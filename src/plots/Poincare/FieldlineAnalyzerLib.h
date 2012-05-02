@@ -43,6 +43,10 @@
 
 #define STRAIGHTLINE_SKELETON 1
 
+#ifdef STRAIGHTLINE_SKELETON
+#include "skelet.h"
+#endif
+
 #include <avtVector.h>
 #include <DebugStream.h>
 
@@ -337,7 +341,10 @@ public:
                           std::vector< Point > &ridgeline_points,
                           std::vector< double > &rotationalSums,
                           std::vector< unsigned int > &poloidalWindingCounts,
-                          float &delta );
+                          float &delta,
+                          unsigned int OLineToroidalWinding );
+
+  Point getAxisPt( Point pt, double phi, double toroidalBase );
 
   void
   GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
@@ -362,7 +369,9 @@ public:
                        unsigned int maxToroidalWinding,
                        double windingPairConfidence,
                        double rationalSurfaceFactor,
-                       bool detectIslandCenters );
+                       bool detectIslandCenters,
+                       unsigned int OLineToroidalWinding,
+                       std::string OLineAxisFilename );
 
   void
   fieldlineProperties2( std::vector< Point > &ptList,
@@ -374,7 +383,11 @@ public:
                           unsigned int offset,
                           unsigned int nnodes,
                           unsigned int moduloValue,
-                          std::vector< Point > &centers );
+                          std::vector< Point > &centers,
+                          std::vector< Point > &nearestBoundaryPoints );
+
+  Point findSkeletonCenter( Skeleton::Skeleton &s,
+                            unsigned int nHullPts );
 
   unsigned int
   islandProperties( std::vector< Point > &points,
@@ -421,6 +434,12 @@ public:
                 unsigned int island );
 
   bool verboseFlag;
+
+protected:
+  std::vector< Point > OLineAxisPts;
+  std::vector< double > OLineAxisPhiAngles;
+  unsigned int OLineAxisIndex;
+  std::string OLineAxisFileName;
 };
 
 

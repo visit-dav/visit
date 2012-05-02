@@ -491,6 +491,11 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetOPointMaxIterations( atts.GetOPointMaxIterations() );
     poincareFilter->SetShowXPoints( atts.GetShowXPoints() );
     poincareFilter->SetXPointMaxIterations( atts.GetXPointMaxIterations() );
+
+    poincareFilter->SetPerformOLineAnalysis( atts.GetPerformOLineAnalysis() );
+    poincareFilter->SetOLineToroidalWinding( atts.GetOLineToroidalWinding() );
+    poincareFilter->SetOLineAxisFileName( atts.GetOLineAxisFileName() );
+
     poincareFilter->SetShowChaotic( atts.GetShowChaotic() );
     poincareFilter->SetShowIslands( atts.GetShowIslands() );
     poincareFilter->SetShowLines(atts.GetShowLines());

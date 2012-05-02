@@ -352,18 +352,19 @@ avtToroidalPoloidalProjectionFilter::ExecuteData(vtkDataSet *in_ds,
     for (int z = 0 ; z < ncells ; z++)
     {
          ds->GetCell(z)->GetBounds(b);
+
          //check bounds in x and y direction, if either x or y
          //direction have large bounds then presume that they are
          //wrapping around and therefore can be used as ghost cells
-         if (b[0] < -1 && b[1] > 1)
+         if( (b[0] < -1 && 1 < b[1]) || (b[2] < -1 && 1 < b[3]) )
+         {
              gz->SetValue(z, 1);
-         else if (b[2] < -1 && b[3] > 1)
-             gz->SetValue(z, 1);
+         }
          else
              gz->SetValue(z,0); //setting any other values to 0
     }
 
-    // Update to get teh correct rMax value.
+    // Update to get the correct rMax value.
     if( atts.GetProject2D() == false )
       UpdateDataObjectInfo();
     

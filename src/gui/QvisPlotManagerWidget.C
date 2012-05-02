@@ -379,10 +379,10 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
 
 
     applyWindowButtonGroup= new QButtonGroup(applyWindow);
-    applyWindowActiveRadioButton = new QRadioButton(tr("Active Window"), applyWindow);
+    applyWindowActiveRadioButton = new QRadioButton(tr("active window"), applyWindow);
     applyWindowButtonGroup->addButton(applyWindowActiveRadioButton,0);
     applyWindowLayout->addWidget(applyWindowActiveRadioButton);
-    applyWindowAllRadioButton = new QRadioButton(tr("All Windows"), applyWindow);
+    applyWindowAllRadioButton = new QRadioButton(tr("all windows"), applyWindow);
     applyWindowButtonGroup->addButton(applyWindowAllRadioButton,1);
     applyWindowLayout->addWidget(applyWindowAllRadioButton);
     connect(applyWindowButtonGroup, SIGNAL(buttonClicked(int)),

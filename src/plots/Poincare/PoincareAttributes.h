@@ -189,6 +189,7 @@ public:
     void SelectVelocitySource();
     void SelectSingleColor();
     void SelectColorTableName();
+    void SelectOLineAxisFileName();
 
     // Property setting methods
     void SetOpacityType(Opacity opacityType_);
@@ -236,6 +237,9 @@ public:
     void SetOPointMaxIterations(int OPointMaxIterations_);
     void SetShowXPoints(bool showXPoints_);
     void SetXPointMaxIterations(int XPointMaxIterations_);
+    void SetPerformOLineAnalysis(bool performOLineAnalysis_);
+    void SetOLineToroidalWinding(int OLineToroidalWinding_);
+    void SetOLineAxisFileName(const std::string &OLineAxisFileName_);
     void SetShowChaotic(bool showChaotic_);
     void SetShowIslands(bool showIslands_);
     void SetVerboseFlag(bool verboseFlag_);
@@ -307,6 +311,10 @@ public:
     int                  GetOPointMaxIterations() const;
     bool                 GetShowXPoints() const;
     int                  GetXPointMaxIterations() const;
+    bool                 GetPerformOLineAnalysis() const;
+    int                  GetOLineToroidalWinding() const;
+    const std::string    &GetOLineAxisFileName() const;
+          std::string    &GetOLineAxisFileName();
     bool                 GetShowChaotic() const;
     bool                 GetShowIslands() const;
     bool                 GetVerboseFlag() const;
@@ -460,6 +468,9 @@ public:
         ID_OPointMaxIterations,
         ID_showXPoints,
         ID_XPointMaxIterations,
+        ID_performOLineAnalysis,
+        ID_OLineToroidalWinding,
+        ID_OLineAxisFileName,
         ID_showChaotic,
         ID_showIslands,
         ID_verboseFlag,
@@ -527,6 +538,9 @@ private:
     int            OPointMaxIterations;
     bool           showXPoints;
     int            XPointMaxIterations;
+    bool           performOLineAnalysis;
+    int            OLineToroidalWinding;
+    std::string    OLineAxisFileName;
     bool           showChaotic;
     bool           showIslands;
     bool           verboseFlag;
@@ -550,6 +564,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibisbbbbbiibdiibbiiiib"
 
 #endif

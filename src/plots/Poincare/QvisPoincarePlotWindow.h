@@ -60,6 +60,7 @@ class QvisLineWidthWidget;
 class QvisVariableButton;
 class QvisPointControl;
 class QvisLineStyleWidget;
+class QPushButton;
 
 // ****************************************************************************
 // Class: QvisPoincarePlotWindow
@@ -148,6 +149,10 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void dataValueChanged(int val);
     void showOPointsChanged(bool val);
     void OPointMaxIterationsChanged(int val);
+    void performOLineAnalysisChanged(bool val);
+    void OLineToroidalWindingChanged(int val);
+    void OLineAxisFileNameProcessText();
+    void OLineAxisFileDialogButtonClicked();
     void showIslandsChanged(bool val);
     void showChaoticChanged(bool val);
     void showLinesChanged(bool val);
@@ -239,6 +244,11 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QCheckBox *showOPoints;
     QLabel *OPointMaxIterationsLabel;
     QSpinBox *OPointMaxIterations;
+    QCheckBox *performOLineAnalysis;
+    QLabel *OLineToroidalWindingLabel;
+    QSpinBox *OLineToroidalWinding;
+    QPushButton *OLineAxisFileDialogButton;
+    QLineEdit *OLineAxisFileName;
     QCheckBox *showChaotic;
     QCheckBox *showIslands;
     QLabel *lineWidthLabel, *lineStyleLabel;

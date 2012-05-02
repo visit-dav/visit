@@ -50,19 +50,6 @@
 #include <list>
 #include <queue>
 
-using std::list;
-using std::vector;
-using std::priority_queue;
-using std::fstream;
-using std::ifstream;
-using std::ios;
-using std::cin;
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::istream;
-using std::string;
-
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
 
@@ -80,15 +67,15 @@ void cls (void);
 // void initEPS (const char *filename)
 // {
 //   epsStream = new std::ofstream (filename);
-//   *epsStream << "%!PS-Adobe-2.0 EPSF-2.0"                   << endl
-//           << "%%BoundingBox: 0 0 " << SCREEN_WIDTH << ' '<< SCREEN_HEIGHT << endl
-//           << "%%Title: Kostra"                           << endl
-//           << "%%CreationDate: "  << endl;
+//   *epsStream << "%!PS-Adobe-2.0 EPSF-2.0"                   << std::endl
+//           << "%%BoundingBox: 0 0 " << SCREEN_WIDTH << ' '<< SCREEN_HEIGHT << std::endl
+//           << "%%Title: Kostra"                           << std::endl
+//           << "%%CreationDate: "  << std::endl;
 // }
 
 // void doneEPS (void)
 // {
-//   *epsStream << "stroke showpage end" << endl;
+//   *epsStream << "stroke showpage end" << std::endl;
 //   epsStream -> flush ();
 //   delete epsStream;
 // }
@@ -264,7 +251,7 @@ inline std::ostream &operator << (std::ostream &os, const VertexSkelet &v)
 inline std::ostream &operator << (std::ostream &os, const VertexList &v)
 {
   VertexList :: const_iterator i = v.begin ();
-  os << v.size () << endl;
+  os << v.size () << std::endl;
   while (i != v.end ()) { 
     os << *i ; 
     i++; }
@@ -274,7 +261,7 @@ inline std::ostream &operator << (std::ostream &os, const VertexList &v)
 inline std::ostream &operator << (std::ostream &os, const SkeletonLine &sl)
 {
   os << sl.lower.vertexID () << ' '  << sl.lower.vertex->point<<' ' 
-     << sl.higher.vertexID () << ' '<< sl.higher.vertex->point<<endl;
+     << sl.higher.vertexID () << ' '<< sl.higher.vertex->point<<std::endl;
 
   int IDH1, IDH2, IDL1, IDR1, IDL2, IDR2, IDP1, IDN1, IDP2, IDN2;
 
@@ -318,15 +305,15 @@ inline std::ostream &operator << (std::ostream &os, const SkeletonLine &sl)
     IDN2 = (sl.higher.vertex) -> nextVertex ->ID;
   else IDN2=-1; 
 
-  os<<sl.lower.vertexID () <<"-> " << IDH1<<" l:"<< IDL1<<" r:"<<IDR1<<" p: "<<IDP1<<" n:"<<IDN1<<endl;
-  os<<sl.higher.vertexID ()<<"-> " << IDH2 <<" l:"<< IDL2<<" r:"<<IDR2<<" p: "<<IDP2<<" n:"<<IDN2<<endl;
+  os<<sl.lower.vertexID () <<"-> " << IDH1<<" l:"<< IDL1<<" r:"<<IDR1<<" p: "<<IDP1<<" n:"<<IDN1<<std::endl;
+  os<<sl.higher.vertexID ()<<"-> " << IDH2 <<" l:"<< IDL2<<" r:"<<IDR2<<" p: "<<IDP2<<" n:"<<IDN2<<std::endl;
 
   return os;
 }
 
 inline std::ostream &operator << (std::ostream &os, const Skeleton &s)
 {
-  os << s.size () << endl;
+  os << s.size () << std::endl;
   for (Skeleton :: const_iterator si = s.begin (); si != s.end (); si++)
     os << *si;
   return os;
@@ -336,13 +323,18 @@ inline std::ostream &operator << (std::ostream &os, const Skeleton &s)
  Global variables
  ******************************************************************************/
 
-IntersectionQueue iq;          // prioritni fronta pruseciku setridena podle vzdalenosti od nositelky (tj. podle vysky ve strese/ i.e. the height of the roof)
-VertexList        vl;          // SLAV, jednotlive cykly (LAV) jsou udrzovany pomoci ukazatelu nextVertex, prevVertex (... cycles are conserved with indicators...)
+IntersectionQueue iq;          // prioritni fronta pruseciku setridena
+                               // podle vzdalenosti od nositelky
+                               // (tj. podle vysky ve strese/ i.e. the
+                               // height of the roof)
+VertexList        vl;          // SLAV, jednotlive cykly (LAV) jsou
+                               // udrzovany pomoci ukazatelu
+                               // nextVertex, prevVertex (... cycles
+                               // are conserved with indicators...)
 Skeleton skeleton;             // output structure containing the skeleton
-// fstream out_file;
-// FILE *binOut; 
+// std::fstream out_file;
 int NrCP;
-fstream OutFile;
+std::fstream OutFile;
 
 
 
@@ -350,8 +342,17 @@ fstream OutFile;
  Function algorithms
  ******************************************************************************/
 
-VertexSkelet :: VertexSkelet (const Point &p, VertexSkelet &left, VertexSkelet &right)   // tvorba vrcholu na miste pruseciku (p) (formation on top of the site of intersection p)
-  : point (p), done (false), higher (NULL), ID (-1), leftSkeletonLine (NULL), rightSkeletonLine (NULL),
+VertexSkelet :: VertexSkelet (const Point &p,
+                              VertexSkelet &left,
+                              VertexSkelet &right)  // tvorba vrcholu
+                                                    // na miste
+                                                    // pruseciku (p)
+                                                    // (formation on
+                                                    // top of the site
+                                                    // of intersection
+                                                    // p)
+  : point (p), done (false), higher (NULL), ID (-1),
+    leftSkeletonLine (NULL), rightSkeletonLine (NULL),
     advancingSkeletonLine (NULL)
 {
   this -> leftLine = left.leftLine;  // hrany puvodni kontury, jejichz
@@ -518,7 +519,7 @@ Point intersectionOfTypeB (const VertexSkelet &v,
     (pl == Point (INFINITY, INFINITY) || pr == Point (INFINITY, INFINITY) || pl == pr);
    
   Point poi = coordinatesOfAnyIntersectionOfTypeB (v, left, right);
-  // out_file<<" any int of type B "<<v.ID<<":"<<poi<<" "<<endl;
+  // out_file<<" any int of type B "<<v.ID<<":"<<poi<<" "<<std::endl;
 
   if (pointOnRay(poi, left.axis) || pointOnRay(poi, right.axis))
   { // cout<<v.ID<<":"<<poi<<" ";
@@ -541,7 +542,7 @@ Point intersectionOfTypeB (const VertexSkelet &v,
     assert 
       (ar >= 0 || ANGLE_SIMILAR (ar, -M_PI) || ANGLE_SIMILAR (ar, 0));
          
-    // out_file<<al<<" "<<alp<<" "<<ar<<" "<<arp<<" "<<endl;
+    // out_file<<al<<" "<<alp<<" "<<ar<<" "<<arp<<" "<<std::endl;
 
     if ((alp > 0 || alp < al) && !ANGLE_SIMILAR (alp, 0) && !ANGLE_SIMILAR (alp, al)) 
     {
@@ -1447,7 +1448,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
   vl.erase (vl.begin (), vl.end ());                         
   skeleton.erase (skeleton.begin (), skeleton.end ());
    
-  //std::cerr << "First loop..." << endl;
+  //std::cerr << "First loop..." << std::endl;
         
   for (int ci = 0; ci < contours.size (); ci ++)             
   {
@@ -1478,7 +1479,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
   if (vl.size () < 3) 
     return skeleton;  
    
-  //std::cerr << "Second loop..." << endl;
+  //std::cerr << "Second loop..." << std::endl;
   
   VertexList :: iterator i;
   int vn = 0, cn = 0;
@@ -1503,7 +1504,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
       vn ++;
   }
   
-  //std::cerr << "Third loop..." << endl;
+  //std::cerr << "Third loop..." << std::endl;
   
   NrCP = -1;
   int type_ev = 0;
@@ -1515,16 +1516,16 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
   }
 
 #ifdef EPS
-//  *epsStream << "%Hranice" << endl;               
+//  *epsStream << "%Hranice" << std::endl;               
 //  for (i = vl.begin (); i != vl.end (); i++)
 //  {
 //    *epsStream << (*i).point.x << ' ' << (*i).point.y << " moveto ";
 //    *epsStream << (*i).nextVertex -> point.x << ' ' << (*i).nextVertex -> point.y << " lineto\n";
 //   }
-//   *epsStream << "%Vnitrek" << endl;
+//   *epsStream << "%Vnitrek" << std::endl;
 #endif
      
-  //std::cerr << "Fourth loop..." << endl;
+  //std::cerr << "Fourth loop..." << std::endl;
         
   for (i = vl.begin (); i != vl.end (); i++)
   {
@@ -1535,7 +1536,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
     }
   }
   
-  std::cerr << "Fifth loop..." << endl;
+  //std::cerr << "Fifth loop..." << std::endl;
   
   //Possible dead loop below (Phi_BT 1350 (1.51054 0 0.0428917) )!!!
   int counter = 0;
@@ -1547,7 +1548,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
       counter ++;
       if (counter > 100000)
       {
-        std::cerr << "Infinite loop! Exiting ..." << endl;
+        std::cerr << "Infinite loop! Exiting ..." << std::endl;
         break;
         //skeleton.erase (skeleton.begin (), skeleton.end ()); return skeleton;
       }
@@ -1621,7 +1622,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
 
       if (i.type == Intersection :: NONCONVEX)
       {
-        std::cerr << "Call non-convex intersection ..." << endl;
+        std::cerr << "Call non-convex intersection ..." << std::endl;
         
         applyNonconvexIntersection (i);
       } // NON-CONVEX INTERSECTIONS 
@@ -1632,7 +1633,7 @@ Skeleton &makeSkeleton (PointVectorVector &contours)
 #endif
   }
 
-  std::cerr << "Skeleton Done!" << endl;
+  //std::cerr << "Skeleton Done!" << std::endl;
   
   return skeleton;    
 

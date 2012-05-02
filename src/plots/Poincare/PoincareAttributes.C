@@ -639,6 +639,9 @@ void PoincareAttributes::Init()
     OPointMaxIterations = 2;
     showXPoints = false;
     XPointMaxIterations = 2;
+    performOLineAnalysis = false;
+    OLineToroidalWinding = 0;
+    OLineAxisFileName = "";
     showChaotic = false;
     showIslands = false;
     verboseFlag = true;
@@ -735,6 +738,9 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     OPointMaxIterations = obj.OPointMaxIterations;
     showXPoints = obj.showXPoints;
     XPointMaxIterations = obj.XPointMaxIterations;
+    performOLineAnalysis = obj.performOLineAnalysis;
+    OLineToroidalWinding = obj.OLineToroidalWinding;
+    OLineAxisFileName = obj.OLineAxisFileName;
     showChaotic = obj.showChaotic;
     showIslands = obj.showIslands;
     verboseFlag = obj.verboseFlag;
@@ -977,6 +983,9 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (OPointMaxIterations == obj.OPointMaxIterations) &&
             (showXPoints == obj.showXPoints) &&
             (XPointMaxIterations == obj.XPointMaxIterations) &&
+            (performOLineAnalysis == obj.performOLineAnalysis) &&
+            (OLineToroidalWinding == obj.OLineToroidalWinding) &&
+            (OLineAxisFileName == obj.OLineAxisFileName) &&
             (showChaotic == obj.showChaotic) &&
             (showIslands == obj.showIslands) &&
             (verboseFlag == obj.verboseFlag) &&
@@ -1208,6 +1217,9 @@ PoincareAttributes::SelectAll()
     Select(ID_OPointMaxIterations,       (void *)&OPointMaxIterations);
     Select(ID_showXPoints,               (void *)&showXPoints);
     Select(ID_XPointMaxIterations,       (void *)&XPointMaxIterations);
+    Select(ID_performOLineAnalysis,      (void *)&performOLineAnalysis);
+    Select(ID_OLineToroidalWinding,      (void *)&OLineToroidalWinding);
+    Select(ID_OLineAxisFileName,         (void *)&OLineAxisFileName);
     Select(ID_showChaotic,               (void *)&showChaotic);
     Select(ID_showIslands,               (void *)&showIslands);
     Select(ID_verboseFlag,               (void *)&verboseFlag);
@@ -1528,6 +1540,24 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("XPointMaxIterations", XPointMaxIterations));
+    }
+
+    if(completeSave || !FieldsEqual(ID_performOLineAnalysis, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("performOLineAnalysis", performOLineAnalysis));
+    }
+
+    if(completeSave || !FieldsEqual(ID_OLineToroidalWinding, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("OLineToroidalWinding", OLineToroidalWinding));
+    }
+
+    if(completeSave || !FieldsEqual(ID_OLineAxisFileName, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("OLineAxisFileName", OLineAxisFileName));
     }
 
     if(completeSave || !FieldsEqual(ID_showChaotic, &defaultObject))
@@ -1932,6 +1962,12 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowXPoints(node->AsBool());
     if((node = searchNode->GetNode("XPointMaxIterations")) != 0)
         SetXPointMaxIterations(node->AsInt());
+    if((node = searchNode->GetNode("performOLineAnalysis")) != 0)
+        SetPerformOLineAnalysis(node->AsBool());
+    if((node = searchNode->GetNode("OLineToroidalWinding")) != 0)
+        SetOLineToroidalWinding(node->AsInt());
+    if((node = searchNode->GetNode("OLineAxisFileName")) != 0)
+        SetOLineAxisFileName(node->AsString());
     if((node = searchNode->GetNode("showChaotic")) != 0)
         SetShowChaotic(node->AsBool());
     if((node = searchNode->GetNode("showIslands")) != 0)
@@ -2323,6 +2359,27 @@ PoincareAttributes::SetXPointMaxIterations(int XPointMaxIterations_)
 {
     XPointMaxIterations = XPointMaxIterations_;
     Select(ID_XPointMaxIterations, (void *)&XPointMaxIterations);
+}
+
+void
+PoincareAttributes::SetPerformOLineAnalysis(bool performOLineAnalysis_)
+{
+    performOLineAnalysis = performOLineAnalysis_;
+    Select(ID_performOLineAnalysis, (void *)&performOLineAnalysis);
+}
+
+void
+PoincareAttributes::SetOLineToroidalWinding(int OLineToroidalWinding_)
+{
+    OLineToroidalWinding = OLineToroidalWinding_;
+    Select(ID_OLineToroidalWinding, (void *)&OLineToroidalWinding);
+}
+
+void
+PoincareAttributes::SetOLineAxisFileName(const std::string &OLineAxisFileName_)
+{
+    OLineAxisFileName = OLineAxisFileName_;
+    Select(ID_OLineAxisFileName, (void *)&OLineAxisFileName);
 }
 
 void
@@ -2762,6 +2819,30 @@ PoincareAttributes::GetXPointMaxIterations() const
 }
 
 bool
+PoincareAttributes::GetPerformOLineAnalysis() const
+{
+    return performOLineAnalysis;
+}
+
+int
+PoincareAttributes::GetOLineToroidalWinding() const
+{
+    return OLineToroidalWinding;
+}
+
+const std::string &
+PoincareAttributes::GetOLineAxisFileName() const
+{
+    return OLineAxisFileName;
+}
+
+std::string &
+PoincareAttributes::GetOLineAxisFileName()
+{
+    return OLineAxisFileName;
+}
+
+bool
 PoincareAttributes::GetShowChaotic() const
 {
     return showChaotic;
@@ -2909,6 +2990,12 @@ PoincareAttributes::SelectColorTableName()
     Select(ID_colorTableName, (void *)&colorTableName);
 }
 
+void
+PoincareAttributes::SelectOLineAxisFileName()
+{
+    Select(ID_OLineAxisFileName, (void *)&OLineAxisFileName);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2978,6 +3065,9 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_OPointMaxIterations:       return "OPointMaxIterations";
     case ID_showXPoints:               return "showXPoints";
     case ID_XPointMaxIterations:       return "XPointMaxIterations";
+    case ID_performOLineAnalysis:      return "performOLineAnalysis";
+    case ID_OLineToroidalWinding:      return "OLineToroidalWinding";
+    case ID_OLineAxisFileName:         return "OLineAxisFileName";
     case ID_showChaotic:               return "showChaotic";
     case ID_showIslands:               return "showIslands";
     case ID_verboseFlag:               return "verboseFlag";
@@ -3065,6 +3155,9 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_OPointMaxIterations:       return FieldType_int;
     case ID_showXPoints:               return FieldType_bool;
     case ID_XPointMaxIterations:       return FieldType_int;
+    case ID_performOLineAnalysis:      return FieldType_bool;
+    case ID_OLineToroidalWinding:      return FieldType_int;
+    case ID_OLineAxisFileName:         return FieldType_string;
     case ID_showChaotic:               return FieldType_bool;
     case ID_showIslands:               return FieldType_bool;
     case ID_verboseFlag:               return FieldType_bool;
@@ -3152,6 +3245,9 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_OPointMaxIterations:       return "int";
     case ID_showXPoints:               return "bool";
     case ID_XPointMaxIterations:       return "int";
+    case ID_performOLineAnalysis:      return "bool";
+    case ID_OLineToroidalWinding:      return "int";
+    case ID_OLineAxisFileName:         return "string";
     case ID_showChaotic:               return "bool";
     case ID_showIslands:               return "bool";
     case ID_verboseFlag:               return "bool";
@@ -3441,6 +3537,21 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (XPointMaxIterations == obj.XPointMaxIterations);
         }
         break;
+    case ID_performOLineAnalysis:
+        {  // new scope
+        retval = (performOLineAnalysis == obj.performOLineAnalysis);
+        }
+        break;
+    case ID_OLineToroidalWinding:
+        {  // new scope
+        retval = (OLineToroidalWinding == obj.OLineToroidalWinding);
+        }
+        break;
+    case ID_OLineAxisFileName:
+        {  // new scope
+        retval = (OLineAxisFileName == obj.OLineAxisFileName);
+        }
+        break;
     case ID_showChaotic:
         {  // new scope
         retval = (showChaotic == obj.showChaotic);
@@ -3649,6 +3760,10 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            showOPoints != obj.showOPoints ||
            OPointMaxIterations != obj.OPointMaxIterations ||
+
+           performOLineAnalysis != obj.performOLineAnalysis ||
+           OLineToroidalWinding != obj.OLineToroidalWinding ||
+           OLineAxisFileName != obj.OLineAxisFileName ||
 
            showXPoints != obj.showXPoints ||
            XPointMaxIterations != obj.XPointMaxIterations ||

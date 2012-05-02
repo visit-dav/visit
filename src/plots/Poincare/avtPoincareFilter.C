@@ -175,6 +175,9 @@ avtPoincareFilter::avtPoincareFilter() :
     showOPoints( false ),
     OPointMaxIterations(2),
     XPointMaxIterations(2),
+    performOLineAnalysis( false ),
+    OLineToroidalWinding( 0 ),
+    OLineAxisFileName(""),
     showIslands( false ),
     showLines( true ),
     showPoints( false ),
@@ -437,41 +440,224 @@ avtPoincareFilter::ContinueExecute()
         // For Island Chains add in the O Points.
         if( showOPoints )
         {
-          if( properties.type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-              properties.type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-              properties.type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
-              properties.type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
+          // Are O Points present?
+          if( properties.type & FieldlineProperties::ISLAND_CHAIN &&
+              properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
+
+              (properties.searchState == FieldlineProperties::UNKNOWN_SEARCH ||
+               properties.searchState == FieldlineProperties::ISLAND_O_POINT) )
           {
-            // Are O Points present?
-            if( properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
-                !(poincare_ic->properties.OPoints.empty()) )
+            // Change the state of the properties to complete now that
+            // the seed point has been stripped off.
+            poincare_ic->properties.analysisState =
+              FieldlineProperties::COMPLETED;
+            
+            if(verboseFlag )
+              std::cerr << "Have island seed  " << properties.seedPoints[0]
+                        << std::endl;
+            
+            if( properties.iteration < OPointMaxIterations )
             {
-              // Change the state of the properties to complete now that
-              // the seed point has been stripped off.
-              poincare_ic->properties.analysisState =
-                FieldlineProperties::COMPLETED;
+              std::vector<avtIntegralCurve *> new_ics;
+              avtVector vec(0,0,0);
+              
+              if(verboseFlag )
+                std::cerr << "Adding island O point seed  "
+                          << properties.seedPoints[0]
+                          << std::endl;
+              
+              AddSeedPoint( properties.seedPoints[0], vec, new_ics );
+              
+              for( unsigned int j=0; j<new_ics.size(); ++j )
+              {
+                if(verboseFlag )
+                  std::cerr << "New island O point seed ids "
+                            << new_ics[j]->id << "  ";
+
+                avtPoincareIC* seed_poincare_ic =
+                  (avtPoincareIC *) new_ics[j];
+
+                // Transfer and update properties.
+                seed_poincare_ic->properties = properties;
+              
+                seed_poincare_ic->properties.analysisState =
+                  FieldlineProperties::UNKNOWN_STATE;
+              
+                seed_poincare_ic->properties.source = properties.type;
+              
+                seed_poincare_ic->properties.iteration =
+                  properties.iteration + 1;
+
+                if( properties.iteration == 0 )
+                {
+                  std::cerr << __LINE__ << "  "
+                            << properties.searchDelta << std::endl;
+
+                  seed_poincare_ic->properties.searchBaseDelta =
+                    properties.searchDelta;
+                }
+
+                seed_poincare_ic->properties.searchState =
+                  FieldlineProperties::ISLAND_O_POINT;
+              }
 
               if(verboseFlag )
-                std::cerr << "Have island seed  " << properties.OPoints[0]
-                          << std::endl;
+                std::cerr << std::endl;
+              
+              // The source was an island_chain which meant the seed was
+              // an intermediate seed so delete it.
+
+              // Note only delete the seed if another seed replaces
+              // it. If past the maximum iterations the seed will
+              // not be deleted.
+              if( properties.source & FieldlineProperties::ISLAND_CHAIN )
+              {
+                if(verboseFlag )
+                  std::cerr << "Deleting old O Point seed that spanwned a new seed "
+                            << poincare_ic->id << std::endl;
+                
+                ids_to_delete.push_back( poincare_ic->id );
+              }
+            }
+          }
+              
+          // Is a width seed point present?
+          else if( properties.type == FieldlineProperties::O_POINT &&
+                   ((properties.analysisState == FieldlineProperties::ADD_WIDTH_POINT &&
+                     properties.searchState == FieldlineProperties::ISLAND_O_POINT) ||
+                    (properties.analysisState == FieldlineProperties::UNKNOWN_STATE &&
+                     properties.searchState == FieldlineProperties::ISLAND_PCA_SEARCH)) )
+          {
+            // Change the state of the properties to complete now that
+            // the seed point has been stripped off.
+            poincare_ic->properties.analysisState =
+              FieldlineProperties::COMPLETED;
+
+//          properties.searchNormal = avtVector(1,0,1);
+//          properties.searchNormal.normalize();
+
+            std::cerr << __LINE__ << "  "
+                      << properties.lastSeedPoint << "  "
+                      << properties.searchNormal << "  "
+                      << properties.searchDelta << "  "
+                      << properties.searchBaseDelta << "  "
+                      << properties.searchIncrement << "  "
+                      << properties.searchMagnitude << "  "
+                      << std::endl;
+
+            properties.searchIncrement = 1.0;
+
+            if( (properties.searchState == FieldlineProperties::ISLAND_O_POINT) ||
+                (properties.searchState == FieldlineProperties::ISLAND_PCA_SEARCH &&
+                 properties.iteration < OPointMaxIterations) )
+            {
+              // First time through the loop.
+              if( properties.searchState == FieldlineProperties::ISLAND_O_POINT )
+              {
+                properties.searchMagnitude = properties.searchIncrement;
+              }
+              // Ended up back up at the O Point so try again.
+              else
+                properties.searchMagnitude += properties.searchIncrement;
+
+              properties.baseToroidalWinding = properties.toroidalWinding;
+              properties.basePoloidalWinding = properties.poloidalWinding;
+              
+              avtVector seed = properties.lastSeedPoint +
+                properties.searchNormal *
+                properties.searchMagnitude * properties.searchDelta;
+              
+              std::vector<avtIntegralCurve *> new_ics;
+              avtVector vec(0,0,0);
+              
+              if(verboseFlag )
+                std::cerr << "Have island PCA seed  " << seed << std::endl;
+              
+              AddSeedPoint( seed, vec, new_ics );
+              
+              for( unsigned int j=0; j<new_ics.size(); ++j )
+              {
+                if(verboseFlag )
+                  std::cerr << __LINE__
+                            << " New island PCA seed ids "
+                            << new_ics[j]->id << "  ";
+                
+                avtPoincareIC* seed_poincare_ic =
+                  (avtPoincareIC *) new_ics[j];
+                
+                // Transfer and update properties.
+                seed_poincare_ic->properties = properties;
+                
+                seed_poincare_ic->properties.analysisState =
+                  FieldlineProperties::UNKNOWN_STATE;
+                
+                seed_poincare_ic->properties.parentOPointIC = poincare_ic;
+                seed_poincare_ic->properties.source = properties.type;
+              
+                if( properties.searchState == FieldlineProperties::ISLAND_O_POINT )
+                  seed_poincare_ic->properties.iteration = 0;
+                else
+                  seed_poincare_ic->properties.iteration =
+                    properties.iteration + 1;
+                
+                seed_poincare_ic->properties.searchState =
+                  FieldlineProperties::ISLAND_PCA_SEARCH;
+              }
+
+              if(verboseFlag )
+                std::cerr << std::endl;
+            }
+          }
+
+          // PCA Island check
+          else if( properties.type & FieldlineProperties::ISLAND_CHAIN &&
+                   properties.analysisState == FieldlineProperties::ADD_O_POINTS &&
+                   properties.searchState == FieldlineProperties::ISLAND_PCA_SEARCH )
+          {
+            // Change the state of the properties to complete.
+            poincare_ic->properties.analysisState =
+              FieldlineProperties::COMPLETED;
+
+            std::cerr << __LINE__ << "  "
+                      << properties.lastSeedPoint << "  "
+                      << properties.searchNormal << "  "
+                      << properties.searchDelta << "  "
+                      << properties.searchBaseDelta << "  "
+                      << properties.searchIncrement << "  "
+                      << properties.searchMagnitude << "  "
+                      << std::endl;
             
+            // TODO - PCA calculation.
+            
+            // Failed PCA - too circular
+            if( 0 )
+            {
               if( properties.iteration < OPointMaxIterations )
               {
+                properties.searchMagnitude += properties.searchIncrement;
+
+                avtVector seed = properties.lastSeedPoint +
+                  properties.searchMagnitude * properties.searchDelta *
+                  properties.searchNormal;
+
                 std::vector<avtIntegralCurve *> new_ics;
                 avtVector vec(0,0,0);
               
                 if(verboseFlag )
-                  std::cerr << "Adding island seed  " << properties.OPoints[0]
-                            << std::endl;
+                  std::cerr << __LINE__
+                            << " Adding additional island PCA point seed  "
+                            << seed << std::endl;
               
-                AddSeedPoint( properties.OPoints[0], vec, new_ics );
+                AddSeedPoint( seed, vec, new_ics );
               
                 for( unsigned int j=0; j<new_ics.size(); ++j )
                 {
                   if(verboseFlag )
-                    std::cerr << "New island seed ids " << new_ics[j]->id << "  ";
+                    std::cerr << "New island PCA seed ids "
+                              << new_ics[j]->id << "  ";
 
-                  avtPoincareIC* seed_poincare_ic = (avtPoincareIC *) new_ics[j];
+                  avtPoincareIC* seed_poincare_ic =
+                    (avtPoincareIC *) new_ics[j];
 
                   // Transfer and update properties.
                   seed_poincare_ic->properties = properties;
@@ -481,7 +667,11 @@ avtPoincareFilter::ContinueExecute()
               
                   seed_poincare_ic->properties.source = properties.type;
               
-                  seed_poincare_ic->properties.iteration = properties.iteration + 1;
+                  seed_poincare_ic->properties.iteration =
+                    properties.iteration + 1;
+
+                  seed_poincare_ic->properties.searchState =
+                    FieldlineProperties::ISLAND_O_POINT;
                 }
 
                 if(verboseFlag )
@@ -493,18 +683,210 @@ avtPoincareFilter::ContinueExecute()
                 // Note only delete the seed if another seed replaces
                 // it. If past the maximum iterations the seed will
                 // not be deleted.
-                if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-                    properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-                    properties.source == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
-                    properties.source == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
+                if( properties.source & FieldlineProperties::ISLAND_CHAIN ||
+                    properties.source & FieldlineProperties::O_POINT )
                 {
                   if(verboseFlag )
-                    std::cerr << "Deleting old O Point seed that spanwned a new seed "
+                    std::cerr << "Deleting old O Point seed that spanwned a new PCA seed "
                               << poincare_ic->id << std::endl;
                 
                   ids_to_delete.push_back( poincare_ic->id );
                 }
               }
+            }
+
+            // Passed PCA so jump out to the next island;
+            else
+            {
+              properties.pastFirstSearchFailure = false;
+
+              if( properties.searchBaseDelta / properties.searchDelta > 10.0 )
+                properties.searchDelta = properties.searchBaseDelta / 10;
+              else
+                properties.searchDelta = properties.searchBaseDelta / 10;
+
+              properties.searchIncrement = 1.0;
+              properties.searchMagnitude += properties.searchIncrement;
+
+              properties.searchMagnitude =
+                properties.searchBaseDelta / properties.searchDelta;
+
+              avtVector seed = properties.lastSeedPoint +
+                properties.searchMagnitude * properties.searchDelta *
+                properties.searchNormal;
+              
+              std::vector<avtIntegralCurve *> new_ics;
+              avtVector vec(0,0,0);
+              
+              if(verboseFlag )
+                std::cerr <<  __LINE__
+                          << " Have new island width seed  " << seed << std::endl;
+                          
+              AddSeedPoint( seed, vec, new_ics );
+              
+              for( unsigned int j=0; j<new_ics.size(); ++j )
+              {
+                if(verboseFlag )
+                  std::cerr << "New island width seed ids "
+                            << new_ics[j]->id << "  ";
+
+                avtPoincareIC* seed_poincare_ic =
+                  (avtPoincareIC *) new_ics[j];
+                
+                // Transfer and update properties.
+                seed_poincare_ic->properties = properties;
+                  
+                seed_poincare_ic->properties.analysisState =
+                  FieldlineProperties::UNKNOWN_STATE;
+              
+                seed_poincare_ic->properties.source = properties.type;
+              
+                seed_poincare_ic->properties.iteration = 0;
+
+                seed_poincare_ic->properties.searchState =
+                  FieldlineProperties::ISLAND_WIDTH_SEARCH;
+              }
+
+              if(verboseFlag )
+                std::cerr << std::endl;
+
+              // Note only delete the seed if another seed replaces
+              // it. If past the maximum iterations the seed will
+              // not be deleted.
+              if( properties.source & FieldlineProperties::O_POINT )
+              {
+                if(verboseFlag )
+                  std::cerr << "Deleting old O Point seed that spanwned a new width seed "
+                            << poincare_ic->id << std::endl;
+                
+                ids_to_delete.push_back( poincare_ic->id );
+              }
+            }
+          }
+
+          // Width surfaces
+          else if( ( (properties.type & FieldlineProperties::ISLAND_CHAIN &&
+                      properties.analysisState == FieldlineProperties::ADD_O_POINTS ) ||
+                     properties.type & FieldlineProperties::FLUX_SURFACE &&
+                     properties.analysisState == FieldlineProperties::COMPLETED ) &&
+                   properties.searchState == FieldlineProperties::ISLAND_WIDTH_SEARCH )     
+          {
+            // Change the state of the properties to complete.
+            poincare_ic->properties.analysisState =
+              FieldlineProperties::COMPLETED;
+
+            if( properties.iteration < OPointMaxIterations )
+            {
+              std::cerr << __LINE__ << "  "
+                        << properties.baseToroidalWinding << "  "
+                        << properties.basePoloidalWinding << "  "
+                        << properties.toroidalWinding << "  "
+                        << properties.poloidalWinding << "  "
+                        << std::endl;
+
+              if( (float) properties.baseToroidalWinding /
+                  (float) properties.basePoloidalWinding ==
+                  (float) properties.toroidalWinding /
+                  (float) properties.poloidalWinding )
+              {
+                if( properties.pastFirstSearchFailure )
+                  properties.searchIncrement /= 2.0;
+              }
+              else
+              {
+                if( properties.pastFirstSearchFailure == false )
+                {
+                  properties.pastFirstSearchFailure = true;
+                  properties.iteration = 0;
+                }
+
+                properties.searchMagnitude -= properties.searchIncrement;
+
+                properties.searchIncrement /= 2.0;            
+              }
+              
+              // If about to end do not increment so to be assured
+              // that an island is found.
+              if( properties.iteration+1 < OPointMaxIterations )
+                properties.searchMagnitude += properties.searchIncrement;
+
+              avtVector seed = properties.lastSeedPoint +
+                properties.searchMagnitude * properties.searchDelta *
+                properties.searchNormal;
+            
+              std::cerr << __LINE__ << "  "
+                        << properties.iteration << "  "
+                        << seed << "  "
+                        << properties.searchNormal << "  "
+                        << properties.searchDelta << "  "
+                        << properties.searchBaseDelta << "  "
+                        << properties.searchIncrement << "  "
+                        << properties.searchMagnitude << "  "
+                        << properties.pastFirstSearchFailure << "  "
+                        << std::endl;
+
+              std::vector<avtIntegralCurve *> new_ics;
+              avtVector vec(0,0,0);
+              
+              if(verboseFlag )
+                std::cerr << __LINE__
+                          << " Have additional island width seed  " << seed << std::endl;
+                          
+              AddSeedPoint( seed, vec, new_ics );
+              
+              for( unsigned int j=0; j<new_ics.size(); ++j )
+              {
+                if(verboseFlag )
+                  std::cerr << "New island width seed ids "
+                            << new_ics[j]->id << "  ";
+              
+                avtPoincareIC* seed_poincare_ic =
+                  (avtPoincareIC *) new_ics[j];
+              
+                // Transfer and update properties.
+                seed_poincare_ic->properties = properties;
+              
+                seed_poincare_ic->properties.analysisState =
+                  FieldlineProperties::UNKNOWN_STATE;
+              
+                seed_poincare_ic->properties.source = properties.type;
+              
+                seed_poincare_ic->properties.iteration =
+                  properties.iteration + 1;
+              
+                seed_poincare_ic->properties.searchState =
+                  FieldlineProperties::ISLAND_WIDTH_SEARCH;
+              }
+
+              if(verboseFlag )
+                std::cerr << std::endl;
+
+              // Note only delete the seed if another seed replaces
+              // it. If past the maximum iterations the seed will
+              // not be deleted.
+//            if( properties.source & FieldlineProperties::ISLAND_CHAIN )
+              {
+                if(verboseFlag )
+                  std::cerr << "Deleting old O Point seed that spanwned a new width seed "
+                            << poincare_ic->id << std::endl;
+                
+                ids_to_delete.push_back( poincare_ic->id );
+              }
+            }
+            else
+            {
+              poincare_ic->properties.searchState =
+                FieldlineProperties::ISLAND_WIDTH_COMPLETED;
+
+              std::cerr << __LINE__ << "  "
+                        << properties.baseToroidalWinding << "  "
+                        << properties.basePoloidalWinding << "  "
+                        << properties.toroidalWinding << "  "
+                        << properties.poloidalWinding << "  "
+                        << std::endl;
+
+              poincare_ic->properties.parentOPointIC->properties.childOPointIC = 
+                poincare_ic;
             }
           }
 
@@ -516,10 +898,8 @@ avtPoincareFilter::ContinueExecute()
             // The source was an island_chain which meant the seed was
             // an intermediate seed that did make it into an O Point
             // so delete it.
-            if( properties.source == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-                properties.source == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-                properties.source == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
-                properties.source == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS )
+            if( properties.source & FieldlineProperties::ISLAND_CHAIN &&
+                properties.searchState == FieldlineProperties::ISLAND_O_POINT )
             {
               if(verboseFlag )
                 std::cerr << "Deleting old O Point seed that resulted in a surface "
@@ -1651,7 +2031,9 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
                                    maximumToroidalWinding,
                                    windingPairConfidence,
                                    rationalSurfaceFactor,
-                                   showOPoints );
+                                   showOPoints,
+                                   performOLineAnalysis ? OLineToroidalWinding : 0,
+                                   OLineAxisFileName );
 
 //      std::cerr << "Analysis of Fieldline: id = "
 //                << poincare_ic->id << "  "
@@ -1710,8 +2092,19 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         else if( poincare_ic->properties.analysisState ==
                  FieldlineProperties::ADD_O_POINTS )
         {
-          // Make more analysis is done in the poincare filter once O
-          // points are added to teh queue.
+          // Make sure more analysis is done in the poincare filter
+          // once O point seeds are added to the queue.
+          analysisComplete = false;
+        }
+
+        // See if a seed for finding the island width need to be added.
+        else if( poincare_ic->properties.analysisState ==
+                 FieldlineProperties::ADD_WIDTH_POINT ||
+                 properties.searchState ==
+                 FieldlineProperties::ISLAND_WIDTH_SEARCH )
+        {
+          // Make sure more analysis is done in the poincare filter
+          // once width seed points are added to the queue.
           analysisComplete = false;
         }
         // Catch all for completed or terminated fieldlines
@@ -2023,7 +2416,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         unsigned int islandGroups       = properties.islandGroups;
         unsigned int nnodes             = properties.nnodes;
 
-        std::vector< avtVector > &OPoints = properties.OPoints;
+        std::vector< avtVector > &seedPoints = properties.seedPoints;
 
         bool completeIslands = true;
 
@@ -2036,8 +2429,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           else
             safetyFactor = 0;
 
-          std::cerr << "Surface id = " << poincare_ic->id << "  "
-                    << "< " << poincare_ic->points[0].x << " "
+          std::cerr << "Surface id = " << poincare_ic->id << "  < "
+                    << poincare_ic->points[0].x << " "
                     << poincare_ic->points[0].y << " "
                     << poincare_ic->points[0].z << " >  "
                     << toroidalWinding << "," << poloidalWinding << " ("
@@ -2090,13 +2483,28 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                     << (complete ? " (Complete)  " : "  ")
                     << std::endl;
           
-          if( (type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
-               type == FieldlineProperties::ISLAND_SECONDARY_CHAIN ||
-               type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
-               type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS) &&
+          if( type & FieldlineProperties::ISLAND_CHAIN &&
               toroidalWinding != poloidalWinding &&
               islands != toroidalWinding )
             std::cerr << "WARNING - The island count does not match the toroidalWinding count" << std::endl;
+
+          if( type & FieldlineProperties::O_POINT &&
+              properties.childOPointIC )
+          {
+            std::cerr << properties.seedPoints.size() << std::endl;
+            std::cerr << properties.childOPointIC->properties.seedPoints.size() << std::endl;
+            for( unsigned int j=0; j<islands; ++j )
+            {
+              std::cerr << "O point " << properties.seedPoints[j] << "  "
+                        << " radial "
+                        << properties.childOPointIC->properties.seedPoints[j] << "  "
+                        << "width  "
+                        << (properties.seedPoints[j] -
+                            properties.childOPointIC->properties.seedPoints[j]).length()
+                        << std::endl;
+            }
+          }
+
         }
         
         if( type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS )
@@ -2641,7 +3049,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 //                    type == FieldlineProperties::ISLAND_PRIMARY_SECONDARY_AXIS ||
 //                    type == FieldlineProperties::ISLAND_SECONDARY_SECONDARY_AXIS) )
 //               {
-//                 drawPoints( dt, OPoints );
+//                 drawPoints( dt, seedPoints );
 //               }
             }
             else
@@ -2651,7 +3059,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
                            dataValue, color_value );
             }
 
-            if( show1DPlots )
+            if( 0 && show1DPlots )
               drawPeriodicity( dt, distancePts,
                                toroidalResonance,
 //                             distancePts.size(),
@@ -2661,8 +3069,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             
             if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
-                               poloidalResonance,
-//                             ridgelinePts.size(),
+//                               poloidalResonance,
+                               ridgelinePts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
             
