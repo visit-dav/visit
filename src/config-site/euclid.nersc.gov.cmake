@@ -26,11 +26,9 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 ## Parallel Options
 ##
-
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/common/usg/openmpi/1.4.4/gnu/bin/mpic++ TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH /usr/common/usg/openmpi/1.4.4/gnu/lib/)
-
 
 ##############################################################
 ##
