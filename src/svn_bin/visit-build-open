@@ -84,6 +84,11 @@
 #   I modified the builds on hoth and sidious to use the serial config
 #   site files.
 #
+#   Eric Brugger, Wed May  2 08:45:05 PDT 2012
+#   I removed ellipse and xchem.  I modified hoth since it is now an x86_64
+#   rhel6 system instead of an x86 rhel3 system.  I updated the e-mail
+#   addresses.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -95,17 +100,23 @@ user=`whoami`
 #
 emailName=brugger1@llnl.gov
 case $user in
-   kbonnell)
-      emailName=bonnell2@llnl.gov
+   biagas2)
+      emailName=biagas2@llnl.gov
       ;; 
-   brugger)
-      emailName=brugger1@llnl.gov
-      ;;
+   kbonnell)
+      emailName=biagas2@llnl.gov
+      ;; 
    brugger1)
       emailName=brugger1@llnl.gov
       ;;
-   childs)
-      emailName=childs3@llnl.gov
+   brugger)
+      emailName=brugger1@llnl.gov
+      ;;
+   harrison37)
+      emailName=cyrush@llnl.gov
+      ;;
+   cyrush)
+      emailName=cyrush@llnl.gov
       ;;
    mcmiller)
       emailName=miller86@llnl.gov
@@ -115,12 +126,6 @@ case $user in
       ;;
    whitlocb)
       emailName=whitlock2@llnl.gov
-      ;;
-   harrison37)
-      emailName=cyrush@llnl.gov
-      ;;
-   cyrush)
-      emailName=cyrush@llnl.gov
       ;;
 esac
 
@@ -134,9 +139,7 @@ ubuntu1104_64=false
 aztec=true
 rzzeus=true
 alastor=false
-xchem=false
 euclid=true
-ellipse=true
 glory=false
 redsky=false
 
@@ -158,9 +161,7 @@ do
          aztec=false
          rzzeus=false
          alastor=false
-         xchem=false
          euclid=false
-         ellipse=false
          glory=false
          redsky=false
          shift
@@ -221,28 +222,12 @@ do
          alastor=true
          shift
          ;;
-      -xchem)
-         xchem=false
-         shift
-         ;;
-      +xchem)
-         xchem=true
-         shift
-         ;;
       -euclid)
          euclid=false
          shift
          ;;
       +euclid)
          euclid=true
-         shift
-         ;;
-      -ellipse)
-         ellipse=false
-         shift
-         ;;
-      +ellipse)
-         ellipse=true
          shift
          ;;
       -glory)
@@ -282,9 +267,7 @@ then
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
-   echo "    xchem (HEAF, Linux),"
    echo "    euclid (LBNL, Linux, x86_64),"
-   echo "    ellipse (UChicago, Linux)"
    echo "    glory (Sandia, Linux)"
    echo "    redsky (Sandia, Linux)"
    exit
@@ -306,28 +289,28 @@ fi
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-if test ! -e /scratch/$user ; then
-   mkdir /scratch/$user
+if test ! -e /data/$user ; then
+   mkdir /data/$user
 fi
-if test ! -e /scratch/$user/hoth ; then
-   mkdir /scratch/$user/hoth
+if test ! -e /data/$user/hoth ; then
+   mkdir /data/$user/hoth
 fi
-rm -rf /scratch/$user/hoth/visitbuild
-mkdir /scratch/$user/hoth/visitbuild
-mv hoth_$dist.tar.gz /scratch/$user/hoth/visitbuild/$dist.tar.gz
-cd /scratch/$user/hoth/visitbuild
+rm -rf /data/$user/hoth/visitbuild
+mkdir /data/$user/hoth/visitbuild
+mv hoth_$dist.tar.gz /data/$user/hoth/visitbuild/$dist.tar.gz
+cd /data/$user/hoth/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 cd config-site
-mv hoth.llnl.gov.cmake hoth.llnl.gov.parallel.cmake
-mv hoth.llnl.gov.serial.cmake hoth.llnl.gov.cmake
+mv hoth.cmake hoth.parallel.cmake
+mv hoth.serial.cmake hoth.cmake
 cd ..
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-i686_gcc-3.2/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../..
+mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "        build of visit on hoth"         > resultlog 2>&1
@@ -664,61 +647,6 @@ then
 fi
 
 #
-# Build on xchem.
-#
-rm -f xchem
-cat <<EOF > xchem
-#!/bin/sh
-PATH=/usr/X11R6/bin:\$PATH
-if test ! -d tmp ; then
-   mkdir tmp
-fi
-if test ! -d tmp/$user ; then
-   mkdir tmp/$user
-fi
-if test ! -d tmp/$user/xchem ; then
-   mkdir tmp/$user/xchem
-fi
-rm -rf tmp/$user/xchem/visitbuild
-mkdir tmp/$user/xchem/visitbuild
-mv xchem_$dist.tar.gz tmp/$user/xchem/visitbuild/$dist.tar.gz
-cd tmp/$user/xchem/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/cmake/2.8.3/linux-x86_64-gcc-4.0.2/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release >> ../../buildlog 2>&1
-make -j 3 >> ../../buildlog 2>&1
-make -j 3 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on xchem"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): xchem" $emailName < resultlog
-EOF
-
-if [ $xchem = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on xchem"
-      scp xchem xchem:xchem_buildit
-      scp $dist.tar.gz xchem:xchem_$dist.tar.gz
-      ssh xchem "chmod 750 xchem_buildit;./xchem_buildit" &
-   fi
-fi
-
-#
 # Build on euclid.
 #
 rm -f euclid
@@ -766,66 +694,6 @@ then
       scp euclid euclid.nersc.gov:euclid_buildit
       scp $dist.tar.gz euclid.nersc.gov:euclid_$dist.tar.gz
       ssh euclid.nersc.gov "chmod 750 euclid_buildit;./euclid_buildit" &
-   fi
-fi
-
-#
-# Build on ellipse.
-#
-rm -f ellipse
-cat <<EOF > ellipse
-#!/bin/sh
-PATH=/soft/intel-c-9.1.042-f-9.1.036-r1/bin:\$PATH
-export PATH
-LD_LIBRARY_PATH=/soft/intel-c-9.1.042-f-9.1.036-r1/lib:\$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH
-INTEL_HOME=/soft/intel-c-9.1.042-f-9.1.036-r1
-export INTEL_HOME
-if test ! -d tmp ; then
-   mkdir tmp
-fi
-if test ! -d tmp/$user ; then
-   mkdir tmp/$user
-fi
-if test ! -d tmp/$user/ellipse; then
-   mkdir tmp/$user/ellipse
-fi
-rm -rf tmp/$user/ellipse/visitbuild
-mkdir tmp/$user/ellipse/visitbuild
-mv ellipse_$dist.tar.gz tmp/$user/ellipse/visitbuild/$dist.tar.gz
-cd tmp/$user/ellipse/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/home/brugger/visit/cmake/2.8.3/linux-rhel4-ia32_gcc-3.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 2 >> ../../buildlog 2>&1
-make -j 2 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on ellipse"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): ellipse" $emailName < resultlog
-EOF
-
-if [ $ellipse = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on ellipse"
-      scp ellipse ellipse.uchicago.edu:ellipse_buildit
-      scp $dist.tar.gz ellipse.uchicago.edu:ellipse_$dist.tar.gz
-      ssh ellipse.uchicago.edu "chmod 750 ellipse_buildit;./ellipse_buildit" &
    fi
 fi
 
@@ -943,5 +811,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 aztec rzzeus alastor xchem euclid ellipse glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 aztec rzzeus alastor euclid glory redsky
 fi
