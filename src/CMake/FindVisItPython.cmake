@@ -408,16 +408,20 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
 
             # Install the Python headers
             IF (NOT WIN32)
-                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-                  DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
-                  FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                                   GROUP_READ GROUP_WRITE 
-                                   WORLD_READ
-                  DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                                        WORLD_READ             WORLD_EXECUTE
-                  PATTERN ".svn" EXCLUDE
-                )
+                IF(VISIT_HEADERS_SKIP_INSTALL)
+                    MESSAGE(STATUS "Skipping python headers installation")
+                ELSE(VISIT_HEADERS_SKIP_INSTALL)
+                    INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
+                        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
+                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                                         GROUP_READ GROUP_WRITE 
+                                         WORLD_READ
+                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                              WORLD_READ             WORLD_EXECUTE
+                        PATTERN ".svn" EXCLUDE
+                        )
+                ENDIF(VISIT_HEADERS_SKIP_INSTALL)
                 #
                 # CDH:
                 # We also need to install the headers into lib/python dir
@@ -439,6 +443,9 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 # The WIN32 & NOT WIN32 cases seem almost the same here?
                 # The only diff I can see is the "*.h" glob is used?
                 # 
+                IF(VISIT_HEADERS_SKIP_INSTALL)
+                    MESSAGE(STATUS "Skipping python headers installation")
+                ELSE(VISIT_HEADERS_SKIP_INSTALL)
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
                     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
                     FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
@@ -450,6 +457,7 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     FILES_MATCHING PATTERN "*.h"
                     PATTERN ".svn" EXCLUDE
                 )
+                ENDIF(VISIT_HEADERS_SKIP_INSTALL)
                 #
                 # CDH:
                 # We also need to install the headers into lib/python dir
