@@ -113,7 +113,11 @@ function build_R
         if [[ "$RFLAG_ARCH" == "x86_64" ]]; then
             RFLAG="64"
         fi
+        if [[ $MACOSX_DEPLOYMENT_TARGET == "10.6" || $MACOSX_DEPLOYMENT_TARGET == "10.7" || $MACOSX_DEPLOYMENT_TARGET == "10.8" ]]; then
+        ./configure FFLAGS="-m64" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
+        else
         ./configure FFLAGS="-m$RFLAG" CFLAGS="-std=gnu99 -g -O2" CXXFLAGS="-std=gnu99 -g -O2" --without-jpeglib --disable-R-framework --enable-R-shlib --disable-openmp --without-cairo --without-ICU --without-libpng --without-system-xz --without-aqua --without-tcltk --without-readline --prefix="$R_INSTALL_DIR"
+        fi
     else
         env LIBnn=lib ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
             CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \

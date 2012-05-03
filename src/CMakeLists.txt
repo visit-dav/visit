@@ -458,7 +458,6 @@ IF(VISIT_STATIC)
     ADD_DEFINITIONS(-DVISIT_STATIC -DGLEW_STATIC)
 ENDIF(VISIT_STATIC)
 OPTION(VISIT_OSX_USE_RPATH      "Use rpath instead of executable_path while installing" OFF)
-SET(VISIT_OSX_USE_RPATH OFF CACHE BOOL "Use rpath instead of executable_path while installing" FORCE)
 OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
 OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." ON)
 
@@ -847,20 +846,24 @@ MACRO(VISIT_INSTALL_TARGETS)
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
 # Install the headers for directories that we need in order to build plugins
-INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkqt winutil
-    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
-    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                     GROUP_READ GROUP_WRITE 
-                     WORLD_READ
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-                          WORLD_READ             WORLD_EXECUTE
-    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-    FILES_MATCHING PATTERN "*.h"
-    PATTERN "*.hpp"
-    PATTERN ".svn" EXCLUDE
-    PATTERN "CMakeFiles" EXCLUDE
-)
+IF(VISIT_HEADERS_SKIP_INSTALL)
+    MESSAGE(STATUS "Skipping VisIt headers installation")
+ELSE(VISIT_HEADERS_SKIP_INSTALL)
+    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin viewer visit_vtk visitpy vtkqt winutil
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
+                         GROUP_READ GROUP_WRITE 
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "*.hpp"
+        PATTERN ".svn" EXCLUDE
+        PATTERN "CMakeFiles" EXCLUDE
+    )
+ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Detect packages here. We could probably write macros that we can include from
