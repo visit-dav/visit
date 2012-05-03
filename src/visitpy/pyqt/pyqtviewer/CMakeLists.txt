@@ -66,8 +66,7 @@ set(pyqtviewer_include_paths ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
                     ${VISIT_SOURCE_DIR}/visit_vtk/full
                     ${VISIT_SOURCE_DIR}/gui
-                    $Error in build process.  See build_visit_log for more information. If the error is unclear, please include build_visit_log in a  message to the visit-users@ornl.gov list.  You will probably  need to compress the build_visit_log using a program like gzip  so it will fit within the size limits for email attachments.
-{CMAKE_BINARY_DIR}/include)
+                    ${CMAKE_BINARY_DIR}/include)
 
 set(pyqtviewer_link_libs ${module_name}
                       #gui
@@ -111,9 +110,10 @@ endif()
 EXECUTE_PROCESS(COMMAND ${SIP_EXECUTABLE} "-t" ${PYQT_QT_VERSION} "-t" ${PYQT_QT_DEVICE} "-I" ${VISIT_SIP_DIR}/share/sip/PyQt4 "-I" ${VISIT_SIP_DIR}/share "-c" ${CMAKE_CURRENT_BINARY_DIR} ${SIP_FILE})
 
 ADD_DEFINITIONS("-fvisibility=default")
-set(CMAKE_SHARED_MODULE_PREFIX)
 include_directories(${pyqtviewer_include_paths})
 ADD_LIBRARY(${SIP_LIBRARY} MODULE ${pyqtviewer_sources})
+SET_TARGET_PROPERTIES(${SIP_LIBRARY} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${SIP_LIBRARY} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
 TARGET_LINK_LIBRARIES(${SIP_LIBRARY} ${pyqtviewer_link_libs})
-VISIT_INSTALL_TARGETS(${SIP_LIBRARY})
+VISIT_INSTALL_TARGETS_RELATIVE("site-packages/visit" ${SIP_LIBRARY})
+

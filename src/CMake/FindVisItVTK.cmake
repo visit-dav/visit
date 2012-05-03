@@ -175,17 +175,21 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
     # Add install targets for VTK headers too -- but just the vtk-5.0 dir.
     # The VTK_INCLUDE_DIRS may contain stuff like /usr/include or the
     # Python directory and we just want VTK here.
-    FOREACH(X ${VTK_INCLUDE_DIRS})
-        IF(EXISTS ${X}/vtkActor.h)
-            #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
-            INSTALL(DIRECTORY ${X}
-                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
-                FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                PATTERN ".svn" EXCLUDE
-            )
-        ENDIF(EXISTS ${X}/vtkActor.h)
-    ENDFOREACH(X)
+    IF(VISIT_HEADERS_SKIP_INSTALL)
+        MESSAGE(STATUS "Skipping vtk headers installation")
+    ELSE(VISIT_HEADERS_SKIP_INSTALL)
+        FOREACH(X ${VTK_INCLUDE_DIRS})
+            IF(EXISTS ${X}/vtkActor.h)
+                #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
+                INSTALL(DIRECTORY ${X}
+                    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
+                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
+                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    PATTERN ".svn" EXCLUDE
+                )
+            ENDIF(EXISTS ${X}/vtkActor.h)
+        ENDFOREACH(X)
+    ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 ENDIF(VISIT_VTK_SKIP_INSTALL)
 
 # check for python wrappers
