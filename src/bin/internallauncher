@@ -741,6 +741,9 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Fri Mar 30 10:02:36 PDT 2012
 #    Remove purple and Q machine hacks. Add LSU's "philip" machine.
 #
+#    Eric Brugger, Thu May  3 10:31:06 PDT 2012
+#    I added a hack for hoth.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2015,6 +2018,18 @@ if ( $host =~ /^philip\d+$/ )
         $ENV{LD_LIBRARY_PATH} = join ':' ,
                              ("$ENV{LD_LIBRARY_PATH}",
                               "/usr/local/compilers/GNU/gcc-4.3.2/lib64");
+    }
+}
+
+# ----
+# HACK for Hoth @ LLNL
+# ----
+if ( $host =~ /^hoth/ )
+{
+    chomp($domain = `hostname -d`);
+    if ( $domain eq "llnl.gov" )
+    {
+        $ENV{LIBGL_ALWAYS_INDIRECT} = "1";
     }
 }
 
