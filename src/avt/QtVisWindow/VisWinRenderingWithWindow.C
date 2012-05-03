@@ -43,6 +43,7 @@
 #include <VisWinRenderingWithWindow.h>
 
 #include <vtkQtRenderWindow.h>
+#include <vtkRenderWindow.h>
 #include <vtkRubberBandMapper2D.h>
 #include <vtkDashedXorGridMapper2D.h>
 
@@ -123,6 +124,10 @@ VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 //    If we don't own the render window then it must be embedded. We should
 //    not do any window manager grab in that case.
 //
+//    Brad Whitlock, Thu May 3 11:52 PDT 2012
+//    Force a render on Windows so the new window will use the right background
+//    color.
+//
 // ****************************************************************************
 
 void
@@ -133,6 +138,9 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
     else
         renWin->show();
 
+#ifdef Q_WS_WIN
+    renWin->GetRenderWindow()->Render();
+#endif
 #ifdef Q_WS_X11
     if(ownRenderWindow)
         WindowMetrics::WaitForWindowManagerToGrabWindow(renWin);
