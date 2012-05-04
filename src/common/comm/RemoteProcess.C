@@ -1287,6 +1287,13 @@ RemoteProcess::WaitForTermination()
 //   overwritten with new values and we were walking off the end of an array
 //   and causing a seg fault.
 //
+//   Jeremy Meredith, Fri May  4 12:13:49 EDT 2012
+//   Check for errors from listen() and re-try the process a number of
+//   times before giving up.  On some systems, launching multiple
+//   VisIt processes at once caused multiple VisIt's to bind to
+//   a specific port successfully; it was only the listen() call that
+//   gave any indication this happened, via an EADDRINUSE.
+//
 // ****************************************************************************
 
 bool
@@ -1424,23 +1431,43 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // Open the socket for listening
     //
     debug5 << mName << "Calling GetSocketAndPort" << endl;
-    if(!GetSocketAndPort())
+
+    int retrycount = 100;
+    bool success = false;
+    while (--retrycount >= 0 && success == false)
     {
-        // Could not open socket and port
-        debug5 << mName << "GetSocketAndPort returned false" << endl;
-        return false;
+        // Find a port
+        if(!GetSocketAndPort())
+        {
+            // Could not open socket and port
+            debug5 << mName << "GetSocketAndPort returned false" << endl;
+            return false;
+        }
+
+        // Start listening for connections.
+        debug5 << mName << "Start listening for connections." << endl;
+#if defined(_WIN32)
+        success = (listen(listenSocketNum, 5) != SOCKET_ERROR);
+        if (!success)
+            LogWindowsSocketError(mName, "listen");
+#else
+        success = (listen(listenSocketNum, 5) == 0);
+#endif
+        if (!success)
+        {
+#if defined(_WIN32)
+            closesocket(listenSocketNum);
+#else
+            close(listenSocketNum);
+#endif
+            listenSocketNum = -1;
+        }
     }
 
-    //
-    // Start listening for connections.
-    //
-    debug5 << mName << "Start listening for connections." << endl;
-#if defined(_WIN32)
-    if(listen(listenSocketNum, 5) == SOCKET_ERROR)
-        LogWindowsSocketError(mName, "listen");
-#else
-    listen(listenSocketNum, 5);
-#endif
+    // NOTE: returning false from here simply
+    //       leads to aborts; returning true
+    //       leads to a more graceful recovery.
+    //return success;   <-- no, bad things happen
     return true;
 }
 
