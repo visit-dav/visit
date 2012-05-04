@@ -91,7 +91,7 @@
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">false</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
@@ -128,7 +128,7 @@
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">2</Field>
-        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>
         <Field name="partition" type="string">reg_xlmem</Field>
@@ -143,8 +143,8 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
-        <Field name="launchArgsSet" type="bool">false</Field>
-        <Field name="launchArgs" type="string"></Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-l mem=32gb"</Field>
         <Field name="sublaunchArgsSet" type="bool">false</Field>
         <Field name="sublaunchArgs" type="string"></Field>
         <Field name="sublaunchPreCmdSet" type="bool">false</Field>
@@ -159,7 +159,115 @@
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">false</Field>
         <Field name="XDisplay" type="string">:%l</Field>
-        <Field name="profileName" type="string">reg_xlmem</Field>
+        <Field name="profileName" type="string">"reg_xlmem (32 GB)"</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">reg_xlmem</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-l mem=64gb"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"reg_xlmem (64 GB)"</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">reg_xlmem</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-l mem=128gb"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"reg_xlmem (128 GB)"</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">2</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">reg_xlmem</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">qsub/mpirun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">"-l mem=256gb"</Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"reg_xlmem (256 GB)"</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>
