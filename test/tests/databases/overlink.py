@@ -15,6 +15,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Fri May  4 22:54:55 PDT 2012
+#    Add a test for modestly large number of nodesets to test new vtkBitArray
+#    approach to handling nodesets.
 # ----------------------------------------------------------------------------
 
 
@@ -118,5 +122,18 @@ for i in range(silr.NumSets()):
         break
 SetPlotSILRestriction(silr)
 Test("overlink_10")
+
+TestSection("Large number of nodelists")
+DeleteAllPlots()
+CloseDatabase("../data/overlink_test_data/annotInt/overlink2dTest.silo")
+OpenDatabase("../data/overlink_test_data/annotInt/overlink2dTstA.silo")
+AddPlot("Mesh","MMESH")
+DrawPlots()
+silr = SILRestriction()
+for i in range(silr.NumSets()):
+    if (i%2 and silr.SetName(i)[0:5] == "cell_"):
+        silr.TurnOffSet(i)
+SetPlotSILRestriction(silr)
+Test("overlink_11")
 
 Exit()
