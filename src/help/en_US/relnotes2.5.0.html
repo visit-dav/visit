@@ -78,6 +78,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>If you have loaded or saved a session file then the name of the session file will be displayed in the Main window's title.</li>
   <li>Support was added for launching engines using the combination of <i>sbatch/aprun</i>.</li>
   <li>VisIt is now installed with additional color tables derived from the set of <i>Brewer</i> color tables <i>(See the Copyright in the help for more information)</i>. This provides many more color tables from which to choose.</li>
+    <li>VisIt's python module was modified to include packing of python scripts and resolve import namespace issues with the compiled module.
+   This change requires new paths when using the module from your own python interperter. For more details see: <a href="http://visitusers.org/index.php?title=Python_Module_Support">Python Module Support</a></li>
+   <li> A new set of python  utilities <b>visit_utils</b> is included with VisIt.
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -94,6 +97,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Color table buttons in the gui now show an icon depicting the colors in the color table.</li>
   <li>Color tables can now use cubic spline interpolation between colors to make smoother transitions than the default linear scheme. The default color tables remain linear but you can change the interpolation yourself.</li>
+  <li>Added a Controls menu option to directly launch VisIt's command line interface (CLI), if an instance of the CLI is not already active.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -107,9 +111,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The BOW reader was obsolete so it was removed.</li>
   <li>VisIt's Dyna3D reader can now read material models 10 and 15.</li>
   <li>Bob Corey updated the Mili reader.</li>
-  <li>Bob Corey corrected a bug in makemili, where not all the variables present in the Mili file were made available for plotting.</li> 
+  <li>Bob Corey corrected a bug in makemili, where not all the variables present in the Mili file were made available for plotting.</li>
   <li>The paraDIS reader was fixed so it will read the entire dataset on Windows.</li>
   <li>The CGNS reader was fixed so that VisIt won't crash when reading a large number of grouped files.</li>
+  <li>The Silo reader was enhanced to read gmap extensions which identify periodic boundary conditions and avoid ghosting of these boundaries.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -128,6 +133,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.5</font></b></p>
 <ul>
   <li>The <b>cross</b> expression, which performs a cross product, now produces a scalar when crossing two dimensional vectors, as the magnitude of the direction out of the plane.</li>
+  <li>The <b>value_for_materiral</b>, and <b>matvf</b> expressions now work properly with AMR datasets.</li>
 </ul>
 
 <a name="Query_changes"></a>
