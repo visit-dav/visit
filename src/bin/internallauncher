@@ -744,6 +744,11 @@ $0 = shift @ARGV;
 #    Eric Brugger, Thu May  3 10:31:06 PDT 2012
 #    I added a hack for hoth.
 #
+#    Gunther H. Weber, Mon May  7 11:36:25 PDT 2012
+#    Removed support/hack for retired Franklin # NERSC. Added support/hack for
+#    Carver at NERSC. Instead of hard coding different "mpirun" command on
+#    Euclid change PATH to include appropriate command.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1792,61 +1797,8 @@ if ( ($parallel) and $exe_name eq "engine" and $host =~ /krakenpf/)
     }
 }
 
-
 # ----
-# HACK for franklin @ NERSC
-#
-# ----
-$IsRunningOnFranklinNERSC = 0;
-if ( $host =~ /^nid/ )
-{
-    $nodename=`/usr/syscom/nsg/bin/nodename`;
-    if ($nodename =~ /^franklin/ || $nodename =~ /^nid/)
-    {
-        $IsRunningOnFranklinNERSC = 1;
-        $ENV{LD_LIBRARY_PATH} = "/opt/gcc/4.4.4/snos/lib64";
-        if ($ENV{PATH} eq "")
-        {
-            $ENV{PATH} = "/opt/torque/2.3.4-200809011357/bin";
-        }
-        else
-        {
-            $ENV{PATH} = join ':' , ("$ENV{PATH}","/opt/torque/2.3.4-200809011357/bin");
-        }
-        if ($exe_name eq "gui")
-        {
-            print "The VisIt install on Franklin is provided for the purpose of running ";
-            print "the parallel remote visualization backend on Franklin or run scripts ";
-            print "via VisIt's Python Command Line Interface (CLI). If you need to run ";
-            print "VisIt's gui, please install VisIt $ver on your local workstation.\n\n";
-            print "For more information, see ";
-            print "http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/visit_franklin_remote.php\n\n";
-            print "If you do not want to install VisIt on your local machine, run the ";
-            print "VisIt GUI on Euclid, and follow the instructions under \"Running a ";
-            print "remote compute engine on Franklin\" on the Web page above. (VisIt on ";
-            print "Euclid already is configured with a host profile for Franklin).\n\n";
-            print "Please note that you will achieve the best performance by running the ";
-            print "VisIt GUI on your local workstation and the remote compute engine on ";
-            print "Franklin (or any other NERSC machine with VisIt).\n\n";
-            print "If you would like to perform batch data analysis or visualization on ";
-            print "Franklin using VisIt\'s CLI, add the options \"-cli -nowin\" to your ";
-            print "command line. Please contact NERSC Analytics at consult@nersc.gov for ";
-            print "further help.\n\n";
-            print "For more information about running VisIt at NERSC:";
-            print "http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/\n\n";
-            exit 1;
-        }
-        elsif (($exe_name eq "engine") and not $parallel)
-        {
-            print "The VisIt install on Franklin only supports running a parallel ";
-            print "engine on the compute nodes!\n";
-            exit 1;
-        }
-    }
-}
-
-# ----
-# HACK for hopper @ NERSC
+# HACK for Hopper @ NERSC
 #
 # ----
 $IsRunningOnHopperNERSC = 0;
@@ -1860,7 +1812,8 @@ if ($ENV{NERSC_HOST} eq "hopper")
     {
         if ((!$envonly) and ($exe_name eq "gui"))
         {
-            print "To run the VisIt GUI on Hopper, you need to run it on a MOM node!\n\n ";
+            print "Do not run the VisIt GUI on Hopper. Run it on you local ";
+            print "workstation (preferred/best performance) or Euclid!\n\n ";
             print "For more information about running VisIt at NERSC:";
             print "http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/\n\n";
             exit 1;
@@ -1878,7 +1831,7 @@ if ($ENV{NERSC_HOST} eq "hopper")
             else
             {
                 print "The VisIt install on Hopper does not support running ";
-                print "a serial engine on the login nodes!\n";
+                print "a serial engine!\n";
                 exit 1;
             }
         }
@@ -1886,13 +1839,26 @@ if ($ENV{NERSC_HOST} eq "hopper")
 }
 
 # ----
-# HACK for euclid @ NERSC
+# HACK for Euclid @ NERSC
 #
 # ----
-$IsRunningOnEuclidNERSC = 0;
-if ( $host =~ /^euclid.nersc.gov/ )
+if ($host eq "euclid.nersc.gov")
 {
-    $IsRunningOnEuclidNERSC = 1;
+    $ENV{PATH} = join ':' ,
+        ("/usr/common/usg/openmpi/1.4.1/gnu/bin",
+         "$ENV{PATH}");
+}
+
+# ----
+# HACK for Carver @ NERSC
+#
+# ----
+if ( $host =~ /^cvrsvc/ )
+{
+    $ENV{PATH} = join ':' ,
+        ("/usr/syscom/opt/torque/default/bin",
+         "/usr/common/usg/openmpi/1.4.5/gcc/bin",
+         "$ENV{PATH}");
 }
 
 # ----
@@ -2735,7 +2701,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-n", $procs if $procs_set;
         push @parcmd, "-N",  $nodes if $nodes_set;
-        if ( $IsRunningOnFranklinNERSC || $IsRunningOnJaguar_ORNL )
+        if ( $IsRunningOnJaguar_ORNL )
         {
             push @parcmd, "$visitbindir/env";
             push @parcmd, "LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
@@ -2761,14 +2727,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
     # mpirun
     elsif ($launch eq "mpirun")
     {
-        if ($IsRunningOnEuclidNERSC)
-        {
-            @parcmd = ("/usr/common/usg/openmpi/1.4.1/gnu/bin/mpirun");
-        }
-        else
-        {
-            @parcmd = ("mpirun");
-        }
+        @parcmd = ("mpirun");
         if ($debug_totalview eq $exe_name)
         {
             push @parcmd, "-tv";
@@ -3187,7 +3146,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                     $ppn = ceil($procs / $nodes);
                     push @mpicmd, "-N",  $ppn;
                 }
-                if ( $IsRunningOnFranklinNERSC || $IsRunningOnJaguar_ORNL )
+                if ( $IsRunningOnJaguar_ORNL )
                 {
                     push @mpicmd, "$visitbindir/env LD_LIBRARY_PATH=$visitlibdir:$visitarchdir/system_libs";
                 }
@@ -3383,15 +3342,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 }
                 push @parcmd, "-pe", "${tacc_way}way", $tacc_procs;
             }
-            elsif ($IsRunningOnFranklinNERSC || $IsRunningOnHopperNERSC)
+            elsif ($IsRunningOnHopperNERSC)
             {
                 push @parcmd, "-d", "$cwd" if $wd_set;
-                if ($nodes_set) {
-                    if ($IsRunningOnFranklinNERSC) {
-                        $nprocpernode=4;
-                    } else {
-                        $nprocpernode=24;
-                    }
+                if ($nodes_set)
+                {
+                    $nprocpernode=24;
                     $nwidth=$nprocpernode*$nodes;
                     # If the number of nodes is set, we need to modify mppwidth to ensure
                     # allocation of the proper number of nodes. The number of nodes allocated
