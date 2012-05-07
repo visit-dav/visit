@@ -59,7 +59,7 @@ IF(NOT GeneratorRunner_FOUND OR NOT Shiboken_FOUND)
     set(PySide_FOUND 0)
 ELSEIF(PySide_FOUND)
     SET(PYSIDE_FOUND 1)
-    SET_UP_THIRD_PARTY(PYSIDE lib include pyside-python2.6 shiboken-python2.6)
+    SET_UP_THIRD_PARTY(PYSIDE lib include pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
     # The PySide module is symlinked into the python install VisIt uses for dev builds.
     # For 'make install' and 'make package' we need to actually install the PySide SOs.
     SET(PYSIDE_MODULE_SRC  ${VISIT_PYSIDE_DIR}/lib/python${PYTHON_VERSION}/site-packages/PySide/)
