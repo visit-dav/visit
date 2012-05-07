@@ -80,6 +80,7 @@
             <lib name="no-cmake"/>
             <lib name="no-vtk"/>
             <lib name="no-python"/>
+            <lib name="no-pyside"/>
         </group>
 
         <!-- all io libraries -->
