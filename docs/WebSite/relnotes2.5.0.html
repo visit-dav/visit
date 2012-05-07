@@ -6,6 +6,7 @@
 
 <!-- InstanceBeginEditable name="doctitle" -->
 
+<TITLE>VisIt 2.5 Release Notes</TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="LLNLRandR" content="LLNL-WEB-555771">
 <meta name="review" content="May 2012">
@@ -18,36 +19,6 @@
 <meta http-equiv="Expires" content="never">
 <meta name="date" content="2012-05-09">
 <meta name="Author" content="Eric Brugger">
-
-<script language="javascript">
-
-<!--
-
-var remote = null;
-
-function gallery(u) {
-
-remote = window.open(u, 'gallery', 'WIDTH=850,HEIGHT=700,resizable=yes,scrollbars=yes');
-
-if (remote != null) {
-
-if (remote.opener == null)
-
-remote.opener = self;
-
-window.name = 'gallerythumbnails';
-
-remote.location.href = u;}
-
-remote.focus();}
-
-//-->
-
-</script>
-
-
-
-<link href="VisIt.css" rel="stylesheet" type="text/css">
 
 <!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
 
@@ -371,7 +342,7 @@ function MM_initTimelines() { //v4.0
 //-->
 </script>
 
-<!-- InstanceBeginEditable name="head" --><title>VisIt Gallery</title><!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
 
 </HEAD>
 
@@ -439,143 +410,159 @@ function MM_initTimelines() { //v4.0
 
 <!-- InstanceBeginEditable name="body" -->
 
-<h1>Gallery</h1>
+<h1>VisIt 2.5 Release Notes</h1>
 
-<p>This page shows examples of visualizations that have been created with VisIt. Some visualizations have been contributed by VisIt customers. If you would like to submit an image for the gallery, please send an image and a description of the visualization to the <a href="mailto:brugger1@llnl.gov,whitlock2@llnl.gov">VisIt Webmaster</a>.</p>
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
 
-<p>Click on any of the visualizations below to view a larger image. </p>
-
-<table width="80%"  border="0" cellspacing="5" cellpadding="0" summary="This table contains example images made by VisIt">
-
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.5</font></b></p>
+<ul>
+  <li>VisIt has been enhanced to better support double precision values, with many plots and operators capable of processing data in double precision from the time the data is read to the time it is displayed.</li>
+  <li>The Windows version of VisIt has been enhanced so it can launch parallel compute engines on Windows HPC clusters. In order to launch VisIt's compute engine on a Windows HPC cluster, you must have Microsoft's HPC Client Utilities. You will also need to create a host profile for your cluster. The new host profile must contain the following:
+    <p><ul>
+      <li>The name of the cluster's head node.</li>
+      <li>The <i>Installation directory</i> where VisIt is located on the remote cluster.</li>
+      <li>The <i>Share batch job with Metadata Server</i> option must be enabled.</li>
+      <li>The <i>Parallel launch method</i> set to <i>WindowsHPC</i>.</li>
+      <li>The default number of processors.</li>
+    </ul></p>
+    When you submit a job to the Windows HPC scheduler, VisIt will interact with the scheduler directly so there is no need to run ssh to get to the remote computer. The cluster's compute nodes must be able to connect back to your client computer over the network.
+  </li>
+  <li>VisIt has been enhanced so the metadata server and compute engine can once again share a single batch job. This option is available in the <i>Host Profiles</i> window.</li>
+  <li>The Windows version of VisIt no longer opens console windows.</li>
+  <li>VisIt has been enhanced so each variable on a mesh can have an associated <i>"missing data"</i> value. Missing data are used to exclude cells or nodes with the missing data values from the visualization. Expressions that combine variables with missing data restrict their outputs to only the cells or nodes that are valid for all of the expression's input variables.<p>Missing data are specified in the scalar metadata by a database reader plugin and can be described using 4 rules:
+  <center><table border="1" cellpadding="10">
   <tr>
-
-    <td><a href='javascript: gallery("gallery_00.html");'><img src="media/gallery/thumb_gallery_00.jpg" alt="Comples surfaces" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_01.html");'><img src="media/gallery/thumb_gallery_01.jpg" alt="Bunker" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_02.html");'><img src="media/gallery/thumb_gallery_02.jpg" alt="Raleigh-Taylor instability" width="150" height="138" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_03.html");'><img src="media/gallery/thumb_gallery_03.jpg" alt="AMR vortex" width="150" height="150" border="0"></a></td>
+    <td><b>Missing data rule</b></td>
+    <td><b>Description</b></td>
   </tr>
-
   <tr>
-
-    <td><a href='javascript: gallery("gallery_04.html");'><img src="media/gallery/thumb_gallery_04.jpg" alt="Elevation map of Europe" width="150" height="142" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_05.html");'><img src="media/gallery/thumb_gallery_05.jpg" alt="Star formation" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_06.html");'><img src="media/gallery/thumb_gallery_06.jpg" alt="Curve plots" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_07.html");'><img src="media/gallery/thumb_gallery_07.jpg" alt="NASTRAN model" width="150" height="122" border="0"></a></td>
+    <td>Missing value</td>
+    <td>All values matching the provided missing value are excluded.</td>
   </tr>
-
   <tr>
-
-    <td><a href='javascript: gallery("gallery_08.html");'><img src="media/gallery/thumb_gallery_08.jpg" alt="Plot of YF-17 aircraft" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_09.html");'><img src="media/gallery/thumb_gallery_09.jpg" alt="Image annotations" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_10.html");'><img src="media/gallery/thumb_gallery_10.jpg" alt="Solid geometry with volume rendering" width="150" height="92" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_11.html");'><img src="media/gallery/thumb_gallery_11.jpg" alt="Structured AMR" width="150" height="150" border="0"></a></td>
+    <td>Valid min</td>
+    <td>All values below the provided valid minimum value are excluded.</td>
   </tr>
-
   <tr>
-
-    <td><a href='javascript: gallery("gallery_12.html");'><img src="media/gallery/thumb_gallery_12.jpg" alt="Heating coil" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_13.html");'><img src="media/gallery/thumb_gallery_13.jpg" alt="terrain rendering" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_14.html");'><img src="media/gallery/thumb_gallery_14.jpg" alt="GIS visualization" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_15.html");'><img src="media/gallery/thumb_gallery_15.jpg" alt="Multiple plots" width="150" height="150" border="0"></a></td>
+    <td>Valid max</td>
+    <td>All values above the provided valid maximum value are excluded.</td>
   </tr>
-
   <tr>
-
-    <td><a href='javascript: gallery("gallery_16.html");'><img src="media/gallery/thumb_gallery_16.jpg" alt="Brain visualization" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_17.html");'><img src="media/gallery/thumb_gallery_17.jpg" alt="fMRI visualization" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_18.html");'><img src="media/gallery/thumb_gallery_18.jpg" alt="Stained cells" width="149" height="136" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_19.html");'><img src="media/gallery/thumb_gallery_19.jpg" alt="Molecular rendering" width="150" height="133" border="0"></a></td>
+    <td>Valid range</td>
+    <td>All values outside of the provided valid range are excluded.</td>
   </tr>
+  </table></center>
+  </p>
+  </li>
+  <li>Allen Harvey extended the Volume plot's splatting renderer so that it may directly render clouds of points without first resampling them to a regular grid. This change preserves details in point clouds without having to use a large number of sample points. Thanks Allen!</li>
+  <li>The Volume plot's splatting renderer can now render single-block rectilinear datasets without first sampling to another grid size.</li>
+  <li>Zooming using the mouse wheel now causes the view to be sent to the GUI.</li>
+  <li>Zooming using the mouse wheel is now implemented for windows that display Curve plots.</li>
+  <li>If you have loaded or saved a session file then the name of the session file will be displayed in the Main window's title.</li>
+  <li>Support was added for launching engines using the combination of <i>sbatch/aprun</i>.</li>
+  <li>VisIt is now installed with additional color tables derived from the set of <i>Brewer</i> color tables <i>(See the Copyright in the help for more information)</i>. This provides many more color tables from which to choose.</li>
+    <li>VisIt's python module was modified to include packing of python scripts and resolve import namespace issues with the compiled module.
+   This change requires new paths when using the module from your own python interperter. For more details see: <a href="http://visitusers.org/index.php?title=Python_Module_Support">Python Module Support</a></li>
+   <li> A new set of python  utilities <b>visit_utils</b> is included with VisIt.
+</ul>
 
-  <tr>
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.5</font></b></p>
+<ul>
+  <li>Selections have been enhanced so they offer multiple ways to index cells in a mesh. For example, it is now possible to identify cells using their domain and local cell number, global cell number, or by a user-specified variable such as a particle ID. The domain and local cell number and global cell number indexing schemes are useful for domain-decomposed data whose mesh connectivity does not change. The variable indexing scheme is good for domain-decomposed data and situations where mesh connectivity changes across domains and time. You can specify the type of indexing to use when you create a new selection and you can alter the selection's properties in the Selections window.</li>
+  <li>William T. Jones extended libsim so it supports ghost nodes. Thanks William!</li>
+  <li>Libsim was enhanced to provide a function that lets you set the MPI communicator that VisIt should use. Pass an address to the communicator to <i>VisItSetMPICommunicator(void*)</i> if you want to make VisIt use a user-defined communicator. Passing NULL will make VisIt use its copy of the world communicator.</li>
+  <li>The VisIt Python Interface now provides a function called <i>WriteScript</i> that tries to write the current state of VisIt as a Python program that can be executed later.</li>
+</ul>
 
-    <td><a href='javascript: gallery("gallery_20.html");'><img src="media/gallery/thumb_gallery_20.jpg" alt="Accelerator" width="150" height="96" border="0"></a></td>
+<a name="GUI_Changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 2.5</font></b></p>
+<ul>
+  <li>Color table buttons in the gui now show an icon depicting the colors in the color table.</li>
+  <li>Color tables can now use cubic spline interpolation between colors to make smoother transitions than the default linear scheme. The default color tables remain linear but you can change the interpolation yourself.</li>
+  <li>Added a Controls menu option to directly launch VisIt's command line interface (CLI), if an instance of the CLI is not already active.</li>
+</ul>
 
-    <td><a href='javascript: gallery("gallery_21.html");'><img src="media/gallery/thumb_gallery_21.jpg" alt="Function visualization" width="150" height="150" border="0"></a></td>
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.5</font></b></p>
+<ul>
+  <li>Joel Welling contributed an MFIXCDF reader.</li>
+  <li>Joel Welling contributed changes to the MFIX reader that change how it performs domain decomposition.</li>
+  <li>The EnSight file format reader now supports materials.</li>
+  <li>VisIt's NETCDF reader now supports conventions for missing data. The <i>missing_value, _FillValue, valid_min, valid_max, valid_range</i> attributes are supported.</li>
+  <li>VisIt's NETCDF reader now supports the <i>scale_factor</i> and <i>add_offset</i> attributes, using them to transform packed char and short data into double-precision.</li>
+  <li>The BOW reader was obsolete so it was removed.</li>
+  <li>VisIt's Dyna3D reader can now read material models 10 and 15.</li>
+  <li>Bob Corey updated the Mili reader.</li>
+  <li>Bob Corey corrected a bug in makemili, where not all the variables present in the Mili file were made available for plotting.</li>
+  <li>The paraDIS reader was fixed so it will read the entire dataset on Windows.</li>
+  <li>The CGNS reader was fixed so that VisIt won't crash when reading a large number of grouped files.</li>
+  <li>The Silo reader was enhanced to read gmap extensions which identify periodic boundary conditions and avoid ghosting of these boundaries.</li>
+</ul>
 
-    <td><a href='javascript: gallery("gallery_22.html");'><img src="media/gallery/thumb_gallery_22.jpg" alt="Scatter plot" width="150" height="150" border="0"></a></td>
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.5</font></b></p>
+<ul>
+  <li>VisIt's Spreadsheet plot now supports missing data, marking them in the spreadsheet with a reddish gray background color.</li>
+</ul>
 
-    <td><a href='javascript: gallery("gallery_23.html");'><img src="media/gallery/thumb_gallery_23.jpg" alt="Burn through high explosive" width="150" height="150" border="0"></a></td>
-  </tr>
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.5</font></b></p>
+<ul>
+  <li>The <b>cross</b> expression, which performs a cross product, now produces a scalar when crossing two dimensional vectors, as the magnitude of the direction out of the plane.</li>
+  <li>The <b>value_for_materiral</b>, and <b>matvf</b> expressions now work properly with AMR datasets.</li>
+</ul>
 
-  <tr>
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.5</font></b></p>
+<ul>
+  <li>Scatter Plots can now be picked.</li>
+</ul>
 
-    <td><a href='javascript: gallery("gallery_24.html");'><img src="media/gallery/thumb_gallery_24.jpg" alt="Ablating material" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_25.html");'><img src="media/gallery/thumb_gallery_25.jpg" alt="City rendering" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_26.html");'><img src="media/gallery/thumb_gallery_26.jpg" alt="Laser filamentation" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_27.html");'><img src="media/gallery/thumb_gallery_27.jpg" alt="Elevated texture" width="150" height="150" border="0"></a></td>
-  </tr>
-
-  <tr>
-
-    <td><a href='javascript: gallery("gallery_28.html");'><img src="media/gallery/thumb_gallery_28.jpg" alt="Three Dimensional Radiation Hydrodymanics Calculations of Massive Star Supernovae Explosions" width="150" height="120" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_29.html");'><img src="media/gallery/thumb_gallery_29.jpg" alt="An integrated 3D HYDRA simulation of a NIF ignition target" width="151" height="80" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_30.html");'><img src="media/gallery/thumb_gallery_30.jpg" alt="Atmospheric Anomaly in Times Square" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_31.html");'><img src="media/gallery/thumb_gallery_31.jpg" alt="Large-Eddy Simulation of Raleigh-Taylor Instability" width="150" height="70" border="0"></a></td>
-  </tr>
-
-  <tr>
-
-    <td><a href='javascript: gallery("gallery_32.html");'><img src="media/gallery/thumb_gallery_32.jpg" alt="Large scale simulation of a type Ia supernova" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_33.html");'><img src="media/gallery/thumb_gallery_33.jpg" alt="Climate visualization" width="150" height="84" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_34.html");'><img src="media/gallery/thumb_gallery_34.jpg" alt="Climate visualization" width="150" height="121" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_35.html");'><img src="media/gallery/thumb_gallery_35.jpg" alt="FVCOM Gulf of Maine Simulation Snapshot of Density and Velocity" width="150" height="150" border="0"></a></td>
-  </tr>
-
-  <tr>
-
-    <td><a href='javascript: gallery("gallery_36.html");'><img src="media/gallery/thumb_gallery_36.jpg" alt="Structure and charge density" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_37.html");'><img src="media/gallery/thumb_gallery_37.jpg" alt="Charge density" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_38.html");'><img src="media/gallery/thumb_gallery_38.jpg" alt="Growth of non-linear zonal flow" width="150" height="150" border="0"></a></td>
-
-    <td><a href='javascript: gallery("gallery_39.html");'><img src="media/gallery/thumb_gallery_39.jpg" alt="Computer simulation of dendritic growth in a cooling Al+Cu alloy" width="150" height="150" border="0"></a></td>
-  </tr>
-
-  <tr>
-
-    <td><a href='javascript: gallery("gallery_40.html");'><img src="media/gallery/thumb_gallery_40.jpg" alt="Type Ia Supernova" width="150" height="150" border="0"></a></td>
-
-    <td></td><!--<td><a href='javascript: gallery("gallery_41.html");'><img src="media/gallery/thumb_gallery_41.jpg" alt="" width="150" height="150" border="0"></a></td>-->
-
-    <td></td><!--<td><a href='javascript: gallery("gallery_42.html");'><img src="media/gallery/thumb_gallery_42.jpg" alt="" width="150" height="150" border="0"></a></td>-->
-
-    <td></td><!--<td><a href='javascript: gallery("gallery_43.html");'><img src="media/gallery/thumb_gallery_43.jpg" alt="" width="150" height="150" border="0"></a></td>-->
-  </tr>
-</table>
-
-<p>&nbsp;</p>
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.5</font></b></p>
+<ul>
+  <li>Named selections now correctly select the right cells when FastBit indexing is used.</li>
+  <li>Libsim's routines for setting rectlinear and AMR domain boundary indices are now properly getting called in the simulation runtime library.</li>
+  <li>The PersistentParticles operator no longer causes the compute engine to exit when it is applied to a Mesh plot.</li>
+  <li>Stereo rendering now works properly. It was broken in versions of VisIt after the VTK upgrade in VisIt 2.4.0.</li>
+  <li>Slicing and Contouring of data on unstructured meshes containing polyhedral cells no longer causes VisIt's compute engine to eventually crash.</li>
+  <li>Enabling keyframing no longer crashes the viewer.</li>
+</ul>
+  
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.5</font></b></p>
+<ul>
+  <li>Host profiles for LLNL's CZ clusters have been changed to use <i>SSH tunneling</i> so Windows users should be able to run client/server without having to modify host profiles.</li>
+  <li>Host profiles were added for LLNL's rzmerl cluster.</li>
+  <li>Host profiles were added for LLNL's oslic cluster.</li>
+  <li>Host profiles were added for LLNL's zin cluster.</li>
+</ul>
+  
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.5</font></b></p>
+<ul>
+  <li>Visual Studio 2010 support was added.</li>
+</ul>
 
 <!-- InstanceEndEditable -->
 
 <div align="center"> 
 
-  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;Gallery |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
+  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
 
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
 
@@ -724,4 +711,3 @@ function MM_initTimelines() { //v4.0
 </BODY>
 
 <!-- InstanceEnd --></HTML>
-
