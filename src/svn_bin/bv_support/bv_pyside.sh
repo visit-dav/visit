@@ -1,7 +1,7 @@
 function bv_pyside_initialize
 {
-export DO_PYSIDE="no"
-export ON_PYSIDE="off"
+export DO_PYSIDE="yes"
+export ON_PYSIDE="on"
 }
 
 function bv_pyside_enable

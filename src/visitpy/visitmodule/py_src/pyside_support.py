@@ -16,6 +16,7 @@ except ImportError:
     pass
 
 __all__ = ["SetupTimer","GetRenderWindow","GetRenderWindowIds"]
+__pyside_viewer_inst__ = None
 
 # this is a function that polls for keyboard input,
 # when it sees one it quits the
@@ -44,6 +45,12 @@ class ProcessCLIInput(Thread):
                     if msvcrt.kbhit():
                         self.qtapp.exit(0)
 
+def GetPySideInstance():
+    global __pyside_viewer_inst__
+    if __pyside_viewer_inst__ is None:
+        __pyside_viewer_inst__ = pyside_viewer.PySideViewer.instance()
+    return __pyside_viewer_inst__
+
 def SetupTimer():
     if ProcessCLIInput.instance is None:
         ProcessCLIInput.instance = ProcessCLIInput(0.001)
@@ -52,7 +59,7 @@ def SetupTimer():
 def IsPySideViewerEnabled():
     res = False
     if using_pyside:
-        inst = pyside_viewer.PySideViewer.instance()
+        inst = GetPySideInstance() 
         if not inst is None:
             res = True
     return res
@@ -60,7 +67,7 @@ def IsPySideViewerEnabled():
 def GetRenderWindow(i):
     if using_pyside:
         # this will return None, unless properly inited
-        inst = pyside_viewer.PySideViewer.instance()
+        inst = GetPySideInstance()
         if not inst is None:
             return inst.GetRenderWindow(i)
     else:
@@ -69,7 +76,7 @@ def GetRenderWindow(i):
 def GetRenderWindowIds():
     if using_pyside:
         # this will return None, unless properly inited
-        inst = pyside_viewer.PySideViewer.instance()
+        inst = GetPySideInstance()
         if not inst is None:
             return inst.GetRenderWindowIDs()
     else:
