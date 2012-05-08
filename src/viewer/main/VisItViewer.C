@@ -57,6 +57,14 @@ VisItViewer::Initialize(int *argc, char ***argv)
 {
     VisItInit::SetComponentName("viewer");
     VisItInit::Initialize(*argc, *argv, 0, 1, false);
+    for (int i = 0 ; i < *argc ; i++)
+    {
+        if (strcmp((*argv)[i], "-manta") == 0)
+        {
+            std::cerr << "setting Manta mode\n";
+            avtCallback::SetMantaMode(true);
+        }
+    }
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     LogGlxAndXdpyInfo();
 }

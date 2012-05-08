@@ -2585,6 +2585,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Add code to always force ssh tunneling of all data connections that
 //    is conditional on VISIT_FORCE_SSH_TUNNELING.
 //
+//    Carson Brownlee, Sun May  6 16:25:28 PDT 2012
+//    Add -manta argument.
+//
 // ****************************************************************************
 
 void
@@ -2827,6 +2830,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             InitVTKRendering::ForceMesa();
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
+        }
+        else if (strcmp(argv[i], "-manta") == 0)
+        {
+            avtCallback::SetMantaMode(true);
         }
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {

@@ -141,6 +141,11 @@ class PIPELINE_API avtCallback
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; };
 
+    static void                  SetMantaMode(bool b)
+                                     { useManta = b; }
+    static bool                  UseManta(void)
+                                     { return useManta; }
+
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -180,6 +185,7 @@ class PIPELINE_API avtCallback
 
     static bool                  nowinMode;
     static bool                  swRendering;
+    static bool                  useManta;
     static bool                  safeMode;
 
     static std::string           auxSessionKey;

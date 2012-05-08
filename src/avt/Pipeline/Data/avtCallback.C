@@ -65,6 +65,7 @@ LightList                     avtCallback::lightList;
 
 bool                          avtCallback::nowinMode = false;
 bool                          avtCallback::swRendering = false;
+bool                          avtCallback::useManta = false;
 bool                          avtCallback::safeMode = false;
 
 UpdatePlotAttributesCallback  avtCallback::updatePlotAttributesCallback = NULL;

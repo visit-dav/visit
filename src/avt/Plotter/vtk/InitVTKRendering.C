@@ -51,6 +51,14 @@
 #endif
 
 
+#include <InitVTKRenderingConfig.h>
+
+#ifdef VISIT_MANTA
+#include <vtkMantaObjectFactory.h>
+#endif
+
+#include <avtCallback.h>
+
 //
 // A factory that will allow VisIt to override any vtkObject
 // with a sub-class of that object.
@@ -158,6 +166,9 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 //    Hank Childs, Wed May  5 10:15:48 PDT 2004
 //    Use the VisIt graphics factory to override the standard polydata mapper.
 //
+//    Carson Brownlee, Sun May  6 16:25:28 PDT 2012
+//    Add support for Manta.
+//
 // ****************************************************************************
 
 void
@@ -167,6 +178,17 @@ InitVTKRendering::Initialize(void)
     vtkVisItGraphicsFactory *factory = vtkVisItGraphicsFactory::New();
     vtkObjectFactory::RegisterFactory(factory);
     factory->Delete();
+
+#ifdef VISIT_MANTA
+    if (avtCallback::UseManta())
+    {
+      printf("Initializing Manta\n");
+      //register manta overrides.  This factory overrides actors, lights and other state to pass of polygonal data to manta.
+      vtkMantaObjectFactory* mfactory = vtkMantaObjectFactory::New();
+      vtkObjectFactory::RegisterFactory(mfactory);
+      mfactory->Delete();
+    }
+#endif
 }
 
 
