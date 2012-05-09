@@ -144,18 +144,15 @@ fi
 skipList_for_Edge="\
     $testHost,parallel:tests/hybrid/missingdata.py:missingdata_0_04 \
     $testHost,scalable,parallel,icet:tests/hybrid/missingdata.py:missingdata_0_04 \
-    $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
-    $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
-    $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_07,streamline_geom_08,streamline_geom_09 \
+    $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
+    $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
+    $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
     $testHost,serial:tests/operators/persistent_particles.py \
     $testHost,parallel:tests/operators/persistent_particles.py \
     $testHost,scalable,parallel,icet:tests/operators/persistent_particles.py \
     $testHost,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
-    $testHost,serial:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
-    $testHost,parallel:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
-    $testHost,scalable,parallel,icet:tests/rendering/tuvok.py:tuvok_1,tuvok_2,tuvok_3,tuvok_4,tuvok_6 \
     $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     $testHost,parallel:tests/rendering/compositing.py \
     $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
