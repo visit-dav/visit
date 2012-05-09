@@ -346,7 +346,7 @@ gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
     };
     vtkIdType ids[27];
     bool addedCell = false;
-    for(int t = 0; t < sizeof(gmv2vtk)/sizeof(gmv2vtk_t); ++t)
+    for(size_t t = 0; t < sizeof(gmv2vtk)/sizeof(gmv2vtk_t); ++t)
     {
         if(strncmp(gmv_data.name1, gmv2vtk[t].cellname, gmv2vtk[t].cellnamelen) == 0)
         {
@@ -412,7 +412,9 @@ gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
 // Creation:   Wed Oct 27 12:19:28 PDT 2010
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue May  8 13:49:43 PDT 2012
+//   Change local2Global to long from int.
+//
 // ****************************************************************************
 
 int
@@ -518,7 +520,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
             // they are in the face.
             vtkPoints *localPts = vtkPoints::New();
             localPts->Allocate(nPointsInFace);
-            int *local2Global = new int[nPointsInFace];
+            long *local2Global = new long[nPointsInFace];
             VertexManager           uniqueVerts(localPts);
             gmvPolygonToTriangles   tess(&uniqueVerts);
             tess.SetNormal(n);
@@ -534,7 +536,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 
             for(int t = 0; t < tess.GetNumTriangles(); ++t)
             {
-                int a,b,c;
+                int a = 0, b = 0, c = 0;
                 tess.GetTriangle(t, a, b, c);
                 verts[0] = local2Global[a];
                 verts[1] = local2Global[b];
@@ -1766,7 +1768,7 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
             if(pos != meshes.end() && material != 0)
             {
                 gmvMaterialEncoder M;
-                for(int i = 0; i < mmd->materialNames.size(); ++i)
+                for(size_t i = 0; i < mmd->materialNames.size(); ++i)
                     M.AddMaterial(mmd->materialNames[i]);
                 M.AllocClean(pos->second.dataset->GetNumberOfCells());
 
