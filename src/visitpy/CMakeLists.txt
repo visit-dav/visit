@@ -54,6 +54,9 @@
 #  Cyrus Harrison, Tue Apr 24 23:12:25 MDT 2012
 #  Added visit_utils
 #
+#  Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
+#  Don't change LIBRARY_OUTPUT_DIRECTORY for visitmodule if on windows. 
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -258,8 +261,11 @@ ELSE(VISIT_STATIC)
         ${PYTHON_LIBRARIES}
     )
 
-    SET_TARGET_PROPERTIES(visitmodule PROPERTIES
-                                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
+    IF(NOT WIN32)
+        SET_TARGET_PROPERTIES(visitmodule PROPERTIES
+                                          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
+    ENDIF(NOT WIN32)
+
 
     IF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES INSTALL_RPATH "$ORIGIN")

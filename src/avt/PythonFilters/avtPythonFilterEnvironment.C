@@ -115,6 +115,9 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
 //    Remove slash from end of paths passed to AddSystemPath.
 //
+//    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012 
+//    Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
+//
 // ****************************************************************************
 
 bool
@@ -125,8 +128,7 @@ avtPythonFilterEnvironment::Initialize()
         return false;
     // setup pyavt env:
     // add system paths: $VISITARCHOME/lib & $VISITARCHOME/lib/site-packages
-    string varchdir = GetVisItArchitectureDirectory();
-    string vlibdir = varchdir + VISIT_SLASH_CHAR + "lib";
+    string vlibdir = GetVisItLibraryDirectory();
     string vlibsp  = vlibdir  + VISIT_SLASH_CHAR + "site-packages";
 
     if(!pyi->AddSystemPath(vlibdir))

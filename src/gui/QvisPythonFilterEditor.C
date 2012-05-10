@@ -363,15 +363,16 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 //   Cyrus Harrison, Wed Apr 11 15:03:17 PDT 2012
 //   Update to reflect change loc of templates.
 //
+//   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
+//   Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
+//
 // ****************************************************************************
 
 QString
 QvisPythonFilterEditor::templateDirectory()
 {
-    QString res(GetVisItArchitectureDirectory().c_str());
+    QString res(GetVisItLibraryDirectory().c_str());
     res += QString(VISIT_SLASH_CHAR)
-           + QString("lib")
-           + QString(VISIT_SLASH_CHAR)
            + QString("site-packages")
            + QString(VISIT_SLASH_CHAR)
            + QString("pyavt")

@@ -54,6 +54,8 @@ bool        MISC_API ReadInstallationInfo(std::string &distName,
 std::string MISC_API GetVisItArchitectureDirectory();
 std::string MISC_API GetVisItArchitectureDirectory(const char *version);
 std::string MISC_API GetVisItLauncher();
+std::string MISC_API GetVisItLibraryDirectory();
+std::string MISC_API GetVisItLibraryDirectory(const char *version);
 
 // User installation / data functions
 std::string MISC_API GetUserVisItDirectory();

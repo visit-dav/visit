@@ -82,6 +82,11 @@
 #   Cyrus Harrison, Mon Apr 16 14:20:20 PDT 2012
 #   Fix problem with PYTHON_EXECUTABLE detection.
 #
+#   Kathleen Biagas, Thu May 10 10:24:15 MST 2012
+#   Add windows-specific cases for PYTHON_ADD_DISTUTILS_SETUP, to correctly
+#   handle windows path and path-with-spaces issues. Don't change
+#   library output directory on widnows for PYTHON_ADD_HYBRID_MODULE.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -331,27 +336,56 @@ ENDFUNCTION(PYTHON_WRITE_MODULES_HEADER)
 
 FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
 MESSAGE(STATUS "Configuring python distutils setup: ${target_name}")
-add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
-                   COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-                   build
-                   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-                   install
-                   --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
-                   DEPENDS  ${setup_file} ${ARGN}
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+IF(NOT WIN32)
+    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
+            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+            build
+            --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+            install
+            --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
+            DEPENDS  ${setup_file} ${ARGN}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
-
-# also use distutils for the install ...
-INSTALL(CODE
+    add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
+    # also use distutils for the install ...
+    INSTALL(CODE
         "
         EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-                                build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
-                                install --install-purelib=\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
-                         OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
+            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+                build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
+                install --install-purelib=\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+            OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
         MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
         ")
+ELSE(NOT WIN32)
+
+    FILE(TO_NATIVE_PATH ${VISIT_LIBRARY_DIR} VLD_NATIVE)
+    STRING(REPLACE "\\" "\\\\" VLD_ESC_PATH "${VLD_NATIVE}")
+    FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CCBD_NATIVE)
+    STRING(REPLACE "\\" "\\\\" CCBD_ESC_PATH "${CCBD_NATIVE}")
+
+    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
+            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+            build
+            --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+            install
+            --install-purelib=${VLD_NATIVE}/${dest_dir}
+            DEPENDS  ${setup_file} ${ARGN}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+    add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
+    # also use distutils for the install ...
+    FILE(TO_NATIVE_PATH ${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
+    STRING(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")
+    INSTALL(CODE
+       "
+       EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+           COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+           build   \"--build-base=${CCBD_ESC_PATH}\\\\build_install\"
+           install \"--install-purelib=${VIVL_ESC_PATH}\\\\${dest_dir}\")
+       MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
+       ")
+ENDIF(NOT WIN32)
 
 
 ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
@@ -363,8 +397,10 @@ FUNCTION(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
                                ${setup_file}
                                ${py_sources})
     PYTHON_ADD_MODULE(${target_name} ${ARGN})
-    SET_TARGET_PROPERTIES(${target_name} PROPERTIES
-                                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+    IF(NOT WIN32)
+        SET_TARGET_PROPERTIES(${target_name} PROPERTIES
+                                             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+    ENDIF(NOT WIN32)
     ADD_DEPENDENCIES(${target_name} "${target_name}_py_setup")
     VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
 
