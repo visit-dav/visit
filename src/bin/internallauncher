@@ -749,6 +749,11 @@ $0 = shift @ARGV;
 #    Carver at NERSC. Instead of hard coding different "mpirun" command on
 #    Euclid change PATH to include appropriate command.
 #
+#    Eric Brugger, Thu May 10 09:13:40 PDT 2012
+#    I corrected an error in the path to "mpirun" for Euclid. It was using
+#    openmpi 1.4.1, when it should use openmpi 1.4.4. I removed support
+#    for xchem.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1845,7 +1850,7 @@ if ($ENV{NERSC_HOST} eq "hopper")
 if ($host eq "euclid.nersc.gov")
 {
     $ENV{PATH} = join ':' ,
-        ("/usr/common/usg/openmpi/1.4.1/gnu/bin",
+        ("/usr/common/usg/openmpi/1.4.4/gnu/bin",
          "$ENV{PATH}");
 }
 
@@ -1859,19 +1864,6 @@ if ( $host =~ /^cvrsvc/ )
         ("/usr/syscom/opt/torque/default/bin",
          "/usr/common/usg/openmpi/1.4.5/gcc/bin",
          "$ENV{PATH}");
-}
-
-# ----
-# HACK for xchem @ LLNL
-#
-# ----
-$IsRunningOnXchemLLNL = 0;
-if ( $host =~ /^xchem.llnl.gov/ )
-{
-    $IsRunningOnXchemLLNL = 1;
-    $ENV{LD_LIBRARY_PATH} = join ':' ,
-        ("/opt/intel/cc/10.1.021/lib",
-         "/opt/llnl/mpich2_shared/ch3-ssm/lib");
 }
 
 # ----
