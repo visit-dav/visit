@@ -301,6 +301,9 @@
 #    Brad Whitlock, Fri Mar 30 10:04:31 PDT 2012
 #    Add LSU host profiles.
 #
+#    Eric Brugger, Thu May 10 09:18:54 PDT 2012
+#    I removed the host profile for franklin.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -740,7 +743,6 @@ elif [ "$config" = "llnl_open_rz" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_rzmerl.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nersc" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_nersc_franklin.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "ornl" ]; then
