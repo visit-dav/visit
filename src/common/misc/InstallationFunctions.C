@@ -1262,3 +1262,49 @@ VersionGreaterThan(const std::string &v1, const std::string &v2)
 {
     return VersionToInt(v1) > VersionToInt(v2);
 }
+
+
+// ****************************************************************************
+// Method: GetVisItLibraryDirectory
+//
+// Purpose: 
+//   Gets the name of the directory where VisIt's current library is installed.
+//
+// Arguments:
+//   version : The version number for which we want the library dir.
+//
+// Returns:    The library dir.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   May 4, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+GetVisItLibraryDirectory()
+{
+    return GetVisItLibraryDirectory(VISIT_VERSION);
+}
+
+std::string
+GetVisItLibraryDirectory(const char *version)
+{
+    std::string varchdir(GetVisItArchitectureDirectory(version));
+
+#if defined(_WIN32)
+    if (isDevelopmentVersion)
+    {
+        size_t pos = varchdir.find_last_of("\\");
+        std::string config = varchdir.substr(pos+1);
+        pos = varchdir.find_last_of("\\", pos-1);
+        std::string libdir = varchdir.substr(0, pos) + VISIT_SLASH_CHAR + 
+                             "lib" + VISIT_SLASH_CHAR + config;
+        return libdir;
+    }
+#endif
+    std::string libdir = varchdir + VISIT_SLASH_CHAR + "lib";
+    return libdir;
+}
+

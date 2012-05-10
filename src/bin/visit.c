@@ -131,7 +131,8 @@ static const char usage[] =
 /*
  * Prototypes
  */
-string GetVisItEnvironment(stringVector &, bool, bool);
+string GetVisItEnvironment(stringVector &, bool, bool, bool &);
+
 void   SetVisItEnvironment(const stringVector &);
 string AddPath(char *, const char *, const char*);
 bool   ReadKey(const char *key, char **keyval);
@@ -274,6 +275,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   we're building the launcher as a windows app. I also added message box
  *   debugging for the launcher so we can see the command line and environment
  *   we're attempting to use.
+ *
+ *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
+ *   If working from a dev build, pass "-dv" to components.
  *
  *****************************************************************************/
 
@@ -506,7 +510,10 @@ VisItLauncherMain(int argc, char *argv[])
     // Add some stuff to the environment.
     //
     stringVector visitEnv;
-    string visitpath = GetVisItEnvironment(visitEnv, useShortFileName, addPluginVars);
+    bool usingDev;
+    string visitpath = GetVisItEnvironment(visitEnv, useShortFileName, addPluginVars, usingDev);
+    if (usingDev)
+        componentArgs.push_back("-dv");
     SetVisItEnvironment(visitEnv);
 #ifdef VISIT_WINDOWS_APPLICATION
     // Show the path and the environment we've created.
@@ -873,17 +880,21 @@ ReadKey(const char *key, char **keyval)
  *   I made the routine return all of the environment strings in a stringVector
  *   instead of calling _putenv on all of them.
  *
+ *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012 
+ *   Return usingdev as an arg.
+ *
  *****************************************************************************/
 
 std::string 
-GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars)
+GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars, bool &usingdev)
 {
     char *tmp, *visitpath = NULL;
     char *visitdevdir = NULL;
     char tmpdir[512];
     bool haveVISITHOME = false;
-    bool usingdev = false;
+    usingdev = false;
     bool freeVisItPath = true;
+    string config;
 
     tmp = (char *)malloc(10000);
 
@@ -949,6 +960,8 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
             strncpy(visitdevdir, visitpath, pos);
             visitdevdir[pos] = '\0';
             strncat(visitdevdir, "\\ThirdParty", 14);
+            if (len != pos)
+                config = vp.substr(pos+1);
         }
     }
  
@@ -1084,8 +1097,18 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
     }
     else 
     {
-        sprintf(tmp, "PYTHONPATH=%s\\..\\..\\lib;%s\\..\\..\\lib\\Python\\lib",
-                visitpath, visitpath);
+        string vp(visitpath);
+        size_t pos = vp.find_last_of("\\");
+        pos = vp.find_last_of("\\", pos-1);
+        string svp = vp.substr(0, pos);
+        if (config.length() > 0)
+        {
+            sprintf(tmp, "PYTHONPATH=%s\\lib\\%s;%s\\lib\\%s\\Python\\Lib", svp.c_str(), config.c_str(), svp.c_str(), config.c_str());
+        }
+        else
+        {
+            sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\Python\\Lib", svp.c_str(), svp.c_str());
+        }
         env.push_back(tmp);
     }
 
