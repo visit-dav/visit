@@ -180,6 +180,10 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Cyrus Harrison, Thu Apr 12 17:33:16 PDT 2012
 //    Update to reflect changes made in visit python module revamp.
 //
+//    Kathleen Biagas, Fri May 4 14:05:27 PDT 2012  
+//    Use GetVisItLibraryDirectory to find lib location. 
+//    SetIsDevelopmentVersion when -dv encountered.
+//
 // ****************************************************************************
 
 int
@@ -329,6 +333,10 @@ main(int argc, char *argv[])
         {
             pyside_gui = true;
         }
+        else if(strcmp(argv[i], "-dv") == 0)
+        {
+            SetIsDevelopmentVersion(true);
+        }
         else
         {
             // Pass the array along to the visitmodule.
@@ -372,8 +380,8 @@ main(int argc, char *argv[])
         PyRun_SimpleString((char*)"from os.path import join as pjoin");
 
         // add lib to sys.path to pickup various dylibs.
-        std::string varchdir = GetVisItArchitectureDirectory();
-        std::string vlibdir  = varchdir + VISIT_SLASH_CHAR + "lib";
+        std::string vlibdir  = GetVisItLibraryDirectory(); 
+
         std::ostringstream oss;
 
         oss << "sys.path.append(pjoin('" << vlibdir  <<"','site-packages'))";

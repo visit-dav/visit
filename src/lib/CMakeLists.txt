@@ -69,6 +69,9 @@
 #    Cyrus Harrison, Wed Jul  7 10:09:07 PDT 2010
 #    Remove any existing symlinks before attempting to create new ones.
 #
+#    Kathleen Biagas, Thu May 10 10:58:39 MST 2012 
+#    Change how python is handled on Windows to reflect recent changes.
+#
 #----------------------------------------------------------------------------
 
 FOREACH(LIB ${MESA_LIB})
@@ -105,9 +108,17 @@ IF (NOT WIN32)
                             ${VISIT_PYTHON_DIR}
                             ${CMAKE_CURRENT_BINARY_DIR}/python)
 ELSE (NOT WIN32)
-    FILE(COPY        ${VISIT_PYTHON_DIR}/Lib
-         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/python
-         PATTERN ".svn" EXCLUDE)
+
+    # because you don't need to choose your configuration up-front
+    # on windows, make this a custom target so they are copied to the
+    # correct lib/${CFG} directory 
+    ADD_CUSTOM_TARGET(python_lib ALL)
+    ADD_CUSTOM_COMMAND(TARGET python_lib POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+            ${VISIT_PYTHON_DIR}/Lib
+            ${VISIT_LIBRARY_DIR}/python/Lib
+            COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib"
+            )
 ENDIF (NOT WIN32)
 
 IF(VISIT_PYTHON_FILTERS)
@@ -117,27 +128,22 @@ IF(VISIT_PYTHON_FILTERS)
     IF (NOT WIN32)
         ## MESSAGE("${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
-    ELSE (NOT WIN32)
-        FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/site-packages/*")
-    ENDIF (NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${CMAKE_CURRENT_BINARY_DIR}/site-packages
+                        RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
+        #
+        # make sure lib/site-packages exists before we try to
+        # symlink or copy the vtk python wrappers
+        #
+    
+        IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+            MESSAGE(WARNING "Failed to create lib/site-packages/")
+        ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
 
-    #
-    # make sure lib/site-packages exists before we try to
-    # symlink or copy the vtk python wrappers
-    #
-
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
-                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages
-                    RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
-    IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-        MESSAGE(WARNING "Failed to create lib/site-packages/")
-    ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-
-    FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
-        GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
-        GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
-        MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
-        IF (NOT WIN32)
+        FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
+            GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
+            GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
+            MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
                                     ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
                                     RESULT_VARIABLE VTK_MODULE_SYM_RM)
@@ -148,12 +154,23 @@ IF(VISIT_PYTHON_FILTERS)
             IF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
                 MESSAGE(WARNING "Failed to create VTK Python module symlink in lib/site-packages/ for ${ITM_ABS}")
             ENDIF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
-        ELSE (NOT WIN32)
-            FILE(COPY ${ITM_ABS}
-                 DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/site-packages
-                 PATTERN ".svn" EXCLUDE)
-        ENDIF (NOT WIN32)
-    ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
+        ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
 
+    ELSE (NOT WIN32)
+        FILE(GLOB VTK_EGG_FILE "${VISIT_VTK_DIR}/lib/site-packages/*egg*")
+        # because you don't need to choose your configuration up-front
+        # on windows, make this a custom target so they are copied to the
+        # correct lib/${CFG} directory 
+        ADD_CUSTOM_TARGET(vtk_python_modules ALL)
+        ADD_CUSTOM_COMMAND(TARGET vtk_python_modules POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory 
+                    ${VISIT_VTK_DIR}/lib/site-packages/vtk 
+                    ${VISIT_LIBRARY_DIR}/site-packages/vtk
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${VTK_EGG_FILE}
+                    ${VISIT_LIBRARY_DIR}/site-packages
+            COMMENT "Copying ${VISIT_VTK_DIR}/lib/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
+            )
+    ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 

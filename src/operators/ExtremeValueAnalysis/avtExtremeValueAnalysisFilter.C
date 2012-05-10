@@ -152,6 +152,9 @@ avtExtremeValueAnalysisFilter::Equivalent(const AttributeGroup *a)
 //   Dave Pugmire, Wed Apr 11 14:53:44 EDT 2012
 //   Name the output scalar coming out of avtRExtremesFilter
 //
+//   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
+//   Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
+//
 // ****************************************************************************
 
 void
@@ -166,8 +169,7 @@ avtExtremeValueAnalysisFilter::Execute()
     else if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::YEARLY)
         f->computeMaxes = avtRExtremesFilter::YEARLY;
     //f->codeDir = atts.GetRCodeDir();
-    std::string varchdir = GetVisItArchitectureDirectory();
-    std::string vlibdir = varchdir + VISIT_SLASH_CHAR + "lib" + VISIT_SLASH_CHAR + "r_support";
+    std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
     std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;
     f->codeDir = vlibrdir;
 

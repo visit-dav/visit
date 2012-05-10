@@ -1768,7 +1768,9 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
 # The normal plugin case. We redefine these when we build against an installed
 # version of VisIt
 SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
-SET(VISIT_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib CACHE INTENAL "Path to VisIt's libraries")
+# VISIT_LIBRARY_DIR set previsouly, why change it now? And especially to point 
+# to source  changing the name to _DIR2 to see if it munges anything.
+SET(VISIT_LIBRARY_DIR2 ${VISIT_SOURCE_DIR}/lib CACHE INTERNAL "Path to VisIt's libraries")
 IF(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
 ELSE(NOT WIN32)
