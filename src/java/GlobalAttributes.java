@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int GlobalAttributes_numAdditionalAtts = 23;
+    private static int GlobalAttributes_numAdditionalAtts = 24;
 
     public GlobalAttributes()
     {
@@ -71,6 +71,8 @@ public class GlobalAttributes extends AttributeSubject
         autoUpdateFlag = false;
         replacePlots = false;
         applyOperator = true;
+        applySelection = true;
+        applyWindow = false;
         executing = false;
         windowLayout = 1;
         makeDefaultConfirm = true;
@@ -84,7 +86,6 @@ public class GlobalAttributes extends AttributeSubject
         newPlotsInheritSILRestriction = true;
         userDirForSessionFiles = false;
         saveCrashRecoveryFile = true;
-        applySelection = true;
         ignoreExtentsFromDbs = false;
         expandNewPlots = false;
     }
@@ -100,6 +101,8 @@ public class GlobalAttributes extends AttributeSubject
         autoUpdateFlag = false;
         replacePlots = false;
         applyOperator = true;
+        applySelection = true;
+        applyWindow = false;
         executing = false;
         windowLayout = 1;
         makeDefaultConfirm = true;
@@ -113,7 +116,6 @@ public class GlobalAttributes extends AttributeSubject
         newPlotsInheritSILRestriction = true;
         userDirForSessionFiles = false;
         saveCrashRecoveryFile = true;
-        applySelection = true;
         ignoreExtentsFromDbs = false;
         expandNewPlots = false;
     }
@@ -139,6 +141,8 @@ public class GlobalAttributes extends AttributeSubject
         autoUpdateFlag = obj.autoUpdateFlag;
         replacePlots = obj.replacePlots;
         applyOperator = obj.applyOperator;
+        applySelection = obj.applySelection;
+        applyWindow = obj.applyWindow;
         executing = obj.executing;
         windowLayout = obj.windowLayout;
         makeDefaultConfirm = obj.makeDefaultConfirm;
@@ -152,7 +156,6 @@ public class GlobalAttributes extends AttributeSubject
         newPlotsInheritSILRestriction = obj.newPlotsInheritSILRestriction;
         userDirForSessionFiles = obj.userDirForSessionFiles;
         saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
-        applySelection = obj.applySelection;
         ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
         expandNewPlots = obj.expandNewPlots;
 
@@ -199,6 +202,8 @@ public class GlobalAttributes extends AttributeSubject
                 (autoUpdateFlag == obj.autoUpdateFlag) &&
                 (replacePlots == obj.replacePlots) &&
                 (applyOperator == obj.applyOperator) &&
+                (applySelection == obj.applySelection) &&
+                (applyWindow == obj.applyWindow) &&
                 (executing == obj.executing) &&
                 (windowLayout == obj.windowLayout) &&
                 (makeDefaultConfirm == obj.makeDefaultConfirm) &&
@@ -212,7 +217,6 @@ public class GlobalAttributes extends AttributeSubject
                 (newPlotsInheritSILRestriction == obj.newPlotsInheritSILRestriction) &&
                 (userDirForSessionFiles == obj.userDirForSessionFiles) &&
                 (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
-                (applySelection == obj.applySelection) &&
                 (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
                 (expandNewPlots == obj.expandNewPlots));
     }
@@ -260,100 +264,106 @@ public class GlobalAttributes extends AttributeSubject
         Select(6);
     }
 
+    public void SetApplySelection(boolean applySelection_)
+    {
+        applySelection = applySelection_;
+        Select(7);
+    }
+
+    public void SetApplyWindow(boolean applyWindow_)
+    {
+        applyWindow = applyWindow_;
+        Select(8);
+    }
+
     public void SetExecuting(boolean executing_)
     {
         executing = executing_;
-        Select(7);
+        Select(9);
     }
 
     public void SetWindowLayout(int windowLayout_)
     {
         windowLayout = windowLayout_;
-        Select(8);
+        Select(10);
     }
 
     public void SetMakeDefaultConfirm(boolean makeDefaultConfirm_)
     {
         makeDefaultConfirm = makeDefaultConfirm_;
-        Select(9);
+        Select(11);
     }
 
     public void SetCloneWindowOnFirstRef(boolean cloneWindowOnFirstRef_)
     {
         cloneWindowOnFirstRef = cloneWindowOnFirstRef_;
-        Select(10);
+        Select(12);
     }
 
     public void SetAutomaticallyAddOperator(boolean automaticallyAddOperator_)
     {
         automaticallyAddOperator = automaticallyAddOperator_;
-        Select(11);
+        Select(13);
     }
 
     public void SetTryHarderCyclesTimes(boolean tryHarderCyclesTimes_)
     {
         tryHarderCyclesTimes = tryHarderCyclesTimes_;
-        Select(12);
+        Select(14);
     }
 
     public void SetTreatAllDBsAsTimeVarying(boolean treatAllDBsAsTimeVarying_)
     {
         treatAllDBsAsTimeVarying = treatAllDBsAsTimeVarying_;
-        Select(13);
+        Select(15);
     }
 
     public void SetCreateMeshQualityExpressions(boolean createMeshQualityExpressions_)
     {
         createMeshQualityExpressions = createMeshQualityExpressions_;
-        Select(14);
+        Select(16);
     }
 
     public void SetCreateTimeDerivativeExpressions(boolean createTimeDerivativeExpressions_)
     {
         createTimeDerivativeExpressions = createTimeDerivativeExpressions_;
-        Select(15);
+        Select(17);
     }
 
     public void SetCreateVectorMagnitudeExpressions(boolean createVectorMagnitudeExpressions_)
     {
         createVectorMagnitudeExpressions = createVectorMagnitudeExpressions_;
-        Select(16);
+        Select(18);
     }
 
     public void SetNewPlotsInheritSILRestriction(boolean newPlotsInheritSILRestriction_)
     {
         newPlotsInheritSILRestriction = newPlotsInheritSILRestriction_;
-        Select(17);
+        Select(19);
     }
 
     public void SetUserDirForSessionFiles(boolean userDirForSessionFiles_)
     {
         userDirForSessionFiles = userDirForSessionFiles_;
-        Select(18);
+        Select(20);
     }
 
     public void SetSaveCrashRecoveryFile(boolean saveCrashRecoveryFile_)
     {
         saveCrashRecoveryFile = saveCrashRecoveryFile_;
-        Select(19);
-    }
-
-    public void SetApplySelection(boolean applySelection_)
-    {
-        applySelection = applySelection_;
-        Select(20);
+        Select(21);
     }
 
     public void SetIgnoreExtentsFromDbs(boolean ignoreExtentsFromDbs_)
     {
         ignoreExtentsFromDbs = ignoreExtentsFromDbs_;
-        Select(21);
+        Select(22);
     }
 
     public void SetExpandNewPlots(boolean expandNewPlots_)
     {
         expandNewPlots = expandNewPlots_;
-        Select(22);
+        Select(23);
     }
 
     // Property getting methods
@@ -364,6 +374,8 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetAutoUpdateFlag() { return autoUpdateFlag; }
     public boolean GetReplacePlots() { return replacePlots; }
     public boolean GetApplyOperator() { return applyOperator; }
+    public boolean GetApplySelection() { return applySelection; }
+    public boolean GetApplyWindow() { return applyWindow; }
     public boolean GetExecuting() { return executing; }
     public int     GetWindowLayout() { return windowLayout; }
     public boolean GetMakeDefaultConfirm() { return makeDefaultConfirm; }
@@ -377,7 +389,6 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetNewPlotsInheritSILRestriction() { return newPlotsInheritSILRestriction; }
     public boolean GetUserDirForSessionFiles() { return userDirForSessionFiles; }
     public boolean GetSaveCrashRecoveryFile() { return saveCrashRecoveryFile; }
-    public boolean GetApplySelection() { return applySelection; }
     public boolean GetIgnoreExtentsFromDbs() { return ignoreExtentsFromDbs; }
     public boolean GetExpandNewPlots() { return expandNewPlots; }
 
@@ -399,36 +410,38 @@ public class GlobalAttributes extends AttributeSubject
         if(WriteSelect(6, buf))
             buf.WriteBool(applyOperator);
         if(WriteSelect(7, buf))
-            buf.WriteBool(executing);
-        if(WriteSelect(8, buf))
-            buf.WriteInt(windowLayout);
-        if(WriteSelect(9, buf))
-            buf.WriteBool(makeDefaultConfirm);
-        if(WriteSelect(10, buf))
-            buf.WriteBool(cloneWindowOnFirstRef);
-        if(WriteSelect(11, buf))
-            buf.WriteBool(automaticallyAddOperator);
-        if(WriteSelect(12, buf))
-            buf.WriteBool(tryHarderCyclesTimes);
-        if(WriteSelect(13, buf))
-            buf.WriteBool(treatAllDBsAsTimeVarying);
-        if(WriteSelect(14, buf))
-            buf.WriteBool(createMeshQualityExpressions);
-        if(WriteSelect(15, buf))
-            buf.WriteBool(createTimeDerivativeExpressions);
-        if(WriteSelect(16, buf))
-            buf.WriteBool(createVectorMagnitudeExpressions);
-        if(WriteSelect(17, buf))
-            buf.WriteBool(newPlotsInheritSILRestriction);
-        if(WriteSelect(18, buf))
-            buf.WriteBool(userDirForSessionFiles);
-        if(WriteSelect(19, buf))
-            buf.WriteBool(saveCrashRecoveryFile);
-        if(WriteSelect(20, buf))
             buf.WriteBool(applySelection);
+        if(WriteSelect(8, buf))
+            buf.WriteBool(applyWindow);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(executing);
+        if(WriteSelect(10, buf))
+            buf.WriteInt(windowLayout);
+        if(WriteSelect(11, buf))
+            buf.WriteBool(makeDefaultConfirm);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(cloneWindowOnFirstRef);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(automaticallyAddOperator);
+        if(WriteSelect(14, buf))
+            buf.WriteBool(tryHarderCyclesTimes);
+        if(WriteSelect(15, buf))
+            buf.WriteBool(treatAllDBsAsTimeVarying);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(createMeshQualityExpressions);
+        if(WriteSelect(17, buf))
+            buf.WriteBool(createTimeDerivativeExpressions);
+        if(WriteSelect(18, buf))
+            buf.WriteBool(createVectorMagnitudeExpressions);
+        if(WriteSelect(19, buf))
+            buf.WriteBool(newPlotsInheritSILRestriction);
+        if(WriteSelect(20, buf))
+            buf.WriteBool(userDirForSessionFiles);
         if(WriteSelect(21, buf))
-            buf.WriteBool(ignoreExtentsFromDbs);
+            buf.WriteBool(saveCrashRecoveryFile);
         if(WriteSelect(22, buf))
+            buf.WriteBool(ignoreExtentsFromDbs);
+        if(WriteSelect(23, buf))
             buf.WriteBool(expandNewPlots);
     }
 
@@ -458,51 +471,54 @@ public class GlobalAttributes extends AttributeSubject
             SetApplyOperator(buf.ReadBool());
             break;
         case 7:
-            SetExecuting(buf.ReadBool());
-            break;
-        case 8:
-            SetWindowLayout(buf.ReadInt());
-            break;
-        case 9:
-            SetMakeDefaultConfirm(buf.ReadBool());
-            break;
-        case 10:
-            SetCloneWindowOnFirstRef(buf.ReadBool());
-            break;
-        case 11:
-            SetAutomaticallyAddOperator(buf.ReadBool());
-            break;
-        case 12:
-            SetTryHarderCyclesTimes(buf.ReadBool());
-            break;
-        case 13:
-            SetTreatAllDBsAsTimeVarying(buf.ReadBool());
-            break;
-        case 14:
-            SetCreateMeshQualityExpressions(buf.ReadBool());
-            break;
-        case 15:
-            SetCreateTimeDerivativeExpressions(buf.ReadBool());
-            break;
-        case 16:
-            SetCreateVectorMagnitudeExpressions(buf.ReadBool());
-            break;
-        case 17:
-            SetNewPlotsInheritSILRestriction(buf.ReadBool());
-            break;
-        case 18:
-            SetUserDirForSessionFiles(buf.ReadBool());
-            break;
-        case 19:
-            SetSaveCrashRecoveryFile(buf.ReadBool());
-            break;
-        case 20:
             SetApplySelection(buf.ReadBool());
             break;
+        case 8:
+            SetApplyWindow(buf.ReadBool());
+            break;
+        case 9:
+            SetExecuting(buf.ReadBool());
+            break;
+        case 10:
+            SetWindowLayout(buf.ReadInt());
+            break;
+        case 11:
+            SetMakeDefaultConfirm(buf.ReadBool());
+            break;
+        case 12:
+            SetCloneWindowOnFirstRef(buf.ReadBool());
+            break;
+        case 13:
+            SetAutomaticallyAddOperator(buf.ReadBool());
+            break;
+        case 14:
+            SetTryHarderCyclesTimes(buf.ReadBool());
+            break;
+        case 15:
+            SetTreatAllDBsAsTimeVarying(buf.ReadBool());
+            break;
+        case 16:
+            SetCreateMeshQualityExpressions(buf.ReadBool());
+            break;
+        case 17:
+            SetCreateTimeDerivativeExpressions(buf.ReadBool());
+            break;
+        case 18:
+            SetCreateVectorMagnitudeExpressions(buf.ReadBool());
+            break;
+        case 19:
+            SetNewPlotsInheritSILRestriction(buf.ReadBool());
+            break;
+        case 20:
+            SetUserDirForSessionFiles(buf.ReadBool());
+            break;
         case 21:
-            SetIgnoreExtentsFromDbs(buf.ReadBool());
+            SetSaveCrashRecoveryFile(buf.ReadBool());
             break;
         case 22:
+            SetIgnoreExtentsFromDbs(buf.ReadBool());
+            break;
+        case 23:
             SetExpandNewPlots(buf.ReadBool());
             break;
         }
@@ -518,6 +534,8 @@ public class GlobalAttributes extends AttributeSubject
         str = str + boolToString("autoUpdateFlag", autoUpdateFlag, indent) + "\n";
         str = str + boolToString("replacePlots", replacePlots, indent) + "\n";
         str = str + boolToString("applyOperator", applyOperator, indent) + "\n";
+        str = str + boolToString("applySelection", applySelection, indent) + "\n";
+        str = str + boolToString("applyWindow", applyWindow, indent) + "\n";
         str = str + boolToString("executing", executing, indent) + "\n";
         str = str + intToString("windowLayout", windowLayout, indent) + "\n";
         str = str + boolToString("makeDefaultConfirm", makeDefaultConfirm, indent) + "\n";
@@ -531,7 +549,6 @@ public class GlobalAttributes extends AttributeSubject
         str = str + boolToString("newPlotsInheritSILRestriction", newPlotsInheritSILRestriction, indent) + "\n";
         str = str + boolToString("userDirForSessionFiles", userDirForSessionFiles, indent) + "\n";
         str = str + boolToString("saveCrashRecoveryFile", saveCrashRecoveryFile, indent) + "\n";
-        str = str + boolToString("applySelection", applySelection, indent) + "\n";
         str = str + boolToString("ignoreExtentsFromDbs", ignoreExtentsFromDbs, indent) + "\n";
         str = str + boolToString("expandNewPlots", expandNewPlots, indent) + "\n";
         return str;
@@ -546,6 +563,8 @@ public class GlobalAttributes extends AttributeSubject
     private boolean autoUpdateFlag;
     private boolean replacePlots;
     private boolean applyOperator;
+    private boolean applySelection;
+    private boolean applyWindow;
     private boolean executing;
     private int     windowLayout;
     private boolean makeDefaultConfirm;
@@ -559,7 +578,6 @@ public class GlobalAttributes extends AttributeSubject
     private boolean newPlotsInheritSILRestriction;
     private boolean userDirForSessionFiles;
     private boolean saveCrashRecoveryFile;
-    private boolean applySelection;
     private boolean ignoreExtentsFromDbs;
     private boolean expandNewPlots;
 }
