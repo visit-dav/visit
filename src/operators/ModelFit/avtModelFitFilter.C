@@ -502,18 +502,18 @@ avtModelFitFilter::PostExecute()
                 else if (StatTuples[tup_index+j] == 'm')
                     Tuples[tup_index+j] = VS[varFinder]->min;
 
-                printf("Tuples[%d] before: %lf\n", tup_index+j, Tuples[tup_index+j]);
+                //printf("Tuples[%d] before: %lf\n", tup_index+j, Tuples[tup_index+j]);
                 Tuples[tup_index+j] = spaceConvert(Tuples[tup_index+j], varFinder, selectionType[i]);
-                printf("Tuples[%d] after: %lf\n", tup_index+j, Tuples[tup_index+j]);
+                //printf("Tuples[%d] after: %lf\n", tup_index+j, Tuples[tup_index+j]);
             }
             else if(inputSpace[i] != selectionType[i])
             {
-                printf("Tuples[%d] before: %lf\n", tup_index+j, Tuples[tup_index+j]);
+                //printf("Tuples[%d] before: %lf\n", tup_index+j, Tuples[tup_index+j]);
                 Tuples[tup_index+j] = convertToVariableSpace(Tuples[tup_index+j], varFinder, inputSpace[i]);
-                printf("Tuples[%d] after cTVS: %lf\n", tup_index+j, Tuples[tup_index+j]);
+                //printf("Tuples[%d] after cTVS: %lf\n", tup_index+j, Tuples[tup_index+j]);
                 Tuples[tup_index+j] = spaceConvert(Tuples[tup_index+j], varFinder, selectionType[i]);
-                printf("Tuples[%d] after SC: %lf\n", tup_index+j, Tuples[tup_index+j]);
-                printf("Used %lf for min, %lf for max\n", VS[varFinder]->min, VS[varFinder]->max);
+                //printf("Tuples[%d] after SC: %lf\n", tup_index+j, Tuples[tup_index+j]);
+                //printf("Used %lf for min, %lf for max\n", VS[varFinder]->min, VS[varFinder]->max);
             }
         }
     }
