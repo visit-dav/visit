@@ -126,6 +126,9 @@
 #    Brad Whitlock, Fri Mar  2 12:04:25 PST 2012
 #    Remove BOW reader.
 #
+#    Brad Whitlock, Fri May 11 15:02:31 PDT 2012
+#    Add BATL reader.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -190,6 +193,7 @@ IF(NOT XDMF_FOUND)
 ENDIF(NOT XDMF_FOUND)
 THIRDPARTY_DEPENDENT_PLUGINS(HDF5     
 AMR
+BATL
 CaleHDF5
 CarpetHDF5
 Chombo
