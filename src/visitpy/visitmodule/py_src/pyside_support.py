@@ -122,7 +122,7 @@ def GetRenderWindow(i):
 def GetRenderWindowIds():
     if using_pyside:
         # this will return None, unless properly inited
-        inst = GetPySideInstance()
+        inst = GetPySideViewerInstance()
         if not inst is None:
             return inst.GetRenderWindowIDs()
     else:
