@@ -396,6 +396,10 @@ avtXRayImageQuery::SetOutputType(int type)
 //  Programmer: Kathleen Biagas 
 //  Creation:   July 13, 2011
 //
+//  Modifications:
+//    Eric Brugger, Mon May 14 10:35:27 PDT 2012
+//    I added the bov output type.
+//
 // ****************************************************************************
 
 void
@@ -411,8 +415,8 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
         outputType = 3;
     else if (type == "rawfloats")
         outputType = 4;
-    else if (type == "bof")
-        outputType = 4;
+    else if (type == "bov")
+        outputType = 5;
 }
 
 // ****************************************************************************
@@ -481,6 +485,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Eric Brugger, Tue Dec 28 14:40:43 PST 2010
 //    I moved all the logic for doing the ray integration and creating the
 //    image in chunks to avtXRayFilter.
+//
+//    Eric Brugger, Mon May 14 10:35:27 PDT 2012
+//    I added the bov output type.
 //
 // ****************************************************************************
 
@@ -596,14 +603,36 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                    WriteFloats(i, numPixels, (int*)image->GetVoidPointer(0));
             }
         }
+        else if (outputType == 5)
+        {
+            for (int i = 0; i < nLeaves; i++)
+            {
+                image = leaves[i]->GetPointData()->GetArray("Image");
+                if (image->GetDataType() == VTK_FLOAT)
+                {
+                   WriteFloats(i, numPixels, (float*)image->GetVoidPointer(0));
+                   WriteBOVHeader(i, nx, ny, "FLOAT");
+                }
+                else if (image->GetDataType() == VTK_DOUBLE)
+                {
+                   WriteFloats(i, numPixels, (double*)image->GetVoidPointer(0));
+                   WriteBOVHeader(i, nx, ny, "DOUBLE");
+                }
+                else if (image->GetDataType() == VTK_INT)
+                {
+                   WriteFloats(i, numPixels, (int*)image->GetVoidPointer(0));
+                   WriteBOVHeader(i, nx, ny, "INT");
+                }
+            }
+        }
 
         //
         // Output the result message.
         //
-        if (outputType >=0 && outputType <= 4)
+        if (outputType >=0 && outputType <= 5)
         {
             std::string msg = "";
-            const char *exts[5] = {"bmp", "jpeg", "png", "tif", "bof"};
+            const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
             char buf[512];
     
             if (nLeaves == 1)
@@ -753,6 +782,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
 //    image in chunks to avtXRayFilter.
 //
 // ****************************************************************************
+
 template <typename T>
 void
 avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
@@ -761,6 +791,41 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
     sprintf(fileName, "output%02d.bof", iImage);
     FILE *file = fopen(fileName, "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
+    fclose(file);
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBOVHeader
+//
+//  Purpose:
+//    Write the header file for a brick of values file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   May 14, 2012
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, char *type)
+{
+    char fileName[24];
+    sprintf(fileName, "output%02d.bov", iImage);
+    FILE *file = fopen(fileName, "w");
+    fprintf(file, "TIME: 0\n");
+    fprintf(file, "DATA_FILE: output%02d.bof\n", iImage);
+    fprintf(file, "DATA_SIZE: %d %d 1\n", nx, ny);
+    fprintf(file, "DATA_FORMAT: %s\n", type);
+    fprintf(file, "VARIABLE: image\n");
+    const int one = 1;
+    unsigned char *ptr = (unsigned char *)&one;
+    if (ptr[0] == 1)
+        fprintf(file, "DATA_ENDIAN: LITTLE\n");
+    else
+        fprintf(file, "DATA_ENDIAN: BIG\n");
+    fprintf(file, "CENTERING: zonal\n");
+    fprintf(file, "BRICK_ORIGIN: 1 1 1\n");
+    fprintf(file, "BRICK_SIZE: %d %d 1\n", nx, ny);
     fclose(file);
 }
 
