@@ -843,7 +843,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
     debug5 << "GetMesh Marker 1" << endl;
     ReadAllMetaData();
 
-    if ((string(meshname) == "amr_mesh" or string(meshname) == "mesh_blockandproc") and simParams.typeGeometry < 3)
+    if ((string(meshname) == "amr_mesh" || string(meshname) == "mesh_blockandproc") && simParams.typeGeometry < 3)
     {
         // rectilinear mesh
         vtkFloatArray  *coords[3];
@@ -880,7 +880,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
 
         return rGrid;
     }
-    else if ((string(meshname) == "amr_mesh" or string(meshname) == "mesh_blockandproc") and simParams.typeGeometry > 2 )
+    else if ((string(meshname) == "amr_mesh" || string(meshname) == "mesh_blockandproc") && simParams.typeGeometry > 2 )
     {
 
         debug5 << "GetMesh Marker 3" << endl;
@@ -1189,7 +1189,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
             //
             // Add all of the points to an array.
             //
-            int nPts = xvals.size();
+            size_t nPts = xvals.size();
             vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
             vtkFloatArray    *valarray = vtkFloatArray::New();
             valarray->SetNumberOfComponents(1);
@@ -1197,7 +1197,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
             valarray->SetName(meshname);
             rg->GetPointData()->SetScalars(valarray);
             vtkDataArray *xc = rg->GetXCoordinates();
-            for (int j = 0 ; j < nPts ; j++)
+            for (size_t j = 0 ; j < nPts ; j++)
             {
                 //  NODE CENTERED:
                 xc->SetComponent(j,  0, xvals[j]);
@@ -1316,7 +1316,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
             return rg;
         }
     }
-    else if (string(meshname) == "morton_blockandproc" or string(meshname) == "morton_blockandlevel")
+    else if (string(meshname) == "morton_blockandproc" || string(meshname) == "morton_blockandlevel")
     {
         return GetMortonCurveSubset(domain);
     }
@@ -3075,7 +3075,7 @@ avtBATLFileFormat::GetAuxiliaryData(const char *var, int dom,
             range[1] = extr_line[1];
             debug5 << range[0] << endl;
             debug5 << range[1] << endl;
-            if ((range[0] < 0) or (range[1] < 0))
+            if ((range[0] < 0) || (range[1] < 0))
             {
                 debug5 << "NEGATIVE DATA DATA" << endl;
             }
