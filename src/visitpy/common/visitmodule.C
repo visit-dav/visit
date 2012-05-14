@@ -10649,6 +10649,9 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Viewer.  Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
+//   E4ric Brugger, Mon May 14 10:51:24 PDT 2012
+//   I added the bov output type to the XRay Image query.
+//
 // ****************************************************************************
 
 STATIC PyObject*
@@ -10714,6 +10717,8 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                 arg1 = 3;
             else if (strcmp(imageType, "rawfloats") == 0)
                 arg1 = 4;
+            else if (strcmp(imageType, "bov") == 0)
+                arg1 = 5;
             params["output_type"] = arg1;
             params["divide_emis_by_absorb"] = arg2;
             params["origin"] = darg1;
