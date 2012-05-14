@@ -52,20 +52,22 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i)
-  # normally handled in InstallThirdParty.cmake, but gdal has a weird
-  # naming convention on windows
-  IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal17.dll)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
-      ${GDAL_LIBRARY_DIR}/gdal17.dll
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal17.dll
-      DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-      PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-      CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-      )
-  ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal17.dll)
+    SET_UP_THIRD_PARTY(GDAL lib/${VISIT_MSVC_VERSION} include gdal_i)
+    # normally handled in InstallThirdParty.cmake, but gdal has a weird
+    # naming convention on windows
+    FOREACH(VER 17 19)
+        IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                )
+        ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
+    ENDFOREACH(VER)
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(GDAL lib include gdal)
+    SET_UP_THIRD_PARTY(GDAL lib include gdal)
 ENDIF (WIN32)
 
