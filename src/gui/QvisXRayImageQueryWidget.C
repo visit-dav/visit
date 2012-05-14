@@ -64,6 +64,8 @@
 // Creation:   June 17, 2011 
 //
 // Modifications:
+//   Eric Brugger, Mon May 14 12:31:15 PDT 2012
+//   I added the bov output image format.
 //
 // ****************************************************************************
 
@@ -87,6 +89,7 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("png"));
     imageFormat->addItem(tr("tiff"));
     imageFormat->addItem(tr("rawfloats"));
+    imageFormat->addItem(tr("bov"));
     imageFormat->setCurrentIndex(2);
     topLayout->addWidget(imageFormat, 0, 1);
 

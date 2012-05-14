@@ -76,6 +76,9 @@
 //    Kathleen Biagas, Fri Jul 15 16:01:19 PDT 2011
 //    Added GetDefaultInputParams.
 //
+//    Eric Brugger, Mon May 14 10:22:29 PDT 2012
+//    I added the bov output type.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -128,6 +131,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteImage(int, int, T*);
     template <typename T>
     void                      WriteFloats(int, int, T*);
+    void                      WriteBOVHeader(int, int, int, char *);
 };
 
 
