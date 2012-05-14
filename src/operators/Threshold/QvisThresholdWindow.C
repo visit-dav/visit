@@ -281,6 +281,9 @@ QvisThresholdWindow::CreateWindowContents()
 //   Cyrus Harrison, Thu Aug 21 08:45:29 PDT 2008
 //   Qt4 Port.
 //
+//   Brad Whitlock, Mon May 14 16:32:55 PDT 2012
+//   Select the first row if no row is selected.
+//
 // ****************************************************************************
 
 void
@@ -288,7 +291,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 {
     intVector curZonePortions;
     doubleVector curBounds;
-    int varNum;
+    size_t  varNum;
     QString fieldString;
 
     atts->ForceAttributeConsistency();
@@ -351,6 +354,17 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 break;
         }
     }
+
+    // Select the first row if no row is selected.
+    if(threshVars->rowCount() > 0)
+    {
+        if(!threshVars->selectionModel()->hasSelection())
+        {
+            QModelIndex index(threshVars->model()->index(0, 1));
+            threshVars->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+            threshVars->setCurrentIndex(index);
+        }
+    }
 }
 
 
@@ -408,7 +422,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     doubleVector curUpperBounds;
     intVector    curZonePortions;
 
-    if (threshVars->rowCount() != guiFullVarNames.size()) // Just in case
+    if (threshVars->rowCount() != int(guiFullVarNames.size())) // Just in case
     {
         debug3 << "QTW/GCV/1: Threshold GUI out of sync with internal data."
                << endl;
@@ -511,14 +525,14 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 void
 QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
 {
-    if (threshVars->rowCount() != guiFullVarNames.size())
+    if (threshVars->rowCount() != int(guiFullVarNames.size()))
     {
         debug3 << "QTW/vATL/1: Threshold GUI out of sync with internal data."
                << endl;
         return;
     }
 
-    for (int varNum = 0; varNum < guiFullVarNames.size(); varNum++ )
+    for (size_t varNum = 0; varNum < guiFullVarNames.size(); varNum++ )
     {
         if (QString(guiFullVarNames[varNum].c_str()) == variableToAdd) return;
     }
@@ -541,14 +555,14 @@ QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
 void
 QvisThresholdWindow::selectedVariableDeleted()
 {
-    if (threshVars->rowCount() != guiFullVarNames.size())
+    if (threshVars->rowCount() != int(guiFullVarNames.size()))
     {
         debug3 << "QTW/sVD/1: Threshold GUI out of sync with internal data."
                << endl;
         return;
     }
  
-    if (guiFullVarNames.size() == 0)
+    if (guiFullVarNames.empty())
         return;
  
     int selectedVarNum = threshVars->currentRow();
