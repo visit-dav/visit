@@ -45,6 +45,9 @@
 #   I removed ellipse and xchem.  I modified hoth, kickit, sidious and
 #   aztec for various reasons.  I updated the e-mail addresses.
 #
+#   Eric Brugger, Tue May 15 11:08:05 PDT 2012
+#   I changed the name of the ubuntu 11 executable.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -332,7 +335,7 @@ fi
 rm -f ubuntu1104_64
 cat <<EOF > ubuntu1104_64
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-ubuntu11 /home/visit/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-ubuntu11 /home/visit/visit > installlog 2>&1
 rm -f resultlog
 echo "      install of visit on ubuntu1104_64"      > resultlog 2>&1
 echo "     -----------------------------------"    >> resultlog 2>&1
@@ -353,7 +356,7 @@ if [ $ubuntu1104_64 = true ]
 then
    if [ $test = no ]
    then
-      cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-ubuntu11.tar.gz
+      cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11.tar.gz
       scp ubuntu1104_64 ubuntu1104_64_install
       chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install
    fi
