@@ -4,6 +4,7 @@
       <Enum name="ComputeMaxes">
         MONTHLY
         YEARLY
+        SEASONAL
       </Enum>
       <Enum name="Month">
         January
@@ -25,8 +26,8 @@
       <Field name="DisplayMonth" label="Display Month" type="enum" subtype="Month" enabler="computeMaxes:MONTHLY">
         January
       </Field>
-      <Field name="RCodeDir" label="RCodeDir" type="string">
-        ./
+      <Field name="dumpData" label="Dump Data" type="bool">
+        false
       </Field>
     </Attribute>
   </Plugin>

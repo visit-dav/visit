@@ -44,20 +44,21 @@
 //
 
 static const char *ComputeMaxes_strings[] = {
-"MONTHLY", "YEARLY"};
+"MONTHLY", "YEARLY", "SEASONAL"
+};
 
 std::string
 ExtremeValueAnalysisAttributes::ComputeMaxes_ToString(ExtremeValueAnalysisAttributes::ComputeMaxes t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return ComputeMaxes_strings[index];
 }
 
 std::string
 ExtremeValueAnalysisAttributes::ComputeMaxes_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return ComputeMaxes_strings[index];
 }
 
@@ -65,7 +66,7 @@ bool
 ExtremeValueAnalysisAttributes::ComputeMaxes_FromString(const std::string &s, ExtremeValueAnalysisAttributes::ComputeMaxes &val)
 {
     val = ExtremeValueAnalysisAttributes::MONTHLY;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == ComputeMaxes_strings[i])
         {
@@ -136,7 +137,7 @@ void ExtremeValueAnalysisAttributes::Init()
 {
     computeMaxes = YEARLY;
     DisplayMonth = January;
-    RCodeDir = "./";
+    dumpData = false;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -160,7 +161,7 @@ void ExtremeValueAnalysisAttributes::Copy(const ExtremeValueAnalysisAttributes &
 {
     computeMaxes = obj.computeMaxes;
     DisplayMonth = obj.DisplayMonth;
-    RCodeDir = obj.RCodeDir;
+    dumpData = obj.dumpData;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -320,7 +321,7 @@ ExtremeValueAnalysisAttributes::operator == (const ExtremeValueAnalysisAttribute
     // Create the return value
     return ((computeMaxes == obj.computeMaxes) &&
             (DisplayMonth == obj.DisplayMonth) &&
-            (RCodeDir == obj.RCodeDir));
+            (dumpData == obj.dumpData));
 }
 
 // ****************************************************************************
@@ -466,7 +467,7 @@ ExtremeValueAnalysisAttributes::SelectAll()
 {
     Select(ID_computeMaxes, (void *)&computeMaxes);
     Select(ID_DisplayMonth, (void *)&DisplayMonth);
-    Select(ID_RCodeDir,     (void *)&RCodeDir);
+    Select(ID_dumpData,     (void *)&dumpData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -511,10 +512,10 @@ ExtremeValueAnalysisAttributes::CreateNode(DataNode *parentNode, bool completeSa
         node->AddNode(new DataNode("DisplayMonth", Month_ToString(DisplayMonth)));
     }
 
-    if(completeSave || !FieldsEqual(ID_RCodeDir, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_dumpData, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("RCodeDir", RCodeDir));
+        node->AddNode(new DataNode("dumpData", dumpData));
     }
 
 
@@ -559,7 +560,7 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetComputeMaxes(ComputeMaxes(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -585,8 +586,8 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMonth(value);
         }
     }
-    if((node = searchNode->GetNode("RCodeDir")) != 0)
-        SetRCodeDir(node->AsString());
+    if((node = searchNode->GetNode("dumpData")) != 0)
+        SetDumpData(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -608,10 +609,10 @@ ExtremeValueAnalysisAttributes::SetDisplayMonth(ExtremeValueAnalysisAttributes::
 }
 
 void
-ExtremeValueAnalysisAttributes::SetRCodeDir(const std::string &RCodeDir_)
+ExtremeValueAnalysisAttributes::SetDumpData(bool dumpData_)
 {
-    RCodeDir = RCodeDir_;
-    Select(ID_RCodeDir, (void *)&RCodeDir);
+    dumpData = dumpData_;
+    Select(ID_dumpData, (void *)&dumpData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -630,26 +631,10 @@ ExtremeValueAnalysisAttributes::GetDisplayMonth() const
     return Month(DisplayMonth);
 }
 
-const std::string &
-ExtremeValueAnalysisAttributes::GetRCodeDir() const
+bool
+ExtremeValueAnalysisAttributes::GetDumpData() const
 {
-    return RCodeDir;
-}
-
-std::string &
-ExtremeValueAnalysisAttributes::GetRCodeDir()
-{
-    return RCodeDir;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Select property methods
-///////////////////////////////////////////////////////////////////////////////
-
-void
-ExtremeValueAnalysisAttributes::SelectRCodeDir()
-{
-    Select(ID_RCodeDir, (void *)&RCodeDir);
+    return dumpData;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -678,7 +663,7 @@ ExtremeValueAnalysisAttributes::GetFieldName(int index) const
     {
     case ID_computeMaxes: return "computeMaxes";
     case ID_DisplayMonth: return "DisplayMonth";
-    case ID_RCodeDir:     return "RCodeDir";
+    case ID_dumpData:     return "dumpData";
     default:  return "invalid index";
     }
 }
@@ -705,7 +690,7 @@ ExtremeValueAnalysisAttributes::GetFieldType(int index) const
     {
     case ID_computeMaxes: return FieldType_enum;
     case ID_DisplayMonth: return FieldType_enum;
-    case ID_RCodeDir:     return FieldType_string;
+    case ID_dumpData:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -732,7 +717,7 @@ ExtremeValueAnalysisAttributes::GetFieldTypeName(int index) const
     {
     case ID_computeMaxes: return "enum";
     case ID_DisplayMonth: return "enum";
-    case ID_RCodeDir:     return "string";
+    case ID_dumpData:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -769,9 +754,9 @@ ExtremeValueAnalysisAttributes::FieldsEqual(int index_, const AttributeGroup *rh
         retval = (DisplayMonth == obj.DisplayMonth);
         }
         break;
-    case ID_RCodeDir:
+    case ID_dumpData:
         {  // new scope
-        retval = (RCodeDir == obj.RCodeDir);
+        retval = (dumpData == obj.dumpData);
         }
         break;
     default: retval = false;

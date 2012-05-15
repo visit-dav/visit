@@ -168,10 +168,11 @@ avtExtremeValueAnalysisFilter::Execute()
     }
     else if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::YEARLY)
         f->computeMaxes = avtRExtremesFilter::YEARLY;
-    //f->codeDir = atts.GetRCodeDir();
+
     std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
     std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;
     f->codeDir = vlibrdir;
+    f->dumpData = atts.GetDumpData();
 
     f->SetInput(GetInput());
     

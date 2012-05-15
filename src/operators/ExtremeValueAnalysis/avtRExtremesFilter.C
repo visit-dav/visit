@@ -35,6 +35,7 @@ avtRExtremesFilter::avtRExtremesFilter()
     numYears = 0;
     scalingVal =  86400.0 / 10.0;
     monthDisplay = 0;
+    dumpData = false;
 }
 
 // ****************************************************************************

@@ -64,6 +64,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
     // Enum values
     public final static int COMPUTEMAXES_MONTHLY = 0;
     public final static int COMPUTEMAXES_YEARLY = 1;
+    public final static int COMPUTEMAXES_SEASONAL = 2;
 
     public final static int MONTH_JANUARY = 0;
     public final static int MONTH_FEBRUARY = 1;
@@ -85,7 +86,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
-        RCodeDir = new String("./");
+        dumpData = false;
     }
 
     public ExtremeValueAnalysisAttributes(int nMoreFields)
@@ -94,7 +95,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
-        RCodeDir = new String("./");
+        dumpData = false;
     }
 
     public ExtremeValueAnalysisAttributes(ExtremeValueAnalysisAttributes obj)
@@ -103,7 +104,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
 
         computeMaxes = obj.computeMaxes;
         DisplayMonth = obj.DisplayMonth;
-        RCodeDir = new String(obj.RCodeDir);
+        dumpData = obj.dumpData;
 
         SelectAll();
     }
@@ -123,7 +124,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         // Create the return value
         return ((computeMaxes == obj.computeMaxes) &&
                 (DisplayMonth == obj.DisplayMonth) &&
-                (RCodeDir.equals(obj.RCodeDir)));
+                (dumpData == obj.dumpData));
     }
 
     public String GetName() { return "ExtremeValueAnalysis"; }
@@ -142,16 +143,16 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         Select(1);
     }
 
-    public void SetRCodeDir(String RCodeDir_)
+    public void SetDumpData(boolean dumpData_)
     {
-        RCodeDir = RCodeDir_;
+        dumpData = dumpData_;
         Select(2);
     }
 
     // Property getting methods
-    public int    GetComputeMaxes() { return computeMaxes; }
-    public int    GetDisplayMonth() { return DisplayMonth; }
-    public String GetRCodeDir() { return RCodeDir; }
+    public int     GetComputeMaxes() { return computeMaxes; }
+    public int     GetDisplayMonth() { return DisplayMonth; }
+    public boolean GetDumpData() { return dumpData; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -161,7 +162,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         if(WriteSelect(1, buf))
             buf.WriteInt(DisplayMonth);
         if(WriteSelect(2, buf))
-            buf.WriteString(RCodeDir);
+            buf.WriteBool(dumpData);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -175,7 +176,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             SetDisplayMonth(buf.ReadInt());
             break;
         case 2:
-            SetRCodeDir(buf.ReadString());
+            SetDumpData(buf.ReadBool());
             break;
         }
     }
@@ -188,6 +189,8 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             str = str + "COMPUTEMAXES_MONTHLY";
         if(computeMaxes == COMPUTEMAXES_YEARLY)
             str = str + "COMPUTEMAXES_YEARLY";
+        if(computeMaxes == COMPUTEMAXES_SEASONAL)
+            str = str + "COMPUTEMAXES_SEASONAL";
         str = str + "\n";
         str = str + indent + "DisplayMonth = ";
         if(DisplayMonth == MONTH_JANUARY)
@@ -215,14 +218,14 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         if(DisplayMonth == MONTH_DECEMBER)
             str = str + "MONTH_DECEMBER";
         str = str + "\n";
-        str = str + stringToString("RCodeDir", RCodeDir, indent) + "\n";
+        str = str + boolToString("dumpData", dumpData, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int    computeMaxes;
-    private int    DisplayMonth;
-    private String RCodeDir;
+    private int     computeMaxes;
+    private int     DisplayMonth;
+    private boolean dumpData;
 }
 
