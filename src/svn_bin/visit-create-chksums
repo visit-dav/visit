@@ -110,30 +110,30 @@ do
    rm -f $output
 
    cd $version
-   echo ""                                         >  ../$output
-   echo "The VisIt executable $property"           >> ../$output
-   echo ""                                         >> ../$output
-   $cmd INSTALL_NOTES                              >> ../$output
-   $cmd VisIt-$version-i386-installer.dmg          >> ../$output
-   $cmd VisIt-$version-x86_64-installer.dmg        >> ../$output
-   $cmd jvisit$version.tar.gz                      >> ../$output
-   $cmd visit-install$version2                     >> ../$output
-   $cmd visit$version.exe                          >> ../$output
-   $cmd visit${version}_x64.exe                    >> ../$output
-   $cmd visit$version2.darwin-i386.tar.gz          >> ../$output
-   $cmd visit$version2.darwin-x86_64.tar.gz        >> ../$output
-   $cmd visit$version2.linux-euclid.tar.gz         >> ../$output
-   $cmd visit$version2.linux-rhel5.tar.gz          >> ../$output
-   $cmd visit$version2.linux-ubuntu11.tar.gz       >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel5.tar.gz   >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel6.tar.gz   >> ../$output
+   echo ""                                          >  ../$output
+   echo "The VisIt executable $property"            >> ../$output
+   echo ""                                          >> ../$output
+   $cmd INSTALL_NOTES                               >> ../$output
+   $cmd VisIt-$version-i386-installer.dmg           >> ../$output
+   $cmd VisIt-$version-x86_64-installer.dmg         >> ../$output
+   $cmd jvisit$version.tar.gz                       >> ../$output
+   $cmd visit-install$version2                      >> ../$output
+   $cmd visit$version.exe                           >> ../$output
+   $cmd visit${version}_x64.exe                     >> ../$output
+   $cmd visit$version2.darwin-i386.tar.gz           >> ../$output
+   $cmd visit$version2.darwin-x86_64.tar.gz         >> ../$output
+   $cmd visit$version2.linux-euclid.tar.gz          >> ../$output
+   $cmd visit$version2.linux-rhel5.tar.gz           >> ../$output
+   $cmd visit$version2.linux-x86_64-ubuntu11.tar.gz >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel5.tar.gz    >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel6.tar.gz    >> ../$output
 
-   echo ""                                         >> ../$output
-   echo "The VisIt source code $property"          >> ../$output
-   echo ""                                         >> ../$output
-   $cmd build_visit$version2                       >> ../$output
-   $cmd $dist.tar.gz                               >> ../$output
-   $cmd visitdev$version.exe                       >> ../$output
+   echo ""                                          >> ../$output
+   echo "The VisIt source code $property"           >> ../$output
+   echo ""                                          >> ../$output
+   $cmd build_visit$version2                        >> ../$output
+   $cmd $dist.tar.gz                                >> ../$output
+   $cmd visitdev$version.exe                        >> ../$output
    cd ../third_party
    files=`ls`
    for file in $files
