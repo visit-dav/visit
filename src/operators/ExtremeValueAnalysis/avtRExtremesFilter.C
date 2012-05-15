@@ -309,9 +309,18 @@ avtRExtremesFilter::CreateFinalOutput()
 
     //Run R code.
     int numVals = idxN-idx0;
-    float *result = new float[numTuples];
-    for (int i = 0; i < numTuples; i++)
-        result[i] = 0.0f;
+    int numResults = 1;
+    if (dumpData)
+        numResults = 2;
+    
+    vector<vector<float> > results;
+    results.resize(numResults);
+    for (int i = 0; i < numResults; i++)
+    {
+        results[i].resize(numTuples);
+        for (int j = 0; j < numTuples; j++)
+            results[i][j] = 0.0f;
+    }
 
     vtkRInterface *RI = vtkRInterface::New();
     vtkDoubleArray *inData = vtkDoubleArray::New();
@@ -357,16 +366,24 @@ avtRExtremesFilter::CreateFinalOutput()
     command += fileLoad;
         
     command += cmd;
+    if (dumpData)
+        command = command + "result2 = output$se.returnValue\n";
     cout<<command<<endl;
     RI->EvalRscript(command.c_str());
+    RI->EvalRscript("save.image(file='tmp.RData')\n");
         
-    vtkDoubleArray *output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
-
-    int j = 0;
-    idx = idx0;
-    for (int i = idx0; i < idxN; i++, j++, idx++)
+    for (int i = 0; i < results.size(); i++)
     {
-        result[idx] = (float)output->GetComponent(0, j);
+        vtkDoubleArray *output;
+        if (i == 0)
+            output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
+        else
+            output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result2"));
+        int j = 0;
+        for (int idx = idx0; idx < idxN; idx++, j++)
+        {
+            results[i][idx] = (float)output->GetComponent(0, j);
+        }
     }
     
     //output->Delete(); //Looks like RI will release this??
@@ -375,9 +392,12 @@ avtRExtremesFilter::CreateFinalOutput()
 
 #ifdef PARALLEL
     float *s = new float[numTuples];
-    SumFloatArray(result, s, numTuples);
-    if (PAR_Rank() == 0)
-        memcpy(result, s, numTuples*sizeof(float));
+    for (int i = 0; i < results.size(); i++)
+    {
+        SumFloatArray(&(results[i][0]), s, numTuples);
+        if (PAR_Rank() == 0)
+            memcpy(&(results[i][0]), s, numTuples*sizeof(float));
+    }
     delete [] s;
 #endif
 
@@ -392,7 +412,7 @@ avtRExtremesFilter::CreateFinalOutput()
         int idx = 0;
         for (int i = 0; i < numTuples; i++, idx++)
         {
-            outVar->SetValue(i, result[idx]);
+            outVar->SetValue(i, results[0][idx]);
         }
     
         if (nodeCenteredData)
@@ -405,10 +425,26 @@ avtRExtremesFilter::CreateFinalOutput()
         avtDataTree_p outputTree = new avtDataTree(outDS, 0);
         SetOutputDataTree(outputTree);
         outDS->Delete();
+
+        if (dumpData)
+        {
+            string nm;
+            for (int i = 0; i < results.size(); i++)
+            {
+                if (i == 0)
+                    nm = "gev_returnValue.txt";
+                else if (i == 1)
+                    nm = "gev_se.returnValue.txt";
+                    
+                ofstream ofile(nm.c_str());
+                for (int j = 0; j < numTuples-1; j++)
+                    ofile<<results[i][j]<<", ";
+                ofile<<results[i][numTuples-1];
+            }
+        }
     }
     else
         SetOutputDataTree(new avtDataTree());
 
-    delete [] result;
     avtCallback::ResetTimeout(5*60);
 }
