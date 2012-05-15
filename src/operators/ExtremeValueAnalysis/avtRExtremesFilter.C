@@ -33,7 +33,7 @@ avtRExtremesFilter::avtRExtremesFilter()
     nodeCenteredData = false;
     computeMaxes = avtRExtremesFilter::YEARLY;
     numYears = 0;
-    scalingVal =  86400.0 / 10.0;
+    scalingVal =  1.0;
     monthDisplay = 0;
     dumpData = false;
 }

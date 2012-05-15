@@ -90,6 +90,7 @@ class QvisExtremeValueAnalysisWindow : public QvisOperatorWindow
     void computeMaxesChanged(int val);
     void DisplayMonthChanged(int val);
     void dumpDataChanged(bool val);
+    void dataScalingProcessText();
   private:
     QWidget      *computeMaxes;
     QButtonGroup *computeMaxesButtonGroup;
@@ -97,6 +98,8 @@ class QvisExtremeValueAnalysisWindow : public QvisOperatorWindow
     QCheckBox *dumpData;
     QLabel *computeMaxesLabel;
     QLabel *DisplayMonthLabel;
+    QLabel *dataScalingLabel;
+    QLineEdit *dataScaling;
 
     ExtremeValueAnalysisAttributes *atts;
 };

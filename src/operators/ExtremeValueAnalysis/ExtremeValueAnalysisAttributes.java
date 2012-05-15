@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ExtremeValueAnalysisAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExtremeValueAnalysisAttributes_numAdditionalAtts = 3;
+    private static int ExtremeValueAnalysisAttributes_numAdditionalAtts = 4;
 
     // Enum values
     public final static int COMPUTEMAXES_MONTHLY = 0;
@@ -87,6 +87,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
         dumpData = false;
+        dataScaling = 1;
     }
 
     public ExtremeValueAnalysisAttributes(int nMoreFields)
@@ -96,6 +97,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         computeMaxes = COMPUTEMAXES_YEARLY;
         DisplayMonth = MONTH_JANUARY;
         dumpData = false;
+        dataScaling = 1;
     }
 
     public ExtremeValueAnalysisAttributes(ExtremeValueAnalysisAttributes obj)
@@ -105,6 +107,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         computeMaxes = obj.computeMaxes;
         DisplayMonth = obj.DisplayMonth;
         dumpData = obj.dumpData;
+        dataScaling = obj.dataScaling;
 
         SelectAll();
     }
@@ -124,7 +127,8 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         // Create the return value
         return ((computeMaxes == obj.computeMaxes) &&
                 (DisplayMonth == obj.DisplayMonth) &&
-                (dumpData == obj.dumpData));
+                (dumpData == obj.dumpData) &&
+                (dataScaling == obj.dataScaling));
     }
 
     public String GetName() { return "ExtremeValueAnalysis"; }
@@ -149,10 +153,17 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
         Select(2);
     }
 
+    public void SetDataScaling(double dataScaling_)
+    {
+        dataScaling = dataScaling_;
+        Select(3);
+    }
+
     // Property getting methods
     public int     GetComputeMaxes() { return computeMaxes; }
     public int     GetDisplayMonth() { return DisplayMonth; }
     public boolean GetDumpData() { return dumpData; }
+    public double  GetDataScaling() { return dataScaling; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -163,6 +174,8 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             buf.WriteInt(DisplayMonth);
         if(WriteSelect(2, buf))
             buf.WriteBool(dumpData);
+        if(WriteSelect(3, buf))
+            buf.WriteDouble(dataScaling);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -177,6 +190,9 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             break;
         case 2:
             SetDumpData(buf.ReadBool());
+            break;
+        case 3:
+            SetDataScaling(buf.ReadDouble());
             break;
         }
     }
@@ -219,6 +235,7 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
             str = str + "MONTH_DECEMBER";
         str = str + "\n";
         str = str + boolToString("dumpData", dumpData, indent) + "\n";
+        str = str + doubleToString("dataScaling", dataScaling, indent) + "\n";
         return str;
     }
 
@@ -227,5 +244,6 @@ public class ExtremeValueAnalysisAttributes extends AttributeSubject implements 
     private int     computeMaxes;
     private int     DisplayMonth;
     private boolean dumpData;
+    private double  dataScaling;
 }
 

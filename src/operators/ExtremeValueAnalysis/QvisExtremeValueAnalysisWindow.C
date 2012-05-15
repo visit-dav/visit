@@ -166,10 +166,17 @@ QvisExtremeValueAnalysisWindow::CreateWindowContents()
     connect(displayMonthType, SIGNAL(activated(int)),
             this, SLOT(DisplayMonthChanged(int)));
 
+    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
+    mainLayout->addWidget(dataScalingLabel,2,0);
+    dataScaling = new QLineEdit(central);
+    connect(dataScaling, SIGNAL(returnPressed()),
+            this, SLOT(dataScalingProcessText()));
+    mainLayout->addWidget(dataScaling, 2,1);
+
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 2,0);
+    mainLayout->addWidget(dumpData, 3,0);
 }
 
 
@@ -233,6 +240,10 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
             dumpData->setChecked(atts->GetDumpData());
             dumpData->blockSignals(false);
             break;
+            
+          case ExtremeValueAnalysisAttributes::ID_dataScaling:
+            dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
+            break;
         }
     }
 }
@@ -257,6 +268,19 @@ void
 QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
+// Do dataScaling
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_dataScaling || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(dataScaling, val))
+            atts->SetDataScaling(val);
+        else
+        {
+            ResettingError(tr("Data Scaling"),
+                DoubleToQString(atts->GetDataScaling()));
+            atts->SetDataScaling(atts->GetDataScaling());
+        }
+    }
 }
 
 
@@ -292,5 +316,12 @@ QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
 {
     atts->SetDumpData(val);
     SetUpdate(false);
+    Apply();
+}
+
+void
+QvisExtremeValueAnalysisWindow::dataScalingProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataScaling);
     Apply();
 }

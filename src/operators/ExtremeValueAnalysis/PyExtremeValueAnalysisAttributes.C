@@ -157,6 +157,8 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
     else
         SNPRINTF(tmpStr, 1000, "%sdumpData = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
+    str += tmpStr;
     return str;
 }
 
@@ -261,6 +263,30 @@ ExtremeValueAnalysisAttributes_GetDumpData(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataScaling(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the dataScaling in the object.
+    obj->data->SetDataScaling(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataScaling(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetDataScaling());
+    return retval;
+}
+
 
 
 PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBUTES_NMETH] = {
@@ -271,6 +297,8 @@ PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBU
     {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
     {"SetDumpData", ExtremeValueAnalysisAttributes_SetDumpData, METH_VARARGS},
     {"GetDumpData", ExtremeValueAnalysisAttributes_GetDumpData, METH_VARARGS},
+    {"SetDataScaling", ExtremeValueAnalysisAttributes_SetDataScaling, METH_VARARGS},
+    {"GetDataScaling", ExtremeValueAnalysisAttributes_GetDataScaling, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -337,6 +365,8 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "dumpData") == 0)
         return ExtremeValueAnalysisAttributes_GetDumpData(self, NULL);
+    if(strcmp(name, "dataScaling") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataScaling(self, NULL);
 
     return Py_FindMethod(PyExtremeValueAnalysisAttributes_methods, self, name);
 }
@@ -357,6 +387,8 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
     else if(strcmp(name, "dumpData") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDumpData(self, tuple);
+    else if(strcmp(name, "dataScaling") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataScaling(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

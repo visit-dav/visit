@@ -29,5 +29,8 @@
       <Field name="dumpData" label="Dump Data" type="bool">
         false
       </Field>
+      <Field name="dataScaling" label="Data Scaling" type="double">
+        1.000000
+      </Field>
     </Attribute>
   </Plugin>
