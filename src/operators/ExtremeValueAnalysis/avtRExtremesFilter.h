@@ -34,6 +34,7 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
     int monthDisplay;
     std::string codeDir;
     bool dumpData;
+    float scalingVal;
     
   protected:
     void                    Initialize();
@@ -53,7 +54,6 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
     int idx0, idxN;
     std::vector<std::vector<double> > values;
     int numYears;
-    float scalingVal;
 };
 
 #endif

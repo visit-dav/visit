@@ -112,11 +112,13 @@ public:
     void SetComputeMaxes(ComputeMaxes computeMaxes_);
     void SetDisplayMonth(Month DisplayMonth_);
     void SetDumpData(bool dumpData_);
+    void SetDataScaling(double dataScaling_);
 
     // Property getting methods
     ComputeMaxes GetComputeMaxes() const;
-    Month GetDisplayMonth() const;
-    bool GetDumpData() const;
+    Month  GetDisplayMonth() const;
+    bool   GetDumpData() const;
+    double GetDataScaling() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -146,18 +148,20 @@ public:
         ID_computeMaxes = 0,
         ID_DisplayMonth,
         ID_dumpData,
+        ID_dataScaling,
         ID__LAST
     };
 
 private:
-    int  computeMaxes;
-    int  DisplayMonth;
-    bool dumpData;
+    int    computeMaxes;
+    int    DisplayMonth;
+    bool   dumpData;
+    double dataScaling;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iib"
+#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iibd"
 
 #endif

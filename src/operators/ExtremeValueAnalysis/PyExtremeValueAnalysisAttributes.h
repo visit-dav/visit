@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTREMEVALUEANALYSISATTRIBUTES_NMETH 8
+#define EXTREMEVALUEANALYSISATTRIBUTES_NMETH 10
 void           PyExtremeValueAnalysisAttributes_StartUp(ExtremeValueAnalysisAttributes *subj, void *data);
 void           PyExtremeValueAnalysisAttributes_CloseDown();
 PyMethodDef *  PyExtremeValueAnalysisAttributes_GetMethodTable(int *nMethods);

@@ -138,6 +138,7 @@ void ExtremeValueAnalysisAttributes::Init()
     computeMaxes = YEARLY;
     DisplayMonth = January;
     dumpData = false;
+    dataScaling = 1;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -162,6 +163,7 @@ void ExtremeValueAnalysisAttributes::Copy(const ExtremeValueAnalysisAttributes &
     computeMaxes = obj.computeMaxes;
     DisplayMonth = obj.DisplayMonth;
     dumpData = obj.dumpData;
+    dataScaling = obj.dataScaling;
 
     ExtremeValueAnalysisAttributes::SelectAll();
 }
@@ -321,7 +323,8 @@ ExtremeValueAnalysisAttributes::operator == (const ExtremeValueAnalysisAttribute
     // Create the return value
     return ((computeMaxes == obj.computeMaxes) &&
             (DisplayMonth == obj.DisplayMonth) &&
-            (dumpData == obj.dumpData));
+            (dumpData == obj.dumpData) &&
+            (dataScaling == obj.dataScaling));
 }
 
 // ****************************************************************************
@@ -468,6 +471,7 @@ ExtremeValueAnalysisAttributes::SelectAll()
     Select(ID_computeMaxes, (void *)&computeMaxes);
     Select(ID_DisplayMonth, (void *)&DisplayMonth);
     Select(ID_dumpData,     (void *)&dumpData);
+    Select(ID_dataScaling,  (void *)&dataScaling);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -516,6 +520,12 @@ ExtremeValueAnalysisAttributes::CreateNode(DataNode *parentNode, bool completeSa
     {
         addToParent = true;
         node->AddNode(new DataNode("dumpData", dumpData));
+    }
+
+    if(completeSave || !FieldsEqual(ID_dataScaling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dataScaling", dataScaling));
     }
 
 
@@ -588,6 +598,8 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("dumpData")) != 0)
         SetDumpData(node->AsBool());
+    if((node = searchNode->GetNode("dataScaling")) != 0)
+        SetDataScaling(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -615,6 +627,13 @@ ExtremeValueAnalysisAttributes::SetDumpData(bool dumpData_)
     Select(ID_dumpData, (void *)&dumpData);
 }
 
+void
+ExtremeValueAnalysisAttributes::SetDataScaling(double dataScaling_)
+{
+    dataScaling = dataScaling_;
+    Select(ID_dataScaling, (void *)&dataScaling);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -635,6 +654,12 @@ bool
 ExtremeValueAnalysisAttributes::GetDumpData() const
 {
     return dumpData;
+}
+
+double
+ExtremeValueAnalysisAttributes::GetDataScaling() const
+{
+    return dataScaling;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -664,6 +689,7 @@ ExtremeValueAnalysisAttributes::GetFieldName(int index) const
     case ID_computeMaxes: return "computeMaxes";
     case ID_DisplayMonth: return "DisplayMonth";
     case ID_dumpData:     return "dumpData";
+    case ID_dataScaling:  return "dataScaling";
     default:  return "invalid index";
     }
 }
@@ -691,6 +717,7 @@ ExtremeValueAnalysisAttributes::GetFieldType(int index) const
     case ID_computeMaxes: return FieldType_enum;
     case ID_DisplayMonth: return FieldType_enum;
     case ID_dumpData:     return FieldType_bool;
+    case ID_dataScaling:  return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -718,6 +745,7 @@ ExtremeValueAnalysisAttributes::GetFieldTypeName(int index) const
     case ID_computeMaxes: return "enum";
     case ID_DisplayMonth: return "enum";
     case ID_dumpData:     return "bool";
+    case ID_dataScaling:  return "double";
     default:  return "invalid index";
     }
 }
@@ -757,6 +785,11 @@ ExtremeValueAnalysisAttributes::FieldsEqual(int index_, const AttributeGroup *rh
     case ID_dumpData:
         {  // new scope
         retval = (dumpData == obj.dumpData);
+        }
+        break;
+    case ID_dataScaling:
+        {  // new scope
+        retval = (dataScaling == obj.dataScaling);
         }
         break;
     default: retval = false;

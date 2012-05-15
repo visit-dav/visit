@@ -173,6 +173,7 @@ avtExtremeValueAnalysisFilter::Execute()
     std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;
     f->codeDir = vlibrdir;
     f->dumpData = atts.GetDumpData();
+    f->scalingVal = atts.GetDataScaling();
 
     f->SetInput(GetInput());
     
