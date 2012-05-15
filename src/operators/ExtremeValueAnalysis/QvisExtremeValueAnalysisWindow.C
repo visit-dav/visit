@@ -166,13 +166,10 @@ QvisExtremeValueAnalysisWindow::CreateWindowContents()
     connect(displayMonthType, SIGNAL(activated(int)),
             this, SLOT(DisplayMonthChanged(int)));
 
-    RCodeDirLabel = new QLabel(tr("R Code Directory"), central);
-    mainLayout->addWidget(RCodeDirLabel,2,0);
-    RCodeDir = new QLineEdit(central);
-    connect(RCodeDir, SIGNAL(returnPressed()),
-            this, SLOT(RCodeDirProcessText()));
-    mainLayout->addWidget(RCodeDir, 2,1);
-
+    dumpData = new QCheckBox(tr("Dump Data"), central);
+    connect(dumpData, SIGNAL(toggled(bool)),
+            this, SLOT(dumpDataChanged(bool)));
+    mainLayout->addWidget(dumpData, 2,0);
 }
 
 
@@ -230,11 +227,12 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
             displayMonthType->setCurrentIndex((int)atts->GetDisplayMonth());
             displayMonthType->blockSignals(false);
             break;
-            
-          case ExtremeValueAnalysisAttributes::ID_RCodeDir:
-            RCodeDir->setText(QString(atts->GetRCodeDir().c_str()));
-            break;
 
+          case ExtremeValueAnalysisAttributes::ID_dumpData:
+            dumpData->blockSignals(true);
+            dumpData->setChecked(atts->GetDumpData());
+            dumpData->blockSignals(false);
+            break;
         }
     }
 }
@@ -259,20 +257,6 @@ void
 QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-
-    // Do RCodeDir
-    if(which_widget == ExtremeValueAnalysisAttributes::ID_RCodeDir || doAll)
-    {
-        QString temp = RCodeDir->displayText();
-        if(!temp.isEmpty())
-            atts->SetRCodeDir(temp.toStdString());
-        else
-        {
-            ResettingError(tr("R Code Directory"),
-                QString(atts->GetRCodeDir().c_str()));
-            atts->SetRCodeDir(atts->GetRCodeDir());
-        }
-    }
 }
 
 
@@ -304,10 +288,9 @@ QvisExtremeValueAnalysisWindow::DisplayMonthChanged(int val)
 }
 
 void
-QvisExtremeValueAnalysisWindow::RCodeDirProcessText()
+QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
 {
-    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_RCodeDir);
+    atts->SetDumpData(val);
+    SetUpdate(false);
     Apply();
 }
-
-

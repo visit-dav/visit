@@ -76,7 +76,7 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *computeMaxes_names = "MONTHLY, YEARLY";
+    const char *computeMaxes_names = "MONTHLY, YEARLY, SEASONAL";
     switch (atts->GetComputeMaxes())
     {
       case ExtremeValueAnalysisAttributes::MONTHLY:
@@ -85,6 +85,10 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
           break;
       case ExtremeValueAnalysisAttributes::YEARLY:
           SNPRINTF(tmpStr, 1000, "%scomputeMaxes = %sYEARLY  # %s\n", prefix, prefix, computeMaxes_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::SEASONAL:
+          SNPRINTF(tmpStr, 1000, "%scomputeMaxes = %sSEASONAL  # %s\n", prefix, prefix, computeMaxes_names);
           str += tmpStr;
           break;
       default:
@@ -148,7 +152,10 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sRCodeDir = \"%s\"\n", prefix, atts->GetRCodeDir().c_str());
+    if(atts->GetDumpData())
+        SNPRINTF(tmpStr, 1000, "%sdumpData = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdumpData = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -172,14 +179,14 @@ ExtremeValueAnalysisAttributes_SetComputeMaxes(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the computeMaxes in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetComputeMaxes(ExtremeValueAnalysisAttributes::ComputeMaxes(ival));
     else
     {
         fprintf(stderr, "An invalid computeMaxes value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "MONTHLY, YEARLY.");
+                        "MONTHLY, YEARLY, SEASONAL.");
         return NULL;
     }
 
@@ -231,26 +238,26 @@ ExtremeValueAnalysisAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_SetRCodeDir(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_SetDumpData(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the RCodeDir in the object.
-    obj->data->SetRCodeDir(std::string(str));
+    // Set the dumpData in the object.
+    obj->data->SetDumpData(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_GetRCodeDir(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_GetDumpData(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetRCodeDir().c_str());
+    PyObject *retval = PyInt_FromLong(obj->data->GetDumpData()?1L:0L);
     return retval;
 }
 
@@ -262,8 +269,8 @@ PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBU
     {"GetComputeMaxes", ExtremeValueAnalysisAttributes_GetComputeMaxes, METH_VARARGS},
     {"SetDisplayMonth", ExtremeValueAnalysisAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
-    {"SetRCodeDir", ExtremeValueAnalysisAttributes_SetRCodeDir, METH_VARARGS},
-    {"GetRCodeDir", ExtremeValueAnalysisAttributes_GetRCodeDir, METH_VARARGS},
+    {"SetDumpData", ExtremeValueAnalysisAttributes_SetDumpData, METH_VARARGS},
+    {"GetDumpData", ExtremeValueAnalysisAttributes_GetDumpData, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -298,6 +305,8 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MONTHLY));
     if(strcmp(name, "YEARLY") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::YEARLY));
+    if(strcmp(name, "SEASONAL") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SEASONAL));
 
     if(strcmp(name, "DisplayMonth") == 0)
         return ExtremeValueAnalysisAttributes_GetDisplayMonth(self, NULL);
@@ -326,8 +335,8 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "December") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::December));
 
-    if(strcmp(name, "RCodeDir") == 0)
-        return ExtremeValueAnalysisAttributes_GetRCodeDir(self, NULL);
+    if(strcmp(name, "dumpData") == 0)
+        return ExtremeValueAnalysisAttributes_GetDumpData(self, NULL);
 
     return Py_FindMethod(PyExtremeValueAnalysisAttributes_methods, self, name);
 }
@@ -346,8 +355,8 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ExtremeValueAnalysisAttributes_SetComputeMaxes(self, tuple);
     else if(strcmp(name, "DisplayMonth") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
-    else if(strcmp(name, "RCodeDir") == 0)
-        obj = ExtremeValueAnalysisAttributes_SetRCodeDir(self, tuple);
+    else if(strcmp(name, "dumpData") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDumpData(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

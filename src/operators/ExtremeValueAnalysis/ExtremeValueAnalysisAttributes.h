@@ -63,7 +63,8 @@ public:
     enum ComputeMaxes
     {
         MONTHLY,
-        YEARLY
+        YEARLY,
+        SEASONAL
     };
     enum Month
     {
@@ -106,18 +107,16 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectRCodeDir();
 
     // Property setting methods
     void SetComputeMaxes(ComputeMaxes computeMaxes_);
     void SetDisplayMonth(Month DisplayMonth_);
-    void SetRCodeDir(const std::string &RCodeDir_);
+    void SetDumpData(bool dumpData_);
 
     // Property getting methods
-    ComputeMaxes      GetComputeMaxes() const;
-    Month             GetDisplayMonth() const;
-    const std::string &GetRCodeDir() const;
-          std::string &GetRCodeDir();
+    ComputeMaxes GetComputeMaxes() const;
+    Month GetDisplayMonth() const;
+    bool GetDumpData() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -146,19 +145,19 @@ public:
     enum {
         ID_computeMaxes = 0,
         ID_DisplayMonth,
-        ID_RCodeDir,
+        ID_dumpData,
         ID__LAST
     };
 
 private:
-    int         computeMaxes;
-    int         DisplayMonth;
-    std::string RCodeDir;
+    int  computeMaxes;
+    int  DisplayMonth;
+    bool dumpData;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iis"
+#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iib"
 
 #endif
