@@ -190,6 +190,7 @@ public:
 
 public slots:
     void windowDeleted(QObject*);
+    void viewerWindowCreated(ViewerWindow*);
 private:
     static vtkQtRenderWindow* renderWindow(void* data);
 };

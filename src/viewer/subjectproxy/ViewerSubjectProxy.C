@@ -76,7 +76,10 @@
 
 #undef Always
 #include <QtVisWindow.h>
-
+#include <ViewerWindow.h>
+#include <ViewerWindowManager.h>
+#include <ViewerPopupMenu.h>
+#include <QMenu>
 
 std::map<int,vtkQtRenderWindow*> ViewerSubjectProxy::viswindows;
 
@@ -293,6 +296,9 @@ void ViewerSubjectProxy::Initialize(int argc,char* argv[])
         //std::cout << "initializing" << std::endl;
         vissubject->ProcessCommandLine(argc,argv);
         vissubject->Initialize();
+        viewerWindowCreated(ViewerWindowManager::Instance()->GetActiveWindow());
+        connect(ViewerWindowManager::Instance(),SIGNAL(createWindow(ViewerWindow*)),
+                this,SLOT(viewerWindowCreated(ViewerWindow*)));
     }
     catch(VisItException e)
     {
@@ -476,5 +482,39 @@ ViewerSubjectProxy::Update(Subject *subj)
         internalSILRestriction = new avtSILRestriction(
             *gstate->GetSILRestrictionAttributes());
     }
+}
+
+#include <ViewerToolbar.h>
+
+void
+ViewerSubjectProxy::viewerWindowCreated(ViewerWindow *window)
+{
+    QMenu* menu = window->GetPopupMenu()->GetPopup();
+    QList<QAction*> actions = menu->actions();
+    for(int i = 0; i < actions.size(); ++i)
+    {
+        QAction* action = actions[i];
+
+        if(     action->text() == tr("Quit") ||
+                action->text() == tr("Open CLI") ||
+                action->text() == tr("Open GUI") ||
+                action->text() == tr("Customize"))
+            menu->removeAction(action);
+        else if(action->text() == tr("Window"))
+        {
+            QList<QAction*> winactions = action->menu()->actions();
+            for(int i = 0; i < winactions.size(); ++i)
+            {
+                if(winactions[i]->text() == tr("New") ||
+                        winactions[i]->text() == tr("Clone") ||
+                        winactions[i]->text() == tr("Delete") ||
+                        winactions[i]->text() == tr("Layout"))
+                    action->menu()->removeAction(winactions[i]);
+            }
+        }
+    }
+
+    ViewerToolbar* toolbar = window->GetToolbar();
+    toolbar->HideAll();
 }
 

@@ -100,6 +100,7 @@ public:
     void RemoveAction(ViewerActionBase *action);
     void EnableMenu(const std::string &menuName);
     void DisableMenu(const std::string &menuName);
+    QMenu* GetPopup() { return popup; }
 private:
     QMenu   *CreateMenu(const std::string &name);
 
