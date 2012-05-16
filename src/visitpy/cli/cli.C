@@ -422,6 +422,7 @@ main(int argc, char *argv[])
 
 
         PyRun_SimpleString((char*)"visit.Launch()");
+        PyRun_SimpleString((char*)"visit.ShowAllWindows()");
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
         // import helper that lets us know if the pyside viewer is enabled

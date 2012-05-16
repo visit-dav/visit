@@ -73,6 +73,7 @@ class ViewerChangeUsernameWindow : public QDialog
     ViewerChangeUsernameWindow(QWidget *parent = 0);
     ~ViewerChangeUsernameWindow();
 
+    static bool changeUsername(const std::string &hostname, std::string& username);
     static bool changeUsername(const std::string &hostname);
     static std::string getUsername(void);
 
