@@ -6,6 +6,7 @@
     <Field name="hostNickname" type="string">LLNL Sierra</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="arguments" type="stringVector"> </Field>
