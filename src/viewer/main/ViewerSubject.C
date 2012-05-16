@@ -133,6 +133,7 @@
 #include <ViewerObserverToSignal.h>
 #include <ViewerOperatorFactory.h>
 #include <ViewerPasswordWindow.h>
+#include <ViewerChangeUsernameWindow.h>
 #include <ViewerPlot.h>
 #include <ViewerPlotFactory.h>
 #include <ViewerPlotList.h>
@@ -816,6 +817,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
     if (!GetViewerProperties()->GetNowin())
     {
         RemoteProcess::SetAuthenticationCallback(&ViewerPasswordWindow::authenticate);
+        RemoteProcess::SetChangeUserNameCallback(&ViewerChangeUsernameWindow::changeUsername);
     }
 #endif
 

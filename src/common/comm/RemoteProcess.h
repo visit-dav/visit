@@ -164,7 +164,8 @@ public:
     void SetProgressCallback(bool (*)(void *, int), void *);
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
 
-    static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
+    static void SetAuthenticationCallback(void (*)(const char *, const char *, int));
+    static void SetChangeUserNameCallback(bool (*)(const std::string &,std::string&));
     static void DisablePTY();
 protected:
     bool StartMakingConnection(const std::string &rHost, int numRead,
@@ -213,6 +214,7 @@ private:
     std::map<int,int>        portTunnelMap;
 
     static void            (*getAuthentication)(const char *, const char *, int);
+    static bool            (*changeUsername)(const std::string &, std::string&);
     static bool              disablePTY;
 };
 
