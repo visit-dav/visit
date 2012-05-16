@@ -1,12 +1,6 @@
 gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovariates = 0, covariates = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, missingFlag = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, maxes = TRUE, optimMethod = "Nelder-Mead"){
-  # data should be a 1-d array containing the maxes (or mins) by year (year x (optionally) month x (optionally) location),
-  # with the year index varying fastest and the location index varying slowest.
-  # For "seasonal" aggregation, the maxes should be provided by month.
-  # For seasonal analysis, data should be given as consecutive years, with NA for missing values,
-  # as the code needs to treat December as being with the following year.
-  # If there are NAs for any months of a given season, the seasonal value is taken to be NA.
-  # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification.
-  # If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
+  # data should be a 1-d array containing the maxes (or mins) by year (year x (optionally) month x (optionally) location), with the year index varying fastest and the location index varying slowest. For "seasonal" aggregation, the maxes should be provided by month. For seasonal analysis, data should be given as consecutive years, with NA for missing values, as the code needs to treat December as being with the following year. If there are NAs for any months of a given season, the seasonal value is taken to be NA.
+  # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification. If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
   # nYears is the number of years (more generally of blocks) of data provided
   # nLocations is the number of locations provided
   # nCovariates indicates the number of covariates provided through 'covariates' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
@@ -42,10 +36,7 @@ gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovari
   }
   
   data <- data * dataScaling
-  print(length(data))
-  print(nYears)
-  print(nLocations)
-  print(nYears*nLocations)
+
   # check dimensionality of input arrays
   if((aggregation == "annual" && length(data) != nYears*nLocations) ||
      (aggregation != "annual" && length(data) != nYears*12*nLocations))
@@ -109,15 +100,13 @@ gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovari
     link = "c(identity, exp, identity)"
   }
   
-  NAlist <- list(mle = rep(NA, nParam), se = rep(NA, nParam), cov = matrix(NA, nParam, nParam)) #  rep(NA, nParam)
+  NAlist <- list(mle = rep(NA, nParam), se = rep(NA, nParam), cov = matrix(NA, nParam, nParam)) 
 
   gev.fit.wrap <- function(xdat, ydat){
     fit <- try(gev.fit2(xdat, ydat = ydat, mul = locationModel, sigl = scaleModel, shl = shapeModel, mulink = mulink, siglink = siglink, shlink = shlink, show = FALSE))
-    if(!is(fit, 'try-error') && !fit$flag && !fit$conv){
-      return(fit[c("mle", "se", "cov")])
-    } else{
-      return(NAlist)
-    }
+    if(is(fit, 'try-error') || fit$conv || fit$flag)
+      fit <- NAlist
+    return(fit)
   }
 
   extract <- function(index, object, name)

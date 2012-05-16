@@ -197,6 +197,7 @@ avtExtremeValueAnalysisFilter::Execute()
             
 
     SetOutputDataTree(tree);
+    delete f;
 }
 
 
