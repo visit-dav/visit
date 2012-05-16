@@ -1,7 +1,7 @@
 gev.fit2 <- function (xdat, ydat = NULL, mul = NULL, sigl = NULL, shl = NULL, 
     mulink = identity, siglink = identity, shlink = identity, 
     muinit = NULL, siginit = NULL, shinit = NULL, show = TRUE, 
-    method = "Nelder-Mead", maxit = 10000, ndeps = 1e-3, ...) 
+    method = "Nelder-Mead", maxit = 10000, ndeps = 1e-6, ...) 
 {
   # modification of gev.fit() from ismev by C. Paciorek
   # differences from gev.fit()
@@ -74,11 +74,12 @@ gev.fit2 <- function (xdat, ydat = NULL, mul = NULL, sigl = NULL, shl = NULL,
     if (any(y <= 0, na.rm = TRUE) || any(sc <= 0)) 
       return(10^6)
     if(length(sc) == 1){
-      term1 <- length(xdat[!is.na(xdat)]) * log(sc)
+      l <- length(xdat[!is.na(xdat)]) * log(sc)
     } else{
-      term1 <- sum(log(sc[!is.na(xdat)]))
+      l <- sum(log(sc[!is.na(xdat)]))
     }
-    term1 + sum(y^(-1/xi), na.rm = TRUE) + sum(log(y) * (1/xi + 1), na.rm = TRUE)
+    l <- l + sum(y^(-1/xi), na.rm = TRUE) + sum(log(y) * (1/xi + 1), na.rm = TRUE)
+    return(l)
   }
   x <- optim(init, gev.lik, hessian = TRUE, method = method, 
              control = list(maxit = maxit, ndeps = rep(ndeps, length = length(init)), ...))
