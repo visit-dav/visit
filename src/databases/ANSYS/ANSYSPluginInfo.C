@@ -167,6 +167,7 @@ ANSYSGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.inp");
+    defaultPatterns.push_back("*.cdb");
 
     return defaultPatterns;
 }

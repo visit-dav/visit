@@ -189,6 +189,9 @@ avtANSYSFileFormat::ActivateTimestep()
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
+//    Brad Whitlock, Wed May 16 12:02:53 PDT 2012
+//    Change how we read the lines so it is more robust.
+//
 // ****************************************************************************
 
 bool
@@ -231,7 +234,8 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
     ugrid->Allocate(nCells);
     pts->Delete();
 
-    char  line[1024];
+#define MAX_ANSYS_LINE 200
+    char  line[MAX_ANSYS_LINE];
     float pt[3];
     vtkIdType   verts[8];
     bool  recognized = false;
@@ -240,6 +244,7 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
     bool  readingConnectivity = false;
     int   expectedLineLength = 0;
 
+    int   firstFieldWidth = 8;
     int   fieldWidth = 16;
     int   fieldStart = 56;
 
@@ -249,17 +254,36 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             break;
 
         // Get the line
-        ifile.getline(line, 1024);
+        ifile.getline(line, MAX_ANSYS_LINE);
 #if defined(_WIN32)
         int linelen = strlen(line);
 #else
         int linelen = strlen(line)-1; // account for the end of line char.
 #endif
+        // If the line length is less than expected then pad with NULLs.
+        if(expectedLineLength > 0 && linelen < expectedLineLength)
+        {
+             memset(line + linelen + 1, 0, (MAX_ANSYS_LINE - linelen - 1) * sizeof(char));
+#if 0
+             debug5 << "Padding line with NULLs" << endl;
+             debug5 << line << endl;
+#endif
+        }
 
-        // Determine what the line is for.
-        bool rightLength = (linelen == expectedLineLength);
-        readingCoordinates  = readingCoordinates && rightLength;
-        readingConnectivity = readingConnectivity && rightLength;
+        // Give it a chance to break out of coordinate reading.
+        if(readingCoordinates)
+        {
+            bool valid = true;
+            for(int i = 0; i < firstFieldWidth && valid; ++i)
+                valid &= (line[i] == ' ' || (line[i] >= '0' && line[i] <= '9'));
+
+            if(!valid)
+            {                
+                expectedLineLength = 0;
+                readingCoordinates = false;
+                continue;
+            }
+        }
 
         if(readingCoordinates)
         {
@@ -284,17 +308,29 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(readingConnectivity)
         {
-            char tmp = line[fieldWidth];
+            // Get whether this cell is real from column 0
             line[fieldWidth] = '\0';
-            int nverts = atoi(line);
-            line[fieldWidth] = tmp;
+            bool realCell = atoi(line) > 0;
+            if(!realCell)
+            {
+                expectedLineLength = 0;
+                readingConnectivity = false;
+                continue;
+            }
+
+            // Get the number of vertices in this cell from column 9.
+            static const int ncellsColumn = 9;
+            line[ncellsColumn * fieldWidth] = '\0';
+            int nverts = atoi(line + (ncellsColumn-1) * fieldWidth);
+
             if(nverts == 8)
             {
                 char *valstart = line + fieldStart;
                 char *valend   = valstart + fieldWidth;
                 for(int i = 0; i < 8; ++i)
                 {
-                    verts[7-i] = atoi(valstart)-1;
+                    int ivalue = atoi(valstart);
+                    verts[7-i] = (ivalue > 0) ? (ivalue - 1) : ivalue;
                     valstart -= fieldWidth;
                     valend   -= fieldWidth;
                     *valend = '\0';
@@ -337,11 +373,12 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             ifile.getline(line, 1024);
             if(line[0] == '(')
             {
-                InterpretFormatString(line, fieldStart, fieldWidth,
+                InterpretFormatString(line, firstFieldWidth, fieldStart, fieldWidth,
                                       expectedLineLength);
-                debug4 << mName << "fieldStart=" << fieldStart
+                debug4 << mName << "firstFieldWidth=" << firstFieldWidth
+                       << ", fieldStart=" << fieldStart
                        << ", fieldWidth=" << fieldWidth 
-                       << ",expectedLineLength=" << expectedLineLength
+                       << ", expectedLineLength=" << expectedLineLength
                        << endl;
                 readingCoordinates = true;
             }
@@ -372,11 +409,12 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
             ifile.getline(line, 1024);
             if(line[0] == '(')
             {
-                InterpretFormatString(line, fieldStart, fieldWidth,
+                InterpretFormatString(line, firstFieldWidth, fieldStart, fieldWidth,
                                       expectedLineLength);
-                debug4 << mName << "fieldStart=" << fieldStart
+                debug4 << mName << "firstFieldWidth=" << firstFieldWidth
+                       << ", fieldStart=" << fieldStart
                        << ", fieldWidth=" << fieldWidth
-                       << ",expectedLineLength=" << expectedLineLength 
+                       << ", expectedLineLength=" << expectedLineLength 
                        << endl; 
                 readingConnectivity = true;
             }
@@ -403,6 +441,12 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
                 STRNCASECMP(line, "/NOLIST", 7) == 0)
         {
             recognized = true;
+        }
+        else
+        {
+            expectedLineLength = 0;
+            readingCoordinates = false;
+            readingConnectivity = false;
         }
     }
 
@@ -470,6 +514,7 @@ avtANSYSFileFormat::Interpret(const char *fmt, int &fieldWidth,
 //
 // Arguments:
 //   line               : The line containing the format string.
+//   firstFieldWidth    : The width of the first field.
 //   fieldStart         : The starting location of the first field that we
 //                        want to read.
 //   fieldWidth         : The length of the field that we want to read.
@@ -480,18 +525,21 @@ avtANSYSFileFormat::Interpret(const char *fmt, int &fieldWidth,
 // Creation:   Thu Jul 7 09:57:23 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed May 16 13:36:03 PDT 2012
+//   Pass out the width of the first field.
+//
 // ****************************************************************************
 
 void
-avtANSYSFileFormat::InterpretFormatString(char *line, int &fieldStart,
-    int &fieldWidth, int &expectedLineLength) const
+avtANSYSFileFormat::InterpretFormatString(char *line, int &firstFieldWidth,
+    int &fieldStart, int &fieldWidth, int &expectedLineLength) const
 {
     char *fmt = line + 1;
     char *ptr = 0;
 
     expectedLineLength = 0;
     bool keepGoing = true;
+    bool first = true;
     while(keepGoing)
     {
         int linelen = 0;
@@ -500,6 +548,11 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int &fieldStart,
         {
             *ptr = '\0';
             Interpret(fmt, fieldWidth, linelen);
+            if(first)
+            {
+                first = false;
+                firstFieldWidth = fieldWidth;
+            }
             expectedLineLength += linelen;
             fmt = ptr + 1;
         }
@@ -507,6 +560,11 @@ avtANSYSFileFormat::InterpretFormatString(char *line, int &fieldStart,
         {
             *ptr = '\0';
             Interpret(fmt, fieldWidth, linelen);
+            if(first)
+            {
+                first = false;
+                firstFieldWidth = fieldWidth;
+            }
             expectedLineLength += linelen;
             keepGoing = false;
         }

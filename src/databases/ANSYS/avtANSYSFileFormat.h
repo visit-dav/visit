@@ -96,7 +96,7 @@ public:
 
 protected:
     bool ReadFile(const char *, int nLines);
-    void InterpretFormatString(char *line, int &fieldStart,
+    void InterpretFormatString(char *line, int &firstFieldWidth, int &fieldStart,
                                int &fieldWidth, int &expectedLineLength) const;
     void Interpret(const char *fmt, int &fieldWidth, int &linelen) const;
 
