@@ -255,3 +255,11 @@ extern const char *visit_UpdateNamedSelection_doc;
 extern const char *visit_Version_doc;
 extern const char *visit_WriteConfigFile_doc;
 extern const char *visit_ZonePick_doc;
+
+//MachineProfile specific documents
+extern const char *visit_AddMachineProfile_doc;
+extern const char *visit_GetMachineProfile_doc;
+extern const char *visit_GetMachineProfileNames_doc;
+extern const char *visit_SetMachineProfile_doc;
+extern const char *visit_RemoveMachineProfile_doc;
+

@@ -102,6 +102,7 @@
 #include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
+#include <HostProfileList.h>
 #include <InteractorAttributes.h>
 #include <KeyframeAttributes.h>
 #include <MeshManagementAttributes.h>
@@ -417,6 +418,7 @@ ViewerProxy                 *viewer = 0;
 static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
 static bool                  keepGoing = true;
+static bool                  autoUpdate = false;
 static bool                  viewerInitiatedQuit = false;
 static bool                  viewerBlockingRead = false;
 #ifdef THREADS
@@ -3176,6 +3178,7 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 //   Change string literals to const char*'s.
 //
 // ****************************************************************************
+STATIC PyObject *visit_SetMachineProfile(PyObject *self, PyObject *args);
 
 STATIC PyObject *
 OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
@@ -3189,12 +3192,26 @@ OpenComponentHelper(PyObject *self, PyObject *args, bool openEngine)
             "\tE.g.: (\"-np\", \"2\"), not (\"-np\", 2)";
 
     const char  *hostName;
+    std::string machine_hostname;
     char  *arg1;
     stringVector argv;
 
     if (!PyArg_ParseTuple(args, "s", &hostName))
     {
-        if (!PyArg_ParseTuple(args, "ss", &hostName, &arg1))
+        PyObject* machine;
+        if (PyArg_ParseTuple(args, "O", &machine))
+        {
+            if(!PyMachineProfile_Check(machine))
+            {
+                VisItErrorFunc(OCEError);
+                return NULL;
+            }
+            visit_SetMachineProfile(self,args);
+            MachineProfile *mp = PyMachineProfile_FromPyObject(machine);
+            machine_hostname = mp->GetHost();
+            hostName = machine_hostname.c_str();
+        }
+        else if (!PyArg_ParseTuple(args, "ss", &hostName, &arg1))
         {
             PyObject *tuple;
             if (!PyArg_ParseTuple(args, "sO", &hostName, &tuple))
@@ -3496,6 +3513,8 @@ visit_AddPlot(PyObject *self, PyObject *args)
         GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
+
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -3584,6 +3603,7 @@ visit_AddOperator(PyObject *self, PyObject *args)
         GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -5259,6 +5279,220 @@ visit_GetAnnotationAttributes(PyObject *self, PyObject *args)
     // Copy the viewer proxy's annotation atts into the return data structure.
     *aa = *(GetViewerState()->GetAnnotationAttributes());
 
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_GetMachineProfile
+//
+// Purpose:
+//   Gets the MachineProfile for a specific hostname
+//
+// Notes:
+//
+// Programmer: Hari Krishnan
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetMachineProfile(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *hostName = 0;
+    if (!PyArg_ParseTuple(args, "s", &hostName))
+    {
+        return NULL;
+    }
+
+    PyObject *retval = PyMachineProfile_New();
+    MachineProfile *mp = PyMachineProfile_FromPyObject(retval);
+
+    MUTEX_LOCK();
+    std::string host = hostName;
+    HostProfileList* hpl = GetViewerState()->GetHostProfileList();
+    MachineProfile *ma = hpl->GetMachineProfileForHost(host);
+    if(ma) *mp = *ma;
+    MUTEX_UNLOCK();
+
+    if(!ma)
+    {
+        VisItErrorFunc("Invalid hostname to get Machine Profile");
+        return NULL;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_SetMachineProfile
+//
+// Purpose:
+//   Sets Machine Profile in HostProfileList. If hostname exist then the
+//   MachineProfile replaces the existing one, otherwise the machine profile is
+//   added to the list.
+//
+// Notes:
+//
+// Programmer: Hari Krishnan
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetMachineProfile(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *machine = NULL;
+
+    if (!PyArg_ParseTuple(args, "O",&machine))
+    {
+        return NULL;
+    }
+
+    if(!PyMachineProfile_Check(machine))
+    {
+        VisItErrorFunc("Argument is not a MachineProfile object");
+        return NULL;
+    }
+
+
+    MUTEX_LOCK();
+
+    HostProfileList* hpl = GetViewerState()->GetHostProfileList();
+
+    MachineProfile ma = *PyMachineProfile_FromPyObject(machine);
+    std::string hostName = ma.GetHost();
+
+    //MachineProfile *mp = hpl->GetMachineProfileForHost(host);
+    //remove host if it already exists and add a new one..
+    intVector rmhosts;
+    for(int i = 0; i < hpl->GetNumMachines(); ++i)
+    {
+        std::string name = hpl->GetMachines(i).GetHost();
+        if(name == hostName)
+            rmhosts.push_back(i);
+    }
+
+    for(int i = 0; i < rmhosts.size(); ++i)
+        hpl->RemoveMachines(rmhosts[rmhosts.size() - 1 - i]);
+
+    hpl->AddMachines(ma);
+    hpl->Notify();
+
+    MUTEX_UNLOCK();
+    return IntReturnValue(Synchronize());
+}
+
+
+// ****************************************************************************
+// Function: visit_AddMachineProfile
+//
+// Purpose:
+//   Same as SetMachineProfile, but makes more sense when
+//   overriding existing profile names
+//
+// Notes:
+//
+// Programmer: Hari Krishnan
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_AddMachineProfile(PyObject *self, PyObject *args)
+{
+    return visit_SetMachineProfile(self,args);
+}
+
+// ****************************************************************************
+// Function: visit_RemoveMachineProfile
+//
+// Purpose:
+//   Removes the machine profile from the HostProfileList
+//
+// Notes:
+//
+// Programmer: Hari Krishnan
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RemoveMachineProfile(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    const char* host;
+
+    if (!PyArg_ParseTuple(args, "s",&host))
+    {
+        VisItErrorFunc("Please enter machine's hostname");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+
+    HostProfileList* hpl = GetViewerState()->GetHostProfileList();
+    std::string hostName = host;
+
+    //MachineProfile *mp = hpl->GetMachineProfileForHost(host);
+    //remove host if it already exists and add a new one..
+    intVector rmhosts;
+    for(int i = 0; i < hpl->GetNumMachines(); ++i)
+    {
+        std::string name = hpl->GetMachines(i).GetHost();
+        if(name == hostName)
+            rmhosts.push_back(i);
+    }
+
+    for(int i = 0; i < rmhosts.size(); ++i)
+        hpl->RemoveMachines(rmhosts[rmhosts.size() - 1 - i]);
+    hpl->Notify();
+
+    MUTEX_UNLOCK();
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetMachineProfileNames
+//
+// Purpose:
+//   Returns all the hostnames in the HostProfileList
+//
+// Notes:
+//
+// Programmer: Hari Krishnan
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetMachineProfileNames(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    stringVector names;
+    MUTEX_LOCK();
+    HostProfileList* hpl = GetViewerState()->GetHostProfileList();
+    for(int i = 0; i < hpl->GetNumMachines(); ++i)
+        names.push_back(hpl->GetMachines(i).GetHost());
+    MUTEX_UNLOCK();
+
+    PyObject *retval = PyTuple_New(names.size());
+    for(int i = 0; i < names.size(); ++i)
+    {
+        PyObject *s = PyString_FromString(names[i].c_str());
+        PyTuple_SET_ITEM(retval, i, s);
+    }
     return retval;
 }
 
@@ -7176,6 +7410,8 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
         errorFlag = Synchronize();
     }
 
+
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(errorFlag);
 }
@@ -7243,6 +7479,7 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
         errorFlag = Synchronize();
     }
 
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(errorFlag);
 }
@@ -7683,6 +7920,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     }
     MUTEX_UNLOCK();
 
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -7754,6 +7992,7 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     }
     MUTEX_UNLOCK();
 
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -8073,6 +8312,7 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     }
     MUTEX_UNLOCK();
 
+    if(autoUpdate) GetViewerMethods()->DrawPlots();
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -14307,6 +14547,40 @@ visit_SaveNamedSelection(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetAutoUpdate
+//
+// Purpose:
+//   Tells the viewer to auto update when doing certain operations
+//   like adding and removing plots and operators
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 11 16:05:26 PDT 2010
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetAutoUpdate(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int apply = 0;
+    if (!PyArg_ParseTuple(args, "i", &apply))
+       return NULL;
+
+    // Set the named selection auto apply mode.
+    MUTEX_LOCK();
+    autoUpdate = (apply != 0);
+    GetViewerState()->GetGlobalAttributes()->SetAutoUpdateFlag(autoUpdate);
+    GetViewerState()->GetGlobalAttributes()->Notify();
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetNamedSelectionAutoApply
 //
 // Purpose: 
@@ -16020,6 +16294,14 @@ AddDefaultMethods()
     AddMethod("LoadUltra", visit_LoadUltra, visit_LoadUltra_doc);
     AddMethod("GetUltraScript", visit_GetUltraScript, visit_GetUltraScript_doc);
     AddMethod("SetUltraScript", visit_SetUltraScript, visit_SetUltraScript_doc);
+
+
+    AddMethod("AddMachineProfile", visit_AddMachineProfile,visit_AddMachineProfile_doc);
+    AddMethod("RemoveMachineProfile", visit_RemoveMachineProfile, visit_RemoveMachineProfile_doc);
+    AddMethod("SetMachineProfile", visit_SetMachineProfile, visit_SetMachineProfile_doc);
+    AddMethod("GetMachineProfile", visit_GetMachineProfile, visit_GetMachineProfile_doc);
+    AddMethod("GetMachineProfileNames", visit_GetMachineProfileNames, visit_GetMachineProfileNames_doc);
+
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
@@ -16142,6 +16424,8 @@ AddDefaultMethods()
                                         visit_SetMeshManagementAttributes_doc);
     AddMethod("SetNamedSelectionAutoApply", visit_SetNamedSelectionAutoApply,
               visit_SetNamedSelectionAutoApply_doc);
+    AddMethod("SetAutoUpdate", visit_SetAutoUpdate,
+              NULL);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetPickAttributes", visit_SetPickAttributes,
@@ -17187,7 +17471,7 @@ LaunchViewer(const char *visitProgram)
         //
         // Tell the windows to show themselves
         //
-        GetViewerMethods()->ShowAllWindows();
+        //GetViewerMethods()->ShowAllWindows();
 
         //
         // Set a flag indicating the viewer exists.

@@ -231,3 +231,44 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
 }
 
 
+// ****************************************************************************
+// Method: ViewerChangeUsernameWindow::changeUsername
+//
+// Purpose:
+//   Pops up the change username window and sets the new username in the
+//   host profiles.
+//
+// Arguments:
+//   host     : The name of the host for which we're setting the username.
+//
+// Returns:    True if the user entered a new username, false otherwise
+//
+// Programmer: Hank Childs
+// Creation:   November 11, 2007
+//
+// Modifications:
+//   Brad Whitlock, Tue Apr 29 11:58:35 PDT 2008
+//   Added tr()'s
+//
+//   Brad Whitlock, Fri May 23 11:03:20 PDT 2008
+//   Use std::string, Qt 4.
+//
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//   Can just update one machine profile now.
+//
+//   Kathleen Bonnell, Thu Apr 22 17:54:34 MST 2010
+//   Prevent use of mp if NULL.
+//
+// ****************************************************************************
+
+
+bool
+ViewerChangeUsernameWindow::changeUsername(const std::string &host, std::string& username)
+{
+    bool res = changeUsername(host);
+    if(res) username = getUsername();
+    return res;
+}
+
+

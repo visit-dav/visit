@@ -71,6 +71,7 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
+#include <ChangeUsernameException.h>
 #include <InstallationFunctions.h>
 
 #include <DebugStream.h>
@@ -116,6 +117,7 @@ struct ThreadCallbackDataStruct
 // Static data
 //
 void (*RemoteProcess::getAuthentication)(const char *, const char *, int) = NULL;
+bool (*RemoteProcess::changeUsername)(const std::string &, std::string&) = NULL;
 bool RemoteProcess::disablePTY = false;
 
 using std::map;
@@ -2278,6 +2280,88 @@ RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
             (*getAuthentication)(remoteUserName.c_str(), host.c_str(),
                                  ptyFileDescriptor);
         }
+        CATCH(ChangeUsernameException)
+        {
+            //std::cout << "User Selected Change UserName Exception" << std::endl;
+            std::string newUserName = "";
+            if(changeUsername && changeUsername(host,newUserName))
+            {
+                //if the user selects blank, revert back to old name..
+                if(newUserName == "")
+                    newUserName = remoteUserName;
+
+                //close everything..
+                // Close the file descriptor allocated for the PTY
+                close(ptyFileDescriptor);
+
+                // Kill the SSH proces
+                kill(remoteProgramPid, SIGTERM);
+
+                // Clean up memory
+                DestroySplitCommandLine(argv, argc);
+
+                // Close the listen socket.
+                //CloseListenSocket();
+
+                //set new user name and connect...
+                SetRemoteUserName(newUserName);
+
+                //check to see if args has remoteUserName already..
+                //if so replace with this otherwise add ..
+                bool match = false;
+                bool foundIt = false;
+                stringVector args2;
+                args2.reserve( args.size() + 2 ); //one more
+
+                for(int i = 0; i < args.size(); ++i)
+                {
+                    //replace..
+                    std::string var = args[i];
+
+                    if(match == true)
+                    {
+                        var = newUserName;
+                        match = false;
+                        foundIt = true;
+                    }
+                    else if(var == "-l")
+                    {
+                        match = true; //arguments already have username..
+                    }
+                    else if(foundIt == false && var == host)
+                    {
+                        //if we have reached remoteProgram and -l not found
+                        //then user is default then we must add the new one..
+                        args2.push_back("-l");
+                        args2.push_back(newUserName);
+                    }
+
+                    //std::cout << var << std::endl;
+                    args2.push_back(var);
+                }
+
+                //recursively call connection..
+                LaunchRemote(host, args2);
+                return; //unnecessary
+            }
+            else
+            {
+                //do same thing as CouldNotConnectException
+                // Close the file descriptor allocated for the PTY
+                close(ptyFileDescriptor);
+
+                // Kill the SSH proces
+                kill(remoteProgramPid, SIGTERM);
+
+                // Clean up memory
+                DestroySplitCommandLine(argv, argc);
+
+                // Close the listen socket.
+                CloseListenSocket();
+
+                RETHROW;
+            }
+        }
         CATCH(CouldNotConnectException)
         {
             // Close the file descriptor allocated for the PTY
@@ -2578,3 +2662,29 @@ RemoteProcess::SetProgressCallback(bool (*callback)(void *, int), void *data)
     progressCallback = callback;
     progressCallbackData = data;
 }
+
+// ****************************************************************************
+// Method: RemoteProcess::SetChangeUserNameCallback
+//
+// Purpose:
+//   Allows user to change username if set
+//
+// Arguments:
+//   callback : The callback function.
+//   data     : Data for the callback function.
+//
+// Note:       The progress callback is only called when we have threads.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 26 17:11:57 PST 2002
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+RemoteProcess::SetChangeUserNameCallback(bool (*callback)(const std::string &, std::string& ))
+{
+    changeUsername = callback;
+}
+
