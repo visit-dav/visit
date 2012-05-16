@@ -131,7 +131,7 @@ MakeSafeVariableName(const std::string &var)
     int nInvalids = sizeof(invalids) / (sizeof(char)*2);
     for(int i = 0; i < nInvalids; ++i)
     {
-        for(int ci = 0; ci < var.size(); ++ci)
+        for(size_t ci = 0; ci < var.size(); ++ci)
         {
             if(tmp[ci] == invalids[i][0])
                 tmp[ci] = invalids[i][1];
@@ -589,7 +589,6 @@ avtCGNSFileFormat::GetVariablesForBase(int base, avtCGNSFileFormat::BaseInformat
 
     bool retval = true;
     char namebase[33];
-    int cell_dim = 2, phys_dim = 2;
     if(cg_base_read(GetFileHandle(), base, namebase, &baseInfo.cellDim, &baseInfo.physicalDim) != CG_OK)
     {
         debug1 << "Could not read base " << base << endl;
@@ -796,10 +795,11 @@ avtCGNSFileFormat::GetVariablesForBase(int base, avtCGNSFileFormat::BaseInformat
                             info.units = fieldUnits;
                         baseInfo.vars[fieldname] = info;
                     }
-                    else
+                    else if(sol == 1)
                     {
                         // We've already run across the variable in another zone
                         // so let's update what we know.
+                        // This is done only for first iteration.
                         pos->second.zoneList.push_back(zone);
                         pos->second.cellCentering += cellCentering;
                         pos->second.nodeCentering += nodeCentering;
@@ -1113,7 +1113,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
     // Print the information that we read from the file.
     debug4 << "==================== BASE INFORMATION ====================" << endl;
-    for(int bi = 0; bi < baseInfo.size(); ++bi)
+    for(size_t bi = 0; bi < baseInfo.size(); ++bi)
     {
         if(DebugStream::Level4())
             PrintBaseInformation(DebugStream::Stream4(), baseInfo[bi]);
@@ -1125,7 +1125,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // meshes that we need to create for each base. Let's use the base name
     // as the mesh name if there is more than one zone in a base. If there's
     debug4 << "=================== POPULATE VARIABLES ===================" << endl;
-    for(int bi = 0; bi < baseInfo.size(); ++bi)
+    for(size_t bi = 0; bi < baseInfo.size(); ++bi)
     {
         std::string baseName(baseInfo[bi].name);
         baseName = MakeSafeVariableName(baseName);
@@ -1151,7 +1151,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //
         std::map<intVector, std::string> meshDef;
         intVector allDomains;
-        for(int i = 0; i < baseInfo[bi].zoneNames.size(); ++i)
+        for(size_t i = 0; i < baseInfo[bi].zoneNames.size(); ++i)
             allDomains.push_back(i+1);
         meshDef[allDomains] = meshName;
         debug4 << mName << "Step 2: Need mesh " << meshName.c_str() << endl;
@@ -1191,7 +1191,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 1, 1, 1, 0, baseInfo[bi].physicalDim, baseInfo[bi].cellDim, mt);
 
             stringVector domainNames;
-            for(int di = 0; di < it->first.size(); ++di)
+            for(size_t di = 0; di < it->first.size(); ++di)
             {
                 int idx = it->first[di] - 1;
                 domainNames.push_back(baseInfo[bi].zoneNames[idx]);
@@ -1217,7 +1217,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // Print the entry we just created in MeshDomainMapping 
             debug4 << mName << "Step 3: Creating mesh " << it->second.c_str() << " for base "
                    << bzl.base << " for zones [";
-            for(int zi = 0; zi < it->first.size(); ++zi)
+            for(size_t zi = 0; zi < it->first.size(); ++zi)
             {
                 debug4 << it->first[zi];
                 if(zi <  it->first.size()-1)
@@ -1388,7 +1388,7 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     debug4 << mName << "Checking if zone " << zone << " is part of "
            << meshname << endl;
     debug4 << "zones = {";
-    for(int i = 0; i < zones.size(); ++i)
+    for(size_t i = 0; i < zones.size(); ++i)
         debug4 << zones[i] << ", ";
     debug4 << "}" << endl;
     if(std::find(zones.begin(), zones.end(), zone) == zones.end())
@@ -1440,10 +1440,10 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                            "Meshes with ZoneTypeUserDefined are not supported.");
                 break;
             case Structured:
-                retval = GetCurvilinearMesh(base, zone, meshname, zsize);
+                retval = GetCurvilinearMesh(timestate, base, zone, meshname, zsize);
                 break;
             case Unstructured:
-                retval = GetUnstructuredMesh(base, zone, meshname, zsize);
+                retval = GetUnstructuredMesh(timestate, base, zone, meshname, zsize);
                 break;
             }
         }
@@ -1484,7 +1484,7 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 // ****************************************************************************
 
 bool
-avtCGNSFileFormat::GetCoords(int base, int zone, const cgsize_t *zsize,
+avtCGNSFileFormat::GetCoords(int timestate, int base, int zone, const cgsize_t *zsize,
     bool structured, float **coords, int *ncoords)
 {
     const char *mName = "avtCGNSFileFormat::GetCoords: ";
@@ -1509,7 +1509,6 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const cgsize_t *zsize,
         err = *ncoords != 2 && *ncoords != 3;
         
         unsigned int nPts = 0;
-        cgsize_t rmin[3] = {1,1,1};
         cgsize_t rmax[3] = {1,1,1};
         if(structured)
         {
@@ -1536,10 +1535,41 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const cgsize_t *zsize,
             nPts = zsize[0];
         }
 
+        // Check the number of grids stored in zone
+        int ngrids = 0;
+        if(cg_ngrids(GetFileHandle(), base, zone, &ngrids) != CG_OK)
+        {
+          debug4 << mName << "Could not get number of grids in zone "
+                 << zone << endl;
+          debug4 << cg_get_error() << endl;
+        }
+        // If the solution is unsteady but not the mesh, timestate will change but requiredgrid
+        // should remain bounded.
+        int requiredgrid = (timestate < ngrids) ? (timestate + 1) : ngrids;
+        
+        char GridCoordName[33];
+        cg_grid_read(GetFileHandle(), base, zone, requiredgrid, GridCoordName);
+        
+        debug4 << "Reading mesh node " << GridCoordName << endl;
+        if (cg_goto(GetFileHandle(), base, "Zone_t", zone, GridCoordName, 0, "end") != CG_OK)
+        {
+            debug4 << cg_get_error() << endl;
+        }
+        
+        int narrays=0;
+        cg_narrays(&narrays);
+        if(narrays<*ncoords)
+        {
+            debug4 << "Not enought coordinates in node " << GridCoordName << endl;
+            err = true;
+        }
+        // Every grid is read through cg_array. However, "GridCoordinates" node should always be present
+        // to describe reference state according to CGNS Grid Specification.
         for(int c = 1; c <= *ncoords; ++c)
         {
             char coordname[33];
             DataType_t ct;
+            if(err == true) break;
             if(cg_coord_info(GetFileHandle(), base, zone, c, &ct,
                 coordname) != CG_OK)
             {
@@ -1553,12 +1583,10 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const cgsize_t *zsize,
                 // Read the various coordinates as float
                 debug4 << mName << "Reading " << coordname
                        << " as a float array." << endl;
-                if(cg_coord_read(GetFileHandle(), base, zone, coordname,
-                   RealSingle, rmin, rmax, (void*)coords[c-1]) != CG_OK)
+                if(cg_array_read_as(c, RealSingle, (void*)coords[c-1] ) != CG_OK)
                 {
                     debug4 << mName << cg_get_error() << endl;
                     err = true;
-                    break;
                 }
             }
         }
@@ -1604,16 +1632,15 @@ avtCGNSFileFormat::GetCoords(int base, int zone, const cgsize_t *zsize,
 // ****************************************************************************
 
 vtkDataSet *
-avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
+avtCGNSFileFormat::GetCurvilinearMesh(int timestate, int base, int zone, const char *meshname,
     const cgsize_t *zsize)
 {
-    const char *mName = "avtCGNSFileFormat::GetCurvilinearMesh: ";
     vtkDataSet *retval = 0;
 
     // Get the number of coords
     int ncoords = 0;
     float *coords[3] = {0,0,0};
-    if(GetCoords(base, zone, zsize, true, coords, &ncoords))
+    if(GetCoords(timestate, base, zone, zsize, true, coords, &ncoords))
     {
         // Create the curvilinear mesh.
         vtkStructuredGrid *sgrid   = vtkStructuredGrid::New(); 
@@ -1716,7 +1743,7 @@ avtCGNSFileFormat::GetCurvilinearMesh(int base, int zone, const char *meshname,
 // ****************************************************************************
 
 vtkDataSet *
-avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
+avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const char *meshname,
     const cgsize_t *zsize)
 {
     const char *mName = "avtCGNSFileFormat::GetUnstructuredMesh: ";
@@ -1725,7 +1752,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
     // Get the number of coords
     int ncoords = 0;
     float *coords[3] = {0,0,0};
-    if(GetCoords(base, zone, zsize, false, coords, &ncoords))
+    if(GetCoords(timestate, base, zone, zsize, false, coords, &ncoords))
     {
         // Read the number of sections, for the zone.
         int nsections = 0;
@@ -1823,7 +1850,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int base, int zone, const char *meshname,
                 //
                 vtkIdType verts[27];
                 const cgsize_t *elem = elements;
-                for(unsigned int icell = 0; icell < (end-start+1); ++icell)
+                for(cgsize_t icell = 0; icell < (end-start+1); ++icell)
                 {
                     // If we're reading mixed elements then the element type 
                     // comes first.
@@ -2214,7 +2241,7 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
         // e.g. the number of the required solution in the
         // FlowSolutionPointers array is the same as node number of
         // the solution, which is not necessarily true
-        int requiredsol = timestate + 1;
+        int requiredsol = (timestate < nsols) ? timestate + 1: nsols;
 
         // Iterate through the solutions until we find the variable that we're
         // looking for or required solution by number.
@@ -2271,7 +2298,9 @@ avtCGNSFileFormat::GetVar(int timestate, int domain, const char *varname)
                         {
                         case DataTypeNull:
                         case DataTypeUserDefined:
-                            debug4 << "Unsupported variable type" << endl;
+                            debug4 << "Unsupported variable type: ";
+                            PrintDataType(dt);
+                            debug4 << endl;
                             break;
                         case Integer:
                             arr = vtkIntArray::New();
@@ -2425,7 +2454,7 @@ void
 avtCGNSFileFormat::PrintVarInfo(ostream &out, const avtCGNSFileFormat::VarInfo &var, const char *indent)
 {
     out << indent << "zoneList = {";
-    for(int i = 0; i < var.zoneList.size(); ++i)
+    for(size_t i = 0; i < var.zoneList.size(); ++i)
     {
         out << var.zoneList[i];
         if(i < var.zoneList.size()-1)
@@ -2496,7 +2525,7 @@ avtCGNSFileFormat::PrintBaseInformation(ostream &out, const avtCGNSFileFormat::B
     out << "physicalDim = " << baseInfo.physicalDim << endl;
     out << "meshType = " << baseInfo.meshType << " 0=curv, 1=ucd, -1,-2=unsupported" << endl;
     out << "zoneNames = {";
-    for(int i = 0; i < baseInfo.zoneNames.size(); ++i)
+    for(size_t i = 0; i < baseInfo.zoneNames.size(); ++i)
     {
         out << baseInfo.zoneNames[i];
         if(i < baseInfo.zoneNames.size()-1)

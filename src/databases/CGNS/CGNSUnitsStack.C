@@ -218,7 +218,7 @@ public:
                 else if(N.size() > 1)
                 {
                     NS = "(";
-                    for(int u = 0; u < N.size(); ++u)
+                    for(size_t u = 0; u < N.size(); ++u)
                     {
                         if(u > 0)
                             NS += " * ";
@@ -233,7 +233,7 @@ public:
                 else if(D.size() > 1)
                 {
                     DS = "(";
-                    for(int u = 0; u < D.size(); ++u)
+                    for(size_t u = 0; u < D.size(); ++u)
                     {
                         if(u > 0)
                             DS += " * ";
@@ -271,7 +271,6 @@ protected:
     {
         bool err = true;
         int i = top + 1;
-        int nexp = 0;
         if(i < CGNSUnitsStackMaxDepth &&
            cg_units_read(&massU[i], &lengthU[i], &timeU[i],
                          &tempU[i], &angleU[i]) == CG_OK)
