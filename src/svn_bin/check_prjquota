@@ -1,0 +1,78 @@
+#!/bin/sh
+
+#
+# This script is intended to run as a cron job on NERSC
+# systems to monitor project dir quotas and inform somone
+# who can take action if either byte or indod quota exceeds 95%
+#
+
+qw_recipients="\
+miller86@llnl.gov \
+brugger1@llnl.gov \
+hankchilds@gmail.com \
+jsmeredith@ornl.gov \
+harrison37@llnl.gov"
+
+#
+# Example of string in vals:" visit 1671 4096 0 9972318 10000000 0"
+# array indices                 0    1     2  3    4       5     6
+#
+vals=($(/usr/common/usg/bin/prjquota visit | tr -s ' ' | grep '^ visit'))
+
+#
+# use 'dc' (for float arithmetic) to compute percent byte usage
+#
+byteu ()
+{
+/usr/bin/dc <<- EOF
+2
+k
+${vals[1]}
+${vals[2]}
+/
+100
+*
+p
+q
+EOF
+}
+bu=$(byteu | cut -d '.' -f1)
+
+#
+# use 'dc' (for float arithmetic) to compute percent inode usage
+#
+inodeu ()
+{
+/usr/bin/dc <<- EOF
+2
+k
+${vals[4]}
+${vals[5]}
+/
+100
+*
+p
+q
+EOF
+}
+iu=$(inodeu | cut -d '.' -f1)
+
+#
+# Create an email message
+#
+catmsg ()
+{
+/bin/cat <<- EOF
+From: visit-developers@ornl.gov
+Subject: VisIt project dir quota >95%: ${bu}% (bytes) ${iu}% (inodes)
+
+$(prjquota visit)
+
+.
+EOF
+}
+
+# if either of the usages is above 95% issue a warning email
+if [[ $bu -gt 95 || $iu -gt 95 ]]; then
+    catmsg | /usr/sbin/sendmail $qw_recipients
+fi
