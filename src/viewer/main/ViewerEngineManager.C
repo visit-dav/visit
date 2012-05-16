@@ -673,7 +673,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                 newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
                                   manualSSHPort, sshPort, useTunneling,
                                   useGateway, gatewayHost,
-                                  OpenWithLauncher, (void *)cbData, true);
+                                  OpenWithLauncher, (void *)dialog, true);
             }
 
             debug1 << mName << "Send keep alive and engine properties rpc" << endl;
