@@ -66,6 +66,9 @@
 #  Brad Whitlock, Tue May  1 12:01:49 PDT 2012
 #  I moved some directories up into resources.
 #
+#  Brad Whitlock, Fri May 18 16:09:34 PST 2012
+#  Use different resource file.
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -151,7 +154,7 @@ ELSE (NOT WIN32)
     #--------------------------------------------------------------------------
     INCLUDE_DIRECTORIES(${VISIT_COMMON_INCLUDES})
     LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-    ADD_EXECUTABLE(visit_exe ${VISIT_APPLICATION_STYLE} visit.c ${VISIT_WIN_ICON_RESOURCE})
+    ADD_EXECUTABLE(visit_exe ${VISIT_APPLICATION_STYLE} visit.c ${VISIT_VISIT_RESOURCE_FILE})
     SET_TARGET_PROPERTIES(visit_exe PROPERTIES OUTPUT_NAME visit)
     SET_SOURCE_FILES_PROPERTIES(visit.c PROPERTIES LANGUAGE CXX)
     TARGET_LINK_LIBRARIES(visit_exe shlwapi)

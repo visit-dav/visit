@@ -44,6 +44,9 @@
 #   Brad Whitlock, Tue Nov 29 11:15:24 PST 2011
 #   I moved SocketBridge to common.
 #
+#   Brad Whitlock, Fri May 18 16:09:34 PST 2012
+#   Use different resource file.
+#
 #****************************************************************************/
 
 SET(VCL_SOURCES
@@ -65,7 +68,7 @@ ${VISIT_SOURCE_DIR}/launcher/proxy
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 
-ADD_EXECUTABLE(vcl ${VISIT_APPLICATION_STYLE} ${VCL_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
+ADD_EXECUTABLE(vcl ${VISIT_APPLICATION_STYLE} ${VCL_SOURCES} ${VISIT_VCL_RESOURCE_FILE})
 TARGET_LINK_LIBRARIES(vcl vclrpc visitcommon ${CMAKE_THREAD_LIBS} ${DL_LIB})
 
 IF (VISIT_CREATE_SOCKET_RELAY_EXECUTABLE)

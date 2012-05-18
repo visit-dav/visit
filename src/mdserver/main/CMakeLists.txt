@@ -47,6 +47,10 @@
 #
 #   Mark C. Miller, Tue Jan 11 11:14:08 PST 2011
 #   Removed testmds. It is obsoleted by other testing.
+#
+#   Brad Whitlock, Fri May 18 16:09:34 PST 2012
+#   Use different resource file.
+#
 #****************************************************************************/
 
 SET(MDSERVER_SOURCES
@@ -102,7 +106,7 @@ ${GLEW_LIBRARY_DIR}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
-ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
+ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_MDSERVER_RESOURCE_FILE})
 TARGET_LINK_LIBRARIES(mdserver 
     ${mdserver_MDatabase}
     ${mdserver_IDatabase}
