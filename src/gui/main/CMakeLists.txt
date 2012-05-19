@@ -42,6 +42,9 @@
 #   Brad Whitlock, Wed Nov 23 13:17:14 PST 2011
 #   Allow for no console windows apps.
 #
+#   Brad Whitlock, Fri May 18 16:09:34 PST 2012
+#   Use different resource file.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -74,7 +77,7 @@ ENDIF(VISIT_STATIC)
 
 #****************************** The gui executable ***************************
 IF(NOT APPLE)
-    ADD_EXECUTABLE(gui_exe ${VISIT_APPLICATION_STYLE} main.C ${GUI_STATIC_SOURCES} ${VISIT_WIN_ICON_RESOURCE})
+    ADD_EXECUTABLE(gui_exe ${VISIT_APPLICATION_STYLE} main.C ${GUI_STATIC_SOURCES} ${VISIT_GUI_RESOURCE_FILE})
 ELSE(NOT APPLE)
     SET(GUI_ICON_FILE VisItIcon.icns)
     SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/${GUI_ICON_FILE} PROPERTIES

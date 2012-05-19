@@ -276,6 +276,10 @@
 #    Kathleen Biagas, Fri Mar  9 15:30:58 PST 2012
 #    Prevent retesting of PROTOTYPE functions on re-configure.
 #
+#    Brad Whitlock, Fri May 18 16:35:34 PST 2012
+#    Enhance support for resource files on Windows so we fill in more 
+#    application information.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -415,14 +419,6 @@ IF (WIN32)
   IF(NOT EXISTS ${VISIT_WINDOWS_DIR})
     MESSAGE(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
   ENDIF()
-  IF(EXISTS ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
-    SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/resources/visitresources.rc)
-  ELSEIF(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visitresources.rc)
-    SET(VISIT_WIN_ICON_RESOURCE ${VISIT_WINDOWS_DIR}/visitresources/visitresources.rc)
-  ELSE()
-    MESSAGE(FATAL_ERROR "Cannot find visitresources.rc in either ${VISIT_WINDOWS_DIR}/resources or ${VISIT_WINDOWS_DIR}/visitresources")
-  ENDIF()
-  MESSAGE(STATUS "VISIT_WIN_ICON_RESOURCE = ${VISIT_WIN_ICON_RESOURCE}")
 ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
@@ -677,88 +673,6 @@ VISIT_INSTALLED_VERSION_PLUGINS
 VISIT_INSTALLED_VERSION_ARCHIVES
 VISIT_INSTALLED_VERSION_INCLUDE
 )
-
-# MACRO(VISIT_INSTALL_TARGETS)
-#     IF(VISIT_STATIC)
-#         # Skip installation of static libraries when we build statically
-#         FOREACH(T ${ARGN})
-#             GET_TARGET_PROPERTY(pType ${T} TYPE)
-#             IF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
-#                 INSTALL(TARGETS ${T}
-#                     RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-#                     BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-#                     LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-#                     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
-#                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-#                                 GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-#                                 WORLD_READ             WORLD_EXECUTE
-#                     CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-#                 )
-#             ENDIF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
-#         ENDFOREACH(T)
-#     ELSE(VISIT_STATIC)
-#         INSTALL(TARGETS ${ARGN}
-#             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-#             BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-#             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-#             ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}
-#             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-#                         GROUP_READ GROUP_WRITE GROUP_EXECUTE 
-#                         WORLD_READ             WORLD_EXECUTE
-#             CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
-#         )
-#         IF(APPLE)
-#             FOREACH(target ${ARGN})
-#                 GET_TARGET_PROPERTY(type ${target} TYPE)
-#                 IF(${type} STREQUAL "SHARED_LIBRARY")
-#                     # This turns out to be a better way to get the 
-#                     # base filename of the output target.
-#                     GET_TARGET_PROPERTY(filename ${target} LOCATION)
-#                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
-#                     INSTALL(CODE 
-#                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-#                              COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
-#                              OUTPUT_VARIABLE OSXOUT)
-#                          MESSAGE(STATUS \"\${OSXOUT}\")
-#                         ")
-#                 ELSEIF(${type} STREQUAL "MODULE_LIBRARY")
-#                     # This turns out to be a better way to get the 
-#                     # base filename of the output target.
-#                     GET_TARGET_PROPERTY(filename ${target} LOCATION)
-#                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
-#                     INSTALL(CODE 
-#                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-#                              COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
-#                              OUTPUT_VARIABLE OSXOUT)
-#                          MESSAGE(STATUS \"\${OSXOUT}\")
-#                         ")                
-#                 ELSEIF(${type} STREQUAL "EXECUTABLE")
-#                     GET_TARGET_PROPERTY(filename ${target} OUTPUT_NAME)
-#                     IF(filename STREQUAL "filename-NOTFOUND")
-#                         SET(filename ${target})
-#                     ENDIF(filename STREQUAL "filename-NOTFOUND")
-#                     GET_TARGET_PROPERTY(bundle ${target} MACOSX_BUNDLE)
-#                     IF(${bundle} STREQUAL "ON")
-#                         INSTALL(CODE 
-#                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-#                                 COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}\" ${filename}
-#                                 OUTPUT_VARIABLE OSXOUT)
-#                              MESSAGE(STATUS \"\${OSXOUT}\")
-#                             ")
-#                     ELSE(${bundle} STREQUAL "ON")
-#                         INSTALL(CODE 
-#                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-#                                 COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${filename}\"
-#                                 OUTPUT_VARIABLE OSXOUT)
-#                              MESSAGE(STATUS \"\${OSXOUT}\")
-#                             ")
-#                     ENDIF(${bundle} STREQUAL "ON")
-#                 ENDIF(${type} STREQUAL "SHARED_LIBRARY")
-#             ENDFOREACH(target)
-#         ENDIF(APPLE)
-#     ENDIF(VISIT_STATIC)
-# ENDMACRO(VISIT_INSTALL_TARGETS)
-
 
 MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
     IF(VISIT_STATIC)
@@ -1555,6 +1469,39 @@ ELSE(EXISTS SVN_REVISION)
         ENDIF(Subversion_FOUND)
     ENDIF (EXISTS ${VISIT_SOURCE_DIR}/.svn)
 ENDIF(EXISTS SVN_REVISION)
+
+#-----------------------------------------------------------------------------
+# Set up resource files for Windows applications.
+#-----------------------------------------------------------------------------
+IF (WIN32)
+    IF(EXISTS ${VISIT_WINDOWS_DIR}/resources/visit.rc)
+        SET(RESOURCEDIR resources)
+    ELSEIF(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visit.rc)
+        SET(RESOURCEDIR visitresources)
+    ELSE()
+        MESSAGE(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/resources or ${VISIT_WINDOWS_DIR}/visitresources")
+    ENDIF()
+
+    SET(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc)
+    SET(VISIT_GUI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/gui.rc)
+    SET(VISIT_VIEWER_RESOURCE_FILE     ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/viewer.rc)
+    SET(VISIT_MDSERVER_RESOURCE_FILE   ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/mdserver.rc)
+    SET(VISIT_ENGINE_SER_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_ser.rc)
+    SET(VISIT_ENGINE_PAR_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_par.rc)
+    SET(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc)
+    SET(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc)
+    MESSAGE(STATUS "VISIT_VISIT_RESOURCE_FILE = ${VISIT_VISIT_RESOURCE_FILE}")
+
+    #-------------------------------------------------------------------
+    # Create versionvars.rc to include version info into resource files.
+    #-------------------------------------------------------------------
+    STRING(REPLACE "b" "" filteredver1 "${VISIT_VERSION}")
+    STRING(REPLACE "." "," filteredver2 "${filteredver1}")
+    SET(VER_FILEVERSION "${filteredver2},0")
+    SET(VER_PRODUCTVERSION "${filteredver2},0")
+    CONFIGURE_FILE(${VISIT_WINDOWS_DIR}/resources/versionvars.rc.in
+                   ${VISIT_BINARY_DIR}/include/versionvars.rc @ONLY IMMEDIATE)
+ENDIF (WIN32)
 
 #-----------------------------------------------------------------------------
 # Create visit-config.h
