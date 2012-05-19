@@ -43,7 +43,7 @@
 #   Add releases to skip list.
 #
 #   Brad Whitlock, Fri May 18 17:15:34 PDT 2012
-#   Add .rc files to skip list.
+#   Add .rc and .in files to skip list.
 #
 ##############################################################################
 REPOS="$1"
@@ -124,6 +124,9 @@ while read fline; do
             continue
             ;;
         *.rc)
+            continue
+            ;;
+        *.in)
             continue
             ;;
         *docs/WebSite/*)
