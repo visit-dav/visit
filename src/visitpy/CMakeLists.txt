@@ -57,6 +57,9 @@
 #  Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
 #  Don't change LIBRARY_OUTPUT_DIRECTORY for visitmodule if on windows. 
 #
+#  Brad Whitlock, Fri May 18 16:35:34 PST 2012
+#  Change the version file that we use.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -210,7 +213,7 @@ ${PYTHON_LIBRARIES}
 ADD_EXECUTABLE(cli
 ${COMMON_SOURCES}
 ${CLI_SOURCES}
-${VISIT_WIN_ICON_RESOURCE}
+${VISIT_CLI_RESOURCE_FILE}
 )
 TARGET_LINK_LIBRARIES(cli 
 ${cli_IOperator}
