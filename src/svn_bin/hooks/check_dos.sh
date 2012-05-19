@@ -41,6 +41,10 @@
 #
 #   Brad Whitlock, Tue Jul 26 10:28:47 PDT 2011
 #   Add releases to skip list.
+#
+#   Brad Whitlock, Fri May 18 17:15:34 PDT 2012
+#   Add .rc files to skip list.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -117,6 +121,9 @@ while read fline; do
             continue
             ;;
         *.bat)
+            continue
+            ;;
+        *.rc)
             continue
             ;;
         *docs/WebSite/*)
