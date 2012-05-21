@@ -326,26 +326,13 @@ QTSSHMain(int argc, char *argv[])
 // Creation:   Wed Nov 23 13:15:31 PST 2011
 //
 // Modifications:
+//   Brad Whitlock, Mon May 21 14:27:34 PST 2012
+//   Turn qtssh back into a console application.
 //   
 // ****************************************************************************
 
-#if defined(_WIN32) && defined(VISIT_WINDOWS_APPLICATION)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-int WINAPI
-WinMain(HINSTANCE hInstance,     // handle to the current instance
-        HINSTANCE hPrevInstance, // handle to the previous instance    
-        LPSTR lpCmdLine,         // pointer to the command line
-        int nCmdShow             // show state of window
-)
-{
-    return QTSSHMain(__argc, __argv);
-}
-#else
 int
 main(int argc, char **argv)
 {
     return QTSSHMain(argc, argv);
 }
-#endif
