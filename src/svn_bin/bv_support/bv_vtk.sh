@@ -394,15 +394,11 @@ function build_vtk
                 vopts="${vopts} -D${VTK_PREFIX}_WRAP_PYTHON:BOOL=OFF"
             fi
 
-            py="${VISIT_PYTHON_DIR}/bin/python"
-            pycompat="${PYTHON_COMPATIBILITY_VERSION}"
+            py="${PYTHON_COMMAND}"
             vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
-            pyinc="${VISIT_PYTHON_DIR}/include/python${pycompat}"
+            pyinc="${PYTHON_INCLUDE_DIR}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
-            pylib="${VISIT_PYTHON_DIR}/lib/libpython${pycompat}"
-            for ext in so a dylib ; do
-                if test -f ${pylib}.${ext} ; then pylib="${pylib}.${ext}" ; fi
-            done
+            pylib="${PYTHON_LIBRARY}"
             vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
         else

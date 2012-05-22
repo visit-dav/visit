@@ -20,7 +20,7 @@ ON_PYSIDE="off"
 
 function bv_pyside_depends_on
 {
-echo "qt"
+echo "cmake python qt"
 }
 
 function bv_pyside_info
@@ -65,7 +65,7 @@ function bv_pyside_host_profile
 
 function bv_pyside_ensure
 {
-    if [[ "$DO_PYSIDE" = "yes" ]] ; then
+    if [[ "$DO_PYSIDE" = "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         ensure_built_or_ready "pyside"     $PYSIDE_VERSION    $PYSIDE_BUILD_DIR    $PYSIDE_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -88,45 +88,30 @@ function bv_pyside_dry_run
 
 function build_pyside_component
 {
-    CMAKE_BIN="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake"
-    VISIT_PYSIDE_DIR=${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/
-    QTDIR=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/
-    QTLIBDIR=${QTDIR}/lib/
+    VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
     
-    export PATH=${QTBINDIR}:$PATH
+    export PATH=${QT_BIN_DIR}:$PATH
     export PATH=$VISIT_PYSIDE_DIR/bin:$VISIT_PYTHON_DIR/bin:$PATH
     export PYTHONPATH=$VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages:$PYTHONPATH
     export PKG_CONFIG_PATH=$VISIT_PYSIDE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
-    
-    QMAKEEXE=${QTDIR}/bin/qmake
-    QMAKEINCDIR=${QTDIR}/include
-    CMAKE_PROG=${VISITDIR}/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake
-    PYTHON_DIR=${VISIT_PYTHON_DIR} #${VISITDIR}/python/${PYTHON_VERSION}/$VISITARCH/
-
-    PYTHON_BINARY=${PYTHON_DIR}/bin/python
-    PYTHON_LIBRARY_DIR=${PYTHON_DIR}/lib
-    PYTHON_INCLUDE_DIR=${PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}
-    PYTHON_LIBRARY=${PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}
-    PYTHON_LIBS=${PYTHON_DIR}/lib/
-
     cd $1
     info "Configuring pyside/$1 . . ."
-    $CMAKE_BIN . \
-        -DCMAKE_INSTALL_PREFIX:FILEPATH=$VISIT_PYSIDE_DIR \
+    $CMAKE_COMMAND . \
+        -DCMAKE_INSTALL_PREFIX:FILEPATH="$VISIT_PYSIDE_DIR" \
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=FALSE\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=FALSE\
-        -DCMAKE_INSTALL_RPATH:FILEPATH=$VISIT_PYSIDE_DIR/lib \
+        -DCMAKE_INSTALL_RPATH:FILEPATH="$VISIT_PYSIDE_DIR/lib" \
         -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE\
-        -DCMAKE_INSTALL_NAME_DIR:FILEPATH=$VISIT_PYSIDE_DIR/lib \
+        -DCMAKE_INSTALL_NAME_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib" \
         -DCMAKE_BUILD_TYPE:STRING=Release \
-        -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH=$QMAKEINCDIR \
-        -DQT_QMAKE_EXECUTABLE:FILEPATH=$QMAKEEXE \
+        -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH="$QT_INCLUDE_DIR" \
+        -DQT_QMAKE_EXECUTABLE:FILEPATH="$QT_QMAKE_COMMAND" \
         -DENABLE_ICECC:BOOL=0 \
-        -DShiboken_DIR:FILEPATH=$VISIT_PYSIDE_DIR/lib/\
-        -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_BINARY\
-        -DPYTHON_INCLUDE_PATH:FILEPATH=$PYTHON_INCLUDE_DIR\
-        -DPYTHON_LIBRARY:FILEPATH=$PYTHON_LIBRARY\
+        -DShiboken_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib/"\
+        -DPYTHON_EXECUTABLE:FILEPATH="$PYTHON_COMMAND"\
+        -DPYTHON_INCLUDE_PATH:FILEPATH="$PYTHON_INCLUDE_DIR"\
+        -DPYTHON_LIBRARY:FILEPATH="$PYTHON_LIBRARY"\
         -DDISABLE_DOCSTRINGS:BOOL=True
     
     if [[ $? != 0 ]] ; then
@@ -143,8 +128,18 @@ function build_pyside_component
 
     info "Installing pyside/$1 . . ."
     $MAKE install
+    touch "${VISIT_PYSIDE_DIR}/$1_success"
     info "Successfully built pyside/$1"
     cd ../
+}
+
+function patch_pyside_qt47_107
+{
+   patch -f -p0 pyside-qt4.7+1.0.7/PySide/QtScript/typesystem_script.xml <<\EOF
+42a43,44
+>         <!-- Not supported BUG #957-->
+>         <modify-function signature="scriptValueFromQMetaObject()" remove="all" />
+EOF
 }
 
 function build_pyside
@@ -180,6 +175,7 @@ function build_pyside
        return 1
     fi
     
+    patch_pyside_qt47_107 #remove if component is updated to latest
     build_pyside_component pyside-qt4.7+1.0.7
     if [[ $? != 0 ]] ; then
        return 1
@@ -192,7 +188,7 @@ function build_pyside
 
     cd "$START_DIR"
     info "Linking PySide to Python Installation"
-    ln -s $VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide $PYTHON_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide
+    ln -s $VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide $VISIT_PYTHON_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide
     info "Done with PySide"
 
     return 0
@@ -200,6 +196,9 @@ function build_pyside
 
 function bv_pyside_is_enabled
 {
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        return 0;
+    fi 
     if [[ $DO_PYSIDE == "yes" ]]; then
         return 1    
     fi
@@ -208,11 +207,21 @@ function bv_pyside_is_enabled
 
 function bv_pyside_is_installed
 {
+    VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
     check_if_installed "pyside" $PYSIDE_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
+    if [[ $? != 0 ]] ; then
+        return 0
     fi
-    return 0
+
+    if [[ ! -e "${VISIT_PYSIDE_DIR}/apiextractor-0.10.7_success" ||
+          ! -e "${VISIT_PYSIDE_DIR}/generatorrunner-0.6.13_success" ||
+          ! -e "${VISIT_PYSIDE_DIR}/shiboken-1.0.7_success" ||
+          ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.7+1.0.7_success" ]]; then
+       info "pyside not installed completely"
+       return 0
+    fi
+
+    return 1
 }
 
 function bv_pyside_build
@@ -221,9 +230,9 @@ function bv_pyside_build
 # Build PySide
 #
 cd "$START_DIR"
-if [[ "$DO_PYSIDE" == "yes" ]] ; then
-        check_if_installed "pyside" $PYSIDE_VERSION
-    if [[ $? == 0 ]] ; then
+if [[ "$DO_PYSIDE" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
+    bv_pyside_is_installed #this returns 1 for true, 0 for false
+    if [[ $? != 0 ]] ; then
         info "Skipping PySide build.  PySide is already installed."
    else
       info "Building PySide (~10 minutes)"
