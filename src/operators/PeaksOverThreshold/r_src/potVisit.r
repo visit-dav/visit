@@ -1,4 +1,4 @@
-potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYears, numPerYear = switch(aggregation, annual = 365.25, c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold, nCovariates = 0, covariates = NULL, covariatesByYear = NULL, thresholdByYear = NULL, propMissing = 0, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
+potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYears, numPerYear = switch(aggregation, annual = 365.25, c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold, nCovariates = 0, covariates = NULL, covariatesByYear = NULL, propMissing = 0, thresholdByYear = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
 
   # data, day, and month are 1-d arrays giving the observed values and corresponding day index and month for the exceedances; note that the day index is NOT the day of the year but a continuous index with arbitrary starting value for the first day of the first year. 'day' is required when 'multiDayEventHandling' is not NULL; 'month' is required for seasonal or monthly analyses.
   # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification. If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
@@ -6,7 +6,7 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   # numPerYear is the number of days in each year. For annual analyses this should be about 365 (i.e., the average of the number of days in the years, including leap years). For seasonal and monthly analyses, this should be a 1-d array with 12 values, one for each month; the default values assume leap years are one-quarter of the years in the full dataset, thus 28.25 days per February. Strictly speaking this should not vary by year as the interpretation of return values is affected, though the effect of leap years should be minimal.
   # threshold is either a scalar when the threshold is constant or a 1-d array of threshold values, one per observation; the threshold may vary by year, by stratum, or both, but must be constant within year-stratum for proper calculation of the likelihood in this case when only the exceedances are provided
   # nCovariates indicates the number of covariates provided through 'covariates' and 'covariatesByYear' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
-  # covariates is a 1-d array of covariate values (observation x covariate), with the observation index varying fastest and covariate index varying slowest; should be NULL if 'nCovariates' is 0
+  # covariates is a 1-d array of covariate values (observation x covariate), with the observation index varying fastest and covariate index varying slowest; should be NULL if 'nCovariates' is 0; covariates should not vary within year as the model assumes constant covariates within each year in order to compute the likelihood with only the exceedances over the threshold
   # covariatesByYear must be provided if 'nCovariates' is non-zero and must specify the covariate values by year (year x covariate x (optionally) stratum), with the year index varying fastest and stratum index varying slowest
   # thresholdByYear is a 1-d array of threshold values by year (year x (optionally) stratum), with the year index varying fastest.
  # propMissing is either 0 or a 1-d array indicating the proportion of missing values (year x month (for monthly/seasonal analyses)), with the year index varying fastest.  This should include values for all years between the first and last years - years that are entirely missing should have a value of 1
@@ -172,7 +172,7 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   NAlist <- list(mle = rep(NA, nParam), se = rep(NA, nParam), cov = matrix(NA, nParam, nParam)) #  rep(NA, nParam)
 
   pot.fit.wrap = function(xdat, threshold, npy, ydat, ydatByYear, propMissing, nYears, thresholdByYear){
-    fit = try(pp.fit2(xdat, threshold = threshold, npy = npy,  ydat = ydat, mul = locationModel, sigl = scaleModel, shl = shapeModel, mulink = mulink, siglink = siglink, shlink = shlink, show = FALSE, exceedancesOnly = TRUE, nBlock = nYears, propMissingByBlock = propMissing, ydatByBlock = ydatByYear, thresholdByBlock = thresholdByYear))
+    fit = try(pp.fit2(xdat, threshold = threshold, npy = npy,  ydat = ydat, mul = locationModel, sigl = scaleModel, shl = shapeModel, mulink = mulink, siglink = siglink, shlink = shlink, show = FALSE, exceedancesOnly = TRUE, nBlocks = nYears, propMissingByBlock = propMissing, ydatByBlock = ydatByYear, thresholdByBlock = thresholdByYear))
     if(!is(fit, 'try-error') && !fit$flag && !fit$conv){
       return(fit[c("mle", "se", "cov")])
     } else{
@@ -186,10 +186,10 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   for(j in 1:nStrata){
     tmpdata = data
     tmpthreshold = threshold
-    tmpcovar = covariates
-    tmpcovarByYear = covariatesByYear
+    tmpcovariates = covariates
+    tmpcovariatesByYear = covariatesByYear
     if(nCovariates)
-      tmpcovarByYear = matrix(covariatesByYear[ , , j], nc = nCovariates)      
+      tmpcovariatesByYear = matrix(covariatesByYear[ , , j], nc = nCovariates)      
     if(aggregation == "monthly"){
       tmpdata = data[month == j]
       if(length(threshold) > 1){
@@ -198,7 +198,7 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
           tmpthreshold = tmpthreshold[1]
       }
       if(nCovariates){
-        tmpcovar = covariates[month == j, , drop = FALSE]
+        tmpcovariates = covariates[month == j, , drop = FALSE]
       } 
     }  
     if(aggregation == "seasonal"){
@@ -209,14 +209,14 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
           tmpthreshold = tmpthreshold[1]
       }
       if(nCovariates){
-        tmpcovar = covariates[season == j, , drop = FALSE]
+        tmpcovariates = covariates[season == j, , drop = FALSE]
       } 
     }
 
-    output = pot.fit.wrap(tmpdata, tmpthreshold, numPerYear[j], tmpcovar, tmpcovarByYear, propMissing[ , j], nYears, thresholdByYear[ , j])
+    output = pot.fit.wrap(tmpdata, tmpthreshold, numPerYear[j], tmpcovariates, tmpcovariatesByYear, propMissing[ , j], nYears, thresholdByYear[ , j])
     mle[ , j] <- output$mle
     if(!upper.tail)  # location parameters for lower tail are the negative of those computed based on negative of data values
-      mle[1:(length(locationModel)+1), ] <- -results$mle[1:(length(locationModel)+1), ]
+      mle[1:(length(locationModel)+1), ] <- -mle[1:(length(locationModel)+1), ]
     se[ , j] <- output$se
     covmat[ , , j] <- output$cov
   }
@@ -273,7 +273,7 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
         rvDiff[j, ] <- returnValueDiff(fit, rvInterval, rvDifference) 
       }
     if(aggregation == "seasonal")
-      attributes(rvDiff)$dimnames[[2]] <- seasons
+      attributes(rvDiff)$dimnames[[1]] <- seasons
     results$returnValueDiff <- rvDiff[ , 1] 
     results$se.returnValueDiff <- rvDiff[ , 2]
   }

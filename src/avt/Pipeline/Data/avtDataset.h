@@ -167,6 +167,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtResampleExpression;
 #ifdef HAVE_LIB_R
     friend                   class  avtExtremeValueAnalysisFilter;
+    friend                   class  avtPeaksOverThresholdFilter;
 #endif
 
   public:
