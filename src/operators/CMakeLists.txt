@@ -149,6 +149,7 @@ ENDIF(VISIT_BUILD_ALL_PLUGINS)
 
 IF(HAVE_LIB_R)
   LIST(APPEND BUILD_PLUGINS ExtremeValueAnalysis)
+  LIST(APPEND BUILD_PLUGINS PeaksOverThreshold)
 ENDIF(HAVE_LIB_R)
 
 # Add the plugin directories
