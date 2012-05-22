@@ -3513,8 +3513,12 @@ visit_AddPlot(PyObject *self, PyObject *args)
         GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
-
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -3603,7 +3607,12 @@ visit_AddOperator(PyObject *self, PyObject *args)
         GetViewerState()->GetGlobalAttributes()->Notify();
     MUTEX_UNLOCK();
 
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -7410,8 +7419,12 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
         errorFlag = Synchronize();
     }
 
-
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(errorFlag);
 }
@@ -7479,7 +7492,12 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
         errorFlag = Synchronize();
     }
 
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(errorFlag);
 }
@@ -7920,7 +7938,12 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     }
     MUTEX_UNLOCK();
 
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -7992,7 +8015,12 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     }
     MUTEX_UNLOCK();
 
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
@@ -8312,7 +8340,12 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
     }
     MUTEX_UNLOCK();
 
-    if(autoUpdate) GetViewerMethods()->DrawPlots();
+    if(autoUpdate)
+    {
+        MUTEX_LOCK();
+        GetViewerMethods()->DrawPlots();
+        MUTEX_UNLOCK();
+    }
     // Return the success value.
     return IntReturnValue(Synchronize());
 }
