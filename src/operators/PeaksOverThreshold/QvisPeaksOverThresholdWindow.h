@@ -86,17 +86,18 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void aggregationTypeChanged(int val);
+    void aggregationChanged(int val);
     void annualPercentileProcessText();
     void seasonalPercentileProcessText();
     void monthlyPercentileProcessText();
     void seasonChanged(int val);
     void monthChanged(int val);
+    void cutoffProcessText();
     void dataScalingProcessText();
     void dumpDataChanged(bool val);
   private:
-    QWidget      *aggregationType;
-    QButtonGroup *aggregationTypeButtonGroup;
+    QWidget      *aggregation;
+    QButtonGroup *aggregationButtonGroup;
     QLineEdit *annualPercentile;
     QLineEdit *seasonalPercentile;
     QLineEdit *monthlyPercentile;
@@ -104,14 +105,16 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QButtonGroup *seasonButtonGroup;
     QWidget      *month;
     QButtonGroup *monthButtonGroup;
+    QLineEdit *cutoff;
     QLineEdit *dataScaling;
     QCheckBox *dumpData;
-    QLabel *aggregationTypeLabel;
+    QLabel *aggregationLabel;
     QLabel *annualPercentileLabel;
     QLabel *seasonalPercentileLabel;
     QLabel *monthlyPercentileLabel;
     QLabel *seasonLabel;
     QLabel *monthLabel;
+    QLabel *cutoffLabel;
     QLabel *dataScalingLabel;
 
     PeaksOverThresholdAttributes *atts;

@@ -173,7 +173,7 @@ PeaksOverThresholdAttributes::MonthType_FromString(const std::string &s, PeaksOv
 
 void PeaksOverThresholdAttributes::Init()
 {
-    aggregationType = ANNUAL;
+    aggregation = ANNUAL;
     annualPercentile = 0.9;
     seasonalPercentile[0] = 0.9;
     seasonalPercentile[1] = 0.9;
@@ -193,6 +193,7 @@ void PeaksOverThresholdAttributes::Init()
     monthlyPercentile[11] = 0.9;
     season = WINTER;
     month = JAN;
+    cutoff = 0;
     dataScaling = 86500;
     dumpData = false;
 
@@ -217,7 +218,7 @@ void PeaksOverThresholdAttributes::Init()
 void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
 {
 
-    aggregationType = obj.aggregationType;
+    aggregation = obj.aggregation;
     annualPercentile = obj.annualPercentile;
     for(int i = 0; i < 4; ++i)
         seasonalPercentile[i] = obj.seasonalPercentile[i];
@@ -227,6 +228,7 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
 
     season = obj.season;
     month = obj.month;
+    cutoff = obj.cutoff;
     dataScaling = obj.dataScaling;
     dumpData = obj.dumpData;
 
@@ -396,12 +398,13 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
         monthlyPercentile_equal = (monthlyPercentile[i] == obj.monthlyPercentile[i]);
 
     // Create the return value
-    return ((aggregationType == obj.aggregationType) &&
+    return ((aggregation == obj.aggregation) &&
             (annualPercentile == obj.annualPercentile) &&
             seasonalPercentile_equal &&
             monthlyPercentile_equal &&
             (season == obj.season) &&
             (month == obj.month) &&
+            (cutoff == obj.cutoff) &&
             (dataScaling == obj.dataScaling) &&
             (dumpData == obj.dumpData));
 }
@@ -547,12 +550,13 @@ PeaksOverThresholdAttributes::NewInstance(bool copy) const
 void
 PeaksOverThresholdAttributes::SelectAll()
 {
-    Select(ID_aggregationType,    (void *)&aggregationType);
+    Select(ID_aggregation,        (void *)&aggregation);
     Select(ID_annualPercentile,   (void *)&annualPercentile);
     Select(ID_seasonalPercentile, (void *)seasonalPercentile, 4);
     Select(ID_monthlyPercentile,  (void *)monthlyPercentile, 12);
     Select(ID_season,             (void *)&season);
     Select(ID_month,              (void *)&month);
+    Select(ID_cutoff,             (void *)&cutoff);
     Select(ID_dataScaling,        (void *)&dataScaling);
     Select(ID_dumpData,           (void *)&dumpData);
 }
@@ -587,10 +591,10 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     // Create a node for PeaksOverThresholdAttributes.
     DataNode *node = new DataNode("PeaksOverThresholdAttributes");
 
-    if(completeSave || !FieldsEqual(ID_aggregationType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_aggregation, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("aggregationType", AggregationType_ToString(aggregationType)));
+        node->AddNode(new DataNode("aggregation", AggregationType_ToString(aggregation)));
     }
 
     if(completeSave || !FieldsEqual(ID_annualPercentile, &defaultObject))
@@ -621,6 +625,12 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("month", MonthType_ToString(month)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cutoff, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cutoff", cutoff));
     }
 
     if(completeSave || !FieldsEqual(ID_dataScaling, &defaultObject))
@@ -671,20 +681,20 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("aggregationType")) != 0)
+    if((node = searchNode->GetNode("aggregation")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 3)
-                SetAggregationType(AggregationType(ival));
+                SetAggregation(AggregationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
             AggregationType value;
             if(AggregationType_FromString(node->AsString(), value))
-                SetAggregationType(value);
+                SetAggregation(value);
         }
     }
     if((node = searchNode->GetNode("annualPercentile")) != 0)
@@ -725,6 +735,8 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
                 SetMonth(value);
         }
     }
+    if((node = searchNode->GetNode("cutoff")) != 0)
+        SetCutoff(node->AsFloat());
     if((node = searchNode->GetNode("dataScaling")) != 0)
         SetDataScaling(node->AsDouble());
     if((node = searchNode->GetNode("dumpData")) != 0)
@@ -736,10 +748,10 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-PeaksOverThresholdAttributes::SetAggregationType(PeaksOverThresholdAttributes::AggregationType aggregationType_)
+PeaksOverThresholdAttributes::SetAggregation(PeaksOverThresholdAttributes::AggregationType aggregation_)
 {
-    aggregationType = aggregationType_;
-    Select(ID_aggregationType, (void *)&aggregationType);
+    aggregation = aggregation_;
+    Select(ID_aggregation, (void *)&aggregation);
 }
 
 void
@@ -782,6 +794,13 @@ PeaksOverThresholdAttributes::SetMonth(PeaksOverThresholdAttributes::MonthType m
 }
 
 void
+PeaksOverThresholdAttributes::SetCutoff(float cutoff_)
+{
+    cutoff = cutoff_;
+    Select(ID_cutoff, (void *)&cutoff);
+}
+
+void
 PeaksOverThresholdAttributes::SetDataScaling(double dataScaling_)
 {
     dataScaling = dataScaling_;
@@ -800,9 +819,9 @@ PeaksOverThresholdAttributes::SetDumpData(bool dumpData_)
 ///////////////////////////////////////////////////////////////////////////////
 
 PeaksOverThresholdAttributes::AggregationType
-PeaksOverThresholdAttributes::GetAggregationType() const
+PeaksOverThresholdAttributes::GetAggregation() const
 {
-    return AggregationType(aggregationType);
+    return AggregationType(aggregation);
 }
 
 double
@@ -845,6 +864,12 @@ PeaksOverThresholdAttributes::MonthType
 PeaksOverThresholdAttributes::GetMonth() const
 {
     return MonthType(month);
+}
+
+float
+PeaksOverThresholdAttributes::GetCutoff() const
+{
+    return cutoff;
 }
 
 double
@@ -899,12 +924,13 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_aggregationType:    return "aggregationType";
+    case ID_aggregation:        return "aggregation";
     case ID_annualPercentile:   return "annualPercentile";
     case ID_seasonalPercentile: return "seasonalPercentile";
     case ID_monthlyPercentile:  return "monthlyPercentile";
     case ID_season:             return "season";
     case ID_month:              return "month";
+    case ID_cutoff:             return "cutoff";
     case ID_dataScaling:        return "dataScaling";
     case ID_dumpData:           return "dumpData";
     default:  return "invalid index";
@@ -931,12 +957,13 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_aggregationType:    return FieldType_enum;
+    case ID_aggregation:        return FieldType_enum;
     case ID_annualPercentile:   return FieldType_double;
     case ID_seasonalPercentile: return FieldType_doubleArray;
     case ID_monthlyPercentile:  return FieldType_doubleArray;
     case ID_season:             return FieldType_enum;
     case ID_month:              return FieldType_enum;
+    case ID_cutoff:             return FieldType_float;
     case ID_dataScaling:        return FieldType_double;
     case ID_dumpData:           return FieldType_bool;
     default:  return FieldType_unknown;
@@ -963,12 +990,13 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_aggregationType:    return "enum";
+    case ID_aggregation:        return "enum";
     case ID_annualPercentile:   return "double";
     case ID_seasonalPercentile: return "doubleArray";
     case ID_monthlyPercentile:  return "doubleArray";
     case ID_season:             return "enum";
     case ID_month:              return "enum";
+    case ID_cutoff:             return "float";
     case ID_dataScaling:        return "double";
     case ID_dumpData:           return "bool";
     default:  return "invalid index";
@@ -997,9 +1025,9 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     bool retval = false;
     switch (index_)
     {
-    case ID_aggregationType:
+    case ID_aggregation:
         {  // new scope
-        retval = (aggregationType == obj.aggregationType);
+        retval = (aggregation == obj.aggregation);
         }
         break;
     case ID_annualPercentile:
@@ -1035,6 +1063,11 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_month:
         {  // new scope
         retval = (month == obj.month);
+        }
+        break;
+    case ID_cutoff:
+        {  // new scope
+        retval = (cutoff == obj.cutoff);
         }
         break;
     case ID_dataScaling:
