@@ -18,7 +18,7 @@ ON_ICET="off"
 
 function bv_icet_depends_on
 {
-echo ""
+echo "cmake"
 }
 
 function bv_icet_info
@@ -215,11 +215,7 @@ function build_icet
     # CMake is the build system for IceT.  We already required CMake to be
     # built, so it should be there.
     #
-    CMAKE_BIN="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin/cmake"
-    if [[ ! -f ${CMAKE_BIN} ]] ; then
-       warn "Unable to locate CMake.  Giving Up!"
-       return 1
-    fi
+    CMAKE_BIN="${CMAKE_COMMAND}"
 
     prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
     untarred_icet=$?

@@ -1400,7 +1400,7 @@ initialize_module_variables
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
 #
-if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
+if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]]; then
 
     check_if_installed "qt" $QT_VERSION
     if [[ $? == 0 ]] ; then

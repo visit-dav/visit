@@ -97,21 +97,7 @@ function bv_xdmf_dry_run
 
 function build_xdmf
 {
-    #
-    # CMake is the build system for Xdmf.  Call another script that will build
-    # that program.
-    #
-    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
-    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
-       info "Xdmf: CMake found"
-    else
-       build_cmake
-       if [[ $? != 0 ]] ; then
-          warn "Unable to build cmake.  Giving up"
-          return 1
-       fi
-    fi
-    CMAKE_BIN=${CMAKE_INSTALL}/cmake
+    CMAKE_BIN="${CMAKE_COMMAND}"
 
     #
     # Prepare build dir

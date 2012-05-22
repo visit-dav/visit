@@ -31,32 +31,51 @@ function bv_python_force
   return 1;
 }
 
-function bv_python_system_python
+function python_set_vars_helper
 {
-  echo "Using system python"
-   TEST=`which python-config`
-   [ $? != 0 ] && error "System Python not found"
-
-  bv_python_enable
-  USE_SYSTEM_PYTHON="yes"
-  PYTHON_BUILD_DIR=`python-config --prefix`
-  PYTHON_VER=`python --version 2>&1`
+  VISIT_PYTHON_DIR=`"$PYTHON_CONFIG_COMMAND" --prefix`
+  PYTHON_BUILD_DIR=`"$PYTHON_CONFIG_COMMAND" --prefix`
+  PYTHON_VER=`"$PYTHON_COMMAND" --version 2>&1`
   PYTHON_VERSION=${PYTHON_VER#"Python "}
   PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
-  PYTHON_FILE=""
-  VISIT_PYTHON_DIR=`python-config --prefix`
-
   ########################
-  PYTHON_INCLUDE_PATH=`python-config --includes`
+  PYTHON_INCLUDE_PATH=`"$PYTHON_CONFIG_COMMAND" --includes`
   #remove -I from first include
   PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH:2}"
   #remove any extra includes
   PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
+  PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
   PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
-  PYTHON_LIBRARY=`python-config --libs`
+  PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
   #remove all other libraries except for python..
   PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
 
+  if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+       PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
+  else
+      if [[ "$OPSYS" == "Darwin" ]]; then
+           PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
+      else
+           PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
+      fi
+  fi
+  PYTHON_LIBRARY="${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY}"
+  echo $PYTHON_BUILD_DIR $PYTHON_VERSION $VISIT_PYTHON_DIR
+
+}
+
+function bv_python_system_python
+{
+  echo "Using system python"
+   TEST=`which python-config`
+   [ $? != 0 ] && error "System python-config not found, cannot configure python"
+
+  bv_python_enable
+  USE_SYSTEM_PYTHON="yes"
+  PYTHON_COMMAND="python"
+  PYTHON_CONFIG_COMMAND="python-config"
+  PYTHON_FILE=""
+  python_set_vars_helper #set vars..
 }
 
 function bv_python_alt_python_dir
@@ -68,26 +87,11 @@ function bv_python_alt_python_dir
   bv_python_enable
   USE_SYSTEM_PYTHON="yes"
   PYTHON_ALT_DIR="$1"
-  PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
-  PYTHON_PYVER_COMMAND="$PYTHON_ALT_DIR/bin/python"
-  PYTHON_BUILD_DIR=`"$PYTHON_COMMAND" --prefix`
-  PYTHON_VER=`"$PYTHON_PYVER_COMMAND" --version 2>&1`
-  PYTHON_VERSION=${PYTHON_VER#"Python "}
-  PYTHON_COMPATIBILITY_VERSION=${PYTHON_VERSION%.*}
+  PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
+  PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
   PYTHON_FILE=""
-  VISIT_PYTHON_DIR=`"$PYTHON_COMMAND" --prefix`
-  
-  ########################
-  PYTHON_INCLUDE_PATH=`"$PYTHON_COMMAND" --includes`
-  #remove -I from first include
-  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH:2}"
-  #remove any extra includes
-  PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
-  PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/lib"
-  PYTHON_LIBRARY=`"$PYTHON_COMMAND" --libs`
-  #remove all other libraries except for python..
-  PYTHON_LIBRARY="${PYTHON_LIBRARY##-l*-l}"
-  echo $PYTHON_BUILD_DIR $PYTHON_VERSION $VISIT_PYTHON_DIR
+  python_set_vars_helper #set vars..
+
 }
 
 
@@ -135,21 +139,10 @@ echo "## Specify the location of the python." >> $HOSTCONF
 echo "##" >> $HOSTCONF
 
 if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
-
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-        PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.a"
-    else
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.dylib"
-        else
-            PYTHON_LIBRARY="lib${PYTHON_LIBRARY}.so"
-        fi
-    fi
-
     echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
     #incase the PYTHON_DIR does not find the include and library set it manually...
     echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY_DIR}/${PYTHON_LIBRARY})" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
 else
@@ -166,6 +159,10 @@ function bv_python_initialize_vars
         #when they build..
         #this is for when python is being built and system python was not selected..
         export VISIT_PYTHON_DIR=${VISIT_PYTHON_DIR:-"$VISITDIR/python/${PYTHON_VERSION}/${VISITARCH}"}
+        export PYTHON_COMMAND="${VISIT_PYTHON_DIR}/bin/python"
+        export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
+        export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
+        export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
     fi
 }
 
