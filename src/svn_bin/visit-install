@@ -304,6 +304,9 @@
 #    Eric Brugger, Thu May 10 09:18:54 PDT 2012
 #    I removed the host profile for franklin.
 #
+#    Eric Brugger, Mon May 21 17:16:15 PDT 2012
+#    I added the host profile for zin.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -715,6 +718,7 @@ elif [ "$config" = "llnl_closed" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_muir.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_rhea.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_tempest.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_zin.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_open" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
