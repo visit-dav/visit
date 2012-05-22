@@ -184,6 +184,11 @@ function build_visit
     local VISIT_DIR="${VISIT_FILE%.tar*}/src"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         VISIT_DIR="src" 
+    else
+        #visit2.5.0 needs a patch for ModelFit operator
+        if [[ "${VISIT_FILE%.tar*}" == "visit2.5.0" ]]; then
+            bv_patch_2_5_0
+        fi
     fi
     
     if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
@@ -404,6 +409,21 @@ function bv_visit_is_installed
 {
     #always return false?
     return 0
+}
+
+function bv_patch_2_5_0
+{
+
+  if [[ -e visit2.5.0 ]]; then
+    info "apply patch to ModelFit operator"
+patch -f -p0 visit2.5.0/src/operators/ModelFit/CMakeLists.txt <<\EOF
+24d23
+< QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
+94a94
+>     QT_WRAP_CPP(GModelFitOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
+EOF
+  fi
+
 }
 
 #the build command..

@@ -149,7 +149,7 @@ function build_silo
     if [[ "$DO_QT" != "yes" || "$OPSYS" == "Darwin" ]] ; then
        WITHSILOQTARG="--disable-silex"
     else
-       export SILOQTDIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+       export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
        WITHSILOQTARG="--with-qt=$SILOQTDIR"
     fi
 

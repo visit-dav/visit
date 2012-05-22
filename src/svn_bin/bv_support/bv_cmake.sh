@@ -36,6 +36,19 @@ function bv_cmake_force
   return 1;
 }
 
+function cmake_set_vars_helper
+{
+   CMAKE_VERSION=`${CMAKE_COMMAND} --version`
+   CMAKE_VERSION=${CMAKE_VERSION/cmake version }
+   CMAKE_BUILD_DIR=`${CMAKE_COMMAND} --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
+   CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
+   CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
+   CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
+   CMAKE_ROOT=`echo "$CMAKE_ROOT"`
+
+   echo $CMAKE_VERSION "--> $CMAKE_BUILD_DIR" "--> $CMAKE_INSTALL" "--> $CMAKE_ROOT"
+}
+
 function bv_cmake_system_cmake
 {
    echo "using system cmake"
@@ -47,17 +60,9 @@ function bv_cmake_system_cmake
 
    USE_SYSTEM_CMAKE="yes"
 
-   CMAKE_VERSION=`cmake --version`
-   CMAKE_VERSION=${CMAKE_VERSION/cmake version }
-   CMAKE_BUILD_DIR=`cmake --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
-   CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
+   CMAKE_COMMAND="cmake"
    CMAKE_FILE=""
-   CMAKE_INSTALL=$CMAKE_BUILD_DIR/bin
-   CMAKE_COMMAND="$CMAKE_BUILD_DIR/bin/cmake"
-   CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
-   CMAKE_ROOT=`echo "$CMAKE_ROOT"`
-
-   echo $CMAKE_VERSION "--> $CMAKE_BUILD_DIR" "--> $CMAKE_INSTALL" "--> $CMAKE_ROOT"
+   cmake_set_vars_helper #set vars..
 }
 
 function bv_cmake_alt_cmake_dir
@@ -71,16 +76,8 @@ function bv_cmake_alt_cmake_dir
     USE_SYSTEM_CMAKE="yes"
 
     CMAKE_COMMAND="$CMAKE_ALT_DIR/bin/cmake"
-    CMAKE_VERSION=`"$CMAKE_COMMAND" --version`
-    CMAKE_VERSION=${CMAKE_VERSION/cmake version } 
-    CMAKE_BUILD_DIR=`"$CMAKE_COMMAND" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
     CMAKE_FILE=""
-    CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
-    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
-    CMAKE_ROOT=`echo $CMAKE_ROOT` 
-
-    
-    echo "$CMAKE_VERSION $CMAKE_BUILD_DIR $CMAKE_INSTALL $CMAKE_ROOT"
+    cmake_set_vars_helper #set vars..
 }
 
 function bv_cmake_cmake_bin_dir
@@ -94,16 +91,8 @@ function bv_cmake_cmake_bin_dir
     USE_SYSTEM_CMAKE="yes"
 
     CMAKE_COMMAND="$CMAKE_BIN_DIR/cmake"
-    CMAKE_VERSION=`"$CMAKE_COMMAND" --version`
-    CMAKE_VERSION=${CMAKE_VERSION/cmake version }
-    CMAKE_BUILD_DIR=`"$CMAKE_COMMAND" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g` 
-    CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
     CMAKE_FILE=""
-    CMAKE_INSTALL="$CMAKE_BIN_DIR" #$CMAKE_BUILD_DIR/bin
-    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g`
-    CMAKE_ROOT=`echo $CMAKE_ROOT`
-
-    echo "$CMAKE_VERSION $CMAKE_BUILD_DIR $CMAKE_INSTALL $CMAKE_ROOT"
+    cmake_set_vars_helper #set vars..
 }
 
 
@@ -138,11 +127,12 @@ echo "##" >> $HOSTCONF
 
 function bv_cmake_initialize_vars
 {
-    if [[ "$CMAKE_INSTALL" == "" && "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
+    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
             #initialize variables where cmake should exist..
             CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/${VISITARCH}/bin"}
             CMAKE_ROOT=${CMAKE_ROOT:-"$VISITDIR/cmake/${CMAKE_VERSION}/${VISITARCH}/share/cmake-${CMAKE_VERSION%.*}"}
+            CMAKE_COMMAND="${CMAKE_INSTALL}/cmake"
         fi
     fi
 
