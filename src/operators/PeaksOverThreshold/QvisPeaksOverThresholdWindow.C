@@ -127,25 +127,25 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    aggregationTypeLabel = new QLabel(tr("Aggregation Type"), central);
-    mainLayout->addWidget(aggregationTypeLabel,0,0);
-    aggregationType = new QWidget(central);
-    aggregationTypeButtonGroup= new QButtonGroup(aggregationType);
-    QHBoxLayout *aggregationTypeLayout = new QHBoxLayout(aggregationType);
-    aggregationTypeLayout->setMargin(0);
-    aggregationTypeLayout->setSpacing(10);
-    QRadioButton *aggregationTypeAggregationTypeANNUAL = new QRadioButton(tr("ANNUAL"), aggregationType);
-    aggregationTypeButtonGroup->addButton(aggregationTypeAggregationTypeANNUAL,0);
-    aggregationTypeLayout->addWidget(aggregationTypeAggregationTypeANNUAL);
-    QRadioButton *aggregationTypeAggregationTypeSEASONAL = new QRadioButton(tr("SEASONAL"), aggregationType);
-    aggregationTypeButtonGroup->addButton(aggregationTypeAggregationTypeSEASONAL,1);
-    aggregationTypeLayout->addWidget(aggregationTypeAggregationTypeSEASONAL);
-    QRadioButton *aggregationTypeAggregationTypeMONTHLY = new QRadioButton(tr("MONTHLY"), aggregationType);
-    aggregationTypeButtonGroup->addButton(aggregationTypeAggregationTypeMONTHLY,2);
-    aggregationTypeLayout->addWidget(aggregationTypeAggregationTypeMONTHLY);
-    connect(aggregationTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(aggregationTypeChanged(int)));
-    mainLayout->addWidget(aggregationType, 0,1);
+    aggregationLabel = new QLabel(tr("Aggregation"), central);
+    mainLayout->addWidget(aggregationLabel,0,0);
+    aggregation = new QWidget(central);
+    aggregationButtonGroup= new QButtonGroup(aggregation);
+    QHBoxLayout *aggregationLayout = new QHBoxLayout(aggregation);
+    aggregationLayout->setMargin(0);
+    aggregationLayout->setSpacing(10);
+    QRadioButton *aggregationAggregationTypeANNUAL = new QRadioButton(tr("ANNUAL"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeANNUAL,0);
+    aggregationLayout->addWidget(aggregationAggregationTypeANNUAL);
+    QRadioButton *aggregationAggregationTypeSEASONAL = new QRadioButton(tr("SEASONAL"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeSEASONAL,1);
+    aggregationLayout->addWidget(aggregationAggregationTypeSEASONAL);
+    QRadioButton *aggregationAggregationTypeMONTHLY = new QRadioButton(tr("MONTHLY"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeMONTHLY,2);
+    aggregationLayout->addWidget(aggregationAggregationTypeMONTHLY);
+    connect(aggregationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(aggregationChanged(int)));
+    mainLayout->addWidget(aggregation, 0,1);
 
     annualPercentileLabel = new QLabel(tr("Annual Percentile"), central);
     mainLayout->addWidget(annualPercentileLabel,1,0);
@@ -238,17 +238,24 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
             this, SLOT(monthChanged(int)));
     mainLayout->addWidget(month, 5,1);
 
+    cutoffLabel = new QLabel(tr("Cutoff"), central);
+    mainLayout->addWidget(cutoffLabel,6,0);
+    cutoff = new QLineEdit(central);
+    connect(cutoff, SIGNAL(returnPressed()),
+            this, SLOT(cutoffProcessText()));
+    mainLayout->addWidget(cutoff, 6,1);
+
     dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,6,0);
+    mainLayout->addWidget(dataScalingLabel,7,0);
     dataScaling = new QLineEdit(central);
     connect(dataScaling, SIGNAL(returnPressed()),
             this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 6,1);
+    mainLayout->addWidget(dataScaling, 7,1);
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 7,0);
+    mainLayout->addWidget(dumpData, 8,0);
 
 }
 
@@ -284,8 +291,8 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case PeaksOverThresholdAttributes::ID_aggregationType:
-            if (atts->GetAggregationType() == PeaksOverThresholdAttributes::ANNUAL)
+          case PeaksOverThresholdAttributes::ID_aggregation:
+            if (atts->GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
             {
                 annualPercentile->setEnabled(true);
                 if(annualPercentileLabel)
@@ -297,7 +304,7 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 if(annualPercentileLabel)
                     annualPercentileLabel->setEnabled(false);
             }
-            if (atts->GetAggregationType() == PeaksOverThresholdAttributes::SEASONAL)
+            if (atts->GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
             {
                 seasonalPercentile->setEnabled(true);
                 if(seasonalPercentileLabel)
@@ -309,7 +316,7 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 if(seasonalPercentileLabel)
                     seasonalPercentileLabel->setEnabled(false);
             }
-            if (atts->GetAggregationType() == PeaksOverThresholdAttributes::MONTHLY)
+            if (atts->GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
             {
                 monthlyPercentile->setEnabled(true);
                 if(monthlyPercentileLabel)
@@ -321,7 +328,7 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 if(monthlyPercentileLabel)
                     monthlyPercentileLabel->setEnabled(false);
             }
-            if (atts->GetAggregationType() == PeaksOverThresholdAttributes::SEASONAL)
+            if (atts->GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
             {
                 season->setEnabled(true);
                 if(seasonLabel)
@@ -333,7 +340,7 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 if(seasonLabel)
                     seasonLabel->setEnabled(false);
             }
-            if (atts->GetAggregationType() == PeaksOverThresholdAttributes::MONTHLY)
+            if (atts->GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
             {
                 month->setEnabled(true);
                 if(monthLabel)
@@ -345,10 +352,10 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 if(monthLabel)
                     monthLabel->setEnabled(false);
             }
-            aggregationTypeButtonGroup->blockSignals(true);
-            if(aggregationTypeButtonGroup->button((int)atts->GetAggregationType()) != 0)
-                aggregationTypeButtonGroup->button((int)atts->GetAggregationType())->setChecked(true);
-            aggregationTypeButtonGroup->blockSignals(false);
+            aggregationButtonGroup->blockSignals(true);
+            if(aggregationButtonGroup->button((int)atts->GetAggregation()) != 0)
+                aggregationButtonGroup->button((int)atts->GetAggregation())->setChecked(true);
+            aggregationButtonGroup->blockSignals(false);
             break;
           case PeaksOverThresholdAttributes::ID_annualPercentile:
             annualPercentile->setText(DoubleToQString(atts->GetAnnualPercentile()));
@@ -370,6 +377,9 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             if(monthButtonGroup->button((int)atts->GetMonth()) != 0)
                 monthButtonGroup->button((int)atts->GetMonth())->setChecked(true);
             monthButtonGroup->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_cutoff:
+            cutoff->setText(FloatToQString(atts->GetCutoff()));
             break;
           case PeaksOverThresholdAttributes::ID_dataScaling:
             dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
@@ -446,6 +456,20 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do cutoff
+    if(which_widget == PeaksOverThresholdAttributes::ID_cutoff || doAll)
+    {
+        float val;
+        if(LineEditGetFloat(cutoff, val))
+            atts->SetCutoff(val);
+        else
+        {
+            ResettingError(tr("Cutoff"),
+                FloatToQString(atts->GetCutoff()));
+            atts->SetCutoff(atts->GetCutoff());
+        }
+    }
+
     // Do dataScaling
     if(which_widget == PeaksOverThresholdAttributes::ID_dataScaling || doAll)
     {
@@ -469,11 +493,11 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisPeaksOverThresholdWindow::aggregationTypeChanged(int val)
+QvisPeaksOverThresholdWindow::aggregationChanged(int val)
 {
-    if(val != atts->GetAggregationType())
+    if(val != atts->GetAggregation())
     {
-        atts->SetAggregationType(PeaksOverThresholdAttributes::AggregationType(val));
+        atts->SetAggregation(PeaksOverThresholdAttributes::AggregationType(val));
         Apply();
     }
 }
@@ -524,6 +548,14 @@ QvisPeaksOverThresholdWindow::monthChanged(int val)
         SetUpdate(false);
         Apply();
     }
+}
+
+
+void
+QvisPeaksOverThresholdWindow::cutoffProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_cutoff);
+    Apply();
 }
 
 

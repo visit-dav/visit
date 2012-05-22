@@ -76,19 +76,19 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *aggregationType_names = "ANNUAL, SEASONAL, MONTHLY";
-    switch (atts->GetAggregationType())
+    const char *aggregation_names = "ANNUAL, SEASONAL, MONTHLY";
+    switch (atts->GetAggregation())
     {
       case PeaksOverThresholdAttributes::ANNUAL:
-          SNPRINTF(tmpStr, 1000, "%saggregationType = %sANNUAL  # %s\n", prefix, prefix, aggregationType_names);
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sANNUAL  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::SEASONAL:
-          SNPRINTF(tmpStr, 1000, "%saggregationType = %sSEASONAL  # %s\n", prefix, prefix, aggregationType_names);
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sSEASONAL  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::MONTHLY:
-          SNPRINTF(tmpStr, 1000, "%saggregationType = %sMONTHLY  # %s\n", prefix, prefix, aggregationType_names);
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sMONTHLY  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
       default:
@@ -209,6 +209,8 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
     str += tmpStr;
     if(atts->GetDumpData())
@@ -229,7 +231,7 @@ PeaksOverThresholdAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetAggregationType(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetAggregation(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -237,12 +239,12 @@ PeaksOverThresholdAttributes_SetAggregationType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the aggregationType in the object.
+    // Set the aggregation in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetAggregationType(PeaksOverThresholdAttributes::AggregationType(ival));
+        obj->data->SetAggregation(PeaksOverThresholdAttributes::AggregationType(ival));
     else
     {
-        fprintf(stderr, "An invalid aggregationType value was given. "
+        fprintf(stderr, "An invalid aggregation value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "ANNUAL, SEASONAL, MONTHLY.");
@@ -254,10 +256,10 @@ PeaksOverThresholdAttributes_SetAggregationType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetAggregationType(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetAggregation(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetAggregationType()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAggregation()));
     return retval;
 }
 
@@ -462,6 +464,30 @@ PeaksOverThresholdAttributes_GetMonth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PeaksOverThresholdAttributes_SetCutoff(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    float fval;
+    if(!PyArg_ParseTuple(args, "f", &fval))
+        return NULL;
+
+    // Set the cutoff in the object.
+    obj->data->SetCutoff(fval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetCutoff(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetCutoff()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetDataScaling(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -513,8 +539,8 @@ PeaksOverThresholdAttributes_GetDumpData(PyObject *self, PyObject *args)
 
 PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_NMETH] = {
     {"Notify", PeaksOverThresholdAttributes_Notify, METH_VARARGS},
-    {"SetAggregationType", PeaksOverThresholdAttributes_SetAggregationType, METH_VARARGS},
-    {"GetAggregationType", PeaksOverThresholdAttributes_GetAggregationType, METH_VARARGS},
+    {"SetAggregation", PeaksOverThresholdAttributes_SetAggregation, METH_VARARGS},
+    {"GetAggregation", PeaksOverThresholdAttributes_GetAggregation, METH_VARARGS},
     {"SetAnnualPercentile", PeaksOverThresholdAttributes_SetAnnualPercentile, METH_VARARGS},
     {"GetAnnualPercentile", PeaksOverThresholdAttributes_GetAnnualPercentile, METH_VARARGS},
     {"SetSeasonalPercentile", PeaksOverThresholdAttributes_SetSeasonalPercentile, METH_VARARGS},
@@ -525,6 +551,8 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetSeason", PeaksOverThresholdAttributes_GetSeason, METH_VARARGS},
     {"SetMonth", PeaksOverThresholdAttributes_SetMonth, METH_VARARGS},
     {"GetMonth", PeaksOverThresholdAttributes_GetMonth, METH_VARARGS},
+    {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
+    {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
     {"SetDataScaling", PeaksOverThresholdAttributes_SetDataScaling, METH_VARARGS},
     {"GetDataScaling", PeaksOverThresholdAttributes_GetDataScaling, METH_VARARGS},
     {"SetDumpData", PeaksOverThresholdAttributes_SetDumpData, METH_VARARGS},
@@ -557,8 +585,8 @@ PeaksOverThresholdAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "aggregationType") == 0)
-        return PeaksOverThresholdAttributes_GetAggregationType(self, NULL);
+    if(strcmp(name, "aggregation") == 0)
+        return PeaksOverThresholdAttributes_GetAggregation(self, NULL);
     if(strcmp(name, "ANNUAL") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::ANNUAL));
     if(strcmp(name, "SEASONAL") == 0)
@@ -610,6 +638,8 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "DEC") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::DEC));
 
+    if(strcmp(name, "cutoff") == 0)
+        return PeaksOverThresholdAttributes_GetCutoff(self, NULL);
     if(strcmp(name, "dataScaling") == 0)
         return PeaksOverThresholdAttributes_GetDataScaling(self, NULL);
     if(strcmp(name, "dumpData") == 0)
@@ -628,8 +658,8 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "aggregationType") == 0)
-        obj = PeaksOverThresholdAttributes_SetAggregationType(self, tuple);
+    if(strcmp(name, "aggregation") == 0)
+        obj = PeaksOverThresholdAttributes_SetAggregation(self, tuple);
     else if(strcmp(name, "annualPercentile") == 0)
         obj = PeaksOverThresholdAttributes_SetAnnualPercentile(self, tuple);
     else if(strcmp(name, "seasonalPercentile") == 0)
@@ -640,6 +670,8 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetSeason(self, tuple);
     else if(strcmp(name, "month") == 0)
         obj = PeaksOverThresholdAttributes_SetMonth(self, tuple);
+    else if(strcmp(name, "cutoff") == 0)
+        obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
     else if(strcmp(name, "dataScaling") == 0)
         obj = PeaksOverThresholdAttributes_SetDataScaling(self, tuple);
     else if(strcmp(name, "dumpData") == 0)

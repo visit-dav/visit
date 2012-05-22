@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 8;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 9;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -89,7 +89,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     {
         super(PeaksOverThresholdAttributes_numAdditionalAtts);
 
-        aggregationType = AGGREGATIONTYPE_ANNUAL;
+        aggregation = AGGREGATIONTYPE_ANNUAL;
         annualPercentile = 0.9;
         seasonalPercentile = new double[4];
         seasonalPercentile[0] = 0.9;
@@ -111,6 +111,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         monthlyPercentile[11] = 0.9;
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
+        cutoff = 0f;
         dataScaling = 86500;
         dumpData = false;
     }
@@ -119,7 +120,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     {
         super(PeaksOverThresholdAttributes_numAdditionalAtts + nMoreFields);
 
-        aggregationType = AGGREGATIONTYPE_ANNUAL;
+        aggregation = AGGREGATIONTYPE_ANNUAL;
         annualPercentile = 0.9;
         seasonalPercentile = new double[4];
         seasonalPercentile[0] = 0.9;
@@ -141,6 +142,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         monthlyPercentile[11] = 0.9;
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
+        cutoff = 0f;
         dataScaling = 86500;
         dumpData = false;
     }
@@ -151,7 +153,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
         int i;
 
-        aggregationType = obj.aggregationType;
+        aggregation = obj.aggregation;
         annualPercentile = obj.annualPercentile;
         seasonalPercentile = new double[4];
         for(i = 0; i < obj.seasonalPercentile.length; ++i)
@@ -163,6 +165,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
         season = obj.season;
         month = obj.month;
+        cutoff = obj.cutoff;
         dataScaling = obj.dataScaling;
         dumpData = obj.dumpData;
 
@@ -194,12 +197,13 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             monthlyPercentile_equal = (monthlyPercentile[i] == obj.monthlyPercentile[i]);
 
         // Create the return value
-        return ((aggregationType == obj.aggregationType) &&
+        return ((aggregation == obj.aggregation) &&
                 (annualPercentile == obj.annualPercentile) &&
                 seasonalPercentile_equal &&
                 monthlyPercentile_equal &&
                 (season == obj.season) &&
                 (month == obj.month) &&
+                (cutoff == obj.cutoff) &&
                 (dataScaling == obj.dataScaling) &&
                 (dumpData == obj.dumpData));
     }
@@ -208,9 +212,9 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
-    public void SetAggregationType(int aggregationType_)
+    public void SetAggregation(int aggregation_)
     {
-        aggregationType = aggregationType_;
+        aggregation = aggregation_;
         Select(0);
     }
 
@@ -257,25 +261,32 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(5);
     }
 
+    public void SetCutoff(float cutoff_)
+    {
+        cutoff = cutoff_;
+        Select(6);
+    }
+
     public void SetDataScaling(double dataScaling_)
     {
         dataScaling = dataScaling_;
-        Select(6);
+        Select(7);
     }
 
     public void SetDumpData(boolean dumpData_)
     {
         dumpData = dumpData_;
-        Select(7);
+        Select(8);
     }
 
     // Property getting methods
-    public int      GetAggregationType() { return aggregationType; }
+    public int      GetAggregation() { return aggregation; }
     public double   GetAnnualPercentile() { return annualPercentile; }
     public double[] GetSeasonalPercentile() { return seasonalPercentile; }
     public double[] GetMonthlyPercentile() { return monthlyPercentile; }
     public int      GetSeason() { return season; }
     public int      GetMonth() { return month; }
+    public float    GetCutoff() { return cutoff; }
     public double   GetDataScaling() { return dataScaling; }
     public boolean  GetDumpData() { return dumpData; }
 
@@ -283,7 +294,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(aggregationType);
+            buf.WriteInt(aggregation);
         if(WriteSelect(1, buf))
             buf.WriteDouble(annualPercentile);
         if(WriteSelect(2, buf))
@@ -295,8 +306,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(WriteSelect(5, buf))
             buf.WriteInt(month);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(dataScaling);
+            buf.WriteFloat(cutoff);
         if(WriteSelect(7, buf))
+            buf.WriteDouble(dataScaling);
+        if(WriteSelect(8, buf))
             buf.WriteBool(dumpData);
     }
 
@@ -305,7 +318,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         switch(index)
         {
         case 0:
-            SetAggregationType(buf.ReadInt());
+            SetAggregation(buf.ReadInt());
             break;
         case 1:
             SetAnnualPercentile(buf.ReadDouble());
@@ -323,9 +336,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             SetMonth(buf.ReadInt());
             break;
         case 6:
-            SetDataScaling(buf.ReadDouble());
+            SetCutoff(buf.ReadFloat());
             break;
         case 7:
+            SetDataScaling(buf.ReadDouble());
+            break;
+        case 8:
             SetDumpData(buf.ReadBool());
             break;
         }
@@ -334,12 +350,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public String toString(String indent)
     {
         String str = new String();
-        str = str + indent + "aggregationType = ";
-        if(aggregationType == AGGREGATIONTYPE_ANNUAL)
+        str = str + indent + "aggregation = ";
+        if(aggregation == AGGREGATIONTYPE_ANNUAL)
             str = str + "AGGREGATIONTYPE_ANNUAL";
-        if(aggregationType == AGGREGATIONTYPE_SEASONAL)
+        if(aggregation == AGGREGATIONTYPE_SEASONAL)
             str = str + "AGGREGATIONTYPE_SEASONAL";
-        if(aggregationType == AGGREGATIONTYPE_MONTHLY)
+        if(aggregation == AGGREGATIONTYPE_MONTHLY)
             str = str + "AGGREGATIONTYPE_MONTHLY";
         str = str + "\n";
         str = str + doubleToString("annualPercentile", annualPercentile, indent) + "\n";
@@ -381,6 +397,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(month == MONTHTYPE_DEC)
             str = str + "MONTHTYPE_DEC";
         str = str + "\n";
+        str = str + floatToString("cutoff", cutoff, indent) + "\n";
         str = str + doubleToString("dataScaling", dataScaling, indent) + "\n";
         str = str + boolToString("dumpData", dumpData, indent) + "\n";
         return str;
@@ -388,12 +405,13 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
 
     // Attributes
-    private int      aggregationType;
+    private int      aggregation;
     private double   annualPercentile;
     private double[] seasonalPercentile;
     private double[] monthlyPercentile;
     private int      season;
     private int      month;
+    private float    cutoff;
     private double   dataScaling;
     private boolean  dumpData;
 }

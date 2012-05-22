@@ -118,17 +118,18 @@ public:
     void SelectMonthlyPercentile();
 
     // Property setting methods
-    void SetAggregationType(AggregationType aggregationType_);
+    void SetAggregation(AggregationType aggregation_);
     void SetAnnualPercentile(double annualPercentile_);
     void SetSeasonalPercentile(const double *seasonalPercentile_);
     void SetMonthlyPercentile(const double *monthlyPercentile_);
     void SetSeason(SeasonType season_);
     void SetMonth(MonthType month_);
+    void SetCutoff(float cutoff_);
     void SetDataScaling(double dataScaling_);
     void SetDumpData(bool dumpData_);
 
     // Property getting methods
-    AggregationType GetAggregationType() const;
+    AggregationType GetAggregation() const;
     double       GetAnnualPercentile() const;
     const double *GetSeasonalPercentile() const;
           double *GetSeasonalPercentile();
@@ -136,6 +137,7 @@ public:
           double *GetMonthlyPercentile();
     SeasonType   GetSeason() const;
     MonthType    GetMonth() const;
+    float        GetCutoff() const;
     double       GetDataScaling() const;
     bool         GetDumpData() const;
 
@@ -169,24 +171,26 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_aggregationType = 0,
+        ID_aggregation = 0,
         ID_annualPercentile,
         ID_seasonalPercentile,
         ID_monthlyPercentile,
         ID_season,
         ID_month,
+        ID_cutoff,
         ID_dataScaling,
         ID_dumpData,
         ID__LAST
     };
 
 private:
-    int    aggregationType;
+    int    aggregation;
     double annualPercentile;
     double seasonalPercentile[4];
     double monthlyPercentile[12];
     int    season;
     int    month;
+    float  cutoff;
     double dataScaling;
     bool   dumpData;
 
@@ -194,6 +198,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiidb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifdb"
 
 #endif

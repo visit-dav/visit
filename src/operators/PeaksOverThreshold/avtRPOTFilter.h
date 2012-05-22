@@ -4,6 +4,7 @@
 #include <filters_exports.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtTimeLoopFilter.h>
+#include <PeaksOverThresholdAttributes.h>
 #include <string>
 #include <vector>
 
@@ -28,13 +29,16 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
 
     std::string newVarName;
 
-    enum ComputeMaxMethod { MONTHLY=0, YEARLY, SEASONAL};
+    PeaksOverThresholdAttributes::AggregationType aggregation;
+    PeaksOverThresholdAttributes::SeasonType displaySeason;
+    PeaksOverThresholdAttributes::MonthType displayMonth;
 
-    ComputeMaxMethod computeMaxes;
-    int monthDisplay;
+    float annualPercentile, monthlyPercentile[12], seasonalPercentile[4];
+    float cutoff;
+
     std::string codeDir;
     bool dumpData;
-    float scalingVal, percentile;
+    float scalingVal;
     
   protected:
     void                    Initialize();
@@ -46,13 +50,17 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
 
     virtual bool            FilterSupportsTimeParallelization();
     virtual bool            DataCanBeParallelizedOverTime(void);
-    int                     GetIndexFromDay(const int &t);
+
+    float                   CalculateThreshold(int loc, int arr);
+    int                     GetIndexFromDay(int t);
+    std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
+    std::string             GetDumpFileName(int idx, int var);
 
     vtkDataSet *outDS;
-    int numTuples;
+    int numTuples, numTimes;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
-    //values[location][aggregation][i]
+    //values[location][aggregation][time_i]
     std::vector<std::vector<std::vector<double> > >values;
     int numYears;
 };

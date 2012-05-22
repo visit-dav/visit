@@ -26,37 +26,40 @@
         NOV
         DEC
       </Enum>
-      <Field name="aggregationType" label="Aggregation Type" type="enum" subtype="AggregationType">
+      <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
         ANNUAL
       </Field>
-      <Field name="annualPercentile" label="Annual Percentile" type="double" enabler="aggregationType:ANNUAL">
+      <Field name="annualPercentile" label="Annual Percentile" type="double" enabler="aggregation:ANNUAL">
         0.900000
       </Field>
-      <Field name="seasonalPercentile" label="Seasonal Percentile" type="doubleArray" length="4" enabler="aggregationType:SEASONAL">
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-      </Field>
-      <Field name="monthlyPercentile" label="Monthly Percentile" type="doubleArray" length="12" enabler="aggregationType:MONTHLY">
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
+      <Field name="seasonalPercentile" label="Seasonal Percentile" type="doubleArray" length="4" enabler="aggregation:SEASONAL">
         0.900000
         0.900000
         0.900000
         0.900000
       </Field>
-      <Field name="season" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregationType:SEASONAL">
+      <Field name="monthlyPercentile" label="Monthly Percentile" type="doubleArray" length="12" enabler="aggregation:MONTHLY">
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+        0.900000
+      </Field>
+      <Field name="season" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
         WINTER
       </Field>
-      <Field name="month" label="Display Month" type="enum" subtype="MonthType" enabler="aggregationType:MONTHLY">
+      <Field name="month" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
         JAN
+      </Field>
+      <Field name="cutoff" label="Cutoff" type="float">
+        0.000000
       </Field>
       <Field name="dataScaling" label="Data Scaling" type="double">
         86500.000000
