@@ -4,10 +4,13 @@
 #include <filters_exports.h>
 #include <avtDatasetToDatasetFilter.h>
 #include <avtTimeLoopFilter.h>
+#include <ExtremeValueAnalysisAttributes.h>
 #include <string>
 #include <vector>
 
 class vtkDataSet;
+class vtkDoubleArray;
+class vtkRInterface;
 
 // ****************************************************************************
 // Class:  avtRExtremesFilter
@@ -27,11 +30,11 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
     virtual const char* GetType() {return "avtRExtremesFilter";}
 
     std::string newVarName;
+    
+    ExtremeValueAnalysisAttributes::AggregationType aggregation;
+    ExtremeValueAnalysisAttributes::SeasonType displaySeason;
+    ExtremeValueAnalysisAttributes::MonthType displayMonth;
 
-    enum ComputeMaxMethod { MONTHLY=0, YEARLY};
-
-    ComputeMaxMethod computeMaxes;
-    int monthDisplay;
     std::string codeDir;
     bool dumpData;
     float scalingVal;
@@ -47,13 +50,27 @@ class AVTFILTERS_API avtRExtremesFilter : virtual public avtDatasetToDatasetFilt
     virtual bool            FilterSupportsTimeParallelization();
     virtual bool            DataCanBeParallelizedOverTime(void);
     int                     GetIndexFromDay(const int &t);
+    std::string             GenerateCommand(const char *var);
+    void                    SetResults(std::vector<std::vector<std::vector<float> > > &results,
+                                       vtkRInterface *RI);
+
+    void                    SetupOutput(const char *nm, const char *Rnm, int dim);
 
     vtkDataSet *outDS;
-    int numTuples;
+    int numTuples, numTimes, numYears;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
+    //values[aggregation][location]
     std::vector<std::vector<double> > values;
-    int numYears;
+
+    struct outputType
+    {
+        std::string name, Rname, dumpFileName;
+        int aggrIdx, varIdx;
+    };
+
+    std::vector<outputType> outputArr;
+    int indexCounter;
 };
 
 #endif

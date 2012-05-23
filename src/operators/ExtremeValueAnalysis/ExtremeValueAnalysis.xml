@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
   <Plugin name="ExtremeValueAnalysis" type="operator" label="ExtremeValueAnalysis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
     <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
-      <Enum name="ComputeMaxes">
+      <Enum name="AggregationType">
+        ANNUAL
         MONTHLY
-        YEARLY
         SEASONAL
       </Enum>
-      <Enum name="Month">
+      <Enum name="MonthType">
         January
         February
         March
@@ -20,11 +20,20 @@
         November
         December
       </Enum>
-      <Field name="computeMaxes" label="compute Maxes" type="enum" subtype="ComputeMaxes">
-        YEARLY
+      <Enum name="SeasonType">
+        WINTER
+        SPRING
+        SUMMER
+        FALL
+      </Enum>
+      <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
+        MONTHLY
       </Field>
-      <Field name="DisplayMonth" label="Display Month" type="enum" subtype="Month" enabler="computeMaxes:MONTHLY">
+      <Field name="displayMonth" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
         January
+      </Field>
+      <Field name="displaySeason" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
+        WINTER
       </Field>
       <Field name="dumpData" label="Dump Data" type="bool">
         false

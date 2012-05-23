@@ -54,7 +54,6 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
-#include <QComboBox>
 
 #include <stdio.h>
 #include <string>
@@ -128,55 +127,108 @@ QvisExtremeValueAnalysisWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
-    computeMaxesLabel = new QLabel(tr("Compute Maxes:"), central);
-    mainLayout->addWidget(computeMaxesLabel,0,0);
-    computeMaxes = new QWidget(central);
-    computeMaxesButtonGroup= new QButtonGroup(computeMaxes);
-    QHBoxLayout *computeMaxesLayout = new QHBoxLayout(computeMaxes);
-    computeMaxesLayout->setMargin(0);
-    computeMaxesLayout->setSpacing(10);
-    QRadioButton *computeMaxesComputeMaxesMONTHLY = new QRadioButton(tr("Monthly"), computeMaxes);
-    computeMaxesButtonGroup->addButton(computeMaxesComputeMaxesMONTHLY,0);
-    computeMaxesLayout->addWidget(computeMaxesComputeMaxesMONTHLY);
-    QRadioButton *computeMaxesComputeMaxesYEARLY = new QRadioButton(tr("Annually"), computeMaxes);
-    computeMaxesButtonGroup->addButton(computeMaxesComputeMaxesYEARLY,1);
-    computeMaxesLayout->addWidget(computeMaxesComputeMaxesYEARLY);
-    connect(computeMaxesButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(computeMaxesChanged(int)));
-    mainLayout->addWidget(computeMaxes, 0,1);
+    aggregationLabel = new QLabel(tr("Aggregation"), central);
+    mainLayout->addWidget(aggregationLabel,0,0);
+    aggregation = new QWidget(central);
+    aggregationButtonGroup= new QButtonGroup(aggregation);
+    QHBoxLayout *aggregationLayout = new QHBoxLayout(aggregation);
+    aggregationLayout->setMargin(0);
+    aggregationLayout->setSpacing(10);
+    QRadioButton *aggregationAggregationTypeANNUAL = new QRadioButton(tr("ANNUAL"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeANNUAL,0);
+    aggregationLayout->addWidget(aggregationAggregationTypeANNUAL);
+    QRadioButton *aggregationAggregationTypeMONTHLY = new QRadioButton(tr("MONTHLY"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeMONTHLY,1);
+    aggregationLayout->addWidget(aggregationAggregationTypeMONTHLY);
+    QRadioButton *aggregationAggregationTypeSEASONAL = new QRadioButton(tr("SEASONAL"), aggregation);
+    aggregationButtonGroup->addButton(aggregationAggregationTypeSEASONAL,2);
+    aggregationLayout->addWidget(aggregationAggregationTypeSEASONAL);
+    connect(aggregationButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(aggregationChanged(int)));
+    mainLayout->addWidget(aggregation, 0,1);
 
-    DisplayMonthLabel = new QLabel(tr("Display Month"), central);
-    mainLayout->addWidget(DisplayMonthLabel,1,0);
+    displayMonthLabel = new QLabel(tr("Display Month"), central);
+    mainLayout->addWidget(displayMonthLabel,1,0);
+    displayMonth = new QWidget(central);
+    displayMonthButtonGroup= new QButtonGroup(displayMonth);
+    QHBoxLayout *displayMonthLayout = new QHBoxLayout(displayMonth);
+    displayMonthLayout->setMargin(0);
+    displayMonthLayout->setSpacing(10);
+    QRadioButton *displayMonthMonthTypeJanuary = new QRadioButton(tr("January"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeJanuary,0);
+    displayMonthLayout->addWidget(displayMonthMonthTypeJanuary);
+    QRadioButton *displayMonthMonthTypeFebruary = new QRadioButton(tr("February"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeFebruary,1);
+    displayMonthLayout->addWidget(displayMonthMonthTypeFebruary);
+    QRadioButton *displayMonthMonthTypeMarch = new QRadioButton(tr("March"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeMarch,2);
+    displayMonthLayout->addWidget(displayMonthMonthTypeMarch);
+    QRadioButton *displayMonthMonthTypeApril = new QRadioButton(tr("April"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeApril,3);
+    displayMonthLayout->addWidget(displayMonthMonthTypeApril);
+    QRadioButton *displayMonthMonthTypeMay = new QRadioButton(tr("May"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeMay,4);
+    displayMonthLayout->addWidget(displayMonthMonthTypeMay);
+    QRadioButton *displayMonthMonthTypeJune = new QRadioButton(tr("June"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeJune,5);
+    displayMonthLayout->addWidget(displayMonthMonthTypeJune);
+    QRadioButton *displayMonthMonthTypeJuly = new QRadioButton(tr("July"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeJuly,6);
+    displayMonthLayout->addWidget(displayMonthMonthTypeJuly);
+    QRadioButton *displayMonthMonthTypeAugust = new QRadioButton(tr("August"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeAugust,7);
+    displayMonthLayout->addWidget(displayMonthMonthTypeAugust);
+    QRadioButton *displayMonthMonthTypeSeptember = new QRadioButton(tr("September"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeSeptember,8);
+    displayMonthLayout->addWidget(displayMonthMonthTypeSeptember);
+    QRadioButton *displayMonthMonthTypeOctober = new QRadioButton(tr("October"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeOctober,9);
+    displayMonthLayout->addWidget(displayMonthMonthTypeOctober);
+    QRadioButton *displayMonthMonthTypeNovember = new QRadioButton(tr("November"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeNovember,10);
+    displayMonthLayout->addWidget(displayMonthMonthTypeNovember);
+    QRadioButton *displayMonthMonthTypeDecember = new QRadioButton(tr("December"), displayMonth);
+    displayMonthButtonGroup->addButton(displayMonthMonthTypeDecember,11);
+    displayMonthLayout->addWidget(displayMonthMonthTypeDecember);
+    connect(displayMonthButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(displayMonthChanged(int)));
+    mainLayout->addWidget(displayMonth, 1,1);
 
-    displayMonthType = new QComboBox(central);
-    displayMonthType->addItem(tr("January"));
-    displayMonthType->addItem(tr("February"));
-    displayMonthType->addItem(tr("March"));
-    displayMonthType->addItem(tr("April"));
-    displayMonthType->addItem(tr("May"));
-    displayMonthType->addItem(tr("June"));
-    displayMonthType->addItem(tr("July"));
-    displayMonthType->addItem(tr("August"));
-    displayMonthType->addItem(tr("September"));
-    displayMonthType->addItem(tr("October"));
-    displayMonthType->addItem(tr("November"));
-    displayMonthType->addItem(tr("December"));
-
-    mainLayout->addWidget(displayMonthType, 1,1);
-    connect(displayMonthType, SIGNAL(activated(int)),
-            this, SLOT(DisplayMonthChanged(int)));
-
-    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,2,0);
-    dataScaling = new QLineEdit(central);
-    connect(dataScaling, SIGNAL(returnPressed()),
-            this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 2,1);
+    displaySeasonLabel = new QLabel(tr("Display Season"), central);
+    mainLayout->addWidget(displaySeasonLabel,2,0);
+    displaySeason = new QWidget(central);
+    displaySeasonButtonGroup= new QButtonGroup(displaySeason);
+    QHBoxLayout *displaySeasonLayout = new QHBoxLayout(displaySeason);
+    displaySeasonLayout->setMargin(0);
+    displaySeasonLayout->setSpacing(10);
+    QRadioButton *displaySeasonSeasonTypeWINTER = new QRadioButton(tr("WINTER"), displaySeason);
+    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeWINTER,0);
+    displaySeasonLayout->addWidget(displaySeasonSeasonTypeWINTER);
+    QRadioButton *displaySeasonSeasonTypeSPRING = new QRadioButton(tr("SPRING"), displaySeason);
+    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSPRING,1);
+    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSPRING);
+    QRadioButton *displaySeasonSeasonTypeSUMMER = new QRadioButton(tr("SUMMER"), displaySeason);
+    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSUMMER,2);
+    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSUMMER);
+    QRadioButton *displaySeasonSeasonTypeFALL = new QRadioButton(tr("FALL"), displaySeason);
+    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeFALL,3);
+    displaySeasonLayout->addWidget(displaySeasonSeasonTypeFALL);
+    connect(displaySeasonButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(displaySeasonChanged(int)));
+    mainLayout->addWidget(displaySeason, 2,1);
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
     mainLayout->addWidget(dumpData, 3,0);
+
+    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
+    mainLayout->addWidget(dataScalingLabel,4,0);
+    dataScaling = new QLineEdit(central);
+    connect(dataScaling, SIGNAL(returnPressed()),
+            this, SLOT(dataScalingProcessText()));
+    mainLayout->addWidget(dataScaling, 4,1);
+
 }
 
 
@@ -211,36 +263,53 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case ExtremeValueAnalysisAttributes::ID_computeMaxes:
-            if (atts->GetComputeMaxes() == ExtremeValueAnalysisAttributes::MONTHLY)
+          case ExtremeValueAnalysisAttributes::ID_aggregation:
+            if (atts->GetAggregation() == ExtremeValueAnalysisAttributes::MONTHLY)
             {
-                displayMonthType->setEnabled(true);
-                if(DisplayMonthLabel)
-                    DisplayMonthLabel->setEnabled(true);
+                displayMonth->setEnabled(true);
+                if(displayMonthLabel)
+                    displayMonthLabel->setEnabled(true);
             }
             else
             {
-                displayMonthType->setEnabled(false);
-                if(DisplayMonthLabel)
-                    DisplayMonthLabel->setEnabled(false);
+                displayMonth->setEnabled(false);
+                if(displayMonthLabel)
+                    displayMonthLabel->setEnabled(false);
             }
-            computeMaxesButtonGroup->blockSignals(true);
-            if(computeMaxesButtonGroup->button((int)atts->GetComputeMaxes()) != 0)
-                computeMaxesButtonGroup->button((int)atts->GetComputeMaxes())->setChecked(true);
-            computeMaxesButtonGroup->blockSignals(false);
+            if (atts->GetAggregation() == ExtremeValueAnalysisAttributes::SEASONAL)
+            {
+                displaySeason->setEnabled(true);
+                if(displaySeasonLabel)
+                    displaySeasonLabel->setEnabled(true);
+            }
+            else
+            {
+                displaySeason->setEnabled(false);
+                if(displaySeasonLabel)
+                    displaySeasonLabel->setEnabled(false);
+            }
+            aggregationButtonGroup->blockSignals(true);
+            if(aggregationButtonGroup->button((int)atts->GetAggregation()) != 0)
+                aggregationButtonGroup->button((int)atts->GetAggregation())->setChecked(true);
+            aggregationButtonGroup->blockSignals(false);
             break;
-          case ExtremeValueAnalysisAttributes::ID_DisplayMonth:
-            displayMonthType->blockSignals(true);
-            displayMonthType->setCurrentIndex((int)atts->GetDisplayMonth());
-            displayMonthType->blockSignals(false);
+          case ExtremeValueAnalysisAttributes::ID_displayMonth:
+            displayMonthButtonGroup->blockSignals(true);
+            if(displayMonthButtonGroup->button((int)atts->GetDisplayMonth()) != 0)
+                displayMonthButtonGroup->button((int)atts->GetDisplayMonth())->setChecked(true);
+            displayMonthButtonGroup->blockSignals(false);
             break;
-
+          case ExtremeValueAnalysisAttributes::ID_displaySeason:
+            displaySeasonButtonGroup->blockSignals(true);
+            if(displaySeasonButtonGroup->button((int)atts->GetDisplaySeason()) != 0)
+                displaySeasonButtonGroup->button((int)atts->GetDisplaySeason())->setChecked(true);
+            displaySeasonButtonGroup->blockSignals(false);
+            break;
           case ExtremeValueAnalysisAttributes::ID_dumpData:
             dumpData->blockSignals(true);
             dumpData->setChecked(atts->GetDumpData());
             dumpData->blockSignals(false);
             break;
-            
           case ExtremeValueAnalysisAttributes::ID_dataScaling:
             dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
             break;
@@ -268,7 +337,8 @@ void
 QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-// Do dataScaling
+
+    // Do dataScaling
     if(which_widget == ExtremeValueAnalysisAttributes::ID_dataScaling || doAll)
     {
         double val;
@@ -281,6 +351,7 @@ QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
             atts->SetDataScaling(atts->GetDataScaling());
         }
     }
+
 }
 
 
@@ -290,26 +361,39 @@ QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 
 
 void
-QvisExtremeValueAnalysisWindow::computeMaxesChanged(int val)
+QvisExtremeValueAnalysisWindow::aggregationChanged(int val)
 {
-    if(val != atts->GetComputeMaxes())
+    if(val != atts->GetAggregation())
     {
-        atts->SetComputeMaxes(ExtremeValueAnalysisAttributes::ComputeMaxes(val));
+        atts->SetAggregation(ExtremeValueAnalysisAttributes::AggregationType(val));
         Apply();
     }
 }
 
 
 void
-QvisExtremeValueAnalysisWindow::DisplayMonthChanged(int val)
+QvisExtremeValueAnalysisWindow::displayMonthChanged(int val)
 {
     if(val != atts->GetDisplayMonth())
     {
-        atts->SetDisplayMonth(ExtremeValueAnalysisAttributes::Month(val));
+        atts->SetDisplayMonth(ExtremeValueAnalysisAttributes::MonthType(val));
         SetUpdate(false);
         Apply();
     }
 }
+
+
+void
+QvisExtremeValueAnalysisWindow::displaySeasonChanged(int val)
+{
+    if(val != atts->GetDisplaySeason())
+    {
+        atts->SetDisplaySeason(ExtremeValueAnalysisAttributes::SeasonType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
 
 void
 QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
@@ -319,9 +403,12 @@ QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
     Apply();
 }
 
+
 void
 QvisExtremeValueAnalysisWindow::dataScalingProcessText()
 {
     GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataScaling);
     Apply();
 }
+
+

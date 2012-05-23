@@ -40,37 +40,37 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for ExtremeValueAnalysisAttributes::ComputeMaxes
+// Enum conversion methods for ExtremeValueAnalysisAttributes::AggregationType
 //
 
-static const char *ComputeMaxes_strings[] = {
-"MONTHLY", "YEARLY", "SEASONAL"
+static const char *AggregationType_strings[] = {
+"ANNUAL", "MONTHLY", "SEASONAL"
 };
 
 std::string
-ExtremeValueAnalysisAttributes::ComputeMaxes_ToString(ExtremeValueAnalysisAttributes::ComputeMaxes t)
+ExtremeValueAnalysisAttributes::AggregationType_ToString(ExtremeValueAnalysisAttributes::AggregationType t)
 {
     int index = int(t);
     if(index < 0 || index >= 3) index = 0;
-    return ComputeMaxes_strings[index];
+    return AggregationType_strings[index];
 }
 
 std::string
-ExtremeValueAnalysisAttributes::ComputeMaxes_ToString(int t)
+ExtremeValueAnalysisAttributes::AggregationType_ToString(int t)
 {
     int index = (t < 0 || t >= 3) ? 0 : t;
-    return ComputeMaxes_strings[index];
+    return AggregationType_strings[index];
 }
 
 bool
-ExtremeValueAnalysisAttributes::ComputeMaxes_FromString(const std::string &s, ExtremeValueAnalysisAttributes::ComputeMaxes &val)
+ExtremeValueAnalysisAttributes::AggregationType_FromString(const std::string &s, ExtremeValueAnalysisAttributes::AggregationType &val)
 {
-    val = ExtremeValueAnalysisAttributes::MONTHLY;
+    val = ExtremeValueAnalysisAttributes::ANNUAL;
     for(int i = 0; i < 3; ++i)
     {
-        if(s == ComputeMaxes_strings[i])
+        if(s == AggregationType_strings[i])
         {
-            val = (ComputeMaxes)i;
+            val = (AggregationType)i;
             return true;
         }
     }
@@ -78,10 +78,10 @@ ExtremeValueAnalysisAttributes::ComputeMaxes_FromString(const std::string &s, Ex
 }
 
 //
-// Enum conversion methods for ExtremeValueAnalysisAttributes::Month
+// Enum conversion methods for ExtremeValueAnalysisAttributes::MonthType
 //
 
-static const char *Month_strings[] = {
+static const char *MonthType_strings[] = {
 "January", "February", "March", 
 "April", "May", "June", 
 "July", "August", "September", 
@@ -89,29 +89,67 @@ static const char *Month_strings[] = {
 };
 
 std::string
-ExtremeValueAnalysisAttributes::Month_ToString(ExtremeValueAnalysisAttributes::Month t)
+ExtremeValueAnalysisAttributes::MonthType_ToString(ExtremeValueAnalysisAttributes::MonthType t)
 {
     int index = int(t);
     if(index < 0 || index >= 12) index = 0;
-    return Month_strings[index];
+    return MonthType_strings[index];
 }
 
 std::string
-ExtremeValueAnalysisAttributes::Month_ToString(int t)
+ExtremeValueAnalysisAttributes::MonthType_ToString(int t)
 {
     int index = (t < 0 || t >= 12) ? 0 : t;
-    return Month_strings[index];
+    return MonthType_strings[index];
 }
 
 bool
-ExtremeValueAnalysisAttributes::Month_FromString(const std::string &s, ExtremeValueAnalysisAttributes::Month &val)
+ExtremeValueAnalysisAttributes::MonthType_FromString(const std::string &s, ExtremeValueAnalysisAttributes::MonthType &val)
 {
     val = ExtremeValueAnalysisAttributes::January;
     for(int i = 0; i < 12; ++i)
     {
-        if(s == Month_strings[i])
+        if(s == MonthType_strings[i])
         {
-            val = (Month)i;
+            val = (MonthType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for ExtremeValueAnalysisAttributes::SeasonType
+//
+
+static const char *SeasonType_strings[] = {
+"WINTER", "SPRING", "SUMMER", 
+"FALL"};
+
+std::string
+ExtremeValueAnalysisAttributes::SeasonType_ToString(ExtremeValueAnalysisAttributes::SeasonType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return SeasonType_strings[index];
+}
+
+std::string
+ExtremeValueAnalysisAttributes::SeasonType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return SeasonType_strings[index];
+}
+
+bool
+ExtremeValueAnalysisAttributes::SeasonType_FromString(const std::string &s, ExtremeValueAnalysisAttributes::SeasonType &val)
+{
+    val = ExtremeValueAnalysisAttributes::WINTER;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == SeasonType_strings[i])
+        {
+            val = (SeasonType)i;
             return true;
         }
     }
@@ -135,8 +173,9 @@ ExtremeValueAnalysisAttributes::Month_FromString(const std::string &s, ExtremeVa
 
 void ExtremeValueAnalysisAttributes::Init()
 {
-    computeMaxes = YEARLY;
-    DisplayMonth = January;
+    aggregation = MONTHLY;
+    displayMonth = January;
+    displaySeason = WINTER;
     dumpData = false;
     dataScaling = 1;
 
@@ -160,8 +199,9 @@ void ExtremeValueAnalysisAttributes::Init()
 
 void ExtremeValueAnalysisAttributes::Copy(const ExtremeValueAnalysisAttributes &obj)
 {
-    computeMaxes = obj.computeMaxes;
-    DisplayMonth = obj.DisplayMonth;
+    aggregation = obj.aggregation;
+    displayMonth = obj.displayMonth;
+    displaySeason = obj.displaySeason;
     dumpData = obj.dumpData;
     dataScaling = obj.dataScaling;
 
@@ -321,8 +361,9 @@ bool
 ExtremeValueAnalysisAttributes::operator == (const ExtremeValueAnalysisAttributes &obj) const
 {
     // Create the return value
-    return ((computeMaxes == obj.computeMaxes) &&
-            (DisplayMonth == obj.DisplayMonth) &&
+    return ((aggregation == obj.aggregation) &&
+            (displayMonth == obj.displayMonth) &&
+            (displaySeason == obj.displaySeason) &&
             (dumpData == obj.dumpData) &&
             (dataScaling == obj.dataScaling));
 }
@@ -468,10 +509,11 @@ ExtremeValueAnalysisAttributes::NewInstance(bool copy) const
 void
 ExtremeValueAnalysisAttributes::SelectAll()
 {
-    Select(ID_computeMaxes, (void *)&computeMaxes);
-    Select(ID_DisplayMonth, (void *)&DisplayMonth);
-    Select(ID_dumpData,     (void *)&dumpData);
-    Select(ID_dataScaling,  (void *)&dataScaling);
+    Select(ID_aggregation,   (void *)&aggregation);
+    Select(ID_displayMonth,  (void *)&displayMonth);
+    Select(ID_displaySeason, (void *)&displaySeason);
+    Select(ID_dumpData,      (void *)&dumpData);
+    Select(ID_dataScaling,   (void *)&dataScaling);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -504,16 +546,22 @@ ExtremeValueAnalysisAttributes::CreateNode(DataNode *parentNode, bool completeSa
     // Create a node for ExtremeValueAnalysisAttributes.
     DataNode *node = new DataNode("ExtremeValueAnalysisAttributes");
 
-    if(completeSave || !FieldsEqual(ID_computeMaxes, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_aggregation, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("computeMaxes", ComputeMaxes_ToString(computeMaxes)));
+        node->AddNode(new DataNode("aggregation", AggregationType_ToString(aggregation)));
     }
 
-    if(completeSave || !FieldsEqual(ID_DisplayMonth, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_displayMonth, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("DisplayMonth", Month_ToString(DisplayMonth)));
+        node->AddNode(new DataNode("displayMonth", MonthType_ToString(displayMonth)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displaySeason, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displaySeason", SeasonType_ToString(displaySeason)));
     }
 
     if(completeSave || !FieldsEqual(ID_dumpData, &defaultObject))
@@ -564,36 +612,52 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("computeMaxes")) != 0)
+    if((node = searchNode->GetNode("aggregation")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 3)
-                SetComputeMaxes(ComputeMaxes(ival));
+                SetAggregation(AggregationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            ComputeMaxes value;
-            if(ComputeMaxes_FromString(node->AsString(), value))
-                SetComputeMaxes(value);
+            AggregationType value;
+            if(AggregationType_FromString(node->AsString(), value))
+                SetAggregation(value);
         }
     }
-    if((node = searchNode->GetNode("DisplayMonth")) != 0)
+    if((node = searchNode->GetNode("displayMonth")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 12)
-                SetDisplayMonth(Month(ival));
+                SetDisplayMonth(MonthType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            Month value;
-            if(Month_FromString(node->AsString(), value))
+            MonthType value;
+            if(MonthType_FromString(node->AsString(), value))
                 SetDisplayMonth(value);
+        }
+    }
+    if((node = searchNode->GetNode("displaySeason")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetDisplaySeason(SeasonType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SeasonType value;
+            if(SeasonType_FromString(node->AsString(), value))
+                SetDisplaySeason(value);
         }
     }
     if((node = searchNode->GetNode("dumpData")) != 0)
@@ -607,17 +671,24 @@ ExtremeValueAnalysisAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-ExtremeValueAnalysisAttributes::SetComputeMaxes(ExtremeValueAnalysisAttributes::ComputeMaxes computeMaxes_)
+ExtremeValueAnalysisAttributes::SetAggregation(ExtremeValueAnalysisAttributes::AggregationType aggregation_)
 {
-    computeMaxes = computeMaxes_;
-    Select(ID_computeMaxes, (void *)&computeMaxes);
+    aggregation = aggregation_;
+    Select(ID_aggregation, (void *)&aggregation);
 }
 
 void
-ExtremeValueAnalysisAttributes::SetDisplayMonth(ExtremeValueAnalysisAttributes::Month DisplayMonth_)
+ExtremeValueAnalysisAttributes::SetDisplayMonth(ExtremeValueAnalysisAttributes::MonthType displayMonth_)
 {
-    DisplayMonth = DisplayMonth_;
-    Select(ID_DisplayMonth, (void *)&DisplayMonth);
+    displayMonth = displayMonth_;
+    Select(ID_displayMonth, (void *)&displayMonth);
+}
+
+void
+ExtremeValueAnalysisAttributes::SetDisplaySeason(ExtremeValueAnalysisAttributes::SeasonType displaySeason_)
+{
+    displaySeason = displaySeason_;
+    Select(ID_displaySeason, (void *)&displaySeason);
 }
 
 void
@@ -638,16 +709,22 @@ ExtremeValueAnalysisAttributes::SetDataScaling(double dataScaling_)
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-ExtremeValueAnalysisAttributes::ComputeMaxes
-ExtremeValueAnalysisAttributes::GetComputeMaxes() const
+ExtremeValueAnalysisAttributes::AggregationType
+ExtremeValueAnalysisAttributes::GetAggregation() const
 {
-    return ComputeMaxes(computeMaxes);
+    return AggregationType(aggregation);
 }
 
-ExtremeValueAnalysisAttributes::Month
+ExtremeValueAnalysisAttributes::MonthType
 ExtremeValueAnalysisAttributes::GetDisplayMonth() const
 {
-    return Month(DisplayMonth);
+    return MonthType(displayMonth);
+}
+
+ExtremeValueAnalysisAttributes::SeasonType
+ExtremeValueAnalysisAttributes::GetDisplaySeason() const
+{
+    return SeasonType(displaySeason);
 }
 
 bool
@@ -686,10 +763,11 @@ ExtremeValueAnalysisAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_computeMaxes: return "computeMaxes";
-    case ID_DisplayMonth: return "DisplayMonth";
-    case ID_dumpData:     return "dumpData";
-    case ID_dataScaling:  return "dataScaling";
+    case ID_aggregation:   return "aggregation";
+    case ID_displayMonth:  return "displayMonth";
+    case ID_displaySeason: return "displaySeason";
+    case ID_dumpData:      return "dumpData";
+    case ID_dataScaling:   return "dataScaling";
     default:  return "invalid index";
     }
 }
@@ -714,10 +792,11 @@ ExtremeValueAnalysisAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_computeMaxes: return FieldType_enum;
-    case ID_DisplayMonth: return FieldType_enum;
-    case ID_dumpData:     return FieldType_bool;
-    case ID_dataScaling:  return FieldType_double;
+    case ID_aggregation:   return FieldType_enum;
+    case ID_displayMonth:  return FieldType_enum;
+    case ID_displaySeason: return FieldType_enum;
+    case ID_dumpData:      return FieldType_bool;
+    case ID_dataScaling:   return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -742,10 +821,11 @@ ExtremeValueAnalysisAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_computeMaxes: return "enum";
-    case ID_DisplayMonth: return "enum";
-    case ID_dumpData:     return "bool";
-    case ID_dataScaling:  return "double";
+    case ID_aggregation:   return "enum";
+    case ID_displayMonth:  return "enum";
+    case ID_displaySeason: return "enum";
+    case ID_dumpData:      return "bool";
+    case ID_dataScaling:   return "double";
     default:  return "invalid index";
     }
 }
@@ -772,14 +852,19 @@ ExtremeValueAnalysisAttributes::FieldsEqual(int index_, const AttributeGroup *rh
     bool retval = false;
     switch (index_)
     {
-    case ID_computeMaxes:
+    case ID_aggregation:
         {  // new scope
-        retval = (computeMaxes == obj.computeMaxes);
+        retval = (aggregation == obj.aggregation);
         }
         break;
-    case ID_DisplayMonth:
+    case ID_displayMonth:
         {  // new scope
-        retval = (DisplayMonth == obj.DisplayMonth);
+        retval = (displayMonth == obj.displayMonth);
+        }
+        break;
+    case ID_displaySeason:
+        {  // new scope
+        retval = (displaySeason == obj.displaySeason);
         }
         break;
     case ID_dumpData:
