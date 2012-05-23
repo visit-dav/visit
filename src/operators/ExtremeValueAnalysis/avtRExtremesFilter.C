@@ -31,11 +31,13 @@ avtRExtremesFilter::avtRExtremesFilter()
     outDS = NULL;
     numTuples = 0;
     nodeCenteredData = false;
-    computeMaxes = avtRExtremesFilter::YEARLY;
+    aggregation = ExtremeValueAnalysisAttributes::ANNUAL;
+    displaySeason = ExtremeValueAnalysisAttributes::WINTER;
+    displayMonth = ExtremeValueAnalysisAttributes::January;
     numYears = 0;
     scalingVal =  1.0;
-    monthDisplay = 0;
     dumpData = false;
+    indexCounter = 0;
 }
 
 // ****************************************************************************
@@ -89,16 +91,39 @@ avtRExtremesFilter::DataCanBeParallelizedOverTime()
 int
 avtRExtremesFilter::GetIndexFromDay(const int &t)
 {
-    if (computeMaxes == avtRExtremesFilter::MONTHLY)
+    if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY ||
+        aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+        
     {
         int year = t/365;
         int dayMonth[12] = {31,59,90,120,151,181,213,244,274,304,334,365}; //no leap year
         int dayInYear = t % 365;
+        int month = -1, ret = -1;
         for (int i = 0; i < 12; i++)
             if (dayInYear <= dayMonth[i])
-                return (year*12) + i;
+            {
+                month = i;
+                ret = (year*12) + i; 
+                break;
+            }
+
+        if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+            return ret;
+        else
+        {
+            int season = -1;
+            if (month == 11 || month == 0 || month == 1)
+                season = (year*4) + 0;
+            else if (month == 2 || month == 3 || month == 4)
+                season = (year*4) + 1;
+            else if (month == 5 || month == 6 || month == 7)
+                season = (year*4) + 2;
+            else if (month == 8 || month == 9 || month == 10)
+                season = (year*4) + 3;
+            return season;
+        }
     }
-    else if (computeMaxes == avtRExtremesFilter::YEARLY)
+    else if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
         return t / 365;
 }
 
@@ -151,32 +176,17 @@ avtRExtremesFilter::Initialize()
     //cout<<"Initialize: numTuples= "<<numTuples<<endl;
     int t0 = GetStartTime();
     int t1 = GetEndTime();
-    int nTimes = t1-t0 + 1;
-    numYears = nTimes/365;
+    numTimes = t1-t0 + 1;
+    numYears = numTimes/365;
 
-    int numArrays = 0;
-    //How to compute maxes.
-    //Monthly maxes.
-    if (computeMaxes == avtRExtremesFilter::MONTHLY)
-    {
-        numArrays = numYears*12;
-    }
-    else if (computeMaxes == avtRExtremesFilter::YEARLY)
-        numArrays = numYears;
-    
-    if (numArrays == 0)
-        numArrays = 1;
-    cout<<"Array: "<<numArrays<<" of "<<numTuples<<endl;
-    values.resize(numArrays);
-    for (int i = 0; i < numArrays; i++)
-    {
-        values[i].resize(numTuples);
-        for (int j = 0; j < numTuples; j++)
-            values[i][j] = -numeric_limits<double>::max();
-    }
-
-    //To control how many tuples get processed, set here.
-    //numTuples = 512;
+    int numAggregationArrays = 0;
+    //Maxima aggregation.
+    if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+        numAggregationArrays = numYears;
+    else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+        numAggregationArrays = 12*numYears;
+    else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+        numAggregationArrays = 4*numYears;
     
     idx0 = 0;
     idxN = numTuples;
@@ -197,11 +207,29 @@ avtRExtremesFilter::Initialize()
         idx0 = (rank)*(nSamplesPerProc) + oneExtraUntil;
         idxN = (rank+1)*(nSamplesPerProc) + oneExtraUntil;
     }
-
 #endif
+
+    values.resize(numAggregationArrays);
+    for (int i = 0; i < numAggregationArrays; i++)
+    {
+        values[i].resize(numTuples);
+        for (int j = 0; j < numTuples; j++)
+            values[i][j] = -numeric_limits<double>::max();
+    }
     
     initialized = true;
     delete [] leaves;
+
+
+    //Setup outputs.
+    SetupOutput("rv", "returnValue", 1);
+    SetupOutput("se_rv", "se.returnValue", 1);
+    SetupOutput("mle", "mle", 3);
+    SetupOutput("se_mle", "se.mle", 3);
+    /*
+    for (int i=0; i < outputArr.size(); i++)
+        cout<<i<<": "<<outputArr[i].name<<" = "<<outputArr[i].Rname<<" vidx= "<<outputArr[i].varIdx<<" "<<outputArr[i].aggrIdx<<" "<<outputArr[i].dumpFileName<<endl;
+    */
 }
 
 
@@ -259,14 +287,9 @@ avtRExtremesFilter::Execute()
     float *vals = (float *) scalars->GetVoidPointer(0);
     
     int index = GetIndexFromDay(currentTime);
-    vector<double>::iterator it = values[index].begin();
-    vector<double>::iterator end = values[index].end();
     //cout<<"index= "<<index<<" "<<values.size()<<" "<<values[index].size()<<" nt= "<<scalars->GetNumberOfTuples()<<endl;
-    float sum = 0.0;
-    int cnt = 0;
 
-    int nTuples = scalars->GetNumberOfTuples();
-    for (int i = 0; i < nTuples; i++)
+    for (int i = 0; i < numTuples; i++)
     {
         float v = vals[i];
         if (v > values[index][i])
@@ -309,17 +332,31 @@ avtRExtremesFilter::CreateFinalOutput()
 
     //Run R code.
     int numVals = idxN-idx0;
-    int numResults = 1;
-    if (dumpData)
-        numResults = 2;
+
+    //Results: $returnValue, $se.returnValue, $mle(x3), $se.mle(x3)
+    int numResults = 8;
+    //results[aggregation][location][var]
+    vector<vector<vector<float> > > results;
     
-    vector<vector<float> > results;
-    results.resize(numResults);
-    for (int i = 0; i < numResults; i++)
+    int numAggregationArrays = 0;
+    //Maxima aggregation.
+    if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+        numAggregationArrays = 1;
+    else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+        numAggregationArrays = 12;
+    else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+        numAggregationArrays = 4;
+
+    results.resize(numAggregationArrays);
+    for (int i = 0; i < numAggregationArrays; i++)
     {
         results[i].resize(numTuples);
         for (int j = 0; j < numTuples; j++)
-            results[i][j] = 0.0f;
+        {
+            results[i][j].resize(numResults);
+            for (int k = 0; k < numResults; k++)
+                results[i][j][k] = 0.0f;
+        }
     }
 
     vtkRInterface *RI = vtkRInterface::New();
@@ -340,22 +377,8 @@ avtRExtremesFilter::CreateFinalOutput()
     cout<<"inData : "<<inData->GetNumberOfTuples()<<" : "<<inData->GetNumberOfComponents()<<endl;
     cout<<"I have "<<idx0<<" "<<idxN<<endl;
 
-    char cmd[512];
-    if (computeMaxes == avtRExtremesFilter::MONTHLY)
-    {
-        sprintf(cmd,
-                "output=gevFit(inData,'monthly', %d, %d)\n"     \
-                "result = output$returnValue[%d,]\n",
-                numYears, (idxN-idx0), monthDisplay+1);
-    }
-    else if (computeMaxes == avtRExtremesFilter::YEARLY)
-    {
-        sprintf(cmd,
-                "output=gevFit(inData,'annual', %d, %d)\n"      \
-                "result = output$returnValue\n",
-                numYears, (idxN-idx0));
-    }
-        
+    string cmd = GenerateCommand("inData");
+
     string command;
     char fileLoad[1024];
     sprintf(fileLoad, "source('%s/auxil.r')\n", codeDir.c_str());
@@ -366,37 +389,25 @@ avtRExtremesFilter::CreateFinalOutput()
     command += fileLoad;
         
     command += cmd;
-    if (dumpData)
-        command = command + "result2 = output$se.returnValue\n";
     cout<<command<<endl;
     RI->EvalRscript(command.c_str());
-    RI->EvalRscript("save.image(file='tmp.RData')\n");
-        
-    for (int i = 0; i < results.size(); i++)
-    {
-        vtkDoubleArray *output;
-        if (i == 0)
-            output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result"));
-        else
-            output = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("result2"));
-        int j = 0;
-        for (int idx = idx0; idx < idxN; idx++, j++)
-        {
-            results[i][idx] = (float)output->GetComponent(0, j);
-        }
-    }
-    
-    //output->Delete(); //Looks like RI will release this??
+    //RI->EvalRscript("save.image(file='tmp.RData')\n");
+
+    SetResults(results, RI);
+
     inData->Delete();
     RI->Delete();
 
 #ifdef PARALLEL
-    float *s = new float[numTuples];
+    float *s = new float[results[0][0].size()];
     for (int i = 0; i < results.size(); i++)
     {
-        SumFloatArray(&(results[i][0]), s, numTuples);
-        if (PAR_Rank() == 0)
-            memcpy(&(results[i][0]), s, numTuples*sizeof(float));
+        for (int j = 0; j < results[i].size(); j++)
+        {
+            SumFloatArray(&(results[i][j][0]), s, results[0][0].size());
+            if (PAR_Rank() == 0)
+                memcpy(&(results[i][j][0]), s, results[0][0].size()*sizeof(float));
+        }
     }
     delete [] s;
 #endif
@@ -410,9 +421,18 @@ avtRExtremesFilter::CreateFinalOutput()
         outVar->SetNumberOfComponents(1);
         outVar->SetNumberOfTuples(numTuples);
         int idx = 0;
+        int aggrIdx = 0;
+        
+        if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+            aggrIdx = 0;
+        else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+            aggrIdx = (int)displayMonth;
+        else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+            aggrIdx = (int)displaySeason;
+        
         for (int i = 0; i < numTuples; i++, idx++)
         {
-            outVar->SetValue(i, results[0][idx]);
+            outVar->SetValue(i, results[aggrIdx][idx][0]);
         }
     
         if (nodeCenteredData)
@@ -428,18 +448,11 @@ avtRExtremesFilter::CreateFinalOutput()
 
         if (dumpData)
         {
-            string nm;
-            for (int i = 0; i < results.size(); i++)
+            for (int i=0; i < outputArr.size(); i++)
             {
-                if (i == 0)
-                    nm = "gev_returnValue.txt";
-                else if (i == 1)
-                    nm = "gev_se.returnValue.txt";
-                    
-                ofstream ofile(nm.c_str());
-                for (int j = 0; j < numTuples-1; j++)
-                    ofile<<results[i][j]<<", ";
-                ofile<<results[i][numTuples-1];
+                ofstream ofile(outputArr[i].dumpFileName.c_str());
+                for (int j = 0; j < numTuples; j++)
+                    ofile<<results[outputArr[i].aggrIdx][j][outputArr[i].varIdx]<<endl;
             }
         }
     }
@@ -447,4 +460,180 @@ avtRExtremesFilter::CreateFinalOutput()
         SetOutputDataTree(new avtDataTree());
 
     avtCallback::ResetTimeout(5*60);
+}
+
+
+// ****************************************************************************
+// Method:  avtRExtremesFilter::GenerateCommand
+//
+// Programmer:  Dave Pugmire
+// Creation:    Wed May 23 15:21:06 EDT 2012
+//
+// ****************************************************************************
+
+string
+avtRExtremesFilter::GenerateCommand(const char *var)
+{
+    string aggrType;
+    int n;
+    if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+    {
+        aggrType = "annual";
+        n = 1;
+    }
+    else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+    {
+        aggrType = "monthly";
+        n = 12;
+    }
+    else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+    {
+        aggrType = "seasonal";
+        n = 4;
+    }
+
+    char str[512];
+    sprintf(str,
+            "output=gevFit(data=%s,aggregation='%s', nYears=%d, nLocations=%d, returnParams=TRUE)\n",
+            var, aggrType.c_str(), numYears, (idxN-idx0));
+    
+    string command = str;
+    for (int i=0; i < outputArr.size(); i++)
+    {
+        sprintf(str, "%s = %s\n", outputArr[i].name.c_str(), outputArr[i].Rname.c_str());
+        command = command + str;
+    }
+    
+    return command;
+}
+
+// ****************************************************************************
+// Method:  avtRExtremesFilter::SetResults
+//
+// Programmer:  Dave Pugmire
+// Creation:    Wed May 23 15:21:06 EDT 2012
+//
+// ****************************************************************************
+
+void
+avtRExtremesFilter::SetResults(vector<vector<vector<float> > > &results,
+                               vtkRInterface *RI)
+{
+    int numAggregationArrays = 0;
+    if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+        numAggregationArrays = 1;
+    else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+        numAggregationArrays = 12;
+    else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+        numAggregationArrays = 4;
+
+    vtkDoubleArray *arr;
+    for (int i=0; i < outputArr.size(); i++)
+    {
+        arr = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray(outputArr[i].name.c_str()));
+        int j = 0;
+        //cout<<"results: "<<results.size()<<" x "<<results[0].size()<<" x "<<results[0][0].size()<<endl;
+        for (int idx = idx0; idx < idxN; idx++, j++)
+        {
+            //cout<<arr->GetComponent(0,j)<<endl;
+            //cout<<"results["<<outputArr[i].aggrIdx<<"]["<<idx<<"]["<<outputArr[i].varIdx<<"]"<<endl;
+            results[outputArr[i].aggrIdx][idx][outputArr[i].varIdx] = (float)arr->GetComponent(0, j);
+        }
+    }
+}
+
+
+static string
+makeFileName(const char *nm, int i, int d, int N, int DIM)
+{
+    string fname;
+    char str[512];
+    const char *a[1] = {"ANNUAL"};
+    const char *s[4] = {"WINTER", "SPRING", "SUMMER", "FALL"};
+    const char *m[12] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+
+    const char **t;
+    if (N == 1)
+        t = a;
+    else if (N == 4)
+        t = s;
+    else if (N == 12)
+        t = m;
+
+    
+    if (DIM == 1)
+        sprintf(str, "GEV.%s_%s.txt", t[i], nm);
+    else
+        sprintf(str, "GEV.%s_%s_%d.txt", t[i], nm, d);
+    fname = str;
+
+    return fname;
+}
+
+// ****************************************************************************
+// Method:  avtRExtremesFilter::SetupOutput
+//
+// Programmer:  Dave Pugmire
+// Creation:    Wed May 23 15:21:06 EDT 2012
+//
+// ****************************************************************************
+
+void
+avtRExtremesFilter::SetupOutput(const char *nm, const char *Rnm, int dim)
+{
+    char str[512];
+    int n;
+    char *fileNamePrefix;
+    if (aggregation == ExtremeValueAnalysisAttributes::ANNUAL)
+    {
+        n = 1;
+        fileNamePrefix = "GEV.annual_";
+    }
+    else if (aggregation == ExtremeValueAnalysisAttributes::MONTHLY)
+    {
+        n = 12;
+        fileNamePrefix = "GEV.%s_";
+    }
+    else if (aggregation == ExtremeValueAnalysisAttributes::SEASONAL)
+    {
+        n = 4;
+        fileNamePrefix = "GEV.%s_";
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int d = 0; d < dim; d++)
+        {
+            outputType o;
+            o.varIdx = indexCounter+d;
+            o.aggrIdx = i;
+            
+            if (dim == 1)
+                sprintf(str, "%s_%d", nm, i);
+            else
+                sprintf(str, "%s_%d_%d", nm, i, d);
+            o.name = str;
+            
+            if (dim == 1)
+            {
+                if (n == 1)
+                    sprintf(str, "output$%s", Rnm);
+                else
+                    sprintf(str, "output$%s[%d,]", Rnm, i+1);
+            }
+            else
+            {
+                if (n == 1)
+                    sprintf(str, "output$%s[%d,]", Rnm, d+1);
+                else
+                    sprintf(str, "output$%s[%d,%d,]", Rnm, d+1, i+1);
+            }
+            o.Rname = str;
+
+            o.dumpFileName = makeFileName(nm, i, d, n, dim);
+
+            outputArr.push_back(o);
+        }
+    }
+    indexCounter += dim;
 }

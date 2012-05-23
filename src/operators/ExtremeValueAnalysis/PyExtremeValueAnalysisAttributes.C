@@ -76,76 +76,99 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *computeMaxes_names = "MONTHLY, YEARLY, SEASONAL";
-    switch (atts->GetComputeMaxes())
+    const char *aggregation_names = "ANNUAL, MONTHLY, SEASONAL";
+    switch (atts->GetAggregation())
     {
-      case ExtremeValueAnalysisAttributes::MONTHLY:
-          SNPRINTF(tmpStr, 1000, "%scomputeMaxes = %sMONTHLY  # %s\n", prefix, prefix, computeMaxes_names);
+      case ExtremeValueAnalysisAttributes::ANNUAL:
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sANNUAL  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::YEARLY:
-          SNPRINTF(tmpStr, 1000, "%scomputeMaxes = %sYEARLY  # %s\n", prefix, prefix, computeMaxes_names);
+      case ExtremeValueAnalysisAttributes::MONTHLY:
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sMONTHLY  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::SEASONAL:
-          SNPRINTF(tmpStr, 1000, "%scomputeMaxes = %sSEASONAL  # %s\n", prefix, prefix, computeMaxes_names);
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sSEASONAL  # %s\n", prefix, prefix, aggregation_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    const char *DisplayMonth_names = "January, February, March, April, May, "
+    const char *displayMonth_names = "January, February, March, April, May, "
         "June, July, August, September, "
         "October, November, December";
     switch (atts->GetDisplayMonth())
     {
       case ExtremeValueAnalysisAttributes::January:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJanuary  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJanuary  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::February:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sFebruary  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sFebruary  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::March:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sMarch  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMarch  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::April:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sApril  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sApril  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::May:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sMay  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMay  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::June:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJune  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJune  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::July:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sJuly  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJuly  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::August:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sAugust  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAugust  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::September:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sSeptember  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sSeptember  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::October:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sOctober  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sOctober  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::November:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sNovember  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sNovember  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case ExtremeValueAnalysisAttributes::December:
-          SNPRINTF(tmpStr, 1000, "%sDisplayMonth = %sDecember  # %s\n", prefix, prefix, DisplayMonth_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sDecember  # %s\n", prefix, prefix, displayMonth_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *displaySeason_names = "WINTER, SPRING, SUMMER, FALL";
+    switch (atts->GetDisplaySeason())
+    {
+      case ExtremeValueAnalysisAttributes::WINTER:
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sWINTER  # %s\n", prefix, prefix, displaySeason_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::SPRING:
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sSPRING  # %s\n", prefix, prefix, displaySeason_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::SUMMER:
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sSUMMER  # %s\n", prefix, prefix, displaySeason_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::FALL:
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sFALL  # %s\n", prefix, prefix, displaySeason_names);
           str += tmpStr;
           break;
       default:
@@ -172,7 +195,7 @@ ExtremeValueAnalysisAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_SetComputeMaxes(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_SetAggregation(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
 
@@ -180,15 +203,15 @@ ExtremeValueAnalysisAttributes_SetComputeMaxes(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the computeMaxes in the object.
+    // Set the aggregation in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetComputeMaxes(ExtremeValueAnalysisAttributes::ComputeMaxes(ival));
+        obj->data->SetAggregation(ExtremeValueAnalysisAttributes::AggregationType(ival));
     else
     {
-        fprintf(stderr, "An invalid computeMaxes value was given. "
+        fprintf(stderr, "An invalid aggregation value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "MONTHLY, YEARLY, SEASONAL.");
+                        "ANNUAL, MONTHLY, SEASONAL.");
         return NULL;
     }
 
@@ -197,10 +220,10 @@ ExtremeValueAnalysisAttributes_SetComputeMaxes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_GetComputeMaxes(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_GetAggregation(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetComputeMaxes()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAggregation()));
     return retval;
 }
 
@@ -213,12 +236,12 @@ ExtremeValueAnalysisAttributes_SetDisplayMonth(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the DisplayMonth in the object.
+    // Set the displayMonth in the object.
     if(ival >= 0 && ival < 12)
-        obj->data->SetDisplayMonth(ExtremeValueAnalysisAttributes::Month(ival));
+        obj->data->SetDisplayMonth(ExtremeValueAnalysisAttributes::MonthType(ival));
     else
     {
-        fprintf(stderr, "An invalid DisplayMonth value was given. "
+        fprintf(stderr, "An invalid displayMonth value was given. "
                         "Valid values are in the range of [0,11]. "
                         "You can also use the following names: "
                         "January, February, March, April, May, "
@@ -236,6 +259,39 @@ ExtremeValueAnalysisAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayMonth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDisplaySeason(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the displaySeason in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetDisplaySeason(ExtremeValueAnalysisAttributes::SeasonType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid displaySeason value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "WINTER, SPRING, SUMMER, FALL.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDisplaySeason(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplaySeason()));
     return retval;
 }
 
@@ -291,10 +347,12 @@ ExtremeValueAnalysisAttributes_GetDataScaling(PyObject *self, PyObject *args)
 
 PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBUTES_NMETH] = {
     {"Notify", ExtremeValueAnalysisAttributes_Notify, METH_VARARGS},
-    {"SetComputeMaxes", ExtremeValueAnalysisAttributes_SetComputeMaxes, METH_VARARGS},
-    {"GetComputeMaxes", ExtremeValueAnalysisAttributes_GetComputeMaxes, METH_VARARGS},
+    {"SetAggregation", ExtremeValueAnalysisAttributes_SetAggregation, METH_VARARGS},
+    {"GetAggregation", ExtremeValueAnalysisAttributes_GetAggregation, METH_VARARGS},
     {"SetDisplayMonth", ExtremeValueAnalysisAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
+    {"SetDisplaySeason", ExtremeValueAnalysisAttributes_SetDisplaySeason, METH_VARARGS},
+    {"GetDisplaySeason", ExtremeValueAnalysisAttributes_GetDisplaySeason, METH_VARARGS},
     {"SetDumpData", ExtremeValueAnalysisAttributes_SetDumpData, METH_VARARGS},
     {"GetDumpData", ExtremeValueAnalysisAttributes_GetDumpData, METH_VARARGS},
     {"SetDataScaling", ExtremeValueAnalysisAttributes_SetDataScaling, METH_VARARGS},
@@ -327,16 +385,16 @@ ExtremeValueAnalysisAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "computeMaxes") == 0)
-        return ExtremeValueAnalysisAttributes_GetComputeMaxes(self, NULL);
+    if(strcmp(name, "aggregation") == 0)
+        return ExtremeValueAnalysisAttributes_GetAggregation(self, NULL);
+    if(strcmp(name, "ANNUAL") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::ANNUAL));
     if(strcmp(name, "MONTHLY") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MONTHLY));
-    if(strcmp(name, "YEARLY") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::YEARLY));
     if(strcmp(name, "SEASONAL") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SEASONAL));
 
-    if(strcmp(name, "DisplayMonth") == 0)
+    if(strcmp(name, "displayMonth") == 0)
         return ExtremeValueAnalysisAttributes_GetDisplayMonth(self, NULL);
     if(strcmp(name, "January") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::January));
@@ -363,6 +421,17 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "December") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::December));
 
+    if(strcmp(name, "displaySeason") == 0)
+        return ExtremeValueAnalysisAttributes_GetDisplaySeason(self, NULL);
+    if(strcmp(name, "WINTER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::WINTER));
+    if(strcmp(name, "SPRING") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SPRING));
+    if(strcmp(name, "SUMMER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SUMMER));
+    if(strcmp(name, "FALL") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::FALL));
+
     if(strcmp(name, "dumpData") == 0)
         return ExtremeValueAnalysisAttributes_GetDumpData(self, NULL);
     if(strcmp(name, "dataScaling") == 0)
@@ -381,10 +450,12 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "computeMaxes") == 0)
-        obj = ExtremeValueAnalysisAttributes_SetComputeMaxes(self, tuple);
-    else if(strcmp(name, "DisplayMonth") == 0)
+    if(strcmp(name, "aggregation") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetAggregation(self, tuple);
+    else if(strcmp(name, "displayMonth") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
+    else if(strcmp(name, "displaySeason") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDisplaySeason(self, tuple);
     else if(strcmp(name, "dumpData") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDumpData(self, tuple);
     else if(strcmp(name, "dataScaling") == 0)

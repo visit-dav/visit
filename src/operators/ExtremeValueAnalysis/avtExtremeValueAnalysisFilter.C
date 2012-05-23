@@ -161,13 +161,9 @@ void
 avtExtremeValueAnalysisFilter::Execute()
 {
     avtRExtremesFilter *f = new avtRExtremesFilter();
-    if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::MONTHLY)
-    {
-        f->computeMaxes = avtRExtremesFilter::MONTHLY;
-        f->monthDisplay = (int)atts.GetDisplayMonth() - (int)ExtremeValueAnalysisAttributes::January;
-    }
-    else if (atts.GetComputeMaxes() == ExtremeValueAnalysisAttributes::YEARLY)
-        f->computeMaxes = avtRExtremesFilter::YEARLY;
+    f->aggregation = atts.GetAggregation();
+    f->displayMonth = atts.GetDisplayMonth();
+    f->displaySeason = atts.GetDisplaySeason();
 
     std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
     std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;

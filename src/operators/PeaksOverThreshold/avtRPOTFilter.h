@@ -57,12 +57,11 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     std::string             GetDumpFileName(int idx, int var);
 
     vtkDataSet *outDS;
-    int numTuples, numTimes;
+    int numTuples, numTimes, numYears;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
     //values[location][aggregation][time_i]
     std::vector<std::vector<std::vector<double> > >values;
-    int numYears;
 };
 
 #endif
