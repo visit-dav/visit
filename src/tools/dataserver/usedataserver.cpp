@@ -91,11 +91,79 @@ GetData(VisItDataServer &server, const std::string plotId,
     delete atts;
 
     //
-    // Add a plot to the network. Use Label so we get the volume data. We could
-    // use Spreadsheet too since it won't create more arrays. The advantage of
-    // Label is that it works on vectors too.
+    // Add a plot to the network.
     //
     server.AddPlot(plotId);
+
+    //
+    // Execute the plot.
+    //
+    return server.Execute(n);
+}
+
+// ****************************************************************************
+// Method: GetContourData
+//
+// Purpose: 
+//   Set up a network on the engine, execute it, and return VTK data.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       Return contour surfaces.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 23 15:47:28 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+vtkDataSet **
+GetContourData(VisItDataServer &server, 
+    const std::string &filename, int timeState, const std::string &var,
+    int &n)
+{
+    //
+    // Open the database.
+    //
+    server.OpenDatabase(filename, timeState);
+
+    //
+    // Read the variable of interest.
+    //
+    server.ReadData(var);
+
+    //
+    // Create an IndexSelect operator
+    //
+    std::string id("IndexSelect_1.0");
+    AttributeSubject *atts = server.CreateOperatorAttributes(id);
+    atts->SetValue("xMin", 20);
+    atts->SetValue("xMax", 25);
+    server.AddOperator(id, atts);
+    delete atts;
+
+    //
+    // Create an Isosurface operator
+    //
+    std::string id2("Isosurface_1.0");
+    atts = server.CreateOperatorAttributes(id2);
+    atts->SetValue("contourMethod", 1); // Select by value
+    std::vector<double> values;         // Make up some contour values
+    values.push_back(1.3);
+    values.push_back(2.4);
+    values.push_back(3.7);
+    values.push_back(4.9);
+    atts->SetValue("contourValue", values);
+    server.AddOperator(id2, atts);
+    delete atts;
+
+    //
+    // Add a plot to the network.
+    //
+    server.AddPlot("Pseudocolor_1.0");
 
     //
     // Execute the plot.
@@ -165,16 +233,20 @@ main(int argc, char *argv[])
         int         timeState = 0;
         const char *varnames[] = {"hardyglobal", "grad", "hardyglobal"};
         const char *filebases[] = {"scalar", "vector", "contour"};
-        const char *bestplot[] = {"Pseudocolor_1.0", "Label_1.0", "Contour_1.0"};
-        for(int j = 0; j < 2; ++j) // Do 2 for now since Contour has issues.
+        const char *bestplot[] = {"Pseudocolor_1.0", "Label_1.0", "Pseudocolor_1.0"};
+        for(int j = 0; j < 3; ++j)
         {
             //
             // Use the server to return some VTK data.
             //
             int n = 0;
-            vtkDataSet **datasets = GetData(server, bestplot[j], 
-                                            filename, timeState, varnames[j],
-                                            n);
+            vtkDataSet **datasets = NULL;
+            if(j == 0)
+                datasets = GetData(server, bestplot[j], filename, timeState, varnames[j], n);
+            else if(j == 1)
+                datasets = GetData(server, bestplot[j], filename, timeState, varnames[j], n);
+            else if(j == 2)
+                datasets = GetContourData(server, filename, timeState, varnames[j], n);
 
             //
             // Now, do something with the VTK datasets. We're writing them out.
