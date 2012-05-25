@@ -26,7 +26,8 @@ SetAnnotationAttributes(a)
 #    multicolor mode -- normal plot, then CZO on, then CZO off
 # -----------------------------------------------------------------------------
 TestSection("Multicolor mode")
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 
 AddPlot("FilledBoundary", "mat1");
 DrawPlots()

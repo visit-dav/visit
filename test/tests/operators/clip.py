@@ -48,15 +48,16 @@ def TestOne(filename, index, zonal_var, nodal_var, radius):
    Test(name)
    DeleteAllPlots()
 
-TestOne("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, 4*0, "d", "u", 0.5)
-TestOne("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE, 4*1, "d", "u", 0.5)
-TestOne("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE, 4*2, "d", "u", 3)
-TestOne("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE, 4*3, "d", "u", 4)
-TestOne("../data/silo_%s_test_data/globe.silo"%SILO_MODE, 4*4, "t", "u", 5)
+TestOne(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE, 4*0, "d", "u", 0.5)
+TestOne(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE, 4*1, "d", "u", 0.5)
+TestOne(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE, 4*2, "d", "u", 3)
+TestOne(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE, 4*3, "d", "u", 4)
+TestOne(data_path("silo_%s_test_data/globe.silo")%SILO_MODE, 4*4, "t", "u", 5)
 
 # Test doing a clip where there are no planes selected.  This has caused
 # a crash ['7195].
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor" , "d")
 AddOperator("Clip")
 c = ClipAttributes()
@@ -74,7 +75,8 @@ test_idx += 1
 
 # Test accurate vs. fast.
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Mesh", "mesh1")
 c = ClipAttributes()
 c.funcType = c.Plane  # Plane, Sphere

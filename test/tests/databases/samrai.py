@@ -65,7 +65,8 @@ def TurnOffSetsByName(silr, cat, names):
             if setname == names:
                 silr.TurnOffSet(s)
 
-OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
 
 #
 # just tests that default plot comes up automatically 
@@ -156,7 +157,8 @@ Test("samrai_09")
 #
 DeleteAllPlots()
 
-OpenDatabase("../data/samrai_test_data/ale2d/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/ale2d/dumps.visit"))
+
 ResetView()
 
 #
@@ -191,7 +193,8 @@ Test("samrai_12")
 #
 DeleteAllPlots()
 
-OpenDatabase("../data/samrai_test_data/mats-par3/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/mats-par3/dumps.visit"))
+
 ResetView()
 
 #
@@ -291,7 +294,8 @@ DeleteAllPlots()
 # Open a new database that has levels that change over time so we can test
 # that plots get the right metadata and SIL as time advances.
 #
-OpenDatabase("../data/samrai_test_data/front/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/front/dumps.visit"))
+
 # Get rid of the default plot
 DeleteAllPlots()
 AddPlot("FilledBoundary", "levels")
@@ -307,7 +311,8 @@ Test("samrai_22")
 # Test a database where some variables are not defined on all patches
 #
 DeleteAllPlots()
-OpenDatabase("../data/samrai_test_data/viz_2d/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/viz_2d/dumps.visit"))
+
 AddPlot("Pseudocolor", "Function_0") # only defined on some patches
 AddPlot("Pseudocolor", "Function_1") # only defined on some other patches
 DrawPlots()
@@ -317,7 +322,8 @@ Test("samrai_23")
 # Test a samrai database with sparse material representation
 #
 DeleteAllPlots()
-OpenDatabase("../data/samrai_test_data/sparse_mats/summary.samrai")
+OpenDatabase(data_path("samrai_test_data/sparse_mats/summary.samrai"))
+
 AddPlot("Pseudocolor", "energy")
 DrawPlots()
 Test("samrai_24")

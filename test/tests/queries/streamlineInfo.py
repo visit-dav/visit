@@ -14,7 +14,8 @@
 # ----------------------------------------------------------------------------
 
 def QueryMain() :
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Streamline", "grad")
     sa = StreamlineAttributes()
     sa.sourceType = sa.SpecifiedLine

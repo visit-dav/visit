@@ -23,7 +23,8 @@ import os
 #
 # Test a single block structured grid with scalars.
 #
-OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -51,7 +52,8 @@ DefineArrayExpression("pa", "array_compose(p1,p1)")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/multi_curv3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_curv3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -72,7 +74,8 @@ TestText("xrayimage04", s)
 #
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
@@ -114,7 +117,8 @@ DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 

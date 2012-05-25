@@ -86,7 +86,7 @@ def AddMoleculePlot(db, var):
 
 def test0():
     TestSection("Testing Rattlesnake venom")
-    AddMoleculePlot("../data/ProteinDataBank_test_data/crotamine.pdb", "element")
+    AddMoleculePlot(data_path("ProteinDataBank_test_data/crotamine.pdb"), "element")
 
     v0 = View3DAttributes()
     v0.viewNormal = (-0.967329, 0.252251, -0.0253765)
@@ -139,7 +139,7 @@ def test0():
 
 def test1():
     TestSection("Testing small DNA")
-    AddMoleculePlot("../data/ProteinDataBank_test_data/1NTS.pdb", "element")
+    AddMoleculePlot(data_path("ProteinDataBank_test_data/1NTS.pdb"), "element")
 
     v1 = View3DAttributes()
     v1.viewNormal = (-0.320353, 0.944248, 0.075961)
@@ -192,7 +192,7 @@ def test1():
 
 def test2():
     TestSection("Testing insulin")
-    AddMoleculePlot("../data/ProteinDataBank_test_data/1UZ9.pdb", "element")
+    AddMoleculePlot(data_path("ProteinDataBank_test_data/1UZ9.pdb"), "element")
 
     v2 = View3DAttributes()
     v2.viewNormal = (0.215329, 0.245957, 0.94506)
@@ -245,7 +245,7 @@ def test2():
 
 def test3():
     TestSection("Testing Black Mamba venom")
-    AddMoleculePlot("../data/ProteinDataBank_test_data/1TFS.pdb", "element")
+    AddMoleculePlot(data_path("ProteinDataBank_test_data/1TFS.pdb"), "element")
 
     v3 = View3DAttributes()
     v3.viewNormal = (-0.242177, -0.689536, 0.682562)
@@ -305,7 +305,7 @@ def test3():
 # NOTE: This test is not enabled because it fails. It needs baselines too.
 def test4():
     TestSection("Testing file replacement with ProteinDataBank files")
-    AddMoleculePlot("../data/ProteinDataBank_test_data/crotamine.pdb", "element")
+    AddMoleculePlot(data_path("ProteinDataBank_test_data/crotamine.pdb"), "element")
 
     v0 = View3DAttributes()
     v0.viewNormal = (-0.967329, 0.252251, -0.0253765)
@@ -323,8 +323,8 @@ def test4():
     v0.centerOfRotation = (31.726, -54.1675, 13.645)
     SetView3D(v0)
     Test("proteindb_4_00")
+    ReplaceDatabase(data_path("ProteinDataBank_test_data/1UZ9.pdb"))
 
-    ReplaceDatabase("../data/ProteinDataBank_test_data/1UZ9.pdb")
     v1 = View3DAttributes()
     v1.viewNormal = (-0.320353, 0.944248, 0.075961)
     v1.focus = (-0.0580001, 0.0915003, 0.3815)

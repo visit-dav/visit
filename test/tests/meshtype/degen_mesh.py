@@ -35,12 +35,15 @@ DefineScalarExpression("pos", "sqrt(coords[0]*coords[0]+coords[1]*coords[1]+coor
 #
 
 # Test that we can make the meshes with no modification.
-OpenDatabase("../data/vtk_test_data/curv_flat_i.vtk")
+OpenDatabase(data_path("vtk_test_data/curv_flat_i.vtk"))
+
 AddPlot("Mesh", "mesh")
 # If you do a DrawPlots now, you will exhibit '5337
-OpenDatabase("../data/vtk_test_data/curv_flat_j.vtk")
+OpenDatabase(data_path("vtk_test_data/curv_flat_j.vtk"))
+
 AddPlot("Mesh", "mesh")
-OpenDatabase("../data/vtk_test_data/curv_flat_k.vtk")
+OpenDatabase(data_path("vtk_test_data/curv_flat_k.vtk"))
+
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("degen_mesh_01")
@@ -80,20 +83,23 @@ SetView3D(v)
 Test("degen_mesh_02")
 
 # Test that we can do PC plots ('5335)
-ActivateDatabase("../data/vtk_test_data/curv_flat_i.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_i.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp = DisplaceAttributes()
 disp.variable = "i_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_j.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_j.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp.variable = "j_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_k.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_k.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)
@@ -111,20 +117,23 @@ DeleteActivePlots()
 
 
 # Test that we can do contours ('5333)
-ActivateDatabase("../data/vtk_test_data/curv_flat_i.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_i.vtk"))
+
 AddPlot("Contour", "pos")
 disp = DisplaceAttributes()
 disp.variable = "i_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_j.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_j.vtk"))
+
 AddPlot("Contour", "pos")
 disp.variable = "j_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_k.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_k.vtk"))
+
 AddPlot("Contour", "pos")
 disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)
@@ -140,12 +149,15 @@ Test("degen_mesh_04")
 DeleteAllPlots()
 
 # Test that we can make the meshes with no modification.
-OpenDatabase("../data/vtk_test_data/rect_flat_i.vtk")
+OpenDatabase(data_path("vtk_test_data/rect_flat_i.vtk"))
+
 AddPlot("Mesh", "mesh")
 # If you do a DrawPlots now, you will exhibit '5337
-OpenDatabase("../data/vtk_test_data/rect_flat_j.vtk")
+OpenDatabase(data_path("vtk_test_data/rect_flat_j.vtk"))
+
 AddPlot("Mesh", "mesh")
-OpenDatabase("../data/vtk_test_data/rect_flat_k.vtk")
+OpenDatabase(data_path("vtk_test_data/rect_flat_k.vtk"))
+
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("degen_mesh_05")
@@ -184,20 +196,23 @@ SetView3D(v)
 Test("degen_mesh_06")
 
 # Test that we can do PC plots ('5335)
-ActivateDatabase("../data/vtk_test_data/rect_flat_i.vtk")
+ActivateDatabase(data_path("vtk_test_data/rect_flat_i.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp = DisplaceAttributes()
 disp.variable = "i_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/rect_flat_j.vtk")
+ActivateDatabase(data_path("vtk_test_data/rect_flat_j.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp.variable = "j_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/rect_flat_k.vtk")
+ActivateDatabase(data_path("vtk_test_data/rect_flat_k.vtk"))
+
 AddPlot("Pseudocolor", "pos")
 disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)
@@ -215,20 +230,23 @@ DeleteActivePlots()
 
 
 # Test that we can do contours ('5333)
-ActivateDatabase("../data/vtk_test_data/curv_flat_i.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_i.vtk"))
+
 AddPlot("Contour", "pos")
 disp = DisplaceAttributes()
 disp.variable = "i_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_j.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_j.vtk"))
+
 AddPlot("Contour", "pos")
 disp.variable = "j_disp"
 SetDefaultOperatorOptions(disp)
 AddOperator("Displace")
 
-ActivateDatabase("../data/vtk_test_data/curv_flat_k.vtk")
+ActivateDatabase(data_path("vtk_test_data/curv_flat_k.vtk"))
+
 AddPlot("Contour", "pos")
 disp.variable = "k_disp"
 SetDefaultOperatorOptions(disp)

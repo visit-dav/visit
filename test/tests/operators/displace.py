@@ -34,7 +34,8 @@ disp.variable = "vel"
 SetDefaultOperatorOptions(disp)
 
 # 2D, rectilinear.
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Displace")
 AddPlot("Mesh", "quadmesh2d")
@@ -45,24 +46,28 @@ Test("ops_disp01")
 
 SetActivePlots(1)
 DeleteActivePlots()
-ReplaceDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 ResetView()
 
 Test("ops_disp02")
 
-ReplaceDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 v = GetView3D()
 v.viewNormal = (0.61, -0.61, 0.61)
 SetView3D(v)
 
 Test("ops_disp03")
 
-ReplaceDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 Test("ops_disp04")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/ucd3d.silo")%SILO_MODE)
+
 
 AddPlot("Subset", "mat1")
 AddOperator("Displace")
@@ -73,7 +78,8 @@ DrawPlots()
 Test("ops_disp05")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Displace")
 disp.variable = "vel"
@@ -93,7 +99,8 @@ TestText("ops_disp08", error)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
+
 
 #   8265: cell-centered vector with rectilinear mesh 
 # + 8259: file format the declares itself having 2D vectors + displace

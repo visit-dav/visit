@@ -94,7 +94,8 @@ def SetCurvePlotDefaults():
 
 
 def TestAllTimeQueries():
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
 
@@ -155,7 +156,8 @@ def TestAllTimeQueries():
 
 def TestFilledBoundary():
     #  bug '4708
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("FilledBoundary", "Material")
     DrawPlots()
     TurnMaterialsOff(("1 barrier", "2 water"))
@@ -185,7 +187,8 @@ def TestFilledBoundary():
 
 def TestOperators():
     #  bug '4818
-    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     AddOperator("Isovolume")
     iso = IsovolumeAttributes()
@@ -229,7 +232,8 @@ def TestOperators():
 
 def TestExpressions():
     #bug '4784
-    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
+    OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
+
     AddPlot("Pseudocolor", "mesh/ireg")
     pa = PseudocolorAttributes()
     pa.minFlag = 1
@@ -254,7 +258,8 @@ def TestExpressions():
     DeleteAllPlots()
 
     # test a scalar expression
-    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+
     DefineScalarExpression("p2", "pressure*pressure")
     AddPlot("Pseudocolor", "p2")
     DrawPlots()
@@ -269,7 +274,8 @@ def TestExpressions():
     SetActiveWindow(1)
     DeleteAllPlots()
 
-    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
+    OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
+
     DefineScalarExpression("m", "matvf(material, 1)")
     AddPlot("Pseudocolor", "m")
     DrawPlots()
@@ -291,7 +297,7 @@ def TestTransientVariable():
 
     # Do what is necessary to get access to the transient variable,
     # because QueryOverTime requires an active drawn plot.
-    db = "../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE
+    db = data_path("silo_%s_test_data/wave_tv*.silo database") % SILO_MODE
     OpenDatabase(db)
     SetTimeSliderState(17)
     ReOpenDatabase(db)
@@ -332,7 +338,8 @@ def TestTransientVariable():
 
 def TestSpecifyTimeQueryWindow():
     # bug '5163
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure") 
     DrawPlots()
 
@@ -384,7 +391,8 @@ def TestSpecifyTimeQueryWindow():
 
 def TestTimeVaryingSIL():
     #bug '5473
-    OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+    OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
 
     cfileName = "./temp.curve"
     curveFile = open(cfileName, "wt")
@@ -449,9 +457,11 @@ def TestTimeVaryingSIL():
 
 def TestQueryAfterQueryOverTime():
     # bug '5823
-    OpenDatabase("../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave_tv.visit")%SILO_MODE)
+
     SetTimeSliderState(17)
-    ReOpenDatabase("../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
+    ReOpenDatabase(data_path("silo_%s_test_data/wave_tv.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "transient")
     DrawPlots()
 
@@ -468,7 +478,8 @@ def TestQueryAfterQueryOverTime():
     DeleteAllPlots()
 
     # bug '6042
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     TurnMaterialsOn()
@@ -489,7 +500,8 @@ def TestQueryAfterQueryOverTime():
 
 def TestMili():
     # bug '6430
-    OpenDatabase("../data/mili_test_data/m_plot.mili")
+    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+
     AddPlot("Pseudocolor", "derived/velocity/z")
     DrawPlots()
 
@@ -536,7 +548,8 @@ def TestMili():
     DeleteAllPlots()
 
 def MultiVarTimePick():
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
 
@@ -566,7 +579,8 @@ def MultiVarTimePick():
     SetActiveWindow(1)
     DeleteAllPlots()
 
-    OpenDatabase("../data/mili_test_data/m_plot.mili")
+    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+
     AddPlot("Pseudocolor", "inteng")
     DrawPlots()
 

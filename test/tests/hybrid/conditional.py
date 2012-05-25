@@ -25,7 +25,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 
 DefineScalarExpression("bigun", 'if(and(gt(nmats(mat1), 1.), gt(matvf(mat1, "4"), 0.)), d, 0.)')

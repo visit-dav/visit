@@ -32,7 +32,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/mili_test_data/m_plot.mili")
+OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+
 AddPlot("FilledBoundary", "materials1_no_free_nodes(mesh1_no_free_nodes)")
 DrawPlots()
 
@@ -168,12 +169,13 @@ SetPlotSILRestriction(sil)
 Test("mili_30")
 
 DeleteAllPlots()
-CloseDatabase("../data/mili_test_data/m_plot.mili")
+CloseDatabase(data_path("mili_test_data/m_plot.mili"))
 
 #
 # Test a mili database with time-invariant nodal positions
 #
-OpenDatabase("../data/mili_test_data/m1_plot.mili")
+OpenDatabase(data_path("mili_test_data/m1_plot.mili"))
+
 SetTimeSliderState(5)
 AddPlot("Pseudocolor","temp")
 ResetView()

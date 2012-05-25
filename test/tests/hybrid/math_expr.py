@@ -19,7 +19,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 
 
 DefineScalarExpression("mod", "mod(t, 10)")

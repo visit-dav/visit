@@ -38,7 +38,8 @@ def TestWindowInformation(testname):
     TestText(testname, s)
 
 # Create a plot of dbA00.pdb.
-OpenDatabase("../data/pdb_test_data/dbA00.pdb")
+OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
+
 AddPlot("FilledBoundary", "material(mesh)")
 DrawPlots()
 Test("activesource00")
@@ -51,7 +52,8 @@ DeleteAllPlots()
 TestWindowInformation("activesource01")
 
 # Open dbB00.pdb and make sure that it becomes the active source.
-OpenDatabase("../data/pdb_test_data/dbB00.pdb")
+OpenDatabase(data_path("pdb_test_data/dbB00.pdb"))
+
 TestWindowInformation("activesource02")
 
 # Create a plot from it.

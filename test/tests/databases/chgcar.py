@@ -26,7 +26,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/chgcar_test_data/CHGCAR", 0, "VASP_1.0")
+OpenDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 AddPlot("Pseudocolor", "charge")
 DrawPlots()
 
@@ -38,9 +39,11 @@ View3DAtts.viewAngle = 30
 SetView3D(View3DAtts)
 
 Test("chgcar_01")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_02")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 AddOperator("Resample")
 ResampleAtts = ResampleAttributes()
@@ -59,9 +62,11 @@ SetOperatorOptions(ResampleAtts)
 DrawPlots()
 
 Test("chgcar_03")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_04")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 DeleteActivePlots()
 
@@ -80,9 +85,11 @@ SetPlotOptions(LabelAtts)
 DrawPlots()
 
 Test("chgcar_11")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_12")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 DeleteAllPlots()
 
@@ -98,9 +105,11 @@ SetOperatorOptions(ThreeSliceAtts)
 DrawPlots()
 
 Test("chgcar_13")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_14")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 DeleteAllPlots()
 
@@ -114,26 +123,32 @@ VolumeAtts.rendererType = VolumeAtts.Splatting
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_05")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_06")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 VolumeAtts.opacityAttenuation = .2
 VolumeAtts.rendererType = VolumeAtts.Texture3D
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_07")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_08")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 VolumeAtts.opacityAttenuation = .4
 VolumeAtts.rendererType = VolumeAtts.RayCasting
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_09")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR.vtk")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR.vtk"))
+
 Test("chgcar_10")
-ReplaceDatabase("../data/chgcar_test_data/CHGCAR")
+ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
+
 
 Exit()

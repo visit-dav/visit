@@ -12,7 +12,8 @@
 
 
 # test the main mesh
-OpenDatabase("../data/sami_test_data/bdw.sami")
+OpenDatabase(data_path("sami_test_data/bdw.sami"))
+
 AddPlot("Mesh","mesh")
 DrawPlots()
 v=GetView3D()
@@ -43,7 +44,8 @@ Test("sami_04")
 DeleteAllPlots()
 
 # test a multi-part sami file
-OpenDatabase("../data/sami_test_data/sample_sami.visit")
+OpenDatabase(data_path("sami_test_data/sample_sami.visit"))
+
 AddPlot("Pseudocolor","global_node_numbers")
 DrawPlots()
 ResetView()

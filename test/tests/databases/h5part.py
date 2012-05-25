@@ -13,7 +13,8 @@
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations()
 
-OpenDatabase("../data/h5part_test_data/sample.h5part", 0)
+OpenDatabase(data_path("h5part_test_data/sample.h5part"), 0)
+
 AddPlot("Pseudocolor", "GaussianField", 1, 0)
 DrawPlots()
 Test("h5part_01")

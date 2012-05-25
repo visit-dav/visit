@@ -43,7 +43,8 @@ def SetTheView():
     SetView3D(v)
 
 # Databases
-OpenDatabase("../data/tecplot_test_data/2dfed.tec")
+OpenDatabase(data_path("tecplot_test_data/2dfed.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","P")
 DrawPlots()
@@ -51,7 +52,8 @@ SetTheView()
 Test("tecplot_01")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/3dgeom.tec")
+OpenDatabase(data_path("tecplot_test_data/3dgeom.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Subset","Zones(mesh)")
 DrawPlots()
@@ -59,7 +61,8 @@ SetTheView()
 Test("tecplot_02")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/T3L3CLS17u.plt")
+OpenDatabase(data_path("tecplot_test_data/T3L3CLS17u.plt"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","U")
 DrawPlots()
@@ -70,7 +73,8 @@ SetView2D(v)
 Test("tecplot_03")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/channel.tec")
+OpenDatabase(data_path("tecplot_test_data/channel.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","U")
 DrawPlots()
@@ -78,16 +82,19 @@ SetTheView()
 Test("tecplot_04")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/crystal_plot.tec")
+OpenDatabase(data_path("tecplot_test_data/crystal_plot.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","t")
 DrawPlots()
 SetTheView()
 Test("tecplot_05")
 DeleteAllPlots();
-CloseDatabase("../data/tecplot_test_data/crystal_plot.tec")
+CloseDatabase(data_path("tecplot_test_data/crystal_plot.tec"))
 
-OpenDatabase("../data/tecplot_test_data/cube.tec")
+
+OpenDatabase(data_path("tecplot_test_data/cube.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","R")
 DrawPlots()
@@ -101,14 +108,16 @@ DeleteAllPlots();
 # tecplot file format to specify which type it is,
 # so this must wait until we have options for
 # the database plugins.  See '2440.
-#OpenDatabase("../data/tecplot_test_data/cylindrical.tec")
+##OpenDatabase(data_path("tecplot_test_data/cylindrical.tec"))
+
 #AddPlot("Mesh","mesh")
 #DrawPlots()
 #SetTheView()
 #Test("tecplot_07")
 #DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/febrfeb.tec")
+OpenDatabase(data_path("tecplot_test_data/febrfeb.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","Temperature")
 DrawPlots()
@@ -116,7 +125,8 @@ SetTheView()
 Test("tecplot_08")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/febrfep.tec")
+OpenDatabase(data_path("tecplot_test_data/febrfep.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","Temperature")
 DrawPlots()
@@ -124,7 +134,8 @@ SetTheView()
 Test("tecplot_09")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/fetebk.tec")
+OpenDatabase(data_path("tecplot_test_data/fetebk.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","C")
 DrawPlots()
@@ -132,7 +143,8 @@ SetTheView()
 Test("tecplot_10")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/fetetpt.tec")
+OpenDatabase(data_path("tecplot_test_data/fetetpt.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","C")
 DrawPlots()
@@ -140,7 +152,8 @@ SetTheView()
 Test("tecplot_11")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/flow5.tec")
+OpenDatabase(data_path("tecplot_test_data/flow5.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","V")
 DrawPlots()
@@ -148,7 +161,8 @@ SetTheView()
 Test("tecplot_12")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/human.tec")
+OpenDatabase(data_path("tecplot_test_data/human.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","R")
 DrawPlots()
@@ -156,7 +170,8 @@ SetTheView()
 Test("tecplot_13")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/movie.tec")
+OpenDatabase(data_path("tecplot_test_data/movie.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Subset","Zones(mesh)")
 DrawPlots()
@@ -164,7 +179,8 @@ SetTheView()
 Test("tecplot_14")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/multzn2d.tec")
+OpenDatabase(data_path("tecplot_test_data/multzn2d.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","Temp")
 DrawPlots()
@@ -172,7 +188,8 @@ SetTheView()
 Test("tecplot_15")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/order1.tec")
+OpenDatabase(data_path("tecplot_test_data/order1.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","psi")
 DrawPlots()
@@ -180,7 +197,8 @@ SetTheView()
 Test("tecplot_16")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/sample.tp")
+OpenDatabase(data_path("tecplot_test_data/sample.tp"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Volume","X Velocity")
 v=VolumeAttributes()
@@ -191,7 +209,8 @@ SetTheView()
 Test("tecplot_17")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/simp3dbk.tec")
+OpenDatabase(data_path("tecplot_test_data/simp3dbk.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","Density")
 DrawPlots()
@@ -199,7 +218,8 @@ SetTheView()
 Test("tecplot_18")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/simp3dpt.tec")
+OpenDatabase(data_path("tecplot_test_data/simp3dpt.tec"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","Density")
 DrawPlots()
@@ -207,7 +227,8 @@ SetTheView()
 Test("tecplot_19")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/simpscat.tec")
+OpenDatabase(data_path("tecplot_test_data/simpscat.tec"))
+
 AddPlot("Pseudocolor","T_lb_K_rb_")
 p = PseudocolorAttributes()
 p.pointSizePixels = 6
@@ -221,21 +242,24 @@ ResetView()
 Test("tecplot_20")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/simpxy.tec")
+OpenDatabase(data_path("tecplot_test_data/simpxy.tec"))
+
 AddPlot("Curve","Temperature vs/Distance")
 DrawPlots()
 SetTheView()
 Test("tecplot_21")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/simpxy2.tec")
+OpenDatabase(data_path("tecplot_test_data/simpxy2.tec"))
+
 AddPlot("Curve","Only Zone/Temperature vs/Distance")
 DrawPlots()
 SetTheView()
 Test("tecplot_22")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/symmetricFlow.plt")
+OpenDatabase(data_path("tecplot_test_data/symmetricFlow.plt"))
+
 AddPlot("Pseudocolor","VELOCITY")
 DrawPlots()
 ResetView()
@@ -255,7 +279,8 @@ SetView2D(v)
 Test("tecplot_24")
 DeleteAllPlots();
 
-OpenDatabase("../data/tecplot_test_data/pointmesh.tec")
+OpenDatabase(data_path("tecplot_test_data/pointmesh.tec"))
+
 AddPlot("Mesh","mesh")
 ResetView()
 DrawPlots()

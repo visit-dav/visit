@@ -21,7 +21,8 @@ import os, string
 
 
 
-OpenDatabase("../data/miranda_test_data/TG_vortex/plot.raw")
+OpenDatabase(data_path("miranda_test_data/TG_vortex/plot.raw"))
+
 
 AddPlot("Pseudocolor","density")
 DrawPlots()
@@ -50,7 +51,8 @@ SetView3D(v)
 Test("miranda_raw_reader5")
 
 DeleteAllPlots()
-ReplaceDatabase("../data/miranda_test_data/jet_2d/plot_mat_t83.raw")
+ReplaceDatabase(data_path("miranda_test_data/jet_2d/plot_mat_t83.raw"))
+
 
 
 SetTimeSliderState(0)

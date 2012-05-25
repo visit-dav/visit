@@ -29,6 +29,7 @@
 # ----------------------------------------------------------------------------
 
 import sys
+# TODO FIX
 sys.path.append("../src/lib")
 
 import visit_writer
@@ -42,7 +43,7 @@ if scalable != 0:
 
 # BEGIN USER MODIFIABLE SECTION
 
-database = "../data/silo_%s_test_data/globe.silo"%SILO_MODE
+database = data_path("silo_%s_test_data/globe.silo") % SILO_MODE
 origin = (0,0,0)
 radius = 10 
 variable = "recenter(t) + 10*u"

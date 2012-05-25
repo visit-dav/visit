@@ -20,7 +20,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "hardyglobal")
 
 AddOperator("Isosurface")
@@ -44,7 +45,8 @@ Test("shadows_02")
 
 # Now test that we don't crash with 2D.
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 Test("shadows_03")

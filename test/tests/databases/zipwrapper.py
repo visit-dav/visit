@@ -22,20 +22,21 @@
 #
 # Create a database of compressed VTK files in a .visit file
 #
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor","d")
 DrawPlots()
 e = ExportDBAttributes()
 e.db_type = "VTK"
 e.filename = "multi_ucd"
-e.dirname = "../data"
+e.dirname = data_path()
 ExportDatabase(e)
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo") % SILO_MODE)
 
 cwd = os.getcwd()
 
-os.chdir("../data")
+os.chdir(data_path())
 visitFile = open("multi_ucd.visit", 'w')
 visitFile.write("!NBLOCKS 36\n")
 for i in range(36):
@@ -61,7 +62,8 @@ SetDefaultFileOpenOptions("ZipWrapper", readOptions)
 
 
 # Test 36 block VTK (only 10 files decompressed at any one time)
-OpenDatabase("../data/zipwrapper_test_data/multi_ucd.visit")
+OpenDatabase(data_path("zipwrapper_test_data/multi_ucd.visit"))
+
 AddPlot("Pseudocolor","d")
 DrawPlots()
 v=GetView3D()
@@ -69,9 +71,10 @@ v.viewNormal=(-0.5, 0.296198, 0.813798)
 SetView3D(v)
 Test("ZipWrapper_01")
 DeleteAllPlots()
-CloseDatabase("../data/zipwrapper_test_data/multi_ucd.visit")
+CloseDatabase(data_path("zipwrapper_test_data/multi_ucd.visit"))
 
-OpenDatabase("../data/zipwrapper_test_data/histz_*.silo.gz database", 3)
+OpenDatabase(data_path("zipwrapper_test_data/histz_*.silo.gz database"), 3)
+
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
 v=GetView3D()
@@ -95,7 +98,8 @@ SetPlotSILRestriction(silr)
 Test("ZipWrapper_06")
 DeleteAllPlots()
 
-OpenDatabase("../data/zipwrapper_test_data/sphere.2d.hdf5.gz")
+OpenDatabase(data_path("zipwrapper_test_data/sphere.2d.hdf5.gz"))
+
 AddPlot("FilledBoundary","materials")
 DrawPlots()
 Test("ZipWrapper_07")

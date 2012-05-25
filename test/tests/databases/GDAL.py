@@ -85,11 +85,11 @@ def test0_and_1(db, prefix):
 
 def test0(datapath):
     TestSection("ArcInfo files")
-    test0_and_1(datapath + "ADF/w001001.adf", "GDAL_0_")
+    test0_and_1(pjoin(datapath,"ADF/w001001.adf"), "GDAL_0_")
 
 def test1(datapath):
     TestSection("DEM files")
-    test0_and_1(datapath + "DEM/Morrison.dem", "GDAL_1_")
+    test0_and_1(pjoin(datapath,"DEM/Morrison.dem"), "GDAL_1_")
 
 def main():
     # Draw antialiased lines
@@ -97,7 +97,7 @@ def main():
     r.antialiasing = 1
     SetRenderingAttributes(r)
 
-    datapath = "../data/GDAL_test_data/"
+    datapath = data_path("GDAL_test_data")
     test0(datapath)
     test1(datapath)
 

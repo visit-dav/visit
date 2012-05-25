@@ -12,7 +12,7 @@
 
 def test0(datapath):
     TestSection("Structured (no hdf5)")
-    OpenDatabase(datapath + "3DRectMesh.xmf")
+    OpenDatabase(pjoin(datapath,"3DRectMesh.xmf"))
     AddPlot("Pseudocolor", "CellScalars")
     DrawPlots()
 
@@ -36,11 +36,11 @@ def test0(datapath):
     ChangeActivePlotsVar("NodeScalars")
     Test("xdmf_0_01")
     DeleteAllPlots()
-    CloseDatabase(datapath + "3DRectMesh.xmf")
+    CloseDatabase(pjoin(datapath,"3DRectMesh.xmf"))
 
 def test1(datapath):
     TestSection("Basic topology (no hdf5)")
-    OpenDatabase(datapath + "BasicTopology.xmf")
+    OpenDatabase(pjoin(datapath,"BasicTopology.xmf"))
     AddPlot("Pseudocolor", "Hexahedron/Cell Centered Values")
     DrawPlots()
 
@@ -118,12 +118,12 @@ def test1(datapath):
     Test("xdmf_1_17")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "BasicTopology.xmf")
+    CloseDatabase(pjoin(datapath,"BasicTopology.xmf"))
 
 def test2(datapath):
     TestSection("Mixed (no hdf5)")
     # Open the mixed topology file
-    OpenDatabase(datapath + "Mixed.xmf")
+    OpenDatabase(pjoin(datapath,"Mixed.xmf"))
     DeleteAllPlots()
     AddPlot("Mesh", "Mixed")
     m = MeshAttributes()
@@ -170,7 +170,7 @@ def test2(datapath):
 
 def test3(datapath):
     TestSection("Polygon (no hdf5)")
-    OpenDatabase(datapath + "PolygonOctagon.xmf")
+    OpenDatabase(pjoin(datapath,"PolygonOctagon.xmf"))
     AddPlot("Mesh", "PolygonOctagon")
     DrawPlots()
     ResetView()
@@ -183,11 +183,11 @@ def test3(datapath):
     ChangeActivePlotsVar("NodeScalar")
     Test("xdmf_3_02")
     DeleteAllPlots()
-    CloseDatabase(datapath + "PolygonOctagon.xmf")
+    CloseDatabase(pjoin(datapath,"PolygonOctagon.xmf"))
 
 def test4(datapath):
     TestSection("Quadratic topology (no hdf5)")
-    OpenDatabase(datapath + "QuadraticTopology.xmf")
+    OpenDatabase(pjoin(datapath,"QuadraticTopology.xmf"))
     AddPlot("Pseudocolor", "Hexahedron_20/Node Centered Values")
     DrawPlots()
     v = View3DAttributes()
@@ -223,11 +223,11 @@ def test4(datapath):
     Test("xdmf_4_05")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "QuadraticTopology.xmf")
+    CloseDatabase(pjoin(datapath,"QuadraticTopology.xmf"))
 
 def test5(datapath):
     TestSection("Multiple grids (no hdf5)")
-    OpenDatabase(datapath + "TetrahedronMultipleGrids.xmf")
+    OpenDatabase(pjoin(datapath,"TetrahedronMultipleGrids.xmf"))
     AddPlot("Pseudocolor", "Tetrahedron 1/CellScalar")
     AddPlot("Pseudocolor", "Tetrahedron 2/CellScalar")
     DrawPlots()
@@ -250,11 +250,11 @@ def test5(datapath):
     Test("xdmf_5_00")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "TetrahedronMultipleGrids.xmf")
+    CloseDatabase(pjoin(datapath,"TetrahedronMultipleGrids.xmf"))
 
 def test6(datapath):
     TestSection("Structured with hdf5")
-    db = datapath + "rect2d.xmf"
+    db = pjoin(datapath,"rect2d.xmf")
     OpenDatabase(db)
     AddPlot("Mesh", "mesh")
     AddPlot("Pseudocolor", "Pressure")
@@ -264,7 +264,7 @@ def test6(datapath):
     ChangeActivePlotsVar("VelocityX")
     Test("xdmf_6_01")
 
-    db = datapath + "corect2d.xmf"
+    db = pjoin(datapath,"corect2d.xmf")
     ReplaceDatabase(db)
     DrawPlots()
     ResetView()
@@ -273,7 +273,7 @@ def test6(datapath):
     DeleteAllPlots()
     CloseDatabase(db)
 
-    db = datapath + "rect3d.xmf"
+    db = pjoin(datapath,"rect3d.xmf")
     OpenDatabase(db)
     AddPlot("Mesh", "mesh")
     AddPlot("Pseudocolor", "VelocityZ")
@@ -281,7 +281,7 @@ def test6(datapath):
     ResetView()
     Test("xdmf_6_03")
 
-    db = datapath + "corect3d.xmf"
+    db = pjoin(datapath,"corect3d.xmf")
     ReplaceDatabase(db)
     DrawPlots()
     ResetView()
@@ -290,7 +290,7 @@ def test6(datapath):
     DeleteAllPlots()
     CloseDatabase(db)
 
-    db = datapath + "xdmf2d.xmf"
+    db = pjoin(datapath,"xdmf2d.xmf")
     OpenDatabase(db)
     AddPlot("Mesh", "mesh1")
     AddPlot("Pseudocolor", "Pressure")
@@ -305,7 +305,7 @@ def test6(datapath):
 
 def test7(datapath):
     TestSection("Quadratic topology (no hdf5)")
-    OpenDatabase(datapath + "singleHex24.xmf")
+    OpenDatabase(pjoin(datapath,"singleHex24.xmf"))
     AddPlot("Mesh", "singleHex24")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -328,9 +328,9 @@ def test7(datapath):
     Test("xdmf_7_00")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleHex24.xmf")
+    CloseDatabase(pjoin(datapath,"singleHex24.xmf"))
 
-    OpenDatabase(datapath + "singleHex27.xmf")
+    OpenDatabase(pjoin(datapath,"singleHex27.xmf"))
     AddPlot("Mesh", "singleHex27")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -338,9 +338,9 @@ def test7(datapath):
     Test("xdmf_7_01")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleHex27.xmf")
+    CloseDatabase(pjoin(datapath,"singleHex27.xmf"))
 
-    OpenDatabase(datapath + "singleQuad6.xmf")
+    OpenDatabase(pjoin(datapath,"singleQuad6.xmf"))
     AddPlot("Mesh", "singleQuad6")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -348,9 +348,9 @@ def test7(datapath):
     Test("xdmf_7_02")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleQuad6.xmf")
+    CloseDatabase(pjoin(datapath,"singleQuad6.xmf"))
 
-    OpenDatabase(datapath + "singleQuad9.xmf")
+    OpenDatabase(pjoin(datapath,"singleQuad9.xmf"))
     AddPlot("Mesh", "singleQuad9")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -358,9 +358,9 @@ def test7(datapath):
     Test("xdmf_7_03")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleQuad9.xmf")
+    CloseDatabase(pjoin(datapath,"singleQuad9.xmf"))
 
-    OpenDatabase(datapath + "singleTri7.xmf")
+    OpenDatabase(pjoin(datapath,"singleTri7.xmf"))
     AddPlot("Mesh", "singleTri7")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -368,9 +368,9 @@ def test7(datapath):
     Test("xdmf_7_04")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleTri7.xmf")
+    CloseDatabase(pjoin(datapath, "singleTri7.xmf"))
 
-    OpenDatabase(datapath + "singleWedge12.xmf")
+    OpenDatabase(pjoin(datapath, "singleWedge12.xmf"))
     AddPlot("Mesh", "singleWedge12")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -393,9 +393,9 @@ def test7(datapath):
     Test("xdmf_7_05")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleWedge12.xmf")
+    CloseDatabase(pjoin(datapath,"singleWedge12.xmf"))
 
-    OpenDatabase(datapath + "singleWedge18.xmf")
+    OpenDatabase(pjoin(datapath,"singleWedge18.xmf"))
     AddPlot("Mesh", "singleWedge18")
     AddPlot("Pseudocolor", "GlobalNodeId")
     DrawPlots()
@@ -403,10 +403,10 @@ def test7(datapath):
     Test("xdmf_7_06")
 
     DeleteAllPlots()
-    CloseDatabase(datapath + "singleWedge18.xmf")
+    CloseDatabase(pjoin(datapath,"singleWedge18.xmf"))
 
 def main():
-    datapath = "../data/xdmf_test_data/"
+    datapath = data_path("xdmf_test_data")
     test0(datapath)
     test1(datapath)
     test2(datapath)

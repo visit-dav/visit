@@ -49,7 +49,8 @@ CloseComputeEngine()
 # if it fails, the OpenDatabase will start a serial engine
 haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Mesh", "mesh1")
 silr=SILRestriction()
 silr.TurnOffAll()
@@ -234,7 +235,8 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 14000 
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 CheckSRMode(1)
@@ -271,7 +273,8 @@ TestText("multiWindow_SRModeHistory",srModeHistory)
 DeleteWindow()
 SetActiveWindow(1)
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 ra.scalableActivationMode = ra.Always
 SetRenderingAttributes(ra)
 AddPlot("Mesh","mesh1")
@@ -289,7 +292,8 @@ Test("scalable_07")
 DeleteAllPlots()
 
 TestSection("Testing Mesh plot's opaque flag in SR mode")
-OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 AddPlot("FilledBoundary", "mat1")
 AddPlot("Mesh", "curvmesh2d")
 m = MeshAttributes()
@@ -314,7 +318,8 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 30000 
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_%s_test_data/galaxy0000.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/galaxy0000.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "vx")
 DrawPlots()
 CheckSRMode(1)
@@ -329,7 +334,8 @@ ra.stereoRendering = 1
 ra.stereoType = ra.RedBlue
 SetRenderingAttributes(ra)
 
-OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+
 AddPlot("Mesh","mesh1")
 
 # make the eye separation as noticable as possible

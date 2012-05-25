@@ -225,9 +225,9 @@ def TestMixvars(db):
 #   allinone00.pdb       - Contains all of the time states in one file.
 #
 
-databases = ("../data/pdb_test_data/multi*.pdb database", \
-             "../data/pdb_test_data/family*.pdb database", \
-             "../data/pdb_test_data/allinone00.pdb")
+databases = (data_path("pdb_test_data/multi*.pdb database"),
+             data_path("pdb_test_data/family*.pdb database"),
+             data_path("pdb_test_data/allinone00.pdb"))
 testNames = ("pdb_multi", "pdb_family", "pdb_allinone")
 for i in range(len(databases)):
     TestWithDatabase(databases[i], testNames[i])

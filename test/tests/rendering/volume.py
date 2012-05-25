@@ -40,7 +40,8 @@
 #START SECTION TO BE MOVED
 
 DeleteAllPlots()
-OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
 
 # '6380.  The wireframe is not composited correctly when in SR mode.
 # So delete the wireframe and we should get the same picture in SR and
@@ -67,7 +68,8 @@ DeleteAllPlots()
 
 # END SECTION TO BE MOVED
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Volume", "t")
 silr=SILRestriction()
 silr.TurnOffSet(5)

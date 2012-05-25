@@ -14,7 +14,7 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-ds_noise = "../data/silo_%s_test_data/noise.silo"%SILO_MODE
+ds_noise = data_path("silo_%s_test_data/noise.silo")%SILO_MODE
 OpenDatabase(ds_noise)
 
 ra = GetRenderingAttributes()

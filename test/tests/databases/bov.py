@@ -167,7 +167,7 @@ def TestBOVDivide(prefix, db, doSubset):
 def TestBOVType(bovtype, prefixes):
     # Test the original BOV file without it being divided.
     TestSection("Reading BOV file of %s" % bovtype)
-    TestBOVDivide(prefixes[0], "../data/bov_test_data/%s_indices.bov" % bovtype, 0)
+    TestBOVDivide(prefixes[0], data_path("bov_test_data/%s_indices.bov") % bovtype, 0)
 
     #
     # Test 2 BOV files that are being subdivided into smaller bricks
@@ -175,10 +175,10 @@ def TestBOVType(bovtype, prefixes):
     # can be processed in parallel.
     #
     TestSection("Decomposing BOV of %s into smaller bricks" % bovtype)
-    TestBOVDivide(prefixes[1], "../data/bov_test_data/%s_indices_div.bov" % bovtype, 1)
+    TestBOVDivide(prefixes[1], data_path("bov_test_data/%s_indices_div.bov") % bovtype, 1)
 
     TestSection("Decomposing BOV of %s with small header into smaller bricks" % bovtype)
-    TestBOVDivide(prefixes[2], "../data/bov_test_data/%s_indices_div_with_header.bov" % bovtype, 1)
+    TestBOVDivide(prefixes[2], data_path("bov_test_data/%s_indices_div_with_header.bov") % bovtype, 1)
 
 
 def main():

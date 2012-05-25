@@ -11,7 +11,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
 
 
 DefineScalarExpression("ave1", "average_over_time(pressure, 1, 10, 1)")

@@ -22,13 +22,15 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase("../data/KullLite_test_data/tagtest_xy_3.pdb")
+OpenDatabase(data_path("KullLite_test_data/tagtest_xy_3.pdb"))
+
 AddPlot("Mesh", "mesh")
 DrawPlots()
 Test("kulllite_01")
 
 DeleteAllPlots()
-OpenDatabase("../data/KullLite_test_data/tagtest_rz_1_0.pdb")
+OpenDatabase(data_path("KullLite_test_data/tagtest_rz_1_0.pdb"))
+
 AddPlot("FilledBoundary", "Material(mesh)")
 AddPlot("Mesh", "mesh_tags/edges_mesh")
 DrawPlots()
@@ -52,7 +54,8 @@ DrawPlots()
 Test("kulllite_04")
 
 DeleteAllPlots()
-OpenDatabase("../data/KullLite_test_data/T.pdb")
+OpenDatabase(data_path("KullLite_test_data/T.pdb"))
+
 AddPlot("FilledBoundary", "Material")
 DrawPlots()
 Test("kulllite_05")
@@ -69,14 +72,16 @@ DeleteAllPlots()
 
 # Test reading of densities, for both per-zone quantities and per-zone,
 # per-material quantities.
-OpenDatabase("../data/pdb_test_data/2dOverlayTest21.pdb")
+OpenDatabase(data_path("pdb_test_data/2dOverlayTest21.pdb"))
+
 AddPlot("Pseudocolor", "density")
 DrawPlots()
 Test("kulllite_07")
 m = MaterialAttributes()
 m.forceMIR = 1
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/pdb_test_data/2dOverlayTest21.pdb")
+ReOpenDatabase(data_path("pdb_test_data/2dOverlayTest21.pdb"))
+
 Test("kulllite_08")
 
 Exit()

@@ -30,7 +30,7 @@
 def test0(datapath):
     TestSection("Structured files")
 
-    OpenDatabase(datapath + "delta.cgns")
+    OpenDatabase(pjoin(datapath,"delta.cgns"))
     AddPlot("Mesh", "Zone___1")
     DrawPlots()
     v0 = View3DAttributes()
@@ -84,7 +84,7 @@ def test0(datapath):
     Test("CGNS_0_03")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "5blocks.cgns")
+    OpenDatabase(pjoin(datapath,"5blocks.cgns"))
     AddPlot("Subset", "zones")
     AddPlot("Mesh", "BASE_1")
     DrawPlots()
@@ -106,7 +106,7 @@ def test0(datapath):
     Test("CGNS_0_04")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "multi.cgns")
+    OpenDatabase(pjoin(datapath,"multi.cgns"))
     AddPlot("Subset", "zones")
     AddOperator("Slice")
     DrawPlots()
@@ -130,7 +130,7 @@ def test0(datapath):
 def test1(datapath):
     TestSection("Unstructured files")
 
-    OpenDatabase(datapath + "StaticMixer.cgns")
+    OpenDatabase(pjoin(datapath,"StaticMixer.cgns"))
     AddPlot("Mesh", "StaticMixer")
     AddPlot("Pseudocolor", "Pressure")
     DrawPlots()
@@ -165,7 +165,7 @@ def test1(datapath):
     Test("CGNS_1_02")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "jet.cgns")
+    OpenDatabase(pjoin(datapath,"jet.cgns"))
     AddPlot("Pseudocolor", "CoefPressure")
     AddPlot("Contour", "CoefPressure")
     c = ContourAttributes()
@@ -193,7 +193,7 @@ def test1(datapath):
     Test("CGNS_1_03")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "yf17.cgns")
+    OpenDatabase(pjoin(datapath,"yf17.cgns"))
     AddPlot("Mesh", "Zone1")
     AddPlot("Pseudocolor", "Density")
     DrawPlots()
@@ -251,7 +251,7 @@ def test1(datapath):
 def test2(datapath):
     TestSection("Variables on only some of the domains")
 
-    OpenDatabase(datapath + "HeatingCoil.cgns")
+    OpenDatabase(pjoin(datapath,"HeatingCoil.cgns"))
     AddPlot("Subset", "zones(Base)")
     DrawPlots()
     v0 = View3DAttributes()
@@ -289,7 +289,7 @@ def test2(datapath):
     DrawPlots()
     Test("CGNS_2_04")
     DeleteAllPlots()
-    
+
     # Draw the 1 variable that exists in both domains.
     AddPlot("Pseudocolor","Temperature")
     DrawPlots()
@@ -303,7 +303,7 @@ def main():
     r.antialiasing = 1
     SetRenderingAttributes(r)
 
-    datapath = "../data/CGNS_test_data/"
+    datapath = data_path("CGNS_test_data")
     test0(datapath)
     test1(datapath)
     test2(datapath)

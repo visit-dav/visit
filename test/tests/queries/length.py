@@ -19,7 +19,8 @@
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Contour", "u")
 DrawPlots()
 Query("Total Length")
@@ -27,7 +28,8 @@ text = GetQueryOutputString()
 TestText("length_01", text)
 
 DeleteAllPlots()
-OpenDatabase("../data/curve_test_data/curve.visit")
+OpenDatabase(data_path("curve_test_data/curve.visit"))
+
 AddPlot("Curve", "going_up") 
 DrawPlots()
 

@@ -14,7 +14,8 @@
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
-    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "d")
     DrawPlots()
     s = ""

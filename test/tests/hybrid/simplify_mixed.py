@@ -21,7 +21,8 @@
 
 
 
-OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
+
 
 AddPlot("FilledBoundary", "materials")
 DrawPlots()
@@ -58,7 +59,8 @@ Test("simplify_mixed03")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+
 
 m.forceMIR = 1
 SetMaterialAttributes(m)
@@ -71,12 +73,14 @@ Test("simplify_mixed04")
 
 m.maxMaterialsPerZone = 2
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
+ReOpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+
 Test("simplify_mixed05")
 
 m.maxMaterialsPerZone = 3
 SetMaterialAttributes(m)
-ReOpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
+ReOpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+
 Test("simplify_mixed06")
 
 Exit()

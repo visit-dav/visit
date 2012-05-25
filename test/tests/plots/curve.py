@@ -26,7 +26,8 @@
 # ----------------------------------------------------------------------------
 
 def Test1():
-    OpenDatabase("../data/curve_test_data/distribution.ultra")
+    OpenDatabase(data_path("curve_test_data/distribution.ultra"))
+
     DefineCurveExpression("logED", "log10(<Exponential Distribution>)")
     DefineCurveExpression("logLap", "log10(<Laplace Distribution>)")
     AddPlot("Curve", "Exponential Distribution")
@@ -78,13 +79,15 @@ def Test1():
     Test("curve_1_07")
 
     DeleteAllPlots()
-    CloseDatabase("../data/curve_test_data/distribution.ultra")
+    CloseDatabase(data_path("curve_test_data/distribution.ultra"))
+
 
 def TestOverlayCurves():
     TestSection("Overlay curves on 2D plots")
 
     # put up some 2D plots
-    OpenDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor","d")    # id=0
     AddPlot("Mesh","ucdmesh2d")   # id=1
     SetActivePlots((1))
@@ -95,17 +98,20 @@ def TestOverlayCurves():
     SetOperatorOptions(ta)
     DrawPlots()
 
-    OpenDatabase("../data/curve_test_data/ol_curveA.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveA.curve"))
+
     AddPlot("Curve","ol_curveA")  # id=2
     DrawPlots()
     Test("curve_2_01")
 
-    OpenDatabase("../data/curve_test_data/ol_curveB.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveB.curve"))
+
     AddPlot("Curve","ol_curveB")  # id=3
     DrawPlots()
     Test("curve_2_02")
 
-    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveC.curve"))
+
     AddPlot("Curve","ol_curveC")  # id=4
     DrawPlots()
     Test("curve_2_03")
@@ -141,14 +147,19 @@ def TestOverlayCurves():
     HideActivePlots()
 
     DeleteAllPlots()
-    CloseDatabase("../data/silo_%s_test_data/ucd2d.silo"%SILO_MODE)
-    CloseDatabase("../data/curve_test_data/ol_curveA.curve")
-    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
-    CloseDatabase("../data/curve_test_data/ol_curveC.curve")
+    CloseDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+
+    CloseDatabase(data_path("curve_test_data/ol_curveA.curve"))
+
+    CloseDatabase(data_path("curve_test_data/ol_curveB.curve"))
+
+    CloseDatabase(data_path("curve_test_data/ol_curveC.curve"))
+
 
 def TestPointsAndSymbols():
     TestSection("Points and Symbols")
-    OpenDatabase("../data/curve_test_data/ol_curveA.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveA.curve"))
+
     AddPlot("Curve","ol_curveA")  
     #points and lines
     curve = CurveAttributes()
@@ -217,7 +228,8 @@ def TestPointsAndSymbols():
     SetPlotOptions(curve)
     Test("curve_3_10")
 
-    OpenDatabase("../data/curve_test_data/ol_curveB.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveB.curve"))
+
     AddPlot("Curve", "ol_curveB")
     DrawPlots()
     c2 = CurveAttributes()
@@ -244,7 +256,8 @@ def TestPointsAndSymbols():
     Test("curve_3_12")
 
 
-    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveC.curve"))
+
     AddPlot("Curve", "ol_curveC")
     DrawPlots()
     c3 = CurveAttributes()
@@ -263,13 +276,17 @@ def TestPointsAndSymbols():
 
 
     DeleteAllPlots()
-    CloseDatabase("../data/curve_test_data/ol_curveA.curve")
-    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
-    CloseDatabase("../data/curve_test_data/ol_curveB.curve")
+    CloseDatabase(data_path("curve_test_data/ol_curveA.curve"))
+
+    CloseDatabase(data_path("curve_test_data/ol_curveB.curve"))
+
+    CloseDatabase(data_path("curve_test_data/ol_curveB.curve"))
+
 
 def TestTimeCue():
     TestSection("Time Cue")
-    OpenDatabase("../data/curve_test_data/ol_curveC.curve")
+    OpenDatabase(data_path("curve_test_data/ol_curveC.curve"))
+
     AddPlot("Curve", "ol_curveC")
     c = CurveAttributes()
     c.showLabels = 0
@@ -313,7 +330,8 @@ def TestTimeCue():
   
 
     DeleteAllPlots()
-    CloseDatabase("../data/curve_test_data/ol_curveC.curve")
+    CloseDatabase(data_path("curve_test_data/ol_curveC.curve"))
+
 
 def Main():
     Test1()

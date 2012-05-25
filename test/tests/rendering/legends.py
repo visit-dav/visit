@@ -65,8 +65,9 @@
 # This test ensures that correct labels are applied to the legend.
 def TestLevelsLegend(a):
     TestSection("Test levels legend")
-    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
- 
+    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
+
     AddPlot("Subset", "mat1")
     TurnMaterialsOff(("2", "4"))
     subAtts = SubsetAttributes()
@@ -102,7 +103,8 @@ def TestLevelsLegend(a):
 #
 def TestSizeAndPosition(a):
     TestSection("Test legend default sizing and positioning")
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 
     AddPlot("Boundary", "mat1")
     bndAtts = BoundaryAttributes()
@@ -131,14 +133,16 @@ def TestSizeAndPosition(a):
     Test("legends_06")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 
     AddPlot("Volume", "u")
     DrawPlots()
     Test("legends_07")
     DeleteAllPlots()
 
-    OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 
     AddPlot("Contour", "d")
     contourAtts = ContourAttributes()
@@ -154,7 +158,8 @@ def TestSizeAndPosition(a):
 #
 def TestCurveLegend(a):
     TestSection("Test Curve plot legend")
-    OpenDatabase("../data/curve_test_data/c033.curve")
+    OpenDatabase(data_path("curve_test_data/c033.curve"))
+
     # Test legend on
     AddPlot("Curve", "parabolic")
     curveAtts = CurveAttributes()
@@ -174,7 +179,8 @@ def TestCurveLegend(a):
     SetPlotOptions(curveAtts)
 
     # Tests multiple plots
-    OpenDatabase("../data/curve_test_data/c044.curve")
+    OpenDatabase(data_path("curve_test_data/c044.curve"))
+
     AddPlot("Curve", "parabolic")
     curveAtts.color = (0, 255, 0, 255)
     curveAtts.lineStyle = curveAtts.DOT  # was 2
@@ -182,7 +188,8 @@ def TestCurveLegend(a):
     SetPlotOptions(curveAtts)
     DrawPlots()
 
-    OpenDatabase("../data/curve_test_data/c055.curve")
+    OpenDatabase(data_path("curve_test_data/c055.curve"))
+
     AddPlot("Curve", "parabolic")
     curveAtts.color = (0, 0, 255, 255)
     curveAtts.lineStyle = curveAtts.DOTDASH # was 3
@@ -199,7 +206,8 @@ def TestCurveLegend(a):
 
     DeleteAllPlots()
 
-    OpenDatabase("../data/curve_test_data/distribution.ultra")
+    OpenDatabase(data_path("curve_test_data/distribution.ultra"))
+
     AddPlot("Curve", "Laplace Distribution")
     DrawPlots()
     Test("legends_13")
@@ -215,7 +223,8 @@ def TestCurveLegend(a):
 #
 def TestLegendProperties(a):
     TestSection("Test setting legend properties")
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
     v0 = View3DAttributes()
@@ -308,7 +317,8 @@ def TestLegendProperties(a):
 #
 def TestLegendCopying(a):
     TestSection("Test legend copying")
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -372,7 +382,8 @@ def TestLegendCopying(a):
 
 def TestLegendTics():
     TestSection("Test setting legend tics")
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 

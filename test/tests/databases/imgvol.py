@@ -13,7 +13,8 @@
 #    Added missing Slice operator for contour plot.
 # ----------------------------------------------------------------------------
 
-OpenDatabase("../data/imgvol_test_data/tcup.imgvol")
+OpenDatabase(data_path("imgvol_test_data/tcup.imgvol"))
+
 AddPlot("Pseudocolor","intensity")
 sa=SliceAttributes()
 sa.originType = sa.Percent

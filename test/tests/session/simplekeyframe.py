@@ -30,7 +30,8 @@ def GetTruncatedWindowInformationString():
     # Only use the first 5 or so lines from the string.
     lines = string.split(s, "\n")
     s = ""
-    for i in range(5):
+    # ignore the active source
+    for i in range(1,5):
         if(i < len(lines)):
             s = s + lines[i]
             s = s + "\n"

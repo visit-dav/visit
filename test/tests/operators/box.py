@@ -26,7 +26,8 @@
 
 
 # 3D, rectilinear.  Multi-block  Tests ghost zones as well.
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 
 atts = BoxAttributes()
 atts.amount = 0
@@ -54,7 +55,8 @@ DeleteAllPlots()
 
 
 # 3D, unstructured
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Subset", "mat1")
 AddOperator("Box")
 atts.minx = -5
@@ -84,7 +86,8 @@ DeleteAllPlots()
 view.parallelScale = 14
 SetView3D(view)
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Vector", "airVfGradient")
 vec = VectorAttributes()
 SetPlotOptions(vec)
@@ -131,7 +134,8 @@ Test("ops_box07")
 # the "Extents", which can screw up the facelist filter.  Test that
 # no one has undone the fix from Paul Selby.
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Box")
 atts.minx = 0.2

@@ -21,7 +21,8 @@
 
 def TestMaterials():
     TestSection("Materials in VTK")
-    OpenDatabase("../data/vtk_test_data/globe_mats.vtk")
+    OpenDatabase(data_path("vtk_test_data/globe_mats.vtk"))
+
 
     #
     # Test simple read and display of a material variable 
@@ -63,7 +64,8 @@ def TestMaterials():
 
 def TestXML():
     TestSection("VTK XML-style data files")
-    OpenDatabase("../data/vtk_xml_test_data/curv2d.vts")
+    OpenDatabase(data_path("vtk_xml_test_data/curv2d.vts"))
+
     AddPlot("Pseudocolor", "d");
     DrawPlots();
     Test("vtk_04")
@@ -82,7 +84,8 @@ def TestXML():
     Test("vtk_08")
     DeleteActivePlots()
 
-    OpenDatabase("../data/vtk_xml_test_data/curv3d.vts")
+    OpenDatabase(data_path("vtk_xml_test_data/curv3d.vts"))
+
     AddPlot("Pseudocolor", "d");
     DrawPlots();
     Test("vtk_09")
@@ -108,7 +111,8 @@ def TestXML():
     DeleteActivePlots()
 
 
-    OpenDatabase("../data/vtk_xml_test_data/rect3d.vtr")
+    OpenDatabase(data_path("vtk_xml_test_data/rect3d.vtr"))
+
     AddPlot("Pseudocolor", "d");
     DrawPlots();
     Test("vtk_16")
@@ -133,7 +137,8 @@ def TestXML():
     Test("vtk_22")
     DeleteActivePlots()
 
-    OpenDatabase("../data/vtk_xml_test_data/ucd2d.vtu")
+    OpenDatabase(data_path("vtk_xml_test_data/ucd2d.vtu"))
+
     AddPlot("Pseudocolor", "d");
     DrawPlots();
     Test("vtk_23")
@@ -155,7 +160,8 @@ def TestXML():
 
 def TestHigherOrder():
     TestSection("Quadratic triangles in VTK")
-    OpenDatabase("../data/vtk_test_data/higher_order_triangles.vtk")
+    OpenDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
+
     AddPlot("Mesh", "mesh");
     DrawPlots()
 

@@ -21,7 +21,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
 
 
 # Test that database expressions can still be generated.

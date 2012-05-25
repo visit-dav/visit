@@ -15,7 +15,7 @@
 
 def test0(datapath):
     TestSection("RAW files")
-    OpenDatabase(datapath + "visitrocks.raw")
+    OpenDatabase(pjoin(datapath,"visitrocks.raw"))
     AddPlot("Pseudocolor", "x")
     DrawPlots()
     v0 = View3DAttributes()
@@ -36,7 +36,7 @@ def test0(datapath):
     Test("RAW_0_00")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "visit1.7.raw")
+    OpenDatabase(pjoin(datapath,"visit1.7.raw"))
     AddPlot("Pseudocolor", "z")
     DrawPlots()
     v1 = View3DAttributes()
@@ -57,7 +57,7 @@ def test0(datapath):
     Test("RAW_0_01")
     DeleteAllPlots()
 
-    OpenDatabase(datapath + "llnl-logo.raw")
+    OpenDatabase(pjoin(datapath,"llnl-logo.raw"))
     AddPlot("Subset", "domains")
     silr = SILRestriction()
     silr.SuspendCorrectnessChecking()
@@ -86,7 +86,7 @@ def test0(datapath):
     DeleteAllPlots()
 
 def main():
-    datapath = "../data/RAW_test_data/"
+    datapath = data_path("RAW_test_data")
     test0(datapath)
 
 main()

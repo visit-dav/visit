@@ -23,7 +23,7 @@ def test0(datapath):
     TestSection("2D truecolor images")
 
     # Set up the plots.
-    db = datapath + "mandrill.fits"
+    db = pjoin(datapath,"mandrill.fits")
     OpenDatabase(db)
     AddPlot("Truecolor", "MANDRILL")
     DrawPlots()
@@ -38,7 +38,7 @@ def test1(datapath):
     TestSection("2D pseudocolor images")
 
     # Set up the plots.
-    db = datapath + "y2000m2.fits"
+    db = pjoin(datapath,"y2000m2.fits")
     OpenDatabase(db)
     AddPlot("Pseudocolor", "NGC7083 V 550nm _lp_Intens_rp_")
     pc = PseudocolorAttributes()
@@ -53,7 +53,7 @@ def test1(datapath):
     CloseDatabase(db)
 
     # Set up the plots.
-    db = datapath + "04May04_standard_*.fits database"
+    db = pjoin(datapath, "04May04_standard_*.fits database")
     OpenDatabase(db)
     AddPlot("Pseudocolor", "HD43583")
     DrawPlots()
@@ -73,7 +73,7 @@ def test2(datapath):
     TestSection("3D pseudocolor data")
 
     # Set up the plots.
-    db = datapath + "ngc6503.fits"
+    db = pjoin(datapath,"ngc6503.fits")
     OpenDatabase(db)
     AddPlot("Pseudocolor", "NGC6503")
     DrawPlots()
@@ -111,7 +111,7 @@ def main():
 
     InvertBackgroundColor()
 
-    datapath = "../data/FITS_test_data/"
+    datapath = data_path("FITS_test_data")
     test0(datapath)
     test1(datapath)
     test2(datapath)

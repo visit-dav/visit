@@ -40,7 +40,7 @@ def AddPseudocolorPlot():
 def test1(datapath):
     db = "pipe.inp"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath, db))
     AddMeshPlot()
     DrawPlots()
 
@@ -84,12 +84,12 @@ def test1(datapath):
     Test("ansys1_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test2(datapath):
     db = "waterjacket.inp"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -133,12 +133,12 @@ def test2(datapath):
     Test("ansys2_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test3(datapath):
     db = "intake.inp"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -182,7 +182,7 @@ def test3(datapath):
     Test("ansys3_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def main():
     # Set up the window background color
@@ -194,7 +194,7 @@ def main():
 
     DefineScalarExpression("one", "(zoneid(mesh) + 1) / (zoneid(mesh) + 1)")
 
-    datapath = "../data/ANSYS_test_data/"
+    datapath = data_path("ANSYS_test_data")
     test1(datapath)
     test2(datapath)
     test3(datapath)

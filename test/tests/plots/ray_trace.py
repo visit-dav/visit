@@ -47,7 +47,8 @@ SetAnnotationAttributes(a)
 # Start off by testing that we can bring up a normal volume plot and smooth
 # the data.  Also test that it can interact with the bounding box correctly.
 #
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting
@@ -123,7 +124,8 @@ Test("ray_trace_04")
 # different sort of sampling.
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Volume", "d")
 vol_atts.rendererType = vol_atts.RayCasting
 vol_atts.smoothData = 0
@@ -150,7 +152,8 @@ SetView3D(v)
 #  the zones that refine them).
 #
 DeleteAllPlots()
-OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
 AddPlot("Volume", "Primitive Var _number_0")
 vol_atts.rendererType = vol_atts.RayCasting
 vol_atts.smoothData = 0
@@ -179,7 +182,8 @@ AddWindow()
 SetActiveWindow(2)
 DeleteAllPlots()
 SetAnnotationAttributes(a)
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Volume", "d")
 vol_atts = VolumeAttributes()
 vol_atts.rendererType = vol_atts.RayCasting

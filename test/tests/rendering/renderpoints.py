@@ -201,7 +201,8 @@ def main():
     # Turn off all annotation
     TurnOffAllAnnotations()
 
-    OpenDatabase("../data/silo_%s_test_data/galaxy0000.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/galaxy0000.silo")%SILO_MODE)
+
 
     test0()
     test1()

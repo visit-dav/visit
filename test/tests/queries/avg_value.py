@@ -11,7 +11,8 @@
 
 TurnOffAllAnnotations()
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "t")
 DrawPlots()
 Query("Average Value")
@@ -31,7 +32,8 @@ Query("Average Value")
 t = GetQueryOutputString()
 TestText("avg_value_03", t)
 
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 Query("Average Value")

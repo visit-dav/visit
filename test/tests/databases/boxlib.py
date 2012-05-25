@@ -18,7 +18,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
+
 AddPlot("Pseudocolor", "density")
 AddPlot("Boundary", "materials")
 b = BoundaryAttributes()
@@ -58,9 +59,10 @@ SetPlotSILRestriction(s)
 Test("boxlib_03")
 
 DeleteAllPlots()
-CloseDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+CloseDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
 
-OpenDatabase("../data/boxlib_test_data/3D/plt_asgc05_0309/Header")
+OpenDatabase(data_path("boxlib_test_data/3D/plt_asgc05_0309/Header"))
+
 AddPlot("Pseudocolor","tracer")
 DrawPlots()
 ResetView()

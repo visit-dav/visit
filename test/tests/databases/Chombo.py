@@ -19,7 +19,7 @@ def test0(datapath):
     TestSection("Changing time states")
 
     # Set up the plots.
-    db = datapath + "chombo.visit"
+    db = pjoin(datapath,"chombo.visit")
     OpenDatabase(db)
     AddPlot("Pseudocolor", "Density")
     AddOperator("Transform")
@@ -56,7 +56,7 @@ def main():
 
     InvertBackgroundColor()
 
-    datapath = "../data/Chombo_test_data/"
+    datapath = data_path("Chombo_test_data")
     test0(datapath)
 
     InvertBackgroundColor()

@@ -29,7 +29,8 @@
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Isovolume")
 iso_atts = IsovolumeAttributes()
@@ -49,7 +50,8 @@ TestText("scf_02", text)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 QueryOverTime("Spherical Compactness Factor", stride=10)
@@ -59,7 +61,8 @@ SetAnnotationAttributes(a)
 Test("scf_03")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 i = ThresholdAttributes()
 i.lowerBounds = (0.0)

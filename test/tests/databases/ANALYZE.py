@@ -27,8 +27,8 @@ a.foregroundColor = (255, 255, 255, 255)
 SetAnnotationAttributes(a)
 
 # Create a plot using the large database
-dbs = ("../data/ANALYZE_test_data/s01_anatomy_stripped.hdr",\
-       "../data/ANALYZE_test_data/s01_epi_r01.visit")
+dbs = (data_path("ANALYZE_test_data/s01_anatomy_stripped.hdr"),
+       data_path("ANALYZE_test_data/s01_epi_r01.visit"))
 OpenDatabase(dbs[0])
 AddPlot("Contour", "Variable")
 c = ContourAttributes()

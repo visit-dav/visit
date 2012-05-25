@@ -40,7 +40,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 
 DefineScalarExpression("m1", 'matvf(mat1, ["1", "3"])')
@@ -78,7 +79,8 @@ Test("matvf_03")
 DeleteAllPlots()
 
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "m1")
 AddOperator("Threshold")
 DrawPlots()
@@ -105,7 +107,8 @@ Test("matvf_05")
 DeleteAllPlots()
 
 DefineScalarExpression("mbs", 'matvf(mat, 1)')
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "mbs")
 t = ThresholdAttributes()
 t.lowerBounds = (0.5)
@@ -146,7 +149,8 @@ Test("matvf_07")
 # Now test the materror expression.
 DeleteAllPlots()
 DefineScalarExpression("materror1", 'materror(mat1, 1)')
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "materror1")
 sil = SILRestriction()
 sil.TurnOnAll()
@@ -176,13 +180,16 @@ DrawPlots()
 Test("matvf_09")
 
 # Now test that it can calculate "volume fractions" using areas.
-ReplaceDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 RemoveLastOperator()
 Test("matvf_10")
 
 
-CloseDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+
 
 # tests for matvf w/ ghost zones
 
@@ -222,8 +229,10 @@ SetPlotOptions(atts)
 DrawPlots()
 Test("matvf_post_ghost_3")
 
-CloseDatabase("../data/silo_%s_test_data/thinplane.silo"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 
 # test for gradient w/ matvf, to check if post ghosts were correctly 
 # requested. 

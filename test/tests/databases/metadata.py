@@ -14,27 +14,27 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-def test0(datapath):
+def test0():
     TestSection("Getting metadata")
 
     # Get metadata for various test datasets.
-    md = GetMetaData(datapath + "silo_%s_test_data/noise.silo"%SILO_MODE)
+    md = GetMetaData(data_path("silo_%s_test_data/noise.silo") % SILO_MODE)
     TestText("metadata_0_00", str(md))
 
     # Get the metadata for the first time step
-    md = GetMetaData(datapath + "silo_%s_test_data/wave*.silo database"%SILO_MODE)
+    md = GetMetaData(data_path("silo_%s_test_data/wave*.silo database") % SILO_MODE)
     TestText("metadata_0_01", str(md))
 
     # Get the metadata for the 17th time step where new variables appear
-    md = GetMetaData(datapath + "silo_%s_test_data/wave*.silo database"%SILO_MODE, 17)
+    md = GetMetaData(data_path("silo_%s_test_data/wave*.silo database") % SILO_MODE, 17)
     TestText("metadata_0_02", str(md))
 
     # Get something with species and default plots.
-    md = GetMetaData(datapath + "samrai_test_data/mats-par3/dumps.visit")
+    md = GetMetaData(data_path("samrai_test_data/mats-par3/dumps.visit"))
     TestText("metadata_0_03", str(md))
 
     # Get something with label variables
-    md = GetMetaData(datapath + "shapefile_test_data/alameda/tgr06001lkA.shp")
+    md = GetMetaData(data_path("shapefile_test_data/alameda/tgr06001lkA.shp"))
     TestText("metadata_0_04", str(md))
 
 def MakeSafe(varname):
@@ -46,10 +46,10 @@ def MakeSafe(varname):
     ret = string.replace(ret, ";", "_")
     return ret
 
-def test1(datapath):
+def test1():
     TestSection("Use the metadata to plot the variables.")
 
-    db = datapath + "silo_%s_test_data/noise.silo"%SILO_MODE
+    db = data_path("silo_%s_test_data/noise.silo") % SILO_MODE
     OpenDatabase(db)
     md = GetMetaData(db)
 
@@ -104,9 +104,8 @@ def main():
     r.antialiasing = 1
     SetRenderingAttributes(r)
 
-    datapath = "../data/"
-    test0(datapath)
-    test1(datapath)
+    test0()
+    test1()
 
 main()
 Exit()

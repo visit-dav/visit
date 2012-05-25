@@ -1197,7 +1197,7 @@ def FilterTestText(inText, baseText):
     # We have to filter out the absolute path information we might see in
     # this string. runtest passes the value for visitTopDir here.
     #
-    inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
+    inText = string.replace(inText, visitDataDir, "VISIT_TOP_DIR/data")
     inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
 
     #
@@ -1503,7 +1503,16 @@ def TurnOffAllAnnotations(givenAtts=0):
     a.legendInfoFlag = 0
     SetAnnotationAttributes(a)
 
+# Places where we're likely to find data files that we do NOT
+# maintain in VisIt's repo. One needs to use the FindAndOpenDatabase()
+# method in place of the OpenDatabase() method to invoke the behavior
+# of searching in these dirs for the database file to open.
+
 def FindAndOpenDatabase(dbname, extraPaths=()):
+    externalDbPaths=(data_path(),
+                     "/project/projectdirs/visit/data",
+                      "/usr/gapps/visit/data",
+                      "/home/visit/data")
     for p in externalDbPaths + extraPaths:
         abs_dbname = "%s/%s"%(p,dbname)
         if os.path.isfile(abs_dbname):
@@ -1649,7 +1658,17 @@ def TestScriptPath():
 #
 # ----------------------------------------------------------------------------
 
-import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
+import string
+import sys
+import time
+import os
+import glob
+import commands
+import thread
+
+import HtmlDiff
+import HtmlPython
+
 from stat import *
 
 #############################################################################
@@ -1674,14 +1693,36 @@ sampleIndex = 0
 checkSumMap = {}
 oszPageSize = 0
 
-# Places where we're likely to find data files that we do NOT
-# maintain in VisIt's repo. One needs to use the FindAndOpenDatabase()
-# method in place of the OpenDatabase() method to invoke the behavior
-# of searching in these dirs for the database file to open.
-externalDbPaths=("../data",
-    "/project/projectdirs/visit/data",
-    "/usr/gapps/visit/data",
-    "/home/visit/data")
+def abs_path(*args):
+    """
+    Helper for constructing absolute paths from a string, or lists of strings.
+    """
+    rargs = []
+    for arg in args:
+        if os.path.isabs(arg) or arg.count("/")  == 0:
+            rargs.append(arg)
+        else:
+            toks = arg.split("/")
+            rargs.extend(toks)
+    res = pjoin(*rargs)
+    return res
+
+def data_path(*args):
+    """
+    Generates proper absolute path relative to the 'data' directory.
+    """
+    rargs = [visitDataDir]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
+def tests_path(*args):
+    """
+    Generates proper absolute path relative to the 'test/tests' directory.
+    """
+    rargs = [visitTopDir,"test","tests"]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
 
 # Process some command line arguments.
 for arg in sys.argv:
@@ -1700,12 +1741,16 @@ for arg in sys.argv:
         numdifftol = float(subargs[1])
 
 # find our file name
-visitTopDir = os.environ['VISIT_TOP_DIR']
-pyfilename = os.environ['VISIT_TEST_NAME']
-pyfilebase = pyfilename[:-3]
-category = os.environ['VISIT_TEST_CATEGORY']
-modes    = string.split(os.environ['VISIT_TEST_MODES'],",")
-skipCases = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
+visitTopDir  = os.environ['VISIT_TOP_DIR']
+visitDataDir = os.path.abspath(pjoin(visitTopDir,"data"))
+pyfilename   = os.environ['VISIT_TEST_NAME']
+pyfilebase   = pyfilename[:-3]
+category     = os.environ['VISIT_TEST_CATEGORY']
+modes        = string.split(os.environ['VISIT_TEST_MODES'],",")
+skipCases    = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
+
+
+
 
 if usePIL:
     try:

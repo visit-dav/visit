@@ -84,7 +84,8 @@ def TurnOffSetsByName(silr, cat, names):
             if setname == names:
                 silr.TurnOffSet(s)
 
-OpenDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+
 
 #
 # Test simple read and display of a variable 
@@ -146,9 +147,10 @@ HideActivePlots()
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
-os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
+for f in glob.glob(data_path("silo_%s_test_data/gorfo*")%SILO_MODE):
+    os.remove(f)
 cwd = os.getcwd()
-os.chdir("../data/silo_%s_test_data/"%SILO_MODE)
+os.chdir(data_path("silo_%s_test_data") % SILO_MODE)
 i = 1
 for filename in os.listdir("."):
     if filename == "multipart_multi_ucd3d.silo":
@@ -156,20 +158,21 @@ for filename in os.listdir("."):
         os.system("ln -s %s gorfo_2000"%filename)
         os.system("ln -s %s gorfo_3000"%filename)
     elif string.find(filename, "multipart_multi_ucd3d") == 0:
-	name1="gorfo_1000.%d"%i
-	name2="gorfo_2000.%d"%i
-	name3="gorfo_3000.%d"%i
+        name1="gorfo_1000.%d"%i
+        name2="gorfo_2000.%d"%i
+        name3="gorfo_3000.%d"%i
         os.system("ln -s %s %s"%(filename,name1))
         os.system("ln -s %s %s"%(filename,name2))
         os.system("ln -s %s %s"%(filename,name3))
-	i = i + 1
+    i = i + 1
 os.chdir(cwd)
 
 #
 # Test opening a 'virtual' database of multi-part silo files
 # at something other than its first timestep
 #
-OpenDatabase("../data/silo_%s_test_data/gorfo_* database"%SILO_MODE,1)
+OpenDatabase(data_path("silo_%s_test_data/gorfo_* database")%SILO_MODE,1)
+
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh", "mesh1")
 DrawPlots()
@@ -186,7 +189,8 @@ os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/ucd3d.silo")%SILO_MODE)
+
 AddPlot("Mesh", "exterior_faces")
 DrawPlots()
 Test("silo_07")
@@ -201,7 +205,8 @@ Test("silo_08")
 # all empty domains. So we go from 1 to end and
 # back around to 1 purposely avoiding 0
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/hist_ucd3d_* database"%SILO_MODE,1)
+OpenDatabase(data_path("silo_%s_test_data/hist_ucd3d_* database")%SILO_MODE,1)
+
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
 
@@ -228,7 +233,8 @@ Test("silo_18")
 # Test defvar object
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor","sum")
 DrawPlots()
 Test("silo_20")
@@ -256,7 +262,8 @@ a=GetAnnotationAttributes()
 a.axes2D.visible = 1
 SetAnnotationAttributes(a)
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Curve","line")
 DrawPlots()
 Test("silo_23")
@@ -278,7 +285,8 @@ Test("silo_25")
 # data dir.
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 (err, dbname) = FindAndOpenDatabase("largefile.silo")
 AddPlot("Curve","sincurve")
 AddPlot("Curve","coscurve")
@@ -293,7 +301,8 @@ CloseDatabase(dbname)
 #
 # Test time invariant mesh
 #
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d_ti_* database"%SILO_MODE,2)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d_ti_* database")%SILO_MODE,2)
+
 AddPlot("Pseudocolor","d")
 DrawPlots()
 ResetView()
@@ -313,8 +322,10 @@ Test("silo_28")
 # invalidated by VisIt
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multi_ucd3d_ti_* database"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d_ti_* database")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor","d_split")
 DrawPlots()
 t = GetLastError()
@@ -326,8 +337,10 @@ TestText("silo_29", t)
 # on
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/histne_ucd3d_* database"%SILO_MODE, 2)
+CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/histne_ucd3d_* database")%SILO_MODE, 2)
+
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
 Test("silo_30")
@@ -348,9 +361,11 @@ Test("silo_34")
 # Test a database with some odd multi-block structure
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/histne_ucd3d_* database"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/histne_ucd3d_* database")%SILO_MODE)
+
 SetTreatAllDBsAsTimeVarying(0)
-OpenDatabase("../data/silo_pdb_test_data/odd_multi.silo")
+OpenDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
+
 AddPlot("Pseudocolor","cyc_00000/den")
 DrawPlots()
 ResetView()
@@ -360,8 +375,10 @@ Test("silo_35")
 # Test a database in which all timesteps are in one file
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_pdb_test_data/odd_multi.silo")
-OpenDatabase("../data/silo_%s_test_data/wave_1file.visit"%SILO_MODE)
+CloseDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
+
+OpenDatabase(data_path("silo_%s_test_data/wave_1file.visit")%SILO_MODE)
+
 AddPlot("Mesh","quadmesh")
 AddPlot("Pseudocolor","pressure")
 DrawPlots()
@@ -385,8 +402,10 @@ Test("silo_39")
 TestSection("Silo AMR w/Mrgtrees")
 TurnOffAllAnnotations()
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/wave_1file.visit"%SILO_MODE)
-OpenDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
+CloseDatabase(data_path("silo_%s_test_data/wave_1file.visit")%SILO_MODE)
+
+OpenDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
+
 AddPlot("Mesh","amr_mesh_wmrgtree")
 DrawPlots()
 ResetView()
@@ -403,8 +422,10 @@ SetPlotSILRestriction(silr)
 Test("silo_42")
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
-OpenDatabase("../data/silo_amr_test_data/amr3d_wmrgtree.silo")
+CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
+
+OpenDatabase(data_path("silo_amr_test_data/amr3d_wmrgtree.silo"))
+
 AddPlot("Contour","foo_wmrgtree")
 ca=ContourAttributes()
 ca.contourValue = (60,)
@@ -426,8 +447,10 @@ SetPlotSILRestriction(silr)
 Test("silo_45")
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_amr_test_data/amr2d_wmrgtree.silo")
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
+
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 TestSection("Variables defined on material subsets")
 sa = SliceAttributes()
 sa.originType = sa.Percent
@@ -446,8 +469,10 @@ for varname in ("p_on_mats_2","d_on_mats_1_3","m1vf_on_mats_1","m2vf_on_mats_2",
     testNum = testNum + 1
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/arbpoly-zoohybrid.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/arbpoly-zoohybrid.silo")%SILO_MODE)
+
 TestSection("Various arbitrary polygonal/polyhedral meshes")
 
 ma = MeshAttributes()

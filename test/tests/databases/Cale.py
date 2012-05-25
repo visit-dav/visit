@@ -15,7 +15,7 @@
 
 def test0(datapath):
     TestSection("Cale files")
-    OpenDatabase(datapath + "jet00405.pdb")
+    OpenDatabase(pjoin(datapath,"jet00405.pdb"))
     AddPlot("Pseudocolor", "p")
     DrawPlots()
     Test("Cale_0_00")
@@ -49,7 +49,7 @@ def test0(datapath):
     DeleteAllPlots()
 
     # Test another file.
-    OpenDatabase(datapath + "vpgz.pdb")
+    OpenDatabase(pjoin(datapath,"vpgz.pdb"))
     AddPlot("FilledBoundary", "Materials")
     DrawPlots()
     ResetView()
@@ -57,7 +57,7 @@ def test0(datapath):
     DeleteActivePlots()
 
 def main():
-    datapath = "../data/Cale_test_data/"
+    datapath = data_path("Cale_test_data")
     test0(datapath)
 
 main()

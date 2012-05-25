@@ -16,14 +16,16 @@
 
 
 
-OpenDatabase("../data/old_silo_test_data/pion0244.silo")
+OpenDatabase(data_path("old_silo_test_data/pion0244.silo"))
+
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh","hydro_mesh")
 DrawPlots()
 Test("oldsilo_01")
 DeleteAllPlots()
 
-OpenDatabase("../data/old_silo_test_data/fwl.17217")
+OpenDatabase(data_path("old_silo_test_data/fwl.17217"))
+
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh","mesh1")
 DrawPlots()

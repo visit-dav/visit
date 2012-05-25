@@ -30,7 +30,8 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase("../data/exodus_test_data/balls.exodus")
+OpenDatabase(data_path("exodus_test_data/balls.exodus"))
+
 AddPlot("Pseudocolor", "EQPS")
 DrawPlots()
 
@@ -67,7 +68,8 @@ Test("exodus_05")
 
 TestSection("Testing SHELL4 support")
 DeleteAllPlots()
-OpenDatabase("../data/exodus_test_data/aircraft.exoII")
+OpenDatabase(data_path("exodus_test_data/aircraft.exoII"))
+
 AddPlot("Mesh", "Mesh")
 DrawPlots()
 v = View3DAttributes()
@@ -90,7 +92,8 @@ Test("exodus_06")
 TestSection("Testing support element block names")
 DeleteAllPlots()
 
-OpenDatabase("../data/exodus_test_data/test.exo")
+OpenDatabase(data_path("exodus_test_data/test.exo"))
+
 AddPlot("FilledBoundary", "ElementBlock")
 AddPlot("Label", "ElementBlock")
 DrawPlots()

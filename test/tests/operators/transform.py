@@ -50,7 +50,8 @@
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 
 AddPlot("Pseudocolor", "u")
 clip = ClipAttributes()
@@ -86,7 +87,8 @@ DrawPlots()
 Test("ops_transform01")
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 AddPlot("Mesh", "quadmesh3d")
 m = MeshAttributes()
@@ -136,7 +138,8 @@ Test("ops_transform04")
 
 # '6699
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Transform")
 trans.transformType = trans.Coordinate
@@ -159,7 +162,8 @@ Test("ops_transform06")
 
 # '8277
 DeleteAllPlots()
-OpenDatabase("../data/curve_test_data/zonecent.ultra")
+OpenDatabase(data_path("curve_test_data/zonecent.ultra"))
+
 AddPlot("Curve", "curve2")
 DrawPlots()
 Test("ops_transform07")
@@ -178,7 +182,8 @@ Test("ops_transform08")
 
 # Test linear transform
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
 

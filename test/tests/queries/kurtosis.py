@@ -12,7 +12,8 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-OpenDatabase("../data/curve_test_data/distribution.ultra")
+OpenDatabase(data_path("curve_test_data/distribution.ultra"))
+
 AddPlot("Curve", "Laplace Distribution")
 DrawPlots()
 

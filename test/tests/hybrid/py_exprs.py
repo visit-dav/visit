@@ -17,7 +17,8 @@
 import os
 from os.path import join as pjoin
 
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 
 script_file = pjoin(os.path.split(TestScriptPath())[0],"py_expr_script_00.vpe")
 

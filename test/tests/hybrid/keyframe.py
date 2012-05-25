@@ -25,7 +25,8 @@
 
 
 # Open a database.
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
  
 # Enable keyframe mode.
 k = GetKeyframeAttributes()
@@ -237,7 +238,8 @@ k.enabled = 1
 SetKeyframeAttributes(k)
 
 # Open a database.
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
  
 # Set the number of frames to be 9.
 AnimationSetNFrames(9)
@@ -322,7 +324,8 @@ DeleteAllPlots()
 ResetView()
 
 # Open a database.
-OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
 
 # Set the number of frames to be 6.
 AnimationSetNFrames(6)
