@@ -55,6 +55,8 @@
 // Creation:   Thu Feb 12 15:55:45 PST 2009
 //
 // Modifications:
+//   Eric Brugger, Fri May 25 14:27:42 PDT 2012
+//   I rearranged some of the code to avoid a crash with new versions of qt.
 //
 // ****************************************************************************
 
@@ -65,18 +67,19 @@ QvisMessageDialog::QvisMessageDialog()
     QGridLayout *grid = new QGridLayout();
     topLayout->addLayout(grid);
 
+    // Create a multi line edit to display the message text.
+    messageText = new QTextEdit(this);
+    messageText->setWordWrapMode(QTextOption::WordWrap);
+    messageText->setReadOnly(true);
+
     // Create a label to display the severity.
     severityLabel = new QLabel(tr("Message"), this);
     severityLabel->setBuddy(messageText);
     QFont f("helvetica", 18);
     f.setBold(true);
     severityLabel->setFont(f);
-    grid->addWidget(severityLabel);
 
-    // Create a multi line edit to display the message text.
-    messageText = new QTextEdit(this);
-    messageText->setWordWrapMode(QTextOption::WordWrap);
-    messageText->setReadOnly(true);
+    grid->addWidget(severityLabel);
     grid->addWidget(messageText);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
