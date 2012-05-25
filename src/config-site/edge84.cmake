@@ -1,1 +1,1 @@
-aztec1.cmake
+edge83.cmake
