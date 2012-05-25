@@ -285,6 +285,14 @@
 #    Make Python search conditional on VISIT_PYTHON_SCRIPTING OR
 #    VISIT_PYTHON_FILTERS
 #
+#    Eric Brugger, Fri May 25 09:50:53 PDT 2012
+#    I set the VISIT_RENDERING_SIZE_LIMIT to 16384 so that we are not
+#    unnecessarily constraining the user. There is no way to set this
+#    properly since this is used in the viewer and the limit really comes
+#    from the engine, which may have a different size if running
+#    client/server. This setting should be removed and a runtime check
+#    should be added to the engine.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
@@ -1689,22 +1697,13 @@ IF(NOT VISIT_DISABLE_SELECT)
     ENDIF(WIN32)
 ENDIF(NOT VISIT_DISABLE_SELECT)
 
-IF (NOT WIN32 AND VISIT_MESA_DIR)
-  IF (NOT VISIT_MESA_DIR)
-    MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to ${OSMESA_SIZE_LIMIT}")
-    SET(VISIT_RENDERING_SIZE_LIMIT ${OSMESA_SIZE_LIMIT} CACHE INTERNAL "rendering size limit")
-  ELSE (NOT VISIT_MESA_DIR)
-    # Using 16384 may be a bit risky when running against an engine not using
-    # mesa, but I didn't want to unnecessarily limit the user when running
-    # client/server to a parallel engine.
-    MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
-    SET(VISIT_RENDERING_SIZE_LIMIT 4096 CACHE INTERNAL "rendering size limit")
-  ENDIF (NOT VISIT_MESA_DIR)
-ELSE(NOT WIN32 AND VISIT_MESA_DIR)
-  # Totally arbitrary, but it is what Mesa was set to when built on Windows
-  MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
-  SET(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
-ENDIF(NOT WIN32 AND VISIT_MESA_DIR)
+# Set the rendering size limit to 16384 so that we are not unnecessarily
+# constraining the user. There is no way to set this properly since this
+# is used in the viewer and the limit really comes from the engine, which
+# may have a different size if running client/server. This setting should
+# be removed and a runtime check should be added to the engine.
+MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
+SET(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
 
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)
