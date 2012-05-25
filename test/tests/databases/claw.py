@@ -12,7 +12,8 @@
 
 
 # test the mesh
-OpenDatabase("../data/claw_test_data/2d/fort.claw")
+OpenDatabase(data_path("claw_test_data/2d/fort.claw"))
+
 TimeSliderNextState()
 AddPlot("Mesh","claw_mesh")
 DrawPlots()
@@ -31,9 +32,10 @@ AddPlot("Pseudocolor","col_00")
 DrawPlots()
 Test("claw_02")
 DeleteAllPlots()
-CloseDatabase("../data/claw_test_data/2d/fort.claw")
+CloseDatabase(data_path("claw_test_data/2d/fort.claw"))
 
-OpenDatabase("../data/claw_test_data/3d/fort.claw")
+OpenDatabase(data_path("claw_test_data/3d/fort.claw"))
+
 TimeSliderNextState()
 ss = SubsetAttributes()
 #ss.colorType = ss.ColorBySingleColor

@@ -177,16 +177,16 @@ def test1(testindex):
     SetCloneWindowOnFirstRef(1)
 
     # Copy wave.visit to this directory a few times.
-    f = open("../data/silo_%s_test_data/wave.visit"%SILO_MODE, "rt")
+    f = open(data_path("silo_%s_test_data/wave.visit") % SILO_MODE, "rt")
     lines = f.readlines()
     f.close()
     f0 = open("wave.visit","wt")
     f1 = open("wave1.visit","wt")
     f2 = open("wave2.visit","wt")
     for line in lines:
-        f0.write("../data/silo_%s_test_data/"%SILO_MODE + line)
-        f1.write("../data/silo_%s_test_data/"%SILO_MODE + line)
-        f2.write("../data/silo_%s_test_data/"%SILO_MODE + line)
+        f0.write(data_path("silo_%s_test_data",line) % SILO_MODE )
+        f1.write(data_path("silo_%s_test_data",line) % SILO_MODE )
+        f2.write(data_path("silo_%s_test_data",line) % SILO_MODE )
     f0.close()
     f1.close()
     f2.close()
@@ -258,7 +258,8 @@ def test2(testindex):
     SetAnnotationAttributes(b)
 
     SetCloneWindowOnFirstRef(0)
-    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
+    OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
+
     AddPlot("FilledBoundary", "material(mesh)")
     DrawPlots()
     Test("timelock_%02d" % testindex)
@@ -304,7 +305,8 @@ def test3(testindex):
     # Turn on "CloneWindowOnFirstRef"
     SetCloneWindowOnFirstRef(1)
 
-    dbs = ("../data/silo_%s_test_data/wave.visit"%SILO_MODE, "../data/silo_%s_test_data/wave_tv.visit"%SILO_MODE)
+    dbs = (data_path("silo_%s_test_data/wave.visit") % SILO_MODE,
+           data_path("silo_%s_test_data/wave_tv.visit") % SILO_MODE)
     OpenDatabase(dbs[0])
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()

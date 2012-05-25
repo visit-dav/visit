@@ -36,7 +36,7 @@ def writeDataSet():
         t = float(i) / float(nts - 1)
         y_left = t * y1 + (1. - t) * y0
         y_right = t * y0 + (1. - t) * y1
-        filename = "../data/curve_test_data/line%04d.curve" % i
+        filename = data_path("curve_test_data/line%04d.curve") % i
         names = names + [filename]
         try:
             f = open(filename, "w")
@@ -78,7 +78,8 @@ def test1():
     filenames = data[0]
     coefficients = data[1]
 
-    OpenDatabase("../data/curve_test_data/line*.curve database")
+    OpenDatabase(data_path("curve_test_data/line*.curve database"))
+
     AddPlot("Curve", "line")
     DrawPlots()
 
@@ -103,7 +104,8 @@ def test1():
 #
 def test2():
     # Do Scatter plot of d vs d since we know that it will make Y=X
-    OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+
     AddPlot("Scatter", "d")
     s = ScatterAttributes()
     s.var2 = "d"
@@ -125,7 +127,8 @@ def test2():
 
     # Check the best fit with another known line eq.
     DeleteAllPlots()
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     DefineScalarExpression("t", "zoneid(curvmesh2d)")
     DefineScalarExpression("line", "t * 0.33333 + 10.")
     AddPlot("Scatter", "t")
@@ -138,7 +141,8 @@ def test2():
 
     # Make the scatter plot be d vs. dpu
     DeleteAllPlots()
-    OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+
     AddPlot("Scatter", "d")
     DefineScalarExpression("dpu", "d + u / 3.")
     s.var2 = "dpu"

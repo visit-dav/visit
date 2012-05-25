@@ -20,7 +20,8 @@
 
 # test the main mesh
 TestSection("Curvilinear grid files")
-OpenDatabase("../data/Rect_test_data/curv_data/datafile.rect")
+OpenDatabase(data_path("Rect_test_data/curv_data/datafile.rect"))
+
 AddPlot("Mesh","Mesh")
 DrawPlots()
 v=GetView3D()
@@ -47,10 +48,12 @@ DrawPlots()
 Test("rect_04")
 
 DeleteAllPlots()
-CloseDatabase("../data/Rect_test_data/curv_data/datafile.rect")
+CloseDatabase(data_path("Rect_test_data/curv_data/datafile.rect"))
+
 
 TestSection("Rectilinear grid files")
-OpenDatabase("../data/Rect_test_data/rect_data/datafile.rect")
+OpenDatabase(data_path("Rect_test_data/rect_data/datafile.rect"))
+
 AddPlot("Mesh","Mesh")
 DrawPlots()
 ResetView()
@@ -61,7 +64,8 @@ DrawPlots()
 Test("rect_06")
 
 DeleteAllPlots()
-CloseDatabase("../data/Rect_test_data/rect_data/datafile.rect")
+CloseDatabase(data_path("Rect_test_data/rect_data/datafile.rect"))
+
 
 TestSection("1D Datasets re-interpreted as curves.")
 
@@ -69,7 +73,8 @@ c = CurveAttributes()
 c.showLabels = 0
 SetDefaultPlotOptions(c)
 
-OpenDatabase("../data/Rect_test_data/1d/curv_data/datafile.rect")
+OpenDatabase(data_path("Rect_test_data/1d/curv_data/datafile.rect"))
+
 AddPlot("Curve", "Scalar_Curves/pressure")
 DrawPlots()
 ResetView()

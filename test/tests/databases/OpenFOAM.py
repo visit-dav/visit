@@ -13,7 +13,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/OpenFOAM_test_data/bubbleColumn/system/controlDict")
+OpenDatabase(data_path("OpenFOAM_test_data/bubbleColumn/system/controlDict"))
+
 
 AddPlot("Vector", "Ua")
 v = VectorAttributes()
@@ -39,7 +40,8 @@ Test("OpenFOAM_05")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/OpenFOAM_test_data/mixer2D_ascii/system/controlDict")
+OpenDatabase(data_path("OpenFOAM_test_data/mixer2D_ascii/system/controlDict"))
+
 AddPlot("Vector", "U")
 v = VectorAttributes()
 v.nVectors = 400*6

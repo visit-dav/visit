@@ -14,7 +14,8 @@
 
 
 # test a 2D pixie database
-OpenDatabase("../data/pixie_test_data/pixie3d3.h5")
+OpenDatabase(data_path("pixie_test_data/pixie3d3.h5"))
+
 
 #
 # Test simple read and display of a variable 
@@ -36,7 +37,8 @@ Test("pixie_03")
 DeleteAllPlots()
 
 # test a 3D pixie database
-OpenDatabase("../data/pixie_test_data/pixie3d4.h5")
+OpenDatabase(data_path("pixie_test_data/pixie3d4.h5"))
+
 AddPlot("Contour","Car variables/Vx")
 AddPlot("Mesh","curvemesh_33x33x33")
 v=GetView3D()
@@ -48,7 +50,8 @@ DeleteAllPlots()
 ResetView()
 
 # test a pixie expression
-OpenDatabase("../data/pixie_test_data/pixie_expressions.h5")
+OpenDatabase(data_path("pixie_test_data/pixie_expressions.h5"))
+
 AddPlot("Vector","V")
 DrawPlots()
 v=GetView3D()
@@ -64,7 +67,8 @@ Test("pixie_06")
 DeleteAllPlots()
 
 # test a mesh plot of a non-square, 2D, curvilinear mesh 
-OpenDatabase("../data/pixie_test_data/pixie3d5.h5")
+OpenDatabase(data_path("pixie_test_data/pixie3d5.h5"))
+
 AddPlot("Mesh","curvemesh_65x33x2")
 AddPlot("Pseudocolor","Diagnostics/q factor")
 DrawPlots()

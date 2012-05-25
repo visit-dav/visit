@@ -85,7 +85,8 @@
 # ----------------------------------------------------------------------------
 
 def QueryRect2d():
-    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -145,7 +146,8 @@ def QueryRect2d():
 
 
 def QueryMultiUcd3d():
-    OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -224,7 +226,8 @@ def QueryMultiUcd3d():
     DeleteAllPlots()
 
 def QueryContours():
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Contour", "hardyglobal")
     c = ContourAttributes()
     c.contourNLevels = 10
@@ -280,7 +283,8 @@ def QueryContours():
  
     DeleteAllPlots()  
 
-    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
     AddPlot("Contour", "d")
     c.contourNLevels = 10
     SetPlotOptions(c)
@@ -328,7 +332,8 @@ def QueryContours():
 
 def QueryCurv2d():
     # Testing database queries on curv2d.
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -371,7 +376,8 @@ def QueryCurv2d():
     DeleteAllPlots()
 
 def QueryCurv3d():
-    OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "p")
     DrawPlots()
 
@@ -399,7 +405,8 @@ def QueryCurv3d():
     DeleteAllPlots()
 
 def QueryGlobe():
-    OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -493,7 +500,8 @@ def QueryGlobe():
     DeleteAllPlots()
 
 def QueryNoise():
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -565,7 +573,8 @@ def QueryNoise():
     DeleteAllPlots()
 
 def QuerySid97():
-    OpenDatabase("../data/silo_%s_test_data/sid97.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/sid97.silo")%SILO_MODE)
+
     AddPlot("FilledBoundary", "mat1")
     DrawPlots()
 
@@ -587,7 +596,8 @@ def QuerySid97():
     DeleteAllPlots()
 
 def QueryBigSil():
-    OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
 
@@ -615,7 +625,8 @@ def QueryBigSil():
     DeleteAllPlots()
 
 def QueryMinMaxCurve():
-    OpenDatabase("../data/curve_test_data/curve.visit")
+    OpenDatabase(data_path("curve_test_data/curve.visit"))
+
     AddPlot("Curve", "parabolic");
     DrawPlots()
     Query("MinMax", use_actual_data=1) 
@@ -643,7 +654,8 @@ def QueryMinMaxCurve():
     DeleteAllPlots()
 
 def QuerySAMRAI():
-    OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+    OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
     AddPlot("Pseudocolor", "Primitive Var _number_0")
     DrawPlots()
 
@@ -679,7 +691,8 @@ def QuerySAMRAI():
 def QueryCurves():
     # in responses to VisIt00004449, Area between 2 curves query crashes
     # viewer if curves not from same database.
-    OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
 
@@ -697,7 +710,8 @@ def QueryCurves():
   
     # now add a curve from a different database, and test against 
     # previous curves.
-    OpenDatabase("../data/curve_test_data/c000.curve")
+    OpenDatabase(data_path("curve_test_data/c000.curve"))
+
     AddPlot("Curve", "going_up")
     DrawPlots()
 
@@ -718,7 +732,8 @@ def QueryCurves():
     DeleteAllPlots()
 
 def QueryHistogram():
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     AddPlot("Histogram", "d")
     DrawPlots()
     
@@ -741,7 +756,8 @@ def QueryHistogram():
     DeleteAllPlots()   
 
 def QueryGlobalId():
-    OpenDatabase("../data/silo_%s_test_data/global_node.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/global_node.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
 
@@ -762,7 +778,8 @@ def QueryGlobalId():
 
 def QueryZR_RZ():
     s = "RZ UGRID:\n    "
-    OpenDatabase("../data/vtk_cylindrical_test_data/ugrid_RZ.vtk")
+    OpenDatabase(data_path("vtk_cylindrical_test_data/ugrid_RZ.vtk"))
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Query("Weighted Variable Sum")
@@ -773,7 +790,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "ZR UGRID:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/ugrid_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/ugrid_ZR.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -783,7 +801,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "XY UGRID:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/ugrid_XY.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/ugrid_XY.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -808,7 +827,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/ugrid_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/ugrid_ZR.vtk"))
+
     DrawPlots()
 
     s = s + "ZR UGRID TRANSLATED:\n    "
@@ -819,7 +839,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/ugrid_RZ.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/ugrid_RZ.vtk"))
+
     DrawPlots()
 
     s = s + "RZ UGRID TRANSLATED:\n    "
@@ -833,7 +854,8 @@ def QueryZR_RZ():
     DeleteAllPlots()
 
     s = s + "RZ RGRID:\n    "
-    OpenDatabase("../data/vtk_cylindrical_test_data/rect_RZ.vtk")
+    OpenDatabase(data_path("vtk_cylindrical_test_data/rect_RZ.vtk"))
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Query("Weighted Variable Sum")
@@ -844,7 +866,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "ZR RGRID:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/rect_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/rect_ZR.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -854,7 +877,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "XY RGRID:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/rect_XY.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/rect_XY.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -879,7 +903,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/rect_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/rect_ZR.vtk"))
+
     DrawPlots()
     s = s + "ZR RGRID TRANSLATED:\n    "
     Query("Weighted Variable Sum")
@@ -889,7 +914,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/rect_RZ.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/rect_RZ.vtk"))
+
     DrawPlots()
 
     s = s + "RZ RGRID TRANSLATED:\n    "
@@ -903,7 +929,8 @@ def QueryZR_RZ():
     DeleteAllPlots()
 
     s = s + "RZ POLY:\n    "
-    OpenDatabase("../data/vtk_cylindrical_test_data/poly_RZ.vtk")
+    OpenDatabase(data_path("vtk_cylindrical_test_data/poly_RZ.vtk"))
+
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Query("Weighted Variable Sum")
@@ -914,7 +941,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "ZR POLY:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/poly_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/poly_ZR.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -924,7 +952,8 @@ def QueryZR_RZ():
     s = s + GetQueryOutputString() + "\n\n"
 
     s = s + "XY POLY:\n    "
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/poly_XY.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/poly_XY.vtk"))
+
     DrawPlots()
     Query("Weighted Variable Sum")
     s = s + GetQueryOutputString() + "\n    "
@@ -948,7 +977,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/poly_ZR.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/poly_ZR.vtk"))
+
     DrawPlots()
     s = s + "ZR POLY TRANSLATED:\n    "
     Query("Weighted Variable Sum")
@@ -958,7 +988,8 @@ def QueryZR_RZ():
     Query("Revolved surface area")
     s = s + GetQueryOutputString() + "\n\n"
 
-    ReplaceDatabase("../data/vtk_cylindrical_test_data/poly_RZ.vtk")
+    ReplaceDatabase(data_path("vtk_cylindrical_test_data/poly_RZ.vtk"))
+
     DrawPlots()
 
     s = s + "RZ POLY TRANSLATED:\n    "

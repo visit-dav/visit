@@ -59,7 +59,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 atts = IndexSelectAttributes()
 # Dim is an enumerated type.  0 -> 1D, 1 -> 2D, 2 -> 3D.
@@ -131,7 +132,8 @@ DrawPlots()
 Test("ops_indexselect05")
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 
 # 3D, curvilinear, mesh plot
 AddPlot("Mesh", "curvmesh3d")
@@ -172,7 +174,8 @@ DrawPlots()
 Test("ops_indexselect08")
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 
 # 2D, rectilinear, mesh plot
 AddPlot("Mesh", "quadmesh2d")
@@ -197,7 +200,8 @@ DrawPlots()
 Test("ops_indexselect10")
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 
 # 2D, curvilinear, mesh plot
 AddPlot("Mesh", "curvmesh2d")
@@ -254,7 +258,8 @@ DeleteAllPlots()
 
 # 3D multi-rect 
 # test 'modulo' problems, bug: VisIt00003308
-OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
 atts.dim = 2
@@ -288,7 +293,8 @@ DeleteAllPlots()
 
 # bigsil 
 # test 'domainIndex' problems, bug: VisIt00005559
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 AddPlot("Subset", "domains")
 AddPlot("Mesh", "mesh")
 AddOperator("IndexSelect")
@@ -411,7 +417,8 @@ TurnDomainsOn()
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 # 3D, rectilinear, zonal var, index-selected at max/min boundaries.
 AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
@@ -447,7 +454,8 @@ Test("ops_indexselect28")
 DeleteAllPlots()
 
 
-OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 # 3D, curvilinear, zonal var, index-selected at max/min boundaries.
 AddPlot("Pseudocolor", "p")
 AddOperator("IndexSelect")
@@ -483,7 +491,8 @@ DeleteAllPlots()
 
 #'6428, boundary between domains disappear when on edge of
 # index-selected plot 
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "dist")
 atts.dim = atts.ThreeD
 atts.xMin = 0
@@ -527,7 +536,8 @@ DeleteAllPlots()
 
 # Test point meshes
 TestSection("IndexSelect on Point meshes.")
-OpenDatabase("../data/vtk_test_data/ugrid_points.vtk")
+OpenDatabase(data_path("vtk_test_data/ugrid_points.vtk"))
+
 AddPlot("Pseudocolor", "u")
 p = PseudocolorAttributes()
 p.pointType = p.Box
@@ -578,7 +588,8 @@ Test("ops_indexselect38")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "PointVar")
 AddOperator("IndexSelect")
 # make sure we are using default atts

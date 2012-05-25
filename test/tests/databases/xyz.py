@@ -14,7 +14,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/xyz_test_data/nanowireTB23K298.xyz", 0, "XYZ_1.0")
+OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
+
 AddPlot("Molecule", "element")
 DrawPlots()
 

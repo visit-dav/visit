@@ -31,7 +31,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()
@@ -75,7 +76,8 @@ DeleteAllPlots()
 # Contour lines by one variable, isovolumeing by another.  Multi-block,
 # curvilinear, 2D.
 #
-OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+
 AddPlot("Contour", "u")
 DrawPlots()
 
@@ -112,7 +114,8 @@ DeleteAllPlots()
 # Mesh plot and PC plot, both isovolumeed by the same variable, criteria.
 # Multi-block, rectilinear, 3D.
 #
-OpenDatabase("../data/silo_%s_test_data/multi_rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+
 
 isovol.lbound = 0.4
 isovol.ubound = 1.0
@@ -131,7 +134,8 @@ Test("ops_isovol05")
 # Test that we can slice poly-data correctly.
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 isovol.lbound = -1.0
 isovol.ubound = 1.0

@@ -15,7 +15,8 @@
 
 
 
-OpenDatabase("../data/Image_test_data/manhattan.jpg")
+OpenDatabase(data_path("Image_test_data/manhattan.jpg"))
+
 DefineScalarExpression("cm", "conservative_smoothing(intensity)")
 AddPlot("Pseudocolor", "cm")
 DrawPlots()

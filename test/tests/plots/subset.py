@@ -29,7 +29,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/multi_curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+
 
 AddPlot("Subset", "domains")
 DrawPlots()
@@ -81,7 +82,8 @@ SetPlotOptions(s)
 Test("subset_06")
 
 DeleteAllPlots()
-OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
+
 AddPlot("Subset", "levels")
 AddOperator("Isovolume")
 DefineScalarExpression("vort", "curl(vel)")

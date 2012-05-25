@@ -31,7 +31,8 @@ SetDefaultPlotOptions(pcatts)
 #
 # test ability to read an image as usual 
 #
-OpenDatabase("../data/Image_test_data/manhattan.jpg")
+OpenDatabase(data_path("Image_test_data/manhattan.jpg"))
+
 
 AddPlot("Pseudocolor","intensity")
 DrawPlots()
@@ -61,7 +62,8 @@ DeleteAllPlots()
 # Now test a data selection on a format that can
 # handle selection during read 
 #
-OpenDatabase("../data/Image_test_data/manhattan.pnm")
+OpenDatabase(data_path("Image_test_data/manhattan.pnm"))
+
 AddPlot("Pseudocolor","intensity")
 AddOperator("Box")
 SetOperatorOptions(box)
@@ -69,12 +71,13 @@ DrawPlots()
 Test("image_03")
 
 DeleteAllPlots()
-f = open("../data/Image_test_data/manhattan.imgvol", "wt")
+f = open(data_path("Image_test_data/manhattan.imgvol"), "wt")
 f.write("Z_STEP:60\n")
 for i in range(3):
    f.write("manhattan.jpg\n")
 f.close()
-OpenDatabase("../data/Image_test_data/manhattan.imgvol")
+OpenDatabase(data_path("Image_test_data/manhattan.imgvol"))
+
 AddPlot("Contour", "green")
 c = ContourAttributes()
 c.contourMethod = c.Value

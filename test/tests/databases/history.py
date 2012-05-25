@@ -16,7 +16,8 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 
 #
 # Test that we can detect that there is a problem and add 0's.

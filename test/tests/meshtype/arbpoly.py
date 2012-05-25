@@ -25,7 +25,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/poly3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/poly3d.silo")%SILO_MODE)
+
 
 AddPlot("Mesh", "ucdmesh3d")
 DrawPlots()
@@ -59,9 +60,11 @@ DrawPlots()
 Test("arbpoly_03")
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/poly3d.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/poly3d.silo")%SILO_MODE)
 
-OpenDatabase("../data/overlink_test_data/ev_0_0_100/OvlTop.silo")
+
+OpenDatabase(data_path("overlink_test_data/ev_0_0_100/OvlTop.silo"))
+
 AddPlot("Mesh","MMESH")
 DrawPlots()
 ma = MeshAttributes()

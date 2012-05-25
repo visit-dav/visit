@@ -71,7 +71,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 TestSection("Slice through a point")
 # Test 1 -- a slice through a point
@@ -199,7 +200,8 @@ Test("ops_Slice09")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/sid97.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/sid97.silo")%SILO_MODE)
+
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Slice")
 atts = SliceAttributes()
@@ -215,7 +217,8 @@ Test("ops_Slice10")
 DeleteAllPlots()
 
 
-OpenDatabase("../data/silo_%s_test_data/tire.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/tire.silo")%SILO_MODE)
+
 AddPlot("Subset", "domains")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -244,7 +247,8 @@ Test("ops_Slice13")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -258,7 +262,8 @@ Test("ops_Slice14")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Slice")
 atts.originType = atts.Zone
@@ -298,7 +303,8 @@ TestSection("Slice point mesh")
 # Test that we can slice point meshes.  The points must be exactly on the
 # plane (or at least within some tolerance).  To guarantee the point positions,
 # take a 2D plot and put it into 3D.  Then slice it.
-OpenDatabase("../data/silo_%s_test_data/noise2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "PointVar")
 pc_atts = PseudocolorAttributes()
 pc_atts.pointType = pc_atts.Box
@@ -320,7 +326,8 @@ DrawPlots()
 Test("ops_Slice19")
 
 DeleteAllPlots()
-ActivateDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+ActivateDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 # Test 1 -- a slice through a point
 TestSection("Slice through a point")
@@ -388,7 +395,8 @@ Test("ops_Slice27")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "PointVar")
 pc_atts.pointSize = 1.0
 SetPlotOptions(pc_atts)
@@ -407,7 +415,8 @@ Test("ops_Slice28")
 # First, test slice by a zone with a boundary plot where the zone is along
 # a material boundary.
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Boundary", "mat1")
 AddOperator("Slice")
 slice = SliceAttributes()
@@ -428,7 +437,8 @@ DeleteAllPlots()
 
 # Test what happens when the up axis is not orthogonal to the normal.
 # Start off with the two being orthogonal, though.
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "hardyglobal")
 AddOperator("Slice")
 slice = SliceAttributes()
@@ -450,7 +460,8 @@ Test("ops_Slice32")
 # through a zone and then change the time state.
 DeleteAllPlots()
 ResetView()
-OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+
 
 AddPlot("Pseudocolor", "pressure")
 AddOperator("Slice")
@@ -469,7 +480,8 @@ Test("ops_Slice33")
 
 DeleteAllPlots()
 ResetView()
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d_dup")
 AddOperator("Slice")
 atts = SliceAttributes()
@@ -485,7 +497,8 @@ DrawPlots()
 Test("ops_Slice34")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
 iatts = IndexSelectAttributes()
@@ -507,7 +520,8 @@ Test("ops_Slice35")
 DeleteAllPlots()
 
 TestSection("Slice polyhedral cells")
-OpenDatabase("../data/EnSight_test_data/small.case")
+OpenDatabase(data_path("EnSight_test_data/small.case"))
+
 DefineScalarExpression("zid", "zoneid(mesh) * 1.")
 DefineScalarExpression("nid", "nodeid(mesh) * 1.")
 AddPlot("Pseudocolor", "zid")

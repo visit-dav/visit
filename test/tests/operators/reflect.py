@@ -47,7 +47,8 @@
 
 
 # 3D, rectilinear.  Multi-block  Tests ghost zones as well.
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 
 atts = ReflectAttributes()
 
@@ -75,7 +76,8 @@ Test("ops_refl02")
 
 DeleteAllPlots()
 
-OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 AddOperator("Reflect")
 DrawPlots()
@@ -93,7 +95,8 @@ Test("ops_refl05")
 DeleteAllPlots()
 
 # Test unstructured mesh -- plus test vectors.
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Vector", "vel")
 v = VectorAttributes()
 v.vectorOrigin = v.Head
@@ -153,7 +156,8 @@ DeleteAllPlots()
 # rectilinear grid.  Use the PXPYPZ and NXNYNZ octants to flex all of that 
 # code.
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "hardyglobal")
 pc = PseudocolorAttributes()
 pc.opacity = 0.3
@@ -199,7 +203,8 @@ Test("ops_refl11")
 # reflect) and ghost zones (from the multi_ucd3d file).
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "d")
 SetPlotOptions(pc)
 AddOperator("Reflect")
@@ -226,7 +231,8 @@ SetView3D(v)
 Test("ops_refl12")
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Boundary", "mat1")
 AddOperator("Project")
 AddOperator("Reflect")
@@ -236,7 +242,8 @@ Test("ops_refl13")
 # The "mass volume extractor" of the volume renderer depends on the
 # rectilinear grid not being inverted.  Test that here ('6321).
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 AddPlot("Volume", "d")
 AddOperator("Reflect")
 DrawPlots()

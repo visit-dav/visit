@@ -42,7 +42,8 @@ def InitializeView():
     SetView3D(v)
 
 # Open the database.
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 # Test the single color opacity for the Boundary plot
 AddPlot("Boundary", "mat1")

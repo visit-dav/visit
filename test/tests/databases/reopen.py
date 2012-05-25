@@ -154,7 +154,7 @@ def CreateMTFile(prefix, makeVisItFile, percent):
     if makeVisItFile == 0:
         # Virtual database
         for file in files:
-            fileFrom = "../data/silo_hdf5_test_data/%s" % file
+            fileFrom = data_path("silo_hdf5_test_data/%s" % file)
             fileTo   = "%s%s" % (prefix, file)
             if not os.path.exists(fileFrom):
                 print >>sys.stderr, "Error: %s didn't exist" % fileFrom
@@ -174,7 +174,7 @@ def CreateMTFile(prefix, makeVisItFile, percent):
         db = "reopen_wave.visit"
         f = open(db, "wt")
         for file in files:
-            f.write("../data/silo_hdf5_test_data/%s\n" % file)
+            f.write(data_path("silo_hdf5_test_data/%s\n" % file))
         f.close()
     return (db, prefixfiles)
 
@@ -186,7 +186,7 @@ def DestroyMTFile(makeVisItFile, db):
 def CreateTimeVaryingMTFile(percent):
     # Read in the entire dumps.visit file for the SAMRAI data so that
     # we can get the list of files.
-    f = open("../data/samrai_test_data/sil_changes/dumps.visit", "rt")
+    f = open(data_path("samrai_test_data/sil_changes/dumps.visit"), "rt")
     lines = f.readlines()
     f.close()
 
@@ -197,7 +197,7 @@ def CreateTimeVaryingMTFile(percent):
     db = "reopen_samrai.visit"
     f = open(db, "wt")
     for i in range(maxState):
-        f.write("../data/samrai_test_data/sil_changes/%s" % lines[i])
+        f.write(data_path("samrai_test_data/sil_changes/%s") % lines[i])
     f.close()
     return db
 
@@ -231,7 +231,7 @@ def test1(testIndex):
     # This will open at timestep 0.  The variable "transient" will not be
     # available then.
     #
-    db = "../data/silo_%s_test_data/wave.visit"%SILO_MODE
+    db = data_path("silo_%s_test_data/wave.visit") % SILO_MODE
     OpenDatabase(db)
 
     #
@@ -373,7 +373,7 @@ def test4(testIndex):
 
     # Copy curv2d to the current directory.
     db = "test4.silo"
-    os.link("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE, db)
+    os.link(data_path("silo_%s_test_data/curv2d.silo") %SILO_MODE, db)
 
     # Open up the file and create a plot.
     OpenDatabase(db)
@@ -383,7 +383,7 @@ def test4(testIndex):
 
     # Delete the file
     os.unlink(db)
-    os.link("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, db)
+    os.link(data_path("silo_%s_test_data/rect2d.silo") % SILO_MODE, db)
     ReOpenDatabase(db)
     ResetView()
     Test("reopen_%02d" % (testIndex + 1))
@@ -400,7 +400,7 @@ def test4(testIndex):
 #
 def test5(testIndex):
     TestSection("Testing reopen/expressions with multiple windows")
-    db = "../data/silo_%s_test_data/curv3d.silo"%SILO_MODE
+    db = data_path("silo_%s_test_data/curv3d.silo") % SILO_MODE
     AddWindow()
     SetActiveWindow(1)
     OpenDatabase(db)
@@ -498,7 +498,7 @@ def test7(testIndex):
     TestSection("Testing reopen on a deleted file")
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
-    os.link("../data/silo_%s_test_data/globe.silo"%SILO_MODE, db)
+    os.link(data_path("silo_%s_test_data/globe.silo") % SILO_MODE, db)
     WaitForFilesToBePresent(db)
 
     OpenDatabase(db)

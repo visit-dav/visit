@@ -35,7 +35,8 @@ view.farPlane = 1.73205
 view.perspective = 1
 SetView3D(view)
 
-OpenDatabase("../data/silo_%s_test_data/bigsil.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+
 AddPlot("Subset", "mat")
 DrawPlots()
 
@@ -64,7 +65,8 @@ AddPlot("Subset", "domains")
 DrawPlots()
 Test("sil5")
 
-OpenDatabase("../data/Chombo_test_data/chombo.visit")
+OpenDatabase(data_path("Chombo_test_data/chombo.visit"))
+
 AddPlot("Pseudocolor", "Density")
 s = SILRestriction()
 s.TurnOffSet(s.SetsInCategory("materials")[1])

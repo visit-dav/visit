@@ -33,7 +33,8 @@ DefineScalarExpression("var4", "var5 * var6")
 DefineScalarExpression("var7", "var8 / var9")
 
 # Open the first database, which has some expressions.
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "speed")
 DrawPlots()
 
@@ -45,7 +46,8 @@ TestText("exprList00", ExprStrings())
 AddWindow()
 SetActiveWindow(2)
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+
 TestText("exprList01", ExprStrings())
 
 # Going back to window 1, where globe is open. This should make the expression
@@ -55,7 +57,8 @@ TestText("exprList02", ExprStrings())
 
 # Open a new database. This should make the expression list contain the
 # expressions for rect3d and our scalar expressions.
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 TestText("exprList03", ExprStrings())
 
 # Add a plot

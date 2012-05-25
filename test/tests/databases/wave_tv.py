@@ -23,7 +23,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE, 9)
+OpenDatabase(data_path("silo_%s_test_data/wave_tv*.silo database")%SILO_MODE, 9)
+
 
 #
 # This brings up a subset plot with 5 materials.
@@ -47,7 +48,7 @@ TimeSliderNextState()
 Test("wave_tv_02")
 
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/wave_tv*.silo database") % SILO_MODE)
 
 #
 # Open wave_tv one state BEFORE where variable 'transient' is
@@ -55,7 +56,7 @@ CloseDatabase("../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE)
 # turned off, the add should always fail. With it turned on,
 # the add should succeed on state 17.
 #
-OpenDatabase(".../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE, 16)
+OpenDatabase(data_path("silo_%s_test_data/wave_tv*.silo database") % SILO_MODE, 16)
 addOk16 = AddPlot("Pseudocolor","transient")
 DeleteAllPlots()
 TimeSliderNextState()
@@ -64,10 +65,11 @@ msg = "With TreatAllDBsAsTimeVarying set to its default value,\n"
 msg = msg + "AddPlot() returned %d for state 16 and %d for state 17"%(addOk16,addOk17)
 TestText("wave_tv_03", msg)
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/wave_tv*.silo database") % SILO_MODE)
 
 SetTreatAllDBsAsTimeVarying(1)
-OpenDatabase("../data/silo_%s_test_data/wave_tv*.silo database"%SILO_MODE, 16)
+OpenDatabase(data_path("silo_%s_test_data/wave_tv*.silo database")%SILO_MODE, 16)
+
 addOk16 = AddPlot("Pseudocolor","transient")
 DeleteAllPlots()
 TimeSliderNextState()

@@ -19,7 +19,7 @@ def SetTheView():
 
 def test0(datapath):
     TestSection("Missing data")
-    OpenDatabase(datapath + "earth.nc")
+    OpenDatabase(pjoin(datapath,"earth.nc"))
     AddPlot("Pseudocolor", "height")
     DrawPlots()
     SetTheView()
@@ -39,7 +39,7 @@ def test0(datapath):
 
 def test1(datapath):
     TestSection("Expressions and missing data")
-    OpenDatabase(datapath + "earth.nc")
+    OpenDatabase(pjoin(datapath,"earth.nc"))
     DefineScalarExpression("meaningless", "carbon_particulates + seatemp")
     AddPlot("Pseudocolor", "meaningless")
     DrawPlots()
@@ -63,7 +63,7 @@ def test1(datapath):
     Test("missingdata_1_02")
 
 def main():
-    datapath = "../data/netcdf_test_data/"
+    datapath = data_path("netcdf_test_data")
     test0(datapath)
     test1(datapath)
 

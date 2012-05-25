@@ -66,13 +66,13 @@ def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y,
 
 DefineArrayExpression("a0", "array_compose(recenter(u), recenter(v), d)")
 DefineArrayExpression("e0", "array_compose(recenter(gradient(u)[0]), recenter(gradient(u)[1]), p)")
-TestOne(0, "../data/silo_%s_test_data/rect2d.silo"%SILO_MODE, "d", "quadmesh2d", "a0", "e0", 100, 0.5,0.5,0, 0.1,0,0)
+TestOne(0, data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE, "d", "quadmesh2d", "a0", "e0", 100, 0.5,0.5,0, 0.1,0,0)
 DeleteExpression("a0")
 DeleteExpression("e0")
 
 DefineArrayExpression("a1", "array_compose(<mesh_quality/volume>, <mesh_quality/taper>,  <mesh_quality/oddy>)")
 DefineArrayExpression("e1", "array_compose(<mesh_quality/aspect>, <mesh_quality/shape>, <mesh_quality/skew>)")
-TestOne(1, "../data/KullLite_test_data/T.pdb", "mesh_quality/volume", "mesh", \
+TestOne(1, data_path("KullLite_test_data/T.pdb"), "mesh_quality/volume", "mesh", \
         "a1", "e1", 100, 0,0,0, 0.25,90,90)
 DeleteExpression("a1")
 DeleteExpression("e1")
@@ -81,19 +81,19 @@ DefineArrayExpression("a2", "array_compose(<mesh_quality/mesh/jacobian>, \
                       <mesh_quality/mesh/area>, <mesh_quality/mesh/oddy>)")
 DefineArrayExpression("e2", "array_compose(<mesh_quality/mesh/aspect>, \
                       <mesh_quality/mesh/shape>, <mesh_quality/mesh/skew>)")
-TestOne(2, "../data/KullLite_test_data/tagtest_rz_3.pdb", "mesh_quality/mesh/area", "mesh", 
+TestOne(2, data_path("KullLite_test_data/tagtest_rz_3.pdb"), "mesh_quality/mesh/area", "mesh",
         "a2", "e2", 333, 0,0,1, 0.5,0,0)
 DeleteExpression("a2")
 DeleteExpression("e2")
 
-TestOne(3, "../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE, "d", "mesh1", "d", "p", 500, 0.5,0.5,0, 1,45,45)
+TestOne(3, data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE, "d", "mesh1", "d", "p", 500, 0.5,0.5,0, 1,45,45)
 
 
 DefineArrayExpression("a3", "array_compose_with_bins(<mesh_quality/mesh/jacobian>, \
                       <mesh_quality/mesh/area>, <mesh_quality/mesh/oddy>,  [0, 2, 4, 8])")
 DefineArrayExpression("e3", "array_compose_with_bins(<mesh_quality/mesh/aspect>, \
                       <mesh_quality/mesh/shape>, <mesh_quality/mesh/skew>, [0, 2, 4, 8])")
-TestOne(4, "../data/KullLite_test_data/tagtest_rz_3.pdb", "mesh_quality/mesh/area", "mesh", 
+TestOne(4, data_path("KullLite_test_data/tagtest_rz_3.pdb"), "mesh_quality/mesh/area", "mesh",
         "a3", "e3", 333, 0,0,1, 0.5,0,0)
 DeleteExpression("a3")
 DeleteExpression("e3")

@@ -26,7 +26,8 @@
 OpenMDServer("localhost")
 
 # open a Vista/Diablo multi-part file
-OpenDatabase("../data/Vista_test_data/AAAA_00004_00000.SILO",0,"Vista_1.0")
+OpenDatabase(data_path("Vista_test_data/AAAA_00004_00000.SILO"))
+
 
 TestSection("Vista-Diablo")
 
@@ -56,7 +57,8 @@ DeleteAllPlots()
 # open a Vista/Ale3d file
 TestSection("Vista-Ale3d")
 
-OpenDatabase("../data/Vista_test_data/nnq_001_00423.vista")
+OpenDatabase(data_path("Vista_test_data/nnq_001_00423.vista"))
+
 
 AddPlot("Pseudocolor","p")
 DrawPlots()

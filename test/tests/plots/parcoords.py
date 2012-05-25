@@ -39,7 +39,8 @@
 #
 TestSection("Test scalar collection sources")
 
-OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 
 # Set default plot variables
 p = ParallelCoordinatesAttributes()
@@ -105,7 +106,8 @@ TestSection("Test array expression sources")
 # Try an array variable
 DeleteAllPlots();
 
-OpenDatabase("../data/okc_test_data/astronomy.okc")
+OpenDatabase(data_path("okc_test_data/astronomy.okc"))
+
 
 DefineArrayExpression("arrayvar1",
                       "array_compose(d, b, b/2, b+l)")
@@ -159,7 +161,8 @@ SetPlotOptions(p)
 Test("parcoords_12")
 
 DeleteAllPlots()
-ActivateDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+ActivateDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
 AddPlot("ParallelCoordinates", "hardyglobal")
 p = ParallelCoordinatesAttributes()
 p.scalarAxisNames = ("hardyglobal", "shepardglobal")

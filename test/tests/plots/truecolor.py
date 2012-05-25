@@ -9,7 +9,8 @@
 
 
 
-OpenDatabase("../data/Image_test_data/manhattan.jpg")
+OpenDatabase(data_path("Image_test_data/manhattan.jpg"))
+
 
 AddPlot("Truecolor","color");
 DrawPlots()

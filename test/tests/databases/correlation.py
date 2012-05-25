@@ -86,7 +86,9 @@ def TestLengthAndCorrelationList(testname):
 #
 # The databases that we'll use for most tests.
 #
-dbs = ("../data/pdb_test_data/dbA00.pdb", "../data/pdb_test_data/dbB00.pdb", "../data/pdb_test_data/dbC00.pdb")
+dbs = (data_path("pdb_test_data/dbA00.pdb"),
+       data_path("pdb_test_data/dbB00.pdb"),
+       data_path("pdb_test_data/dbC00.pdb"))
 
 #
 # Open each database and create a plot.

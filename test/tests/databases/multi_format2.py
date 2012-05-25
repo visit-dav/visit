@@ -19,8 +19,8 @@
 # ----------------------------------------------------------------------------
 
 
-db = ("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE,
-      "../data/pdb_test_data/allinone00.pdb")
+db = (data_path("silo_%s_test_data/rect2d.silo") % SILO_MODE,
+      data_path("pdb_test_data/allinone00.pdb"))
 
 # Create a Pseudocolor plot of Rect2d.
 OpenDatabase(db[0])

@@ -1,4 +1,3 @@
-activeSource = "../data/silo_hdf5_test_data/globe.silo"
 activeTimeSlider = 0
 timeSliders = ("Keyframe animation")
 timeSliderCurrentStates = (0)

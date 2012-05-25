@@ -26,7 +26,8 @@
 # ----------------------------------------------------------------------------
 
 def QueryMultiWindow():
-    OpenDatabase("../data/silo_%s_test_data/wave*.silo database"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     SetTimeSliderState(31)
     DrawPlots()
@@ -90,7 +91,8 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple windows, same db, same timestate)
-    OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
     DefineScalarExpression("X", "coord(quadmesh3d)[0]")
     DefineScalarExpression("unnamed1", "X-1")
     DefineScalarExpression("unnamed2", "X-2")
@@ -123,7 +125,8 @@ def QueryMultiWindow():
     DeleteAllPlots()
 
     #bug 8425 (multiple plots, same window, same db, same root var)
-    OpenDatabase("../data/silo_%s_test_data/multi_rect2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE)
+
     DefineScalarExpression("p2", "p*p")
     DefineScalarExpression("p3", "p*p*p")
     AddPlot("Pseudocolor", "p")

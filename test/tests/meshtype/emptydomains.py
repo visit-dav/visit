@@ -17,7 +17,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/silo_%s_test_data/emptydomains.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/emptydomains.silo")%SILO_MODE)
+
 
 # Test the multi-mesh support
 AddPlot("Mesh", "mesh")

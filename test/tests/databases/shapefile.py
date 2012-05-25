@@ -19,7 +19,7 @@
 def test0():
     TestSection("Test reading a shapefile that contains points")
 
-    db = "../data/shapefile_test_data/m195mbsp/m195mbsp.shp"
+    db = data_path("shapefile_test_data/m195mbsp/m195mbsp.shp")
     OpenDatabase(db)
     AddPlot("Mesh", "point")
     m = MeshAttributes()
@@ -50,7 +50,7 @@ def test0():
 #
 def test1():
     TestSection("Test reading a shapefile that contains polylines")
-    db = "../data/shapefile_test_data/morrison/499071-HP.shp"
+    db = data_path("shapefile_test_data/morrison/499071-HP.shp")
     OpenDatabase(db)
     AddPlot("Mesh", "polyline")
     DrawPlots()
@@ -72,7 +72,7 @@ def test1():
 #
 def test2():
     TestSection("Test reading shapefiles that contain polygons")
-    db = "../data/shapefile_test_data/west/states.shp"
+    db = data_path("shapefile_test_data/west/states.shp")
     OpenDatabase(db)
     AddPlot("Mesh", "polygon")
     DrawPlots()
@@ -90,7 +90,7 @@ def test2():
     CloseDatabase(db)
     
     # Look at another file.
-    db = "../data/shapefile_test_data/prism0p020/prism0p020.shp"
+    db = data_path("shapefile_test_data/prism0p020/prism0p020.shp")
     OpenDatabase(db)
     AddPlot("Mesh", "polygon")
     DrawPlots()
@@ -124,10 +124,10 @@ def test2():
 # 
 def test3():
     TestSection("Test multiple files for showing different features")
-    dbs = ("../data/shapefile_test_data/alameda/tgr06001lkA.shp", \
-           "../data/shapefile_test_data/alameda/tgr06001cty00.shp", \
-           "../data/shapefile_test_data/alameda/tgr06001wat.shp", \
-           "../data/shapefile_test_data/alameda/tgr06001lkH.shp")
+    dbs = (data_path("shapefile_test_data/alameda/tgr06001lkA.shp"),
+           data_path("shapefile_test_data/alameda/tgr06001cty00.shp"),
+           data_path("shapefile_test_data/alameda/tgr06001wat.shp"),
+           data_path("shapefile_test_data/alameda/tgr06001lkH.shp"))
     # Put the roads on.
     OpenDatabase(dbs[0])
     AddPlot("Mesh", "polyline")
@@ -195,7 +195,7 @@ def test3():
 #
 def test4():
     TestSection("Test a .visit file of shapefiles")
-    db = "../data/shapefile_test_data/bayarearoads/roads.visit"
+    db = data_path("shapefile_test_data/bayarearoads/roads.visit")
     OpenDatabase(db)
     AddPlot("Subset", "blocks")
     DrawPlots()
@@ -207,7 +207,7 @@ def test4():
     v.windowCoords = (-122.614, -121.92, 37.3495, 37.9982)
     SetView2D(v)
     Test("shapefile_4_01")
-    
+
     # Zoom in more
     v.windowCoords = (-122.522, -122.362, 37.7017, 37.8424)
     SetView2D(v)

@@ -37,7 +37,8 @@ def TestWindowInformation(testname):
 SetCloneWindowOnFirstRef(1)
 SetWindowLayout(2)
 SetActiveWindow(2)
-OpenDatabase("../data/pdb_test_data/dbB00.pdb")
+OpenDatabase(data_path("pdb_test_data/dbB00.pdb"))
+
 AddPlot("FilledBoundary", "material(mesh)")
 DrawPlots()
 Test("clonefirstref_00")

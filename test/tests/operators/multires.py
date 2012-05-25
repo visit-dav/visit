@@ -8,7 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 
-ds = "../data/Chombo_test_data/chombo.visit"
+ds = data_path("Chombo_test_data/chombo.visit")
 OpenDatabase(ds)
 
 AddPlot("Pseudocolor", "Scalar_1")

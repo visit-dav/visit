@@ -18,8 +18,8 @@
 # ----------------------------------------------------------------------------
 
 
-db = ("../data/silo_pdb_test_data/wave*.silo database",
-      "../data/pdb_test_data/allinone00.pdb")
+db = (data_path("silo_pdb_test_data/wave*.silo database"),
+      data_path("pdb_test_data/allinone00.pdb"))
 
 # Create a Pseudocolor plot of wave.
 OpenDatabase(db[0])

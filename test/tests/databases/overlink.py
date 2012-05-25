@@ -22,7 +22,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
+OpenDatabase(data_path("overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo"))
+
 
 #
 # This is an interesting mesh 
@@ -59,14 +60,16 @@ Test("overlink_04")
 #
 TestSection("ANNOTATION_INT nodelists")
 DeleteAllPlots()
-CloseDatabase("../data/overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo")
+CloseDatabase(data_path("overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo"))
+
 
 # First test open with search for ANNOT_INT objects turned on
 # but none actually in the database.
 readOptions=GetDefaultFileOpenOptions("Silo")
 readOptions["Search For ANNOTATION_INT (!!Slow!!)"] = 1
 SetDefaultFileOpenOptions("Silo", readOptions)
-OpenDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor","d")
 DrawPlots()
 ResetView()
@@ -74,19 +77,24 @@ Test("overlink_05")
 
 # likewise on single domain, single file
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/multipart_multi_ucd3d.silo"%SILO_MODE)
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor","dx")
 DrawPlots()
 ResetView()
 Test("overlink_06")
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 
 # Ok, now lets do some real annot_int work
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
-OpenDatabase("../data/overlink_test_data/annotInt/sweptCellTagTest.silo")
+CloseDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
+OpenDatabase(data_path("overlink_test_data/annotInt/sweptCellTagTest.silo"))
+
 AddPlot("Mesh","MMESH")
 DrawPlots()
 Test("overlink_07")
@@ -107,8 +115,10 @@ SetPlotSILRestriction(silr)
 Test("overlink_09")
 
 DeleteAllPlots()
-CloseDatabase("../data/overlink_test_data/annotInt/sweptCellTagTest.silo")
-OpenDatabase("../data/overlink_test_data/annotInt/overlink2dTest.silo")
+CloseDatabase(data_path("overlink_test_data/annotInt/sweptCellTagTest.silo"))
+
+OpenDatabase(data_path("overlink_test_data/annotInt/overlink2dTest.silo"))
+
 AddPlot("Mesh","MMESH")
 DrawPlots()
 ResetView()
@@ -125,8 +135,10 @@ Test("overlink_10")
 
 TestSection("Large number of nodelists")
 DeleteAllPlots()
-CloseDatabase("../data/overlink_test_data/annotInt/overlink2dTest.silo")
-OpenDatabase("../data/overlink_test_data/annotInt/overlink2dTstA.silo")
+CloseDatabase(data_path("overlink_test_data/annotInt/overlink2dTest.silo"))
+
+OpenDatabase(data_path("overlink_test_data/annotInt/overlink2dTstA.silo"))
+
 AddPlot("Mesh","MMESH")
 DrawPlots()
 silr = SILRestriction()

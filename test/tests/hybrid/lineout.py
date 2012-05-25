@@ -107,7 +107,8 @@ def InitAnnotation():
     SetAnnotationAttributes(a)
 
 def TestLineout2D(time, suffix):
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -169,7 +170,8 @@ def TestLineout2D(time, suffix):
     ResetLineoutColor()
 
 def TestLineout3D(time, suffix):
-    OpenDatabase("../data/silo_%s_test_data/noise.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
 
@@ -213,7 +215,8 @@ def TestLineout3D(time, suffix):
     ResetLineoutColor()
 
 def TestMultiVarLineout2D(time, suffix):
-    OpenDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -240,7 +243,8 @@ def TestMultiVarLineout2D(time, suffix):
     ResetLineoutColor()
 
 def TestSAMRAI(time, suffix):
-    OpenDatabase("../data/samrai_test_data/sil_changes/dumps.visit")
+    OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+
     AddPlot("Pseudocolor", "Primitive Var _number_0")
     DrawPlots()
 
@@ -289,7 +293,8 @@ def TestSAMRAI(time, suffix):
 
 def TestSpecifyLineoutWindow(time, suffix):
     #window 1
-    OpenDatabase("../data/pdb_test_data/dbA00.pdb")
+    OpenDatabase(data_path("pdb_test_data/dbA00.pdb"))
+
     AddPlot("Pseudocolor", "mesh/ireg") 
     DrawPlots()
     ResetView()
@@ -345,7 +350,8 @@ def TestDynamicLineout(time, suffix):
     if (time == 1):
         return
     #window 1
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
@@ -399,7 +405,9 @@ def TestDynamicLineout(time, suffix):
     # clear all plots from window 1
     DeleteAllPlots()
 
-    dbs = ("../data/pdb_test_data/dbA00.pdb", "../data/pdb_test_data/dbB00.pdb", "../data/pdb_test_data/dbC00.pdb")
+    dbs = (data_path("pdb_test_data/dbA00.pdb"),
+           data_path("pdb_test_data/dbB00.pdb"),
+           data_path("pdb_test_data/dbC00.pdb"))
     OpenDatabase(dbs[0])
     AddPlot("Pseudocolor", "mesh/ireg")
     OpenDatabase(dbs[1])
@@ -469,7 +477,8 @@ def TestDynamicLineout(time, suffix):
 def TestDynamic2():
     # VisIt00006006 -- ensure  that 'ClearRefLines' will 'disconnect' the lineout 
     # from its originating plot, and won't update when orig plot changes time.
-    OpenDatabase("../data/silo_%s_test_data/wave.visit"%SILO_MODE)
+    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
@@ -508,7 +517,8 @@ def TestDynamic2():
 
 def TestTecPlot():
     # VisIt00006243 -- curve generated from Lineout looks reversed in X
-    OpenDatabase("../data/tecplot_test_data/T3L3CLS17u.plt")
+    OpenDatabase(data_path("tecplot_test_data/T3L3CLS17u.plt"))
+
     AddPlot("Mesh", "mesh")
     AddPlot("Pseudocolor", "k")
     DrawPlots()

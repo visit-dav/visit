@@ -29,7 +29,8 @@ atts.zMin = 0
 atts.zMax = -1
 atts.zIncr = 4
 
-OpenDatabase("../data/visus_test_data/idx/streaming.idx")
+OpenDatabase(data_path("visus_test_data/idx/streaming.idx"))
+
 SetTimeSliderState(4)
 
 #

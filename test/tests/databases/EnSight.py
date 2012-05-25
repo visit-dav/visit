@@ -20,7 +20,7 @@ def test0(datapath):
     TestSection("MT, ASCII, EnSight Gold files")
 
     # Set up the plots.
-    OpenDatabase(datapath + "CHR.case")
+    OpenDatabase(pjoin(datapath,"CHR.case"))
     AddPlot("Pseudocolor", "Pression")
     DrawPlots()
 
@@ -41,7 +41,7 @@ def test1(datapath):
     TestSection("Make sure that we get correct values")
 
     # Set up the plots.
-    OpenDatabase(datapath + "dataset2/CHR.case")
+    OpenDatabase(pjoin(datapath,"dataset2/CHR.case"))
     AddPlot("Pseudocolor", "nb")
     DrawPlots()
 
@@ -73,7 +73,7 @@ def test1(datapath):
 def main():
     TurnOffAllAnnotations()
 
-    datapath = "../data/EnSight_test_data/"
+    datapath = data_path("EnSight_test_data")
     test0(datapath)
     test1(datapath)
 

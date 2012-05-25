@@ -94,10 +94,10 @@ def SetupPlots(var1, var2):
 #
 # Test basic selection creation and usage.
 #
-def test0(datapath):
+def test0():
     # Creating and using selections
     TestSection("Selections")
-    db = datapath + "silo_hdf5_test_data/noise.silo"
+    db = data_path("silo_hdf5_test_data/noise.silo")
     OpenDatabase(db)
     AddPlot("Pseudocolor", "hardyglobal")
     AddPlot("Pseudocolor", "grad_magnitude")
@@ -175,7 +175,7 @@ def test0(datapath):
 #
 # Test Cumulative Query selections.
 #
-def test123(datapath):
+def test123():
     TestSection("Cumulative Query")
 
     SetupPlots("m3", "pressure")
@@ -329,7 +329,7 @@ def test123(datapath):
 #
 # Test Cumulative query selections with variable histogramming.
 #
-def test4(datapath):
+def test4():
     # We create a CQ selection based on 2 variables so we can sort the cells
     # by the dist variable. This will let us do a radial dissolve from the
     # center of the remaining cells.
@@ -388,13 +388,13 @@ def test4(datapath):
 #
 # Test selection creation directly on files (not plots)
 #
-def test5(datapath):
+def test5():
     TestSection("Cumulative Query based on database")
     DefineScalarExpression("mat1", "matvf(<material(mesh)>, 1)")
-    
-    db = datapath + "pdb_test_data/dbA00.pdb"
+
+    db = data_path("pdb_test_data/dbA00.pdb")
     OpenDatabase(db, 0, "PDB")
-    
+
     selName = "dbA_sel"
     s = SelectionProperties()
     s.name = selName
@@ -435,26 +435,24 @@ def test5(datapath):
 #
 # Test Cumulative query selections on multidomain datasets.
 #    
-def test6(datapath):
+def test6():
     # write me
     return
 
 def main():
-    datapath = "../data/"
+    test0()
 
-    test0(datapath)
-
-    OpenDatabase(datapath + "silo_hdf5_test_data/wave.visit")
+    OpenDatabase(data_path("silo_hdf5_test_data/wave.visit"))
     DefineScalarExpression("m3", "matvf(Material, 3)")
     DefineScalarExpression("m2", "matvf(Material, 2)")
 
-    test123(datapath)
-    test4(datapath)
+    test123()
+    test4()
 
-    CloseDatabase(datapath + "silo_hdf5_test_data/wave.visit")
+    CloseDatabase(data_path("silo_hdf5_test_data/wave.visit"))
 
-    test5(datapath)
-    test6(datapath)
+    test5()
+    test6()
 
 main()
 Exit()

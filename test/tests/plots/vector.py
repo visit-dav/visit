@@ -30,7 +30,8 @@
 
 
 
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Vector", "vel")
 vector_atts = VectorAttributes()
 vector_atts.autoScale = 0
@@ -127,7 +128,8 @@ Test("vector_11")
 #
 
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect3d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+
 
 DefineVectorExpression("v1", "{ vel[0]*coord(quadmesh3d)[0], vel[1]*coord(quadmesh3d)[1], vel[2]*coord(quadmesh3d)[2] }")
 DefineScalarExpression("mag2", "magnitude(v1)")
@@ -198,7 +200,8 @@ Test("vector_15")
 # Test the "limit vectors to original node/cell" option
 #
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/rect2d.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+
 DefineVectorExpression("cvel","recenter(vel)")
 AddPlot("Vector", "vel", 1, 0)
 AddPlot("Boundary", "mat1", 1, 0)

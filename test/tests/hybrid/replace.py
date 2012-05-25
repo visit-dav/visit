@@ -29,7 +29,8 @@ a.axes2D.yAxis.title.visible = 0
 SetAnnotationAttributes(a)
 
 # Set up the plots.
-OpenDatabase("../data/silo_%s_test_data/wave0110.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/wave0110.silo")%SILO_MODE)
+
 AddPlot("Subset", "Material")
 DrawPlots()
 v = View3DAttributes()
@@ -52,22 +53,26 @@ Test("Material2Off")
 # Try replacing with a later time step and see if the SIL selection
 # still is applied. It should be still applied since the files have
 # equivalent SILs.
-ReplaceDatabase("../data/silo_%s_test_data/wave0340.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/wave0340.silo")%SILO_MODE)
+
 Test("Replace1")
 
 # Make different materials active and replace again.
 TurnMaterialsOn()
 TurnMaterialsOff("1 barrier")
-ReplaceDatabase("../data/silo_%s_test_data/wave0470.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/wave0470.silo")%SILO_MODE)
+
 Test("Replace2")
 
 # Open one of our simple databases, do a plot and then replace it with
 # an unrelated database.
 DeleteAllPlots()
-OpenDatabase("../data/silo_%s_test_data/globe.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+
 AddPlot("Pseudocolor", "u")
 DrawPlots()
-ReplaceDatabase("../data/silo_%s_test_data/curv3d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+
 v2 = View3DAttributes()
 v2.viewNormal = (-0.499092, 0.420388, 0.757747)
 v2.focus = (0,2.5,15)
@@ -81,6 +86,7 @@ SetView3D(v2)
 Test("Replace3")
 
 # Replace it with a 2d database.
-ReplaceDatabase("../data/silo_%s_test_data/curv2d.silo"%SILO_MODE)
+ReplaceDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+
 Test("Replace4")
 Exit()

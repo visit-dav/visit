@@ -39,7 +39,7 @@ def AddPseudocolorPlot():
 def test1(datapath):
     db = "pipe.neu"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -83,12 +83,12 @@ def test1(datapath):
     Test("PATRAN1_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test2(datapath):
     db = "waterjacket.neu"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -132,12 +132,12 @@ def test2(datapath):
     Test("PATRAN2_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test3(datapath):
     db = "intake.neu"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -181,12 +181,12 @@ def test3(datapath):
     Test("PATRAN3_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test4(datapath):
     db = "patout.neu"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddPlot("FilledBoundary", "named_components")
     f = FilledBoundaryAttributes()
     f.legendFlag = 0
@@ -227,7 +227,7 @@ def main():
     SetAnnotationAttributes(a)
 
     DefineScalarExpression("one", "(zoneid(mesh) + 1) / (zoneid(mesh) + 1)")
-    datapath = "../data/PATRAN_test_data/"
+    datapath = data_path("PATRAN_test_data")
     test1(datapath)
     test2(datapath)
     test3(datapath)

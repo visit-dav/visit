@@ -27,7 +27,8 @@ mma=MeshManagementAttributes()
 mma.discretizationMode = mma.Adaptive
 mma.discretizationTolerance=(0.01, 0.25)
 SetMeshManagementAttributes(mma)
-OpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
+OpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+
 
 #
 # the mesh named "csgmesh" uses just spheres, cylinder and plane
@@ -47,7 +48,8 @@ Test("csg_01")
 mma.discretizationMode = mma.MultiPass
 mma.discretizationTolerance=(0.02, 0.25)
 SetMeshManagementAttributes(mma)
-ReOpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
+ReOpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+
 ClearWindow()
 DrawPlots()
 Test("csg_02")
@@ -61,7 +63,8 @@ ResetView()
 mma.discretizationTolerance=(0.005, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)
-ReOpenDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
+ReOpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+
 AddPlot("Subset", "regions(greenman_mesh)")
 DrawPlots()
 v = GetView3D()
@@ -138,11 +141,13 @@ DeleteAllPlots()
 # Now use Matt's Fusion data
 #
 DeleteAllPlots()
-CloseDatabase("../data/silo_%s_test_data/csg.silo"%SILO_MODE)
+CloseDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+
 mma.discretizationTolerance=(0.05, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)
-OpenDatabase("../data/csg_test_data/Fusion_000001_root.gra")
+OpenDatabase(data_path("csg_test_data/Fusion_000001_root.gra"))
+
 AddPlot("FilledBoundary","MC_Material(MC_ThreeD_Structured)")
 DrawPlots()
 silr = SILRestriction()

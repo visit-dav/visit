@@ -66,7 +66,8 @@ def RestrictSetsInCategory(silr, className, setIds):
             silr.TurnOffSet(set)
 
 # test the main mesh and MOAB implementation
-OpenDatabase("../data/iTaps_test_data/MOAB/mbtest1", 0, "ITAPS_MOAB_1.0")
+OpenDatabase(data_path("iTaps_test_data/MOAB/mbtest1"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 # use threshold to display only 3D zones (upper case ASCII range)
@@ -83,10 +84,12 @@ v.viewUp = (0.198721, 0.840238, 0.50449)
 SetView3D(v)
 Test("itaps_01")
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/mbtest1")
+CloseDatabase(data_path("iTaps_test_data/MOAB/mbtest1"))
+
 
 # open a database with some interesting sets
-OpenDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub", 0, "ITAPS_MOAB_1.0")
+OpenDatabase(data_path("iTaps_test_data/MOAB/brick_cubit10.cub"))
+
 AddPlot("Mesh","mesh")
 DrawPlots()
 ResetView()
@@ -114,9 +117,11 @@ DrawPlots()
 Test("itaps_05")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/brick_cubit10.cub")
+CloseDatabase(data_path("iTaps_test_data/MOAB/brick_cubit10.cub"))
 
-OpenDatabase("../data/iTaps_test_data/MOAB/ptest.cub", 0, "ITAPS_MOAB_1.0")
+
+OpenDatabase(data_path("iTaps_test_data/MOAB/ptest.cub"))
+
 AddPlot("Mesh","mesh")
 DrawPlots()
 ResetView()
@@ -126,10 +131,12 @@ SetPlotSILRestriction(silr)
 Test("itaps_06")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/ptest.cub")
+CloseDatabase(data_path("iTaps_test_data/MOAB/ptest.cub"))
+
 
 # test another mesh with some different element types
-OpenDatabase("../data/iTaps_test_data/MOAB/globe_mats", 0, "ITAPS_MOAB_1.0")
+OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 SetActivePlots((0,1))
@@ -139,10 +146,12 @@ ResetView()
 Test("itaps_07")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/globe_mats")
+CloseDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
+
 
 # test another mesh with some different element types
-OpenDatabase("../data/iTaps_test_data/MOAB/mixed-hex-pyr-tet", 0, "ITAPS_MOAB_1.0")
+OpenDatabase(data_path("iTaps_test_data/MOAB/mixed-hex-pyr-tet"))
+
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -153,10 +162,12 @@ SetView3D(v)
 Test("itaps_08")
 
 DeleteAllPlots()
-CloseDatabase("../data/iTaps_test_data/MOAB/mixed-hex-pyr-tet")
+CloseDatabase(data_path("iTaps_test_data/MOAB/mixed-hex-pyr-tet"))
+
 
 # test some variables now (node-centered, zone-centered, integer valued)
-OpenDatabase("../data/iTaps_test_data/MOAB/globe_mats", 0, "ITAPS_MOAB_1.0")
+OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
+
 AddPlot("Pseudocolor","dx")
 DrawPlots()
 Test("itaps_10")
@@ -179,7 +190,7 @@ DeleteAllPlots()
 if not parallel:
     n=13
     for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
-        OpenDatabase("../data/iTaps_test_data/%s/%s"%imp, 0, "ITAPS_%s_1.0"%imp[0])
+        OpenDatabase(data_path("iTaps_test_data/%s/%s")%imp)
         AddPlot("Mesh","mesh")
         DrawPlots()
         ResetView()
@@ -189,7 +200,8 @@ if not parallel:
             SetView3D(v)
         Test("itaps_%d"%n)
         DeleteAllPlots()
-        CloseDatabase("../data/iTaps_test_data/%s/%s"%imp)
+        CloseDatabase(data_path("iTaps_test_data/%s/%s")%imp)
+
         n = n + 1
 else:
     global skipCases

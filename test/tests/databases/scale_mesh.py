@@ -13,7 +13,8 @@
 
 
 # Create a Pseudocolor plot of wave by opening it up at a late time state.
-OpenDatabase("../data/vtk_test_data/near_planar.vtk")
+OpenDatabase(data_path("vtk_test_data/near_planar.vtk"))
+
 AddPlot("Pseudocolor", "hardyglobal")
 DrawPlots()
 

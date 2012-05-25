@@ -38,7 +38,7 @@ SetView3D(View3DAtts)
 
 for i in range(len(databases)):
   TestSection(databases[i])
-  db="../data/%s.pics" %(databases[i])
+  db=data_path("%s.pics") %(databases[i])
   OpenDatabase(db)
   for j in range(len(algs)):
      str="Varying time type with parallelization algorithm = %s" %(algs_strings[j])

@@ -34,7 +34,7 @@ def AddPseudocolorPlot():
 def test1(datapath):
     db = "pipe.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -78,12 +78,12 @@ def test1(datapath):
     Test("nastran1_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test2(datapath):
     db = "waterjacket.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -127,12 +127,12 @@ def test2(datapath):
     Test("nastran2_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test3(datapath):
     db = "intake.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -176,12 +176,12 @@ def test3(datapath):
     Test("nastran3_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test4(datapath):
     db = "porsche.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -237,12 +237,12 @@ def test4(datapath):
     Test("nastran4_2")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test5(datapath):
     db = "Rohr_01.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -268,12 +268,12 @@ def test5(datapath):
     Test("nastran5_1")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test6(datapath):
     db = "BMSP4E.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -295,12 +295,12 @@ def test6(datapath):
     Test("nastran6_0")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def test7(datapath):
     db = "HAM6D.nas"
     TestSection(db)
-    OpenDatabase(datapath + db)
+    OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
 
@@ -338,7 +338,7 @@ def test7(datapath):
     Test("nastran7_1")
 
     DeleteActivePlots()
-    CloseDatabase(datapath + db)
+    CloseDatabase(pjoin(datapath,db))
 
 def main():
     # Set the window background color
@@ -350,7 +350,7 @@ def main():
 
     DefineScalarExpression("one", "(zoneid(mesh) + 1) / (zoneid(mesh) + 1)")
 
-    datapath = "../data/NASTRAN_test_data/"
+    datapath = data_path("NASTRAN_test_data")
     test1(datapath)
     test2(datapath)
     test3(datapath)

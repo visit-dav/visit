@@ -23,7 +23,8 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase("../data/curve_test_data/curve.visit")
+OpenDatabase(data_path("curve_test_data/curve.visit"))
+
 curv_atts = CurveAttributes()
 AddPlot("Curve", "flat") 
 curv_atts.color = (0, 255, 0, 255)

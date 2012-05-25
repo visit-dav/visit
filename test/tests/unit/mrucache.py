@@ -9,7 +9,9 @@
 # ----------------------------------------------------------------------------
 import os, subprocess
 
-tapp = os.path.join(visitTopDir,"src","exe","MRUCache_test")
+# TODO: NEEDS TO BE FIXED FOR OUT OF SOURCE BUILD
+
+tapp = pjoin(visitTopDir,"src","exe","MRUCache_test")
 subp = subprocess.Popen(tapp, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 (outdata,errdata) = subp.communicate()
 subp.wait()
