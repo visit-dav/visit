@@ -61,6 +61,7 @@
 #include <FileFunctions.h>
 #include <Utility.h>
 #include <InstallationFunctions.h>
+#include <StringHelpers.h>
 #include <VisItException.h>
 
 #include <string>
@@ -183,6 +184,10 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Kathleen Biagas, Fri May 4 14:05:27 PDT 2012  
 //    Use GetVisItLibraryDirectory to find lib location. 
 //    SetIsDevelopmentVersion when -dv encountered.
+//
+//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012  
+//    Ensure visit's lib dir has path-separators properly escaped on Windows
+//    before being passed to the pjoin command.
 //
 // ****************************************************************************
 
@@ -381,7 +386,10 @@ main(int argc, char *argv[])
 
         // add lib to sys.path to pickup various dylibs.
         std::string vlibdir  = GetVisItLibraryDirectory(); 
-
+#ifdef _WIN32
+        // ensure libdir has path-separators that are properly escaped.
+        vlibdir = StringHelpers::Replace(vlibdir, "\\", "\\\\");
+#endif
         std::ostringstream oss;
 
         oss << "sys.path.append(pjoin('" << vlibdir  <<"','site-packages'))";
