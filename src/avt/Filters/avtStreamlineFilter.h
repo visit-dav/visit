@@ -148,7 +148,7 @@ class vtkAppendPolyData;
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Make DomainType a const reference.
+//   Make BlockIDType a const reference.
 //
 //   Hank Childs, Sun Mar 22 11:30:40 CDT 2009
 //   Added specifyPoint data member.
@@ -296,7 +296,7 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                       { issueWarningForCriticalPoints = v;
                                         criticalPointThreshold = speed; };
 
-    virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
+    virtual avtIVPField      *GetFieldForDomain(const BlockIDType&, vtkDataSet*);
 
     virtual void              PostExecute(void);
     virtual void              UpdateDataObjectInfo(void);

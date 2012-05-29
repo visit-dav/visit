@@ -146,21 +146,21 @@ class avtICAlgorithm
     
     //Helper accessor funcstions to the filter.
     avtIVPSolver *            GetSolver() {return picsFilter->solver; }
-    virtual bool              PointInDomain(avtVector &pt, DomainType &dom)
+    virtual bool              PointInDomain(avtVector &pt, BlockIDType &dom)
     { return picsFilter->avtPICSFilter::PointInDomain(pt, dom); }
     virtual void              AdvectParticle(avtIntegralCurve *ic);
     virtual void              AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds);
     vtkDataSet               *GetDomain(avtIntegralCurve *ic);
-    vtkDataSet               *GetDomain(const DomainType &dom,
+    vtkDataSet               *GetDomain(const BlockIDType &dom,
                                         double X=0, double Y=0, double Z=0);
-    virtual bool              DomainLoaded(DomainType &dom) const
+    virtual bool              DomainLoaded(BlockIDType &dom) const
     { return picsFilter->avtPICSFilter::DomainLoaded(dom); }
     void                      SetDomain(avtIntegralCurve *ic)
     { return picsFilter->avtPICSFilter::SetDomain(ic); }
     
-    bool                      OwnDomain(DomainType &dom)
+    bool                      OwnDomain(BlockIDType &dom)
     {return picsFilter->avtPICSFilter::OwnDomain(dom); }
-    int                       DomainToRank(DomainType &dom)
+    int                       DomainToRank(BlockIDType &dom)
     {return picsFilter->avtPICSFilter::DomainToRank(dom); }
     int                       DomCacheSize() const { return picsFilter->cacheQLen; }
 

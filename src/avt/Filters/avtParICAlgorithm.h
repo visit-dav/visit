@@ -157,7 +157,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     bool                      RecvMsg(std::vector<MsgCommData> &msgs);
 
     // Send/Recv datasets.
-    void                      SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<DomainType> &doms);
+    void                      SendDS(int dst, std::vector<vtkDataSet *> &ds, std::vector<BlockIDType> &doms);
     bool                      RecvDS(std::vector<DSCommData> &ds);
     bool                      RecvAny(std::vector<MsgCommData> *msgs,
                                       std::list<ICCommData> *recvICs,
@@ -276,12 +276,12 @@ class DSCommData
 {
   public:
     DSCommData() {ds=NULL;}
-    DSCommData(DomainType &_dom, vtkDataSet *_ds) {dom=_dom; ds=_ds;}
+    DSCommData(BlockIDType &_dom, vtkDataSet *_ds) {dom=_dom; ds=_ds;}
     DSCommData(const DSCommData &d) {ds=d.ds; dom=d.dom;}
 
     DSCommData &operator=(const DSCommData &d) {ds=d.ds; dom=d.dom; return *this; }
     
-    DomainType dom;
+    BlockIDType dom;
     vtkDataSet *ds;
 };
 

@@ -172,7 +172,7 @@ avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 // ****************************************************************************
 
 vtkDataSet *
-avtICAlgorithm::GetDomain(const DomainType &dom, double X, double Y, double Z)
+avtICAlgorithm::GetDomain(const BlockIDType &dom, double X, double Y, double Z)
 {
     int timerHandle = visitTimer->StartTimer();
     vtkDataSet *ds = picsFilter->GetDomain(dom, X, Y, Z);
