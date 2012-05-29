@@ -49,7 +49,6 @@
 #include <list>
 #include <cstring>
 #include <avtVector.h>
-#include <vector>
 #include <DebugStream.h>
 #include <VisItException.h>
 
@@ -104,12 +103,14 @@ class IVP_API MemStream
     template <typename T> void io(Mode mode, T *pt, size_t num) {return (mode == READ ? read(pt,num) : write(pt,num));}
     template <typename T> void io(Mode mode, T& t) {size_t s=1; io( mode, &t, s );}
     template <typename T> void io(Mode mode, std::vector<T> &v)  {return (mode == READ ? read(v) : write(v));}
+    template <typename T> void io(Mode mode, std::list<T> &l)  {return (mode == READ ? read(l) : write(l));}
     void                       io(Mode mode, avtVector &v) {return (mode == READ ? read(v) : write(v));}
 
     //Read from buffer.
     template <typename T> void read(T *pt, const size_t &num);
     template <typename T> void read(T& t) { read(&t, 1);}
     template <typename T> void read(std::vector<T> &v);
+    template <typename T> void read(std::list<T> &l);
     void read(avtVector &v);
     void read(std::string &str);
     void read(vtkDataSet **ds);
@@ -118,6 +119,7 @@ class IVP_API MemStream
     template <typename T> void write(const T& t) { write( &t, 1 );}
     template <typename T> void write(const T *const pt, size_t num);
     template <typename T> void write(const std::vector<T> &v);
+    template <typename T> void write(const std::list<T> &l);
     void write(const avtVector &v);
     void write(const std::string &str);
     void write(vtkDataSet *ds);
@@ -182,6 +184,18 @@ template <typename T> inline void MemStream::read(std::vector<T> &v)
         read(v[i]);
 }
 
+template <typename T> inline void MemStream::read(std::list<T> &l)
+{
+    size_t sz;
+    read(sz);
+    for (size_t i = 0; i < sz; i++)
+    {
+        T v;
+        read(v);
+        l.push_back(v);
+    }
+}
+
 template <typename T> inline void MemStream::write(const T *const pt, size_t num)
 {
     size_t nBytes = sizeof(T)*num;
@@ -198,6 +212,14 @@ template <typename T> inline void MemStream::write(const std::vector<T> &v)
     write(v.size());
     for (size_t i = 0; i < v.size(); i++)
         write(v[i]);
+}
+
+template <typename T> inline void MemStream::write(const std::list<T> &l)
+{
+    write(l.size());
+    typename std::list<T>::const_iterator it;
+    for (it = l.begin(); it != l.end(); it++)
+        write(*it);
 }
 
 inline void MemStream::write(const avtVector &v)
