@@ -26,7 +26,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("chgcar_test_data/CHGCAR"))
+OpenDatabase(data_path("chgcar_test_data/CHGCAR"),0, "VASP_1.0")
 
 AddPlot("Pseudocolor", "charge")
 DrawPlots()

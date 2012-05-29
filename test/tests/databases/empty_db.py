@@ -15,7 +15,7 @@
 # ----------------------------------------------------------------------------
 import re
 
-OpenDatabase(data_path("silo_pdb_test_data/empty.silo"))
+OpenDatabase(data_path("silo_pdb_test_data/empty.silo"), 0, "Silo_1.0")
 
 errStr = GetLastError()
 tmpType = re.search(",\nno data was found in the file for VisIt to work with.", errStr)

@@ -8,7 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase(data_path("synergia_test_data/vis_particles_*.h5 database"))
+OpenDatabase(data_path("synergia_test_data/vis_particles_*.h5 database"),0, "Vs")
 
 AddPlot("Pseudocolor", "particles_6")
 AddOperator("Threshold")
