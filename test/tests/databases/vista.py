@@ -26,7 +26,7 @@
 OpenMDServer("localhost")
 
 # open a Vista/Diablo multi-part file
-OpenDatabase(data_path("Vista_test_data/AAAA_00004_00000.SILO"))
+OpenDatabase(data_path("Vista_test_data/AAAA_00004_00000.SILO"),0,"Vista_1.0")
 
 
 TestSection("Vista-Diablo")

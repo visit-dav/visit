@@ -66,7 +66,7 @@ def RestrictSetsInCategory(silr, className, setIds):
             silr.TurnOffSet(set)
 
 # test the main mesh and MOAB implementation
-OpenDatabase(data_path("iTaps_test_data/MOAB/mbtest1"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/mbtest1"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
@@ -88,7 +88,7 @@ CloseDatabase(data_path("iTaps_test_data/MOAB/mbtest1"))
 
 
 # open a database with some interesting sets
-OpenDatabase(data_path("iTaps_test_data/MOAB/brick_cubit10.cub"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/brick_cubit10.cub"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Mesh","mesh")
 DrawPlots()
@@ -120,7 +120,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("iTaps_test_data/MOAB/brick_cubit10.cub"))
 
 
-OpenDatabase(data_path("iTaps_test_data/MOAB/ptest.cub"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/ptest.cub"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Mesh","mesh")
 DrawPlots()
@@ -135,7 +135,7 @@ CloseDatabase(data_path("iTaps_test_data/MOAB/ptest.cub"))
 
 
 # test another mesh with some different element types
-OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
@@ -150,7 +150,7 @@ CloseDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
 
 
 # test another mesh with some different element types
-OpenDatabase(data_path("iTaps_test_data/MOAB/mixed-hex-pyr-tet"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/mixed-hex-pyr-tet"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
@@ -166,7 +166,7 @@ CloseDatabase(data_path("iTaps_test_data/MOAB/mixed-hex-pyr-tet"))
 
 
 # test some variables now (node-centered, zone-centered, integer valued)
-OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"))
+OpenDatabase(data_path("iTaps_test_data/MOAB/globe_mats"),0, "ITAPS_MOAB_1.0")
 
 AddPlot("Pseudocolor","dx")
 DrawPlots()
@@ -190,7 +190,7 @@ DeleteAllPlots()
 if not parallel:
     n=13
     for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
-        OpenDatabase(data_path("iTaps_test_data/%s/%s")%imp)
+        OpenDatabase(data_path("iTaps_test_data/%s/%s")%imp,0, "ITAPS_%s_1.0" % imp[0])
         AddPlot("Mesh","mesh")
         DrawPlots()
         ResetView()

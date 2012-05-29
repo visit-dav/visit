@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  Test Case:  chgcar.py
+#  Test Case:  xyz.py
 #
 #  Tests:      mesh      - 3D Points
 #              plots     - Molecule
@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
+OpenDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"),0, "XYZ_1.0")
 
 AddPlot("Molecule", "element")
 DrawPlots()

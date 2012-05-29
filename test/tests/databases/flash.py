@@ -24,7 +24,7 @@ SetTryHarderCyclesTimes(1)
 # the following open command doesn't work (#7873)
 ##OpenDatabase(data_path("FLASH_test_data/orbit_hdf5_chk_0* database"))
 
-OpenDatabase(data_path("FLASH_test_data/orbit_hdf5_chk_0000"))
+OpenDatabase(data_path("FLASH_test_data/orbit_hdf5_chk_0000"),0, "FLASH_1.0")
 
 
 AddPlot("Pseudocolor","pden")
