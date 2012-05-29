@@ -1763,7 +1763,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 // ****************************************************************************
 
 avtIVPField* 
-avtStreamlineFilter::GetFieldForDomain(const DomainType& dom, vtkDataSet* ds)
+avtStreamlineFilter::GetFieldForDomain(const BlockIDType& dom, vtkDataSet* ds)
 {
     avtIVPField* field = avtPICSFilter::GetFieldForDomain( dom, ds );
 

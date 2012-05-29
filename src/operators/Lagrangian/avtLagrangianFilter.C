@@ -449,7 +449,7 @@ avtLagrangianFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 avtIVPField*
-avtLagrangianFilter::GetFieldForDomain(const DomainType& dom, vtkDataSet* ds)
+avtLagrangianFilter::GetFieldForDomain(const BlockIDType& dom, vtkDataSet* ds)
 {
     avtIVPField* field = avtPICSFilter::GetFieldForDomain( dom, ds );
 

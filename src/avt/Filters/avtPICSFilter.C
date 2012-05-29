@@ -231,7 +231,7 @@ avtPICSFilter::~avtPICSFilter()
 void
 avtPICSFilter::ClearDomainToCellLocatorMap()
 {
-    std::map<DomainType, avtCellLocator_p>::iterator it;
+    std::map<BlockIDType, avtCellLocator_p>::iterator it;
 
     for ( it = domainToCellLocatorMap.begin(); it != domainToCellLocatorMap.end(); it++ )
     {
@@ -268,8 +268,8 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
     for (int i = 0; i < domList.size(); i++)
     {
         int dom = domList[i];
-        DomainType d(dom, 0);
-        // TODO: Should this be DomainType d(dom, activeTimeStep); instead?
+        BlockIDType d(dom, 0);
+        // TODO: Should this be BlockIDType d(dom, activeTimeStep); instead?
         int proc = DomainToRank(d);
         r.push_back(proc);
     }
@@ -371,11 +371,11 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
     //    debug5<<"SetDomain(): pt= "<<endPt<<" t "<<t<<" doms= "<<doms<<endl;
 
     for( int i=0; i < doms.size(); i++ )
-        ic->seedPtDomainList.push_back( DomainType( doms[i], timeStep ) );
+        ic->seedPtDomainList.push_back( BlockIDType( doms[i], timeStep ) );
 
     // save the last domain so we can ignore it later
-    DomainType oldDomain = ic->domain;
-    ic->domain = DomainType(-1,-1);
+    BlockIDType oldDomain = ic->domain;
+    ic->domain = BlockIDType(-1,-1);
 
     // Point in multiple domains. See if we can shorten the list by 
     // looking at "my" domains.
@@ -384,11 +384,11 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
         // Point in multiple domains. See if we can shorten the list by 
         // looking at "my" domains.
         // See if the point is contained in a domain owned by "me".
-        vector<DomainType> newDomList;
+        vector<BlockIDType> newDomList;
         bool foundOwner = false;
         for (int i = 0; i < ic->seedPtDomainList.size(); i++)
         {
-            DomainType dom = ic->seedPtDomainList[i];
+            BlockIDType dom = ic->seedPtDomainList[i];
 
             if( dom == oldDomain )
             {
@@ -463,7 +463,7 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Make DomainType a const reference.
+//   Make BlockIDType a const reference.
 //
 //   Hank Childs, Sun Mar 22 13:31:08 CDT 2009
 //   Add support for getting the "domain" by using a point.
@@ -477,7 +477,7 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 // ****************************************************************************
 
 vtkDataSet *
-avtPICSFilter::GetDomain(const DomainType &domain,
+avtPICSFilter::GetDomain(const BlockIDType &domain,
                          double X, double Y, double Z)
 {
     //    if (DebugStream::Level5())
@@ -907,7 +907,7 @@ avtPICSFilter::GetTimeStep(double t) const
 // ****************************************************************************
 
 bool
-avtPICSFilter::DomainLoaded(DomainType &domain) const
+avtPICSFilter::DomainLoaded(BlockIDType &domain) const
 {
     //debug1<< "avtPICSFilter::DomainLoaded("<<domain<<");\n";
 #ifdef PARALLEL
@@ -1829,12 +1829,12 @@ avtPICSFilter::InitializeLocators(void)
     int t1 = visitTimer->StartTimer();
     for (int i = 0 ; i < numDomains ; i++)
     {
-        DomainType dom;
+        BlockIDType dom;
         dom.domain = i;
         dom.timeStep = seedTimeStep0;
         if (OwnDomain(dom))
         {
-            std::map<DomainType,avtCellLocator_p>::iterator cli = 
+            std::map<BlockIDType,avtCellLocator_p>::iterator cli = 
                 domainToCellLocatorMap.find( dom );
 
             if( cli == domainToCellLocatorMap.end() )
@@ -1923,11 +1923,11 @@ avtPICSFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 avtCellLocator_p
-avtPICSFilter::SetupLocator( const DomainType &domain, vtkDataSet *ds )
+avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
 {
     avtCellLocator_p locator;
 
-    std::map<DomainType, avtCellLocator_p>::iterator it = 
+    std::map<BlockIDType, avtCellLocator_p>::iterator it = 
         domainToCellLocatorMap.find( domain );
     
     if( it == domainToCellLocatorMap.end() )
@@ -2006,7 +2006,7 @@ avtPICSFilter::SetupLocator( const DomainType &domain, vtkDataSet *ds )
 // ****************************************************************************
 
 avtIVPField* 
-avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
+avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
 {
     avtCellLocator_p locator = SetupLocator( domain, ds );
 
@@ -2158,7 +2158,7 @@ avtPICSFilter::GetFieldForDomain( const DomainType &domain, vtkDataSet *ds )
 // ****************************************************************************
 
 bool
-avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
+avtPICSFilter::PointInDomain(avtVector &pt, BlockIDType &domain)
 {
     int t1 = visitTimer->StartTimer();
 
@@ -2213,7 +2213,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
     }
 
     // check if we have a locator
-    std::map<DomainType,avtCellLocator_p>::iterator cli = 
+    std::map<BlockIDType,avtCellLocator_p>::iterator cli = 
         domainToCellLocatorMap.find( domain );
 
     if( cli != domainToCellLocatorMap.end() && specifyPoint )
@@ -2282,7 +2282,7 @@ avtPICSFilter::PointInDomain(avtVector &pt, DomainType &domain)
 // ****************************************************************************
 
 bool
-avtPICSFilter::OwnDomain(DomainType &domain)
+avtPICSFilter::OwnDomain(BlockIDType &domain)
 {
 #ifdef PARALLEL
     if (OperatingOnDemand())
@@ -2381,7 +2381,7 @@ avtPICSFilter::ComputeDomainToRankMapping()
 // ****************************************************************************
 
 int
-avtPICSFilter::DomainToRank(DomainType &domain)
+avtPICSFilter::DomainToRank(BlockIDType &domain)
 {
     if (domain.domain < 0 || domain.domain >= domainToRank.size())
         EXCEPTION1(ImproperUseException, "Domain out of range.");
@@ -2509,7 +2509,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps
     //Particle exited this domain.
     if (ic->status == avtIntegralCurve::STATUS_OK)
     {
-        DomainType oldDomain = ic->domain;
+        BlockIDType oldDomain = ic->domain;
         SetDomain(ic);
         int domCnt = ic->seedPtDomainList.size();
         
@@ -3041,7 +3041,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
         for (int j = 0; j < dl.size(); j++)
         {
-            DomainType dom(dl[j], seedTimeStep0);
+            BlockIDType dom(dl[j], seedTimeStep0);
 
             // This logic assumes we have identical point lists
             // on every MPI task.  We may need to add an OwnDomain
@@ -3476,8 +3476,8 @@ avtPICSFilter::PostStepCallback()
 void
 avtPICSFilter::PurgeDomain( const int domain, const int timeStep )
 {
-    DomainType dom(domain, timeStep);
-    std::map<DomainType,avtCellLocator_p>::iterator it =
+    BlockIDType dom(domain, timeStep);
+    std::map<BlockIDType,avtCellLocator_p>::iterator it =
       domainToCellLocatorMap.find( dom );
 
     if( it != domainToCellLocatorMap.end() )

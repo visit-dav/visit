@@ -54,7 +54,7 @@ class vtkObject;
 typedef bool (*avtIntegralCurveCallback)(void);
 
 // ****************************************************************************
-// Class: DomainType
+// Class: BlockIDType
 //
 // Purpose:
 //    Encapsulate the a domain/timestep.
@@ -70,26 +70,26 @@ typedef bool (*avtIntegralCurveCallback)(void);
 //
 // ****************************************************************************
 
-class IVP_API DomainType
+class IVP_API BlockIDType
 {
   public:
-    DomainType() :domain(-1), timeStep(0) {}
-    DomainType(const int &d) :domain(d), timeStep(0) {}
-    DomainType(const int &d, const int &t) :domain(d), timeStep(t) {}
-    ~DomainType() {}
+    BlockIDType() :domain(-1), timeStep(0) {}
+    BlockIDType(const int &d) :domain(d), timeStep(0) {}
+    BlockIDType(const int &d, const int &t) :domain(d), timeStep(t) {}
+    ~BlockIDType() {}
 
-    void operator=(const DomainType &dt)
+    void operator=(const BlockIDType &dt)
     {
         domain=dt.domain;
         timeStep=dt.timeStep;
     }
 
-    bool operator==(const DomainType &dt) const
+    bool operator==(const BlockIDType &dt) const
     {
         return (domain == dt.domain &&
                 timeStep == dt.timeStep);
     }
-    bool operator<(const DomainType &dt) const
+    bool operator<(const BlockIDType &dt) const
     {
         return (domain < dt.domain) ||
                ((domain == dt.domain) && timeStep < dt.timeStep);
@@ -98,7 +98,7 @@ class IVP_API DomainType
     //Members
     int domain, timeStep;
 
-    friend std::ostream& operator<<(std::ostream &out, const DomainType &d)
+    friend std::ostream& operator<<(std::ostream &out, const BlockIDType &d)
     {
         out<<"["<<d.domain<<", "<<d.timeStep<<"]";
         return out;
@@ -278,8 +278,8 @@ class IVP_API avtIntegralCurve
     Direction direction;
 
     // Helpers needed for figuring out which domain to use next
-    std::vector<DomainType> seedPtDomainList;
-    DomainType domain;
+    std::vector<BlockIDType> seedPtDomainList;
+    BlockIDType domain;
     long long sortKey;
 
     long id;

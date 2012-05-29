@@ -59,7 +59,7 @@
 
 #include <vector>
 
-class DomainType;
+class BlockIDType;
 class avtICAlgorithm;
 
 #define STREAMLINE_FIELD_DEFAULT 0
@@ -238,7 +238,7 @@ class AVTFILTERS_API avtPICSFilter :
     int numDomains, numTimeSteps, cacheQLen;
     std::vector<int> domainToRank;
     std::vector<vtkDataSet*>dataSets;
-    std::map<DomainType, avtCellLocator_p> domainToCellLocatorMap;
+    std::map<BlockIDType, avtCellLocator_p> domainToCellLocatorMap;
     std::vector<std::pair<int,int> > fwdBwdICPairs;
 
     std::vector<double> pointList;
@@ -270,10 +270,10 @@ class AVTFILTERS_API avtPICSFilter :
                                               vtkDataSet *ds,
                                               double *extents,
                                               int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(const DomainType &, double = 0.0, double = 0.0, double = 0.0);
+    virtual vtkDataSet        *GetDomain(const BlockIDType &, double = 0.0, double = 0.0, double = 0.0);
     bool                      LoadNextTimeSlice();
     virtual int               GetTimeStep(double t) const;
-    virtual bool              DomainLoaded(DomainType &) const;
+    virtual bool              DomainLoaded(BlockIDType &) const;
 
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
@@ -296,10 +296,10 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              PurgeDomain( const int domain, const int timeStep );
 
     // Helper functions.
-    bool                      PointInDomain(avtVector &pt, DomainType &domain);
-    int                       DomainToRank(DomainType &domain);
+    bool                      PointInDomain(avtVector &pt, BlockIDType &domain);
+    int                       DomainToRank(BlockIDType &domain);
     void                      ComputeDomainToRankMapping();
-    bool                      OwnDomain(DomainType &domain);
+    bool                      OwnDomain(BlockIDType &domain);
     void                      Initialize();
     void                      InitializeTimeInformation(int);
     void                      ComputeRankList(const std::vector<int> &domList,
@@ -308,9 +308,9 @@ class AVTFILTERS_API avtPICSFilter :
     double                    GetLengthScale(void);
     bool                      CacheLocators(void);
 
-    avtCellLocator_p          SetupLocator(const DomainType &, vtkDataSet *);
+    avtCellLocator_p          SetupLocator(const BlockIDType &, vtkDataSet *);
     void                      ClearDomainToCellLocatorMap();
-    virtual avtIVPField      *GetFieldForDomain(const DomainType&, vtkDataSet*);
+    virtual avtIVPField      *GetFieldForDomain(const BlockIDType&, vtkDataSet*);
 
     void                      UpdateIntervalTree(int timeSlice);
 

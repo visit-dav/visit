@@ -1754,7 +1754,7 @@ avtMasterICAlgorithm::Case2(int &counter)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Bug fix. Didn't use new DomainType structure for MSG_SEND_IC.
+//   Bug fix. Didn't use new BlockIDType structure for MSG_SEND_IC.
 //   
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
 //   Allow masters to share work loads.
@@ -1843,7 +1843,7 @@ avtMasterICAlgorithm::Case3(int overloadFactor,
         msg.push_back(MSG_SEND_IC);
         msg.push_back(recvSlave.rank);
 
-        DomainType dd = IdxToDom(d);
+        BlockIDType dd = IdxToDom(d);
         msg.push_back(d);
         msg.push_back(n);
         
@@ -1912,7 +1912,7 @@ avtMasterICAlgorithm::Case4(int oobThreshold,
         {
             vector<int> msg;
             msg.push_back(MSG_LOAD_DOMAIN);
-            DomainType dom = IdxToDom(domToLoad);
+            BlockIDType dom = IdxToDom(domToLoad);
             msg.push_back(dom.domain);
             msg.push_back(dom.timeStep);
             SendMsg(slaveInfo[idx].rank, msg);
@@ -2179,7 +2179,7 @@ avtSlaveICAlgorithm::UpdateStatus()
     // Set 0,1 for domains loaded.
     for (int i = 0; i < NUM_DOMAINS; i++)
     {
-        DomainType d = IdxToDom(i);
+        BlockIDType d = IdxToDom(i);
         status[i] = (DomainLoaded(d) ? 1: 0);
     }
     
@@ -2363,7 +2363,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
                 SendStatus(true);
                 
                 //Get the domain, and return to the top of the while loop.
-                DomainType dom = IdxToDom(candidate);
+                BlockIDType dom = IdxToDom(candidate);
                 GetDomain(dom);
                 activeICs.splice(activeICs.end(), oobICs);
                 oobICs.clear();
@@ -2476,7 +2476,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Mon Mar 16 15:05:14 EDT 2009
-//   Bug fix. Didn't use new DomainType structure for MSG_SEND_IC.
+//   Bug fix. Didn't use new BlockIDType structure for MSG_SEND_IC.
 //
 //   Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
 //   Improve the logic for streamline offloading. Only offload streamlines
@@ -2514,7 +2514,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         //Load this domain.
         else if (msgType == MSG_LOAD_DOMAIN)
         {
-            DomainType dom(msg[1], msg[2]);
+            BlockIDType dom(msg[1], msg[2]);
             debug1<<"MSG: LoadDomain( "<<dom<<")\n";
             GetDomain(dom);
         }
@@ -2539,7 +2539,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             for (int d = 0; d < numDoms; d++)
             {
                 int domIdx = msg[3+d];
-                DomainType dom = IdxToDom(domIdx);
+                BlockIDType dom = IdxToDom(domIdx);
                 
                 list<avtIntegralCurve *>::iterator s = activeICs.begin();
                 while (s != activeICs.end() &&
@@ -2582,7 +2582,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         else if (msgType == MSG_SEND_IC)
         {
             int dst = msg[1];
-            DomainType dom = IdxToDom(msg[2]);
+            BlockIDType dom = IdxToDom(msg[2]);
             int num = msg[3];
 
             debug1<<"MSG: Send "<<num<<" x dom= "<<dom<<" to "<<dst;

@@ -226,7 +226,7 @@ avtCommDSOnDemandICAlgorithm::RunAlgorithm()
             avtIntegralCurve *s = activeICs.front();
             activeICs.pop_front();
 
-            DomainType d = s->domain;
+            BlockIDType d = s->domain;
             vtkDataSet *ds = GetDataset(s->domain);
             if (ds != NULL)
             {
@@ -308,7 +308,7 @@ avtCommDSOnDemandICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
 // ****************************************************************************
 
 bool
-avtCommDSOnDemandICAlgorithm::RequestDataset(DomainType &d)
+avtCommDSOnDemandICAlgorithm::RequestDataset(BlockIDType &d)
 {
     //See if request already made.
     set<int>::iterator it = pendingDomRequests.find(d.domain);
@@ -385,8 +385,8 @@ avtCommDSOnDemandICAlgorithm::HandleMessages(bool checkMsgs,
                 if (d)
                 {
                     vector<vtkDataSet *> ds;
-                    vector<DomainType> doms;
-                    doms.push_back(DomainType(dom, 0));
+                    vector<BlockIDType> doms;
+                    doms.push_back(BlockIDType(dom, 0));
                     ds.push_back(d);
                     SendDS(sendRank, ds, doms);
                 }
@@ -503,7 +503,7 @@ avtCommDSOnDemandICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
 // ****************************************************************************
 
 vtkDataSet *
-avtCommDSOnDemandICAlgorithm::GetDataset(const DomainType &dom)
+avtCommDSOnDemandICAlgorithm::GetDataset(const BlockIDType &dom)
 {
     //See if the PICS filter has it.
     vtkDataSet *ds = avtICAlgorithm::GetDomain(dom);
@@ -530,7 +530,7 @@ avtCommDSOnDemandICAlgorithm::GetDataset(const DomainType &dom)
 // ****************************************************************************
 
 vtkDataSet *
-avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const DomainType &dom)
+avtCommDSOnDemandICAlgorithm::GetDSFromDomainCache(const BlockIDType &dom)
 {
     list<domainCacheEntry>::iterator it;
 
@@ -707,7 +707,7 @@ avtCommDSOnDemandICAlgorithm::Debug()
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::AddRef(const DomainType &dom)
+avtCommDSOnDemandICAlgorithm::AddRef(const BlockIDType &dom)
 {
     list<domainCacheEntry>::iterator it;
     for (it = domainCache.begin(); it != domainCache.end(); it++)
@@ -729,7 +729,7 @@ avtCommDSOnDemandICAlgorithm::AddRef(const DomainType &dom)
 // ****************************************************************************
 
 void
-avtCommDSOnDemandICAlgorithm::DelRef(const DomainType &dom)
+avtCommDSOnDemandICAlgorithm::DelRef(const BlockIDType &dom)
 {
     list<domainCacheEntry>::iterator it;
     for (it = domainCache.begin(); it != domainCache.end(); it++)

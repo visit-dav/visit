@@ -49,10 +49,10 @@
 class domainCacheEntry
 {
   public:
-    domainCacheEntry(DomainType _dom, vtkDataSet *_ds){ds=_ds; dom=_dom; refCnt=0;}
+    domainCacheEntry(BlockIDType _dom, vtkDataSet *_ds){ds=_ds; dom=_dom; refCnt=0;}
     domainCacheEntry(){ds=NULL; refCnt=0;}
 
-    DomainType dom;
+    BlockIDType dom;
     int refCnt;
     vtkDataSet *ds;
 };
@@ -90,19 +90,19 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     virtual bool              PostStepCallback();
 
   protected:
-    vtkDataSet               *GetDataset(const DomainType &dom);
+    vtkDataSet               *GetDataset(const BlockIDType &dom);
 
     virtual void              RunAlgorithm();
     virtual void              PostRunAlgorithm() {}
     virtual void              SortIntegralCurves(std::list<avtIntegralCurve *> &);
     virtual void              HandleOOBIC(avtIntegralCurve *s);
-    virtual bool              RequestDataset(DomainType &d);
+    virtual bool              RequestDataset(BlockIDType &d);
     virtual bool              HandleMessages(bool checkMsgs=true,
                                              bool checkDSs=true,
                                              bool allowBlockAndWait=true);
 
-    void                      AddRef(const DomainType &dom);
-    void                      DelRef(const DomainType &dom);
+    void                      AddRef(const BlockIDType &dom);
+    void                      DelRef(const BlockIDType &dom);
     void                      CheckCacheVacancy(bool makeReq);
 
     void Debug();
@@ -112,7 +112,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     std::map<int, int>        pendingDomReqTimers;
 
     //Communicated domain cache.
-    virtual vtkDataSet       *GetDSFromDomainCache(const DomainType &dom);
+    virtual vtkDataSet       *GetDSFromDomainCache(const BlockIDType &dom);
     virtual void              AddDSToDomainCache(std::vector<DSCommData> &ds);
 
     int                       numDone;

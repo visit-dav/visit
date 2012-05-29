@@ -119,7 +119,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
                                           std::vector<std::vector< avtIntegralCurve *> > &sendICs);
     int                        maxCnt, case4AThreshold;
     int                        NUM_DOMAINS;
-    int                        DomToIdx(const DomainType &dom) const
+    int                        DomToIdx(const BlockIDType &dom) const
     {
         int n = dom.domain/numTimeSteps + dom.timeStep;
         //debug5<<"numTS= "<<numTimeSteps<<endl;
@@ -127,9 +127,9 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
         return n;
     }
 
-    DomainType                 IdxToDom(const int &num) const
+    BlockIDType                 IdxToDom(const int &num) const
     {
-        DomainType d(num/numTimeSteps + num%numTimeSteps);
+        BlockIDType d(num/numTimeSteps + num%numTimeSteps);
         //debug5<<"idx "<<num<<" ==> "<<d<<endl;
         return d;
     }

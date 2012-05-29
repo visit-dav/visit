@@ -764,7 +764,7 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
         }
         else if (buffers[i].first == avtParICAlgorithm::DATASET_TAG)
         {
-            DomainType dom;
+            BlockIDType dom;
             int dsLen;
             buffers[i].second->read(dom);
 
@@ -1019,7 +1019,7 @@ avtParICAlgorithm::DoSendICs(int dst,
 // ****************************************************************************
 
 void
-avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<DomainType> &doms)
+avtParICAlgorithm::SendDS(int dst, vector<vtkDataSet *> &ds, vector<BlockIDType> &doms)
 {
     int timerHandle = visitTimer->StartTimer();
 

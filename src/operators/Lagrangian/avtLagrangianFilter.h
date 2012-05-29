@@ -91,7 +91,7 @@ class avtLagrangianFilter : public avtPluginFilter,
     virtual CommunicationPattern GetCommunicationPattern() 
                           { return ReturnToOriginatingProcessor; };
 
-    virtual avtIVPField* GetFieldForDomain(const DomainType& dom,
+    virtual avtIVPField* GetFieldForDomain(const BlockIDType& dom,
                                            vtkDataSet* ds);
 
   protected:

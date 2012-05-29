@@ -235,7 +235,7 @@ avtParDomICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
         debug1<<"I own: [";
         for (int i = 0; i < numDomains; i++)
         {
-            DomainType d(i,0);
+            BlockIDType d(i,0);
             if (OwnDomain(d))
                 debug1<<i<<" ";
         }
@@ -419,7 +419,7 @@ avtParDomICAlgorithm::ProcessICs(list<ICCommData> &ics)
         ic->CurrentLocation(endPt);
         for (int i = 0; i < ic->seedPtDomainList.size(); i++)
         {
-            DomainType dom = ic->seedPtDomainList[i];
+            BlockIDType dom = ic->seedPtDomainList[i];
             if (OwnDomain(dom))
             {
                 // If point is inside domain, we are done.
