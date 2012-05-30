@@ -25,7 +25,7 @@
 
 
 # Open a database.
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
  
 # Enable keyframe mode.
@@ -238,7 +238,7 @@ k.enabled = 1
 SetKeyframeAttributes(k)
 
 # Open a database.
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
  
 # Set the number of frames to be 9.
@@ -324,7 +324,7 @@ DeleteAllPlots()
 ResetView()
 
 # Open a database.
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 
 # Set the number of frames to be 6.

@@ -42,7 +42,7 @@ def GetCloseString(db):
     return testString
 
 # Open a database and create a plot
-db = data_path("silo_%s_test_data/wave*.silo database"%SILO_MODE)
+db = silo_data_path("wave*.silo database")
 OpenDatabase(db, 32)
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -81,9 +81,9 @@ TestText("closedatabase06", testString)
 
 
 # Try adding some databases
-dbs = (data_path("silo_%s_test_data/wave.visit") %SILO_MODE,
-       data_path("silo_%s_test_data/globe.silo") %SILO_MODE,
-       data_path("silo_%s_test_data/curv3d.silo") %SILO_MODE)
+dbs = (silo_data_path("wave.visit") ,
+       silo_data_path("globe.silo") ,
+       silo_data_path("curv3d.silo") )
 
 for db in dbs:
     OpenDatabase(db)

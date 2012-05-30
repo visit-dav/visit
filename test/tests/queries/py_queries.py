@@ -20,7 +20,7 @@ from os.path import join as pjoin
 def script_path(sname):
     return pjoin(os.path.split(TestScriptPath())[0],sname)
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 
 AddPlot("Pseudocolor", "d")

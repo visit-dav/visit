@@ -68,7 +68,7 @@ CloseDatabase(data_path("overlink_test_data/regrovl_qh_1000_10001_4/OvlTop.silo"
 readOptions=GetDefaultFileOpenOptions("Silo")
 readOptions["Search For ANNOTATION_INT (!!Slow!!)"] = 1
 SetDefaultFileOpenOptions("Silo", readOptions)
-OpenDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multipart_multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor","d")
 DrawPlots()
@@ -77,21 +77,21 @@ Test("overlink_05")
 
 # likewise on single domain, single file
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("multipart_multi_ucd3d.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor","dx")
 DrawPlots()
 ResetView()
 Test("overlink_06")
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("globe.silo"))
 
 
 # Ok, now lets do some real annot_int work
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("globe.silo"))
 
 OpenDatabase(data_path("overlink_test_data/annotInt/sweptCellTagTest.silo"))
 

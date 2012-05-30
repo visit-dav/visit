@@ -15,7 +15,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/quad_disk.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("quad_disk.silo"))
 
 
 #
@@ -42,7 +42,7 @@ Test("float_xform_02")
 DeleteAllPlots()
 
 CloseDatabase(data_path("data/silo_%s_test_data/quad_disk.silo") %SILO_MODE)
-OpenDatabase(data_path("silo_%s_test_data/quad_disk.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("quad_disk.silo"))
 
 
 #
@@ -69,9 +69,9 @@ DrawPlots()
 Test("float_xform_05")
 DeleteAllPlots()
 
-CloseDatabase(data_path("silo_%s_test_data/quad_disk.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("quad_disk.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/quad_disk.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("quad_disk.silo"))
 
 
 #

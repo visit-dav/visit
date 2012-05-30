@@ -66,7 +66,7 @@ def SaveTestImage(name):
 
 def TestGeneralFeatures():
     TestSection("General label plot features")
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Label", "curvmesh2d")
     DrawPlots()
@@ -177,7 +177,7 @@ def TestGeneralFeatures():
     DeleteAllPlots()
 
     # test different data types from the file
-    OpenDatabase(data_path("silo_%s_test_data/wave0000.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("wave0000.silo"))
 
     AddPlot("Label", "chars")
     DrawPlots()
@@ -201,7 +201,7 @@ def TestGeneralFeatures():
 
 def TestCurvilinear2D():
     TestSection("Curvilinear 2D")
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "u")
     AddPlot("Mesh", "curvmesh2d")
@@ -253,7 +253,7 @@ def TestCurvilinear2D():
 
 def TestRectilinear2D():
     TestSection("Rectilinear 2D")
-    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect2d.silo"))
 
     AddPlot("Pseudocolor", "ascii")
     AddPlot("Mesh", "quadmesh2d")
@@ -310,7 +310,7 @@ def TestRectilinear2D():
 
 def TestUnstructured2D():
     TestSection("Unstructured 2D")
-    OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("ucd2d.silo"))
 
     AddPlot("Mesh", "ucdmesh2d")
     m = MeshAttributes()
@@ -357,7 +357,7 @@ def TestUnstructured2D():
 
 def TestSlice():
     TestSection("Testing slicing 3D data to 2D")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Mesh", "Mesh")
     m = MeshAttributes()
@@ -462,7 +462,7 @@ def TestLabeledVTK():
 
 def TestLabellingSubsets():
     TestSection("Labelling subsets")
-    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("bigsil.silo"))
 
     AddPlot("Mesh", "mesh")
     AddPlot("Subset", "blocks")
@@ -544,7 +544,7 @@ def TestLabellingSubsets():
     DeleteAllPlots()
 
     # Try a dataset with real material names.
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Mesh", "Mesh")
     AddPlot("FilledBoundary", "mat1")
@@ -567,7 +567,7 @@ def TestLabellingSubsets():
 
 def TestLabellingTensors():
     TestSection("Labelling tensors")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Mesh", "Mesh")
     AddPlot("Tensor", "grad_tensor")
@@ -615,7 +615,7 @@ def TestLabellingTensors():
 
 def TestLabelling3D():
     TestSection("Labelling in 3D with Z buffer")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "airVf")
     AddPlot("Label", "airVf")
@@ -661,7 +661,7 @@ def TestLabelling3D():
     # Try labelling a mesh that has interior stuff
     #
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "speed")
     AddPlot("Mesh", "mesh1")
@@ -773,7 +773,7 @@ def TestLabelling3D():
 
 def TestSlicedVectors():
     TestSection("Labelling sliced vectors")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Mesh", "Mesh")
     AddPlot("Label", "grad")
@@ -823,7 +823,7 @@ def TestSlicedVectors():
     # Test a case where having the vector be an expression was causing
     # VisIt to mess up.
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Label", "vel")
@@ -853,7 +853,7 @@ def TestRectilinearLogicalDisplay():
     TestSection("Test 3D zooming and logical mesh display")
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "hardyglobal")
     AddPlot("Mesh", "Mesh")
@@ -914,7 +914,7 @@ def TestRectilinearLogicalDisplay():
 
     # Try a 3D curvilinear mesh
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
     AddPlot("Mesh", "curvmesh3d")
     m = MeshAttributes()

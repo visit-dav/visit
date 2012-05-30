@@ -26,7 +26,7 @@
 
 # Test 2D Case
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 
 AddPlot("Pseudocolor", "d")
@@ -60,7 +60,7 @@ Test("ops_dualmesh_mesh_plot_2d_02")
 DeleteAllPlots()
 
 # Test 3D Case
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 view = GetView3D()

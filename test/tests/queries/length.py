@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 # Test that we can do an l2norm of a degenerate ultra file.
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Contour", "u")
 DrawPlots()

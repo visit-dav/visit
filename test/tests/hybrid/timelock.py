@@ -177,7 +177,7 @@ def test1(testindex):
     SetCloneWindowOnFirstRef(1)
 
     # Copy wave.visit to this directory a few times.
-    f = open(data_path("silo_%s_test_data/wave.visit") % SILO_MODE, "rt")
+    f = open(silo_data_path("wave.visit") , "rt")
     lines = f.readlines()
     f.close()
     f0 = open("wave.visit","wt")
@@ -305,8 +305,8 @@ def test3(testindex):
     # Turn on "CloneWindowOnFirstRef"
     SetCloneWindowOnFirstRef(1)
 
-    dbs = (data_path("silo_%s_test_data/wave.visit") % SILO_MODE,
-           data_path("silo_%s_test_data/wave_tv.visit") % SILO_MODE)
+    dbs = (silo_data_path("wave.visit") ,
+           silo_data_path("wave_tv.visit") )
     OpenDatabase(dbs[0])
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()

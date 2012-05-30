@@ -13,7 +13,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("ExternalSurface")
@@ -40,7 +40,7 @@ TestText("ops_ex_surf_03", t)
 
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("ucd2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("ExternalSurface")

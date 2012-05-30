@@ -47,7 +47,7 @@ a1.gradientColor2 = (0, 0, 0, 255)
 a1.backgroundMode = a1.Gradient
 
 # Set up the plots.
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Subset", "Material")
 DrawPlots()

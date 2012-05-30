@@ -53,7 +53,7 @@ v.viewNormal = (-0.5, 0.707107, 0.5)
 v.viewUp = (0.5, 0.707107, -0.5)
 SetView3D(v)
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 
 AddPlot("Pseudocolor", "d")
@@ -64,7 +64,7 @@ DeleteAllPlots()
 
 # Create a psuedocolor plot and test various degenerate 2d views.
 TestSection("Test degenerate 2D views")
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 
 AddPlot("Pseudocolor", "d")
@@ -130,7 +130,7 @@ DeleteAllPlots()
 # Create a pseudocolor and mesh plot and zoom in on a sharp edge to
 # verify that the mesh lines are not bleeding through the surface.
 TestSection("Test zoom in on mesh lines")
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 
 AddPlot("Pseudocolor", "u")
@@ -191,7 +191,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("Pseudocolor", "u")
 AddOperator("Clip")
@@ -201,7 +201,7 @@ Test("view_14")
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "p")
 DrawPlots()
@@ -212,7 +212,7 @@ DeleteAllPlots()
 
 ResetView()
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")
@@ -292,7 +292,7 @@ DeleteAllPlots()
 # ability to interpolate the view.
 #
 TestSection("Test interpolation of View3DAttributes")
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "speed")
 DrawPlots()

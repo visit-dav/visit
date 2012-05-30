@@ -104,7 +104,7 @@ def test1():
 #
 def test2():
     # Do Scatter plot of d vs d since we know that it will make Y=X
-    OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_curv2d.silo"))
 
     AddPlot("Scatter", "d")
     s = ScatterAttributes()
@@ -127,7 +127,7 @@ def test2():
 
     # Check the best fit with another known line eq.
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     DefineScalarExpression("t", "zoneid(curvmesh2d)")
     DefineScalarExpression("line", "t * 0.33333 + 10.")
@@ -141,7 +141,7 @@ def test2():
 
     # Make the scatter plot be d vs. dpu
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_curv2d.silo"))
 
     AddPlot("Scatter", "d")
     DefineScalarExpression("dpu", "d + u / 3.")

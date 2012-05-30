@@ -44,7 +44,7 @@ def InitAnnotationsLegendOn():
     SetAnnotationAttributes(a)
 
 def TestVolumeScaling():
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Volume", "t")
     volAtts = VolumeAttributes()
@@ -109,7 +109,7 @@ def TestVolumeScaling():
     DeleteAllPlots()
 
 def TestVolumeOpacity():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
     volAtts = VolumeAttributes()
@@ -153,7 +153,7 @@ def TestVolumeOpacity():
     DeleteAllPlots()
 
 def TestVolumeAspect():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
     DefineVectorExpression("disp", "{0,0,-0.9999*coord(Mesh)[2]}")
@@ -170,7 +170,7 @@ def TestVolumeAspect():
     DeleteAllPlots()
 
 def TestVolumeColorControlPoints():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
 
@@ -213,7 +213,7 @@ def TestVolumeColorControlPoints():
     DeleteAllPlots()
 
 def TestVolumeGaussianControlPoints():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
 

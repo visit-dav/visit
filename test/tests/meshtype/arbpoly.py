@@ -25,7 +25,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/poly3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("poly3d.silo"))
 
 
 AddPlot("Mesh", "ucdmesh3d")
@@ -60,7 +60,7 @@ DrawPlots()
 Test("arbpoly_03")
 
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/poly3d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("poly3d.silo"))
 
 
 OpenDatabase(data_path("overlink_test_data/ev_0_0_100/OvlTop.silo"))

@@ -39,7 +39,7 @@
 #
 TestSection("Test scalar collection sources")
 
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 
 # Set default plot variables
@@ -161,7 +161,7 @@ SetPlotOptions(p)
 Test("parcoords_12")
 
 DeleteAllPlots()
-ActivateDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+ActivateDatabase(silo_data_path("noise.silo"))
 
 AddPlot("ParallelCoordinates", "hardyglobal")
 p = ParallelCoordinatesAttributes()

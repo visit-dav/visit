@@ -48,7 +48,7 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "u")
 AddOperator("Slice")
@@ -237,7 +237,7 @@ a.axes2D.tickAxes = a.axes2D.BottomLeft
 # length is correct in each direction.
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()
@@ -302,7 +302,7 @@ Test("annot2d_25")
 ##
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Subset", "mat1")
 DrawPlots()

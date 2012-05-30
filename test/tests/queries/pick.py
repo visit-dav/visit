@@ -198,7 +198,7 @@
 
 def Pick3DTo2D():
     # Testing pick on 3d plots projected to 2d via Slice and Cone operators
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "u")
     AddOperator("Slice")
@@ -260,7 +260,7 @@ def Pick3DTo2D():
     #  When sliced along boundary between zones,
     #  pick with all materials returns different output than
     #  pick with some materials turned off.
-    OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
     AddPlot("Pseudocolor", "d")
     AddOperator("Slice")
@@ -313,7 +313,7 @@ def Pick3DTo2D():
     ResetPickLetter()
 
 def Pick2D():
-    OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("ucd2d.silo"))
 
     AddPlot("Pseudocolor", "u")
     DrawPlots()
@@ -333,7 +333,7 @@ def Pick2D():
     DeleteAllPlots()
 
     # Test PickByZone and PickByNode on data with ghost zones.
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     DrawPlots()
@@ -390,7 +390,7 @@ def Pick2D():
     DeleteAllPlots()
 
     # bug '5152, ascii data not reported as such.
-    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect2d.silo"))
 
     AddPlot("Pseudocolor", "ascii")
     DrawPlots()
@@ -425,7 +425,7 @@ def Pick2D():
 
 def PickOnionPeel():
     # Testing pick on 3d plots with OnionPeel operator
-    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
     AddPlot("Pseudocolor", "u")
     AddOperator("OnionPeel")
@@ -473,7 +473,7 @@ def PickSubset():
     #Testing Pick's accuracy on a sil-restricted plot.
     #All the picks in this test should return zone 30.
     #From defect VisIt00003348
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Subset", "mat1")
     TurnMaterialsOff()
@@ -512,7 +512,7 @@ def PickSubset():
 def PickMatFracsThreshold():
     # Testing pick on 3d plot with Threshold operator, returning
     # material var (mat fracs) and vector var. 
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Pseudocolor", "p")
     thresh = ThresholdAttributes()
@@ -582,7 +582,7 @@ def PickMatFracsThreshold():
 
 def PickReflect():
     # Testing pick on plot with Reflect operator.
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "u")
     AddOperator("Reflect")
@@ -600,7 +600,7 @@ def PickReflect():
 
 
 def PickFilledBoundary():
-    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
     AddPlot("FilledBoundary", "mat1")
 
@@ -656,7 +656,7 @@ def PickFilledBoundary():
     # bug 6217 -- NodePick on Sliced FB returning wrong coords.
     # will test with Mesh, OnionPeeled Mesh and FB to verify
     # they all return the same nodes/zones and coords.
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Mesh", "mesh1")
     AddPlot("Mesh", "mesh1")
@@ -697,7 +697,7 @@ def PickFilledBoundary():
 
 def PickMultiBlock():
     # Testing pick on 3d multi-domain plots 
-    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
     AddPlot("Pseudocolor", "u")
 
@@ -762,7 +762,7 @@ def PickMultiBlock():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
     AddPlot("Mesh", "mesh1")
     TurnMaterialsOn()
@@ -826,7 +826,7 @@ def PickMultiBlock():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("bigsil.silo"))
 
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
@@ -872,7 +872,7 @@ def PickMultiBlock():
     ResetPickLetter()
 
 def PickSurface():
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Surface", "d")
     AddOperator("Slice")
@@ -915,7 +915,7 @@ def PickSurface():
   
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Surface", "p")
     DrawPlots()
@@ -948,7 +948,7 @@ def PickSurface():
 
     DeleteAllPlots() 
 
-    OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("ucd2d.silo"))
 
     AddPlot("Surface", "d")
     DrawPlots()
@@ -989,7 +989,7 @@ def PickSurface():
     ResetPickLetter()
 
 def PickBigSilMat():
-    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("bigsil.silo"))
 
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
@@ -1153,7 +1153,7 @@ def PickOnionPeel2():
 
 def PickSpecMix():
     #VisIt '3864
-    OpenDatabase(data_path("silo_%s_test_data/specmix_quad.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("specmix_quad.silo"))
 
     AddPlot("Pseudocolor", "Species")
     DrawPlots()
@@ -1260,7 +1260,7 @@ def PickCurve():
     DeleteAllPlots()
 
 def PickMultiWindow():
-    OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE)
+    OpenDatabase(silo_data_path("wave*.silo database"))
 
     AddPlot("FilledBoundary", "Material")
     SetTimeSliderState(31)
@@ -1333,7 +1333,7 @@ def PickMultiWindow():
 # being gone.
 #
 def PickBadEngineSetup(testName, GetRidOfEngineCallback):
-    OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
     AddPlot("Pseudocolor", "u")
     DrawPlots()
@@ -1371,7 +1371,7 @@ def PickBadEngineSetup(testName, GetRidOfEngineCallback):
     AddWindow()
     SetActiveWindow(2)
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "u")
     DrawPlots()
@@ -1446,7 +1446,7 @@ def PickBoundary():
 
     ResetPickAttributes()
 
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Boundary", "mat1")
     DrawPlots()
@@ -1487,7 +1487,7 @@ def PickBoundary():
     DeleteAllPlots()
  
 
-    OpenDatabase(data_path("silo_%s_test_data/specmix_quad.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("specmix_quad.silo"))
 
     AddPlot("Boundary", "Material")
     DrawPlots()
@@ -1515,7 +1515,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/specmix_ucd.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("specmix_ucd.silo"))
 
     AddPlot("Boundary", "Material")
     DrawPlots()
@@ -1547,7 +1547,7 @@ def PickBoundary():
     #Test Sliced Boundary plots
     ResetOperatorOptions("Slice")
 
-    OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
     AddPlot("Boundary", "mat1")
     AddOperator("Slice")
@@ -1582,7 +1582,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/sid97.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("sid97.silo"))
 
     AddPlot("Boundary", "mat1")
 
@@ -1635,7 +1635,7 @@ def PickBoundary():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Boundary", "mat1")
 
@@ -1677,7 +1677,7 @@ def PickBoundary():
     ResetPickLetter()
 
 def PickVectorPlots():
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Vector", "vel")
     vector = VectorAttributes()
@@ -1811,7 +1811,7 @@ def PickVectorPlots():
     ResetPickLetter()
 
 def PickPointMeshes():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "PointVar")
     pc = PseudocolorAttributes()
@@ -1854,7 +1854,7 @@ def PickPointMeshes():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/multi_point2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_point2d.silo"))
 
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
@@ -1890,7 +1890,7 @@ def PickPointMeshes():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Subset", "PointMesh")
     DrawPlots()
@@ -1908,7 +1908,7 @@ def PickPointMeshes():
     ResetPickLetter()
 
 def PickGlobalIds():
-    OpenDatabase(data_path("silo_%s_test_data/global_node.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("global_node.silo"))
 
     AddPlot("Pseudocolor", "dist")
     DrawPlots()
@@ -1986,7 +1986,7 @@ def PickGlobalIds():
     ResetPickLetter()
 
 def PickExpressions():
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     DefineScalarExpression("m1", 'matvf(mat1, ["1", "3"])')
     DefineScalarExpression("mir1", 'mirvf(mat1, zoneid(quadmesh3d), volume(quadmesh3d), 1)')
@@ -2023,7 +2023,7 @@ def PickExpressions():
     s = s + GetPickOutput()
 
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "t")
     DrawPlots()
@@ -2293,7 +2293,7 @@ def PickSamrai():
     ResetPickLetter()
 
 def PickIndexSelect():
-    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect2d.silo"))
 
     AddPlot("Mesh", "quadmesh2d")
     AddPlot("Pseudocolor", "u")
@@ -2346,7 +2346,7 @@ def PickIndexSelect():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Pseudocolor", "d")
@@ -2448,7 +2448,7 @@ def PickIndexSelect():
     ResetPickLetter()
 
 def PickTensors():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Mesh", "Mesh")
     DrawPlots()
@@ -2550,7 +2550,7 @@ def PickMili():
 
 def PickContour():
     #'7144
-    OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
     AddPlot("Contour", "d")
     contour = ContourAttributes()
@@ -2587,7 +2587,7 @@ def PickContour():
 
 def PickBox():
     #'7566
-    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     AddOperator("Box")
@@ -2616,7 +2616,7 @@ def PickBox():
 
 
     DeleteAllPlots()
-    OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
     AddPlot("Pseudocolor", "d")
     AddOperator("Box")
@@ -2666,7 +2666,7 @@ def PickBox():
     ResetPickLetter()
 
 def PickScatter():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Scatter", "hardyglobal")
     scatter = ScatterAttributes()
@@ -2691,7 +2691,7 @@ def PickScatter():
     DeleteAllPlots()
 
     s = s + "Expressions used in Scatter\n";
-    OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
     DefineScalarExpression("xc", "coord(mesh1)[0]")
     DefineScalarExpression("yc", "coord(mesh1)[1]")

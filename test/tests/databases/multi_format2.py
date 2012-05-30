@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-db = (data_path("silo_%s_test_data/rect2d.silo") % SILO_MODE,
+db = (silo_data_path("rect2d.silo") ,
       data_path("pdb_test_data/allinone00.pdb"))
 
 # Create a Pseudocolor plot of Rect2d.

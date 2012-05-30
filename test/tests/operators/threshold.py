@@ -46,7 +46,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 
 AddPlot("Pseudocolor", "u")
@@ -110,7 +110,7 @@ DeleteAllPlots()
 # Contour lines by one variable, thresholding by another.  Multi-block,
 # curvilinear, 2D.
 #
-OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_curv2d.silo"))
 
 AddPlot("Contour", "u")
 DrawPlots()
@@ -153,7 +153,7 @@ DeleteAllPlots()
 # inclusion criteria.  Then change the output mesh type to a point mesh.
 # Multi-block, rectilinear, 3D.
 #
-OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 
 thresh.outputMeshType = 0
@@ -182,7 +182,7 @@ Test("ops_thresh07")
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()
@@ -208,7 +208,7 @@ DeleteAllPlots()
 # Contour lines by one variable, thresholding by that variable and another,
 # using two different zone inclusion criteria.  Multi-block, curvilinear, 2D.
 #
-OpenDatabase(data_path("silo_%s_test_data/multi_curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_curv2d.silo"))
 
 AddPlot("Contour", "u")
 DrawPlots()
@@ -243,7 +243,7 @@ DrawPlots()
 Test("ops_thresh10")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "u")
 AddOperator("Threshold")

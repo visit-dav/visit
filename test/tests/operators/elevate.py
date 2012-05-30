@@ -34,7 +34,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 
 #One zonal variable
@@ -92,7 +92,7 @@ DrawPlots()
 Test("elevate08")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("Slice")
@@ -103,7 +103,7 @@ Test("elevate09")
 # Testing expressions.  Test that macro expressions work as secondary
 # variables ('6768).
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 DefineScalarExpression("vv", "hgslice+polar_radius(Mesh2D)")
 AddPlot("Pseudocolor", "hgslice")
@@ -115,7 +115,7 @@ Test("elevate10")
 
 # Filled boundary with recentered expression
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 DefineScalarExpression("d2", "recenter(d)")
 AddPlot("FilledBoundary", "mat1")
@@ -127,7 +127,7 @@ Test("elevate11")
 
 # Boundary plots that are elevated by zero height (no variable). '8346.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("ucd2d.silo"))
 
 AddPlot("Boundary", "mat1")
 AddOperator("Elevate")

@@ -127,7 +127,7 @@ TestSection("Image Formats via Screen Capture")
 DeleteAllPlots()
 CloseDatabase(data_path("curve_test_data/c062.curve"))
 
-OpenDatabase(data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect2d.silo"))
 
 AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "d")
@@ -144,9 +144,9 @@ swa.screenCapture = 1
 
 TestSection("Geometry Formats")
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "dx")
 DrawPlots()

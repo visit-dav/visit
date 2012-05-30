@@ -231,7 +231,7 @@ def test1(testIndex):
     # This will open at timestep 0.  The variable "transient" will not be
     # available then.
     #
-    db = data_path("silo_%s_test_data/wave.visit") % SILO_MODE
+    db = silo_data_path("wave.visit") 
     OpenDatabase(db)
 
     #
@@ -373,7 +373,7 @@ def test4(testIndex):
 
     # Copy curv2d to the current directory.
     db = "test4.silo"
-    os.link(data_path("silo_%s_test_data/curv2d.silo") %SILO_MODE, db)
+    os.link(silo_data_path("curv2d.silo") , db)
 
     # Open up the file and create a plot.
     OpenDatabase(db)
@@ -383,7 +383,7 @@ def test4(testIndex):
 
     # Delete the file
     os.unlink(db)
-    os.link(data_path("silo_%s_test_data/rect2d.silo") % SILO_MODE, db)
+    os.link(silo_data_path("rect2d.silo") , db)
     ReOpenDatabase(db)
     ResetView()
     Test("reopen_%02d" % (testIndex + 1))
@@ -400,7 +400,7 @@ def test4(testIndex):
 #
 def test5(testIndex):
     TestSection("Testing reopen/expressions with multiple windows")
-    db = data_path("silo_%s_test_data/curv3d.silo") % SILO_MODE
+    db = silo_data_path("curv3d.silo") 
     AddWindow()
     SetActiveWindow(1)
     OpenDatabase(db)
@@ -498,7 +498,7 @@ def test7(testIndex):
     TestSection("Testing reopen on a deleted file")
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
-    os.link(data_path("silo_%s_test_data/globe.silo") % SILO_MODE, db)
+    os.link(silo_data_path("globe.silo") , db)
     WaitForFilesToBePresent(db)
 
     OpenDatabase(db)

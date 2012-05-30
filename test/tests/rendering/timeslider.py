@@ -105,7 +105,7 @@ Test("timeslider12")
 # Delete all plots and open a new database
 SetTimeSliderState(0)
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "speed")
 AddPlot("Mesh", "mesh1")

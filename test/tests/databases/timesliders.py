@@ -169,7 +169,7 @@ DeleteAllPlots()
 OpenDatabase(dbs[0])
 SetTimeSliderState(0)
 TestWindowInformation("timesliders23")
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()
@@ -196,7 +196,7 @@ TestWindowInformation("timesliders31")
 # Make sure that when we replace an MT database with an ST database, we get
 # the right time sliders.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE, 30)
+OpenDatabase(silo_data_path("wave*.silo database"), 30)
 
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -204,7 +204,7 @@ SetTheView()
 Test("timesliders32")
 TestWindowInformation("timesliders33")
 # Replace with an ST database
-ReplaceDatabase(data_path("silo_%s_test_data/wave0000.silo")%SILO_MODE)
+ReplaceDatabase(silo_data_path("wave0000.silo"))
 Test("timesliders34")
 TestWindowInformation("timesliders35")
 
@@ -215,10 +215,10 @@ DeleteAllPlots()
 for source in GetGlobalAttributes().sources:
     CloseDatabase(source)
 
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor", "pressure")
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 AddPlot("Pseudocolor", "p")
 DrawPlots()

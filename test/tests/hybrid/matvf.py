@@ -40,7 +40,7 @@
 
 
 
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 
 
@@ -79,7 +79,7 @@ Test("matvf_03")
 DeleteAllPlots()
 
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor", "m1")
 AddOperator("Threshold")
@@ -107,7 +107,7 @@ Test("matvf_05")
 DeleteAllPlots()
 
 DefineScalarExpression("mbs", 'matvf(mat, 1)')
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 AddPlot("Pseudocolor", "mbs")
 t = ThresholdAttributes()
@@ -149,7 +149,7 @@ Test("matvf_07")
 # Now test the materror expression.
 DeleteAllPlots()
 DefineScalarExpression("materror1", 'materror(mat1, 1)')
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "materror1")
 sil = SILRestriction()
@@ -180,15 +180,15 @@ DrawPlots()
 Test("matvf_09")
 
 # Now test that it can calculate "volume fractions" using areas.
-ReplaceDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+ReplaceDatabase(silo_data_path("rect2d.silo"))
 
 RemoveLastOperator()
 Test("matvf_10")
 
 
-CloseDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("rect2d.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("thinplane.silo"))
 
 
 # tests for matvf w/ ghost zones
@@ -229,9 +229,9 @@ SetPlotOptions(atts)
 DrawPlots()
 Test("matvf_post_ghost_3")
 
-CloseDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("thinplane.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 
 # test for gradient w/ matvf, to check if post ghosts were correctly 

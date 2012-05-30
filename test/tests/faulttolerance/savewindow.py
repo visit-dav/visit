@@ -21,7 +21,7 @@ swa.outputToCurrentDirectory = 0
 swa.outputDirectory = "current"
 SetSaveWindowAttributes(swa)
 
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor","pressure")
 DrawPlots()

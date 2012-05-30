@@ -44,7 +44,7 @@
 
 
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Subset", "mat1")
 DrawPlots()
@@ -109,7 +109,7 @@ Test("transparency_06")
 
 # Test that it can do transparency correctly for rectilinear grids ('7772)
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "u")
 pcAtts = PseudocolorAttributes()
@@ -141,7 +141,7 @@ DrawPlots()
 Test("transparency_11")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()

@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/thinplane.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("thinplane.silo"))
 
 atts = PseudocolorAttributes()
 atts.minFlag = 1

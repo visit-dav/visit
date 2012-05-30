@@ -107,7 +107,7 @@ def InitAnnotation():
     SetAnnotationAttributes(a)
 
 def TestLineout2D(time, suffix):
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     DrawPlots()
@@ -170,7 +170,7 @@ def TestLineout2D(time, suffix):
     ResetLineoutColor()
 
 def TestLineout3D(time, suffix):
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
@@ -215,7 +215,7 @@ def TestLineout3D(time, suffix):
     ResetLineoutColor()
 
 def TestMultiVarLineout2D(time, suffix):
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     DrawPlots()
@@ -350,7 +350,7 @@ def TestDynamicLineout(time, suffix):
     if (time == 1):
         return
     #window 1
-    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+    OpenDatabase(silo_data_path("wave.visit"))
 
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
@@ -477,7 +477,7 @@ def TestDynamicLineout(time, suffix):
 def TestDynamic2():
     # VisIt00006006 -- ensure  that 'ClearRefLines' will 'disconnect' the lineout 
     # from its originating plot, and won't update when orig plot changes time.
-    OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+    OpenDatabase(silo_data_path("wave.visit"))
 
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()

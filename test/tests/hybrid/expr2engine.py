@@ -42,7 +42,7 @@ DefineScalarExpression("user_defined2", "v + v")
 DefineVectorExpression("user_defined3", "{u, v, w}")
 
 # Open a database and make a plot.
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Vector", "vel")
 v = VectorAttributes()
@@ -62,7 +62,7 @@ TestExpressionList("expr2engine_01")
 
 # Open a different database. The expression list should only contain the 
 # database variables from the new database.
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 TestExpressionList("expr2engine_02")
 

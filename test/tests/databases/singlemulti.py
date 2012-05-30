@@ -41,7 +41,7 @@ def TestWindowInformation(testname):
     TestText(testname, s)
 
 # Create a Pseudocolor plot of wave by opening it up at a late time state.
-OpenDatabase(data_path("silo_%s_test_data/wave*.silo database")%SILO_MODE, 20)
+OpenDatabase(silo_data_path("wave*.silo database"), 20)
 
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -67,7 +67,7 @@ Test("singlemulti00")
 TestWindowInformation("singlemulti01")
 
 # Create a Pseudocolor plot of curv3d, a single time state database.
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 AddPlot("Pseudocolor", "u")
 AddOperator("Transform")

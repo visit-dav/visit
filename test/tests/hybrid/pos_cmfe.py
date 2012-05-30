@@ -25,7 +25,7 @@
 
 
 
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 
 
@@ -106,7 +106,7 @@ TestText("pos_cmfe_10", t)
 
 # 3D, multi-block to multi-block.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 DefineScalarExpression("cmfe7", "pos_cmfe(<../data/silo_%s_test_data/multi_curv3d.silo:d>, mesh1, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe7")
@@ -117,7 +117,7 @@ DeleteAllPlots()
 
 # multi-block to single-block.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 DefineScalarExpression("cmfe8", "pos_cmfe(<../data/silo_%s_test_data/multi_curv3d.silo:d>, curvmesh3d, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe8")
@@ -126,7 +126,7 @@ Test("pos_cmfe_12")
 
 # single-block to multi-block.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_curv3d.silo"))
 
 DefineScalarExpression("cmfe9", "pos_cmfe(<../data/silo_%s_test_data/curv3d.silo:d>, mesh1, 0.)"%SILO_MODE)
 AddPlot("Pseudocolor", "cmfe9")
@@ -135,7 +135,7 @@ Test("pos_cmfe_13")
 
 # single-block to multi-block -- vector
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 DefineVectorExpression("cmfe10", "pos_cmfe(gradient(<../data/silo_%s_test_data/curv3d.silo:d>), mesh1, {0,0,0})"%SILO_MODE)
 AddPlot("Vector", "cmfe10")
