@@ -29,7 +29,7 @@
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("Isovolume")
@@ -50,7 +50,7 @@ TestText("scf_02", text)
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -61,7 +61,7 @@ SetAnnotationAttributes(a)
 Test("scf_03")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 i = ThresholdAttributes()

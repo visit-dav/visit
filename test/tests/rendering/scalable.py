@@ -49,7 +49,7 @@ CloseComputeEngine()
 # if it fails, the OpenDatabase will start a serial engine
 haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Mesh", "mesh1")
 silr=SILRestriction()
@@ -235,7 +235,7 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 14000 
 SetRenderingAttributes(ra)
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -273,7 +273,7 @@ TestText("multiWindow_SRModeHistory",srModeHistory)
 DeleteWindow()
 SetActiveWindow(1)
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 ra.scalableActivationMode = ra.Always
 SetRenderingAttributes(ra)
@@ -292,7 +292,7 @@ Test("scalable_07")
 DeleteAllPlots()
 
 TestSection("Testing Mesh plot's opaque flag in SR mode")
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 AddPlot("FilledBoundary", "mat1")
 AddPlot("Mesh", "curvmesh2d")
@@ -318,7 +318,7 @@ ra.scalableActivationMode = ra.Auto
 ra.scalableAutoThreshold = 30000 
 SetRenderingAttributes(ra)
 
-OpenDatabase(data_path("silo_%s_test_data/galaxy0000.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("galaxy0000.silo"))
 
 AddPlot("Pseudocolor", "vx")
 DrawPlots()
@@ -334,7 +334,7 @@ ra.stereoRendering = 1
 ra.stereoType = ra.RedBlue
 SetRenderingAttributes(ra)
 
-OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 AddPlot("Mesh","mesh1")
 

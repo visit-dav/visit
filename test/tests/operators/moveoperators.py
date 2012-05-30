@@ -71,7 +71,7 @@ def setTheFirstView():
 # Test operator promotion, demotion, and removal.
 #
 def runTest1():
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
 
     # Set up a plot with a few operators.
@@ -121,7 +121,7 @@ def runTest1():
 def runTest2():
     all = 1
     # Set up a couple plots of globe
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "u")
     AddPlot("Mesh", "mesh1")
@@ -141,7 +141,7 @@ def runTest2():
 #
 def runTest3():
     # Set up a couple plots of globe
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "u")
     pc = PseudocolorAttributes()
@@ -190,7 +190,7 @@ def runTest3():
 # the vis window to get redrawn.
 #
 def runTest4():
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     AddOperator("Isosurface")

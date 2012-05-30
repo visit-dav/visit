@@ -84,7 +84,7 @@ def TurnOffSetsByName(silr, cat, names):
             if setname == names:
                 silr.TurnOffSet(s)
 
-OpenDatabase(data_path("silo_%s_test_data/multipart_multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multipart_multi_ucd3d.silo"))
 
 
 #
@@ -147,7 +147,7 @@ HideActivePlots()
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
-for f in glob.glob(data_path("silo_%s_test_data/gorfo*")%SILO_MODE):
+for f in glob.glob(silo_data_path("gorfo*")):
     os.remove(f)
 cwd = os.getcwd()
 os.chdir(data_path("silo_%s_test_data") % SILO_MODE)
@@ -171,7 +171,7 @@ os.chdir(cwd)
 # Test opening a 'virtual' database of multi-part silo files
 # at something other than its first timestep
 #
-OpenDatabase(data_path("silo_%s_test_data/gorfo_* database")%SILO_MODE,1)
+OpenDatabase(silo_data_path("gorfo_* database"),1)
 
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh", "mesh1")
@@ -189,7 +189,7 @@ os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("ucd3d.silo"))
 
 AddPlot("Mesh", "exterior_faces")
 DrawPlots()
@@ -205,7 +205,7 @@ Test("silo_08")
 # all empty domains. So we go from 1 to end and
 # back around to 1 purposely avoiding 0
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/hist_ucd3d_* database")%SILO_MODE,1)
+OpenDatabase(silo_data_path("hist_ucd3d_* database"),1)
 
 AddPlot("Pseudocolor","d_dup")
 DrawPlots()
@@ -233,7 +233,7 @@ Test("silo_18")
 # Test defvar object
 #
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 AddPlot("Pseudocolor","sum")
 DrawPlots()
@@ -262,7 +262,7 @@ a=GetAnnotationAttributes()
 a.axes2D.visible = 1
 SetAnnotationAttributes(a)
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Curve","line")
 DrawPlots()
@@ -285,7 +285,7 @@ Test("silo_25")
 # data dir.
 #
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
 (err, dbname) = FindAndOpenDatabase("largefile.silo")
 AddPlot("Curve","sincurve")
@@ -301,7 +301,7 @@ CloseDatabase(dbname)
 #
 # Test time invariant mesh
 #
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d_ti_* database")%SILO_MODE,2)
+OpenDatabase(silo_data_path("multi_ucd3d_ti_* database"),2)
 
 AddPlot("Pseudocolor","d")
 DrawPlots()
@@ -322,9 +322,9 @@ Test("silo_28")
 # invalidated by VisIt
 #
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d_ti_* database")%SILO_MODE)
+CloseDatabase(silo_data_path("multi_ucd3d_ti_* database"))
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor","d_split")
 DrawPlots()
@@ -337,9 +337,9 @@ TestText("silo_29", t)
 # on
 #
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/histne_ucd3d_* database")%SILO_MODE, 2)
+OpenDatabase(silo_data_path("histne_ucd3d_* database"), 2)
 
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
@@ -361,7 +361,7 @@ Test("silo_34")
 # Test a database with some odd multi-block structure
 #
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/histne_ucd3d_* database")%SILO_MODE)
+CloseDatabase(silo_data_path("histne_ucd3d_* database"))
 
 SetTreatAllDBsAsTimeVarying(0)
 OpenDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
@@ -377,7 +377,7 @@ Test("silo_35")
 DeleteAllPlots()
 CloseDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/wave_1file.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave_1file.visit"))
 
 AddPlot("Mesh","quadmesh")
 AddPlot("Pseudocolor","pressure")
@@ -402,7 +402,7 @@ Test("silo_39")
 TestSection("Silo AMR w/Mrgtrees")
 TurnOffAllAnnotations()
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/wave_1file.visit")%SILO_MODE)
+CloseDatabase(silo_data_path("wave_1file.visit"))
 
 OpenDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
 
@@ -449,7 +449,7 @@ Test("silo_45")
 DeleteAllPlots()
 CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 TestSection("Variables defined on material subsets")
 sa = SliceAttributes()
@@ -469,9 +469,9 @@ for varname in ("p_on_mats_2","d_on_mats_1_3","m1vf_on_mats_1","m2vf_on_mats_2",
     testNum = testNum + 1
 
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
-OpenDatabase(data_path("silo_%s_test_data/arbpoly-zoohybrid.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
 TestSection("Various arbitrary polygonal/polyhedral meshes")
 

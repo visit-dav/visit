@@ -33,7 +33,7 @@
 
 
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 
 
@@ -86,7 +86,7 @@ Test("multivar_03")
 DeleteAllPlots()
 
 # Test multiple variables with different centerings with expressions ('7843)
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 DefineScalarExpression("x", "coord(curvmesh3d)[0]")
 DefineScalarExpression("y", "coord(curvmesh3d)[1]")

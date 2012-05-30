@@ -86,7 +86,7 @@ def TestOverlayCurves():
     TestSection("Overlay curves on 2D plots")
 
     # put up some 2D plots
-    OpenDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("ucd2d.silo"))
 
     AddPlot("Pseudocolor","d")    # id=0
     AddPlot("Mesh","ucdmesh2d")   # id=1
@@ -147,7 +147,7 @@ def TestOverlayCurves():
     HideActivePlots()
 
     DeleteAllPlots()
-    CloseDatabase(data_path("silo_%s_test_data/ucd2d.silo")%SILO_MODE)
+    CloseDatabase(silo_data_path("ucd2d.silo"))
 
     CloseDatabase(data_path("curve_test_data/ol_curveA.curve"))
 

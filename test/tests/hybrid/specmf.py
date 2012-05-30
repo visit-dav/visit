@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/specmix_quad.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("specmix_quad.silo"))
 
 atts = PseudocolorAttributes()
 atts.minFlag = 1
@@ -32,7 +32,7 @@ AddPlot("Pseudocolor", "spec_mix")
 DrawPlots()
 Test("specmf_0")
 
-OpenDatabase(data_path("silo_%s_test_data/specmix_double_quad.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("specmix_double_quad.silo"))
 
 AddPlot("Pseudocolor", "spec_mix")
 DrawPlots()

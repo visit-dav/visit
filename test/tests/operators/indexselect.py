@@ -59,7 +59,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 
 atts = IndexSelectAttributes()
@@ -132,7 +132,7 @@ DrawPlots()
 Test("ops_indexselect05")
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 
 # 3D, curvilinear, mesh plot
@@ -174,7 +174,7 @@ DrawPlots()
 Test("ops_indexselect08")
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 
 # 2D, rectilinear, mesh plot
@@ -200,7 +200,7 @@ DrawPlots()
 Test("ops_indexselect10")
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 
 # 2D, curvilinear, mesh plot
@@ -258,7 +258,7 @@ DeleteAllPlots()
 
 # 3D multi-rect 
 # test 'modulo' problems, bug: VisIt00003308
-OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("IndexSelect")
@@ -293,7 +293,7 @@ DeleteAllPlots()
 
 # bigsil 
 # test 'domainIndex' problems, bug: VisIt00005559
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 AddPlot("Subset", "domains")
 AddPlot("Mesh", "mesh")
@@ -417,7 +417,7 @@ TurnDomainsOn()
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 # 3D, rectilinear, zonal var, index-selected at max/min boundaries.
 AddPlot("Pseudocolor", "d")
@@ -454,7 +454,7 @@ Test("ops_indexselect28")
 DeleteAllPlots()
 
 
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 # 3D, curvilinear, zonal var, index-selected at max/min boundaries.
 AddPlot("Pseudocolor", "p")
@@ -491,7 +491,7 @@ DeleteAllPlots()
 
 #'6428, boundary between domains disappear when on edge of
 # index-selected plot 
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 AddPlot("Pseudocolor", "dist")
 atts.dim = atts.ThreeD
@@ -588,7 +588,7 @@ Test("ops_indexselect38")
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 AddPlot("Pseudocolor", "PointVar")
 AddOperator("IndexSelect")

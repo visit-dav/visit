@@ -50,7 +50,7 @@
 
 def TestCurve():
     TestSection("Mesh plot of a 3D curvilinear mesh")
-    OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv3d.silo"))
 
     AddPlot("Mesh", "curvmesh3d")
     DrawPlots()    
@@ -86,7 +86,7 @@ def TestCurve():
 
 def TestPointMesh():
     TestSection("Mesh plot of a point mesh")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "PointVar")
     p = PseudocolorAttributes()
@@ -122,7 +122,7 @@ def TestPointMesh():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/noise2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise2d.silo"))
 
     AddPlot("Mesh", "PointMesh")
     ResetView()
@@ -143,7 +143,7 @@ def TestPointMesh():
 
 def TestGlobe():
     TestSection("Mesh plot of a 3D unstructured mesh")
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Mesh", "mesh1")
     DrawPlots()
@@ -198,7 +198,7 @@ def TestGlobe():
 
 def TestRect3d():
     TestSection("Mesh plot of a 3D rectilinear mesh")
-    OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
@@ -238,7 +238,7 @@ def TestAutoOpaqueFlag():
     TestSection("Testing Mesh plot's opaque flag")
 
     # Set up a mesh plot with the auto opaque flag.
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()

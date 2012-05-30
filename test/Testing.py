@@ -1715,6 +1715,15 @@ def data_path(*args):
     rargs.extend(args)
     return abs_path(*rargs)
 
+def silo_data_path(*args):
+    """
+    Helper that generates proper silo data absolute file paths.
+    Incorporates SILO_MODE logic.
+    """
+    rargs = ["silo_%s_test_data" % SILO_MODE]
+    rargs.extend(args)
+    return data_path(*rargs)
+
 def tests_path(*args):
     """
     Generates proper absolute path relative to the 'test/tests' directory.

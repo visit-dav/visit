@@ -22,7 +22,7 @@
 #
 # Create a database of compressed VTK files in a .visit file
 #
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor","d")
 DrawPlots()
@@ -32,7 +32,7 @@ e.filename = "multi_ucd"
 e.dirname = data_path()
 ExportDatabase(e)
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo") % SILO_MODE)
+CloseDatabase(silo_data_path("multi_ucd3d.silo") )
 
 cwd = os.getcwd()
 

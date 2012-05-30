@@ -34,7 +34,7 @@ disp.variable = "vel"
 SetDefaultOperatorOptions(disp)
 
 # 2D, rectilinear.
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("Displace")
@@ -46,13 +46,13 @@ Test("ops_disp01")
 
 SetActivePlots(1)
 DeleteActivePlots()
-ReplaceDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+ReplaceDatabase(silo_data_path("curv2d.silo"))
 
 ResetView()
 
 Test("ops_disp02")
 
-ReplaceDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+ReplaceDatabase(silo_data_path("curv3d.silo"))
 
 v = GetView3D()
 v.viewNormal = (0.61, -0.61, 0.61)
@@ -60,13 +60,13 @@ SetView3D(v)
 
 Test("ops_disp03")
 
-ReplaceDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+ReplaceDatabase(silo_data_path("rect3d.silo"))
 
 Test("ops_disp04")
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("ucd3d.silo"))
 
 
 AddPlot("Subset", "mat1")
@@ -78,7 +78,7 @@ DrawPlots()
 Test("ops_disp05")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("FilledBoundary", "mat1")
 AddOperator("Displace")

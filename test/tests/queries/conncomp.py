@@ -19,7 +19,7 @@
 #
 # ----------------------------------------------------------------------------
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE, 0)
+OpenDatabase(silo_data_path("rect2d.silo"), 0)
 
 
 DefineScalarExpression("_ccl_test_1d", "conn_components(quadmesh2d)")
@@ -66,7 +66,7 @@ TestText("conncomp_1d_weighted_var_sum",res)
 
 DeleteAllPlots()
 
-OpenDatabase(data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE, 0)
+OpenDatabase(silo_data_path("multi_rect2d.silo"), 0)
 
 DefineScalarExpression("_rand_test_2d", "rand(mesh1)")
 DefineScalarExpression("_ccl_test_2d", "conn_components(mesh1)")

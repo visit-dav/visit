@@ -27,7 +27,7 @@ mma=MeshManagementAttributes()
 mma.discretizationMode = mma.Adaptive
 mma.discretizationTolerance=(0.01, 0.25)
 SetMeshManagementAttributes(mma)
-OpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("csg.silo"))
 
 
 #
@@ -48,7 +48,7 @@ Test("csg_01")
 mma.discretizationMode = mma.MultiPass
 mma.discretizationTolerance=(0.02, 0.25)
 SetMeshManagementAttributes(mma)
-ReOpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+ReOpenDatabase(silo_data_path("csg.silo"))
 
 ClearWindow()
 DrawPlots()
@@ -63,7 +63,7 @@ ResetView()
 mma.discretizationTolerance=(0.005, 0.25)
 mma.discretizationMode = mma.Adaptive
 SetMeshManagementAttributes(mma)
-ReOpenDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+ReOpenDatabase(silo_data_path("csg.silo"))
 
 AddPlot("Subset", "regions(greenman_mesh)")
 DrawPlots()
@@ -141,7 +141,7 @@ DeleteAllPlots()
 # Now use Matt's Fusion data
 #
 DeleteAllPlots()
-CloseDatabase(data_path("silo_%s_test_data/csg.silo")%SILO_MODE)
+CloseDatabase(silo_data_path("csg.silo"))
 
 mma.discretizationTolerance=(0.05, 0.25)
 mma.discretizationMode = mma.Adaptive

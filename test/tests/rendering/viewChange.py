@@ -57,7 +57,7 @@ def InitAnnotation():
 
 def TestViewChangeSliceFlip():
     TestSection("Testing view changes with slice flip")
-    OpenDatabase(data_path("silo_%s_test_data/wave0000.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("wave0000.silo"))
 
     AddPlot("Pseudocolor", "pressure")
     AddOperator("Slice")
@@ -78,7 +78,7 @@ def TestViewChangeSliceFlip():
 
 def TestViewChangeFullFrame():
     TestSection("Testing view changes with fullframe")
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "u")
     DrawPlots()
@@ -122,7 +122,7 @@ def TestViewChangeFullFrame():
 
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Histogram", "u")
     DrawPlots()
@@ -142,7 +142,7 @@ def TestViewChangeFullFrame():
 
 def TestViewChangeFullFrameWithGlyphs():
     TestSection("Testing view changes with fullframe and glyphed plots")
-    OpenDatabase(data_path("silo_%s_test_data/fullframe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("fullframe.silo"))
 
     AddPlot("Mesh", "fullframe")
     DrawPlots()
@@ -196,7 +196,7 @@ def TestViewChangeFullFrameWithGlyphs():
 def TestViewChangeLogScaling2D():
     TestSection("Testing view changes with log scaling of 2D plots")
 
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "u")
     DrawPlots()

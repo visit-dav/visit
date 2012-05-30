@@ -30,7 +30,7 @@
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
 
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor","d")
 DrawPlots()
@@ -56,7 +56,7 @@ Test("pickarray_04")
 
 SetActiveWindow(1)
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
@@ -67,7 +67,7 @@ TestText("pickarray_05", text)
 
 #  bug '7498.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 DefineArrayExpression("arr3", "array_compose(dx, dy, dz)")
 AddPlot("Pseudocolor", "u")
@@ -99,7 +99,7 @@ DeleteAllPlots()
 SetActiveWindow(2)
 DeleteAllPlots()
 SetActiveWindow(1)
-OpenDatabase(data_path("silo_%s_test_data/wave.visit")%SILO_MODE)
+OpenDatabase(silo_data_path("wave.visit"))
 
 AddPlot("Pseudocolor", "pressure")
 TimeSliderSetState(34)
@@ -115,7 +115,7 @@ DeleteAllPlots()
 SetActiveWindow(1)
 DeleteAllPlots()
 DefineArrayExpression("arr4", "array_compose_with_bins(dx, dy, [0, 0.5, 1.5])")
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Pseudocolor", "u")
 DrawPlots()

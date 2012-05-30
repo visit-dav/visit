@@ -69,7 +69,7 @@ def TestMultiColor(section, plotAtts, decreasingOpacity):
 def test1():
     TestSection("Testing setting of multiColor in Boundary plot")
     # Set up the plot
-    OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("rect2d.silo"))
 
     AddPlot("Boundary", "mat1")
     b = BoundaryAttributes()
@@ -85,7 +85,7 @@ def test1():
 def test2():
     TestSection("Testing setting of multiColor in Contour plot")
     # Set up the plot
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Contour", "hardyglobal")
     c = ContourAttributes()
@@ -113,14 +113,14 @@ def test3():
     TestSection("Testing setting of multiColor in FilledBoundary plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("bigsil.silo"))
 
     AddPlot("FilledBoundary", "mat")
     f = FilledBoundaryAttributes()
@@ -159,14 +159,14 @@ def test4():
     TestSection("Testing setting of multiColor in Subset plot")
     # Set up the plots. First we want globe so we can see something inside
     # of the Subset plot to make sure that setting alpha works.
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
     AddPlot("Pseudocolor", "w")
     p = PseudocolorAttributes()
     p.legendFlag = 0
     p.colorTableName = "xray"
     SetPlotOptions(p)
-    OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("bigsil.silo"))
 
     AddPlot("Subset", "domains")
     s = SubsetAttributes()
@@ -205,7 +205,7 @@ def test5():
     TestSection("Testing user defined colors for FilledBoundary")
 
     ResetView()
-    OpenDatabase(data_path("silo_%s_test_data/globe_matcolors.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe_matcolors.silo"))
 
     AddPlot("FilledBoundary","mat1")
     AddOperator("Slice")

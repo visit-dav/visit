@@ -65,7 +65,7 @@
 # This test ensures that correct labels are applied to the legend.
 def TestLevelsLegend(a):
     TestSection("Test levels legend")
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
 
     AddPlot("Subset", "mat1")
@@ -103,7 +103,7 @@ def TestLevelsLegend(a):
 #
 def TestSizeAndPosition(a):
     TestSection("Test legend default sizing and positioning")
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
 
     AddPlot("Boundary", "mat1")
@@ -133,7 +133,7 @@ def TestSizeAndPosition(a):
     Test("legends_06")
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("globe.silo"))
 
 
     AddPlot("Volume", "u")
@@ -141,7 +141,7 @@ def TestSizeAndPosition(a):
     Test("legends_07")
     DeleteAllPlots()
 
-    OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 
     AddPlot("Contour", "d")
@@ -223,7 +223,7 @@ def TestCurveLegend(a):
 #
 def TestLegendProperties(a):
     TestSection("Test setting legend properties")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
@@ -317,7 +317,7 @@ def TestLegendProperties(a):
 #
 def TestLegendCopying(a):
     TestSection("Test legend copying")
-    OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Pseudocolor", "hardyglobal")
     DrawPlots()
@@ -382,7 +382,7 @@ def TestLegendCopying(a):
 
 def TestLegendTics():
     TestSection("Test setting legend tics")
-    OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+    OpenDatabase(silo_data_path("curv2d.silo"))
 
     AddPlot("Pseudocolor", "d")
     DrawPlots()

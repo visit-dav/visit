@@ -23,7 +23,7 @@
 
 # Test for topological dimension 2.
 TurnOnAllAnnotations()
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -60,7 +60,7 @@ TestText("revolved_surface_area_03", text)
 
 # Test with 3D, isosurface, slice.
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("Isosurface")

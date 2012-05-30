@@ -30,7 +30,7 @@
 
 
 
-OpenDatabase(data_path("silo_%s_test_data/globe.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("globe.silo"))
 
 AddPlot("Vector", "vel")
 vector_atts = VectorAttributes()
@@ -128,7 +128,7 @@ Test("vector_11")
 #
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 
 DefineVectorExpression("v1", "{ vel[0]*coord(quadmesh3d)[0], vel[1]*coord(quadmesh3d)[1], vel[2]*coord(quadmesh3d)[2] }")
@@ -200,7 +200,7 @@ Test("vector_15")
 # Test the "limit vectors to original node/cell" option
 #
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 DefineVectorExpression("cvel","recenter(vel)")
 AddPlot("Vector", "vel", 1, 0)

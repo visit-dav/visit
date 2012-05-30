@@ -22,7 +22,7 @@
 #
 # Do a test of 2D nodal interpolation on material-selected rectilinear meshes
 #
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 
 AddPlot("Pseudocolor", "u");
@@ -42,7 +42,7 @@ DeleteAllPlots();
 # Do a test of 3D nodal interpolation on material-selected rectilinear meshes
 # Ths is easiest to see when doing a contour plot of a matsel variable
 #
-OpenDatabase(data_path("silo_%s_test_data/rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect3d.silo"))
 
 
 AddPlot("Contour", "u");
@@ -67,7 +67,7 @@ DeleteAllPlots();
 #
 # Do a test of 2D nodal interpolation on material-selected curvilinear meshes
 #
-OpenDatabase(data_path("silo_%s_test_data/curv2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv2d.silo"))
 
 
 AddPlot("Pseudocolor", "u");

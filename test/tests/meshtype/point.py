@@ -36,7 +36,7 @@ v = GetView3D()
 v.viewNormal = (0.3, 0.5, 0.8)
 SetView3D(v)
 
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 
 AddPlot("Pseudocolor", "PointVar")
@@ -62,7 +62,7 @@ DeleteAllPlots()
 
 
 #Test some more of the point-related atts for the pc plot.
-OpenDatabase(data_path("silo_%s_test_data/multi_point2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_point2d.silo"))
 
 AddPlot("Pseudocolor", "u")
 p = PseudocolorAttributes()
@@ -125,7 +125,7 @@ Test("meshtype_point_12")
 DeleteAllPlots()
 
 
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 AddPlot("Pseudocolor", "PointVar")
 p.pointSize = 0.5

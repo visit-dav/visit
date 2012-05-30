@@ -61,12 +61,12 @@ def TestOneFile(isRectilinear, file, matname, prefix):
     CloseDatabase(file)
 
 TestSection("Curvilinear, 2D")
-TestOneFile(False,data_path("silo_%s_test_data/specmix_quad.silo") % SILO_MODE, "Material", "mir_curv2d")
+TestOneFile(False,silo_data_path("specmix_quad.silo") , "Material", "mir_curv2d")
 TestSection("Unstructured, 2D")
-TestOneFile(False,data_path("silo_%s_test_data/specmix_ucd.silo") % SILO_MODE, "Material", "mir_ucd2d")
+TestOneFile(False,silo_data_path("specmix_ucd.silo") , "Material", "mir_ucd2d")
 TestSection("Rectilinear, 2D")
-TestOneFile(True,data_path("silo_%s_test_data/rect2d.silo") % SILO_MODE, "mat1", "mir_rect2d")
+TestOneFile(True,silo_data_path("rect2d.silo") , "mat1", "mir_rect2d")
 TestSection("Rectilinear, 3D")
-TestOneFile(True,data_path("silo_%s_test_data/rect3d.silo") % SILO_MODE, "mat1", "mir_rect3d")
+TestOneFile(True,silo_data_path("rect3d.silo") , "mat1", "mir_rect3d")
 
 Exit()

@@ -33,7 +33,7 @@ TestSection("Test plot options")
 #
 # Set up a simple 2 variable scatter plot.
 #
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 AddPlot("Scatter", "hardyglobal")
 s = ScatterAttributes()
@@ -189,7 +189,7 @@ DeleteActivePlots()
 # Try a Scatter plot with multi-block data
 #
 TestSection("Multiblock and scale to cube")
-OpenDatabase(data_path("silo_%s_test_data/multi_rect3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 AddPlot("Scatter", "d")
 s = ScatterAttributes()
@@ -276,7 +276,7 @@ DeleteActivePlots()
 # color and the extents are right.
 #
 TestSection("Set min and max values, make sure colors and extents are right")
-OpenDatabase(data_path("silo_%s_test_data/curv3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("curv3d.silo"))
 
 AddPlot("Scatter", "d")
 s = ScatterAttributes()
@@ -310,7 +310,7 @@ SetPlotOptions(s)
 Test("scatter_23")
 
 DeleteActivePlots()
-OpenDatabase(data_path("silo_%s_test_data/noise.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("noise.silo"))
 
 AddPlot("Scatter", "hardyglobal")
 s = ScatterAttributes()

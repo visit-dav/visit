@@ -35,7 +35,7 @@ view.farPlane = 1.73205
 view.perspective = 1
 SetView3D(view)
 
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 AddPlot("Subset", "mat")
 DrawPlots()

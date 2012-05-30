@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("silo_%s_test_data/bigsil.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("bigsil.silo"))
 
 AddPlot("Pseudocolor", "dist")
 # By default, we won't create ghost zones, because we don't need them
@@ -37,7 +37,7 @@ SetPlotSILRestriction(sil)
 Test("ops_inverse_ghost_zone02")
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/multi_ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
 AddPlot("Pseudocolor", "d")
 AddOperator("InverseGhostZone")

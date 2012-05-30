@@ -42,7 +42,7 @@ TurnOffAllAnnotations() # defines global object 'a'
 # set FileOptions for a plugin type without having already opened
 # at least one file of that type.
 #
-dummydb = data_path("silo_%s_test_data/one_quad.silo") % SILO_MODE
+dummydb = silo_data_path("one_quad.silo") 
 OpenDatabase(dummydb)
 CloseDatabase(dummydb)
 
@@ -70,7 +70,7 @@ vtypes=("n","z")
 #
 backup = GetSaveWindowAttributes()
 for mt in mtypes:
-    dbname=data_path("silo_%s_test_data/specmix_%s.silo")%(SILO_MODE,mt)
+    dbname=silo_data_path("specmix_%s.silo" % mt)
     OpenDatabase(dbname)
     for v in vtypes:
         varname="%s%svar"%("f",v) # using only 'f'loat for baseline
@@ -97,7 +97,7 @@ for smode in ("hdf5", "pdb"):
         SetForceSingle(fsmode)
         diffResults=""
         for mt in mtypes:
-            dbname=data_path("silo_%s_test_data/specmix_%s.silo")%(smode,mt)
+            dbname=silo_data_path("specmix_%s.silo" % mt )
             OpenDatabase(dbname)
             for v in vtypes:
                 for d in dtypes:

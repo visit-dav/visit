@@ -19,7 +19,7 @@
 
 # Make a sliced filled boundary plot with clean zones only enabled
 TurnOnAllAnnotations()
-OpenDatabase(data_path("silo_%s_test_data/ucd3d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("ucd3d.silo"))
 
 AddPlot("FilledBoundary","mat1")
 f=FilledBoundaryAttributes()

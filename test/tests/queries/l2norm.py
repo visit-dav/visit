@@ -27,7 +27,7 @@ text = GetQueryOutputString()
 TestText("l2norm_01", text)
 
 DeleteAllPlots()
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
@@ -35,7 +35,7 @@ DrawPlots()
 DefineScalarExpression("d_mod", "d+0.4*coord(quadmesh2d)[1]")
 AddWindow()
 SetActiveWindow(2)
-OpenDatabase(data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE)
+OpenDatabase(silo_data_path("rect2d.silo"))
 
 DeleteAllPlots()
 AddPlot("Pseudocolor", "d_mod")

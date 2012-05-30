@@ -66,7 +66,7 @@ def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y,
 
 DefineArrayExpression("a0", "array_compose(recenter(u), recenter(v), d)")
 DefineArrayExpression("e0", "array_compose(recenter(gradient(u)[0]), recenter(gradient(u)[1]), p)")
-TestOne(0, data_path("silo_%s_test_data/rect2d.silo")%SILO_MODE, "d", "quadmesh2d", "a0", "e0", 100, 0.5,0.5,0, 0.1,0,0)
+TestOne(0, silo_data_path("rect2d.silo"), "d", "quadmesh2d", "a0", "e0", 100, 0.5,0.5,0, 0.1,0,0)
 DeleteExpression("a0")
 DeleteExpression("e0")
 
@@ -88,7 +88,7 @@ TestOne(2, data_path("KullLite_test_data/tagtest_rz_3.pdb"),
 DeleteExpression("a2")
 DeleteExpression("e2")
 
-TestOne(3, data_path("silo_%s_test_data/multi_rect2d.silo")%SILO_MODE, "d", "mesh1", "d", "p", 500, 0.5,0.5,0, 1,45,45)
+TestOne(3, silo_data_path("multi_rect2d.silo"), "d", "mesh1", "d", "p", 500, 0.5,0.5,0, 1,45,45)
 
 
 DefineArrayExpression("a3", "array_compose_with_bins(<mesh_quality/mesh/jacobian>,"

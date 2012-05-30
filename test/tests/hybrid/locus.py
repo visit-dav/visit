@@ -43,7 +43,7 @@ if scalable != 0:
 
 # BEGIN USER MODIFIABLE SECTION
 
-database = data_path("silo_%s_test_data/globe.silo") % SILO_MODE
+database = silo_data_path("globe.silo") 
 origin = (0,0,0)
 radius = 10 
 variable = "recenter(t) + 10*u"
