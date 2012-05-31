@@ -49,12 +49,12 @@
 #include <avtCellList.h>
 
 
-const float  avtExtractor::FRUSTUM_MIN_X = -1.;
-const float  avtExtractor::FRUSTUM_MAX_X = +1.;
-const float  avtExtractor::FRUSTUM_MIN_Y = -1.;
-const float  avtExtractor::FRUSTUM_MAX_Y = +1.;
-const float  avtExtractor::FRUSTUM_MIN_Z = 0.;
-const float  avtExtractor::FRUSTUM_MAX_Z = +1.;
+const double  avtExtractor::FRUSTUM_MIN_X = -1.;
+const double  avtExtractor::FRUSTUM_MAX_X = +1.;
+const double  avtExtractor::FRUSTUM_MIN_Y = -1.;
+const double  avtExtractor::FRUSTUM_MAX_Y = +1.;
+const double  avtExtractor::FRUSTUM_MIN_Z = 0.;
+const double  avtExtractor::FRUSTUM_MAX_Z = +1.;
 
 
 // ****************************************************************************
@@ -105,7 +105,7 @@ avtExtractor::avtExtractor(int w, int h, int d, avtVolume *vol,avtCellList *cl)
         z_step = 0;
     sendCellsMode = false;
     jitter        = false;
-    tmpSampleList = new float[depth][AVT_VARIABLE_LIMIT];
+    tmpSampleList = new double[depth][AVT_VARIABLE_LIMIT];
 }
 
 
@@ -167,15 +167,16 @@ avtExtractor::~avtExtractor()
 // ****************************************************************************
 
 void
-avtExtractor::ExtractTriangle(int xi, const float const_y[3],
- const float const_z[3], const float const_v[3][AVT_VARIABLE_LIMIT], int nVars)
+avtExtractor::ExtractTriangle(int xi, const double const_y[3],
+ const double const_z[3], const double const_v[3][AVT_VARIABLE_LIMIT], 
+ int nVars)
 {
     //
     // Make our own version of the triangle we can play with.
     //
-    float y[3];
-    float z[3];
-    float v[3][AVT_VARIABLE_LIMIT];
+    double y[3];
+    double z[3];
+    double v[3][AVT_VARIABLE_LIMIT];
     for (int i = 0 ; i < 3 ; i++)
     {
         y[i] = const_y[i];
@@ -197,8 +198,8 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
     // We could be out of the region we are interested in finding sample
     // points for, so lets make an explicit check.
     //
-    float smallest_y = YFromIndex(restrictedMinHeight);
-    float biggest_y = YFromIndex(restrictedMaxHeight);
+    double smallest_y = YFromIndex(restrictedMinHeight);
+    double biggest_y = YFromIndex(restrictedMaxHeight);
     if (y[0] > biggest_y || y[2] < smallest_y)
     {
         return;
@@ -242,11 +243,11 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
             v_slope_12[k] = (v[1][k] - v[2][k]) / fabs((y[2] - y[1]));
             v_slope_02[k] = (v[0][k] - v[2][k]) / fabs((y[2] - y[0]));
         }
-        float cur_v_12[AVT_VARIABLE_LIMIT];
-        float cur_v_02[AVT_VARIABLE_LIMIT];
+        double cur_v_12[AVT_VARIABLE_LIMIT];
+        double cur_v_02[AVT_VARIABLE_LIMIT];
         for (yi = y_top ; yi >= y_bottom ; yi--)
         {
-            float curY = YFromIndex(yi);
+            double curY = YFromIndex(yi);
             if (numericalErrorCandidate)
             {
                 if (y[2] < curY && y[1] < curY)
@@ -254,9 +255,9 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
                 if (y[2] > curY && y[1] > curY)
                     continue;
             }
-            float dist = y[2] - curY;
-            float cur_z_12 = z[2] + z_slope_12*dist;
-            float cur_z_02 = z[2] + z_slope_02*dist;
+            double dist = y[2] - curY;
+            double cur_z_12 = z[2] + z_slope_12*dist;
+            double cur_z_02 = z[2] + z_slope_02*dist;
             for (int k = 0 ; k < nVars ; k++)
             {
                 cur_v_12[k] = v[2][k] + v_slope_12[k]*dist;
@@ -294,11 +295,11 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
             v_slope_01[k] = (v[1][k] - v[0][k]) / fabs((y[1] - y[0]));
             v_slope_02[k] = (v[2][k] - v[0][k]) / fabs((y[0] - y[2]));
         }
-        float cur_v_01[AVT_VARIABLE_LIMIT];
-        float cur_v_02[AVT_VARIABLE_LIMIT];
+        double cur_v_01[AVT_VARIABLE_LIMIT];
+        double cur_v_02[AVT_VARIABLE_LIMIT];
         for (yi = y_bottom ; yi <= y_top ; yi++)
         {
-            float curY = YFromIndex(yi);
+            double curY = YFromIndex(yi);
             if (numericalErrorCandidate)
             {
                 if (y[0] < curY && y[1] < curY)
@@ -306,9 +307,9 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
                 if (y[0] > curY && y[1] > curY)
                     continue;
             }
-            float dist = curY - y[0];
-            float cur_z_01 = z[0] + z_slope_01*dist;
-            float cur_z_02 = z[0] + z_slope_02*dist;
+            double dist = curY - y[0];
+            double cur_z_01 = z[0] + z_slope_01*dist;
+            double cur_z_02 = z[0] + z_slope_02*dist;
             for (int k = 0 ; k < nVars ; k++)
             {
                 cur_v_01[k] = v[0][k] + v_slope_01[k]*dist;
@@ -359,16 +360,16 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
 // ****************************************************************************
 
 void
-avtExtractor::ExtractLine(int xi, int yi, float z1, float z2, 
-                          float v1[AVT_VARIABLE_LIMIT], 
-                          float v2[AVT_VARIABLE_LIMIT], int nVars)
+avtExtractor::ExtractLine(int xi, int yi, double z1, double z2, 
+                          double v1[AVT_VARIABLE_LIMIT], 
+                          double v2[AVT_VARIABLE_LIMIT], int nVars)
 {
     //
     // This is easiest if we know z1 < z2.
     //
     if (z1 > z2)
     {
-        float t;
+        double t;
         t = z1; z1 = z2; z2 = t;
         for (int j = 0 ; j < nVars ; j++)
         {
@@ -396,7 +397,7 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
     int  frontZ  = SnapZBack(z1);
     int  backZ   = SnapZFront(z2);
 
-    float var_slope[AVT_VARIABLE_LIMIT];
+    double var_slope[AVT_VARIABLE_LIMIT];
     if (z1 != z2)
     {
         for (int j = 0 ; j < nVars ; j++)
@@ -419,11 +420,11 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
     int count = 0;
     for (int zi = frontZ ; zi <= backZ ; zi++)
     {
-        float z = ZFromIndex(zi);
-        float dist = z - z1;
+        double z = ZFromIndex(zi);
+        double dist = z - z1;
         for (int j = 0 ; j < nVars ; j++)
         {
-            float v = var_slope[j]*dist + v1[j];
+            double v = var_slope[j]*dist + v1[j];
             tmpSampleList[count][j] = v;
         }
         count++;
@@ -451,7 +452,7 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
 
 void  
 avtExtractor::StoreRay(int x, int y, int frontZ, int backZ,
-                       const float (*samples)[AVT_VARIABLE_LIMIT])
+                       const double (*samples)[AVT_VARIABLE_LIMIT])
 {
     avtRay *ray = volume->GetRay(x, y);
     ray->SetSamples(frontZ, backZ, samples);
@@ -483,10 +484,10 @@ avtExtractor::StoreRay(int x, int y, int frontZ, int backZ,
 // ****************************************************************************
 
 void
-avtExtractor::OrientTriangle(float x[3], float y[3],
-                             float v[3][AVT_VARIABLE_LIMIT], int nVars)
+avtExtractor::OrientTriangle(double x[3], double y[3],
+                             double v[3][AVT_VARIABLE_LIMIT], int nVars)
 {
-    float t;
+    double t;
 
     //
     // Put the point with the lowest y-intercept in position 0
@@ -591,14 +592,14 @@ avtExtractor::SendCellsMode(bool mode)
 // ****************************************************************************
 
 int
-avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
+avtExtractor::ConstructBounds(const double (*pts)[3], int npts)
 {
-    float fminx = +FLT_MAX;
-    float fmaxx = -FLT_MAX;
-    float fminy = +FLT_MAX;
-    float fmaxy = -FLT_MAX;
-    float fminz = +FLT_MAX;
-    float fmaxz = -FLT_MAX;
+    double fminx = +FLT_MAX;
+    double fmaxx = -FLT_MAX;
+    double fminy = +FLT_MAX;
+    double fmaxy = -FLT_MAX;
+    double fminz = +FLT_MAX;
+    double fmaxz = -FLT_MAX;
 
     for (int i = 0 ; i < npts ; i++)
     {
@@ -632,10 +633,10 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
     // We can get snapped to the frustum if we are outside it, so explicitly
     // check for this.
     //
-    float smallest_x = XFromIndex(restrictedMinWidth);
-    float biggest_x = XFromIndex(restrictedMaxWidth);
-    float smallest_y = YFromIndex(restrictedMinHeight);
-    float biggest_y = YFromIndex(restrictedMaxHeight);
+    double smallest_x = XFromIndex(restrictedMinWidth);
+    double biggest_x = XFromIndex(restrictedMaxWidth);
+    double smallest_y = YFromIndex(restrictedMinHeight);
+    double biggest_y = YFromIndex(restrictedMaxHeight);
     if (fmaxx < smallest_x || fminx > biggest_x ||
         fmaxy < smallest_y || fminy > biggest_y ||
         fmaxz < FRUSTUM_MIN_Z || fminz > FRUSTUM_MAX_Z)
@@ -697,8 +698,8 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
 // ****************************************************************************
 
 void
-avtExtractor::ContributeSmallCell(const float (*pts)[3],
-                             const float (*vals)[AVT_VARIABLE_LIMIT], int npts)
+avtExtractor::ContributeSmallCell(const double (*pts)[3],
+    const double (*vals)[AVT_VARIABLE_LIMIT], int npts)
 {
     // This method ends up causing virtually all resampling artifacts.  I am
     // disabling it for now.
@@ -718,10 +719,10 @@ avtExtractor::ContributeSmallCell(const float (*pts)[3],
     //
     for (int i = 0 ; i < npts ; i++)
     {
-        float smallest_x = XFromIndex(restrictedMinWidth);
-        float biggest_x = XFromIndex(restrictedMaxWidth);
-        float smallest_y = YFromIndex(restrictedMinHeight);
-        float biggest_y = YFromIndex(restrictedMaxHeight);
+        double smallest_x = XFromIndex(restrictedMinWidth);
+        double biggest_x = XFromIndex(restrictedMaxWidth);
+        double smallest_y = YFromIndex(restrictedMinHeight);
+        double biggest_y = YFromIndex(restrictedMaxHeight);
         if (pts[i][0] < smallest_x || pts[i][0] > biggest_x ||
             pts[i][1] < smallest_y || pts[i][1] > biggest_y ||
             pts[i][2] < FRUSTUM_MIN_Z || pts[i][2] > FRUSTUM_MAX_Z)
@@ -823,7 +824,7 @@ avtExtractor::Restrict(int minw, int maxw, int minh, int maxh)
 // ****************************************************************************
 
 int
-avtExtractor::IndexToTriangulationTable(const float (*pts)[3],int npts,float x)
+avtExtractor::IndexToTriangulationTable(const double (*pts)[3],int npts,double x)
 {
     int triIndex = 0;
     bool allHi  = true;

@@ -645,6 +645,32 @@ Collect(float *buff, int size)
 #endif
 }
 
+bool
+Collect(double *buff, int size)
+{
+#ifdef PARALLEL
+
+    double *newbuff = new double[size];
+    MPI_Reduce(buff, newbuff, size, MPI_DOUBLE, MPI_MAX, 0, VISIT_MPI_COMM);
+    int rank;
+    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+    if (rank == 0)
+    {
+        for (int i = 0 ; i < size ; i++)
+        {
+            buff[i] = newbuff[i];
+        }
+    }
+
+    delete [] newbuff;
+
+    return (rank == 0 ? true : false);
+
+#else
+    return true;
+#endif
+}
+
 
 // ****************************************************************************
 //  Function: Collect

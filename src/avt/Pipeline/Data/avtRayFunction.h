@@ -98,9 +98,9 @@ class PIPELINE_API avtRayFunction
                                     { primaryVariableIndex = vi; };
 
     virtual void         GetRayValue(const avtRay *,
-                                     unsigned char rgb[3], float) = 0;
+                                     unsigned char rgb[3], double) = 0;
     virtual bool         CanContributeToPicture(int,
-                                          const float (*)[AVT_VARIABLE_LIMIT]);
+                                          const double (*)[AVT_VARIABLE_LIMIT]);
     virtual bool         NeedPixelIndices(void) { return false; };
 
     void                 SetPixelIndex(int i, int j)
@@ -114,7 +114,7 @@ class PIPELINE_API avtRayFunction
     int                  primaryVariableIndex;
     int                  pixelIndexI, pixelIndexJ;
 
-    inline int           IndexOfDepth(const float &, const int &);
+    inline int           IndexOfDepth(const double &, const int &);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy
@@ -138,7 +138,7 @@ class PIPELINE_API avtRayFunction
 // ****************************************************************************
 
 inline int
-avtRayFunction::IndexOfDepth(const float &depth, const int &numSamples)
+avtRayFunction::IndexOfDepth(const double &depth, const int &numSamples)
 {
     int rv = (int) (depth*numSamples);
     if (rv >= numSamples)

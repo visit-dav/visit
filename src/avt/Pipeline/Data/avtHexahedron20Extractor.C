@@ -273,7 +273,7 @@ void
 avtHexahedron20Extractor::LinearHexExtract(const avtHexahedron20 &hex)
 {
     avtHexahedron p_hex; // the parameter hex
-    float pts[27][3]; // all the local points
+    double pts[27][3]; // all the local points
     int i, j, k;
 
     // Now we must set the s,t,u parameter for each corner.
@@ -375,11 +375,11 @@ avtHexahedron20Extractor::QuadraticHexExtract(const avtHexahedron20 &hex)
 
 void  
 avtHexahedron20Extractor::StoreRay(int x, int y, int frontZ, int backZ,
-                                   const float (*samples)[AVT_VARIABLE_LIMIT])
+                                   const double (*samples)[AVT_VARIABLE_LIMIT])
 {
     // The temporary ray we will fill up with samples
-    float (*tmp)[AVT_VARIABLE_LIMIT] = new float [backZ-frontZ+1][AVT_VARIABLE_LIMIT];
-    float weight;
+    double (*tmp)[AVT_VARIABLE_LIMIT] = new double [backZ-frontZ+1][AVT_VARIABLE_LIMIT];
+    double weight;
     int index;
   
     // For all samples in the ray
@@ -437,9 +437,9 @@ avtHexahedron20Extractor::StoreRay(int x, int y, int frontZ, int backZ,
 //
 // ****************************************************************************
 
-float
-avtHexahedron20Extractor::TriLinearWeight(int v_index, float s, float t, 
-                                          float u)
+double
+avtHexahedron20Extractor::TriLinearWeight(int v_index, double s, double t, 
+                                          double u)
 {
     return 0.125*(  (1+sControlPointParam[v_index][0]*s)
                   * (1+sControlPointParam[v_index][1]*t)
@@ -460,9 +460,9 @@ avtHexahedron20Extractor::TriLinearWeight(int v_index, float s, float t,
 //
 // ****************************************************************************
 
-float
-avtHexahedron20Extractor::QuadraticWeight(int v_index, float s, float t, 
-                                          float u)
+double
+avtHexahedron20Extractor::QuadraticWeight(int v_index, double s, double t, 
+                                          double u)
 {
     if (v_index < 8) 
     {
@@ -507,11 +507,11 @@ avtHexahedron20Extractor::QuadraticWeight(int v_index, float s, float t,
 //
 // ****************************************************************************
 
-float 
-avtHexahedron20Extractor::ClosestParametricNeighbor(float s, float t, float u)
+double 
+avtHexahedron20Extractor::ClosestParametricNeighbor(double s, double t, double u)
 {
-    float min = 10;
-    float tmp;
+    double min = 10;
+    double tmp;
     int min_index = -1;
   
     for (int i=0;i<20;i++) 

@@ -84,7 +84,7 @@ avtCompositeRF::avtCompositeRF(avtLightingModel *l, avtOpacityMap *m,
     weightVariableIndex  = -1;
 
     int entries = secondaryMap->GetNumberOfTableEntries();
-    float *opacities = new float[entries];
+    double *opacities = new double[entries];
     const RGBA *table = secondaryMap->GetTable();
     for (int i = 0 ; i < entries ; i++)
     {
@@ -166,7 +166,7 @@ avtCompositeRF::~avtCompositeRF()
 
 void
 avtCompositeRF::GetRayValue(const avtRay *ray, 
-                            unsigned char rgb[3], float depth)
+                            unsigned char rgb[3], double depth)
 {
     //
     // Some compilers do very poor optimizations, so make sure that we don't
@@ -177,9 +177,9 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
     const bool   *validSample = ray->validSample;
 
     // For right now, only work with one variable.
-    const float  *sample      = ray->sample[colorVariableIndex];
-    const float  *sample2     = ray->sample[opacityVariableIndex];
-    const float  *weight      = NULL;
+    const double  *sample      = ray->sample[colorVariableIndex];
+    const double  *sample2     = ray->sample[opacityVariableIndex];
+    const double  *weight      = NULL;
     double        min_weight  = 0.;
     double        min_weight_denom = 0.;
     if (weightVariableIndex >= 0)
@@ -280,10 +280,10 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
 
 bool
 avtCompositeRF::CanContributeToPicture(int nVerts,
-                                       const float (*vals)[AVT_VARIABLE_LIMIT])
+                                       const double (*vals)[AVT_VARIABLE_LIMIT])
 {
-    float min = +FLT_MAX;
-    float max = -FLT_MIN;
+    double min = +FLT_MAX;
+    double max = -FLT_MIN;
     for (int i = 0 ; i < nVerts ; i++)
     {
         if (vals[i][opacityVariableIndex] < min)
@@ -298,7 +298,7 @@ avtCompositeRF::CanContributeToPicture(int nVerts,
 
     int  minIndex = secondaryMap->Quantize(min);
     int  maxIndex = secondaryMap->Quantize(max);
-    float opacMax = rangeMaxTable.GetMaximumOverRange(minIndex, maxIndex);
+    double opacMax = rangeMaxTable.GetMaximumOverRange(minIndex, maxIndex);
 
     return (opacMax > 0. ? true : false);
 }
