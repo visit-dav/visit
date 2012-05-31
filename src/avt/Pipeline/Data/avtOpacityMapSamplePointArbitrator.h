@@ -71,7 +71,7 @@ class PIPELINE_API avtOpacityMapSamplePointArbitrator
                       avtOpacityMapSamplePointArbitrator(avtOpacityMap *, int);
     virtual          ~avtOpacityMapSamplePointArbitrator();
 
-    virtual bool      ShouldOverwrite(float, float);
+    virtual bool      ShouldOverwrite(double, double);
 
   protected:
     avtOpacityMap    *omap;

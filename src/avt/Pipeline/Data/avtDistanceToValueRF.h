@@ -79,7 +79,7 @@ class PIPELINE_API avtDistanceToValueRF : public avtRayFunction
     virtual         ~avtDistanceToValueRF();
 
     virtual void     GetRayValue(const avtRay *,
-                                 unsigned char rgb[3], float);
+                                 unsigned char rgb[3], double);
 
   protected:
     double                  criticalValue;

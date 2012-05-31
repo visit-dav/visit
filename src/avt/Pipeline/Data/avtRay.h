@@ -120,11 +120,11 @@ class PIPELINE_API avtRay
     virtual                      ~avtRay();
 
     inline void                   SetSample(const int &,
-                                            const float[AVT_VARIABLE_LIMIT]);
+                                            const double[AVT_VARIABLE_LIMIT]);
     inline void                   SetSamples(const int &start, const int &end,
-                                          const float (*)[AVT_VARIABLE_LIMIT]);
+                                          const double (*)[AVT_VARIABLE_LIMIT]);
     inline void                   UpdateNumberOfRuns(int);
-    bool                          GetSample(int, float [AVT_VARIABLE_LIMIT])
+    bool                          GetSample(int, double [AVT_VARIABLE_LIMIT])
                                        const;
     inline int                    GetNumberOfSamples(void) const
                                                         { return numSamples; };
@@ -139,7 +139,7 @@ class PIPELINE_API avtRay
     static void                   SetKernelBasedSampling(bool);
 
   protected:
-    float                        *sample[AVT_VARIABLE_LIMIT];
+    double                       *sample[AVT_VARIABLE_LIMIT];
     bool                         *validSample;
     int                           numVariables;
     int                           numSamples;
@@ -190,7 +190,7 @@ class PIPELINE_API avtRay
 // ****************************************************************************
 
 inline void
-avtRay::SetSample(const int &si, const float val[AVT_VARIABLE_LIMIT])
+avtRay::SetSample(const int &si, const double val[AVT_VARIABLE_LIMIT])
 {
     if (si < numSamples && si >= 0)
     {
@@ -268,7 +268,7 @@ avtRay::SetSample(const int &si, const float val[AVT_VARIABLE_LIMIT])
 
 inline void
 avtRay::SetSamples(const int &start, const int &end,
-                   const float (*samps)[AVT_VARIABLE_LIMIT])
+                   const double (*samps)[AVT_VARIABLE_LIMIT])
 {
     if (start >= 0 && end < numSamples)
     {

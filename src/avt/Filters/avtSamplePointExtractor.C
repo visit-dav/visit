@@ -811,7 +811,7 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 
         pointExtractor->Extract(pt);
 
-        int currentMilestone = (int)(((float) j) / numCells * 10);
+        int currentMilestone = (int)(((double) j) / numCells * 10);
         if (currentMilestone > lastMilestone)
         {
             UpdateProgress(10*currentNode+currentMilestone, 10*totalNodes);
@@ -933,7 +933,7 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
             EXCEPTION1(InvalidCellTypeException, "surfaces or anything outside"
                                                  " the finite element zoo.");
         }
-        int currentMilestone = (int)(((float) j) / numCells * 10);
+        int currentMilestone = (int)(((double) j) / numCells * 10);
         if (currentMilestone > lastMilestone)
         {
             UpdateProgress(10*currentNode+currentMilestone, 10*totalNodes);
@@ -994,7 +994,7 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-             float val = arr->GetComponent(hexind, j);
+             double val = arr->GetComponent(hexind, j);
              for (i = 0 ; i < 8 ; i++)
                  h.val[i][idx+j] = val;
         }
@@ -1084,7 +1084,7 @@ avtSamplePointExtractor::ExtractHex20(vtkQuadraticHexahedron *hex20,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-             float val = arr->GetComponent(hexind, j);
+             double val = arr->GetComponent(hexind, j);
              for (i = 0 ; i < 20 ; i++)
                   h.val[i][idx+j] = val;
         }
@@ -1187,7 +1187,7 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(wedgeind, j);
+            double val = arr->GetComponent(wedgeind, j);
             for (i = 0 ; i < 6 ; i++)
                 w.val[i][idx+j] = val;
         }
@@ -1290,7 +1290,7 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(tetind, j);
+            double val = arr->GetComponent(tetind, j);
             for (i = 0 ; i < 4 ; i++)
                 t.val[i][idx+j] = val;
         }
@@ -1393,7 +1393,7 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(pyrind, j);
+            double val = arr->GetComponent(pyrind, j);
             for (i = 0 ; i < 5 ; i++)
                 p.val[i][idx+j] = val;
         }
@@ -1493,7 +1493,7 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(voxind, j);
+            double val = arr->GetComponent(voxind, j);
             for (i = 0 ; i < 8 ; i++)
                 h.val[i][idx+j] = val;
         }
@@ -1592,7 +1592,7 @@ avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(triind, j);
+            double val = arr->GetComponent(triind, j);
             for (i = 0 ; i < 6 ; i++)
                 w.val[i][idx+j] = val;
         }
@@ -1614,9 +1614,9 @@ avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
 
         for (j = 0 ; j < li.pointDataSize[v] ; j++)
         {
-            float val0 = arr->GetComponent(ids->GetId(0), j);
-            float val1 = arr->GetComponent(ids->GetId(1), j);
-            float val2 = arr->GetComponent(ids->GetId(2), j);
+            double val0 = arr->GetComponent(ids->GetId(0), j);
+            double val1 = arr->GetComponent(ids->GetId(1), j);
+            double val2 = arr->GetComponent(ids->GetId(2), j);
             w.val[0][idx+j] = val0;
             w.val[1][idx+j] = val1;
             w.val[2][idx+j] = val2;
@@ -1699,7 +1699,7 @@ avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            float val = arr->GetComponent(quadind, j);
+            double val = arr->GetComponent(quadind, j);
             for (i = 0 ; i < 8 ; i++)
                 h.val[i][idx+j] = val;
         }
@@ -1720,10 +1720,10 @@ avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
 
         for (j = 0 ; j < li.pointDataSize[v] ; j++)
         {
-            float val0 = arr->GetComponent(ids->GetId(0), j);
-            float val1 = arr->GetComponent(ids->GetId(1), j);
-            float val2 = arr->GetComponent(ids->GetId(2), j);
-            float val3 = arr->GetComponent(ids->GetId(3), j);
+            double val0 = arr->GetComponent(ids->GetId(0), j);
+            double val1 = arr->GetComponent(ids->GetId(1), j);
+            double val2 = arr->GetComponent(ids->GetId(2), j);
+            double val3 = arr->GetComponent(ids->GetId(3), j);
             h.val[0][idx+j] = val0;
             h.val[1][idx+j] = val1;
             h.val[2][idx+j] = val2;
@@ -1808,7 +1808,7 @@ avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
         int idx = li.cellDataIndex[v];
         for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-             float val = arr->GetComponent(pixind, j);
+             double val = arr->GetComponent(pixind, j);
              for (i = 0 ; i < 8 ; i++)
                   h.val[i][idx+j] = val;
         }
@@ -1829,10 +1829,10 @@ avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
 
         for (j = 0 ; j < li.pointDataSize[v] ; j++)
         {
-             float val0 = arr->GetComponent(ids->GetId(0), j);
-             float val1 = arr->GetComponent(ids->GetId(1), j);
-             float val2 = arr->GetComponent(ids->GetId(2), j);
-             float val3 = arr->GetComponent(ids->GetId(3), j);
+             double val0 = arr->GetComponent(ids->GetId(0), j);
+             double val1 = arr->GetComponent(ids->GetId(1), j);
+             double val2 = arr->GetComponent(ids->GetId(2), j);
+             double val3 = arr->GetComponent(ids->GetId(3), j);
              h.val[0][idx+j] = val0;
              h.val[1][idx+j] = val1;
              h.val[2][idx+j] = val3;  // Swap for pixel

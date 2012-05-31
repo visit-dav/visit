@@ -121,7 +121,7 @@ avtIntegrationRF::~avtIntegrationRF()
 
 void
 avtIntegrationRF::GetRayValue(const avtRay *ray,
-                               unsigned char rgb[3], float depth)
+                              unsigned char rgb[3], double depth)
 {
     //
     // Some compilers do very poor optimizations, so make sure that we don't
@@ -131,7 +131,7 @@ avtIntegrationRF::GetRayValue(const avtRay *ray,
     const int     numSamples  = ray->numSamples;
     const bool   *validSample = ray->validSample;
 
-    const float  *sample      = ray->sample[primaryVariableIndex];
+    const double  *sample      = ray->sample[primaryVariableIndex];
 
     double sum    = 0.;
     double divisor = distance/numSamples;

@@ -92,7 +92,7 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
     virtual           ~avtCompositeRF();
 
     virtual void       GetRayValue(const avtRay *,
-                                   unsigned char rgb[3], float);
+                                   unsigned char rgb[3], double);
 
     void               SetColorVariableIndex(int cvi)
                                                { colorVariableIndex = cvi; };
@@ -101,7 +101,7 @@ class PIPELINE_API avtCompositeRF : public avtRayFunction
     void               SetWeightVariableIndex(int wvi)
                                                { weightVariableIndex = wvi; };
     virtual bool       CanContributeToPicture(int,
-                                          const float (*)[AVT_VARIABLE_LIMIT]);
+                                          const double (*)[AVT_VARIABLE_LIMIT]);
 
   protected:
     avtOpacityMap     *map;

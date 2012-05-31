@@ -1192,6 +1192,10 @@ VolumeCalculateGradient(const VolumeAttributes &atts,
 //  Cyrus Harrison, Tue Apr  5 09:07:22 PDT 2011
 //  Guard against invalid mem access when the var range or grad range is zero.
 //
+//  Kathleen Biagas, Thu May 31 10:12:48 PDT 2012
+//  Add continue's to for-loop for s out of var_min/var_max range when 
+//  populating histograms in the non-float case.
+//  
 // ****************************************************************************
 
 void
@@ -1262,6 +1266,10 @@ VolumeHistograms(const VolumeAttributes &atts,
         {
             float s = data->GetTuple1(index);
             if(s < NO_DATA_VALUE)
+                continue;
+            if (s < var_min)
+                continue;
+            if(s > var_max)
                 continue;
 
             int scalar_index = (int)(s_scale * (s - var_min));

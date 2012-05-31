@@ -75,7 +75,7 @@ class PIPELINE_API avtIntegrationRF : public avtRayFunction
     virtual            ~avtIntegrationRF();
 
     virtual void        GetRayValue(const avtRay *,
-                                    unsigned char rgb[3], float);
+                                    unsigned char rgb[3], double);
     virtual bool        NeedPixelIndices(void) { return true; };
 
     static void         SetWindowSize(int, int);

@@ -492,7 +492,7 @@ avtRayCompositer::Execute(void)
     //
     unsigned char *data = (unsigned char *)image->GetScalarPointer(0, 0, 0);
     int nPixels = width*height;
-    float *zbuffer = new float[nPixels];
+    double *zbuffer = new double[nPixels];
     for (i = 0 ; i < nPixels ; i++)
     {
         zbuffer[i] = 1.;

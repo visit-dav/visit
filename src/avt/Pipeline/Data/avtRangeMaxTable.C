@@ -106,7 +106,7 @@ avtRangeMaxTable::~avtRangeMaxTable()
 // ****************************************************************************
 
 void
-avtRangeMaxTable::SetTable(int tabSize, float *tab)
+avtRangeMaxTable::SetTable(int tabSize, double *tab)
 {
     int  i, j;
 
@@ -141,7 +141,7 @@ avtRangeMaxTable::SetTable(int tabSize, float *tab)
     //
     // We must initialize the 0th elements with the table.
     //
-    powRange = new float[numEntries*logRange];
+    powRange = new double[numEntries*logRange];
     for (j = 0 ; j < numEntries ; j++)
     {
         powRange[j*logRange + 0] = entries[j];
@@ -158,9 +158,9 @@ avtRangeMaxTable::SetTable(int tabSize, float *tab)
         {
             if (j + offset < numEntries)
             {
-                float val1 = powRange[j*logRange + i-1];
-                float val2 = powRange[(j+offset)*logRange + i-1];
-                float max = (val1 > val2 ? val1 : val2);
+                double val1 = powRange[j*logRange + i-1];
+                double val2 = powRange[(j+offset)*logRange + i-1];
+                double max = (val1 > val2 ? val1 : val2);
                 powRange[j*logRange + i] = max;
             }
             else if ((j + offset/2) >= numEntries)
@@ -169,9 +169,9 @@ avtRangeMaxTable::SetTable(int tabSize, float *tab)
             }
             else
             {
-                float val1 = powRange[j*logRange + i-1];
-                float val2 = powRange[(numEntries-1-offset/2)*logRange + i-1];
-                float max = (val1 > val2 ? val1 : val2);
+                double val1 = powRange[j*logRange + i-1];
+                double val2 = powRange[(numEntries-1-offset/2)*logRange + i-1];
+                double max = (val1 > val2 ? val1 : val2);
                 powRange[j*logRange + i] = max;
             }
         }
@@ -205,7 +205,7 @@ avtRangeMaxTable::SetTable(int tabSize, float *tab)
 //
 // ****************************************************************************
 
-float
+double
 avtRangeMaxTable::GetMaximumOverRange(int minIndex, int maxIndex)
 {
     if (minIndex < 0 || minIndex >= numEntries)
@@ -235,9 +235,9 @@ avtRangeMaxTable::GetMaximumOverRange(int minIndex, int maxIndex)
     // Find the maximum over some range from the front half, the maximum over
     // some range from the back half, and then the maximum of those two.
     // 
-    float val1 = powRange[minIndex*logRange + powIndex];
+    double val1 = powRange[minIndex*logRange + powIndex];
     int index2 = maxIndex - distanceFromEnd;
-    float val2 = powRange[index2*logRange + powIndex];
+    double val2 = powRange[index2*logRange + powIndex];
 
     return (val1 > val2 ? val1 : val2);
 }

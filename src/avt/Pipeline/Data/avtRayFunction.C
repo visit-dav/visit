@@ -113,7 +113,7 @@ avtRayFunction::~avtRayFunction()
 // ****************************************************************************
 
 bool
-avtRayFunction::CanContributeToPicture(int,const float (*)[AVT_VARIABLE_LIMIT])
+avtRayFunction::CanContributeToPicture(int,const double (*)[AVT_VARIABLE_LIMIT])
 {
     return true;
 }
