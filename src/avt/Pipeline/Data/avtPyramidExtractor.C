@@ -197,7 +197,7 @@ avtPyramidExtractor::Extract(const avtPyramid &pyr)
     int maxx_iter = (maxx > restrictedMaxWidth ? restrictedMaxWidth : maxx);
     for (int xi = minx_iter ; xi <= maxx_iter ; xi++)
     {
-        float x = XFromIndex(xi);
+        double x = XFromIndex(xi);
 
         int   triIndex = IndexToTriangulationTable(pyr.pts, 5, x);
 
@@ -214,7 +214,7 @@ avtPyramidExtractor::Extract(const avtPyramid &pyr)
             // triangle intersects and then interpolating along that edge
             // three times to form the triangle.
             //
-            float y[3], z[3], v[3][AVT_VARIABLE_LIMIT];
+            double y[3], z[3], v[3][AVT_VARIABLE_LIMIT];
             for (int tri_vertex = 0 ; tri_vertex < 3 ; tri_vertex++)
             {
                 int pyr_vertex1 = verticesFromEdges[triCase[tri_vertex]][0];

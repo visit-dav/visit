@@ -70,7 +70,7 @@ class PIPELINE_API avtRelativeValueSamplePointArbitrator
                       avtRelativeValueSamplePointArbitrator(bool, int);
     virtual          ~avtRelativeValueSamplePointArbitrator();
 
-    virtual bool      ShouldOverwrite(float, float);
+    virtual bool      ShouldOverwrite(double, double);
 
   protected:
     bool              lessThan;

@@ -349,18 +349,18 @@ avtCellList::Store(char *cell, int minx, int maxx, int miny, int maxy,int size)
 // ****************************************************************************
 
 char *
-avtCellList::Serialize(const float (*pts)[3], 
-                       const float (*var)[AVT_VARIABLE_LIMIT], int nvals)
+avtCellList::Serialize(const double (*pts)[3], 
+                       const double (*var)[AVT_VARIABLE_LIMIT], int nvals)
 {
     int numPoints    = 3;
-    int bytesPerNode = (numPoints+nVars)*sizeof(float);
+    int bytesPerNode = (numPoints+nVars)*sizeof(double);
     char *serialized = new char[bytesPerNode*nvals];
 
     char *tmp = serialized;
-    InlineCopy(tmp, (char *)pts, sizeof(float)*3*nvals);
+    InlineCopy(tmp, (char *)pts, sizeof(double)*3*nvals);
     for (int i = 0 ; i < nvals ; i++)
     {
-        InlineCopy(tmp, (char *)var[i], sizeof(float)*nVars);
+        InlineCopy(tmp, (char *)var[i], sizeof(double)*nVars);
     }
 
     return serialized;
@@ -385,15 +385,15 @@ avtCellList::Serialize(const float (*pts)[3],
 // ****************************************************************************
 
 char *
-avtCellList::SerializePoint(const float *bbox, const float *var)
+avtCellList::SerializePoint(const double *bbox, const double *var)
 {
     int bboxSize     = 6;
-    int bytesPerPt   = (bboxSize+nVars)*sizeof(float);
+    int bytesPerPt   = (bboxSize+nVars)*sizeof(double);
     char *serialized = new char[bytesPerPt];
 
     char *tmp = serialized;
-    InlineCopy(tmp, (char *)bbox, sizeof(float)*bboxSize);
-    InlineCopy(tmp, (char *)var, sizeof(float)*nVars);
+    InlineCopy(tmp, (char *)bbox, sizeof(double)*bboxSize);
+    InlineCopy(tmp, (char *)var, sizeof(double)*nVars);
 
     return serialized;
 }
@@ -432,9 +432,9 @@ avtCellList::ConstructMessages(avtImagePartition *part, char **msgs, int *lens)
     int  numPartitions = part->GetNumPartitions();
 
     int storageForCoord = 3;
-    const int bytesPerNode = (storageForCoord+nVars)*sizeof(float); 
+    const int bytesPerNode = (storageForCoord+nVars)*sizeof(double); 
     int storageForBBox = 6;
-    const int bytesForCellThatIsAPt = (storageForBBox+nVars)*sizeof(float);
+    const int bytesForCellThatIsAPt = (storageForBBox+nVars)*sizeof(double);
 
     //
     // Set up memory to put our messages into.
@@ -645,13 +645,13 @@ avtCellList::ExtractCells(const char * const *msgs, const int *lens, int np,
 // ****************************************************************************
 
 void
-avtCellList::Unserialize(float (*pts)[3], float (*var)[AVT_VARIABLE_LIMIT],
+avtCellList::Unserialize(double (*pts)[3], double (*var)[AVT_VARIABLE_LIMIT],
                          int nvals, const char *&str)
 {
-    InlineExtract((char *)pts, str, nvals*3*sizeof(float));
+    InlineExtract((char *)pts, str, nvals*3*sizeof(double));
     for (int i = 0 ; i < nvals ; i++)
     {
-        InlineExtract((char *)var[i], str, nVars*sizeof(float));
+        InlineExtract((char *)var[i], str, nVars*sizeof(double));
     }
 }
 
@@ -672,10 +672,10 @@ avtCellList::Unserialize(float (*pts)[3], float (*var)[AVT_VARIABLE_LIMIT],
 // ****************************************************************************
 
 void
-avtCellList::UnserializePoint(float *bbox, float *var, const char *&str)
+avtCellList::UnserializePoint(double *bbox, double *var, const char *&str)
 {
-    InlineExtract((char *)bbox, str, 6*sizeof(float));
-    InlineExtract((char *)var, str, nVars*sizeof(float));
+    InlineExtract((char *)bbox, str, 6*sizeof(double));
+    InlineExtract((char *)var, str, nVars*sizeof(double));
 }
 
 

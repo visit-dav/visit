@@ -83,7 +83,7 @@ class PIPELINE_API avtMIPRangeRF : public avtRayFunction
     virtual            ~avtMIPRangeRF();
 
     virtual void        GetRayValue(const avtRay *, 
-                                    unsigned char [3], float);
+                                    unsigned char [3], double);
 
   protected:
     double                 thresholdMin, thresholdMax;

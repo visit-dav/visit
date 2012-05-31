@@ -127,7 +127,7 @@ class PIPELINE_API avtVolume
                                         { return restrictedMinHeight; };
 
     void                      GetPixels(avtRayFunction *, unsigned char *,
-                                        float *);
+                                        double *);
 
     char                     *ConstructMessages(avtImagePartition *, char **,
                                                 int *);
@@ -140,7 +140,7 @@ class PIPELINE_API avtVolume
 
     void                      SetUseKernel(bool uk) { useKernel = uk; };
 
-    void                      GetVariables(float, vtkDataArray **, int,
+    void                      GetVariables(double, vtkDataArray **, int,
                                            avtImagePartition * = NULL);
     void                      SetGradientVariable(int);
 

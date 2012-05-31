@@ -75,11 +75,11 @@ class PIPELINE_API avtPointExtractor : public avtExtractor
     static double    GetMinimumWeightCutoff(void) { return 0.01; };
 
   protected:
-    float            epsilon;
-    float            correction;
-    float            smallestX;
-    float            smallestY;
-    float            smallestZ;
+    double            epsilon;
+    double            correction;
+    double            smallestX;
+    double            smallestY;
+    double            smallestZ;
 };
 
 

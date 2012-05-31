@@ -247,7 +247,7 @@ avtVolume::Restrict(int minw, int maxw, int minh, int maxh)
 // ****************************************************************************
 
 void
-avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,float *zbuffer)
+avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,double *zbuffer)
 {
     int fullwidth  = (restrictedMaxWidth-restrictedMinWidth+1);
     int fullheight = (restrictedMaxHeight-restrictedMinHeight+1);
@@ -377,13 +377,13 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                     //    One int for the number of runs.
                     //    Two ints for each run (starting index and number of
                     //    samples in the run).
-                    //    A float for each sample point and for each variable
+                    //    A double for each sample point and for each variable
                     //    on that sample point.
                     //
                     cnt[index] += 3*sizeof(int);
                     cnt[index] += 2*rays[i][j]->numRuns*sizeof(int);
                     cnt[index] += rays[i][j]->numValidSamples * numVariables *
-                                  sizeof(float);
+                                  sizeof(double);
 
                     if (duplicatedOnOthers)
                     {
@@ -395,7 +395,7 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                             cnt[index] += 3*sizeof(int);
                             cnt[index] += 2*rays[i][j]->numRuns*sizeof(int);
                             cnt[index] += rays[i][j]->numValidSamples 
-                                          * numVariables * sizeof(float);
+                                          * numVariables * sizeof(double);
                         }
                     }
                 }
@@ -452,7 +452,7 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                         //
                         int      numSamples  = rays[i][j]->numSamples;
                         bool    *validSample = rays[i][j]->validSample;
-                        float  **sample      = rays[i][j]->sample;
+                        double  **sample      = rays[i][j]->sample;
     
                         bool inRun = false;
                         for (k = 0 ; k < numSamples ; k++)
@@ -483,7 +483,7 @@ avtVolume::ConstructMessages(avtImagePartition *part, char **msgs, int *cnt)
                                 for (l = 0 ; l < numVariables ; l++)
                                 {
                                     InlineCopy(current[index],
-                                           (char *)&(sample[l][k]), sizeof(float));
+                                           (char *)&(sample[l][k]), sizeof(double));
                                 }
                             }
                             inRun = validSample[k];
@@ -595,11 +595,11 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 
                  for (int k = 0 ; k < numSamples ; k++)
                  {
-                     float value[AVT_VARIABLE_LIMIT];
+                     double value[AVT_VARIABLE_LIMIT];
                      for (int l = 0 ; l < numVariables ; l++)
                      {
                          InlineExtract((char *)&(value[l]), current,
-                                       sizeof(float));
+                                       sizeof(double));
                      }
                      ray->SetSample(index+k, value);
                  }
@@ -651,7 +651,7 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 // ****************************************************************************
 
 void
-avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
+avtVolume::GetVariables(double defaultVal, vtkDataArray **arrays, int nArrays,
                         avtImagePartition *ip)
 {
     int   i, j, k, l, m;
@@ -704,7 +704,7 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
                 {
                     for (m = 0 ; m < arraySize[l] ; m++)
                     {
-                        float val = (useKernel && l == (numVariables-1)
+                        double val = (useKernel && l == (numVariables-1)
                                       ? 0. : defaultVal);
                         arrays[l]->SetComponent(count, m, val);
                     }
@@ -729,7 +729,7 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
                 {
                     for (k = 0 ; k < volumeDepth ; k++)
                     {
-                        float sample[AVT_VARIABLE_LIMIT];
+                        double sample[AVT_VARIABLE_LIMIT];
                         if (rays[i][j]->GetSample(k, sample))
                         {
                             int index = k*vH*vW + (i-hStart)*vW 

@@ -100,58 +100,59 @@ class PIPELINE_API avtExtractor
     void                   Restrict(int, int, int, int);
 
   protected:
-    float                  x_step, y_step, z_step;
+    double                 x_step, y_step, z_step;
     int                    width, height, depth;
     int                    restrictedMinWidth, restrictedMaxWidth;
     int                    restrictedMinHeight, restrictedMaxHeight;
     avtVolume             *volume;
     avtCellList           *celllist;
-    float                (*tmpSampleList)[AVT_VARIABLE_LIMIT];
+    double                (*tmpSampleList)[AVT_VARIABLE_LIMIT];
 
     int                    minx, maxx, miny, maxy, minz, maxz;
     bool                   sendCellsMode;
     bool                   jitter;
 
-    void                   ExtractTriangle(int,const float [3],const float [3],
-                                      const float[3][AVT_VARIABLE_LIMIT], int);
-    void                   ExtractLine(int, int, float, float, 
-                                       float[AVT_VARIABLE_LIMIT],
-                                       float[AVT_VARIABLE_LIMIT], int);
+    void                   ExtractTriangle(int,const double [3],
+                                      const double [3],
+                                      const double[3][AVT_VARIABLE_LIMIT], int);
+    void                   ExtractLine(int, int, double, double, 
+                                       double[AVT_VARIABLE_LIMIT],
+                                       double[AVT_VARIABLE_LIMIT], int);
     virtual void           StoreRay(int, int, int, int,
-                                    const float (*)[AVT_VARIABLE_LIMIT]);
+                                    const double (*)[AVT_VARIABLE_LIMIT]);
     
 
-    void                   OrientTriangle(float [3], float [3],
-                                          float [3][AVT_VARIABLE_LIMIT], int);
-    inline void            InterpolateToPlane(const float[3], const float[3],
-                                              const float *, const float *,
-                                              const float &, float &, float &,
-                                              float *, int);
+    void                   OrientTriangle(double [3], double [3],
+                                          double [3][AVT_VARIABLE_LIMIT], int);
+    inline void            InterpolateToPlane(const double[3], const double[3],
+                                              const double *, const double *,
+                                              const double &, double &, double &,
+                                              double *, int);
 
-    int                    ConstructBounds(const float (*)[3], int);
-    void                   ContributeSmallCell(const float (*)[3],
-                                     const float (*)[AVT_VARIABLE_LIMIT], int);
-    int                    IndexToTriangulationTable(const float(*)[3], int,
-                                                     float);
+    int                    ConstructBounds(const double (*)[3], int);
+    void                   ContributeSmallCell(const double (*)[3],
+                                     const double (*)[AVT_VARIABLE_LIMIT], int);
+    int                    IndexToTriangulationTable(const double(*)[3], int,
+                                                     double);
     void                   AddCell(char *);
 
-    static const float     FRUSTUM_MIN_X;
-    static const float     FRUSTUM_MAX_X;
-    static const float     FRUSTUM_MIN_Y;
-    static const float     FRUSTUM_MAX_Y;
-    static const float     FRUSTUM_MIN_Z;
-    static const float     FRUSTUM_MAX_Z;
+    static const double     FRUSTUM_MIN_X;
+    static const double     FRUSTUM_MAX_X;
+    static const double     FRUSTUM_MIN_Y;
+    static const double     FRUSTUM_MAX_Y;
+    static const double     FRUSTUM_MIN_Z;
+    static const double     FRUSTUM_MAX_Z;
 
-    inline int             SnapXRight(float);
-    inline int             SnapXLeft(float);
-    inline int             SnapYTop(float);
-    inline int             SnapYBottom(float);
-    inline int             SnapZFront(float);
-    inline int             SnapZBack(float);
+    inline int             SnapXRight(double);
+    inline int             SnapXLeft(double);
+    inline int             SnapYTop(double);
+    inline int             SnapYBottom(double);
+    inline int             SnapZFront(double);
+    inline int             SnapZBack(double);
 
-    inline float           XFromIndex(int);
-    inline float           YFromIndex(int);
-    inline float           ZFromIndex(int);
+    inline double           XFromIndex(int);
+    inline double           YFromIndex(int);
+    inline double           ZFromIndex(int);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy
@@ -189,12 +190,12 @@ class PIPELINE_API avtExtractor
 // ****************************************************************************
 
 int 
-avtExtractor::SnapXRight(float x)
+avtExtractor::SnapXRight(double x)
 {
     if (x_step == 0.)
         return restrictedMinWidth;
 
-    float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
+    double close_to_index = (x - FRUSTUM_MIN_X) / x_step;
     int   index = (int)ceil((double)close_to_index);
 
     //
@@ -219,12 +220,12 @@ avtExtractor::SnapXRight(float x)
 }
 
 int 
-avtExtractor::SnapXLeft(float x)
+avtExtractor::SnapXLeft(double x)
 {
     if (x_step == 0.)
         return restrictedMinWidth;
 
-    float close_to_index = (x - FRUSTUM_MIN_X) / x_step;
+    double close_to_index = (x - FRUSTUM_MIN_X) / x_step;
     int   index = (int)floor((double)close_to_index);
 
     //
@@ -249,12 +250,12 @@ avtExtractor::SnapXLeft(float x)
 }
 
 int 
-avtExtractor::SnapYTop(float y)
+avtExtractor::SnapYTop(double y)
 {
     if (y_step == 0.)
         return restrictedMinHeight;
 
-    float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
+    double close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
     int   index = (int)ceil((double)close_to_index);
 
     //
@@ -279,12 +280,12 @@ avtExtractor::SnapYTop(float y)
 }
 
 int 
-avtExtractor::SnapYBottom(float y)
+avtExtractor::SnapYBottom(double y)
 {
     if (y_step == 0.)
         return restrictedMinHeight;
 
-    float close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
+    double close_to_index = (y - FRUSTUM_MIN_Y) / y_step;
     int   index = (int)floor((double)close_to_index);
 
     //
@@ -309,12 +310,12 @@ avtExtractor::SnapYBottom(float y)
 }
 
 int 
-avtExtractor::SnapZBack(float z)
+avtExtractor::SnapZBack(double z)
 {
     if (z_step == 0.)
         return 0;
 
-    float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
+    double close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
     int   index = (int)ceil((double)close_to_index);
 
     //
@@ -339,12 +340,12 @@ avtExtractor::SnapZBack(float z)
 }
 
 int 
-avtExtractor::SnapZFront(float z)
+avtExtractor::SnapZFront(double z)
 {
     if (z_step == 0.)
         return 0;
 
-    float close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
+    double close_to_index = (z - FRUSTUM_MIN_Z) / z_step;
     int   index = (int)floor((double)close_to_index);
 
     //
@@ -386,21 +387,21 @@ avtExtractor::SnapZFront(float z)
 //
 // ****************************************************************************
 
-float
+double
 avtExtractor::XFromIndex(int xi)
 {
     return FRUSTUM_MIN_X + (xi*x_step);
 }
 
 
-float
+double
 avtExtractor::YFromIndex(int yi)
 {
     return FRUSTUM_MIN_Y + (yi*y_step);
 }
 
 
-float
+double
 avtExtractor::ZFromIndex(int zi)
 {
     return FRUSTUM_MIN_Z + (zi*z_step);
@@ -443,10 +444,10 @@ avtExtractor::ZFromIndex(int zi)
 // ****************************************************************************
 
 void
-avtExtractor::InterpolateToPlane(const float v1[3], const float v2[3],
-                                 const float *val1, const float *val2,
-                                 const float &x, float &y, float &z, 
-                                 float *v, int nVars)
+avtExtractor::InterpolateToPlane(const double v1[3], const double v2[3],
+                                 const double *val1, const double *val2,
+                                 const double &x, double &y, double &z, 
+                                 double *v, int nVars)
 {
     //
     // Make sure this is not from a degenerate cell.
@@ -460,7 +461,7 @@ avtExtractor::InterpolateToPlane(const float v1[3], const float v2[3],
     // t is the distance we have to go along the line connecting v1 and v2 to
     // get to a point that has its x-coordinate equal to x.
     //
-    float t = (x - v1[0]) / (v2[0] - v1[0]);
+    double t = (x - v1[0]) / (v2[0] - v1[0]);
 
     y = t*(v2[1] - v1[1]) + v1[1];
     z = t*(v2[2] - v1[2]) + v1[2];

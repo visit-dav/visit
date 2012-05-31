@@ -84,7 +84,7 @@ class PIPELINE_API avtAverageValueRF : public avtRayFunction
     virtual            ~avtAverageValueRF();
 
     virtual void        GetRayValue(const avtRay *,
-                                    unsigned char rgb[3], float);
+                                    unsigned char rgb[3], double);
 
   protected:
     double                noSampleValue;

@@ -82,7 +82,7 @@ class PIPELINE_API avtMaximumIntensityProjectionRF : public avtRayFunction
     virtual            ~avtMaximumIntensityProjectionRF();
 
     virtual void        GetRayValue(const avtRay *,
-                                    unsigned char [3], float);
+                                    unsigned char [3], double);
 
   protected:
     avtVariablePixelizer  *pix;

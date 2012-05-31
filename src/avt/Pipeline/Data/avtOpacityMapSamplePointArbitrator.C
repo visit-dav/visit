@@ -104,8 +104,8 @@ avtOpacityMapSamplePointArbitrator::~avtOpacityMapSamplePointArbitrator()
 // ****************************************************************************
 
 bool
-avtOpacityMapSamplePointArbitrator::ShouldOverwrite(float whatIgot,
-                                                    float whatIcouldHave)
+avtOpacityMapSamplePointArbitrator::ShouldOverwrite(double whatIgot,
+                                                    double whatIcouldHave)
 {
     RGBA val1 = omap->GetOpacity(whatIgot);
     RGBA val2 = omap->GetOpacity(whatIcouldHave);

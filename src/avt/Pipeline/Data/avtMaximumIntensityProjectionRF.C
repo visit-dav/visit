@@ -117,7 +117,7 @@ avtMaximumIntensityProjectionRF::~avtMaximumIntensityProjectionRF()
 
 void
 avtMaximumIntensityProjectionRF::GetRayValue(const avtRay *ray, 
-                                             unsigned char rgb[3], float depth)
+                                             unsigned char rgb[3], double depth)
 {
     double curMax = -1. * DBL_MAX;
     int    maxInd = -1;
@@ -131,7 +131,7 @@ avtMaximumIntensityProjectionRF::GetRayValue(const avtRay *ray,
     const bool   *validSample = ray->validSample;
 
     // Only handle one variable, even if there is more.
-    const float  *sample      = ray->sample[0];
+    const double  *sample      = ray->sample[0];
 
     int depthIndex = IndexOfDepth(depth, numSamples);
 

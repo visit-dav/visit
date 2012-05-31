@@ -63,31 +63,31 @@
 
 typedef struct
 {
-    float  pts[8][3];
-    float  val[8][AVT_VARIABLE_LIMIT];
+    double  pts[8][3];
+    double  val[8][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtHexahedron;
 
 
 typedef struct
 {
-    float  pts[20][3];
-    float  val[20][AVT_VARIABLE_LIMIT];
+    double  pts[20][3];
+    double  val[20][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtHexahedron20;
 
 typedef struct
 {
-    float  pts[27][3];
-    float  val[27][AVT_VARIABLE_LIMIT];
+    double  pts[27][3];
+    double  val[27][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtHexahedron27;
 
 
 typedef struct
 {
-    float  pts[4][3];
-    float  val[4][AVT_VARIABLE_LIMIT];
+    double  pts[4][3];
+    double  val[4][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtTetrahedron;
 
@@ -98,8 +98,8 @@ typedef struct
 //
 typedef struct
 {
-    float  pts[5][3];
-    float  val[5][AVT_VARIABLE_LIMIT];
+    double  pts[5][3];
+    double  val[5][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtPyramid;
 
@@ -110,16 +110,16 @@ typedef struct
 //
 typedef struct
 {
-    float  pts[6][3];
-    float  val[6][AVT_VARIABLE_LIMIT];
+    double  pts[6][3];
+    double  val[6][AVT_VARIABLE_LIMIT];
     int    nVars;
 }  avtWedge;
 
 
 typedef struct
 {
-    float bbox[6];
-    float val[AVT_VARIABLE_LIMIT];
+    double bbox[6];
+    double val[AVT_VARIABLE_LIMIT];
     int   nVars;
 }  avtPoint;
 

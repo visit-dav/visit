@@ -46,7 +46,7 @@
 
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
@@ -73,7 +73,7 @@ static vtkRectilinearGrid  *CreateGrid(const double *, int, int, int,
                                    int, int, int, int, bool, bool);
 static void                 CreateViewFromBounds(avtViewInfo &, const double *,
                                              double [3]);
-static vtkDataArray        *GetCoordinates(float, float, int, int, int);
+static vtkDataArray        *GetCoordinates(double, double, int, int, int);
 
 
 #ifndef MAX
@@ -504,7 +504,7 @@ avtResampleFilter::ResampleInput(void)
 
         // here is some dummied up code to match collective calls below
         int effectiveVars = samples->GetNumberOfRealVariables();
-        float *ptrtmp = new float[width*height*depth];
+        double *ptrtmp = new double[width*height*depth];
         for (int jj = 0; jj < width*height*depth; jj++)
             ptrtmp[jj] = -FLT_MAX;
         for (i = 0 ; i < effectiveVars ; i++)
@@ -589,7 +589,7 @@ avtResampleFilter::ResampleInput(void)
     vtkDataArray **vars = new vtkDataArray*[numArrays];
     for (i = 0 ; i < numArrays ; i++)
     {
-        vars[i] = vtkFloatArray::New();
+        vars[i] = vtkDoubleArray::New();
         if (doKernel && (i == numArrays-1))
             vars[i]->SetNumberOfComponents(1);
         else
@@ -611,7 +611,7 @@ avtResampleFilter::ResampleInput(void)
     // default value is large, then it will screw up the collect call below,
     // which uses MPI_MAX for an all reduce.  So give uncovered regions very
     // small values now (-FLT_MAX) and then replace them later.
-    float defaultPlaceholder = -FLT_MAX;
+    double defaultPlaceholder = -FLT_MAX;
     samples->GetVolume()->GetVariables(defaultPlaceholder, vars, 
                                        numArrays, ip);
 
@@ -623,7 +623,7 @@ avtResampleFilter::ResampleInput(void)
         //
         for (i = 0 ; i < numArrays ; i++)
         {
-            float *ptr = (float *) vars[i]->GetVoidPointer(0);
+            double *ptr = (double *) vars[i]->GetVoidPointer(0);
             Collect(ptr, vars[i]->GetNumberOfComponents()*width*height*depth);
         }
     }
@@ -635,7 +635,7 @@ avtResampleFilter::ResampleInput(void)
                     * vars[i]->GetNumberOfTuples();
         if (numTups > 0)
         {
-            float *ptr = (float *) vars[i]->GetVoidPointer(0);
+            double *ptr = (double *) vars[i]->GetVoidPointer(0);
             for (j = 0 ; j < numTups ; j++)
                 ptr[j] = (ptr[j] == defaultPlaceholder 
                                  ? atts.GetDefaultVal() 
@@ -658,7 +658,7 @@ avtResampleFilter::ResampleInput(void)
 
         if (doKernel)
         {
-            float min_weight = avtPointExtractor::GetMinimumWeightCutoff();
+            double min_weight = avtPointExtractor::GetMinimumWeightCutoff();
             vtkDataArray *weights = vars[numArrays-1];
             int numVals = weights->GetNumberOfTuples();
             for (i = 0 ; i < realVars ; i++)
@@ -667,7 +667,7 @@ avtResampleFilter::ResampleInput(void)
                 {
                     for (k = 0 ; k < numVals ; k++)
                     {
-                        float weight = weights->GetTuple1(k);
+                        double weight = weights->GetTuple1(k);
                         if (weight <= min_weight)
                             vars[i]->SetComponent(k, j, atts.GetDefaultVal());
                         else
@@ -824,9 +824,9 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
             // everything in terms of the number of sample points in the width.
             // Once that is solved, everything falls out.
             //
-            float X = bounds[1] - bounds[0];
-            float Y = bounds[3] - bounds[2];
-            float Z = bounds[5] - bounds[4];
+            double X = bounds[1] - bounds[0];
+            double Y = bounds[3] - bounds[2];
+            double Z = bounds[5] - bounds[4];
 
             ratioX = 1.;
             ratioY = Y / X;
@@ -994,8 +994,8 @@ CreateViewFromBounds(avtViewInfo &view, const double *bounds, double scale[3])
     //
     view.orthographic = true;
     view.setScale     = true;
-    float width  = bounds[1] - bounds[0];
-    float height = bounds[3] - bounds[2];
+    double width  = bounds[1] - bounds[0];
+    double height = bounds[3] - bounds[2];
     view.parallelScale = (width > height ? width/2. : height/2.);
 
     //
@@ -1105,9 +1105,9 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
 
-    float width  = bounds[1] - bounds[0];
-    float height = bounds[3] - bounds[2];
-    float depth  = bounds[5] - bounds[4];
+    double width  = bounds[1] - bounds[0];
+    double height = bounds[3] - bounds[2];
+    double depth  = bounds[5] - bounds[4];
 
     int numX2 = (cellCenteredOutput ? numX+1 : numX);
     int maxX2 = (cellCenteredOutput ? maxX+1 : maxX);
@@ -1168,9 +1168,9 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
 // ****************************************************************************
 
 vtkDataArray *
-GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
+GetCoordinates(double start, double length, int numEls, int myStart, int myStop)
 {
-    vtkFloatArray *rv = vtkFloatArray::New();
+    vtkDoubleArray *rv = vtkDoubleArray::New();
 
     //
     // Make sure we don't have any degenerate cases here.
@@ -1184,7 +1184,7 @@ GetCoordinates(float start, float length, int numEls, int myStart, int myStop)
 
     int realNumEls = myStop - myStart;
     rv->SetNumberOfValues(realNumEls);
-    float offset = length / (numEls-1);
+    double offset = length / (numEls-1);
     for (int i = myStart ; i < myStop ; i++)
     {
         rv->SetValue(i-myStart, start + i*offset);

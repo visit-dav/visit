@@ -101,8 +101,8 @@ avtRelativeValueSamplePointArbitrator::~avtRelativeValueSamplePointArbitrator()
 // ****************************************************************************
 
 bool
-avtRelativeValueSamplePointArbitrator::ShouldOverwrite(float whatIgot,
-                                                       float whatIcouldHave)
+avtRelativeValueSamplePointArbitrator::ShouldOverwrite(double whatIgot,
+                                                       double whatIcouldHave)
 {
     if (lessThan)
         return (whatIgot < whatIcouldHave);

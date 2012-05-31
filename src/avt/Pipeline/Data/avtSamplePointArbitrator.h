@@ -81,7 +81,7 @@ class PIPELINE_API avtSamplePointArbitrator
 
     int                      GetArbitrationVariable(void)
                                                { return arbitrationVariable; };
-    virtual bool             ShouldOverwrite(float, float) = 0;
+    virtual bool             ShouldOverwrite(double, double) = 0;
 
   protected:
     int                      arbitrationVariable;

@@ -128,7 +128,7 @@ avtSamplePointToSurfaceFilter::Execute(void)
     int height = imagePartition->GetHeight();
     int buff_size = width*height;
     int num_samples = -1;
-    float *vals = new float[buff_size];
+    double *vals = new double[buff_size];
     for (i = 0 ; i < buff_size ; i++)
     {
         vals[i] = -FLT_MAX;
@@ -140,7 +140,7 @@ avtSamplePointToSurfaceFilter::Execute(void)
     }
 
     avtVolume *volume = GetTypedInput()->GetVolume();
-    float samples[AVT_VARIABLE_LIMIT];
+    double samples[AVT_VARIABLE_LIMIT];
     for (i = minX ; i <= maxX ; i++)
     {
         for (j = minY ; j <= maxY ; j++)
@@ -187,11 +187,11 @@ avtSamplePointToSurfaceFilter::Execute(void)
             for (j = 0 ; j < height ; j++)
             {
                 int index = i*height + j;
-                float x = (((float)i) / (width-1.)) * 2. - 1.;
-                float y = (((float)j) /(height-1.)) * 2. - 1.;
-                float z;
+                double x = (((double)i) / (width-1.)) * 2. - 1.;
+                double y = (((double)j) /(height-1.)) * 2. - 1.;
+                double z;
                 if (depths[index] >= 0)
-                    z = ((float)depths[index]) / (num_samples-1.);
+                    z = ((double)depths[index]) / (num_samples-1.);
                 else
                     z = 0.;
                 pts->SetPoint(index, x, y, z);
@@ -202,9 +202,9 @@ avtSamplePointToSurfaceFilter::Execute(void)
             for (j = 0 ; j < height-1 ; j++)
             {
                 int index = i*(height-1) + j + norigpts;
-                float x = ((i+0.5) / (width-1.)) * 2. - 1.;
-                float y = ((j+0.5) /(height-1.)) * 2. - 1.;
-                float z = 0.;
+                double x = ((i+0.5) / (width-1.)) * 2. - 1.;
+                double y = ((j+0.5) /(height-1.)) * 2. - 1.;
+                double z = 0.;
                 int numvalid = 0;
                 int i0 = i*height + j;
                 int i1 = (i+1)*height + j;
@@ -212,22 +212,22 @@ avtSamplePointToSurfaceFilter::Execute(void)
                 int i3 = i*height + j+1;
                 if (depths[i0] >= 0)
                 {
-                    z += ((float)depths[i0]) / (num_samples-1.);
+                    z += ((double)depths[i0]) / (num_samples-1.);
                     numvalid++;
                 }
                 if (depths[i1] >= 0)
                 {
-                    z += ((float)depths[i1]) / (num_samples-1.);
+                    z += ((double)depths[i1]) / (num_samples-1.);
                     numvalid++;
                 }
                 if (depths[i2] >= 0)
                 {
-                    z += ((float)depths[i2]) / (num_samples-1.);
+                    z += ((double)depths[i2]) / (num_samples-1.);
                     numvalid++;
                 }
                 if (depths[i3] >= 0)
                 {
-                    z += ((float)depths[i3]) / (num_samples-1.);
+                    z += ((double)depths[i3]) / (num_samples-1.);
                     numvalid++;
                 }
                 if (numvalid > 0)
@@ -249,7 +249,7 @@ avtSamplePointToSurfaceFilter::Execute(void)
             for (j = 0 ; j < height-1 ; j++)
             {
                 int index = i*(height-1) + j + norigpts;
-                float val = 0.;
+                double val = 0.;
                 int numvalid = 0;
                 int i0 = i*height + j;
                 int i1 = (i+1)*height + j;

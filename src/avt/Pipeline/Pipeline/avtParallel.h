@@ -58,6 +58,7 @@ PIPELINE_API extern void *VISIT_MPI_COMM_PTR;
 
 PIPELINE_API void    Barrier(void);
 PIPELINE_API bool    Collect(float *, int);
+PIPELINE_API bool    Collect(double *, int);
 PIPELINE_API bool    Collect(int *, int);
 PIPELINE_API void    PAR_Exit(void);
 PIPELINE_API void    PAR_Init(int &argc, char **&argv);
