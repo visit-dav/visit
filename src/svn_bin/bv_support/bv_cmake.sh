@@ -45,6 +45,7 @@ function cmake_set_vars_helper
    CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
    CMAKE_ROOT=`echo "$CMAKE_ROOT"`
+   CMAKE_ROOT=`echo $CMAKE_ROOT`
 
    echo $CMAKE_VERSION "--> $CMAKE_BUILD_DIR" "--> $CMAKE_INSTALL" "--> $CMAKE_ROOT"
 }
