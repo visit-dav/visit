@@ -291,7 +291,7 @@ simv2_SpeciesMetaData_getSpeciesName(visit_handle h, int i, visit_handle *val)
         retval = VISIT_OKAY;
     }
     else
-        *val = NULL;
+        *val = VISIT_INVALID_HANDLE;
     return retval;
 }
 
