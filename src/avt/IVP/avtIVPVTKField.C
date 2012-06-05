@@ -156,18 +156,16 @@ avtIVPVTKField::GetExtents( double extents[6] ) const
 //
 // ****************************************************************************
 
-bool
+avtIVPField::Classification
 avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 {
-    if( pos != lastPos )
+    if (pos != lastPos)
     {
         lastPos  = pos;
-        
-        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights, false )) )
-            return false;
+        lastCell = loc->FindCell(&pos.x, &lastWeights, false);
     }       
 
-    return lastCell != -1;
+    return (lastCell != -1 ? INSIDE : OUTSIDE_SPATIAL);
 }
 
 // ****************************************************************************
@@ -195,10 +193,10 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 avtIVPField::Result
 avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV ) const
 {
-    if( !FindCell( t, p ) )
-        return( avtIVPSolverResult::OUTSIDE_DOMAIN );
-
-    return FindValue( velData, retV );
+    if (FindCell(t, p) != INSIDE || !FindValue(velData, retV))
+        return avtIVPSolverResult::OUTSIDE_DOMAIN;
+    
+    return avtIVPSolverResult::OK;
 }
 
 // ****************************************************************************
@@ -212,19 +210,19 @@ avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV
 //
 // ****************************************************************************
 
-avtIVPField::Result
-avtIVPVTKField::FindValue( vtkDataArray* vectorData, avtVector &vel ) const
+bool
+avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 {
     vel.x = vel.y = vel.z = 0.0;
 
-    if( velCellBased )
-        vectorData->GetTuple( lastCell, &vel.x );
+    if (velCellBased)
+        vectorData->GetTuple(lastCell, &vel.x);
     else
     {
         double tmp[3];
 
-        for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
-             wi!=lastWeights.end(); ++wi )
+        for (avtInterpolationWeights::const_iterator wi=lastWeights.begin();
+             wi!=lastWeights.end(); ++wi)
         {
             vectorData->GetTuple( wi->i, tmp );
 
@@ -234,15 +232,14 @@ avtIVPVTKField::FindValue( vtkDataArray* vectorData, avtVector &vel ) const
         }
     }
 
-    if( normalized )
+    if (normalized)
     {
         double len = vel.length();
-
-        if( len )
+        if (len)
             vel /= len;
     }
 
-    return( avtIVPSolverResult::OK );
+    return true;
 }
 
 
@@ -463,10 +460,10 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 //    
 // ****************************************************************************
 
-bool
+avtIVPField::Classification
 avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    return loc->FindCell( &pt.x, NULL, true ) > 0;
+    return (loc->FindCell(&pt.x, NULL, true) > 0 ? INSIDE : OUTSIDE_SPATIAL);
 }
 
 // ****************************************************************************

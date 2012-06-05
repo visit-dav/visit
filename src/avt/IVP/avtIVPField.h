@@ -98,12 +98,23 @@ namespace avtIVPSolverResult
 //   Hank Childs, Sun Dec  5 10:18:13 PST 2010
 //   Add a boolean for whether or not the velocity field is instantaneous.
 //
+//   Dave Pugmire, Fri Jun  1 10:03:14 EDT 2012
+//   Add Classification enum for IsInside() method.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
 {
   public:
     typedef avtIVPSolverResult::Result Result;
+
+    enum Classification
+    {
+        INSIDE,
+        OUTSIDE_SPATIAL,
+        OUTSIDE_TEMPORAL,
+        OUTSIDE_BOTH,
+    };
 
                          avtIVPField() : order(1) {}
     virtual             ~avtIVPField() {}
@@ -126,11 +137,10 @@ class IVP_API avtIVPField
                                                const double& t,
                                                const avtVector& x) const = 0;
 
-    virtual void         SetScalarVariable( unsigned char index, 
-                                            const std::string& name ) = 0;
+    virtual void         SetScalarVariable(unsigned char index, 
+                                           const std::string& name ) = 0;
 
-    virtual bool         IsInside( const double& t, 
-                                   const avtVector& x ) const = 0;
+    virtual Classification IsInside(const double &t, const avtVector &x) const = 0;
 
     virtual void         GetTimeRange( double range[2] ) const = 0;
     virtual void         GetExtents( double  extents[6] ) const = 0;

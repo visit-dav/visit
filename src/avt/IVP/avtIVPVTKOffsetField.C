@@ -176,7 +176,7 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
         }        
 
         // velocity for this staggering
-        velocities[j] = FindValue( velData );
+        FindValue(velData, velocities[j]);
     }
 
     // compose the velocity, assuming each component is purely 
@@ -197,54 +197,39 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
 //
 // ****************************************************************************
 
-avtIVPSolverResult::Result
-avtIVPVTKOffsetField::FindValue(vtkDataArray* vectorData, avtVector &vel) const
+bool
+avtIVPVTKOffsetField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 {
-  avtVector result = FindValue(vectorData);
-  vel.x = result.x;
-  vel.y = result.y;
-  vel.z = result.z;
-
-  return avtIVPSolverResult::OK;
-}
-
-avtVector
-avtIVPVTKOffsetField::FindValue( vtkDataArray* vectorData ) const
-{
-    avtVector vel( 0.0, 0.0, 0.0 );
-
-    if( velCellBased )
-        vectorData->GetTuple( lastCell, &vel.x );
+    if (velCellBased)
+        vectorData->GetTuple(lastCell, &vel.x);
     else
     {
         // nodal field components, may contain some offset
-
+        
         for ( size_t j = 0; j < 3; ++j )
         {
-            
             // interpolate
             double tmp[3];
-
+            
             for( avtInterpolationWeights::const_iterator wi=lastWeights.begin();
                  wi!=lastWeights.end(); ++wi )
             {
                 vectorData->GetTuple( wi->i, tmp );
-
+                
                 vel[j] += wi->w * tmp[j];
             }
-
         }
     }
 
     if( normalized )
     {
         double len = vel.length();
-
+        
         if( len )
             vel /= len;
     }
-
-    return vel;
+    
+    return true;
 }
 
 // ****************************************************************************
