@@ -120,20 +120,18 @@ avtIVPFlashField::operator()( const double &t,
                               const avtVector &v,
                               avtVector& retV ) const
 {
-  if( !FindCell( t, p ) )
-    return( avtIVPSolverResult::OUTSIDE_DOMAIN );
+    if (!FindCell(t, p))
+        return avtIVPSolverResult::OUTSIDE_DOMAIN;
 
   Result result;
   avtVector B, E;
-  if( (result = FindValue(B_vtkDataArray, B)) == avtIVPSolverResult::OK )
+  if (FindValue(B_vtkDataArray, B) && FindValue(E_vtkDataArray, E))
   {
-    if( (result = FindValue(E_vtkDataArray, E)) == avtIVPSolverResult::OK )
-    {
       retV = factor * (E + Cross(v, B) );
-    }
+      return avtIVPSolverResult::OK;
   }
-
-  return( result );
+  else
+      return avtIVPSolverResult::OUTSIDE_DOMAIN;
 }
 
 

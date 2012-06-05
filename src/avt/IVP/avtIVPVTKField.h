@@ -110,7 +110,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
                                        avtVector &retV) const
     { return( avtIVPSolverResult::TERMINATE ); };
 
-    virtual Result    FindValue(vtkDataArray* vectorData, avtVector &vel) const;
+    virtual bool      FindValue(vtkDataArray* vectorData, avtVector &vel) const;
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const;
@@ -124,7 +124,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
     virtual void      SetScalarVariable( unsigned char index, 
                                          const std::string& name );
 
-    virtual bool      IsInside( const double& t, const avtVector &pt ) const;
+    virtual Classification      IsInside( const double& t, const avtVector &pt ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
 
@@ -133,7 +133,7 @@ class IVP_API avtIVPVTKField: public avtIVPField
 
   protected:
 
-    bool FindCell( const double& t, const avtVector& p ) const;
+    Classification FindCell( const double& t, const avtVector& p ) const;
 
     bool                   normalized;
     vtkDataSet*            ds;

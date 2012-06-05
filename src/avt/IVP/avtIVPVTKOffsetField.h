@@ -83,8 +83,7 @@ class IVP_API avtIVPVTKOffsetField: public avtIVPVTKField
                                  const avtVector &pt,
                                  avtVector &retV) const;
 
-    virtual avtVector FindValue( vtkDataArray* vectorData ) const;
-    virtual Result    FindValue(vtkDataArray* vectorData, avtVector &vel) const;
+    virtual bool      FindValue(vtkDataArray *vectorData, avtVector &vel) const;
 
     void SetNodeOffsets( const std::vector<avtVector>& offsets );
 

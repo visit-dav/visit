@@ -182,30 +182,38 @@ avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 //
 // ****************************************************************************
 
-bool
+avtIVPField::Classification
 avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) const
 {
+    bool inside[2] = {true, true};
     if( pos != lastPos )
     {
         lastPos  = pos;
         
-        if( -1 == (lastCell = loc->FindCell( &pos.x, &lastWeights, false )) )
-            return false;
+        lastCell = loc->FindCell(&pos.x, &lastWeights, false);
+        inside[0] = (lastCell != -1);
     }       
 
     if (t0 < t1)
     {
         if( time < t0 || time > t1 )
-            return false;
+            inside[1] = false;
     }
     else
     {
         // backwards integration
         if( time < t1 || time > t0 )
-            return false;
+            inside[1] = false;
     }
 
-    return lastCell != -1;
+    if (inside[0] && inside[1])
+        return INSIDE;
+    else if (!inside[0] && !inside[1])
+        return OUTSIDE_BOTH;
+    else if (!inside[0])
+        return OUTSIDE_SPATIAL;
+    else
+        return OUTSIDE_TEMPORAL;
 }
 
 // ****************************************************************************
@@ -547,7 +555,7 @@ avtIVPVTKTimeVaryingField::SetScalarVariable(unsigned char index, const std::str
 //
 // ****************************************************************************
 
-bool
+avtIVPField::Classification
 avtIVPVTKTimeVaryingField::IsInside( const double& t, const avtVector &pt ) const
 {
     return FindCell( t, pt );

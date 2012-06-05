@@ -123,7 +123,7 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     virtual void      SetScalarVariable( unsigned char index, 
                                          const std::string& name );
 
-    bool           IsInside( const double& t, const avtVector &pt ) const;
+    Classification    IsInside( const double& t, const avtVector &pt ) const;
     unsigned int   GetDimension() const;
     void           SetNormalized( bool v );
 
@@ -135,7 +135,7 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
 
   protected:
 
-    bool FindCell( const double& t, const avtVector& p ) const;
+    Classification FindCell( const double& t, const avtVector& p ) const;
 
     bool                   normalized;
     vtkDataSet*            ds;
