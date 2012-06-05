@@ -87,6 +87,9 @@
 #   handle windows path and path-with-spaces issues. Don't change
 #   library output directory on widnows for PYTHON_ADD_HYBRID_MODULE.
 #
+#   Kathleen Biagas, Tue Jun 5 14:49:52 PDT 2012 
+#   Fix problem with setting of PYTHON_VERSION on windows. 
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -180,23 +183,23 @@ FOREACH(_CURRENT_VERSION 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
     NO_SYSTEM_ENVIRONMENT_PATH)
 
   IF (PYTHON_LIBRARY AND PYTHON_INCLUDE_PATH)
-    IF(UNIX)
-        # The python library and include path could be for a path that does
-        # not match the version from _CURRENT_VERSION so let's match again
-        # against the detected filename.
-        GET_FILENAME_COMPONENT(PYLIB ${PYTHON_LIBRARY} NAME)
-        FOREACH(CV 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
-            SET(curPYLIB "libpython${CV}.")
-            IF(${PYLIB} MATCHES ${curPYLIB})
-                SET(PYTHON_VERSION ${CV})
-                MESSAGE(STATUS "Python version: ${PYTHON_VERSION}")
-                BREAK()
-            ENDIF(${PYLIB} MATCHES ${curPYLIB})
-        ENDFOREACH(CV)
-    ELSE(UNIX)
-        SET(PYTHON_VERSION ${_CURRENT_VERSION})
-    ENDIF(UNIX)
-    BREAK()
+      # The python library and include path could be for a path that does
+      # not match the version from _CURRENT_VERSION so let's match again
+      # against the detected filename.
+      GET_FILENAME_COMPONENT(PYLIB ${PYTHON_LIBRARY} NAME)
+      FOREACH(CV 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
+          SET(curPYLIB "libpython${CV}.")
+          IF(WIN32)
+              STRING(REPLACE "." "" CV2 ${CV})
+              SET(curPYLIB "python${CV2}.lib")
+          ENDIF(WIN32)
+          IF(${PYLIB} MATCHES ${curPYLIB})
+              SET(PYTHON_VERSION ${CV})
+              MESSAGE(STATUS "Python version: ${PYTHON_VERSION}")
+              BREAK()
+          ENDIF(${PYLIB} MATCHES ${curPYLIB})
+      ENDFOREACH(CV)
+      BREAK()
   ENDIF (PYTHON_LIBRARY AND PYTHON_INCLUDE_PATH)
 
 ENDFOREACH(_CURRENT_VERSION)
