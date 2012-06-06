@@ -16,6 +16,11 @@ bug fix release to release 2.5.0. It fixes additional bugs in release
 2.5.0.  Look <a href="relnotes2.5.0.html">here</a> to see a complete
 list of changes in release 2.5.0.</p>
 
+<p><b><font size="4">Configuration changes in version 2.5.1</font></b></p>
+<ul>
+<li>The host profiles for LLNL's rhea and minos computers were removed since those machines were retired.</li>
+</ul>
+
 <p><b><font size="4">Bugs fixed in version 2.5.1</font></b></p>
 <ul>
 <li>VisIt's SSH program <i>qtssh.exe</i> has been turned back into a console application to solve connectivity problems to LLNL's RZ network.</li>
@@ -33,6 +38,8 @@ list of changes in release 2.5.0.</p>
 <li>The CGNS reader is better able to read unsteady flow or deforming meshes. Thanks to Mickael Philit!</li>
 <li>The ANSYS reader was improved so it can handle more variation in the file's formatting.</li>
 <li>The Windows version of VisIt has been enhanced so the main executable programs that comprise VisIt contain more metadata. This enables Windows to provide more information about the VisIt programs to the user. For example, the program properties now show a description of the program as well as version. This change also enables the Windows Task Manager to show descriptive names for the VisIt executables, making it easier to determine the origin of the running programs.</li>
+<li>Further improvements were made to the splatting renderer in VisIt's Volume plot.</li>
+<li>The KeyframeAttributes type was exposed in the VisIt module so it can be created using a normal constructor.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous

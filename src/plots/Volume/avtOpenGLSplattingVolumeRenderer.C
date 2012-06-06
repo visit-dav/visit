@@ -171,6 +171,13 @@ DrawOneSplat(const avtVolumeRendererImplementation::RenderProperties &props,
     float opacity;
     opacity = float(rgba[int(o*(nopacities-1))*4 + 3])*props.atts.GetOpacityAttenuation()/256.;
     opacity = MAX(0,MIN(1,opacity));
+    
+    if(volume.hs != NULL)
+    {
+        //then we need to find it's hmin value  
+        float alphaCorrection = MAX(1.0, 1.0/(log10(volume.hs[index])-log10(volume.hs_min)));
+        opacity = opacity*alphaCorrection;  
+    }
 
     // drop transparent splats 
     if (opacity < .0001)
@@ -248,7 +255,6 @@ DrawOneSplat(const avtVolumeRendererImplementation::RenderProperties &props,
     color[0] = float(rgba[colorindex4 + 0])*scaledbrightness;
     color[1] = float(rgba[colorindex4 + 1])*scaledbrightness;
     color[2] = float(rgba[colorindex4 + 2])*scaledbrightness;
-    //color[3] = opacity*alphacorrection;
     color[3] = opacity;
 
     // draw the splat
@@ -470,10 +476,10 @@ avtOpenGLSplattingVolumeRenderer::Render(
         int  imin,imax;
         int  jmin,jmax;
         int  kmin,kmax;
-        int *c1,*c2,*c3;
-        int *c1min,*c2min,*c3min;
-        int *c1max,*c2max,*c3max;
-        int *c1s,*c2s,*c3s;
+        int *c1 = NULL,*c2 = NULL,*c3 = NULL;
+        int *c1min = NULL,*c2min = NULL,*c3min = NULL;
+        int *c1max = NULL,*c2max = NULL,*c3max = NULL;
+        int *c1s = NULL,*c2s = NULL,*c3s = NULL;
 
         float vx[4] = {-1,0,0, 0};
         float vy[4] = {0,-1,0, 0};

@@ -653,10 +653,10 @@ avtBATLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mesh->blockTitle = "Blocks";
             mesh->blockPieceName = "block";
             // Processor number as group
-            mesh->numGroups = numProcessors;
+            mesh->numGroups = numLevels;
             mesh->groupTitle = "Level";
             mesh->groupPieceName = "level";
-            mesh->numGroups = numProcessors;
+            mesh->numGroups = numLevels;
             vector<int> groupIds(numBlocks);
             vector<string> pieceNames(numBlocks);
             debug5 << "axisLabels" << endl;

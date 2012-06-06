@@ -280,7 +280,6 @@ void
 avtVolumeRenderer::Render(vtkDataSet *ds)
 {
     StackTimer t("avtVolumeRenderer::Render");
-
     if (!currentRendererIsValid || !rendererImplementation)
     {
         delete rendererImplementation;
@@ -316,7 +315,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
     {
         Initialize(ds);
     }
-    
+
     vtkDataArray *data = NULL;
     vtkDataArray *opac = NULL;
     bool haveScalars = VolumeGetScalars(atts, ds, data, opac);
@@ -352,6 +351,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         vd.gm = gm;
         vd.gmn = gmn;
         vd.gm_max = gm_max;
+        vd.hs_min = hs_min;
         vd.hs = hs;
 
         StackTimer t2("Implementation Render");
@@ -460,7 +460,6 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
             gmn = new float[nels];
             hs = NULL;
             float ghostval = omax+osize;
-    
             gm_max = VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
         }
     }
@@ -488,8 +487,8 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
                     VolumeGetScalar(ds, atts.GetCompactVariable().c_str());
                 if (compactSupport != NULL)
                 {   //assign h values
-                    for (int i = 0; i<nels; i++)
-                         hs[i] = abs(compactSupport->GetTuple1(i));
+                    for (int i = 0; i<nels; i++)    
+                        hs[i] = fabs(compactSupport->GetTuple1(i));
                 }
                 else
                     calcHS = true;
@@ -497,6 +496,17 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
 
             gm_max = VolumeCalculateGradient_SPH(ds, opac, 
                 gx, gy, gz, gm, gmn, hs, calcHS, ghostval);
+            
+            //Set the extents for the compact support variables;
+            hs_size = nels;
+            hs_min = hs[0]; hs_max = hs[0];
+            for (int i = 0; i < nels; i++)
+            {
+                if ( hs[i] < hs_min )
+                    hs_min = hs[i];
+                if ( hs[i] > hs_max )
+                    hs_max = hs[i];
+            }
         }
     }
 

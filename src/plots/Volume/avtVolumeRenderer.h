@@ -116,7 +116,9 @@ class avtVolumeRenderer : public avtCustomRenderer
 
     float                   vmin,vmax,vsize;
     float                   omin,omax,osize;
-    float                  *gx, *gy, *gz, *gm, *gmn, *hs, gm_max;
+    float                  *hs, hs_min, hs_max, hs_size;
+    
+    float                  *gx, *gy, *gz, *gm, *gmn, gm_max;
 
     bool                    reducedDetail;
 

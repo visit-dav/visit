@@ -324,15 +324,20 @@ VolumeSkewTransform(const VolumeAttributes &atts,
 // Creation:   Fri Dec 19 11:47:04 PST 2008
 //
 // Modifications:
-//   
+//   Allen Harvey, Wed Jun  6 14:02:58 PDT 2012
+//   Change implementation so it looks up the proper array based on the name.
+//
 // ****************************************************************************
 
 vtkDataArray *
 VolumeGetScalar(vtkDataSet *ds, const char *name)
 {
     vtkPointData *pd = ds->GetPointData();
-    vtkDataArray *data = pd->GetScalars();
-    if (data == NULL)  
+    vtkDataArray *data = NULL;
+    if(pd->GetNumberOfArrays() > 0)
+        data = pd->GetArray(0);
+
+    if (data != NULL)  
     {
         //
         // The data is not set up as the active scalars.  Try to guess what
@@ -343,12 +348,9 @@ VolumeGetScalar(vtkDataSet *ds, const char *name)
             vtkDataArray *arr = pd->GetArray(i);
             if (strcmp(arr->GetName(), name) == 0)
             {
-                if (pd->GetNumberOfArrays() > 1)
-                {
-                    continue;
-                }
+                data = arr;
+                break;
             }
-            data = arr;
         }
     }
 
@@ -597,8 +599,7 @@ VolumeGetOpacityExtents(const VolumeAttributes &atts, vtkDataArray *opac,
     grid->GetDimensions(dims); \
     int nx=dims[0]; \
     int ny=dims[1]; \
-    int nz=dims[2]; \
-    int nels=nx*ny*nz;
+    int nz=dims[2];
 
 #define STORE_GRADIENT \
     float mag = sqrtf(gx_i * gx_i + \
@@ -1150,6 +1151,7 @@ VolumeCalculateGradient(const VolumeAttributes &atts,
     StackTimer t("VolumeCalculateGradient");
 
     GRADIENT_GET_DIMS
+    int nels=nx*ny*nz;
 
     float maxmag = 0;
     if (atts.GetGradientType() == VolumeAttributes::CenteredDifferences)
@@ -1267,7 +1269,7 @@ VolumeHistograms(const VolumeAttributes &atts,
             float s = data->GetTuple1(index);
             if(s < NO_DATA_VALUE)
                 continue;
-            if (s < var_min)
+            if(s < var_min)
                 continue;
             if(s > var_max)
                 continue;

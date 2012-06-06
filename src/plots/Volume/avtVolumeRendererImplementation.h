@@ -125,6 +125,7 @@ class avtVolumeRendererImplementation
         float              *gmn;
         float               gm_max;
         float              *hs;
+        float               hs_min;
     };
 
                    avtVolumeRendererImplementation() { }
