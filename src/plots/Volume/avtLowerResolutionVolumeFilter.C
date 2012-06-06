@@ -131,6 +131,9 @@ avtLowerResolutionVolumeFilter::SetAtts(const AttributeGroup *a)
 //   Brad Whitlock, Tue Jan 31 12:08:09 PST 2012
 //   Call the SPH version of the gradient for non-rectilinear meshes.
 //
+//   Brad Whitlock, Wed Jun  6 14:16:06 PDT 2012
+//   Skip SPH gradient for 1D transfer functions.
+//
 // ****************************************************************************
 
 void
@@ -168,15 +171,25 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
         }
         else
         {
-            VolumeCalculateGradient_SPH(ds, opac, 
-                                0, // gx
-                                0, // gy
-                                0, // gz
-                                (float *)gm->GetVoidPointer(0),
-                                0, // gmn
-                                0, // hs
-                                true,
-                                ghostval);
+            // Since SPH gradient is slow, only calculate it when we have a
+            // 2D transfer function since that's the only time we need it for
+            // histogram calculation.
+            if(atts.GetTransferFunctionDim() == 1)
+            {
+                memset(gm->GetVoidPointer(0), 0, sizeof(float)*nels);
+            }
+            else
+            {
+                VolumeCalculateGradient_SPH(ds, opac, 
+                                            0, // gx
+                                            0, // gy
+                                            0, // gz
+                                            (float *)gm->GetVoidPointer(0),
+                                            0, // gmn
+                                            0, // hs
+                                            true,
+                                            ghostval);
+            }
         }
 
         if(hist2 != 0)
