@@ -16684,6 +16684,9 @@ AddDefaultMethods()
 //   Brad Whitlock, Wed Mar  7 13:56:18 PST 2012
 //   Add Expression and ExpressionList.
 //
+//   Brad Whitlock, Wed Jun  6 13:36:36 PDT 2012
+//   Add KeyframeAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -16705,6 +16708,7 @@ AddExtensions()
     ADD_EXTENSION(PyGaussianControlPoint_GetMethodTable);
     ADD_EXTENSION(PyGaussianControlPointList_GetMethodTable);
     ADD_EXTENSION(PyGlobalAttributes_GetMethodTable);
+    ADD_EXTENSION(PyKeyframeAttributes_GetMethodTable);
     ADD_EXTENSION(PyLaunchProfile_GetMethodTable);
     ADD_EXTENSION(PyMeshManagementAttributes_GetMethodTable);
     ADD_EXTENSION(PyMachineProfile_GetMethodTable);
@@ -16791,6 +16795,9 @@ AddExtensions()
 //   Brad Whitlock, Tue Dec 14 16:27:46 PST 2010
 //   Add PySelectionProperties.
 //
+//   Brad Whitlock, Wed Jun  6 13:35:46 PDT 2012
+//   Add KeyframeAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -16803,6 +16810,7 @@ InitializeExtensions()
     PyExpression_StartUp(0, 0);
     PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
+    PyKeyframeAttributes_StartUp(GetViewerState()->GetKeyframeAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);
     PyMachineProfile_StartUp(0, 0);
     PyMaterialAttributes_StartUp(GetViewerState()->GetMaterialAttributes(), 0);
@@ -16853,6 +16861,9 @@ InitializeExtensions()
 //   Brad Whitlock, Tue Dec 14 16:28:11 PST 2010
 //   Add PySelectionProperties.
 //
+//   Brad Whitlock, Wed Jun  6 13:35:46 PDT 2012
+//   Add KeyframeAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -16861,6 +16872,7 @@ CloseExtensions()
     PyAnimationAttributes_CloseDown();
     PyAnnotationAttributes_CloseDown();
     PyGlobalAttributes_CloseDown();
+    PyKeyframeAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();
     PyMeshManagementAttributes_CloseDown();
     PyPickAttributes_CloseDown();
