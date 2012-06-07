@@ -244,24 +244,13 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 avtIVPField::Result
 avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p, avtVector &vel ) const
 {
-    if( !FindCell( t, p ) )
-        return( avtIVPSolverResult::OUTSIDE_DOMAIN );
-    bool outsideTimeFrame = false;
-    if (t0 < t1)
-    {
-        if( t < t0 || t > t1 )
-            outsideTimeFrame = true;
-    }
-    else
-    {
-        // backwards integration
-        if( t < t1 || t > t0 )
-            outsideTimeFrame = true;
-    }
-    if (outsideTimeFrame)
-        return( avtIVPSolverResult::OUTSIDE_TIME_FRAME );
+    Classification cls = FindCell(t, p);
+    if (cls == OUTSIDE_SPATIAL || cls == OUTSIDE_BOTH)
+        return avtIVPSolverResult::OUTSIDE_DOMAIN;
+    else if (cls == OUTSIDE_TEMPORAL)
+        return avtIVPSolverResult::OUTSIDE_TIME_FRAME;
 
-    if( velCellBased )
+    if (velCellBased)
     {
         double v0[3], v1[3];
 
@@ -292,7 +281,7 @@ avtIVPVTKTimeVaryingField::operator()( const double &t, const avtVector &p, avtV
         }
     }
 
-    return( avtIVPSolverResult::OK );
+    return avtIVPSolverResult::OK;
 }
 
 // ****************************************************************************
@@ -437,7 +426,7 @@ avtIVPVTKTimeVaryingField::ComputeScalarVariable(unsigned char index,
     if( data0 == NULL )
         return 0.0;
 
-    if( !FindCell( t, pt ) )
+    if (FindCell(t, pt) != INSIDE)
         return 0.0;
 
     double result = 0.0, tmp0, tmp1;

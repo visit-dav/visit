@@ -120,7 +120,7 @@ avtIVPFlashField::operator()( const double &t,
                               const avtVector &v,
                               avtVector& retV ) const
 {
-    if (!FindCell(t, p))
+    if (FindCell(t, p) != INSIDE)
         return avtIVPSolverResult::OUTSIDE_DOMAIN;
 
   Result result;

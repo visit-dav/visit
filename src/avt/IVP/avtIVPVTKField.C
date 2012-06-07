@@ -377,7 +377,7 @@ avtIVPVTKField::ComputeScalarVariable(unsigned char index,
     if( data == NULL )
         return 0.0;
 
-    if( !FindCell( t, pt ) )
+    if (FindCell(t, pt) != INSIDE)
         return 0.0;
 
     double result = 0.0, tmp;

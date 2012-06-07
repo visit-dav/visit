@@ -150,7 +150,8 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
     for ( size_t j = 0; j < 3; ++j )
     {
 
-        if( !FindCell( t, p ) ) {
+        if (FindCell(t, p) != INSIDE)
+        {
             // ghost cells on the base mesh may be required to avoid this failure
             debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CELL!" 
                    <<std::endl;
@@ -162,14 +163,16 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
 
 
         avtVector displ2 = displ;
-        if( FindCell( t, pCorrected ) ) {
+        if (FindCell(t, pCorrected) != INSIDE)
+        {
             // the displacement seen from the base target position may be 
             // a little different.
             displ2 = GetPositionCorrection( j );
         }
 
         pCorrected = p - 0.5*(displ2 + displ);
-        if( !FindCell( t, pCorrected ) ) {
+        if (FindCell(t, pCorrected) != INSIDE)
+        {
             debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CORRECTED CELL!" 
                    <<std::endl;
             return zeros;
