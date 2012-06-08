@@ -754,6 +754,11 @@ $0 = shift @ARGV;
 #    openmpi 1.4.1, when it should use openmpi 1.4.4. I removed support
 #    for xchem.
 #
+#    Eric Brugger, Fri Jun  8 11:20:44 PDT 2012
+#    I modified the script so that the date portion of the temporary filename
+#    created for the batch script that launches a compute engine in the batch
+#    system can no longer have spaces.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2977,7 +2982,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             @mpicmd = "@visitcmd";
         }
 
-        chomp($tdate = `date | cut -c 12-19`);
+        chomp($tdate = `date | sed "s/ /-/g"`);
         chomp($tuser = `whoami`);
         $script_dir="/tmp";
         $tfilename = "$script_dir/visit.$tuser.$tdate";
@@ -3056,7 +3061,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
         $plauncher = substr($launch,0,4);
         $sublauncher = "" if (!defined $sublauncher);
-        chomp($tdate = `date | cut -c 12-19`);
+        chomp($tdate = `date | sed "s/ /-/g"`);
         chomp($tuser = `whoami`);
         $script_dir="/tmp";
         if ($IsRunningOnEureka_ANL)
