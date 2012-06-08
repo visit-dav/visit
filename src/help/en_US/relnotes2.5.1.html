@@ -28,7 +28,7 @@ list of changes in release 2.5.0.</p>
 <li>The check on the maximum size that an image may be saved at was unnecessarily constraining in some situations. The new maximum size is now always 16384 by 16384.</li>
 <li>The GDAL reader no longer fails because of unsatisfied external symbols from HDF5. Build_visit was modified to build the GDAL library without HDF5 support since this functionality of the library was not being used.</li>
 <li>The Python CLI now works properly when installed for a single user on Windows.</li>
-<li></li>
+<li>The temporary filename created for the batch script that launches a compute engine in the batch system has been modified so that it can no longer have spaces.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.1</font></b></p>
