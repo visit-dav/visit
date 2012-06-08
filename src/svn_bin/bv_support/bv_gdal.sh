@@ -188,7 +188,7 @@ function build_gdal
        --with-libtiff=internal --with-gif=internal \
        --with-png=internal --with-jpeg=internal \
        --with-libz=internal --with-netcdf=no \
-       --with-pg=no --with-curl=no \
+       --with-hdf5=no --with-pg=no --with-curl=no \
        --without-jasper --without-python \
        --without-sqlite3
     if [[ $? != 0 ]] ; then
