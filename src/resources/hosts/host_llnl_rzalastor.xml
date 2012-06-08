@@ -4,9 +4,6 @@
     <Field name="hostAliases" type="string">rzalastor#.llnl.gov rzalastor##.llnl.gov rzalastor# rzalastor##</Field>
     <Field name="hostNickname" type="string">LLNL RZ Alastor</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
-    <Field name="useGateway" type="bool">true</Field>
-    <Field name="gatewayHost" type="string">rzgw.llnl.gov</Field>
-    <Field name="tunnelSSH" type="bool">true</Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
