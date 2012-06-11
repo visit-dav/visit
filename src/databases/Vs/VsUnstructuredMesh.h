@@ -29,6 +29,11 @@ public:
   virtual bool isUnstructuredMesh() { return true; }
   virtual std::string getKind();
   
+  //Tweak for Nautilus
+  bool hasNodeCorrectionData();
+  std::string getNodeCorrectionDatasetName();
+  //end tweak
+
   bool usesSplitPoints();
   std::string getPointsDatasetName();
   std::string getPointsDatasetName(int i);

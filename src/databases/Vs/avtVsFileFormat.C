@@ -1549,8 +1549,6 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       return NULL;
     }
 
-    // Read in the data
-
     // Mesh points are in separate data sets.
     if (unstructuredMesh->usesSplitPoints())
     {
@@ -1919,6 +1917,42 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
       return NULL;
     }
 
+    //Tweak for Nautilus
+    //Prepare to fix up the connectivity list if node correction data is available
+    int* correctionList = NULL;
+    int correctionListSize = 0;
+    if (unstructuredMesh->hasNodeCorrectionData()) {
+      VsH5Dataset* correctionDataset = registry->getDataset(unstructuredMesh->getNodeCorrectionDatasetName());
+      if (correctionDataset) {
+        correctionListSize = correctionDataset->getLength();
+        int* localToGlobalNodeMapping = new int[correctionListSize];
+        reader->getDataSet(correctionDataset, localToGlobalNodeMapping);
+
+        //Build up a list of which global ids are "taken" by more than one node
+        //And when that happens, remember the local ids that need to be mapped to the original local id
+        correctionList = new int[correctionListSize];
+        int* globalToLocalNodeMapping = new int[correctionListSize];
+        for (int i = 0; i < correctionListSize; i++) {
+          correctionList[i] = -1;
+          globalToLocalNodeMapping[i] = -1;
+        }
+
+        //Build up the correction list
+        for (int i = 0; i < correctionListSize; i++) {
+          int localId = i;
+          int globalId = localToGlobalNodeMapping[i];
+          if (globalToLocalNodeMapping[globalId] != -1) {
+            //VsLog::debugLog() <<"Global id " <<globalId <<" is already taken by local node " <<globalToLocalNodeMapping[globalId] <<" so we know that node " <<i <<" should be replaced by node " <<globalToLocalNodeMapping[globalId] <<std::endl;
+            correctionList[i] = globalToLocalNodeMapping[globalId];
+          } else {
+            //VsLog::debugLog() <<"Local id " <<localId <<" is claiming global id " <<globalId <<std::endl;
+            globalToLocalNodeMapping[globalId] = localId;
+          }
+        }
+      }
+    }
+    //end tweak
+
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Inserting cells into grid." << std::endl;
     size_t k = 0;
@@ -2017,6 +2051,23 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             verts[j] = 0;
           }
         }
+
+        //Tweak for Nautilus
+        //Apply node corrections
+        if (correctionList) {
+          for (size_t j = 0; j < cellVerts; j++) {
+            if ((verts[j] >= 0) && (verts[j] < correctionListSize)) {
+              vtkIdType localVertexId = verts[j];
+              vtkIdType newId = correctionList[localVertexId];
+              if (newId != -1) {
+                //VsLog::debugLog() <<"Node #" <<localVertexId <<" should be switched to local id " <<newId <<std::endl;
+                verts[j] = newId;
+              }
+            }
+          }
+        }
+        //end tweak
+
         // insert cell into mesh
         ugridPtr->InsertNextCell(cellType, cellVerts, &verts[0]);
 
@@ -2952,12 +3003,16 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     //Attach offset information to array
-    if (hasOffset) {
-      vtkInformation* info = rv->GetInformation();
-      info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
-      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        <<"Attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
-    }
+    // BRANCH-ONLY HACK
+    // This code is commented out in the embedded3 branch, because we don't have the
+    // same customizations in avtVariableCache as other versions of VisIt
+    //if (hasOffset) {
+    //  vtkInformation* info = rv->GetInformation();
+    //  info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
+    //  VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+    //                    <<"Attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
+    //}
+    //END HACK
 
     rv->SetNumberOfTuples(numVariables);
 
