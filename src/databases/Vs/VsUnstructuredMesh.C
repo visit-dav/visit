@@ -23,6 +23,21 @@ VsUnstructuredMesh::VsUnstructuredMesh(VsH5Group* group):VsMesh(group) {
 VsUnstructuredMesh::~VsUnstructuredMesh() {
 }
 
+//Tweak for Nautilus
+std::string VsUnstructuredMesh::getNodeCorrectionDatasetName() {
+  return makeCanonicalName(getFullName(), "localToGlobalNodeMapping");
+}
+
+bool VsUnstructuredMesh::hasNodeCorrectionData() {
+  std::string datasetName = getNodeCorrectionDatasetName();
+
+  //Look for a node correction list
+  VsH5Dataset* nodeCorrectionDataset = registry->getDataset(datasetName);
+
+  return (nodeCorrectionDataset != NULL);
+}
+//end tweak
+
 unsigned int VsUnstructuredMesh::getNumPoints() {
   return numPoints;
 }
