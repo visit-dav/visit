@@ -38,7 +38,8 @@ struct VsSchema {
   static std::string vsVarsKey;
   static std::string varWithMeshKey;
   static std::string meshKey;
-  static std::string zonalCenteringKey;// Node center is default
+  static std::string zonalCenteringKey;
+  static std::string nodalCenteringKey;// Default
   static std::string structuredMeshKey;
 
   // Index ordering...

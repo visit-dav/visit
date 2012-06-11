@@ -3003,16 +3003,12 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
     }
 
     //Attach offset information to array
-    // BRANCH-ONLY HACK
-    // This code is commented out in the embedded3 branch, because we don't have the
-    // same customizations in avtVariableCache as other versions of VisIt
-    //if (hasOffset) {
-    //  vtkInformation* info = rv->GetInformation();
-    //  info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
-    //  VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-    //                    <<"Attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
-    //}
-    //END HACK
+    if (hasOffset) {
+      vtkInformation* info = rv->GetInformation();
+      info->Set(avtVariableCache::OFFSET_3(), offset[0], offset[1], offset[2]);
+      VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                        <<"Attaching nodeOffset information to dataset: " <<requestedName <<std::endl;
+    }
 
     rv->SetNumberOfTuples(numVariables);
 
