@@ -34,7 +34,8 @@ std::string VsSchema::varKey = "variable";
 std::string VsSchema::varWithMeshKey = "variableWithMesh";
 std::string VsSchema::meshKey = "mesh";
 std::string VsSchema::vsVarsKey = "vsVars";
-std::string VsSchema::zonalCenteringKey = "zonal"; // Default is nodal
+std::string VsSchema::zonalCenteringKey = "zonal"; 
+std::string VsSchema::nodalCenteringKey = "nodal"; // Default
 
 // Index ordering...
 std::string VsSchema::compMajorCKey = "compMajorC"; //currently not supported
