@@ -86,6 +86,9 @@ Zoom2D_SetLineProperties(vtkPolyData *guideLines,
 //    Brad Whitlock, Fri Oct 14 16:26:20 PDT 2011
 //    Create mapper via proxy.
 //
+//    Kathleen Biagas, Mon Jun 11 17:16:42 MST 2012
+//    Have windows follow the APPLE path.
+//
 // ****************************************************************************
 
 Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
@@ -100,7 +103,7 @@ Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
     LineProperties->Delete();
     Zoom2D_SetLineProperties(guideLines, 2, 3, false);
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(12);
     guideLines->SetPoints(pts);
@@ -329,6 +332,9 @@ Zoom2D::EndMiddleButtonAction()
 //    Brad Whitlock, Mon Mar 13 11:42:54 PDT 2006
 //    I added code to set the color for the guidlines actor.
 //
+//    Kathleen Biagas, Mon Jun 11 17:16:42 MST 2012
+//    Have windows follow the APPLE path.
+//
 // ****************************************************************************
 
 void
@@ -348,7 +354,7 @@ Zoom2D::StartRubberBand(int x, int y)
        
         lastGuideX = x;
         lastGuideY = y;
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
         UpdateRubberBand(x,y,x,y,x,y);
 #else
         DrawAllGuideLines(x, y, x, y);
@@ -405,6 +411,9 @@ Zoom2D::EndRubberBand()
 //    Brad Whitlock, Mon Mar 13 12:22:13 PDT 2006
 //    Added code for Apple so all lines can be drawn at once.
 //
+//    Kathleen Biagas, Mon Jun 11 17:16:42 MST 2012
+//    Have windows follow the APPLE path.
+//
 // ****************************************************************************
 
 void
@@ -425,7 +434,7 @@ Zoom2D::UpdateRubberBand(int aX, int aY, int lX, int lY, int nX, int nY)
     // call. The rubberBand doesn't need it exactly, but we do.
     if (shouldDrawGuides)
     {
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
         int x0 = (aX < nX) ? aX : nX;
         int x1 = (aX > nX) ? aX : nX;
         int y0 = (aY < nY) ? aY : nY;

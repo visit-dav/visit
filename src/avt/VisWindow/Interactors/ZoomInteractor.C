@@ -83,6 +83,9 @@
 //    Brad Whitlock, Fri Oct 14 16:27:15 PDT 2011
 //    Create mapper via proxy.
 //
+//    Kathleen Biagas, Mon Jun 11 17:15:39 MST 2012 
+//    Have windows follow the APPLE path. 
+//
 // ****************************************************************************
 
 ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw) 
@@ -101,7 +104,7 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
     rubberBand       = vtkPolyData::New();
 
     vtkPoints *pts = vtkPoints::New();
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
     pts->SetNumberOfPoints(4);
     rubberBand->SetPoints(pts);
     pts->Delete();
@@ -596,6 +599,9 @@ GetSegment(int a, int l, int n, int &outl, int &newl)
 //    I added code for APPLE that lets us draw all line segments at the same
 //    time. The mapper that we're using in this case does not XOR so it's ok.
 //   
+//    Kathleen Biagas, Mon Jun 11 17:15:39 MST 2012 
+//    Have windows follow the APPLE path. 
+//
 // ****************************************************************************
 
 void
@@ -609,7 +615,7 @@ ZoomInteractor::UpdateRubberBand(int aX, int aY, int lX, int lY,int nX,int nY)
         return;
     }
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
     // This code assumes that the lines will be drawn at the same time
     // in an overlay window that the rubber-band mapper will create.
     vtkViewport *ren = proxy.GetBackground();
