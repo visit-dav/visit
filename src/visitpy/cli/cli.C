@@ -386,13 +386,9 @@ main(int argc, char *argv[])
 
         // add lib to sys.path to pickup various dylibs.
         std::string vlibdir  = GetVisItLibraryDirectory(); 
-#ifdef _WIN32
-        // ensure libdir has path-separators that are properly escaped.
-        vlibdir = StringHelpers::Replace(vlibdir, "\\", "\\\\");
-#endif
         std::ostringstream oss;
 
-        oss << "sys.path.append(pjoin('" << vlibdir  <<"','site-packages'))";
+        oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
         PyRun_SimpleString((char*)"import visit");

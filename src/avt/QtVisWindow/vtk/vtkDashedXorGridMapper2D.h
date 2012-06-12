@@ -88,7 +88,6 @@ public:
   { horizontalBias = hb;    }
   
 protected:
-  void RenderOverlay_Win32(vtkViewport* viewport, vtkActor2D* actor);
   void RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor);
   void RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor);
 

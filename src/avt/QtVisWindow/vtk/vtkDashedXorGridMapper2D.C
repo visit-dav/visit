@@ -113,9 +113,7 @@ struct vtkDashedXorGridMapper2DPrivate
         if(bestRenderer != -1)
             return bestRenderer;
 
-#if defined(_WIN32)
-        bestRenderer = 0;
-#elif defined(__APPLE__)
+#if defined(__APPLE__) || defined (_WIN32)
         bestRenderer = 2;
 #elif defined(HAVE_XLIB)
         bestRenderer = 1;
@@ -269,9 +267,6 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
     {
         switch(d->SelectBestRenderer())
         {
-        case 0:
-            RenderOverlay_Win32(viewport, actor);
-            break;
         case 1:
             RenderOverlay_X11(viewport, actor);
             break;
@@ -282,54 +277,6 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
     }
 }
 
-// ****************************************************************************
-//
-// Win32 coding and macros
-//
-// ****************************************************************************
-
-void
-vtkDashedXorGridMapper2D::RenderOverlay_Win32(vtkViewport* viewport, vtkActor2D* actor)
-{
-#if defined(_WIN32)
-#define SET_FOREGROUND_D(rgba) if(validPen) DeleteObject(pen); \
-      pen = CreatePen(PS_SOLID, 1, GetNearestColor(hdc, \
-          RGB(int(255*rgba[0]),int(255*rgba[0]),int(255*rgba[0])))); \
-      SelectObject(hdc, pen); \
-      validPen = true;
-
-#define SET_FOREGROUND(rgba) if(validPen) DeleteObject(pen); \
-      pen = CreatePen(PS_SOLID, 1, GetNearestColor(hdc, RGB(rgba[0],rgba[0],rgba[0]))); \
-      SelectObject(hdc, pen); \
-      validPen = true;
-
-#define DRAW_XOR_LINE(x1, y1, x2, y2) \
-      MoveToEx(hdc, x1+borderL, y1+borderT, &oldPoint); \
-      LineTo(hdc, x2+borderL, y2+borderT); \
-      LineTo(hdc, x2+borderL+1, y2+borderT+1);
-
-#define FLUSH_AND_SYNC() if(validPen) DeleteObject(pen);
-
-#define CLEAN_UP() delete [] points;
-
-    HPEN pen = 0;
-    bool validPen = false;
-    POINT *points = new POINT[1024];
-    POINT oldPoint;
-    HDC hdc = GetWindowDC((HWND)d->widget->winId());
-    int borderT = 0; //GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYSIZE);
-    int borderL = 0; //GetSystemMetrics(SM_CXFRAME);
-
-    // Make the drawing mode be XOR.
-    SetROP2(hdc, R2_XORPEN);
-
-    // Set the line color
-    double whitergb[] = {1.,1.,1.};
-    SET_FOREGROUND_D(whitergb);
-
-#include <vtkDashedXorGridMapper2D_body.C>
-#endif
-}
 
 // ****************************************************************************
 //
@@ -403,12 +350,15 @@ vtkDashedXorGridMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* a
 //
 // Qt coding and macros
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Jun 11 15:44:12 MST 2012
+//    Remove the ifdef preventing use of this method on _WIN32.
+//
 // ****************************************************************************
 
 void
 vtkDashedXorGridMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor)
 {
-#if !defined(_WIN32)
 #define SET_FOREGROUND_D(rgba) \
     painter.setPen(QColor(int(255.*rgba[0]), int(255.*rgba[1]), int(255.*rgba[2])));
 
@@ -458,7 +408,6 @@ vtkDashedXorGridMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* ac
     SET_FOREGROUND_D(actorColor);
 
 #include <vtkDashedXorGridMapper2D_body.C>
-#endif
 }
 
 
