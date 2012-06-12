@@ -1329,6 +1329,11 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   Brad Whitlock, Thu Oct  9 15:57:00 PDT 2008
 //   Conditionally add img2sm to the menu.
 //
+//   Cyrus Harrison, Tue Jun 12 11:27:31 PDT 2012
+//   Removed check for img2sm via a QProcess call. This was hanging the GUI
+//   on some platforms. If we want to selectively enable img2sm in the future,
+//   we can a config file of some sort to point to img2sm if it exists.
+//
 // ****************************************************************************
 
 void
@@ -1357,12 +1362,12 @@ QvisSaveMovieWizard::CreateFormatPage()
 #ifdef _WIN32
     int nFormats = N_MOVIE_FORMATS-1;
 #else
-    // See if the img2sm encoder is present in the user's path.
-    QProcess img2sm;
-    img2sm.start("img2sm", QStringList());
-    bool started = img2sm.waitForStarted();
-    int nFormats = started ? N_MOVIE_FORMATS : (N_MOVIE_FORMATS-1);
+    int nFormats = N_MOVIE_FORMATS;
 #endif
+
+    // removed check for img2sm via a QProcess call
+    // this was hanging on some platforms.
+
     // Add all of the movie formats from the table.
     for(int i = 0; i < nFormats; ++i)
         page9_formatComboBox->addItem(movieFormatInfo[i].menu_name);
