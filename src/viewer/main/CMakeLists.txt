@@ -100,6 +100,8 @@ ViewerToolbar.C
 ViewerWindow.C
 ViewerWindowManager.C
 ViewerWindowManagerAttributes.C
+VisItChangeUsernameWindow.C
+VisItPasswordWindow.C
 VisItViewer.C
 WindowActions.C
 ${VIEWERLIB_WIN32_SOURCES}
@@ -130,6 +132,8 @@ ViewerServerManager.h
 ViewerStateBuffered.h
 ViewerSubject.h
 ViewerWindowManager.h
+VisItChangeUsernameWindow.h
+VisItPasswordWindow.h
 )
 QT_WRAP_CPP(viewer VIEWERLIB_SOURCES ${VIEWERLIB_MOC_SOURCES})
 

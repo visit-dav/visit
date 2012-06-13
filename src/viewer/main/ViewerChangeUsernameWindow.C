@@ -76,35 +76,9 @@ ViewerChangeUsernameWindow *ViewerChangeUsernameWindow::instance = NULL;
 //
 // ****************************************************************************
 
-ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent)
-    : QDialog(parent)
+ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent) :
+    VisItChangeUsernameWindow(parent), username()
 {
-    setModal(true);
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(10);
-
-    QHBoxLayout *l2 = new QHBoxLayout;
-    layout->addLayout(l2);
-    l2->setSpacing(5);
-    label = new QLabel(tr("Username for localhost: "), this);
-    l2->addWidget(label);
-
-    usernameedit = new QLineEdit(this);
-    l2->addWidget(usernameedit);
-    connect(usernameedit, SIGNAL(returnPressed()), this, SLOT(accept()));
-    layout->addSpacing(20);
-
-    QHBoxLayout *l3 = new QHBoxLayout;
-    layout->addLayout(l3);
-    QPushButton *okay = new QPushButton(tr("Confirm username"), this);
-    connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
-    l3->addWidget(okay);
-    l3->addStretch(10);
-
-    QPushButton *cancel = new QPushButton(tr("Cancel"), this);
-    connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
-    l3->addWidget(cancel);
 }
 
 // ****************************************************************************
@@ -117,30 +91,6 @@ ViewerChangeUsernameWindow::ViewerChangeUsernameWindow(QWidget *parent)
 
 ViewerChangeUsernameWindow::~ViewerChangeUsernameWindow()
 {
-}
-
-// ****************************************************************************
-// Method: ViewerChangeUsernameWindow::getUsername
-//
-// Purpose: 
-//   Retrieve the username from the widget.
-//
-// Returns:    Returns the username name if this has been instantiated, 
-//             NULL otherwise. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   February 13, 2008 
-//
-// ****************************************************************************
-
-std::string
-ViewerChangeUsernameWindow::getUsername()
-{
-    // if never instantiated, no user name has been set here
-    if (!instance)
-        return NULL;
-
-    return instance->usernameedit->text().toStdString();
 }
 
 // ****************************************************************************
@@ -172,6 +122,9 @@ ViewerChangeUsernameWindow::getUsername()
 //   Kathleen Bonnell, Thu Apr 22 17:54:34 MST 2010
 //   Prevent use of mp if NULL.
 //
+//   Brad Whitlock, Tue Jun 12 14:31:34 PST 2012
+//   Use base class's getUsername method.
+//
 // ****************************************************************************
 
 bool
@@ -182,40 +135,28 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
     if(!instance)
         instance = new ViewerChangeUsernameWindow();
 
-    instance->setWindowTitle(tr("Choose new username"));
-
-    // Set the username prompt.
-    QString labelText(tr("New username for %1: ").arg(host.c_str()));
-    instance->label->setText(labelText);
-
-    // Make the username window be the active window.
-    instance->activateWindow();
-    instance->raise();
-
-    // Clear the username.
-    instance->usernameedit->clear();
-    instance->usernameedit->setText("");
-
-    // Give focus to the username window.
-    QTimer::singleShot(300, instance->usernameedit, SLOT(setFocus()));
-
     // Enter the local event loop for the dialog.
 #if !defined(_WIN32)
     viewerSubject->BlockSocketSignals(true);
 #endif
-    int status = instance->exec();
+
+    VisItChangeUsernameWindow::ReturnCode status = VisItChangeUsernameWindow::UW_Rejected;
+    instance->username = "";
+    QString name = instance->getUsername(host.c_str(), status);
+
 #if !defined(_WIN32)
     viewerSubject->BlockSocketSignals(false);
 #endif
 
-    if (status == Accepted)
+    if (status == UW_Accepted)
     {
         // Accepted; hit return or Okay.
-        
-        std::string new_username(instance->usernameedit->text().toStdString());
-        if (new_username.size() == 0)
+        std::string new_username(name.toStdString());
+        if (new_username.empty())
             return false;
-       
+
+        instance->username = new_username;
+
         MachineProfile *mp = profiles->GetMachineProfileForHost(host);
         if (mp != NULL)
             mp->SetUserName(new_username);
@@ -229,7 +170,6 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
     // Rejected or cancelled.  
     return false;
 }
-
 
 // ****************************************************************************
 // Method: ViewerChangeUsernameWindow::changeUsername
@@ -264,10 +204,10 @@ ViewerChangeUsernameWindow::changeUsername(const std::string &host)
 
 
 bool
-ViewerChangeUsernameWindow::changeUsername(const std::string &host, std::string& username)
+ViewerChangeUsernameWindow::changeUsername(const std::string &host, std::string &_username)
 {
     bool res = changeUsername(host);
-    if(res) username = getUsername();
+    if(res) _username = instance->username;
     return res;
 }
 

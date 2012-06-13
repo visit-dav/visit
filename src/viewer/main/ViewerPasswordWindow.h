@@ -38,13 +38,10 @@
 
 #ifndef VIEWERPASSWORDWINDOW_H
 #define VIEWERPASSWORDWINDOW_H
-#include <visit-config.h>
-#include <QDialog>
+#include <VisItPasswordWindow.h>
 #include <set>
 
 // Forward declarations
-class QLineEdit;
-class QLabel;
 class ViewerConnectionProgressDialog;
 
 // ****************************************************************************
@@ -83,35 +80,31 @@ class ViewerConnectionProgressDialog;
 //    Kathleen Bonnell, Thu Apr 22 18:06:28 MST 2010 
 //    Changed return type of getPassword to std::string.
 //
+//    Brad Whitlock, Tue Jun 12 11:17:23 PDT 2012
+//    I made it a subclass of VisItPasswordWindow.
+//
 // ****************************************************************************
 
-class ViewerPasswordWindow : public QDialog
+class ViewerPasswordWindow : public VisItPasswordWindow
 {
     Q_OBJECT
 public:
     ViewerPasswordWindow(QWidget *parent=NULL);
-    ~ViewerPasswordWindow();
+    virtual ~ViewerPasswordWindow();
 
-    static const std::string getPassword(const char *, const char *, bool = false);
-    static const bool getNeedToChangeUsername() { return needToChangeUsername; }
-    static void resetNeedToChangeUsername() { needToChangeUsername = false; }
-    static void authenticate(const char *, const char *, int);
-    static void SetConnectionProgressDialog(ViewerConnectionProgressDialog *d)
-    {
-        dialog = d;
-    }
+    // Callback function for RemoteProcess' authentication callback.
+    static void authenticate(const char *username, const char *host, int fd);
 
-private slots:
-    void changeUsername();
+    static void SetConnectionProgressDialog(ViewerConnectionProgressDialog *d);
 
     static std::set<int> GetFailedPortForwards();
 private:
-    static std::set<int> failedPortForwards;
-    QLineEdit *passedit;
-    QLabel    *label;
-    static bool       needToChangeUsername;
+    std::string password(const char *username, const char *host,
+                         bool passphrase, VisItPasswordWindow::ReturnCode &ret);
+
+    static ViewerPasswordWindow           *instance;
     static ViewerConnectionProgressDialog *dialog;
-    static ViewerPasswordWindow *instance;
+    static std::set<int>                   failedPortForwards;
 };
 
 #endif

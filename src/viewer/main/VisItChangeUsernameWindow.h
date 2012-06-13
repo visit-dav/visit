@@ -36,46 +36,43 @@
 *
 *****************************************************************************/
 
-#ifndef VIEWERCHANGEUSERNAMEWINDOW_H
-#define VIEWERCHANGEUSERNAMEWINDOW_H
-#include <VisItChangeUsernameWindow.h>
+#ifndef VISITCHANGEUSERNAMEWINDOW_H
+#define VISITCHANGEUSERNAMEWINDOW_H
+#include <QDialog>
 
-#include <string>
+// Forward declarations
+class QLineEdit;
+class QLabel;
 
 // ****************************************************************************
-//  Class:  ViewerChangeUsernameWindow
+//  Class:  VisItChangeUsernameWindow
 //
 //  Purpose:
 //     A window where the user can set the username for a host.
 //
-//  Programmer:  Hank Childs
-//  Creation:    November 11, 2007
+//  Programmer:  Brad Whitlock
+//  Creation:    Tue Jun 12 14:31:34 PST 2012
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
-//    Added static getUsername method.
-//
-//    Brad Whitlock, Fri May 23 10:36:48 PDT 2008
-//    Qt 4.
-//
-//    Brad Whitlock, Tue Jun 12 15:55:34 PST 2012
-//    I made it inherit from VisItChangeUsernameWindow.
 //
 // ****************************************************************************
 
-class ViewerChangeUsernameWindow : public VisItChangeUsernameWindow
+class VisItChangeUsernameWindow : public QDialog
 {
     Q_OBJECT
 public:
-    ViewerChangeUsernameWindow(QWidget *parent = 0);
-    virtual ~ViewerChangeUsernameWindow();
+    VisItChangeUsernameWindow(QWidget *parent = 0);
+    virtual ~VisItChangeUsernameWindow();
 
-    static bool changeUsername(const std::string &hostname, std::string& username);
-    static bool changeUsername(const std::string &hostname);
+    typedef enum {
+        UW_Accepted,
+        UW_Rejected
+    } ReturnCode;
 
+    QString getUsername(const QString &hostname, ReturnCode &ret);
 private:
-    std::string username;
-    static ViewerChangeUsernameWindow *instance;
+    QLineEdit *usernameedit;
+    QLabel    *label;
 };
 
 #endif
