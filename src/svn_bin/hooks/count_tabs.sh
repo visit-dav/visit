@@ -71,6 +71,9 @@
 #   Brad Whitlock, Fri May 18 17:08:50 PDT 2012
 #   Don't mess with resource (.rc) files.
 #
+#   Brad Whitlock, Wed Jun 13 13:54:46 PDT 2012
+#   Skip qtssh directory.
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -102,6 +105,9 @@ while read fline; do
             continue
             ;;
         */svn_bin/build_visit|*/svn_bin/bv_support/*)
+            continue
+            ;;
+        */tools/qtssh/*|*/tools/qtssh/windows/*)
             continue
             ;;
         *Makefile)
