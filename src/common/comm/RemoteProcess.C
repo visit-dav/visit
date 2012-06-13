@@ -2391,10 +2391,10 @@ RemoteProcess::KillProcess()
         // Stop watching for dead children so we don't get a signal when we
         // intentionally kill it.
         signal(SIGCHLD, SIG_DFL);
-#endif
+
         // Kill the process
         kill(remoteProgramPid, SIGTERM);
-
+#endif
         remoteProgramPid = -1;
     }
 }
