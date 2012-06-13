@@ -38,6 +38,7 @@
 
 #include <visit-config.h>
 #include "ViewerPasswordWindow.h"
+
 #include <ViewerConnectionProgressDialog.h>
 
 #include <ChangeUsernameException.h>
@@ -57,12 +58,11 @@
 extern ViewerSubject *viewerSubject;
 #endif
 
-// Static members
-ViewerPasswordWindow *ViewerPasswordWindow::instance = NULL;
-ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
-bool ViewerPasswordWindow::needToChangeUsername = false;
 
-std::set<int> ViewerPasswordWindow::failedPortForwards;
+// Static members
+ViewerPasswordWindow           *ViewerPasswordWindow::instance = NULL;
+ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
+std::set<int>                   ViewerPasswordWindow::failedPortForwards;
 
 // ****************************************************************************
 //  Constructor:  ViewerPasswordWindow::ViewerPasswordWindow
@@ -71,63 +71,14 @@ std::set<int> ViewerPasswordWindow::failedPortForwards;
 //  Creation:    April 26, 2001
 //
 //  Modifications:
-//    Brad Whitlock, Mon Apr 15 11:22:44 PDT 2002
-//    Added an ok button.
-//
-//    Jeremy Meredith. Tue Dec  9 15:16:52 PST 2003
-//    Added a cancel button, as well as supported Rejected functionality.
-//
-//    Brad Whitlock, Mon Feb 23 15:07:41 PST 2004
-//    Added space between the password line edit and the cancel button.
-//
-//    Hank Childs, Sun Nov 11 22:21:55 PST 2007
-//    Add support for changing the username.
-//
-//    Brad Whitlock, Tue Apr 29 15:09:31 PDT 2008
-//    Added tr()'s
-//
-//    Brad Whitlock, Tue May 27 13:41:28 PDT 2008
-//    Qt 4.
+//    Brad Whitlock, Tue Jun 12 14:19:23 PST 2012
+//    Call the base class' constructor.
 //
 // ****************************************************************************
 
-ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent)
-    : QDialog(parent)
+ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent) :
+    VisItPasswordWindow(parent)
 {
-    setModal(true);
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(10);
-
-    QHBoxLayout *l2 = new QHBoxLayout;
-    layout->addLayout(l2);
-    l2->setSpacing(5);
-    label = new QLabel(tr("Password for localhost: "), this);
-    l2->addWidget(label);
-
-    passedit = new QLineEdit(this);
-    passedit->setEchoMode(QLineEdit::Password);
-    l2->addWidget(passedit);
-    connect(passedit, SIGNAL(returnPressed()), this, SLOT(accept()));
-    layout->addSpacing(20);
-
-    QHBoxLayout *l3 = new QHBoxLayout;
-    layout->addLayout(l3);
-    QPushButton *okay = new QPushButton(tr("OK"), this);
-    connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
-    l3->addWidget(okay);
-    l3->addStretch(10);
-
-    QPushButton *cub = new QPushButton(tr("Change username"), this);
-    connect(cub, SIGNAL(clicked()), this, SLOT(changeUsername()));
-    l3->addWidget(cub);
-    l3->addStretch(10);
-
-    QPushButton *cancel = new QPushButton(tr("Cancel"), this);
-    connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
-    l3->addWidget(cancel);
-
-    setWindowTitle(tr("Enter password"));
 }
 
 // ****************************************************************************
@@ -210,6 +161,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Kathleen Bonnell, Thu Apr 22 17:57:09 MST 2010
 //    getPassword now returns std::string.
 //
+//    Brad Whitlock, Tue Jun 12 14:22:23 PST 2012
+//    I changed how the password is obtained.
+//
 // ****************************************************************************
 
 void
@@ -263,12 +217,12 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                  strstr(buffer, "ASSCODE"))
         {
             // Password needed. Prompt for it and write it to the FD.
-            instance->needToChangeUsername = false;
-            const std::string passwd = instance->getPassword(username, host);
+            VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
+            std::string passwd = instance->password(username, host, false, ret);
 
             if (passwd.empty())
             {
-                if (instance->needToChangeUsername)
+                if (ret == VisItPasswordWindow::PW_ChangedUsername)
                 {
                     EXCEPTION0(ChangeUsernameException)
                 }
@@ -290,12 +244,12 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         else if (strstr(buffer, "assphrase"))
         {
             // Passphrase needed. Prompt for it and write it to the FD.
-            instance->needToChangeUsername = false;
-            const std::string passphr = instance->getPassword(username, host, true);
+            VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
+            std::string passphr = instance->password(username, host, true, ret);
 
             if (passphr.empty())
             {
-                if (instance->needToChangeUsername)
+                if (ret == VisItPasswordWindow::PW_ChangedUsername)
                 {
                     EXCEPTION0(ChangeUsernameException);
                 }
@@ -345,6 +299,35 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         }
     }
 #endif
+}
+
+// ****************************************************************************
+// Method: ViewerPasswordWindow::SetConnectionProgressDialog
+//
+// Purpose: 
+//   Set the connection progress dialog for the viewer.
+//
+// Arguments:
+//    d : The connection progress dialog.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 09:46:42 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPasswordWindow::SetConnectionProgressDialog(ViewerConnectionProgressDialog *d)
+{
+    dialog = d;
+}
+
+
+std::set<int>
+ViewerPasswordWindow::GetFailedPortForwards()
+{
+    return failedPortForwards;
 }
 
 // ****************************************************************************
@@ -400,82 +383,41 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Changed return type to std::string so this method can still be used
 //   on windows.
 //
+//   Brad Whitlock, Tue Jun 12 14:16:34 PST 2012
+//   Implement using new base class' getPassword method.
+//
 // ****************************************************************************
 
-const std::string
-ViewerPasswordWindow::getPassword(const char *username, const char *host,
-                                  bool passphrase)
+std::string
+ViewerPasswordWindow::password(const char *username, const char *host,
+    bool passphrase, VisItPasswordWindow::ReturnCode &ret)
 {
     if(!instance)
         instance = new ViewerPasswordWindow();
 
-    const char *queryType = passphrase ? "Passphrase" : "Password";
-    if (passphrase)
-        instance->setWindowTitle(tr("Enter passphrase"));
-    else
-        instance->setWindowTitle(tr("Enter password"));
+    QString pw;
 
-    // Set the password prompt.
-    QString labelText;
-    instance->label->setTextFormat(Qt::RichText);
-    if(strcmp(username, "notset") == 0)
-        labelText.sprintf("%s for %s: ", queryType, host);
-    else
-        // "nobr" means no line breaks, which is how it worked when we weren't
-        // using rich text.
-        labelText.sprintf("<nobr>%s for <font color=\"red\">%s</font>@%s: </nobr>", 
-                          queryType, username, host);
-    instance->label->setText(labelText);
-
-    // Make the password window be the active window.
-    instance->topLevelWidget()->activateWindow();
-    instance->topLevelWidget()->raise();
-
-    // Clear the password.
-    instance->passedit->clear();
-
-    // Give focus to the password window.
-    QTimer::singleShot(300, instance->passedit, SLOT(setFocus()));
-
-    // Enter the local event loop for the dialog.
-#if !defined(_WIN32)
-    viewerSubject->BlockSocketSignals(true);
-#endif
-    int status = instance->exec();
-#if !defined(_WIN32)
-    viewerSubject->BlockSocketSignals(false);
-#endif
-
-    // Return the password string.
-    std::string pass;
-    if (status == Accepted)
+    TRY
     {
-        // Accepted; hit return or Okay.
-        pass =  instance->passedit->text().toStdString();
+#if !defined(_WIN32)
+        viewerSubject->BlockSocketSignals(true);
+#endif
+
+        ret = VisItPasswordWindow::PW_Rejected;
+        pw = instance->getPassword(QString(username), QString(host), passphrase, ret);
+
+#if !defined(_WIN32)
+        viewerSubject->BlockSocketSignals(false);
+#endif
     }
-    return pass;
-}
+    CATCHALL
+    {
+#if !defined(_WIN32)
+        viewerSubject->BlockSocketSignals(false);
+#endif
+        RETHROW;
+    }
+    ENDTRY
 
-// ****************************************************************************
-// Method: ViewerPasswordWindow::changeUsername
-//
-// Purpose:
-//    A slot for changing the user name.
-//
-// Programmer: Hank Childs
-// Creation:   November 10, 2007
-//
-// ****************************************************************************
-
-void
-ViewerPasswordWindow::changeUsername(void)
-{
-    instance->needToChangeUsername = true;
-    reject();
-}
-
-std::set<int>
-ViewerPasswordWindow::GetFailedPortForwards()
-{
-    return failedPortForwards;
+    return pw.toStdString();
 }
