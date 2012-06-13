@@ -335,7 +335,6 @@ private:
     H5PartFile *h5partFile;
     bool useH5Part;
     bool h5partFileOpen;
-    char fileName[64];
     h5part_int64_t nParticles;
     h5part_int64_t nTimeSteps;
     h5part_int64_t nDatasets;

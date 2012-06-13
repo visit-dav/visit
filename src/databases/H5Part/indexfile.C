@@ -215,7 +215,6 @@ void H5_Index::openH5PartFile(const std::string& file_location) {
 
     // open in H5Part file mode
     h5partFileOpen = true;
-    strcpy(fileName, file_location.c_str());
     h5partFile = H5PartOpenFile(file_location.c_str(), H5PART_READ);
     if (!h5partFile) {
         perror("File open failed:  exiting!");
