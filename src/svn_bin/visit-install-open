@@ -48,6 +48,9 @@
 #   Eric Brugger, Tue May 15 11:08:05 PDT 2012
 #   I changed the name of the ubuntu 11 executable.
 #
+#   Eric Brugger, Wed Jun 13 08:40:31 PDT 2012
+#   I added atlas and rzthriller.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -95,7 +98,9 @@ hoth=true
 kickit=true
 sidious=true
 ubuntu1104_64=false
+atlas=true
 aztec=true
+rzthriller=true
 rzzeus=true
 euclid=true
 glory=false
@@ -116,7 +121,9 @@ do
          kickit=false
          sidious=false
          ubuntu1104_64=false
+         atlas=false
          aztec=false
+         rzthriller=false
          rzzeus=false
          euclid=false
          glory=false
@@ -155,12 +162,28 @@ do
          ubuntu1104_64=true
          shift
          ;;
+      -atlas)
+         atlas=false
+         shift
+         ;;
+      +atlas)
+         atlas=true
+         shift
+         ;;
       -aztec)
          aztec=false
          shift
          ;;
       +aztec)
          aztec=true
+         shift
+         ;;
+      -rzthriller)
+         rzthriller=false
+         shift
+         ;;
+      +rzthriller)
+         rzthriller=true
          shift
          ;;
       -rzzeus)
@@ -363,6 +386,43 @@ then
 fi
 
 #
+# Install on atlas.
+#
+rm -f atlas
+cat <<EOF > atlas
+#!/bin/sh
+./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-atlas /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-chaos4
+rm -f resultlog
+echo "        install of visit on atlas"              > resultlog 2>&1
+echo "       ---------------------------"             >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+df -k /usr/gapps/visit                                >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-chaos4/bin  >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+echo "The database plugins:"                          >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-chaos4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): atlas" $emailName < resultlog
+EOF
+
+if [ $atlas = true ]
+then
+   if [ $test = no ]
+   then
+      scp atlas608:/usr/tmp/$user/atlas/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-atlas.tar.gz
+      scp visit$ver2.linux-atlas.tar.gz atlas:
+      scp visit-install atlas:
+      scp atlas atlas:atlas_install
+      ssh atlas "chmod 750 atlas_install;./atlas_install"
+   fi
+fi
+
+#
 # Install on aztec.
 #
 rm -f aztec
@@ -399,12 +459,49 @@ then
 fi
 
 #
+# Install on rzthriller.
+#
+rm -f rzthriller
+cat <<EOF > rzthriller
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-rzthriller /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-chaos4
+rm -f resultlog
+echo "        install of visit on rzthriller"         > resultlog 2>&1
+echo "       --------------------------------"        >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+df -k /usr/gapps/visit                                >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-chaos4/bin  >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                               >> resultlog 2>&1
+echo "The database plugins:"                          >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-chaos4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail -s "VisIt install ($ver): rzthriller" $emailName < resultlog
+EOF
+
+if [ $rzthriller = true ]
+then
+   if [ $test = no ]
+   then
+      scp rzthriller1:/usr/tmp/$user/rzthriller/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rzthriller.tar.gz
+      scp visit$ver2.linux-rzthriller.tar.gz rzthriller:
+      scp visit-install rzthriller:
+      scp rzthriller rzthriller:rzthriller_install
+      ssh rzthriller "chmod 750 rzthriller_install;./rzthriller_install"
+   fi
+fi
+
+#
 # Install on rzzeus.
 #
 rm -f rzzeus
 cat <<EOF > rzzeus
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-rzzeus /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on rzzeus"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -426,9 +523,11 @@ if [ $rzzeus = true ]
 then
    if [ $test = no ]
    then
-      cp /usr/tmp/$user/rzzeus/visitbuild/visit$ver2.linux-x86_64.tar.gz .
-      cp rzzeus rzzeus_install
-      chmod 750 rzzeus_install;./rzzeus_install
+      scp rzzeus286:/usr/tmp/$user/rzzeus/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rzzeus.tar.gz
+      scp visit$ver2.linux-rzzeus.tar.gz rzzeus:
+      scp visit-install rzzeus:
+      scp rzzeus rzzeus:rzzeus_install
+      ssh rzzeus"chmod 750 rzzeus_install;./rzzeus_install"
    fi
 fi
 
@@ -541,5 +640,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 aztec rzzeus euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 atlas aztec rzthriller rzzeus euclid glory redsky
 fi
