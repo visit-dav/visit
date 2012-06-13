@@ -796,7 +796,7 @@ long H5_FQ_Variable::indexSize() const{
     std::string strname(name());
     uint64_t size = 0;
 
-    bool berr = h5file_.getBitmapSize(strname, (unsigned int64_t)(timeval),
+    bool berr = h5file_.getBitmapSize(strname, (uint64_t)(timeval),
                                       &size);
 
     if (ibis::gVerbose > 3) {
