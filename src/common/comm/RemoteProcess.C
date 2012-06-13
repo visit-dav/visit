@@ -2200,6 +2200,9 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 //    I moved all of the decisions about the command line we'll execute higher
 //    up in the call stack to make this method simpler.
 //
+//    Brad Whitlock, Wed Jun 13 11:11:59 PDT 2012
+//    Call KillProcess method instead of kill().
+//
 // ****************************************************************************
 
 void
@@ -2295,7 +2298,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
                 close(ptyFileDescriptor);
 
                 // Kill the SSH proces
-                kill(remoteProgramPid, SIGTERM);
+                KillProcess();
 
                 // Clean up memory
                 DestroySplitCommandLine(argv, argc);
@@ -2351,7 +2354,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
                 close(ptyFileDescriptor);
 
                 // Kill the SSH proces
-                kill(remoteProgramPid, SIGTERM);
+                KillProcess();
 
                 // Clean up memory
                 DestroySplitCommandLine(argv, argc);
@@ -2368,7 +2371,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
             close(ptyFileDescriptor);
 
             // Kill the SSH proces
-            kill(remoteProgramPid, SIGTERM);
+            KillProcess();
 
             // Clean up memory
             DestroySplitCommandLine(argv, argc);
@@ -2385,6 +2388,42 @@ RemoteProcess::LaunchRemote(const std::string &host, const stringVector &args)
 
     // Clean up memory
     DestroySplitCommandLine(argv, argc);
+}
+
+// ****************************************************************************
+// Method: RemoteProcess::KillProcess
+//
+// Purpose: 
+//   Intentionally kill the process that we launched.
+//
+// Note:       We don't just call kill() since there is the matter of the
+//             catch_dead_child handler. We don't want the intentional kill to
+//             cause that signal handler to fire since it can cause a lockup.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 11:10:21 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProcess::KillProcess()
+{
+    if(remoteProgramPid != -1)
+    {
+        childDied[remoteProgramPid] = false;
+
+#if !defined(_WIN32)
+        // Stop watching for dead children so we don't get a signal when we
+        // intentionally kill it.
+        signal(SIGCHLD, SIG_DFL);
+#endif
+        // Kill the process
+        kill(remoteProgramPid, SIGTERM);
+
+        remoteProgramPid = -1;
+    }
 }
 
 // ****************************************************************************
