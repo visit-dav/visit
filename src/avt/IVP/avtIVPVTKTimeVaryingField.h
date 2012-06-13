@@ -103,13 +103,13 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     // avtIVPField interface
     virtual Result    operator()(const double& t,
                                  const avtVector &pt,
-                                       avtVector &retV) const;
+                                 avtVector &retV) const;
 
     virtual Result    operator()(const double& t,
                                  const avtVector &pt,
                                  const avtVector &vel,
-                                       avtVector &retV) const
-    { return( avtIVPSolverResult::TERMINATE ); };
+                                 avtVector &retV) const
+    { return FAIL; }
 
     virtual avtVector ConvertToCartesian(const avtVector& pt) const;
     virtual avtVector ConvertToCylindrical(const avtVector& pt) const;
@@ -123,9 +123,8 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     virtual void      SetScalarVariable( unsigned char index, 
                                          const std::string& name );
 
-    Classification    IsInside( const double& t, const avtVector &pt ) const;
+    Result         IsInside( const double& t, const avtVector &pt ) const;
     unsigned int   GetDimension() const;
-    void           SetNormalized( bool v );
 
     virtual void   GetExtents( double extents[6] ) const;
     virtual void   GetTimeRange( double range[2] ) const;
@@ -135,9 +134,8 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
 
   protected:
 
-    Classification FindCell( const double& t, const avtVector& p ) const;
+    Result         FindCell( const double& t, const avtVector& p ) const;
 
-    bool                   normalized;
     vtkDataSet*            ds;
     avtCellLocator*        loc;
 
@@ -151,7 +149,6 @@ class IVP_API avtIVPVTKTimeVaryingField : public avtIVPField
     mutable avtVector               lastPos;
     mutable vtkIdType               lastCell;
     mutable avtInterpolationWeights lastWeights;
-
 };
 
 #endif

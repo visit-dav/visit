@@ -246,7 +246,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
-    if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::INSIDE)
+    if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
     {
         if( DebugStream::Level5() )
             debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
@@ -283,19 +283,19 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
         result = ivp->Step( field, tfinal, &step );
 
-        if( result == avtIVPSolverResult::OK || result == avtIVPSolverResult::TERMINATE )
+        if( result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE )
         {
             // The step was successful, call AnalyzeStep() which will
             // determine((among other things) whether to terminate.
             AnalyzeStep( step, field );
 
-            if( result == avtIVPSolverResult::TERMINATE )
+            if( result == avtIVPSolver::TERMINATE )
                 break;
 
             // Check if the new position is outside the domain
             // (or in the domain's ghost data); in this case
             // finish here and continue in the next domain.
-            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::INSIDE)
+            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
@@ -303,13 +303,13 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 break;
             }
         }
-        else if( result == avtIVPSolverResult::OUTSIDE_DOMAIN )
+        else if( result == avtIVPSolver::OUTSIDE_SPATIAL )
         {
             // Last step took us outside the domain, see what can be done.
 
             // First, check if the current point is inside the domain.
             // If it is outside, there is nothing further we can do.
-            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::INSIDE)
+            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): "
@@ -350,7 +350,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 // next domain.
                 avtVector y = ivp->GetCurrentY();
                 avtVector v;
-                if( (*field)(t, y, v) != avtIVPSolverResult::OK )
+                if( (*field)(t, y, v) != avtIVPSolver::OK )
                 {
                     if( DebugStream::Level5() )
                         debug5 << "avtIntegralCurve::Advance(): bad step, "

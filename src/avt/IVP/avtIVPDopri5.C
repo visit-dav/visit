@@ -407,7 +407,7 @@ avtIVPDopri5::GuessInitialStep(const avtIVPField* field,
 
         // perform an explicit Euler step
         avtVector k2, k3 = y + h * k1;
-        if( (*field)(t+h, k3, k2) != avtIVPSolverResult::OK )
+        if ((*field)(t+h, k3, k2) != avtIVPField::OK)
         {
             // Somehow we couldn't evaluate one of the points we need for the
             // starting estimate. The above code adheres to the h_max that is
@@ -521,6 +521,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    avtIVPStep* ivpstep) 
 {    
     const double direction = sign( 1.0, t_max - t );
+    avtIVPSolver::Result res;
+    avtIVPField::Result fieldResult;
 
     // compute maximum stepsize
     double local_h_max = h_max;
@@ -532,9 +534,8 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
     // maybe also needed for hinit())
     if( n_steps == 0 )
     {
-        avtIVPSolver::Result result;
-        if( (result = (*field)( t, y, k1 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t, y, k1 )) != avtIVPSolver::OK)
+            return ConvertResult(fieldResult);
         n_eval++;
     }
 
@@ -569,7 +570,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             if (DebugStream::Level5())
                 debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                        << t << ", step size too small (h = " << h << ")\n";
-            return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
+            return avtIVPSolver::STEPSIZE_UNDERFLOW;
         }
 
         // Check to make sure we don't exceed the max step.
@@ -590,32 +591,31 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    << ", h = " << h << ", t+h = " << t+h << '\n';
 
         avtVector k2, k3, k4, k5, k6, k7;
-        avtIVPSolver::Result result;
 
         // perform stages
         y_new = y + h*a21*k1;
-        if( (result = (*field)( t+c2*h, y_new, k2 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+c2*h, y_new, k2 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
 
         y_new = y + h * ( a31*k1 + a32*k2 );
-        if( (result = (*field)( t+c3*h, y_new, k3 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+c3*h, y_new, k3 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
         
         y_new = y + h * ( a41*k1 + a42*k2 + a43*k3 );
-        if( (result = (*field)( t+c4*h, y_new, k4 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+c4*h, y_new, k4 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
         
         y_new = y + h * ( a51*k1 + a52*k2 + a53*k3 + a54*k4 );
-        if( (result = (*field)( t+c5*h, y_new, k5 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+c5*h, y_new, k5 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
 
         y_stiff = y_new = y + h * (a61*k1 + a62*k2 + a63*k3 + a64*k4 + a65*k5);
-        if( (result = (*field)( t+h, y_new, k6 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+h, y_new, k6 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
         
         y_new = y + h * (a71*k1 + a73*k3 + a74*k4 + a75*k5 + a76*k6 );
-        if( (result = (*field)( t+h, y_new, k7 )) != avtIVPSolverResult::OK )
-            return( result );
+        if ((fieldResult = (*field)( t+h, y_new, k7 )) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
 
         n_eval += 6;
 
@@ -684,7 +684,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                             debug5 << "\tavtIVPDopri5::Step(): exiting at t = " 
                                    << t << ", problem seems stiff (y = " << y 
                                    << ")\n";
-                        return avtIVPSolverResult::STIFFNESS_DETECTED;
+                        return avtIVPSolver::STIFFNESS_DETECTED;
                     }
                 }
                 else 
@@ -740,14 +740,7 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
             h = h_new;
             numStep++;
 
-            return last ? avtIVPSolverResult::TERMINATE : avtIVPSolverResult::OK;
-
-            // normal exit
-            if (DebugStream::Level5())
-                debug5 << "\tavtIVPDopri5::Step(): normal exit, now at t = " 
-                       << t << ", y = " << y << ", h = " << h << '\n';
-
-            return avtIVPSolverResult::OK;
+            return last ? avtIVPSolver::TERMINATE : avtIVPSolver::OK;
         }
         else 
         {

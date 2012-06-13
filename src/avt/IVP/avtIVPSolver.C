@@ -102,3 +102,19 @@ avtIVPSolver::PutState(const avtIVPState& state)
     avtIVPStateHelper aiss(avtIVPStateHelper::PUT, state._data);
     this->AcceptStateVisitor(aiss);
 }
+
+
+avtIVPSolver::Result
+avtIVPSolver::ConvertResult(const avtIVPField::Result &res) const
+{
+    if (res == avtIVPField::OK)
+        return OK;
+    else if (res == avtIVPField::OUTSIDE_SPATIAL)
+        return OUTSIDE_SPATIAL;
+    else if (res == avtIVPField::OUTSIDE_BOTH)
+        return OUTSIDE_SPATIAL;
+    else if (res == avtIVPField::OUTSIDE_TEMPORAL)
+        return OUTSIDE_TEMPORAL;
+    else
+        return UNSPECIFIED_ERROR;
+}

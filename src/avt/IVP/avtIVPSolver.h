@@ -408,12 +408,24 @@ class avtIVPState
 //    Kathleen Bonnell, Wed May 11 16:16:34 PDT 2011
 //    Added IVP_API to class specification, for proper symbol export on Win32.
 //
+//   Dave Pugmire, Wed Jun 13 17:18:03 EDT 2012
+//   Added avtIVPSolver::Result.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPSolver
 {
   public:
-    typedef avtIVPSolverResult::Result Result;
+    enum Result
+    {
+        OK = 0,
+        TERMINATE,
+        OUTSIDE_SPATIAL,
+        OUTSIDE_TEMPORAL,
+        STEPSIZE_UNDERFLOW,
+        STIFFNESS_DETECTED,
+        UNSPECIFIED_ERROR,
+    };
 
                     avtIVPSolver();
     virtual         ~avtIVPSolver() {};
@@ -453,25 +465,28 @@ class IVP_API avtIVPSolver
 
 protected:
     virtual void    AcceptStateVisitor(avtIVPStateHelper& sv) = 0;
+    virtual Result ConvertResult(const avtIVPField::Result &res) const;
 };
 
 
 inline std::ostream& operator<<( std::ostream& out, 
-                                 const avtIVPSolverResult::Result &res )
+                                 const avtIVPSolver::Result &res )
 {
     switch (res)
     {
-    case avtIVPSolverResult::OK:  
+    case avtIVPSolver::OK:  
         return out <<"OK";
-    case avtIVPSolverResult::TERMINATE:
+    case avtIVPSolver::TERMINATE:
         return out << "TERMINATE";
-    case avtIVPSolverResult::OUTSIDE_DOMAIN:
-        return out <<"OUTSIDE_DOMAIN";
-    case avtIVPSolverResult::STEPSIZE_UNDERFLOW: 
+    case avtIVPSolver::OUTSIDE_SPATIAL:
+        return out <<"OUTSIDE_SPATIAL";
+    case avtIVPSolver::OUTSIDE_TEMPORAL:
+        return out <<"OUTSIDE_TEMPORAL";
+    case avtIVPSolver::STEPSIZE_UNDERFLOW: 
         return out << "STEPSIZE_UNDERFLOW";
-    case avtIVPSolverResult::STIFFNESS_DETECTED: 
+    case avtIVPSolver::STIFFNESS_DETECTED: 
         return out << "STIFFNESS_DETECTED";
-    case avtIVPSolverResult::UNSPECIFIED_ERROR:  
+    case avtIVPSolver::UNSPECIFIED_ERROR:  
         return out << "UNSPECIFIED_ERROR";
     default:                             
         return out<<"UNKNOWN";

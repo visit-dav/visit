@@ -370,28 +370,28 @@ avtIVPSolver::Result
 avtIVPAdamsBashforth::RK4Step(const avtIVPField* field,
                               avtVector &yNew )
 {
-  avtVector f[4];
-  avtIVPField::Result result;
-
-  if( (result = (*field)(t, yCur,              f[0])) != avtIVPSolverResult::OK )
-    return( result );
-  f[0] *= h;
-
-  if( (result = (*field)(t+0.5*h, yCur + f[0] * 0.5, f[1])) != avtIVPSolverResult::OK )
-    return( result );
-  f[1] *= h;
-
-  if( (result = (*field)(t+0.5*h, yCur + f[1] * 0.5, f[2])) != avtIVPSolverResult::OK )
-    return( result );
-  f[2] *= h;
-
-  if( (result = (*field)(t+h, yCur + f[2],       f[3])) != avtIVPSolverResult::OK )
-    return( result );
-  f[3] *= h;
-
-  yNew = yCur + (f[0] + 2.0 * f[1] + 2.0 * f[2] + f[3]) * (1.0 / 6.0);
-
-  return avtIVPSolverResult::OK;
+    avtVector f[4];
+    avtIVPField::Result result;
+    
+    if ((result = (*field)(t, yCur,              f[0])) != avtIVPField::OK)
+        return ConvertResult(result);
+    
+    f[0] *= h;
+    if ((result = (*field)(t+0.5*h, yCur + f[0] * 0.5, f[1])) != avtIVPField::OK)
+        return ConvertResult(result);
+    
+    f[1] *= h;
+    if ((result = (*field)(t+0.5*h, yCur + f[1] * 0.5, f[2])) != avtIVPField::OK)
+        return ConvertResult(result);
+    
+    f[2] *= h;
+    if ((result = (*field)(t+h, yCur + f[2],       f[3])) != avtIVPField::OK)
+        return ConvertResult(result);
+    
+    f[3] *= h;
+    yNew = yCur + (f[0] + 2.0 * f[1] + 2.0 * f[2] + f[3]) * (1.0 / 6.0);
+    
+    return avtIVPSolver::OK;
 }
 
 
@@ -424,7 +424,7 @@ avtIVPAdamsBashforth::ABStep(const avtIVPField* field,
     for (size_t i = 0; i < ADAMS_BASHFORTH_NSTEPS; i++)
         yNew += h*divisor*bashforth[i] * history[i];
 
-    return avtIVPSolverResult::OK;
+    return avtIVPSolver::OK;
 }
 
 // ****************************************************************************
@@ -488,9 +488,10 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-        return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
+        return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
     avtIVPSolver::Result res;
+    avtIVPField::Result fieldResult;
     avtVector yNew = yCur;
 
     // Use a fourth-order Runga Kutta integration to seed the Adams-Bashforth.
@@ -499,8 +500,8 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         // Save the first vector values in the history. 
         if( numStep == 0 )
         {
-            if( (res = (*field)(t, yCur, history[0])) != avtIVPSolverResult::OK )
-                return( res );
+            if ((fieldResult = (*field)(t, yCur, history[0])) != avtIVPField::OK)
+                return ConvertResult(fieldResult);
         }
          
         res = RK4Step( field, yNew );
@@ -508,7 +509,7 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
     else
         res = ABStep( field, yNew );
 
-    if( res == avtIVPSolverResult::OK )
+    if (res == OK)
     {
         ivpstep->resize(2);
 
@@ -532,14 +533,14 @@ avtIVPAdamsBashforth::Step(avtIVPField* field, double t_max,
         history[3] = history[2];
         history[2] = history[1];
         history[1] = history[0];
-        if( (res = (*field)(t, yNew, history[0])) != avtIVPSolverResult::OK )
-            return( res );
+        if ((fieldResult = (*field)(t, yNew, history[0])) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
 
         yCur = yNew;
         t = t+h;
 
         if( last )
-            res = avtIVPSolverResult::TERMINATE;
+            res = avtIVPSolver::TERMINATE;
 
         // Reset the step size on sucessful step.
         h = h_max;
