@@ -19,6 +19,8 @@ isUgrid=[0,1,0,1]
 algs=[s.LoadOnDemand, s.ParallelStaticDomains]
 algs_strings=["POS", "POD", "MS", "BestAlg"]
 time_strings=["path_forward", "path_backward", "stream_forward", "stream_backward", "stream_both"]
+intg=[s.Euler, s.Leapfrog, s.DormandPrince, s.AdamsBashforth, s.RK4]
+intg_strings=["Euler", "Leapfrog", "DormandPrince", "AdamsBashforth", "RK4"]
 
 View3DAtts = View3DAttributes()
 View3DAtts.viewNormal = (0.270729, 0.624198, 0.732859)
@@ -43,53 +45,59 @@ for i in range(len(databases)):
   for j in range(len(algs)):
      str="Varying time type with parallelization algorithm = %s" %(algs_strings[j])
      TestSection(str)
-     for k in range(len(time_strings)):
-       DeleteAllPlots()
-       AddPlot("Streamline", "velocity", 1, 0)
-       s = StreamlineAttributes()
-       s.streamlineAlgorithmType = algs[j]
-       s.sourceType = s.SpecifiedPoint
-       if (is2D[i]):
+
+     for integrator_i in range(len(intg)) :
+       str="Varying integrator = %s" %(intg_strings[integrator_i])
+       TestSection(str)
+       
+       for k in range(len(time_strings)):
+         DeleteAllPlots()
+         AddPlot("Streamline", "velocity", 1, 0)
+         s = StreamlineAttributes()
+         s.streamlineAlgorithmType = algs[j]
+         s.sourceType = s.SpecifiedPoint
+         if (is2D[i]):
            s.pointSource = (0.5, 0.1, 0)
-       else:
+         else:
            if (isUgrid[i]):
-               s.pointSource = (0.2, 0.6, 0.6)
+             s.pointSource = (0.2, 0.6, 0.6)
            else:
-               s.pointSource = (0.5, 0.1, 0.1)
-       if (time_strings[k] == "path_forward"):
+             s.pointSource = (0.5, 0.1, 0.1)
+         if (time_strings[k] == "path_forward"):
            TimeSliderSetState(0)
            s.pathlines = 1
            s.streamlineDirection = s.Forward
-       if (time_strings[k] == "path_backward"):
+         if (time_strings[k] == "path_backward"):
            TimeSliderSetState(TimeSliderGetNStates()-1)
            s.pathlines = 1
            s.streamlineDirection = s.Backward
-       if (time_strings[k] == "stream_forward"):
+         if (time_strings[k] == "stream_forward"):
            TimeSliderSetState(0)
            s.pathlines = 0
            s.streamlineDirection = s.Forward
-       if (time_strings[k] == "stream_backward"):
+         if (time_strings[k] == "stream_backward"):
            TimeSliderSetState(0)
            s.pathlines = 0
            s.streamlineDirection = s.Backward
-       if (time_strings[k] == "stream_both"):
+         if (time_strings[k] == "stream_both"):
            TimeSliderSetState(0)
            s.pathlines = 0
            s.streamlineDirection = s.Both
-       s.integrationType = s.Euler
-       s.maxStepLength = 0.01
-       s.legendMinFlag = 1
-       s.legendMaxFlag = 1
-       if (s.pathlines):
-          s.legendMin = 1.5
-          s.legendMax = 5.7
-       else:
-          s.legendMin = -0.5
-          s.legendMax = 0.5
-       s.pathlinesCMFE = s.POS_CMFE
-       SetPlotOptions(s)
-       DrawPlots()
-       str="pics_%s_%s_%s" %(databases[i], algs_strings[j], time_strings[k])
-       Test(str)
+         s.maxStepLength = 0.01
+         s.legendMinFlag = 1
+         s.legendMaxFlag = 1
+         if (s.pathlines):
+           s.legendMin = 1.5
+           s.legendMax = 5.7
+         else:
+           s.legendMin = -0.5
+           s.legendMax = 0.5
+           
+         s.pathlinesCMFE = s.POS_CMFE
+         s.integrationType = intg[integrator_i]
+         SetPlotOptions(s)
+         DrawPlots()
+         str="pics_%s_%s_%s_%s" %(databases[i], algs_strings[j], intg_strings[integrator_i], time_strings[k])
+         Test(str)
 
 Exit()
