@@ -14,8 +14,32 @@
 #include <io.h>
 #include <process.h>
 
+// Static variables.
 static Config                  *qtssh_config = NULL;
 static std::vector<std::string> qtssh_commandline;
+
+// ****************************************************************************
+// Function: qtssh_handle_prompt
+//
+// Purpose: 
+//   Put up a Qt dialog to get a plink-specified value.
+//
+// Arguments:
+//   p : The prompts for which we're gathering input.
+//   i  : The index of the prompt for which we're gathering input.
+//   in : The default input values.
+//   inlen : The length of the default input values.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 static int
 qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
@@ -50,6 +74,26 @@ qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
     return ret;
 }
 
+// ****************************************************************************
+// Function: qtssh_strdup
+//
+// Purpose: 
+//   Duplicate a string.
+//
+// Arguments:
+//   s : The string to duplicate.
+//
+// Returns:    A new string that would be freed by the user.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 static char *
 qtssh_strdup(const std::string &s)
 {
@@ -57,6 +101,28 @@ qtssh_strdup(const std::string &s)
     strcpy(s2, s.c_str());
     return s2;
 }
+
+// ****************************************************************************
+// Function: qtssh_handle_new_username
+//
+// Purpose: 
+//   Called when we want to change the username that we're using to login. We
+//   get the new username via VisIt's username window and then we run restart
+//   qtssh with new arguments that pass a -l newuser.
+//
+// Arguments:
+//   host : The host that we want to log into.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 static void
 qtssh_handle_new_username(const char *host)
@@ -122,6 +188,29 @@ qtssh_handle_new_username(const char *host)
     }
 }
 
+// ****************************************************************************
+// Function: qtssh_handle_password
+//
+// Purpose: 
+//   Put up VisIt's password window.
+//
+// Arguments:
+//   p : The prompts for which we're gathering input.
+//   in : The default input values.
+//   inlen : The length of the default input values.
+//   passphrase : True if we want passphrase instead of password.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 static int
 qtssh_handle_password(prompts_t *p, int i, unsigned char *in, int inlen, bool passphrase)
 {
@@ -164,6 +253,31 @@ getpassword:
     return ret;
 }
 
+// ****************************************************************************
+// Function: qtssh_get_userpass_input
+//
+// Purpose: 
+//   We've made a slight change to plink's function that gets user passwords so
+//   it calls this function first. We use this opportunity to put up out
+//   password and change username windows. If we're getting some other prompt
+//   then we call our own qtssh_handle_prompt function.
+//
+// Arguments:
+//   p : The prompts for which we're gathering input.
+//   in : The default input values.
+//   inlen : The length of the default input values.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
 {
     int ret = -1; // unhandled value
@@ -179,6 +293,26 @@ int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
     }
     return ret;
 }
+
+// ****************************************************************************
+// Function: qtssh_init
+//
+// Purpose: 
+//   Init function that plink's main function calls.
+//
+// Arguments:
+//   argc : The argument count.
+//   argv : The command line arguments.
+//   cfg  : The config object that holds the properties of how plink is connecting.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 13 14:02:02 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 int
 qtssh_init(int *argc, char **argv, Config *cfg)
