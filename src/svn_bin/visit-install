@@ -313,6 +313,9 @@
 #    Brad Whitlock, Fri Jun  8 11:54:58 PDT 2012
 #    Account for different versions of RZ machine profiles.
 #
+#    Eric Brugger, Wed Jun 13 11:41:10 PDT 2012
+#    I added the host profile for rzthriller.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -707,11 +710,11 @@ rm -f "$dir"/$version+/.visit/config
 rm -rf "$dir"/$version+/.visit/hosts
 mkdir "$dir"/$version+/.visit/hosts
 if [ "$config" = "anl" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_anl_cosmea.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_eureka.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_gadzooks.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_mcs_login.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_cosmea.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_eureka.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_gadzooks.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_mcs_login.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml   "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_closed" ]; then
    ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_lanl_closed_cielo.xml   "$dir"/$version+/.visit/hosts/
@@ -726,16 +729,17 @@ elif [ "$config" = "llnl_closed" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_open" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzalastor.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzmerl.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzzeus.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml            "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml            "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml             "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml             "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml            "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzalastor.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzmerl.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzthriller.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzzeus.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml           "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml              "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_open_cz" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
    cp "$dir"/$version+/.visit/allhosts/host_llnl_atlas.xml   "$dir"/$version+/.visit/hosts/
@@ -748,9 +752,10 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "llnl_open_rz" ]; then
    ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzalastor.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzmerl.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzalastor.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzmerl.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzthriller.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml      "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
@@ -766,22 +771,22 @@ elif [ "$config" = "princeton" ]; then
    cp "$dir"/$version+/.visit/allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "sandia" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_glory.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_redsky.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_glory.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_redsky.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "sandia_closed" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_unity.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_whitney.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_redsky-s.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_unity.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_whitney.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_redsky-s.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "tacc" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_spur.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_tacc_spur.xml      "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "umich" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/.visit/allhosts/host_umich_nyx.xml   "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nics" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_nics_kraken.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_nics_nautilus.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_nics_kraken.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/.visit/allhosts/host_nics_nautilus.xml  "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "anag" ]; then
    ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
    ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig

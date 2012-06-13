@@ -759,6 +759,10 @@ $0 = shift @ARGV;
 #    created for the batch script that launches a compute engine in the batch
 #    system can no longer have spaces.
 #
+#    Eric Brugger, Wed Jun 13 10:27:14 PDT 2012
+#    I modified the script to run the chaos 4 version if running on atlas or
+#    rzthriller.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2092,7 +2096,12 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            push @supportedarchs, "linux-x86_64";
+            if ($host =~ /^atlas/ || $host =~ /^rzthriller/) {
+                push @supportedarchs, "linux-x86_64-chaos4";
+            }
+            else {
+                push @supportedarchs, "linux-x86_64";
+            }
         }
         elsif ($mach =~ /ppc64/) {
             if ($exe_name eq "engine" && $req_compiler eq "powerpc-bgp-linux-g++") {

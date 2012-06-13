@@ -89,6 +89,9 @@
 #   rhel6 system instead of an x86 rhel3 system.  I updated the e-mail
 #   addresses.
 #
+#   Eric Brugger, Wed Jun 13 08:38:15 PDT 2012
+#   I added atlas and rzthriller.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -136,7 +139,9 @@ hoth=true
 kickit=true
 sidious=true
 ubuntu1104_64=false
+atlas=true
 aztec=true
+rzthriller=true
 rzzeus=true
 alastor=false
 euclid=true
@@ -158,7 +163,9 @@ do
          kickit=false
          sidious=false
          ubuntu1104_64=false
+         atlas=false
          aztec=false
+         rzthriller=false
          rzzeus=false
          alastor=false
          euclid=false
@@ -198,12 +205,28 @@ do
          ubuntu1104_64=true
          shift
          ;;
+      -atlas)
+         atlas=false
+         shift
+         ;;
+      +atlas)
+         atlas=true
+         shift
+         ;;
       -aztec)
          aztec=false
          shift
          ;;
       +aztec)
          aztec=true
+         shift
+         ;;
+      -rzthriller)
+         rzthriller=false
+         shift
+         ;;
+      +rzthriller)
+         rzthriller=true
          shift
          ;;
       -rzzeus)
@@ -264,7 +287,9 @@ then
    echo "    kickit (B-Div, Linux),"
    echo "    sidious(B-Div, Linux),"
    echo "    Ubunut1104-64(B-Div, Linux),"
+   echo "    atlas (LC, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
+   echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
    echo "    alastor (LC, Linux, x86_64),"
    echo "    euclid (LBNL, Linux, x86_64),"
@@ -490,6 +515,58 @@ then
 fi
 
 #
+# Build on atlas.
+#
+rm -f atlas
+cat <<EOF > atlas
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/atlas ; then
+   mkdir /usr/tmp/$user/atlas
+fi
+rm -rf /usr/tmp/$user/atlas/visitbuild
+mkdir /usr/tmp/$user/atlas/visitbuild
+mv atlas_$dist.tar.gz /usr/tmp/$user/atlas/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/atlas/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export PATH=\$PATH:/usr/bin/X11
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on atlas"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): atlas" $emailName < resultlog
+EOF
+
+if [ $atlas = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on atlas"
+      scp atlas atlas:atlas_buildit
+      scp $dist.tar.gz atlas:atlas_$dist.tar.gz
+      ssh atlas608 "chmod 750 atlas_buildit;./atlas_buildit" &
+   fi
+fi
+
+#
 # Build on aztec.
 #
 rm -f aztec
@@ -535,9 +612,61 @@ then
    if [ $test = no ]
    then
       echo "Building on aztec"
-      scp aztec aztec3:aztec_buildit
-      scp $dist.tar.gz aztec3:aztec_$dist.tar.gz
+      scp aztec aztec:aztec_buildit
+      scp $dist.tar.gz aztec:aztec_$dist.tar.gz
       ssh aztec3 "chmod 750 aztec_buildit;./aztec_buildit" &
+   fi
+fi
+
+#
+# Build on rzthriller.
+#
+rm -f rzthriller
+cat <<EOF > rzthriller
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/rzthriller ; then
+   mkdir /usr/tmp/$user/rzthriller
+fi
+rm -rf /usr/tmp/$user/rzthriller/visitbuild
+mkdir /usr/tmp/$user/rzthriller/visitbuild
+mv rzthriller_$dist.tar.gz /usr/tmp/$user/rzthriller/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzthriller/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+export PATH=\$PATH:/usr/bin/X11
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on rzthriller"   > resultlog 2>&1
+echo "       ------------------------------"  >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): rzthriller" $emailName < resultlog
+EOF
+
+if [ $rzthriller = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on rzthriller"
+      scp rzthriller rzthriller:rzthriller_buildit
+      scp $dist.tar.gz rzthriller:rzthriller_$dist.tar.gz
+      ssh rzthriller1 "chmod 750 rzthriller_buildit;./rzthriller_buildit" &
    fi
 fi
 
@@ -587,9 +716,9 @@ then
    if [ $test = no ]
    then
       echo "Building on rzzeus"
-      cp rzzeus rzzeus_buildit
-      cp $dist.tar.gz rzzeus_$dist.tar.gz
-      chmod 750 rzzeus_buildit;./rzzeus_buildit &
+      scp rzzeus rzzeus:rzzeus_buildit
+      scp $dist.tar.gz rzzeus:rzzeus_$dist.tar.gz
+      ssh rzzeus286 "chmod 750 rzzeus_buildit;./rzzeus_buildit" &
    fi
 fi
 
@@ -811,5 +940,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 aztec rzzeus alastor euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 atlas aztec rzthriller rzzeus alastor euclid glory redsky
 fi
