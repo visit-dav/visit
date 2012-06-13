@@ -44,27 +44,87 @@
 #   Brad Whitlock, Mon May 21 14:27:34 PST 2012
 #   Turn qtssh back into a console application.
 #
+#   Brad Whitlock, Tue Jun 12 16:14:32 PST 2012
+#   Redo qtssh using new sources and refactored viewer windows.
+#
 #****************************************************************************/
 
-ADD_SUBDIRECTORY(remotecommand)
+# All of the plink sources, according to the plink.dsp project file.
+SET(PLINK_SOURCES
+be_all_s.c
+cmdline.c
+cproxy.c
+ldisc.c
+logging.c
+misc.c
+pgssapi.c
+pinger.c
+portfwd.c
+proxy.c
+raw.c
+rlogin.c
+settings.c
+ssh.c
+sshaes.c
+ssharcf.c
+sshblowf.c
+sshbn.c
+sshcrc.c
+sshcrcda.c
+sshdes.c
+sshdh.c
+sshdss.c
+sshgssc.c
+sshmd5.c
+sshpubk.c
+sshrand.c
+sshrsa.c
+sshsh256.c
+sshsh512.c
+sshsha.c
+sshzlib.c
+telnet.c
+timing.c
+tree234.c
+version.c
+wildcard.c
+windows/plink.rc
+windows/putty.ico
+windows/wincons.c
+windows/windefs.c
+windows/wingss.c
+windows/winhandl.c
+windows/winmisc.c
+windows/winnet.c
+windows/winnoise.c
+windows/winnojmp.c
+windows/winpgntc.c
+windows/winproxy.c
+windows/winser.c
+windows/winstore.c
+windows/wintime.c
+windows/winx11.c
+x11fwd.c
+)
 
 SET(QTSSH_SOURCES
 qtssh.cpp
-${VISIT_SOURCE_DIR}/viewer/main/ViewerChangeUsernameWindow.C
-${VISIT_SOURCE_DIR}/viewer/main/ViewerPasswordWindow.C
+qtsshmain.c
+${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.C
 )
 
 # The subset of the sources that have Q_OBJECT in their header.
 SET(QTSSH_MOC_SOURCES
-${VISIT_SOURCE_DIR}/viewer/main/ViewerChangeUsernameWindow.h
-${VISIT_SOURCE_DIR}/viewer/main/ViewerPasswordWindow.h
+${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.h
+${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.h
 )
 QT_WRAP_CPP(qtssh QTSSH_SOURCES ${QTSSH_MOC_SOURCES})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/windows
 ${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/tools/qtssh/remotecommand
 ${VISIT_SOURCE_DIR}/viewer/main
 ${VISIT_COMMON_INCLUDES}
 ${QT_INCLUDE_DIR}
@@ -73,23 +133,13 @@ ${QT_QTCORE_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
-ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES})
-ADD_DEPENDENCIES(qtssh remotecommand visitcommon viewer) 
 
-# TARGET_LINK_LIBRARIES is the normal command we would use, but cmake pulls in 
-# all of viewer's dependencies as well and adds them to the linker input in the
-# visual studio project. So instead, add the necessary link dependencies as
-# LINK_FLAGS.  No paths are needed as they have already been specified in the 
-# LINK_DIRECTORIES command above. 
+ADD_DEFINITIONS(-DSECURITY_WIN32)
 
-# Add /Od COMPILE FLAG, as QTSSH needs to be compiled without optimization, 
-# because of its use of exceptions that cross c/c++ library boundaries.
-
-SET(QTSSH_DEP "remotecommand.lib visitcommon.lib viewerlib.lib QtCore4.lib QtGui4.lib")
-
-SET_TARGET_PROPERTIES(qtssh PROPERTIES 
-                      LINK_FLAGS ${QTSSH_DEP}
-                      COMPILE_FLAGS "/Od")
+ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES} ${PLINK_SOURCES})
+TARGET_LINK_LIBRARIES(qtssh QtCore4 QtGui4)
 
 VISIT_INSTALL_TARGETS(qtssh)
 VISIT_TOOLS_ADD_FOLDER(qtssh)
+
+

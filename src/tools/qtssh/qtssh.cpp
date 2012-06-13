@@ -1,338 +1,194 @@
-#include <ViewerPasswordWindow.h>
-#include <ViewerChangeUsernameWindow.h>
-#include <qapplication.h>
-#include <windows.h>
-#include <stdlib.h>
-#include <io.h>
-
-// Include the header file for the remote command SSH library.
-#include <RemoteCommand.h>
-
-// Globals
-static char *username = 0;
-class DoUsernameWindow { };
-
-
-// ****************************************************************************
-// Function: graphicalGetUsername
 //
-// Purpose: This is the callback function for getting the username from the
-//          user. It uses the ViewerChangeUsernameWindow class to get the 
-//          username graphically.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   February 13, 2008 
-//
-// Modifications:
-//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
-//   Use std::string.
-//
-// ****************************************************************************
-
-std::string 
-graphicalGetUsername(const char *host)
-{
-    bool okay = ViewerChangeUsernameWindow::changeUsername(host);
-    std::string retval;
-    if (okay)
-    {
-        retval = ViewerChangeUsernameWindow::getUsername();
-    }
-    return retval;
-}
-
-// ****************************************************************************
-// Function: graphicalGetPassword
-//
-// Purpose: This is the callback function for getting the password from the
-//          user. It uses the ViewerPasswordWindow class to get the password
-//          graphically.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug 29 14:57:24 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Mon Feb 23 15:03:24 PST 2004
-//   I made the okay parameter be 0 if the password window returns NULL
-//   for a password. This lets us quit without crashing.
-//
-//   Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
-//   Added test for 'needToChangeUsername'.  Throw exception if necessary so
-//   that RunRemoteCommand can get the correct username.
-//
-//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
-//   Modified signature to prevent returning char* across dll boundaries.
-//
-// ****************************************************************************
-
-void
-graphicalGetPassword(const char *host, char *pass, int *okay)
-{
-    ViewerPasswordWindow::resetNeedToChangeUsername();
-    std::string store = ViewerPasswordWindow::getPassword(username, host);
-    if (ViewerPasswordWindow::getNeedToChangeUsername())
-    {
-        throw DoUsernameWindow();
-    }
-    *okay = (store.size() != 0);
-
-    if (store.size() > 0)
-    {
-        strncpy(pass, store.c_str(), store.size());
-        pass[store.size()] = '\0';
-    }
-}
-
-// ****************************************************************************
-// Function: QTSSHMain
-//
-// Purpose:
-//   This is the main function for the qtssh program.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Aug 29 14:59:21 PST 2002
-//
-// Modifications:
-//   Brad Whitlock, Fri Oct 10 14:24:27 PST 2003
-//   Added the -p argument.
-//
-//   Brad Whitlock, Tue Dec 21 16:17:12 PST 2004
-//   Added code to close stdin so we don't gobble up input typed into the CLI.
-//
-//   Jeremy Meredith, Wed Jun 27 12:08:52 EDT 2007
-//   Added support for standard SSH-style remote port forwarding arguments
-//   of the form "-R rp:lh:lp:".
-//
-//   Kathleen Bonnell, Wed Feb 13 14:05:03 PST 2008
-//   Applied Paul Selby's fix to prevent '-l launchername' from being applied
-//   as '-l username' here.  Surround 'RunRemoteCommand' in try-catch block
-//   in order to allow user to change the Username..
+// NOTES: This file contains some functions to call from qtsshmain.c, a slightly 
+//        customized version of windows/winplink.c from the PuTTY source code 
+//        distribution.
 // 
-//   Kathleen Bonnell, Tue May 27 15:50:02 PDT 2008 
-//   If user changes Username, ensure we copy the correct length string. 
-//
-//   Kathleen Bonnell, Thu Jun  5 13:51:20 PDT 2008 
-//   Fixed typo causing compiler failure.
-//
-//   Kathleen Bonnell, Thu April 22 17:43:12 MST 2010
-//   graphicalGetUsername now returns std::string.
-//
-// ****************************************************************************
+#include <QApplication>
+#include <QInputDialog>
 
-int
-QTSSHMain(int argc, char *argv[])
+#include <VisItChangeUsernameWindow.h>
+#include <VisItPasswordWindow.h>
+
+#include "qtssh.h"
+
+#include <io.h>
+#include <process.h>
+
+static Config                  *qtssh_config = NULL;
+static std::vector<std::string> qtssh_commandline;
+
+static int
+qtssh_handle_prompt(prompts_t *p, int i, unsigned char *in, int inlen)
 {
-    const char *host = "localhost";
-    bool shouldDeleteUsername = true;
-    bool first = true;
-    const char **commands = new const char*[100];
-    int i, command_count = 0;
-    bool printArgs = false;
-    bool hostSpecified = false;
-    int  port = 22;
-    char portfwd[1024] = "";
-    int portfwdpos = 0;
-
-    // Initialize the command line array.
-    for(i = 0; i < 100; ++i)
-        commands[i] = 0;
-
-    // Create a new application.
-    new QApplication(argc, argv);
-
-    // Get the username.
-    DWORD namelen = 100;
-    username = new char[100];
-    GetUserName(username, &namelen);
-  
-    // Parse the command line arguments that matter.
-    for(i = 1; i < argc; ++i)
+    int ret = -1; // unhandled value
+    QInputDialog dlg;
+    dlg.setWindowTitle(p->name);
+    dlg.setLabelText(p->prompts[i]->prompt);
+    dlg.setTextEchoMode((p->prompts[i]->echo > 0) ? QLineEdit::Normal : QLineEdit::Password);
+    if(in != NULL)
     {
-        char *arg = argv[i];
-        if(!first)
+        char *tmp = new char[inlen+1];
+        strncpy(tmp, (const char *)in, inlen);
+        tmp[inlen] = '\0';
+        dlg.setTextValue(tmp);
+        delete [] tmp;
+    }
+    if(dlg.exec() == QDialog::Accepted)
+    {
+        QString s(dlg.textValue().simplified());
+        if(!s.isEmpty())
         {
-            // Store the pointer into the option list.
-            commands[command_count++] = arg;
+            ret = 1;
+            strncpy(p->prompts[i]->result, s.toStdString().c_str(),
+                    p->prompts[i]->result_len);
+            p->prompts[i]->result[p->prompts[i]->result_len-1] = '\0';
         }
-        else if(arg[0] == '-')
+    }
+    else
+        exit(0);
+
+    return ret;
+}
+
+static char *
+qtssh_strdup(const std::string &s)
+{
+    char *s2 = new char[s.size() + 1];
+    strcpy(s2, s.c_str());
+    return s2;
+}
+
+static void
+qtssh_handle_new_username(const char *host)
+{
+    VisItChangeUsernameWindow win;
+    VisItChangeUsernameWindow::ReturnCode status = VisItChangeUsernameWindow::UW_Rejected;
+    QString username = win.getUsername(host, status);
+    if(status == VisItChangeUsernameWindow::UW_Accepted && !username.isEmpty())
+    {
+        // Look for -l until the end or we hit an ssh command.
+        bool dashL = false;
+        for(size_t i = 1; i < qtssh_commandline.size(); ++i)
         {
-            if(strcmp(arg, "-l") == 0)
+            if(qtssh_commandline[i] == "-l")
             {
-                if(i+1 < argc)
-                {
-                    if(shouldDeleteUsername)
-                        delete [] username;
-                    username = argv[i+1];
-                    ++i;
-                    shouldDeleteUsername = false;
-                }
+                dashL = true;
+                break;
             }
-            else if(strcmp(arg, "-p") == 0)
+            else if(qtssh_commandline[i] == "ssh")
+                break;
+        }
+
+        // We need to restart this program with extra arguments to set the new username
+        // on the command line.
+        const char **new_argv = new const char*[qtssh_commandline.size() + (dashL ? 1 : 3)];
+        int index = 0;
+        new_argv[index++] = qtssh_strdup(qtssh_commandline[0]);
+        // There was no -l so add one.
+        if(!dashL)
+        {
+            new_argv[index++] = qtssh_strdup("-l");
+            new_argv[index++] = qtssh_strdup(username.toStdString());
+        }
+        // Copy the rest of the arguments.
+        for(size_t i = 1; i < qtssh_commandline.size(); ++i)
+        {
+            new_argv[index++] = qtssh_strdup(qtssh_commandline[i]);
+            if(qtssh_commandline[i] == "-l")
             {
-                if(i+1 < argc)
-                {
-                    int tempPort = atoi(argv[i+1]);
-                    if(tempPort >= 0)
-                        port = tempPort;
-                    ++i;
-                }
-            }
-            else if(strcmp(arg, "-R") == 0)
-            {
-                // we must compose the port forward string
-                // according to PUTTY.H
-                if(i+1 < argc)
-                {
-                    int   l = strlen(argv[i+1]);
-                    char *s = strdup(argv[i+1]);
-                    char *p = s;
-                    int part = 0;
-                    char *remoteport;
-                    char *localhost;
-                    char *localport;
-                    for (int j=0; j<l+1; j++)
-                    {
-                        if (s[j] == ':' || s[j] == '\0')
-                        {
-                            s[j] = '\0';
-                            switch (part)
-                            {
-                              case 0:
-                                remoteport = p;
-                                break;
-                              case 1:
-                                localhost = p;
-                                break;
-                              case 2:
-                                localport = p;
-                                break;
-                              default:
-                                // we'll detect this as an error automatically
-                                break;
-                            }
-                            p = &(s[j+1]);
-                            part++;
-                        }
-                    }
-                    if (part == 3)
-                    {
-                        // first is the R, for Remote
-                        portfwd[portfwdpos++] = 'R';
-                        for (size_t j=0; j<strlen(remoteport); j++)
-                            portfwd[portfwdpos++] = remoteport[j];
-                        // remote/local separated by tab
-                        portfwd[portfwdpos++] = '\t';
-                        for (size_t j=0; j<strlen(localhost); j++)
-                            portfwd[portfwdpos++] = localhost[j];
-                        // host/port separated by a colon
-                        portfwd[portfwdpos++] = ':';
-                        for (size_t j=0; j<strlen(localport); j++)
-                            portfwd[portfwdpos++] = localport[j];
-                        // terminate this forward with a \0
-                        portfwd[portfwdpos++] = '\0';
-                        // and the final forward is terminated with another \0
-                        portfwd[portfwdpos] = '\0';
-                    }
-                    ++i;
-                }
-            }
-            else if(strcmp(arg, "-D") == 0)
-            {
-                printArgs = true;
-            }
-            else
-            {
-                qDebug("Unknown option: %s", arg);
-                if(shouldDeleteUsername)
-                    delete [] username;
-                return -1;
+                new_argv[index++] = qtssh_strdup(username.toStdString());
+                ++i;
             }
         }
+        new_argv[index] = NULL;
+
+#if 0
+        printf("Starting: ");
+        for(int i = 0; i < index; ++i)
+            printf(" %s", new_argv[i]);
+        printf("\n");
+#endif
+
+        // make a new console and minimize it.
+        FreeConsole();
+        AllocConsole();
+        ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
+
+        // Start the new qtssh.exe
+        _spawnvp(_P_NOWAIT, new_argv[0], new_argv);
+
+        // Exit this one.
+        cleanup_exit(0);
+    }
+}
+
+static int
+qtssh_handle_password(prompts_t *p, int i, unsigned char *in, int inlen, bool passphrase)
+{
+    VisItPasswordWindow win;
+
+    // Get the new password.
+getpassword:
+    VisItPasswordWindow::ReturnCode status = VisItPasswordWindow::PW_Rejected;
+    QString password = win.getPassword(QString(qtssh_config->username),
+                                       QString(qtssh_config->host),
+                                       passphrase,
+                                       status);
+
+    int ret = -1;
+    if(status == VisItPasswordWindow::PW_ChangedUsername)
+    {
+        win.hide();
+
+        // The user wanted to get a new username.
+        qtssh_handle_new_username(qtssh_config->host);
+
+        win.show();
+        goto getpassword;
+    }
+    else if(status == VisItPasswordWindow::PW_Accepted)
+    {
+        ret = 1;
+
+        // Copy the password back into the prompts.
+        strncpy(p->prompts[i]->result, password.toStdString().c_str(),
+                p->prompts[i]->result_len);
+        p->prompts[i]->result[p->prompts[i]->result_len-1] = '\0';
+    }
+    else
+    {
+        // The user did not want to enter a password. Exit the program.
+        exit(0);
+    }
+
+    return ret;
+}
+
+int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
+{
+    int ret = -1; // unhandled value
+
+    for(int i = 0; i < p->n_prompts; ++i)
+    {
+        if (strstr(p->prompts[i]->prompt, "assword") != NULL)
+            ret = qtssh_handle_password(p, i, in, inlen, false);
+        else if (strstr(p->prompts[i]->prompt, "assphrase") != NULL)
+            ret = qtssh_handle_password(p, i, in, inlen, true);
         else
-        {
-            // The first option without a '-' character must be the hostname.
-            first = false;
-            hostSpecified = true;
-            host = arg;
-        }
+            ret = qtssh_handle_prompt(p, i, in, inlen);
     }
-
-    if(printArgs)
-    {
-        qDebug("username=%s", username);
-        qDebug("host=%s", host);
-        for(int j = 0; j < command_count; ++j)
-            qDebug("command[%d]=%s", j, commands[j]);
-    }
-
-    if(!hostSpecified)
-    {
-        qDebug("usage: %s [options] hostname [command args...]", argv[0]);
-        qDebug("");
-        qDebug("options:");
-        qDebug("    -l username     Sets the user login name.");
-        qDebug("    -p portnum      Sets the port number used to connect.");
-        qDebug("    -D              Prints command line arguments.");
-        if(shouldDeleteUsername)
-            delete [] username;
-        return -1;
-    }
-
-    // Close stdin so we don't try and intercept input from the CLI.
-    _close(0);
-
-    // Run the command on the remote machine.
-    bool keepTrying = true;
-
-    while (keepTrying)
-    {
-        try
-        {
-            RunRemoteCommand(username, host, port, commands, command_count,
-                             graphicalGetPassword, 1, portfwd);
-            keepTrying = false;
-        }
-        catch(DoUsernameWindow)
-        {
-            std::string n = graphicalGetUsername(host);
-            if (!n.empty())
-            {
-                namelen = n.size() +1;
-                if (!shouldDeleteUsername)
-                {
-                    username = new char[namelen];
-                    shouldDeleteUsername = true; 
-                }
-                strncpy(username, n.c_str(), namelen);
-            }
-        }
-    }
-
-    // Clean up.
-    if(shouldDeleteUsername)
-        delete [] username;
-    delete [] commands;
-
-    return 0;
+    return ret;
 }
-
-// ****************************************************************************
-// Method: main/WinMain
-//
-// Purpose: 
-//   The program entry point function.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 23 13:15:31 PST 2011
-//
-// Modifications:
-//   Brad Whitlock, Mon May 21 14:27:34 PST 2012
-//   Turn qtssh back into a console application.
-//   
-// ****************************************************************************
 
 int
-main(int argc, char **argv)
+qtssh_init(int *argc, char **argv, Config *cfg)
 {
-    return QTSSHMain(argc, argv);
+    // Stash some information we'll need.
+    qtssh_config = cfg;
+    for(int i = 0; i < *argc; ++i)
+        qtssh_commandline.push_back(argv[i]);
+    // Create a QApplication.
+    new QApplication(*argc, argv);
+    return 1;
 }
+
