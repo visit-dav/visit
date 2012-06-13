@@ -262,9 +262,9 @@ type* avtIVPNIMRODField::SetDataPointer( vtkDataSet *ds,
 avtIVPField::Result
 avtIVPNIMRODField::operator()( const double &t, const avtVector &p, avtVector &linear_vec ) const
 {
-  Result result;
-  if( (result = avtIVPVTKField::operator()(t, p, linear_vec)) != avtIVPSolverResult::OK )
-    return( result );
+  avtIVPField::Result result;
+  if( (result = avtIVPVTKField::operator()(t, p, linear_vec)) != avtIVPField::OK )
+    return result;
 
   vtkIdList *ptIds = vtkIdList::New();
 
@@ -366,7 +366,7 @@ avtIVPNIMRODField::operator()( const double &t, const avtVector &p, avtVector &l
 
 //  interpolate( rad, theta, phi, &P, &DRV );
 
-  return( avtIVPSolverResult::OK );
+  return OK;
 }
 
 // ****************************************************************************

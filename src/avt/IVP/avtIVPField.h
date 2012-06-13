@@ -47,21 +47,6 @@
 #include <avtVector.h>
 #include <ivp_exports.h>
 
-namespace avtIVPSolverResult
-{
-    enum Result
-    {
-        OK,
-        TERMINATE,
-        OUTSIDE_DOMAIN,
-        OUTSIDE_TIME_FRAME,
-        STEPSIZE_UNDERFLOW,
-        STIFFNESS_DETECTED,
-        UNSPECIFIED_ERROR,
-    };
-}
-
-
 // ****************************************************************************
 //  Class: avtIVPField
 //
@@ -101,19 +86,21 @@ namespace avtIVPSolverResult
 //   Dave Pugmire, Fri Jun  1 10:03:14 EDT 2012
 //   Add Classification enum for IsInside() method.
 //
+//   Dave Pugmire, Wed Jun 13 17:18:24 EDT 2012
+//   Added avtIVPField::Result.
+//
 // ****************************************************************************
 
 class IVP_API avtIVPField
 {
   public:
-    typedef avtIVPSolverResult::Result Result;
-
-    enum Classification
+    enum Result
     {
-        INSIDE,
+        OK = 0,
         OUTSIDE_SPATIAL,
         OUTSIDE_TEMPORAL,
         OUTSIDE_BOTH,
+        FAIL,
     };
 
                          avtIVPField() : order(1) {}
@@ -121,12 +108,12 @@ class IVP_API avtIVPField
 
     virtual Result       operator()(const double& t, 
                                     const avtVector& x,
-                                          avtVector& retV) const = 0;
+                                    avtVector& retV) const = 0;
 
     virtual Result       operator()(const double& t, 
                                     const avtVector& x, 
                                     const avtVector& v,
-                                          avtVector& retV) const = 0;
+                                    avtVector& retV) const = 0;
 
     virtual avtVector    ConvertToCartesian(const avtVector& pt) const = 0;
     virtual avtVector    ConvertToCylindrical(const avtVector& pt) const = 0;
@@ -140,14 +127,14 @@ class IVP_API avtIVPField
     virtual void         SetScalarVariable(unsigned char index, 
                                            const std::string& name ) = 0;
 
-    virtual Classification IsInside(const double &t, const avtVector &x) const = 0;
+    virtual Result       IsInside(const double &t, const avtVector &x) const = 0;
 
     virtual void         GetTimeRange( double range[2] ) const = 0;
     virtual void         GetExtents( double  extents[6] ) const = 0;
-    virtual bool         VelocityIsInstantaneous(void) { return true; };
+    virtual bool         VelocityIsInstantaneous(void) { return true; }
 
-    virtual void         SetOrder( unsigned int val ) { order = val; };
-    virtual unsigned int GetOrder() { return order; };
+    virtual void         SetOrder( unsigned int val ) { order = val; }
+    virtual unsigned int GetOrder() { return order; }
 
  protected:
     unsigned int order;

@@ -131,15 +131,16 @@ avtIVPVTKOffsetField::SetNodeOffsets( const std::vector<avtVector>& offsets )
 //
 // ****************************************************************************
 
-avtIVPSolverResult::Result
-avtIVPVTKOffsetField::operator()( const double &t, const avtVector &pt, avtVector &retV ) const {
-  avtVector result = operator()(t, pt);
-  //TODO error handling
-  retV.x = result.x;
-  retV.y = result.y;
-  retV.z = result.z;
-
-  return avtIVPSolverResult::OK;
+avtIVPField::Result
+avtIVPVTKOffsetField::operator()( const double &t, const avtVector &pt, avtVector &retV ) const
+{
+    avtVector result = operator()(t, pt);
+    //TODO error handling
+    retV.x = result.x;
+    retV.y = result.y;
+    retV.z = result.z;
+    
+    return OK;
 }
 
 avtVector
@@ -150,7 +151,7 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
     for ( size_t j = 0; j < 3; ++j )
     {
 
-        if (FindCell(t, p) != INSIDE)
+        if (FindCell(t, p) != OK)
         {
             // ghost cells on the base mesh may be required to avoid this failure
             debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CELL!" 
@@ -163,7 +164,7 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
 
 
         avtVector displ2 = displ;
-        if (FindCell(t, pCorrected) != INSIDE)
+        if (FindCell(t, pCorrected) != OK)
         {
             // the displacement seen from the base target position may be 
             // a little different.
@@ -171,7 +172,7 @@ avtIVPVTKOffsetField::operator()( const double &t, const avtVector &p ) const
         }
 
         pCorrected = p - 0.5*(displ2 + displ);
-        if (FindCell(t, pCorrected) != INSIDE)
+        if (FindCell(t, pCorrected) != OK)
         {
             debug5 <<"avtIVPVTKOffsetField::operator() - UNABLE TO FIND CORRECTED CELL!" 
                    <<std::endl;
@@ -224,14 +225,6 @@ avtIVPVTKOffsetField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
         }
     }
 
-    if( normalized )
-    {
-        double len = vel.length();
-        
-        if( len )
-            vel /= len;
-    }
-    
     return true;
 }
 

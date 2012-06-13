@@ -393,7 +393,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
 //
 //  ****************************************************************************
 
-avtIVPField::Classification
+avtIVPField::Result
 avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 {
   double xin[3];
@@ -405,7 +405,7 @@ avtIVPM3DC1Field::IsInside(const double& t, const avtVector& x) const
 
   int el = get_tri_coords2D(xin, xieta);
 
-  return (el >= 0 ? INSIDE : OUTSIDE_SPATIAL);
+  return (el >= 0 ? OK : OUTSIDE_SPATIAL);
 }
 
 
@@ -860,7 +860,7 @@ avtIVPM3DC1Field::operator()( const double &t, const avtVector &p, avtVector &ve
   if( reparameterize )
     reparameterizeBcomps( p, vec );
 
-  return( avtIVPSolverResult::OK );
+  return OK;
 }
 
 

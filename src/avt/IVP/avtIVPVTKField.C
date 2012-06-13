@@ -68,7 +68,7 @@
 // ****************************************************************************
 
 avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator ) 
-    : ds(dataset), loc(locator), normalized(false)
+    : ds(dataset), loc(locator)
 {
     if( ds )
         ds->Register( NULL );
@@ -156,7 +156,7 @@ avtIVPVTKField::GetExtents( double extents[6] ) const
 //
 // ****************************************************************************
 
-avtIVPField::Classification
+avtIVPField::Result
 avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 {
     if (pos != lastPos)
@@ -165,7 +165,7 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
         lastCell = loc->FindCell(&pos.x, &lastWeights, false);
     }       
 
-    return (lastCell != -1 ? INSIDE : OUTSIDE_SPATIAL);
+    return (lastCell != -1 ? OK : OUTSIDE_SPATIAL);
 }
 
 // ****************************************************************************
@@ -193,10 +193,10 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 avtIVPField::Result
 avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV ) const
 {
-    if (FindCell(t, p) != INSIDE || !FindValue(velData, retV))
-        return avtIVPSolverResult::OUTSIDE_DOMAIN;
+    if (FindCell(t, p) != OK || !FindValue(velData, retV))
+        return OUTSIDE_SPATIAL;
     
-    return avtIVPSolverResult::OK;
+    return OK;
 }
 
 // ****************************************************************************
@@ -230,13 +230,6 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
             vel.y += wi->w * tmp[1];
             vel.z += wi->w * tmp[2];
         }
-    }
-
-    if (normalized)
-    {
-        double len = vel.length();
-        if (len)
-            vel /= len;
     }
 
     return true;
@@ -377,7 +370,7 @@ avtIVPVTKField::ComputeScalarVariable(unsigned char index,
     if( data == NULL )
         return 0.0;
 
-    if (FindCell(t, pt) != INSIDE)
+    if (FindCell(t, pt) != OK)
         return 0.0;
 
     double result = 0.0, tmp;
@@ -460,10 +453,10 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 //    
 // ****************************************************************************
 
-avtIVPField::Classification
+avtIVPField::Result
 avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    return (loc->FindCell(&pt.x, NULL, true) > 0 ? INSIDE : OUTSIDE_SPATIAL);
+    return (loc->FindCell(&pt.x, NULL, true) > 0 ? OK : OUTSIDE_SPATIAL);
 }
 
 // ****************************************************************************
@@ -488,23 +481,6 @@ avtIVPVTKField::GetDimension() const
 {
     return 3;
 }  
-
-// ****************************************************************************
-//  Method: avtIVPVTKField::SetNormalized
-//
-//  Purpose:
-//      Sets field normalization.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   August 6, 2008
-//
-// ****************************************************************************
-
-void
-avtIVPVTKField::SetNormalized( bool v )
-{
-    normalized = v;
-}
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::GetTimeRange

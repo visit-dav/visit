@@ -123,11 +123,11 @@ class IVP_API avtIVPAdamsBashforth: public avtIVPSolver
     
     void             UpdateHistory( const avtVector &yNew );
 
-    avtIVPSolver::Result RK4Step(const avtIVPField* field,
-                                 avtVector &yNew);
-
-    avtIVPSolver::Result ABStep(const avtIVPField* field,
-                                avtVector &yNew);
+    Result           RK4Step(const avtIVPField* field,
+                             avtVector &yNew);
+    
+    Result           ABStep(const avtIVPField* field,
+                            avtVector &yNew);
 
   private:
     int numStep;

@@ -407,60 +407,53 @@ avtIVPEuler::Step(avtIVPField* field, double t_max, avtIVPStep* ivpstep)
 
     // stepsize underflow?
     if( 0.1*std::abs(h) <= std::abs(t)*epsilon )
-        return avtIVPSolverResult::STEPSIZE_UNDERFLOW;
+        return avtIVPSolver::STEPSIZE_UNDERFLOW;
 
-    avtIVPSolver::Result res = avtIVPSolverResult::OK;
+    avtIVPField::Result fieldResult;
     avtVector yNew, vNew;
 
     if( field->GetOrder() == 2 )
     {
-      avtVector aCur;
-
-      if( (res = (*field)(t, yCur, vCur, aCur)) != avtIVPSolverResult::OK )
-        return( res );
-
-      vNew = vCur + aCur * h;  // New velocity
-
-      yNew = yCur + vNew * h;  // New position
+        avtVector aCur;
+        
+        if ((fieldResult = (*field)(t, yCur, vCur, aCur)) != avtIVPField::OK)
+            return ConvertResult(fieldResult);
+        
+        vNew = vCur + aCur * h;  // New velocity
+        yNew = yCur + vNew * h;  // New position
     }
     else  //if( field->GetOrder() == 1 )
     {
-      if( (res = (*field)(t, yCur, vCur)) != avtIVPSolverResult::OK )
-        return( res );
-
-      yNew = yCur + vCur * h;     // New position
+        if ((fieldResult = (*field)(t, yCur, vCur)) != avtIVPSolver::OK)
+            return ConvertResult(fieldResult);
+        yNew = yCur + vCur * h;     // New position
     }
-
-    if( res == avtIVPSolverResult::OK )
+    
+    ivpstep->resize(2);
+    
+    if( convertToCartesian )
     {
-        ivpstep->resize(2);
-
-        if( convertToCartesian )
-        {
-          (*ivpstep)[0] = field->ConvertToCartesian( yCur );
-          (*ivpstep)[1] = field->ConvertToCartesian( yNew );
-        }
-        else
-        {
-          (*ivpstep)[0] = yCur;
-          (*ivpstep)[1] = yNew;
-        }
-
-        ivpstep->t0 = t;
-        ivpstep->t1 = t + h;
-        numStep++;
-
-        yCur = yNew;
-        vCur = vNew;
-        t = t+h;
-
-        if( last )
-            res = avtIVPSolverResult::TERMINATE;
+        (*ivpstep)[0] = field->ConvertToCartesian( yCur );
+        (*ivpstep)[1] = field->ConvertToCartesian( yNew );
     }
+    else
+    {
+        (*ivpstep)[0] = yCur;
+        (*ivpstep)[1] = yNew;
+    }
+    
+    ivpstep->t0 = t;
+    ivpstep->t1 = t + h;
+    numStep++;
+    
+    yCur = yNew;
+    vCur = vNew;
+    t = t+h;
 
     // Reset the step size on sucessful step.
     h = h_max;
-    return res;
+    
+    return (last ? avtIVPSolver::TERMINATE : avtIVPSolver::OK);
 }
 
 // ****************************************************************************

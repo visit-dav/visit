@@ -86,7 +86,7 @@ class IVP_API avtIVPM3DC1Field: public avtIVPVTKField
 
   ~avtIVPM3DC1Field();
 
-  virtual avtIVPField::Classification IsInside(const double& t, const avtVector &x) const;
+  virtual Result IsInside(const double& t, const avtVector &x) const;
 
   void findElementNeighbors();
   int register_vert(std::vector< vertex > &vlist,
