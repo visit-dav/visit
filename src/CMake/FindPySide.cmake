@@ -35,6 +35,11 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Thu June 14 15:48:01 MST 2012
+#   Add support for pyside 1.1.1 on windows, which no longer has a separate 
+#   generatorrunner module.  For PYSIDE_ADD_MODULE function, change the 
+#   target's output location on windows to the exe dir, explanation for this
+#   is within the code below.  Change gen_pathsep on windows to "\;".
 #
 #****************************************************************************/
 
@@ -46,35 +51,62 @@ IF(VISIT_PYSIDE_DIR)
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
     set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
-    find_package(GeneratorRunner 0.6.11)
-    find_package(Shiboken 1.0.4)
-    find_package(PySide 1.0.4)
+    IF(UNIX)
+        find_package(GeneratorRunner 0.6.11)
+        find_package(Shiboken 1.0.4)
+        find_package(PySide 1.0.4)
+    ELSE(UNIX)
+        find_package(Shiboken 1.1.1)
+        find_package(PySide 1.1.1)
+        IF(Shiboken_FOUND)
+            SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
+        ENDIF(Shiboken_FOUND)
+    ENDIF(UNIX)
 
 ENDIF(VISIT_PYSIDE_DIR)
 
-
-IF(NOT GeneratorRunner_FOUND OR NOT Shiboken_FOUND)
-#If we dont have generator runner  & shiboken, force pyside off
+IF(UNIX)
+  IF(NOT GeneratorRunner_FOUND OR NOT Shiboken_FOUND)
+    #If we dont have generator runner  & shiboken, force pyside off
     MESSAGE(STATUS "PySide NOT found")
-    set(PySide_FOUND 0)
-ELSEIF(PySide_FOUND)
-    SET(PYSIDE_FOUND 1)
-    SET_UP_THIRD_PARTY(PYSIDE lib include pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
-    # The PySide module is symlinked into the python install VisIt uses for dev builds.
-    # For 'make install' and 'make package' we need to actually install the PySide SOs.
-    SET(PYSIDE_MODULE_SRC  ${VISIT_PYSIDE_DIR}/lib/python${PYTHON_VERSION}/site-packages/PySide/)
-    SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/site-packages/PySide/)
+    SET(PySide_FOUND 0)
+  ELSE()
+    SET(PySide_FOUND 1)
+  ENDIF()
+ELSE(UNIX)
+  IF(NOT PySide_FOUND OR NOT Shiboken_FOUND)
+    #If we dont have generator runner  & shiboken, force pyside off
+    MESSAGE(STATUS "PySide NOT found")
+    SET(PySide_FOUND 0)
+  ENDIF()
+ENDIF(UNIX)
+
+IF(PySide_FOUND)
+    SET_UP_THIRD_PARTY(PYSIDE lib include 
+          pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
+    # The PySide module is symlinked into the python install VisIt uses for 
+    # dev builds.  For 'make install' and 'make package' we need to actually 
+    # install the PySide SOs.
+    IF(UNIX)
+        SET(PYSIDE_MODULE_SRC  ${VISIT_PYSIDE_DIR}/lib/python${PYTHON_VERSION}/site-packages/PySide/)
+        SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/python/lib/python${PYTHON_VERSION}/site-packages/PySide/)
+    ELSE(UNIX)
+        SET(PYSIDE_MODULE_SRC  ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide/)
+        SET(PYSIDE_MODULE_INSTALLED_DIR ${VISIT_INSTALLED_VERSION_LIB}/python/Lib/site-packages/PySide/)
+    ENDIF(UNIX)
 
     FILE(GLOB pysidelibs ${PYSIDE_MODULE_SRC}/*)
     INSTALL(FILES ${pysidelibs}
             DESTINATION ${PYSIDE_MODULE_INSTALLED_DIR}
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                        GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                        WORLD_READ WORLD_EXECUTE
             CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
             )
 
     # On OSX patch install names for the PySide module.
-    FOREACH(pysidelib ${pysidelibs})
-        IF(APPLE)
+    IF(APPLE)
+        FOREACH(pysidelib ${pysidelibs})
             GET_FILENAME_COMPONENT(libname ${pysidelib} NAME)
             INSTALL(CODE
                     "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
@@ -83,10 +115,11 @@ ELSEIF(PySide_FOUND)
                     OUTPUT_VARIABLE OSXOUT)
                     MESSAGE(STATUS \"\${OSXOUT}\")
                     ")
-        ENDIF(APPLE)
         ENDFOREACH(pysidelib ${pysidelibs})
+    ENDIF(APPLE)
 
-ENDIF(NOT GeneratorRunner_FOUND OR NOT Shiboken_FOUND)
+
+ENDIF(PySide_FOUND)
 
 
 
@@ -124,8 +157,34 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 add_library(${module_name} MODULE ${${mod_sources}} ${${mod_gen_sources}})
 
 SET_TARGET_PROPERTIES(${module_name} PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES(${module_name} PROPERTIES
-                                     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir})
+
+IF(UNIX)
+    SET_TARGET_PROPERTIES(${module_name} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${VISIT_LIBRARY_DIR}/${dest_dir})
+ELSE(UNIX)
+    # Use a different LIBARARY_OUTPUT_DIRECTORY on windows so visit -cli -pyside
+    # will work from the build directory.  Here's why:
+    #
+    # If VISIT_LIBRARY_DIR/dest_dir is used, the files are output to
+    # lib/Release/visit/site-packages/Release.  This causes problems
+    # with running visit -cli -pyside from the build directory, because
+    # the extra 'Release' at the end of the path is not part of sys.path.
+    # Copying the output files to the directory one below solves the problem
+    # of running from the build, but the INSTALL target fails because 
+    # CMake only translates one of the $(Configuration) macros in the path:
+    # "lib/$(Configuration)/visit/site-packages/$(Configuration)", so the file
+    # "lib/$(Configuration)/visit/site-packages/Release" cannot be
+    # found and the INSTALL target fails.
+    # 
+    # using VISIT_BINARY_DIR/exe works for running from the build dir because
+    # the exe path is part of sys.path and the .pyd files are found and loaded
+    # correctly.  It also works for the INSTALL target, because the files
+    # are copied from the exe dir to the install-dir/lib/site-packages/visit.
+    # 
+    SET_TARGET_PROPERTIES(${module_name} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe)
+    SET_TARGET_PROPERTIES(${module_name} PROPERTIES SUFFIX ".pyd")
+ENDIF(UNIX)
 
 target_link_libraries(${module_name}
                       ${SHIBOKEN_PYTHON_LIBRARIES}
@@ -194,7 +253,7 @@ set(PYSIDE_GENERATOR_EXTRA_FLAGS --generator-set=shiboken
 #
 
 IF(WIN32)
-    set(gen_pathsep ";")
+    set(gen_pathsep "\;")
 ELSE(WIN32)
     set(gen_pathsep ":")
 ENDIF(WIN32)
@@ -205,7 +264,6 @@ FOREACH(itm ${${gen_include_paths}})
     SET(gen_include_paths_arg "${gen_include_paths_arg}${gen_pathsep}${itm}")
 ENDFOREACH(itm ${gen_include_paths})
 
-
 add_custom_command(OUTPUT ${${gen_sources}}
                    COMMAND ${GENERATORRUNNER_BINARY} ${PYSIDE_GENERATOR_EXTRA_FLAGS}
                    ${gen_global}
@@ -214,7 +272,8 @@ add_custom_command(OUTPUT ${${gen_sources}}
                    --output-directory=${CMAKE_CURRENT_BINARY_DIR}
                    ${gen_typesystem}
                    DEPENDS  ${gen_global} ${gen_typesystem}
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                   COMMENT "Running generator for ${${gen_sources}}...")
 
 add_custom_target(${target_name} DEPENDS ${${gen_sources}})
 ENDFUNCTION(PYSIDE_ADD_GENERATOR_TARGET)

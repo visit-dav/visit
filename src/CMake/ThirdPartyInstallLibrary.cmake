@@ -54,6 +54,8 @@
 #   To resolve this I added a more robust way to construct the list of 
 #   libs symlinks to try to install.
 #
+#   Kathleen Biagas, Thu June 14 13:52:53 MST 2012
+#   Use GET_FILENAME_SHORTEXT on Windows, too.
 #****************************************************************************/
 
 #
@@ -82,20 +84,21 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         ENDIF(NOT EXISTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
 
         SET(tmpLIBFILE ${LIBFILE})
+        GET_FILENAME_SHORTEXT(LIBEXT ${tmpLIBFILE})
         GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
         GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
-        GET_FILENAME_COMPONENT(curNAMEWE ${LIBREALPATH} NAME_WE)
-        #
-        # Windows TODO: check if libshiboken & libpyside have the same "python2.6" suffix
-        # that causes issues w/ NAME_WE on OSX.
-        # 
+        GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
+        STRING(REPLACE ${LIBEXT} "" curNAMEWE ${realNAME})
+
         SET(curNAME "${curPATH}/${curNAMEWE}")
         SET(dllNAME "${curNAME}.dll")
         SET(libNAME "${curNAME}.lib")
         IF(EXISTS ${dllNAME})
             INSTALL(FILES ${dllNAME} 
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                            WORLD_READ WORLD_EXECUTE
                 CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                 )
             # On Windows, we also need to copy the file to the 
@@ -109,7 +112,9 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             # also install the import libraries
             INSTALL(FILES ${libNAME}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                            WORLD_READ WORLD_EXECUTE
                 CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                 )
         ENDIF(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
