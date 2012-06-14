@@ -72,6 +72,9 @@
 #    Kathleen Biagas, Thu May 10 10:58:39 MST 2012 
 #    Change how python is handled on Windows to reflect recent changes.
 #
+#    Kathleen Biagas, Thu June 14 15:53:12 MST 2012 
+#    Add target for pyside on windows.
+#
 #----------------------------------------------------------------------------
 
 FOREACH(LIB ${MESA_LIB})
@@ -174,3 +177,15 @@ IF(VISIT_PYTHON_FILTERS)
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 
+IF(WIN32)
+    IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
+        MESSAGE(STATUS "Adding pyside to lib/site-packages/")
+        ADD_CUSTOM_TARGET(pyside_modules ALL)
+        ADD_CUSTOM_COMMAND(TARGET pyside_modules POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory 
+                    ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide 
+                    ${VISIT_LIBRARY_DIR}/site-packages/PySide
+            COMMENT "Copying ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
+            )
+    ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
+ENDIF(WIN32)
