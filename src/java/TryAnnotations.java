@@ -38,6 +38,7 @@
 
 import java.lang.ArrayIndexOutOfBoundsException;
 import java.util.Vector;
+import llnl.visit.Axes3D;
 import llnl.visit.View3DAttributes;
 import llnl.visit.AnnotationAttributes;
 import llnl.visit.AnnotationObject;
@@ -58,6 +59,8 @@ import llnl.visit.SaveWindowAttributes;
 // Creation:   Wed Feb 27 09:38:43 PDT 2008
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 13 17:00:08 PDT 2012
+//   Set some legend options.
 //
 // ****************************************************************************
 
@@ -66,6 +69,23 @@ public class TryAnnotations extends RunViewer
     public TryAnnotations()
     {
         super();
+    }
+
+    protected void SetCustomDefaultAnnotations()
+    {
+        // Change some annotation attributes.
+        AnnotationAttributes a = viewer.GetViewerState().GetAnnotationAttributes();
+        a.SetBackgroundMode(AnnotationAttributes.BACKGROUNDMODE_GRADIENT);
+        a.SetGradientBackgroundStyle(AnnotationAttributes.GRADIENTSTYLE_RADIAL);
+        a.SetGradientColor1(new ColorAttribute(0,0,255));
+        a.SetGradientColor2(new ColorAttribute(0,0,0));
+        a.SetForegroundColor(new ColorAttribute(255,255,255));
+        Axes3D a3d = new Axes3D(a.GetAxes3D());
+        a3d.SetAxesType(Axes3D.AXES_STATICEDGES);
+        a3d.SetVisible(true);
+        a.SetAxes3D(a3d);
+        a.Notify();
+        viewer.GetViewerMethods().SetAnnotationAttributes();
     }
 
     protected void work(String[] args)
@@ -94,6 +114,8 @@ public class TryAnnotations extends RunViewer
             v.SetCenterOfRotation(5, 0.353448, 2.5);
             v.Notify();
             viewer.GetViewerMethods().SetView3D();
+
+            SetCustomDefaultAnnotations();
 
             AnnotationObjectList aol = viewer.GetViewerState().GetAnnotationObjectList();
 
@@ -167,14 +189,14 @@ public class TryAnnotations extends RunViewer
             annot.SetBackgroundMode(annot.BACKGROUNDMODE_SOLID);
             annot.Notify();
             viewer.GetViewerMethods().SetAnnotationAttributes();
-            SaveImage("imageannot.tif", 300, 300);
+            SaveImage("imageannot.png", 300, 300);
             annot.SetBackgroundColor(new ColorAttribute(0,0,0,255));
             annot.Notify();
             viewer.GetViewerMethods().SetAnnotationAttributes();
 
             viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_IMAGE, "image");
             aol.SetImageOptions("image",
-                "imageannot.tif",
+                "imageannot.png",
                 0.02, 0.63,
                 1., 1., true,
                 transColor, true,
@@ -183,6 +205,31 @@ public class TryAnnotations extends RunViewer
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
             System.out.println("After image: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
+
+            // Set some legend attributes. You'd get the name from the PlotList object
+            // but here we're just hard-coding the plot name since the Pseudocolor is
+            // called Plot0000.
+            SetCustomDefaultAnnotations();
+            aol.SetLegendOptions("Plot0000",
+                false, // managePosition,
+                0.2, 0.1, // x,y
+                1.5, 0.5, // scaleX, scaleY
+                7, // numTicks
+                true, // drawBox
+                false, // drawLabels,
+                true,  // horizontalLegend,
+                true, // alternateText, (false=normal text position, true=opposite position)
+                false, // drawTitle,
+                false, // drawMinMax,
+                true, // controlTicks,
+                true, // minMaxInclusive,
+                true, // drawValues
+                0.03, // fontheight
+                new ColorAttribute(100,255,100), false,
+                2, true, true, true,
+                true);
+            aol.Notify();
+            viewer.GetViewerMethods().SetAnnotationObjectOptions();
         }
         else
             System.out.println("Could not open the database!");
@@ -196,7 +243,7 @@ public class TryAnnotations extends RunViewer
         saveAtts.SetWidth(xres);
         saveAtts.SetHeight(yres);
         saveAtts.SetFamily(false);
-        saveAtts.SetFormat(saveAtts.FILEFORMAT_TIFF);
+        saveAtts.SetFormat(saveAtts.FILEFORMAT_PNG);
         saveAtts.SetResConstraint(saveAtts.RESCONSTRAINT_NOCONSTRAINT);
         saveAtts.Notify();
         viewer.GetViewerMethods().SaveWindow();

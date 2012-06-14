@@ -22,6 +22,8 @@
     </Function>
     <Function name="SetImageOptions" user="true" member="true">
     </Function>
+    <Function name="SetLegendOptions" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       snprintf.h
     </Include>
