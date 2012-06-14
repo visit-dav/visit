@@ -428,6 +428,75 @@ public class AnnotationObjectList extends AttributeSubject
         }
     }
 
+    private final static int LEGEND_MANAGE_POSITION  =0;
+    private final static int LEGEND_DRAW_BOX         =1;
+    private final static int LEGEND_DRAW_LABELS      =2;
+    private final static int LEGEND_ORIENTATION0     =3;
+    private final static int LEGEND_ORIENTATION1     =4;
+    private final static int LEGEND_DRAW_TITLE       =5;
+    private final static int LEGEND_DRAW_MINMAX      =6;
+    private final static int LEGEND_CONTROL_TICKS    =7;
+    private final static int LEGEND_MINMAX_INCLUSIVE =8;
+    private final static int LEGEND_DRAW_VALUES      =9;
+
+    private void SetLegendBit(AnnotationObject annot, int bit, boolean val)
+    {
+        int shifted = (1 << bit);
+        int mask = ~shifted;
+        int data = annot.GetIntAttribute1();
+        annot.SetIntAttribute1((data & mask) | (val ? shifted : 0)); 
+    }
+
+    public void SetLegendOptions(String annotName, 
+         boolean managePosition,
+         double  x, double y,
+         double  scaleX,
+         double  scaleY,
+         int     numTicks,
+         boolean drawBox,
+         boolean drawLabels,
+         boolean horizontalLegend,
+         boolean alternateText,
+         boolean drawTitle,
+         boolean drawMinMax,
+         boolean controlTicks,
+         boolean minMaxInclusive,
+         boolean drawValues,
+         double fontHeight,
+         ColorAttribute textColor, boolean useForegroundColor, 
+         int fontFamily, boolean bold, boolean italic, boolean shadow,
+         boolean visible)      
+    {
+        AnnotationObject annot = GetAnnotation(annotName);
+        if(annot != null)
+        {
+            SetLegendBit(annot, LEGEND_MANAGE_POSITION, managePosition);
+            SetLegendBit(annot, LEGEND_DRAW_BOX, drawBox);
+            SetLegendBit(annot, LEGEND_DRAW_LABELS, drawLabels);
+            SetLegendBit(annot, LEGEND_ORIENTATION0, horizontalLegend);
+            SetLegendBit(annot, LEGEND_ORIENTATION1, alternateText);
+            SetLegendBit(annot, LEGEND_DRAW_TITLE, drawTitle);
+            SetLegendBit(annot, LEGEND_DRAW_MINMAX, drawMinMax);
+            SetLegendBit(annot, LEGEND_CONTROL_TICKS, controlTicks);
+            SetLegendBit(annot, LEGEND_MINMAX_INCLUSIVE, minMaxInclusive);
+            SetLegendBit(annot, LEGEND_DRAW_VALUES, drawValues);
+
+            annot.SetPosition(x, y, 0.);
+            annot.SetPosition2(scaleX, scaleY, 0.);
+
+            annot.SetIntAttribute2(numTicks);
+
+            annot.SetDoubleAttribute1(fontHeight);
+            annot.SetTextColor(textColor);
+            annot.SetUseForegroundForTextColor(useForegroundColor);
+            annot.SetFontFamily(fontFamily);
+            annot.SetFontBold(bold);
+            annot.SetFontItalic(italic);
+            annot.SetFontShadow(shadow);
+            annot.SetVisible(visible);
+        }
+    }
+
     // Attributes
     private Vector annotation; // vector of AnnotationObject objects
 }
