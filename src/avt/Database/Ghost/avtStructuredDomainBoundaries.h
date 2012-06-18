@@ -276,6 +276,10 @@ class BoundaryHelperFunctions
 //    Brad Whitlock, Sun Apr 22 09:59:55 PDT 2012
 //    Support for double.
 //
+//    Gunther H. Weber, Thu Jun 14 17:31:00 PDT 2012
+//    Add method to select new ghost zone generation method for AMRStichCell
+//    operator.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -285,6 +289,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual ~avtStructuredDomainBoundaries();
 
     static void Destruct(void *);
+    static void SetCreateGhostsForTIntersections(bool createGhosts = false)
+    {
+        createGhostsForTIntersections = createGhosts;
+    }
 
     void     SetNumDomains(int nd);
     void     SetExtents(int domain, int e[6]);
@@ -355,6 +363,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
                                              bool                  isPointData,
                                              std::vector<vtkDataArray*> scalars);
 
+
+    static bool                       createGhostsForTIntersections;
 
   protected:
     // data

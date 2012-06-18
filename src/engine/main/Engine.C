@@ -111,6 +111,7 @@
 #include <avtDataObjectToDatasetFilter.h>
 #include <avtVariableCache.h>
 #include <Environment.h>
+#include <avtStructuredDomainBoundaries.h>
 
 #include <string>
 using std::string;
@@ -340,8 +341,12 @@ protected:
 //    Brad Whitlock, Mon Oct 10 11:22:45 PDT 2011
 //    Added enginePropertiesRPC.
 //
-//   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
-//   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//    Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
+//    Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//
+//    Gunther H. Weber, Thu Jun 14 17:29:02 PDT 2012
+//    Add command line option to enable new ghost zone generation for
+//    AMRStitchCell operator.
 //
 // ****************************************************************************
 
@@ -2177,6 +2182,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-lb-absolute") == 0)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
+        }
+        else if (strcmp(argv[i], "-create-ghosts-for-t-intersections") == 0)
+        {
+            avtStructuredDomainBoundaries::SetCreateGhostsForTIntersections(true);
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
