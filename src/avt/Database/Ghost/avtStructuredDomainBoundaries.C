@@ -75,6 +75,11 @@ using   std::string;
 using   std::vector;
 using   std::sort;
 
+// ----------------------------------------------------------------------------
+//                            static data members
+// ----------------------------------------------------------------------------
+
+bool avtStructuredDomainBoundaries::createGhostsForTIntersections = false;
 
 // ----------------------------------------------------------------------------
 //                            private helper methods
@@ -3507,420 +3512,425 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Select new support for T-intersections by defining 
 //    CREATE_GHOSTS_FOR_T_INTERSECTIONS
 //
+//    Gunther H. Weber, Thu Jun 14 17:31:59 PDT 2012
+//    Make it possible to enable new support for T-intersections at runtime.
+//
 // ****************************************************************************
 
 void
 avtStructuredDomainBoundaries::CalculateBoundaries(void)
 {
-#ifndef CREATE_GHOSTS_FOR_T_INTERSECTIONS
-   if (haveCalculatedBoundaries)
-        return;
-
-    int t0 = visitTimer->StartTimer();
-
-    int i, j, l;
-
-    if (!shouldComputeNeighborsFromExtents)
+    if (!createGhostsForTIntersections)
     {
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries: "
-                   "passing indices for a mesh that does not support "
-                   "computation of neighbors from index extents");
-    }
+        if (haveCalculatedBoundaries)
+            return;
 
-    for (l = 0 ; l < maxAMRLevel ; l++)
-    {
-        vector<int> doms_at_this_level;
-        int ndoms;
-        bool renumberForEachAMRLevel = false;
-        if (maxAMRLevel == 1)
+        int t0 = visitTimer->StartTimer();
+
+        int i, j, l;
+
+        if (!shouldComputeNeighborsFromExtents)
         {
-            renumberForEachAMRLevel = false;
-            ndoms = levels.size();
+            EXCEPTION1(VisItException,
+                    "avtStructuredDomainBoundaries: "
+                    "passing indices for a mesh that does not support "
+                    "computation of neighbors from index extents");
         }
-        else
-        {
-            renumberForEachAMRLevel = true;
 
-            int totalNDoms = levels.size();
-            for (i = 0 ; i < totalNDoms ; i++)
+        for (l = 0 ; l < maxAMRLevel ; l++)
+        {
+            vector<int> doms_at_this_level;
+            int ndoms;
+            bool renumberForEachAMRLevel = false;
+            if (maxAMRLevel == 1)
             {
-                if (levels[i] == l)
-                    doms_at_this_level.push_back(i);
+                renumberForEachAMRLevel = false;
+                ndoms = levels.size();
             }
-            ndoms = doms_at_this_level.size();
-        }
-
-        avtIntervalTree itree(ndoms, 3);
-        double extf[6];
-        for (i = 0 ; i < ndoms ; i++)
-        {
-            for (j = 0 ; j < 6 ; j++)
+            else
             {
-                int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-                extf[j] = (double) extents[6*dom+j];
-            }
-            itree.AddElement(i, extf);
-        }
-        itree.Calculate(true);
+                renumberForEachAMRLevel = true;
 
-        vector<int> neighbors(ndoms, 0);
-        for (i = 0 ; i < ndoms ; i++)
-        {
-            double min_vec[3], max_vec[3];
-            int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-            min_vec[0] = (double) extents[6*dom+0];
-            min_vec[1] = (double) extents[6*dom+2];
-            min_vec[2] = (double) extents[6*dom+4];
-            max_vec[0] = (double) extents[6*dom+1];
-            max_vec[1] = (double) extents[6*dom+3];
-            max_vec[2] = (double) extents[6*dom+5];
-            vector<int> list;
-            itree.GetElementsListFromRange(min_vec, max_vec, list);
-
-            // To get the "match" entry correct, we have to sort the list.  This
-            // will ensure that we can predict what a domain's match number will be
-            // for its neighbor.
-
-            sort(list.begin(), list.end());
-
-            for (size_t j = 0 ; j < list.size() ; j++)
-            {
-                if (i == list[j])
-                    continue; // Not interested in self-intersection.
-
-                int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                  // apply for rectilinear.
-                int d1 = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
-                int d2 = (renumberForEachAMRLevel ? doms_at_this_level[list[j]]
-                                                  : list[j]);
-                if (levels[d1] != levels[d2])
-                    continue;
-                int e[6];
-                e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0]
-                                                          : extents[6*d2+0]);
-                e[0] -= extents[6*d1+0] - 1;
-                e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1]
-                                                          : extents[6*d2+1]);
-                e[1] -= extents[6*d1+0] - 1;
-                e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2]
-                                                          : extents[6*d2+2]);
-                e[2] -= extents[6*d1+2] - 1;
-                e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3]
-                                                          : extents[6*d2+3]);
-                e[3] -= extents[6*d1+2] - 1;
-                e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4]
-                                                          : extents[6*d2+4]);
-                e[4] -= extents[6*d1+4] - 1;
-                e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5]
-                                                          : extents[6*d2+5]);
-                e[5] -= extents[6*d1+4] - 1;
-                int index = neighbors[list[j]];
-                neighbors[list[j]]++;
-                AddNeighbor(d1, d2, index, orientation, e);
-            }
-        }
-    }
-
-    // This will perform some calculations that are necessary to do the actual
-    // communication.
-    //
-    for (i = 0 ; i < levels.size() ; i++)
-    {
-        Finish(i);
-    }
-
-    visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
-    haveCalculatedBoundaries = true;
-
-#else
-    if (haveCalculatedBoundaries)
-        return;
-
-    int t0 = visitTimer->StartTimer();
-    int totalNumDomains = wholeBoundary.size();
-    vector<int> numNeighbors(totalNumDomains, 0);
-
-    int i, j, l;
-
-    if (!shouldComputeNeighborsFromExtents)
-    {
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries: "
-                   "passing indices for a mesh that does not support "
-                   "computation of neighbors from index extents");
-    }
-
-    // 
-    // The logic for setting up boundaries across AMR levels and within an
-    // AMR level are similar.  So the code is combined into a single loop.
-    // Also, the normal rectilinear case is the same as "within an AMR level".
-    //   Iteration 0: across AMR levels
-    //   Iteration 1: within AMR levels
-    //
-    for (int iteration = 0 ; iteration < 2 ; iteration++)
-    {
-        bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == maxAMRLevel-1;
-        if (iteration == 0 && !wellFormedAMR)
-            continue;
-
-        int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
-        for (l = 0 ; l < maxLevel ; l++)
-        {
-            int refrat = 1;
-            if (iteration == 0)
-                refrat = ref_ratios[l];
-            vector<int> doms;
-            int totalNDoms = levels.size();
-            for (i = 0 ; i < totalNDoms ; i++)
-            {
-                if (iteration == 0)
-                {
-                    if (levels[i] == l || levels[i] == l+1)
-                    {
-                        doms.push_back(i);
-                    }
-                }
-                else
+                int totalNDoms = levels.size();
+                for (i = 0 ; i < totalNDoms ; i++)
                 {
                     if (levels[i] == l)
-                    {
-                        doms.push_back(i);
-                    }
+                        doms_at_this_level.push_back(i);
                 }
+                ndoms = doms_at_this_level.size();
             }
-            int ndoms = doms.size();
-    
+
             avtIntervalTree itree(ndoms, 3);
             double extf[6];
             for (i = 0 ; i < ndoms ; i++)
             {
-
                 for (j = 0 ; j < 6 ; j++)
                 {
-                    int dom = doms[i];
-                    if (levels[dom] == l)
-                        extf[j] = (double) (refrat*extents[6*dom+j]);
-                    else
-                        extf[j] = (double) extents[6*dom+j];
+                    int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                    extf[j] = (double) extents[6*dom+j];
                 }
                 itree.AddElement(i, extf);
             }
             itree.Calculate(true);
-    
+
+            vector<int> neighbors(ndoms, 0);
             for (i = 0 ; i < ndoms ; i++)
             {
-                int d1 = doms[i];
-                if (levels[d1] != l) // next refinement level.  We'll get this later
-                    continue;
-
                 double min_vec[3], max_vec[3];
-                int dom = doms[i];
-                min_vec[0] = (double) refrat*extents[6*dom+0];
-                min_vec[1] = (double) refrat*extents[6*dom+2];
-                min_vec[2] = (double) refrat*extents[6*dom+4];
-                max_vec[0] = (double) refrat*extents[6*dom+1];
-                max_vec[1] = (double) refrat*extents[6*dom+3];
-                max_vec[2] = (double) refrat*extents[6*dom+5];
-
-                bool dataIs2D = (extents[6*dom+4]==0 && extents[6*dom+5]==0);
-
+                int dom = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                min_vec[0] = (double) extents[6*dom+0];
+                min_vec[1] = (double) extents[6*dom+2];
+                min_vec[2] = (double) extents[6*dom+4];
+                max_vec[0] = (double) extents[6*dom+1];
+                max_vec[1] = (double) extents[6*dom+3];
+                max_vec[2] = (double) extents[6*dom+5];
                 vector<int> list;
                 itree.GetElementsListFromRange(min_vec, max_vec, list);
-    
+
                 // To get the "match" entry correct, we have to sort the list.  This
                 // will ensure that we can predict what a domain's match number will be
                 // for its neighbor.
-    
+
                 sort(list.begin(), list.end());
-    
+
                 for (size_t j = 0 ; j < list.size() ; j++)
                 {
                     if (i == list[j])
                         continue; // Not interested in self-intersection.
-    
+
                     int orientation[3] = { 1, 2, 3 }; // this doesn't really
-                                                      // apply for rectilinear.
-                    int d2 = doms[list[j]];
+                    // apply for rectilinear.
+                    int d1 = (renumberForEachAMRLevel ? doms_at_this_level[i] : i);
+                    int d2 = (renumberForEachAMRLevel ? doms_at_this_level[list[j]]
+                            : list[j]);
+                    if (levels[d1] != levels[d2])
+                        continue;
+                    int e[6];
+                    e[0] = (extents[6*d1+0] > extents[6*d2+0] ? extents[6*d1+0]
+                            : extents[6*d2+0]);
+                    e[0] -= extents[6*d1+0] - 1;
+                    e[1] = (extents[6*d1+1] < extents[6*d2+1] ? extents[6*d1+1]
+                            : extents[6*d2+1]);
+                    e[1] -= extents[6*d1+0] - 1;
+                    e[2] = (extents[6*d1+2] > extents[6*d2+2] ? extents[6*d1+2]
+                            : extents[6*d2+2]);
+                    e[2] -= extents[6*d1+2] - 1;
+                    e[3] = (extents[6*d1+3] < extents[6*d2+3] ? extents[6*d1+3]
+                            : extents[6*d2+3]);
+                    e[3] -= extents[6*d1+2] - 1;
+                    e[4] = (extents[6*d1+4] > extents[6*d2+4] ? extents[6*d1+4]
+                            : extents[6*d2+4]);
+                    e[4] -= extents[6*d1+4] - 1;
+                    e[5] = (extents[6*d1+5] < extents[6*d2+5] ? extents[6*d1+5]
+                            : extents[6*d2+5]);
+                    e[5] -= extents[6*d1+4] - 1;
+                    int index = neighbors[list[j]];
+                    neighbors[list[j]]++;
+                    AddNeighbor(d1, d2, index, orientation, e);
+                }
+            }
+        }
+
+        // This will perform some calculations that are necessary to do the actual
+        // communication.
+        //
+        for (i = 0 ; i < levels.size() ; i++)
+        {
+            Finish(i);
+        }
+
+        visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
+        haveCalculatedBoundaries = true;
+    }
+    else
+    {
+        if (haveCalculatedBoundaries)
+            return;
+
+        int t0 = visitTimer->StartTimer();
+        int totalNumDomains = wholeBoundary.size();
+        vector<int> numNeighbors(totalNumDomains, 0);
+
+        int i, j, l;
+
+        if (!shouldComputeNeighborsFromExtents)
+        {
+            EXCEPTION1(VisItException,
+                    "avtStructuredDomainBoundaries: "
+                    "passing indices for a mesh that does not support "
+                    "computation of neighbors from index extents");
+        }
+
+        // 
+        // The logic for setting up boundaries across AMR levels and within an
+        // AMR level are similar.  So the code is combined into a single loop.
+        // Also, the normal rectilinear case is the same as "within an AMR level".
+        //   Iteration 0: across AMR levels
+        //   Iteration 1: within AMR levels
+        //
+        for (int iteration = 0 ; iteration < 2 ; iteration++)
+        {
+            bool wellFormedAMR = ref_ratios.size() > 0 && ref_ratios.size() == maxAMRLevel-1;
+            if (iteration == 0 && !wellFormedAMR)
+                continue;
+
+            int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
+            for (l = 0 ; l < maxLevel ; l++)
+            {
+                int refrat = 1;
+                if (iteration == 0)
+                    refrat = ref_ratios[l];
+                vector<int> doms;
+                int totalNDoms = levels.size();
+                for (i = 0 ; i < totalNDoms ; i++)
+                {
                     if (iteration == 0)
                     {
-                        if (levels[d2] != (l+1)) // at same refinement level
-                                                 // and we want one finer
-                            continue;
+                        if (levels[i] == l || levels[i] == l+1)
+                        {
+                            doms.push_back(i);
+                        }
                     }
                     else
                     {
-                        if (levels[d2] != (l)) // at different refinement level
-                                               // and we want the same
-                            continue;
-                    }
-
-                    // Determine area of extents overlap and then normalize to d2.
-                    int e[6];
-                    e[0] = (refrat*extents[6*d1+0] > extents[6*d2+0] ? refrat*extents[6*d1+0]
-                                                              : extents[6*d2+0]);
-                    e[0] -= extents[6*d2+0] - 1;
-                    e[1] = (refrat*extents[6*d1+1] < extents[6*d2+1] ? refrat*extents[6*d1+1]
-                                                              : extents[6*d2+1]);
-                    e[1] -= extents[6*d2+0] - 1;
-                    e[2] = (refrat*extents[6*d1+2] > extents[6*d2+2] ? refrat*extents[6*d1+2]
-                                                              : extents[6*d2+2]);
-                    e[2] -= extents[6*d2+2] - 1;
-                    e[3] = (refrat*extents[6*d1+3] < extents[6*d2+3] ? refrat*extents[6*d1+3]
-                                                              : extents[6*d2+3]);
-                    e[3] -= extents[6*d2+2] - 1;
-                    e[4] = (refrat*extents[6*d1+4] > extents[6*d2+4] ? refrat*extents[6*d1+4]
-                                                              : extents[6*d2+4]);
-                    e[4] -= extents[6*d2+4] - 1;
-                    e[5] = (refrat*extents[6*d1+5] < extents[6*d2+5] ? refrat*extents[6*d1+5]
-                                                              : extents[6*d2+5]);
-                    e[5] -= extents[6*d2+4] - 1;
-
-                    bool minFace[3];
-                    bool maxFace[3];
-                    bool tJuncMinFace[3] = { false, false, false };
-                    bool tJuncMaxFace[3] = { false, false, false };
-                    int  idxBeg[3];
-                    int  idxEnd[3];
-
-                    // We are asking the question: "does d1 form a minI face for d2?" for
-                    // mins and maxes in I, J, & K.
-                    //
-                    // And: tJunMaxFace[0] = true -->
-                    //  d2 d2
-                    //  d1 d1 d1 d1
-                    // (d1 extends past d2 in the I direction ... and also overlaps in the I direction)
-
-                    for (int axis=0; axis<3; axis++)
-                    {
-                        minFace[axis]  = (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
-                        if (minFace[axis])
-                            if (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
-                                tJuncMinFace[axis] = true;
-                        maxFace[axis]  = (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
-                        if (maxFace[axis])
-                            if (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
-                                tJuncMaxFace[axis] = true;
-                        idxBeg[axis]   = (refrat*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat*extents[6*d1+2*axis+0]
-                                                                                                 : extents[6*d2+2*axis+0]);
-                        idxEnd[axis]   = (refrat*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat*extents[6*d1+2*axis+1]
-                                                                                                 : extents[6*d2+2*axis+1]);
-                    }
-
-                    // Loop over all possible 8 (2D) or 26 (3D)
-                    // boundaries, and add them if they apply here.
-                    for (int kOff=-1; kOff<=1; ++kOff)
-                    {
-                        // for 2D data, skip all but kOff==0
-                        if (dataIs2D && kOff!=0)
-                            continue;
-
-                        for (int jOff=-1; jOff<=1; ++jOff)
+                        if (levels[i] == l)
                         {
-                            for (int iOff=-1; iOff<=1; ++iOff)
+                            doms.push_back(i);
+                        }
+                    }
+                }
+                int ndoms = doms.size();
+
+                avtIntervalTree itree(ndoms, 3);
+                double extf[6];
+                for (i = 0 ; i < ndoms ; i++)
+                {
+
+                    for (j = 0 ; j < 6 ; j++)
+                    {
+                        int dom = doms[i];
+                        if (levels[dom] == l)
+                            extf[j] = (double) (refrat*extents[6*dom+j]);
+                        else
+                            extf[j] = (double) extents[6*dom+j];
+                    }
+                    itree.AddElement(i, extf);
+                }
+                itree.Calculate(true);
+
+                for (i = 0 ; i < ndoms ; i++)
+                {
+                    int d1 = doms[i];
+                    if (levels[d1] != l) // next refinement level.  We'll get this later
+                        continue;
+
+                    double min_vec[3], max_vec[3];
+                    int dom = doms[i];
+                    min_vec[0] = (double) refrat*extents[6*dom+0];
+                    min_vec[1] = (double) refrat*extents[6*dom+2];
+                    min_vec[2] = (double) refrat*extents[6*dom+4];
+                    max_vec[0] = (double) refrat*extents[6*dom+1];
+                    max_vec[1] = (double) refrat*extents[6*dom+3];
+                    max_vec[2] = (double) refrat*extents[6*dom+5];
+
+                    bool dataIs2D = (extents[6*dom+4]==0 && extents[6*dom+5]==0);
+
+                    vector<int> list;
+                    itree.GetElementsListFromRange(min_vec, max_vec, list);
+
+                    // To get the "match" entry correct, we have to sort the list.  This
+                    // will ensure that we can predict what a domain's match number will be
+                    // for its neighbor.
+
+                    sort(list.begin(), list.end());
+
+                    for (size_t j = 0 ; j < list.size() ; j++)
+                    {
+                        if (i == list[j])
+                            continue; // Not interested in self-intersection.
+
+                        int orientation[3] = { 1, 2, 3 }; // this doesn't really
+                        // apply for rectilinear.
+                        int d2 = doms[list[j]];
+                        if (iteration == 0)
+                        {
+                            if (levels[d2] != (l+1)) // at same refinement level
+                                // and we want one finer
+                                continue;
+                        }
+                        else
+                        {
+                            if (levels[d2] != (l)) // at different refinement level
+                                // and we want the same
+                                continue;
+                        }
+
+                        // Determine area of extents overlap and then normalize to d2.
+                        int e[6];
+                        e[0] = (refrat*extents[6*d1+0] > extents[6*d2+0] ? refrat*extents[6*d1+0]
+                                : extents[6*d2+0]);
+                        e[0] -= extents[6*d2+0] - 1;
+                        e[1] = (refrat*extents[6*d1+1] < extents[6*d2+1] ? refrat*extents[6*d1+1]
+                                : extents[6*d2+1]);
+                        e[1] -= extents[6*d2+0] - 1;
+                        e[2] = (refrat*extents[6*d1+2] > extents[6*d2+2] ? refrat*extents[6*d1+2]
+                                : extents[6*d2+2]);
+                        e[2] -= extents[6*d2+2] - 1;
+                        e[3] = (refrat*extents[6*d1+3] < extents[6*d2+3] ? refrat*extents[6*d1+3]
+                                : extents[6*d2+3]);
+                        e[3] -= extents[6*d2+2] - 1;
+                        e[4] = (refrat*extents[6*d1+4] > extents[6*d2+4] ? refrat*extents[6*d1+4]
+                                : extents[6*d2+4]);
+                        e[4] -= extents[6*d2+4] - 1;
+                        e[5] = (refrat*extents[6*d1+5] < extents[6*d2+5] ? refrat*extents[6*d1+5]
+                                : extents[6*d2+5]);
+                        e[5] -= extents[6*d2+4] - 1;
+
+                        bool minFace[3];
+                        bool maxFace[3];
+                        bool tJuncMinFace[3] = { false, false, false };
+                        bool tJuncMaxFace[3] = { false, false, false };
+                        int  idxBeg[3];
+                        int  idxEnd[3];
+
+                        // We are asking the question: "does d1 form a minI face for d2?" for
+                        // mins and maxes in I, J, & K.
+                        //
+                        // And: tJunMaxFace[0] = true -->
+                        //  d2 d2
+                        //  d1 d1 d1 d1
+                        // (d1 extends past d2 in the I direction ... and also overlaps in the I direction)
+
+                        for (int axis=0; axis<3; axis++)
+                        {
+                            minFace[axis]  = (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
+                            if (minFace[axis])
+                                if (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
+                                    tJuncMinFace[axis] = true;
+                            maxFace[axis]  = (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
+                            if (maxFace[axis])
+                                if (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
+                                    tJuncMaxFace[axis] = true;
+                            idxBeg[axis]   = (refrat*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat*extents[6*d1+2*axis+0]
+                                    : extents[6*d2+2*axis+0]);
+                            idxEnd[axis]   = (refrat*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat*extents[6*d1+2*axis+1]
+                                    : extents[6*d2+2*axis+1]);
+                        }
+
+                        // Loop over all possible 8 (2D) or 26 (3D)
+                        // boundaries, and add them if they apply here.
+                        for (int kOff=-1; kOff<=1; ++kOff)
+                        {
+                            // for 2D data, skip all but kOff==0
+                            if (dataIs2D && kOff!=0)
+                                continue;
+
+                            for (int jOff=-1; jOff<=1; ++jOff)
                             {
-                                // iOff=jOff=kOff=0 is the current domain; skip it.
-                                if (iOff==0 && jOff==0 && kOff==0)
-                                    continue;
-
-                                int axisOffset[3] = {iOff, jOff, kOff};
-
-                                // if the current boundary doesn't apply, skip it
-                                if ((axisOffset[0]==-1 && !minFace[0]) ||
-                                    (axisOffset[0]==+1 && !maxFace[0]) || 
-                                    (axisOffset[1]==-1 && !minFace[1]) ||
-                                    (axisOffset[1]==+1 && !maxFace[1]) || 
-                                    (axisOffset[2]==-1 && !minFace[2]) ||
-                                    (axisOffset[2]==+1 && !maxFace[2]))
+                                for (int iOff=-1; iOff<=1; ++iOff)
                                 {
-                                    continue;
-                                }
+                                    // iOff=jOff=kOff=0 is the current domain; skip it.
+                                    if (iOff==0 && jOff==0 && kOff==0)
+                                        continue;
 
-                                int bnd1[6];
-                                int bnd2[6];
-                                string dgbtxt = "";
-                                bool usedTJunc = false;
-                                for (int axis = 0; axis < 3; axis++)
-                                {
-                                    int extAxMin = 2*axis + 0;
-                                    int extAxMax = 2*axis + 1;
-                                    int extD1Start = 6*d1;
-                                    int extD2Start = 6*d2;
-                                    if (axisOffset[axis]==-1 && minFace[axis])
+                                    int axisOffset[3] = {iOff, jOff, kOff};
+
+                                    // if the current boundary doesn't apply, skip it
+                                    if ((axisOffset[0]==-1 && !minFace[0]) ||
+                                            (axisOffset[0]==+1 && !maxFace[0]) || 
+                                            (axisOffset[1]==-1 && !minFace[1]) ||
+                                            (axisOffset[1]==+1 && !maxFace[1]) || 
+                                            (axisOffset[2]==-1 && !minFace[2]) ||
+                                            (axisOffset[2]==+1 && !maxFace[2]))
                                     {
-                                        dgbtxt += string("min") + string(1,'I'+axis);
-                                        bnd1[extAxMin] = 1;
-                                        bnd1[extAxMax] = 1;
-
-                                        bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat*extents[extD1Start+extAxMin];
-                                        bnd2[extAxMin] /= refrat;
-                                        bnd2[extAxMin] += 1;
-                                        if (tJuncMinFace[axis])
-                                           bnd2[extAxMin] -= 1;  // crazy indexing; only happens at min, not max
-                                        usedTJunc = true;
-                                        bnd2[extAxMax] = bnd2[extAxMin];
+                                        continue;
                                     }
-                                    else if (axisOffset[axis]==+1 && maxFace[axis])
-                                    {
-                                        dgbtxt += string("max") + string(1,'I'+axis);
-                                        bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
-                                        bnd1[extAxMax] = bnd1[extAxMin];
 
-                                        bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat*extents[extD1Start+extAxMin];
-                                        bnd2[extAxMin] /= refrat;
-                                        bnd2[extAxMin] += 1;
-                                        bnd2[extAxMax] = bnd2[extAxMin];
-                                        if (tJuncMaxFace[axis])
+                                    int bnd1[6];
+                                    int bnd2[6];
+                                    string dgbtxt = "";
+                                    bool usedTJunc = false;
+                                    for (int axis = 0; axis < 3; axis++)
+                                    {
+                                        int extAxMin = 2*axis + 0;
+                                        int extAxMax = 2*axis + 1;
+                                        int extD1Start = 6*d1;
+                                        int extD2Start = 6*d2;
+                                        if (axisOffset[axis]==-1 && minFace[axis])
+                                        {
+                                            dgbtxt += string("min") + string(1,'I'+axis);
+                                            bnd1[extAxMin] = 1;
+                                            bnd1[extAxMax] = 1;
+
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] += 1;
+                                            if (tJuncMinFace[axis])
+                                                bnd2[extAxMin] -= 1;  // crazy indexing; only happens at min, not max
                                             usedTJunc = true;
+                                            bnd2[extAxMax] = bnd2[extAxMin];
+                                        }
+                                        else if (axisOffset[axis]==+1 && maxFace[axis])
+                                        {
+                                            dgbtxt += string("max") + string(1,'I'+axis);
+                                            bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
+                                            bnd1[extAxMax] = bnd1[extAxMin];
+
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] += 1;
+                                            bnd2[extAxMax] = bnd2[extAxMin];
+                                            if (tJuncMaxFace[axis])
+                                                usedTJunc = true;
+                                        }
+                                        else
+                                        {
+                                            bnd1[extAxMin] = idxBeg[axis] - extents[extD2Start+extAxMin] + 1;
+                                            bnd1[extAxMax] = idxEnd[axis] - extents[extD2Start+extAxMin] + 1;
+
+                                            bnd2[extAxMin] = idxBeg[axis] - refrat*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] += 1;
+                                            bnd2[extAxMax] = bnd2[extAxMin] + (bnd1[extAxMax]-bnd1[extAxMin]);
+                                        }
                                     }
+
+                                    int index = numNeighbors[d1];
+                                    numNeighbors[d1]++;
+                                    if (iteration == 0)
+                                        AddNeighbor(d2, d1, index, orientation, bnd1, MORE_COARSE, refrat, DONOR_NEIGHBOR);
+                                    else if (usedTJunc)
+                                        AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, 1, DONOR_NEIGHBOR);
                                     else
-                                    {
-                                        bnd1[extAxMin] = idxBeg[axis] - extents[extD2Start+extAxMin] + 1;
-                                        bnd1[extAxMax] = idxEnd[axis] - extents[extD2Start+extAxMin] + 1;
+                                        AddNeighbor(d2, d1, index, orientation, bnd1);
 
-                                        bnd2[extAxMin] = idxBeg[axis] - refrat*extents[extD1Start+extAxMin];
-                                        bnd2[extAxMin] /= refrat;
-                                        bnd2[extAxMin] += 1;
-                                        bnd2[extAxMax] = bnd2[extAxMin] + (bnd1[extAxMax]-bnd1[extAxMin]);
-                                    }
+                                    index = numNeighbors[d2];
+                                    numNeighbors[d2]++;
+                                    if (iteration == 0)
+                                        AddNeighbor(d1, d2, index, orientation, bnd2, MORE_FINE, refrat, RECIPIENT_NEIGHBOR);
+                                    else if (usedTJunc)
+                                        AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, 1, RECIPIENT_NEIGHBOR);
+                                    else
+                                        AddNeighbor(d1, d2, index, orientation, bnd2);
                                 }
-
-                                int index = numNeighbors[d1];
-                                numNeighbors[d1]++;
-                                if (iteration == 0)
-                                    AddNeighbor(d2, d1, index, orientation, bnd1, MORE_COARSE, refrat, DONOR_NEIGHBOR);
-                                else if (usedTJunc)
-                                    AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, 1, DONOR_NEIGHBOR);
-                                else
-                                    AddNeighbor(d2, d1, index, orientation, bnd1);
-
-                                index = numNeighbors[d2];
-                                numNeighbors[d2]++;
-                                if (iteration == 0)
-                                    AddNeighbor(d1, d2, index, orientation, bnd2, MORE_FINE, refrat, RECIPIENT_NEIGHBOR);
-                                else if (usedTJunc)
-                                    AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, 1, RECIPIENT_NEIGHBOR);
-                                else
-                                    AddNeighbor(d1, d2, index, orientation, bnd2);
                             }
                         }
                     }
                 }
             }
         }
-    }
 
-    // This will perform some calculations that are necessary to do the actual
-    // communication.
-    //
-    for (i = 0 ; i < levels.size() ; i++)
-    {
-        Finish(i);
-    }
+        // This will perform some calculations that are necessary to do the actual
+        // communication.
+        //
+        for (i = 0 ; i < levels.size() ; i++)
+        {
+            Finish(i);
+        }
 
-    visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
-    haveCalculatedBoundaries = true;
-#endif
+        visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::Calculate");
+        haveCalculatedBoundaries = true;
+    }
 }
 
 
