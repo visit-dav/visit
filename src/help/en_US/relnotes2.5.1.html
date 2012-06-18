@@ -34,6 +34,15 @@ list of changes in release 2.5.0.</p>
 <li>The temporary filename created for the batch script that launches a compute engine in the batch system has been modified so that it can no longer have spaces.</li>
 <li>Using the rubber-band zoom tool on Windows will no longer cause a crash.</li>
 <li>VisIt's viewer would sometimes hang when using the <i>Change username</i> window while logging into a remote computer.</li>
+<li>A type bug identified by clang in H5Part database plugin was resolved.</li>
+<li>
+    VisIt's CMake build system detection logic for Python features was improved:
+    <ul>
+    <li>Python is now conditional on VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS.</li>
+    <li>PySide is now conditional on VISIT_PYTHON_SCRIPTING</li>
+    </ul>
+</li>
+
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.1</font></b></p>
