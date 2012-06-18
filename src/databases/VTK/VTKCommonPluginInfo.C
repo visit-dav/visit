@@ -38,7 +38,7 @@
 
 #include <VTKPluginInfo.h>
 #include <avtVTKFileFormat.h>
-#include <avtSTSDFileFormatInterface.h>
+#include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtVTKOptions.h>
 
@@ -55,7 +55,7 @@
 DatabaseType
 VTKCommonPluginInfo::GetDatabaseType()
 {
-    return DB_TYPE_STSD;
+    return DB_TYPE_STMD;
 }
 
 // ****************************************************************************
@@ -79,18 +79,13 @@ avtDatabase *
 VTKCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
-    int nTimestep = nList / nBlock;
-    avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nTimestep];
-    for (int i = 0 ; i < nTimestep ; i++)
+    avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
+    for (int i = 0 ; i < nList ; i++)
     {
-        ffl[i] = new avtSTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
-        {
-            ffl[i][j] = new avtVTKFileFormat(list[i*nBlock + j], readOptions);
-        }
+        ffl[i] = new avtVTKFileFormat(list[i], readOptions);
     }
-    avtSTSDFileFormatInterface *inter 
-           = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
+    avtSTMDFileFormatInterface *inter 
+           = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
 

@@ -17,6 +17,7 @@ VTKMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtVTKFileFormat.C
 avtVTKOptions.C
+vtkVisItXMLPDataReader.C
 )
 
 SET(LIBE_SOURCES
@@ -25,6 +26,7 @@ ${COMMON_SOURCES}
 avtVTKFileFormat.C
 avtVTKOptions.C
 avtVTKWriter.C
+vtkVisItXMLPDataReader.C
 )
 
 INCLUDE_DIRECTORIES(
