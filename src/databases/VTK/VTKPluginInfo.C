@@ -167,11 +167,16 @@ VTKGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.vtk");
-    defaultPatterns.push_back("*.vts");
-    defaultPatterns.push_back("*.vtr");
-    defaultPatterns.push_back("*.vtu");
     defaultPatterns.push_back("*.vti");
     defaultPatterns.push_back("*.vtp");
+    defaultPatterns.push_back("*.vtr");
+    defaultPatterns.push_back("*.vts");
+    defaultPatterns.push_back("*.vtu");
+    defaultPatterns.push_back("*.pvti");
+    defaultPatterns.push_back("*.pvtp");
+    defaultPatterns.push_back("*.pvtr");
+    defaultPatterns.push_back("*.pvts");
+    defaultPatterns.push_back("*.pvtu");
 
     return defaultPatterns;
 }

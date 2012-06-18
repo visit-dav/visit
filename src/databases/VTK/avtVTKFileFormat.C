@@ -60,6 +60,7 @@
 #include <vtkXMLRectilinearGridReader.h>
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLUnstructuredGridReader.h>
+#include <vtkVisItXMLPDataReader.h>
 
 #include <snprintf.h>
 #include <DebugStream.h>
@@ -95,36 +96,45 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //  Programmer:  Hank Childs
 //  Creation:    February 23, 2001
 //
-//   Modifications:
+//  Modifications:
+//    Hank Childs, Tue May 24 12:05:52 PDT 2005
+//    Added arguments.
 //
-//     Hank Childs, Tue May 24 12:05:52 PDT 2005
-//     Added arguments.
+//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
+//    Initialized matvarname
 //
-//     Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
-//     Initialized matvarname
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
+//    Save the file extension. 
 //
-//     Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
-//     Save the file extension. 
+//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//    Add vtk_time, to store time from the VTK file if it is available.
 //
-//     Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
-//     Add vtk_time, to store time from the VTK file if it is available.
+//    Hank Childs, Mon Jun 11 21:27:04 PDT 2007
+//    Do not assume there is an extension.
 //
-//     Hank Childs, Mon Jun 11 21:27:04 PDT 2007
-//     Do not assume there is an extension.
+//    Kathleen Bonnell, Wed Jul  9 17:48:21 PDT 2008
+//    Add vtk_cycle, to store cycle from the VTK file if it is available.
 //
-//     Kathleen Bonnell, Wed Jul  9 17:48:21 PDT 2008
-//     Add vtk_cycle, to store cycle from the VTK file if it is available.
+//    Brad Whitlock, Tue May 11 11:13:29 PDT 2010
+//    Search for file extension from the back of the filename in case
+//    directories contain "." and terminate if we hit a path separator.
 //
-//     Brad Whitlock, Tue May 11 11:13:29 PDT 2010
-//     Search for file extension from the back of the filename in case
-//     directories contain "." and terminate if we hit a path separator.
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
 //
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
-    : avtSTSDFileFormat(fname)
+    : avtSTMDFileFormat(&fname, 1)
 {
-    dataset = NULL;
+    filename = new char[strlen(fname)+1];
+    strcpy(filename, fname);
+
+    iblock = 0;
+    nblocks = 1;
+    pieceFileNames = NULL;
+    pieceDatasets = NULL;
+
     readInDataset = false;
     matvarname = NULL;
 
@@ -163,32 +173,101 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
 //  Creation:   February 23, 2001
 //
 //  Modifications:
-//
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Freed matvarname
 //
 //    Brad Whitlock, Wed Oct 26 11:03:14 PDT 2011
 //    Delete curves in vtkCurves.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::~avtVTKFileFormat()
 {
-    if (dataset != NULL)
-    {
-        dataset->Delete();
-        dataset = NULL;
-    }
+    free(filename);
     if (matvarname != NULL)
     {
         free(matvarname);
         matvarname = NULL;
+    }
+    if (pieceFileNames != NULL)
+    {
+        for (int i = 0; i < nblocks; i++)
+            delete [] pieceFileNames[i];
+        delete [] pieceFileNames;
+    }
+    if (pieceDatasets != NULL)
+    {
+        for (int i = 0; i < nblocks; i++)
+        {
+            if (pieceDatasets[i] != NULL)
+                pieceDatasets[i]->Delete();
+        }
+        delete [] pieceDatasets;
     }
     for(std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
         pos != vtkCurves.end(); ++pos)
     {
         pos->second->Delete();
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtVTKFileFormat::ReadInFile
+//
+//  Purpose:
+//      Reads in the file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 18, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVTKFileFormat::ReadInFile(void)
+{
+    if (extension == "pvtu")
+    {
+        vtkVisItXMLPDataReader *xmlpReader = vtkVisItXMLPDataReader::New();
+        xmlpReader->SetFileName(filename);
+        xmlpReader->ReadXMLInformation();
+
+        nblocks = xmlpReader->GetNumberOfPieces();
+        pieceFileNames = new char*[nblocks];
+        for (int i = 0; i < nblocks; i++)
+        {
+            pieceFileNames[i] = new char[strlen(xmlpReader->GetPieceFileName(i))+1];
+            strcpy(pieceFileNames[i], xmlpReader->GetPieceFileName(i));
+        }
+
+        xmlpReader->Delete();
+
+        pieceDatasets = new vtkDataSet*[nblocks];
+        for (int i = 0; i < nblocks; i++)
+            pieceDatasets[i] = NULL;
+
+        extension = extension.substr(1,3);
+    }
+    else
+    {
+        nblocks = 1;
+        pieceFileNames = new char*[nblocks];
+
+        pieceFileNames[0] = new char[strlen(filename)+1];
+        strcpy(pieceFileNames[0], filename);
+
+        pieceDatasets = new vtkDataSet*[nblocks];
+        pieceDatasets[0] = NULL;
+    }
+
+    ReadInDataset();
+
+    readInDataset = true;
 }
 
 
@@ -235,6 +314,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Brad Whitlock, Wed Oct 26 11:04:50 PDT 2011
 //    Create curves for 1D rectilinear grids.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 void
@@ -247,10 +329,13 @@ avtVTKFileFormat::ReadInDataset(void)
     // we are trying to read from the file sitting in memory), but anything
     // to prevent leaks.
     //
-    if (dataset != NULL)
+    if (pieceDatasets[iblock] != NULL)
     {
-        dataset->Delete();
+        pieceDatasets[iblock]->Delete();
+        pieceDatasets[iblock] = NULL;
     }
+
+    vtkDataSet *dataset = NULL;
 
     if (extension == "vtk" || extension == "none")
     {
@@ -265,12 +350,12 @@ avtVTKFileFormat::ReadInDataset(void)
         reader->ReadAllScalarsOn();
         reader->ReadAllVectorsOn();
         reader->ReadAllTensorsOn();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
 
@@ -285,12 +370,12 @@ avtVTKFileFormat::ReadInDataset(void)
     else if (extension == "vti")
     {
         vtkXMLImageDataReader *reader = vtkXMLImageDataReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -301,12 +386,12 @@ avtVTKFileFormat::ReadInDataset(void)
     {
         vtkXMLRectilinearGridReader *reader = 
             vtkXMLRectilinearGridReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -317,12 +402,12 @@ avtVTKFileFormat::ReadInDataset(void)
     {
         vtkXMLStructuredGridReader *reader = 
             vtkXMLStructuredGridReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -332,12 +417,12 @@ avtVTKFileFormat::ReadInDataset(void)
     else if (extension == "vtp") 
     {
         vtkXMLPolyDataReader *reader = vtkXMLPolyDataReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -348,12 +433,12 @@ avtVTKFileFormat::ReadInDataset(void)
     {
         vtkXMLUnstructuredGridReader *reader = 
             vtkXMLUnstructuredGridReader::New();
-        reader->SetFileName(filename);
+        reader->SetFileName(pieceFileNames[iblock]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, filename);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -362,7 +447,7 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else
     {
-        EXCEPTION2(InvalidFilesException, filename, 
+        EXCEPTION2(InvalidFilesException, pieceFileNames[iblock], 
                    "could not match extension to a VTK file format type");
     }
 
@@ -399,8 +484,9 @@ avtVTKFileFormat::ReadInDataset(void)
         }
     }
 
-    readInDataset = true;
+    pieceDatasets[iblock] = dataset;
 }
+
 
 // ****************************************************************************
 // Method: avtVTKFileFormat::CreateCurves
@@ -478,6 +564,7 @@ avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
     }
 }
 
+
 // ****************************************************************************
 //  Method: avtVTKFileFormat::GetAuxiliaryData
 //
@@ -485,7 +572,6 @@ avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
 //  Creation:   September 15, 2005 
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Feb 15 11:25:32 PST 2008
 //    Fix memory leak.
 //
@@ -497,6 +583,9 @@ avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
 //    Cyrus Harrison, Wed Nov 16 13:35:54 PST 2011
 //    Use "MaterialIds" field data to help generate avtMaterials result object.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 void *
@@ -504,6 +593,8 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
     const char *type, void *, DestructorFunction &df)
 {
     void *rv = NULL;
+
+    vtkDataSet *dataset = pieceDatasets[iblock];
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
@@ -517,7 +608,7 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
         {
             if (!readInDataset)
             {
-                ReadInDataset();
+                ReadInFile();
             }
             int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
             for(int i=0;( i < ncellvars) && (matvarname == NULL) ;i++)
@@ -530,7 +621,7 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
             }
         }
 
-        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(matvarname));
+        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(0, matvarname));
 
 
         // again, if we haven't called PopulateDatabaseMetaData().
@@ -596,6 +687,7 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
     return rv;
 }
 
+
 // ****************************************************************************
 //  Method: avtVTKFileFormat::GetMesh
 //
@@ -617,17 +709,27 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
 //    Brad Whitlock, Wed Oct 26 11:08:31 PDT 2011
 //    Return curves.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtVTKFileFormat::GetMesh(const char *mesh)
+avtVTKFileFormat::GetMesh(int domain, const char *mesh)
 {
     debug5 << "Getting mesh from VTK file " << filename << endl;
 
     if (!readInDataset)
     {
+        ReadInFile();
+    }
+
+    iblock = domain;
+    if (pieceDatasets[iblock] == NULL)
+    {
         ReadInDataset();
     }
+    vtkDataSet *dataset = pieceDatasets[iblock];
 
     // If the requested mesh is a curve, return it.
     std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
@@ -667,7 +769,6 @@ avtVTKFileFormat::GetMesh(const char *mesh)
 //  Creation:   February 23, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Mar 20 09:23:26 PST 2001
 //    Account for vector variable in error checking.
 //
@@ -683,17 +784,27 @@ avtVTKFileFormat::GetMesh(const char *mesh)
 //    Hank Childs, Sat Mar 19 11:57:19 PST 2005
 //    Turn variables with name "internal_var_" back into "avt".
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtVTKFileFormat::GetVar(const char *real_name)
+avtVTKFileFormat::GetVar(int domain, const char *real_name)
 {
     debug5 << "Getting var from VTK file " << filename << endl;
 
     if (!readInDataset)
     {
+        ReadInFile();
+    }
+
+    iblock = domain;
+    if (pieceDatasets[iblock] == NULL)
+    {
         ReadInDataset();
     }
+    vtkDataSet *dataset = pieceDatasets[iblock];
 
     const char *var = real_name;
     char buffer[1024];
@@ -758,7 +869,6 @@ avtVTKFileFormat::GetVar(const char *real_name)
 //  Creation:   March 20, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Mar 26 13:33:43 PST 2002
 //    Add a reference so that reference counting tricks work.
 //
@@ -769,15 +879,18 @@ avtVTKFileFormat::GetVar(const char *real_name)
 //    Route the vector call through the scalar variable call, since there is
 //    now no effective difference between the two.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtVTKFileFormat::GetVectorVar(const char *var)
+avtVTKFileFormat::GetVectorVar(int domain, const char *var)
 {
     //
     // There is no difference between vectors and scalars for this class.
     //
-    return GetVar(var);
+    return GetVar(domain, var);
 }
 
 
@@ -794,9 +907,11 @@ avtVTKFileFormat::GetVectorVar(const char *var)
 //  Creation:   February 23, 2001
 //
 //  Modifications:
-//
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Freed matvarname
+//
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
 //
 // ****************************************************************************
 
@@ -806,10 +921,15 @@ avtVTKFileFormat::FreeUpResources(void)
     debug4 << "VTK file " << filename << " forced to free up resources."
            << endl;
 
-    if (dataset != NULL)
+    if (pieceDatasets != NULL)
     {
-        dataset->Delete();
-        dataset = NULL;
+        for (int i = 0; i < nblocks; i++)
+        {
+            if (pieceDatasets[iblock] != NULL)
+                pieceDatasets[iblock]->Delete();
+        }
+        delete [] pieceDatasets;
+        pieceDatasets = NULL;
     }
     if (matvarname != NULL)
     {
@@ -831,7 +951,6 @@ avtVTKFileFormat::FreeUpResources(void)
 //  Creation:   February 23, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Mar 15 11:10:54 PST 2001
 //    Better determine if the dataset is 2D or 3D.
 //
@@ -901,6 +1020,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Cyrus Harrison, Wed Nov 16 13:35:54 PST 2011
 //    Use "MaterialIds" field data to help generate materials metadata.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 void
@@ -910,8 +1032,10 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     if (!readInDataset)
     {
-        ReadInDataset();
+        ReadInFile();
     }
+
+    vtkDataSet *dataset = pieceDatasets[iblock];
 
     int spat = 3;
     int topo = 3;
@@ -1012,9 +1136,10 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->meshType = type;
     mesh->spatialDimension = spat;
     mesh->topologicalDimension = topo;
-    mesh->numBlocks = 1;
+    mesh->numBlocks = nblocks;
     mesh->blockOrigin = 0;
-    mesh->SetExtents(bounds);
+    if (nblocks == 1)
+        mesh->SetExtents(bounds);
     if (dataset->GetFieldData()->GetArray("MeshCoordType") != NULL)
     {
         avtMeshCoordType mct = (avtMeshCoordType)
@@ -1240,9 +1365,9 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Purpose:
 //     Gets a list of the unique cell types.
 //
-//  Notes:    This is done externally to the similar method in 
-//            vtkUnstructuredGrid, since that method is buggy and can get
-//            into an infinite loop.
+//  Notes: This is done externally to the similar method in 
+//         vtkUnstructuredGrid, since that method is buggy and can get
+//         into an infinite loop.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 21, 2003
@@ -1281,7 +1406,7 @@ GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
 //  Purpose:
 //     Constructs a vtkRectilinearGrid from the passed vtkStructuredPoints. 
 //
-//  Notes:  The passed in dataset will be deleted.
+//  Notes: The passed in dataset will be deleted.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 9, 2004
@@ -1346,10 +1471,11 @@ avtVTKFileFormat::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP)
 //  Purpose: Try to get a cycle number from a file name
 //
 //  Notes: Although all this method does is simply call the format's base
-//  class implementation of GuessCycle, doing this is a way for the VTK
-//  format to "bless" the guesses that that method makes. Otherwise, VisIt
-//  wouldn't know that VTK thinks those guesses are good. See notes in
-//  avtSTXXFileFormatInterface::SetDatabaseMetaData for further explanation.
+//         class implementation of GuessCycle, doing this is a way for the
+//         VTK format to "bless" the guesses that that method makes.
+//         Otherwise, VisIt wouldn't know that VTK thinks those guesses are
+//         good. See notes in avtSTXXFileFormatInterface::SetDatabaseMetaData
+//         for further explanation.
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 12, 2005
@@ -1375,15 +1501,19 @@ avtVTKFileFormat::GetCycleFromFilename(const char *f) const
 //    Kathleen Bonnell, Wed Jul  9 18:14:24 PDT 2008
 //    Call ReadInDataset if not done already.
 //
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
+//
 // ****************************************************************************
 
 double
 avtVTKFileFormat::GetTime()
 {
     if (INVALID_TIME == vtk_time && !readInDataset)
-        ReadInDataset();
+        ReadInFile();
     return vtk_time;
 }
+
 
 // ****************************************************************************
 //  Method: avtVTKFileFormat::GetCycle
@@ -1394,6 +1524,8 @@ avtVTKFileFormat::GetTime()
 //  Creation:   July 9, 2008 
 //
 //  Modifications:
+//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
+//    I enhanced the reader so that it can read parallel VTK files.
 //
 // ****************************************************************************
 
@@ -1401,6 +1533,6 @@ int
 avtVTKFileFormat::GetCycle()
 {
     if (INVALID_CYCLE == vtk_cycle && !readInDataset)
-        ReadInDataset();
+        ReadInFile();
     return vtk_cycle;
 }
