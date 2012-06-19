@@ -2,11 +2,11 @@
 ##
 ## ../visit_svn/trunk/src/svn_bin/build_visit generated host.cmake
 ## created: Mon Jan  4 19:13:25 PST 2010
-## system: Darwin fry.lbl.gov 11.1.0 Darwin Kernel Version 11.1.0: Tue Jul 26 16:07:11 PDT 2011; root:xnu-1699.22.81~1/RELEASE_X86_64 x86_64
+## system: Darwin fry.lbl.gov 11.3.0 Darwin Kernel Version 11.3.0: Thu Jan 12 18:47:41 PST 2012; root:xnu-1699.24.23~1/RELEASE_X86_64 x86_64
 ## by: ghweber
 
 ##
-## Set the VISITHOME environment variable.
+## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /Users/ghweber/devel/visit_3rdparty)
 SET(VISITARCH i386-apple-darwin11_gcc-4.2)
@@ -19,7 +19,7 @@ VISIT_OPTION_DEFAULT(VISIT_CREATE_APPBUNDLE_PACKAGE ON)
 ##
 ## Specify the location of Mesa.
 ##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
 ## Specify the location of VTK.
@@ -35,15 +35,18 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN /opt/local/bin)
 ##
 ## Specify the location of Python.
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /opt/local/Library/Frameworks/Python.framework/Versions/2.7)
+VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH /opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 )
+VISIT_OPTION_DEFAULT(PYTHON_LIBRARY /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib)
+VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib)
 
 ##
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidden -D__USE_ISOC99")
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
 
 ##
 ##  Parallel flags
