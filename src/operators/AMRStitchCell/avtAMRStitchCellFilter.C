@@ -1314,6 +1314,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                         {
                             int numVtcs = tesselationArray3D[tessPos++];
                             std::vector<vtkIdType> vPtId(numVtcs);
+                            std::vector<vtkIdType> vSrcPtId(numVtcs);
 
                             bool skipCell = false;
                             for (int vtxNo = 0; vtxNo < numVtcs; ++ vtxNo)
@@ -1335,10 +1336,11 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 int vI = vIdx[cubeVtxNo][0];
                                 int vJ = vIdx[cubeVtxNo][1];
                                 int vK = vIdx[cubeVtxNo][2];
+                                vSrcPtId[vtxNo] = LOC(vI, vJ, vK);
 
                                 if (pointIds[LOC(vI, vJ, vK)] < 0)
                                 {
-                                    // Vertex was not computed for  a previous stitch cell
+                                    // Vertex was not computed for a previous stitch cell
                                     if (caseNo & (1 << cubeVtxNo))
                                     {
                                         // Fine cell
@@ -1484,13 +1486,17 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
                                 for (int dim=0; dim<3; ++dim)
                                     centroid[dim]/=7.;
                                 vtkIdType centroidId = stitchCellPts->InsertNextPoint(centroid);
+                                //std::cout << "Centroid ID: " << centroidId << std::endl;
                                 originalDataIds.push_back(-1);
                                 interpolatedDataIds.push_back(vtkIdList::New());
                                 interpolatedDataIds.back()->SetNumberOfIds(7);
+                                //std::cout << "Interpolated points: ";
                                 for (vtkIdType cPtNo=0; cPtNo<7; ++cPtNo)
                                 {
-                                    interpolatedDataIds.back()->SetId(cPtNo, vPtId[cPtNo]);
+                                    //std::cout << vSrcPtId[cPtNo] << " (ID="<<vPtId[cPtNo]<<") ";
+                                    interpolatedDataIds.back()->SetId(cPtNo, vSrcPtId[cPtNo]);
                                 }
+                                //std::cout << std::endl;
 
                                 vtkIdType c0[5] = { vPtId[0], vPtId[1], vPtId[2], vPtId[3], centroidId };
                                 vtkIdType c1[5] = { vPtId[0], vPtId[4], vPtId[5], vPtId[1], centroidId };
@@ -1560,11 +1566,20 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         {
             if (*it != -1)
             {
+                //std::cout << idx << ": Copying point with ID: " << *it << std::endl;
                 oneIdList->SetId(0, *it);
                 ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, oneIdList, oneWeight);
             }
             else
             {
+#if 0
+                std::cout << idx << ": Interpolating between IDs: ";
+                for (int i=0; i<(*iVLIt)->GetNumberOfIds(); ++i)
+                {
+                    std::cout << (*iVLIt)->GetId(i) << " (w=" << sevenWeights[i] << ") ";
+                }
+                std::cout << std::endl;
+#endif
                 ugrid->GetPointData()->InterpolatePoint(rgrid->GetCellData(), idx, *iVLIt, sevenWeights);
                 (*iVLIt)->Delete();
                 ++iVLIt;
