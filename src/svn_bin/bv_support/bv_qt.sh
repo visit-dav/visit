@@ -84,9 +84,15 @@ function bv_qt_initialize_vars
     if [[ $USE_SYSTEM_QT != "yes" ]]; then
       QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/"
       QT_QMAKE_COMMAND="${QT_INSTALL_DIR}/bin/qmake"
-      QT_BIN_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_BINS`
-      QT_INCLUDE_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_HEADERS`
-      QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
+      if [[ -e "$QT_QMAKE_COMMAND" ]]; then
+        QT_BIN_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_BINS`
+        QT_INCLUDE_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_HEADERS`
+        QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
+      else
+        QT_BIN_DIR="$QT_INSTALL_DIR/bin"
+        QT_INCLUDE_DIR="$QT_INSTALL_DIR/include"
+        QT_LIB_DIR="$QT_INSTALL_DIR/lib"
+      fi
       QT_QTUITOOLS_INCLUDE_DIR="$QT_INCLUDE_DIR/QtUiTools"
     fi
 }
