@@ -151,6 +151,8 @@ skipList_for_Edge="\
     $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
     $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
     $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
+    $testHost,parallel:tests/plots/pics.py:pics_MB_2D_rect_POS_DormandPrince_stream_both \
+    $testHost,parallel:tests/plots/pics.py:pics_MB_2D_rect_POD_DormandPrince_stream_both \
     $testHost,serial:tests/operators/persistent_particles.py \
     $testHost,parallel:tests/operators/persistent_particles.py \
     $testHost,scalable,parallel,icet:tests/operators/persistent_particles.py \
