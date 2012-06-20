@@ -189,6 +189,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Ensure visit's lib dir has path-separators properly escaped on Windows
 //    before being passed to the pjoin command.
 //
+//    Brad Whitlock, Wed Jun 20 11:37:23 PDT 2012
+//    Added -minimized argument to minimize the cli window on Windows.
+//
 // ****************************************************************************
 
 int
@@ -341,6 +344,15 @@ main(int argc, char *argv[])
         else if(strcmp(argv[i], "-dv") == 0)
         {
             SetIsDevelopmentVersion(true);
+        }
+
+        else if(strcmp(argv[i], "-minimized") == 0)
+        {
+#ifdef WIN32
+            HWND console = GetConsoleWindow();
+            if(console != NULL)
+                ShowWindow(console, SW_MINIMIZE);
+#endif
         }
         else
         {
