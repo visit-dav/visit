@@ -154,10 +154,10 @@ static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
 
 static void HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm,
     const char *multimesh_name, avtMeshType *mt, int *num_groups,
-    vector<int> *group_ids, vector<string> *block_names, int);
+    vector<int> *group_ids, vector<string> *block_names, int forceSingle);
 static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     const char *meshName, int timestate, int type, avtVariableCache *cache,
-    int);
+    int forceSingle);
 
 static int MultiMatHasAllMatInfo(const DBmultimat *const mm);
 static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
@@ -15461,7 +15461,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
         }
     }
 
-    DBForceSingle(!forceSingle);
+    DBForceSingle(forceSingle);
     return retval;
 }
 #endif
