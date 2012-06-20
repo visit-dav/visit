@@ -518,7 +518,7 @@ RemoteProcess::GetProcessId() const
 //    Added more Windows error logging.
 //
 //    Brad Whitlock, Tue Jun 19 17:10:39 PDT 2012
-//    Add VISIT_SO_REUSEADDR and VISIT_INITIAL_PORT environment variables.
+//    Add VISIT_INITIAL_PORT environment variable.
 //
 // ****************************************************************************
 
@@ -542,13 +542,6 @@ RemoteProcess::GetSocketAndPort()
     }
     debug5 << mName << "Opened listen socket: " << listenSocketNum << endl;
 
-#if !defined(_WIN32)
-    bool so_reuseaddr = true;
-    const char *visit_reuseaddr = getenv("VISIT_SO_REUSEADDR");
-    if(visit_reuseaddr != NULL && strcmp(visit_reuseaddr, "0") == 0)
-        so_reuseaddr = false;
-#endif
-
     //
     // Look for a port that can be used.
     //
@@ -568,8 +561,7 @@ RemoteProcess::GetSocketAndPort()
     {
         sin.sin_port = htons(listenPortNum);
 #if !defined(_WIN32)
-        if(so_reuseaddr)
-            setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 #endif
         if (bind(listenSocketNum, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         {
@@ -1307,6 +1299,13 @@ RemoteProcess::WaitForTermination()
 //   overwritten with new values and we were walking off the end of an array
 //   and causing a seg fault.
 //
+//   Jeremy Meredith, Fri May  4 12:13:49 EDT 2012
+//   Check for errors from listen() and re-try the process a number of
+//   times before giving up.  On some systems, launching multiple
+//   VisIt processes at once caused multiple VisIt's to bind to
+//   a specific port successfully; it was only the listen() call that
+//   gave any indication this happened, via an EADDRINUSE.
+//
 // ****************************************************************************
 
 bool
@@ -1444,23 +1443,36 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     // Open the socket for listening
     //
     debug5 << mName << "Calling GetSocketAndPort" << endl;
-    if(!GetSocketAndPort())
+
+    int retrycount = 100;
+    bool success = false;
+    while (--retrycount >= 0 && success == false)
     {
-        // Could not open socket and port
-        debug5 << mName << "GetSocketAndPort returned false" << endl;
-        return false;
+        // Find a port
+        if(!GetSocketAndPort())
+        {
+            // Could not open socket and port
+            debug5 << mName << "GetSocketAndPort returned false" << endl;
+            return false;
+        }
+
+        // Start listening for connections.
+        debug5 << mName << "Start listening for connections." << endl;
+#if defined(_WIN32)
+        success = (listen(listenSocketNum, 5) != SOCKET_ERROR);
+        if (!success)
+            LogWindowsSocketError(mName, "listen");
+#else
+        success = (listen(listenSocketNum, 5) == 0);
+#endif
+        if (!success)
+            CloseListenSocket();
     }
 
-    //
-    // Start listening for connections.
-    //
-    debug5 << mName << "Start listening for connections." << endl;
-#if defined(_WIN32)
-    if(listen(listenSocketNum, 5) == SOCKET_ERROR)
-        LogWindowsSocketError(mName, "listen");
-#else
-    listen(listenSocketNum, 5);
-#endif
+    // NOTE: returning false from here simply
+    //       leads to aborts; returning true
+    //       leads to a more graceful recovery.
+    //return success;   <-- no, bad things happen
     return true;
 }
 
@@ -2717,4 +2729,3 @@ RemoteProcess::SetChangeUserNameCallback(bool (*callback)(const std::string &, s
 {
     changeUsername = callback;
 }
-
