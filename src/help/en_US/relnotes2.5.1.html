@@ -57,6 +57,8 @@ list of changes in release 2.5.0.</p>
 <li>Further improvements were made to the splatting renderer in VisIt's Volume plot.</li>
 <li>The KeyframeAttributes type was exposed in the VisIt module so it can be created using a normal constructor.</li>
 <li>The VTK reader was enhanced so that it can read parallel VTK files. These are files with extensions "pvtu", "pvts", "pvtr", "pvti" and "pvtp".</li>
+<li>VisIt can now get the initial port number that it uses from the <i>VISIT_INITIAL_PORT</i> environment variable. The provided value must be an integer greater than or equal to 1024. VisIt normally starts looking for available ports at port 5600.</li>
+<li>VisIt tries to reuse ports when it can but this can cause problems when starting up multiple instances of VisIt simultaneously. If you regularly do this, you can set the <i>VISIT_SO_REUSEADDR</i> environment variable to "0" to prevent VisIt from reusing ports, ensuring that the right clients will talk to the right servers.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous

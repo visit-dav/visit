@@ -517,6 +517,9 @@ RemoteProcess::GetProcessId() const
 //    Brad Whitlock, Fri May 12 11:56:59 PDT 2006
 //    Added more Windows error logging.
 //
+//    Brad Whitlock, Tue Jun 19 17:10:39 PDT 2012
+//    Add VISIT_SO_REUSEADDR and VISIT_INITIAL_PORT environment variables.
+//
 // ****************************************************************************
 
 bool
@@ -539,19 +542,34 @@ RemoteProcess::GetSocketAndPort()
     }
     debug5 << mName << "Opened listen socket: " << listenSocketNum << endl;
 
+#if !defined(_WIN32)
+    bool so_reuseaddr = true;
+    const char *visit_reuseaddr = getenv("VISIT_SO_REUSEADDR");
+    if(visit_reuseaddr != NULL && strcmp(visit_reuseaddr, "0") == 0)
+        so_reuseaddr = false;
+#endif
+
     //
     // Look for a port that can be used.
     //
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
     listenPortNum = INITIAL_PORT_NUMBER;
+    const char *visitPort = getenv("VISIT_INITIAL_PORT");
+    if(visitPort != NULL)
+    {
+        listenPortNum = atoi(visitPort);
+        if(listenPortNum < 1024)
+            listenPortNum = 1024;
+    }
     debug5 << mName << "Looking for available port starting with: "
            << listenPortNum << endl;
     while (!portFound && listenPortNum < 32767)
     {
         sin.sin_port = htons(listenPortNum);
 #if !defined(_WIN32)
-        setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        if(so_reuseaddr)
+            setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 #endif
         if (bind(listenSocketNum, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         {
