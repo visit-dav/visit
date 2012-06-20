@@ -130,7 +130,6 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     filename = new char[strlen(fname)+1];
     strcpy(filename, fname);
 
-    iblock = 0;
     nblocks = 1;
     pieceFileNames = NULL;
     pieceDatasets = NULL;
@@ -157,9 +156,9 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     }
 
     if (start != -1)
-        extension = string(fname, start+1, len-1);
+        fileExtension = string(fname, start+1, len-1);
     else
-        extension = "none";
+        fileExtension = "none";
 
     vtk_time = INVALID_TIME;
     vtk_cycle = INVALID_CYCLE;
@@ -231,7 +230,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 void
 avtVTKFileFormat::ReadInFile(void)
 {
-    if (extension == "pvtu")
+    if (fileExtension == "pvtu" || fileExtension == "pvts" ||
+        fileExtension == "pvtr" || fileExtension == "pvti" ||
+        fileExtension == "pvtp")
     {
         vtkVisItXMLPDataReader *xmlpReader = vtkVisItXMLPDataReader::New();
         xmlpReader->SetFileName(filename);
@@ -251,7 +252,7 @@ avtVTKFileFormat::ReadInFile(void)
         for (int i = 0; i < nblocks; i++)
             pieceDatasets[i] = NULL;
 
-        extension = extension.substr(1,3);
+        pieceExtension = fileExtension.substr(1,3);
     }
     else
     {
@@ -263,9 +264,11 @@ avtVTKFileFormat::ReadInFile(void)
 
         pieceDatasets = new vtkDataSet*[nblocks];
         pieceDatasets[0] = NULL;
+
+        pieceExtension = fileExtension;
     }
 
-    ReadInDataset();
+    ReadInDataset(0);
 
     readInDataset = true;
 }
@@ -320,7 +323,7 @@ avtVTKFileFormat::ReadInFile(void)
 // ****************************************************************************
 
 void
-avtVTKFileFormat::ReadInDataset(void)
+avtVTKFileFormat::ReadInDataset(int domain)
 {
     debug4 << "Reading in dataset from VTK file " << filename << endl;
 
@@ -329,17 +332,17 @@ avtVTKFileFormat::ReadInDataset(void)
     // we are trying to read from the file sitting in memory), but anything
     // to prevent leaks.
     //
-    if (pieceDatasets[iblock] != NULL)
+    if (pieceDatasets[domain] != NULL)
     {
-        pieceDatasets[iblock]->Delete();
-        pieceDatasets[iblock] = NULL;
+        pieceDatasets[domain]->Delete();
+        pieceDatasets[domain] = NULL;
     }
 
     vtkDataSet *dataset = NULL;
 
-    if (extension == "vtk" || extension == "none")
+    if (pieceExtension == "vtk" || pieceExtension == "none")
     {
-        if (extension == "none")
+        if (pieceExtension == "none")
             debug1 << "No extension given ... assuming legacy VTK format." 
                    << endl;
 
@@ -350,12 +353,12 @@ avtVTKFileFormat::ReadInDataset(void)
         reader->ReadAllScalarsOn();
         reader->ReadAllVectorsOn();
         reader->ReadAllTensorsOn();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
 
@@ -367,78 +370,78 @@ avtVTKFileFormat::ReadInDataset(void)
         //dataset->SetSource(NULL);
         reader->Delete();
     }
-    else if (extension == "vti")
+    else if (pieceExtension == "vti")
     {
         vtkXMLImageDataReader *reader = vtkXMLImageDataReader::New();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
         reader->Delete();
     } 
-    else if (extension == "vtr") 
+    else if (pieceExtension == "vtr") 
     {
         vtkXMLRectilinearGridReader *reader = 
             vtkXMLRectilinearGridReader::New();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
         reader->Delete();
     } 
-    else if (extension == "vts")
+    else if (pieceExtension == "vts")
     {
         vtkXMLStructuredGridReader *reader = 
             vtkXMLStructuredGridReader::New();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
         reader->Delete();
     } 
-    else if (extension == "vtp") 
+    else if (pieceExtension == "vtp") 
     {
         vtkXMLPolyDataReader *reader = vtkXMLPolyDataReader::New();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
         dataset->Update();
         //dataset->SetSource(NULL);
         reader->Delete();
     } 
-    else if (extension == "vtu") 
+    else if (pieceExtension == "vtu") 
     {
         vtkXMLUnstructuredGridReader *reader = 
             vtkXMLUnstructuredGridReader::New();
-        reader->SetFileName(pieceFileNames[iblock]);
+        reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
         dataset = reader->GetOutput();
         if (dataset == NULL)
         {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[iblock]);
+            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
         dataset->Update();
@@ -447,7 +450,7 @@ avtVTKFileFormat::ReadInDataset(void)
     } 
     else
     {
-        EXCEPTION2(InvalidFilesException, pieceFileNames[iblock], 
+        EXCEPTION2(InvalidFilesException, pieceFileNames[domain], 
                    "could not match extension to a VTK file format type");
     }
 
@@ -484,7 +487,7 @@ avtVTKFileFormat::ReadInDataset(void)
         }
     }
 
-    pieceDatasets[iblock] = dataset;
+    pieceDatasets[domain] = dataset;
 }
 
 
@@ -589,15 +592,14 @@ avtVTKFileFormat::CreateCurves(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 
 void *
-avtVTKFileFormat::GetAuxiliaryData(const char *var,
+avtVTKFileFormat::GetAuxiliaryData(const char *var, int domain,
     const char *type, void *, DestructorFunction &df)
 {
     void *rv = NULL;
 
-    vtkDataSet *dataset = pieceDatasets[iblock];
-
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
+        vtkDataSet *dataset = NULL;
 
         // matvarname is only inited if we call: PopulateDatabaseMetaData().
         // If you have a series of vtk files using this variable will cause
@@ -610,6 +612,13 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
             {
                 ReadInFile();
             }
+
+            if (pieceDatasets[domain] == NULL)
+            {
+                ReadInDataset(domain);
+            }
+            dataset = pieceDatasets[domain];
+
             int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
             for(int i=0;( i < ncellvars) && (matvarname == NULL) ;i++)
             {
@@ -619,6 +628,10 @@ avtVTKFileFormat::GetAuxiliaryData(const char *var,
                 else if(strcmp(dataset->GetCellData()->GetArrayName(i), "material") == 0)
                     matvarname = strdup("material");
             }
+        }
+        else
+        {
+            dataset = pieceDatasets[domain];
         }
 
         vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(0, matvarname));
@@ -724,12 +737,11 @@ avtVTKFileFormat::GetMesh(int domain, const char *mesh)
         ReadInFile();
     }
 
-    iblock = domain;
-    if (pieceDatasets[iblock] == NULL)
+    if (pieceDatasets[domain] == NULL)
     {
-        ReadInDataset();
+        ReadInDataset(domain);
     }
-    vtkDataSet *dataset = pieceDatasets[iblock];
+    vtkDataSet *dataset = pieceDatasets[domain];
 
     // If the requested mesh is a curve, return it.
     std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
@@ -799,12 +811,11 @@ avtVTKFileFormat::GetVar(int domain, const char *real_name)
         ReadInFile();
     }
 
-    iblock = domain;
-    if (pieceDatasets[iblock] == NULL)
+    if (pieceDatasets[domain] == NULL)
     {
-        ReadInDataset();
+        ReadInDataset(domain);
     }
-    vtkDataSet *dataset = pieceDatasets[iblock];
+    vtkDataSet *dataset = pieceDatasets[domain];
 
     const char *var = real_name;
     char buffer[1024];
@@ -925,8 +936,8 @@ avtVTKFileFormat::FreeUpResources(void)
     {
         for (int i = 0; i < nblocks; i++)
         {
-            if (pieceDatasets[iblock] != NULL)
-                pieceDatasets[iblock]->Delete();
+            if (pieceDatasets[i] != NULL)
+                pieceDatasets[i]->Delete();
         }
         delete [] pieceDatasets;
         pieceDatasets = NULL;
@@ -1035,7 +1046,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ReadInFile();
     }
 
-    vtkDataSet *dataset = pieceDatasets[iblock];
+    vtkDataSet *dataset = pieceDatasets[0];
 
     int spat = 3;
     int topo = 3;

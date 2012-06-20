@@ -109,7 +109,7 @@ class avtVTKFileFormat : public avtSTMDFileFormat
     virtual vtkDataSet   *GetMesh(int, const char *);
     virtual vtkDataArray *GetVar(int, const char *);
     virtual vtkDataArray *GetVectorVar(int, const char *);
-    virtual void         *GetAuxiliaryData(const char *var,
+    virtual void         *GetAuxiliaryData(const char *var, int,
                               const char *type, void *, DestructorFunction &df);
 
     virtual const char   *GetType(void)  { return "VTK File Format"; };
@@ -127,7 +127,6 @@ class avtVTKFileFormat : public avtSTMDFileFormat
 
     bool                  readInDataset;
 
-    int                   iblock;
     int                   nblocks;
     char                **pieceFileNames;
     vtkDataSet          **pieceDatasets;
@@ -140,12 +139,13 @@ class avtVTKFileFormat : public avtSTMDFileFormat
     double                vtk_time;
     int                   vtk_cycle;
 
-    std::string           extension;
+    std::string           fileExtension;
+    std::string           pieceExtension;
 
     std::map<std::string, vtkRectilinearGrid *> vtkCurves;
 
     void                  ReadInFile(void);
-    void                  ReadInDataset(void);
+    void                  ReadInDataset(int);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);
     void                  CreateCurves(vtkRectilinearGrid *rgrid);
 };
