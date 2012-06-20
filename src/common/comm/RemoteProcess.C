@@ -518,7 +518,7 @@ RemoteProcess::GetProcessId() const
 //    Added more Windows error logging.
 //
 //    Brad Whitlock, Tue Jun 19 17:10:39 PDT 2012
-//    Add VISIT_SO_REUSEADDR and VISIT_INITIAL_PORT environment variables.
+//    Add VISIT_INITIAL_PORT environment variable.
 //
 // ****************************************************************************
 
@@ -542,13 +542,6 @@ RemoteProcess::GetSocketAndPort()
     }
     debug5 << mName << "Opened listen socket: " << listenSocketNum << endl;
 
-#if !defined(_WIN32)
-    bool so_reuseaddr = true;
-    const char *visit_reuseaddr = getenv("VISIT_SO_REUSEADDR");
-    if(visit_reuseaddr != NULL && strcmp(visit_reuseaddr, "0") == 0)
-        so_reuseaddr = false;
-#endif
-
     //
     // Look for a port that can be used.
     //
@@ -568,8 +561,7 @@ RemoteProcess::GetSocketAndPort()
     {
         sin.sin_port = htons(listenPortNum);
 #if !defined(_WIN32)
-        if(so_reuseaddr)
-            setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        setsockopt(listenSocketNum, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 #endif
         if (bind(listenSocketNum, (struct sockaddr *)&sin, sizeof(sin)) < 0)
         {
@@ -1474,14 +1466,7 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
         success = (listen(listenSocketNum, 5) == 0);
 #endif
         if (!success)
-        {
-#if defined(_WIN32)
-            closesocket(listenSocketNum);
-#else
-            close(listenSocketNum);
-#endif
-            listenSocketNum = -1;
-        }
+            CloseListenSocket();
     }
 
     // NOTE: returning false from here simply
@@ -2744,4 +2729,3 @@ RemoteProcess::SetChangeUserNameCallback(bool (*callback)(const std::string &, s
 {
     changeUsername = callback;
 }
-
