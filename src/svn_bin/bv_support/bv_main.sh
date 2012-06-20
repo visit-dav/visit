@@ -496,8 +496,9 @@ function enable_dependent_libraries
         do
             $"bv_${depend_lib}_is_enabled"
             if [[ $? == 0 ]]; then
-                echo "library ${depend_lib} was not set but another library depends on it, enabling it"
-                $"bv_${depend_lib}_enable"
+                error "ERROR: library ${depend_lib} was not set ${reqlibs[$bv_i]} depends on it, please enable"
+                #echo "library ${depend_lib} was not set but another library depends on it, enabling it"
+                #$"bv_${depend_lib}_enable"
             fi
         done
     done
@@ -521,6 +522,7 @@ function enable_dependent_libraries
         do
             $"bv_${depend_lib}_is_enabled"
             if [[ $? == 0 ]]; then
+                error "ERROR: library ${depend_lib} was not set ${optlibs[$bv_i]} depends on it, please enable"
                 echo "library ${depend_lib} was not set but another library depends on it, enabling it"
                 $"bv_${depend_lib}_enable"
             fi
