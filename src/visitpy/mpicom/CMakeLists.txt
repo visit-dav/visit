@@ -41,6 +41,9 @@
 #  Cyrus Harrison,Thu Apr  5 09:14:27 PDT 2012
 #  Use new python module creation setup.
 #
+#  Kathleen Biagas, Thu Jun 21 11:32:12 PST 2012 
+#  Change how parallel flags are handled on windows. 
+#
 #****************************************************************************/
 
 SET(MPICOM_PY_SOURCES py_src/__init__.py
@@ -66,22 +69,27 @@ IF(VISIT_PARALLEL)
                              ${MPICOM_SOURCES})
 
 
-    IF(VISIT_PARALLEL_CXXFLAGS)
-        SET(PAR_COMPILE_FLAGS "")
-        FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-            SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        ENDFOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
+    IF(UNIX)
+        IF(VISIT_PARALLEL_CXXFLAGS)
+            SET(PAR_COMPILE_FLAGS "")
+            FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
+                SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
+            ENDFOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
             SET_TARGET_PROPERTIES(mpicom PROPERTIES
                                   COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-    ENDIF(VISIT_PARALLEL_CXXFLAGS)
-    IF(VISIT_PARALLEL_LINKER_FLAGS)
-        SET(PAR_LINK_FLAGS "")
-        FOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-            SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-        ENDFOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-        SET_TARGET_PROPERTIES(mpicom PROPERTIES
+        ENDIF(VISIT_PARALLEL_CXXFLAGS)
+        IF(VISIT_PARALLEL_LINKER_FLAGS)
+            SET(PAR_LINK_FLAGS "")
+            FOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
+                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
+            ENDFOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
+            SET_TARGET_PROPERTIES(mpicom PROPERTIES
                               LINK_FLAGS ${PAR_LINK_FLAGS})
-    ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
+        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
+    ELSE(UNIX)
+        ADD_TARGET_INCLUDE(mpicom ${VISIT_PARALLEL_INCLUDE})
+        ADD_TARGET_DEFINITIONS(mpicom ${VISIT_PARALLEL_DEFS})
+    ENDIF(UNIX)
 
     TARGET_LINK_LIBRARIES(mpicom
                           ${PYTHON_LIBRARIES}

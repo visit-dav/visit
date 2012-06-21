@@ -293,9 +293,18 @@
 #    client/server. This setting should be removed and a runtime check
 #    should be added to the engine.
 #
+#    Kathleen Biagas, Thu Jun 21 11:12:57 MST 2012
+#    Include paths for vtk, exodusii, python and lib names for ptyhon are 
+#    different on windows than unix, so use special vars for use with 
+#    PluginVsInstall.
+#    Added function 'ADD_TARGET_INCLUDE'.  (requires cmake 2.8.8 to work)
+#    Modify how parallel flags are handled on windows. 
+#    Fix glitch with ADD_TARGET_DEFINITIONS when target
+#    had more than one definition set already.
+#
 #****************************************************************************/
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -1203,36 +1212,37 @@ IF(VISIT_PARALLEL)
             ENDIF(VISIT_MPI_LD_FLAGS)
         ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
             IF(WIN32)
-              INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMPI.cmake)
-              IF(MPI_FOUND)
-                IF(MPI_COMPILE_FLAGS)
-                    LIST(APPEND VPFLAGS "${MPI_COMPILE_FLAGS}")
-                ENDIF(MPI_COMPILE_FLAGS)
-                IF(MPI_INCLUDE_PATH)
-                    FILE(TO_NATIVE_PATH ${MPI_INCLUDE_PATH} MIP_NATIVE)
-                    LIST(APPEND VPFLAGS "/I\"${MIP_NATIVE}\"")
-                ENDIF(MPI_INCLUDE_PATH)
-                STRING(REPLACE ";" " " VPFLAGS "${VPFLAGS}")
-                SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS}" 
-                    CACHE STRING "Parallel CFLAGS")
-                SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS}" 
-                     CACHE STRING "Parallel CXXFLAGS")
-                FILE(TO_NATIVE_PATH ${MPI_LIBRARY} ML_NATIVE)
-                SET(VISIT_PARALLEL_LIBS "${ML_NATIVE}"
-                    CACHE STRING "MPI libraries")
-                IF(MPI_LINK_FLAGS)
-                    SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
-                        CACHE STRING "Parallel LDFLAGS")
-                #ELSE(MPI_LINK_FLAGS)
-                #    SET(VISIT_PARALLEL_LINKER_FLAGS " "
-                #        CACHE STRING "Parallel LDFLAGS")
-                ENDIF(MPI_LINK_FLAGS)
-              ELSE(MPI_FOUND)
-                MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a " 
-                        "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
-                        "You may also define VISIT_MPI_LD_FLAGS, "
-                        "VISIT_MPI_CXX_FLAGS." )
-              ENDIF(MPI_FOUND)
+              IF(NOT MPI_FOUND)
+                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMPI.cmake)
+                IF(MPI_FOUND)
+                  STRING(REPLACE " " ";" VPFLAGS "${VPFLAGS}")
+                  SET(VISIT_PARALLEL_DEFS "${VPFLAGS}" 
+                      CACHE STRING "parallel defines")
+                  SET(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
+                      CACHE STRING "MPI libraries")
+                  SET(VISIT_PARALLEL_INCLUDE "${MPI_INCLUDE_PATH}"
+                      CACHE STRING "MPI include dir")
+                  IF(MPI_EXTRA_LIBRARY)
+                       LIST(APPEND VISIT_PARALLEL_LIBS "${MPI_EXTRA_LIBRARY}")
+                  ENDIF(MPI_EXTRA_LIBRARY)
+  
+                  IF(MPI_COMPILE_FLAGS)
+                      SET(VISIT_PARALLEL_CFLAGS "${MPI_COMPILE_FLAGS}"
+                          CACHE STRING "Parallel CFLAGS")
+                      SET(VISIT_PARALLEL_CXXFLAGS "${MPI_COMPILE_FLAGS}"
+                          CACHE STRING "Parallel CXXFLAGS")
+                  ENDIF(MPI_COMPILE_FLAGS)
+                  IF(MPI_LINK_FLAGS)
+                      SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
+                          CACHE STRING "Parallel LDFLAGS")
+                  ENDIF(MPI_LINK_FLAGS)
+                ELSE(MPI_FOUND)
+                  MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a " 
+                          "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
+                          "You may also define VISIT_MPI_LD_FLAGS, "
+                          "VISIT_MPI_CXX_FLAGS." )
+                ENDIF(MPI_FOUND)
+              ENDIF(NOT MPI_FOUND)
             ELSE(WIN32)
                 MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a " 
                         "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
@@ -1250,6 +1260,8 @@ IF(VISIT_PARALLEL)
     MESSAGE(STATUS "    VISIT_PARALLEL_LINKER_FLAGS = ${VISIT_PARALLEL_LINKER_FLAGS}")
     MESSAGE(STATUS "    VISIT_PARALLEL_LIBS = ${VISIT_PARALLEL_LIBS}")
     MESSAGE(STATUS "    VISIT_PARALLEL_RPATH = ${VISIT_PARALLEL_RPATH}")
+    MESSAGE(STATUS "    VISIT_PARALLEL_DEFS = ${VISIT_PARALLEL_DEFS}")
+    MESSAGE(STATUS "    VISIT_PARALLEL_INCLUDE = ${VISIT_PARALLEL_INCLUDE}")
 
     IF(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)
         MESSAGE(STATUS "")
@@ -1261,9 +1273,38 @@ ELSE(VISIT_PARALLEL)
     MESSAGE(STATUS "Serial version of VisIt")
 ENDIF(VISIT_PARALLEL)
 
+FUNCTION(ADD_TARGET_INCLUDE target)
+    # Setting include_directories via set_target_properties overrides
+    # the current settings, but we want to append, so first retrieve
+    # the current values, then append the desired include.
+    GET_TARGET_PROPERTY(currentInc ${target} INCLUDE_DIRECTORIES)
+    LIST(APPEND currentInc ${ARGN})
+    SET_TARGET_PROPERTIES(${target} PROPERTIES
+                          INCLUDE_DIRECTORIES "${currentInc}")
+    UNSET(currentInc)
+ENDFUNCTION(ADD_TARGET_INCLUDE)
+
+FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
+    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
+    # if there truly are current definitions, and more than 1 in the list, then
+    # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.  
+    # Grab the first item in the list for comparison instead.
+    LIST(GET currentDefs 0 firstItem )
+    IF(${firstItem} MATCHES NOTFOUND)
+        SET(allDefs ${newDefs})
+    ELSE(${firstItem} MATCHES NOTFOUND)
+        SET(allDefs ${currentDefs} ${newDefs})
+    ENDIF(${firstItem} MATCHES NOTFOUND)
+    SET_TARGET_PROPERTIES(${target} PROPERTIES
+            COMPILE_DEFINITIONS "${allDefs}"
+        )
+ENDFUNCTION(ADD_TARGET_DEFINITIONS)
+
 FUNCTION(ADD_PARALLEL_EXECUTABLE target)
     ADD_EXECUTABLE(${target} ${ARGN})
-    IF(VISIT_PARALLEL_CXXFLAGS)
+
+    IF(UNIX)
+      IF(VISIT_PARALLEL_CXXFLAGS)
         SET(PAR_COMPILE_FLAGS "")
         FOREACH(X ${VISIT_PARALLEL_CXXFLAGS})
             SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
@@ -1281,12 +1322,6 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target)
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-        # If we're on doing this "nolink mpi" option, we rely on the
-        # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
-        # target with MPI.
-        IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
-            TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-        ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
         IF(VISIT_PARALLEL_RPATH)
             SET(PAR_RPATHS "")
@@ -1300,7 +1335,19 @@ FUNCTION(ADD_PARALLEL_EXECUTABLE target)
                 INSTALL_RPATH ${PAR_RPATHS}
             )
         ENDIF(VISIT_PARALLEL_RPATH)
-    ENDIF(VISIT_PARALLEL_CXXFLAGS)
+      ENDIF(VISIT_PARALLEL_CXXFLAGS)
+    ELSE(UNIX)
+          ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
+          ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
+          TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+    ENDIF(UNIX)
+
+    # If we're on doing this "nolink mpi" option, we rely on the
+    # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
+    # target with MPI.
+    IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
+        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+    ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(ADD_PARALLEL_EXECUTABLE)
 
 FUNCTION(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
@@ -1349,7 +1396,9 @@ ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
 
 FUNCTION(ADD_PARALLEL_LIBRARY target)
     ADD_LIBRARY(${target} ${ARGN})
-    IF(VISIT_PARALLEL_CXXFLAGS)
+
+    IF(UNIX)
+      IF(VISIT_PARALLEL_CXXFLAGS)
         SET(PAR_COMPILE_FLAGS "")
         FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
             SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
@@ -1379,11 +1428,15 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
                 INSTALL_RPATH ${PAR_RPATHS}
             )
         ENDIF(VISIT_PARALLEL_RPATH)
-
-        IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-            TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-        ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-    ENDIF(VISIT_PARALLEL_CXXFLAGS)
+      ENDIF(VISIT_PARALLEL_CXXFLAGS)
+   
+    ELSE(UNIX)
+      ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
+      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
+    ENDIF(UNIX)
+    IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
+    ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
 # Set up easy to use includes for the common directory
@@ -1795,6 +1848,19 @@ ENDIF(NOT WIN32)
 
 # Store some configure information into a C file (like version, SVN version
 # and platform things that change).
+
+# Fix some third-party include paths that are different on windows than unix.
+IF(UNIX)
+   SET(python_include_relative_path "/python/include/python@PYTHON_VERSION@")
+   SET(exodusii_include_relative_path "/exodusii/inc")
+   SET(vtk_include_relative_path "/vtk/include")
+ELSE(UNIX)
+   SET(python_include_relative_path "/python")
+   SET(exodusii_include_relative_path "/exodusii/include")
+   SET(vtk_include_relative_path "/vtk/vtk-5.8")
+ENDIF(UNIX)
+
+
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/CMake/PluginVsInstall.cmake.in
                ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake @ONLY IMMEDIATE)
 INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake
@@ -1802,7 +1868,10 @@ INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake
     PERMISSIONS OWNER_READ OWNER_WRITE 
                 GROUP_READ GROUP_WRITE 
                 WORLD_READ
-)
+    )
+UNSET(python_include_relative_path)
+UNSET(exodusii_include_relative_path)
+UNSET(vtk_include_relative_path)
 
 #-----------------------------------------------------------------------------
 # Set flags & options from config-site files after everything is set up since
@@ -1861,17 +1930,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     ENDIF(VISIT_JAVA)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
-FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
-    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
-    IF(${currentDefs} MATCHES NOTFOUND)
-        SET(allDefs ${newDefs})
-    ELSE(${currentDefs} MATCHES NOTFOUND)
-        SET(allDefs ${currentDefs} ${newDefs})
-    ENDIF(${currentDefs} MATCHES NOTFOUND)
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_DEFINITIONS ${allDefs}
-        )
-ENDFUNCTION(ADD_TARGET_DEFINITIONS)
 
 MACRO(ADD_TARGET_XXX_FLAGS target XXX)
     GET_TARGET_PROPERTY(currentFlags ${target} ${XXX})
@@ -1938,7 +1996,7 @@ IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
         # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new 
         # PROJECT in data/CMakeLists.txt
         SET(V_EX "EXCLUDE_FROM_ALL")
-     ENDIF(WIN32)
+    ENDIF(WIN32)
     IF(VISIT_OUT_OF_SOURCE_BUILD)
         ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../data 
                          ${CMAKE_CURRENT_BINARY_DIR}/data 

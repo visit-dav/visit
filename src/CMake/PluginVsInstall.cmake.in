@@ -63,6 +63,16 @@
 #   Brad Whitlock, Thu Jun 23 17:03:35 PDT 2011
 #   Fix python library extension for Mac.
 #
+#   Kathleen Biagas, Thu Jun 21 11:12:57 MST 2012
+#   Include paths for vtk, exodusii, python and lib names for ptyhon are 
+#   different on windows than unix, so use special vars set in root 
+#   CMakeLists.txt file.  Fix boxlib include and lib var names.
+#   Added fix for automatic debug flags setting on windows, to allow proper
+#   linking with our default release-version third-party libraries.
+#   Added 'ADD_TARGET_INCLUDE' function, change how parallel flags are 
+#   handled on windows. Fix glitch with ADD_TARGET_DEFINITIONS when target
+#   had more than one definition set already.
+#
 #****************************************************************************/
 
 ##
@@ -127,7 +137,7 @@ SET(VISIT_SLIVR                  @VISIT_SLIVR@)
 SET(VISIT_TUVOK                  @VISIT_TUVOK@)
 
 # Set up VTK
-SET(VTK_INCLUDE_DIRS ${VISIT_INCLUDE_DIR}/vtk/include)
+SET(VTK_INCLUDE_DIRS ${VISIT_INCLUDE_DIR}@vtk_include_relative_path@)
 SET(VTK_LIBRARY_DIRS ${VISIT_LIBRARY_DIR})
 
 # Set up Mesa
@@ -173,8 +183,8 @@ SET(QT_BIN                   ${VISIT_BINARY_DIR})
 SET(QT_MOC_EXECUTABLE        ${VISIT_BINARY_DIR}/moc)
 
 # Set up Python
-SET(PYTHON_INCLUDE_PATH      ${VISIT_INCLUDE_DIR}/python/include/python@PYTHON_VERSION@)
-SET(PYTHON_LIBRARY           ${VISIT_LIBRARY_DIR}/libpython@PYTHON_VERSION@@VISIT_PLUGIN_EXTENSION@)
+SET(PYTHON_INCLUDE_PATH    ${VISIT_INCLUDE_DIR}@python_include_relative_path@)
+SET(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
 
 # Set up SLIVR
 SET(SLIVR_INCLUDE_DIR 
@@ -200,13 +210,10 @@ SET(ADVIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/advio/include)
 SET(ADVIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 SET(ADVIO_LIB @ADVIO_LIB@)
 
-SET(BOXLIB2D_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boxlib2d/2D)
-SET(BOXLIB2D_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-SET(BOXLIB2D_LIB @BOXLIB2D_LIB@)
-
-SET(BOXLIB3D_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boxlib3d/3D)
-SET(BOXLIB3D_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-SET(BOXLIB3D_LIB @BOXLIB3D_LIB@)
+SET(BOXLIB_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boxlib/include)
+SET(BOXLIB_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+SET(BOXLIB_2D_LIB @BOXLIB_2D_LIB@)
+SET(BOXLIB_3D_LIB @BOXLIB_3D_LIB@)
 
 SET(CCMIO_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/ccmio/include)
 SET(CCMIO_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
@@ -220,7 +227,7 @@ SET(CGNS_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/cgns/include)
 SET(CGNS_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 SET(CGNS_LIB @CGNS_LIB@)
 
-SET(EXODUSII_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/exodusii/inc)
+SET(EXODUSII_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/@exodusii_inlcude_relative_path@)
 SET(EXODUSII_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 SET(EXODUSII_LIB @EXODUSII_LIB@)
 
@@ -280,6 +287,37 @@ IF(WIN32)
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
   ADD_DEFINITIONS(-D_SCL_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE)
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+
+  # cmake automatically uses _DEBUG and MDd for Debug flags, but our
+  # third-party libs are NOT debug versions, so we won't be able to
+  # link against them if those defines are used.  Replace those flags:
+  # When we allow users to supply their own third-party libs, then
+  # this will have to be rethought -- they may want to be able to c
+  # change them and this currently forces.
+
+  MACRO(REPLACE_FLAG OLD_FLAG NEW_FLAG FLAG_TYPE FLAG_STRING)
+      STRING(REPLACE "${OLD_FLAG}" "${NEW_FLAG}" TMP "${${FLAG_TYPE}}")
+      SET(${FLAG_TYPE} "${TMP}" CACHE STRING "${FLAG_STRING}" FORCE)
+  ENDMACRO(REPLACE_FLAG)
+
+  # Remove /_DEBUG From debug builds
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_CXX_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_C_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_EXE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  REPLACE_FLAG("/D_DEBUG" "" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  # Change /MDd to /MD for debug builds
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_C_FLAGS_DEBUG 
+               "Flags used by the compiler during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_EXE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
+  REPLACE_FLAG("/MDd" "/MD" CMAKE_MODULE_LINKER_FLAGS_DEBUG 
+               "Flags used by the linker during debug builds")
 ENDIF(WIN32)
 
 # Installation macros
@@ -321,11 +359,44 @@ ENDMACRO(VISIT_PLUGIN_TARGET_FOLDER)
 # Parallel settings
 SET(VISIT_PARALLEL_CXXFLAGS     @VISIT_PARALLEL_CXXFLAGS@)
 SET(VISIT_PARALLEL_LINKER_FLAGS @VISIT_PARALLEL_LINKER_FLAGS@)
-SET(VISIT_PARALLEL_LIBS         @VISIT_PARALLEL_LIBS@)
+SET(VISIT_PARALLEL_LIBS         "@VISIT_PARALLEL_LIBS@")
+SET(VISIT_PARALLEL_INCLUDE      "@VISIT_PARALLEL_INCLUDE@")
+SET(VISIT_PARALLEL_DEFS         @VISIT_PARALLEL_DEFS@)
+
+
+FUNCTION(ADD_TARGET_INCLUDE target inc)
+    # Setting include_directories via set_target_properties overrides
+    # the current settings, but we want to append, so first retrieve
+    # the current values, then append the desired include.
+    GET_TARGET_PROPERTY(currentInc ${target} INCLUDE_DIRECTORIES)
+    LIST(APPEND currentInc ${inc})
+    SET_TARGET_PROPERTIES(${target} PROPERTIES
+                          INCLUDE_DIRECTORIES "${currentInc}")
+    UNSET(currentInc)
+ENDFUNCTION(ADD_TARGET_INCLUDE)
+
+FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
+    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
+    # if there truly are current definitions, and more than 1 in the list, then
+    # IF(${currentDefs} MATCHES NOTFOUND) causes a configure failure.  
+    # Grab the first item in the list for comparison instead.
+    LIST(GET currentDefs 0 firstItem )
+    IF(${firstItem} MATCHES NOTFOUND)
+        SET(allDefs ${newDefs})
+    ELSE(${firstItem} MATCHES NOTFOUND)
+        SET(allDefs ${currentDefs} ${newDefs})
+    ENDIF(${firstItem} MATCHES NOTFOUND)
+   
+    SET_TARGET_PROPERTIES(${target} PROPERTIES
+        COMPILE_DEFINITIONS ${allDefs}
+    )
+ENDFUNCTION(ADD_TARGET_DEFINITIONS)
+
 
 FUNCTION(ADD_PARALLEL_LIBRARY target)
     ADD_LIBRARY(${target} ${ARGN})
-    IF(VISIT_PARALLEL_CXXFLAGS)
+    IF(UNIX)
+      IF(VISIT_PARALLEL_CXXFLAGS)
         SET(PAR_COMPILE_FLAGS "")
         FOREACH(X ${VISIT_PARALLEL_CXXFLAGS})
             SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
@@ -342,21 +413,14 @@ FUNCTION(ADD_PARALLEL_LIBRARY target)
                 LINK_FLAGS ${PAR_LINK_FLAGS}
             )
         ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-    ENDIF(VISIT_PARALLEL_CXXFLAGS)
+      ENDIF(VISIT_PARALLEL_CXXFLAGS)
+    ELSE(UNIX)
+      ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
+      ADD_TARGET_DEFINTIONS(${target} ${VISIT_PARALLEL_DEFS})
+    ENDIF(UNIX)
+    TARGET_LINK_LIBRARIES(${target} "${VISIT_PARALLEL_LIBS}")
 ENDFUNCTION(ADD_PARALLEL_LIBRARY)
 
-FUNCTION(ADD_TARGET_DEFINITIONS target newDefs)
-    GET_TARGET_PROPERTY(currentDefs ${target} COMPILE_DEFINITIONS)
-    IF(${currentDefs} MATCHES NOTFOUND)
-        SET(allDefs ${newDefs})
-    ELSE(${currentDefs} MATCHES NOTFOUND)
-        SET(allDefs ${currentDefs} ${newDefs})
-    ENDIF(${currentDefs} MATCHES NOTFOUND)
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-        COMPILE_DEFINITIONS ${allDefs}
-    )
-ENDFUNCTION(ADD_TARGET_DEFINITIONS)
 
 MACRO(VISIT_PLUGIN_TARGET_RTOD type) 
     IF(WIN32)
