@@ -271,7 +271,8 @@ avtMatrixMarketFileFormat::ReadData()
         {
             // Read the types we support
             if (mm_is_matrix(matcode) &&
-                mm_is_real(matcode) &&
+                (mm_is_real(matcode) ||
+                 mm_is_integer(matcode)) &&
                 mm_is_array(matcode) &&
                 mm_is_general(matcode))
             {
@@ -295,7 +296,8 @@ avtMatrixMarketFileFormat::ReadData()
                 }
             }
             else if (mm_is_matrix(matcode) &&
-                     mm_is_real(matcode) &&
+                     (mm_is_real(matcode) ||
+                      mm_is_integer(matcode)) &&
                      mm_is_coordinate(matcode) &&
                      mm_is_general(matcode))
             {
