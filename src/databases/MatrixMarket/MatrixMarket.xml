@@ -2,6 +2,7 @@
   <Plugin name="MatrixMarket" type="database" label="MatrixMarket" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false">
     <FilePatterns>
       *.mpippv
+      *.mpippc
       *.mtx
     </FilePatterns>
     <Files components="M">
