@@ -58,6 +58,9 @@ list of changes in release 2.5.0.</p>
 <li>The Windows version of VisIt has been enhanced so the main executable programs that comprise VisIt contain more metadata. This enables Windows to provide more information about the VisIt programs to the user. For example, the program properties now show a description of the program as well as version. This change also enables the Windows Task Manager to show descriptive names for the VisIt executables, making it easier to determine the origin of the running programs.</li>
 <li>Further improvements were made to the splatting renderer in VisIt's Volume plot.</li>
 <li>The KeyframeAttributes type was exposed in the VisIt module so it can be created using a normal constructor.</li>
+<li>PySide is now enabled on Windows.</li>
+<li>From cli, pick no longer prints its output to terminal. It now returns a Python Dictionary of the results.</li>
+<li>Experimental support for crack free isosurface extraction from AMR data has been added. Adding the option -create-ghosts-for-t-intersections to the engine arguments makes it possible to use the AMRStitchCell operator (disabled by default, needs to be enabled manually) to extract continuous isosurfaces from AMR data (tested for BoxLib and Chombo).</li>
 <li>The VTK reader was enhanced so that it can read parallel VTK files. These are files with extensions "pvtu", "pvts", "pvtr", "pvti" and "pvtp".</li>
 <li>VisIt can now get the initial port number that it uses from the <i>VISIT_INITIAL_PORT</i> environment variable. The provided value must be an integer greater than or equal to 1024. VisIt normally starts looking for available ports at port 5600.</li>
 <li>The Windows version of VisIt's CLI supports a new <i>-minimized</i> command line argument that minimizes the CLI console window on startup.</li>
