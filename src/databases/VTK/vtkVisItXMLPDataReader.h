@@ -30,7 +30,7 @@ class vtkDataArray;
 class vtkDataSet;
 class vtkXMLDataReader;
 
-class VTK_IO_EXPORT vtkVisItXMLPDataReader : public vtkXMLReader
+class vtkVisItXMLPDataReader : public vtkXMLReader
 {
 public:
   vtkTypeMacro(vtkVisItXMLPDataReader,vtkXMLReader);
