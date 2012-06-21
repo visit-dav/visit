@@ -167,6 +167,7 @@ MatrixMarketGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.mpippv");
+    defaultPatterns.push_back("*.mpippc");
     defaultPatterns.push_back("*.mtx");
 
     return defaultPatterns;
