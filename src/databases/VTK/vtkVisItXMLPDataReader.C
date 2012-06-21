@@ -101,11 +101,13 @@ void vtkVisItXMLPDataReader::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 char* vtkVisItXMLPDataReader::GetPointArrayName(int piece)
 {
+  return NULL;
 }
 
 //----------------------------------------------------------------------------
 char* vtkVisItXMLPDataReader::GetCellArrayName(int piece)
 {
+  return NULL;
 }
 
 //----------------------------------------------------------------------------
