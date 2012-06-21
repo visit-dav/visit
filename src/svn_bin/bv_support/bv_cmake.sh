@@ -99,11 +99,11 @@ function bv_cmake_cmake_bin_dir
 
 function bv_cmake_info
 {
-export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.3.tar.gz"}
-export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.3"}
-export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.3"}
-export CMAKE_MD5_CHECKSUM="a76a44b93acf5e3badda9de111385921"
-export CMAKE_SHA256_CHECKSUM=""
+export CMAKE_FILE=${CMAKE_FILE:-"cmake-2.8.8.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION:-"2.8.8"}
+export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-2.8.8"}
+export CMAKE_MD5_CHECKSUM="ba74b22c788a0c8547976b880cd02b17"
+export CMAKE_SHA256_CHECKSUM="2b59897864d6220ff20aa8eac64cac8994e004898a1c0f899c8cb4d7b7570b46"
 }
 
 function bv_cmake_print
@@ -165,9 +165,9 @@ function bv_cmake_dry_run
 function apply_cmake_patch_1
 {
    patch -p0 <<\EOF
-diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.3/Modules/Platform/UnixPaths.cmake
+diff -c a/Modules/Platform/UnixPaths.cmake cmake-2.8.8/Modules/Platform/UnixPaths.cmake
 *** a/Modules/Platform/UnixPaths.cmake
---- cmake-2.8.3/Modules/Platform/UnixPaths.cmake
+--- cmake-2.8.8/Modules/Platform/UnixPaths.cmake
 ***************
 *** 67,72 ****
 --- 67,75 ----
