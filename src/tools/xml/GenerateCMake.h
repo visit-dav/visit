@@ -134,6 +134,10 @@
 //    Kathleen Biagas, Tue Nov 22 14:39:51 PST 2011
 //    Remove VISIT_PLUGIN_TARGET_PREFIX in favor of VISIT_PLUGIN_TARGET_RUNTIME.
 //
+//    Kathleen Biagas, Mon Jun 18 10:49:07 MST 2012
+//    Set VISIT_ARCHIVE_DIR on windows to be /lib. Change minimum CMake
+//    version to 2.8.8.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -1020,7 +1024,7 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.0 FATAL_ERROR)" << endl;
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)" << endl;
             out << "SET(VISIT_INCLUDE_DIR \"" << qvisithome 
                 << "/include\")" << endl;
             out << "SET(VISIT_LIBRARY_DIR \"" << qvisithome 
@@ -1029,12 +1033,14 @@ class CMakeGeneratorPlugin : public Plugin
             // There is no 'bin' dir for installed VisIt on Windows
             out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
                 << "\")" << endl;
+            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
+                << "/lib\")" << endl;
 #else
             out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
                 << "/bin\")" << endl;
-#endif
             out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
                 << "/archives\")" << endl;
+#endif
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 
