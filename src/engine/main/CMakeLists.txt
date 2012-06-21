@@ -53,6 +53,10 @@
 #    Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #    Use different resource file.
 #
+#    Kathleen Biagas, Thu Jun 21 15:19:02 MST 2012 
+#    Call ADD_TARGET_DEFINTIONS to add "HAVE_ICET", as the function deals
+#    correctly with a target already having some COMPILE_DEFINITIONS set.
+#
 #****************************************************************************/
 
 SET(LIBENGINE_SOURCES
@@ -209,15 +213,7 @@ IF(VISIT_PARALLEL)
 
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
     IF(ICET_FOUND)
-        GET_TARGET_PROPERTY(PAR_DEFS engine_par COMPILE_DEFINITIONS)
-        IF(PAR_DEFS MATCHES "NOTFOUND")
-            SET(PAR_DEFS "HAVE_ICET")
-        ELSE(PAR_DEFS MATCHES "NOTFOUND")
-            SET(PAR_DEFS "${PAR_DEFS} HAVE_ICET")
-        ENDIF(PAR_DEFS MATCHES "NOTFOUND")
-        SET_TARGET_PROPERTIES(engine_par PROPERTIES 
-            COMPILE_DEFINITIONS ${PAR_DEFS}
-        )
+        ADD_TARGET_DEFINITIONS(engine_par "HAVE_ICET")
         IF(APPLE)
             # We need to link with OpenGL on Mac when we have IceT.
             SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
