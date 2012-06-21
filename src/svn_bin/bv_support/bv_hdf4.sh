@@ -72,7 +72,6 @@ function bv_hdf4_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg TYPE STRING)" \
             >> $HOSTCONF
         fi
-        >> $HOSTCONF
     fi
 }
 
