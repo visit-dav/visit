@@ -67,6 +67,7 @@ printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-third
 
 function bv_vtk_host_profile
 {
+    echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## VTK" >> $HOSTCONF
     echo "##" >> $HOSTCONF
@@ -75,7 +76,6 @@ function bv_vtk_host_profile
     else
         echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
     fi
-    echo >> $HOSTCONF
 }
 
 function bv_vtk_initialize_vars

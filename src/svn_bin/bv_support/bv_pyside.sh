@@ -54,13 +54,12 @@ echo "$graphical_out"
 function bv_pyside_host_profile
 {
     if [[ "$DO_PYSIDE" == "yes" ]] ; then
+        echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## Specify the PySide dir. " >> $HOSTCONF
+        echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH}/)" >> $HOSTCONF
-        echo >> $HOSTCONF
     fi
-    echo "##" >> $HOSTCONF
 }
 
 function bv_pyside_ensure

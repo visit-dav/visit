@@ -61,7 +61,6 @@ function bv_boxlib_host_profile
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR \${VISITHOME}/boxlib/$BOXLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        >> $HOSTCONF
     fi
 
 }

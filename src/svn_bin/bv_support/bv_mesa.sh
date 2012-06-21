@@ -54,11 +54,11 @@ echo $graphical_out
 function bv_mesa_host_profile
 {
     if [[ "$DO_MESA" == "yes" ]] ; then
+        echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## Mesa" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_MESA_DIR \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
-        echo >> $HOSTCONF
     fi
 }
 

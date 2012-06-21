@@ -134,8 +134,9 @@ printf "%-15s %s [%s]\n" "--system-python" "Use System Python" "Used unless --no
 
 function bv_python_host_profile
 {
+echo >> $HOSTCONF
 echo "##" >> $HOSTCONF
-echo "## Specify the location of the python." >> $HOSTCONF
+echo "## Python" >> $HOSTCONF
 echo "##" >> $HOSTCONF
 
 if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
@@ -148,7 +149,6 @@ if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
 else
     echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
 fi
-echo >> $HOSTCONF
 }
 
 function bv_python_initialize_vars

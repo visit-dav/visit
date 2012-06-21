@@ -130,9 +130,9 @@ printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory" "Use
 
 function bv_qt_host_profile
 {
+echo >> $HOSTCONF
 echo "##" >> $HOSTCONF
-echo "## Specify the Qt4 binary dir. " >> $HOSTCONF
-echo "## (qmake is used to locate & setup Qt4 dependencies)" >> $HOSTCONF
+echo "## Qt" >> $HOSTCONF
 echo "##" >> $HOSTCONF
 if [[ $USE_SYSTEM_QT == "yes" ]]; then
     echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
@@ -140,7 +140,6 @@ if [[ $USE_SYSTEM_QT == "yes" ]]; then
 else
     echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
 fi
-echo >> $HOSTCONF
     
 }
 
