@@ -65,6 +65,7 @@
 #include <avtIdentifierSelection.h>
 #endif
 
+#include <avtCallback.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <NonCompliantFileException.h>
@@ -221,8 +222,8 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
     unsigned char cylindrical = 0;
     unsigned char spherical = 0;
 
-    // If there is particle data in the file (check needed since a file could contain
-    // only block data).
+    // If there is particle data in the file (check needed since a
+    // file could contain only block data).
     if (particleVarNameToTypeMap.size())
     {
         // Determine what coordinate system is used and whether the file is 2D or 3D
@@ -231,17 +232,54 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename,
         {
             std::string currVarName = it->first; 
 
+            std::transform(currVarName.begin(), currVarName.end(),
+                           currVarName.begin(), ::tolower);
+
             if (currVarName == "x" || currVarName == "y" || currVarName == "z" )
                 ++cartesian;
 
-            if (currVarName == "r" || currVarName == "phi" || currVarName == "z" )
+            if (currVarName == "r" || currVarName == "phi" || currVarName == "z")
                 ++cylindrical;
 
             if (currVarName == "r" || currVarName == "phi" || currVarName == "theta" )
                 ++spherical;
 
-            if (currVarName == "z" || currVarName == "theta")
+            if (currVarName == "z" || currVarName == "theta" )
                 particleNSpatialDims = 3;;
+        }
+
+        if( spherical == 3 && (cylindrical >= 2 || cartesian >= 2) )
+        {
+          char buf[1024];
+
+          sprintf( buf, "avtH5PartFileFormat ambiguous coordinate system: both "
+                   "spherical and cylindrical or cartesian coordinate systems were found. "
+                   "Can not disambiguate. ");
+
+          debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): "
+                 << buf << std::endl;
+
+          EXCEPTION2(NonCompliantFileException, "H5Part Constructor", buf );
+
+          // call backis not working so use the exception above
+          avtCallback::IssueWarning( buf );
+        }
+
+        else if( cylindrical >= 2 && cartesian >= 2 )
+        {
+          char buf[1024];
+
+          sprintf( buf, "avtH5PartFileFormat ambiguous coordinate system: both "
+                   "cylindrical and cartesian coordinate systems were found. "
+                   "Can not disambiguate. ");
+
+          debug1 << "avtH5PartFileFormat::avtH5PartFileFormat(): "
+                 << buf << std::endl;
+
+          EXCEPTION2(NonCompliantFileException, "H5Part Constructor", buf );
+
+          // call backis not working so use the exception above
+          avtCallback::IssueWarning( buf );
         }
 
         if( spherical == 3)           { coordType = sphericalCoordSystem; }
