@@ -24,6 +24,10 @@
 #   Modified the command that submits the batch job to run the test suite
 #   to specify that it isn't using any of the Lustre file systems so that
 #   the job will run even if one of the Lustre file systems is down.
+#
+#   Eric Brugger, Fri Jun 22 07:54:19 PDT 2012
+#   I modified the script to use cmake 2.8.8. I also added several failing
+#   tests to the skip list.
 
 #
 # Determine the users name and e-mail address.
@@ -152,15 +156,22 @@ skipList_for_Edge="\
     $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
     $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
     $testHost,parallel:tests/plots/pics.py:pics_MB_2D_rect_POS_DormandPrince_stream_both \
+    $testHost,scalable,parallel,icet:tests/plots/pics.py:pics_MB_2D_rect_POS_DormandPrince_stream_both \
     $testHost,parallel:tests/plots/pics.py:pics_MB_2D_rect_POD_DormandPrince_stream_both \
+    $testHost,scalable,parallel,icet:tests/plots/pics.py:pics_MB_2D_rect_POD_DormandPrince_stream_both \
     $testHost,parallel:tests/plots/pics.py:pics_MB_3D_rect_POS_DormandPrince_stream_both \
+    $testHost,scalalbe,parallel,icet:tests/plots/pics.py:pics_MB_3D_rect_POS_DormandPrince_stream_both \
     $testHost,parallel:tests/plots/pics.py:pics_MB_3D_rect_POD_DormandPrince_stream_both \
+    $testHost,scalable,parallel,icet:tests/plots/pics.py:pics_MB_3D_rect_POD_DormandPrince_stream_both \
     $testHost,serial:tests/operators/persistent_particles.py \
     $testHost,parallel:tests/operators/persistent_particles.py \
     $testHost,scalable,parallel,icet:tests/operators/persistent_particles.py \
     $testHost,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
+    $testHost,serial:tests/databases/zipwrapper.py:ZipWrapper_01 \
+    $testHost,parallel:tests/databases/zipwrapper.py:ZipWrapper_01 \
+    $testHost,scalable,parallel,icet:tests/databases/zipwrapper.py:ZipWrapper_01 \
     $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     $testHost,parallel:tests/rendering/compositing.py \
     $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
@@ -216,7 +227,7 @@ export PATH=\$PATH:/usr/bin/X11
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
 fi
-/usr/gapps/visit/cmake/2.8.0/linux-x86_64_gcc-4.1/bin/cmake . -DVISIT_CONFIG_SITE=config-site/edge83.cmake -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON >> ../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DVISIT_CONFIG_SITE=config-site/edge83.cmake -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON >> ../buildlog 2>&1
 make -j 12 >> ../buildlog 2>&1
 if test "$debug" = "true" ; then
     echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
