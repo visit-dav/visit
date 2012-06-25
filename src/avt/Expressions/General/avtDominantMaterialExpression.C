@@ -210,6 +210,12 @@ avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   December 29, 2008
 //
+//  Modifications:
+//    Brad Whitlock, Mon Jun 25 16:11:56 PDT 2012
+//    Turn off ghost zones to avoid a problem with 0's getting into the final
+//    data array as a result of the mesh being larger than the avtMaterial used
+//    as the source of the data values.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -219,6 +225,14 @@ avtDominantMaterialExpression::ModifyContract(avtContract_p c)
 
     avtDataRequest_p ds = rv->GetDataRequest();
     ds->TurnZoneNumbersOn();
+
+    // Turn off ghost zone communication because we need the avtMaterial that
+    // we use to match the size of the mesh that we get. Theoretically, we can
+    // use ds->SetNeedPostGhostMaterialInfo(true) to get an avtMaterial that is
+    // the right size but that approach didn't work 100%. This approach, while
+    // it may be less than ideal, does work when you do variable recentering, etc.
+    // For the post-ghost approach, see avtPerMaterialValueExpression.
+    ds->SetMaintainOriginalConnectivity(true);
 
     return rv;
 }
