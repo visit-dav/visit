@@ -1,14 +1,14 @@
-#/project/projectdirs/visit/visit_3rdparty/euclid/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
+#/project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## svn_bin/build_visit generated host.cmake
-## created: Tue Nov 29 17:40:55 PST 2011
+## ./build_visit2_5_1 generated host.cmake
+## created: Fri Jun 22 10:47:45 PDT 2012
 ## system: Linux euclid.nersc.gov 2.6.18-238.12.1.el5.bsdv3 #1 SMP Wed Jul 13 08:23:11 PDT 2011 x86_64 x86_64 x86_64 GNU/Linux
-## by: cyrush
+## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /project/projectdirs/visit/visit_3rdparty/euclid)
+SET(VISITHOME /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "nersc")
@@ -42,27 +42,26 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH /usr/common/usg/openmpi/1.4.4/gnu/lib/
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
-##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
-## Specify the location of the mesa.
+## Python
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/python/2.6.4/linux-x86_64_gcc-4.1)
+
+##
+## Mesa
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
-## Specify the location of the vtk.
+## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
+## Qt
 ##
 VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
-
 
 ##
 ## SZIP
@@ -74,6 +73,16 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
+
+##
+## Mili
+##
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
+
+##
+## Ice-T
+##
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 
 ##
 ## HDF4
@@ -103,11 +112,6 @@ VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.98/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP} TYPE STRING)
-
-##
-## Mili
-##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
 
 ##
 ## Boxlib
@@ -169,12 +173,10 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-##
-##
-## Specify the PySide dir. 
-##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 
 ##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
 

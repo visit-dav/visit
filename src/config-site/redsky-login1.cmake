@@ -1,14 +1,14 @@
-#/projects/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
+#/projects/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## ./build_visit2_4_0 generated host.cmake
-## created: Thu Jan 12 15:32:27 MST 2012
-## system: Linux redsky-login3 2.6.18-107redsky_chaos #1 SMP Wed Jul 6 10:34:51 MDT 2011 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_5_1 generated host.cmake
+## created: Fri Jun 22 12:49:15 MDT 2012
+## system: Linux redsky-login1 2.6.18-108redsky_chaos #1 SMP Mon Dec 5 11:18:51 MST 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: ebrugge
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /projects/visit)
+SET(VISITHOME /projects/visit/thirdparty_shared_2_5_1)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
 ## Compiler flags.
@@ -40,27 +40,26 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/apps/x86_64/mpi/openmpi/gcc-4.1.2/o
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
-##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
 
 ##
-## Specify the location of the mesa.
+## Python
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /projects/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-x86_64_gcc-4.1)
+
+##
+## Mesa
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
-## Specify the location of the vtk.
+## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
+## Qt
 ##
 VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
-
 
 ##
 ## SZIP
@@ -72,6 +71,11 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
+
+##
+## Mili
+##
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
 
 ##
 ## Ice-T
@@ -108,11 +112,6 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.98/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP} TYPE STRING)
 
 ##
-## Mili
-##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
-
-##
 ## Boxlib
 ##
 VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
@@ -129,6 +128,11 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.6/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## FastBit
+##
+VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.2.0/${VISITARCH})
+
+##
 ## CCMIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_CCMIO_DIR ${VISITHOME}/ccmio/2.6.1/${VISITARCH})
@@ -140,17 +144,19 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## AdvIO
+##
+VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
+
+##
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-##
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 ##
 
 ##
-## FastBit
+## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.2.0/${VISITARCH})
-##
-##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
 
