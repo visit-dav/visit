@@ -604,7 +604,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
 
   unsigned int max_groups = stats.size() / max_samples;
   unsigned int mult = 0;
-  double minPercent = 0.5-1.0e-4;
+  double minPercent = 0.5;
 
   std::map< int, int > GCDCount;  
   std::map<int, int>::iterator ic;
@@ -2942,12 +2942,23 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     poloidalResonance = 1;
   }
 
+  // For a 1,1 case a 2,2 resonance can be found as the winding pairs
+  // can easily be divided evenly between ood, even values. As such,
+  // throwout the case where a 2,2 resonce is found for a 1,1 surface.
+  if( toroidalResonance == poloidalResonance &&
+      toroidalResonance == 2 && poloidalResonance == 2 )
+  {
+    toroidalResonance = 1;
+    poloidalResonance = 1;
+  }
+
   // Get the resonance GCD which gives the indication that there are
   // secondary islands.
   unsigned int resonanceGCD = GCD( toroidalResonance, poloidalResonance );
 
   if( verboseFlag )
-    std::cerr << "Winding Pair " << mergedWindingPairs[0].toroidal << ","
+    std::cerr << "Winding Pair "
+              << mergedWindingPairs[0].toroidal << ","
               << mergedWindingPairs[0].poloidal << "  "
               << "GCD = " << GCD( mergedWindingPairs[0].toroidal,
                                   mergedWindingPairs[0].poloidal ) << "   "
