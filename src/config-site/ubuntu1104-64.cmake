@@ -1,17 +1,16 @@
-#/home/visit/visit/cmake/2.8.3/linux-x86_64_gcc-4.5/bin/cmake
+#/home/visit/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake
 ##
-## ./build_visit2_4_2 generated host.cmake
-## created: Thu Feb 23 15:01:28 PST 2012
+## ./build_visit2_5_1 generated host.cmake
+## created: Tue Jun 26 14:38:34 PDT 2012
 ## system: Linux ubuntu1104-64 2.6.38-8-generic #42-Ubuntu SMP Mon Apr 11 03:31:24 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: visit
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/visit/visit)
+SET(VISITHOME /home/visit/visit/thirdparty_shared_2_5_1)
 SET(VISITARCH linux-x86_64_gcc-4.5)
 
-##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
@@ -31,10 +30,11 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/visit/visit/python/2.6.4/linux-x86_64_gcc-4.5)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/visit/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-x86_64_gcc-4.5)
 
 ##
 ## VTK
@@ -42,8 +42,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/visit/visit/python/2.6.4/linux-x86_6
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
+## Qt
 ##
 VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
 
@@ -77,6 +76,11 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.0.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## GDAL
+##
+VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.1/${VISITARCH})
+
+##
 ## Exodus
 ##
 VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.98/${VISITARCH})
@@ -101,7 +105,7 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBD
 ##
 ## FastBit
 ##
-##VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.2.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_FASTBIT_DIR ${VISITHOME}/fastbit/1.2.0/${VISITARCH})
 
 ##
 ## CCMIO
@@ -123,5 +127,11 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
+##
+
+##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
 
