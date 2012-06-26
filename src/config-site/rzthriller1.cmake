@@ -1,4 +1,4 @@
-#/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake
+#/usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake
 ##
 ## ./build_visit2_2_0 generated host.cmake
 ## created: Mon Jan 10 09:56:02 PST 2011

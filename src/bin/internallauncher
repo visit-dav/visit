@@ -760,8 +760,8 @@ $0 = shift @ARGV;
 #    system can no longer have spaces.
 #
 #    Eric Brugger, Wed Jun 13 10:27:14 PDT 2012
-#    I modified the script to run the chaos 4 version if running on atlas or
-#    rzthriller.
+#    I modified the script to run the chaos 4 version if running on atlas,
+#    prism or rzthriller.
 #
 ###############################################################################
 
@@ -2096,7 +2096,7 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            if ($host =~ /^atlas/ || $host =~ /^rzthriller/) {
+            if ($host =~ /^atlas/ || $host =~ /^prism/ || $host =~ /^rzthriller/) {
                 push @supportedarchs, "linux-x86_64-chaos4";
             }
             else {

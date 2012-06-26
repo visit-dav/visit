@@ -527,7 +527,7 @@ then
       scp visit$ver2.linux-rzzeus.tar.gz rzzeus:
       scp visit-install rzzeus:
       scp rzzeus rzzeus:rzzeus_install
-      ssh rzzeus"chmod 750 rzzeus_install;./rzzeus_install"
+      ssh rzzeus "chmod 750 rzzeus_install;./rzzeus_install"
    fi
 fi
 
