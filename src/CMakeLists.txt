@@ -302,6 +302,9 @@
 #    Fix glitch with ADD_TARGET_DEFINITIONS when target
 #    had more than one definition set already.
 #
+#    Kathleen Biagas, Tue Jun 26 13:38:27 MST 2012
+#    Fixed parallel definitions for windows (removed -D).
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1166,7 +1169,11 @@ IF(VISIT_PARALLEL)
         ENDIF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
 
     ELSE(VISIT_MPI_COMPILER)
-        SET(VPFLAGS "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK")
+        IF(WIN32)
+            SET(VPFLAGS "PARALLEL MPICH_IGNORE_CXX_SEEK")
+        ELSE(WIN32)
+            SET(VPFLAGS "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK")
+        ENDIF(WIN32)
         IF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
             MESSAGE(STATUS "Setting up MPI using user defined flags")
             SET(VISIT_PARALLEL_LIBS          ${VISIT_MPI_LIBS} 
