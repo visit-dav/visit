@@ -1241,6 +1241,10 @@ ViewerConnectionPrinter::~ViewerConnectionPrinter()
 //
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
+//
+//   Brad Whitlock, Tue Jun 26 16:45:03 PDT 2012
+//   Send output to the client too.
+//
 // ****************************************************************************
 
 void
@@ -1251,14 +1255,26 @@ ViewerConnectionPrinter::HandleRead(int)
         // Fill up the connection from the socket.
         conn->Fill();
 
-        // Print the output that we read to stdout.
+        QString msg;
         while(conn->Size() > 0)
         {
             unsigned char c;
             conn->Read(&c);
-            fputc((int)c, stdout);
+            msg.append(QChar(c));
         }
+
+        // Print the output that we read to stdout.
+        fprintf(stdout, "%s", msg.toStdString().c_str());
         fflush(stdout);
+
+        // Send the message to the client too.
+        while(msg.endsWith("\n"))
+            msg.chop(1);
+        int idx = msg.indexOf("WARNING: ");
+        if(idx != -1)
+            ViewerBase::Warning(msg.right(msg.size() - (idx + 9)));
+        else
+            ViewerBase::Message(msg);
     }
     CATCH(LostConnectionException)
     {
