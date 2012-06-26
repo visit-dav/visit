@@ -1716,13 +1716,33 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     return NULL;
   }
 
-  int nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
+  int nSamples;
+
+  if( atts.GetChannelIntegration() ==
+      LineSamplerAttributes::IntegrateAlongChannel )
+    nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
+  else if( atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::ToroidalTimeSample ||
+      atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::IntegrateToroidally )
+    nSamples = (int) (axis.length() / sampleDistance) + 1;
+  else
+    nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
-//  avtVector delta = axis * sampleDistance;
 
-  avtVector basePoint;
-  avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
+  avtVector basePoint, delta;
+
+  if( atts.GetChannelIntegration() ==
+      LineSamplerAttributes::IntegrateAlongChannel )
+    delta = (stopPoint - startPoint) / (double) (nSamples-1);
+  else if( atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::ToroidalTimeSample ||
+      atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::IntegrateToroidally )
+    delta = axis * sampleDistance;
+  else
+    delta = (stopPoint - startPoint) / (double) (nSamples-1);
 
   if( atts.GetViewGeometry() == LineSamplerAttributes::Points )
   {
@@ -1741,9 +1761,6 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     if( allocateScalars && scalars )
       scalars->Allocate(nSamples);
          
-    avtVector basePoint;
-    avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
-    
     // Create the points for sampling
     for( unsigned int i=0; i<nSamples; ++i )
     {
@@ -1802,7 +1819,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
         basePoint = stopPoint;
       else
         basePoint = startPoint + (double) i * delta;
-    
+
       points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
     
       cells->InsertCellPoint(i);
@@ -1864,14 +1881,34 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
     return NULL;
   }
 
-  int nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
+  int nSamples;
+
+  if( atts.GetChannelIntegration() ==
+      LineSamplerAttributes::IntegrateAlongChannel )
+    nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
+  else if( atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::ToroidalTimeSample ||
+      atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::IntegrateToroidally )
+    nSamples = (int) (axis.length() / sampleDistance) + 1;
+  else
+    nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
 
   axis.normalize();
-  //  avtVector delta = axis * sampleDistance;
 
   // sampling offset between points.
-  avtVector basePoint;
-  avtVector delta = (stopPoint - startPoint) / (double) (nSamples-1);
+  avtVector basePoint, delta;
+
+  if( atts.GetChannelIntegration() ==
+      LineSamplerAttributes::IntegrateAlongChannel )
+    delta = (stopPoint - startPoint) / (double) (nSamples-1);
+  else if( atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::ToroidalTimeSample ||
+      atts.GetToroidalIntegration() ==
+      LineSamplerAttributes::IntegrateToroidally )
+    delta = axis * sampleDistance;
+  else
+    delta = (stopPoint - startPoint) / (double) (nSamples-1);
 
   // Get the circumference
   double circumference = 2.0 * M_PI * radius;
