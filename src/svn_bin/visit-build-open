@@ -95,6 +95,9 @@
 #   Eric Brugger, Thu Jun 21 16:17:04 PDT 2012
 #   I modified many of the builds to use cmake 2.8.8.
 #
+#   Eric Brugger, Wed Jun 27 11:40:14 PDT 2012
+#   I deleted alastor.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -146,7 +149,6 @@ atlas=true
 aztec=true
 rzthriller=true
 rzzeus=true
-alastor=false
 euclid=true
 glory=false
 redsky=false
@@ -170,7 +172,6 @@ do
          aztec=false
          rzthriller=false
          rzzeus=false
-         alastor=false
          euclid=false
          glory=false
          redsky=false
@@ -240,14 +241,6 @@ do
          rzzeus=true
          shift
          ;;
-      -alastor)
-         alastor=false
-         shift
-         ;;
-      +alastor)
-         alastor=true
-         shift
-         ;;
       -euclid)
          euclid=false
          shift
@@ -294,7 +287,6 @@ then
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
-   echo "    alastor (LC, Linux, x86_64),"
    echo "    euclid (LBNL, Linux, x86_64),"
    echo "    glory (Sandia, Linux)"
    echo "    redsky (Sandia, Linux)"
@@ -645,9 +637,12 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
+#
+# cpack for cmake 2.8.8 crashes on atlas so I am using the 2.8.3 version.
+#
+/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cpack --config ./CPackConfig.cmake >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
@@ -729,59 +724,6 @@ then
 fi
 
 #
-# Build on alastor.
-#
-rm -f alastor
-cat <<EOF > alastor
-#!/bin/sh
-if test ! -d /nfs/tmp2/$user ; then
-   mkdir /nfs/tmp2/$user
-fi
-if test ! -d /nfs/tmp2/$user/alastor ; then
-   mkdir /nfs/tmp2/$user/alastor
-fi
-rm -rf /nfs/tmp2/$user/alastor/visitbuild
-mkdir /nfs/tmp2/$user/alastor/visitbuild
-mv alastor_$dist.tar.gz /nfs/tmp2/$user/alastor/visitbuild/$dist.tar.gz
-cd /nfs/tmp2/$user/alastor/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-cp config-site/aztec1.cmake config-site/\`hostname\`.cmake
-/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 12 >> ../../buildlog 2>&1
-make -j 12 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on alastor"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): alastor" $emailName < resultlog
-EOF
-
-if [ $alastor = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on alastor"
-      scp alastor alastor:alastor_buildit
-      scp $dist.tar.gz alastor:alastor_$dist.tar.gz
-      ssh alastor "chmod 750 alastor_buildit;srun -n 1 -p pdebug --exclusive ./alastor_buildit" &
-   fi
-fi
-
-#
 # Build on euclid.
 #
 rm -f euclid
@@ -801,7 +743,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/project/projectdirs/visit/visit_3rdparty_euclid_opt/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -946,5 +888,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 atlas aztec rzthriller rzzeus alastor euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 atlas aztec rzthriller rzzeus euclid glory redsky
 fi
