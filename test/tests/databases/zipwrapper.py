@@ -3,7 +3,7 @@
 #
 #  Test Case:  zipwrapper.py 
 #
-#  Tests:      STSD operation (VTK) 
+#  Tests:      STSD operation (STL) 
 #              STMD operation (Silo)
 #              .visit file and .* database
 #              Operation over time
@@ -17,54 +17,27 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Mark C. Miller, Wed Jun 27 12:25:12 PDT 2012
+#    Adjusted to use STL as STSD test because VTK was changed from STSD
+#    to STMD. Removed code to generate test data because the test data is
+#    now stored as zipwrapper_test_data.tar.gz 
 # ----------------------------------------------------------------------------
-
-#
-# Create a database of compressed VTK files in a .visit file
-#
-OpenDatabase(silo_data_path("multi_ucd3d.silo"))
-
-AddPlot("Pseudocolor","d")
-DrawPlots()
-e = ExportDBAttributes()
-e.db_type = "VTK"
-e.filename = "multi_ucd"
-e.dirname = data_path()
-ExportDatabase(e)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("multi_ucd3d.silo") )
-
-cwd = os.getcwd()
-
-os.chdir(data_path())
-visitFile = open("multi_ucd.visit", 'w')
-visitFile.write("!NBLOCKS 36\n")
-for i in range(36):
-    os.system("gzip -f multi_ucd.%d.vtk"%i)
-    visitFile.write("multi_ucd.%d.vtk.gz\n"%i)
-visitFile.close()
-
-#
-# Compress a fraction of files from hist_ucd
-#
-for i in range(5,10):
-    os.system("cp hist_ucd3d_%04d histz_%04d.silo ; gzip -f histz_%04d.silo"%(i,i,i))
-
-os.chdir(cwd)
 
 #
 # Ok, before we start processing any compressed files, set
 # ZipWrapper default read options 
 #
+OpenMDServer("localhost")
 readOptions=GetDefaultFileOpenOptions("ZipWrapper")
 readOptions["Max. # decompressed files"] = 10
 SetDefaultFileOpenOptions("ZipWrapper", readOptions)
 
 
-# Test 36 block VTK (only 10 files decompressed at any one time)
+# Test 36 block STL (only 10 files decompressed at any one time)
 OpenDatabase(data_path("zipwrapper_test_data/multi_ucd.visit"))
 
-AddPlot("Pseudocolor","d")
+AddPlot("Pseudocolor","mesh_quality/condition")
 DrawPlots()
 v=GetView3D()
 v.viewNormal=(-0.5, 0.296198, 0.813798)
