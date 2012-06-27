@@ -1,54 +1,3 @@
-Function: CopyAttributes
-Declaration: virtual bool CopyAttributes(const AttributeGroup *);
-Definition:
-// ****************************************************************************
-// Method: DataBinningAttributes::CopyAttributes
-//
-// Purpose: 
-//   CopyAttributes method for the DataBinningAttributes class.
-//
-// Note:       Copies over expressions as well
-//
-// Programmer: Hank Childs
-// Creation:   August 31, 2010
-//
-// ****************************************************************************
-
-bool
-DataBinningAttributes::CopyAttributes(const AttributeGroup *atts)
-{
-    bool retval = false;
-
-    if(TypeName() == atts->TypeName())
-    {
-        // Call assignment operator.
-        const DataBinningAttributes *tmp = (const DataBinningAttributes *)atts;
-        *this = *tmp;
-        retval = true;
-    }
-    else if(atts->TypeName() == "Expression")
-    {
-        Expression *exp = (Expression *)atts;
-        if (strstr(exp->GetName().c_str(), "operators/DataBinning/1D") != NULL)
-        {
-            SetNumDimensions(One);
-            retval = true;
-        }
-        else if (strstr(exp->GetName().c_str(), "operators/DataBinning/2D") != NULL)
-        {
-            SetNumDimensions(Two);
-            retval = true;
-        }
-        else if (strstr(exp->GetName().c_str(), "operators/DataBinning/3D") != NULL)
-        {
-            SetNumDimensions(Three);
-            retval = true;
-        }
-    }
-
-    return retval;
-}
-
 Function: CreateConstructionAtts
 Declaration: ConstructDataBinningAttributes CreateConstructionAtts(void);
 Definition:
@@ -201,3 +150,52 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
     return el;
 }
 
+Function: DataBinningViewerPluginInfo::InitializeOperatorAtts
+Declaration: virtual void DataBinningViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts, const ViewerPlot *plot, const bool fromDefault);
+Definition:
+// ****************************************************************************
+//  Method: DataBinningViewerPluginInfo::InitializeOperatorAtts
+//
+//  Purpose:
+//    Initialize the operator attributes to the default attributes.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//    fromDefault True to initialize the attributes from the defaults. False
+//                to initialize from the current attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Jun 27 10:10:44 PDT 2012
+//
+//  Modifications:
+//    Brad Whitlock, Wed Jun 27 10:13:24 PDT 2012
+//    I transplanted this code from the old version of 
+//    DataBinningAttributes::CopyAttributes since we should just set the 
+//    operator dimensions when we create the operator attributes.
+//
+// ****************************************************************************
+
+#include <cstring>
+#include <ViewerPlot.h>
+
+void
+DataBinningViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
+    const ViewerPlot *plot, const bool fromDefault)
+{
+    DataBinningAttributes *binning = (DataBinningAttributes *)atts;
+
+    if (fromDefault)
+        *binning = *defaultAtts;
+    else
+        *binning = *clientAtts;
+
+    // Set the number of dimensions based on the variable name.
+    const char *varname = plot->GetVariableName().c_str();
+    if (strstr(varname, "operators/DataBinning/1D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::One);
+    else if (strstr(varname, "operators/DataBinning/2D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::Two);
+    else if (strstr(varname, "operators/DataBinning/3D") != NULL)
+        binning->SetNumDimensions(DataBinningAttributes::Three);
+}

@@ -2538,6 +2538,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Hank Childs, Tue Apr 10 21:46:32 PDT 2012
 //    Make sure variable-creating-operators get the full list of expressions.
 //
+//    Brad Whitlock, Wed Jun 27 10:36:47 PDT 2012
+//    Add the operator before updating the plot list.
+//
 // ****************************************************************************
 
 int
@@ -2659,22 +2662,6 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
         }
     }
 
-    //
-    // Update the client attributes.
-    //
-    UpdatePlotList();
-    UpdatePlotAtts();
-    UpdateSILRestrictionAtts();
-    UpdateExpressionList(true);
-
-    //
-    // If we added a plot, it's possible that a time slider was created if
-    // we allow automatic database correlation. We need to send the time
-    // sliders back to the client.
-    //
-    ViewerWindowManager::Instance()->UpdateWindowInformation(
-         WINDOWINFO_TIMESLIDERS);
-
     // If a plot of an operator variable is added, let's find the operator
     // and add it to the execution pipeline
     OperatorPluginManager *oPM = GetOperatorPluginManager();
@@ -2717,6 +2704,22 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
             }
         }
     }
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts();
+    UpdateSILRestrictionAtts();
+    UpdateExpressionList(true);
+
+    //
+    // If we added a plot, it's possible that a time slider was created if
+    // we allow automatic database correlation. We need to send the time
+    // sliders back to the client.
+    //
+    ViewerWindowManager::Instance()->UpdateWindowInformation(
+         WINDOWINFO_TIMESLIDERS);
 
     return plotId;
 }
@@ -7937,6 +7940,10 @@ ViewerPlotList::UpdateSILRestrictionAtts()
 //   Hank Childs, Thu Dec 30 13:09:36 PST 2010
 //   Add support for operator expressions from scalars, vectors, and tensors.
 //
+//   Brad Whitlock, Wed Jun 27 10:18:36 PDT 2012
+//   Do not set operator attributes from the expression. This was for DataBinning
+//   and I moved the code into the viewer plugin info.
+//
 // ****************************************************************************
 
 void
@@ -8033,8 +8040,6 @@ ViewerPlotList::UpdateExpressionList(bool considerPlots, bool update)
                     Expression exp = exprs->GetExpressions(k);
                     exp.SetFromOperator(true);
                     newList.AddExpressions(exp);
-                    if (exp.GetName() == plot->GetVariableName())
-                        oper->SetOperatorAtts(&exp);
                 }
             }
         }

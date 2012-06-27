@@ -95,11 +95,11 @@
       <Field name="emptyVal" label="Value for Bins With No Data" type="double">
         0.000000
       </Field>
-      <Function name="CopyAttributes" user="false" member="true">
-      </Function>
       <Function name="CreateConstructionAtts" user="true" member="true">
       </Function>
       <Function name="DataBinningCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+      <Function name="DataBinningViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         ConstructDataBinningAttributes.h
