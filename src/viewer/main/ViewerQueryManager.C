@@ -1899,6 +1899,9 @@ ViewerQueryManager::ClearPickPoints()
 //    should be performed, or miscellaneous other information that used to be
 //    determined by comparing GetPlotTypeName.
 //
+//    Brad Whitlock, Wed Jun 27 16:29:29 PDT 2012
+//    I fixed a small memory leak.
+//
 // ****************************************************************************
 
 bool
@@ -2388,15 +2391,21 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                      PickAttributes *p = (PickAttributes *)
                          plotAtts->CreateCompatible("PickAttributes");
                      if (p != NULL)
+                     {
                          if (p->GetSubsetName() != pickAtts->GetSubsetName())
                          {
                             // Special logic for one domain meshes, which
                             // use the special keyword "Whole", which comes
                             // from the spreadsheet attributes.
-                            if ((p->GetSubsetName() != "Whole")
-                                || (pickAtts->GetSubsetName() != ""))
-                             continue;
+                            if ((p->GetSubsetName() != "Whole") ||
+                                (pickAtts->GetSubsetName() != ""))
+                            {
+                                delete p;
+                                continue;
+                            }
                          }
+                         delete p;
+                     }
 
                      // It is a spreadsheet plot of the same variable and the same
                      // domain for the same database from the same host. Re-use it.
