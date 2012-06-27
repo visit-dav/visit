@@ -42,6 +42,9 @@ init()
   blkxs_=blkdx_=datbuf_=NULL;
   prebuf_=sndbuf_=tmpbuf_=NULL;
   eos_=NULL;
+
+  // Turn off error message printing.
+  H5Eset_auto2(0,0,0);
 }
 
 
