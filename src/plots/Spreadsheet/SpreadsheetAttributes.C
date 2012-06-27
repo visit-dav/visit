@@ -383,6 +383,9 @@ SpreadsheetAttributes::TypeName() const
 //   Brad Whitlock, Thu May 21 14:43:24 PDT 2009
 //   Use pick element and type instead of the pick point.
 //
+//   Brad Whitlock, Wed Jun 27 16:04:29 PDT 2012
+//   Do not turn off the tracer plane if we're just clearing picks.
+//
 // ****************************************************************************
 
 bool
@@ -402,10 +405,6 @@ SpreadsheetAttributes::CopyAttributes(const AttributeGroup *atts)
     }
     if (atts->TypeName() == "PickAttributes")
     {
-        // If we got this from a pick, then the tracer plane will just
-        // get in the way, so turn it off.
-        SetShowTracerPlane(false);
-
         PickAttributes *p = (PickAttributes *) atts;
 
         // Handle a clear of pick points
@@ -416,6 +415,10 @@ SpreadsheetAttributes::CopyAttributes(const AttributeGroup *atts)
             currentPickValid = false;
             return true;
         }
+
+        // If we got this from a pick, then the tracer plane will just
+        // get in the way, so turn it off.
+        SetShowTracerPlane(false);
 
         // Handle subset changes
         if (p->GetSubsetName() != "" &&
