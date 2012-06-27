@@ -50,6 +50,9 @@
 #   I removed the code to swap out the xt-mpt module with the xt-mpich2
 #   module on cielo since the xt-mpich2 module was now the default.
 #
+#   Eric Brugger, Wed Jun 27 11:36:45 PDT 2012
+#   Deleted terminator.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -60,7 +63,6 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 termite=true
-terminator=false
 inca=true
 cielo=true
 
@@ -76,7 +78,6 @@ do
    case $1 in
       -none)
          termite=false
-         terminator=false
          inca=false
          cielo=false
          shift
@@ -87,14 +88,6 @@ do
          ;;
       +termite)
          termite=true
-         shift
-         ;;
-      -terminator)
-         terminator=false
-         shift
-         ;;
-      +terminator)
-         terminator=true
          shift
          ;;
       -inca)
@@ -128,7 +121,6 @@ then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
    echo "    termite (B-Div, Linux),"
-   echo "    terminator (B-Div, Linux),"
    echo "    inca (LC, x86_64)"
    echo "    cielo (LANL, x86_64)"
    exit
@@ -188,53 +180,6 @@ then
       scp -P 22 termite termite:termite_buildit
       scp -P 22 $dist.tar.gz termite:termite_$dist.tar.gz
       ssh -p 22 termite "chmod 750 termite_buildit;./termite_buildit" &
-   fi
-fi
-
-#
-# Build on terminator.
-#
-rm -f terminator
-cat <<EOF > terminator
-#!/bin/sh
-if test ! -e terminator ; then
-   mkdir terminator
-fi
-rm -rf terminator/visitbuild
-mkdir terminator/visitbuild
-mv terminator_$dist.tar.gz terminator/visitbuild/$dist.tar.gz
-cd terminator/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/misc/gapps/visit/cmake/2.8.3/linux-i686_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 4 >> ../../buildlog 2>&1
-make package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on terminator"   > resultlog 2>&1
-echo "       ------------------------------"  >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
- 
-if [ $terminator = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on terminator"
-      scp -P 22 terminator terminator:terminator_buildit
-      scp -P 22 $dist.tar.gz terminator:terminator_$dist.tar.gz
-      ssh -p 22 terminator "chmod 750 terminator_buildit;./terminator_buildit" &
    fi
 fi
 
@@ -345,5 +290,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f termite terminator inca cielo
+   rm -f termite inca cielo
 fi
