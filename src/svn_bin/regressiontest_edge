@@ -28,6 +28,10 @@
 #   Eric Brugger, Fri Jun 22 07:54:19 PDT 2012
 #   I modified the script to use cmake 2.8.8. I also added several failing
 #   tests to the skip list.
+#
+#   Mark C. Miller, Wed Jun 27 12:30:13 PDT 2012
+#   Removed zipwrapper tests from skip list because the tests were updated
+#   to use STL in place of VTK.
 
 #
 # Determine the users name and e-mail address.
@@ -163,9 +167,6 @@ skipList_for_Edge="\
     $testHost,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
     $testHost,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
-    $testHost,serial:tests/databases/zipwrapper.py:ZipWrapper_01 \
-    $testHost,parallel:tests/databases/zipwrapper.py:ZipWrapper_01 \
-    $testHost,scalable,parallel,icet:tests/databases/zipwrapper.py:ZipWrapper_01 \
     $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
     $testHost,parallel:tests/rendering/compositing.py \
     $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
