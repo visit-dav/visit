@@ -23,8 +23,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Add parallel arguments.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/5.1.2/xt/gemini/mpich2-gnu/include/44 -I/opt/cray/mpt/5.1.2/xt/gemini/mpich2-gnu/include")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/5.1.2/xt/gemini/mpich2-gnu/lib/44 -L/opt/cray/mpt/5.1.2/xt/gemini/mpich2-gnu/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/lib")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 
 ##############################################################
