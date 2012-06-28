@@ -1947,7 +1947,7 @@ if ( $host =~ /^ci-fe\d+$/ or $host =~ /^ci-login\d+$/ or
     {
         $IsRunningOnCieloLANL = 1;
         $ENV{LIBGL_ALWAYS_INDIRECT} = "1";
-        $ENV{LD_LIBRARY_PATH} = "/opt/cray/mpt/5.2.0/xt/gemini/mpich2-gnu/lib:/opt/gcc/mpc/0.8.1/lib:/opt/gcc/mpfr/2.4.2/lib:/opt/gcc/gmp/4.3.2/lib:/opt/gcc/4.5.2/snos/lib64:$ENV{LD_LIBRARY_PATH}";
+        $ENV{LD_LIBRARY_PATH} = "/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/lib:/opt/gcc/mpc/0.8.1/lib:/opt/gcc/mpfr/2.4.2/lib:/opt/gcc/gmp/4.3.2/lib:/opt/gcc/4.6.2/snos/lib64:/opt/cray/atp/1.4.1/lib:$ENV{LD_LIBRARY_PATH}";
     }
 }
 
