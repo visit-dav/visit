@@ -15,7 +15,7 @@
         <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="partitionSet" type="bool">true</Field>
-        <Field name="partition" type="string">analysis</Field>
+        <Field name="partition" type="string">computation</Field>
         <Field name="bankSet" type="bool">true</Field>
         <Field name="bank" type="string">STF006</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
@@ -31,7 +31,7 @@
         <Field name="numProcessors" type="int">16</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="partitionSet" type="bool">true</Field>
-        <Field name="partition" type="string">analysis</Field>
+        <Field name="partition" type="string">computation</Field>
         <Field name="bankSet" type="bool">true</Field>
         <Field name="bank" type="string">STF006</Field>
         <Field name="timeLimitSet" type="bool">true</Field>
