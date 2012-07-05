@@ -1867,12 +1867,14 @@ if ($host eq "euclid.nersc.gov")
 # HACK for Carver @ NERSC
 #
 # ----
+$IsRunningOnCarverNERSC = 0;
 if ( $host =~ /^cvrsvc/ )
 {
     $ENV{PATH} = join ':' ,
         ("/usr/syscom/opt/torque/default/bin",
          "/usr/common/usg/openmpi/1.4.5/gcc/bin",
          "$ENV{PATH}");
+    $IsRunningOnCarverNERSC = 1;
 }
 
 # ----
@@ -3325,6 +3327,28 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, @newlaunchargs if $newlaunchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
+
+            if ($IsRunningOnCarverNERSC)
+            { 
+                if ($part eq "reg_xlmem")
+                {
+                    # There is a limit of one node for reg_xlmem
+                    $nodes = 1;
+                    $ppn = $procs;
+                }
+                else
+                {
+                    # Even though Carver nodes may have a different number
+                    # of cores per nodes, this is a reasonable default for most
+                    # nodes. It is better to set nodes and cores manually in the
+                    # launch profile.
+                    if (!$nodes_set)
+                    {
+                        $nodes = ceil($procs / 8);
+                        $ppn = 8;
+                    }
+                }
+            }
             if ($IsRunningOnRanger_TACC)
             {
                 $thread_factor=16;
