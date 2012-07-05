@@ -1,4 +1,4 @@
-#/usr/common/graphics/installs/visit_3rdparty/cmake/2.8.3/linux-x86_64_gcc-4.6/bin/cmake
+#/usr/common/usg/cmake/2.8.8/bin/cmake
 ##
 ## build_visit generated host.cmake
 ## created: Mon Nov 15 17:10:11 PST 2010
@@ -11,6 +11,7 @@
 SET(VISITHOME /usr/common/graphics/installs/visit_3rdparty)
 SET(VISITARCH linux-x86_64_gcc-4.6)
 #SET(VISIT_VERBOSE_MAKEFILE TRUE)
+SET(VISIT_INSTALL_PROFILES_TO_HOSTS "nersc")
 VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /usr/common/graphics/visit)
 VISIT_OPTION_DEFAULT(VISIT_INSTALL_THIRD_PARTY ON)
 VISIT_OPTION_DEFAULT(CMAKE_BUILD_TYPE Release)
