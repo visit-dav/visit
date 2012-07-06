@@ -243,8 +243,14 @@ function info
 
 function info_box_large
 {
-    if [[ "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
+            $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH 1>&3
+        fi
+    else
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
+            $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH
+        fi
     fi
     return 0
 }
@@ -1021,7 +1027,7 @@ function check_parallel
             while [[ $tryagain == 1 ]]; do
                 $DLG --backtitle "$DLG_BACKTITLE" --yesno \
 "The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" \
-                15 $DLG_WIDTH
+                15 $DLG_WIDTH 3>1& 1>&2 2>&3
                 if [[ $? == 1 ]] ; then
                     tryagain=1
                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
@@ -1040,7 +1046,7 @@ function check_parallel
             tryagain=1
             while [[ $tryagain == 1 ]]; do
                 $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-"The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
+"The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH 3>1& 1>&2 2>&3
                 if [[ $? == 1 ]] ; then
                     tryagain=1
                     result=$($DLG --backtitle "$DLG_BACKTITLE" \

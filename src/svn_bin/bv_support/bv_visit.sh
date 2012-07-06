@@ -466,11 +466,7 @@ function bv_visit_build
         # am treating the graphical and console interfaces differently.
         #
         if test "${GRAPHICAL}" = "yes" ; then
-            if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-                info_box_large "$FINISHED_MSG" 1>&3
-            else
-                info_box_large "$FINISHED_MSG"
-            fi
+            info_box_large "$FINISHED_MSG"
             log "Finished building VisIt."
             log
             log "You many now try to run VisIt by cd'ing into the"
