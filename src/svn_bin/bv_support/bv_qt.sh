@@ -181,9 +181,17 @@ QT_CONFIRM_MSG="VisIt requires Qt4: Please respond with \"yes\" to accept\
                 Public License (LGPL) version 2.1 or \
                 the GNU General Public License (GPL) version 3"
 if [[ "$GRAPHICAL" == "yes" ]] ; then
-    $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 1>&3
+    else
+        $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
+    fi
     if [[ $? == 1 ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 
+        if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 1>&3
+        else
+            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 
+        fi
         if [[ $? == 1 ]] ; then
             return 1
         fi

@@ -1360,7 +1360,11 @@ if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
          fi
       else
          if [[ "$GRAPHICAL" == "yes" ]] ; then
-             $DLG --backtitle "$DLG_BACKTITLE" --yesno "The third party library location does not exist. Create it?" 0 0
+             if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+                 $DLG --backtitle "$DLG_BACKTITLE" --yesno "The third party library location does not exist. Create it?" 0 0 1>&3
+             else
+                 $DLG --backtitle "$DLG_BACKTITLE" --yesno "The third party library location does not exist. Create it?" 0 0
+             fi
              if [[ $? == 1 ]] ; then
                  error "The third party library location does not exist." \
                        "Bailing out."
