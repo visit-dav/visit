@@ -1,8 +1,8 @@
-#/Users/allen/Projects/VisIt/trunk/visit/cmake/2.8.3/i386-apple-darwin10_gcc-4.2/bin/cmake
+#/Users/allen/Projects/VisIt/trunk/visit/cmake/2.8.8/i386-apple-darwin10_gcc-4.2/bin/cmake
 ##
-## build_visit generated host.cmake
-## created: Fri Aug 20 10:43:50 MDT 2010
-## system: Darwin ferment.sci.utah.edu 9.8.0 Darwin Kernel Version 9.8.0: Wed Jul 15 16:55:01 PDT 2009; root:xnu-1228.15.4~1/RELEASE_I386 i386
+## src/svn_bin/build_visit generated host.cmake
+## created: Fri Jul  6 12:51:29 MDT 2012
+## system: Darwin ferment.sci.utah.edu 10.8.0 Darwin Kernel Version 10.8.0: Tue Jun  7 16:33:36 PDT 2011; root:xnu-1504.15.3~1/RELEASE_I386 i386
 ## by: allen
 
 ##
@@ -16,34 +16,12 @@
 SET(VISITHOME /Users/allen/Projects/VisIt/trunk/visit)
 SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 
-##
-## Specify the location of the mesa.
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
-
-##
-## Specify the location of the vtk.
-##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
-
-##
-## Specify the Qt4 binary dir. 
-## (qmake us used to locate & setup Qt4 dependencies)
-##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
-
-##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
-
-##
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-O2 -fno-common -fexceptions -fvisibility=hidden")
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-O2 -fno-common -fexceptions -fvisibility=hidden")
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
@@ -56,7 +34,41 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
 ##
 ## Database reader plugin support libraries
 ##
+## The HDF4, HDF5 and NetCDF libraries must be first so that
+## their libdeps are defined for any plugins that need them.
+##
+## For libraries with LIBDEP settings, order matters.
+## Libraries with LIBDEP settings that depend on other
+## Library's LIBDEP settings must come after them.
 ##############################################################
+##
+
+##
+## Python
+##
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+
+##
+## VTK
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+
+##
+## Qt
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+##
+
+##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+
 
 ##
 ## FastBit
