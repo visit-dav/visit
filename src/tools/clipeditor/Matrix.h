@@ -47,7 +47,7 @@
 #define MATRIX_H
 
 class Vector;
-#include <visitstream.h>
+#include <iostream>
 
 // ****************************************************************************
 //  Class:  Matrix
@@ -96,7 +96,7 @@ class Matrix
     float* GetOpenGLMatrix();
 
     // friends
-    friend ostream& operator<<(ostream&,const Matrix&);
+    friend std::ostream& operator<<(std::ostream&,const Matrix&);
 };
 
 #endif

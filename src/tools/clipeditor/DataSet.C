@@ -47,7 +47,7 @@
 #include "Vector.h"
 #include "Shape.h"
 
-#include <visitstream.h>
+#include <iostream>
 
 DataSet::DataSet(ShapeType st, int sc)
 {

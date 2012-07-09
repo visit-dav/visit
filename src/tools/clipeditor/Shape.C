@@ -62,14 +62,16 @@
 
 #include "Shape.h"
 #include "Vector.h"
-#include <qgl.h>
+#include <QGLWidget>
 #include "Font.h"
 #include "Transforms.h"
 
-#include "../../visit_vtk/lightweight/vtkTriangulationTables.C"
+#include "vtkTriangulationTables.C"
 #include "DataSet.h"
 
 using std::vector;
+using std::cerr;
+using std::endl;
 using std::swap;
 
 int  Shape::duplicateFacesRemoval = 0;

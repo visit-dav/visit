@@ -46,7 +46,8 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <qgl.h>
+#include <QGLWidget>
+#include <QMouseEvent>
 
 #include "Vector.h"
 #include "Matrix.h"
@@ -56,7 +57,7 @@ class Viewer : public QGLWidget
 {
     Q_OBJECT
   public:
-                  Viewer(QWidget *parent=NULL, const char *name=NULL);
+                  Viewer(QWidget *parent=NULL);
                  ~Viewer();
 
     void          initializeGL();
