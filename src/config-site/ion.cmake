@@ -1,7 +1,7 @@
-#/apps/visit/cmake/2.8.3/linux-x86_64_gcc-4.6/bin/cmake
+#/apps/visit/cmake/2.8.8/linux-x86_64_gcc-4.6/bin/cmake
 ##
-## ./svn_bin/build_visit generated host.cmake
-## created: Fri Jun  8 14:43:55 EDT 2012
+## ../svn_bin/build_visit generated host.cmake
+## created: Mon Jul  9 11:44:02 EDT 2012
 ## system: Linux ion 3.2.0-24-generic #39-Ubuntu SMP Mon May 21 16:52:17 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
 ## by: js9
 
@@ -33,8 +33,9 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
 ##
-## Specify the location of the python.
+## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr)
 VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH /usr/include/python2.7 )
@@ -47,19 +48,16 @@ VISIT_OPTION_DEFAULT(PYTHON_VERSION 2.7)
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
-
 ##
 ## VTK
 ##
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
 
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
+## Qt
 ##
 VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR /usr/include/qt4/QtUiTools)
 VISIT_OPTION_DEFAULT(VISIT_QT_BIN /usr/bin)
-
 
 ##
 ## SZIP
@@ -139,10 +137,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 ##
+
 ##
-## Specify the PySide dir. 
+## PySide
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
-
-##
-
