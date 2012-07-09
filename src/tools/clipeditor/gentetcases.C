@@ -43,8 +43,8 @@ using namespace std;
 //  File:  gentetcases.cpp
 //
 //  Purpose:
-//    Generates the 48 transforms of a hex.
-//    Points are 0-8, edges are A-L.
+//    Generates the 24 transforms of a tetrahedron.
+//    Points are 0-3, edges are A-F.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 14, 2003
