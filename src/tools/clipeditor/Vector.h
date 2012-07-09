@@ -39,7 +39,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <visitstream.h>
+#include <iostream>
 
 // ****************************************************************************
 //  Class:  Vector
@@ -88,7 +88,7 @@ class Vector
     Vector  normalized() const;
 
     // friends
-    friend ostream& operator<<(ostream&,const Vector&);
+    friend std::ostream& operator<<(std::ostream&,const Vector&);
 
     // input/output
     const char *getAsText();
@@ -98,7 +98,6 @@ class Vector
 };
 
 #include <math.h>
-#include <visitstream.h>
 
 inline 
 Vector::Vector()

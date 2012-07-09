@@ -65,7 +65,11 @@
 #include "Viewer.h"
 
 #include <stdlib.h>
-#include <visitstream.h>
+#include <iostream>
+#include <fstream>
+#include <QKeyEvent>
+
+using namespace std;
 
 std::string copyright_str = 
 "/*****************************************************************************\n"
@@ -246,8 +250,8 @@ inline char StrToNodeWithConversion(const char *c)
 }
 
 ClipEditor::ClipEditor(const QString &st,
-                     QWidget *parent, const QString &name) :
-        QMainWindow(parent, name)
+                       QWidget *parent) :
+    QMainWindow(parent)
 {
     if (st.left(3) == "hex")
     {
@@ -306,7 +310,7 @@ ClipEditor::ClipEditor(const QString &st,
     }
 
 
-    viewer = new Viewer(this, "Viewer Widget");
+    viewer = new Viewer(this);
     setCentralWidget(viewer);
     textMode = TM_MAIN;
     defaultcolor = 0;
@@ -399,7 +403,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 cerr << endl;
             }
         }
-        else if (kev->key() == Qt::Key_Prior)
+        else if (kev->key() == Qt::Key_PageUp)
         {
             int oldindex = caseindex;
             caseindex--;
@@ -423,7 +427,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 cerr << "No previous unique cases\n";
             }
         }
-        else if (kev->key() == Qt::Key_Next)
+        else if (kev->key() == Qt::Key_PageDown)
         {
             int oldindex = caseindex;
             caseindex++;
@@ -451,7 +455,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -463,7 +467,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -481,7 +485,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -499,7 +503,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -540,7 +544,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -555,7 +559,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -569,7 +573,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
         {
             if (datasets[caseindex]->copyOfDataset)
             {
-                cerr << "Read-only case!\n";
+                cerr << "This case is not unique; it is a copy and thus cannot be modified.\n";
             }
             else
             {
@@ -671,7 +675,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             }
             else
             {
-                cerr << "Invalid shape type " << kev->text() << endl;
+                cerr << "Invalid shape type " << kev->text().toStdString() << endl;
             }
         }
         else if (addedpoints == -1)
@@ -721,7 +725,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             }
             else
             {
-                cerr << "Invalid key " << kev->text() << endl;
+                cerr << "Invalid key " << kev->text().toStdString() << endl;
             }
 
             if (addedpoints == npts)

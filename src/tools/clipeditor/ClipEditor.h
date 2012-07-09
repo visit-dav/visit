@@ -46,7 +46,7 @@
 #ifndef CLIP_EDITOR_H
 #define CLIP_EDITOR_H
 
-#include <qmainwindow.h>
+#include <QMainWindow>
 #include <vector>
 #include <string>
 #include "DataSet.h"
@@ -57,7 +57,7 @@ class ClipEditor : public QMainWindow
 {
     Q_OBJECT
   public:
-    ClipEditor(const QString &shape, QWidget *parent, const QString &name);
+    ClipEditor(const QString &shape, QWidget *parent);
     
     virtual void keyPressEvent(QKeyEvent *kev);
 

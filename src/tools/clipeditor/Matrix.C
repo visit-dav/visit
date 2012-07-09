@@ -39,7 +39,6 @@
 #include "Matrix.h"
 #include "Vector.h"
 #include <math.h>
-#include <visitstream.h>
 
 #define MAX(a,b) ((a)>(b) ? (a) : (a))
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
@@ -361,7 +360,7 @@ Matrix::CreateTrackball(float p1x,float p1y,  float p2x, float p2y)
 }
 
 
-ostream &operator<<(ostream& out, const Matrix &r)
+std::ostream &operator<<(std::ostream& out, const Matrix &r)
 {
     out << r.m[0][0] << "," << r.m[0][1] << "," << r.m[0][2] << "," << r.m[0][3] << "\n";
     out << r.m[1][0] << "," << r.m[1][1] << "," << r.m[1][2] << "," << r.m[1][3] << "\n";

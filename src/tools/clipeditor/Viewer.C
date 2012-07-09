@@ -1,4 +1,4 @@
-/*****************************************************************************
+ /*****************************************************************************
 *
 * Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -47,10 +47,10 @@
 #include "Matrix.h"
 #include "Shape.h"
 
-#include <qevent.h>
+#include <QEvent>
 
-Viewer::Viewer(QWidget *parent, const char *name)
-    : QGLWidget(parent, name)
+Viewer::Viewer(QWidget *parent)
+    : QGLWidget(parent)
 {
     mousedown = false;
     M.CreateIdentity();
@@ -199,7 +199,7 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
         float x2 =  ((float(  x  *2)/float(width())) - 1.0);
         float y2 = -((float(  y  *2)/float(height())) - 1.0);
 
-        if (mev->state() == LeftButton)
+        if (mev->buttons() == Qt::LeftButton)
         {
             Matrix R1;
             R1.CreateTrackball(-x1,-y1, -x2,-y2);
@@ -226,14 +226,14 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
             up   = MM^up;
             V.CreateView(from,at,up);
         }
-        else if (mev->state() == MidButton)
+        else if (mev->buttons() == Qt::MidButton)
         {
             Vector view_dir((at-from).normalized());
             at   += view_dir*(y2-y1)*ds_size;
             from += view_dir*(y2-y1)*ds_size;
             V.CreateView(from,at,up);
         }
-        else if (mev->state() & RightButton)
+        else if (mev->buttons() & Qt::RightButton)
         {
             Vector view_dir(at-from);
             Vector right(up % view_dir);

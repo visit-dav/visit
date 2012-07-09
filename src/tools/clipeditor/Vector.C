@@ -41,7 +41,7 @@
 #include <stdio.h>
 
 
-ostream &operator<<(ostream& out, const Vector &r)
+std::ostream &operator<<(std::ostream& out, const Vector &r)
 {
     out << "<" << r.x << "," << r.y << "," << r.z << ">";
     return out;
