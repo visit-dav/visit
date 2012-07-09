@@ -534,7 +534,7 @@ avtRPOTFilter::CreateFinalOutput()
     for (int i = 0; i < numTuples; i++)
         in[i] = 0.0f;
     
-    for (int k = 0; k < values[0][0].size(); k++)
+    for (int k = 0; k < numTimes; k++)
     {
         for (int j = 0; j < numArrays; j++)
         {
