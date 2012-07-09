@@ -115,6 +115,9 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 //    Jeremy Meredith, Fri Feb 13 11:05:06 EST 2009
 //    Added calculation of output vf's per material, if requested.
 //
+//    Jeremy Meredith, Mon Jul  9 16:53:41 EDT 2012
+//    Added support for 5- through 8-sided polygons.
+//
 // ****************************************************************************
 void
 RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
@@ -312,6 +315,35 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
                     splitCase  = &clipShapesPix[startIndex];
                     numOutput  = numClipShapesPix[lookup_case];
                     vertices_from_edges = pixelVerticesFromEdges;
+                    break;
+                  case VTK_POLYGON:
+                    switch (nids)
+                    {
+                      case 5:
+                        startIndex = startClipShapesPoly5[lookup_case];
+                        splitCase  = &clipShapesPoly5[startIndex];
+                        numOutput  = numClipShapesPoly5[lookup_case];
+                        vertices_from_edges = poly5VerticesFromEdges;
+                        break;
+                      case 6:
+                        startIndex = startClipShapesPoly6[lookup_case];
+                        splitCase  = &clipShapesPoly6[startIndex];
+                        numOutput  = numClipShapesPoly6[lookup_case];
+                        vertices_from_edges = poly6VerticesFromEdges;
+                        break;
+                      case 7:
+                        startIndex = startClipShapesPoly7[lookup_case];
+                        splitCase  = &clipShapesPoly7[startIndex];
+                        numOutput  = numClipShapesPoly7[lookup_case];
+                        vertices_from_edges = poly7VerticesFromEdges;
+                        break;
+                      case 8:
+                        startIndex = startClipShapesPoly8[lookup_case];
+                        splitCase  = &clipShapesPoly8[startIndex];
+                        numOutput  = numClipShapesPoly8[lookup_case];
+                        vertices_from_edges = poly8VerticesFromEdges;
+                        break;
+                    }
                     break;
                 }
 

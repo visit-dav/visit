@@ -722,6 +722,9 @@ private:
 //   and ScalarAccess so we can get data from different meshes and precisions
 //   without if statements.
 //
+//   Jeremy Meredith, Mon Jul  9 16:53:41 EDT 2012
+//   Added support for 5- through 8-sided polygons.
+//
 // ****************************************************************************
 
 template <typename Bridge, typename ScalarAccess>
@@ -775,6 +778,14 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
             break;
 
           default:
+            // we now handle 5-8 sided polygons as well
+            if (cellType == VTK_POLYGON &&
+                nCellPts >= 5 && nCellPts <= 8)
+            {
+                break;
+            }
+
+            // everything else; defer for other clipper algorithm
             {
                 if (numIcantClip == 0)
                     stuff_I_cant_clip->GetCellData()->
@@ -872,6 +883,35 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
             splitCase  = &clipShapesVtx[startIndex];
             numOutput  = numClipShapesVtx[lookup_case];
             vertices_from_edges = NULL;
+            break;
+          case VTK_POLYGON:
+            switch (nCellPts)
+            {
+              case 5:
+                startIndex = startClipShapesPoly5[lookup_case];
+                splitCase  = &clipShapesPoly5[startIndex];
+                numOutput  = numClipShapesPoly5[lookup_case];
+                vertices_from_edges = poly5VerticesFromEdges;
+                break;
+              case 6:
+                startIndex = startClipShapesPoly6[lookup_case];
+                splitCase  = &clipShapesPoly6[startIndex];
+                numOutput  = numClipShapesPoly6[lookup_case];
+                vertices_from_edges = poly6VerticesFromEdges;
+                break;
+              case 7:
+                startIndex = startClipShapesPoly7[lookup_case];
+                splitCase  = &clipShapesPoly7[startIndex];
+                numOutput  = numClipShapesPoly7[lookup_case];
+                vertices_from_edges = poly7VerticesFromEdges;
+                break;
+              case 8:
+                startIndex = startClipShapesPoly8[lookup_case];
+                splitCase  = &clipShapesPoly8[startIndex];
+                numOutput  = numClipShapesPoly8[lookup_case];
+                vertices_from_edges = poly8VerticesFromEdges;
+                break;
+            }
             break;
         }
 

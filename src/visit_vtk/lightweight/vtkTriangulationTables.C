@@ -849,3 +849,44 @@ int lineVerticesFromEdges[1][2] =
     {0,1}
 };
 
+int poly5VerticesFromEdges[5][2] =
+{
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,4},
+    {4,0}
+};
+
+int poly6VerticesFromEdges[6][2] =
+{
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,4},
+    {4,5},
+    {5,0}
+};
+
+int poly7VerticesFromEdges[7][2] =
+{
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,4},
+    {4,5},
+    {5,6},
+    {6,0}
+};
+
+int poly8VerticesFromEdges[8][2] =
+{
+    {0,1},
+    {1,2},
+    {2,3},
+    {3,4},
+    {4,5},
+    {5,6},
+    {6,7},
+    {7,0}
+};

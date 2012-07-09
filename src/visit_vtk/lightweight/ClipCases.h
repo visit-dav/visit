@@ -161,4 +161,24 @@ extern VISIT_VTK_LIGHT_API int numClipShapesVtx[2];
 extern VISIT_VTK_LIGHT_API int startClipShapesVtx[2];
 extern VISIT_VTK_LIGHT_API unsigned char clipShapesVtx[];
 
+extern VISIT_VTK_LIGHT_API int numClipCasesPoly5;
+extern VISIT_VTK_LIGHT_API int numClipShapesPoly5[32];
+extern VISIT_VTK_LIGHT_API int startClipShapesPoly5[32];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly5[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesPoly6;
+extern VISIT_VTK_LIGHT_API int numClipShapesPoly6[64];
+extern VISIT_VTK_LIGHT_API int startClipShapesPoly6[64];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly6[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesPoly7;
+extern VISIT_VTK_LIGHT_API int numClipShapesPoly7[128];
+extern VISIT_VTK_LIGHT_API int startClipShapesPoly7[128];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly7[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesPoly8;
+extern VISIT_VTK_LIGHT_API int numClipShapesPoly8[256];
+extern VISIT_VTK_LIGHT_API int startClipShapesPoly8[256];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesPoly8[];
+
 #endif

@@ -71,5 +71,9 @@ extern VISIT_VTK_LIGHT_API int triVerticesFromEdges[3][2];
 extern VISIT_VTK_LIGHT_API int quadVerticesFromEdges[4][2];
 extern VISIT_VTK_LIGHT_API int pixelVerticesFromEdges[4][2];
 extern VISIT_VTK_LIGHT_API int lineVerticesFromEdges[1][2];
+extern VISIT_VTK_LIGHT_API int poly5VerticesFromEdges[5][2];
+extern VISIT_VTK_LIGHT_API int poly6VerticesFromEdges[6][2];
+extern VISIT_VTK_LIGHT_API int poly7VerticesFromEdges[7][2];
+extern VISIT_VTK_LIGHT_API int poly8VerticesFromEdges[8][2];
 
 #endif
