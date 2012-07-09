@@ -52,6 +52,9 @@
 //    Jeremy Meredith, Thu Jun  7 13:21:32 EDT 2007
 //    Added line transform.
 //
+//    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
+//    Added 5- thru 8-sided polygon transforms.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef TRANSFORMS_H
@@ -116,9 +119,18 @@ struct TriTransform
 struct LineTransform
 {
     int  n[2];
-    char e[2];
+    char e[1];
     bool f;
 };
+
+template <int N>
+struct PolygonTransform
+{
+    int  n[N];
+    char e[N];
+    bool f;
+};
+
 
 extern HexTransform     hexTransforms[48];
 extern VoxTransform     voxTransforms[48];
@@ -129,5 +141,9 @@ extern QuadTransform    quadTransforms[8];
 extern PixelTransform   pixelTransforms[8];
 extern TriTransform     triTransforms[6];
 extern LineTransform    lineTransforms[2];
+extern PolygonTransform<5> poly5Transforms[10];
+extern PolygonTransform<6> poly6Transforms[12];
+extern PolygonTransform<7> poly7Transforms[14];
+extern PolygonTransform<8> poly8Transforms[16];
 
 #endif

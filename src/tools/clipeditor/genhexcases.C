@@ -44,7 +44,7 @@ using namespace std;
 //
 //  Purpose:
 //    Generates the 48 transforms of a hex.
-//    Points are 0-8, edges are A-L.
+//    Points are 0-7, edges are A-L.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 14, 2003

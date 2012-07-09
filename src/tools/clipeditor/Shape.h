@@ -52,6 +52,9 @@
 //    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
 //    Added Line and Vertex shapes.
 //
+//    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
+//    Added 5- thru 8-sided polygon shapes.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef SHAPE_H
@@ -75,7 +78,11 @@ enum ShapeType
     ST_PIXEL,
     ST_VERTEX,
     ST_LINE,
-    ST_POINT
+    ST_POINT,
+    ST_POLY5,
+    ST_POLY6,
+    ST_POLY7,
+    ST_POLY8
 };
 
 struct Shape
@@ -128,22 +135,36 @@ struct Shape
     Shape(ShapeType st, Shape *parent, const char *nodes, DataSet *ds);
     Shape(ShapeType st, Shape *parent, int c, int n, const char *nodes, DataSet *ds);
     Shape(Shape *copy, int xformID, Shape *parent, DataSet *ds);
+    void GeneratePolygonCoords();
     void DrawPolyData(Vector &up, Vector &right);
     void Init();
     void Invert();
     int  CheckCopyOf(Shape*);
-    void MakeCopyOf(Shape *s, HexTransform &xform);
-    void MakeCopyOf(Shape *s, VoxTransform &xform);
-    void MakeCopyOf(Shape *s, WedgeTransform &xform);
-    void MakeCopyOf(Shape *s, PyramidTransform &xform);
-    void MakeCopyOf(Shape *s, TetTransform &xform);
-    void MakeCopyOf(Shape *s, QuadTransform &xform);
-    void MakeCopyOf(Shape *s, PixelTransform &xform);
-    void MakeCopyOf(Shape *s, TriTransform &xform);
-    void MakeCopyOf(Shape *s, LineTransform &xform);
+    template <class T> void MakeCopyOf(Shape *s, T &xform);
 
     DataSet *dataset;
 };
+
+template <class T> void
+Shape::MakeCopyOf(Shape *s, T &xform)
+{
+    for (int i=0; i<nverts; i++)
+    {
+        char c1 = s->parentNodes[i];
+        char c2 = c1;
+        if (c1 >= '0' && c1 <= '9')
+        {
+            c2 = xform.n[c1 - '0'] + '0';
+        }
+        else if (c1 >= 'a' && c1 <= 'l')
+        {
+            c2 = xform.e[c1 - 'a'];
+        }
+        parentNodes[i] = c2;
+    }
+    if (xform.f)
+        Invert();
+}
 
 
 #endif

@@ -57,6 +57,9 @@
 //    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
 //    Added Line and Vertex shapes.  Added copyright string.
 //
+//    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
+//    Added 5- thru 8-sided polygon shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include "ClipEditor.h"
@@ -302,6 +305,26 @@ ClipEditor::ClipEditor(const QString &st,
     {
         ncases    = 2;
         shapetype = ST_VERTEX;
+    }
+    else if (st == "poly5")
+    {
+        ncases    = 32;
+        shapetype = ST_POLY5;
+    }
+    else if (st == "poly6")
+    {
+        ncases    = 64;
+        shapetype = ST_POLY6;
+    }
+    else if (st == "poly7")
+    {
+        ncases    = 128;
+        shapetype = ST_POLY7;
+    }
+    else if (st == "poly8")
+    {
+        ncases    = 256;
+        shapetype = ST_POLY8;
     }
     else
     {
@@ -767,6 +790,10 @@ ClipEditor::LoadFromFile()
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       case ST_LINE:    lower="Lin"; upper="LIN"; break;
       case ST_VERTEX:  lower="Vtx"; upper="VTX"; break;
+      case ST_POLY5:   lower="Poly5"; upper="POLY5"; break;
+      case ST_POLY6:   lower="Poly6"; upper="POLY6"; break;
+      case ST_POLY7:   lower="Poly7"; upper="POLY7"; break;
+      case ST_POLY8:   lower="Poly8"; upper="POLY8"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
@@ -1002,6 +1029,10 @@ ClipEditor::SaveToFile()
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
       case ST_LINE:    lower="Lin"; upper="LIN"; break;
       case ST_VERTEX:  lower="Vtx"; upper="VTX"; break;
+      case ST_POLY5:   lower="Poly5"; upper="POLY5"; break;
+      case ST_POLY6:   lower="Poly6"; upper="POLY6"; break;
+      case ST_POLY7:   lower="Poly7"; upper="POLY7"; break;
+      case ST_POLY8:   lower="Poly8"; upper="POLY8"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);

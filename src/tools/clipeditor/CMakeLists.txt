@@ -53,6 +53,7 @@ Viewer.C
 ADD_EXECUTABLE(genhexcases genhexcases.C)
 ADD_EXECUTABLE(gentetcases gentetcases.C)
 ADD_EXECUTABLE(genvoxcases genvoxcases.C)
+ADD_EXECUTABLE(genpolycases genpolycases.C)
 
 SET(CLIPEDITOR_MOC_SOURCES
 ClipEditor.h
@@ -77,5 +78,5 @@ TARGET_LINK_LIBRARIES(clipeditor
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTCORE_LIBRARY}
--lGL
+${OPENGL_gl_LIBRARY}
 )

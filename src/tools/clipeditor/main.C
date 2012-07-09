@@ -45,6 +45,9 @@
 //    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
 //    Added Line and Vertex shapes.  Added missing help text for other shapes.
 //
+//    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
+//    Added 5- thru 8-sided polygon shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include <QtGui/QApplication>
@@ -66,7 +69,7 @@ int main(int argc, char *argv[])
     if (argc != 2)
     {
         cerr << "Usage: " << argv[0] << " <shape>\n";
-        cerr << "   where <shape> = { hex, wdg, pyr, tet, qua, pix, tri, lin, vtx }\n";
+        cerr << "   where <shape> = { hex, wdg, pyr, tet, qua, pix, tri, lin, vtx, poly5, poly6, poly7, poly8 }\n";
         exit(1);
     }
 
