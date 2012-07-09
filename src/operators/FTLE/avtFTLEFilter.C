@@ -425,17 +425,23 @@ avtFTLEFilter::GetInitialLocations()
         //add sample points by looping over in x,y,z
         for(int k = 0; k < global_resolution[2]; ++k)
         {
-            double zpcnt = ((double)k)/((double)global_resolution[2]-1);
+            double zpcnt = 0;
+            if (global_resolution[2] > 1)
+                zpcnt = ((double)k)/((double)global_resolution[2]-1);
             double z = global_bounds[4]*(1.0-zpcnt) + global_bounds[5]*zpcnt;
 
             for(int j = 0; j < global_resolution[1]; ++j)
             {
-                double ypcnt = ((double)j)/((double)global_resolution[1]-1);
+                double ypcnt = 0;
+                if (global_resolution[1] > 1)
+                    ypcnt = ((double)j)/((double)global_resolution[1]-1);
                 double y = global_bounds[2]*(1.0-ypcnt) + global_bounds[3]*ypcnt;
 
                 for(int i = 0; i < global_resolution[0]; ++i)
                 {
-                    double xpcnt = ((double)i)/((double)global_resolution[0]-1);
+                    double xpcnt = 0;
+                    if (global_resolution[0] > 1)
+                       xpcnt = ((double)i)/((double)global_resolution[0]-1);
                     double x = global_bounds[0]*(1.0-xpcnt) + global_bounds[1]*xpcnt;
 
                     size_t index = (global_resolution[1]*global_resolution[0]*k) + (global_resolution[0]*j)+i;
@@ -909,9 +915,9 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         end_results[j+1] = end_point[1];
         end_results[j+2] = end_point[2];
     }
-    std::cout << PAR_Rank() << " total integral pts: " << ics.size() << std::endl;
+    //std::cout << PAR_Rank() << " total integral pts: " << ics.size() << std::endl;
 
-    std::flush(cout);
+    //std::flush(cout);
 
     int* all_indices;
     int* index_counts;
@@ -927,7 +933,7 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
     //root should now have index into global structure and all matching end positions..
     if(PAR_Rank() != 0)
     {
-        std::cout << PAR_Rank() << " creating dummy output" << std::endl;
+        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
         avtDataTree* dummy = new avtDataTree();
         SetOutputDataTree(dummy);
     }
@@ -946,21 +952,27 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         lxcoord->SetNumberOfTuples(global_resolution[0]);
         for (int i = 0 ; i < global_resolution[0] ; i++)
         {
-            double pcnt = ((double)i)/((double)global_resolution[0]-1);
+            double pcnt = 0;
+            if (global_resolution[0] > 1)
+                pcnt = ((double)i)/((double)global_resolution[0]-1);
             lxcoord->SetTuple1(i, global_bounds[0]*(1.0-pcnt) + global_bounds[1]*pcnt);
         }
 
         lycoord->SetNumberOfTuples(global_resolution[1]);
         for (int i = 0 ; i < global_resolution[1] ; i++)
         {
-            double pcnt = ((double)i)/((double)global_resolution[1]-1);
+            double pcnt = 0;
+            if (global_resolution[1] > 1)
+                pcnt = ((double)i)/((double)global_resolution[1]-1);
             lycoord->SetTuple1(i, global_bounds[2]*(1.0-pcnt) + global_bounds[3]*pcnt);
         }
 
         lzcoord->SetNumberOfTuples(global_resolution[2]);
         for (int i = 0 ; i < global_resolution[2] ; i++)
         {
-            double pcnt = ((double)i)/((double)global_resolution[2]-1);
+            double pcnt = 0;
+            if (global_resolution[2] > 1)
+                pcnt = ((double)i)/((double)global_resolution[2]-1);
             lzcoord->SetTuple1(i, global_bounds[4]*(1.0-pcnt) + global_bounds[5]*pcnt);
         }
 
@@ -976,9 +988,9 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         //now global grid has been created..
         size_t leafSize = global_resolution[0]*global_resolution[1]*global_resolution[2];
 
-        std::cout << "final resolution: " << PAR_Rank() << " " << global_resolution[0] << " "
-                << global_resolution[1] << " "
-                << global_resolution[2] << std::endl;
+        //std::cout << "final resolution: " << PAR_Rank() << " " << global_resolution[0] << " "
+                //<< global_resolution[1] << " "
+                //<< global_resolution[2] << std::endl;
 
 
         vtkDataArray* jacobian[3];
@@ -997,17 +1009,23 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         size_t l = 0;
         for(int k = 0; k < global_resolution[2]; ++k)
         {
-            double zpcnt = ((double)k)/((double)global_resolution[2]-1);
+            double zpcnt = 0;
+            if (global_resolution[2] > 1)
+                zpcnt = ((double)k)/((double)global_resolution[2]-1);
             double z = global_bounds[4]*(1.0-zpcnt) + global_bounds[5]*zpcnt;
 
             for(int j = 0; j < global_resolution[1]; ++j)
             {
-                double ypcnt = ((double)j)/((double)global_resolution[1]-1);
+                double ypcnt = 0;
+                if (global_resolution[1] > 1)
+                    ypcnt = ((double)j)/((double)global_resolution[1]-1);
                 double y = global_bounds[2]*(1.0-ypcnt) + global_bounds[3]*ypcnt;
 
                 for(int i = 0; i < global_resolution[0]; ++i)
                 {
-                    double xpcnt = ((double)i)/((double)global_resolution[0]-1);
+                    double xpcnt = 0;
+                    if (global_resolution[0] > 1)
+                        xpcnt = ((double)i)/((double)global_resolution[0]-1);
                     double x = global_bounds[0]*(1.0-xpcnt) + global_bounds[1]*xpcnt;
 
                     remapVector[l].set(x,y,z);
@@ -1028,7 +1046,7 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
             total += index_counts[i];
         }
 
-        std::cout << "total number integrated: " << total << std::endl;
+        //std::cout << "total number integrated: " << total << std::endl;
         for(int j = 0,k = 0; j < total; ++j, k += 3)
         {
             size_t index = all_indices[j];
@@ -1077,10 +1095,10 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         //Store this dataset in Cache for next time..
         double bounds[6];
         rect_grid->GetBounds(bounds);
-        std::cout << "final size and bounds: " << PAR_Rank() << " " << leafSize << " "
-                << bounds[0] << " " << bounds[1] << " " << bounds[2]
-                << " " << bounds[3] << " " << bounds[4] << " "
-                << bounds[5] << std::endl;
+        //std::cout << "final size and bounds: " << PAR_Rank() << " " << leafSize << " "
+                //<< bounds[0] << " " << bounds[1] << " " << bounds[2]
+                //<< " " << bounds[3] << " " << bounds[4] << " "
+                //<< bounds[5] << std::endl;
 
         std::string str = CreateResampledCacheString();
         StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
@@ -1091,7 +1109,7 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         avtDataTree* dt = new avtDataTree(rect_grid,index);
         int x = 0;
         dt->GetAllLeaves(x);
-        std::cout << "total leaves:: " << x << std::endl;
+        //std::cout << "total leaves:: " << x << std::endl;
         SetOutputDataTree(dt);
 
         //set atts..
@@ -1136,6 +1154,11 @@ avtFTLEFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
+//  Modifications:
+//
+//    Hank Childs, Jul  6 14:17:47 PDT 2012
+//    Set resolution for Z to be 1 for 2D meshes.
+//
 // ****************************************************************************
 
 void 
@@ -1145,6 +1168,14 @@ avtFTLEFilter::PreExecute(void)
     SetStreamlineAlgorithm(STREAMLINE_VISIT_SELECTS, 10, 3, 10);
 
     GetSpatialExtents(global_bounds);
+
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    {
+        // we set them to 0->1 earlier and GetSpatialExtents only sets the
+        // X and Y parts of the extents for 2D.
+        global_bounds[4] = 0;
+        global_bounds[5] = 0;
+    }
 
     if(!atts.GetUseDataSetStart())
     {
@@ -1166,6 +1197,8 @@ avtFTLEFilter::PreExecute(void)
     global_resolution[0] = res[0];
     global_resolution[1] = res[1];
     global_resolution[2] = res[2];
+    if (global_bounds[4] == global_bounds[5])
+        global_resolution[2] = 1;
     avtPICSFilter::PreExecute();
 }
 
