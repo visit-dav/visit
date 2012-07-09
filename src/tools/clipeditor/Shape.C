@@ -85,11 +85,6 @@ int triangleFaces[1][3] = {{0,1,2}};
 int quadFaces[1][4] = {{0,1,2,3}};
 int pixelFaces[1][4] = {{0,1,3,2}};
 
-int poly5VerticesFromEdges[5][2] = {{0,1},{1,2},{2,3},{3,4},{4,0}};
-int poly6VerticesFromEdges[6][2] = {{0,1},{1,2},{2,3},{3,4},{4,5},{5,0}};
-int poly7VerticesFromEdges[7][2] = {{0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,0}};
-int poly8VerticesFromEdges[8][2] = {{0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,7},{7,0}};
-
 int poly5TriFaces[3][3] = {{0,1,2},{0,2,3},{0,3,4}};
 int poly6TriFaces[4][3] = {{0,1,2},{0,2,3},{0,3,4},{0,4,5}};
 int poly7TriFaces[5][3] = {{0,1,2},{0,2,3},{0,3,4},{0,4,5},{0,5,6}};
