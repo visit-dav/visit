@@ -180,7 +180,7 @@ avtPoincareFilter::avtPoincareFilter() :
     OPointMaxIterations(2),
     XPointMaxIterations(2),
     performOLineAnalysis( false ),
-    OLineToroidalWinding( 0 ),
+    OLineToroidalWinding( 1 ),
     OLineAxisFileName(""),
     showIslands( false ),
     showLines( true ),
@@ -2069,7 +2069,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         // Pass the maxPunctures so that fieldlines can be terminated
         // if needed.
         poincare_ic->properties.maxPunctures = maxPunctures;
-
+        
         // Perform the fieldline analysis.
         FLlib.fieldlineProperties( poincare_ic->points,
                                    poincare_ic->properties,

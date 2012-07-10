@@ -640,7 +640,7 @@ void PoincareAttributes::Init()
     showXPoints = false;
     XPointMaxIterations = 2;
     performOLineAnalysis = false;
-    OLineToroidalWinding = 0;
+    OLineToroidalWinding = 1;
     OLineAxisFileName = "";
     showChaotic = false;
     showIslands = false;

@@ -2356,6 +2356,8 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
   {
     OLineAxisIndex = 1;
 
+    unsigned int index = 1;
+
     Point currPt,  nextPt;
 
     double phiBase, phiTotal;
@@ -2378,15 +2380,19 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       currPt = nextPt;
       currPhi = nextPhi;
 
-      if( fscanf( fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 &&
-          feof(fp) == 0 )
+      if( fscanf( fp, "%lf %lf %lf", &nextPt.x, &nextPt.y, &nextPt.z ) != 3 )
       {
-        std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be read." << std::endl;
-
-        OLineAxisPts.clear();
-        OLineAxisPhiAngles.clear();
-
-        return Point(0,0,0);
+        if( feof(fp) == 0 )
+        {
+          std::cerr << "Trying to perform O-line analysis but the O-line axis file can not be read." << std::endl;
+          
+          OLineAxisPts.clear();
+          OLineAxisPhiAngles.clear();
+          
+          return Point(0,0,0);
+        }
+        else if( feof(fp) )
+          break;
       }
 
       OLineAxisPts.push_back( nextPt );
@@ -2394,7 +2400,7 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
       if( OLineAxisPhiAngles.empty() )
       {
         phiBase = atan2(nextPt.y, nextPt.x);
-        phiTotal = phiBase;
+        phiTotal = 0; //phiBase;
       }
       else
       {
@@ -2411,7 +2417,10 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
         phiBase += dPhi;
         phiTotal += dPhi;
       }
-      
+
+      if( phiTotal/(2.0*M_PI) / toroidalBase < 1.00 )
+        ++index;
+
       OLineAxisPhiAngles.push_back( phiBase );
     }
      
@@ -2423,13 +2432,31 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
                 << "number of rotations " << phiTotal/(2.0*M_PI)
                 << std::endl;
 
-    if( phiTotal/(2.0*M_PI) / toroidalBase < 0.999 ||
-        1.001 < phiTotal/(2.0*M_PI) /toroidalBase )
+    if( phiTotal/(2.0*M_PI) / toroidalBase < 1.0 )
     {
-      std::cerr << "Too few or too many points in the axis "
+      std::cerr << "Too few points in the axis "
                 << "expected " << toroidalBase << " rotations, "
                 << "got " << phiTotal/(2.0*M_PI) <<  " rotations."
                 << std::endl;
+
+      if( index > OLineAxisPhiAngles.size() ) 
+        index = OLineAxisPhiAngles.size();
+
+      if( index < OLineAxisPhiAngles.size() ) 
+        OLineAxisPhiAngles.erase( OLineAxisPhiAngles.begin()+index,
+                                  OLineAxisPhiAngles.end() );
+    }
+
+    else if( index < OLineAxisPhiAngles.size() )
+    {
+      std::cerr << "Too too many points in the axis "
+                << "expected " << toroidalBase << " rotations, "
+                << "got " << phiTotal/(2.0*M_PI) <<  " rotations. "
+                << "Truncating"
+                << std::endl;
+
+      OLineAxisPhiAngles.erase( OLineAxisPhiAngles.begin()+index,
+                                OLineAxisPhiAngles.end() );
     }
   }
 
@@ -3645,7 +3672,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( offset != 1 && offset != toroidalWindingP-1 )
       {
         toroidalWindingP = toroidalWindingP;
-        poloidalWindingP = Blankinship( toroidalWindingP, offset );
+        poloidalWindingP = Blankinship( toroidalWindingP, offset ) + toroidalWindingP;
 
         windingGroupOffset = offset;
 
