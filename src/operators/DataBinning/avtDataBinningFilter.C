@@ -478,6 +478,9 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Wed Sep 21 09:15:21 PDT 2011
 //    Fix problem where 3D unstructured meshes sometimes had exceptions.
 //
+//    Hank Childs, Tue Jul 10 09:47:04 PDT 2012
+//    Set the labels correctly when using spatial coordinates.
+//
 // ****************************************************************************
 
 void
@@ -501,19 +504,37 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
     else
         dataAtts.SetCentering(AVT_ZONECENT);
 
-    std::string var1 = "";
-    if (atts.GetDim1Var() == "default")
+    if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
     {
-        if (pipelineVariable != NULL)
-            var1 = pipelineVariable;
+        std::string var1 = "";
+        if (atts.GetDim1Var() == "default")
+        {
+            if (pipelineVariable != NULL)
+                var1 = pipelineVariable;
+        }
+        else
+            var1 = atts.GetDim1Var();
+        dataAtts.SetXLabel(var1);
+        if(inAtts.ValidVariable(var1.c_str()))
+            dataAtts.SetXUnits(inAtts.GetVariableUnits(var1.c_str()));
+        else
+            dataAtts.SetXUnits("");
     }
-    else
-        var1 = atts.GetDim1Var();
-    dataAtts.SetXLabel(var1);
-    if(inAtts.ValidVariable(var1.c_str()))
-        dataAtts.SetXUnits(inAtts.GetVariableUnits(var1.c_str()));
-    else
-        dataAtts.SetXUnits("");
+    else if (atts.GetDim1BinBasedOn() == DataBinningAttributes::X)
+    {
+        dataAtts.SetXLabel("X");
+        dataAtts.SetXUnits(inAtts.GetXUnits());
+    }
+    else if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Y)
+    {
+        dataAtts.SetXLabel("Y");
+        dataAtts.SetXUnits(inAtts.GetYUnits());
+    }
+    else if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Z)
+    {
+        dataAtts.SetXLabel("Z");
+        dataAtts.SetXUnits(inAtts.GetZUnits());
+    }
 
     if (atts.GetNumDimensions() == DataBinningAttributes::One)
     {
@@ -534,37 +555,75 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
     if ((atts.GetNumDimensions() == DataBinningAttributes::Two ||
          atts.GetNumDimensions() == DataBinningAttributes::Three))
     {
-        std::string var2 = "";
-        if (atts.GetDim2Var() == "default")
+        if (atts.GetDim2BinBasedOn() == DataBinningAttributes::Variable)
         {
-            if (pipelineVariable != NULL)
-                var2 = pipelineVariable;
-        }
-        else
-            var2 = atts.GetDim2Var();
-        dataAtts.SetYLabel(var2);
-        dataAtts.SetYUnits("");
-        if(inAtts.ValidVariable(var2.c_str()))
-            dataAtts.SetYUnits(inAtts.GetVariableUnits(var2.c_str()));
-        else
+            std::string var2 = "";
+            if (atts.GetDim2Var() == "default")
+            {
+                if (pipelineVariable != NULL)
+                    var2 = pipelineVariable;
+            }
+            else
+                var2 = atts.GetDim2Var();
+
+            dataAtts.SetYLabel(var2);
             dataAtts.SetYUnits("");
+            if(inAtts.ValidVariable(var2.c_str()))
+                dataAtts.SetYUnits(inAtts.GetVariableUnits(var2.c_str()));
+            else
+                dataAtts.SetYUnits("");
+        }
+        else if (atts.GetDim2BinBasedOn() == DataBinningAttributes::X)
+        {
+            dataAtts.SetYLabel("X");
+            dataAtts.SetYUnits(inAtts.GetXUnits());
+        }
+        else if (atts.GetDim2BinBasedOn() == DataBinningAttributes::Y)
+        {
+            dataAtts.SetYLabel("Y");
+            dataAtts.SetYUnits(inAtts.GetYUnits());
+        }
+        else if (atts.GetDim2BinBasedOn() == DataBinningAttributes::Z)
+        {
+            dataAtts.SetYLabel("Z");
+            dataAtts.SetYUnits(inAtts.GetZUnits());
+        }
+
     }
 
     if (atts.GetNumDimensions() == DataBinningAttributes::Three)
     {
-        std::string var3 = "";
-        if (atts.GetDim3Var() == "default")
+        if (atts.GetDim3BinBasedOn() == DataBinningAttributes::Variable)
         {
-            if (pipelineVariable != NULL)
-                var3 = pipelineVariable;
+            std::string var3 = "";
+            if (atts.GetDim3Var() == "default")
+            {
+                if (pipelineVariable != NULL)
+                    var3 = pipelineVariable;
+            }
+            else
+                var3 = atts.GetDim3Var();
+            dataAtts.SetZLabel(var3);
+            if(inAtts.ValidVariable(var3.c_str()))
+                dataAtts.SetZUnits(inAtts.GetVariableUnits(var3.c_str()));
+            else
+                dataAtts.SetZUnits("");
         }
-        else
-            var3 = atts.GetDim3Var();
-        dataAtts.SetZLabel(var3);
-        if(inAtts.ValidVariable(var3.c_str()))
-            dataAtts.SetZUnits(inAtts.GetVariableUnits(var3.c_str()));
-        else
-            dataAtts.SetZUnits("");
+        else if (atts.GetDim3BinBasedOn() == DataBinningAttributes::X)
+        {
+            dataAtts.SetZLabel("X");
+            dataAtts.SetZUnits(inAtts.GetXUnits());
+        }
+        else if (atts.GetDim3BinBasedOn() == DataBinningAttributes::Y)
+        {
+            dataAtts.SetZLabel("Y");
+            dataAtts.SetZUnits(inAtts.GetYUnits());
+        }
+        else if (atts.GetDim3BinBasedOn() == DataBinningAttributes::Z)
+        {
+            dataAtts.SetZLabel("Z");
+            dataAtts.SetZUnits(inAtts.GetZUnits());
+        }
     }
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
