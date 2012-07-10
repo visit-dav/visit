@@ -2214,7 +2214,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       if (isDouble) {
         double* dblDataPtr = &(((double*) dataPtr)[i]);
         
-        for (int j=0; j<numNodes[0]; ++j)
+        for (int j=0; j<gdims[0]; ++j)
         {
           *dblDataPtr = 0;
           dblDataPtr += 3;
@@ -2223,7 +2223,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       else if (isFloat) {        
         float* fltDataPtr = &(((float*) dataPtr)[i]);
         
-        for (int j=0; j<numNodes[0]; ++j)
+        for (int j=0; j<gdims[0]; ++j)
         {
           *fltDataPtr = 0;
           fltDataPtr += 3;
@@ -2238,7 +2238,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       if (isDouble) {
         double* dblDataPtr = (double*)dataPtr;
         
-        for (int i = 0; i < numNodes[0]; i++) {
+        for (int i = 0; i < gdims[0]; i++) {
           int baseIndex = i * 3;
           //Get original values
           double zValue = dblDataPtr[baseIndex];
@@ -2261,7 +2261,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
       } else if (isFloat) {
         float* fltDataPtr = (float*)dataPtr;
         
-        for (int i = 0; i < numNodes[0]; i++) {
+        for (int i = 0; i < gdims[0]; i++) {
           int baseIndex = i * 3;
           //Get original values
           float zValue = fltDataPtr[baseIndex];
@@ -2287,9 +2287,9 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // create point mesh
     try {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Allocating " << numNodes[0]
+        << "Allocating " << gdims[0]
         << " vertices.  If old VTK and this fails, it will just abort." << std::endl;
-      meshPtr->Allocate(numNodes[0]);
+      meshPtr->Allocate(gdims[0]);
     } catch (vtkstd::bad_alloc) {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Caught vtkstd::bad_alloc. Unable to allocate cells."
@@ -2307,7 +2307,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Allocation succeeded.  Setting mesh to connectivity 'VERTEX'." << std::endl;
     vtkIdType vertex;
-    for (int i=0; i<numNodes[0]; ++i) {
+    for (int i=0; i<gdims[0]; ++i) {
       vertex = i;
       meshPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
     }
