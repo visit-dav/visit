@@ -712,8 +712,8 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
       // Delta
       double delta = 0;
-      if (numNodes[i] > 1)
-        delta = (upperBounds[i] - lowerBounds[i]) / (numNodes[i]-1);
+      if (gdims[i] > 1)
+        delta = (upperBounds[i] - lowerBounds[i]) / (gdims[i]-1);
 
       int cc = 0;
       int j = mins[i];
@@ -873,11 +873,11 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
       // Read points and add in zero for any lacking dimension
       if( isDoubleType( axisDataType ) ) {
-        dblDataPtr = new double[numNodes[i]];
+        dblDataPtr = new double[gdims[i]];
         dataPtr = dblDataPtr;
       }
       else if( isFloatType( axisDataType ) ) {
-        fltDataPtr = new float[numNodes[i]];
+        fltDataPtr = new float[gdims[i]];
         dataPtr = fltDataPtr;
       } else {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
