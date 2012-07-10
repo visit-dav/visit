@@ -194,7 +194,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showXPoints = false;
         XPointMaxIterations = 2;
         performOLineAnalysis = false;
-        OLineToroidalWinding = 0;
+        OLineToroidalWinding = 1;
         OLineAxisFileName = new String("");
         showChaotic = false;
         showIslands = false;
@@ -278,7 +278,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         showXPoints = false;
         XPointMaxIterations = 2;
         performOLineAnalysis = false;
-        OLineToroidalWinding = 0;
+        OLineToroidalWinding = 1;
         OLineAxisFileName = new String("");
         showChaotic = false;
         showIslands = false;
