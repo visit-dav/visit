@@ -262,6 +262,9 @@ avtRevolveFilter::GetAxis(avtMeshCoordType mt, double *axis)
 //    Brad Whitlock, Fri Oct 12 14:43:23 PST 2007
 //    Added support for revolving lines.
 //
+//    Eric Brugger, Tue Jul 10 11:37:19 PDT 2012
+//    Added support for vector data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -443,6 +446,60 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         outpd->CopyData(inpd, i%npts, i);
     }
     
+    //
+    // Handle vector data.
+    //
+    vtkDataArray *vectors;
+    vectors = ugrid->GetPointData()->GetVectors();
+    if (vectors)
+    {
+        float *vecptr  = (float*)vectors->GetVoidPointer(0);
+        for (i = 0 ; i < niter ; i++)
+        {
+            double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
+            GetRotationMatrix(angle, axis, mat, mt);
+            for (j = 0 ; j < npts ; j++)
+            {
+                double in_pt[4];
+                in_pt[0] = vecptr[0];
+                in_pt[1] = vecptr[1];
+                in_pt[2] = vecptr[2];
+                in_pt[3] = 1.;
+                double out_pt[4];
+                mat->MultiplyPoint(in_pt, out_pt);
+                vecptr[0] = out_pt[0];
+                vecptr[1] = out_pt[1];
+                vecptr[2] = out_pt[2];
+                vecptr += 3;
+            }
+        }
+    }
+    vectors = ugrid->GetCellData()->GetVectors();
+    if (vectors)
+    {
+        float *vecptr  = (float*)vectors->GetVoidPointer(0);
+        for (i = 0 ; i < nsteps-1 ; i++)
+        {
+            double angle = ((stop_angle-start_angle)*(i+0.5))/(nsteps-1) +
+                           start_angle;
+            GetRotationMatrix(angle, axis, mat, mt);
+            for (j = 0 ; j < ncells ; j++)
+            {
+                double in_pt[4];
+                in_pt[0] = vecptr[0];
+                in_pt[1] = vecptr[1];
+                in_pt[2] = vecptr[2];
+                in_pt[3] = 1.;
+                double out_pt[4];
+                mat->MultiplyPoint(in_pt, out_pt);
+                vecptr[0] = out_pt[0];
+                vecptr[1] = out_pt[1];
+                vecptr[2] = out_pt[2];
+                vecptr += 3;
+            }
+        }
+    }
+ 
     //
     // Clean up.
     //
