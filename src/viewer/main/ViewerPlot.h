@@ -365,6 +365,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     // Get/Set the SIL restriction, get metadata, get expressions.
     //
     void SetSILRestriction(avtSILRestriction_p silr);
+    void SetSILRestriction(avtSILRestriction_p silr, bool checkActors);
     avtSILRestriction_p GetSILRestriction() const;
     const avtDatabaseMetaData *GetMetaData() const;
     ExpressionList GetExpressions() const;

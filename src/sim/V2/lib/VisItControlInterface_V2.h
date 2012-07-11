@@ -446,7 +446,6 @@ int VisItGetSockets(int *lSocket, int *cSocket);
  * Returns:   1 on success; 0 on failure
  *
  * Note:      This function should be called when VisItDetectInput returns 1.
- *            Only the root processor should call this function.
  *
  * ****************************************************************************/
 int   VisItAttemptToCompleteConnection(void);

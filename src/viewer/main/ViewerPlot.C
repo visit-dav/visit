@@ -1983,10 +1983,19 @@ ViewerPlot::MoveDatabaseKeyframe(int oldIndex, int newIndex)
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
+//    Brad Whitlock, Wed Jul 11 10:33:06 PDT 2012
+//    I made 2 methods and one optionally checks the actors.
+//
 // ****************************************************************************
 
 void
 ViewerPlot::SetSILRestriction(avtSILRestriction_p s)
+{
+    SetSILRestriction(s, true);
+}
+
+void
+ViewerPlot::SetSILRestriction(avtSILRestriction_p s, bool checkActors)
 {
     //
     // Assign the new SIL restriction to the plot.
@@ -1997,19 +2006,22 @@ ViewerPlot::SetSILRestriction(avtSILRestriction_p s)
     // Loop over the existing plots and delete any cached actors whose SIL
     // restriction is different from the new one.
     //
-    for (int i = 0; i < cacheSize; ++i)
+    if(checkActors)
     {
-        if (*plotList[i] != 0)
+        for (int i = 0; i < cacheSize; ++i)
         {
-            avtSILRestriction_p silp =
-                (*plotList[i])->GetCurrentSILRestriction();
-
-            avtSILRestrictionTraverser trav(silp);
-            if ( (*silp != NULL) && (!(trav.Equal(silr))) )
+            if (*plotList[i] != 0)
             {
-                plotList[i]   = (avtPlot *)0;
-                actorList[i]  = (avtActor *)0;
-                readerList[i] = (avtDataObjectReader *)0;
+                avtSILRestriction_p silp =
+                    (*plotList[i])->GetCurrentSILRestriction();
+    
+                avtSILRestrictionTraverser trav(silp);
+                if ( (*silp != NULL) && (!(trav.Equal(silr))) )
+                {
+                    plotList[i]   = (avtPlot *)0;
+                    actorList[i]  = (avtActor *)0;
+                    readerList[i] = (avtDataObjectReader *)0;
+                }
             }
         }
     }
