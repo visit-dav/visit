@@ -28,6 +28,7 @@ list of changes in release 2.5.1.</p>
 <li>Clearing pick points turns off the Spreadsheet plot's tracer plane.</li>
 <li>The Revolve operator now properly handles vector data.</li>
 <li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
+<li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
