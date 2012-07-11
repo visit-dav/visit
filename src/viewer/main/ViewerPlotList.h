@@ -424,11 +424,12 @@ public:
                              bool activeWindow = false,
                              bool applyToAllWindows = false,
                              bool applyToAllPlots = false);
-    void ReplaceDatabase(const EngineKey &ek, const std::string &database,
+    bool ReplaceDatabase(const EngineKey &ek, const std::string &database,
                          int timeState, bool setTimeState, bool onlyReplaceSame,
                          bool onlyReplaceActive);
     void OverlayDatabase(const EngineKey &ek,
                          const std::string &database, int timeState);
+    bool UpdateSILRestriction(const EngineKey &ek, const std::string &database);
 
     void SetActivePlots(const intVector &activePlots,
                         const intVector &activeOperators,
@@ -510,6 +511,9 @@ public:
     bool ShouldRefineData(double smallestCellSize) const;
 
   protected:
+    bool ReplaceDatabaseHelper(const EngineKey &ek, const std::string &database,
+                         int timeState, bool onlyReplaceSame,
+                         bool onlyReplaceActive, bool justUpdateSIL);
     bool        AskForCorrelationPermission(const stringVector &dbs) const;
     bool        AllowAutomaticCorrelation(const stringVector &dbs) const;
     DatabaseCorrelation *GetMostSuitableCorrelation(const std::string &, bool);

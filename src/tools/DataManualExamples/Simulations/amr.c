@@ -111,6 +111,8 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
         simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
         sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+        VisItUpdatePlots();
 }
 
 /* Called to handle case 3 from VisItDetectInput where we have console
@@ -140,6 +142,8 @@ ProcessConsoleCommand(simulation_data *sim)
         simulate_one_timestep(sim);
     else if(strcmp(cmd, "run") == 0)
         sim->runMode = SIM_RUNNING;
+    else if(strcmp(cmd, "update") == 0)
+        VisItUpdatePlots();
 }
 
 /* SIMULATE ONE TIME STEP */
@@ -257,7 +261,7 @@ int main(int argc, char **argv)
     VisItSetupEnvironment();
 
     /* Write out .sim2 file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("mesh",
+    VisItInitializeSocketAndDumpSimFile("amr",
         "Demonstrates domain nesting data access function",
         "/no/useful/path",
         NULL, NULL, NULL);
@@ -314,18 +318,25 @@ SimGetMetaData(void *cbdata)
         /* Set the first mesh's properties.*/
         if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
         {
+            /* Vary the number of patches based on the cycle so we can test
+             * AMR SILs that change over time.
+             */
+            int np = NPATCHES-1;
+            if(sim->cycle % 2 == 1)
+                np = NPATCHES;
+
             /* Set the mesh's properties.*/
             VisIt_MeshMetaData_setName(mmd, "amr");
             VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_AMR);
             VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
             VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
-            VisIt_MeshMetaData_setNumDomains(mmd, NPATCHES);
+            VisIt_MeshMetaData_setNumDomains(mmd, np);
             VisIt_MeshMetaData_setDomainTitle(mmd, "Patches");
             VisIt_MeshMetaData_setDomainPieceName(mmd, "patch");
             VisIt_MeshMetaData_setNumGroups(mmd, 3);
             VisIt_MeshMetaData_setGroupTitle(mmd, "Levels");
             VisIt_MeshMetaData_setGroupPieceName(mmd, "level");
-            for(i = 0; i < NPATCHES; ++i)
+            for(i = 0; i < np; ++i)
                 VisIt_MeshMetaData_addGroupId(mmd, level[i]);
             VisIt_MeshMetaData_setXUnits(mmd, "cm");
             VisIt_MeshMetaData_setYUnits(mmd, "cm");
@@ -416,6 +427,7 @@ visit_handle
 SimGetDomainNesting(const char *name, void *cbdata)
 {
     visit_handle h = VISIT_INVALID_HANDLE;
+    simulation_data *sim = (simulation_data *)cbdata;
 
     if(VisIt_DomainNesting_alloc(&h) != VISIT_ERROR)
     {
@@ -428,13 +440,26 @@ SimGetDomainNesting(const char *name, void *cbdata)
         int i, dom, nlevels = 3;
         int ratios[3] = {2,2,1}, ext[6]={0,0,0,0,0,0}, patch[2]={0,0};
 
-        VisIt_DomainNesting_set_dimensions(h, NPATCHES, nlevels, 2);
+        /* Vary the number of patches based on the cycle so we can test
+         * AMR SILs that change over time.
+         */
+        int np = NPATCHES-1;
+        if(sim->cycle % 2 == 1)
+        {
+            np = NPATCHES;
+            ncpatch[1] = 2;
+        }
+        else
+        {
+            ncpatch[1] = 1;
+        }
+        VisIt_DomainNesting_set_dimensions(h, np, nlevels, 2);
 
         VisIt_DomainNesting_set_levelRefinement(h, 0, ratios);
         VisIt_DomainNesting_set_levelRefinement(h, 1, ratios);
         VisIt_DomainNesting_set_levelRefinement(h, 2, ratios);
 
-        for(dom = 0; dom < NPATCHES; ++dom)
+        for(dom = 0; dom < np; ++dom)
         {
             ext[XMIN] = rmxext[dom][0];
             ext[YMIN] = rmyext[dom][0];

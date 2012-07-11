@@ -9498,6 +9498,12 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 //
 //    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL
+//
+//    Brad Whitlock, Wed Jul 11 11:00:29 PDT 2012
+//    Call UpdateSILRestriction on the plot list. That's like a replace in 
+//    that it will update the plot's SIL to match the new SIL but it does not
+//    clear the actor or cause the plot to reexecute.
+//
 // ****************************************************************************
 
 void
@@ -9505,6 +9511,8 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
                                     const string &file,
                                     const SILAttributes *sa)
 {
+    int nWindows = 0, *windowIndices = 0;
+
     TRY
     {
         // Handle SIL updates
@@ -9514,12 +9522,28 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
         fs->SetSimulationSILAtts(host, file, *GetViewerState()->GetSILAttributes());
         GetViewerState()->GetSILAttributes()->SelectAll();
         GetViewerState()->GetSILAttributes()->Notify();
+
+        // Replace the plots that use host:file in the plot list so they will get
+        // updated SIL restrictions, etc.
+        ViewerWindowManager *wMgr=ViewerWindowManager::Instance();
+        windowIndices = wMgr->GetWindowIndices(&nWindows);
+        EngineKey ek(host, file);
+        for(int i = 0; i < nWindows; ++i)
+        {
+            ViewerWindow *win = wMgr->GetWindow(windowIndices[i]);
+            ViewerPlotList *plist = win->GetPlotList();
+
+            plist->ClearDefaultSILRestrictions(host, file);
+            plist->UpdateSILRestriction(ek, file);
+        }
     }
     CATCHALL
     {
         ; // nothing
     }
     ENDTRY
+
+    delete [] windowIndices;
 }
 
 // ****************************************************************************
