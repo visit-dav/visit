@@ -52,9 +52,10 @@ int main(int argc, char **argv)
     vector<int> falsePositives;
 
     //
-    // conversions that should succeed
+    // Test validation of printf style format strings
     //
 
+    // Validations that should succeed
     if (!ValidatePrintfFormatString("%d %d %d", "int", "int", "int"))
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("%.3f %#0d", "float", "int"))
@@ -109,9 +110,7 @@ int main(int argc, char **argv)
         if(splitstr[3] != spaces)  { falseNegatives.push_back(__LINE__); }
     }
 
-    //
-    // conversions that should fail
-    //
+    // Validations that should fail
     {
         std::string s = "::::";
         std::vector<std::string> splitstr = split(s, ':');
@@ -178,42 +177,87 @@ int main(int argc, char **argv)
         cerr << endl;
     }
 
-#define CHECK_PLURAL(noun,pnoun)                         \
-    if (Plural(#noun) != #pnoun)                        \
-    {                                                        \
-        cerr << "Problem pluralizing " #pnoun << endl;        \
-        return 1;                                        \
+    //
+    // Test noun pluralization
+    //
+#define CHECK_PLURAL(noun,pnoun)                       \
+    if (Plural(#noun) != #pnoun)                       \
+    {                                                  \
+        cerr << "Problem pluralizing " #pnoun << endl; \
+        pluralizing_errors++;                          \
     }
 
-    CHECK_PLURAL(matrix,matrices);
-    CHECK_PLURAL(stratum,strata);
-    CHECK_PLURAL(patch,patches);
-    CHECK_PLURAL(domain,domains);
-    CHECK_PLURAL(source,sources);
-    CHECK_PLURAL(assembly,assemblies);
+    int pluralizing_errors = 0;
+    //           Singular noun          Plural form
+    //           ----------------------------------
+    CHECK_PLURAL(matrix,                matrices);
+    CHECK_PLURAL(stratum,               strata);
+    CHECK_PLURAL(patch,                 patches);
+    CHECK_PLURAL(domain,                domains);
+    CHECK_PLURAL(source,                sources);
+    CHECK_PLURAL(assembly,              assemblies);
 
+    //
     // test ExtractRESubstr
+    //
     string filename = "/usr/gapps/visit/data/foo.silo.bz2";
     string ext = ExtractRESubstr(filename.c_str(), "<\\.(gz|bz|bz2|zip)$>");
     const char *bname = Basename(filename.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+    string dcname = ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
 
+    int extract_substr_errors = 0;
     if (ext != ".bz2")
     {
         cerr << "Problem with ExtractRESubstr" << endl;
-        return 1;
+        extract_substr_errors++;
     }
     if (string(bname) != "foo.silo.bz2")
     {
         cerr << "Problem with Basename" << endl;
-        return 1;
+        extract_substr_errors++;
     }
     if (dcname != "foo.silo")
     {
         cerr << "Problem with ExtractRESubstr" << endl;
-        return 1;
+        extract_substr_errors++;
     }
 
-    return falseNegatives.size() + falsePositives.size();
+    //
+    // Test Basename and Dirname
+    //
+#define CHECK_PATHNAMES(path,dir,base)                            \
+    if (string(Basename(path)) != string(base))                   \
+    {                                                             \
+        cerr << "Got Basename(" << #path << ") = \""              \
+             << Basename(path) << "\", expected " << #base << endl; \
+        pathname_errors++;                                        \
+    }                                                             \
+    if (string(Dirname(path)) != string(dir))                     \
+    {                                                             \
+        cerr << "Got Dirname(" << #path << ") = \""               \
+             << Dirname(path) << "\", expected " << #dir << endl; \
+        pathname_errors++;                                        \
+    }
 
+    int pathname_errors = 0;
+    //
+    //              Expected behavior as documented in
+    //              section 3 of unix manual...
+    //              --------------------------------------
+    //              path           dirname        basename
+    CHECK_PATHNAMES("/usr/lib",    "/usr",        "lib");
+    CHECK_PATHNAMES("/usr/",       "/",           "usr");
+    CHECK_PATHNAMES("/usr",        "/",           "usr");
+    CHECK_PATHNAMES("usr",         ".",           "usr");
+    CHECK_PATHNAMES("/",           "/",           "/");
+    CHECK_PATHNAMES(".",           ".",           ".");
+    CHECK_PATHNAMES("..",          ".",           "..");
+
+    int all_errors = falseNegatives.size() +
+                     falsePositives.size() +
+                     pluralizing_errors +
+                     extract_substr_errors +
+                     pathname_errors;
+
+    return all_errors > 0;
 }

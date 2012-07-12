@@ -202,6 +202,9 @@ class MRUCacheBase {
       // return total memory used by all cached values
       size_t memsize(void) const { return cache.size() * sizeof(vT); };
 
+      // return number of cache slots in use
+      size_t size(void) const { return cache.size(); };
+
       // return number of cache slots 
       size_t numslots(void) const { return numSlots; };
 

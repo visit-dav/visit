@@ -677,6 +677,9 @@ StringHelpers::Basename(const char *path)
 //    When searching the string, look for either type of slash char, but still
 //    use the sys-dependent VISIT_SLASH_STRING when setting in the empty buf.
 //
+//    Mark C. Miller, Wed Jul 11 20:03:16 PDT 2012
+//    Fixed the special case where the only part of the string left after
+//    eliminating the basename part is a single slash char at index zero.
 // ****************************************************************************
 const char *
 StringHelpers::Dirname(const char *path)
@@ -701,9 +704,10 @@ StringHelpers::Dirname(const char *path)
         int i;
         for (i = 0; i < start; i++)
             StaticStringBuf[i] = path[i];
-        if (StaticStringBuf[i-1] == '/' || StaticStringBuf[i-1] == '\\')
+        if (i > 1 && (StaticStringBuf[i-1] == '/' ||
+                      StaticStringBuf[i-1] == '\\'))
             StaticStringBuf[i-1] = '\0';
-       else
+        else
             StaticStringBuf[i] = '\0';
         return StaticStringBuf;
     }

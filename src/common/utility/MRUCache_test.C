@@ -77,6 +77,7 @@ int main()
     DelCache delCache;
     MRUCache<string, float*, MRUCache_ArrayDelete, CACHE_SIZE> adelCache;
 
+    cout << "Cache size is set to " << CACHE_SIZE << " items." << endl;
 
     // load caches and see how things behave
     for (i = 0; i < 2*CACHE_SIZE; i++)
@@ -131,4 +132,30 @@ int main()
     cout << "Iterating to see what remains in cache" << endl;
     for (it = delCache.begin(); it != delCache.end(); it++)
         cout << "Item with key \"" << it->first.c_str() << "\" still in cache" << endl;
+
+    //
+    // Test clear and adjustments in cache size
+    //
+    cout << "Clearing some caches" << endl;
+    dontCache.clear();
+    delCache.clear();
+    if (dontCache.size() != 0 || delCache.size() != 0)
+        cerr << "Problem with clearing caches" << endl;
+
+    //
+    // Set cache size downwards
+    //
+    cout << "Resizing some caches to most recently used 5 items." << endl;
+    freeCache.numslots(5);
+    adelCache.numslots(5);
+    callbackCache.numslots(5);
+    FreeCache::iterator fit;
+    for (fit = freeCache.begin(); fit != freeCache.end(); fit++)
+        cout << "Item with key \"" << fit->first.c_str() << "\" still in Free cache" << endl;
+    MRUCache<string, float*, MRUCache_ArrayDelete, CACHE_SIZE>::iterator adit;
+    for (adit = adelCache.begin(); adit != adelCache.end(); adit++)
+        cout << "Item with key \"" << adit->first.c_str() << "\" still in delete [] cache" << endl;
+    MRUCache<string, foo_t*, MRUCache_CallbackDelete, CACHE_SIZE>::iterator cbit;
+    for (cbit = callbackCache.begin(); cbit != callbackCache.end(); cbit++)
+        cout << "Item with key \"" << cbit->first.c_str() << "\" still in callbackCache cache" << endl;
 }
