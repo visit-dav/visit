@@ -1,3 +1,4 @@
+Cache size is set to 20 items.
 Iteration 0
 Iteration 1
 Iteration 2
@@ -61,3 +62,20 @@ Item with key "item 36" still in cache
 Item with key "item 37" still in cache
 Item with key "item 38" still in cache
 Item with key "item 39" still in cache
+Clearing some caches
+Resizing some caches to most recently used 5 items.
+Item with key "item 35" still in Free cache
+Item with key "item 36" still in Free cache
+Item with key "item 37" still in Free cache
+Item with key "item 38" still in Free cache
+Item with key "item 39" still in Free cache
+Item with key "item 35" still in delete [] cache
+Item with key "item 36" still in delete [] cache
+Item with key "item 37" still in delete [] cache
+Item with key "item 38" still in delete [] cache
+Item with key "item 39" still in delete [] cache
+Item with key "item 35" still in callbackCache cache
+Item with key "item 36" still in callbackCache cache
+Item with key "item 37" still in callbackCache cache
+Item with key "item 38" still in callbackCache cache
+Item with key "item 39" still in callbackCache cache
