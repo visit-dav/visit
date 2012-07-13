@@ -86,6 +86,9 @@ class     vtkMatrix4x4;
 //    Remove data member ProportionSpaceToZBufferSpace, as we now do our
 //    sampling in even intervals (wbuffer).
 //
+//    Kathleen Biagas, Fri Jul 13 09:44:45 PDT 2012
+//    Use double internally instead of float.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
@@ -112,9 +115,9 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     double           cur_clip_range[2];
     vtkMatrix4x4    *view_to_world_transform;
 
-    float           *X;
-    float           *Y;
-    float           *Z;
+    double           *X;
+    double           *Y;
+    double           *Z;
     unsigned char   *ghosts;
     int              dims[3];
     int              ncell_arrays;
@@ -128,16 +131,16 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     int              pt_index[AVT_VARIABLE_LIMIT];
     int              pt_vartypes[AVT_VARIABLE_LIMIT];
 
-    float           *prop_buffer;
+    double          *prop_buffer;
     int             *ind_buffer;
     bool            *valid_sample;
 
     // We repeatedly divide by the term (X[i+1]-X[i]).  In the interest of
     // performance, cache the term 1./(X[i+1]-X[i]) and use that for faster
     // multiplication.  This sped up total performance by about 5%.
-    float           *divisors_X;
-    float           *divisors_Y;
-    float           *divisors_Z;
+    double           *divisors_X;
+    double           *divisors_Y;
+    double           *divisors_Z;
 
     void             ExtractImageSpaceGrid(vtkRectilinearGrid *,
                              std::vector<std::string> &varnames,
@@ -148,14 +151,14 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
 
     void             RegisterGrid(vtkRectilinearGrid*,
                                   std::vector<std::string>&,std::vector<int>&);
-    void             SampleAlongSegment(const float *, const float*, int, int);
+    void             SampleAlongSegment(const double *, const double*, int, int);
     void             SampleVariable(int, int, int, int);
     bool             FrustumIntersectsGrid(int, int, int, int) const;
-    void             GetSegment(int, int, float *, float *) const;
-    static void      FindPlaneNormal(const float *, const float *, 
-                                     const float *, float *);
-    bool             GridOnPlusSideOfPlane(const float *, const float *) const;
-    bool             FindSegmentIntersections(const float *, const float *, 
+    void             GetSegment(int, int, double *, double *) const;
+    static void      FindPlaneNormal(const double *, const double *, 
+                                     const double *, double *);
+    bool             GridOnPlusSideOfPlane(const double *, const double *) const;
+    bool             FindSegmentIntersections(const double *, const double *, 
                                               int &, int &);
 };
 

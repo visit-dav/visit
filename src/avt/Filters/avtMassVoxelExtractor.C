@@ -44,14 +44,17 @@
 
 #include <float.h>
 
+#include <avtAccessor.h>
 #include <avtCellList.h>
 #include <avtVolume.h>
 
+#include <vtkDataArray.h>
 #include <vtkCamera.h>
 #include <vtkCellData.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkTemplateAliasMacro.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <DebugStream.h>
@@ -85,10 +88,13 @@
 //    Hank Childs, Wed Dec 24 11:22:43 PST 2008
 //    Remove reference to ProportionSpaceToZBufferSpace data member.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
-                                               avtVolume *vol, avtCellList *cl)
+                                             avtVolume *vol, avtCellList *cl)
     : avtExtractor(w, h, d, vol, cl)
 {
     gridsAreInWorldSpace = false;
@@ -102,7 +108,7 @@ avtMassVoxelExtractor::avtMassVoxelExtractor(int w, int h, int d,
     divisors_Y = NULL;
     divisors_Z = NULL;
 
-    prop_buffer   = new float[3*depth];
+    prop_buffer   = new double[3*depth];
     ind_buffer    = new int[3*depth];
     valid_sample  = new bool[depth];
 }
@@ -161,17 +167,21 @@ avtMassVoxelExtractor::~avtMassVoxelExtractor()
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 template <class T> static void
-AssignEight(float *vals, int *index, int s, int m, T *array)
+AssignEight(double *vals, int *index, int s, int m, T *array)
 {
     for (int i = 0 ; i < 8 ; i++)
-        vals[i] = (float) array[s*index[i]+m];
+        vals[i] = (double) array[s*index[i]+m];
 }
 
 static void
-AssignEight(int vartype, float *vals, int *index, int s, int m, void *array)
+AssignEight(int vartype, double *vals, int *index, int s, int m, void *array)
 {
     switch (vartype)
     {
@@ -209,41 +219,45 @@ AssignEight(int vartype, float *vals, int *index, int s, int m, void *array)
 }
 
 // ****************************************************************************
-//  Function:  ConvertToFloat
+//  Function:  ConvertToDouble
 //
 //  Purpose:
-//     A function that performs a cast and conversion to a float.
+//     A function that performs a cast and conversion to a double.
 //
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
-static float
-ConvertToFloat(int vartype, int index, int s, int m, void *array)
+static double
+ConvertToDouble(int vartype, int index, int s, int m, void *array)
 {
     switch (vartype)
     {
       case VTK_CHAR:
-        return (float) ((char*)array)[s*index+m];
+        return (double) ((char*)array)[s*index+m];
       case VTK_UNSIGNED_CHAR:
-        return (float) ((unsigned char*)array)[s*index+m];
+        return (double) ((unsigned char*)array)[s*index+m];
       case VTK_SHORT:
-        return (float) ((short*)array)[s*index+m];
+        return (double) ((short*)array)[s*index+m];
       case VTK_UNSIGNED_SHORT:
-        return (float) ((unsigned short*)array)[s*index+m];
+        return (double) ((unsigned short*)array)[s*index+m];
       case VTK_INT:
-        return (float) ((int*)array)[s*index+m];
+        return (double) ((int*)array)[s*index+m];
       case VTK_UNSIGNED_INT:
-        return (float) ((unsigned int*)array)[s*index+m];
+        return (double) ((unsigned int*)array)[s*index+m];
       case VTK_UNSIGNED_LONG:
-        return (float) ((unsigned long*)array)[s*index+m];
+        return (double) ((unsigned long*)array)[s*index+m];
       case VTK_FLOAT:
-        return ((float*)array)[s*index+m];
+        return (double) ((float*)array)[s*index+m];
       case VTK_DOUBLE:
-        return (float) ((double*)array)[s*index+m];
+        return ((double*)array)[s*index+m];
       case VTK_ID_TYPE:
-        return (float) ((vtkIdType*)array)[s*index+m];
+        return (double) ((vtkIdType*)array)[s*index+m];
     }
 
     return 0.;
@@ -392,6 +406,9 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
 //    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
 //    Add support for non-scalars.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -468,8 +485,8 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
             for (int i = w_min ; i < w_max ; i++)
                 for (int j = h_min ; j < h_max ; j++)
                 {
-                    float origin[4];
-                    float terminus[4];
+                    double origin[4];
+                    double terminus[4];
                     GetSegment(i, j, origin, terminus);
                     SampleAlongSegment(origin, terminus, i, j);
                 }
@@ -500,6 +517,9 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Thu Aug 28 10:52:32 PDT 2008
 //    Make sure we only sample the variables that were requested.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -516,13 +536,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
         delete [] Y;
     if (Z != NULL)
         delete [] Z;
-    X = new float[dims[0]];
+    X = new double[dims[0]];
     for (i = 0 ; i < dims[0] ; i++)
         X[i] = rgrid->GetXCoordinates()->GetTuple1(i);
-    Y = new float[dims[1]];
+    Y = new double[dims[1]];
     for (i = 0 ; i < dims[1] ; i++)
         Y[i] = rgrid->GetYCoordinates()->GetTuple1(i);
-    Z = new float[dims[2]];
+    Z = new double[dims[2]];
     for (i = 0 ; i < dims[2] ; i++)
         Z[i] = rgrid->GetZCoordinates()->GetTuple1(i);
 
@@ -592,13 +612,13 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
     // out its inverse so that we can do cheap multiplication.  This gives us
     // a 5% performance boost.
     //
-    divisors_X = new float[dims[0]-1];
+    divisors_X = new double[dims[0]-1];
     for (i = 0 ; i < dims[0] - 1 ; i++)
         divisors_X[i] = (X[i+1] == X[i] ? 1. : 1./(X[i+1]-X[i]));
-    divisors_Y = new float[dims[1]-1];
+    divisors_Y = new double[dims[1]-1];
     for (i = 0 ; i < dims[1] - 1 ; i++)
         divisors_Y[i] = (Y[i+1] == Y[i] ? 1. : 1./(Y[i+1]-Y[i]));
-    divisors_Z = new float[dims[2]-1];
+    divisors_Z = new double[dims[2]-1];
     for (i = 0 ; i < dims[2] - 1 ; i++)
         divisors_Z[i] = (Z[i+1] == Z[i] ? 1. : 1./(Z[i+1]-Z[i]));
 }
@@ -621,13 +641,16 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Fri Jan  9 14:07:49 PST 2009
 //    Add support for jittering.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
+avtMassVoxelExtractor::GetSegment(int w, int h, double *origin, double *terminus)
     const
 {
-    float view[4];
+    double view[4];
 
     //
     // The image is being reflected across a center vertical line.  This is the
@@ -693,6 +716,10 @@ avtMassVoxelExtractor::GetSegment(int w, int h, float *origin, float *terminus)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 bool
@@ -703,20 +730,20 @@ avtMassVoxelExtractor::FrustumIntersectsGrid(int w_min, int w_max, int h_min,
     // Start off by getting the segments corresponding to the bottom left (bl),
     // upper left (ul), bottom right (br), and upper right (ur) rays.
     //
-    float bl_start[4];
-    float bl_end[4];
+    double bl_start[4];
+    double bl_end[4];
     GetSegment(w_min, h_min, bl_start, bl_end);
 
-    float ul_start[4];
-    float ul_end[4];
+    double ul_start[4];
+    double ul_end[4];
     GetSegment(w_min, h_max, ul_start, ul_end);
 
-    float br_start[4];
-    float br_end[4];
+    double br_start[4];
+    double br_end[4];
     GetSegment(w_max, h_min, br_start, br_end);
 
-    float ur_start[4];
-    float ur_end[4];
+    double ur_start[4];
+    double ur_end[4];
     GetSegment(w_max, h_max, ur_start, ur_end);
 
     //
@@ -728,7 +755,7 @@ avtMassVoxelExtractor::FrustumIntersectsGrid(int w_min, int w_max, int h_min,
     // points are sent into the routine "FindPlaneNormal".  There are some
     // subtleties with putting the arguments in the right order.
     //
-    float normal[3];
+    double normal[3];
     FindPlaneNormal(bl_start, bl_end, ul_start, normal);
     if (!GridOnPlusSideOfPlane(bl_start, normal))
         return false;
@@ -755,17 +782,21 @@ avtMassVoxelExtractor::FrustumIntersectsGrid(int w_min, int w_max, int h_min,
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::FindPlaneNormal(const float *pt1, const float *pt2,
-                                       const float *pt3, float *normal)
+avtMassVoxelExtractor::FindPlaneNormal(const double *pt1, const double *pt2,
+                                       const double *pt3, double *normal)
 {
     //
     // Set up vectors P1P2 and P1P3.
     //
-    float v1[3];
-    float v2[3];
+    double v1[3];
+    double v2[3];
 
     v1[0] = pt2[0] - pt1[0];
     v1[1] = pt2[1] - pt1[1];
@@ -797,22 +828,25 @@ avtMassVoxelExtractor::FindPlaneNormal(const float *pt1, const float *pt2,
 //    Added an ability to extract voxels using the world-space version
 //    even when they're really in image space.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 bool
-avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin, 
-                                             const float *normal) const
+avtMassVoxelExtractor::GridOnPlusSideOfPlane(const double *origin, 
+                                             const double *normal) const
 {
-    float x_min = X[0];
-    float x_max = X[dims[0]-1];
-    float y_min = Y[0];
-    float y_max = Y[dims[1]-1];
-    float z_min = Z[0];
-    float z_max = Z[dims[2]-1];
+    double x_min = X[0];
+    double x_max = X[dims[0]-1];
+    double y_min = Y[0];
+    double y_max = Y[dims[1]-1];
+    double z_min = Z[0];
+    double z_max = Z[dims[2]-1];
 
     for (int i = 0 ; i < 8 ; i++)
     {
-        float pt[3];
+        double pt[3];
         pt[0] = (i & 1 ? x_max : x_min);
         pt[1] = (i & 2 ? y_max : y_min);
         pt[2] = (i & 4 ? z_max : z_min);
@@ -829,7 +863,7 @@ avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin,
         // We can substitute in D to get
         // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) + C*(pt[2-origin[2]) ?>= 0
         //
-        float val  = normal[0]*(pt[0] - origin[0])
+        double val  = normal[0]*(pt[0] - origin[0])
                    + normal[1]*(pt[1] - origin[1])
                    + normal[2]*(pt[2] - origin[2]);
 
@@ -872,23 +906,26 @@ avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin,
 //    likely that we have floating point error than we have intersected a
 //    corner of the data set.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 bool
-avtMassVoxelExtractor::FindSegmentIntersections(const float *origin, 
-                                  const float *terminus, int &start, int &end)
+avtMassVoxelExtractor::FindSegmentIntersections(const double *origin, 
+                                  const double *terminus, int &start, int &end)
 {
-    float  t, x, y, z;
+    double  t, x, y, z;
 
     int num_hits = 0;
-    float hits[6]; // Should always be 2 or 0.
+    double hits[6]; // Should always be 2 or 0.
 
-    float x_min = X[0];
-    float x_max = X[dims[0]-1];
-    float y_min = Y[0];
-    float y_max = Y[dims[1]-1];
-    float z_min = Z[0];
-    float z_max = Z[dims[2]-1];
+    double x_min = X[0];
+    double x_max = X[dims[0]-1];
+    double y_min = Y[0];
+    double y_max = Y[dims[1]-1];
+    double z_min = Z[0];
+    double z_max = Z[dims[2]-1];
 
     if (x_min <= origin[0] && origin[0] <= x_max &&
         y_min <= origin[1] && origin[1] <= y_max &&
@@ -1012,7 +1049,7 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
 
     if (hits[0] > hits[1])
     {
-        float t = hits[0];
+        double t = hits[0];
         hits[0] = hits[1];
         hits[1] = t;
     }
@@ -1052,6 +1089,9 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
 //    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
 //    Add support for non-scalars.
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
@@ -1064,7 +1104,7 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
     for (int i = first ; i < last ; i++)
     {
         const int *ind = ind_buffer + 3*i;
-        const float *prop = prop_buffer + 3*i;
+        const double *prop = prop_buffer + 3*i;
 
         int index = 0;
         if (calc_cell_index)
@@ -1092,8 +1132,8 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
         {
             for (int m = 0 ; m < cell_size[l] ; m++)
                 tmpSampleList[count][cell_index[l]+m] = 
-                                 ConvertToFloat(cell_vartypes[l], index,
-                                                cell_size[l], m, cell_arrays[l]);
+                                 ConvertToDouble(cell_vartypes[l], index,
+                                              cell_size[l], m, cell_arrays[l]);
         }
         if (npt_arrays > 0)
         {
@@ -1113,21 +1153,21 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
                                                   (ind[1]+1)*dims[0]+ (ind[0]);
             index[7] = (ind[2]+1)*dims[0]*dims[1] +
                                                (ind[1]+1)*dims[0] + (ind[0]+1);
-            float x_right = prop[0];
-            float x_left = 1. - prop[0];
-            float y_top = prop[1];
-            float y_bottom = 1. - prop[1];
-            float z_back = prop[2];
-            float z_front = 1. - prop[2];
+            double x_right = prop[0];
+            double x_left = 1. - prop[0];
+            double y_top = prop[1];
+            double y_bottom = 1. - prop[1];
+            double z_back = prop[2];
+            double z_front = 1. - prop[2];
             for (l = 0 ; l < npt_arrays ; l++)
             {
                 void  *pt_array = pt_arrays[l];
                 int    s = pt_size[l];
                 for (int m = 0 ; m < s ; m++)
                 {
-                    float vals[8];
+                    double vals[8];
                     AssignEight(pt_vartypes[l], vals, index, s, m, pt_array);
-                    float val = 
+                    double val = 
                       x_left*y_bottom*z_front*vals[0] +
                       x_right*y_bottom*z_front*vals[1] +
                       x_left*y_top*z_front*vals[2] +
@@ -1162,9 +1202,13 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
 //  Programmer: Hank Childs
 //  Creation:   November 22, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
-static inline int FindMatch(const float *A, const float &a, const int &nA)
+static inline int FindMatch(const double *A, const double &a, const int &nA)
 {
     if ((a < A[0]) || (a > A[nA-1]))
         return -1;
@@ -1206,11 +1250,14 @@ static inline int FindMatch(const float *A, const float &a, const int &nA)
 //    No longer use the ProportionSpaceToZBufferSpace data member, as we now 
 //    do our sampling in even intervals (wbuffer).
 //
+//    Kathleen Biagas, Fri Jul 13 09:23:55 PDT 2012
+//    Use double instead of float.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::SampleAlongSegment(const float *origin, 
-                                          const float *terminus, int w, int h)
+avtMassVoxelExtractor::SampleAlongSegment(const double *origin, 
+                                          const double *terminus, int w, int h)
 {
     int first = 0;
     int last = 0;
@@ -1227,20 +1274,20 @@ avtMassVoxelExtractor::SampleAlongSegment(const float *origin,
     bool yGoingUp = (terminus[1] > origin[1]);
     bool zGoingUp = (terminus[2] > origin[2]);
 
-    float x_dist = (terminus[0]-origin[0]);
-    float y_dist = (terminus[1]-origin[1]);
-    float z_dist = (terminus[2]-origin[2]);
+    double x_dist = (terminus[0]-origin[0]);
+    double y_dist = (terminus[1]-origin[1]);
+    double z_dist = (terminus[2]-origin[2]);
 
-    float pt[3];
+    double pt[3];
     bool hasSamples = false;
  
     for (int i = first ; i < last ; i++)
     {
         int *ind = ind_buffer + 3*i;
-        float *dProp = prop_buffer + 3*i;
+        double *dProp = prop_buffer + 3*i;
         valid_sample[i] = false;
 
-        float proportion = ((float)i)/((float)depth);
+        double proportion = ((double)i)/((double)depth);
         pt[0] = origin[0] + proportion*x_dist;
         pt[1] = origin[1] + proportion*y_dist;
         pt[2] = origin[2] + proportion*z_dist;
@@ -1392,28 +1439,74 @@ avtMassVoxelExtractor::SampleAlongSegment(const float *origin,
 //  Programmer:   Hank Childs
 //  Creation:     December 14, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Jul 13 07:44:46 PDT 2012
+//    Templatized to handle coordinates of various types.
+//
 // ****************************************************************************
 
-inline int FindIndex(const float &pt, const int &last_hit, const int &n,
-                     const float *vals)
+template <class T> inline int
+FindIndex(const double &pt, const int &last_hit, const int &n,
+          T *vals)
 {
-    int i;
-
-    for (i = last_hit ; i < n-1 ; i++)
+    for (int i = last_hit ; i < n-1 ; ++i)
     {
-        if (pt >= vals[i] && (pt <= vals[i+1]))
+        if (pt >= (double)vals[i] && (pt <= (double)vals[i+1]))
             return i;
     }
 
-    for (i = 0 ; i < last_hit ; i++)
+    for (int i = 0 ; i < last_hit ; ++i)
     {
-        if (pt >= vals[i] && (pt <= vals[i+1]))
+        if (pt >= (double)vals[i] && (pt <= (double)vals[i+1]))
             return i;
     }
 
     return -1;
 }
 
+inline int
+FindIndex(vtkDataArray *coordArray,const double &pt, const int &last_hit, 
+          const int &n)
+{
+    switch(coordArray->GetDataType())
+    {
+        vtkTemplateAliasMacro(return FindIndex(pt, last_hit, n,
+            static_cast<VTK_TT *>(coordArray->GetVoidPointer(0))));
+        default:    return -1;
+    }
+}
+
+
+// ****************************************************************************
+//  Function:  FindRange
+//
+//  Purpose:
+//      A templated function to find a range.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 12, 2012
+//
+// ****************************************************************************
+
+template <class T> inline void
+FindRange(int ind, double c, double &min, double &max, T *coord)
+{
+    double range = (double)coord[ind+1] - (double)coord[ind];
+    min = 1. - (c - (double)coord[ind])/range;
+    max = 1. - min;
+}
+
+inline void
+FindRange(vtkDataArray *coordArray, int ind, double c, double &min, double &max)
+{
+    switch(coordArray->GetDataType())
+    {
+        vtkTemplateAliasMacro(FindRange(ind, c, min, max,
+            static_cast<VTK_TT *>(coordArray->GetVoidPointer(0))));
+        default:
+            EXCEPTION1(VisItException, "Unknown Coordinate type");
+    }
+}
 
 // ****************************************************************************
 //  Method: avtMassVoxelExtractor::ExtractImageSpaceGrid
@@ -1453,6 +1546,9 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Fix bug where ghost data could cause an extra sample to be put in the
 //    avtVolume, with that sample's data be uninitialized memory.
 //
+//    Kathleen Biagas, Fri Jul 13 09:30:53 PDT 2012
+//    Handle Coordinates as their native type. Use double internally.
+//
 // ****************************************************************************
 
 void
@@ -1467,9 +1563,6 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
     const int nY = dims[1];
     const int nZ = dims[2];
 
-    float *x = (float *) rgrid->GetXCoordinates()->GetVoidPointer(0);
-    float *y = (float *) rgrid->GetYCoordinates()->GetVoidPointer(0);
-    float *z = (float *) rgrid->GetZCoordinates()->GetVoidPointer(0);
 
     int last_x_hit = 0;
     int last_y_hit = 0;
@@ -1531,43 +1624,45 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
         pt_arrays.push_back(arr->GetVoidPointer(0));
     }
 
-    int startX = SnapXLeft(x[0]);
-    int stopX  = SnapXRight(x[nX-1]);
-    int startY = SnapYBottom(y[0]);
-    int stopY  = SnapYTop(y[nY-1]);
-    int startZ = SnapZFront(z[0]);
-    int stopZ  = SnapZBack(z[nZ-1]);
+
+    vtkDataArray *xarray = rgrid->GetXCoordinates();
+    vtkDataArray *yarray = rgrid->GetYCoordinates();
+    vtkDataArray *zarray = rgrid->GetZCoordinates();
+
+    int startX = SnapXLeft(xarray->GetTuple1(0));
+    int stopX  = SnapXRight(xarray->GetTuple1(nX-1));
+    int startY = SnapYBottom(yarray->GetTuple1(0));
+    int stopY  = SnapYTop(yarray->GetTuple1(nY-1));
+    int startZ = SnapZFront(zarray->GetTuple1(0));
+    int stopZ  = SnapZBack(zarray->GetTuple1(nZ-1));
+
     for (j = startY ; j <= stopY ; j++)
     {
-        float yc = YFromIndex(j);
-        int yind = FindIndex(yc, last_y_hit, nY, y);
+        double yc = YFromIndex(j);
+        int yind = FindIndex(yarray, yc, last_y_hit, nY);
         if (yind == -1)
             continue;
         last_y_hit = yind;
 
-        float y_bottom  = 0.;
-        float y_top = 1.;
+        double y_bottom  = 0.;
+        double y_top = 1.;
         if (pt_arrays.size() > 0)
         {
-            float y_range = y[yind+1] - y[yind];
-            y_bottom = 1. - (yc - y[yind])/y_range;
-            y_top = 1. - y_bottom;
+            FindRange(yarray, yind, yc, y_bottom, y_top);
         }
         for (i = startX ; i <= stopX ; i++)
         {
-            float xc = XFromIndex(i);
-            int xind = FindIndex(xc, last_x_hit, nX, x);
+            double xc = XFromIndex(i);
+            int xind = FindIndex(xarray, xc, last_x_hit, nX);
             if (xind == -1)
                 continue;
             last_x_hit = xind;
 
-            float x_left  = 0.;
-            float x_right = 1.;
+            double x_left  = 0.;
+            double x_right = 1.;
             if (pt_arrays.size() > 0)
             {
-                float x_range = x[xind+1] - x[xind];
-                x_left = 1. - (xc - x[xind])/x_range;
-                x_right = 1. - x_left;
+                FindRange(xarray, xind, xc, x_left, x_right);
             }
 
             last_z_hit = 0;
@@ -1576,8 +1671,8 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
             int lastZ  = stopZ;
             for (k = startZ ; k <= stopZ ; k++)
             {
-                float zc = ZFromIndex(k);
-                int zind = FindIndex(zc, last_z_hit, nZ, z);
+                double zc = ZFromIndex(k);
+                int zind = FindIndex(zarray, zc, last_z_hit, nZ);
                 if (zind == -1)
                 {
                     if (firstZ == -1)
@@ -1611,13 +1706,11 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     }
                 }
 
-                float z_front  = 0.;
-                float z_back = 1.;
+                double z_front  = 0.;
+                double z_back = 1.;
                 if (pt_arrays.size() > 0)
                 {
-                    float z_range = z[zind+1] - z[zind];
-                    z_front = 1. - (zc - z[zind])/z_range;
-                    z_back = 1. - z_front;
+                    FindRange(zarray, zind, zc, z_front, z_back);
                 }
 
                 int var_index = 0;
@@ -1626,7 +1719,7 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
                     for (m = 0 ; m < cell_size[l] ; m++)
                         tmpSampleList[count][cell_index[l]+m] = 
-                                  ConvertToFloat(cell_vartypes[l],index,
+                                  ConvertToDouble(cell_vartypes[l],index,
                                               cell_size[l], m, cell_arrays[l]);
                 }
                 if (pt_arrays.size() > 0)
@@ -1646,10 +1739,10 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
                         int    s        = pt_size[l];
                         for (m = 0 ; m < s ; m++)
                         {
-                            float vals[8];
+                            double vals[8];
                             AssignEight(pt_vartypes[l], vals, index, 
                                         s, m, pt_array);
-                            float val = 
+                            double val = 
                                   x_left*y_bottom*z_front*vals[0] +
                                   x_right*y_bottom*z_front*vals[1] +
                                   x_left*y_top*z_front*vals[2] +
