@@ -43,7 +43,7 @@
 #include <avtSpheralFileFormat.h>
 
 #include <vtkAppendPolyData.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPolyData.h>
 
 #include <avtDatabaseMetaData.h>
@@ -798,6 +798,9 @@ avtSpheralFileFormat::GetMesh(int dom, const char *name)
 //    Make sure we have read in the meta-data, since that is no longer done
 //    in the constructor.
 //
+//    Kathleen Biagas, Fri Jul 13 09:52:49 PDT 2012
+//    Use vtkDoubleArray to store vars.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -853,7 +856,7 @@ avtSpheralFileFormat::GetVar(int dom, const char *field)
             }
             else
             {
-                rv = vtkFloatArray::New();
+                rv = vtkDoubleArray::New();
                 rv->SetNumberOfComponents(
                                        one_array->GetNumberOfComponents());
                 rv->SetNumberOfTuples(nTuples);
@@ -1157,6 +1160,9 @@ avtSpheralFileFormat::ReadDomain(int dom)
 //    Hank Childs, Mon Sep 22 14:07:02 PDT 2003
 //    Add support for tensors.
 //
+//    Kathleen Biagas, Fri Jul 13 09:52:49 PDT 2012
+//    Use vtkDoubleArray to store vars.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1189,7 +1195,7 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
 
     if (fieldType[fieldIndex] == AVT_SCALAR_VAR)
     {
-        vtkFloatArray *arr = vtkFloatArray::New();
+        vtkDoubleArray *arr = vtkDoubleArray::New();
         arr->SetNumberOfTuples(nNodes);
         for (int i = 0 ; i < nNodes ; i++)
         {
@@ -1200,17 +1206,17 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
                        << "error." << endl;
                 EXCEPTION1(InvalidFilesException, current_file.c_str());
             }
-            float val = atof(line + offsets[0]);
+            double val = atof(line + offsets[0]);
             arr->SetTuple1(i, val);
         }
         rv = arr;
     }
     else if (fieldType[fieldIndex] == AVT_VECTOR_VAR)
     {
-        vtkFloatArray *arr = vtkFloatArray::New();
+        vtkDoubleArray *arr = vtkDoubleArray::New();
         int actual_dim  = fieldDim1[fieldIndex];
         int working_dim = (actual_dim == 2 ? 3 : actual_dim);
-        float *vals = new float[working_dim];
+        double *vals = new double[working_dim];
         arr->SetNumberOfComponents(working_dim);
         arr->SetNumberOfTuples(nNodes);
         for (int i = 0 ; i < nNodes ; i++)
@@ -1233,9 +1239,9 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
     }
     else if (fieldType[fieldIndex] == AVT_SYMMETRIC_TENSOR_VAR)
     {
-        vtkFloatArray *arr = vtkFloatArray::New();
+        vtkDoubleArray *arr = vtkDoubleArray::New();
         int dim  = fieldDim1[fieldIndex];
-        float vals[9];
+        double vals[9];
         arr->SetNumberOfComponents(9);
         arr->SetNumberOfTuples(nNodes);
         if (dim == 2)
@@ -1288,9 +1294,9 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
     }
     else if (fieldType[fieldIndex] == AVT_TENSOR_VAR)
     {
-        vtkFloatArray *arr = vtkFloatArray::New();
+        vtkDoubleArray *arr = vtkDoubleArray::New();
         int dim  = fieldDim1[fieldIndex];
-        float vals[9];
+        double vals[9];
         arr->SetNumberOfComponents(9);
         arr->SetNumberOfTuples(nNodes);
         if (dim == 2)
@@ -1370,6 +1376,9 @@ avtSpheralFileFormat::ReadField(istream &ifile, int nodeListIndex,
 //    multiple node lists, and one of the node lists is empty on this processor
 //    only.
 //
+//    Kathleen Biagas, Fri Jul 13 09:52:49 PDT 2012
+//    Always create vtkPoints of type VTK_DOUBLE.
+//
 // ****************************************************************************
 
 vtkPolyData *
@@ -1438,7 +1447,7 @@ avtSpheralFileFormat::ReadNodeList(istream &ifile, int nodeListIndex)
     //
     // Read in all of the actual points in the position field.
     //
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkPoints::New(VTK_DOUBLE);
     pts->SetNumberOfPoints(nNodes);
     for (int i = 0 ; i < nNodes ; i++)
     {
@@ -1448,7 +1457,7 @@ avtSpheralFileFormat::ReadNodeList(istream &ifile, int nodeListIndex)
             debug1 << "Could not parse position field." << endl;
             EXCEPTION1(InvalidFilesException, current_file.c_str());
         }
-        float pt[3];
+        double pt[3];
         for (int j = 0 ; j < 3 ; j++)
         {
             if (j < dim)
