@@ -29,6 +29,8 @@ list of changes in release 2.5.1.</p>
 <li>The Revolve operator now properly handles vector data.</li>
 <li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
 <li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
+<li>Splatter Volume plots now supports data with double-precision coordinates.</li>
+<li>Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
