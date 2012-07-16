@@ -214,6 +214,7 @@ protected:
     static int                objcnt;
     std::string               filename;
     int                       dimension;
+    int                       logicalDimension;
     int                       numBlocks;
     int                       numLevels;
     int                       amrDimension;
