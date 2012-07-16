@@ -56,7 +56,7 @@
 #define DEFAULT_HEIGHT  0.05
 #define TIME_IDENTIFIER "$time"
 #define CYCLE_IDENTIFIER "$cycle"
-#define TEXT_SCALING_CORRECTION 0.9
+#define TEXT_SCALING_CORRECTION 0.666667
 
 // ****************************************************************************
 // Method: avtTimeSliderColleague::avtTimeSliderColleague
@@ -809,13 +809,17 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
 // Creation:   Wed Dec 3 11:18:22 PDT 2003
 //
 // Modifications:
+//   Eric Brugger, Thu Jul 12 14:08:10 PDT 2012
+//   I modified the slider so that the text and slider bar don't partially
+//   overlap when the text has characters that have descenders (i.e. "g", "j",
+//   "p", "q" or "y").
 //   
 // ****************************************************************************
 
 double
 avtTimeSliderColleague::SliderHeight(double height) const
 {
-    return height * 0.6;
+    return height * 0.5;
 }
 
 // ****************************************************************************
