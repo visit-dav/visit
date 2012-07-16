@@ -168,7 +168,7 @@ VISIT_OPTION_DEFAULT(VISIT_VISUS_DIR ${VISITHOME}/visus/26Feb07/${VISITARCH})
 ## MOAB implementation
 ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/1.2/${VISITARCH}/moab-nightly/include)
 ITAPS_FILE_PATTERNS(MOAB *.cub)
-ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5 sz z netcdf_c++ netcdf vtkGraphics)
+ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf vtkGraphics)
 ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/1.2/${VISITARCH}/moab-nightly/lib  ${VISITHOME}/hdf5/1.8.4/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/4.1.1/${VISITARCH}/lib)
 ## FMDB implementation
 ITAPS_INCLUDE_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/${VISITARCH}/fmdb-1.2/include)
