@@ -5028,7 +5028,7 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
 //   
 // ****************************************************************************
 
-bool
+void
 ViewerPlotList::UpdateSILRestriction(const EngineKey &key, const std::string &database)
 {
     int  timeState = 0;
