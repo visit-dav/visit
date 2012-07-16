@@ -429,7 +429,7 @@ public:
                          bool onlyReplaceActive);
     void OverlayDatabase(const EngineKey &ek,
                          const std::string &database, int timeState);
-    bool UpdateSILRestriction(const EngineKey &ek, const std::string &database);
+    void UpdateSILRestriction(const EngineKey &ek, const std::string &database);
 
     void SetActivePlots(const intVector &activePlots,
                         const intVector &activeOperators,
