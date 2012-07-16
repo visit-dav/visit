@@ -265,9 +265,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   the visit.exe program.
  *
  *   Brad Whitlock, Thu Dec 8 14:51:PST 2011
- *   Skip over arguments that end with 'visit', 'visit.exe', 'visit"', 'visit.exe"'
- *   since we're starting the argv iteration at 0, which means we'll pick up
- *   the visit.exe program.
+ *   Skip over arguments that end with 'visit', 'visit.exe', 'visit"', 
+ *   'visit.exe"' since we're starting the argv iteration at 0, which means 
+ *   we'll pick up the visit.exe program.
  *
  *   Brad Whitlock, Tue Dec 13 10:49:34 PDT 2011
  *   I added all command line arguments to a string vector instead of building
@@ -278,6 +278,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *
  *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
  *   If working from a dev build, pass "-dv" to components.
+ *
+ *   Kathleen Biagas, Mon Jul 16 13:43:12 MST 2012
+ *   Prevent arguments ending in '.visit' from being skipped.
  *
  *****************************************************************************/
 
@@ -311,8 +314,9 @@ VisItLauncherMain(int argc, char *argv[])
         {
            continue; 
         }
-        else if(ENDSWITH("visit")   || ENDSWITH("visit.exe") ||
-                ENDSWITH("visit\"") || ENDSWITH("visit.exe\""))
+        else if (!ENDSWITH(".visit") && !ENDSWITH(".visit\"") &&
+                (ENDSWITH("visit")   || ENDSWITH("visit.exe") ||
+                ENDSWITH("visit\"") || ENDSWITH("visit.exe\"")))
         {
             continue;
         }
