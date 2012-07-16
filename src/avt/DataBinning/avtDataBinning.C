@@ -179,7 +179,38 @@ avtDataBinning::CreateGrid(void)
 //    Hank Childs, Fri Feb 15 16:15:16 PST 2008
 //    Fix memory leak with error condition.
 //
+//    Hank Childs, Mon Jul 16 16:19:51 PDT 2012
+//    Add support for coordinates.  Also improve error handling for mixed 
+//    centering.
+//
 // ****************************************************************************
+
+class ValueRetriever
+{
+  public:
+    virtual double GetValue(int) = 0;
+};
+
+class VariableValueRetriever : public ValueRetriever
+{
+  public:
+                   VariableValueRetriever(vtkDataArray *a) { arr = a; };
+    double         GetValue(int v) { return arr->GetTuple1(v); };
+  private:
+    vtkDataArray  *arr;
+};
+
+class CoordinateValueRetriever : public ValueRetriever
+{
+  public:
+                   CoordinateValueRetriever(vtkDataSet *m, int c) { mesh = m; coord = c; };
+    double         GetValue(int v) { double p[3]; mesh->GetPoint(v, p);  return p[coord]; };
+
+  private:
+    vtkDataSet    *mesh;
+    int            coord;
+};
+
 
 vtkDataArray *
 avtDataBinning::ApplyFunction(vtkDataSet *ds)
@@ -188,32 +219,53 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
     int   nvars = functionInfo->GetDomainNumberOfTuples();
 
     bool hasError = false;
-    bool isNodal = true;
-    const char   *varname0 = functionInfo->GetCodomainName().c_str();
-    vtkDataArray *arr0 = ds->GetPointData()->GetArray(varname0);
-    if (arr0 == NULL)
-    {
-        arr0 = ds->GetCellData()->GetArray(varname0);
-        if (arr0 == NULL)
-            hasError = true;
-        isNodal = false;
-    }
+    int numNodal = 0;
 
-    vtkDataArray **arr = new vtkDataArray*[nvars];
+    ValueRetriever **val_ret = new ValueRetriever*[nvars];
+    for (k = 0 ; k < nvars ; k++)
+         val_ret[k] = NULL;
     for (k = 0 ; k < nvars ; k++)
     {
-        const char *varname = functionInfo->GetDomainTupleName(k).c_str();
-        arr[k] = (isNodal ? ds->GetPointData()->GetArray(varname)
-                          : ds->GetCellData()->GetArray(varname));
-        if (arr[k] == NULL)
+        avtDataBinningFunctionInfo::BinBasedOn bbo =
+                                           functionInfo->GetBinBasedOnType(k);
+        if (bbo == avtDataBinningFunctionInfo::VARIABLE)
         {
-            hasError = true;
+            const char *varname = functionInfo->GetDomainTupleName(k).c_str();
+            vtkDataArray *arr = ds->GetPointData()->GetArray(varname);
+            if (arr != NULL)
+                numNodal++;
+            else
+                arr = ds->GetCellData()->GetArray(varname);
+
+            if (arr == NULL) // not in point data or cell data
+                hasError = true;
+            else
+                val_ret[k] = new VariableValueRetriever(arr);
         }
+        else 
+        {
+            numNodal++;
+            if (bbo == avtDataBinningFunctionInfo::X)
+                val_ret[k] = new CoordinateValueRetriever(ds, 0);
+            if (bbo == avtDataBinningFunctionInfo::Y)
+                val_ret[k] = new CoordinateValueRetriever(ds, 1);
+            if (bbo == avtDataBinningFunctionInfo::Z)
+                val_ret[k] = new CoordinateValueRetriever(ds, 2);
+        }
+    }
+
+    if (0 < numNodal && numNodal < nvars) // mixed centering
+    {
+        hasError = true;
     }
 
     if (hasError)
     {
-        delete [] arr;
+        for (k = 0 ; k < nvars ; k++)
+            if (val_ret[k] != NULL)
+                delete val_ret[k];
+        delete [] val_ret;
+
         debug1 << "Could not locate one of the tuples from the "
                << "domain.  Or the variables have different centerings."
                << endl;
@@ -221,6 +273,7 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
         return NULL;
     }
 
+    bool isNodal = (numNodal > 0);
     int nvals = (isNodal ? ds->GetNumberOfPoints() : ds->GetNumberOfCells());
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetName(functionInfo->GetCodomainName().c_str());
@@ -230,12 +283,16 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
     for (i = 0 ; i < nvals ; i++)
     {
         for (j = 0 ; j < nvars ; j++)
-            v[j] = arr[j]->GetTuple1(i);
+            v[j] = val_ret[j]->GetValue(i);
         int binId = bs->GetBinId(v);
         rv->SetValue(i, vals[binId]);
     }
 
-    delete [] arr;
+    for (k = 0 ; k < nvars ; k++)
+        if (val_ret[k] != NULL)
+            delete val_ret[k];
+    delete [] val_ret;
+
     delete [] v;
 
     return rv;
