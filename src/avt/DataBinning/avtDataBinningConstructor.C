@@ -156,6 +156,10 @@ avtDataBinningConstructor::~avtDataBinningConstructor()
 //    Hank Childs, Thu Sep 22 08:39:24 PDT 2011
 //    Fix crash when processor has no data.
 //
+//    Hank Childs, Mon Jul 16 16:19:51 PDT 2012
+//    Fix handling of mixed centering when the statistical reduction does not 
+//    involve a variable.
+//
 // ****************************************************************************
 
 class ValueRetriever
@@ -438,6 +442,13 @@ avtDataBinningConstructor::ConstructDataBinning(
 
                     for (k = 0 ; k < nvars ; k++)
                         if (isNodal[k] != coDomIsNodal)
+                            mixedCentering = true;
+                }
+                else
+                {
+                    // still should check for mixed centering
+                    for (k = 1 ; k < nvars ; k++)
+                        if (isNodal[k] != isNodal[0])
                             mixedCentering = true;
                 }
             }
