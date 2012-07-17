@@ -768,15 +768,35 @@ StringHelpers::Normalize(const char *path)
     // terms that precede them.
     string slash_dot_dot = VISIT_SLASH_STRING "..";
     size_t slash_dot_dot_idx = retval.find(slash_dot_dot);
+    bool noCharsRemainingToBackup = false;
     while (slash_dot_dot_idx != std::string::npos)
     {
         size_t preceding_slash_idx = retval.rfind(VISIT_SLASH_STRING, slash_dot_dot_idx-1);
-        if (preceding_slash_idx == std::string::npos) return "";
-        size_t nchars = slash_dot_dot_idx - preceding_slash_idx + 3;
-        retval.erase(preceding_slash_idx+1, nchars);
-        slash_dot_dot_idx = retval.find(slash_dot_dot);
+        if (preceding_slash_idx == std::string::npos)
+        {
+            size_t nchars = slash_dot_dot_idx + 3;
+            retval.erase(0, nchars);
+            slash_dot_dot_idx = retval.find(slash_dot_dot);
+            if (slash_dot_dot_idx == 0)
+            {
+                retval = "";
+                noCharsRemainingToBackup = true;
+                break;
+            }
+        }
+        else
+        {
+            size_t nchars = slash_dot_dot_idx - preceding_slash_idx + 3;
+            retval.erase(preceding_slash_idx+1, nchars);
+            slash_dot_dot_idx = retval.find(slash_dot_dot);
+        }
     }
 
+    // Remove any trailing slash if one exists
+    if (retval[retval.size()-1] == VISIT_SLASH_CHAR)
+        retval.erase(retval.size()-1);
+
+    if (retval == "" && !noCharsRemainingToBackup) retval = ".";
     
     StaticStringBuf[0] = '\0';
     strcat(StaticStringBuf, retval.c_str());

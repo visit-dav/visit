@@ -253,6 +253,63 @@ int main(int argc, char **argv)
     CHECK_PATHNAMES(".",           ".",           ".");
     CHECK_PATHNAMES("..",          ".",           "..");
 
+#define CHECK_NORMALIZE(path,result)                                    \
+    if (string(Normalize(path)) != string(result))                      \
+    {                                                                   \
+        cerr << "Got \"" << Normalize(path)                             \
+             << "\" normalizing " << #path << endl                      \
+             << "Expected " << #result << endl;                         \
+        pathname_errors++;                                              \
+    }
+
+    CHECK_NORMALIZE("./././a/b/c/d/../../e/././f////../..///", "a/b");
+    CHECK_NORMALIZE("b/..", ".");
+    CHECK_NORMALIZE("a/b/c/d/..////.////./../../..", ".");
+    CHECK_NORMALIZE("a/b/c/../../../..", "");
+
+#define CHECK_ABSNAME(cwd,path,result)                                  \
+    if (string(Absname(cwd,path)) != string(result))                    \
+    {                                                                   \
+        cerr << "Got \"" << Absname(cwd,path)                           \
+             << "\" when forming absolute path name from..." << endl    \
+             << #cwd << endl                                            \
+             << #path << endl                                           \
+             << "Expected " << #result << endl;                         \
+        pathname_errors++;                                              \
+    }
+
+    CHECK_ABSNAME("/a/b/c",
+                  "d/e/f",
+                  "/a/b/c/d/e/f");
+
+    CHECK_ABSNAME(0x0,
+                  "/d/e/f",
+                  "/d/e/f");
+
+    CHECK_ABSNAME("",
+                  "/d/e/f",
+                  "/d/e/f");
+
+    CHECK_ABSNAME("/a/b/c",
+                  0x0,
+                  "/a/b/c");
+
+    CHECK_ABSNAME("/a/b/c",
+                  "",
+                  "/a/b/c");
+
+    CHECK_ABSNAME("/a/b/c",
+                  "/d/e/f",
+                  "/d/e/f");
+
+    CHECK_ABSNAME("/foo/bar/gorfo/",
+                  "./peanut/orange/",
+                  "/foo/bar/gorfo/peanut/orange");
+
+    CHECK_ABSNAME("/foo/bar/mark//./../sandy/sue/..////.././steve",
+                  "../kerry/apple///banana/./././///../../../grape",
+                  "/foo/bar/grape");
+
     int all_errors = falseNegatives.size() +
                      falsePositives.size() +
                      pluralizing_errors +
