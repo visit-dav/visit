@@ -56,12 +56,18 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
     std::string             GetDumpFileName(int idx, int var);
 
+    virtual int             GetNumberOfIterations();
+    virtual bool            NeedCurrentTimeSlice();
+    virtual void            BeginIteration(int i);
+    virtual void            EndIteration(int i);
+
     vtkDataSet *outDS;
     int numTuples, numTimes, numYears;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
-    //values[location][aggregation][time_i]
-    std::vector<std::vector<std::vector<double> > >values;
+    //values[location][time_i]
+    std::vector<std::vector<double> > values;
+    std::vector<double> output[2];
 };
 
 #endif
