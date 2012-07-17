@@ -162,6 +162,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void pointSizeChanged(double val);
     void pointSizePixelsChanged(int val);
     void pointTypeChanged(int val);
+    void summaryFlagChanged(bool val);
     void verboseFlagChanged(bool val);
     void show1DPlotsChanged(bool val);
     void legendToggled(bool val);
@@ -259,6 +260,7 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QvisLineStyleWidget *lineStyle;
 
     QCheckBox *show1DPlots;
+    QCheckBox *summaryFlag;
     QCheckBox *verboseFlag;
     QCheckBox *legendToggle;
     QCheckBox *lightingToggle;

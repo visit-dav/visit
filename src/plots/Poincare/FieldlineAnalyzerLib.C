@@ -2679,6 +2679,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       ridgeline_points.empty() )
   {
     fi.type = FieldlineProperties::UNKNOWN_TYPE;
+
     fi.analysisState = FieldlineProperties::TERMINATED;
 
     fi.safetyFactor = 0;
@@ -3115,9 +3116,9 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
         wMax = Blankinship( mergedWindingPairs[i].toroidal,
                             windingGroupOffset );
-        
-        std::cerr << "windingGroupOffset " << windingGroupOffset << "  "
-                  << "wMax " << wMax << std::endl;
+        if( verboseFlag )
+          std::cerr << "windingGroupOffset " << windingGroupOffset << "  "
+                    << "wMax " << wMax << std::endl;
 
         unsigned int w;
 
@@ -3270,6 +3271,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       else
       {
         fi.nPuncturesNeeded = 0;
+
         fi.analysisState = FieldlineProperties::TERMINATED;
       }
 
@@ -3476,6 +3478,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         else
         {
           nPuncturesNeeded = 0;
+
           analysisState = FieldlineProperties::TERMINATED;
         }
       }
@@ -3548,13 +3551,14 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           analysisState = FieldlineProperties::ADD_WIDTH_POINT;
         }
       }
+
+      if( type != FieldlineProperties::O_POINT &&
+          nPuncturesNeeded == 0 )
+        analysisState = FieldlineProperties::COMPLETED;
     }
 
     windingGroupOffset = Blankinship( toroidalWinding, poloidalWinding );
 
-    if( type != FieldlineProperties::O_POINT &&
-        nPuncturesNeeded == 0 )
-      analysisState = FieldlineProperties::COMPLETED;
 
     // Surface or island so check for the secondary axis case. To date
     // we have seen secondary axis in 1,1 surfaces and islands and in
@@ -3736,7 +3740,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
           searchNormal.normalize();
           lastSeedPoint = islandSeedPts[0];
 
-          std::cerr << __LINE__ << "  "
+          std::cerr << "LINE " << __LINE__ << "  "
                     << islandSeedPts[0] << "  "
                     << nearestBoundaryPoints[0] << "  "
                     << lastSeedPoint << "  "
@@ -4045,6 +4049,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       std::cerr << "FORCE TERMINATING  " << nPuncturesNeeded << std::endl;
 
     nPuncturesNeeded = 0;
+
     analysisState = FieldlineProperties::TERMINATED;
   }
 
@@ -5722,9 +5727,9 @@ FieldlineLib::findIslandCenters( std::vector< Point > &puncturePts,
       }
     }
 
-    std::cerr << __LINE__ << "  " << distance << "  " << nearestBoundaryPoint
+    std::cerr << "LINE " << __LINE__ << "  "
+              << distance << "  " << nearestBoundaryPoint
               << std::endl;
-      
 
     nearestBoundaryPoints.push_back( nearestBoundaryPoint );
   }

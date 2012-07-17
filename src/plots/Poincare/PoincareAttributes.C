@@ -644,7 +644,8 @@ void PoincareAttributes::Init()
     OLineAxisFileName = "";
     showChaotic = false;
     showIslands = false;
-    verboseFlag = true;
+    SummaryFlag = true;
+    verboseFlag = false;
     show1DPlots = false;
     showLines = true;
     lineWidth = 0;
@@ -743,6 +744,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     OLineAxisFileName = obj.OLineAxisFileName;
     showChaotic = obj.showChaotic;
     showIslands = obj.showIslands;
+    SummaryFlag = obj.SummaryFlag;
     verboseFlag = obj.verboseFlag;
     show1DPlots = obj.show1DPlots;
     showLines = obj.showLines;
@@ -988,6 +990,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (OLineAxisFileName == obj.OLineAxisFileName) &&
             (showChaotic == obj.showChaotic) &&
             (showIslands == obj.showIslands) &&
+            (SummaryFlag == obj.SummaryFlag) &&
             (verboseFlag == obj.verboseFlag) &&
             (show1DPlots == obj.show1DPlots) &&
             (showLines == obj.showLines) &&
@@ -1222,6 +1225,7 @@ PoincareAttributes::SelectAll()
     Select(ID_OLineAxisFileName,         (void *)&OLineAxisFileName);
     Select(ID_showChaotic,               (void *)&showChaotic);
     Select(ID_showIslands,               (void *)&showIslands);
+    Select(ID_SummaryFlag,               (void *)&SummaryFlag);
     Select(ID_verboseFlag,               (void *)&verboseFlag);
     Select(ID_show1DPlots,               (void *)&show1DPlots);
     Select(ID_showLines,                 (void *)&showLines);
@@ -1570,6 +1574,12 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("showIslands", showIslands));
+    }
+
+    if(completeSave || !FieldsEqual(ID_SummaryFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("SummaryFlag", SummaryFlag));
     }
 
     if(completeSave || !FieldsEqual(ID_verboseFlag, &defaultObject))
@@ -1972,6 +1982,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShowChaotic(node->AsBool());
     if((node = searchNode->GetNode("showIslands")) != 0)
         SetShowIslands(node->AsBool());
+    if((node = searchNode->GetNode("SummaryFlag")) != 0)
+        SetSummaryFlag(node->AsBool());
     if((node = searchNode->GetNode("verboseFlag")) != 0)
         SetVerboseFlag(node->AsBool());
     if((node = searchNode->GetNode("show1DPlots")) != 0)
@@ -2394,6 +2406,13 @@ PoincareAttributes::SetShowIslands(bool showIslands_)
 {
     showIslands = showIslands_;
     Select(ID_showIslands, (void *)&showIslands);
+}
+
+void
+PoincareAttributes::SetSummaryFlag(bool SummaryFlag_)
+{
+    SummaryFlag = SummaryFlag_;
+    Select(ID_SummaryFlag, (void *)&SummaryFlag);
 }
 
 void
@@ -2855,6 +2874,12 @@ PoincareAttributes::GetShowIslands() const
 }
 
 bool
+PoincareAttributes::GetSummaryFlag() const
+{
+    return SummaryFlag;
+}
+
+bool
 PoincareAttributes::GetVerboseFlag() const
 {
     return verboseFlag;
@@ -3070,6 +3095,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_OLineAxisFileName:         return "OLineAxisFileName";
     case ID_showChaotic:               return "showChaotic";
     case ID_showIslands:               return "showIslands";
+    case ID_SummaryFlag:               return "SummaryFlag";
     case ID_verboseFlag:               return "verboseFlag";
     case ID_show1DPlots:               return "show1DPlots";
     case ID_showLines:                 return "showLines";
@@ -3160,6 +3186,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_OLineAxisFileName:         return FieldType_string;
     case ID_showChaotic:               return FieldType_bool;
     case ID_showIslands:               return FieldType_bool;
+    case ID_SummaryFlag:               return FieldType_bool;
     case ID_verboseFlag:               return FieldType_bool;
     case ID_show1DPlots:               return FieldType_bool;
     case ID_showLines:                 return FieldType_bool;
@@ -3250,6 +3277,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_OLineAxisFileName:         return "string";
     case ID_showChaotic:               return "bool";
     case ID_showIslands:               return "bool";
+    case ID_SummaryFlag:               return "bool";
     case ID_verboseFlag:               return "bool";
     case ID_show1DPlots:               return "bool";
     case ID_showLines:                 return "bool";
@@ -3560,6 +3588,11 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showIslands:
         {  // new scope
         retval = (showIslands == obj.showIslands);
+        }
+        break;
+    case ID_SummaryFlag:
+        {  // new scope
+        retval = (SummaryFlag == obj.SummaryFlag);
         }
         break;
     case ID_verboseFlag:

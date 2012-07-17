@@ -580,26 +580,32 @@ QvisPoincarePlotWindow::CreateWindowContents()
     analysisOptionsLayout->setMargin(5);
     analysisOptionsLayout->setSpacing(10);
 
+    showChaotic =
+      new QCheckBox(tr("Show chaotic fieldlines as points"), analysisOptionsGroup);
+    connect(showChaotic, SIGNAL(toggled(bool)),
+            this, SLOT(showChaoticChanged(bool)));
+    analysisOptionsLayout->addWidget(showChaotic, 0, 0, 1, 2);
+
     showIslands = new QCheckBox(tr("Show islands only"), analysisOptionsGroup);
     connect(showIslands, SIGNAL(toggled(bool)),
             this, SLOT(showIslandsChanged(bool)));
-    analysisOptionsLayout->addWidget(showIslands, 0, 0);
+    analysisOptionsLayout->addWidget(showIslands, 0, 2);
 
-    showChaotic =
-      new QCheckBox(tr("Show chaotic fieldlines (as points)"), analysisOptionsGroup);
-    connect(showChaotic, SIGNAL(toggled(bool)),
-            this, SLOT(showChaoticChanged(bool)));
-    analysisOptionsLayout->addWidget(showChaotic, 0, 1);
 
-    show1DPlots = new QCheckBox(tr("Show 1D plots (distance/ridgelines)"), analysisOptionsGroup);
-    connect(show1DPlots, SIGNAL(toggled(bool)),
-            this, SLOT(show1DPlotsChanged(bool)));
-    analysisOptionsLayout->addWidget(show1DPlots, 1, 0);
+    summaryFlag = new QCheckBox(tr("Summary"), analysisOptionsGroup);
+    connect(summaryFlag, SIGNAL(toggled(bool)),
+            this, SLOT(summaryFlagChanged(bool)));
+    analysisOptionsLayout->addWidget(summaryFlag, 1, 0);
 
     verboseFlag = new QCheckBox(tr("Verbose"), analysisOptionsGroup);
     connect(verboseFlag, SIGNAL(toggled(bool)),
             this, SLOT(verboseFlagChanged(bool)));
     analysisOptionsLayout->addWidget(verboseFlag, 1, 1);
+
+    show1DPlots = new QCheckBox(tr("Show distance/ridgeline plots"), analysisOptionsGroup);
+    connect(show1DPlots, SIGNAL(toggled(bool)),
+            this, SLOT(show1DPlotsChanged(bool)));
+    analysisOptionsLayout->addWidget(show1DPlots, 1, 2);
 
 
     // ----------------------------------------------------------------------
@@ -1363,6 +1369,11 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             show1DPlots->blockSignals(true);
             show1DPlots->setChecked(atts->GetShow1DPlots());
             show1DPlots->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_SummaryFlag:
+            summaryFlag->blockSignals(true);
+            summaryFlag->setChecked(atts->GetSummaryFlag());
+            summaryFlag->blockSignals(false);
             break;
           case PoincareAttributes::ID_verboseFlag:
             verboseFlag->blockSignals(true);
@@ -2402,6 +2413,14 @@ void
 QvisPoincarePlotWindow::showPointsChanged(bool val)
 {
     atts->SetShowPoints(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::summaryFlagChanged(bool val)
+{
+    atts->SetSummaryFlag(val);
     Apply();
 }
 

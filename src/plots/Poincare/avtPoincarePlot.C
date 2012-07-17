@@ -502,6 +502,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     poincareFilter->SetShowPoints(atts.GetShowPoints());
     poincareFilter->SetPointScale(atts.GetPointSize());
     poincareFilter->SetShow1DPlots(atts.GetShow1DPlots());
+    poincareFilter->SetSummaryFlag( atts.GetSummaryFlag() );
     poincareFilter->SetVerboseFlag( atts.GetVerboseFlag() );
 #endif
 

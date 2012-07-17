@@ -242,6 +242,7 @@ public:
     void SetOLineAxisFileName(const std::string &OLineAxisFileName_);
     void SetShowChaotic(bool showChaotic_);
     void SetShowIslands(bool showIslands_);
+    void SetSummaryFlag(bool SummaryFlag_);
     void SetVerboseFlag(bool verboseFlag_);
     void SetShow1DPlots(bool show1DPlots_);
     void SetShowLines(bool showLines_);
@@ -317,6 +318,7 @@ public:
           std::string    &GetOLineAxisFileName();
     bool                 GetShowChaotic() const;
     bool                 GetShowIslands() const;
+    bool                 GetSummaryFlag() const;
     bool                 GetVerboseFlag() const;
     bool                 GetShow1DPlots() const;
     bool                 GetShowLines() const;
@@ -473,6 +475,7 @@ public:
         ID_OLineAxisFileName,
         ID_showChaotic,
         ID_showIslands,
+        ID_SummaryFlag,
         ID_verboseFlag,
         ID_show1DPlots,
         ID_showLines,
@@ -543,6 +546,7 @@ private:
     std::string    OLineAxisFileName;
     bool           showChaotic;
     bool           showIslands;
+    bool           SummaryFlag;
     bool           verboseFlag;
     bool           show1DPlots;
     bool           showLines;
@@ -564,6 +568,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibisbbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibisbbbbbbiibdiibbiiiib"
 
 #endif

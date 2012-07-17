@@ -185,7 +185,8 @@ avtPoincareFilter::avtPoincareFilter() :
     showIslands( false ),
     showLines( true ),
     showPoints( false ),
-    verboseFlag( true ),
+    summaryFlag( true ),
+    verboseFlag( false ),
     pointScale(1)
 {
     planes.resize(1);
@@ -2435,7 +2436,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
     debug5 << "Creating output " << std::endl;
 
-    if( verboseFlag ) 
+    if( summaryFlag ) 
        std::cerr << std::endl << std::endl << "count " << ic.size() << std::endl << std::endl;
 
     for ( int i=0; i<ic.size(); ++i )
@@ -2467,7 +2468,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
         bool completeIslands = true;
 
-        if( verboseFlag ) 
+        if( summaryFlag ) 
         {
           double safetyFactor;
 
@@ -2602,7 +2603,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           }
           else
           {
-            if( verboseFlag ) 
+            if( summaryFlag ) 
               std::cerr << " id = " << poincare_ic->id
                         << " SKIPPING UNKNOWN TYPE " << std::endl;
             
@@ -2613,7 +2614,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         }
         else if( toroidalWinding == 0 ) 
         {
-            if( verboseFlag ) 
+            if( summaryFlag ) 
               std::cerr << " id = " << poincare_ic->id
                         << " SKIPPING TOROIDAL WINDING OF 0" << std::endl;
             
@@ -2623,7 +2624,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         }
         else if( poloidalWinding == 0 ) 
         {
-            if( verboseFlag ) 
+            if( summaryFlag ) 
               std::cerr << " id = " << poincare_ic->id
                         << " SKIPPING POLOIDAL WINDING OF 0" << std::endl;
             
@@ -2883,7 +2884,8 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
               if( overlaps != 0 )
               {
                 if( properties.analysisState == FieldlineProperties::COMPLETED ||
-                    properties.analysisState == FieldlineProperties::TERMINATED )
+//                    properties.analysisState == FieldlineProperties::TERMINATED ||
+                    0 )
                 {
                   // Loop through each island.
                   for( unsigned int j=0; j<toroidalWinding; j++ )

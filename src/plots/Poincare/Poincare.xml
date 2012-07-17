@@ -250,8 +250,11 @@
       <Field name="showIslands" label="Show Islands" type="bool">
         false
       </Field>
-      <Field name="verboseFlag" label="Verbose" type="bool">
+      <Field name="SummaryFlag" label="Summary" type="bool">
         true
+      </Field>
+      <Field name="verboseFlag" label="Verbose" type="bool">
+        false
       </Field>
       <Field name="show1DPlots" label="Show 1D Plots" type="bool">
         false

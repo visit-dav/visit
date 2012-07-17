@@ -506,6 +506,11 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     else
         SNPRINTF(tmpStr, 1000, "%sshowIslands = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetSummaryFlag())
+        SNPRINTF(tmpStr, 1000, "%sSummaryFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sSummaryFlag = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetVerboseFlag())
         SNPRINTF(tmpStr, 1000, "%sverboseFlag = 1\n", prefix);
     else
@@ -2101,6 +2106,30 @@ PoincareAttributes_GetShowIslands(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetSummaryFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the SummaryFlag in the object.
+    obj->data->SetSummaryFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetSummaryFlag(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetSummaryFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -2616,6 +2645,8 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetShowChaotic", PoincareAttributes_GetShowChaotic, METH_VARARGS},
     {"SetShowIslands", PoincareAttributes_SetShowIslands, METH_VARARGS},
     {"GetShowIslands", PoincareAttributes_GetShowIslands, METH_VARARGS},
+    {"SetSummaryFlag", PoincareAttributes_SetSummaryFlag, METH_VARARGS},
+    {"GetSummaryFlag", PoincareAttributes_GetSummaryFlag, METH_VARARGS},
     {"SetVerboseFlag", PoincareAttributes_SetVerboseFlag, METH_VARARGS},
     {"GetVerboseFlag", PoincareAttributes_GetVerboseFlag, METH_VARARGS},
     {"SetShow1DPlots", PoincareAttributes_SetShow1DPlots, METH_VARARGS},
@@ -2880,6 +2911,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetShowChaotic(self, NULL);
     if(strcmp(name, "showIslands") == 0)
         return PoincareAttributes_GetShowIslands(self, NULL);
+    if(strcmp(name, "SummaryFlag") == 0)
+        return PoincareAttributes_GetSummaryFlag(self, NULL);
     if(strcmp(name, "verboseFlag") == 0)
         return PoincareAttributes_GetVerboseFlag(self, NULL);
     if(strcmp(name, "show1DPlots") == 0)
@@ -3053,6 +3086,8 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetShowChaotic(self, tuple);
     else if(strcmp(name, "showIslands") == 0)
         obj = PoincareAttributes_SetShowIslands(self, tuple);
+    else if(strcmp(name, "SummaryFlag") == 0)
+        obj = PoincareAttributes_SetSummaryFlag(self, tuple);
     else if(strcmp(name, "verboseFlag") == 0)
         obj = PoincareAttributes_SetVerboseFlag(self, tuple);
     else if(strcmp(name, "show1DPlots") == 0)

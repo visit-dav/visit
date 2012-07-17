@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 66;
+    private static int PoincareAttributes_numAdditionalAtts = 67;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -198,7 +198,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         OLineAxisFileName = new String("");
         showChaotic = false;
         showIslands = false;
-        verboseFlag = true;
+        SummaryFlag = true;
+        verboseFlag = false;
         show1DPlots = false;
         showLines = true;
         lineWidth = 0;
@@ -282,7 +283,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         OLineAxisFileName = new String("");
         showChaotic = false;
         showIslands = false;
-        verboseFlag = true;
+        SummaryFlag = true;
+        verboseFlag = false;
         show1DPlots = false;
         showLines = true;
         lineWidth = 0;
@@ -372,6 +374,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         OLineAxisFileName = new String(obj.OLineAxisFileName);
         showChaotic = obj.showChaotic;
         showIslands = obj.showIslands;
+        SummaryFlag = obj.SummaryFlag;
         verboseFlag = obj.verboseFlag;
         show1DPlots = obj.show1DPlots;
         showLines = obj.showLines;
@@ -477,6 +480,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (OLineAxisFileName.equals(obj.OLineAxisFileName)) &&
                 (showChaotic == obj.showChaotic) &&
                 (showIslands == obj.showIslands) &&
+                (SummaryFlag == obj.SummaryFlag) &&
                 (verboseFlag == obj.verboseFlag) &&
                 (show1DPlots == obj.show1DPlots) &&
                 (showLines == obj.showLines) &&
@@ -839,100 +843,106 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(49);
     }
 
+    public void SetSummaryFlag(boolean SummaryFlag_)
+    {
+        SummaryFlag = SummaryFlag_;
+        Select(50);
+    }
+
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(50);
+        Select(51);
     }
 
     public void SetShow1DPlots(boolean show1DPlots_)
     {
         show1DPlots = show1DPlots_;
-        Select(51);
+        Select(52);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(52);
+        Select(53);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(53);
+        Select(54);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(54);
+        Select(55);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(55);
+        Select(56);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(56);
+        Select(57);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(57);
+        Select(58);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(58);
+        Select(59);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(59);
+        Select(60);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(60);
+        Select(61);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(61);
+        Select(62);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(62);
+        Select(63);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(63);
+        Select(64);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(64);
+        Select(65);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(65);
+        Select(66);
     }
 
     // Property getting methods
@@ -986,6 +996,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public String         GetOLineAxisFileName() { return OLineAxisFileName; }
     public boolean        GetShowChaotic() { return showChaotic; }
     public boolean        GetShowIslands() { return showIslands; }
+    public boolean        GetSummaryFlag() { return SummaryFlag; }
     public boolean        GetVerboseFlag() { return verboseFlag; }
     public boolean        GetShow1DPlots() { return show1DPlots; }
     public boolean        GetShowLines() { return showLines; }
@@ -1107,36 +1118,38 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(49, buf))
             buf.WriteBool(showIslands);
         if(WriteSelect(50, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(SummaryFlag);
         if(WriteSelect(51, buf))
-            buf.WriteBool(show1DPlots);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(52, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(show1DPlots);
         if(WriteSelect(53, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteBool(showLines);
         if(WriteSelect(54, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(55, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(56, buf))
-            buf.WriteDouble(pointSize);
+            buf.WriteBool(showPoints);
         if(WriteSelect(57, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteDouble(pointSize);
         if(WriteSelect(58, buf))
-            buf.WriteInt(pointType);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(59, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteInt(pointType);
         if(WriteSelect(60, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(61, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(62, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteInt(streamlineAlgorithmType);
         if(WriteSelect(63, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(maxStreamlineProcessCount);
         if(WriteSelect(64, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(65, buf))
+            buf.WriteInt(workGroupSize);
+        if(WriteSelect(66, buf))
             buf.WriteBool(forceNodeCenteredData);
     }
 
@@ -1296,51 +1309,54 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetShowIslands(buf.ReadBool());
             break;
         case 50:
-            SetVerboseFlag(buf.ReadBool());
+            SetSummaryFlag(buf.ReadBool());
             break;
         case 51:
-            SetShow1DPlots(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 52:
-            SetShowLines(buf.ReadBool());
+            SetShow1DPlots(buf.ReadBool());
             break;
         case 53:
-            SetLineWidth(buf.ReadInt());
+            SetShowLines(buf.ReadBool());
             break;
         case 54:
-            SetLineStyle(buf.ReadInt());
+            SetLineWidth(buf.ReadInt());
             break;
         case 55:
-            SetShowPoints(buf.ReadBool());
+            SetLineStyle(buf.ReadInt());
             break;
         case 56:
-            SetPointSize(buf.ReadDouble());
+            SetShowPoints(buf.ReadBool());
             break;
         case 57:
-            SetPointSizePixels(buf.ReadInt());
+            SetPointSize(buf.ReadDouble());
             break;
         case 58:
-            SetPointType(buf.ReadInt());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 59:
-            SetLegendFlag(buf.ReadBool());
+            SetPointType(buf.ReadInt());
             break;
         case 60:
-            SetLightingFlag(buf.ReadBool());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 61:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 62:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetStreamlineAlgorithmType(buf.ReadInt());
             break;
         case 63:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetMaxStreamlineProcessCount(buf.ReadInt());
             break;
         case 64:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxDomainCacheSize(buf.ReadInt());
             break;
         case 65:
+            SetWorkGroupSize(buf.ReadInt());
+            break;
+        case 66:
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         }
@@ -1503,6 +1519,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("OLineAxisFileName", OLineAxisFileName, indent) + "\n";
         str = str + boolToString("showChaotic", showChaotic, indent) + "\n";
         str = str + boolToString("showIslands", showIslands, indent) + "\n";
+        str = str + boolToString("SummaryFlag", SummaryFlag, indent) + "\n";
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
         str = str + boolToString("show1DPlots", show1DPlots, indent) + "\n";
         str = str + boolToString("showLines", showLines, indent) + "\n";
@@ -1592,6 +1609,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private String         OLineAxisFileName;
     private boolean        showChaotic;
     private boolean        showIslands;
+    private boolean        SummaryFlag;
     private boolean        verboseFlag;
     private boolean        show1DPlots;
     private boolean        showLines;
