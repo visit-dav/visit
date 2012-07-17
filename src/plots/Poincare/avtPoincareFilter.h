@@ -136,6 +136,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     void SetShowLines( bool val )   { showLines = val; }
     void SetShowPoints( bool val )  { showPoints = val; }
     void SetPointScale(int scale)   { pointScale = scale; }
+    void SetSummaryFlag( bool val ) { summaryFlag = val; }
     void SetVerboseFlag( bool val ) { verboseFlag = val; }
     void SetShow1DPlots( bool val )   { show1DPlots = val; }
 
@@ -233,7 +234,7 @@ class avtPoincareFilter : public avtStreamlineFilter
     int maxIntersections;
 
     bool showOPoints, showXPoints, showIslands, showChaotic;
-    bool showLines, showPoints, show1DPlots, verboseFlag;
+    bool showLines, showPoints, summaryFlag, verboseFlag, show1DPlots;
     int  pointScale;
 
     unsigned int OPointMaxIterations;
