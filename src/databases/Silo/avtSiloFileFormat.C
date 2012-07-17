@@ -87,6 +87,7 @@
 #include <avtTypes.h>
 #include <avtVariableCache.h>
 
+#include <BJHash.h>
 #include <Utility.h>
 #include <Expression.h>
 #include <StringHelpers.h>
@@ -152,7 +153,16 @@ static void ArbInsertArbitrary(vtkUnstructuredGrid *ugrid,
 static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
 static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
 
-static void HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm,
+static string ResolveSiloIndObjAbsPath(DBfile *dbfile,
+    string primary_objname_incl_any_abs_or_rel_path,
+    string indirect_objname_incl_any_abs_or_rel_path);
+
+static DBgroupelmap * 
+GetCondensedGroupelMap(DBfile *dbfile, string mrgtnm_abspath,
+    DBmrgtnode *rootNode, int forceSingle, int gpel_type);
+static void HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname,
+    const string& tname, avtDatabaseMetaData *md);
+static void HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm,
     const char *multimesh_name, avtMeshType *mt, int *num_groups,
     vector<int> *group_ids, vector<string> *block_names, int forceSingle);
 static void BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -1628,6 +1638,8 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Tue Jul 10 19:55:37 PDT 2012
+//    Added logic to handle nodelist vars defined in MRG Trees.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
@@ -1907,14 +1919,15 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 if (mm->mrgtree_name != 0)
                 {
                     // So far, we've coded only for MRG trees representing AMR hierarchies
-                    HandleMrgtreeForMultimesh(dbfile, mm, multimesh_names[i],
+                    HandleMrgtreeAMRGroups(dbfile, mm, multimesh_names[i],
                         &mt, &num_amr_groups, &amr_group_ids, &amr_block_names,
                         forceSingle);
+
+                    HandleMrgtreeNodelistVars(dbfile, name_w_dir, mm->mrgtree_name, md);
                 }
 #endif
 #endif
 #endif
-
 
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,2)
@@ -1928,6 +1941,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 if (mt == AVT_UNSTRUCTURED_MESH)
                     mmd->disjointElements = hasDisjointElements;
 #endif
+
                 if (num_amr_groups > 0)
                 {
                     mmd->numGroups = num_amr_groups;
@@ -2125,6 +2139,8 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Tue Jul 10 19:55:37 PDT 2012
+//    Added logic to handle nodelist vars defined in MRG Trees.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
@@ -2178,6 +2194,18 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
                 }
                 extents_to_use = extents;
             }
+
+#ifndef WIN32
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,2)
+                if (um->mrgtree_name != 0)
+                {
+                    // So far, we've coded only for MRG trees representing AMR hierarchies
+                    HandleMrgtreeNodelistVars(dbfile, name_w_dir, um->mrgtree_name, md);
+                }
+#endif
+#endif
+#endif
 
             // Handle data-specified topological dimension if its available
             int tdims = um->ndims;
@@ -6516,6 +6544,119 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
     return nlvar;
 }
 
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::GetMrgTreeNodelistsVar
+//
+//  Purpose: Return scalar variable representing (enumerated scalar) nodelists 
+//           of meshes based on contents of MRG Tree nodesets. Currently, this
+//           is implemented only for UCD meshes and only for NODEsets.
+//
+//  Creation: Mark C. Miller, Tue Jul 10 19:56:44 PDT 2012
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
+{
+    int i;
+    string meshName = metadata->MeshForVar(listsname);
+
+    //
+    // Look up the mesh in the cache.
+    //
+    vtkDataSet *ds = (vtkDataSet *) cache->GetVTKObject(meshName.c_str(),
+                                            avtVariableCache::DATASET_NAME,
+                                            timestep, domain, "_all");
+    if (ds == 0)
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Cannot find cached mesh \"%s\" for domain %d to "
+            "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
+        EXCEPTION1(InvalidVariableException, msg);
+    }
+
+    debug3 << "Generating " << listsname << " variable for domain " << domain << endl;
+
+    const avtScalarMetaData *smd = metadata->GetScalar(listsname);
+    int nenumVals = smd->enumNames.size();
+
+    //
+    // Initialize the return variable array
+    //
+    const int bpuc = sizeof(unsigned char)*8;
+    int npts = ds->GetNumberOfPoints();
+    vtkBitArray *nlvar = vtkBitArray::New();
+    nlvar->SetNumberOfComponents(((nenumVals+bpuc-1)/bpuc)*bpuc);
+    nlvar->SetNumberOfTuples(npts);
+    memset(nlvar->GetVoidPointer(0), 0, nlvar->GetSize()/bpuc);
+
+    //
+    // For the failure cases below here, why don't we cleanup everything including
+    // nlvar and trigger an exception? The reason is that a given domain may not
+    // have (e.g. contain) any of the MRG tree subsets of interest here and that is ok.
+    // We will wind up returing an all zero nlvar indicating nothing in this domain is
+    // relevant regardless of which nodesets are selected in the current selection.
+    //
+
+    //
+    // Try to get the MRG Tree object for this mesh.
+    //
+    DBfile *domain_file = GetFile(tocIndex);
+    string domain_mesh;
+    GetMeshHelper(&domain, meshName.c_str(), 0, 0, &domain_file, domain_mesh);
+
+    // Only get the mesh header information, none of the problem sized data.
+    long oldMask = DBSetDataReadMask(0x0);
+    DBucdmesh  *um = DBGetUcdmesh(domain_file, domain_mesh.c_str());
+    DBSetDataReadMask(oldMask);
+    if (!um)
+    {
+        debug3 << "Unable to get mesh \"" << meshName << "\" for domain " << domain << endl;
+        return nlvar;
+    }
+    if (!um->mrgtree_name)
+    {
+        debug3 << "Mesh \"" << meshName << "\" for domain " << domain << " has no MRG Tree" << endl;
+        DBFreeUcdmesh(um);
+        return nlvar;
+    }
+
+    string mrgtnm_abspath = ResolveSiloIndObjAbsPath(domain_file, domain_mesh, um->mrgtree_name);
+    DBFreeUcdmesh(um);
+
+    DBmrgtree *mrgt = DBGetMrgtree(domain_file, mrgtnm_abspath.c_str());
+    if (!mrgt)
+    {
+        debug3 << "Unable to get MRG Tree \"" << mrgtnm_abspath << "\" for domain " << domain << endl;
+        return nlvar;
+    }
+    if (DBSetCwr(mrgt, listsname.substr(0,8).c_str()) < 0)
+    {
+        debug3 << "MRG Tree \"" << mrgtnm_abspath << "\" for domain " << domain 
+               << " has no top node named \"" << listsname.substr(0,8) << endl;
+        DBFreeMrgtree(mrgt);
+        return nlvar;
+    }
+
+    DBgroupelmap *cgm = GetCondensedGroupelMap(domain_file, mrgtnm_abspath,
+        mrgt->cwr, forceSingle, DB_NODECENT);
+    DBFreeMrgtree(mrgt);
+    if (!cgm)
+    {
+        debug3 << "Unable to get condensed groupel map for MRG Tree node \"" << mrgtnm_abspath
+               << "\" for domain " << domain << endl;
+        return nlvar;
+    }
+
+    for (int i = 0; i < cgm->num_segments; i++)
+        for (int j = 0; j < cgm->segment_lengths[i]; j++)
+            nlvar->SetComponent(cgm->segment_data[i][j], i, 1);
+    DBFreeGroupelmap(cgm);
+
+    return nlvar;
+}
+
 // ****************************************************************************
 //  Method: avtSiloFileFormat::GetVar
 //
@@ -6573,6 +6714,8 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Tue Jul 10 20:08:37 PDT 2012
+//    Add support for nodelist vars in MRG Trees.
 // ****************************************************************************
 
 vtkDataArray *
@@ -6591,13 +6734,16 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
         if (nlvar != 0)
             return nlvar;
     }
-
-    //
-    // Handle possible special case of annot int nodelists
-    //
-    if (string(v) == "AnnotInt_Nodelists" || string(v) == "AnnotInt_Facelists")
+    else if (string(v) == "AnnotInt_Nodelists" || string(v) == "AnnotInt_Facelists")
     {
         vtkDataArray *nlvar = GetAnnotIntNodelistsVar(domain, v);
+        if (nlvar != 0)
+            return nlvar;
+    }
+    // If the variable name begings with "nodesets_" or "facesets_"...
+    if (string(v).find("nodesets_") == 0 || string(v).find("facesets_") == 0)
+    {
+        vtkDataArray *nlvar = GetMrgTreeNodelistsVar(domain, v);
         if (nlvar != 0)
             return nlvar;
     }
@@ -8780,11 +8926,13 @@ avtSiloFileFormat::HandleGlobalZoneIds(const char *meshname, int domain,
 //      and return if so.  Either one can be NULL and it is still a valid
 //      Silo unstructured mesh.
 //
+//    Mark C. Miller, Tue Jul 10 20:12:33 PDT 2012
+//    Made this a static function in the source file since it doesn't use
+//    any class members.
 // ****************************************************************************
 
-void
-avtSiloFileFormat::RemapFacelistForPolyhedronZones(DBfacelist *sfl,
-    DBzonelist *szl)
+static void
+RemapFacelistForPolyhedronZones(DBfacelist *sfl, DBzonelist *szl)
 {
     //
     // If either the facelist or zonelist is NULL, return.  Either one
@@ -8997,6 +9145,9 @@ avtSiloFileFormat::RemapFacelistForPolyhedronZones(DBfacelist *sfl,
 //    array of a Silo facelist object when the zonelist associated with the
 //    facelist has polyhedral elements.
 //
+//    Mark C. Miller, Wed Jul 11 10:41:56 PDT 2012
+//    Changed interface to ReadInConnectivity to support repeated calls to
+//    ReadInArbConnectivity for different segments of same zonelist.
 // ****************************************************************************
 
 vtkDataSet *
@@ -9104,8 +9255,7 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     {
         vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
         ugrid->SetPoints(points);
-        ReadInConnectivity(ugrid, um->ndims, um->zones, um->zones->origin,
-            mesh, domain);
+        ReadInConnectivity(ugrid, um, mesh, domain);
         rv = ugrid;
 
 #ifdef SILO_VERSION_GE
@@ -9174,6 +9324,98 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 }
 
 // ****************************************************************************
+//  Function: LookupPHZonelistFaceIdInFaceHash
+//
+//  Purpose: Support method for building a DBphzonelist object from a 'normal'
+//  DBzonelist object by maintaining a hash of unique, canonically ordered
+//  faces.
+//
+//  Creation: Mark C. Miller, Wed Jul 11 10:44:42 PDT 2012
+//
+// ****************************************************************************
+static int
+LookupPHZonelistFaceIdInFaceHash(const vector<int>& faceNodes,
+    const vector<int>& canonicalFaceNodes,
+    const map<unsigned int, vector<std::pair<int, vector<int> > > >& faceHash)
+{
+    unsigned int hv = BJHash::Hash((const unsigned char*) &canonicalFaceNodes[0],
+        canonicalFaceNodes.size()*sizeof(int), 0x0);
+    map<unsigned int, vector<std::pair<int, vector<int> > > >::const_iterator it
+        = faceHash.find(hv);
+    if (it == faceHash.end())
+        return -INT_MAX;
+
+    // Maybe a hash collision. So, now check all entries at 'hv' key.
+    for (int i = 0; i < it->second.size(); i++)
+    {
+        std::pair<int, vector<int> > p(it->second[i]);
+        if (canonicalFaceNodes == p.second) return p.first;
+    } 
+
+    return -INT_MAX;
+}
+
+// ****************************************************************************
+//  Function: GetPHZonelistFaceId
+//
+//  Purpose: Support method for building a DBphzonelist object from a 'normal'
+//  DBzonelist object by building canonical face ordering and then looking it
+//  and its reverse ordered (opposite normal) variant in the hash and if 
+//  neither is found, adding it to the hash as a new, unique face.
+//
+//  Creation: Mark C. Miller, Wed Jul 11 10:44:42 PDT 2012
+//
+// ****************************************************************************
+static int
+GetPHZonelistFaceId(int nnodes, const int *const nl,
+    map<unsigned int, vector<std::pair<int, vector<int> > > >& faceHash,
+    vector<int>& nodecnt, vector<int>& nodelist)
+{
+    // Make a vector of this face's nodes
+    vector<int> faceNodes;
+    for (int i = 0; i < nnodes; i++)
+        faceNodes.push_back(*(nl+i));
+
+    // Two pass loop for forward and reverse node order over the face
+    vector<int> faceNodesF;
+    for (int pass = 0; pass < 2; pass++)
+    {
+        vector<int> canonicalFaceNodes = faceNodes;
+        if (pass == 1)
+            reverse(canonicalFaceNodes.begin(), canonicalFaceNodes.end());
+
+        // Rotate face's list of nodes so that lowest node id is first
+        int lowIdx = 0;
+        for (int j = 1; j < nnodes; j++)
+        {
+            if (canonicalFaceNodes[j] < canonicalFaceNodes[lowIdx])
+                lowIdx = j;
+        }
+        rotate(canonicalFaceNodes.begin(),canonicalFaceNodes.begin()+lowIdx,canonicalFaceNodes.end()); 
+        if (pass == 0) faceNodesF = canonicalFaceNodes;
+
+        // Lookup the face
+        int phzlFaceId = LookupPHZonelistFaceIdInFaceHash(faceNodes, canonicalFaceNodes, faceHash);
+        if (phzlFaceId != -INT_MAX)
+        {
+            // This is where normal orientation (e.g. inward vs. outward) gets handled.
+            if (pass == 0) return phzlFaceId;
+            else return ~phzlFaceId;
+        }
+    }
+
+    // If we get here, we didn't find the face in the faceHash.
+    // So, we need to update everything for this new face.
+    unsigned int hv = BJHash::Hash((const unsigned char *)&faceNodesF[0], faceNodesF.size()*sizeof(int), 0x0);
+    int phzlFaceId = nodecnt.size();
+    faceHash[hv].push_back(std::pair<int, vector<int> >(phzlFaceId, faceNodesF));
+    nodecnt.push_back(faceNodes.size());
+    for (int j = 0; j < faceNodes.size(); j++)
+        nodelist.push_back(faceNodes[j]);
+    return phzlFaceId;
+}
+
+// ****************************************************************************
 //  Function: MakePHZonelistFromZonelistArbFragment
 //
 //  Purpose: Create a DBphzonelist object from a fragment of an ordinary
@@ -9181,27 +9423,29 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //
 //  Programmer: Mark C. Miller, Wed Oct 28 20:46:22 PDT 2009
 //
+//  Modifications:
+//    Comlete re-write to fix numerous problems most prominent of which is
+//    neglecting to build *unique* facelist. The input DBzonelist object from
+//    which this is being constructed is guaranteed NOT to handle the *unique*
+//    faces properly.
 // ****************************************************************************
 
 static DBphzonelist* 
 MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 {
-    int i, j;
-    int ntotfaces = 0;
+    vector<int> nodecnt, nodelist, facecnt, facelist;
+    map<unsigned int, vector<std::pair<int, vector<int> > > > faceHash;
     int nzones = 0;
-    vector<int> nodecnt, facecnt, nodelist, facelist;
     while (nzones < shapecnt)
     {
         int nfaces = *nl++;
         facecnt.push_back(nfaces);
-        for (i = 0; i < nfaces; i++)
+        for (int i = 0; i < nfaces; i++)
         {
-            facelist.push_back(ntotfaces++);
-
             int nnodes = *nl++;
-            nodecnt.push_back(nnodes);
-            for (j = 0; j < nnodes; j++)
-                nodelist.push_back(*nl++);
+            int phzlFaceId = GetPHZonelistFaceId(nnodes, nl, faceHash, nodecnt, nodelist);
+            facelist.push_back(phzlFaceId);
+            nl += nnodes;
         }
         nzones++;
     }
@@ -9211,7 +9455,7 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
     // that Silo will later expect to be able to call free on.
     //
     DBphzonelist *phzl = DBAllocPHZonelist();
-    phzl->nfaces = ntotfaces;
+    phzl->nfaces = nodecnt.size();
     phzl->nodecnt = (int *) malloc(nodecnt.size() * sizeof(int));
     memcpy(phzl->nodecnt, &nodecnt[0], nodecnt.size() * sizeof(int));
     phzl->lnodelist = (int) nodelist.size();
@@ -9223,6 +9467,8 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
     phzl->lfacelist = (int) facelist.size();
     phzl->facelist = (int *) malloc(facelist.size() * sizeof(int));
     memcpy(phzl->facelist, &facelist[0], facelist.size() * sizeof(int));
+    phzl->lo_offset = 0;
+    phzl->hi_offset = shapecnt-1;
 
     return phzl;
 }
@@ -9287,12 +9533,18 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
 //    VTK_POLYGON when we encounter a cell that is *not* a triangle or
 //    quad.
 //
+//    Mark C. Miller, Wed Jul 11 10:55:15 PDT 2012
+//    Changed interface so that calls to ReadInArbConnectivity can be made
+//    repeatedly for different segments of same zonelist. Also, adjusted
+//    how a DBzonelist with zones of type DB_ZONETYPE_POLYHEDRON get handled
+//    so that the same code used to detect zoo-type elements in DBphzonelists
+//    can be used to detect them here too. Also, fixed a problem with ghost
+//    zone variable in presence of arbitrary polyhedra.
 // ****************************************************************************
 
 void
-avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
-                                      DBzonelist *zl, int origin,
-                                      const char *meshname, int domain)
+avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
+    DBucdmesh *um, const char *meshname, int domain)
 {
     //
     // A 'normal' zonelist in silo may contain some zones of arb. polyhedral
@@ -9306,6 +9558,9 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
     // arb. polyhedral zonetype.
     //
     int   i, j, k;
+    int nsdims = um->ndims;
+    const DBzonelist *const zl = um->zones;
+    int origin = um->zones->origin;
 
     //
     // Tell the ugrid how many cells it will have.
@@ -9575,6 +9830,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
     // Now, deal with any arbitrary polyhedral zones we encountered above.
     //
     vector<int> *cellReMap = 0;
+    map<string, map<int, vector<int>* > >::iterator domit;
     if (arbZoneIdxOffs.size())
     {
         //
@@ -9582,13 +9838,19 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
         // in subsequent GetVar calls.
         //
         cellReMap = new vector<int>;
-        vector<int> *nodeReMap = new vector<int>;
+        if ((domit = arbMeshCellReMap.find(meshname)) != arbMeshCellReMap.end() &&
+            domit->second.find(domain) != domit->second.end())
+            delete domit->second[domain];
         arbMeshCellReMap[meshname][domain] = cellReMap;
+        vector<int> *nodeReMap = new vector<int>;
+        if ((domit = arbMeshNodeReMap.find(meshname)) != arbMeshNodeReMap.end() &&
+            domit->second.find(domain) != domit->second.end())
+            delete domit->second[domain];
         arbMeshNodeReMap[meshname][domain] = nodeReMap;
 
         //
         // Go ahead and add an empty avtOriginalCellNumbers array now.
-        // We'll populate it below. 
+        // We'll populate it below.
         //
         vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
         oca->SetName("avtOriginalCellNumbers");
@@ -9615,42 +9877,31 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid, int nsdims,
         }
         oca->Delete();
 
-        //
-        // Ok, we'll insert the arbitrary polyhedral zones by using
-        // ArbInsertArbitrary function. 
-        //
         for (i = 0; i < arbZoneIdxOffs.size(); i++)
         {
-            int sum;
             int *nl = arbZoneNlOffs[i];
-            int gz = arbZoneIdxOffs[i];
+            int gzOff = arbZoneIdxOffs[i];
 
             //
-            // Create a temp. Silo DBphzonelist object to call ArbInsertArbitrary.
+            // Create a temp. Silo DBphzonelist object to call ReadInArbConnectivity. 
             //
             DBphzonelist *phzl = 
                 MakePHZonelistFromZonelistArbFragment(nl, arbZoneCounts[i]);
-            vector<int> nloffs, floffs;
-            for (j = 0, sum = 0; j < phzl->nfaces; sum += phzl->nodecnt[j], j++)
-                nloffs.push_back(sum);
-            for (j = 0, sum = 0; j < phzl->nzones; sum += phzl->facecnt[j], j++)
-                floffs.push_back(sum);
 
-            //
-            // Ok, now loop over this group of arb. polyhedral zones, 
-            // adding them using ArbInsertArbitrary.
-            //
-            for (j = 0; j < arbZoneCounts[i]; j++, gz++)
-            {
-                unsigned int ocdata[2] = {domain, gz};
-                ArbInsertArbitrary(ugrid, nsdims, phzl, j, nloffs, floffs,
-                    ocdata, cellReMap, nodeReMap);
-            }
-
+            DBphzonelist *tmpphzl = um->phzones;
+            um->phzones = phzl;
+            ReadInArbConnectivity(meshname, ugrid, um, domain, gzOff);
+            um->phzones = tmpphzl;
             DBFreePHZonelist(phzl);
 
             numCells += arbZoneCounts[i];
         }
+
+        if ((domit = arbMeshCellReMap.find(meshname)) != arbMeshCellReMap.end() &&
+            domit->second.find(domain) != domit->second.end())
+            cellReMap = domit->second[domain];
+        else
+            cellReMap = 0;
     }
 
     //
@@ -10211,10 +10462,14 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, int nsdims, DBphzonelist *phzl, i
 //    Several fixes to deal with zoo-type elements properly and ensure
 //    logic is impervious to ordering variations that still preserve shape.
 //    Also, fixed a bug in logic to re-map ghost-zoning.
+//
+//    Mark C. Miller, Wed Jul 11 10:57:26 PDT 2012
+//    Changed interface to support repeated calls for different segments of
+//    the same zonelist.
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
-    vtkUnstructuredGrid *ugrid, DBucdmesh *um, int domain)
+    vtkUnstructuredGrid *ugrid, DBucdmesh *um, int domain, int gzOffset)
 {
     int i, j, sum;
 
@@ -10232,12 +10487,17 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     // truly arbitrary zones, we'll remove it at the end because we
     // won't actually need it.
     //
-    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
-    oca->SetName("avtOriginalCellNumbers");
-    oca->SetNumberOfComponents(2);
-    ugrid->GetCellData()->AddArray(oca);
-    ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
-    oca->Delete();
+    bool origCellNumbersAdded = false;
+    if (!ugrid->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    {
+        vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
+        oca->SetName("avtOriginalCellNumbers");
+        oca->SetNumberOfComponents(2);
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+        oca->Delete();
+        origCellNumbersAdded = true;
+    }
 
     //
     // Instantiate cell- and node- re-mapping arrays. Just as for
@@ -10250,18 +10510,34 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     // centers. For this reason, the nodeReMap vector is defined
     // only for those 'extra' nodes.
     //
-    vector<int> *nodeReMap = new vector<int>;
+    vector<int> *nodeReMap;
+    bool nodeReMapAdded = false;
     map<string, map<int, vector<int>* > >::iterator domit;
     if ((domit = arbMeshNodeReMap.find(meshname)) != arbMeshNodeReMap.end() &&
          domit->second.find(domain) != domit->second.end())
-        delete domit->second[domain];
-    arbMeshNodeReMap[meshname][domain] = nodeReMap;
+    {
+        nodeReMap = domit->second[domain];
+    }
+    else
+    {
+        nodeReMap = new vector<int>;
+        arbMeshNodeReMap[meshname][domain] = nodeReMap;
+        nodeReMapAdded = true;
+    }
 
-    vector<int> *cellReMap = new vector<int>;
+    vector<int> *cellReMap;
+    bool cellReMapAdded = false;
     if ((domit = arbMeshCellReMap.find(meshname)) != arbMeshCellReMap.end() &&
          domit->second.find(domain) != domit->second.end())
-        delete domit->second[domain];
-    arbMeshCellReMap[meshname][domain] = cellReMap;
+    {
+        cellReMap = domit->second[domain];
+    }
+    else
+    {
+        cellReMap = new vector<int>;
+        arbMeshCellReMap[meshname][domain] = cellReMap;
+        cellReMapAdded = true;
+    }
 
     // build up random access offset indices into nodelist and facelist lists
     vector<int> nloffs;
@@ -10283,7 +10559,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         else
             fcnt = phzl->nodecnt[gz];
 
-        unsigned int ocdata[2] = {domain, gz};
+        unsigned int ocdata[2] = {domain, gz+gzOffset};
 
         if (((nsdims == 3) && (fcnt == 3 || // Must be tri
                                fcnt == 4 || // Maybe tet or quad
@@ -10836,11 +11112,18 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     //
     if (ugrid->GetNumberOfPoints() <= um->nnodes)
     {
-        ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
-        arbMeshNodeReMap.find(meshname)->second.erase(domain);
-        arbMeshCellReMap.find(meshname)->second.erase(domain);
-        delete cellReMap;
-        delete nodeReMap;
+        if (origCellNumbersAdded)
+            ugrid->GetCellData()->RemoveArray("avtOriginalCellNumbers");
+        if (nodeReMapAdded)
+        {
+            arbMeshNodeReMap.find(meshname)->second.erase(domain);
+            delete nodeReMap;
+        }
+        if (cellReMapAdded)
+        {
+            arbMeshCellReMap.find(meshname)->second.erase(domain);
+            delete cellReMap;
+        }
     }
 }
 
@@ -13093,14 +13376,15 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Mon Jul 16 22:42:14 PDT 2012
+//    Moved debug5 output lines indicating that global node ids are being read
+//    down so that it appears in debug logs only when there is actually data
+//    being read and returned from the plugin.
 // ****************************************************************************
 
 vtkDataArray *
 avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
 {
-    debug5 << "Reading in domain " << dom << ", global node ids for " << mesh << endl;
-    debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
-
     DBfile *dbfile = GetFile(tocIndex);
 
     char *meshname = AllocAndDetermineMeshnameForUcdmesh(dom, mesh);
@@ -13131,6 +13415,10 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     vtkDataArray *rv = NULL;
     if (um->gnodeno != NULL)
     {
+
+        debug5 << "Reading in domain " << dom << ", global node ids for " << mesh << endl;
+        debug5 << "Reading in from toc " << filenames[tocIndex] << endl;
+
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,7,1)
         rv = CreateDataArray(um->gnznodtype, um->gnodeno, um->nnodes);
@@ -13141,6 +13429,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
         rv = CreateDataArray(DB_INT, um->gnodeno, um->nnodes); 
 #endif
         um->gnodeno = 0; // vtkDataArray owns the data now.
+
     }
 
     DBFreeUcdmesh(um);
@@ -15316,6 +15605,100 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
 }
 
 // ****************************************************************************
+//  Function: GatherChildMRGTreeRegionNames
+//
+//  Purpose: Get all the MRG Tree region names that are direct descendents of
+//  'top' MRG Tree node.
+//
+//  Creation: Mark C. Miller, Wed Jul 11 10:58:59 PDT 2012
+//
+// ****************************************************************************
+static void
+GatherChildMRGTreeRegionNames(DBfile *dbfile, const DBmrgtnode *top, vector<string>& theNames)
+{
+    int i;
+
+    if (top->num_children == 1)
+    {
+        if (top->children[0]->narray > 0 &&
+            top->children[0]->names)
+        {
+            //
+            // Array-based representation for the patches
+            //
+            DBmrgtnode *patchesArrayNode = top->children[0];
+
+            //
+            // Handle the names of the patches 
+            //
+            if (strchr(patchesArrayNode->names[0],'%') == 0)
+            {
+                // Explicitly stored names
+                for (i = 0; i < patchesArrayNode->narray; i++)
+                    theNames.push_back(patchesArrayNode->names[i]);
+            }
+            else
+            {
+                //
+                // Handle any array-refs in the naming scheme
+                //
+                int nrefs = 0;
+                char *p = strchr(patchesArrayNode->names[0],'$');
+                int *refs[] = {0,0,0,0,0,0,0,0,0,0};
+                DBmrgvar *vars[] = {0,0,0,0,0,0,0,0,0,0};
+                while (p != 0 && nrefs < sizeof(refs)/sizeof(refs[0]))
+                {
+                    char *p1 = strchr(p, '[');
+                    char tmpName[256];
+                    strncpy(tmpName,p+1,p1-p-1);
+                    vars[nrefs] = DBGetMrgvar(dbfile, tmpName);
+                    if (vars[nrefs])
+                    {
+                        // assume its an integer valued variable
+                        refs[nrefs] = (int*) (vars[nrefs]->data[0]);
+                        nrefs++;
+                    }
+                    p = strchr(p,'$');
+                }
+
+                //
+                // Construct the names using the namescheme
+                //
+                DBnamescheme *ns = DBMakeNamescheme(patchesArrayNode->names[0],
+                    refs[0],refs[1],refs[2],refs[3],refs[4]);
+                for (i = 0; i < patchesArrayNode->narray; i++)
+                    theNames.push_back(DBGetName(ns, i));
+
+                //
+                // Free up everything
+                //
+                DBFreeNamescheme(ns);
+                for (i = 0; i < nrefs; i++)
+                    DBFreeMrgvar(vars[i]);
+            }
+        }
+        else if (top->children[0]->narray == 0)
+        {
+            //
+            // Single block case.
+            //
+            theNames.push_back(top->children[0]->name);
+        }
+    }
+    else if (top->num_children > 1)
+    {
+        //
+        // Individual MRG Tree nodes for each patch 
+        //
+        for (int q = 0; q < top->num_children; q++)
+        {
+            DBmrgtnode *patchChild = top->children[q];
+            theNames.push_back(patchChild->name);
+        }
+    }
+}
+
+// ****************************************************************************
 //  Function: GetCondensedGroupelMap
 //
 //  Purpose:  Simplify handling groupel maps for levels/children. Whether the
@@ -15347,12 +15730,18 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
 //
 //    Mark C. Miller, Wed Jan 20 16:35:37 PST 2010
 //    Made calls to ForceSingle on and off UNconditional.
+//
+//    Mark C. Miller, Wed Jul 11 10:59:24 PDT 2012
+//    Changed interface so that this function can be used in several different
+//    MRG Tree contexts determined by the MRG Tree name, root node at which
+//    maps are gathered and condensed and the groupel type.
 // ****************************************************************************
 
 #ifdef SILO_VERSION_GE 
 #if SILO_VERSION_GE(4,6,3)
 static DBgroupelmap * 
-GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
+GetCondensedGroupelMap(DBfile *dbfile, string mrgtnm_abspath,
+    DBmrgtnode *rootNode, int forceSingle, int gpel_type)
 {
     int i,k,q,pass;
     DBgroupelmap *retval = 0;
@@ -15381,14 +15770,17 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
         //
         // Get the groupel map.
         //
-        string mapsName = mapNode->maps_name;
+        if (!mapNode->maps_name)
+            return 0;
+
+        string mapsName = ResolveSiloIndObjAbsPath(dbfile, mrgtnm_abspath, mapNode->maps_name);
         DBgroupelmap *gm = DBGetGroupelmap(dbfile, mapsName.c_str());
 
         //
         // One pass to count parts of map we'll be needing and a 2nd 
         // pass to allocate and transfer those parts to the returned map.
         //
-        for (pass = 0; pass < 2; pass++)
+        for (pass = 0; pass < 2 && gm; pass++)
         {
             if (pass == 1) /* allocate on 2nd pass */
             {
@@ -15408,13 +15800,13 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
                     int gm_seg_type = gm->groupel_types[i];
                     int tnode_seg_type = mapNode->seg_types[k];
                     if (gm_seg_id != tnode_seg_id ||
-                        tnode_seg_type != DB_BLOCKCENT ||
-                        gm_seg_type != DB_BLOCKCENT)
+                        tnode_seg_type != gpel_type ||
+                        gm_seg_type != gpel_type)
                         continue;
 
                     if (pass == 1) /* populate on 2nd pass */
                     {
-                        retval->groupel_types[q] = DB_BLOCKCENT;
+                        retval->groupel_types[q] = gpel_type;
                         retval->segment_lengths[q] = gm->segment_lengths[tnode_seg_id];
                         /* Transfer ownership of segment_data to the condensed map */
                         retval->segment_data[q] = gm->segment_data[tnode_seg_id];
@@ -15436,9 +15828,10 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
         for (q = 0; q < rootNode->num_children; q++)
         {
             DBmrgtnode *rootChild = rootNode->children[q];
-            string mapsName = rootChild->maps_name;
+            if (!rootChild->maps_name) continue;
+            string mapsName = ResolveSiloIndObjAbsPath(dbfile, mrgtnm_abspath, rootChild->maps_name);
             DBgroupelmap *gm = DBGetGroupelmap(dbfile, mapsName.c_str());
-            for (k = 0; k < rootChild->nsegs; k++)
+            for (k = 0; k < rootChild->nsegs && gm; k++)
             {
                 for (i = 0; i < gm->num_segments; i++)
                 {
@@ -15447,11 +15840,11 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
                     int gm_seg_type = gm->groupel_types[i];
                     int tnode_seg_type = rootChild->seg_types[k];
                     if (gm_seg_id != tnode_seg_id ||
-                        tnode_seg_type != DB_BLOCKCENT ||
-                        gm_seg_type != DB_BLOCKCENT)
+                        tnode_seg_type != gpel_type ||
+                        gm_seg_type != gpel_type)
                         continue;
 
-                    retval->groupel_types[q] = DB_BLOCKCENT;
+                    retval->groupel_types[q] = gpel_type;
                     retval->segment_lengths[q] = gm->segment_lengths[i];
                     retval->segment_data[q] = gm->segment_data[i];
                     gm->segment_data[i] = 0;
@@ -15468,7 +15861,7 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
 #endif
 
 // ****************************************************************************
-//  Function: HandleMrgtreeForMultimesh 
+//  Function: HandleMrgtreeAMRGroups
 //
 //  Purpose: Process the AMR parts of a mesh region grouping (mrg) tree. Also
 //  handles whatever naming scheme the database specifies for levels and
@@ -15487,10 +15880,15 @@ GetCondensedGroupelMap(DBfile *dbfile, DBmrgtnode *rootNode, int forceSingle)
 //
 //    Mark C. Miller, Mon Nov  9 10:43:05 PST 2009
 //    Added forceSingle arg.
+//
+//    Mark C. Miller, Wed Jul 11 11:00:54 PDT 2012
+//    Changed name to make it clearer what his function is used for. Adjusted
+//    to use abs pathname for MRG Tree as well. Also, re-factored code to
+//    get all the child MRG Tree region names to a new function.
 // ****************************************************************************
 
 static void
-HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
+HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_name,
     avtMeshType *mt, int *num_groups, vector<int> *group_ids, vector<string> *block_names,
     int forceSingle)
 {
@@ -15514,10 +15912,13 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
         debug3 << "No mrgtree specified for mesh \"" << multimesh_name << "\"" << endl;
         return;
     }
-    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mm->mrgtree_name);
+
+    string mrgtnm_abspath = ResolveSiloIndObjAbsPath(dbfile, multimesh_name, mm->mrgtree_name);
+
+    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mrgtnm_abspath.c_str());
     if (mrgTree == 0)
     {
-        debug3 << "Unable to find mrgtree named \"" << mm->mrgtree_name << "\"" << endl;
+        debug3 << "Unable to find mrgtree named \"" << mrgtnm_abspath << "\"" << endl;
         return;
     }
 
@@ -15548,7 +15949,15 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
     //
     // Get level grouping information from the levels subtree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, forceSingle);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, mrgtnm_abspath, levelsNode,
+        forceSingle, DB_BLOCKCENT);
+    if (!lvlgm)
+    {
+        debug3 << "Unable got get condensed groupel map for \"levels\"" << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
     *num_groups = lvlgm->num_segments;
     group_ids->resize(mm->nblocks,-1);
     for (i = 0; i < lvlgm->num_segments; i++)
@@ -15582,84 +15991,7 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
     // Set the block names according to contents of MRG Tree
     //
     DBmrgtnode *patchesNode = mrgTree->cwr;
-    if (patchesNode->num_children == 1)
-    {
-        if (patchesNode->children[0]->narray > 0 &&
-            patchesNode->children[0]->names)
-        {
-            //
-            // Array-based representation for the patches 
-            //
-            DBmrgtnode *patchesArrayNode = patchesNode->children[0];
-
-            //
-            // Handle the names of the patches 
-            //
-            if (strchr(patchesArrayNode->names[0],'%') == 0)
-            {
-                // Explicitly stored names
-                for (i = 0; i < patchesArrayNode->narray; i++)
-                    block_names->push_back(patchesArrayNode->names[i]);
-            }
-            else
-            {
-                //
-                // Handle any array-refs in the naming scheme
-                //
-                int nrefs = 0;
-                char *p = strchr(patchesArrayNode->names[0],'$');
-                int *refs[] = {0,0,0,0,0,0,0,0,0,0};
-                DBmrgvar *vars[] = {0,0,0,0,0,0,0,0,0,0};
-                while (p != 0 && nrefs < sizeof(refs)/sizeof(refs[0]))
-                {
-                    char *p1 = strchr(p, '[');
-                    char tmpName[256];
-                    strncpy(tmpName,p+1,p1-p-1);
-                    vars[nrefs] = DBGetMrgvar(dbfile, tmpName);
-                    if (vars[nrefs])
-                    {
-                        // assume its an integer valued variable
-                        refs[nrefs] = (int*) (vars[nrefs]->data[0]);
-                        nrefs++;
-                    }
-                    p = strchr(p,'$');
-                }
-
-                //
-                // Construct the names using the namescheme
-                //
-                DBnamescheme *ns = DBMakeNamescheme(patchesArrayNode->names[0],
-                    refs[0],refs[1],refs[2],refs[3],refs[4]);
-                for (i = 0; i < patchesArrayNode->narray; i++)
-                    block_names->push_back(DBGetName(ns, i));
-
-                //
-                // Free up everything
-                //
-                DBFreeNamescheme(ns);
-                for (i = 0; i < nrefs; i++)
-                    DBFreeMrgvar(vars[i]);
-            }
-        }
-        else if (patchesNode->children[0]->narray == 0)
-        {
-            //
-            // Single block case.
-            //
-            block_names->push_back(patchesNode->children[0]->name);
-        }
-    }
-    else if (patchesNode->num_children > 1)
-    {
-        //
-        // Individual MRG Tree nodes for each patch 
-        //
-        for (q = 0; q < patchesNode->num_children; q++)
-        {
-            DBmrgtnode *patchChild = patchesNode->children[q];
-            block_names->push_back(patchChild->name);
-        }
-    }
+    GatherChildMRGTreeRegionNames(dbfile, patchesNode, *block_names);
 
     DBFreeMrgtree(mrgTree);
     return;
@@ -15703,6 +16035,8 @@ HandleMrgtreeForMultimesh(DBfile *dbfile, DBmultimesh *mm, const char *multimesh
 //    This function requires db_mesh_type to be either DB_QUAD_RECT or DB_QUAD_CURV
 //    (DB_QUADMESH is ambiguous).
 //
+//    Mark C. Miller, Wed Jul 11 11:03:35 PDT 2012
+//    Adjusted to use absolute path of MRG Tree in calls to get it or its maps.
 // ****************************************************************************
 static void
 BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
@@ -15743,10 +16077,13 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
         debug3 << "No mrgtree specified for mesh \"" << meshName << "\"" << endl;
         return;
     }
-    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mm->mrgtree_name);
+
+    string mrgtnm_abspath = ResolveSiloIndObjAbsPath(dbfile, meshName, mm->mrgtree_name);
+
+    DBmrgtree *mrgTree = DBGetMrgtree(dbfile, mrgtnm_abspath.c_str());
     if (mrgTree == 0)
     {
-        debug3 << "Unable to find mrgtree named \"" << mm->mrgtree_name << "\"" << endl;
+        debug3 << "Unable to find mrgtree named \"" << mrgtnm_abspath << "\"" << endl;
         return;
     }
 
@@ -15813,7 +16150,15 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get level grouping information from tree
     //
-    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, levelsNode, forceSingle);
+    DBgroupelmap *lvlgm = GetCondensedGroupelMap(dbfile, mrgtnm_abspath, levelsNode,
+        forceSingle, DB_BLOCKCENT);
+    if (!lvlgm)
+    {
+        debug3 << "Unable to get condensed groupel map for \"levels\"" << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
+
     num_levels = lvlgm->num_segments;
     debug5 << "num_levels = " << num_levels << endl;
     vector<int> levelId;
@@ -15845,7 +16190,14 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
     //
     // Get Parent/Child maps
     //
-    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, childsNode, forceSingle);
+    DBgroupelmap *chldgm = GetCondensedGroupelMap(dbfile, mrgtnm_abspath, childsNode,
+        forceSingle, DB_BLOCKCENT);
+    if (!chldgm)
+    {
+        debug3 << "Unable to get condensed groupel map for \"parent/child\"" << endl;
+        DBFreeMrgtree(mrgTree);
+        return;
+    }
 
     //
     // Read the ratios variable (on the levels) and the parent/child
@@ -15986,6 +16338,83 @@ BuildDomainAuxiliaryInfoForAMRMeshes(DBfile *dbfile, DBmultimesh *mm,
 }
 
 // ****************************************************************************
+//  Function: GetNodesetEnumerationsFromMRGTree
+//
+//  Purpose: Builds an numerated scalar variable from MRG Tree region names
+//  known to define nodesets or facesets
+//
+//  Creation: Mark C. Miller, Wed Jul 11 11:06:44 PDT 2012
+// ****************************************************************************
+static void
+GetNodesetEnumerationsFromMRGTree(DBfile *dbfile, const DBmrgtnode *nsnode,
+    const string& mname, avtDatabaseMetaData *md)
+{
+    vector<string> nsnames;
+    GatherChildMRGTreeRegionNames(dbfile, nsnode, nsnames);
+
+    //
+    // Because we use the strings "nodesets" or "facesets" to indicate MRG Tree
+    // nodes that define nodesets or facesets we essentially force any writier
+    // with multiple meshes in one Silo file to have the same names for the
+    // nodesets and facesets variables. To disambiguate them, we need to add
+    // the name of the mesh with which they are associated.
+    //
+    avtScalarMetaData *smd = new avtScalarMetaData(string(nsnode->name)+"_"+mname, mname, AVT_NODECENT);
+
+    for (int i = 0; i < nsnames.size(); i++)
+        smd->AddEnumNameValue(nsnames[i], i);
+    smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
+    smd->SetEnumPartialCellMode(avtScalarMetaData::Dissect);
+    smd->hideFromGUI = true;
+
+    md->Add(smd);
+}
+
+// ****************************************************************************
+//  Function: HandleMrgtreeNodelistVars
+//
+//  Purpose: Examines an MRG Tree for tell-tale signs that it defines nodesets
+//  or facesets.
+//
+//  Creation: Mark C. Miller, Wed Jul 11 11:06:44 PDT 2012
+// ****************************************************************************
+static void
+HandleMrgtreeNodelistVars(DBfile *dbfile, const string& mname, const string& tname,
+    avtDatabaseMetaData *md)
+{
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,6,3)
+
+    DBmrgtree *mrgt = DBGetMrgtree(dbfile, tname.c_str());
+    if (!mrgt)
+    {
+        debug3 << "Unable to find mrgtree named \"" << tname << "\"" << endl;
+        return;
+    }
+
+    //
+    // Try to go to the nodesets node in the tree
+    //
+    const char* nsnames[] = {"nodesets", "facesets"};
+    for (int i = 0; i < sizeof(nsnames)/sizeof(nsnames[0]); i++)
+    {
+        if (DBSetCwr(mrgt, nsnames[i]) < 0)
+        {
+            debug3 << "Although mrgtree \"" << tname << "\" exists, "
+                   << "it does not contain node named \"" << nsnames[i] << "\"." << endl;
+        }
+        else
+        {
+            GetNodesetEnumerationsFromMRGTree(dbfile, mrgt->cwr, mname, md);
+            DBSetCwr(mrgt, "..");
+        }
+    }
+
+#endif
+#endif
+}
+
+// ****************************************************************************
 //  Function: MultiMatHasAllMatInfo
 //
 //  Purpose: Return an int indicating if a multi-mat object has all the
@@ -16034,3 +16463,49 @@ MultiMatHasAllMatInfo(const DBmultimat *const mm)
     return 0;
 }
 
+// ****************************************************************************
+//  Function: ResolveSiloIndObjAbsPath
+//
+//  Purpose: A fool proof and general mechanism to resolve the absolute path
+//  for a Silo object name indirection. Here's the situation. A Silo object is
+//  read. That object contains a reference to some other Silo object (e.g. an
+//  indirection). How do we ensure we know the absolute path for that indirect
+//  object? This funciton will compute it given the Silo file handle which
+//  includes the current working directory of the Silo file, the first
+//  (or primary) object just read from the file that contains a string which
+//  names the indirect object.
+//
+//  Creation: Mark C. Miller, Wed Jul 11 09:12:59 PDT 2012
+//
+// ****************************************************************************
+static string ResolveSiloIndObjAbsPath(
+    DBfile *dbfile,
+    string primary_objname_incl_any_abs_or_rel_path,
+    string indirect_objname_incl_any_abs_or_rel_path)
+{
+    string retval = "unresolved_silo_object_indirection";
+
+    char dbcwd[1024];
+    if (DBGetDir(dbfile, dbcwd) < 0)
+        return retval;
+
+    // If primary object str is the name of an object as opposed to
+    // the dir the object lives in, then compute the dirname
+    string obj_abspath = StringHelpers::Absname(dbcwd,
+        primary_objname_incl_any_abs_or_rel_path.c_str());
+    int vtype = DBInqVarType(dbfile, obj_abspath.c_str());
+    if (vtype >= 0 && vtype != DB_DIR)
+    {
+        size_t last_slash_idx = obj_abspath.find_last_of('/');
+        if (last_slash_idx != std::string::npos)
+        {
+           if (last_slash_idx == 0) last_slash_idx++;
+            obj_abspath.erase(last_slash_idx);
+        }
+    }
+
+    string indobj_abspath = StringHelpers::Absname(obj_abspath.c_str(),
+        indirect_objname_incl_any_abs_or_rel_path.c_str());
+    retval = string(indobj_abspath);
+    return retval;
+}

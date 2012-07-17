@@ -264,6 +264,15 @@ typedef struct _GroupInfo
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Mon Jul  9 21:24:45 PDT 2012
+//    Added method to handle nodelists vars from MRG Trees. Adjusted interfaces
+//    that read UCD mesh and arb. connectivity to support repeating calls for
+//    different segments of a zonelist.
+//
+//    Mark C. Miller, Tue Jul 10 20:11:42 PDT 2012
+//    Removed RemapFacelistForPolyhedronZones since it did not use any class
+//    members and could therefore be defined as a static function in the .C
+//    file.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -387,6 +396,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     vtkDataArray         *GetNodelistsVar(int);
     vtkDataArray         *GetAnnotIntNodelistsVar(int, std::string);
+    vtkDataArray         *GetMrgTreeNodelistsVar(int, std::string);
     vtkDataArray         *GetQuadVar(DBfile *, const char *, const char *,int);
     void                  ExpandUcdvar(DBucdvar *uv, const char *vname, const char *tvn,
                               int domain);
@@ -411,8 +421,6 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
                                               int, const char *);
 
-    void                  RemapFacelistForPolyhedronZones(DBfacelist *,
-                                                          DBzonelist *);
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,7,1)
     void                  HandleGlobalZoneIds(const char *, int, void*, int, int);
@@ -422,11 +430,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 #else
     void                  HandleGlobalZoneIds(const char *, int, int*, int);
 #endif
-    void                  ReadInConnectivity(vtkUnstructuredGrid *, int,
-                                             DBzonelist *, int,
-                                             const char *,int);
+    void                  ReadInConnectivity(vtkUnstructuredGrid *,
+                              DBucdmesh *um, const char *, int);
     void                  ReadInArbConnectivity(const char *, vtkUnstructuredGrid*,
-                                                DBucdmesh*,int);
+                                                DBucdmesh*,int,int=0);
     avtMeshType           FindDecomposedMeshType(DBfile *dbfile);
     void                  GetConnectivityAndGroupInformation(DBfile *, bool = false);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,

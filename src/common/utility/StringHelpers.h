@@ -94,6 +94,9 @@ namespace StringHelpers
 
     const char UTILITY_API *Basename(const char *path);
     const char UTILITY_API *Dirname(const char *path);
+    const char UTILITY_API *Absname(const char *cwd_context, const char *path);
+    const char UTILITY_API *Normalize(const char *path);
+    std::string UTILITY_API Normalize(const std::string& path);
 
     std::string UTILITY_API car(const std::string, const char separator);
     std::string UTILITY_API cdr(const std::string, const char separator);
