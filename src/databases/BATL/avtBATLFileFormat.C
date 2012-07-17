@@ -411,16 +411,16 @@ avtBATLFileFormat::FreeUpResources(void)
 // ****************************************************************************
 typedef struct
 {
-    int f[3];
+    double f[3];
     int   b;
-} IntInt;
+} DoubleInt;
 
 
 static int
 QsortiCoordSorter(const void *arg1, const void *arg2)
 {
-    IntInt *A = (IntInt *) arg1;
-    IntInt *B = (IntInt *) arg2;
+    DoubleInt *A = (DoubleInt *) arg1;
+    DoubleInt *B = (DoubleInt *) arg2;
 
     if (A->f[2] < B->f[2])
         return -1;
@@ -1033,7 +1033,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
             }
 
 
-            IntInt *di = new IntInt[numBlocks];
+            DoubleInt *di = new DoubleInt[numBlocks];
             for (int b=0; b<numBlocks; b++)
             {
                 di[b].f[0] = blocks[b].minSpatialExtents[0];
@@ -1046,7 +1046,7 @@ avtBATLFileFormat::GetMesh(int domain, const char *meshname)
             vector<double> yvals;
 
             // Sort them from left to right.
-            qsort(di, numBlocks, sizeof(IntInt), QsortiCoordSorter);
+            qsort(di, numBlocks, sizeof(DoubleInt), QsortiCoordSorter);
 
             vector<int> blocksInProgress;
             blocksInProgress.push_back(di[0].b);
