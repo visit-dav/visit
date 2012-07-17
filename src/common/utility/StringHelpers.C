@@ -714,6 +714,136 @@ StringHelpers::Dirname(const char *path)
 }
 
 // ****************************************************************************
+//  Function: Normalize
+//
+//  Purpose: Normalize a pathname; removing all embedded './' and/or '../' or
+//  '//', and any trailing '/'. Note, however, that he code is written to use
+//  whatever the VISIT_SLASH_STRING is so it should work on Windows as well
+//  with the exception of a leading drive letter and colon.
+//
+//  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
+//
+// ****************************************************************************
+const char *
+StringHelpers::Normalize(const char *path)
+{
+    string retval = string(path);
+
+    // First, remove any double slashes
+    string dbl_slash = VISIT_SLASH_STRING VISIT_SLASH_STRING;
+    size_t dbl_slash_idx = retval.rfind(dbl_slash);
+    while (dbl_slash_idx != std::string::npos)
+    {
+        retval.erase(dbl_slash_idx, 1);
+        dbl_slash_idx = retval.rfind(dbl_slash);
+    }
+
+    // Remove any terms of the form "./". These have no effect
+    string dot_slash = "." VISIT_SLASH_STRING;
+    size_t dot_slash_idx = retval.rfind(dot_slash);
+    while (dot_slash_idx != std::string::npos)
+    {
+        if ((dot_slash_idx > 0 && retval[dot_slash_idx-1] != '.') ||
+             dot_slash_idx == 0)
+        {
+            retval.erase(dot_slash_idx, 2);
+            dot_slash_idx = retval.rfind(dot_slash,dot_slash_idx-1);
+        }
+        else
+        {
+            if (dot_slash_idx > 0)
+                dot_slash_idx = retval.rfind(dot_slash,dot_slash_idx-1);
+            else
+                dot_slash_idx = std::string::npos;
+        }
+    }
+
+    // Remove any trailing slash if one exists
+    if (retval[retval.size()-1] == VISIT_SLASH_CHAR)
+        retval.erase(retval.size()-1);
+
+    // At this point we have a string that begins with a slash
+    // and has only <path> terms or "../" terms. We need to 
+    // resolve any "../" terms by backing up through the <path>
+    // terms that precede them.
+    string slash_dot_dot = VISIT_SLASH_STRING "..";
+    size_t slash_dot_dot_idx = retval.find(slash_dot_dot);
+    while (slash_dot_dot_idx != std::string::npos)
+    {
+        size_t preceding_slash_idx = retval.rfind(VISIT_SLASH_STRING, slash_dot_dot_idx-1);
+        if (preceding_slash_idx == std::string::npos) return "";
+        size_t nchars = slash_dot_dot_idx - preceding_slash_idx + 3;
+        retval.erase(preceding_slash_idx+1, nchars);
+        slash_dot_dot_idx = retval.find(slash_dot_dot);
+    }
+
+    
+    StaticStringBuf[0] = '\0';
+    strcat(StaticStringBuf, retval.c_str());
+    return StaticStringBuf;
+}
+
+string
+StringHelpers::Normalize(const string& path)
+{
+    return Normalize(path.c_str());
+}
+
+// ****************************************************************************
+//  Function: Dirname 
+//
+//  Purpose: Compute absolute path name based on cwd and a path relative to 
+//  the cwd.
+//
+//  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
+//
+// ****************************************************************************
+
+const char *
+StringHelpers::Absname(const char *cwd_context, const char *path)
+{
+    // Clear our temporary array for handling char * return values.
+    StaticStringBuf[0] = '\0';
+
+    // cwd_context is null or empty string
+    if (!cwd_context || cwd_context[0] == '\0')
+    {
+        if (!path) return StaticStringBuf;
+        if (path[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+
+        string npath = Normalize(path);
+        strcpy(StaticStringBuf, npath.c_str());
+        return StaticStringBuf;
+    }
+
+    // path is null or empty string
+    if (!path || path[0] == '\0')
+    {
+        if (!cwd_context) return StaticStringBuf;
+        if (cwd_context[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+
+        string ncwd = Normalize(cwd_context);
+        strcpy(StaticStringBuf, ncwd.c_str());
+        return StaticStringBuf;
+    }
+
+    if (path[0] == VISIT_SLASH_CHAR)
+    {
+        string npath = Normalize(path);
+        strcpy(StaticStringBuf, npath.c_str());
+        return StaticStringBuf;
+    }
+
+    if (cwd_context[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+
+    // Catenate path to cwd_context and then Normalize the result
+    string path2 = string(cwd_context) + "/" + string(path);
+    string npath = Normalize(path2.c_str());
+    strcpy(StaticStringBuf, npath.c_str());
+    return StaticStringBuf;
+}
+
+// ****************************************************************************
 //  Function: InitTypeNameToFmtREMap
 //
 //  Purpose: Support routine to build map of regular expressions for different
