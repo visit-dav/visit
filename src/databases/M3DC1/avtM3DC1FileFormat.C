@@ -459,7 +459,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     amd->hideFromGUI = true;
     md->Add(amd);
     
-    avtVectorMetaData *amd =
+    amd =
       new avtVectorMetaData("hidden/elements", "hidden/mesh",
                             AVT_ZONECENT, element_size);
 
