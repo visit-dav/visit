@@ -168,74 +168,86 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 
     FinalizeTimeLoop();
 
+    int numTimeLoopIterations = GetNumberOfIterations();
+
     //
     // This will tell the terminating source how many executions we are doing.
     // That in turn will allow the progress to work correctly.
     //
-    int numIters = (actualEnd-startTime)/stride+1;
+    int numIters = ((actualEnd-startTime)/stride+1)*numTimeLoopIterations;
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
-    int curIter = 0;
-
-    for (i = startTime; i < actualEnd; i+= stride)
+    for (currentLoopIter = 0; currentLoopIter < numTimeLoopIterations; currentLoopIter++)
     {
-        bool shouldDoThisTimeSlice = true;
-        if (parallelizingOverTime)
-            if ((curIter % PAR_Size()) != PAR_Rank())
-                shouldDoThisTimeSlice = false;
-        curIter++;
-        if (!shouldDoThisTimeSlice)
-            continue;
-             
-        if (i < endTime)
-           currentTime = i; 
-        else 
-           currentTime = endTime; 
-        debug4 << "Time loop filter updating with time slice #" 
-               << currentTime << endl;
+        debug4 << "Time loop filter updating with iteration # "<<currentLoopIter<<endl;
+        int curIter = 0;
 
-        avtSIL *sil = GetInput()->GetOriginatingSource()->GetSIL(currentTime);
-        if (sil == NULL)
+        BeginIteration(currentLoopIter);
+        for (i = startTime; i < actualEnd; i+= stride)
         {
-            debug4 << "Could not read the SIL at state " << currentTime << endl;
-            currentSILR = orig_SILR;
-        }
-        else 
-        {
-            currentSILR = new avtSILRestriction(sil);
-            currentSILR->SetTopSet(orig_SILR->GetTopSet());
-            if (!currentSILR->SetFromCompatibleRestriction(orig_SILR))
+            bool shouldDoThisTimeSlice = true;
+            if (parallelizingOverTime)
+                if ((curIter % PAR_Size()) != PAR_Rank())
+                    shouldDoThisTimeSlice = false;
+            curIter++;
+            if (!shouldDoThisTimeSlice)
+                continue;
+             
+            if (i < endTime)
+                currentTime = i;
+            else 
+                currentTime = endTime;
+            
+            if (!NeedCurrentTimeSlice())
+                continue;
+            
+            debug4 << "Time loop filter updating with time slice #" 
+                   << currentTime << endl;
+
+            avtSIL *sil = GetInput()->GetOriginatingSource()->GetSIL(currentTime);
+            if (sil == NULL)
             {
-                debug4 << "Could not Set compatible restriction." << endl;
+                debug4 << "Could not read the SIL at state " << currentTime << endl;
                 currentSILR = orig_SILR;
             }
-        }
-        avtDataRequest_p newDS = new avtDataRequest(orig_DS, currentSILR);
-        newDS->SetTimestep(currentTime);
+            else 
+            {
+                currentSILR = new avtSILRestriction(sil);
+                currentSILR->SetTopSet(orig_SILR->GetTopSet());
+                if (!currentSILR->SetFromCompatibleRestriction(orig_SILR))
+                {
+                    debug4 << "Could not Set compatible restriction." << endl;
+                    currentSILR = orig_SILR;
+                }
+            }
+            avtDataRequest_p newDS = new avtDataRequest(orig_DS, currentSILR);
+            newDS->SetTimestep(currentTime);
 
-        avtContract_p contract = 
-            new avtContract(newDS, spec->GetPipelineIndex());
-        if (parallelizingOverTime)
-        {
-            contract->SetOnDemandStreaming(true);
-            contract->UseLoadBalancing(false);
-        }
-        else
-            contract->NoStreaming();
+            avtContract_p contract = 
+                new avtContract(newDS, spec->GetPipelineIndex());
+            if (parallelizingOverTime)
+            {
+                contract->SetOnDemandStreaming(true);
+                contract->UseLoadBalancing(false);
+            }
+            else
+                contract->NoStreaming();
         
-        modified |= avtFilter::Update(contract);
+            modified |= avtFilter::Update(contract);
         
-        if (ExecutionSuccessful())
-        {
-            validTimes.push_back(currentTime);
+            if (ExecutionSuccessful())
+            {
+                validTimes.push_back(currentTime);
+            }
+            else 
+            {
+                skippedTimes.push_back(currentTime);
+            }
+            avtCallback::ResetTimeout(5*60);
         }
-        else 
-        {
-            skippedTimes.push_back(currentTime);
-        }
-        avtCallback::ResetTimeout(5*60);
-    } 
+        EndIteration(currentLoopIter);
+    }
 
     //
     // It is possible that execution of some timesteps may have resulted

@@ -74,6 +74,9 @@
 //    Hank Childs, Wed Dec 15 14:30:42 PST 2010
 //    Add support for parallelizing over time.
 //
+//    Dave Pugmire, Tue Jul 17 11:52:34 EDT 2012
+//    Added ability to make multiple passes over the time series.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
@@ -101,10 +104,14 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
   protected:
     intVector                           validTimes;
     intVector                           skippedTimes;
-    int                                 currentTime;
+    int                                 currentTime, currentLoopIter;
     avtSILRestriction_p                 currentSILR;
     std::string                         errorMessage;
 
+    virtual void                        BeginIteration(int i) {}
+    virtual void                        EndIteration(int i) {}
+    virtual int                         GetNumberOfIterations() {return 1;}
+    virtual bool                        NeedCurrentTimeSlice() {return true;}
     virtual void                        CreateFinalOutput(void) = 0;
     virtual bool                        ExecutionSuccessful(void) = 0;
 
