@@ -111,6 +111,7 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     void dim3NumBinsProcessText();
     void dim3BinBasedOnChanged(int);
     void outOfBoundsBehaviorChanged(int val);
+    void outputChanged(int val);
     void reductionOperatorClicked(int val);
     void varForReductionChanged(const QString &varName);
     void emptyValProcessText();
@@ -170,6 +171,7 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     QLabel *reductionOperatorLabel;
     QLabel *varForReductionLabel;
     QLabel *emptyValLabel;
+    QButtonGroup *outputButtonGroup;
 
     DataBinningAttributes *atts;
 };

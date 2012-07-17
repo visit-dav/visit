@@ -30,6 +30,10 @@
         Z
         Variable
       </Enum>
+      <Enum name="OutputType">
+        OutputOnBins
+        OutputOnInputMesh
+      </Enum>
       <Field name="numDimensions" label="Dimensions" type="enum" subtype="NumDimensions">
         One
       </Field>
@@ -94,6 +98,9 @@
       </Field>
       <Field name="emptyVal" label="Value for Bins With No Data" type="double">
         0.000000
+      </Field>
+      <Field name="outputType" label="Output Type" type="enum" subtype="OutputType">
+        OutputOnBins
       </Field>
       <Function name="CreateConstructionAtts" user="true" member="true">
       </Function>

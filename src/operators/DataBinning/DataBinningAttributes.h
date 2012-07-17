@@ -93,6 +93,11 @@ public:
         Z,
         Variable
     };
+    enum OutputType
+    {
+        OutputOnBins,
+        OutputOnInputMesh
+    };
 
     // These constructors are for objects of this class
     DataBinningAttributes();
@@ -148,6 +153,7 @@ public:
     void SetReductionOperator(ReductionOperator reductionOperator_);
     void SetVarForReduction(const std::string &varForReduction_);
     void SetEmptyVal(double emptyVal_);
+    void SetOutputType(OutputType outputType_);
 
     // Property getting methods
     NumDimensions     GetNumDimensions() const;
@@ -177,6 +183,7 @@ public:
     const std::string &GetVarForReduction() const;
           std::string &GetVarForReduction();
     double            GetEmptyVal() const;
+    OutputType        GetOutputType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -202,6 +209,11 @@ public:
     static bool BinBasedOn_FromString(const std::string &, BinBasedOn &);
 protected:
     static std::string BinBasedOn_ToString(int);
+public:
+    static std::string OutputType_ToString(OutputType);
+    static bool OutputType_FromString(const std::string &, OutputType &);
+protected:
+    static std::string OutputType_ToString(int);
 public:
 
     // Keyframing methods
@@ -238,6 +250,7 @@ public:
         ID_reductionOperator,
         ID_varForReduction,
         ID_emptyVal,
+        ID_outputType,
         ID__LAST
     };
 
@@ -265,11 +278,12 @@ private:
     int         reductionOperator;
     std::string varForReduction;
     double      emptyVal;
+    int         outputType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define DATABINNINGATTRIBUTES_TMFS "iisbddiisbddiisbddiiisd"
+#define DATABINNINGATTRIBUTES_TMFS "iisbddiisbddiisbddiiisdi"
 
 #endif
