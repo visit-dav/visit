@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class DataBinningAttributes extends AttributeSubject implements Plugin
 {
-    private static int DataBinningAttributes_numAdditionalAtts = 23;
+    private static int DataBinningAttributes_numAdditionalAtts = 24;
 
     // Enum values
     public final static int REDUCTIONOPERATOR_AVERAGE = 0;
@@ -83,6 +83,9 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
     public final static int BINBASEDON_Y = 1;
     public final static int BINBASEDON_Z = 2;
     public final static int BINBASEDON_VARIABLE = 3;
+
+    public final static int OUTPUTTYPE_OUTPUTONBINS = 0;
+    public final static int OUTPUTTYPE_OUTPUTONINPUTMESH = 1;
 
 
     public DataBinningAttributes()
@@ -112,6 +115,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         reductionOperator = REDUCTIONOPERATOR_AVERAGE;
         varForReduction = new String("");
         emptyVal = 0;
+        outputType = OUTPUTTYPE_OUTPUTONBINS;
     }
 
     public DataBinningAttributes(int nMoreFields)
@@ -141,6 +145,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         reductionOperator = REDUCTIONOPERATOR_AVERAGE;
         varForReduction = new String("");
         emptyVal = 0;
+        outputType = OUTPUTTYPE_OUTPUTONBINS;
     }
 
     public DataBinningAttributes(DataBinningAttributes obj)
@@ -170,6 +175,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         reductionOperator = obj.reductionOperator;
         varForReduction = new String(obj.varForReduction);
         emptyVal = obj.emptyVal;
+        outputType = obj.outputType;
 
         SelectAll();
     }
@@ -209,7 +215,8 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
                 (outOfBoundsBehavior == obj.outOfBoundsBehavior) &&
                 (reductionOperator == obj.reductionOperator) &&
                 (varForReduction.equals(obj.varForReduction)) &&
-                (emptyVal == obj.emptyVal));
+                (emptyVal == obj.emptyVal) &&
+                (outputType == obj.outputType));
     }
 
     public String GetName() { return "DataBinning"; }
@@ -354,6 +361,12 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         Select(22);
     }
 
+    public void SetOutputType(int outputType_)
+    {
+        outputType = outputType_;
+        Select(23);
+    }
+
     // Property getting methods
     public int     GetNumDimensions() { return numDimensions; }
     public int     GetDim1BinBasedOn() { return dim1BinBasedOn; }
@@ -378,6 +391,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
     public int     GetReductionOperator() { return reductionOperator; }
     public String  GetVarForReduction() { return varForReduction; }
     public double  GetEmptyVal() { return emptyVal; }
+    public int     GetOutputType() { return outputType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -428,6 +442,8 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
             buf.WriteString(varForReduction);
         if(WriteSelect(22, buf))
             buf.WriteDouble(emptyVal);
+        if(WriteSelect(23, buf))
+            buf.WriteInt(outputType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -502,6 +518,9 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
             break;
         case 22:
             SetEmptyVal(buf.ReadDouble());
+            break;
+        case 23:
+            SetOutputType(buf.ReadInt());
             break;
         }
     }
@@ -590,6 +609,12 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + stringToString("varForReduction", varForReduction, indent) + "\n";
         str = str + doubleToString("emptyVal", emptyVal, indent) + "\n";
+        str = str + indent + "outputType = ";
+        if(outputType == OUTPUTTYPE_OUTPUTONBINS)
+            str = str + "OUTPUTTYPE_OUTPUTONBINS";
+        if(outputType == OUTPUTTYPE_OUTPUTONINPUTMESH)
+            str = str + "OUTPUTTYPE_OUTPUTONINPUTMESH";
+        str = str + "\n";
         return str;
     }
 
@@ -618,5 +643,6 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
     private int     reductionOperator;
     private String  varForReduction;
     private double  emptyVal;
+    private int     outputType;
 }
 

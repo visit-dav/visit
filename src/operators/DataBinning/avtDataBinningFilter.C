@@ -47,6 +47,7 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
+#include <avtCallback.h>
 #include <avtDataBinning.h>
 #include <avtDataBinningConstructor.h>
 #include <avtExtents.h>
@@ -167,6 +168,9 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Mon Aug  1 07:13:23 PDT 2011
 //    Add support for spatial dimensions.
 //
+//    Hank Childs, Mon Jul 16 17:22:00 PDT 2012
+//    Add support for outputing on the input mesh.
+//
 // ****************************************************************************
 
 void
@@ -243,33 +247,136 @@ avtDataBinningFilter::Execute(void)
     avtDataBinningConstructor dbc;
     dbc.SetInput(GetInput());
     avtDataBinning *d = dbc.ConstructDataBinning(&dba, lastContract, false);
-    if (PAR_Rank() == 0)
-    {
-        vtkDataSet *ds = d->CreateGrid();
-        if (atts.GetNumDimensions() == DataBinningAttributes::One)
-            ds->GetPointData()->GetScalars()->SetName(varname.c_str());
-        else
-            ds->GetCellData()->GetScalars()->SetName(varname.c_str());
-        ds->GetCellData()->SetActiveScalars(varname.c_str());
-        SetOutputDataTree(new avtDataTree(ds, -1));
-        double range[2] = { FLT_MAX, -FLT_MAX };
-        GetDataRange(ds, range, varname.c_str(), false);
-        avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-        dataAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
-        dataAtts.GetThisProcsActualDataExtents(varname.c_str())->Set(range);
 
-        ds->Delete();
+    if (atts.GetOutputType() == DataBinningAttributes::OutputOnBins)
+    {
+        if (PAR_Rank() == 0)
+        {
+            vtkDataSet *ds = d->CreateGrid();
+            if (atts.GetNumDimensions() == DataBinningAttributes::One)
+                ds->GetPointData()->GetScalars()->SetName(varname.c_str());
+            else
+                ds->GetCellData()->GetScalars()->SetName(varname.c_str());
+            ds->GetCellData()->SetActiveScalars(varname.c_str());
+            SetOutputDataTree(new avtDataTree(ds, -1));
+            double range[2] = { FLT_MAX, -FLT_MAX };
+            GetDataRange(ds, range, varname.c_str(), false);
+            avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+            dataAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
+            dataAtts.GetThisProcsActualDataExtents(varname.c_str())->Set(range);
+    
+            ds->Delete();
+        }
+        else
+            SetOutputDataTree(new avtDataTree());
+     
+        avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+        int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
+                  : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
+        dataAtts.GetThisProcsOriginalSpatialExtents()->Set(&bb[0]);
+        dataAtts.GetOriginalSpatialExtents()->Set(&bb[0]);
+    }
+    else if (atts.GetOutputType() == DataBinningAttributes::OutputOnInputMesh)
+    {
+        double range[2] = { FLT_MAX, -FLT_MAX };
+        bool hadError = false;
+        avtDataTree_p tree = CreateArrayFromDataBinning(GetInputDataTree(), d, range, hadError);
+        if (UnifyMaximumValue((int) hadError) > 0)
+        {
+            avtCallback::IssueWarning("The data binning could not be placed on the input "
+                    "mesh.  This is typically because the data binning is over different "
+                    "centerings (zonal and nodal) and can not be meaningfully placed back "
+                    "on the input mesh.  Try recentering one of the variables to remove "
+                    "this ambiguity.");
+            SetOutputDataTree(new avtDataTree());
+        }
+        else
+        {
+            SetOutputDataTree(tree);
+            avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+            dataAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
+            dataAtts.GetThisProcsActualDataExtents(varname.c_str())->Set(range);
+        }
+    }
+    
+    delete d;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataBinningFilter::CreateArrayFromDataBinning
+//
+//  Purpose:
+//      Used for the mode where the data binning is applied on the input mesh.
+//      This makes recursion easy.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 16, 2012
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtDataBinningFilter::CreateArrayFromDataBinning(avtDataTree_p tree, 
+                                                 avtDataBinning *theDataBinning, 
+                                                 double *extents, bool &hadError)
+{
+    if (*tree == NULL)
+        return NULL;
+
+    int nc = tree->GetNChildren();
+
+    if (nc <= 0 && !tree->HasData())
+        return NULL;
+
+    if (nc == 0)
+    {
+        //
+        // there is only one dataset to process
+        //
+        vtkDataSet *in_ds = tree->GetDataRepresentation().GetDataVTK();
+        vtkDataArray *res = theDataBinning->ApplyFunction(in_ds);
+        if (res == NULL)
+        {
+            hadError = true;
+            return NULL;
+        }
+        res->SetName(varname.c_str());
+        if (res->GetNumberOfTuples() == in_ds->GetNumberOfCells())
+        {
+            in_ds->GetCellData()->AddArray(res);
+            in_ds->GetCellData()->SetActiveScalars(varname.c_str());
+        }
+        if (res->GetNumberOfTuples() == in_ds->GetNumberOfPoints())
+        {
+            in_ds->GetPointData()->AddArray(res);
+            in_ds->GetPointData()->SetActiveScalars(varname.c_str());
+        }
+        res->Delete();
+        double range[2] = { FLT_MAX, -FLT_MAX };
+        GetDataRange(in_ds, range, varname.c_str(), false);
+        extents[0] = (extents[0] > range[0] ? range[0] : extents[0]);
+        extents[1] = (extents[1] < range[1] ? range[1] : extents[1]);
+
+        int dom = tree->GetDataRepresentation().GetDomain();
+        std::string label = tree->GetDataRepresentation().GetLabel();
+        avtDataTree_p rv = new avtDataTree(in_ds, dom, label);
+        return rv;
     }
     else
-        SetOutputDataTree(new avtDataTree());
- 
-    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-    int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
-              : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
-    dataAtts.GetThisProcsOriginalSpatialExtents()->Set(&bb[0]);
-    dataAtts.GetOriginalSpatialExtents()->Set(&bb[0]);
-
-    delete d;
+    {
+        avtDataTree_p *outDT = new avtDataTree_p[nc];
+        for (int j = 0; j < nc; j++)
+        {
+            if (tree->ChildIsPresent(j))
+                outDT[j] = CreateArrayFromDataBinning(tree->GetChild(j), 
+                                theDataBinning, extents, hadError);
+            else
+                outDT[j] = NULL;
+        }
+        avtDataTree_p rv = new avtDataTree(nc, outDT);
+        delete [] outDT;
+        return (rv);
+    }
 }
 
 
@@ -481,6 +588,9 @@ avtDataBinningFilter::ModifyContract(avtContract_p inContract)
 //    Hank Childs, Tue Jul 10 09:47:04 PDT 2012
 //    Set the labels correctly when using spatial coordinates.
 //
+//    Hank Childs, Mon Jul 16 17:22:00 PDT 2012
+//    Split logic for setting axis names and units into its own method.
+//
 // ****************************************************************************
 
 void
@@ -488,21 +598,47 @@ avtDataBinningFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
-    int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
-              : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
-    dataAtts.SetTopologicalDimension(dim);
-    dataAtts.SetSpatialDimension(dim);
-    dataAtts.GetThisProcsOriginalSpatialExtents()->Clear();
-    dataAtts.GetOriginalSpatialExtents()->Clear();
-    dataAtts.GetDesiredSpatialExtents()->Clear();
     dataAtts.AddVariable(varname);
     dataAtts.SetActiveVariable(varname.c_str());
     dataAtts.SetVariableDimension(1);
     dataAtts.SetVariableType(AVT_SCALAR_VAR);
-    if (atts.GetNumDimensions() == DataBinningAttributes::One)
-        dataAtts.SetCentering(AVT_NODECENT);
-    else
-        dataAtts.SetCentering(AVT_ZONECENT);
+
+    if (atts.GetOutputType() == DataBinningAttributes::OutputOnBins)
+    {
+        if (atts.GetNumDimensions() == DataBinningAttributes::One)
+            dataAtts.SetCentering(AVT_NODECENT);
+        else 
+            dataAtts.SetCentering(AVT_ZONECENT);
+        SetAxisNamesAndUnits();
+   }
+}
+
+
+// ****************************************************************************
+//  Method: avtDataBinningFilter::SetAxisNamesAndUnits
+//
+//  Purpose:
+//      Sets the names of the axes and their units when creating bin outputs.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 16, 2012
+//
+// ****************************************************************************
+
+void
+avtDataBinningFilter::SetAxisNamesAndUnits(void)
+{
+    avtDataAttributes &inAtts   = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
+    int dim = ( (atts.GetNumDimensions() == DataBinningAttributes::One) ? 1
+              : ((atts.GetNumDimensions() == DataBinningAttributes::Two) ? 2 : 3));
+    {
+        dataAtts.SetTopologicalDimension(dim);
+        dataAtts.SetSpatialDimension(dim);
+        dataAtts.GetThisProcsOriginalSpatialExtents()->Clear();
+        dataAtts.GetOriginalSpatialExtents()->Clear();
+        dataAtts.GetDesiredSpatialExtents()->Clear();
+    }
 
     if (atts.GetDim1BinBasedOn() == DataBinningAttributes::Variable)
     {

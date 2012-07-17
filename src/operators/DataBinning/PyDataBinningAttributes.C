@@ -266,6 +266,21 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%semptyVal = %g\n", prefix, atts->GetEmptyVal());
     str += tmpStr;
+    const char *outputType_names = "OutputOnBins, OutputOnInputMesh";
+    switch (atts->GetOutputType())
+    {
+      case DataBinningAttributes::OutputOnBins:
+          SNPRINTF(tmpStr, 1000, "%soutputType = %sOutputOnBins  # %s\n", prefix, prefix, outputType_names);
+          str += tmpStr;
+          break;
+      case DataBinningAttributes::OutputOnInputMesh:
+          SNPRINTF(tmpStr, 1000, "%soutputType = %sOutputOnInputMesh  # %s\n", prefix, prefix, outputType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -886,6 +901,39 @@ DataBinningAttributes_GetEmptyVal(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the outputType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetOutputType(DataBinningAttributes::OutputType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid outputType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "OutputOnBins, OutputOnInputMesh.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_GetOutputType(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
@@ -936,6 +984,8 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
     {"GetVarForReduction", DataBinningAttributes_GetVarForReduction, METH_VARARGS},
     {"SetEmptyVal", DataBinningAttributes_SetEmptyVal, METH_VARARGS},
     {"GetEmptyVal", DataBinningAttributes_GetEmptyVal, METH_VARARGS},
+    {"SetOutputType", DataBinningAttributes_SetOutputType, METH_VARARGS},
+    {"GetOutputType", DataBinningAttributes_GetOutputType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1068,6 +1118,13 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
         return DataBinningAttributes_GetVarForReduction(self, NULL);
     if(strcmp(name, "emptyVal") == 0)
         return DataBinningAttributes_GetEmptyVal(self, NULL);
+    if(strcmp(name, "outputType") == 0)
+        return DataBinningAttributes_GetOutputType(self, NULL);
+    if(strcmp(name, "OutputOnBins") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::OutputOnBins));
+    if(strcmp(name, "OutputOnInputMesh") == 0)
+        return PyInt_FromLong(long(DataBinningAttributes::OutputOnInputMesh));
+
 
     return Py_FindMethod(PyDataBinningAttributes_methods, self, name);
 }
@@ -1128,6 +1185,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = DataBinningAttributes_SetVarForReduction(self, tuple);
     else if(strcmp(name, "emptyVal") == 0)
         obj = DataBinningAttributes_SetEmptyVal(self, tuple);
+    else if(strcmp(name, "outputType") == 0)
+        obj = DataBinningAttributes_SetOutputType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

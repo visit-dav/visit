@@ -124,6 +124,9 @@ QvisDataBinningWindow::~QvisDataBinningWindow()
 //   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
 //   Add support for bins based on spatial dimensions.
 //
+//   Hank Childs, Mon Jul 16 17:13:53 PDT 2012
+//   Add support for outputs on the mesh or the bins.
+//
 // ****************************************************************************
 
 void
@@ -369,6 +372,28 @@ QvisDataBinningWindow::CreateWindowContents()
             this, SLOT(emptyValProcessText()));
     rtLayout->addWidget(emptyVal, 2,1);
 
+    QGroupBox *outputGroup = new QGroupBox(central);
+    outputGroup->setTitle(tr("Output"));
+    mainLayout->addWidget(outputGroup);
+
+    QGridLayout *outputLayout = new QGridLayout(outputGroup);
+
+    QLabel *outputLabel = new QLabel(tr("Output on"), central);
+    outputLayout->addWidget(outputLabel,0,0);
+    QWidget *outputWidget = new QWidget(central);
+    outputButtonGroup= new QButtonGroup(outputWidget);
+    QHBoxLayout *outputHLayout = new QHBoxLayout(outputWidget);
+    outputHLayout->setMargin(0);
+    outputHLayout->setSpacing(0);
+    QRadioButton *outputBins = new QRadioButton(tr("Bins"), outputWidget);
+    outputButtonGroup->addButton(outputBins,0);
+    outputHLayout->addWidget(outputBins);
+    QRadioButton *outputMesh = new QRadioButton(tr("Mesh"), outputWidget);
+    outputButtonGroup->addButton(outputMesh,1);
+    outputHLayout->addWidget(outputMesh);
+    outputLayout->addWidget(outputWidget, 0, 1);
+    connect(outputButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(outputChanged(int)));
 }
 
 
@@ -387,6 +412,9 @@ QvisDataBinningWindow::CreateWindowContents()
 //   
 //   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
 //   Add support for bins based on spatial dimensions.
+//
+//   Hank Childs, Mon Jul 16 17:13:53 PDT 2012
+//   Add support for outputs on the mesh or the bins.
 //
 // ****************************************************************************
 
@@ -707,6 +735,12 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
                dim3YLabel->setChecked(true);
             else if (atts->GetDim3BinBasedOn() == DataBinningAttributes::Z)
                dim3ZLabel->setChecked(true);
+            break;
+          case DataBinningAttributes::ID_outputType:
+            outputButtonGroup->blockSignals(true);
+            if(outputButtonGroup->button((int)atts->GetOutputType()) != 0)
+                outputButtonGroup->button((int)atts->GetOutputType())->setChecked(true);
+            outputButtonGroup->blockSignals(false);
             break;
         }
     }
@@ -1048,6 +1082,16 @@ QvisDataBinningWindow::dim3BinBasedOnChanged(int val)
     }
 }
 
+void
+QvisDataBinningWindow::outputChanged(int val)
+{
+    if(val != atts->GetOutputType())
+    {
+        atts->SetOutputType(DataBinningAttributes::OutputType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
 
 void
 QvisDataBinningWindow::outOfBoundsBehaviorChanged(int val)

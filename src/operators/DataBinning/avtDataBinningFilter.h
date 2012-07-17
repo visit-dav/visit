@@ -43,9 +43,10 @@
 #ifndef AVT_DataBinning_FILTER_H
 #define AVT_DataBinning_FILTER_H
 
-
 #include <avtPluginDatasetToDatasetFilter.h>
 #include <DataBinningAttributes.h>
+
+class     avtDataBinning;
 
 
 // ****************************************************************************
@@ -82,6 +83,9 @@ class avtDataBinningFilter : public avtPluginDatasetToDatasetFilter
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);
     virtual avtContract_p ModifyContract(avtContract_p);
+    void                  SetAxisNamesAndUnits(void);
+    avtDataTree_p         CreateArrayFromDataBinning(avtDataTree_p, 
+                                           avtDataBinning *, double *, bool &);
 };
 
 

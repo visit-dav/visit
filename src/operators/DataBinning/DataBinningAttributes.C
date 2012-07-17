@@ -192,6 +192,43 @@ DataBinningAttributes::BinBasedOn_FromString(const std::string &s, DataBinningAt
     return false;
 }
 
+//
+// Enum conversion methods for DataBinningAttributes::OutputType
+//
+
+static const char *OutputType_strings[] = {
+"OutputOnBins", "OutputOnInputMesh"};
+
+std::string
+DataBinningAttributes::OutputType_ToString(DataBinningAttributes::OutputType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return OutputType_strings[index];
+}
+
+std::string
+DataBinningAttributes::OutputType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return OutputType_strings[index];
+}
+
+bool
+DataBinningAttributes::OutputType_FromString(const std::string &s, DataBinningAttributes::OutputType &val)
+{
+    val = DataBinningAttributes::OutputOnBins;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == OutputType_strings[i])
+        {
+            val = (OutputType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: DataBinningAttributes::DataBinningAttributes
 //
@@ -228,6 +265,7 @@ void DataBinningAttributes::Init()
     outOfBoundsBehavior = Clamp;
     reductionOperator = Average;
     emptyVal = 0;
+    outputType = OutputOnBins;
 
     DataBinningAttributes::SelectAll();
 }
@@ -272,6 +310,7 @@ void DataBinningAttributes::Copy(const DataBinningAttributes &obj)
     reductionOperator = obj.reductionOperator;
     varForReduction = obj.varForReduction;
     emptyVal = obj.emptyVal;
+    outputType = obj.outputType;
 
     DataBinningAttributes::SelectAll();
 }
@@ -455,7 +494,8 @@ DataBinningAttributes::operator == (const DataBinningAttributes &obj) const
             (outOfBoundsBehavior == obj.outOfBoundsBehavior) &&
             (reductionOperator == obj.reductionOperator) &&
             (varForReduction == obj.varForReduction) &&
-            (emptyVal == obj.emptyVal));
+            (emptyVal == obj.emptyVal) &&
+            (outputType == obj.outputType));
 }
 
 // ****************************************************************************
@@ -622,6 +662,7 @@ DataBinningAttributes::SelectAll()
     Select(ID_reductionOperator,   (void *)&reductionOperator);
     Select(ID_varForReduction,     (void *)&varForReduction);
     Select(ID_emptyVal,            (void *)&emptyVal);
+    Select(ID_outputType,          (void *)&outputType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -792,6 +833,12 @@ DataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("emptyVal", emptyVal));
     }
 
+    if(completeSave || !FieldsEqual(ID_outputType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("outputType", OutputType_ToString(outputType)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -958,6 +1005,22 @@ DataBinningAttributes::SetFromNode(DataNode *parentNode)
         SetVarForReduction(node->AsString());
     if((node = searchNode->GetNode("emptyVal")) != 0)
         SetEmptyVal(node->AsDouble());
+    if((node = searchNode->GetNode("outputType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetOutputType(OutputType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OutputType value;
+            if(OutputType_FromString(node->AsString(), value))
+                SetOutputType(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1123,6 +1186,13 @@ DataBinningAttributes::SetEmptyVal(double emptyVal_)
 {
     emptyVal = emptyVal_;
     Select(ID_emptyVal, (void *)&emptyVal);
+}
+
+void
+DataBinningAttributes::SetOutputType(DataBinningAttributes::OutputType outputType_)
+{
+    outputType = outputType_;
+    Select(ID_outputType, (void *)&outputType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1291,6 +1361,12 @@ DataBinningAttributes::GetEmptyVal() const
     return emptyVal;
 }
 
+DataBinningAttributes::OutputType
+DataBinningAttributes::GetOutputType() const
+{
+    return OutputType(outputType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1366,6 +1442,7 @@ DataBinningAttributes::GetFieldName(int index) const
     case ID_reductionOperator:   return "reductionOperator";
     case ID_varForReduction:     return "varForReduction";
     case ID_emptyVal:            return "emptyVal";
+    case ID_outputType:          return "outputType";
     default:  return "invalid index";
     }
 }
@@ -1413,6 +1490,7 @@ DataBinningAttributes::GetFieldType(int index) const
     case ID_reductionOperator:   return FieldType_enum;
     case ID_varForReduction:     return FieldType_variablename;
     case ID_emptyVal:            return FieldType_double;
+    case ID_outputType:          return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1460,6 +1538,7 @@ DataBinningAttributes::GetFieldTypeName(int index) const
     case ID_reductionOperator:   return "enum";
     case ID_varForReduction:     return "variablename";
     case ID_emptyVal:            return "double";
+    case ID_outputType:          return "enum";
     default:  return "invalid index";
     }
 }
@@ -1599,6 +1678,11 @@ DataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_emptyVal:
         {  // new scope
         retval = (emptyVal == obj.emptyVal);
+        }
+        break;
+    case ID_outputType:
+        {  // new scope
+        retval = (outputType == obj.outputType);
         }
         break;
     default: retval = false;
