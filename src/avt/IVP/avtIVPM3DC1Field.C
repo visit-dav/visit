@@ -239,18 +239,18 @@ avtIVPM3DC1Field::~avtIVPM3DC1Field()
 
   if( elements ) delete [] elements;
 
-  if( f0 )       delete [] f0;
-  if( psi0 )     delete [] psi0;
-  if( I0 )      delete [] I0;
+  if( f0 )   delete [] f0;
+  if( psi0 ) delete [] psi0;
+  if( I0 )   delete [] I0;
 
-  if( fnr )      delete [] fnr;
-  if( fni )      delete [] fni;
-  if( psinr )    delete [] psinr;
-  if( psini )    delete [] psini;
+  if( fnr )   delete [] fnr;
+  if( fni )   delete [] fni;
+  if( psinr ) delete [] psinr;
+  if( psini ) delete [] psini;
 
-  if( f )       delete [] f;
-  if( psi )     delete [] psi;
-  if( I )       delete [] I;
+  if( f )   delete [] f;
+  if( psi ) delete [] psi;
+  if( I )   delete [] I;
 }
 
 
@@ -547,10 +547,9 @@ int avtIVPM3DC1Field::register_vert(std::vector< vertex > &vlist,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-void
-avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
-                             int *vertexIndexs,
-                             int side, int element, int *neighborList)
+void avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
+                                int *vertexIndexs,
+                                int side, int element, int *neighborList)
 {
   int v0, v1, key, vertex;
 
@@ -727,6 +726,7 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 // fprintf(stderr, "Searched %d elements.\n", count);
 
     return el;
+  }
 
 #ifdef COMMENT_OUT_ASSUMPTIONS_NOT_TRUE
   if( element_dimension == 2 )
@@ -771,8 +771,6 @@ int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
     return -1;
   }
 #endif
-
-  }
 
   // For 3D elements use VisIt's native cell search.
   else //if( element_dimension == 3 )
