@@ -148,7 +148,7 @@ avtRPOTFilter::CalculateThreshold(int loc, int arr)
         nVals = 0;
         for (int i = 0; i < numTimes; i++)
         {
-            if (values[loc][arr][i] > cutoff)
+            if (values[loc][i] > cutoff)
                 nVals++;
         }
         
@@ -156,9 +156,9 @@ avtRPOTFilter::CalculateThreshold(int loc, int arr)
         int idx = 0;
         for (int i = 0; i < nVals; i++)
         {
-            if (values[loc][arr][i] > cutoff)
+            if (values[loc][i] > cutoff)
             {
-                inData->SetValue(idx, values[loc][arr][i]);
+                inData->SetValue(idx, values[loc][i]);
                 idx++;
             }
         }
@@ -167,7 +167,7 @@ avtRPOTFilter::CalculateThreshold(int loc, int arr)
     {
         inData->SetNumberOfTuples(nVals);
         for (int i = 0; i < nVals; i++)
-            inData->SetValue(i, values[loc][arr][i]);
+            inData->SetValue(i, values[loc][i]);
     }
 
     vtkRInterface *RI = vtkRInterface::New();
@@ -265,6 +265,209 @@ avtRPOTFilter::GetDumpFileName(int idx, int var)
     return nm;
 }
 
+//****************************************************************************
+// Method:  avtRPOTFilter::GetNumberOfIterations()
+//
+// Purpose:
+//   Return number of iterations through the time sequence required.
+//
+// Programmer:  Dave Pugmire
+// Creation:    July 17, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+int
+avtRPOTFilter::GetNumberOfIterations()
+{
+    if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
+        return 12;
+    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
+        return 4;
+    else if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
+        return 1;
+}
+
+//****************************************************************************
+// Method:  avtRPOTFilter::NeedCurrentTimeSlice()
+//
+// Purpose:
+//   Determine if this time slice is needed.
+//
+// Programmer:  Dave Pugmire
+// Creation:    July 17, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtRPOTFilter::NeedCurrentTimeSlice()
+{
+    return (GetIndexFromDay(currentTime) == currentLoopIter);
+}
+
+//****************************************************************************
+// Method:  avtRPOTFilter::BeginIteration
+//
+// Purpose:
+//   Signals that a new time iteration is begining.
+//
+// Programmer:  Dave Pugmire
+// Creation:    July 17, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtRPOTFilter::BeginIteration(int i)
+{
+    //cout<<"Begin iteration "<<i<<endl;
+
+    //initialize values.
+    if (i > 0)
+    {
+        for (int i = 0; i < numTuples; i++)
+            for (int j = 0; j < numTimes; j++)
+                values[i][j] = 0.0;
+        //cout<<"values = ["<<values.size()<<"]["<<values[0].size()<<"]"<<endl;
+    }
+}
+
+//****************************************************************************
+// Method:  avtRPOTFilter::BeginIteration
+//
+// Purpose:
+//   Signals that a time iteration has completed.
+//
+// Programmer:  Dave Pugmire
+// Creation:    July 17, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtRPOTFilter::EndIteration(int i)
+{
+    avtCallback::ResetTimeout(0);
+
+    //Exchange data....
+#ifdef PARALLEL
+    double *tmp = new double[numTimes];
+
+    for (int i = 0; i < numTuples; i++)
+    {
+        UnifyMaximumDoubleArrayAcrossAllProcessors(&(values[i][0]), tmp, numTimes);
+        for (int j = 0; j < numTimes; j++)
+            values[i][j] = tmp[j];
+    }
+    delete [] tmp;
+#endif
+
+    vtkRInterface *RI = vtkRInterface::New();
+    char fileLoad[1024];
+    sprintf(fileLoad,
+            "source('%s/auxil.r')\n"    \
+            "source('%s/pp.fit2.r')\n" \
+            "source('%s/potVisit.r')\n",
+            codeDir.c_str(),
+            codeDir.c_str(),
+            codeDir.c_str());
+    
+    char potCmd[1024];
+    
+    for (int i = idx0; i < idxN; i++)
+    {
+        float threshold = CalculateThreshold(i, 0);
+
+        int numExceedences = 0;
+        for (int k = 0; k < numTimes; k++)
+            if (values[i][k] > threshold)
+                numExceedences++;
+
+        vtkDoubleArray *exceedences = vtkDoubleArray::New();
+        vtkIntArray *dayIndices = vtkIntArray::New();
+        exceedences->SetNumberOfComponents(1);
+        exceedences->SetNumberOfTuples(numExceedences);
+        dayIndices->SetNumberOfComponents(1);
+        dayIndices->SetNumberOfTuples(numExceedences);
+        
+        int idx = 0;
+        for (int k = 0; k < numTimes; k++)
+        {
+            if (values[i][k] > threshold)
+            {
+                exceedences->SetValue(idx, values[i][k]);
+                dayIndices->SetValue(idx, k);
+                idx++;
+                if (idx == numExceedences)
+                    break;
+            }
+        }
+        RI->AssignVTKDataArrayToRVariable(exceedences, "exceedences");
+        RI->AssignVTKDataArrayToRVariable(dayIndices, "dayIndices");
+        sprintf(potCmd,
+                "require(ismev)\n"                                      \
+                "output = potFit(data = exceedences, day = dayIndices, aggregation = 'annual', nYears = %d, threshold = %f)\n"
+                /*
+                  "save.image(file='tmp.RData')\n"      \
+                */
+                "rv = output$returnValue\n"             \
+                "se_rv = output$se.returnValue\n",
+                numYears, threshold);
+        string command = fileLoad;
+        command += potCmd;
+        //cout<<"command="<<command<<endl;
+        RI->EvalRscript(command.c_str());
+
+        vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));
+        vtkDoubleArray *out_serv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rv"));
+
+        output[0][i] = (float)out_rv->GetComponent(0,0);
+        output[1][i] = (float)out_serv->GetComponent(0,0);
+    }
+
+#if PARALLEL
+    float *in = new float[numTuples];
+    float *sum = new float[numTuples];
+
+    for (int n = 0; n < 2; n++)
+    {
+        for (int i = 0; i < numTuples; i++)
+            in[i] = 0.0f;
+        for (int i = idx0; i < idxN; i++)
+            in[i] = output[n][i];
+        
+        SumFloatArray(in, sum, numTuples);
+        if (PAR_Rank() == 0)
+        {
+            for (int i = 0; i < numTuples; i++)
+                output[n][i] = sum[i];
+        }
+    }
+
+    delete [] in;
+    delete [] sum;
+#endif
+
+    if (PAR_Rank() == 0 && dumpData)
+    {
+        for (int n = 0; n < 2; n++)
+        {
+            string nm = GetDumpFileName(currentLoopIter, n);
+            ofstream ofile(nm.c_str());
+                
+            for (int i = 0; i < numTuples-1; i++)
+                ofile<<output[n][i]<<", ";
+            ofile<<values[n][numTuples-1]<<endl;
+        }
+    }
+    avtCallback::ResetTimeout(5*60);
+}
+
 // ****************************************************************************
 // Method:  avtRPOTFilter::Initialize
 //
@@ -303,30 +506,18 @@ avtRPOTFilter::Initialize()
     numTimes = t1-t0 + 1;
     numYears = numTimes/365;
 
-    int numArrays = 0;
-    //How to compute maxes.
-    //Monthly maxes.
-    if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-        numArrays = 12;
-    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
-        numArrays = 4;
-    else if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
-        numArrays = 1;
-    
+    //Initial allocation...
     values.resize(numTuples);
     for (int i = 0; i < numTuples; i++)
-    {
-        values[i].resize(numArrays);
-        for (int j = 0; j < numArrays; j++)
-        {
-            values[i][j].resize(numTimes);
-            for (int k = 0; k < numTimes; k++)
-                values[i][j][k] = 0.0;
-        }
-    }
-
-    //cout<<"values:"<<values.size()<<" x "<<values[0].size()<<" x "<<values[0][0].size()<<endl;
-    //cout<<"values["<<numTuples<<"]["<<numArrays<<"][numTimes]"<<endl;
+        values[i].resize(numTimes);
+    
+    output[0].resize(numTuples);
+    output[1].resize(numTuples);
+    
+    //initialize values.
+    for (int i = 0; i < numTuples; i++)
+        for (int j = 0; j < numTimes; j++)
+            values[i][j] = 0.0;
     
     idx0 = 0;
     idxN = numTuples;
@@ -407,13 +598,13 @@ avtRPOTFilter::Execute()
     else
         scalars = (vtkFloatArray *)ds->GetCellData()->GetScalars();
     float *vals = (float *) scalars->GetVoidPointer(0);
-
+    
     int nTuples = scalars->GetNumberOfTuples();
-    int index = GetIndexFromDay(currentTime);
+    //int index = GetIndexFromDay(currentTime);
 
     //cout<<"processing "<<currentTime<<" sv = "<<scalingVal<<" index= "<<index<<endl;
     for (int i = 0; i < nTuples; i++)
-        values[i][index][currentTime] = vals[i]*scalingVal;
+        values[i][currentTime] = vals[i]*scalingVal;
 }
 
 // ****************************************************************************
@@ -432,138 +623,8 @@ avtRPOTFilter::Execute()
 void
 avtRPOTFilter::CreateFinalOutput()
 {
-    avtCallback::ResetTimeout(0);
-
-    //Exchange data....
-    int numArrays = values[0].size();
-#ifdef PARALLEL
-    double *tmp = new double[numTimes];
-
-    for (int i = 0; i < numTuples; i++)
-    {
-        for (int j = 0; j < numArrays; j++)
-        {
-            UnifyMaximumDoubleArrayAcrossAllProcessors(&(values[i][j][0]), tmp, numTimes);
-            for (int k = 0; k < numTimes; k++)
-                values[i][j][k] = tmp[k];
-        }
-    }
-    delete [] tmp;
-#endif
-    
-    vtkRInterface *RI = vtkRInterface::New();
-    char fileLoad[1024];
-    sprintf(fileLoad,
-            "source('%s/auxil.r')\n"    \
-            "source('%s/pp.fit2.r')\n" \
-            "source('%s/potVisit.r')\n",
-            codeDir.c_str(),
-            codeDir.c_str(),
-            codeDir.c_str());
-    
-    char potCmd[1024];
-            
-    
-    for (int j = 0; j < numArrays; j++)
-    {
-        for (int i = idx0; i < idxN; i++)
-        {
-            float threshold = CalculateThreshold(i, j);
-
-            int numExceedences = 0;
-            for (int k = 0; k < numTimes; k++)
-                if (values[i][j][k] > threshold)
-                    numExceedences++;
-
-            vtkDoubleArray *exceedences = vtkDoubleArray::New();
-            vtkIntArray *dayIndices = vtkIntArray::New();
-            exceedences->SetNumberOfComponents(1);
-            exceedences->SetNumberOfTuples(numExceedences);
-            dayIndices->SetNumberOfComponents(1);
-            dayIndices->SetNumberOfTuples(numExceedences);
-            
-            int idx = 0;
-            for (int k = 0; k < numTimes; k++)
-            {
-                if (values[i][j][k] > threshold)
-                {
-                    exceedences->SetValue(idx, values[i][j][k]);
-                    dayIndices->SetValue(idx, k);
-                    idx++;
-                    if (idx == numExceedences)
-                        break;
-                }
-            }
-            RI->AssignVTKDataArrayToRVariable(exceedences, "exceedences");
-            RI->AssignVTKDataArrayToRVariable(dayIndices, "dayIndices");
-            sprintf(potCmd,
-                    "require(ismev)\n" \
-                    "output = potFit(data = exceedences, day = dayIndices, aggregation = 'annual', nYears = %d, threshold = %f)\n"
-                    /*
-                    "save.image(file='tmp.RData')\n"  \
-                    */
-                    "rv = output$returnValue\n"\
-                    "se_rv = output$se.returnValue\n",
-                    numYears, threshold);
-            string command = fileLoad;
-            command += potCmd;
-            //cout<<"command="<<command<<endl;
-            RI->EvalRscript(command.c_str());
-
-            vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));
-            vtkDoubleArray *out_serv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rv"));
-
-            if (dumpData)
-            {
-                values[i][j].resize(2);
-                values[i][j][0] = (float)out_rv->GetComponent(0,0);
-                values[i][j][1] = (float)out_serv->GetComponent(0,0);
-            }
-            else
-            {
-                values[i][j].resize(1);
-                values[i][j][0] = (float)out_rv->GetComponent(0,0);
-            }
-        }
-    }
-
-#if PARALLEL
-    float *in = new float[numTuples];
-    float *sum = new float[numTuples];
-    
-    for (int i = 0; i < numTuples; i++)
-        in[i] = 0.0f;
-    
-    for (int k = 0; k < numTimes; k++)
-    {
-        for (int j = 0; j < numArrays; j++)
-        {
-            for (int i = idx0; i < idxN; i++)
-                in[i] = values[i][j][k];
-        
-            SumFloatArray(in, sum, numTuples);
-            if (PAR_Rank() == 0)
-            {
-                for (int i = 0; i < numTuples; i++)
-                    values[i][j][k] = sum[i];
-            }
-        }
-    }
-
-    delete [] in;
-    delete [] sum;
-#endif
-
     if (PAR_Rank() == 0)
     {
-        int displayIdx = 0;
-        if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
-            displayIdx = 0;
-        else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-            displayIdx = (int)displayMonth - (int)(PeaksOverThresholdAttributes::JAN);
-        else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-            displayIdx = (int)displaySeason - (int)(PeaksOverThresholdAttributes::WINTER);
-        
         //cout<<"Create output.....("<<numOutputComponents<<" x "<<numTuples<<")"<<endl;
         vtkFloatArray *outVar = vtkFloatArray::New();
         outVar->SetNumberOfComponents(1);
@@ -571,7 +632,7 @@ avtRPOTFilter::CreateFinalOutput()
         int idx = 0;
         for (int i = 0; i < numTuples; i++, idx++)
         {
-            outVar->SetValue(i, values[i][displayIdx][0]);
+            outVar->SetValue(i, output[0][i]);
         }
     
         if (nodeCenteredData)
@@ -584,25 +645,7 @@ avtRPOTFilter::CreateFinalOutput()
         avtDataTree_p outputTree = new avtDataTree(outDS, 0);
         SetOutputDataTree(outputTree);
         outDS->Delete();
-
-        if (dumpData)
-        {
-            for (int k = 0; k < values[0][0].size(); k++)
-            {
-                for (int j = 0; j < numArrays; j++)
-                {
-                    string nm = GetDumpFileName(j, k);
-                    ofstream ofile(nm.c_str());
-                    
-                    for (int i = 0; i < numTuples-1; i++)
-                        ofile<<values[i][j][k]<<", ";
-                    ofile<<values[numTuples-1][j][k]<<endl;
-                }
-            }
-        }
     }
     else
         SetOutputDataTree(new avtDataTree());
-
-    avtCallback::ResetTimeout(5*60);
 }

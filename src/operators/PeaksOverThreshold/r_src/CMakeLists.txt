@@ -3,7 +3,7 @@
 CONFIGURE_FILE(potVisit.r
               ${CMAKE_BINARY_DIR}/lib/r_support/Rscripts/potVisit.r @ONLY)
 CONFIGURE_FILE(pp.fit2.r
-              ${CMAKE_BINARY_DIR}/lib/r_support/Rscripts/potVisit.r @ONLY)
+              ${CMAKE_BINARY_DIR}/lib/r_support/Rscripts/pp.fit2.r @ONLY)
 
 #install all files..
 MESSAGE(STATUS "Installing R scripts: ${VISIT_INSTALLED_VERSION_LIB} ")
