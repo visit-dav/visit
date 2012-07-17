@@ -146,6 +146,11 @@ public:
     unsigned int scalar_size;
     
   protected:
+
     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+
+    static herr_t linkIterator(hid_t, const char *, const H5L_info_t *, void *);
+    static herr_t groupIterator(hid_t, const char *, void *);
+
 };
 #endif

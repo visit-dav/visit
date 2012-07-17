@@ -82,8 +82,6 @@ class avtM3DC1Field
 
     ~avtM3DC1Field();
 
-    virtual bool IsInside(const double& t, const avtVector& x) const;
-
     void findElementNeighbors();
     int register_vert(std::vector< vertex > &vlist,
                       double x, double y);
@@ -91,10 +89,7 @@ class avtM3DC1Field
     void add_edge(std::multimap< int, edge > &edgeMaplist,
                   int *vertexIndexs, int side, int element, int *neighborList);
 
-    int get_tri_coords2D(double *x, double *xout) const;
     int get_tri_coords2D(double *x, int el, double *xout) const;
-
-    avtVector operator()( const double &t, const avtVector &p ) const;
 
     void interpBcomps(float *B, double *x, int element, double *xieta) const;
 

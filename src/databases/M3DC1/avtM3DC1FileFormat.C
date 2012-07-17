@@ -112,7 +112,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
     }
 
     if( m_refinement < 0 )      m_refinement = 0;
-    else if( m_refinement > 9 ) m_refinement = 9;
+    else if( m_refinement > 4 ) m_refinement = 4;
 
     if( processDataSelections && m_refinement )
     {
@@ -358,7 +358,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                               cell_origin, group_origin,
                               spatial_dimension, topological_dimension,
                               meshType);
-
+    
     mmd->SetBounds( bounds );
     mmd->SetNumberCells( nelms );
     md->Add(mmd);
@@ -379,8 +379,9 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     {
       string varname = "equilibrium/" + m_fieldVarNames[i];
       string meshname = string("equilibrium/mesh") + string(level);
+      
       AddScalarVarToMetaData( md, varname, meshname, m_dataLocation );
-
+      
       meshname = string("mesh") + string(level);
       AddScalarVarToMetaData( md, m_fieldVarNames[i], meshname, m_dataLocation );
     }
@@ -410,7 +411,6 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                             spatial_dimension, topological_dimension, meshType);
       mmd->hideFromGUI = true;
       md->Add(mmd);
-
 
       mmd =
         new avtMeshMetaData(string("mesh") + string(level),
@@ -445,36 +445,39 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       avtScalarMetaData *smd =
         new avtScalarMetaData("hidden/" + m_scalarVarNames[i],
                               "hidden/equilibrium/mesh", AVT_ZONECENT);
-
+      
       smd->hideFromGUI = true;
       md->Add(smd);
     }
-
+    
     // Add the elements so we have access to them for the interpolation
     avtVectorMetaData *amd =
       new avtVectorMetaData("hidden/equilibrium/elements",
-                           "hidden/equilibrium/mesh",
-                           AVT_ZONECENT, element_size);
-
+                            "hidden/equilibrium/mesh",
+                            AVT_ZONECENT, element_size);
+    
     amd->hideFromGUI = true;
     md->Add(amd);
-
-    amd = new avtVectorMetaData("hidden/elements", "hidden/mesh",
-                               AVT_ZONECENT, element_size);
+    
+    avtVectorMetaData *amd =
+      new avtVectorMetaData("hidden/elements", "hidden/mesh",
+                            AVT_ZONECENT, element_size);
 
     amd->hideFromGUI = true;
     md->Add(amd);
 
     // Hidden array field vars so we have access to them for the interpolation
+    string varname;
+
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
-      string varname = "hidden/equilibrium/" + m_fieldVarNames[i];
+      varname = "hidden/equilibrium/" + m_fieldVarNames[i];
       amd = new avtVectorMetaData(varname, "hidden/equilibrium/mesh",
-                                 AVT_ZONECENT, scalar_size);
-
+                                  AVT_ZONECENT, scalar_size);
+      
       amd->hideFromGUI = true;
       md->Add(amd);
-
+    
       varname = "hidden/" + m_fieldVarNames[i];
       amd = new avtVectorMetaData(varname, "hidden/mesh",
                                  AVT_ZONECENT, scalar_size);
@@ -1019,6 +1022,8 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   {
     vtkWedge *wedge = vtkWedge::New();
 
+//    mins[0] = maxs[0] = 187219;
+
     for( int i=mins[0]; i<=maxs[0]; i+=strides[0] )
     {
       unsigned int index = i * nvertices;
@@ -1316,6 +1321,8 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   float* pts = (float *) vtkPts->GetVoidPointer(0);
   int npts = vtkPts->GetNumberOfPoints();
 
+  unsigned int ptsPerElement = npts / nelms;
+
   // Get the M3D C1 field so the variables can be interpolated on the
   // linear mesh.
   avtM3DC1Field m3dField(elements, nelms, element_dimension, nplanes);
@@ -1345,7 +1352,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   float* varPtr = (float *) var->GetVoidPointer(0);
 
   int element;
-  double *xieta = new double[element_dimension];
+  double xieta[3];
 
   double pt[3], centroid[3];
 
@@ -1360,33 +1367,7 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       // because the points lie in the element.
       // 
       if( i % nvertices == 0 )
-      {
-        if( element_dimension == 2 )
-        {
-          centroid[0] = (pts[0] + pts[3] + pts[6] ) / nvertices;
-          centroid[1] = (pts[1] + pts[4] + pts[7] ) / nvertices;
-          centroid[2] = (pts[2] + pts[5] + pts[8] ) / nvertices;
-        }
-        else //if( element_dimension == 3 )
-        {
-          centroid[0] = (pts[0] + pts[3] + pts[6] +
-                         pts[9] + pts[12] + pts[15] ) / nvertices;
-          centroid[1] = (pts[1] + pts[4] + pts[7] +
-                         pts[10] + pts[13] + pts[16] ) / nvertices;
-          centroid[2] = (pts[2] + pts[5] + pts[8] +
-                         pts[11] + pts[14] + pts[17] ) / nvertices;
-        }
-
-        if( (element = m3dField.get_tri_coords2D(centroid, xieta)) < 0 )
-        {
-          char buf[1024];
-
-          sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f",
-                   centroid[0], centroid[1], centroid[2] );
-
-          avtCallback::IssueWarning( buf );
-        }
-      }
+        element = i / ptsPerElement;
 
       pt[0] = pts[0];  pt[1] = pts[1];   pt[2] = pts[2];
 
@@ -1394,6 +1375,13 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       if ((element = m3dField.get_tri_coords2D(pt, element, xieta)) >= 0)
       {
         *varPtr++ = m3dField.interp(values, element, xieta);
+
+        if( m3dField.interp(values, element, xieta) < -10 ||
+            m3dField.interp(values, element, xieta) > 1 )
+        cout << i << "  " << element << "  "
+             << pt[0] << "  " << pt[1] << "  " << pt[2] << "  "
+             <<  m3dField.interp(values, element, xieta) << "  "
+             << endl;
 
 //      cout << i << "  " << element << "  "
 //           << pt[0] << "  " << pt[1] << "  " << pt[2] << "  "
@@ -1440,8 +1428,10 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
                        pts[11] + pts[14] + pts[17] ) / nvertices;
       }
 
+      element = i / ptsPerElement;
+
       /* Find the element containing the point; get local coords xi,eta */
-      if ((element = m3dField.get_tri_coords2D(centroid, xieta)) >= 0)
+      if ((element = m3dField.get_tri_coords2D(centroid, element, xieta)) >= 0)
       {
         *varPtr++ = m3dField.interp(values, element, xieta);
       }
@@ -1463,7 +1453,6 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
   vtkPts->Delete();
   vtkVar->Delete();
-  delete [] xieta; 
 
   return var;
 }
@@ -1518,7 +1507,6 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
     // For now the mesh is the same mesh as the original mesh because
     // of needing it for the integration.
     vtkPoints *vtkPts;
-
     if( strcmp(varname, "B_C1_Elements") == 0 )
       vtkPts = GetMeshPoints( elements, 0 );
     else if( strcmp(varname, "B_Interpolated") == 0 )
@@ -1526,6 +1514,8 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     float* pts = (float *) vtkPts->GetVoidPointer(0);
     int npts = vtkPts->GetNumberOfPoints();
+
+    unsigned int ptsPerElement = npts / nelms;
 
     // Get the M3D C1 field so the variables can be interpolated on the
     // linear mesh.
@@ -1640,7 +1630,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
     int element;
     float B[3];
-    double pt[3], centroid[3], *xieta = new double[element_dimension];
+    double pt[3], centroid[3], xieta[3];
 
     if( m_dataLocation == AVT_NODECENT)
     {
@@ -1670,7 +1660,7 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
                            pts[11] + pts[14] + pts[17] ) / nvertices;
           }
 
-          element = m3dField.get_tri_coords2D(centroid, xieta);
+          element = i / ptsPerElement;
         }
         
         pt[0] = pts[0];  pt[1] = pts[1];   pt[2] = pts[2];
@@ -1718,8 +1708,10 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
                          pts[11] + pts[14] + pts[17] ) / nvertices;
         }
 
+        element = i / ptsPerElement;
+
         /* Find the element containing the point; get local coords xi,eta */
-        if ((element = m3dField.get_tri_coords2D(centroid, xieta)) >= 0) 
+        if ((element = m3dField.get_tri_coords2D(centroid, element, xieta)) >= 0) 
         {
           m3dField.interpBcomps(B, centroid, element, xieta);
 
@@ -1740,8 +1732,6 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
         pts += nvertices * 3;
       }
     }
-
-    delete [] xieta;
 
     // Set the pointers to null as the VTK delete operation will take
     // of deleting the data. Normally the M3DCIField thinks it needs
@@ -1937,26 +1927,150 @@ avtM3DC1FileFormat::ReadAttribute( hid_t parentID,
 }
 
 // ****************************************************************************
-//  Method: avtM3DFileFormat::groupIterator
+//  Method: avtM3DFileFormat::linkIterator
 //
 //  Purpose:
-//      Iterate through all of the grops in an HDF5 file.
+//      Iterate through all of the links in an HDF5 file.
 //
 //  Arguments:
-//      parentID   The id of the parent.
-//      attr       Name of the group.
-//      value      Optional data - in this case the avtM3DC1FileFormat.
+//      locId   The id of the parent.
+//      name    Name of the group.
+//      linfo   link info
+//      vopdata Optional data - in this case the avtM3DC1FileFormat.
 //
 //  Programmer: allen
 //  Creation:   Tue Sep 25 08:49:28 PDT 2007
 //
 // ****************************************************************************
-herr_t groupIterator(hid_t locId, const char* name, void* opdata) {
+
+herr_t
+avtM3DC1FileFormat::linkIterator(hid_t locId, const char* name,
+                                 const H5L_info_t *linfo, void* opdata)
+{
+  switch (linfo->type) {
+    case H5L_TYPE_HARD: {
+
+      H5O_info_t objinfo;
+
+      /* Stat the object */
+      if(H5Oget_info_by_name(locId, name, &objinfo, H5P_DEFAULT) < 0) {
+        debug5 << "visitLinks() - unable to open object with name " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+
+      switch(objinfo.type)
+      {
+        case H5O_TYPE_GROUP:
+        return groupIterator( locId, name, opdata );
+        break;
+        case H5O_TYPE_DATASET:
+        return groupIterator( locId, name, opdata );
+        break;
+
+        default:
+        debug5 << "visitLinks: node '" << name <<
+        "' has an unknown type " << objinfo.type << std::endl;
+        break;
+      }
+    }
+    break;
+    //end of case H5L_TYPE_HARD
+    case H5L_TYPE_EXTERNAL: {
+
+      char *targbuf = (char*) malloc( linfo->u.val_size );
+
+      if (H5Lget_val(locId, name, targbuf, linfo->u.val_size, H5P_DEFAULT) < 0) {
+        debug5 << "visitLinks() - unable to open external link with name " <<targbuf <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      const char *filename;
+      const char *targname;
+
+      if (H5Lunpack_elink_val(targbuf, linfo->u.val_size, 0, &filename, &targname) < 0) {
+        debug5 << "visitLinks() - unable to open external file with name " <<filename <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      debug5 << "visitLinks(): node '" << name << "' is an external link." << std::endl;
+      debug5 << "visitLinks(): node '" << targname << "' is an external target group." << std::endl;
+
+      free(targbuf);
+      targbuf = NULL;
+      
+      // Get info of the linked object.
+      H5O_info_t objinfo;
+      hid_t obj_id = H5Oopen(locId, name, H5P_DEFAULT);
+      
+      if (obj_id < 0) {
+        debug5 << "visitLinks() - unable to get id for external object " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+
+      //Test-open the linked object
+      if (H5Oget_info (obj_id, &objinfo) < 0) {
+        debug5 << "visitLinks() - unable to open external object " <<name <<std::endl;
+        debug5 << "visitLinks() - this object and all children will be dropped." <<std::endl;
+        return 0;
+      }
+      
+      //Close the linked object to release hdf5 id
+      H5Oclose( obj_id );
+
+      //Finally, decide what to do depending on what type of object this is
+      switch(objinfo.type)
+      {
+        case H5O_TYPE_GROUP:
+        return groupIterator( locId, name, opdata );
+        break;
+        case H5O_TYPE_DATASET:
+        return groupIterator( locId, name, opdata );
+        break;
+
+        default:
+          debug5 << "visitLinks: node '" << name <<
+        "' has an unknown type " << objinfo.type << std::endl;
+        break;
+      }
+    }
+    break;
+      //END OF CASE H5L_TYPE_EXTERNAL
+    
+    default:
+    debug5 << "visitLinks: node '" << name <<
+    "' has an unknown object type " << linfo->type << std::endl;
+    break;
+  }
+
+  return 0;
+}
+
+// ****************************************************************************
+//  Method: avtM3DFileFormat::groupIterator
+//
+//  Purpose:
+//      Iterate through all of the groups in an HDF5 file.
+//
+//  Arguments:
+//      locId   The id of the parent.
+//      name    Name of the group.
+//      vopdata Optional data - in this case the avtM3DC1FileFormat.
+//
+//  Programmer: allen
+//  Creation:   Tue Sep 25 08:49:28 PDT 2007
+//
+// ****************************************************************************
+herr_t
+avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
 
   avtM3DC1FileFormat* M3DC1FF = static_cast< avtM3DC1FileFormat* >(opdata);
 
   H5G_stat_t statbuf;
-  H5Gget_objinfo (locId, name, false, &statbuf);
+  H5Gget_objinfo (locId, name, true, &statbuf);
 
   switch (statbuf.type) {
 
@@ -2039,9 +2153,16 @@ avtM3DC1FileFormat::LoadFile()
     int ntime;
     if ( ! ReadAttribute( rootID, "ntime", &ntime ) )
     {
+      if( nFiles != 0 )
+      {
+        ntime = nFiles;
+      }
+      else // if( nFiles == 0 )
+      {
         H5Gclose(rootID);
         H5Fclose(m_fileID);
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'ntime' was not found or was the wrong type." );
+      }
     }
 
     // 2D or 3D elements?
@@ -2129,75 +2250,118 @@ avtM3DC1FileFormat::LoadFile()
 
     H5Gclose( rootID );
 
+
+    int nfields = -1;
+    nelms = -1;
+    
     // EQUILIBRIUM
 
     // Read in equilibrium mesh element information.
     hid_t groupId = H5Gopen( m_fileID, "/equilibrium/mesh", H5P_DEFAULT);
     if ( groupId < 0 )
     {
-        H5Fclose(m_fileID);
-        EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/mesh' was not found" );
+      H5Fclose(m_fileID);
+      EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/mesh' was not found" );
     }
-
-    if ( ! ReadAttribute( groupId, "nelms", &nelms ) )
+    else
+    {
+      if ( ! ReadAttribute( groupId, "nelms", &nelms ) )
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nelms' was not found or was the wrong type." );
 
-    hid_t datasetId = H5Dopen(groupId, "elements", H5P_DEFAULT);
-    hid_t spaceId = H5Dget_space(datasetId);
-    size_t rank = H5Sget_simple_extent_ndims(spaceId);
-    std::vector<hsize_t> sdim(rank);
-    H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
+      hid_t datasetId = H5Dopen(groupId, "elements", H5P_DEFAULT);
+      hid_t spaceId = H5Dget_space(datasetId);
+      size_t rank = H5Sget_simple_extent_ndims(spaceId);
+      std::vector<hsize_t> sdim(rank);
+      H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
     
-    H5Dclose(spaceId);
-    H5Dclose(datasetId);
-    
-    if( rank != 2 ||
-        sdim[0] != nelms ||
-        sdim[1] != element_size )
-    {
-      EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - number of elements or the element size does not match" );
-    }
+      H5Dclose(spaceId);
+      H5Dclose(datasetId);
+      
+      if( rank != 2 ||
+          sdim[0] != nelms ||
+          sdim[1] != element_size )
+      {
+        EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - number of elements or the element size does not match" );
+      }
 
-    H5Gclose( groupId );
+      H5Gclose( groupId );
 
-
-    // Read in equilibrium field information.
-    groupId = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
-    if ( groupId < 0 )
+      // Read in equilibrium field information.
+      groupId = H5Gopen( m_fileID, "/equilibrium/fields", H5P_DEFAULT);
+      if ( groupId < 0 )
+      {
         EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - '/equilibrium/fields' was not found" );
-
-    int nfields;
-    
-    if ( ! ReadAttribute( groupId, "nfields", &nfields ) )
-        EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nfields' was not found or was the wrong type." );
-
-    // Go through the field group and collect all of the field datasets
-    H5Giterate(groupId, ".", NULL, groupIterator, this);
-
-    H5Gclose( groupId );
-
-    if( nfields != m_fieldVarNames.size() )
-        EXCEPTION1( InvalidVariableException, "M3DC1 number of fields check - of fields does not match the number of datasets founds." );
+      }
+      else
+      {
+        if ( ! ReadAttribute( groupId, "nfields", &nfields ) )
+          EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nfields' was not found or was the wrong type." );
+        
+        // Go through the field group and collect all of the field datasets
+        //    H5Giterate(groupId, ".", NULL, groupIterator, this);
+        H5Literate(groupId, H5_INDEX_NAME, H5_ITER_INC, 0, linkIterator, this);
+        
+        H5Gclose( groupId );
+        
+        if( nfields != m_fieldVarNames.size() )
+          EXCEPTION1( InvalidVariableException, "M3DC1 number of fields check - of fields does not match the number of datasets founds." );
+      }
+    }
 
     // TIME STEPS
 
     //Load basic info on variables for each time step.
-    for ( int t=0; t<ntime; ++t )
+    for ( int t=0; t<ntime && t<55; ++t )
     {
         char timeStep[64];
         sprintf( timeStep, "/time_%03d", t );
 
         hid_t groupID = H5Gopen( m_fileID, timeStep, H5P_DEFAULT);
         if ( groupID < 0 )
-          EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'timeStep' was not found" );
+          EXCEPTION1( InvalidVariableException,
+                      "M3DC1 Group Open - timeStep " + string(timeStep) +
+                      " was not found" );
 
         // Read the time value
         double time;
         if ( ! ReadAttribute( groupID, "time", &time ) )
-          EXCEPTION1( InvalidVariableException, "M3DC1 Group Open - 'time' was not found" );
+          EXCEPTION1( InvalidVariableException,
+                      "M3DC1 Group Open - 'time' was not found" );
 
         m_times.push_back( time );
         m_cycles.push_back( t );
+
+
+        // Read in the mesh information.
+        hid_t meshId = H5Gopen( groupID, "mesh", H5P_DEFAULT);
+
+        int nElements;
+        if ( ! ReadAttribute( meshId, "nelms", &nElements ) )
+          EXCEPTION1( InvalidVariableException,
+                      "M3DC1 Attribute Reader - 'nelms' was not found" );
+
+        if( nElements != nelms )
+          EXCEPTION1( InvalidVariableException,
+                      "M3DC1 Element Check - Time step 'nelms' does not match equilibrium 'nelms'" );
+
+        hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
+        hid_t spaceId = H5Dget_space(datasetId);
+        size_t rank = H5Sget_simple_extent_ndims(spaceId);
+        std::vector<hsize_t> sdim(rank);
+        H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
+    
+        H5Dclose(spaceId);
+        H5Dclose(datasetId);
+
+        if( rank != 2 ||
+            sdim[0] != nelms ||
+            sdim[1] != element_size )
+        {
+          EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - The number of elements or the element size does not match" );
+        }
+        
+        H5Gclose( meshId );
+
 
         // Read in the field information.
         hid_t fieldID = H5Gopen( groupID, "fields", H5P_DEFAULT);
@@ -2238,34 +2402,6 @@ avtM3DC1FileFormat::LoadFile()
         }
             
         H5Gclose( fieldID );
-
-        // Read in the mesh information.
-        hid_t meshId = H5Gopen( groupID, "mesh", H5P_DEFAULT);
-
-        int nElements;
-        if ( ! ReadAttribute( meshId, "nelms", &nElements ) )
-          EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nelms' was not found" );
-
-        if( nElements != nelms )
-          EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Time step 'nelms' does not match equilibrium 'nelms'" );
-
-        hid_t datasetId = H5Dopen(meshId, "elements", H5P_DEFAULT);
-        hid_t spaceId = H5Dget_space(datasetId);
-        size_t rank = H5Sget_simple_extent_ndims(spaceId);
-        std::vector<hsize_t> sdim(rank);
-        H5Sget_simple_extent_dims(spaceId, &sdim[0], NULL);
-    
-        H5Dclose(spaceId);
-        H5Dclose(datasetId);
-    
-        if( rank != 2 ||
-            sdim[0] != nelms ||
-            sdim[1] != element_size )
-        {
-          EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - The number of elements or the element size does not match" );
-        }
-        
-        H5Gclose( meshId );
     }
 
     debug1 << "SUCCESS in opening M3D C1 file " << m_filename << endl;

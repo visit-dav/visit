@@ -132,34 +132,6 @@ avtM3DC1Field::~avtM3DC1Field()
 
 
 // ****************************************************************************
-//  Method: avtM3DC1Field IsInside
-//
-//  Creationist: Joshua Breslau
-//  Creation:   16 April 2010
-//
-//  The VTK check should work but is not reliable because the mesh
-//  lies in the XZ plane and Y may or may not be exactly zero. As such
-//  due to round off VTK may say the point is outside the
-//  mesh. As such, use the native check instead.
-//
-//  ****************************************************************************
-
-bool avtM3DC1Field::IsInside(const double& t, const avtVector& x) const
-{
-  double xin[3];
-  double xieta[3];
-
-  xin[0] = x[0];
-  xin[1] = x[1];
-  xin[2] = x[2];
-
-  int el = get_tri_coords2D(xin, xieta);
-
-  return (bool) ( el >= 0 );
-}
-
-
-// ****************************************************************************
 //  Method: findElementNeighbors
 //
 //  Creationist: Joshua Breslau
@@ -186,7 +158,7 @@ void avtM3DC1Field::findElementNeighbors()
     neighbors[el] = -1;
 
   /* Allocate trig table */
-  trigtable = (double *)malloc(2 * tElements * sizeof(double));
+  trigtable = (double *)malloc(2 * nplanes*tElements * sizeof(double));
   if (trigtable == NULL) {
     EXCEPTION1( InvalidVariableException,
                 "M3DC1 findElementNeighbors - Insufficient memory for trigtable" );
@@ -200,28 +172,41 @@ void avtM3DC1Field::findElementNeighbors()
   // (x+(a+b)*cos(theta),z+(a+b)*sin(theta)),
   // (x+b*cos(theta)-c*sin(theta),z+b*sin(theta)+c*cos(theta)).
 
-  for (el=0; el<tElements; el++) {
-    ptr = elements + element_size*el;
-    co = trigtable[2*el]     = cos(ptr[3]);
-    sn = trigtable[2*el + 1] = sin(ptr[3]);
+  if( element_dimension == 2 )
+  {
+    for (el=0; el<tElements; el++) {
+      ptr = elements + element_size*el;
+      trigtable[2*el]     = cos(ptr[3]);
+      trigtable[2*el + 1] = sin(ptr[3]);
+      
+      co = trigtable[2*el];
+      sn = trigtable[2*el + 1];
 
-    x[0] = ptr[4];
-    y[0] = ptr[5];
+      x[0] = ptr[4];
+      y[0] = ptr[5];
+      
+      x[1] = x[0] + (ptr[0] + ptr[1])*co;
+      y[1] = y[0] + (ptr[0] + ptr[1])*sn;
+      
+      x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
+      y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
+      
+      for (vert=0; vert<3; vert++)
+        tri[vert] = register_vert(vertexList, x[vert], y[vert]);
+      
+      for (vert=0; vert<3; vert++)
+        add_edge(edgeListMap, tri, vert, el, neighbors);
 
-    x[1] = x[0] + (ptr[0] + ptr[1])*co;
-    y[1] = y[0] + (ptr[0] + ptr[1])*sn;
-
-    x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
-    y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
-
-    for (vert=0; vert<3; vert++)
-      tri[vert] = register_vert(vertexList, x[vert], y[vert]);
-    
-    for (vert=0; vert<3; vert++)
-      add_edge(edgeListMap, tri, vert, el, neighbors);
-
-  } /* end loop el */
-
+    } /* end loop el */
+  }
+  else //if( element_dimension == 3 )
+  {
+    for (el=0; el<nplanes*tElements; el++) {
+      ptr = elements + element_size*el;
+      trigtable[2*el]     = cos(ptr[3]);
+      trigtable[2*el + 1] = sin(ptr[3]);
+    }
+  }
 //   fprintf(stderr, "%d / %d unique vertices\n", vlen, 3*tElements);
 //   fprintf(stderr, "Neighbors of element 0: %d, %d, %d\n", neighbors[0],
 //           neighbors[1], neighbors[2]);
@@ -345,10 +330,10 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
   tri = elements + element_size*el;
 
   /* Compute coordinates local to the current element */
-  if( element_dimension == 2 )
+//   if( element_dimension == 2 )
     index = 2 * el;
-  else //if( element_dimension == 3 )
-    index = 2*(el%tElements);
+//  else //if( element_dimension == 3 )
+//    index = 2*(el%tElements);
 
   co = trigtable[index];
   sn = trigtable[index + 1];
@@ -373,182 +358,6 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
   }
 
   return el;
-}
-
-
-// ****************************************************************************
-//  Method: get_tri_coords2D
-//
-//  Creationist: Joshua Breslau
-//  Creation:   20 November 2009
-//
-// ****************************************************************************
-int avtM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
-{
-  static int el=0;  /* Needs to be static so the method is a const. */
-
-  float  *tri;
-  double co, sn, rrel, zrel;
-  int    last=-1, next, flag0, flag1, flag2;
-
-  for (int count=0; count<tElements; ++count)
-  {
-    tri = elements + element_size*el;
-
-    /* Compute coordinates local to the current element */
-    co = trigtable[2*el];
-    sn = trigtable[2*el + 1];
-
-    rrel = xin[0] - (tri[4] + tri[1]*co);
-    zrel = xin[2] - (tri[5] + tri[1]*sn);
-
-    xout[0] = rrel*co + zrel*sn;  /* = xi */
-    xout[1] = zrel*co - rrel*sn;  /* = eta */
-
-    /* Determine whether point is inside element */
-    /* "Outside" side 0? */
-    if ((flag0 = ((tri[0] + tri[1])*xout[1] < 0.0)))
-    {
-      if ((next = neighbors[3*el]) >= 0) {
-        if (next != last) // not on the boundary so continue;
-        {
-          last = el;
-          el = next;
-          continue;
-        }
-        else // on the boundary so reset the flag and check the other edges;
-          flag0 = 0;
-      }
-    }
-
-    /* "Outside" side 1? */
-    if ((flag1 = (tri[0]*xout[1] > tri[2]*(*tri - xout[0]))))
-    {
-      if ((next = neighbors[3*el + 1]) >= 0) {
-        if (next != last) // not on the boundary so continue;
-        {
-          last = el;
-          el = next;
-          continue;
-        }
-        else // on the boundary so reset the flag and check the other edges;
-          flag1 = 0;
-      }
-    }
-
-    /* "Outside" side 2? */
-    if ((flag2 = (tri[2]*xout[0] < tri[1]*(xout[1] - tri[2]))))
-    {
-      if ((next = neighbors[3*el + 2]) >= 0) {
-        if (next != last) // on the boundary so continue;
-        {
-          last = el;
-          el = next;
-          continue;
-        }
-        else // on the boundary so reset the flag and check the other edges;
-          flag2 = 0;
-      }
-    }
-
-    if (flag0 || flag1 || flag2)
-      return -1;
-    else
-      break;
-
-  } /* end loop count */
-
-// fprintf(stderr, "Searched %d elements.\n", count);
-
-  if( element_dimension == 2 )
-    return el;
-  else //if( element_dimension == 3 )
-  {
-    // The above finds the xi and eta for the phi = 0 plane. Which is
-    // the same for any plane. Now find the correct phi plane via a
-    // brut force search of each plane.
-
-    // Assumptions:
-    // Equal number of elements in each plane,
-    // Same ordering of elements in each plane,
-    // Matching element alignment at each plane.
-
-    float phi = xin[1];
-
-    while( phi < 0 )
-      phi += 2.0*M_PI;
-
-    while( phi >= 2.0*M_PI )
-      phi -= 2.0*M_PI;
-
-    for( int i=0; i<nplanes; ++i )
-    {
-      if( tri[8] <= phi ) // tri[8] = phi0
-      {
-        xout[2] = phi - tri[8];
-
-        if( xout[2] <= tri[7] ) // tri[7] == depth of the section
-          return el + i * tElements;
-      }
-
-      // Go to the next plane
-      tri += element_size*tElements;
-    }
-
-//     tri = elements + element_size*el;
-
-//     for( int i=0; i<nplanes; ++i )
-//     {
-//       cerr << tri[8] << "  " <<  xin[1] << endl;
-//       // Go to the next plane
-//       tri += element_size*tElements;
-//     }
-
-    return -1;
-  }
-}
-
-
-// ****************************************************************************
-//  Method: avtM3DC1Field::operator
-//
-//  Evaluates a point location by consulting a M3D C1 grid.  Gets the
-//      B field components directly.
-//
-//  Programmer: Joshua Breslau
-//  Creation:   October 24, 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtVector
-avtM3DC1Field::operator()( const double &t, const avtVector &p ) const
-{
-  // NOTE: Assumes the point is in cylindrical coordiantes.
-  double pt[3] = { p[0], p[1], p[2] };
-
-  /* Find the element containing the point; get local coords xi,eta */
-  double xieta[3];
-  int    element;
-
-  avtVector vec;
-
-  if ((element = get_tri_coords2D(pt, xieta)) < 0) 
-  {
-    vec = avtVector(0,0,0);
-  }
-  else 
-  {
-    float B[3];
-
-    interpBcomps(B, pt, element, xieta);
-
-    // The B value is in cylindrical coordiantes
-    vec = avtVector( B[0], B[1], B[2] );
-  }
-
-  return vec;
 }
 
 
