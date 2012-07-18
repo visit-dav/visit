@@ -378,10 +378,9 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
         avtIntegralCurve *s = terminatedICs.front();
         terminatedICs.pop_front();
         
-        if (curTimeSlice == -1 || s->domain.timeStep == curTimeSlice)
+        if( curTimeSlice == -1 || s->domain.timeStep == curTimeSlice )
         {
             activeICs.push_back(s);
-            s->status = avtIntegralCurve::STATUS_OK;
         }
         else
         {
