@@ -907,6 +907,8 @@ avtSiloFileFormat::GetTimeVaryingInformation(DBfile *dbfile,
 //    Mark C. Miller, Mon Feb 23 12:02:24 PST 2004
 //    Added bool to skip global info
 //
+//    Mark C. Miller, Tue Jul 17 20:05:52 PDT 2012
+//    Permit file to be an absolute path instead of relative to toc file.
 // *****************************************************************************
 
 DBfile *
@@ -917,22 +919,41 @@ avtSiloFileFormat::OpenFile(const char *n, bool skipGlobalInfo)
     // table of contents.  Reflect that here.
     //
     char name[1024];
-    char *tocFile = filenames[tocIndex];
-    char *thisSlash = tocFile, *lastSlash = tocFile;
-    while (thisSlash != NULL)
-    {
-        lastSlash = thisSlash;
-        thisSlash = strstr(lastSlash+1, VISIT_SLASH_STRING);
-    }
-    if (lastSlash == tocFile)
+
+    //
+    // If the filename passed in here is already an absolute path, we
+    // do not treat it as relative to the toc file. This permits root
+    // files to have multi-block objects with absolute path names.
+    //
+#ifdef WIN32
+    // Example "C:\foo\bar"
+    if (strlen(n) > 2 && n[1] == ':' && n[2] == VISIT_SLASH_CHAR)
+#else
+    // Example "/foo/bar"
+    if (n[0] == VISIT_SLASH_CHAR)
+#endif
     {
         strcpy(name, n);
     }
     else
     {
-        int amount = lastSlash-tocFile+1;
-        strncpy(name, tocFile, amount);
-        strcpy(name+amount, n);
+        char *tocFile = filenames[tocIndex];
+        char *thisSlash = tocFile, *lastSlash = tocFile;
+        while (thisSlash != NULL)
+        {
+            lastSlash = thisSlash;
+            thisSlash = strstr(lastSlash+1, VISIT_SLASH_STRING);
+        }
+        if (lastSlash == tocFile)
+        {
+            strcpy(name, n);
+        }
+        else
+        {
+            int amount = lastSlash-tocFile+1;
+            strncpy(name, tocFile, amount);
+            strcpy(name+amount, n);
+        }
     }
 
     int fileIndex = -1;
