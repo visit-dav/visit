@@ -1376,13 +1376,6 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
       {
         *varPtr++ = m3dField.interp(values, element, xieta);
 
-        if( m3dField.interp(values, element, xieta) < -10 ||
-            m3dField.interp(values, element, xieta) > 1 )
-        cout << i << "  " << element << "  "
-             << pt[0] << "  " << pt[1] << "  " << pt[2] << "  "
-             <<  m3dField.interp(values, element, xieta) << "  "
-             << endl;
-
 //      cout << i << "  " << element << "  "
 //           << pt[0] << "  " << pt[1] << "  " << pt[2] << "  "
 //           <<  m3dField.interp(values, element, xieta) << "  "
@@ -2311,7 +2304,7 @@ avtM3DC1FileFormat::LoadFile()
     // TIME STEPS
 
     //Load basic info on variables for each time step.
-    for ( int t=0; t<ntime && t<55; ++t )
+    for ( int t=0; t<ntime; ++t )
     {
         char timeStep[64];
         sprintf( timeStep, "/time_%03d", t );
