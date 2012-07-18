@@ -225,7 +225,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
 
     if (CheckForTermination(step, field))
     {
-        status = STATUS_TERMINATED;
+        status = STATUS_FINISHED;
     }
 
     // This must be called after CheckForTermination, because 

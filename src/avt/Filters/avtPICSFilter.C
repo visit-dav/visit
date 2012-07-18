@@ -3033,10 +3033,15 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         // Need a single ID for the IC even if there are many domains.
         int currentID = i;
         int nextID = -1;
+
+        currentID = GetNextCurveID();
+
         if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
             currentID = 2*i;
             nextID = 2*i+1;
+
+            nextID = GetNextCurveID();
         }
 
         for (int j = 0; j < dl.size(); j++)
@@ -3105,7 +3110,8 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 // TODO: what happens if we get 0 domains returned. We will still add the seed point to the list.
         ids.push_back(seedPtIds);
     }
-    MaxID = pts.size();
+
+//    MaxID = pts.size();
 
     // Sort them on domain.
     std::sort(curves.begin(), curves.end(), avtIntegralCurve::DomainCompare);
