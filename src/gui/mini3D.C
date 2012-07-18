@@ -1602,11 +1602,10 @@ m3d_renderer::m3d_renderer(int w, int h)
     width = w;
     height = h;
 
-    device.m[0][0] = (float)qMin(width,height)/2.;
-    device.m[1][1] =-(float)qMin(width,height)/2.;
-    device.m[0][3] = (float)width/2.;
-    device.m[1][3] = (float)height/2.;
-
+    device.m[0][0] = (float)qMin(width,height)/2.f;
+    device.m[1][1] =-(float)qMin(width,height)/2.f;
+    device.m[0][3] = (float)width/2.f;
+    device.m[1][3] = (float)height/2.f;
     numElements = 0;
     maxElements = 0;
     sort_elements = 0;
@@ -1659,10 +1658,10 @@ m3d_renderer::resize(int w, int h)
     width = w;
     height = h;
 
-    device.m[0][0] = (float)qMin(width,height)/2.;
-    device.m[1][1] =-(float)qMin(width,height)/2.;
-    device.m[0][3] = (float)width/2.;
-    device.m[1][3] = (float)height/2.;
+    device.m[0][0] = (float)qMin(width,height)/2.f;
+    device.m[1][1] =-(float)qMin(width,height)/2.f;
+    device.m[0][3] = (float)width/2.f;
+    device.m[1][3] = (float)height/2.f;
 }
 
 /*---------------------------------------------------------------------------*
@@ -2297,12 +2296,20 @@ transform_vector(const matrix4 *M, vector3 *v)
  * Notes:
  *
  * Modifications:
+ *   Kathleen Biagias, Wed Jul 18 11:17:24 MST 2012
+ *   Change how the matrix is initialized, to overcome an issue with 64-bit
+ *   compiler on Windows.
  *
  *---------------------------------------------------------------------------*/
 matrix4
 m3du_create_identity_matrix(void)
 {
-    matrix4 M = {{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}};
+    matrix4 M = m3du_create_zero_matrix();
+    M.m[0][0] = 1.0f;
+    M.m[1][1] = 1.0f;
+    M.m[2][2] = 1.0f;
+    M.m[3][3] = 1.0f;
+
     return M;
 }
 
@@ -2322,12 +2329,19 @@ m3du_create_identity_matrix(void)
  * Notes:
  *
  * Modifications:
+ *   Kathleen Biagias, Wed Jul 18 11:17:24 MST 2012
+ *   Change how the matrix is initialized, to overcome an issue with 64-bit 
+ *   compiler on Windows.
  *
  *---------------------------------------------------------------------------*/
 matrix4
 m3du_create_zero_matrix(void)
 {
-    matrix4 M = {{{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}}};
+    matrix4 M;
+    for (int i = 0; i < 4; ++i)
+       for (int j = 0; j < 4; ++j)
+           M.m[i][j] = 0.f;
+
     return M;
 }
 
