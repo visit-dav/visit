@@ -35,6 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#include <assert.h>
 #include <cmath>
 #include <cstring>
 #include <string>
@@ -76,6 +77,8 @@ float g_Center[2];
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Jul 17 20:12:32 PDT 2012
+//    Add option controlling use of absolute file paths in multi-block objects.
 // ****************************************************************************
 
 class ProgramOptions
@@ -84,13 +87,15 @@ public:
     ProgramOptions() : 
         isteps(40),
         jsteps(40),
-        driver(DB_PDB)
+        driver(DB_PDB),
+        useAbsoluteFilePaths(false)
     {
     }
 
     int isteps;
     int jsteps;
     int driver;
+    bool useAbsoluteFilePaths;
 };
 
 // ****************************************************************************
@@ -327,6 +332,8 @@ WriteDomainFile(int cycle, int dom, const ProgramOptions &opt)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Jul 17 20:10:52 PDT 2012
+//    Add ability to test absolute file paths stored in multi-block objects.
 // ****************************************************************************
 
 void
@@ -348,29 +355,38 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
     char *Array_002[MAX_DOMAINS];
     char *Array_003[MAX_DOMAINS];
     int   varTypes[MAX_DOMAINS];
+    std::string cwd = GetCurrentDirectory() + "/";
+    
+
     std::string filename = DomainFileName(cycle);
     for(int dom = 0; dom < MAX_DOMAINS; ++dom)
     {
         std::string dirname = DirectoryName(dom);
 
         meshNames[dom] = new char[MAX_STRING];
-        SNPRINTF(meshNames[dom], MAX_STRING, "%s/%s:/Mesh", dirname.c_str(), filename.c_str());
+        SNPRINTF(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
         meshTypes[dom] = DB_QUADMESH;
 
         radial[dom] = new char[MAX_STRING];
-        SNPRINTF(radial[dom], MAX_STRING, "%s/%s:/radial", dirname.c_str(), filename.c_str());
+        SNPRINTF(radial[dom], MAX_STRING, "%s%s/%s:/radial", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
 
         Array_000[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_000[dom], MAX_STRING, "%s/%s:/Array_comps/Array_000", dirname.c_str(), filename.c_str());
+        SNPRINTF(Array_000[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_000", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
 
         Array_001[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_001[dom], MAX_STRING, "%s/%s:/Array_comps/Array_001", dirname.c_str(), filename.c_str());
+        SNPRINTF(Array_001[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_001", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
 
         Array_002[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_002[dom], MAX_STRING, "%s/%s:/Array_comps/Array_002", dirname.c_str(), filename.c_str());
+        SNPRINTF(Array_002[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_002", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
 
         Array_003[dom] = new char[MAX_STRING];
-        SNPRINTF(Array_003[dom], MAX_STRING, "%s/%s:/Array_comps/Array_003", dirname.c_str(), filename.c_str());
+        SNPRINTF(Array_003[dom], MAX_STRING, "%s%s/%s:/Array_comps/Array_003", opt.useAbsoluteFilePaths?cwd.c_str():"",
+            dirname.c_str(), filename.c_str());
 
         varTypes[dom] = DB_QUADVAR;
     }
@@ -452,6 +468,8 @@ WriteCycle(int cycle, const ProgramOptions &opt)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Tue Jul 17 20:12:15 PDT 2012
+//    Add option to use absolute file paths for multi-block objects.
 // ****************************************************************************
 
 int
@@ -479,6 +497,10 @@ main(int argc, char *argv[])
                fprintf(stderr,"Unrecognized driver name \"%s\"\n",
                    argv[j]);
             }
+        }
+        else if (strcmp(argv[j], "-abspaths") == 0)
+        {
+            opt.useAbsoluteFilePaths = true;
         }
     }
 
