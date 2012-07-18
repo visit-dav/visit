@@ -255,7 +255,7 @@ int
 avtChomboFileFormat::GetCycle(void)
 {
     InitializeReader();
-    return cycle; 
+    return cycle;
 }
 
 // ****************************************************************************
@@ -653,9 +653,6 @@ avtChomboFileFormat::InitializeReader(void)
         }
     }
 
-    H5Tclose(doublevect2d_id);
-    H5Tclose(doublevect3d_id);
-
 
     //
     // Note: max_level, per conversation with John Shalf, is for the code
@@ -789,6 +786,15 @@ avtChomboFileFormat::InitializeReader(void)
         H5Gclose(expressionsGroup);
     }
 
+    hid_t intvect2d_id = H5Tcreate (H5T_COMPOUND, sizeof(intvect2d));
+    H5Tinsert (intvect2d_id, "intvecti", HOFFSET(intvect2d, i), H5T_NATIVE_INT);
+    H5Tinsert (intvect2d_id, "intvectj", HOFFSET(intvect2d, j), H5T_NATIVE_INT);
+
+    hid_t intvect3d_id = H5Tcreate (H5T_COMPOUND, sizeof(intvect3d));
+    H5Tinsert (intvect3d_id, "intvecti", HOFFSET(intvect3d, i), H5T_NATIVE_INT);
+    H5Tinsert (intvect3d_id, "intvectj", HOFFSET(intvect3d, j), H5T_NATIVE_INT);
+    H5Tinsert (intvect3d_id, "intvectk", HOFFSET(intvect3d, k), H5T_NATIVE_INT);
+
     //
     // Now iterate over each refinement level and determine how many patches
     // there are at that refinement level, what the refinement ratio is, and
@@ -821,26 +827,73 @@ avtChomboFileFormat::InitializeReader(void)
         patchesPerLevel[i] = dims[0];
         totalPatches += patchesPerLevel[i];
 
-        hid_t dx_id = H5Aopen_name(level, "dx");
-        if (dx_id < 0)
+        hid_t dx_id = H5Aopen_name(level, "vec_dx");
+        if (dx_id >= 0)
         {
-            EXCEPTION1(InvalidDBTypeException, "Does not contain \"dx\".");
+            if (dimension == 2)
+            {
+                doublevect2d dx_tmp;
+                H5Aread(dx_id, doublevect2d_id, &dx_tmp);
+                dx[i].push_back(dx_tmp.x);
+                dx[i].push_back(dx_tmp.y);
+            }
+            else
+            {
+                doublevect3d dx_tmp;
+                H5Aread(dx_id, doublevect3d_id, &dx_tmp);
+                dx[i].push_back(dx_tmp.x);
+                dx[i].push_back(dx_tmp.y);
+                dx[i].push_back(dx_tmp.z);
+            }
         }
-        double dx_tmp;
-        H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp);
-        H5Aclose(dx_id);
-        dx[i] = dx_tmp;
+        else
+        {
+            dx_id = H5Aopen_name(level, "dx");
 
-        hid_t rr_id = H5Aopen_name(level, "ref_ratio");
-        if (rr_id < 0)
-        {
-            EXCEPTION1(InvalidDBTypeException,
-                                            "Does not contain \"ref_ratio\".");
+            if (dx_id < 0)
+                EXCEPTION1(InvalidDBTypeException,
+                           "Does not contain \"vec_dx\" or \"dx\".");
+
+            double dx_tmp;
+            H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp);
+            for (int d = 0; d<dimension; ++d)
+                dx[i].push_back(dx_tmp);
         }
-        int rr;
-        H5Aread(rr_id, H5T_NATIVE_INT, &rr);
+        H5Aclose(dx_id);
+
+        hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
+        if (rr_id >= 0)
+        {
+            if (dimension == 2)
+            {
+                intvect2d rr_tmp;
+                H5Aread(rr_id, intvect2d_id, &rr_tmp);
+                refinement_ratio[i].push_back(rr_tmp.i);
+                refinement_ratio[i].push_back(rr_tmp.j);
+            }
+            else
+            {
+                intvect3d rr_tmp;
+                H5Aread(rr_id, intvect3d_id, &rr_tmp);
+                refinement_ratio[i].push_back(rr_tmp.i);
+                refinement_ratio[i].push_back(rr_tmp.j);
+                refinement_ratio[i].push_back(rr_tmp.k);
+            }
+        }
+        else
+        {
+            rr_id = H5Aopen_name(level, "ref_ratio");
+
+            if (rr_id < 0)
+                EXCEPTION1(InvalidDBTypeException,
+                           "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
+
+            int rr_tmp;
+            H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
+            for (int d = 0; d<dimension; ++d)
+                refinement_ratio[i].push_back(rr_tmp);
+        }
         H5Aclose(rr_id);
-        refinement_ratio[i] = rr;
 
         if (!hasTime && i == 0)
         {
@@ -860,7 +913,10 @@ avtChomboFileFormat::InitializeReader(void)
         H5Gclose(level);
     }
 
-    // 
+    H5Tclose(doublevect2d_id);
+    H5Tclose(doublevect3d_id);
+
+    //
     // Now that we know how many total patches there are, create our data
     // structures to hold the extents of each patch.
     //
@@ -886,7 +942,7 @@ avtChomboFileFormat::InitializeReader(void)
         lowProbK.resize(num_levels);
         hiProbK.resize(num_levels);
     }
-    
+
     //
     // Now iterate over the patches again, storing their extents in our
     // internal data structure.
@@ -904,15 +960,6 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tinsert (box3d_id, "hi_i", HOFFSET(box3d, hi.i), H5T_NATIVE_INT);
     H5Tinsert (box3d_id, "hi_j", HOFFSET(box3d, hi.j), H5T_NATIVE_INT);
     H5Tinsert (box3d_id, "hi_k", HOFFSET(box3d, hi.k), H5T_NATIVE_INT);
-
-    hid_t intvect2d_id = H5Tcreate (H5T_COMPOUND, sizeof(intvect2d));
-    H5Tinsert (intvect2d_id, "intvecti", HOFFSET(intvect2d, i), H5T_NATIVE_INT);
-    H5Tinsert (intvect2d_id, "intvectj", HOFFSET(intvect2d, j), H5T_NATIVE_INT);
-
-    hid_t intvect3d_id = H5Tcreate (H5T_COMPOUND, sizeof(intvect3d));
-    H5Tinsert (intvect3d_id, "intvecti", HOFFSET(intvect3d, i), H5T_NATIVE_INT);
-    H5Tinsert (intvect3d_id, "intvectj", HOFFSET(intvect3d, j), H5T_NATIVE_INT);
-    H5Tinsert (intvect3d_id, "intvectk", HOFFSET(intvect3d, k), H5T_NATIVE_INT);
 
     int patchId = 0;
     for (i = 0 ; i < num_levels ; i++)
@@ -965,14 +1012,14 @@ avtChomboFileFormat::InitializeReader(void)
         {
             // In higher levels, calculate the information using
             // the previous level and refinement ratio
-            lowProbI[i] = refinement_ratio[i-1] * lowProbI[i-1];
-            hiProbI[i] = refinement_ratio[i-1] * hiProbI[i-1];
-            lowProbJ[i] = refinement_ratio[i-1] * lowProbJ[i-1];
-            hiProbJ[i] = refinement_ratio[i-1] * hiProbJ[i-1];
+            lowProbI[i] = refinement_ratio[i-1][0] * lowProbI[i-1];
+            hiProbI[i] = refinement_ratio[i-1][0] * hiProbI[i-1];
+            lowProbJ[i] = refinement_ratio[i-1][1] * lowProbJ[i-1];
+            hiProbJ[i] = refinement_ratio[i-1][1] * hiProbJ[i-1];
             if (dimension == 3)
             {
-                lowProbK[i] = refinement_ratio[i-1] * lowProbK[i-1];
-                hiProbK[i] = refinement_ratio[i-1] * hiProbK[i-1];
+                lowProbK[i] = refinement_ratio[i-1][2] * lowProbK[i-1];
+                hiProbK[i] = refinement_ratio[i-1][2] * hiProbK[i-1];
             }
         }
 
@@ -1049,7 +1096,7 @@ avtChomboFileFormat::InitializeReader(void)
             numGhosts.push_back(0);
             numGhosts.push_back(0);
         }
-           
+
         H5Sclose(memdataspace);
         H5Sclose(boxspace);
         H5Dclose(boxes);
@@ -1058,6 +1105,8 @@ avtChomboFileFormat::InitializeReader(void)
 
     H5Tclose(box2d_id);
     H5Tclose(box3d_id);
+    H5Tclose(intvect2d_id);
+    H5Tclose(intvect3d_id);
 
     //
     // Look for particles
@@ -1283,23 +1332,26 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         else
         {
             for (j = 0 ; j < dimension ; j++)
-                rr[j] = refinement_ratio[level-1];
+                rr[j] = refinement_ratio[level-1][j];
         }
         dn->SetLevelRefinementRatios(level, rr);
 
         for (int d=0; d < dimension; ++d)
-            cs[d] = dx[level]*aspectRatio[d];
+            cs[d] = dx[level][d]*aspectRatio[d];
         dn->SetLevelCellSizes(level, cs);
     }
 
     //
     // This multiplier will be needed to find out if patches are nested.
     //
-    std::vector<int> multiplier(num_levels);
-    multiplier[num_levels-1] = 1;
+    std::vector< std::vector<int> > multiplier(num_levels);
+    for (int d = 0; d < dimension; ++d)
+        multiplier[num_levels-1].push_back(1);
     for (level = num_levels-2 ; level >= 0 ; level--)
     {
-        multiplier[level] = multiplier[level+1]*refinement_ratio[level];
+        multiplier[level].resize(dimension);
+        for (int d = 0; d < dimension; ++d)
+            multiplier[level][d] = multiplier[level+1][d]*refinement_ratio[level][d];
     }
     visitTimer->StopTimer(t1, "Setting up domain nesting: part 1");
 
@@ -1315,7 +1367,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
         rdb->SetNumDomains(totalPatches);
         std::vector<int> real_rr(refinement_ratio.size()-1);
         for (int lvl=0; lvl<real_rr.size(); lvl++)
-            real_rr[lvl] = refinement_ratio[lvl];
+            real_rr[lvl] = refinement_ratio[lvl][0]; // FIXME: Need infrastructure to handle real refinement ratio
         rdb->SetRefinementRatios(real_rr);
         for (int patch = 0 ; patch < totalPatches ; patch++)
         {
@@ -1347,62 +1399,62 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     std::vector< std::vector<int> > childPatches(totalPatches);
     for (level = num_levels-1 ; level > 0 ; level--)
     {
-        int prev_level = level-1;
-        int coarse_start  = levelStart[prev_level];
-        int coarse_end    = levelEnd[prev_level];
-        int num_coarse    = coarse_end - coarse_start;
-        int mc            = multiplier[prev_level];
+        int prev_level             = level-1;
+        int coarse_start           = levelStart[prev_level];
+        int coarse_end             = levelEnd[prev_level];
+        int num_coarse             = coarse_end - coarse_start;
+        const std::vector<int>& mc = multiplier[prev_level];
         avtIntervalTree coarse_levels(num_coarse, dimension, false);
         double exts[6] = { 0, 0, 0, 0, 0, 0 };
         for (int i = 0 ; i < num_coarse ; i++)
         {
-            exts[0] = mc*lowI[coarse_start+i];
-            exts[1] = mc*hiI[coarse_start+i];
-            exts[2] = mc*lowJ[coarse_start+i];
-            exts[3] = mc*hiJ[coarse_start+i];
+            exts[0] = mc[0]*lowI[coarse_start+i];
+            exts[1] = mc[0]*hiI[coarse_start+i];
+            exts[2] = mc[1]*lowJ[coarse_start+i];
+            exts[3] = mc[1]*hiJ[coarse_start+i];
             if (dimension == 3)
             {
-                exts[4] = mc*lowK[coarse_start+i];
-                exts[5] = mc*hiK[coarse_start+i];
+                exts[4] = mc[2]*lowK[coarse_start+i];
+                exts[5] = mc[2]*hiK[coarse_start+i];
             }
             coarse_levels.AddElement(i, exts);
         }
         coarse_levels.Calculate(true);
-        
-        int patches_start = levelStart[level];
-        int patches_end   = levelEnd[level];
-        int mp = multiplier[level];
+
+        int patches_start          = levelStart[level];
+        int patches_end            = levelEnd[level];
+        const std::vector<int>& mp = multiplier[level];
         for (int patch = patches_start ; patch < patches_end ; patch++)
         {
             double min[3];
             double max[3];
-            min[0] = mp*lowI[patch];
-            max[0] = mp*hiI[patch];
-            min[1] = mp*lowJ[patch];
-            max[1] = mp*hiJ[patch];
+            min[0] = mp[0]*lowI[patch];
+            max[0] = mp[0]*hiI[patch];
+            min[1] = mp[1]*lowJ[patch];
+            max[1] = mp[1]*hiJ[patch];
             if (dimension == 3)
             {
-                min[2] = mp*lowK[patch];
-                max[2] = mp*hiK[patch];
+                min[2] = mp[2]*lowK[patch];
+                max[2] = mp[2]*hiK[patch];
             }
             std::vector<int> list;
             coarse_levels.GetElementsListFromRange(min, max, list);
             for (int i = 0 ; i < list.size() ; i++)
             {
                 int candidate = coarse_start + list[i];
-                if (hiI[patch]*mp < lowI[candidate]*mc)
+                if (hiI[patch]*mp[0] < lowI[candidate]*mc[0])
                     continue;
-                if (lowI[patch]*mp >= hiI[candidate]*mc)
+                if (lowI[patch]*mp[0] >= hiI[candidate]*mc[0])
                     continue;
-                if (hiJ[patch]*mp < lowJ[candidate]*mc)
+                if (hiJ[patch]*mp[1] < lowJ[candidate]*mc[1])
                     continue;
-                if (lowJ[patch]*mp >= hiJ[candidate]*mc)
+                if (lowJ[patch]*mp[1] >= hiJ[candidate]*mc[1])
                     continue;
                 if (dimension == 3)
                 {
-                    if (hiK[patch]*mp < lowK[candidate]*mc)
+                    if (hiK[patch]*mp[2] < lowK[candidate]*mc[2])
                         continue;
-                    if (lowK[patch]*mp >= hiK[candidate]*mc)
+                    if (lowK[patch]*mp[2] >= hiK[candidate]*mc[2])
                         continue;
                 }
                 childPatches[candidate].push_back(patch);
@@ -1547,14 +1599,14 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->spatialDimension = 3;
     }
     mesh->hasSpatialExtents = true;
-    mesh->minSpatialExtents[0] = probLo[0] + lowProbI[0] * dx[0] * aspectRatio[0];
-    mesh->maxSpatialExtents[0] = probLo[0] + (hiProbI[0] + 1) * dx[0] * aspectRatio[0];
-    mesh->minSpatialExtents[1] = probLo[1] + lowProbJ[0] * dx[0] * aspectRatio[1];
-    mesh->maxSpatialExtents[1] = probLo[1] + (hiProbJ[0] + 1) * dx[0] * aspectRatio[1];
+    mesh->minSpatialExtents[0] = probLo[0] + lowProbI[0] * dx[0][0] * aspectRatio[0];
+    mesh->maxSpatialExtents[0] = probLo[0] + (hiProbI[0] + 1) * dx[0][0] * aspectRatio[0];
+    mesh->minSpatialExtents[1] = probLo[1] + lowProbJ[0] * dx[0][1] * aspectRatio[1];
+    mesh->maxSpatialExtents[1] = probLo[1] + (hiProbJ[0] + 1) * dx[0][1] * aspectRatio[1];
     if (dimension == 3)
     {
-        mesh->minSpatialExtents[2] = probLo[2] + lowProbK[0] * dx[0] * aspectRatio[2];
-        mesh->maxSpatialExtents[2] = probLo[2] + (hiProbK[0] + 1) * dx[0] * aspectRatio[2];
+        mesh->minSpatialExtents[2] = probLo[2] + lowProbK[0] * dx[0][2] * aspectRatio[2];
+        mesh->maxSpatialExtents[2] = probLo[2] + (hiProbK[0] + 1) * dx[0][2] * aspectRatio[2];
     }
     mesh->blockTitle = "patches";
     mesh->blockPieceName = "patch";
@@ -2085,32 +2137,32 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         float *ptr = xcoord->GetPointer(0);
         if (!allowedToUseGhosts)
-            ptr[0] = probLo[0] + lowI[patch]*dx[level]*aspectRatio[0];
+            ptr[0] = probLo[0] + lowI[patch]*dx[level][0]*aspectRatio[0];
         else
-            ptr[0] = probLo[0] + (lowI[patch]-numGhostI)*dx[level]*aspectRatio[0];
+            ptr[0] = probLo[0] + (lowI[patch]-numGhostI)*dx[level][0]*aspectRatio[0];
 
         for (i = 1; i < dims[0]; i++)
-            ptr[i] = ptr[0] + i*dx[level]*aspectRatio[0];
+            ptr[i] = ptr[0] + i*dx[level][0]*aspectRatio[0];
 
         ptr = ycoord->GetPointer(0);
         if (!allowedToUseGhosts)
-            ptr[0] = probLo[1] + lowJ[patch]*dx[level]*aspectRatio[1];
+            ptr[0] = probLo[1] + lowJ[patch]*dx[level][1]*aspectRatio[1];
         else
-            ptr[0] = probLo[1] + (lowJ[patch]-numGhostJ)*dx[level]*aspectRatio[1];
+            ptr[0] = probLo[1] + (lowJ[patch]-numGhostJ)*dx[level][1]*aspectRatio[1];
 
         for (i = 1; i < dims[1]; i++)
-            ptr[i] = ptr[0] + i*dx[level]*aspectRatio[1];
+            ptr[i] = ptr[0] + i*dx[level][1]*aspectRatio[1];
 
         if (dimension == 3)
         {
             ptr = zcoord->GetPointer(0);
             if (!allowedToUseGhosts)
-                ptr[0] = probLo[2] + lowK[patch]*dx[level]*aspectRatio[2];
+                ptr[0] = probLo[2] + lowK[patch]*dx[level][2]*aspectRatio[2];
             else
-                ptr[0] = probLo[2] + (lowK[patch]-numGhostK)*dx[level]*aspectRatio[2];
+                ptr[0] = probLo[2] + (lowK[patch]-numGhostK)*dx[level][2]*aspectRatio[2];
 
             for (i = 1; i < dims[2]; i++)
-                ptr[i] = ptr[0] + i*dx[level]*aspectRatio[2];
+                ptr[i] = ptr[0] + i*dx[level][2]*aspectRatio[2];
         }
         else
             zcoord->SetTuple1(0, 0.);
@@ -2936,16 +2988,16 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
 
             GetLevelAndLocalPatchNumber(patch, level, local_patch);
 
-            bounds[0] = probLo[0] + lowI[patch]*dx[level]*aspectRatio[0];
-            bounds[1] = probLo[0] + bounds[0] + (hiI[patch]-lowI[patch])*dx[level]*aspectRatio[0];
-            bounds[2] = probLo[1] + lowJ[patch]*dx[level]*aspectRatio[1];
-            bounds[3] = probLo[1] + bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level]*aspectRatio[1];
+            bounds[0] = probLo[0] + lowI[patch]*dx[level][0]*aspectRatio[0];
+            bounds[1] = probLo[0] + bounds[0] + (hiI[patch]-lowI[patch])*dx[level][0]*aspectRatio[0];
+            bounds[2] = probLo[1] + lowJ[patch]*dx[level][1]*aspectRatio[1];
+            bounds[3] = probLo[1] + bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level][1]*aspectRatio[1];
             bounds[4] = 0;
             bounds[5] = 0;
             if (dimension == 3)
             {
-                bounds[4] = probLo[2] + lowK[patch]*dx[level]*aspectRatio[2];
-                bounds[5] = probLo[2] + bounds[4] + (hiK[patch]-lowK[patch])*dx[level]*aspectRatio[2];
+                bounds[4] = probLo[2] + lowK[patch]*dx[level][2]*aspectRatio[2];
+                bounds[5] = probLo[2] + bounds[4] + (hiK[patch]-lowK[patch])*dx[level][2]*aspectRatio[2];
             }
             itree->AddElement(patch, bounds);
         }

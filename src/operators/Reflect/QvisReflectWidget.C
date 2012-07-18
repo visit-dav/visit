@@ -67,7 +67,7 @@ const float axes_size = 10.;
 
 
 #define ANIMATION_NFRAMES 20
-#define ANIMATION_DELTA   (1. / float(ANIMATION_NFRAMES))
+#define ANIMATION_DELTA   (1.f / float(ANIMATION_NFRAMES))
 
 #define SPHERE_ON_XDIM  30
 #define SPHERE_ON_YDIM  15
@@ -369,16 +369,16 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     //
     // Set up the camera.
     //
-    vector3 camera = vec_create(0, 0, 35.);
+    vector3 camera = vec_create(0.f, 0.f, 35.f);
     matrix4 view = m3du_create_view_matrix(
             camera,
-            vec_create(0,0,0),
-            vec_create(0,1,0));
+            vec_create(0.f,0.f,0.f),
+            vec_create(0.f,1.f,0.f));
     renderer.set_view_matrix(view);
     renderer.set_view_reference_point(camera);
 
     // Set up the lights.
-    renderer.set_light(1, M3D_LIGHT_AMB, 0., 0., 0., 0.1f, 0.1f, 0.1f);
+    renderer.set_light(1, M3D_LIGHT_AMB, 0.f, 0.f, 0.f, 0.1f, 0.1f, 0.1f);
     renderer.set_light(2, M3D_LIGHT_EYE, -35.f, -35.f, -50.f, 0.7f, 0.7f, 0.7f);
     renderer.begin_scene(painter);
     renderer.set_world_matrix(m3du_create_identity_matrix());
@@ -497,8 +497,8 @@ void
 QvisReflectWidget::setupCamera()
 {
     // Set the view.
-    vector3 camera1 = vec_create(24.2, 16.5, 29.7);
-    vector3 camera2 = vec_create(-24.2, 16.5, -29.7);
+    vector3 camera1 = vec_create(24.2f, 16.5f, 29.7f);
+    vector3 camera2 = vec_create(-24.2f, 16.5f, -29.7f);
 
 #ifdef DONT_KNOW_THE_VALUES
     // we're debugging
@@ -807,7 +807,7 @@ QvisReflectWidget::mouseReleaseEvent(QMouseEvent *e)
         {
             activeCamera = 0;
             switchingCameras = true;
-            cameraInterpolant = 1. - ANIMATION_DELTA;
+            cameraInterpolant = 1.f - ANIMATION_DELTA;
             timer->start(1000 / ANIMATION_NFRAMES);
         }
         else
@@ -846,17 +846,17 @@ QvisReflectWidget::handleTimer()
     else
         cameraInterpolant += ANIMATION_DELTA;
 
-    if(cameraInterpolant >= 1.)
+    if(cameraInterpolant >= 1.f)
     {
         switchingCameras = false;
         timer->stop();
-        cameraInterpolant = 1.;
+        cameraInterpolant = 1.f;
     }
-    else if(cameraInterpolant <= 0.)
+    else if(cameraInterpolant <= 0.f)
     {
         switchingCameras = false;
         timer->stop();
-        cameraInterpolant = 0.;
+        cameraInterpolant = 0.f;
     }
 }
 
@@ -1353,7 +1353,7 @@ QvisReflectWidget::initializeArrow()
     {
         pts[ptIndex].x = cos(theta) * ARROW_HEAD_RADIUS;
         pts[ptIndex].y = sin(theta) * ARROW_HEAD_RADIUS;
-        pts[ptIndex].z = (ARROW_LENGTH - ARROW_HEAD_LENGTH) - (0.02 * ARROW_LENGTH);
+        pts[ptIndex].z = (ARROW_LENGTH - ARROW_HEAD_LENGTH) - (0.02f * ARROW_LENGTH);
         ++ptIndex;
     }
     pts[ptIndex].x = 0.;

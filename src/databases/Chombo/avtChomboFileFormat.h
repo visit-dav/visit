@@ -184,62 +184,61 @@ class avtChomboFileFormat : public avtSTMDFileFormat
                            );
   
   protected:
-    bool                   initializedReader;
-    int                    dimension;
-    hid_t                  file_handle;
-    std::vector<std::string>  varnames;
-    int                    nMaterials;
-    bool                   hasParticles;
-    bool                   connectParticles;
-    bool                   alwaysComputeDomainBoundaries;
-    std::vector<std::string>  particleVarnames;
-    double                 dtime;
-    int                    cycle;
-    //int                    max_level;
-    int                    num_levels;
-    bool                   nodeCentered;
-    std::vector<int>       numGhosts;
-    std::vector<int>       patchesPerLevel;
-    std::vector<int>       refinement_ratio;
-    std::vector<double>    dx;
-    std::list<Expression*> expressions;
-    bool                   allowedToUseGhosts;
-    bool                   fileContainsGhosts;
-    bool                   enableOnlyRootLevel;
-    bool                   enableOnlyExplicitMaterials;
-    bool                   checkForMappingFile;
-    bool                   mappingFileExists;
-    bool                   mappingIs3D;
+    bool                               initializedReader;
+    int                                dimension;
+    hid_t                              file_handle;
+    std::vector<std::string>           varnames;
+    int                                nMaterials;
+    bool                               hasParticles;
+    bool                               connectParticles;
+    bool                               alwaysComputeDomainBoundaries;
+    std::vector<std::string>           particleVarnames;
+    double                             dtime;
+    int                                cycle;
+    int                                num_levels;
+    bool                               nodeCentered;
+    std::vector<int>                   numGhosts;
+    std::vector<int>                   patchesPerLevel;
+    std::vector< std::vector<int> >    refinement_ratio;
+    std::vector< std::vector<double> > dx;
+    std::list<Expression*>             expressions;
+    bool                               allowedToUseGhosts;
+    bool                               fileContainsGhosts;
+    bool                               enableOnlyRootLevel;
+    bool                               enableOnlyExplicitMaterials;
+    bool                               checkForMappingFile;
+    bool                               mappingFileExists;
+    bool                               mappingIs3D;
 
-    std::vector<int>       lowProbI;
-    std::vector<int>       hiProbI;
-    std::vector<int>       lowProbJ;
-    std::vector<int>       hiProbJ;
-    std::vector<int>       lowProbK;
-    std::vector<int>       hiProbK;
+    std::vector<int>                   lowProbI;
+    std::vector<int>                   hiProbI;
+    std::vector<int>                   lowProbJ;
+    std::vector<int>                   hiProbJ;
+    std::vector<int>                   lowProbK;
+    std::vector<int>                   hiProbK;
 
-    std::vector<int>       lowI;
-    std::vector<int>       hiI;
-    std::vector<int>       lowJ;
-    std::vector<int>       hiJ;
-    std::vector<int>       lowK;
-    std::vector<int>       hiK;
+    std::vector<int>                   lowI;
+    std::vector<int>                   hiI;
+    std::vector<int>                   lowJ;
+    std::vector<int>                   hiJ;
+    std::vector<int>                   lowK;
+    std::vector<int>                   hiK;
 
-    double                 probLo[3];
-    double                 aspectRatio[3];
+    double                             probLo[3];
+    double                             aspectRatio[3];
 
-    size_t                 resolution; // for user selection of resolution
+    size_t                             resolution; // for user selection of resolution
 
-    void                   InitializeReader(void);
-    void                   GetLevelAndLocalPatchNumber(int global_patch,
-                                           int &level, int &local_patch) const;
-    void                   CalculateDomainNesting(void);
+    void                               InitializeReader(void);
+    void                               GetLevelAndLocalPatchNumber(int global_patch,
+                                          int &level, int &local_patch) const;
+    void                               CalculateDomainNesting(void);
 
-    virtual int            GetCycle(void);
-    virtual double         GetTime(void);
-    virtual int            GetCycleFromFilename(const char *f) const;
+    virtual int                        GetCycle(void);
+    virtual double                     GetTime(void);
+    virtual int                        GetCycleFromFilename(const char *f) const;
 
-    virtual bool           HasInvariantMetaData(void) const { return false; };
-    virtual bool           HasInvariantSIL(void) const { return false; };
+    virtual bool                       HasInvariantMetaData(void) const { return false; };
+    virtual bool                       HasInvariantSIL(void) const      { return false; };
 };
 #endif
