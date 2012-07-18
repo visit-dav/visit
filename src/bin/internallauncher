@@ -763,6 +763,9 @@ $0 = shift @ARGV;
 #    I modified the script to run the chaos 4 version if running on atlas,
 #    prism or rzthriller.
 #
+#    Eric Brugger, Wed Jul 18 12:17:44 PDT 2012
+#    I modified the script to run the chaos 4 version if running on rzbeast.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2098,7 +2101,7 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            if ($host =~ /^atlas/ || $host =~ /^prism/ || $host =~ /^rzthriller/) {
+            if ($host =~ /^atlas/ || $host =~ /^prism/ || $host =~ /^rzthriller/ || $host =~ /^rzbeast/) {
                 push @supportedarchs, "linux-x86_64-chaos4";
             }
             else {
