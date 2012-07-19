@@ -55,6 +55,9 @@
 #   Use new ADD_TARGET_INCLUDE function to add includes to a target instead
 #   of setting them via compile flags.  
 #
+#   Brad Whitlock, Wed Jul 18 17:03:01 PDT 2012
+#   Added materialvar.c
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -217,6 +220,8 @@ ADD_SIMV2_SIMULATION(mandelbrot mandelbrot.C patch.C)
 
 ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)
+
+ADD_SIMV2_SIMULATION(materialvar materialvar.c)
 
 ADD_SIMV2_SIMULATION(mesh mesh.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmesh fmesh.f)

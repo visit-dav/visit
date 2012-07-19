@@ -94,6 +94,15 @@ VisIt_VariableData_setDataD(visit_handle obj, int owner, int ncomps,
 }
 
 int
+VisIt_VariableData_setDataL(visit_handle obj, int owner, int ncomps,
+    int ntuples, long *ptr)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableData_setData,
+                    int, (visit_handle,int,int,int,int,void*), 
+                    (obj,owner,VISIT_DATATYPE_LONG,ncomps,ntuples,(void *)ptr));
+}
+
+int
 VisIt_VariableData_getData(visit_handle obj, int *owner, int *dataType, int *ncomps,
     int *ntuples, void **ptr)
 {
@@ -142,6 +151,16 @@ VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *ncomps,
                     (obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
 }
 
+int
+VisIt_VariableData_getDataL(visit_handle obj, int *owner, int *ncomps,
+    int *ntuples, long **ptr)
+{
+    int dataType;
+    VISIT_DYNAMIC_EXECUTE(VariableData_getData2,
+                    int, (visit_handle,int*,int*,int*,int*,void**), 
+                    (obj,owner,&dataType,ncomps,ntuples,(void **)ptr));
+}
+
 
 /************************** Fortran callable routines *************************/
 #define F_VISITVARDATAALLOC   F77_ID(visitvardataalloc_,visitvardataalloc,VISITVARDATAALLOC)
@@ -150,11 +169,13 @@ VisIt_VariableData_getDataD(visit_handle obj, int *owner, int *ncomps,
 #define F_VISITVARDATASETI    F77_ID(visitvardataseti_,visitvardataseti,VISITVARDATASETI)
 #define F_VISITVARDATASETF    F77_ID(visitvardatasetf_,visitvardatasetf,VISITVARDATASETF)
 #define F_VISITVARDATASETD    F77_ID(visitvardatasetd_,visitvardatasetd,VISITVARDATASETD)
+#define F_VISITVARDATASETL    F77_ID(visitvardatasetl_,visitvardatasetl,VISITVARDATASETL)
 #define F_VISITVARDATAGETTYPE F77_ID(visitvardatagettype_,visitvardatagettype,VISITVARDATAGETTYPE)
 #define F_VISITVARDATAGETC    F77_ID(visitvardatagetc_,visitvardatagetc,VISITVARDATAGETC)
 #define F_VISITVARDATAGETI    F77_ID(visitvardatageti_,visitvardatageti,VISITVARDATAGETI)
 #define F_VISITVARDATAGETF    F77_ID(visitvardatagetf_,visitvardatagetf,VISITVARDATAGETF)
 #define F_VISITVARDATAGETD    F77_ID(visitvardatagetd_,visitvardatagetd,VISITVARDATAGETD)
+#define F_VISITVARDATAGETL    F77_ID(visitvardatagetl_,visitvardatagetl,VISITVARDATAGETL)
 
 int
 F_VISITVARDATAALLOC(visit_handle *obj)
@@ -194,6 +215,13 @@ F_VISITVARDATASETD(visit_handle *obj, int *owner, int *ncomps, int *ntuples, dou
 {
     int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
     return VisIt_VariableData_setDataD(*obj, realOwner, *ncomps, *ntuples, ptr);
+}
+
+int
+F_VISITVARDATASETL(visit_handle *obj, int *owner, int *ncomps, int *ntuples, long *ptr)
+{
+    int realOwner = (*owner == VISIT_OWNER_VISIT) ? VISIT_OWNER_COPY : *owner;
+    return VisIt_VariableData_setDataL(*obj, realOwner, *ncomps, *ntuples, ptr);
 }
 
 int
@@ -253,5 +281,18 @@ F_VISITVARDATAGETD(visit_handle *obj, int *owner, int *ncomps, int *ntuples, dou
     if(*ncomps * *ntuples < *ldest)
         sz = *ncomps * *ntuples;
     memcpy((void *)dest, (void *)ptr, sz * sizeof(double));
+    return retval;
+}
+
+int
+F_VISITVARDATAGETL(visit_handle *obj, int *owner, int *ncomps, int *ntuples, long *dest, int *ldest)
+{
+    int retval, sz;
+    long *ptr = NULL;
+    sz = *ldest;
+    retval = VisIt_VariableData_getDataL(*obj, owner, ncomps, ntuples, &ptr);
+    if(*ncomps * *ntuples < *ldest)
+        sz = *ncomps * *ntuples;
+    memcpy((void *)dest, (void *)ptr, sz * sizeof(long));
     return retval;
 }

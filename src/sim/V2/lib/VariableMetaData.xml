@@ -37,6 +37,8 @@
     <Field name="numComponents" label="Number of components" type="int">
       1
     </Field>
+    <Field name="materialNames" label="Material names where the variable is defined" type="stringVector">
+    </Field>
     <Function name="simv2_VariableMetaData_check" user="true" member="true">
     </Function>
   </Attribute>

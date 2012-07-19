@@ -101,6 +101,7 @@ typedef enum {
 #define VISIT_DATATYPE_INT                1
 #define VISIT_DATATYPE_FLOAT              2
 #define VISIT_DATATYPE_DOUBLE             3
+#define VISIT_DATATYPE_LONG               4
 
 /* Array Owner */
 #define VISIT_OWNER_SIM                   0
