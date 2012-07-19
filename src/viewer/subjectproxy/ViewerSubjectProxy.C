@@ -68,6 +68,8 @@
 #include <ViewerState.h>
 #include <VisItException.h>
 #include <Xfer.h>
+#include <InitVTK.h>
+#include <InitVTKRendering.h>
 
 #ifndef _WIN32
 #include <unistd.h> // for usleep
@@ -80,6 +82,8 @@
 #include <ViewerWindowManager.h>
 #include <ViewerPopupMenu.h>
 #include <QMenu>
+#include <ViewerToolbar.h>
+#include <QMainWindow>
 
 std::map<int,vtkQtRenderWindow*> ViewerSubjectProxy::viswindows;
 
@@ -104,24 +108,8 @@ ViewerSubjectProxy::TestConnection::NeedsRead(bool blocking) const
 
 void ViewerSubjectProxy::InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir)
 {
-
-    //std::cout << "initializing plugins.." << " " << std::endl;
-    //t = PluginManager::GUI | PluginManager::Scripting;
-
-
-//    if(t == PluginManager::GUI)
-//    {
-//        std::cout << "now loading plugins" << std::endl;
-//        std::string dir = "/work/visit/branches/PySideIntegration/build/plugins/";
-//        cli_plotplugin->Initialize(t, false, dir.c_str());
-//        cli_operatorplugin->Initialize(t, false, dir.c_str());
-//        LoadPlugins();
-//    }
-//    else
-//    {
-        cli_plotplugin->Initialize(t, false, pluginDir);
-        cli_operatorplugin->Initialize(t, false, pluginDir);
-//    }
+    plotplugin->Initialize(t, false, pluginDir);
+    operatorplugin->Initialize(t, false, pluginDir);
 }
 
 void ViewerSubjectProxy::LoadPlugins()
@@ -130,8 +118,8 @@ void ViewerSubjectProxy::LoadPlugins()
 
     //ViewerState* state = vissubject->GetViewerState();
     ViewerState* state = gstate;
-    PlotPluginManager* plotPlugins = cli_plotplugin;
-    OperatorPluginManager* operatorPlugins = cli_operatorplugin;
+    PlotPluginManager* plotPlugins = plotplugin;
+    OperatorPluginManager* operatorPlugins = operatorplugin;
 
     int nPlots = state->GetNumPlotStateObjects();
     int nOperators = state->GetNumOperatorStateObjects();
@@ -239,14 +227,14 @@ PlotPluginManager* ViewerSubjectProxy::GetPlotPluginManager() const
 {
     //std::cout << "Getting plot plugins" << std::endl;
     //return vissubject->GetPlotPluginManager();
-    return cli_plotplugin;
+    return plotplugin;
 }
 
 OperatorPluginManager *ViewerSubjectProxy::GetOperatorPluginManager() const
 {
     //std::cout << "operator plugins" << std::endl;
     //return vissubject->GetOperatorPluginManager();
-    return cli_operatorplugin;
+    return operatorplugin;
 }
 
 ViewerState   *ViewerSubjectProxy::GetViewerState() const
@@ -274,8 +262,8 @@ void ViewerSubjectProxy::Initialize(int argc,char* argv[])
 //    }
     vissubject = new ViewerSubject();
     testconn = new TestConnection();
-    cli_plotplugin = new PlotPluginManager();
-    cli_operatorplugin = new OperatorPluginManager();
+    plotplugin = new PlotPluginManager();
+    operatorplugin = new OperatorPluginManager();
 
     gstate = vissubject->GetViewerState();
     gmethods = vissubject->GetViewerMethods();
@@ -373,27 +361,41 @@ QList<int> ViewerSubjectProxy::GetRenderWindowIDs()
 // Constructor
 ViewerSubjectProxy::ViewerSubjectProxy():ViewerProxy()
 {
+    //reset VTK logs..
+    InitVTK::Initialize();
+    InitVTKRendering::Initialize();
+
     initialize = true;
     //setting to ViewerBase works because they are static
     gstate = ViewerBase::GetViewerState();
     gmethods = ViewerBase::GetViewerMethods();
     vissubject = 0;
-    cli_plotplugin = 0;
-    cli_operatorplugin = 0;
+    plotplugin = 0;
+    operatorplugin = 0;
+    m_proxy = 0;
+    internalSILRestriction = new avtSILRestriction(
+        *gstate->GetSILRestrictionAttributes());
+    gstate->GetSILRestrictionAttributes()->Attach(this);
+    //gstate->GetSyncAttributes()->Attach(this);
     ViewerProxy::CreateViewerProxy(this);
 }
 
 // This constructor emulates as if it has already been started..
-ViewerSubjectProxy::ViewerSubjectProxy(ViewerState* istate, ViewerMethods* imethods):ViewerProxy()
+ViewerSubjectProxy::ViewerSubjectProxy(ViewerSubjectProxy* proxy):ViewerProxy()
 {
     initialize = false;
     vissubject = 0;
-    this->gstate = istate;
-    this->gmethods = imethods;
+    this->gstate = proxy->GetViewerState();
+    this->gmethods = proxy->GetViewerMethods();
 
     testconn = new TestConnection();
-    cli_plotplugin = new PlotPluginManager();
-    cli_operatorplugin = new OperatorPluginManager();
+    plotplugin = new PlotPluginManager();
+    operatorplugin = new OperatorPluginManager();
+    m_proxy = proxy;
+    internalSILRestriction = new avtSILRestriction(
+        *gstate->GetSILRestrictionAttributes());
+    gstate->GetSILRestrictionAttributes()->Attach(this);
+    //gstate->GetSyncAttributes()->Attach(this);
     ViewerProxy::CreateViewerProxy(this);
 }
 
@@ -401,27 +403,28 @@ ViewerSubjectProxy::ViewerSubjectProxy(ViewerState* istate, ViewerMethods* imeth
 ViewerSubjectProxy::~ViewerSubjectProxy()
 {
     delete testconn;
-    delete cli_plotplugin;
-    delete cli_operatorplugin;
+    delete plotplugin;
+    delete operatorplugin;
 }
 
 
 //SIL functions
 avtSILRestriction_p 
 ViewerSubjectProxy::GetPlotSILRestriction()
-{ 
-    return internalSILRestriction; 
+{
+    return internalSILRestriction;
 }
 
 avtSILRestriction_p 
 ViewerSubjectProxy::GetPlotSILRestriction() const
-{ 
+{
     return new avtSILRestriction(internalSILRestriction);
 }
 
 void 
 ViewerSubjectProxy::SetPlotSILRestriction(avtSILRestriction_p newRestriction)
 {
+
     // Copy the new SIL restriction into the internal SIL restriction object.
     internalSILRestriction = newRestriction;
 
@@ -481,10 +484,9 @@ ViewerSubjectProxy::Update(Subject *subj)
     {
         internalSILRestriction = new avtSILRestriction(
             *gstate->GetSILRestrictionAttributes());
+        if(m_proxy) m_proxy->Update(subj);
     }
 }
-
-#include <ViewerToolbar.h>
 
 void
 ViewerSubjectProxy::viewerWindowCreated(ViewerWindow *window)
@@ -516,5 +518,46 @@ ViewerSubjectProxy::viewerWindowCreated(ViewerWindow *window)
 
     ViewerToolbar* toolbar = window->GetToolbar();
     toolbar->HideAll();
+
+    int visid = window->GetWindowId()+1; //+1 Gets vtkQtRenderWindow id..
+    QMainWindow* renwin = dynamic_cast<QMainWindow*>(viswindows[visid]);
+    renwin->setProperty("id",visid);
+    renwin->installEventFilter(this);
+}
+
+bool
+ViewerSubjectProxy::eventFilter(QObject *o, QEvent *e)
+{
+    if(e->type() == QEvent::Show && !e->spontaneous())
+    {
+        QMainWindow* renwin = dynamic_cast<QMainWindow*>(o);
+        if(renwin)
+        {
+            int id = renwin->property("id").toInt();
+
+            ViewerWindow* vw = ViewerWindowManager::Instance()->GetWindow(id-1);
+            if(vw)
+            {
+                if (vw->GetRealized() == true)
+                    vw->Show();
+                else
+                    vw->Realize();
+            }
+            return true;
+        }
+    }
+    else if(e->type() == QEvent::Hide && !e->spontaneous())
+    {
+        QMainWindow* renwin = dynamic_cast<QMainWindow*>(o);
+        if(renwin)
+        {
+            int id = renwin->property("id").toInt();
+            ViewerWindow* vw = ViewerWindowManager::Instance()->GetWindow(id-1);
+            if(vw)
+                vw->Hide();
+            return true;
+        }
+    }
+    return false;
 }
 

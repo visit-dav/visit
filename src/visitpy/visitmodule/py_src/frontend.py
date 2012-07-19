@@ -87,7 +87,7 @@ class VisItModuleState(object):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     print k, env[k]
                     os.environ[k] = env[k]
-            print os.environ
+            #print os.environ
             mod = cls.__load_visitmodule(mod)
             for arg in cls.launch_args:
                 mod.AddArgument(arg)

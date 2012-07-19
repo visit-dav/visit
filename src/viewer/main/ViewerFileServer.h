@@ -202,18 +202,18 @@ class SILAttributes;
 
 class ViewerFileServer : public ViewerServerManager
 {
-    class ServerInfo
-    {
-    public:
-        ServerInfo(MDServerProxy *, const stringVector &);
-        ServerInfo(const ServerInfo &);
-        virtual ~ServerInfo();
+//    class ServerInfo
+//    {
+//    public:
+//        ServerInfo(MDServerProxy *, const stringVector &);
+//        ServerInfo(const ServerInfo &);
+//        virtual ~ServerInfo();
 
-        MDServerProxy *proxy;
-        stringVector  arguments;
-    };
+//        MDServerProxy *proxy;
+//        stringVector  arguments;
+//    };
 
-    typedef std::map<std::string, ServerInfo *> ServerMap;
+//    typedef std::map<std::string, ServerInfo *> ServerMap;
     typedef std::map<std::string, avtDatabaseMetaData *> FileMetaDataMap;
     typedef std::map<std::string, avtSIL *> FileSILMap;
 public:
@@ -375,7 +375,7 @@ protected:
 private:
     static ViewerFileServer *instance;
 
-    ServerMap                 servers;
+//    ServerMap                 servers;
     FileMetaDataMap           fileMetaData;
     StringStringMap           filePlugins;
     FileSILMap                fileSIL;

@@ -226,7 +226,7 @@ LauncherApplication::Instance()
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
-    keepAliveRPC(), launchRPC(), childOutput(), launch()
+    keepAliveRPC(), launcherstate(), childOutput(), launch()
 {
     quitExecutor = 0;
     keepAliveExecutor = 0;
@@ -402,14 +402,13 @@ LauncherApplication::Connect(int *argc, char **argv[])
     // Hook up the RPC's to the xfer object.
     xfer.Add(&quitRPC);
     xfer.Add(&keepAliveRPC);
-    xfer.Add(&launchRPC);
-    xfer.Add(&connectSimRPC);
+    launcherstate.SetupComponentRPCs(&xfer);
 
     // Hook up the RPC executors to the RPC's.
     quitExecutor      = new RPCExecutor<QuitRPC>(&quitRPC); 
     keepAliveExecutor = new RPCExecutor<KeepAliveRPC>(&keepAliveRPC); 
-    launchExecutor    = new RPCExecutor<LaunchRPC>(&launchRPC);
-    connectSimExecutor= new RPCExecutor<ConnectSimRPC>(&connectSimRPC);
+    launchExecutor    = new RPCExecutor<LaunchRPC>(&launcherstate.GetLaunchRPC());
+    connectSimExecutor= new RPCExecutor<ConnectSimRPC>(&launcherstate.GetConnectSimRPC());
 }
 
 // ****************************************************************************

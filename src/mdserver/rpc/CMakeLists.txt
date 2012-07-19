@@ -54,6 +54,8 @@ GetMetaDataRPC.C
 GetPluginErrorsRPC.C
 GetSILRPC.C
 LoadPluginsRPC.C
+MDServerMethods.C
+MDServerState.C
 SetMFileOpenOptionsRPC.C
 )
 

@@ -688,7 +688,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
 
             // Request the engine properties so we have a better idea of
             // what we're talking to.
-            newEngine.properties = newEngine.proxy->GetEngineProperties();
+            newEngine.properties = newEngine.proxy->GetEngineMethods()->GetEngineProperties();
         }
         CATCHALL
         {
@@ -702,10 +702,10 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
         engines[ek] = newEngine;
 
         // Make the engine manager observe the proxy's status atts.
-        newEngine.proxy->GetStatusAttributes()->Attach(this);
+        newEngine.proxy->GetEngineMethods()->GetStatusAttributes()->Attach(this);
 
         // Tell the new engine what the default file open options are.
-        newEngine.proxy->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
+        newEngine.proxy->GetEngineMethods()->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -959,12 +959,12 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
                           SimConnectThroughLauncher, (void *)&simData,
                           true);
 
-        newEngine.properties = newEngine.proxy->GetEngineProperties();
+        newEngine.properties = newEngine.proxy->GetEngineMethods()->GetEngineProperties();
 
         engines[ek] = newEngine;
 
         // Make the engine manager observe the proxy's status atts.
-        newEngine.proxy->GetStatusAttributes()->Attach(this);
+        newEngine.proxy->GetEngineMethods()->GetStatusAttributes()->Attach(this);
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -1092,7 +1092,7 @@ ViewerEngineManager::CloseEngines()
                    << "." << endl;
         }
 
-        engine->GetStatusAttributes()->Detach(this);
+        engine->GetEngineMethods()->GetStatusAttributes()->Detach(this);
         TRY
         {
             engine->Close();
@@ -1630,7 +1630,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
              pos != perEnginePlotIds.end(); pos++)
         {
             ek = pos->first;
-            engines[ek].proxy->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
+            engines[ek].proxy->GetEngineMethods()->SetWinAnnotAtts(&winAtts, &annotAtts, &annotObjs,
                              extStr, &visCues, frameAndState, viewExtents, ctName,
                              windowID);
         }
@@ -1639,7 +1639,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
         for (i = 0; i < plotIdsList.size(); i++)
         {
             ek = engineKeysList[i];
-            engines[ek].proxy->UpdatePlotAttributes(pluginIDsList[i],
+            engines[ek].proxy->GetEngineMethods()->UpdatePlotAttributes(pluginIDsList[i],
                                               plotIdsList[i],
                                               attsList[i]);
         }
@@ -1662,7 +1662,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
                 annotMode = doAllAnnotations ? 2 : 1;
 
             avtDataObjectReader_p rdr =
-                engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode,
+                engines[ek].proxy->GetEngineMethods()->Render(sendZBuffer, pos->second, annotMode,
                                           windowID, leftEye,
                                           ViewerSubject::ProcessEventsCB,
                                           (void *)viewerSubject);
@@ -1925,7 +1925,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                 // we need define the virtual database on the engine.
                 if(md->GetIsVirtualDatabase())
                 {
-                    engine->DefineVirtualDatabase(defaultFormat,
+                    engine->GetEngineMethods()->DefineVirtualDatabase(defaultFormat,
                                                   plot->GetDatabaseName(),
                                                   md->GetTimeStepPath(),
                                                   md->GetTimeStepNames(),
@@ -1940,7 +1940,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
             bool ignoreExtents =
                 ViewerWindowManager::Instance()->GetClientAtts()->
                     GetIgnoreExtentsFromDbs();
-            engine->ReadDataObject(defaultFormat, 
+            engine->GetEngineMethods()->ReadDataObject(defaultFormat,
                                    plot->GetDatabaseName(),
                                    plot->GetVariableName(),
                                    state, plot->GetSILRestriction(),
@@ -1986,7 +1986,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                                        fns[4], fns[5], fns[6]);
            double vext[6];
            w->GetExtents(3, vext);
-           engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
+           engine->GetEngineMethods()->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
                                    &visCues,fns,vext,"",windowId);
         }
 
@@ -2013,7 +2013,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
 #else
             BeginEngineExecute();
 
-            retval = engine->Execute(replyWithNullData, 
+            retval = engine->GetEngineMethods()->Execute(replyWithNullData,
                                      ViewerSubject::ProcessEventsCB,
                                      (void *)viewerSubject);
 
@@ -2024,7 +2024,7 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
                // ask for the engine's output as null data 'cause the 
                // avtDataObject in the current reader is just the message that 
                //it exceeded threshold
-               retval = engine->Execute(true,
+               retval = engine->GetEngineMethods()->Execute(true,
                                         ViewerSubject::ProcessEventsCB,
                                         (void *)viewerSubject);
 
@@ -2104,7 +2104,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
     TRY
     {
         // tell engine which network to re-use
-        engine->UseNetwork(plot->GetNetworkID());
+        engine->GetEngineMethods()->UseNetwork(plot->GetNetworkID());
 
         bool replyWithNullData = !turningOffScalableRendering; 
 
@@ -2117,7 +2117,7 @@ ViewerEngineManager::UseDataObjectReader(ViewerPlot *const plot,
 #else
             BeginEngineExecute();
 
-            retval = engine->Execute(replyWithNullData, ViewerSubject::ProcessEventsCB,
+            retval = engine->GetEngineMethods()->Execute(replyWithNullData, ViewerSubject::ProcessEventsCB,
                                      (void *)viewerSubject);
 
             EndEngineExecute();
@@ -2232,7 +2232,7 @@ ViewerEngineManager::OpenDatabase(const EngineKey &ek, const std::string &format
                     GetCreateTimeDerivativeExpressions();
     bool ie = ViewerWindowManager::Instance()->GetClientAtts()->
                     GetIgnoreExtentsFromDbs();
-    engine->OpenDatabase(format, filename, time, cmq, ctd, ie);
+    engine->GetEngineMethods()->OpenDatabase(format, filename, time, cmq, ctd, ie);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2267,7 +2267,7 @@ ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
                     GetCreateMeshQualityExpressions();
     bool ctd = ViewerWindowManager::Instance()->GetClientAtts()->
                     GetCreateTimeDerivativeExpressions();
-    engine->DefineVirtualDatabase(format, dbName, path, files, time, cmq, ctd);
+    engine->GetEngineMethods()->DefineVirtualDatabase(format, dbName, path, files, time, cmq, ctd);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2294,7 +2294,7 @@ ViewerEngineManager::ApplyOperator(const EngineKey &ek, const std::string &name,
     const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("ApplyOperator");
-    engine->ApplyOperator(name, atts);
+    engine->GetEngineMethods()->ApplyOperator(name, atts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 
@@ -2331,7 +2331,7 @@ ViewerEngineManager::MakePlot(const EngineKey &ek, const std::string &plotName,
     const vector<double> &extents, int winID, int *networkId)
 {
     ENGINE_PROXY_RPC_BEGIN("MakePlot");
-    *networkId = engine->MakePlot(plotName, pluginID, atts, extents, winID);
+    *networkId = engine->GetEngineMethods()->MakePlot(plotName, pluginID, atts, extents, winID);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW;
 }
 
@@ -2356,7 +2356,7 @@ ViewerEngineManager::UpdatePlotAttributes(const EngineKey &ek,
                                           const AttributeSubject *atts)
 {
     ENGINE_PROXY_RPC_BEGIN("UpdatePlotAttributes");
-    engine->UpdatePlotAttributes(name, id, atts);
+    engine->GetEngineMethods()->UpdatePlotAttributes(name, id, atts);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2392,7 +2392,7 @@ ViewerEngineManager::Pick(const EngineKey &ek,
                           PickAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("Pick");
-    engine->Pick(nid, atts, retAtts, wid);
+    engine->GetEngineMethods()->Pick(nid, atts, retAtts, wid);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -2412,7 +2412,7 @@ ViewerEngineManager::StartQuery(const EngineKey &ek, const bool flag,
                                const int nid)
 {
     ENGINE_PROXY_RPC_BEGIN("StartQuery");
-    engine->StartQuery(flag, nid);
+    engine->GetEngineMethods()->StartQuery(flag, nid);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2442,7 +2442,7 @@ ViewerEngineManager::StartPick(const EngineKey &ek, const bool forZones,
                                const bool flag, const int nid)
 {
     ENGINE_PROXY_RPC_BEGIN_NOSTART("StartPick");
-    engine->StartPick(forZones, flag, nid);
+    engine->GetEngineMethods()->StartPick(forZones, flag, nid);
     ENGINE_PROXY_RPC_END_NORESTART;
 }
 
@@ -2502,7 +2502,7 @@ ViewerEngineManager::SetWinAnnotAtts(const EngineKey &ek,
                                      const int winID)
 {
     ENGINE_PROXY_RPC_BEGIN("SetWinAnnotAtts");
-    engine->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
+    engine->GetEngineMethods()->SetWinAnnotAtts(wa,aa,ao,extstr,visCues,frameAndState,viewExtents,
         ctName, winID);
     ENGINE_PROXY_RPC_END;
 }
@@ -2535,9 +2535,9 @@ ViewerEngineManager::ClearCache(const EngineKey &ek,
 {
     ENGINE_PROXY_RPC_BEGIN_NOSTART("ClearCache");
     if (dbName == "")
-        engine->ClearCache();
+        engine->GetEngineMethods()->ClearCache();
     else
-        engine->ClearCache(dbName);
+        engine->GetEngineMethods()->ClearCache(dbName);
     ENGINE_PROXY_RPC_END_NORESTART;
 }
 
@@ -2627,7 +2627,7 @@ ViewerEngineManager::RemoveEngine(const EngineKey &ek, bool close)
     if (EngineExists(ek))
     {
         // Delete the entry in the engine list for the specified index.    
-        engines[ek].proxy->GetStatusAttributes()->Detach(this);
+        engines[ek].proxy->GetEngineMethods()->GetStatusAttributes()->Detach(this);
         if (close)
             engines[ek].proxy->Close();
         delete engines[ek].proxy;
@@ -2808,7 +2808,7 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
     EngineKey ek;
     for (EngineMap::iterator i = engines.begin() ; i != engines.end() ; i++)
     {
-        if (i->second.proxy->GetStatusAttributes() == statusAtts)
+        if (i->second.proxy->GetEngineMethods()->GetStatusAttributes() == statusAtts)
         {
             ek = i->first;
             break;
@@ -2927,14 +2927,14 @@ ViewerEngineManager::GetImage(int index, avtDataObject_p &dob)
     w->GetExtents(3, vext);
 
     // send to the engine
-    engine->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
+    engine->GetEngineMethods()->SetWinAnnotAtts(&winAtts,&annotAtts,&annotObjs,extStr,
                             &visCues,fns,vext,"",w->GetWindowId());
     
-    engine->UseNetwork(index);
+    engine->GetEngineMethods()->UseNetwork(index);
 #ifdef VIEWER_MT
     avtDataObjectReader_p rdr = engine->Execute(false, 0,0);
 #else
-    avtDataObjectReader_p rdr = engine->Execute(false,
+    avtDataObjectReader_p rdr = engine->GetEngineMethods()->Execute(false,
         ViewerSubject::ProcessEventsCB, (void *)viewerSubject);
 #endif
 
@@ -2980,7 +2980,7 @@ ViewerEngineManager::UpdatePlotAttributes(const string &str, int index,
     // WHOA!  ASSUMING ENGINE 0
     EngineProxy *engine = (engines.begin())->second.proxy;
 
-    engine->UpdatePlotAttributes(str, index, atts);
+    engine->GetEngineMethods()->UpdatePlotAttributes(str, index, atts);
 }
 
 // ****************************************************************************
@@ -3061,7 +3061,7 @@ ViewerEngineManager::Query(const EngineKey &ek,
                            QueryAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("Query");
-    engine->Query(nid, atts, retAtts);
+    engine->GetEngineMethods()->Query(nid, atts, retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3081,7 +3081,7 @@ ViewerEngineManager::GetQueryParameters(const EngineKey &ek,
     const std::string &qName,  string *params)
 {
     ENGINE_PROXY_RPC_BEGIN("GetQueryParameters");
-    *params = engine->GetQueryParameters(qName);
+    *params = engine->GetEngineMethods()->GetQueryParameters(qName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3100,7 +3100,7 @@ bool
 ViewerEngineManager::GetProcInfo(const EngineKey &ek, ProcessAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("GetProcInfo");
-    engine->GetProcInfo(retAtts);
+    engine->GetEngineMethods()->GetProcInfo(retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3132,7 +3132,7 @@ ViewerEngineManager::ReleaseData(const EngineKey &ek, int id)
         return true;
 
     ENGINE_PROXY_RPC_BEGIN("ReleaseData");
-    engine->ReleaseData(id);
+    engine->GetEngineMethods()->ReleaseData(id);
     ENGINE_PROXY_RPC_END_NORESTART;
 }
 
@@ -3342,7 +3342,7 @@ ViewerEngineManager::UpdateDefaultFileOpenOptions(FileOpenOptions *opts)
     // And send the updated one to the existing engines.
     for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
     {
-        it->second.proxy->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
+        it->second.proxy->GetEngineMethods()->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
     }    
 }
 
@@ -3426,7 +3426,7 @@ ViewerEngineManager::ExportDatabase(const EngineKey &ek, int id)
     }
     else
     {
-        engine->ExportDatabase(id, exportDBAtts);
+        engine->GetEngineMethods()->ExportDatabase(id, exportDBAtts);
     }
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3518,7 +3518,7 @@ ViewerEngineManager::CreateNamedSelection(const EngineKey &ek,
             ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
 
         // Create the named selection
-        summary = engine->CreateNamedSelection(id, props);
+        summary = engine->GetEngineMethods()->CreateNamedSelection(id, props);
 
         // Add the new summary to the list.
         ViewerWindowManager::GetSelectionList()->AddSelectionSummary(summary);
@@ -3554,7 +3554,7 @@ ViewerEngineManager::UpdateNamedSelection(const EngineKey &ek,
             ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
 
         // Create the named selection
-        summary = engine->UpdateNamedSelection(id, props, allowCache);
+        summary = engine->GetEngineMethods()->UpdateNamedSelection(id, props, allowCache);
 
         // Add the new summary to the list.
         ViewerWindowManager::GetSelectionList()->AddSelectionSummary(summary);
@@ -3586,7 +3586,7 @@ ViewerEngineManager::DeleteNamedSelection(const EngineKey &ek,
             ViewerWindowManager::GetSelectionList()->RemoveSelectionSummary(sindex);
 
         // Delete the selection on the engine.
-        engine->DeleteNamedSelection(selName);
+        engine->GetEngineMethods()->DeleteNamedSelection(selName);
 
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
@@ -3608,7 +3608,7 @@ ViewerEngineManager::LoadNamedSelection(const EngineKey &ek,
                                          const std::string &selName)
 {
     ENGINE_PROXY_RPC_BEGIN("LoadNamedSelection");
-    engine->LoadNamedSelection(selName);
+    engine->GetEngineMethods()->LoadNamedSelection(selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3629,7 +3629,7 @@ ViewerEngineManager::SaveNamedSelection(const EngineKey &ek,
                                          const std::string &selName)
 {
     ENGINE_PROXY_RPC_BEGIN("SaveNamedSelection");
-    engine->SaveNamedSelection(selName);
+    engine->GetEngineMethods()->SaveNamedSelection(selName);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3654,7 +3654,7 @@ bool
 ViewerEngineManager::ConstructDataBinning(const EngineKey &ek, int id)
 {
     ENGINE_PROXY_RPC_BEGIN("ConstructDataBinning");
-    engine->ConstructDataBinning(id, constructDataBinningAtts);
+    engine->GetEngineMethods()->ConstructDataBinning(id, constructDataBinningAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3677,7 +3677,7 @@ ViewerEngineManager::CloneNetwork(const EngineKey &ek, int nid,
                            const QueryOverTimeAttributes *qatts)
 {
     ENGINE_PROXY_RPC_BEGIN("CloneNetwork");
-    engine->CloneNetwork(nid, qatts);
+    engine->GetEngineMethods()->CloneNetwork(nid, qatts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
@@ -3940,7 +3940,7 @@ ViewerEngineManager::UpdateExpressions(const EngineKey &ek,
     const ExpressionList &eL)
 {
     ENGINE_PROXY_RPC_BEGIN("UpdateExpressions");  
-        engine->UpdateExpressions(eL);
+        engine->GetEngineMethods()->UpdateExpressions(eL);
     ENGINE_PROXY_RPC_END
 }
 
@@ -3965,7 +3965,7 @@ ViewerEngineManager::SendSimulationCommand(const EngineKey &ek,
                                            const std::string &argument)
 {
     if (EngineExists(ek))
-        engines[ek].proxy->ExecuteSimulationControlCommand(command, argument);
+        engines[ek].proxy->GetEngineMethods()->ExecuteSimulationControlCommand(command, argument);
     else
         EXCEPTION0(NoEngineException);
 }
@@ -3995,6 +3995,6 @@ bool
 ViewerEngineManager::LaunchProcess(const EngineKey &ek, const stringVector &args)
 {
     ENGINE_PROXY_RPC_BEGIN("LaunchProcess");  
-        engine->LaunchProcess(args);
+        engine->GetEngineMethods()->LaunchProcess(args);
     ENGINE_PROXY_RPC_END
 }

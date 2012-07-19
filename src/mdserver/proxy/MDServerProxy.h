@@ -40,33 +40,18 @@
 //                              MDServerProxy.h                              //
 // ************************************************************************* //
 
-#ifndef _MSSERVERPROXY_H_
+#ifndef _MDSERVERPROXY_H_
 #define _MDSERVERPROXY_H_
 #include <mdsproxy_exports.h>
 
 #include <RemoteProxyBase.h>
-#include <GetDirectoryRPC.h>
-#include <ChangeDirectoryRPC.h>
-#include <CloseDatabaseRPC.h>
-#include <ConnectCallback.h>
-#include <ConnectRPC.h>
-#include <CreateGroupListRPC.h>
-#include <ExpandPathRPC.h>
-#include <GetFileListRPC.h>
-#include <GetDBPluginInfoRPC.h>
-#include <GetMetaDataRPC.h>
-#include <GetSILRPC.h>
-#include <LoadPluginsRPC.h>
-#include <avtDatabaseMetaData.h>
-#include <SILAttributes.h>
-#include <GetPluginErrorsRPC.h>
-#include <SetMFileOpenOptionsRPC.h>
 
 #include <string>
 #include <vector>
 #include <maptypes.h>
 #include <vectortypes.h>
-
+#include <MDServerState.h>
+#include <MDServerMethods.h>
 class     DBPluginInfoAttributes;
 
 
@@ -180,103 +165,21 @@ class     DBPluginInfoAttributes;
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
 {
 public:
-    struct FileEntry
-    {
-        FileEntry();
-        FileEntry(const FileEntry &);
-        ~FileEntry();
-        void operator = (const FileEntry &);
-
-        static bool LessThan(const FileEntry &f1, const FileEntry &f2);
-
-        std::string   name;
-        int           size;
-
-        bool          CanAccess() const    { return (flag & 1) == 1; }
-        void          SetAccess(bool val)  { flag = (flag & 0xfe | (val?1:0)); }
-        bool          IsVirtual() const    { return (flag & 2) == 2; }
-        void          SetVirtual(bool val) { flag = (flag & 0xfd | (val?2:0)); }
-    private:
-        // Access  is bit 0
-        // Virtual is bit 1
-        unsigned char flag;
-    };
-
-    typedef std::vector<FileEntry> FileEntryVector;
-
-    struct MDSERVER_PROXY_API FileList
-    {
-        FileList();
-        FileList(const FileList &);
-        ~FileList();
-        void operator = (const FileList &);
-        void Sort();
-        void Clear();
-
-        FileEntryVector       files;
-        FileEntryVector       dirs;
-        FileEntryVector       others;
-        StringStringVectorMap virtualFiles;
-    };
-public:
     MDServerProxy();
     virtual ~MDServerProxy();
 
     virtual std::string GetComponentName() const;
 
-    // RPCs to access functionality on the mdserver.
-    void                       ChangeDirectory(const std::string &);
-    void                       Connect(const stringVector &args);
-    void                       CreateGroupList(const std::string &filename,
-                                               const stringVector &groupList);
-    std::string                GetDirectory();
-    const FileList            *GetFileList(const std::string &filter, bool,
-                                           bool=true);
-    const avtDatabaseMetaData *GetMetaData(const std::string &, int=0,
-                               bool forceReadAllCyclesTimes = false,
-                               const std::string &forcedFileType = "",
-                               bool treatAllDBsAsTimeVarying = false,
-                               bool createMeshQualityExpressions = true,
-                               bool createTimeDerivativeExpressions = true,
-                               bool createVectorMagnitudeExpressions = true);
-    const SILAttributes       *GetSIL(const std::string &, int=0,
-                                   bool treatAllDBsAsTimeVarying = false);
-    std::string                ExpandPath(const std::string &);
-    void                       CloseDatabase();
-    void                       CloseDatabase(const std::string &);
-    void                       LoadPlugins();
-    const DBPluginInfoAttributes *GetDBPluginInfo(void);
-    void                       SetDefaultFileOpenOptions(
-                                                       const FileOpenOptions&);
+    MDServerMethods *GetMDServerMethods() { return methods; }
+    MDServerState   *GetMDServerState() { return state; }
 
-    std::string                GetPluginErrors();
-
-    char                       GetSeparator() const;
-    std::string                GetSeparatorString() const;
 protected:
     virtual void               SetupComponentRPCs();
+
 private:
-    void                       DetermineSeparator();
 
-    char                       separator;
-
-    GetDirectoryRPC            getDirectoryRPC;
-    ChangeDirectoryRPC         changeDirectoryRPC;
-    GetFileListRPC             getFileListRPC;
-    GetMetaDataRPC             getMetaDataRPC;
-    GetSILRPC                  getSILRPC;
-    ConnectRPC                 connectRPC;
-    CreateGroupListRPC         createGroupListRPC;
-    ExpandPathRPC              expandPathRPC;
-    CloseDatabaseRPC           closeDatabaseRPC;
-    LoadPluginsRPC             loadPluginsRPC;
-    GetPluginErrorsRPC         getPluginErrorsRPC;
-    GetDBPluginInfoRPC         getDBPluginInfoRPC;
-    SetMFileOpenOptionsRPC     setMFileOpenOptionsRPC;
-
-    FileList                   fileList;
-    avtDatabaseMetaData        metaData;
-    SILAttributes              sil;
+    MDServerState* state;
+    MDServerMethods* methods;
 };
 
 #endif

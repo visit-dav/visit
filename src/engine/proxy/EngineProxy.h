@@ -45,40 +45,11 @@
 #include <engine_proxy_exports.h>
 
 #include <RemoteProxyBase.h>
-#include <ReadRPC.h>
-#include <RenderRPC.h>
-#include <ExecuteRPC.h>
-#include <ApplyOperatorRPC.h>
-#include <ClearCacheRPC.h>
-#include <CloneNetworkRPC.h>
-#include <ConstructDataBinningRPC.h>
-#include <DefineVirtualDatabaseRPC.h>
-#include <EnginePropertiesRPC.h>
-#include <ExportDatabaseRPC.h>
-#include <LaunchRPC.h>
-#include <MakePlotRPC.h>
-#include <NamedSelectionRPC.h>
-#include <OpenDatabaseRPC.h>
-#include <PickRPC.h>
-#include <ProcInfoRPC.h>
-#include <QueryRPC.h>
-#include <QueryParametersRPC.h>
-#include <ReleaseDataRPC.h>
-#include <SetWinAnnotAttsRPC.h>
-#include <SimulationCommand.h>
-#include <SimulationCommandRPC.h>
-#include <SILAttributes.h>
-#include <StartPickRPC.h>
-#include <StartQueryRPC.h>
-#include <UpdatePlotAttsRPC.h>
-#include <UseNetworkRPC.h>
-#include <ExpressionList.h>
-#include <FileOpenOptions.h>
-#include <SetEFileOpenOptionsRPC.h>
-#include <SelectionProperties.h>
-
+#include <EngineState.h>
+#include <EngineMethods.h>
 #include <avtDataObjectReader.h>
 #include <avtDatabaseMetaData.h>
+#include <SimulationCommand.h>
 
 #include <vectortypes.h>
 #include <string>
@@ -348,15 +319,17 @@ public:
 
     virtual void SendKeepAlive();
 
-    virtual bool Parallel() const { return numProcs > 1; };
+    virtual bool Parallel() const { return numProcs > 1; }
     virtual std::string GetComponentName() const;
 
-    virtual void SetNumProcessors(int np) { numProcs = np; };
-    virtual void SetNumNodes(int nn)      { numNodes = nn; };
-    virtual void SetLoadBalancing(int lb) { loadBalancing = lb; };
-    virtual int  NumProcessors() const    { return numProcs; };
-    virtual int  NumNodes() const         { return numNodes; };
-    virtual int  LoadBalancing() const    { return loadBalancing; };
+    virtual void SetNumProcessors(int np) { numProcs = np; }
+    virtual void SetNumNodes(int nn)      { numNodes = nn; }
+    virtual void SetLoadBalancing(int lb) { loadBalancing = lb; }
+    virtual int  NumProcessors() const    { return numProcs; }
+    virtual int  NumNodes() const         { return numNodes; }
+    virtual int  LoadBalancing() const    { return loadBalancing; }
+
+    void Interrupt();
 
     // Needed for simulations to pass back metadata; may have expanded
     // functionality in the future
@@ -366,141 +339,24 @@ public:
     SILAttributes           *GetSimulationSILAtts();
     SimulationCommand       *GetCommandFromSimulation();
 
-    StatusAttributes        *GetStatusAttributes() const;
+    EngineState             *GetEngineState() { return state; }
+    EngineMethods           *GetEngineMethods() { return methods; }
 
-    // RPCs to access functionality on the engine.
-    void                     OpenDatabase(const std::string &, 
-                                          const std::string &, int = 0,
-                                          bool=true, bool=true, bool=false);
-    void                     DefineVirtualDatabase(const std::string &,
-                                                   const std::string &,
-                                                   const std::string &,
-                                                   const stringVector &,
-                                                   int = 0, bool=true,
-                                                   bool=true);
-    void                     ReadDataObject(const std::string &format,
-                                            const std::string &filename,
-                                            const std::string &var, const int ts,
-                                            avtSILRestriction_p,
-                                            const MaterialAttributes&,
-                                            const ExpressionList &,
-                                            const MeshManagementAttributes &,
-                                            bool treatAllDbsAsTimeVarying,
-                                            bool ignoreExtents,
-                                            const std::string &selName,
-                                            int windowID);
-    void                     ApplyOperator(const std::string&, 
-                                           const AttributeSubject*);
-    void                     ApplyNamedFunction(const std::string &name,
-                                                int nargs);
-    int                      MakePlot(const std::string &plotName,
-                                      const std::string &pluginID, 
-                                      const AttributeSubject*,
-                                      const std::vector<double>&,
-                                      int winID);
-
-    void                     UseNetwork(int);
-    void                     UpdatePlotAttributes(const std::string &, int,
-                                                  const AttributeSubject*);
-    void                     Pick(const int, const PickAttributes *,
-                                  PickAttributes &, const int);
-    void                     StartPick(const bool, const bool, const int);
-    void                     StartQuery(const bool, const int);
-
-    void                     SetWinAnnotAtts(const WindowAttributes*,
-                                             const AnnotationAttributes*,
-                                             const AnnotationObjectList*,
-                                             std::string,
-                                             const VisualCueList*,
-                                             const int *frameAndState,
-                                             const double *viewExtents,
-                                             const std::string,
-                                             const int winID);
-
-    void                     SetDefaultFileOpenOptions(const FileOpenOptions&);
-
-    avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
-                                 void (*waitCB)(void *), void *cbData);
-
-    avtDataObjectReader_p    Execute(bool, void (*waitCB)(void*),void *cbData);
-
-    void                     ClearCache();
-    void                     ClearCache(const std::string &);
-
-    void                     Interrupt();
-
-    void                     Query(const std::vector<int> &,
-                                   const QueryAttributes *, 
-                                   QueryAttributes &);
-    void                     ExportDatabase(int, const ExportDBAttributes *);
-    void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
-
-    const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);
-    const SelectionSummary  &UpdateNamedSelection(int id, const SelectionProperties &props, bool cache);
-    void                     DeleteNamedSelection(const std::string selName);
-    void                     LoadNamedSelection(const std::string selName);
-    void                     SaveNamedSelection(const std::string selName);
-    void                     ReleaseData(const int);
-    void                     CloneNetwork(const int,
-                                          const QueryOverTimeAttributes *);
-    void                     UpdateExpressions(const ExpressionList &);
-
-    std::string              GetQueryParameters(const std::string &qName);
-
-    void                     GetProcInfo(ProcessAttributes &);
-
-    void                     ExecuteSimulationControlCommand(
-                                                      const std::string &cmd);
-    void                     ExecuteSimulationControlCommand(
-                                                      const std::string &cmd,
-                                                      const std::string &arg);
-    EngineProperties         GetEngineProperties();
-
-    void                     LaunchProcess(const stringVector &programArgs);
-
+    virtual void Create(const std::string &hostName,
+                MachineProfile::ClientHostDetermination chd,
+                const std::string &clientHostName,
+                bool manualSSHPort,
+                int sshPort,
+                bool useTunneling,
+                bool useGateway,
+                const std::string &gatewayHost,
+                ConnectCallback *connectCallback = 0,
+                void *data = 0, bool createAsThoughLocal = false);
 protected:
     virtual void             SetupComponentRPCs();
     void                     ExtractEngineInformation();
-    void                     BlockForNamedSelectionOperation();
-    void                     Status(const char *message);
-    void                     Status(int percent, int curStage,
-                                    const std::string &curStageName,
-                                    int maxStage);
-    void                     ClearStatus();
-    void                     Warning(const char *message);
 private:
     ParentProcess           *engineP;
-
-    ReadRPC                  readRPC;
-    ApplyOperatorRPC         applyOperatorRPC;
-    MakePlotRPC              makePlotRPC;
-    UseNetworkRPC            useNetworkRPC;
-    UpdatePlotAttsRPC        updatePlotAttsRPC;
-    ExecuteRPC               executeRPC;
-    PickRPC                  pickRPC;
-    StartPickRPC             startPickRPC;
-    StartQueryRPC            startQueryRPC;
-    ClearCacheRPC            clearCacheRPC;
-    QueryRPC                 queryRPC;
-    QueryParametersRPC       queryParametersRPC;
-    ReleaseDataRPC           releaseDataRPC;
-    OpenDatabaseRPC          openDatabaseRPC;
-    DefineVirtualDatabaseRPC defineVirtualDatabaseRPC;
-    RenderRPC                renderRPC;
-    SetWinAnnotAttsRPC       setWinAnnotAttsRPC;
-    ExpressionList           exprList;
-    CloneNetworkRPC          cloneNetworkRPC;
-    ProcInfoRPC              procInfoRPC;
-    SimulationCommandRPC     simulationCommandRPC;
-    ExportDatabaseRPC        exportDatabaseRPC;
-    ConstructDataBinningRPC  constructDataBinningRPC;
-    NamedSelectionRPC        namedSelectionRPC;
-    SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
-    EnginePropertiesRPC      enginePropertiesRPC;
-    LaunchRPC                launchRPC;
-
-    // For indicating status.
-    StatusAttributes        *statusAtts;
 
     // Metadata, SIL published by a simulation
     Xfer                    *simxfer;
@@ -512,6 +368,9 @@ private:
     int                      numProcs;
     int                      numNodes;
     int                      loadBalancing;
+
+    EngineState             *state;
+    EngineMethods           *methods;
 };
 
 #endif

@@ -42,6 +42,8 @@
 
 SET(VCLRPC_SOURCES
 ConnectSimRPC.C
+LauncherMethods.C
+LauncherState.C
 )
 
 INCLUDE_DIRECTORIES(

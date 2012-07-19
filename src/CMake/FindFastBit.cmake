@@ -48,7 +48,7 @@ ELSE (WIN32)
     IF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
         # Linux requires librt to resolve "clock_gettime"
         # add this as a general dep:
-        SET(FASTBIT_LIBDEP /usr/lib rt "${FASTBIT_LIBDEP}")
+        #SET(FASTBIT_LIBDEP /usr/lib rt "${FASTBIT_LIBDEP}")
     ENDIF("${VISIT_CMAKE_PLATFORM}" STREQUAL "Linux")
     SET_UP_THIRD_PARTY(FASTBIT lib include fastbit)
 ENDIF (WIN32)

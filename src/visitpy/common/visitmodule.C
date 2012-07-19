@@ -421,6 +421,7 @@ static bool                  keepGoing = true;
 static bool                  autoUpdate = false;
 static bool                  viewerInitiatedQuit = false;
 static bool                  viewerBlockingRead = false;
+static bool                  viewerEmbedded = false;
 #ifdef THREADS
 static bool                  moduleUseThreads = true;
 #else
@@ -1126,6 +1127,9 @@ visit_AddArgument(PyObject *self, PyObject *args)
         char *arg;
         if(!PyArg_ParseTuple(args, "s", &arg))
             return NULL;
+
+        if(strcmp(arg,"-embedded") == 0)
+            viewerEmbedded = true;
 
         GetViewerProxy()->AddArgument(arg);
     }
@@ -17418,8 +17422,11 @@ InitializeModule()
     // Add the optional command line arguments coming from cli_argv.
     //
     for(int i = 1; i < cli_argc; ++i)
+    {
+        if(strcmp(cli_argv[i],"-embedded") == 0)
+            viewerEmbedded = true; //do not show window if it is embedded..
         GetViewerProxy()->AddArgument(cli_argv[i]);
-
+    }
     //
     // Hook up observers
     //
@@ -17449,9 +17456,11 @@ InitializeModule()
     std::string vud = GetUserVisItDirectory() + "\\visitlog.py";
     const char *logName = vud.c_str();
 #endif
-    if(!LogFile_Open(logName))
-        fprintf(stderr, "Could not open %s log file.\n", logName);
-
+    if(!viewerEmbedded)
+    {
+        if(!LogFile_Open(logName))
+            fprintf(stderr, "Could not open %s log file.\n", logName);
+    }
     // Add the default methods to the module's method table.
     AddDefaultMethods();
     // Add extension methods to the module's method table.
@@ -17625,7 +17634,7 @@ LaunchViewer(const char *visitProgram)
         //
         // Tell the windows to show themselves
         //
-        //GetViewerMethods()->ShowAllWindows();
+        if(!viewerEmbedded) GetViewerMethods()->ShowAllWindows();
 
         //
         // Set a flag indicating the viewer exists.

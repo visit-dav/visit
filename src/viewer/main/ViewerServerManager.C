@@ -955,7 +955,7 @@ ViewerServerManager::OpenWithLauncher(
                 cancelled = true;
             else
             {
-                launchers[remoteHost].launcher->LaunchProcess(args);
+                launchers[remoteHost].launcher->GetLauncherMethods()->LaunchProcess(args);
                 // Indicate success.
                 launched = true;
             }
@@ -1106,7 +1106,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
                 if(simData->tunnel)
                     ConvertArgsToTunneledValues(GetPortTunnelMap(remoteHost), args2);
 
-                launchers[remoteHost].launcher->ConnectSimulation(args2,
+                launchers[remoteHost].launcher->GetLauncherMethods()->ConnectSimulation(args2,
                     simData->h, simData->p, simData->k);
 
                 // Indicate success.

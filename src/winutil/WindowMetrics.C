@@ -130,7 +130,7 @@ WindowMetrics::Instance()
 //    exit the main application loop.
 //
 // ****************************************************************************
-
+bool WindowMetrics::embedded = false;
 WindowMetrics::WindowMetrics()
 : testWindow(0)
 {
@@ -615,6 +615,8 @@ WindowMetrics::CalculateBorders(QWidget *win,
 void
 WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 {
+    if(embedded) return;
+
     XFlush(QX11Info::display());
     XEvent ev;
     while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),
@@ -647,6 +649,8 @@ WindowMetrics::WaitForWindowManagerToGrabWindow(QWidget *win)
 void
 WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 {
+    if(embedded) return;
+
     XFlush(QX11Info::display());
     XEvent ev;
     while (!XCheckTypedWindowEvent(QX11Info::display(), win->winId(),

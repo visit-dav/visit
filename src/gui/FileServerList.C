@@ -155,7 +155,7 @@ MDCacheKeys(const string& stateLessName, int timeState)
 //
 // ****************************************************************************
 
-FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
+FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"),
     activeHost("localhost"), fileList(), appliedFileList(), openFile(),
     fileMetaData(), recentPaths()
 {
@@ -225,6 +225,8 @@ FileServerList::~FileServerList()
 {
     // Iterate through the server list, close and destroy each
     // server and remove the server from the map.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     for(pos = servers.begin(); pos != servers.end(); ++pos)
     {
@@ -337,13 +339,15 @@ FileServerList::Initialize()
     ENDTRY
 
     // Get the remote file list and copy it to the local file list.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator info = servers.find(activeHost);
     if(info != servers.end())
     {
         TRY
         {
             // Try to get the file list from the MD Server.
-            fileList = *(info->second->server->GetFileList(filter,
+            fileList = *(info->second->server->GetMDServerMethods()->GetFileList(filter,
                 automaticFileGroupingFlag, smartFileGroupingFlag));
             Select(ID_fileListFlag, (void *)&fileListFlag);
 
@@ -495,13 +499,15 @@ FileServerList::Notify()
 void
 FileServerList::SilentNotify()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // Return if there is no mdserver associated with the active host.
     ServerMap::iterator pos;
     if((pos = servers.find(activeHost)) == servers.end())
         return;
 
     // Get a pointer to the mdserver for the active host.
-    ServerInfo *info = servers[activeHost];
+    MDServerManager::ServerInfo *info = servers[activeHost];
     int        numAttempts = 0;
     bool       tryAgain = false;
 
@@ -515,7 +521,7 @@ FileServerList::SilentNotify()
             if(fileAction == FILE_CLOSE)
             {
                 if(!openFile.Empty())
-                    info->server->CloseDatabase();
+                    info->server->GetMDServerMethods()->CloseDatabase();
             }
             else
             {
@@ -524,8 +530,8 @@ FileServerList::SilentNotify()
                     if(!pathFlag)
                     {
                         // Get the file list from the MDServerProxy.
-                        const MDServerProxy::FileList *fl =
-                            info->server->GetFileList(filter,
+                        const MDServerMethods::FileList *fl =
+                            info->server->GetMDServerMethods()->GetFileList(filter,
                                                       automaticFileGroupingFlag,
                                                       smartFileGroupingFlag);
                         // copy the file list into the local file list.
@@ -552,13 +558,13 @@ FileServerList::SilentNotify()
                         // Change to the new path.
                         if(pathFlag)
                         {
-                            info->server->ChangeDirectory(info->path);
-                            info->path = info->server->GetDirectory();
+                            info->server->GetMDServerMethods()->ChangeDirectory(info->path);
+                            info->path = info->server->GetMDServerMethods()->GetDirectory();
                         }
 
                         // Copy the file list into the local file list.
-                        const MDServerProxy::FileList *fl =
-                            info->server->GetFileList(filter,
+                        const MDServerMethods::FileList *fl =
+                            info->server->GetMDServerMethods()->GetFileList(filter,
                                                       automaticFileGroupingFlag,
                                                       smartFileGroupingFlag);
                         fileList = *fl;
@@ -576,7 +582,7 @@ FileServerList::SilentNotify()
                     CATCH(ChangeDirectoryException)
                     {
                         // Set the directory back to the previous directory name.
-                        info->path = info->server->GetDirectory();
+                        info->path = info->server->GetMDServerMethods()->GetDirectory();
                         // Reset the flags for future operations and rethrow.
                         hostFlag = pathFlag = filterFlag = false;
                         fileListFlag = appliedFileListFlag = false;
@@ -707,13 +713,15 @@ FileServerList::SilentNotify()
 void
 FileServerList::SetHost(const string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // If the fully qualified host name is not the same as the regular
     // hostname and we have a server under the regular hostname, migrate
     // the server to the new hostname.
     ServerMap::iterator pos = servers.find(host);
     if(pos != servers.end())
     {
-        ServerInfo *oldServer = pos->second;
+        MDServerManager::ServerInfo *oldServer = pos->second;
         servers.erase(pos);
         servers[host] = oldServer;
 
@@ -850,7 +858,10 @@ FileServerList::SetHost(const string &host)
 void
 FileServerList::StartServer(const string &host)
 {
-    ServerInfo *info = new ServerInfo();
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
+    MDServerManager::ServerInfo *info = new MDServerManager::ServerInfo();
     info->server = 0;
 
     // Create a new MD server on the remote machine.
@@ -866,7 +877,7 @@ FileServerList::StartServer(const string &host)
         connectingServer = false;
 
         // Get the current directory from the server
-        info->path = info->server->GetDirectory();
+        info->path = info->server->GetMDServerMethods()->GetDirectory();
 
         // Add the information about the new server to the 
         // server map.
@@ -905,6 +916,8 @@ FileServerList::StartServer(const string &host)
 void
 FileServerList::CloseServer(const string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(host)) != servers.end()) 
     {
@@ -942,6 +955,8 @@ void
 FileServerList::SetPath(const string &path)
 {
     // If the activeHost is in the server map, set its path.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(activeHost)) != servers.end())
     {
@@ -977,12 +992,14 @@ void
 FileServerList::LoadPlugins()
 {
     // If the activeHost is in the server map, set its path.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(activeHost)) != servers.end())
     {
         // Now that we have what we need, tell the mdserver to load its
         // plugins.
-        pos->second->server->LoadPlugins();
+        pos->second->server->GetMDServerMethods()->LoadPlugins();
     }
 }
 
@@ -1004,6 +1021,8 @@ FileServerList::LoadPlugins()
 void
 FileServerList::SendKeepAlives()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(!connectingServer)
     {
         ServerMap::iterator pos;
@@ -1445,12 +1464,14 @@ FileServerList::OverlayFile(const QualifiedFilename &filename)
 void
 FileServerList::CloseFile()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // Try to close the file on the mdserver.
     if(servers.find(openFile.host) != servers.end())
     {
         TRY
         {
-            servers[openFile.host]->server->CloseDatabase();
+            servers[openFile.host]->server->GetMDServerMethods()->CloseDatabase();
         }
         CATCH(LostConnectionException)
         {
@@ -1532,6 +1553,8 @@ void
 FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
     int timeState, int action)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // If the metadata has been seen before, indicate that we have it.
     // Otherwise, read it from the MetaData Server.
     if (GetMetaData(filename, timeState, !ANY_STATE, !GET_NEW_MD) != 0)
@@ -1783,6 +1806,8 @@ FileServerList::GetFileIndex(const QualifiedFilename &fileName)
 QualifiedFilename
 FileServerList::QualifiedName(const string &fileName)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     return QualifiedFilename(activeHost, servers[activeHost]->path,
                              fileName);
 }
@@ -1862,13 +1887,16 @@ FileServerList::SetProgressCallback(bool (*cb)(void *, int), void *data)
 QualifiedFilenameVector
 FileServerList::GetFilteredFileList()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
     QualifiedFilenameVector retval;
 
     if(automaticFileGroupingFlag)
     {
         // Go through each file in the file and virtualFiles list and add them
         // all to the returned list.
-        MDServerProxy::FileEntryVector::const_iterator pos;
+        MDServerMethods::FileEntryVector::const_iterator pos;
         for(pos = fileList.files.begin();
             pos != fileList.files.end(); ++pos)
         {
@@ -1889,7 +1917,7 @@ FileServerList::GetFilteredFileList()
             filterList.push_back("*");
 
         // Go through each file in the file list and
-        MDServerProxy::FileEntryVector::const_iterator pos;
+        MDServerMethods::FileEntryVector::const_iterator pos;
         for(pos = fileList.files.begin();
             pos != fileList.files.end(); ++pos)
         {
@@ -2079,6 +2107,9 @@ FileServerList::ClearRecentPathList()
 void
 FileServerList::DefineVirtualFiles()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
     StringStringVectorMap::const_iterator pos;
     for(pos = fileList.virtualFiles.begin();
         pos != fileList.virtualFiles.end(); ++pos)
@@ -2189,6 +2220,9 @@ FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) cons
 bool
 FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
     DataNode *fsNode = new DataNode("FileServerList");
     parentNode->AddNode(fsNode);
 
@@ -2412,6 +2446,8 @@ FileServerList::GetPath() const
 {
     static string retval("~");
 
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::const_iterator pos;
     if((pos = servers.find(activeHost)) != servers.end())
         retval = pos->second->path;
@@ -2470,7 +2506,7 @@ FileServerList::GetFilter() const
     return filter;
 }
 
-const MDServerProxy::FileList &
+const MDServerMethods::FileList &
 FileServerList::GetFileList() const
 {
     return fileList;
@@ -2571,6 +2607,9 @@ const avtDatabaseMetaData *
 FileServerList::GetMetaDataEx(const QualifiedFilename &filename,
     int timeState, bool anyStateOk, bool dontGetNew, string *key)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
     // build set of keys for cached metadata
     vector<string> mdKeys = MDCacheKeys(filename.FullName(),
                                         timeState);
@@ -2620,7 +2659,7 @@ FileServerList::GetMetaDataEx(const QualifiedFilename &filename,
 
         MDServerProxy *mds = svit->second->server;
         const avtDatabaseMetaData *md =
-            mds->GetMetaData(filename.PathAndFile(), timeState,
+            mds->GetMDServerMethods()->GetMetaData(filename.PathAndFile(), timeState,
                              forceReadAllCyclesTimes, forcedFileType,
                              treatAllDBsAsTimeVarying,
                              createMeshQualityExpressions,
@@ -2852,12 +2891,14 @@ FileServerList::GetSILEx(const QualifiedFilename &filename, int timeState,
         }
 
         // acquire new SIL from mdserver
+        typedef MDServerManager::ServerMap ServerMap;
+        ServerMap& servers = MDServerManager::Instance()->GetServerMap();
         ServerMap::const_iterator svit = servers.find(filename.host);
         if (svit == servers.end()) 
             return 0;
 
         MDServerProxy *mds = svit->second->server;
-        const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(),
+        const SILAttributes *sil = mds->GetMDServerMethods()->GetSIL(filename.PathAndFile(),
             timeState, treatAllDBsAsTimeVarying);
 
         // cache what we got
@@ -2932,8 +2973,10 @@ void
 FileServerList::CreateGroupList(const string &filename,
     const stringVector &groupList)
 {
-    ServerInfo *info = servers[activeHost];
-    info->server->CreateGroupList(filename, groupList);
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    MDServerManager::ServerInfo *info = servers[activeHost];
+    info->server->GetMDServerMethods()->CreateGroupList(filename, groupList);
 
     // Reread the file list from the server
     pathFlag = true;
@@ -2959,15 +3002,17 @@ FileServerList::CreateGroupList(const string &filename,
 string
 FileServerList::GetHomePath()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // Get a pointer to the mdserver for the active host.
-    ServerInfo *info = servers[activeHost];
+    MDServerManager::ServerInfo *info = servers[activeHost];
 
     // Initialize the return value.
     string homePath("~");
 
     TRY
     {
-        homePath = info->server->ExpandPath("~");
+        homePath = info->server->GetMDServerMethods()->ExpandPath("~");
     }
     CATCH(LostConnectionException)
     {
@@ -2999,17 +3044,19 @@ FileServerList::GetHomePath()
 string
 FileServerList::ExpandPath(const string &p)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // Initialize the return value.
     string homePath(p);
 
     if(servers.find(activeHost) != servers.end())
     {
         // Get a pointer to the mdserver for the active host.
-        ServerInfo *info = servers[activeHost];
+        MDServerManager::ServerInfo *info = servers[activeHost];
 
         TRY
         {
-            homePath = info->server->ExpandPath(p);
+            homePath = info->server->GetMDServerMethods()->ExpandPath(p);
         }
         CATCH(VisItException)
         {
@@ -3168,11 +3215,13 @@ FileServerList::DecodePath(const string &path)
 
 #define SAFE_GET_SEPARATOR(host, func)    TRY\
     {\
+        typedef MDServerManager::ServerMap ServerMap;\
+        ServerMap& servers = MDServerManager::Instance()->GetServerMap();\
         if(servers.find(host) == servers.end())\
             StartServer(host);\
         if(servers.find(host) != servers.end())\
-        {   const ServerInfo *info = servers[host]; \
-            sep = info->server->func();\
+        {   const MDServerManager::ServerInfo *info = servers[host]; \
+            sep = info->server->GetMDServerMethods()->func();\
         }\
     }\
     CATCHALL\
