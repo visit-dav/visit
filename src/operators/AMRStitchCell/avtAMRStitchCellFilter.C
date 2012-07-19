@@ -196,6 +196,9 @@ avtAMRStitchCellFilter::ModifyContract(avtContract_p in_contract)
 //
 //  Modifications:
 //
+//    Gunther H. Weber, Wed Jul 18 17:29:30 PDT 2012
+//    Fixed memory error reported by valgrind
+//
 // ****************************************************************************
 
 void
@@ -280,10 +283,18 @@ avtAMRStitchCellFilter::PreExecute(void)
         logicalDomainBoundingBox[l].resize(6);
         logicalDomainBoundingBox[l][0] = refRatio[0] * logicalDomainBoundingBox[l-1][0];
         logicalDomainBoundingBox[l][1] = refRatio[1] * logicalDomainBoundingBox[l-1][1];
-        logicalDomainBoundingBox[l][2] = refRatio[2] * logicalDomainBoundingBox[l-1][2];
         logicalDomainBoundingBox[l][3] = refRatio[0] * (logicalDomainBoundingBox[l-1][3] + 1) - 1;
         logicalDomainBoundingBox[l][4] = refRatio[1] * (logicalDomainBoundingBox[l-1][4] + 1) - 1;
-        logicalDomainBoundingBox[l][5] = refRatio[2] * (logicalDomainBoundingBox[l-1][5] + 1) - 1;
+        if (topologicalDimension == 2)
+        {
+            logicalDomainBoundingBox[l][2] = 0;
+            logicalDomainBoundingBox[l][5] = 0;
+        }
+        else
+        {
+            logicalDomainBoundingBox[l][2] = refRatio[2] * logicalDomainBoundingBox[l-1][2];
+            logicalDomainBoundingBox[l][5] = refRatio[2] * (logicalDomainBoundingBox[l-1][5] + 1) - 1;
+        }
 
         debug5 << "avtAMRStitchCellFilter::PreExecute(): logicalDomainBoundingBox[" << l << "][6] = { ";
         debug5 << logicalDomainBoundingBox[l][0] << ", " << logicalDomainBoundingBox[l][1] << ", ";
