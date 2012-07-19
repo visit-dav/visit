@@ -112,12 +112,12 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     virtual ViewerMethods *GetViewerMethods() const;
 
     // Methods for dealing with plot SIL restrictions.
-    avtSILRestriction_p GetPlotSILRestriction() 
+    virtual avtSILRestriction_p GetPlotSILRestriction()
                      { return internalSILRestriction; };
-    avtSILRestriction_p GetPlotSILRestriction() const
+    virtual avtSILRestriction_p GetPlotSILRestriction() const
                      { return new avtSILRestriction(internalSILRestriction); };
-    void SetPlotSILRestriction(avtSILRestriction_p newRestriction);
-    void SetPlotSILRestriction();
+    virtual void SetPlotSILRestriction(avtSILRestriction_p newRestriction);
+    virtual void SetPlotSILRestriction();
 
     // Convenience methods 
     void AnimationStop();

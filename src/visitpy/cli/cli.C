@@ -337,7 +337,7 @@ main(int argc, char *argv[])
         {
             pyside = true;
         }
-        else if(strcmp(argv[i], "-pysideviewer") == 0)
+        else if(strcmp(argv[i], "-pysideclient") == 0)
         {
             pyside_gui = true;
         }
@@ -382,6 +382,19 @@ main(int argc, char *argv[])
             pyside_gui = false;
             pyside = true;
         }
+        if(pyside_gui && tmp == "-nowin")
+        {
+            std::cerr << "Error: Cannot create pyside client and nowin at the same time" 
+                      << std::endl;
+            return (0);
+        }
+
+        if(pyside_gui && tmp == "-defer")
+        {
+            std::cerr << "Warning: Cannot use pyside client and defer at the same time"
+                      << std::endl;
+            return (0);
+        }
     }
 
     TRY
@@ -421,9 +434,14 @@ main(int argc, char *argv[])
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
-            PyRun_SimpleString((char*)"visit.pyside_viewer.PySideViewer.instance(sys.argv)");
+            PyRun_SimpleString((char*)"visit.pyside_gui.PySideGUI.instance(sys.argv)");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
+            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
         }
 
         // Initialize the VisIt module.
@@ -438,7 +456,7 @@ main(int argc, char *argv[])
 
 
         PyRun_SimpleString((char*)"visit.Launch()");
-        PyRun_SimpleString((char*)"visit.ShowAllWindows()");
+
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
         // import helper that lets us know if the pyside viewer is enabled

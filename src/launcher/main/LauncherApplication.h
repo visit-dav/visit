@@ -47,7 +47,7 @@
 #include <ConnectSimRPC.h>
 #include <RPCExecutor.h>
 #include <LaunchService.h>
-
+#include <LauncherState.h>
 #include <map>
 
 // ****************************************************************************
@@ -121,9 +121,7 @@ private:
 
     QuitRPC                     quitRPC;
     KeepAliveRPC                keepAliveRPC;
-    LaunchRPC                   launchRPC;
-    ConnectSimRPC               connectSimRPC;
-
+    LauncherState               launcherstate;
     RPCExecutor<QuitRPC>       *quitExecutor;
     RPCExecutor<KeepAliveRPC>  *keepAliveExecutor;
     RPCExecutor<LaunchRPC>     *launchExecutor;

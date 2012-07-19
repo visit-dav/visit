@@ -349,14 +349,15 @@ class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public 
 {
     Q_OBJECT
 public:
-    QvisGUIApplication(int &argc, char **argv);
+    QvisGUIApplication(int &argc, char **argv, ViewerProxy* proxy = NULL);
     ~QvisGUIApplication();
     int Exec();
 
 signals:
     void FireInit(int stage);
+    void VisItIsReady();
 
-private:
+protected:
     void AddViewerArguments(int argc, char **argv);
     void AddViewerSpaceArguments();
     void AddMovieArguments(int argc, char **argv);
@@ -429,7 +430,7 @@ public slots:
     void redoPick();
     void restorePickAttributesAfterRepick();
 
-private slots:
+protected slots:
     void Init(int stage);
     void Quit();
     void HeavyInitialization();
@@ -511,7 +512,7 @@ private slots:
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);
-private:
+protected:
     QStringList                  windowNames;
     int                          completeInit;
     int                          stagedInit;
@@ -523,7 +524,7 @@ private:
     MessageAttributes            message;
 
     // The Application
-    QvisApplication              *mainApp;
+    QApplication                *mainApp;
 
     // A socket notifier to tell us when the viewer proxy has input.
     QSocketNotifier              *fromViewer;
@@ -629,6 +630,8 @@ private:
     // Config file storage
     DataNode                     *systemSettings;
     DataNode                     *localSettings;
+    bool                          inheritedGUI;
+    bool                          embeddedGUI;
 };
 
 #endif

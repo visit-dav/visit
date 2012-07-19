@@ -226,7 +226,7 @@ VisItDataServerPrivate::Open(int argc, char *argv[])
                   useTunneling,
                   useGateway,
                   gatewayHost);
-    mdserver.LoadPlugins();
+    mdserver.GetMDServerMethods()->LoadPlugins();
 
     //
     // Create the engine
@@ -251,13 +251,13 @@ VisItDataServerPrivate::Close()
 std::string
 VisItDataServerPrivate::ExpandPath(const std::string &path)
 {
-    return mdserver.ExpandPath(path);
+    return mdserver.GetMDServerMethods()->ExpandPath(path);
 }
 
 const avtDatabaseMetaData *
 VisItDataServerPrivate::GetMetaData(const std::string &filename)
 {
-    return mdserver.GetMetaData(filename);
+    return mdserver.GetMDServerMethods()->GetMetaData(filename);
 }
 
 void
@@ -270,7 +270,7 @@ VisItDataServerPrivate::OpenDatabase(const std::string &filename, int timeState)
         std::string expandedFile = ExpandPath(filename);
 
         // Determine the file format.
-        const avtDatabaseMetaData *md = mdserver.GetMetaData(expandedFile);
+        const avtDatabaseMetaData *md = mdserver.GetMDServerMethods()->GetMetaData(expandedFile);
         if(md == NULL)
         {
             EXCEPTION1(VisItException, "Can't get the metadata.");
@@ -288,7 +288,7 @@ VisItDataServerPrivate::OpenDatabase(const std::string &filename, int timeState)
     //
     // Open the database on the engine.
     //
-    engine.OpenDatabase(openFileFormat,
+    engine.GetEngineMethods()->OpenDatabase(openFileFormat,
                         openFile,
                         openTimeState,
                         createMeshQualityExpressions,
@@ -346,7 +346,7 @@ VisItDataServerPrivate::ReadData(const std::string &var)
         double               viewExtents[] = {0., 1., 0., 1., 0., 1.};
         std::string          ctName("hot");
 
-        engine.SetWinAnnotAtts(&windowAtts,
+        engine.GetEngineMethods()->SetWinAnnotAtts(&windowAtts,
                                &annotationAtts,
                                &annotationObjectList,
                                extStr,
@@ -373,7 +373,7 @@ VisItDataServerPrivate::ReadData(const std::string &var)
     //
     // Get the SIL so we can make a SIL restriction.
     //
-    const SILAttributes *silAtts = mdserver.GetSIL(openFile, openTimeState,
+    const SILAttributes *silAtts = mdserver.GetMDServerMethods()->GetSIL(openFile, openTimeState,
                                                    treatAllDbsAsTimeVarying);
     if(silAtts == NULL)
     {
@@ -386,7 +386,7 @@ VisItDataServerPrivate::ReadData(const std::string &var)
     //
     // Start a new network
     //
-    engine.ReadDataObject(openFileFormat,
+    engine.GetEngineMethods()->ReadDataObject(openFileFormat,
                           openFile,
                           var,
                           openTimeState,
@@ -415,14 +415,14 @@ void
 VisItDataServerPrivate::AddOperator(const std::string &id)
 {
     AttributeSubject *atts = CreateOperatorAttributes(id);
-    engine.ApplyOperator(id, atts);
+    engine.GetEngineMethods()->ApplyOperator(id, atts);
     delete atts;
 }
 
 void
 VisItDataServerPrivate::AddOperator(const std::string &id, const AttributeSubject *atts)
 {
-    engine.ApplyOperator(id, atts);
+    engine.GetEngineMethods()->ApplyOperator(id, atts);
 }
 
 AttributeSubject *
@@ -449,7 +449,7 @@ VisItDataServerPrivate::AddPlot(const std::string &id)
     std::string plotName(NewPlotName());
     std::vector<double> extents;
     AttributeSubject *atts = CreatePlotAttributes(id);
-    engine.MakePlot(NewPlotName(), 
+    engine.GetEngineMethods()->MakePlot(NewPlotName(),
                     id,
                     atts,
                     extents,
@@ -462,7 +462,7 @@ VisItDataServerPrivate::AddPlot(const std::string &id, const AttributeSubject *a
 {
     std::string plotName(NewPlotName());
     std::vector<double> extents;
-    engine.MakePlot(NewPlotName(), 
+    engine.GetEngineMethods()->MakePlot(NewPlotName(),
                     id,
                     atts,
                     extents,
@@ -475,7 +475,7 @@ VisItDataServerPrivate::Execute(int &n)
     //
     // Execute the plot on the engine.
     //
-    avtDataObjectReader_p reader = engine.Execute(false, NULL, NULL);
+    avtDataObjectReader_p reader = engine.GetEngineMethods()->Execute(false, NULL, NULL);
     avtDataObject_p dob = reader->GetOutput();
 
     //

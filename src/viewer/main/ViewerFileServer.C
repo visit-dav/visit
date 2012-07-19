@@ -69,6 +69,7 @@
 #include <ViewerChangeUsernameWindow.h>
 #include <LauncherProxy.h>
 #include <Utility.h>
+#include <MDServerManager.h>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -175,7 +176,7 @@ static bool GetCreateTimeDerivativeExpressions()
 //
 // ****************************************************************************
 
-ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
+ViewerFileServer::ViewerFileServer() : ViewerServerManager(),
     fileMetaData(), fileSIL(), declinedFiles(), declinedFilesLength()
 {
     databaseCorrelationList = new DatabaseCorrelationList;
@@ -266,6 +267,8 @@ ViewerFileServer::CloseServers()
 {
     // Iterate through the server list, close and destroy each
     // server and remove the server from the map.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     for(pos = servers.begin(); pos != servers.end(); ++pos)
     {
@@ -662,6 +665,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
     const avtDatabaseMetaData *retval = NULL;
 
     // If a server exists, get the metadata.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(servers.find(host) != servers.end())
     {
         int numAttempts = 0;
@@ -693,7 +698,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
 
                 int t0 = visitTimer->StartTimer();
                 const avtDatabaseMetaData *md =
-                    servers[host]->proxy->GetMetaData(db, timeState,
+                    servers[host]->proxy->GetMDServerMethods()->GetMetaData(db, timeState,
                                         forceReadAllCyclesAndTimes ||
                                         GetTryHarderCyclesTimes(),
                                         forcedFileType,
@@ -1004,6 +1009,8 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
     const avtSIL *retval = NULL;
 
     // If a server exists, get the metadata.
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(servers.find(host) != servers.end())
     {
         int numAttempts = 0;
@@ -1035,7 +1042,7 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 // Get the SIL from the mdserver
                 //
                 const SILAttributes *atts =
-                    servers[host]->proxy->GetSIL(db, timeState);
+                    servers[host]->proxy->GetMDServerMethods()->GetSIL(db, timeState);
 
                 if(atts != NULL)
                 {
@@ -1174,6 +1181,8 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
     //
     // If filename expansion is required, expand the filename.
     //
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(ExpansionRequired(filename))
     {
         // Try and start a server.
@@ -1188,7 +1197,7 @@ ViewerFileServer::ExpandedFileName(const std::string &host,
             {
                 TRY
                 {
-                    retval = servers[host]->proxy->ExpandPath(filename);
+                    retval = servers[host]->proxy->GetMDServerMethods()->ExpandPath(filename);
                     tryAgain = false;
                 }
                 CATCH(LostConnectionException)
@@ -1409,6 +1418,8 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 {
     const char *mName = "ViewerFileServer::StartServer: ";
 
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // If the server already exists, return.
     if(servers.find(host) != servers.end())
         return;
@@ -1478,7 +1489,9 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 
         // Add the information about the new server to the 
         // server map.
-        servers[host] = new ServerInfo(newServer, args);
+        servers[host] = new MDServerManager::ServerInfo();
+        servers[host]->server = newServer;
+        servers[host]->arguments = args;
 
         shouldSendFileOpenOptions = true;
     }
@@ -1643,6 +1656,8 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
 void
 ViewerFileServer::SendFileOpenOptions(const std::string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(shouldSendFileOpenOptions && servers.find(host) != servers.end())
     {
         // Once we start a new server, we need to update the current
@@ -1655,7 +1670,7 @@ ViewerFileServer::SendFileOpenOptions(const std::string &host)
             UpdateDBPluginInfo(oldhost);
 
         // Send the new server our current options for opening files.
-        servers[host]->proxy->SetDefaultFileOpenOptions(*fileOpenOptions);
+        servers[host]->proxy->GetMDServerMethods()->SetDefaultFileOpenOptions(*fileOpenOptions);
     }
     shouldSendFileOpenOptions = false;
 }
@@ -1710,6 +1725,8 @@ void
 ViewerFileServer::NoFaultStartServer(const std::string &host, 
     const stringVector &args)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(servers.find(host) == servers.end())
     {
         // Try and start a metadata server on the specified host.
@@ -1745,6 +1762,8 @@ ViewerFileServer::NoFaultStartServer(const std::string &host,
 void
 ViewerFileServer::CloseServer(const std::string &host, bool close)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(host)) != servers.end()) 
     {
@@ -1778,6 +1797,8 @@ ViewerFileServer::CloseServer(const std::string &host, bool close)
 void
 ViewerFileServer::SendKeepAlives()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     for(pos = servers.begin(); pos != servers.end();)
     {
@@ -1873,6 +1894,8 @@ void
 ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     const stringVector &args)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     // If a server exists, get the current directory to make sure it is
     // still alive.
     stringVector startArgs;
@@ -1882,7 +1905,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
         {
             // Get the directory, it is relatively cheap to do this and it
             // also proves that the mdserver is still alive.
-            servers[mdServerHost]->proxy->GetDirectory();
+            servers[mdServerHost]->proxy->GetMDServerMethods()->GetDirectory();
         }
         CATCH(LostConnectionException)
         {
@@ -1965,12 +1988,12 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
                        << "increasing the number of tunneled ports.";
                 TerminateConnectionRequest(args, 5);
             }
-            servers[mdServerHost]->proxy->Connect(newargs);
+            servers[mdServerHost]->proxy->GetMDServerMethods()->Connect(newargs);
         }
         else
         {
             // Not tunneling through SSH; just go ahead and connect
-            servers[mdServerHost]->proxy->Connect(args);
+            servers[mdServerHost]->proxy->GetMDServerMethods()->Connect(args);
         }
     }
     // We only want to do this after the mdserver has connected back
@@ -2073,9 +2096,11 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 void
 ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(servers.find(host) != servers.end())
     {
-        *dbPluginInfoAtts = *(servers[host]->proxy->GetDBPluginInfo());
+        *dbPluginInfoAtts = *(servers[host]->proxy->GetMDServerMethods()->GetDBPluginInfo());
         dbPluginInfoAtts->SetHost(host);
         dbPluginInfoAtts->Notify();
         fileOpenOptions->MergeNewFromPluginInfo(dbPluginInfoAtts);
@@ -2190,12 +2215,14 @@ ViewerFileServer::ClearFile(const std::string &fullName, bool forgetPlugin)
 void
 ViewerFileServer::CloseFile(const std::string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(host)) != servers.end()) 
     {
         TRY
         {
-            pos->second->proxy->CloseDatabase();
+            pos->second->proxy->GetMDServerMethods()->CloseDatabase();
         }
         CATCH(LostConnectionException)
         {
@@ -2208,12 +2235,14 @@ ViewerFileServer::CloseFile(const std::string &host)
 void
 ViewerFileServer::CloseFile(const std::string &host, const std::string &db)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator pos;
     if((pos = servers.find(host)) != servers.end()) 
     {
         TRY
         {
-            pos->second->proxy->CloseDatabase(db);
+            pos->second->proxy->GetMDServerMethods()->CloseDatabase(db);
         }
         CATCH(LostConnectionException)
         {
@@ -3468,9 +3497,11 @@ ViewerFileServer::SetSimulationSILAtts(const std::string &host,
 std::string
 ViewerFileServer::GetPluginErrors(const std::string &host)
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     if(servers.find(host) != servers.end())
     {
-        return servers[host]->proxy->GetPluginErrors();
+        return servers[host]->proxy->GetMDServerMethods()->GetPluginErrors();
     }
     return "";
 }
@@ -3479,21 +3510,21 @@ ViewerFileServer::GetPluginErrors(const std::string &host)
 // ViewerFileServer::ServerInfo methods
 //
 
-ViewerFileServer::ServerInfo::ServerInfo(MDServerProxy *p, const stringVector &args) : arguments(args)
-{
-    proxy = p;
-}
+//ViewerFileServer::ServerInfo::ServerInfo(MDServerProxy *p, const stringVector &args) : arguments(args)
+//{
+//    proxy = p;
+//}
 
-ViewerFileServer::ServerInfo::ServerInfo(const ServerInfo &b)
-{
-    proxy = 0;
-    arguments = b.arguments;
-}
+//ViewerFileServer::ServerInfo::ServerInfo(const ServerInfo &b)
+//{
+//    proxy = 0;
+//    arguments = b.arguments;
+//}
 
-ViewerFileServer::ServerInfo::~ServerInfo()
-{
-    delete proxy;
-}
+//ViewerFileServer::ServerInfo::~ServerInfo()
+//{
+//    delete proxy;
+//}
 
 // ****************************************************************************
 //  Method:  ViewerFileServer::BroadcastUpdatedFileOpenOptions
@@ -3512,10 +3543,12 @@ ViewerFileServer::ServerInfo::~ServerInfo()
 void
 ViewerFileServer::BroadcastUpdatedFileOpenOptions()
 {
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     ServerMap::iterator it;
     for (it = servers.begin(); it != servers.end(); it++)
     {
-        it->second->proxy->SetDefaultFileOpenOptions(*fileOpenOptions);
+        it->second->proxy->GetMDServerMethods()->SetDefaultFileOpenOptions(*fileOpenOptions);
     }
 }
 

@@ -64,7 +64,7 @@ from writescript import *
 
 try:
     import pyside_hook
-    import pyside_viewer
+    import pyside_gui
     import pyside_support
 except ImportError:
     pass

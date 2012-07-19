@@ -97,7 +97,7 @@ extern ViewerProxy *viewer;
 //
 static std::string  macroString;
 static bool         macroRecord = false;
-static FILE        *logFile;
+static FILE        *logFile = NULL;
 static bool         logging = false;
 static int          logLevel = 0;
 

@@ -69,6 +69,7 @@ class ProcInfoRPC;
 class SimulationCommandRPC;
 class SetEFileOpenOptionsRPC;
 class LaunchRPC;
+class EngineState;
 
 // Other classes
 class avtDatabaseMetaData;
@@ -366,32 +367,7 @@ class ENGINE_MAIN_API Engine
     // The RPCs
     QuitRPC                  *quitRPC;
     KeepAliveRPC             *keepAliveRPC;
-    ReadRPC                  *readRPC;
-    ApplyOperatorRPC         *applyOperatorRPC;
-    MakePlotRPC              *makePlotRPC;
-    UseNetworkRPC            *useNetworkRPC;
-    UpdatePlotAttsRPC        *updatePlotAttsRPC;
-    PickRPC                  *pickRPC;
-    StartPickRPC             *startPickRPC;
-    StartQueryRPC            *startQueryRPC;
-    ExecuteRPC               *executeRPC;
-    ClearCacheRPC            *clearCacheRPC;
-    QueryRPC                 *queryRPC;
-    QueryParametersRPC       *queryParametersRPC;
-    ReleaseDataRPC           *releaseDataRPC;
-    OpenDatabaseRPC          *openDatabaseRPC;
-    DefineVirtualDatabaseRPC *defineVirtualDatabaseRPC;
-    RenderRPC                *renderRPC;
-    SetWinAnnotAttsRPC       *setWinAnnotAttsRPC;
-    CloneNetworkRPC          *cloneNetworkRPC;
-    ProcInfoRPC              *procInfoRPC;
-    SimulationCommandRPC     *simulationCommandRPC;
-    ExportDatabaseRPC        *exportDatabaseRPC;
-    ConstructDataBinningRPC  *constructDataBinningRPC;
-    NamedSelectionRPC        *namedSelectionRPC;
-    SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
-    EnginePropertiesRPC      *enginePropertiesRPC;
-    LaunchRPC                *launchRPC;
+    EngineState              *enginestate;
 
 #ifdef DEBUG_MEMORY_LEAKS
     ParsingExprList          *parsingExprList;

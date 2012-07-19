@@ -38,4 +38,5 @@
 #
 #*****************************************************************************
 
+add_subdirectory(pyqtgui)
 add_subdirectory(pyqtviewer)

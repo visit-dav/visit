@@ -125,12 +125,12 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     ViewerSubject* vissubject;
     ViewerState* gstate;
     ViewerMethods* gmethods;
-    PlotPluginManager* cli_plotplugin;
-    OperatorPluginManager* cli_operatorplugin;
+    PlotPluginManager* plotplugin;
+    OperatorPluginManager* operatorplugin;
 
     // Used to store the sil restriction in avt format.
     avtSILRestriction_p        internalSILRestriction;
-
+    ViewerSubjectProxy*        m_proxy;
 
     std::string host;
     TestConnection* testconn;
@@ -143,7 +143,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
         static int mx = 1000;
 
         SyncAttributes* a = GetViewerState()->GetSyncAttributes();
-        if(a->GetSyncTag() < 0)
+        if(a->GetSyncTag() < 0) //a sync tag of -1 means that the cli is waiting..
         {
             mx++;
             a->SetSyncTag(mx);
@@ -164,6 +164,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     virtual void LoadPlugins();
     virtual void InitializePlugins(PluginManager::PluginCategory t, const char *pluginDir);
 
+ public:
     //SIL support
     virtual avtSILRestriction_p GetPlotSILRestriction();
     virtual avtSILRestriction_p GetPlotSILRestriction() const;
@@ -171,11 +172,11 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     virtual void SetPlotSILRestriction();
     virtual void Update(Subject *subj);
 
-public:
+
 
     ViewerSubjectProxy();
 
-    ViewerSubjectProxy(ViewerState* istate, ViewerMethods* imethods);
+    ViewerSubjectProxy(ViewerSubjectProxy* proxy);
 
     virtual ~ViewerSubjectProxy();
 
@@ -188,6 +189,7 @@ public:
     vtkQtRenderWindow* GetRenderWindow(int i);
     QList<int> GetRenderWindowIDs();
 
+    bool eventFilter(QObject *, QEvent *);
 public slots:
     void windowDeleted(QObject*);
     void viewerWindowCreated(ViewerWindow*);

@@ -108,7 +108,7 @@ public:
     void AddProfileArguments(const MachineProfile &machine,
                              bool addParallelArgs);
 
-    void Create(const std::string &hostName,
+    virtual void Create(const std::string &hostName,
                 MachineProfile::ClientHostDetermination chd,
                 const std::string &clientHostName,
                 bool manualSSHPort,

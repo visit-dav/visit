@@ -748,7 +748,7 @@ QvisFileWindowBase::UpdateHostComboBox()
 void
 QvisFileWindowBase::UpdateDirectoryList()
 {
-    const MDServerProxy::FileList &f = fileServer->GetFileList();
+    const MDServerMethods::FileList &f = fileServer->GetFileList();
 
     // Get the strings for current directory and up directory.
     QString curDirString, upDirString;
@@ -756,7 +756,7 @@ QvisFileWindowBase::UpdateDirectoryList()
 
     // Iterate through the the directory list and add the dirs.
     directoryList->clear();
-    MDServerProxy::FileEntryVector::const_iterator pos;
+    MDServerMethods::FileEntryVector::const_iterator pos;
     for(pos = f.dirs.begin(); pos != f.dirs.end(); ++pos)
     {
         QListWidgetItem *item = new QListWidgetItem(directoryList);

@@ -2037,7 +2037,8 @@ ViewerSubject::ProcessEvents()
 
     if (interruptionEnabled)
     {
-        qApp->processEvents(QEventLoop::AllEvents, 100);
+        if(!WindowMetrics::EmbeddedWindowState()) //if not embedded or pyside client
+            qApp->processEvents(QEventLoop::AllEvents, 100);
     }
 
     for(it = engineKeyToNotifier.begin(); it != engineKeyToNotifier.end(); ++it)
@@ -2829,6 +2830,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             InitVTKRendering::ForceMesa();
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
+        }
+        else if (strcmp(argv[i], "-embedded") == 0 || strcmp(argv[i], "-pysideclient") == 0)
+        {
+            WindowMetrics::SetEmbeddedWindowState(true);
         }
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {

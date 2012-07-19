@@ -44,6 +44,7 @@
 #include <vectortypes.h>
 #include <GetFileListRPC.h>
 #include <FileOpenOptions.h>
+#include <MDServerState.h>
 
 // Forward declarations
 class avtDatabase;
@@ -301,19 +302,7 @@ private:
     // RPCs
     QuitRPC                    *quitRPC;
     KeepAliveRPC               *keepAliveRPC;
-    GetDirectoryRPC            *getDirectoryRPC;
-    ChangeDirectoryRPC         *changeDirectoryRPC;
-    GetFileListRPC             *getFileListRPC;
-    GetMetaDataRPC             *getMetaDataRPC;
-    GetSILRPC                  *getSILRPC;
-    ConnectRPC                 *connectRPC;
-    CreateGroupListRPC         *createGroupListRPC;
-    ExpandPathRPC              *expandPathRPC;
-    CloseDatabaseRPC           *closeDatabaseRPC;
-    LoadPluginsRPC             *loadPluginsRPC;
-    GetPluginErrorsRPC         *getPluginErrorsRPC;
-    GetDBPluginInfoRPC         *getDBPluginInfoRPC;
-    SetMFileOpenOptionsRPC     *setMFileOpenOptionsRPC;
+    MDServerState              *mdstate;
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;

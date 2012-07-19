@@ -39,4 +39,5 @@
 #*****************************************************************************
 
 add_subdirectory(pyside_hook)
+add_subdirectory(pyside_gui)
 add_subdirectory(pyside_viewer)
