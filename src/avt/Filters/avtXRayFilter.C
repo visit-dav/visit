@@ -459,6 +459,10 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
 //    Moved some code to ImageStripExecute, call a templatized version of the
 //    method for double-precision support.
 //
+//    Eric Brugger, Wed Jul 18 13:05:27 PDT 2012
+//    I corrected a bug where the filter would crash when running in parallel
+//    for some combinations of processor count and image size.
+// 
 // ****************************************************************************
 
 void
@@ -474,20 +478,20 @@ avtXRayFilter::Execute(void)
     pixelsForLastPass = ((numPixels % actualPixelsPerIteration) == 0) ?
         actualPixelsPerIteration : numPixels % actualPixelsPerIteration;
 
-    pixelsForFirstPassFirstProc = ((pixelsForFirstPass % PAR_Size()) == 0) ?
-        (pixelsForFirstPass / PAR_Size()) :
-        (pixelsForFirstPass / PAR_Size() + 1);
+    pixelsForFirstPassFirstProc = pixelsForFirstPass / PAR_Size();
+    while (PAR_Size() > 1 && (pixelsForFirstPassFirstProc + 1) * (PAR_Size() - 1) < pixelsForFirstPass)
+        pixelsForFirstPassFirstProc++;
     pixelsForFirstPassLastProc =
         ((pixelsForFirstPass % pixelsForFirstPassFirstProc) == 0) ?
         pixelsForFirstPassFirstProc :
-        pixelsForFirstPass % pixelsForFirstPassFirstProc;
-    pixelsForLastPassFirstProc = ((pixelsForLastPass % PAR_Size()) == 0) ?
-        (pixelsForLastPass / PAR_Size()) :
-        (pixelsForLastPass / PAR_Size() + 1);
+        pixelsForFirstPass - (pixelsForFirstPassFirstProc * (PAR_Size() - 1));
+    pixelsForLastPassFirstProc = pixelsForLastPass / PAR_Size();
+    while (PAR_Size() > 1 && (pixelsForLastPassFirstProc + 1) * (PAR_Size() - 1) < pixelsForLastPass)
+        pixelsForLastPassFirstProc++;
     pixelsForLastPassLastProc =
         ((pixelsForLastPass % pixelsForLastPassFirstProc) == 0) ?
         pixelsForLastPassFirstProc :
-        pixelsForLastPass % pixelsForLastPassFirstProc;
+        pixelsForLastPass - (pixelsForLastPassFirstProc * (PAR_Size() - 1));
 
     int numPasses = numPixels / actualPixelsPerIteration;
     if (numPixels % actualPixelsPerIteration != 0)
@@ -524,12 +528,21 @@ avtXRayFilter::Execute(void)
         linesForThisPass = pixelsForThisPass;
         linesForThisPassFirstProc = pixelsForThisPassFirstProc;
 
-        int pixelsForThisProc = ((pixelsForThisPass % PAR_Size()) == 0) ?
-            (pixelsForThisPass / PAR_Size()) :
-            (pixelsForThisPass / PAR_Size() + 1);
-        if (PAR_Rank() == PAR_Size() - 1)
-            if (pixelsForThisPass % pixelsForThisProc != 0)
-                pixelsForThisProc = pixelsForThisPass % pixelsForThisProc;
+        int pixelsForThisProc;
+        if (PAR_Rank() < PAR_Size() - 1)
+        {
+            if (iPass < numPasses - 1)
+                pixelsForThisProc = pixelsForFirstPassFirstProc;
+            else
+                pixelsForThisProc = pixelsForLastPassFirstProc;
+        }
+        else
+        {
+            if (iPass < numPasses - 1)
+                pixelsForThisProc = pixelsForFirstPassLastProc;
+            else
+                pixelsForThisProc = pixelsForLastPassLastProc;
+        }
 
         imageFragmentSizes[iPass] = pixelsForThisProc;
 
@@ -1727,6 +1740,7 @@ static int
 AssignToProc(int val, int linesPerProc)
 {
     int proc = val / linesPerProc;
+    if (proc > PAR_Size() - 1) proc = PAR_Size() - 1;
     return proc;
 }
 #endif
