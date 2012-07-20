@@ -194,6 +194,10 @@ void PeaksOverThresholdAttributes::Init()
     season = WINTER;
     month = JAN;
     cutoff = 0;
+    useLocationModel = false;
+    useScaleModel = false;
+    useShapeModel = false;
+    yearOneValue = 1900;
     dataScaling = 86500;
     dumpData = false;
 
@@ -229,6 +233,10 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
     season = obj.season;
     month = obj.month;
     cutoff = obj.cutoff;
+    useLocationModel = obj.useLocationModel;
+    useScaleModel = obj.useScaleModel;
+    useShapeModel = obj.useShapeModel;
+    yearOneValue = obj.yearOneValue;
     dataScaling = obj.dataScaling;
     dumpData = obj.dumpData;
 
@@ -405,6 +413,10 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
             (season == obj.season) &&
             (month == obj.month) &&
             (cutoff == obj.cutoff) &&
+            (useLocationModel == obj.useLocationModel) &&
+            (useScaleModel == obj.useScaleModel) &&
+            (useShapeModel == obj.useShapeModel) &&
+            (yearOneValue == obj.yearOneValue) &&
             (dataScaling == obj.dataScaling) &&
             (dumpData == obj.dumpData));
 }
@@ -557,6 +569,10 @@ PeaksOverThresholdAttributes::SelectAll()
     Select(ID_season,             (void *)&season);
     Select(ID_month,              (void *)&month);
     Select(ID_cutoff,             (void *)&cutoff);
+    Select(ID_useLocationModel,   (void *)&useLocationModel);
+    Select(ID_useScaleModel,      (void *)&useScaleModel);
+    Select(ID_useShapeModel,      (void *)&useShapeModel);
+    Select(ID_yearOneValue,       (void *)&yearOneValue);
     Select(ID_dataScaling,        (void *)&dataScaling);
     Select(ID_dumpData,           (void *)&dumpData);
 }
@@ -631,6 +647,30 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("cutoff", cutoff));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useLocationModel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useLocationModel", useLocationModel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useScaleModel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useScaleModel", useScaleModel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useShapeModel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useShapeModel", useShapeModel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_yearOneValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("yearOneValue", yearOneValue));
     }
 
     if(completeSave || !FieldsEqual(ID_dataScaling, &defaultObject))
@@ -737,6 +777,14 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("cutoff")) != 0)
         SetCutoff(node->AsFloat());
+    if((node = searchNode->GetNode("useLocationModel")) != 0)
+        SetUseLocationModel(node->AsBool());
+    if((node = searchNode->GetNode("useScaleModel")) != 0)
+        SetUseScaleModel(node->AsBool());
+    if((node = searchNode->GetNode("useShapeModel")) != 0)
+        SetUseShapeModel(node->AsBool());
+    if((node = searchNode->GetNode("yearOneValue")) != 0)
+        SetYearOneValue(node->AsInt());
     if((node = searchNode->GetNode("dataScaling")) != 0)
         SetDataScaling(node->AsDouble());
     if((node = searchNode->GetNode("dumpData")) != 0)
@@ -798,6 +846,34 @@ PeaksOverThresholdAttributes::SetCutoff(float cutoff_)
 {
     cutoff = cutoff_;
     Select(ID_cutoff, (void *)&cutoff);
+}
+
+void
+PeaksOverThresholdAttributes::SetUseLocationModel(bool useLocationModel_)
+{
+    useLocationModel = useLocationModel_;
+    Select(ID_useLocationModel, (void *)&useLocationModel);
+}
+
+void
+PeaksOverThresholdAttributes::SetUseScaleModel(bool useScaleModel_)
+{
+    useScaleModel = useScaleModel_;
+    Select(ID_useScaleModel, (void *)&useScaleModel);
+}
+
+void
+PeaksOverThresholdAttributes::SetUseShapeModel(bool useShapeModel_)
+{
+    useShapeModel = useShapeModel_;
+    Select(ID_useShapeModel, (void *)&useShapeModel);
+}
+
+void
+PeaksOverThresholdAttributes::SetYearOneValue(int yearOneValue_)
+{
+    yearOneValue = yearOneValue_;
+    Select(ID_yearOneValue, (void *)&yearOneValue);
 }
 
 void
@@ -872,6 +948,30 @@ PeaksOverThresholdAttributes::GetCutoff() const
     return cutoff;
 }
 
+bool
+PeaksOverThresholdAttributes::GetUseLocationModel() const
+{
+    return useLocationModel;
+}
+
+bool
+PeaksOverThresholdAttributes::GetUseScaleModel() const
+{
+    return useScaleModel;
+}
+
+bool
+PeaksOverThresholdAttributes::GetUseShapeModel() const
+{
+    return useShapeModel;
+}
+
+int
+PeaksOverThresholdAttributes::GetYearOneValue() const
+{
+    return yearOneValue;
+}
+
 double
 PeaksOverThresholdAttributes::GetDataScaling() const
 {
@@ -931,6 +1031,10 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
     case ID_season:             return "season";
     case ID_month:              return "month";
     case ID_cutoff:             return "cutoff";
+    case ID_useLocationModel:   return "useLocationModel";
+    case ID_useScaleModel:      return "useScaleModel";
+    case ID_useShapeModel:      return "useShapeModel";
+    case ID_yearOneValue:       return "yearOneValue";
     case ID_dataScaling:        return "dataScaling";
     case ID_dumpData:           return "dumpData";
     default:  return "invalid index";
@@ -964,6 +1068,10 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
     case ID_season:             return FieldType_enum;
     case ID_month:              return FieldType_enum;
     case ID_cutoff:             return FieldType_float;
+    case ID_useLocationModel:   return FieldType_bool;
+    case ID_useScaleModel:      return FieldType_bool;
+    case ID_useShapeModel:      return FieldType_bool;
+    case ID_yearOneValue:       return FieldType_int;
     case ID_dataScaling:        return FieldType_double;
     case ID_dumpData:           return FieldType_bool;
     default:  return FieldType_unknown;
@@ -997,6 +1105,10 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
     case ID_season:             return "enum";
     case ID_month:              return "enum";
     case ID_cutoff:             return "float";
+    case ID_useLocationModel:   return "bool";
+    case ID_useScaleModel:      return "bool";
+    case ID_useShapeModel:      return "bool";
+    case ID_yearOneValue:       return "int";
     case ID_dataScaling:        return "double";
     case ID_dumpData:           return "bool";
     default:  return "invalid index";
@@ -1068,6 +1180,26 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_cutoff:
         {  // new scope
         retval = (cutoff == obj.cutoff);
+        }
+        break;
+    case ID_useLocationModel:
+        {  // new scope
+        retval = (useLocationModel == obj.useLocationModel);
+        }
+        break;
+    case ID_useScaleModel:
+        {  // new scope
+        retval = (useScaleModel == obj.useScaleModel);
+        }
+        break;
+    case ID_useShapeModel:
+        {  // new scope
+        retval = (useShapeModel == obj.useShapeModel);
+        }
+        break;
+    case ID_yearOneValue:
+        {  // new scope
+        retval = (yearOneValue == obj.yearOneValue);
         }
         break;
     case ID_dataScaling:

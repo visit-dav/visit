@@ -53,21 +53,28 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
 
     float                   CalculateThreshold(int loc, int arr);
     int                     GetIndexFromDay(int t);
+    int                     GetMonthFromDay(int t);
+    int                     GetSeasonFromDay(int t);
     std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
     std::string             GetDumpFileName(int idx, int var);
 
-    virtual int             GetNumberOfIterations();
-    virtual bool            NeedCurrentTimeSlice();
-    virtual void            BeginIteration(int i);
-    virtual void            EndIteration(int i);
-
     vtkDataSet *outDS;
-    int numTuples, numTimes, numYears;
+    int numTuples, numTimes, numYears, numBins;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
-    //values[location][time_i]
-    std::vector<std::vector<double> > values;
-    std::vector<double> output[2];
+    //values[location][aggregation][time_i]
+    class sample
+    {
+    public:
+        sample() {val=-1; time=-1;}
+        sample(float v, int t) {val=v; time=t;}
+        float val;
+        int time;
+    };
+    
+    std::vector<std::vector<std::vector<sample> > > values;
+
+    void DebugData(int loc, std::string nm);
 };
 
 #endif

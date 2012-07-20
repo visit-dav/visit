@@ -61,6 +61,18 @@
       <Field name="cutoff" label="Cutoff" type="float">
         0.000000
       </Field>
+      <Field name="useLocationModel" label="Use Time-varying location parameter" type="bool">
+        false
+      </Field>
+      <Field name="useScaleModel" label="Use Time-varying scale parameter" type="bool">
+        false
+      </Field>
+      <Field name="useShapeModel" label="Use Time-varying shape parameter" type="bool">
+        false
+      </Field>
+      <Field name="yearOneValue" label="Year begin" type="int">
+        1900
+      </Field>
       <Field name="dataScaling" label="Data Scaling" type="double">
         86500.000000
       </Field>

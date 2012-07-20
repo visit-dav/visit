@@ -211,6 +211,23 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
 
     SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
     str += tmpStr;
+    if(atts->GetUseLocationModel())
+        SNPRINTF(tmpStr, 1000, "%suseLocationModel = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseLocationModel = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUseScaleModel())
+        SNPRINTF(tmpStr, 1000, "%suseScaleModel = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseScaleModel = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetUseShapeModel())
+        SNPRINTF(tmpStr, 1000, "%suseShapeModel = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseShapeModel = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%syearOneValue = %d\n", prefix, atts->GetYearOneValue());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
     str += tmpStr;
     if(atts->GetDumpData())
@@ -488,6 +505,102 @@ PeaksOverThresholdAttributes_GetCutoff(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PeaksOverThresholdAttributes_SetUseLocationModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useLocationModel in the object.
+    obj->data->SetUseLocationModel(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetUseLocationModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseLocationModel()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetUseScaleModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useScaleModel in the object.
+    obj->data->SetUseScaleModel(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetUseScaleModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseScaleModel()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetUseShapeModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useShapeModel in the object.
+    obj->data->SetUseShapeModel(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetUseShapeModel(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseShapeModel()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetYearOneValue(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the yearOneValue in the object.
+    obj->data->SetYearOneValue((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetYearOneValue(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetYearOneValue()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetDataScaling(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -553,6 +666,14 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetMonth", PeaksOverThresholdAttributes_GetMonth, METH_VARARGS},
     {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
     {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
+    {"SetUseLocationModel", PeaksOverThresholdAttributes_SetUseLocationModel, METH_VARARGS},
+    {"GetUseLocationModel", PeaksOverThresholdAttributes_GetUseLocationModel, METH_VARARGS},
+    {"SetUseScaleModel", PeaksOverThresholdAttributes_SetUseScaleModel, METH_VARARGS},
+    {"GetUseScaleModel", PeaksOverThresholdAttributes_GetUseScaleModel, METH_VARARGS},
+    {"SetUseShapeModel", PeaksOverThresholdAttributes_SetUseShapeModel, METH_VARARGS},
+    {"GetUseShapeModel", PeaksOverThresholdAttributes_GetUseShapeModel, METH_VARARGS},
+    {"SetYearOneValue", PeaksOverThresholdAttributes_SetYearOneValue, METH_VARARGS},
+    {"GetYearOneValue", PeaksOverThresholdAttributes_GetYearOneValue, METH_VARARGS},
     {"SetDataScaling", PeaksOverThresholdAttributes_SetDataScaling, METH_VARARGS},
     {"GetDataScaling", PeaksOverThresholdAttributes_GetDataScaling, METH_VARARGS},
     {"SetDumpData", PeaksOverThresholdAttributes_SetDumpData, METH_VARARGS},
@@ -640,6 +761,14 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "cutoff") == 0)
         return PeaksOverThresholdAttributes_GetCutoff(self, NULL);
+    if(strcmp(name, "useLocationModel") == 0)
+        return PeaksOverThresholdAttributes_GetUseLocationModel(self, NULL);
+    if(strcmp(name, "useScaleModel") == 0)
+        return PeaksOverThresholdAttributes_GetUseScaleModel(self, NULL);
+    if(strcmp(name, "useShapeModel") == 0)
+        return PeaksOverThresholdAttributes_GetUseShapeModel(self, NULL);
+    if(strcmp(name, "yearOneValue") == 0)
+        return PeaksOverThresholdAttributes_GetYearOneValue(self, NULL);
     if(strcmp(name, "dataScaling") == 0)
         return PeaksOverThresholdAttributes_GetDataScaling(self, NULL);
     if(strcmp(name, "dumpData") == 0)
@@ -672,6 +801,14 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetMonth(self, tuple);
     else if(strcmp(name, "cutoff") == 0)
         obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
+    else if(strcmp(name, "useLocationModel") == 0)
+        obj = PeaksOverThresholdAttributes_SetUseLocationModel(self, tuple);
+    else if(strcmp(name, "useScaleModel") == 0)
+        obj = PeaksOverThresholdAttributes_SetUseScaleModel(self, tuple);
+    else if(strcmp(name, "useShapeModel") == 0)
+        obj = PeaksOverThresholdAttributes_SetUseShapeModel(self, tuple);
+    else if(strcmp(name, "yearOneValue") == 0)
+        obj = PeaksOverThresholdAttributes_SetYearOneValue(self, tuple);
     else if(strcmp(name, "dataScaling") == 0)
         obj = PeaksOverThresholdAttributes_SetDataScaling(self, tuple);
     else if(strcmp(name, "dumpData") == 0)

@@ -93,6 +93,10 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void seasonChanged(int val);
     void monthChanged(int val);
     void cutoffProcessText();
+    void useLocationModelChanged(bool val);
+    void useScaleModelChanged(bool val);
+    void useShapeModelChanged(bool val);
+    void yearOneValueProcessText();
     void dataScalingProcessText();
     void dumpDataChanged(bool val);
   private:
@@ -106,6 +110,10 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QWidget      *month;
     QButtonGroup *monthButtonGroup;
     QLineEdit *cutoff;
+    QCheckBox *useLocationModel;
+    QCheckBox *useScaleModel;
+    QCheckBox *useShapeModel;
+    QLineEdit *yearOneValue;
     QLineEdit *dataScaling;
     QCheckBox *dumpData;
     QLabel *aggregationLabel;
@@ -115,6 +123,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLabel *seasonLabel;
     QLabel *monthLabel;
     QLabel *cutoffLabel;
+    QLabel *yearOneValueLabel;
     QLabel *dataScalingLabel;
 
     PeaksOverThresholdAttributes *atts;

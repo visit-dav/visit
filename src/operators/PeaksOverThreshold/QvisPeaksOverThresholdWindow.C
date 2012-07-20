@@ -245,17 +245,39 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
             this, SLOT(cutoffProcessText()));
     mainLayout->addWidget(cutoff, 6,1);
 
+    useLocationModel = new QCheckBox(tr("Use Time-varying location parameter"), central);
+    connect(useLocationModel, SIGNAL(toggled(bool)),
+            this, SLOT(useLocationModelChanged(bool)));
+    mainLayout->addWidget(useLocationModel, 7,0);
+
+    useScaleModel = new QCheckBox(tr("Use Time-varying scale parameter"), central);
+    connect(useScaleModel, SIGNAL(toggled(bool)),
+            this, SLOT(useScaleModelChanged(bool)));
+    mainLayout->addWidget(useScaleModel, 8,0);
+
+    useShapeModel = new QCheckBox(tr("Use Time-varying shape parameter"), central);
+    connect(useShapeModel, SIGNAL(toggled(bool)),
+            this, SLOT(useShapeModelChanged(bool)));
+    mainLayout->addWidget(useShapeModel, 9,0);
+
+    yearOneValueLabel = new QLabel(tr("Year begin"), central);
+    mainLayout->addWidget(yearOneValueLabel,10,0);
+    yearOneValue = new QLineEdit(central);
+    connect(yearOneValue, SIGNAL(returnPressed()),
+            this, SLOT(yearOneValueProcessText()));
+    mainLayout->addWidget(yearOneValue, 10,1);
+
     dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,7,0);
+    mainLayout->addWidget(dataScalingLabel,11,0);
     dataScaling = new QLineEdit(central);
     connect(dataScaling, SIGNAL(returnPressed()),
             this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 7,1);
+    mainLayout->addWidget(dataScaling, 11,1);
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 8,0);
+    mainLayout->addWidget(dumpData, 12,0);
 
 }
 
@@ -381,6 +403,24 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
           case PeaksOverThresholdAttributes::ID_cutoff:
             cutoff->setText(FloatToQString(atts->GetCutoff()));
             break;
+          case PeaksOverThresholdAttributes::ID_useLocationModel:
+            useLocationModel->blockSignals(true);
+            useLocationModel->setChecked(atts->GetUseLocationModel());
+            useLocationModel->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_useScaleModel:
+            useScaleModel->blockSignals(true);
+            useScaleModel->setChecked(atts->GetUseScaleModel());
+            useScaleModel->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_useShapeModel:
+            useShapeModel->blockSignals(true);
+            useShapeModel->setChecked(atts->GetUseShapeModel());
+            useShapeModel->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_yearOneValue:
+            yearOneValue->setText(IntToQString(atts->GetYearOneValue()));
+            break;
           case PeaksOverThresholdAttributes::ID_dataScaling:
             dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
             break;
@@ -470,6 +510,20 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do yearOneValue
+    if(which_widget == PeaksOverThresholdAttributes::ID_yearOneValue || doAll)
+    {
+        int val;
+        if(LineEditGetInt(yearOneValue, val))
+            atts->SetYearOneValue(val);
+        else
+        {
+            ResettingError(tr("Year begin"),
+                IntToQString(atts->GetYearOneValue()));
+            atts->SetYearOneValue(atts->GetYearOneValue());
+        }
+    }
+
     // Do dataScaling
     if(which_widget == PeaksOverThresholdAttributes::ID_dataScaling || doAll)
     {
@@ -555,6 +609,41 @@ void
 QvisPeaksOverThresholdWindow::cutoffProcessText()
 {
     GetCurrentValues(PeaksOverThresholdAttributes::ID_cutoff);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::useLocationModelChanged(bool val)
+{
+    atts->SetUseLocationModel(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::useScaleModelChanged(bool val)
+{
+    atts->SetUseScaleModel(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::useShapeModelChanged(bool val)
+{
+    atts->SetUseShapeModel(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::yearOneValueProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_yearOneValue);
     Apply();
 }
 
