@@ -297,6 +297,9 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    to fail in some instances.  In particular workingNet needed to be set
 //    back to NULL after it was used.
 //
+//    Brad Whitlock, Fri Jul 20 16:42:05 PDT 2012
+//    Use a different compositing strategy for curve windows.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -423,6 +426,14 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
         // Whether or not to do multipass rendering (opaque first, translucent
         // second) is all handled in the callback; from our perspective, we
         // just say draw, read back the image, and post-process it.
+
+        // IceT sometimes omits large parts of Curve plots when using the
+        // REDUCE strategy. Use a different compositing strategy for Curve
+        // plots to avoid the problem.
+        if(viswin->GetWindowMode() == WINMODE_CURVE)
+            ICET(icetStrategy(ICET_STRATEGY_VTREE));
+        else
+            ICET(icetStrategy(ICET_STRATEGY_REDUCE));
 
         ICET(icetDrawFunc(render));
         ICET(icetDrawFrame());
