@@ -159,6 +159,7 @@ avtPeaksOverThresholdFilter::Execute()
     f->codeDir = vlibrdir;
     f->dumpData = atts.GetDumpData();
     f->scalingVal = atts.GetDataScaling();
+    f->cutoff = atts.GetCutoff();
     
     f->aggregation = atts.GetAggregation();
     f->annualPercentile = atts.GetAnnualPercentile();

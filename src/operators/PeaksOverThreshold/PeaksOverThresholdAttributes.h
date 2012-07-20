@@ -125,6 +125,10 @@ public:
     void SetSeason(SeasonType season_);
     void SetMonth(MonthType month_);
     void SetCutoff(float cutoff_);
+    void SetUseLocationModel(bool useLocationModel_);
+    void SetUseScaleModel(bool useScaleModel_);
+    void SetUseShapeModel(bool useShapeModel_);
+    void SetYearOneValue(int yearOneValue_);
     void SetDataScaling(double dataScaling_);
     void SetDumpData(bool dumpData_);
 
@@ -138,6 +142,10 @@ public:
     SeasonType   GetSeason() const;
     MonthType    GetMonth() const;
     float        GetCutoff() const;
+    bool         GetUseLocationModel() const;
+    bool         GetUseScaleModel() const;
+    bool         GetUseShapeModel() const;
+    int          GetYearOneValue() const;
     double       GetDataScaling() const;
     bool         GetDumpData() const;
 
@@ -178,6 +186,10 @@ public:
         ID_season,
         ID_month,
         ID_cutoff,
+        ID_useLocationModel,
+        ID_useScaleModel,
+        ID_useShapeModel,
+        ID_yearOneValue,
         ID_dataScaling,
         ID_dumpData,
         ID__LAST
@@ -191,6 +203,10 @@ private:
     int    season;
     int    month;
     float  cutoff;
+    bool   useLocationModel;
+    bool   useScaleModel;
+    bool   useShapeModel;
+    int    yearOneValue;
     double dataScaling;
     bool   dumpData;
 
@@ -198,6 +214,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifdb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbbidb"
 
 #endif

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 9;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 13;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -112,6 +112,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
         cutoff = 0f;
+        useLocationModel = false;
+        useScaleModel = false;
+        useShapeModel = false;
+        yearOneValue = 1900;
         dataScaling = 86500;
         dumpData = false;
     }
@@ -143,6 +147,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
         cutoff = 0f;
+        useLocationModel = false;
+        useScaleModel = false;
+        useShapeModel = false;
+        yearOneValue = 1900;
         dataScaling = 86500;
         dumpData = false;
     }
@@ -166,6 +174,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = obj.season;
         month = obj.month;
         cutoff = obj.cutoff;
+        useLocationModel = obj.useLocationModel;
+        useScaleModel = obj.useScaleModel;
+        useShapeModel = obj.useShapeModel;
+        yearOneValue = obj.yearOneValue;
         dataScaling = obj.dataScaling;
         dumpData = obj.dumpData;
 
@@ -204,6 +216,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 (season == obj.season) &&
                 (month == obj.month) &&
                 (cutoff == obj.cutoff) &&
+                (useLocationModel == obj.useLocationModel) &&
+                (useScaleModel == obj.useScaleModel) &&
+                (useShapeModel == obj.useShapeModel) &&
+                (yearOneValue == obj.yearOneValue) &&
                 (dataScaling == obj.dataScaling) &&
                 (dumpData == obj.dumpData));
     }
@@ -267,16 +283,40 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(6);
     }
 
+    public void SetUseLocationModel(boolean useLocationModel_)
+    {
+        useLocationModel = useLocationModel_;
+        Select(7);
+    }
+
+    public void SetUseScaleModel(boolean useScaleModel_)
+    {
+        useScaleModel = useScaleModel_;
+        Select(8);
+    }
+
+    public void SetUseShapeModel(boolean useShapeModel_)
+    {
+        useShapeModel = useShapeModel_;
+        Select(9);
+    }
+
+    public void SetYearOneValue(int yearOneValue_)
+    {
+        yearOneValue = yearOneValue_;
+        Select(10);
+    }
+
     public void SetDataScaling(double dataScaling_)
     {
         dataScaling = dataScaling_;
-        Select(7);
+        Select(11);
     }
 
     public void SetDumpData(boolean dumpData_)
     {
         dumpData = dumpData_;
-        Select(8);
+        Select(12);
     }
 
     // Property getting methods
@@ -287,6 +327,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public int      GetSeason() { return season; }
     public int      GetMonth() { return month; }
     public float    GetCutoff() { return cutoff; }
+    public boolean  GetUseLocationModel() { return useLocationModel; }
+    public boolean  GetUseScaleModel() { return useScaleModel; }
+    public boolean  GetUseShapeModel() { return useShapeModel; }
+    public int      GetYearOneValue() { return yearOneValue; }
     public double   GetDataScaling() { return dataScaling; }
     public boolean  GetDumpData() { return dumpData; }
 
@@ -308,8 +352,16 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(WriteSelect(6, buf))
             buf.WriteFloat(cutoff);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(dataScaling);
+            buf.WriteBool(useLocationModel);
         if(WriteSelect(8, buf))
+            buf.WriteBool(useScaleModel);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(useShapeModel);
+        if(WriteSelect(10, buf))
+            buf.WriteInt(yearOneValue);
+        if(WriteSelect(11, buf))
+            buf.WriteDouble(dataScaling);
+        if(WriteSelect(12, buf))
             buf.WriteBool(dumpData);
     }
 
@@ -339,9 +391,21 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             SetCutoff(buf.ReadFloat());
             break;
         case 7:
-            SetDataScaling(buf.ReadDouble());
+            SetUseLocationModel(buf.ReadBool());
             break;
         case 8:
+            SetUseScaleModel(buf.ReadBool());
+            break;
+        case 9:
+            SetUseShapeModel(buf.ReadBool());
+            break;
+        case 10:
+            SetYearOneValue(buf.ReadInt());
+            break;
+        case 11:
+            SetDataScaling(buf.ReadDouble());
+            break;
+        case 12:
             SetDumpData(buf.ReadBool());
             break;
         }
@@ -398,6 +462,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             str = str + "MONTHTYPE_DEC";
         str = str + "\n";
         str = str + floatToString("cutoff", cutoff, indent) + "\n";
+        str = str + boolToString("useLocationModel", useLocationModel, indent) + "\n";
+        str = str + boolToString("useScaleModel", useScaleModel, indent) + "\n";
+        str = str + boolToString("useShapeModel", useShapeModel, indent) + "\n";
+        str = str + intToString("yearOneValue", yearOneValue, indent) + "\n";
         str = str + doubleToString("dataScaling", dataScaling, indent) + "\n";
         str = str + boolToString("dumpData", dumpData, indent) + "\n";
         return str;
@@ -412,6 +480,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private int      season;
     private int      month;
     private float    cutoff;
+    private boolean  useLocationModel;
+    private boolean  useScaleModel;
+    private boolean  useShapeModel;
+    private int      yearOneValue;
     private double   dataScaling;
     private boolean  dumpData;
 }
