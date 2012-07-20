@@ -63,7 +63,7 @@ using std::vector;
 
 // VisIt's own MPI communicator
 static MPI_Comm VISIT_MPI_COMM_OBJ;
-void *VISIT_MPI_COMM_PTR;
+void *VISIT_MPI_COMM_PTR = NULL;
 
 static MPI_Op AVT_MPI_MINMAX = MPI_OP_NULL;
 static int mpiTagUpperBound = 32767;
@@ -139,6 +139,10 @@ PAR_Exit(void)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Added call to dup MPI_COMM_WORLD to create VISIT_MPI_COMM 
+//
+//    Brad Whitlock, Fri Jul 20 11:23:05 PDT 2012
+//    Duplicate custom communicator if it has been set up.
+//
 // ****************************************************************************
 
 void
@@ -152,9 +156,19 @@ PAR_Init (int &argc, char **&argv)
     if (we_initialized_MPI)
         MPI_Init (&argc, &argv);
 
-    // duplicate the world communicator
-    if (MPI_Comm_dup(MPI_COMM_WORLD, &VISIT_MPI_COMM_OBJ) != MPI_SUCCESS)
-        VISIT_MPI_COMM_OBJ = MPI_COMM_WORLD;
+    MPI_Comm vcomm;
+    if(VISIT_MPI_COMM_PTR == NULL)
+    {
+        debug5 << "Par_Init: Duplicating MPI_COMM_WORLD" << endl;
+        vcomm = MPI_COMM_WORLD;
+    }
+    else
+    {
+        debug5 << "Par_Init: Duplicating a custom MPI communicator." << endl;
+        vcomm = *((MPI_Comm *)VISIT_MPI_COMM_PTR);
+    }
+    if (MPI_Comm_dup(vcomm, &VISIT_MPI_COMM_OBJ) != MPI_SUCCESS)
+        VISIT_MPI_COMM_OBJ = vcomm;
     VISIT_MPI_COMM_PTR = (void*) &VISIT_MPI_COMM_OBJ;
 
     //
@@ -217,6 +231,7 @@ PAR_SetComm(void *newcomm)
 // Test that it is actually a comm?
 
         // Use the communicator that was passed in.
+        debug5 << "PAR_SetComm: Setting VISIT_MPI_COMM_PTR to " << newcomm << endl;
         VISIT_MPI_COMM_PTR = newcomm;
     }
 

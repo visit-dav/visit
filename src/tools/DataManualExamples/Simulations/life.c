@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -21,6 +22,11 @@
 #define VISIT_COMMAND_PROCESS 0
 #define VISIT_COMMAND_SUCCESS 1
 #define VISIT_COMMAND_FAILURE 2
+
+#ifdef PARALLEL
+MPI_Comm comm;
+//#define comm MPI_COMM_WORLD
+#endif
 
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
@@ -127,10 +133,9 @@ life_data_allocate(life_data *life, int par_rank, int par_size)
 void
 life_data_simulate(life_data *life, int par_rank, int par_size)
 {
-    int nsum, i, j, JPNN, JNN, JMNN;
+    int nsum, i, j, JPNN, JNN, JMNN, source, dest;
     int *true_life = NULL, *working_life = NULL;
 #ifdef PARALLEL
-    int source, dest;
     MPI_Status status;
     MPI_Request request;
 #endif
@@ -171,12 +176,12 @@ life_data_simulate(life_data *life, int par_rank, int par_size)
 #ifdef PARALLEL
     source = (par_size + par_rank - 1) % par_size;
     dest = (par_rank+1) % par_size;
-    MPI_Irecv(&working_life[1], life->Ncolumns, MPI_INT, dest, 1000, MPI_COMM_WORLD, &request);
-    MPI_Send(&true_life[(life->Nrows-1)*life->Ncolumns], life->Ncolumns, MPI_INT, source,  1000, MPI_COMM_WORLD);
+    MPI_Irecv(&working_life[1], life->Ncolumns, MPI_INT, dest, 1000, comm, &request);
+    MPI_Send(&true_life[(life->Nrows-1)*life->Ncolumns], life->Ncolumns, MPI_INT, source,  1000, comm);
     MPI_Wait( &request, &status);
 
-    MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + 1], life->Ncolumns, MPI_INT, dest, 1001, MPI_COMM_WORLD, &request);
-    MPI_Send(&true_life[0], life->Ncolumns, MPI_INT, source,  1001, MPI_COMM_WORLD);
+    MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + 1], life->Ncolumns, MPI_INT, dest, 1001, comm, &request);
+    MPI_Send(&true_life[0], life->Ncolumns, MPI_INT, source,  1001, comm);
     MPI_Wait( &request, &status);
 #else
     memcpy(&working_life[1], &true_life[(life->Nrows-1)*life->Ncolumns], life->Ncolumns * sizeof(int));
@@ -193,23 +198,23 @@ life_data_simulate(life_data *life, int par_rank, int par_size)
     if(par_rank == 0)
     {
         source = par_size -1;
-        MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + 0], 1, MPI_INT, source, 1002, MPI_COMM_WORLD, &request);
-        MPI_Send(&true_life[life->Ncolumns-1], 1, MPI_INT, source,  1004, MPI_COMM_WORLD);
+        MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + 0], 1, MPI_INT, source, 1002, comm, &request);
+        MPI_Send(&true_life[life->Ncolumns-1], 1, MPI_INT, source,  1004, comm);
         MPI_Wait( &request, &status);
   
-        MPI_Irecv(&working_life[life->Ncolumns+1], 1, MPI_INT, source, 1003, MPI_COMM_WORLD, &request);
-        MPI_Send(&true_life[0], 1, MPI_INT, source,  1005, MPI_COMM_WORLD);
+        MPI_Irecv(&working_life[life->Ncolumns+1], 1, MPI_INT, source, 1003, comm, &request);
+        MPI_Send(&true_life[0], 1, MPI_INT, source,  1005, comm);
         MPI_Wait( &request, &status);
     }
     if(par_rank == (par_size -1))
     {
         source = 0;
-        MPI_Irecv(&working_life[0], 1, MPI_INT, source, 1004, MPI_COMM_WORLD, &request);
-        MPI_Send(&true_life[life->Ncolumns*(life->Nrows-1) + life->Ncolumns-1], 1, MPI_INT, source,  1002, MPI_COMM_WORLD);
+        MPI_Irecv(&working_life[0], 1, MPI_INT, source, 1004, comm, &request);
+        MPI_Send(&true_life[life->Ncolumns*(life->Nrows-1) + life->Ncolumns-1], 1, MPI_INT, source,  1002, comm);
         MPI_Wait( &request, &status);
   
-        MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + life->Ncolumns+1], 1, MPI_INT, source, 1005, MPI_COMM_WORLD, &request);
-        MPI_Send(&true_life[life->Ncolumns*(life->Nrows-1) + 0], 1, MPI_INT, source,  1003, MPI_COMM_WORLD);
+        MPI_Irecv(&working_life[(life->Nrows+1)*(life->Ncolumns+2) + life->Ncolumns+1], 1, MPI_INT, source, 1005, comm, &request);
+        MPI_Send(&true_life[life->Ncolumns*(life->Nrows-1) + 0], 1, MPI_INT, source,  1003, comm);
         MPI_Wait( &request, &status);
     }
 #else
@@ -417,12 +422,12 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
 #ifdef PARALLEL
 static int visit_broadcast_int_callback(int *value, int sender)
 {
-    return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD);
+    return MPI_Bcast(value, 1, MPI_INT, sender, comm);
 }
 
 static int visit_broadcast_string_callback(char *str, int len, int sender)
 {
-    return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
+    return MPI_Bcast(str, len, MPI_CHAR, sender, comm);
 }
 #endif
 
@@ -431,7 +436,7 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
 static void BroadcastSlaveCommand(int *command)
 {
 #ifdef PARALLEL
-    MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(command, 1, MPI_INT, 0, comm);
 #endif
 }
 
@@ -508,7 +513,7 @@ ProcessConsoleCommand(simulation_data *sim)
 
 #ifdef PARALLEL
     /* Broadcast the command to all processors. */
-    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, MPI_COMM_WORLD);
+    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, comm);
 #endif
 
     if(strcmp(cmd, "quit") == 0)
@@ -560,7 +565,7 @@ void mainloop(simulation_data *sim)
         if(sim->par_rank == 0)
             visitstate = VisItDetectInput(blocking, fileno(stdin));
 #ifdef PARALLEL
-        MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&visitstate, 1, MPI_INT, 0, comm);
 #endif
         /* Do different things depending on the output from VisItDetectInput. */
         switch(visitstate)
@@ -637,6 +642,7 @@ void mainloop(simulation_data *sim)
 
 int main(int argc, char **argv)
 {
+    int i, customcomm = 0;
     simulation_data sim;
     simulation_data_ctor(&sim);
 
@@ -644,11 +650,40 @@ int main(int argc, char **argv)
     VisItSetupEnvironment();
 
 #ifdef PARALLEL
+    /* Scan command line for -customcomm. */
+    for(i = 0; i < argc; ++i)
+        if(strcmp(argv[i], "-customcomm") == 0)
+            customcomm = 1;
+
     /* Initialize MPI */
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank (MPI_COMM_WORLD, &sim.par_rank);
-    MPI_Comm_size (MPI_COMM_WORLD, &sim.par_size);
 
+    /* Determine communicator. */
+    if(customcomm)
+    {
+        int gsize = 1, grank = 0;
+        MPI_Comm_rank (MPI_COMM_WORLD, &grank);
+        MPI_Comm_size (MPI_COMM_WORLD, &gsize);
+  
+        /* Create custom communicator with even ranks from world comm. */
+        MPI_Comm_split(MPI_COMM_WORLD, grank%2, grank, &comm);
+
+        /* Odd processes exit. */
+        if(grank%2 == 1)
+        {
+            MPI_Finalize();
+            return 0;
+        }
+    }
+    else
+    {
+        comm = MPI_COMM_WORLD;
+    }
+
+    /* comm = MPI_COMM_WORLD; */
+    MPI_Comm_rank (comm, &sim.par_rank);
+    MPI_Comm_size (comm, &sim.par_size);
+ 
     /* Adjust the life partitioning */
     sim.life.Nrows = NN/sim.par_size; /* assume they divide evenly */
     if((float)(NN)/sim.par_size - NN/sim.par_size > 0.0)
@@ -672,6 +707,14 @@ int main(int argc, char **argv)
             "/path/to/where/sim/was/started",
             NULL, NULL, NULL);
     }
+#ifdef PARALLEL
+    /* Install custom communicator. */
+    if(customcomm)
+    {
+        printf("Setting custom communicator: %p\n", (void*)&comm);
+        VisItSetMPICommunicator(&comm);
+    }
+#endif
 
     life_data_allocate(&sim.life, sim.par_rank, sim.par_size);
     life_data_ResetInitialConditions(&sim.life, RANDOM);

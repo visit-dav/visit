@@ -1043,6 +1043,11 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 *   Brad Whitlock, Fri Aug 26 10:38:11 PDT 2011
 *   Set the communicator that the engine will use.
 *
+*   Brad Whitlock, Fri Jul 20 10:59:19 PDT 2012
+*   Set the communicator after we have the engine but before it ends up in
+*   functions that call PAR_Init. This lets PAR_Init skip duplication of the
+*   MPI_COMM_WORLD communicator since we already set our custom communicator.
+*
 *******************************************************************************/
 
 static int CreateEngineAndConnectToViewer(void)
@@ -1060,6 +1065,11 @@ static int CreateEngineAndConnectToViewer(void)
         return FALSE;
     }
 
+    if(visit_communicator != NULL)
+    {
+        VisItSetMPICommunicator(visit_communicator);
+    }
+
     LIBSIM_MESSAGE_STRINGLIST("Calling visit_initialize: argv",
                               engine_argc, engine_argv);
     if (!(*callbacks->control.initialize)(engine, engine_argc, engine_argv))
@@ -1069,11 +1079,6 @@ static int CreateEngineAndConnectToViewer(void)
                          "visit_initialize failed. return %d",
                          FALSE);
         return FALSE;
-    }
-
-    if(visit_communicator != NULL)
-    {
-        VisItSetMPICommunicator(visit_communicator);
     }
 
     LIBSIM_MESSAGE_STRINGLIST("Calling visit_connectviewer: argv",
