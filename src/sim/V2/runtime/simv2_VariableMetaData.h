@@ -64,6 +64,9 @@ SIMV2_API int simv2_VariableMetaData_setHideFromGUI(visit_handle h, int);
 SIMV2_API int simv2_VariableMetaData_getHideFromGUI(visit_handle h, int*);
 SIMV2_API int simv2_VariableMetaData_setNumComponents(visit_handle h, int);
 SIMV2_API int simv2_VariableMetaData_getNumComponents(visit_handle h, int*);
+SIMV2_API int simv2_VariableMetaData_addMaterialName(visit_handle h, const char *);
+SIMV2_API int simv2_VariableMetaData_getNumMaterialName(visit_handle h, int *);
+SIMV2_API int simv2_VariableMetaData_getMaterialName(visit_handle h, int, char **);
 
 #ifdef __cplusplus
 };

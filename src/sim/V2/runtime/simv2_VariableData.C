@@ -101,11 +101,12 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
     if(dataType != VISIT_DATATYPE_CHAR &&
        dataType != VISIT_DATATYPE_INT &&
        dataType != VISIT_DATATYPE_FLOAT &&
-       dataType != VISIT_DATATYPE_DOUBLE)
+       dataType != VISIT_DATATYPE_DOUBLE &&
+       dataType != VISIT_DATATYPE_LONG)
     {
         VisItError("VariableData's data type must be set to one of: "
             "VISIT_DATATYPE_CHAR, VISIT_DATATYPE_INT, VISIT_DATATYPE_FLOAT, "
-            "VISIT_DATATYPE_DOUBLE");
+            "VISIT_DATATYPE_DOUBLE, VISIT_DATATYPE_LONG");
         return VISIT_ERROR;
     }
 
@@ -136,6 +137,8 @@ simv2_VariableData_setData(visit_handle h, int owner, int dataType, int nComps,
             sz = sizeof(char);
         else if(dataType == VISIT_DATATYPE_INT)
             sz = sizeof(int);
+        else if(dataType == VISIT_DATATYPE_LONG)
+            sz = sizeof(long);
         else if(dataType == VISIT_DATATYPE_FLOAT)
             sz = sizeof(float);
         else

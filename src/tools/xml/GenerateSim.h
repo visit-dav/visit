@@ -351,9 +351,24 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
         return mName;
     }
 
+    virtual void WriteVisItFortranMacro(QTextStream &h, const QString &classname)
+    {
+        QString mName(FortranName(classname, "ADD"));
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+          << mName.toLower() << ", " << mName << ")" << endl;
+
+        mName = FortranName(classname, "GETNUM");
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+          << mName.toLower() << ", " << mName << ")" << endl;
+
+        mName = FortranName(classname, "GET");
+        h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_," 
+          << mName.toLower() << ", " << mName << ")" << endl;
+    }
+
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
-        QString mName(FortranName(fclass, "SET"));
+        QString mName(FortranName(fclass, "ADD"));
         h << "int" << endl;
         h << "F_" << mName << "(visit_handle *h, int *val)" << endl;
         h << "{" << endl;

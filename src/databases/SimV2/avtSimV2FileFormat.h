@@ -53,6 +53,7 @@
 #include <set>
 #include <string>
 
+class avtMixedVariable;
 class avtSpecies;
 
 // ****************************************************************************
@@ -69,6 +70,8 @@ class avtSpecies;
 //  Creation:   Thu Feb  5 11:59:19 PST 2009
 //
 //  Modifications:
+//    Brad Whitlock, Wed Jul 18 11:53:50 PDT 2012
+//    I added ExpandVariable.
 //
 // ****************************************************************************
 
@@ -98,6 +101,13 @@ class avtSimV2FileFormat : public avtSTMDFileFormat
 
   protected:
     avtSpecies            *GetSpecies(int, const char *);
+
+    vtkDataArray          *ExpandVariable(vtkDataArray *array, avtMixedVariable **mv, 
+                                          int nMixVarComponents, int domain, 
+                                          const std::string &varname, 
+                                          const intVector &restrictToMats);
+    avtCentering           GetCentering(const std::string &varname) const;
+    intVector              GetRestrictedMaterialIndices(const std::string &varname) const;
 
     avtSimulationInformation simInfo;
     std::set<std::string>    curveMeshes;

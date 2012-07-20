@@ -184,6 +184,30 @@ VisIt_VariableMetaData_getNumComponents(visit_handle h, int *val)
         (h, val));
 }
 
+int
+VisIt_VariableMetaData_addMaterialName(visit_handle h, const char *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addMaterialName,
+        int, (visit_handle, const char *),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getNumMaterialName(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumMaterialName,
+        int, (visit_handle, int *),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getMaterialName(visit_handle h, int i, char **val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getMaterialName,
+        int, (visit_handle, int, char **),
+        (h, i, val));
+}
+
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -205,6 +229,9 @@ VisIt_VariableMetaData_getNumComponents(visit_handle h, int *val)
 #define F_VISITMDVARGETHIDEFROMGUI        F77_ID(visitmdvargethidefromgui_,visitmdvargethidefromgui, VISITMDVARGETHIDEFROMGUI)
 #define F_VISITMDVARSETNUMCOMPONENTS      F77_ID(visitmdvarsetnumcomponents_,visitmdvarsetnumcomponents, VISITMDVARSETNUMCOMPONENTS)
 #define F_VISITMDVARGETNUMCOMPONENTS      F77_ID(visitmdvargetnumcomponents_,visitmdvargetnumcomponents, VISITMDVARGETNUMCOMPONENTS)
+#define F_VISITMDVARADDMATERIALNAME       F77_ID(visitmdvaraddmaterialname_,visitmdvaraddmaterialname, VISITMDVARADDMATERIALNAME)
+#define F_VISITMDVARGETNUMMATERIALNAME    F77_ID(visitmdvargetnummaterialname_,visitmdvargetnummaterialname, VISITMDVARGETNUMMATERIALNAME)
+#define F_VISITMDVARGETMATERIALNAME       F77_ID(visitmdvargetmaterialname_,visitmdvargetmaterialname, VISITMDVARGETMATERIALNAME)
 
 int
 F_VISITMDVARALLOC(visit_handle *h)
@@ -348,5 +375,36 @@ int
 F_VISITMDVARGETNUMCOMPONENTS(visit_handle *h, int *val)
 {
     return VisIt_VariableMetaData_getNumComponents(*h, val);
+}
+
+int
+F_VISITMDVARADDMATERIALNAME(visit_handle *h, const char *val, int *lval)
+{
+    char *f_val = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_val, val, lval);
+    retval = VisIt_VariableMetaData_addMaterialName(*h, f_val);
+    FREE(f_val);
+    return retval;
+}
+
+int
+F_VISITMDVARGETNUMMATERIALNAME(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getNumMaterialName(*h, val);
+}
+
+int
+F_VISITMDVARGETMATERIALNAME(visit_handle *h, int *i, char *val, int *lval)
+{
+    char *s = NULL;
+    int retval;
+    retval = VisIt_VariableMetaData_getMaterialName(*h, *i, &s);
+    if(s != NULL)
+    {
+        visit_cstring_to_fstring(s, val, *lval);
+        free(s);
+    }
+    return retval;
 }
 

@@ -39,6 +39,9 @@
 !   Brad Whitlock, Mon Apr 16 16:18:08 PDT 2012
 !   Added visitsetmpicommunicator.
 !
+!   Brad Whitlock, Wed Jul 18 13:47:45 PDT 2012
+!   Add regionIds functions for variable metadata.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -133,7 +136,9 @@
       integer      VISIT_DATATYPE_FLOAT              
       parameter   (VISIT_DATATYPE_FLOAT              = 2)
       integer      VISIT_DATATYPE_DOUBLE             
-      parameter   (VISIT_DATATYPE_DOUBLE             = 3)
+      parameter   (VISIT_DATATYPE_DOUBLE             = 4)
+      integer      VISIT_DATATYPE_LONG             
+      parameter   (VISIT_DATATYPE_LONG               = 4)
 
 !... Array Owner
       integer      VISIT_OWNER_SIM                   
@@ -987,6 +992,18 @@
       external visitmdvargetnumcomponents
       integer  visitmdvargetnumcomponents
 
+! visitmdvaraddmaterialname(visit_handle h, string val, int lval)
+      external visitmdvaraddmaterialname
+      integer  visitmdvaraddmaterialname
+
+! visitmdvargetnummaterialname(visit_handle h, int val)
+      external visitmdvargetnummaterialname
+      integer  visitmdvargetnummaterialname
+
+! visitmdvargetmaterialname(visit_handle h, int i, string val, int lval)
+      external visitmdvargetmaterialname
+      integer  visitmdvargetmaterialname
+
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Data functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1429,6 +1446,10 @@
       external visitvardatasetd
       integer  visitvardatasetd
 
+! visitvardatasetl(visit_handle obj, int owner, int ncomps, int ntuples, long ptr)
+      external visitvardatasetl
+      integer  visitvardatasetl
+
 ! visitvardatagettype(visit_handle obj, int datatype)
       external visitvardatagettype
       integer  visitvardatagettype
@@ -1453,3 +1474,7 @@
       external visitvardatagetd
       integer  visitvardatagetd
 
+! visitvardatagetl(visit_handle obj, int owner, int ncomps, int ntuples,
+!                  long dest, int ldest)
+      external visitvardatagetl
+      integer  visitvardatagetl

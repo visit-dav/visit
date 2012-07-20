@@ -806,7 +806,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     //
     // Obtain the mesh data from the opaque object.
     //
-    int ndims = 0, dims[3]={0,0,0};
+    int ndims = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
     visit_handle x,y,z;   
     if(simv2_RectilinearMesh_getCoords(h, &ndims, &x, &y, &z) == VISIT_ERROR ||
@@ -1121,7 +1121,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 
             for(int t = 0; t < tess.GetNumTriangles(); ++t)
             {
-                int a,b,c;
+                int a=0,b=0,c=0;
                 tess.GetTriangle(t, a, b, c);
                 verts[0] = local2Global[a];
                 verts[1] = local2Global[b];
