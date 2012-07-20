@@ -61,6 +61,9 @@ int VisIt_VariableMetaData_setHideFromGUI(visit_handle h, int);
 int VisIt_VariableMetaData_getHideFromGUI(visit_handle h, int*);
 int VisIt_VariableMetaData_setNumComponents(visit_handle h, int);
 int VisIt_VariableMetaData_getNumComponents(visit_handle h, int*);
+int VisIt_VariableMetaData_addMaterialName(visit_handle h, const char *);
+int VisIt_VariableMetaData_getNumMaterialName(visit_handle h, int *);
+int VisIt_VariableMetaData_getMaterialName(visit_handle h, int, char **);
 
 #ifdef __cplusplus
 }

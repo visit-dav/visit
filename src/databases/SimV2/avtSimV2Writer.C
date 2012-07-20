@@ -167,7 +167,7 @@ avtSimV2Writer::WriteHeaders(const avtDatabaseMetaData *md,
 {
     debug1 << "avtSimV2Writer::WriteHeaders(...)\n";
     varList = scalars;
-    for(int i = 0; i < vectors.size(); ++i)
+    for(size_t i = 0; i < vectors.size(); ++i)
         varList.push_back(vectors[i]);
     metadata = md;
 }
@@ -547,7 +547,6 @@ avtSimV2Writer::WriteUnstructuredMesh(vtkUnstructuredGrid *ds, int chunk,
     bool onlyPoints = true;
     unsigned char *cptr = (unsigned char *)ct->GetVoidPointer(0);
     vtkIdType connLen = 0;
-    vtkIdType *pts = 0;
     for(vtkIdType i = 0; i < ct->GetNumberOfTuples(); ++i)
     {
         int t = *cptr++;
@@ -1129,7 +1128,7 @@ avtSimV2Writer::WriteCellDataArrayConditionally(vtkDataArray *arr,
 void
 avtSimV2Writer::WriteDataArrays(vtkDataSet *ds, int chunk)
 {
-    for (int v = 0 ; v < varList.size() ; v++)
+    for (size_t v = 0 ; v < varList.size() ; v++)
     {
         vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
         if (arr != 0)
@@ -1176,7 +1175,7 @@ void
 avtSimV2Writer::WriteDataArraysConditionally(vtkDataSet *ds, int chunk,
     const unsigned char *cellCopy)
 {
-    for (int v = 0 ; v < varList.size() ; v++)
+    for (size_t v = 0 ; v < varList.size() ; v++)
     {
         vtkDataArray *arr = ds->GetCellData()->GetArray(varList[v].c_str());
         if (arr != 0)

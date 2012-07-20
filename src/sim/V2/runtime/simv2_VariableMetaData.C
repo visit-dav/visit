@@ -49,14 +49,15 @@ struct VisIt_VariableMetaData : public VisIt_ObjectBase
     VisIt_VariableMetaData();
     virtual ~VisIt_VariableMetaData();
 
-    std::string name;
-    std::string meshName;
-    std::string units;
-    int         centering;
-    int         type;
-    bool        treatAsASCII;
-    bool        hideFromGUI;
-    int         numComponents;
+    std::string  name;
+    std::string  meshName;
+    std::string  units;
+    int          centering;
+    int          type;
+    bool         treatAsASCII;
+    bool         hideFromGUI;
+    int          numComponents;
+    stringVector materialNames;
 };
 
 VisIt_VariableMetaData::VisIt_VariableMetaData() : VisIt_ObjectBase(VISIT_VARIABLEMETADATA)
@@ -423,6 +424,65 @@ simv2_VariableMetaData_getNumComponents(visit_handle h, int *val)
     }
     else
         *val = 0;
+    return retval;
+}
+
+int
+simv2_VariableMetaData_addMaterialName(visit_handle h, const char *val)
+{
+    if(val == NULL)
+    {
+        VisItError("An invalid string was provided for materialNames");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_addMaterialName");
+    if(obj != NULL)
+    {
+        obj->materialNames.push_back(val);
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getNumMaterialName(visit_handle h, int *val)
+{
+    if(val == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getNumMaterialName: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getNumMaterialName");
+    if(obj != NULL)
+    {
+        *val = obj->materialNames.size();
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getMaterialName(visit_handle h, int i, char **val)
+{
+    if(val == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getMaterialName: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getMaterialName");
+    if(obj != NULL && i >= 0 && i < obj->materialNames.size())
+    {
+        *val = (char *)malloc(obj->materialNames[i].size() + 1);
+        strcpy(*val, obj->materialNames[i].c_str());
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = NULL;
     return retval;
 }
 
