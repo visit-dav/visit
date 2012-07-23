@@ -301,6 +301,70 @@ static float rmesh_y[NY];
 static const int   rmesh_dims[] = {NX, NY, 1};
 static const int   rmesh_ndims = 2;
 
+/* Unstructured mesh */
+float coords2d[NY][NX][2] = {
+    {{0,0}, {1,0}, {2,0}, {3,0}, {4,0}},
+    {{0,1}, {1,1}, {2,1}, {3,1}, {4,1}},
+    {{0,2}, {1,2}, {2,2}, {3,2}, {4,2}},
+    {{0,3}, {1,3}, {2,3}, {3,3}, {4,3}}
+};
+int connectivity[] = {
+    VISIT_CELL_QUAD,0,1,6,5,
+    VISIT_CELL_QUAD,1,2,7,6,
+    VISIT_CELL_QUAD,2,3,8,7,
+    VISIT_CELL_QUAD,3,4,9,8,
+    VISIT_CELL_QUAD,5,6,11,10,
+    VISIT_CELL_QUAD,6,7,12,11,
+    VISIT_CELL_QUAD,7,8,13,12,
+    VISIT_CELL_QUAD,8,9,14,13,
+    VISIT_CELL_QUAD,10,11,16,15,
+    VISIT_CELL_QUAD,11,12,17,16,
+    VISIT_CELL_QUAD,12,13,18,17,
+    VISIT_CELL_QUAD,13,14,19,18
+};
+/* Mixed material encoding (materials 11,22,33) */
+int matlist[] = {
+    33, -1, -3, 11,
+    33, -5, -7, 11,
+    33, -9, -11, -14
+};
+int mix_zone[] = {
+    1,1,
+    2,2,
+    5,5,
+    6,6,
+    9,9,
+    10,10,10,
+    11,11
+};
+int mix_mat[] =  {
+    22,33,
+    22,11,
+    22,33,
+    22,11,
+    22,33,
+    11,22,33,
+    22,11
+};
+double mix_vf[] = {
+    0.75,0.25,
+    0.1875, 0.8125,
+    0.625, 0.375,
+    0.4375, 0.5625,
+    0.3, 0.7,
+    0.2, 0.4, 0.4,
+    0.45, 0.55
+};
+int mix_next[] = {
+    2, 0,
+    4, 0,
+    6, 0,
+    8, 0,
+    10, 0,
+    12, 13, 0,
+    15, 0
+};
+
 /******************************************************************************
  *
  * Purpose: This callback function returns simulation metadata.
@@ -373,6 +437,37 @@ SimGetMetaData(void *cbdata)
             VisIt_SimulationMetaData_addVariable(md, vmd);
         }
 
+        /* Add mesh metadata for a second mesh. */
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "ucdmesh");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_UNSTRUCTURED);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 2);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 2);
+            VisIt_MeshMetaData_setNumDomains(mmd, 1);
+            VisIt_MeshMetaData_setDomainTitle(mmd, "Domains");
+            VisIt_MeshMetaData_setDomainPieceName(mmd, "domain");
+            VisIt_MeshMetaData_setXUnits(mmd, "cm");
+            VisIt_MeshMetaData_setYUnits(mmd, "cm");
+            VisIt_MeshMetaData_setXLabel(mmd, "Width");
+            VisIt_MeshMetaData_setYLabel(mmd, "Height");
+
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
+       
+        /* Add a material on the second mesh. */
+        if(VisIt_MaterialMetaData_alloc(&mat) == VISIT_OKAY)
+        {
+            VisIt_MaterialMetaData_setName(mat, "MaterialFromArrays");
+            VisIt_MaterialMetaData_setMeshName(mat, "ucdmesh");
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[0]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[1]);
+            VisIt_MaterialMetaData_addMaterialName(mat, matNames[2]);
+
+            VisIt_SimulationMetaData_addMaterial(md, mat);
+        }
+
         /* Add some commands. */
         for(i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
@@ -431,6 +526,23 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             VisIt_RectilinearMesh_setCoordsXY(h, x, y);
         }
     }
+    else if(strcmp(name, "ucdmesh") == 0)
+    {
+        visit_handle c, hc;
+        if(VisIt_UnstructuredMesh_alloc(&h) == VISIT_OKAY &&
+           VisIt_VariableData_alloc(&c) == VISIT_OKAY &&
+           VisIt_VariableData_alloc(&hc) == VISIT_OKAY)
+        {
+            int nnodes, nzones;
+            nnodes = (NX * NY);
+            nzones = (NX-1)*(NY-1);
+            VisIt_VariableData_setDataF(c, VISIT_OWNER_SIM, 2, nnodes, (float*)coords2d);
+            VisIt_VariableData_setDataI(hc, VISIT_OWNER_SIM, 1, 5*nzones,
+                connectivity);
+            VisIt_UnstructuredMesh_setCoords(h, c);
+            VisIt_UnstructuredMesh_setConnectivity(h, nzones, hc);
+        }
+    }
 
     return h;
 }
@@ -454,7 +566,8 @@ SimGetMaterial(int domain, const char *name, void *cbdata)
     visit_handle h = VISIT_INVALID_HANDLE;
 
     /* Allocate a VisIt_MaterialData */
-    if(VisIt_MaterialData_alloc(&h) == VISIT_OKAY)
+    VisIt_MaterialData_alloc(&h);
+    if(strcmp(name, "Material") == 0)
     {
         int i, j, m, cell = 0, arrlen = 0;
         int nmats, cellmat[10], matnos[3]={1,2,3};
@@ -507,6 +620,35 @@ SimGetMaterial(int domain, const char *name, void *cbdata)
                     VisIt_MaterialData_addCleanCell(h, cell, cellmat[0]);
             }
         }
+    }
+    else if(strcmp(name, "MaterialFromArrays") == 0)
+    {
+        int nTuples, matnos[] = {11,22,33};
+        visit_handle hmatlist, hmix_zone, hmix_mat, hmix_vf, hmix_next;
+      
+        /* Fill in the VisIt_MaterialData using arrays encode the material. */
+        VisIt_MaterialData_addMaterial(h, matNames[0], &matnos[0]);
+        VisIt_MaterialData_addMaterial(h, matNames[1], &matnos[1]);
+        VisIt_MaterialData_addMaterial(h, matNames[2], &matnos[2]);
+
+        VisIt_VariableData_alloc(&hmatlist);
+        VisIt_VariableData_setDataI(hmatlist, VISIT_OWNER_SIM, 1, (NX-1)*(NY-1), matlist);
+        VisIt_MaterialData_setMaterials(h, hmatlist);
+
+        nTuples = sizeof(mix_zone) / sizeof(int);
+        VisIt_VariableData_alloc(&hmix_zone);
+        VisIt_VariableData_setDataI(hmix_zone, VISIT_OWNER_SIM, 1, nTuples, mix_zone);
+
+        VisIt_VariableData_alloc(&hmix_mat);
+        VisIt_VariableData_setDataI(hmix_mat, VISIT_OWNER_SIM, 1, nTuples, mix_mat);
+
+        VisIt_VariableData_alloc(&hmix_vf);
+        VisIt_VariableData_setDataD(hmix_vf, VISIT_OWNER_SIM, 1, nTuples, mix_vf);
+
+        VisIt_VariableData_alloc(&hmix_next);
+        VisIt_VariableData_setDataI(hmix_next, VISIT_OWNER_SIM, 1, nTuples, mix_next);
+
+        VisIt_MaterialData_setMixedMaterials(h, hmix_mat, hmix_zone, hmix_next, hmix_vf);
     }
 
     return h;
