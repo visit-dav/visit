@@ -130,10 +130,10 @@ simv2_SpeciesData_addSpeciesName(visit_handle h, visit_handle val)
     int retval = VISIT_ERROR;
     if(simv2_ObjectType(val) != VISIT_NAMELIST)
     {
-        VisItError("simv2_SpeciesData_setSpeciesName: Namelist object required");
+        VisItError("simv2_SpeciesData_addSpeciesName: Namelist object required");
         return VISIT_ERROR;
     }
-    VisIt_SpeciesData *obj = GetObject(h, "simv2_SpeciesData_setSpeciesName");
+    VisIt_SpeciesData *obj = GetObject(h, "simv2_SpeciesData_addSpeciesName");
     if(obj != NULL)
     {
         obj->speciesNames.push_back(val);
@@ -154,7 +154,7 @@ simv2_SpeciesData_setSpecies(visit_handle h, visit_handle val)
     }
     if(dataType != VISIT_DATATYPE_INT)
     {
-        VisItError("simv2_SpeciesData_setSpeciesNames: species require int data");
+        VisItError("simv2_SpeciesData_setSpecies: species require int data");
         return VISIT_ERROR;        
     }
 
@@ -178,9 +178,10 @@ simv2_SpeciesData_setSpeciesMF(visit_handle h, visit_handle val)
     {
         return VISIT_ERROR;
     }
-    if(dataType != VISIT_DATATYPE_FLOAT)
+    if(dataType != VISIT_DATATYPE_FLOAT &&
+       dataType != VISIT_DATATYPE_DOUBLE)
     {
-        VisItError("simv2_SpeciesData_setSpeciesNames: speciesMF require float data");
+        VisItError("simv2_SpeciesData_setSpeciesMF: speciesMF requires float or double data");
         return VISIT_ERROR;        
     }
 
@@ -206,7 +207,7 @@ simv2_SpeciesData_setMixedSpecies(visit_handle h, visit_handle val)
     }
     if(dataType != VISIT_DATATYPE_INT)
     {
-        VisItError("simv2_SpeciesData_setSpeciesNames: mixedSpecies require int data");
+        VisItError("simv2_SpeciesData_setMixedSpecies: mixedSpecies requires int data");
         return VISIT_ERROR;        
     }
 

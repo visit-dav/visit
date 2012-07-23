@@ -30,19 +30,19 @@ list of changes in release 2.5.1.</p>
 <li>The Revolve operator now properly handles vector data.</li>
 <li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
 <li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
-<li>Splatter Volume plots now supports data with double-precision coordinates.</li>
+<li>Volume plots using the splatting renderer now support data with double-precision coordinates.</li>
 <li>Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
 <li>The text in the "Time slider" annotation object no longer partially overlaps the time slider bar when it contains characters with descenders (i.e. "g", "j", "p", "q" or "y").</li>
 <li>Fixed double-clicking on a '.visit' file on Windows so that VisIt will open the related database.</li>
 <li>The linux-intel version of VisIt no longer displays the error message:
-<p>Error opening plugin file:<br>/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so<br>(/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so: undefined symbol: H5DSis_scale)</p>
+<i><p>Error opening plugin file:<br>/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so<br>(/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so: undefined symbol: H5DSis_scale)</p></i>
 </li>
 <li>The Reflect operator will now correctly show that quadrant graphics on Windows.</li>
 <li>The <i>VisItSetMPICommunicator()</i> function in Libsim has been fixed.</li>
 <li>A bug was corrected with the X Ray Image query where it would crash when run in parallel for some combinations of processor count and image size.</li>
 <li>Curve plots rendered by VisIt's scalable rendering mode are sometimes incomplete with certain numbers of processors when IceT image compositing is used.</li>
 <li>Pressing stop when playing an animation with multiple plots results in some plots not drawn.</li>
-<li>Image blanks when frame advancing with scalable rendering mode.</li>
+<li>A blank image is displayed when frame advancing with scalable rendering mode.</li>
 <li>VisIt runs out of memory when plotting curves with 10M points.</li>
 </ul>
 
@@ -50,8 +50,10 @@ list of changes in release 2.5.1.</p>
 <ul>
 <li>Console output from remote mdserver or compute engines is now routed to VisIt's <i>Output window</i>. This ensures that the output is available for platforms such as MacOS X and Windows where the VisIt application does not use a console. Console output from those programs sometimes indicates the cause of client/server launch failures.</li>
 <li>The Chombo reader can now handle anisotropic refinement ratios.</li>
-<li>Libsim was extended so it can support variables defined on material subregions of the mesh. In order to declare that the variable exists only on a subset of the mesh, you must call the <i>VisIt_VariableData_addMaterialName()</i> function, adding the names of the materials over which the variable is defined. If you do not call that function then, as before, the variable will be defined on the entire mesh. When you return the actual variable data from your simulation's <i>GetVariable</i>data callback function, you must take care to only provide data for cells that belong to the material regions that you specified. You would iterate over all cells in the mesh and if the material (or any mixed material) in the cell belongs to the regions of interest then that cell contributes to the returned data array. The procedure for nodal data is similar except that at each node in a cell, add the nodal data to the return array only if you have not visited that node before.</li>
+<li>Libsim was extended so it can support variables defined on material subregions of the mesh. In order to declare that the variable exists only on a subset of the mesh, you must call the <i>VisIt_VariableMetaData_addMaterialName()</i> function, adding the names of the materials over which the variable is defined. If you do not call that function then, as before, the variable will be defined on the entire mesh. When you return the actual variable data from your simulation's <i>GetVariable</i> data callback function, you must take care to only provide data for cells that belong to the material regions that you specified. You would iterate over all cells in the mesh and if the material (or any mixed material) in the cell belongs to the regions of interest then that cell contributes to the returned data array. The procedure for nodal data is similar except that at each node in a cell, add the nodal data to the return array only if you have not visited that node before. Follow the link to see <a href="http://portal.nersc.gov/svn/visit/trunk/src/tools/DataManualExamples/Simulations/materialvar.c"> an example simulation</a>.</li>
 <li>Libsim was extended so variable data may be returned using the <b>long</b> type.</li>
+<li>Libsim can now accept double-precision material volume fractions via the <i>VisIt_MaterialData_setMixedMaterials()</i> function.</li>
+<li>Libsim can now accept double-precision species mass fractions via the <i>VisIt_SpeciesData_setSpeciesMF()</i> function.</li>
 </ul>
 
 

@@ -166,7 +166,7 @@ simv2_MaterialData_addMaterial(visit_handle h, const char *matName, int *matno)
         }
         else
         {
-            if(matno < 0)
+            if(*matno < 0)
             {
                 VisItError("Material number must be >= 0.");
                 return VISIT_ERROR;

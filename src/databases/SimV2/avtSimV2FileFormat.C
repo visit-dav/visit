@@ -2002,6 +2002,8 @@ avtSimV2FileFormat::GetAuxiliaryData(const char *var, int domain,
 //  Creation:    Tue Mar  2 11:49:42 PST 2010
 //
 //  Modifications:
+//    Brad Whitlock, Mon Jul 23 16:14:52 PDT 2012
+//    Convert mix_vf to float if it was double.
 //
 // ****************************************************************************
 
@@ -2093,6 +2095,19 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     const int *mix_next = (const int *)data[3];
     const float *mix_vf = (const float *)data[4];
 
+    // Convert mix_vf input to float if it was double.
+    float *mix_vf_alloc = NULL;
+    if(dataType[4] == VISIT_DATATYPE_DOUBLE)
+    {
+        debug4 << mName << "Converting double mixVF to float." << endl;
+        int nElem = nComps[4] * nTuples[4];
+        mix_vf_alloc = new float[nElem];
+        const double *mix_vf_in = (const double *)data[4];
+        for(int i = 0; i < nElem; ++i)
+            mix_vf_alloc[i] = (float)mix_vf_in[i];
+        mix_vf = mix_vf_alloc;
+    }
+
     // Scan the material numbers to see if they are 0..N-1. If not then use
     // the contructor that will perform re-ordering.
     bool *matUsed = new bool[nMaterials];
@@ -2172,6 +2187,8 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
 
     delete [] materialNumbers;
     simv2_FreeObject(h);
+    if(mix_vf_alloc != NULL)
+        delete [] mix_vf_alloc;
 
     return mat;
 #endif
@@ -2286,7 +2303,9 @@ avtSimV2FileFormat::GetCurve(const char *name)
 // Creation:   Fri Feb  6 16:47:44 PST 2009
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 23 16:19:35 PDT 2012
+//   Support double speciesMF.
+//
 // ****************************************************************************
 
 avtSpecies *
@@ -2364,6 +2383,18 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
         simv2_FreeObject(h);
         return NULL;
     }
+    // Convert the speciesMF to float if needed.
+    float *speciesMF_alloc = NULL;
+    if(speciesMF_dataType == VISIT_DATATYPE_DOUBLE)
+    {
+        debug4 << mName << "Converting double speciesMF to float." << endl;
+        int nElem = speciesMF_nComps * speciesMF_nTuples;
+        speciesMF_alloc = new float[nElem];
+        const double *input = (const double *)speciesMF_data;
+        for(int i = 0; i < nElem; ++i)
+            speciesMF_alloc[i] = (float)input[i];
+        speciesMF_data = (void *)speciesMF_alloc;
+    }
 
     int mixedSpecies_owner, mixedSpecies_dataType, mixedSpecies_nComps, 
         mixedSpecies_nTuples;
@@ -2384,6 +2415,8 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
         speciesMF_nTuples, (float *)speciesMF_data);
 
     simv2_FreeObject(h);
+    if(speciesMF_alloc != NULL)
+        delete [] speciesMF_alloc;
 
     return spec;
 #endif
