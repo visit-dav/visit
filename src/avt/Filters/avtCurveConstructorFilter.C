@@ -635,6 +635,9 @@ avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 //    Brad Whitlock, Tue Jan  6 16:41:18 PST 2009
 //    Store the outputArray into the MapNode data.
 //
+//    Brad Whitlock, Mon Jul 23 12:15:34 PDT 2012
+//    Limit the number of values sent to the client in plot information.
+//
 // ****************************************************************************
 
 void
@@ -643,9 +646,18 @@ avtCurveConstructorFilter::PostExecute(void)
 #ifdef PARALLEL
     BroadcastDoubleVector(outputArray, PAR_Rank());
 #endif
-    PlotInfoAttributes plotInfoAtts ;
-    MapNode data;
-    data = outputArray;
-    GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
+    // Limit outputArray size that we send back to the client.
+    if(outputArray.size() < 100000)
+    {
+        PlotInfoAttributes plotInfoAtts ;
+        MapNode data;
+        data = outputArray;
+        GetOutput()->GetInfo().GetAttributes().AddPlotInformation("Curve", data);
+    }
+    else
+    {
+        debug5 << "Curve constructor filter does not send curves that contain "
+                  "more than 100K values to the client." << endl;
+    }
 }
 

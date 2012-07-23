@@ -219,6 +219,9 @@ avtCurve2DFileFormat::GetVar(const char *name)
 //    Kathleen Bonnell, Tue Jan 20 11:04:33 PST 2009
 //    Added SpatialExtents to CurveMetaData. 
 //
+//    Brad Whitlock, Mon Jul 23 12:07:07 PDT 2012
+//    Iterate based on curveNames since curves will not be populated on mdserver.
+//
 // ****************************************************************************
 
 void
@@ -229,7 +232,7 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ReadFile();
     }
 
-    for (int i = 0 ; i < curves.size() ; i++)
+    for (int i = 0 ; i < curveNames.size() ; i++)
     {
         avtCurveMetaData *curve = new avtCurveMetaData;
         curve->name = curveNames[i];
@@ -309,6 +312,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Fri Jan  8 16:32:25 EST 2010
 //    Made warning be invalid file exception in strict mode.
 //
+//    Brad Whitlock, Mon Jul 23 12:06:38 PDT 2012
+//    Build lightweight rectilinear grids on mdserver.
+//
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -370,6 +376,8 @@ avtCurve2DFileFormat::ReadFile(void)
     CurveToken lastt = VALID_POINT;
     bool justStartedNewCurve = false;
     float lastx;
+    xl.reserve(1000);
+    yl.reserve(1000);
     while (!ifile.eof())
     {
         float   x, y;
@@ -536,6 +544,9 @@ avtCurve2DFileFormat::ReadFile(void)
         // Add all of the points to an array.
         //
         int nPts = cutoff[i] - start - (centering[i] == AVT_NODECENT ? 0 : 1);
+#ifdef MDSERVER
+        vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
+#else
         vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
  
         vtkFloatArray    *vals = vtkFloatArray::New();
@@ -547,7 +558,9 @@ avtCurve2DFileFormat::ReadFile(void)
             vals->SetName("curve");
 
         rg->GetPointData()->SetScalars(vals);
+        vals->Delete();
         vtkFloatArray *xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
+#endif
 
         double dmin = FLT_MAX;
         double dmax = -FLT_MAX;
@@ -555,22 +568,26 @@ avtCurve2DFileFormat::ReadFile(void)
         double smax = -FLT_MAX;
         for (int j = 0 ; j < nPts ; j++)
         {
+            double X, Y;
             if (centering[i] == AVT_NODECENT)
-                xc->SetValue(j, xl[start+j]);
+                X = xl[start+j];
             else
-                xc->SetValue(j, (xl[start+j]+xl[start+j+1])/2.0);
-            vals->SetValue(j, yl[start+j]);
-            if (yl[start+j] < dmin)
-                dmin = yl[start+j];
-            if (yl[start+j] > dmax)
-                dmax = yl[start+j];
-            if (xc->GetValue(j) < smin)
-                smin = xc->GetValue(j);
-            if (xc->GetValue(j) > smax)
-                smax = xc->GetValue(j);
+                X = (xl[start+j]+xl[start+j+1])/2.0;
+            Y = yl[start+j];
+#ifndef MDSERVER
+            xc->SetValue(j, X);
+            vals->SetValue(j, Y);
+#endif
+            if (Y < dmin)
+                dmin = Y;
+            if (Y > dmax)
+                dmax = Y;
+            if (X < smin)
+                smin = X;
+            if (X > smax)
+                smax = X;
         }
- 
-        vals->Delete();
+
         curves.push_back(rg);
         spatialExtents.push_back(smin);
         spatialExtents.push_back(smax);
