@@ -6194,6 +6194,9 @@ ViewerWindowManager::PrevFrame(int windowIndex)
 //   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
 //   Use AnimationAttributes.
 //
+//   Brad Whitlock, Mon Jul 23 11:12:35 PDT 2012
+//   Update the frame in case we interrupted generation of pending plots.
+//
 // ****************************************************************************
 
 void
@@ -6235,6 +6238,14 @@ ViewerWindowManager::Stop(int windowIndex)
         //
         UpdateAnimationTimer();
         UpdateWindowInformation(WINDOWINFO_ANIMATION);
+
+        //
+        // Turning off the animation timer could have interrupted the generation
+        // of some plots. Update the frame to make sure that any pending plots
+        // get created. Note that we do a delayed update here since Stop is
+        // a "special" action.
+        //
+        windows[index]->SendUpdateFrameMessage();
     }
 }
 
