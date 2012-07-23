@@ -1070,7 +1070,12 @@ ViewerPlotList::BackwardStep()
 // Creation:   Mon Mar 22 15:43:18 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jul 23 11:38:44 PDT 2012
+//   Disable updates if we're clearing pick points since the extra redraw
+//   causes the window to blank until the UpdateFrame is done when we're in 
+//   SR mode. This way, the implicit Redraw down in ClearPickPoints has no
+//   effect and we explicitly redraw the window.
+//
 // ****************************************************************************
 
 void
@@ -1085,8 +1090,12 @@ ViewerPlotList::SetTimeSliderState(int state)
 
     if(state >= 0 && state < timeSliderNStates)
     {
-        if (state != timeSliderCurrentState)
+        bool clearPicks = (state != timeSliderCurrentState);
+        if(clearPicks)
+        {
+            window->DisableUpdates();
             window->ClearPickPoints();
+        }
 
         //
         // Get the correlation for the active time slider.
@@ -1135,6 +1144,11 @@ ViewerPlotList::SetTimeSliderState(int state)
         // Update the frame, which we mean to be the image on the screen.
         //
         UpdateFrame(false);
+
+        // If we disabled updates as a result of clearing pick points, enable
+        // updates again.
+        if(clearPicks)
+            window->EnableUpdates();
     }
 }
 
