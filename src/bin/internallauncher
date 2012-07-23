@@ -766,6 +766,10 @@ $0 = shift @ARGV;
 #    Eric Brugger, Wed Jul 18 12:17:44 PDT 2012
 #    I modified the script to run the chaos 4 version if running on rzbeast.
 #
+#    Hank Childs, Mon Jul 23 10:21:59 PDT 2012
+#    Change invocation of xterm, to deal with change in -e option in xterm
+#    V271 option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -3789,7 +3793,8 @@ else
                     @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-e");
                 }
 
-                push @visitcmd, @tmpcmd;
+                $oneString=join(" ", @tmpcmd);
+                push @visitcmd, "$oneString";
             }
         }
 
