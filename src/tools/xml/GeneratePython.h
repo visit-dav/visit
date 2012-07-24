@@ -2674,7 +2674,7 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
     virtual void StringRepresentation(QTextStream &c, const QString &classname)
     {
         c << "    const char *" << name << "_values[] = {\"LINEAR\", \"LOG\"};" << Endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # LINEAR, LOG\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << Endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s%s  # LINEAR, LOG\\n\", prefix, prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << Endl;
         c << "    str += tmpStr;" << Endl;
     }
 

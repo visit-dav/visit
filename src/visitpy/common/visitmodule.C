@@ -414,6 +414,7 @@ private:
 // VisIt module state flags and objects.
 //
 ViewerProxy                 *viewer = 0;
+bool                         localNameSpace = false;
 
 static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
@@ -436,7 +437,6 @@ static bool                  moduleVerbose = false;
 static ObserverToCallback   *pluginLoader = 0;
 static ObserverToCallback   *clientMethodObserver = 0;
 static ObserverToCallback   *stateLoggingObserver = 0;
-static bool                  localNameSpace = false;
 static bool                  interruptScript = false;
 static int                   syncCount = 1000;
 static PyObject             *VisItError;
@@ -15585,6 +15585,10 @@ visit_UserActionFinished(PyObject *self, PyObject *args)
 //    Brad Whitlock, Fri Feb  1 16:58:23 PST 2008
 //    Moved interpreter locking to functions that we can call elsewhere.
 //
+//    Brad Whitlock, Tue Jul 24 12:09:20 PDT 2012
+//    Handle macro recording client methods specially to cope with the module
+//    being imported into a regular Python.
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
@@ -15615,13 +15619,28 @@ visit_exec_client_method(void *data)
     }
     else if(m->GetMethodName() == "Interpret")
     {
-        // Interpret all of the strings stored in the method arguments.
         const stringVector &code = m->GetStringArgs();
-        for(int i = 0; i < code.size(); ++i)
+
+        // Interpret all of the strings stored in the method arguments.
+        for(size_t i = 0; i < code.size(); ++i)
         {
-            int len = code[i].size() + 1;
-            char *buf = new char[len];
-            strcpy(buf, code[i].c_str());
+            char *buf = NULL;
+            // Handle ClientMethod specially if we're not in a local namespace.
+            if(strncmp(code[i].c_str(), "ClientMethod(", 13) == 0)
+            {
+                if(!localNameSpace)
+                {
+                    int len = code[i].size() + 6 + 1;
+                    buf = new char[len];
+                    SNPRINTF(buf, len, "visit.%s", code[i].c_str());
+                }
+            }
+            if(buf == NULL)
+            {
+                int len = code[i].size() + 1;
+                buf = new char[len];
+                strcpy(buf, code[i].c_str());
+            }
             PyRun_SimpleString(buf);
             delete [] buf;
         }
