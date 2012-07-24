@@ -55,9 +55,13 @@ import imp
 
 from os.path import join as pjoin
 
-__all__ = ["Launch","AddArgument","SetDebugLevel","GetDebugLevel"]
+__all__ = ["Launch","LaunchNowin","AddArgument","SetDebugLevel","GetDebugLevel"]
 
 def Launch(vdir=None):
+    return VisItModuleState.launch(vdir)
+
+def LaunchNowin(vdir=None):
+    VisItModuleState.add_argument("-nowin")
     return VisItModuleState.launch(vdir)
 
 def AddArgument(arg):
