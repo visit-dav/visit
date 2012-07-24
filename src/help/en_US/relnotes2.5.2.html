@@ -46,6 +46,7 @@ list of changes in release 2.5.1.</p>
 <li>VisIt runs out of memory when plotting curves with 10M points.</li>
 <li>Command recording for saving a window only records the commands needed to replicate the save settings; it does not contain the actual <i>SaveWindow()</i> function call.</li>
 <li>The VisIt Python module's <i>LaunchNowin()</i> function is not exposed immediately after the module gets imported.</li>
+<li>Command recording is broken when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
@@ -56,6 +57,7 @@ list of changes in release 2.5.1.</p>
 <li>Libsim was extended so variable data may be returned using the <b>long</b> type.</li>
 <li>Libsim can now accept double-precision material volume fractions via the <i>VisIt_MaterialData_setMixedMaterials()</i> function.</li>
 <li>Libsim can now accept double-precision species mass fractions via the <i>VisIt_SpeciesData_setSpeciesMF()</i> function.</li>
+<li>Command recording will now prepend <i>visit.</i> to commands when the <i>visit</i> module is imported into a standard Python interpreter. This ensures that recorded commands can be played back.</li>
 </ul>
 
 
