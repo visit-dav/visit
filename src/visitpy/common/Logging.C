@@ -656,6 +656,7 @@ static std::string log_SaveWindowRPC(ViewerRPC *rpc)
 {
     std::string s(PySaveWindowAttributes_GetLogString());
     s += "SetSaveWindowAttributes(SaveWindowAtts)\n";
+    s += "SaveWindow()\n";
     return s;
 }
 
