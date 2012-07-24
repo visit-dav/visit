@@ -240,6 +240,7 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sadvancedMultiWindowSave = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetAdvancedMultiWindowSave())
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "subWindowAtts.";
