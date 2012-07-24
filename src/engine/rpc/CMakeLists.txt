@@ -54,7 +54,6 @@ CloneNetworkRPC.C
 ConstructDataBinningRPC.C
 DefineVirtualDatabaseRPC.C
 EnginePropertiesRPC.C 
-EngineMethods.C
 EngineState.C
 ExecuteRPC.C
 ExportDatabaseRPC.C
