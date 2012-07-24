@@ -95,6 +95,6 @@ ${VISIT_SOURCE_DIR}/engine/rpc
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_LIBRARY(enginerpc ${ENGINERPC_SOURCES})
-TARGET_LINK_LIBRARIES(enginerpc visitcommon avtdbatts avtpipeline_ser)
+TARGET_LINK_LIBRARIES(enginerpc visitcommon avtdbatts)
 
 VISIT_INSTALL_TARGETS(enginerpc)
