@@ -91,6 +91,7 @@
 // Extern data
 //
 extern ViewerProxy *viewer;
+extern bool localNameSpace;
 
 //
 // Static data
@@ -199,6 +200,22 @@ LogFile_Write(const char *str)
     }
 }
 
+static std::string visitmodule()
+{
+    std::string s;
+    if(!localNameSpace)
+        s = std::string("visit.");
+    return s;
+}
+
+static std::string constructor(const std::string &s)
+{
+    std::string::size_type pos = s.find(" = ");
+    if(pos == std::string::npos)
+        return s;
+    return s.substr(0, pos + 3) + visitmodule() + s.substr(pos+3);
+}
+
 // ****************************************************************************
 //
 // State Logging functions
@@ -249,36 +266,36 @@ static std::string MESSAGE_COMMENT(const char *name, int reason)
 
 static std::string log_AddWindowRPC(ViewerRPC *rpc)
 {
-    return std::string("AddWindow()\n");
+    return visitmodule() + std::string("AddWindow()\n");
 }
 
 static std::string log_DeleteWindowRPC(ViewerRPC *rpc)
 {
-    return std::string("DeleteWindow()\n");
+    return visitmodule() + std::string("DeleteWindow()\n");
 }
 
 static std::string log_SetWindowLayoutRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetWindowLayout(%d)\n", rpc->GetWindowLayout());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetActiveWindowRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetActiveWindow(%d)\n", rpc->GetWindowId());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ClearWindowRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearWindow()\n");
+    return visitmodule() + std::string("ClearWindow()\n");
 }
 
 static std::string log_ClearAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearAllWindows()\n");
+    return visitmodule() + std::string("ClearAllWindows()\n");
 }
 
 static std::string log_OpenDatabaseRPC(ViewerRPC *rpc)
@@ -287,7 +304,7 @@ static std::string log_OpenDatabaseRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CloseDatabaseRPC(ViewerRPC *rpc)
@@ -295,7 +312,7 @@ static std::string log_CloseDatabaseRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\")\n",
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ActivateDatabaseRPC(ViewerRPC *rpc)
@@ -303,7 +320,7 @@ static std::string log_ActivateDatabaseRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "ActivateDatabase(\"%s\")\n",
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CheckForNewStatesRPC(ViewerRPC *rpc)
@@ -311,7 +328,7 @@ static std::string log_CheckForNewStatesRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "CheckForNewStates(\"%s\")\n",
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
@@ -328,7 +345,7 @@ static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
             s += ", ";
     }
     SNPRINTF(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
-    return std::string(str);     
+    return visitmodule() + std::string(str);     
 }
 
 static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
@@ -345,7 +362,7 @@ static std::string log_AlterDatabaseCorrelationRPC(ViewerRPC *rpc)
              s += ", ";
      }
      SNPRINTF(str, SLEN, "%s), %d)\n", s.c_str(), rpc->GetIntArg1());
-     return std::string(str);
+     return visitmodule() + std::string(str);
 }
 
 static std::string log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc)
@@ -353,7 +370,7 @@ static std::string log_DeleteDatabaseCorrelationRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "DeleteDatabaseCorrelation(\"%s\")\n", 
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ReOpenDatabaseRPC(ViewerRPC *rpc)
@@ -362,7 +379,7 @@ static std::string log_ReOpenDatabaseRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "OpenDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ReplaceDatabaseRPC(ViewerRPC *rpc)
@@ -371,7 +388,7 @@ static std::string log_ReplaceDatabaseRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "ReplaceDatabase(\"%s\", %d)\n",
              rpc->GetDatabase().c_str(),
              rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_OverlayDatabaseRPC(ViewerRPC *rpc)
@@ -379,7 +396,7 @@ static std::string log_OverlayDatabaseRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "OverlayDatabase(\"%s\")\n", 
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_OpenComponentHelper(ViewerRPC *rpc, const char *mName)
@@ -389,13 +406,13 @@ static std::string log_OpenComponentHelper(ViewerRPC *rpc, const char *mName)
 
     if(argv.size() == 0)
     {
-        SNPRINTF(str, SLEN, "%s(\"%s\")\n",
-                 mName, rpc->GetProgramHost().c_str());
+        SNPRINTF(str, SLEN, "%s%s(\"%s\")\n",
+                 visitmodule().c_str(), mName, rpc->GetProgramHost().c_str());
     }
     else if(argv.size() == 1)
     {
-        SNPRINTF(str, SLEN, "%s(\"%s\", \"%s\")\n",
-                mName, rpc->GetProgramHost().c_str(), argv[0].c_str());
+        SNPRINTF(str, SLEN, "%s%s(\"%s\", \"%s\")\n",
+                visitmodule().c_str(), mName, rpc->GetProgramHost().c_str(), argv[0].c_str());
     }
     else
     {
@@ -409,8 +426,8 @@ static std::string log_OpenComponentHelper(ViewerRPC *rpc, const char *mName)
                 tmp += ", ";
         }
         tmp += ")\n";
-        SNPRINTF(str, SLEN, "%s%s(\"%s\", launchArguments)\n",
-                 tmp.c_str(), mName, rpc->GetProgramHost().c_str());
+        SNPRINTF(str, SLEN, "%s%s%s(\"%s\", launchArguments)\n",
+                 tmp.c_str(), visitmodule().c_str(), mName, rpc->GetProgramHost().c_str());
     }
     return std::string(str);
 }
@@ -431,14 +448,14 @@ static std::string log_CloseComputeEngineRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "CloseComputeEngine(\"%s\", \"%s\")\n",
              rpc->GetProgramHost().c_str(),
              rpc->GetProgramSim().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_AnimationSetNFramesRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "AnimationSetNFrames(%d)\n", rpc->GetNFrames());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_AnimationPlayRPC(ViewerRPC *rpc)
@@ -458,19 +475,19 @@ static std::string log_AnimationStopRPC(ViewerRPC *rpc)
 
 static std::string log_TimeSliderNextStateRPC(ViewerRPC *rpc)
 {
-    return std::string("TimeSliderNextState()\n");
+    return visitmodule() + std::string("TimeSliderNextState()\n");
 }
 
 static std::string log_TimeSliderPreviousStateRPC(ViewerRPC *rpc)
 {
-    return std::string("TimeSliderPreviousState()\n");
+    return visitmodule() + std::string("TimeSliderPreviousState()\n");
 }
 
 static std::string log_SetTimeSliderStateRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetTimeSliderState(%d)\n", rpc->GetStateNumber());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetActiveTimeSliderRPC(ViewerRPC *rpc)
@@ -478,7 +495,7 @@ static std::string log_SetActiveTimeSliderRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetActiveTimeSlider(\"%s\")\n",
              rpc->GetDatabase().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_AddPlotRPC(ViewerRPC *rpc)
@@ -499,7 +516,7 @@ static std::string log_AddPlotRPC(ViewerRPC *rpc)
              rpc->GetVariable().c_str(),
              inheritSILRestriction,
              applyOperator);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetPlotFrameRangeRPC(ViewerRPC *rpc)
@@ -507,7 +524,7 @@ static std::string log_SetPlotFrameRangeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotFrameRange(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_DeletePlotKeyframeRPC(ViewerRPC *rpc)
@@ -515,7 +532,7 @@ static std::string log_DeletePlotKeyframeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "DeletePlotKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MovePlotKeyframeRPC(ViewerRPC *rpc)
@@ -523,32 +540,32 @@ static std::string log_MovePlotKeyframeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotKeyframe(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_DeleteActivePlotsRPC(ViewerRPC *rpc)
 {
-    return std::string("DeleteActivePlots()\n");
+    return visitmodule() + std::string("DeleteActivePlots()\n");
 }
 
 static std::string log_HideActivePlotsRPC(ViewerRPC *rpc)
 {
-    return std::string("HideActivePlots()\n");
+    return visitmodule() + std::string("HideActivePlots()\n");
 }
 
 static std::string log_DrawPlotsRPC(ViewerRPC *rpc)
 {
-    return std::string("DrawPlots()\n");
+    return visitmodule() + std::string("DrawPlots()\n");
 }
 
 static std::string log_DisableRedrawRPC(ViewerRPC *rpc)
 {
-    return std::string("DisableRedraw()\n");
+    return visitmodule() + std::string("DisableRedraw()\n");
 }
 
 static std::string log_RedrawRPC(ViewerRPC *rpc)
 {
-    return std::string("RedrawWindow()\n");
+    return visitmodule() + std::string("RedrawWindow()\n");
 }
 
 static std::string log_SetActivePlotsRPC(ViewerRPC *rpc)
@@ -580,7 +597,7 @@ static std::string log_SetActivePlotsRPC(ViewerRPC *rpc)
         sptr += L, slen -= L;
     }
     SNPRINTF(sptr, slen, ")\n");
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ChangeActivePlotsVarRPC(ViewerRPC *rpc)
@@ -588,7 +605,7 @@ static std::string log_ChangeActivePlotsVarRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "ChangeActivePlotsVar(\"%s\")\n",
              rpc->GetVariable().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_AddOperatorRPC(ViewerRPC *rpc)
@@ -606,7 +623,7 @@ static std::string log_AddOperatorRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "AddOperator(\"%s\", %d)\n",
              operatorName.c_str(),
              applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_PromoteOperatorRPC(ViewerRPC *rpc)
@@ -615,7 +632,7 @@ static std::string log_PromoteOperatorRPC(ViewerRPC *rpc)
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "PromoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_DemoteOperatorRPC(ViewerRPC *rpc)
@@ -624,7 +641,7 @@ static std::string log_DemoteOperatorRPC(ViewerRPC *rpc)
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "DemoteOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_RemoveOperatorRPC(ViewerRPC *rpc)
@@ -633,7 +650,7 @@ static std::string log_RemoveOperatorRPC(ViewerRPC *rpc)
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveOperator(%d, %d)\n", rpc->GetOperatorType(),
              applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_RemoveLastOperatorRPC(ViewerRPC *rpc)
@@ -641,7 +658,7 @@ static std::string log_RemoveLastOperatorRPC(ViewerRPC *rpc)
     char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveLastOperator(%d)\n", applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_RemoveAllOperatorsRPC(ViewerRPC *rpc)
@@ -649,14 +666,14 @@ static std::string log_RemoveAllOperatorsRPC(ViewerRPC *rpc)
     char str[SLEN];
     int applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1 : 0;
     SNPRINTF(str, SLEN, "RemoveAllOperators(%d)\n", applyAll);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SaveWindowRPC(ViewerRPC *rpc)
 {
-    std::string s(PySaveWindowAttributes_GetLogString());
-    s += "SetSaveWindowAttributes(SaveWindowAtts)\n";
-    s += "SaveWindow()\n";
+    std::string s(constructor(PySaveWindowAttributes_GetLogString()));
+    s += visitmodule() + "SetSaveWindowAttributes(SaveWindowAtts)\n";
+    s += visitmodule() + "SaveWindow()\n";
     return s;
 }
 
@@ -670,7 +687,7 @@ static void log_SetPlotOptionsHelper(ViewerRPC *rpc, std::string &atts,
     if(info != 0)
     {
         char *s = info->GetLogString();
-        atts = s;
+        atts = constructor(s);
         delete [] s;
         plotName = info->GetName();
         plotName += "Atts";
@@ -681,7 +698,7 @@ static std::string log_SetDefaultPlotOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), plotName("");
     log_SetPlotOptionsHelper(rpc, atts, plotName);
-    atts += "SetDefaultPlotOptions(";
+    atts += visitmodule() + "SetDefaultPlotOptions(";
     atts += plotName;
     atts += ")\n";
     return atts;
@@ -691,7 +708,7 @@ static std::string log_SetPlotOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), plotName("");
     log_SetPlotOptionsHelper(rpc, atts, plotName);
-    atts += "SetPlotOptions(";
+    atts += visitmodule() + "SetPlotOptions(";
     atts += plotName;
     atts += ")\n";
     return atts;
@@ -707,7 +724,7 @@ static void log_SetOperatorOptionsHelper(ViewerRPC *rpc, std::string &atts,
     if(info != 0)
     {
         char *s = info->GetLogString();
-        atts = s;
+        atts = constructor(s);
         delete [] s;
         operatorName = info->GetName();
         operatorName += "Atts";
@@ -718,7 +735,7 @@ static std::string log_SetDefaultOperatorOptionsRPC(ViewerRPC *rpc)
 {
     std::string atts(""), operatorName("");
     log_SetOperatorOptionsHelper(rpc, atts, operatorName);
-    atts += "SetDefaultOperatorOptions(";
+    atts += visitmodule() + "SetDefaultOperatorOptions(";
     atts += operatorName;
     atts += ")\n";
     return atts;
@@ -729,7 +746,7 @@ static std::string log_SetOperatorOptionsRPC(ViewerRPC *rpc)
     std::string atts(""), operatorName("");
     bool  applyOperator = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
     log_SetOperatorOptionsHelper(rpc, atts, operatorName);
-    atts += "SetOperatorOptions(";
+    atts += visitmodule() + "SetOperatorOptions(";
     atts += operatorName;
     atts += ", ";
     atts += (applyOperator ? "1" : "0");
@@ -747,41 +764,41 @@ static std::string log_AddInitializedOperatorRPC(ViewerRPC *rpc)
 
 static std::string log_WriteConfigFileRPC(ViewerRPC *rpc)
 {
-    return std::string("WriteConfigFile()\n");
+    return visitmodule() + std::string("WriteConfigFile()\n");
 }
 
 static std::string log_IconifyAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("IconifyAllWindows()\n");
+    return visitmodule() + std::string("IconifyAllWindows()\n");
 }
 
 static std::string log_DeIconifyAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("DeIconifyAllWindows()\n");
+    return visitmodule() + std::string("DeIconifyAllWindows()\n");
 }
 
 static std::string log_ShowAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("ShowAllWindows()\n");
+    return visitmodule() + std::string("ShowAllWindows()\n");
 }
 
 static std::string log_HideAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("HideAllWindows()\n");
+    return visitmodule() + std::string("HideAllWindows()\n");
 }
 
 static std::string log_SetAnnotationAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyAnnotationAttributes_GetLogString());
+    std::string s(constructor(PyAnnotationAttributes_GetLogString()));
     s += std::string("SetAnnotationAttributes(AnnotationAtts)\n");
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetDefaultAnnotationAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyAnnotationAttributes_GetLogString());
+    std::string s(constructor(PyAnnotationAttributes_GetLogString()));
     s += std::string("SetDefaultAnnotationAttributes(AnnotationAtts)\n");
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ResetAnnotationAttributesRPC(ViewerRPC *rpc)
@@ -791,9 +808,9 @@ static std::string log_ResetAnnotationAttributesRPC(ViewerRPC *rpc)
 
 static std::string log_SetKeyframeAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyKeyframeAttributes_GetLogString());
+    std::string s(constructor(PyKeyframeAttributes_GetLogString()));
     s += std::string("SetKeyframeAttributes(KeyframeAtts)\n");
-    return s;
+    return visitmodule() + s;
 }
 
 // ****************************************************************************
@@ -820,7 +837,7 @@ static std::string log_SetKeyframeAttributesRPC(ViewerRPC *rpc)
 static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
 {
     int t1 = visitTimer->StartTimer();
-    std::string s("silr = SILRestriction()\n");
+    std::string s("silr = " + visitmodule() + "SILRestriction()\n");
     int nsets[2] = {0,0};
     avtSILRestriction_p restriction = viewer->GetPlotSILRestriction();
     avtSILRestrictionTraverser trav(restriction);
@@ -923,7 +940,7 @@ static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
         }
     }
     bool applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplySelection();
-    s += "SetPlotSILRestriction(silr ,";
+    s += visitmodule() + "SetPlotSILRestriction(silr ,";
     s += (applyAll ? "1" : "0");
     s += ")\n";
     visitTimer->StopTimer(t1, "Setting up log string for sil restrictions");
@@ -932,29 +949,29 @@ static std::string log_SetPlotSILRestrictionRPC(ViewerRPC *rpc)
 
 static std::string log_SetViewAxisArrayRPC(ViewerRPC *rpc)
 {
-    std::string s(PyViewAxisArrayAttributes_GetLogString());
-    s += std::string("SetViewAxisArray(ViewAxisArrayAtts)\n");
+    std::string s(constructor(PyViewAxisArrayAttributes_GetLogString()));
+    s += visitmodule() + std::string("SetViewAxisArray(ViewAxisArrayAtts)\n");
     return s;
 }
 
 static std::string log_SetViewCurveRPC(ViewerRPC *rpc)
 {
-    std::string s(PyViewCurveAttributes_GetLogString());
-    s += std::string("SetViewCurve(ViewCurveAtts)\n");
+    std::string s(constructor(PyViewCurveAttributes_GetLogString()));
+    s += visitmodule() + std::string("SetViewCurve(ViewCurveAtts)\n");
     return s;
 }
 
 static std::string log_SetView2DRPC(ViewerRPC *rpc)
 {
-    std::string s(PyView2DAttributes_GetLogString());
-    s += std::string("SetView2D(View2DAtts)\n");
+    std::string s(constructor(PyView2DAttributes_GetLogString()));
+    s += visitmodule() + std::string("SetView2D(View2DAtts)\n");
     return s;
 }
 
 static std::string log_SetView3DRPC(ViewerRPC *rpc)
 {
-    std::string s(PyView3DAttributes_GetLogString());
-    s += std::string("SetView3D(View3DAtts)\n");
+    std::string s(constructor(PyView3DAttributes_GetLogString()));
+    s += visitmodule() + std::string("SetView3D(View3DAtts)\n");
     return s;
 }
 
@@ -968,7 +985,7 @@ static std::string log_ResetPlotOptionsRPC(ViewerRPC *rpc)
     if(info != 0)
         plotName = info->GetName();
  
-    return std::string("ResetPlotOptions(\"") + plotName + std::string("\")\n");
+    return visitmodule() + std::string("ResetPlotOptions(\"") + plotName + std::string("\")\n");
 }
 
 static std::string log_ResetOperatorOptionsRPC(ViewerRPC *rpc)
@@ -984,7 +1001,7 @@ static std::string log_ResetOperatorOptionsRPC(ViewerRPC *rpc)
     int  applyAll = viewer->GetViewerState()->GetGlobalAttributes()->GetApplyOperator() ? 1: 0;
     char tmp[20];
     SNPRINTF(tmp, 20, "\", %d)\n", applyAll);
-    return std::string("ResetOperatorOptions(\"") + operatorName + std::string(tmp);
+    return visitmodule() + std::string("ResetOperatorOptions(\"") + operatorName + std::string(tmp);
 }
 
 static std::string log_SetAppearanceRPC(ViewerRPC *rpc)
@@ -1034,7 +1051,7 @@ static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
             std::string def(expr.GetDefinition());
             if(def.size() > 0 && def[def.size()-1] == '\n')
                 def = def.substr(0, def.size()-1);
-            SNPRINTF(str, SLEN, "%s(\"%s\", \"%s\")\n", fx, expr.GetName().c_str(),
+            SNPRINTF(str, SLEN, "%s%s(\"%s\", \"%s\")\n", visitmodule().c_str(), fx, expr.GetName().c_str(),
                      def.c_str());
             exprList += str;
         }
@@ -1064,9 +1081,9 @@ static std::string log_SetLightListRPC(ViewerRPC *rpc)
 
         LightAttributes L(lightlist->GetLight(i));
         s += objName;
-        s += " = LightAttributes()\n";
+        s += " = " + visitmodule() + "LightAttributes()\n";
         s += PyLightAttributes_ToString(&L, objNameDot);
-        s += "SetLight(";
+        s += visitmodule() + "SetLight(";
         s += index;
         s += ", ";
         s += objName;
@@ -1092,7 +1109,7 @@ static std::string log_SetAnimationAttributesRPC(ViewerRPC *rpc)
     AnimationAttributes *atts = viewer->GetViewerState()->GetAnimationAttributes();
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetAnimationTimeout(%d)\n", atts->GetTimeout());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetWindowAreaRPC(ViewerRPC *rpc)
@@ -1101,94 +1118,94 @@ static std::string log_SetWindowAreaRPC(ViewerRPC *rpc)
     int w,h,x,y;
     sscanf(rpc->GetWindowArea().c_str(), "%dx%d+%d+%d", &w, &h, &x, &y);
     SNPRINTF(str, SLEN, "SetWindowArea(%d, %d ,%d, %d)\n", w,h,x,y);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_PrintWindowRPC(ViewerRPC *rpc)
 {
-    return std::string("PrintWindow()\n");
+    return visitmodule() + std::string("PrintWindow()\n");
 }
 
 static std::string log_ResetViewRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetView()\n");
+    return visitmodule() + std::string("ResetView()\n");
 }
 
 static std::string log_RecenterViewRPC(ViewerRPC *rpc)
 {
-    return std::string("RecenterView()\n");
+    return visitmodule() + std::string("RecenterView()\n");
 }
 
 static std::string log_ToggleMaintainViewModeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleMaintainViewMode()\n");
+    return visitmodule() + std::string("ToggleMaintainViewMode()\n");
 }
 
 static std::string log_ToggleBoundingBoxModeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleBoundingBoxMode()\n");
+    return visitmodule() + std::string("ToggleBoundingBoxMode()\n");
 }
 
 static std::string log_ToggleCameraViewModeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleCameraViewMode()\n");
+    return visitmodule() + std::string("ToggleCameraViewMode()\n");
 }
 
 static std::string log_TogglePerspectiveViewRPC(ViewerRPC *rpc)
 {
-    return std::string("TogglePerspectiveView()\n");
+    return visitmodule() + std::string("TogglePerspectiveView()\n");
 }
 
 static std::string log_ToggleSpinModeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleSpinMode()\n");
+    return visitmodule() + std::string("ToggleSpinMode()\n");
 }
 
 static std::string log_ToggleLockTimeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleLockTime()\n");
+    return visitmodule() + std::string("ToggleLockTime()\n");
 }
 
 static std::string log_ToggleLockToolsRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleLockTools()\n");
+    return visitmodule() + std::string("ToggleLockTools()\n");
 }
 
 static std::string log_ToggleLockViewModeRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleLockViewMode()\n");
+    return visitmodule() + std::string("ToggleLockViewMode()\n");
 }
 
 static std::string log_ToggleFullFrameRPC(ViewerRPC *rpc)
 {
-    return std::string("ToggleFullFrameMode()\n");
+    return visitmodule() + std::string("ToggleFullFrameMode()\n");
 }
 
 static std::string log_UndoViewRPC(ViewerRPC *rpc)
 {
-    return std::string("UndoView()\n");
+    return visitmodule() + std::string("UndoView()\n");
 }
 
 static std::string log_RedoViewRPC(ViewerRPC *rpc)
 {
-    return std::string("RedoView()\n");
+    return visitmodule() + std::string("RedoView()\n");
 }
 
 static std::string log_InvertBackgroundRPC(ViewerRPC *rpc)
 {
-    return std::string("InvertBackgroundColor()\n");
+    return visitmodule() + std::string("InvertBackgroundColor()\n");
 }
 
 static std::string log_ClearPickPointsRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearPickPoints()\n");
+    return visitmodule() + std::string("ClearPickPoints()\n");
 }
 
 static std::string log_SetWindowModeRPC(ViewerRPC *rpc)
 {
     const char *wmodes[] = {"navigate", "zoom", "zone pick", "node pick", 
                             "spreadsheet pick", "lineout"};
-    return (std::string("SetWindowMode(\"") + wmodes[rpc->GetWindowMode()]) + "\")\n";
+    return visitmodule() + (std::string("SetWindowMode(\"") + wmodes[rpc->GetWindowMode()]) + "\")\n";
 }
 
 static std::string log_EnableToolRPC(ViewerRPC *rpc)
@@ -1196,7 +1213,7 @@ static std::string log_EnableToolRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "EnableTool(%d, %d)\n", rpc->GetToolId(),
              rpc->GetBoolFlag());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CopyViewToWindowRPC(ViewerRPC *rpc)
@@ -1204,7 +1221,7 @@ static std::string log_CopyViewToWindowRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "CopyViewToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CopyLightingToWindowRPC(ViewerRPC *rpc)
@@ -1212,7 +1229,7 @@ static std::string log_CopyLightingToWindowRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "CopyLightingToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CopyAnnotationsToWindowRPC(ViewerRPC *rpc)
@@ -1220,7 +1237,7 @@ static std::string log_CopyAnnotationsToWindowRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "CopyAnnotationsToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_CopyPlotsToWindowRPC(ViewerRPC *rpc)
@@ -1228,7 +1245,7 @@ static std::string log_CopyPlotsToWindowRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "CopyPlotsToWindow(%d, %d)\n", rpc->GetWindowLayout(),
              rpc->GetWindowId());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ClearCacheRPC(ViewerRPC *rpc)
@@ -1237,31 +1254,31 @@ static std::string log_ClearCacheRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "ClearCache(\"%s\", \"%s\")\n",
              rpc->GetProgramHost().c_str(),
              rpc->GetProgramSim().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ClearCacheForAllEnginesRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearCacheForAllEngines()\n");
+    return visitmodule() + std::string("ClearCacheForAllEngines()\n");
 }
 
 static std::string log_SetViewExtentsTypeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetViewExtentsType(%d)\n", rpc->GetWindowLayout());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ClearRefLinesRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearReferenceLines()\n");
+    return visitmodule() + std::string("ClearReferenceLines()\n");
 }
 
 static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyRenderingAttributes_GetLogString());
+    std::string s(constructor(PyRenderingAttributes_GetLogString()));
     s += "SetRenderingAttributes(RenderingAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 
@@ -1397,27 +1414,27 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
 
         s += ")\n";
     }
-    return s;
+    return visitmodule() + s;
 }
 
 
 static std::string log_CloneWindowRPC(ViewerRPC *rpc)
 {
-    return std::string("CloneWindow()\n");
+    return visitmodule() + std::string("CloneWindow()\n");
 }
 
 static std::string log_SetMaterialAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyMaterialAttributes_GetLogString());
+    std::string s(constructor(PyMaterialAttributes_GetLogString()));
     s += "SetMaterialAttributes(MaterialAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetDefaultMaterialAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyMaterialAttributes_GetLogString());
+    std::string s(constructor(PyMaterialAttributes_GetLogString()));
     s += "SetDefaultMaterialAttributes(MaterialAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ResetMaterialAttributesRPC(ViewerRPC *rpc)
@@ -1430,7 +1447,7 @@ static std::string log_SetPlotDatabaseStateRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotDatabaseState(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
@@ -1438,7 +1455,7 @@ static std::string log_DeletePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "DeletePlotDatabaseKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MovePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
@@ -1446,19 +1463,19 @@ static std::string log_MovePlotDatabaseKeyframeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotDatabaseKeyframe(%d, %d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ClearViewKeyframesRPC(ViewerRPC *rpc)
 {
-    return std::string("ClearViewKeyframes()\n");
+    return visitmodule() + std::string("ClearViewKeyframes()\n");
 }
 
 static std::string log_DeleteViewKeyframeRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "DeleteViewKeyframe(%d)\n", rpc->GetFrame());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MoveViewKeyframeRPC(ViewerRPC *rpc)
@@ -1466,12 +1483,12 @@ static std::string log_MoveViewKeyframeRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "MoveViewKeyframe(%d, %d)\n", 
              rpc->GetIntArg1(), rpc->GetIntArg2());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetViewKeyframeRPC(ViewerRPC *rpc)
 {
-    return std::string("SetViewKeyframe()\n");
+    return visitmodule() + std::string("SetViewKeyframe()\n");
 }
 
 static std::string log_EnableToolbarRPC(ViewerRPC *rpc)
@@ -1481,22 +1498,22 @@ static std::string log_EnableToolbarRPC(ViewerRPC *rpc)
 
 static std::string log_HideToolbarsRPC(ViewerRPC *rpc)
 {
-    return std::string("HideToolbars()\n");
+    return visitmodule() + std::string("HideToolbars()\n");
 }
 
 static std::string log_HideToolbarsForAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("HideToolbars(1)\n");
+    return visitmodule() + std::string("HideToolbars(1)\n");
 }
 
 static std::string log_ShowToolbarsRPC(ViewerRPC *rpc)
 {
-    return std::string("ShowToolbars()\n");
+    return visitmodule() + std::string("ShowToolbars()\n");
 }
 
 static std::string log_ShowToolbarsForAllWindowsRPC(ViewerRPC *rpc)
 {
-    return std::string("ShowToolbars(1)\n");
+    return visitmodule() + std::string("ShowToolbars(1)\n");
 }
 
 static std::string log_SetToolbarIconSizeRPC(ViewerRPC *rpc)
@@ -1511,16 +1528,16 @@ static std::string log_SaveViewRPC(ViewerRPC *rpc)
 
 static std::string log_SetGlobalLineoutAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyGlobalLineoutAttributes_GetLogString());
+    std::string s(constructor(PyGlobalLineoutAttributes_GetLogString()));
     s += "SetGlobalLineoutAttributes(GlobalLineoutAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetPickAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyPickAttributes_GetLogString());
+    std::string s(constructor(PyPickAttributes_GetLogString()));
     s += "SetPickAttributes(PickAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ExportColorTableRPC(ViewerRPC *rpc)
@@ -1532,7 +1549,7 @@ static std::string log_ExportEntireStateRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SaveSession(\"%s\")\n", rpc->GetVariable().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ImportEntireStateRPC(ViewerRPC *rpc)
@@ -1540,7 +1557,7 @@ static std::string log_ImportEntireStateRPC(ViewerRPC *rpc)
     char str[SLEN];
     SNPRINTF(str, SLEN, "RestoreSession(\"%s\", %d)\n", rpc->GetVariable().c_str(),
              rpc->GetBoolFlag()?1:0);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc)
@@ -1561,12 +1578,12 @@ static std::string log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc)
              rpc->GetVariable().c_str(),
              rpc->GetBoolFlag()?1:0,
              stuple.c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_ResetPickAttributesRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetPickAttributes()\n");
+    return visitmodule() + std::string("ResetPickAttributes()\n");
 }
 
 static std::string log_AddAnnotationObjectRPC(ViewerRPC *rpc)
@@ -1611,21 +1628,21 @@ static std::string log_ResetAnnotationObjectListRPC(ViewerRPC *rpc)
 
 static std::string log_ResetPickLetterRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetPickLetter()\n");
+    return visitmodule() + std::string("ResetPickLetter()\n");
 }
 
 static std::string log_RenamePickLabelRPC(ViewerRPC *rpc)
 {
-    return std::string("RenamePickLabel(\"") + 
+    return visitmodule() + std::string("RenamePickLabel(\"") + 
            rpc->GetStringArg1() + std::string("\", \"") + 
            rpc->GetStringArg2() + std::string("\")\n");
 }
 
 static std::string log_SetDefaultPickAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyPickAttributes_GetLogString());
+    std::string s(constructor(PyPickAttributes_GetLogString()));
     s += "SetDefaultPickAttributes(PickAtts)\n";
-    return s;
+    return visitmodule() + s;
 
 }
 
@@ -1641,7 +1658,7 @@ static std::string log_ChooseCenterOfRotationRPC(ViewerRPC *rpc)
     {
         SNPRINTF(str, SLEN, "ChooseCenterOfRotation()\n");
     }
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetCenterOfRotationRPC(ViewerRPC *rpc)
@@ -1650,50 +1667,50 @@ static std::string log_SetCenterOfRotationRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "SetCenterOfRotation(%g, %g, %g)\n", 
              rpc->GetQueryPoint1()[0], rpc->GetQueryPoint1()[1],
              rpc->GetQueryPoint1()[2]);
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyQueryOverTimeAttributes_GetLogString());
+    std::string s(constructor(PyQueryOverTimeAttributes_GetLogString()));
     s += "SetQueryOverTimeAttributes(QueryOverTimeAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetDefaultQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyQueryOverTimeAttributes_GetLogString());
+    std::string s(constructor(PyQueryOverTimeAttributes_GetLogString()));
     s += "SetDefaultQueryOverTimeAttributes(QueryOverTimeAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ResetQueryOverTimeAttributesRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetQueryOverTimeAttributes()\n");
+    return visitmodule() + std::string("ResetQueryOverTimeAttributes()\n");
 }
 
 static std::string log_ResetLineoutColorRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetLineoutColor()\n");
+    return visitmodule() + std::string("ResetLineoutColor()\n");
 }
 
 static std::string log_SetInteractorAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyInteractorAttributes_GetLogString());
+    std::string s(constructor(PyInteractorAttributes_GetLogString()));
     s += "SetInteractorAttributes(InteractorAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetDefaultInteractorAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyInteractorAttributes_GetLogString());
+    std::string s(constructor(PyInteractorAttributes_GetLogString()));
     s += "SetDefaultInteractorAttributes(InteractorAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ResetInteractorAttributesRPC(ViewerRPC *rpc)
 {
-    return std::string("ResetInteractorAttributes()\n");
+    return visitmodule() + std::string("ResetInteractorAttributes()\n");
 }
 
 static std::string log_GetProcInfoRPC(ViewerRPC *rpc)
@@ -1713,7 +1730,7 @@ static std::string log_SendSimulationCommandRPC(ViewerRPC *rpc)
         SNPRINTF(str, SLEN, "SendSimulationCommand(\"%s\", \"%s\", \"%s\")\n",
                  rpc->GetProgramHost().c_str(), rpc->GetProgramSim().c_str(),
                  rpc->GetStringArg1().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_UpdateDBPluginInfoRPC(ViewerRPC *rpc)
@@ -1723,23 +1740,23 @@ static std::string log_UpdateDBPluginInfoRPC(ViewerRPC *rpc)
 
 static std::string log_ConstructDataBinningRPC(ViewerRPC *rpc)
 {
-    std::string s(PyConstructDataBinningAttributes_GetLogString());
-    s += "ConstructDataBinningtabase(ConstructDataBinningAtts)\n";
-    return s;
+    std::string s(constructor(PyConstructDataBinningAttributes_GetLogString()));
+    s += "ConstructDataBinning(ConstructDataBinningAtts)\n";
+    return visitmodule() + s;
 }
 
 static std::string log_ExportDBRPC(ViewerRPC *rpc)
 {
-    std::string s(PyExportDBAttributes_GetLogString());
+    std::string s(constructor(PyExportDBAttributes_GetLogString()));
     s += "ExportDatabase(ExportDBAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetTryHarderCyclesTimesRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetTryHarderCyclesTimes(%d)\n", rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SuppressQueryOutputRPC(ViewerRPC *rpc)
@@ -1749,21 +1766,21 @@ static std::string log_SuppressQueryOutputRPC(ViewerRPC *rpc)
         s = std::string("SuppressQueryOutputOn()\n");
     else
         s = std::string("SuppressQueryOutputOff()\n");
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetMeshManagementAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyMeshManagementAttributes_GetLogString());
+    std::string s(constructor(PyMeshManagementAttributes_GetLogString()));
     s += "SetMeshManagementAttributes(MeshManagementAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_SetDefaultMeshManagementAttributesRPC(ViewerRPC *rpc)
 {
-    std::string s(PyMeshManagementAttributes_GetLogString());
+    std::string s(constructor(PyMeshManagementAttributes_GetLogString()));
     s += "SetDefaultMeshManagementAttributes(MeshManagementAtts)\n";
-    return s;
+    return visitmodule() + s;
 }
 
 static std::string log_ResetMeshManagementAttributesRPC(ViewerRPC *rpc)
@@ -1776,7 +1793,7 @@ static std::string log_ResizeWindowRPC(ViewerRPC *rpc)
     char str[SLEN]; 
     SNPRINTF(str, SLEN, "ResizeWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MoveWindowRPC(ViewerRPC *rpc)
@@ -1784,7 +1801,7 @@ static std::string log_MoveWindowRPC(ViewerRPC *rpc)
     char str[SLEN]; 
     SNPRINTF(str, SLEN, "MoveWindow(%d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MoveAndResizeWindowRPC(ViewerRPC *rpc)
@@ -1793,14 +1810,14 @@ static std::string log_MoveAndResizeWindowRPC(ViewerRPC *rpc)
     SNPRINTF(str, SLEN, "ResizeWindow(%d, %d, %d, %d, %d)\n", rpc->GetWindowId(),
              rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3(),
              rpc->GetWindowLayout());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_RequestMetaDataRPC(ViewerRPC *rpc)
 {
     char str[SLEN]; 
-    SNPRINTF(str, SLEN, "metadata = GetMetaData(\"%s\", %d)\n",
-             rpc->GetDatabase().c_str(), rpc->GetStateNumber());
+    SNPRINTF(str, SLEN, "metadata = %sGetMetaData(\"%s\", %d)\n",
+             visitmodule().c_str(), rpc->GetDatabase().c_str(), rpc->GetStateNumber());
     return std::string(str);
 }
 
@@ -1809,87 +1826,87 @@ static std::string log_SetQueryFloatFormatRPC(ViewerRPC *rpc)
     char str[SLEN]; 
     SNPRINTF(str, SLEN, "SetQueryFloatFormat(\"%s\")\n", 
                         rpc->GetStringArg1().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetPlotFollowsTimeRPC(ViewerRPC *rpc)
 {
-    return std::string("SetPlotFollowsTime()\n");
+    return visitmodule() + std::string("SetPlotFollowsTime()\n");
 }
 
 static std::string log_CreateNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("CreateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
+    return visitmodule() + std::string("CreateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_DeleteNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("DeleteNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("DeleteNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
 static std::string log_LoadNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("LoadNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
+    return visitmodule() + std::string("LoadNamedSelection(\"") + rpc->GetStringArg1() + "\")\n";
 }
 
 static std::string log_SaveNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("SaveNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("SaveNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
 static std::string log_ApplyNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("ApplyNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
 static std::string log_SetNamedSelectionAutoApplyRPC(ViewerRPC *rpc)
 {
-    return std::string("SetNamedSelectionAutoApply(\"") + std::string(rpc->GetBoolFlag()?"1":"0") + "\")\n"; 
+    return visitmodule() + std::string("SetNamedSelectionAutoApply(\"") + std::string(rpc->GetBoolFlag()?"1":"0") + "\")\n"; 
 }
 
 static std::string log_UpdateNamedSelectionRPC(ViewerRPC *rpc)
 {
-    return std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("UpdateNamedSelection(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
 static std::string log_InitializeNamedSelectionVariablesRPC(ViewerRPC *rpc)
 {
-    return std::string("InitializeNamedSelectionVariables(\"") + rpc->GetStringArg1() + "\")\n"; 
+    return visitmodule() + std::string("InitializeNamedSelectionVariables(\"") + rpc->GetStringArg1() + "\")\n"; 
 }
 
 static std::string log_SetPlotDescriptionRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotDescription(%d, \"%s\")\n", rpc->GetIntArg1(), rpc->GetStringArg1().c_str());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MovePlotOrderTowardLastRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotOrderTowardLast(%d)\n", rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_MovePlotOrderTowardFirstRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "MovePlotOrderTowardFirst(%d)\n", rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetPlotOrderToLastRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotOrderToLast(%d)\n", rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
     SNPRINTF(str, SLEN, "SetPlotOrderToFirst(%d)\n", rpc->GetIntArg1());
-    return std::string(str);
+    return visitmodule() + std::string(str);
 }
 
 // ****************************************************************************
@@ -2589,7 +2606,7 @@ SS_log_ViewAxisArray(const std::string &s)
         {
             fprintf(logFile, "%s", beginSpontaneousComment);
             fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s%s", visitmodule().c_str(), v);
             fprintf(logFile, "%s", endSpontaneousComment);
         }
 
@@ -2597,7 +2614,7 @@ SS_log_ViewAxisArray(const std::string &s)
         {
             macroString += beginSpontaneousComment;
             macroString += s;
-            macroString += v;
+            macroString += visitmodule() + v;
             macroString += endSpontaneousComment;
         }
     }
@@ -2628,16 +2645,16 @@ SS_log_ViewCurve(const std::string &s)
         if(logFile != 0)
         {
             fprintf(logFile, "%s", beginSpontaneousComment);
-            fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", constructor(s).c_str());
+            fprintf(logFile, "%s%s", visitmodule().c_str(), v);
             fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
         {
             macroString += beginSpontaneousComment;
-            macroString += s;
-            macroString += v;
+            macroString += constructor(s);
+            macroString += visitmodule() + v;
             macroString += endSpontaneousComment;
         }
     }
@@ -2668,16 +2685,16 @@ SS_log_View2D(const std::string &s)
         if(logFile != 0)
         {
             fprintf(logFile, "%s", beginSpontaneousComment);
-            fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", constructor(s).c_str());
+            fprintf(logFile, "%s%s", visitmodule().c_str(), v);
             fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
         {
             macroString += beginSpontaneousComment;
-            macroString += s;
-            macroString += v;
+            macroString += constructor(s);
+            macroString += visitmodule() + v;
             macroString += endSpontaneousComment;
         }
     }
@@ -2708,16 +2725,16 @@ SS_log_View3D(const std::string &s)
         if(logFile != 0)
         {
             fprintf(logFile, "%s", beginSpontaneousComment);
-            fprintf(logFile, "%s", s.c_str());
-            fprintf(logFile, "%s", v);
+            fprintf(logFile, "%s", constructor(s).c_str());
+            fprintf(logFile, "%s%s", visitmodule().c_str(), v);
             fprintf(logFile, "%s", endSpontaneousComment);
         }
 
         if(macroRecord)
         {
             macroString += beginSpontaneousComment;
-            macroString += s;
-            macroString += v;
+            macroString += constructor(s);
+            macroString += visitmodule() + v;
             macroString += endSpontaneousComment;
         }
     }

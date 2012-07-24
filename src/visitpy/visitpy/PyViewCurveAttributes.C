@@ -125,10 +125,10 @@ PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *pref
         str += tmpStr;
     }
     const char *domainScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%sdomainScale = %s  # LINEAR, LOG\n", prefix, domainScale_values[atts->GetDomainScale()]);
+    SNPRINTF(tmpStr, 1000, "%sdomainScale = %s%s  # LINEAR, LOG\n", prefix, prefix, domainScale_values[atts->GetDomainScale()]);
     str += tmpStr;
     const char *rangeScale_values[] = {"LINEAR", "LOG"};
-    SNPRINTF(tmpStr, 1000, "%srangeScale = %s  # LINEAR, LOG\n", prefix, rangeScale_values[atts->GetRangeScale()]);
+    SNPRINTF(tmpStr, 1000, "%srangeScale = %s%s  # LINEAR, LOG\n", prefix, prefix, rangeScale_values[atts->GetRangeScale()]);
     str += tmpStr;
     return str;
 }
