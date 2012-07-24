@@ -39,6 +39,7 @@
 #****************************************************************************/
 
 SET(ENGINEPROXY_SOURCES
+EngineMethods.C
 EngineProxy.C
 )
 

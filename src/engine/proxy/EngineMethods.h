@@ -44,7 +44,7 @@
 #define ENGINE_METHODS_H
 
 
-#include <engine_rpc_exports.h>
+#include <engine_proxy_exports.h>
 #include <string>
 #include <maptypes.h>
 #include <vectortypes.h>
@@ -74,7 +74,7 @@ class ConstructDataBinningAttributes;
 class VisualCueList;
 class StatusAttributes;
 
-class ENGINE_RPC_API EngineMethods
+class ENGINE_PROXY_API EngineMethods
 {
 public:
     EngineMethods(EngineState*);
