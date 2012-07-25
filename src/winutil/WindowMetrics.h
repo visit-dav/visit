@@ -93,7 +93,7 @@ class WINUTIL_API WindowMetrics
                                                int &borderL, int &borderR);
     static void CalculateTopLeft(QWidget *win, int &X, int &Y);
 
-    static bool SetEmbeddedWindowState(bool _embedded){ embedded = _embedded; }
+    static void SetEmbeddedWindowState(bool _embedded){ embedded = _embedded; }
     static bool EmbeddedWindowState() { return embedded; }
   private:
     int screenX;
