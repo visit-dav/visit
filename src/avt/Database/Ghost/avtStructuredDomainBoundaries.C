@@ -1555,11 +1555,14 @@ avtStructuredDomainBoundaries::SetExtents(int domain, int e[6])
 //    Hank Childs, Tue Jan  4 12:33:17 PST 2011
 //    Add additional arguments for creating ghost data for AMR patches.
 //
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
 // ****************************************************************************
 void
 avtStructuredDomainBoundaries::AddNeighbor(int domain, int d, int mi, int o[3], 
                                            int e[6], RefinementRelationship rr, 
-                                           int ref_ratio,
+                                           const std::vector<int>& ref_ratio,
                                            NeighborRelationship nr)
 {
     if (domain >= wholeBoundary.size())
@@ -3402,6 +3405,27 @@ avtStructuredDomainBoundaries::SetIndicesForRectGrid(int domain, int e[6])
 }
 
 // ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::SetRefinementRatios
+//
+//  Purpose:
+//      Sets the refinement ratios for the isotropic case.
+
+//  Programmer: Gunther H. Weber
+//  Creation:   July 18, 2012
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::SetRefinementRatios(const std::vector<int> &r)
+{
+    ref_ratios.clear();
+    for (std::vector<int>::const_iterator it = r.begin(); it != r.end(); ++it)
+    {
+        ref_ratios.push_back(std::vector<int>(3, *it));
+    }
+}
+
+// ****************************************************************************
 //  Method: avtStructuredDomainBoundaries::SetIndicesForAMRPatch
 //
 //  Purpose:
@@ -3514,6 +3538,9 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //
 //    Gunther H. Weber, Thu Jun 14 17:31:59 PDT 2012
 //    Make it possible to enable new support for T-intersections at runtime.
+//
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
 //
 // ****************************************************************************
 
@@ -3677,9 +3704,10 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
             int maxLevel = (iteration == 0 ? maxAMRLevel-1 : maxAMRLevel);
             for (l = 0 ; l < maxLevel ; l++)
             {
-                int refrat = 1;
+                std::vector<int> refrat(3, 1);
                 if (iteration == 0)
-                    refrat = ref_ratios[l];
+                    for (int d = 0; d < std::min(ref_ratios[l].size(), size_t(3)); ++d)
+                        refrat[d] = ref_ratios[l][d];
                 vector<int> doms;
                 int totalNDoms = levels.size();
                 for (i = 0 ; i < totalNDoms ; i++)
@@ -3710,7 +3738,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                     {
                         int dom = doms[i];
                         if (levels[dom] == l)
-                            extf[j] = (double) (refrat*extents[6*dom+j]);
+                            extf[j] = (double) (refrat[j/2]*extents[6*dom+j]);
                         else
                             extf[j] = (double) extents[6*dom+j];
                     }
@@ -3726,12 +3754,12 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                     double min_vec[3], max_vec[3];
                     int dom = doms[i];
-                    min_vec[0] = (double) refrat*extents[6*dom+0];
-                    min_vec[1] = (double) refrat*extents[6*dom+2];
-                    min_vec[2] = (double) refrat*extents[6*dom+4];
-                    max_vec[0] = (double) refrat*extents[6*dom+1];
-                    max_vec[1] = (double) refrat*extents[6*dom+3];
-                    max_vec[2] = (double) refrat*extents[6*dom+5];
+                    min_vec[0] = (double) refrat[0]*extents[6*dom+0];
+                    min_vec[1] = (double) refrat[1]*extents[6*dom+2];
+                    min_vec[2] = (double) refrat[2]*extents[6*dom+4];
+                    max_vec[0] = (double) refrat[0]*extents[6*dom+1];
+                    max_vec[1] = (double) refrat[1]*extents[6*dom+3];
+                    max_vec[2] = (double) refrat[2]*extents[6*dom+5];
 
                     bool dataIs2D = (extents[6*dom+4]==0 && extents[6*dom+5]==0);
 
@@ -3767,22 +3795,22 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                         // Determine area of extents overlap and then normalize to d2.
                         int e[6];
-                        e[0] = (refrat*extents[6*d1+0] > extents[6*d2+0] ? refrat*extents[6*d1+0]
+                        e[0] = (refrat[0]*extents[6*d1+0] > extents[6*d2+0] ? refrat[0]*extents[6*d1+0]
                                 : extents[6*d2+0]);
                         e[0] -= extents[6*d2+0] - 1;
-                        e[1] = (refrat*extents[6*d1+1] < extents[6*d2+1] ? refrat*extents[6*d1+1]
+                        e[1] = (refrat[0]*extents[6*d1+1] < extents[6*d2+1] ? refrat[0]*extents[6*d1+1]
                                 : extents[6*d2+1]);
                         e[1] -= extents[6*d2+0] - 1;
-                        e[2] = (refrat*extents[6*d1+2] > extents[6*d2+2] ? refrat*extents[6*d1+2]
+                        e[2] = (refrat[1]*extents[6*d1+2] > extents[6*d2+2] ? refrat[1]*extents[6*d1+2]
                                 : extents[6*d2+2]);
                         e[2] -= extents[6*d2+2] - 1;
-                        e[3] = (refrat*extents[6*d1+3] < extents[6*d2+3] ? refrat*extents[6*d1+3]
+                        e[3] = (refrat[1]*extents[6*d1+3] < extents[6*d2+3] ? refrat[1]*extents[6*d1+3]
                                 : extents[6*d2+3]);
                         e[3] -= extents[6*d2+2] - 1;
-                        e[4] = (refrat*extents[6*d1+4] > extents[6*d2+4] ? refrat*extents[6*d1+4]
+                        e[4] = (refrat[2]*extents[6*d1+4] > extents[6*d2+4] ? refrat[2]*extents[6*d1+4]
                                 : extents[6*d2+4]);
                         e[4] -= extents[6*d2+4] - 1;
-                        e[5] = (refrat*extents[6*d1+5] < extents[6*d2+5] ? refrat*extents[6*d1+5]
+                        e[5] = (refrat[2]*extents[6*d1+5] < extents[6*d2+5] ? refrat[2]*extents[6*d1+5]
                                 : extents[6*d2+5]);
                         e[5] -= extents[6*d2+4] - 1;
 
@@ -3803,17 +3831,17 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
 
                         for (int axis=0; axis<3; axis++)
                         {
-                            minFace[axis]  = (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
+                            minFace[axis]  = (refrat[axis]*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+0]);
                             if (minFace[axis])
-                                if (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
+                                if (refrat[axis]*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+0])
                                     tJuncMinFace[axis] = true;
-                            maxFace[axis]  = (refrat*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
+                            maxFace[axis]  = (refrat[axis]*extents[6*d1+2*axis+1] > extents[6*d2+2*axis+1]);
                             if (maxFace[axis])
-                                if (refrat*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
+                                if (refrat[axis]*extents[6*d1+2*axis+0] < extents[6*d2+2*axis+1])
                                     tJuncMaxFace[axis] = true;
-                            idxBeg[axis]   = (refrat*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat*extents[6*d1+2*axis+0]
+                            idxBeg[axis]   = (refrat[axis]*extents[6*d1+2*axis+0] > extents[6*d2+2*axis+0] ? refrat[axis]*extents[6*d1+2*axis+0]
                                     : extents[6*d2+2*axis+0]);
-                            idxEnd[axis]   = (refrat*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat*extents[6*d1+2*axis+1]
+                            idxEnd[axis]   = (refrat[axis]*extents[6*d1+2*axis+1] < extents[6*d2+2*axis+1] ? refrat[axis]*extents[6*d1+2*axis+1]
                                     : extents[6*d2+2*axis+1]);
                         }
 
@@ -3862,8 +3890,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                             bnd1[extAxMin] = 1;
                                             bnd1[extAxMax] = 1;
 
-                                            bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat*extents[extD1Start+extAxMin];
-                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMin] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
                                             bnd2[extAxMin] += 1;
                                             if (tJuncMinFace[axis])
                                                 bnd2[extAxMin] -= 1;  // crazy indexing; only happens at min, not max
@@ -3876,8 +3904,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                             bnd1[extAxMin] = extents[extD2Start+extAxMax] - extents[extD2Start+extAxMin]+1;
                                             bnd1[extAxMax] = bnd1[extAxMin];
 
-                                            bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat*extents[extD1Start+extAxMin];
-                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] = extents[extD2Start+extAxMax] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
                                             bnd2[extAxMin] += 1;
                                             bnd2[extAxMax] = bnd2[extAxMin];
                                             if (tJuncMaxFace[axis])
@@ -3888,8 +3916,8 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                             bnd1[extAxMin] = idxBeg[axis] - extents[extD2Start+extAxMin] + 1;
                                             bnd1[extAxMax] = idxEnd[axis] - extents[extD2Start+extAxMin] + 1;
 
-                                            bnd2[extAxMin] = idxBeg[axis] - refrat*extents[extD1Start+extAxMin];
-                                            bnd2[extAxMin] /= refrat;
+                                            bnd2[extAxMin] = idxBeg[axis] - refrat[axis]*extents[extD1Start+extAxMin];
+                                            bnd2[extAxMin] /= refrat[axis];
                                             bnd2[extAxMin] += 1;
                                             bnd2[extAxMax] = bnd2[extAxMin] + (bnd1[extAxMax]-bnd1[extAxMin]);
                                         }
@@ -3900,7 +3928,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                     if (iteration == 0)
                                         AddNeighbor(d2, d1, index, orientation, bnd1, MORE_COARSE, refrat, DONOR_NEIGHBOR);
                                     else if (usedTJunc)
-                                        AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, 1, DONOR_NEIGHBOR);
+                                        AddNeighbor(d2, d1, index, orientation, bnd1, SAME_REFINEMENT_LEVEL, std::vector<int>(3, 1), DONOR_NEIGHBOR);
                                     else
                                         AddNeighbor(d2, d1, index, orientation, bnd1);
 
@@ -3909,7 +3937,7 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
                                     if (iteration == 0)
                                         AddNeighbor(d1, d2, index, orientation, bnd2, MORE_FINE, refrat, RECIPIENT_NEIGHBOR);
                                     else if (usedTJunc)
-                                        AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, 1, RECIPIENT_NEIGHBOR);
+                                        AddNeighbor(d1, d2, index, orientation, bnd2, SAME_REFINEMENT_LEVEL, std::vector<int>(3, 1), RECIPIENT_NEIGHBOR);
                                     else
                                         AddNeighbor(d1, d2, index, orientation, bnd2);
                                 }

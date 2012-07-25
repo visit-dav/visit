@@ -139,10 +139,13 @@ Boundary::SetExtents(int e[6])
 //    Hank Childs, Tue Jan  4 12:33:17 PST 2011
 //    Add arguments for creating ghost data across refinement levels.
 //
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
 // ****************************************************************************
 void
 Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
-                      RefinementRelationship rr, int ref_ratio, 
+                      RefinementRelationship rr, const std::vector<int>& ref_ratio,
                       NeighborRelationship nr)
 {
     Neighbor n;
@@ -403,6 +406,9 @@ Boundary::IsGhostZone(int i, int j, int k)
 //    Hank Childs, Tue Jan  4 11:31:06 PST 2011
 //    Add handling for differences in refinement ratio.
 //
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
 // ****************************************************************************
 
 int 
@@ -414,9 +420,9 @@ Boundary::TranslatedPointIndex(Neighbor *n1, Neighbor *n2, int i,int j,int k)
 
     if (n1->refinement_rel == MORE_COARSE)
     {
-        i /= n1->refinement_ratio;
-        j /= n1->refinement_ratio;
-        k /= n1->refinement_ratio;
+        i /= n1->refinement_ratio[0];
+        j /= n1->refinement_ratio[1];
+        k /= n1->refinement_ratio[2];
     }
 
     int lookup[7] = {n1->ndims[2]-k-1,
@@ -426,7 +432,7 @@ Boundary::TranslatedPointIndex(Neighbor *n1, Neighbor *n2, int i,int j,int k)
                      i,
                      j,
                      k};
-                            
+
 
     if      (n2->type & IMIN)
         i = n2->nextents[0] + 1;
@@ -497,6 +503,9 @@ Boundary::TranslatedPointIndex(Neighbor *n1, Neighbor *n2, int i,int j,int k)
 //    Hank Childs, Tue Jan  4 11:31:06 PST 2011
 //    Add handling for differences in refinement ratio.
 //
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
 // ****************************************************************************
 
 int
@@ -508,9 +517,9 @@ Boundary::TranslatedCellIndex(Neighbor *n1, Neighbor *n2, int i,int j,int k)
 
     if (n1->refinement_rel == MORE_COARSE)
     {
-        i /= n1->refinement_ratio;
-        j /= n1->refinement_ratio;
-        k /= n1->refinement_ratio;
+        i /= n1->refinement_ratio[0];
+        j /= n1->refinement_ratio[1];
+        k /= n1->refinement_ratio[2];
     }
 
     int lookup[7] = {n1->zdims[2]-k-1,
@@ -520,7 +529,6 @@ Boundary::TranslatedCellIndex(Neighbor *n1, Neighbor *n2, int i,int j,int k)
                      i,
                      j,
                      k};
-                            
 
     if      (n2->type & IMIN)
         i = n2->zextents[0];

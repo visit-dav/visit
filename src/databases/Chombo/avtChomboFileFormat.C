@@ -132,7 +132,7 @@ using     std::string;
 //
 // ****************************************************************************
 
-avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
+avtChomboFileFormat::avtChomboFileFormat(const char *filename,
                                          DBOptionsAttributes *atts)
     : avtSTMDFileFormat(&filename, 1)
 {
@@ -238,7 +238,7 @@ avtChomboFileFormat::FreeUpResources(void)
 // ****************************************************************************
 // Method: avtChomboFileFormat::GetCycle
 //
-// Purpose: 
+// Purpose:
 //   Get the cycle.
 //
 // Note:       We have to initialize the reader before returning a cycle
@@ -248,7 +248,7 @@ avtChomboFileFormat::FreeUpResources(void)
 // Creation:   Mon Sep 25 13:58:05 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -261,7 +261,7 @@ avtChomboFileFormat::GetCycle(void)
 // ****************************************************************************
 // Method: avtChomboFileFormat::GetTime
 //
-// Purpose: 
+// Purpose:
 //   Get the cycle.
 //
 // Note:       We have to initialize the reader before returning a time
@@ -271,7 +271,7 @@ avtChomboFileFormat::GetCycle(void)
 // Creation:   Mon Sep 25 13:58:05 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 double
@@ -288,7 +288,7 @@ avtChomboFileFormat::GetTime(void)
 //      Gets the cycle from the file name.  A custom implementation is needed,
 //      because they have file names like "...plt0080.2d.hdf5".  We want the
 //      "80".
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
@@ -297,7 +297,7 @@ avtChomboFileFormat::GetTime(void)
 //    Added code to support names like plot0.0080.2d.hdf5 where we want the 80.
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Modified to use regular expression based guess 
+//    Modified to use regular expression based guess
 //
 //    Mark C. Miller, Wed Sep 24 11:43:38 PDT 2008
 //    Modified regular expression to meet specifications in ticket 8737
@@ -313,7 +313,7 @@ avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
 {
     if (fname == 0 || fname[0] == '\0')
         return avtFileFormat::INVALID_CYCLE;
-    else 
+    else
         return GuessCycle(fname,
                 "<^.*[^0-9]([0-9][0-9]*)\\.(2|3)[dD]\\.(hdf5|h5)$> \\1");
 }
@@ -324,7 +324,7 @@ avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
 //
 //  Purpose:
 //      Tells the reader it can now do some initialization work.
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
@@ -342,7 +342,7 @@ avtChomboFileFormat::ActivateTimestep(void)
 //
 //  Purpose:
 //      Walks through the HDF5 file and reads in some non-problem size data.
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
@@ -680,7 +680,7 @@ avtChomboFileFormat::InitializeReader(void)
     H5Aclose(nl_id);
     if (num_levels <= 0)
     {
-        debug1 << "ERROR: Number of levels (" << num_levels 
+        debug1 << "ERROR: Number of levels (" << num_levels
                << ") must be at least 1" << endl;
         H5Gclose(slash);
         H5Fclose(file_handle);
@@ -758,10 +758,10 @@ avtChomboFileFormat::InitializeReader(void)
                 exprType = Expression::VectorMeshVar;
             else if (strcmp("scalar", exprTypeStr) == 0)
                 exprType = Expression::ScalarMeshVar;
-            else 
+            else
                 debug1 << "Unknown expression type " << exprType << " in file." << std::endl;
 
-            if (exprType != Expression::Unknown) 
+            if (exprType != Expression::Unknown)
             {
                 hid_t strType = H5Aget_type(currExpression);
                 hsize_t strLen;
@@ -802,7 +802,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     int totalPatches = 0;
     patchesPerLevel.resize(num_levels);
-    refinement_ratio.resize(num_levels);
+    refinement_ratio.resize(num_levels-1);
     dx.resize(num_levels);
     for (i = 0 ; i < num_levels ; i++)
     {
@@ -861,39 +861,42 @@ avtChomboFileFormat::InitializeReader(void)
         }
         H5Aclose(dx_id);
 
-        hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
-        if (rr_id >= 0)
+        if (i != num_levels - 1)
         {
-            if (dimension == 2)
+            hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
+            if (rr_id >= 0)
             {
-                intvect2d rr_tmp;
-                H5Aread(rr_id, intvect2d_id, &rr_tmp);
-                refinement_ratio[i].push_back(rr_tmp.i);
-                refinement_ratio[i].push_back(rr_tmp.j);
+                if (dimension == 2)
+                {
+                    intvect2d rr_tmp;
+                    H5Aread(rr_id, intvect2d_id, &rr_tmp);
+                    refinement_ratio[i].push_back(rr_tmp.i);
+                    refinement_ratio[i].push_back(rr_tmp.j);
+                }
+                else
+                {
+                    intvect3d rr_tmp;
+                    H5Aread(rr_id, intvect3d_id, &rr_tmp);
+                    refinement_ratio[i].push_back(rr_tmp.i);
+                    refinement_ratio[i].push_back(rr_tmp.j);
+                    refinement_ratio[i].push_back(rr_tmp.k);
+                }
             }
             else
             {
-                intvect3d rr_tmp;
-                H5Aread(rr_id, intvect3d_id, &rr_tmp);
-                refinement_ratio[i].push_back(rr_tmp.i);
-                refinement_ratio[i].push_back(rr_tmp.j);
-                refinement_ratio[i].push_back(rr_tmp.k);
+                rr_id = H5Aopen_name(level, "ref_ratio");
+
+                if (rr_id < 0)
+                    EXCEPTION1(InvalidDBTypeException,
+                            "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
+
+                int rr_tmp;
+                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
+                for (int d = 0; d<dimension; ++d)
+                    refinement_ratio[i].push_back(rr_tmp);
             }
+            H5Aclose(rr_id);
         }
-        else
-        {
-            rr_id = H5Aopen_name(level, "ref_ratio");
-
-            if (rr_id < 0)
-                EXCEPTION1(InvalidDBTypeException,
-                           "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
-
-            int rr_tmp;
-            H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
-            for (int d = 0; d<dimension; ++d)
-                refinement_ratio[i].push_back(rr_tmp);
-        }
-        H5Aclose(rr_id);
 
         if (!hasTime && i == 0)
         {
@@ -976,7 +979,7 @@ avtChomboFileFormat::InitializeReader(void)
 
         //
         // Level 0 contains information about the problem domain
-        // 
+        //
         if (i == 0)
         {
             hid_t probDomain = H5Aopen_name(level, "prob_domain");
@@ -1027,7 +1030,7 @@ avtChomboFileFormat::InitializeReader(void)
         // Read box information
         //
         box *boxes_buff = new box[dims[0]];
-        H5Dread(boxes, (dimension == 2 ? box2d_id : box3d_id), memdataspace, 
+        H5Dread(boxes, (dimension == 2 ? box2d_id : box3d_id), memdataspace,
                 boxspace, H5P_DEFAULT, boxes_buff);
 
         for (j = 0 ; j < patchesPerLevel[i] ; j++)
@@ -1137,7 +1140,7 @@ avtChomboFileFormat::InitializeReader(void)
             debug1 << "Ignoring particles since position information is missing." << std::endl;
         }
     }
- 
+
     //
     // The domain nesting takes a while to calculate.  We don't need the
     // data structure if we are on the mdserver.  But we do if we're on the
@@ -1263,7 +1266,7 @@ avtChomboFileFormat::InitializeReader(void)
 //      VisIt which patches are next to each other, allowing VisIt to create
 //      a layer of ghost zones around each patch.  Note that this only works
 //      within a refinement level, not across refinement levels.
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
@@ -1320,21 +1323,13 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // Calculate what the refinement ratio is from one level to the next.
     //
-    std::vector<int> rr(dimension);
     std::vector<double> cs(dimension);
     for (level = 0 ; level < num_levels ; level++)
     {
         if (level == 0)
-        {
-            for (j = 0 ; j < dimension ; j++)
-                rr[j] = 1;
-        }
+            dn->SetLevelRefinementRatios(level, std::vector<int>(dimension, 1));
         else
-        {
-            for (j = 0 ; j < dimension ; j++)
-                rr[j] = refinement_ratio[level-1][j];
-        }
-        dn->SetLevelRefinementRatios(level, rr);
+            dn->SetLevelRefinementRatios(level, refinement_ratio[level-1]);
 
         for (int d=0; d < dimension; ++d)
             cs[d] = dx[level][d]*aspectRatio[d];
@@ -1356,24 +1351,21 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     visitTimer->StopTimer(t1, "Setting up domain nesting: part 1");
 
     //
-    // Now set up the data structure for patch boundaries.  The data 
+    // Now set up the data structure for patch boundaries.  The data
     // does all the work ... it just needs to know the extents of each patch.
     //
     if (alwaysComputeDomainBoundaries || !allowedToUseGhosts || !fileContainsGhosts)
     {
         int t2 = visitTimer->StartTimer();
-        avtRectilinearDomainBoundaries *rdb 
+        avtRectilinearDomainBoundaries *rdb
                                     = new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(totalPatches);
-        std::vector<int> real_rr(refinement_ratio.size()-1);
-        for (int lvl=0; lvl<real_rr.size(); lvl++)
-            real_rr[lvl] = refinement_ratio[lvl][0]; // FIXME: Need infrastructure to handle real refinement ratio
-        rdb->SetRefinementRatios(real_rr);
+        rdb->SetRefinementRatios(refinement_ratio);
         for (int patch = 0 ; patch < totalPatches ; patch++)
         {
             int my_level, local_patch;
             GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
-    
+
             int e[6];
             e[0] = lowI[patch];
             e[1] = hiI[patch];
@@ -1381,7 +1373,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
             e[3] = hiJ[patch];
             e[4] = (dimension == 2 ? 0 : lowK[patch]);
             e[5] = (dimension == 2 ? 0 : hiK[patch]);
-    
+
             rdb->SetIndicesForAMRPatch(patch, my_level, e);
         }
         rdb->CalculateBoundaries();
@@ -1653,7 +1645,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         int id2 = -1;
         bool startsWithFirst = false;
         bool foundVector = false;
-        if (varnames[i][0] == 'x' || varnames[i][0] == 'X' || 
+        if (varnames[i][0] == 'x' || varnames[i][0] == 'X' ||
             varnames[i][0] == 'u' || varnames[i][0] == 'U')
         {
             char yChar = '\0', zChar = '\0';
@@ -1726,7 +1718,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     str++;
                 vec.SetName(str);
                 char defn[1024];
-                SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(), 
+                SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", varnames[i].c_str(),
                                                      yName,zName);
                 vec.SetDefinition(defn);
                 vec.SetType(Expression::VectorMeshVar);
@@ -1834,7 +1826,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         expressionName.insert(0, std::string("particle_"));
                     vec.SetName(expressionName);
                     char defn[1024];
-                    SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(), 
+                    SNPRINTF(defn, 1024, "{<%s>, <%s>, <%s>}", particleVarnames[i].c_str(),
                             yName.c_str(), zName.c_str());
                     vec.SetDefinition(defn);
                     vec.SetType(Expression::VectorMeshVar);
@@ -1845,14 +1837,14 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     //
     // If any materials were found, add them here
-    // 
+    //
     if (nMaterials)
     {
         std::vector<std::string> mnames(nMaterials);
 
         std::string matname;
         matname = "materials";
-        
+
         char str[32];
         for (int m = 0; m < nMaterials; ++m)
         {
@@ -1909,7 +1901,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                             escapedFilename.push_back('\\');
                         escapedFilename.push_back(*it);
                     }
-                    mappingFilename = escapedFilename; 
+                    mappingFilename = escapedFilename;
                 }
 #endif
 
@@ -1987,7 +1979,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Purpose:
 //      Translates our global patch identifier to a refinement level and patch
 //      number local to that refinement level.
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2006
 //
@@ -2200,7 +2192,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             // -> node #2
             // avtRealDims[1] = IDX of node that borders last real zone
             // -> node #6
-            // 
+            //
             arr = vtkIntArray::New();
             arr->SetNumberOfTuples(6);
             arr->SetValue(0, numGhostI);
@@ -2220,9 +2212,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             // Generate ghost zone information
             //
             unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
-            avtGhostData::AddGhostZoneType(ghostInternal, 
+            avtGhostData::AddGhostZoneType(ghostInternal,
                     DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            avtGhostData::AddGhostZoneType(ghostExternal, 
+            avtGhostData::AddGhostZoneType(ghostExternal,
                     ZONE_EXTERIOR_TO_PROBLEM);
 
             vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
@@ -2237,8 +2229,8 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                         for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
                         {
                             if (i>=lowI[patch] && i<hiI[patch] &&
-                                    j>=lowJ[patch] && j<hiJ[patch] && 
-                                    k>=lowK[patch] && k<hiK[patch])  
+                                    j>=lowJ[patch] && j<hiJ[patch] &&
+                                    k>=lowK[patch] && k<hiK[patch])
                             {
                                 ghostCells->InsertNextValue(realVal);
                             }
@@ -2738,7 +2730,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         farr->SetNumberOfTuples(amt);
         double *ptr = farr->GetPointer(0);
 
-        // 
+        //
         // Now do the HDF magic.  Disclosure: this code was cobbled together
         // from examples I found on the internet.  If you think that there is a
         // more efficient way to do this (in lines of code or in performance), you
@@ -2789,7 +2781,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             // path.  We would probably be better served leaving the ghost information
             // and not creating ghost zones later in the process.  But that requires
             // handling for external boundaries to the problem, which are not in place
-            // yet.  
+            // yet.
             //
             if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
             {
@@ -2858,7 +2850,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                             "it is not even an HDF5 file.");
                 }
             }
- 
+
             const char particlesGroupName[] = "/particles/";
             char *datasetname = new char[strlen(particlesGroupName)+strlen(varname)+1];
             std::strcpy(datasetname, particlesGroupName);
@@ -2978,9 +2970,9 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
         int totalPatches = 0;
         for (int level = 0 ; level < num_levels ; level++)
             totalPatches += patchesPerLevel[level];
-    
+
         avtIntervalTree *itree = new avtIntervalTree(totalPatches, dimension);
-    
+
         for (int patch = 0 ; patch < totalPatches ; patch++)
         {
             double bounds[6];
@@ -3028,16 +3020,16 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Hank Childs, Tue Feb  5 16:28:31 PST 2008
 //    Fix problem with GetVar returning doubles.  Also fix memory leak.
 //
-//    Kathleen Bonnell, Fri Apr 23 10:33:17 MST 2010 
+//    Kathleen Bonnell, Fri Apr 23 10:33:17 MST 2010
 //    Fix crash on windows -- cast std::vectors to pointers before passing
 //    as args to avtMaterial, so can catch the case where the vector is empty
-//    and therefore pass NULL, because attempting to  dereference an empty 
+//    and therefore pass NULL, because attempting to  dereference an empty
 //    vector's 0'th item crashes on windows.
 //
 // ****************************************************************************
-    
+
 void *
-avtChomboFileFormat::GetMaterial(const char *var, int patch, 
+avtChomboFileFormat::GetMaterial(const char *var, int patch,
                                    const char *type, DestructorFunction &df)
 {
     if (!initializedReader)
@@ -3051,7 +3043,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
         sprintf(str, "mat%d", i+1);
         mnames[i] = str;
     }
-    
+
     // Get the material fractions
     std::vector<double *> mats(nMaterials);
     std::vector<vtkDoubleArray *> deleteList;
@@ -3107,7 +3099,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
             continue;
         }
 
-        // For unpure materials, we need to add entries to the tables.  
+        // For unpure materials, we need to add entries to the tables.
         material_list[i] = -1 * (1 + mix_zone.size());
         for (j = 0; j < nMaterials; ++j)
         {
@@ -3140,9 +3132,9 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     if (mix_vf.size() > 0)
         mixv = &(mix_vf[0]);
 
-    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells, ml, 
+    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells, ml,
                                         mixed_size, mixm, mixn, mixz, mixv);
-     
+
     df = avtMaterial::Destruct;
 
     delete[] addMatPtr;
