@@ -91,7 +91,7 @@ struct Neighbor
     // A refinement relationship of MORE_FINE means that this->domain is more fine
     // than the implied domain.
     RefinementRelationship refinement_rel;
-    int                    refinement_ratio;
+    std::vector<int>       refinement_ratio;
     NeighborRelationship   neighbor_rel;
 };
 
@@ -107,6 +107,9 @@ struct Neighbor
 //
 //    Hank Childs, Tue Jan  4 11:33:47 PST 2011
 //    Add support for ghost data across refinement levels.
+//
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
 //
 // ****************************************************************************
 struct Boundary
@@ -142,9 +145,9 @@ struct Boundary
   public:
     // Creation methods
     void   SetExtents(int[6]);
-    void   AddNeighbor(int,int,int[3],int[6], 
-                       RefinementRelationship = SAME_REFINEMENT_LEVEL, 
-                       int ref_ratio = 1,
+    void   AddNeighbor(int,int,int[3],int[6],
+                       RefinementRelationship = SAME_REFINEMENT_LEVEL,
+                       const std::vector<int>& ref_ratio = std::vector<int>(3, 1),
                        NeighborRelationship = SYMMETRIC_NEIGHBOR);
     void   DeleteNeighbor(int, std::vector<Boundary> &);
     void   Finish();
@@ -280,6 +283,9 @@ class BoundaryHelperFunctions
 //    Add method to select new ghost zone generation method for AMRStichCell
 //    operator.
 //
+//    Gunther H. Weber, Wed Jul 18 15:38:36 PDT 2012
+//    Support anisotropic refinement.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -296,9 +302,9 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
     void     SetNumDomains(int nd);
     void     SetExtents(int domain, int e[6]);
-    void     AddNeighbor(int domain, int d,int mi, int o[3], int e[6], 
-                         RefinementRelationship = SAME_REFINEMENT_LEVEL, 
-                         int ref_ratio = 1,
+    void     AddNeighbor(int domain, int d,int mi, int o[3], int e[6],
+                         RefinementRelationship = SAME_REFINEMENT_LEVEL,
+                         const std::vector<int>& ref_ratio = std::vector<int>(3, 1),
                          NeighborRelationship = SYMMETRIC_NEIGHBOR);
     void     Finish(int domain);
 
@@ -307,7 +313,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     //  methods for cases where neighbors can be computed
     void  SetIndicesForRectGrid(int domain, int e[6]);
     void  SetIndicesForAMRPatch(int domain, int level, int e[6]);
-    void  SetRefinementRatios(const std::vector<int> &r) { ref_ratios = r; };
+    void  SetRefinementRatios(const std::vector<int> &r); // Isotropic refinement ratios
+    void  SetRefinementRatios(const std::vector< std::vector<int> > &r) { ref_ratios = r; }; // Anisotropic refinement ratios
     void  CalculateBoundaries(void);
     void  GetNeighborPresence(int domain, bool *hasNeighbor, 
                               std::vector<int> &);
@@ -333,18 +340,18 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats);
 
-    virtual std::vector<avtMixedVariable*> ExchangeMixVar(std::vector<int>     domainNum,
-                                        const std::vector<avtMaterial*>   mats,
-                                        std::vector<avtMixedVariable*>    mixvars);
+    virtual std::vector<avtMixedVariable*> ExchangeMixVar(std::vector<int> domainNum,
+                                              const std::vector<avtMaterial*>   mats,
+                                              std::vector<avtMixedVariable*>    mixvars);
 
-    virtual void                      CreateGhostNodes(std::vector<int>   domainNum,
-                                                    std::vector<vtkDataSet*> meshes,
-                                                    std::vector<int> &);
+    virtual void                           CreateGhostNodes(std::vector<int>   domainNum,
+                                              std::vector<vtkDataSet*> meshes,
+                                              std::vector<int> &);
 
-    virtual bool                      RequiresCommunication(avtGhostDataType);
-    virtual bool                      ConfirmMesh(std::vector<int>      domainNum,
+    virtual bool                           RequiresCommunication(avtGhostDataType);
+    virtual bool                           ConfirmMesh(std::vector<int>      domainNum,
                                                std::vector<vtkDataSet*> meshes);
-    virtual void                      ResetCachedMembers();
+    virtual void                           ResetCachedMembers();
 
   private:
     virtual std::vector<vtkDataArray*>     ExchangeFloatScalar(std::vector<int> domainNum,
@@ -368,23 +375,24 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
   protected:
     // data
-    std::vector<Boundary> wholeBoundary;
-    std::vector<Boundary> boundary;
+    std::vector<Boundary>                   wholeBoundary;
+    std::vector<Boundary>                   boundary;
 
     // data for cases where neighbors can be computed
-    bool shouldComputeNeighborsFromExtents;
-    std::vector<int>   extents;
-    std::vector<int>   levels;
-    std::vector<int>   domain2proc;
+    bool                                    shouldComputeNeighborsFromExtents;
+    std::vector<int>                        extents;
+    std::vector<int>                        levels;
+    std::vector<int>                        domain2proc;
 
-    int           maxAMRLevel;
-    std::vector<int>   ref_ratios;
-    bool          haveCalculatedBoundaries;
+    int                                     maxAMRLevel;
+    std::vector<std::vector <int> >         ref_ratios;
+    bool                                    haveCalculatedBoundaries;
 
     friend class BoundaryHelperFunctions<int>;
     friend class BoundaryHelperFunctions<float>;
     friend class BoundaryHelperFunctions<double>;
     friend class BoundaryHelperFunctions<unsigned char>;
+
     BoundaryHelperFunctions<int>           *bhf_int;
     BoundaryHelperFunctions<float>         *bhf_float;
     BoundaryHelperFunctions<double>        *bhf_double;
