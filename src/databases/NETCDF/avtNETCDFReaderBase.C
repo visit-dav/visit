@@ -453,9 +453,7 @@ avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMeta
     const int operation[] = { VALID_MIN | VALID_MAX, VALID_MIN, VALID_MAX, MISSING_DATA, 
                               MISSING_DATA, MISSING_DATA, MISSING_DATA};
     int flags = 0;
-    double values[2];
-
-
+    double values[2] = {0., 0.};
     for(int i = 0; i < 7; ++i)
     {
         double *missingData = NULL;
@@ -476,7 +474,7 @@ avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMeta
             // value before the data are scaled but we don't do our missing data
             // checks until later in the generic db, which means we'll need to
             // scale the missing value too if it is to match the scaled data values.
-            if(operation[i] == 1 && 
+            if(operation[i] == MISSING_DATA && 
                (t == CHARARRAY_TYPE || t == UCHARARRAY_TYPE || t == SHORTARRAY_TYPE))
             {
                 double scale = 1., offset = 0.;
@@ -513,7 +511,7 @@ avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMeta
         }
     }
 
-    double arr[2];
+    double arr[2] = {0., 0.};
     if(flags == VALID_MIN)
     {
         arr[0] = values[0];
