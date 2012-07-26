@@ -135,6 +135,9 @@ avtCCSMReader::~avtCCSMReader()
 //    avtDatabaseMetaData. Otherwise the reader will not work with .visit
 //    files listing multiple time steps.
 //
+//    Hank Childs, Thu Jul 26 13:50:25 PDT 2012
+//    Improve detection of 2D meshes.
+//
 // ****************************************************************************
 
 void
@@ -276,7 +279,11 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                             SNPRINTF(tmp, 100, "x%d", meshDims[j]);
                         else
                             SNPRINTF(tmp, 100, "%d", meshDims[j]);
-                        ++nSpatialDims;
+                        bool skipIt = false;
+                        if (nSpatialDims == 2 && meshDims[j] == 1)
+                            skipIt = true;
+                        if (!skipIt)
+                            ++nSpatialDims;
 
                         meshName += tmp;
                     }
