@@ -49,6 +49,10 @@
 #  platform that needs that. That way we don't have to force the user to set
 #  LD_LIBRARY_PATH before running a system Python. 
 #
+#  Brad Whitlock, Thu Jul 26 15:05:16 PDT 2012
+#  Make "from visit import *" add the VisIt functions to the main namespace
+#  as was intended.
+#
 ###############################################################################
 
 import sys
@@ -101,18 +105,28 @@ class VisItModuleState(object):
             if not cls.debug_lvl is None:
                 mod.SetDebugLevel(str(cls.debug_lvl))
             vcmd = cls.__visit_cmd(vdir,[])
+            
             # this will add functions to the current
             # 'visit' module
             mod.Launch(vcmd)
-            # if visit does not exist in __main__, the
-            # user did an "from visit import *"
-            # we need to refresh the entries in __main__
+
+            # if SetDebugLevel exists in __main__, then the user did
+            # did "from visit import *". the Launch() added functions to
+            # the 'visit' module so we need to copy over the functions
+            # from the 'visit' module into __main__. We check for
+            # the SetDebugLevel function because it's in the frontend
+            # 'visit' module and because whichever way we import the 
+            # 'visit' module, there seems to be a 'visit' entry in
+            # __main__. 
             main_mod = __import__("__main__")
-            if not "visit" in main_mod.__dict__:
+            if "SetDebugLevel" in main_mod.__dict__.keys():
                 for k,v in mod.__dict__.items():
                     # avoid hidden module vars
                     if not k.startswith("__"):
                         main_mod.__dict__[k] = v
+                # Tell the VisIt module that it uses a local namespace,
+                # which helps it get command recording right.
+                mod.LocalNameSpace()
             launched = True
         except Exception, e:
             print "ERROR: %s" % e
