@@ -100,6 +100,10 @@ class avtSourceFromDatabase;
 //    Brad Whitlock, Sun Apr 22 00:01:35 PDT 2012
 //    I added some methods that test for excess precision.
 //
+//    Eric Brugger, Wed Jul 25 09:01:14 PDT 2012
+//    I modified the multi-pass discretizion of CSG meshes to only process
+//    a portion of the mesh on each processor instead of the entire mesh.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -116,7 +120,7 @@ class DATABASE_API avtTransformManager
                                    boolVector &selectionsApplied,
                                    avtDatabaseMetaData *md);
 
-    bool                       TransformMaterialDataset(const avtDatabaseMetaData *const md,
+    bool                       TransformMaterialDataset(avtDatabaseMetaData *md,
                                    const avtDataRequest_p &spec, avtMaterial **mat, int);
 
     void                       ClearTimestep(int ts) { cache.ClearTimestep(ts); };
@@ -135,7 +139,7 @@ class DATABASE_API avtTransformManager
                                    const avtDataRequest_p &dataRequest,
                                    const char *vname, const char *type,
                                    int ts, int dom, const char *mat);
-    vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
+    vtkDataSet                *CSGToDiscrete(avtDatabaseMetaData *md,
                                              const avtDataRequest_p &spec,
                                              vtkDataSet *ds, int);
     vtkDataSet                *AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,

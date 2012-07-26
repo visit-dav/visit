@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef VTK_VISIT_SPLITTER_H
-#define VTK_VISIT_SPLITTER_H
+#ifndef VTK_MULTI_SPLITTER_H
+#define VTK_MULTI_SPLITTER_H
 
 #include <visit_vtk_exports.h>
 #include <FixedLengthBitField.h>
@@ -48,85 +48,47 @@ class vtkImplicitFunction;
 class vtkUnstructuredGrid;
 
 // ****************************************************************************
-//  Class:  vtkVisItSplitter
+//  Class:  vtkMultiSplitter
 //
 //  Purpose:
-//    Splits a dataset using an implicit function or a scalars variable,
+//    Splits a rectilinear dataset using multiple implicit functions,
 //    tagging output cells as it splits, and later allowing extraction
 //    of various region sets as whole data sets.
 //
-//  Note: Copied largely from vtkVisItClipper
+//  Note: Copied largely from vtkVisItSplitter
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    February 24, 2010
+//  Programmer:  Eric Brugger
+//  Creation:    July 23, 2012
 //
 //  Modifications:
-//    Eric Brugger, Wed Jul 25 10:09:42 PDT 2012
-//    Increase the number of boundaries that can be handled by the mulit-pass
-//    CSG discretization from 128 to 512.
 //
 // ****************************************************************************
 
-class VISIT_VTK_API vtkVisItSplitter
+class VISIT_VTK_API vtkMultiSplitter
     : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItSplitter,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeRevisionMacro(vtkMultiSplitter,vtkDataSetToUnstructuredGridFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
 
-    static vtkVisItSplitter *New();
+    static vtkMultiSplitter *New();
 
-    virtual void SetRemoveWholeCells(bool);
-    virtual void SetClipFunction(vtkImplicitFunction*);
-    virtual void SetClipScalars(vtkDataArray *, float);
-    virtual void SetInsideOut(bool);
-    virtual void SetUseZeroCrossings(bool);
-    virtual void SetOldTagBitField(std::vector<FixedLengthBitField<64> >*);
-    virtual void SetNewTagBitField(std::vector<FixedLengthBitField<64> > *);
-    virtual void SetNewTagBit(int);
-
-    void SetCellList(const vtkIdType *, vtkIdType);
-    virtual void SetUpClipFunction(int) { ; };
-
-    struct FilterState
-    {
-        FilterState();
-       ~FilterState();
-        void SetCellList(const vtkIdType *, vtkIdType);
-        void SetClipFunction(vtkImplicitFunction *func);
-        void SetClipScalars(vtkDataArray *, double);
-
-        const vtkIdType     *CellList;
-        vtkIdType            CellListSize;
-  
-        vtkImplicitFunction *clipFunction;
-        vtkDataArray        *scalarArrayAsVTK;
-        double               scalarCutoff;
-
-        bool                 removeWholeCells;
-        bool                 insideOut;
-        bool                 useZeroCrossings;
-
-        int                  newTagBit;
-        std::vector<FixedLengthBitField<64> > *newTags;
-        std::vector<FixedLengthBitField<64> > *oldTags;
-    };
+    virtual void SetTagBitField(std::vector<FixedLengthBitField<64> > *);
+    virtual void SetClipFunctions(double *, int);
 
   protected:
-    vtkVisItSplitter();
-    ~vtkVisItSplitter();
+    vtkMultiSplitter();
+    ~vtkMultiSplitter();
 
     void Execute();
 
   private:
-     // Contains the state for the filter.
-    FilterState state;
+    double *bounds;
+    int    nBounds;
+    std::vector<FixedLengthBitField<64> > *newTags;
 
-    vtkVisItSplitter(const vtkVisItSplitter&);  // Not implemented.
-    void operator=(const vtkVisItSplitter&);  // Not implemented.
+    vtkMultiSplitter(const vtkMultiSplitter&);  // Not implemented.
+    void operator=(const vtkMultiSplitter&);    // Not implemented.
 };
 
-
 #endif
-
-

@@ -492,6 +492,10 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Hank Childs, Wed Dec 22 15:14:33 PST 2010
 //    Tell the file formats whether or not we are streaming.
 //
+//    Eric Brugger, Wed Jul 25 08:35:11 PDT 2012
+//    I modified the multi-pass discretizion of CSG meshes to only process
+//    a portion of the mesh on each processor instead of the entire mesh.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -524,7 +528,15 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     avtSILRestriction_p silr = spec->GetRestriction();
     avtSILRestrictionTraverser trav(silr);
     intVector domains, allDomains;
-    trav.GetDomainList(domains);
+    std::string meshname = md->MeshForVar(spec->GetVariable());
+    if (md->GetMesh(meshname)->meshType != AVT_CSG_MESH)
+    {
+        trav.GetDomainList(domains);
+    }
+    else
+    {
+        trav.GetDomainListAllProcs(domains);
+    }
     trav.GetDomainListAllProcs(allDomains);
 
     //
@@ -666,7 +678,6 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 
     // clear the present ghost zone types state in the db metadata
     // (this is the current path to get things set in the data atts...)
-    string meshname = md->MeshForVar(spec->GetVariable());
     md->ClearGhostTypesPresent(meshname);
 
     bool alreadyDidNesting    = false;

@@ -92,6 +92,14 @@
 //    once per boundary to increase accuracy at edges/corners and improve
 //    support for thin shells.
 //
+//    Eric Brugger, Wed Jul 25 09:58:59 PDT 2012
+//    Increase the number of boundaries that can be handled by the mulit-pass
+//    CSG discretization from 128 to 512.
+//    Modified the multi-pass CSG discretization to perform the partitions
+//    against all the boundaries and then create a vtkDataSet at the end
+//    rather than creating a new vtkDataSet after partitioning with each
+//    boundary.
+//
 
 // .SECTION See Also
 // vtkImplicitFunction, vtkQuadric, vtkUnstructuredGrid, vtkDataSet
@@ -182,7 +190,6 @@ public:
 
   void BuildVTKImplicitFunction(int zoneId, vtkImplicitFunction **func) const;
 
-#if 1
   //
   // A discretize method that returns the surfaces only
   //
@@ -197,16 +204,13 @@ public:
   //
   vtkUnstructuredGrid *GetMultiPassDiscretization(int specificZone = -1);
 
-  bool                 DiscretizeSpaceMultiPass(double tol = 0.01,
-                                   double minX = -10.0, double maxX = 10.0,
-                                   double minY = -10.0, double maxY = 10.0,
-                                   double minZ = -10.0, double maxZ = 10.0);
+  bool                 DiscretizeSpaceMultiPass(const double bnds[6],
+                                   const int dims[3], const int subRegion[6]);
 
   vtkUnstructuredGrid *DiscretizeSpace(int specificZone = -1, double tol = 0.01,
                                    double minX = -10.0, double maxX = 10.0,
                                    double minY = -10.0, double maxY = 10.0,
                                    double minZ = -10.0, double maxZ = 10.0);
-#endif
 
   //
   // A discretize method that returns the entire spatial bounding
@@ -306,7 +310,7 @@ protected:
   vtkCSGGrid();
   ~vtkCSGGrid();
 
-    bool EvaluateRegionBits(int region, FixedLengthBitField<16> &bits);
+    bool EvaluateRegionBits(int region, FixedLengthBitField<64> &bits);
 
   //
   // We put this in the protected part of the interface because
@@ -331,7 +335,7 @@ protected:
   // These are storage of the binary partition tree unstructured grid
   // and bitfield for the boundary tags for the multipass algorithm.
   vtkUnstructuredGrid *multipassProcessedGrid;
-  std::vector<FixedLengthBitField<16> > *multipassTags;
+  std::vector<FixedLengthBitField<64> > *multipassTags;
 
 
 
