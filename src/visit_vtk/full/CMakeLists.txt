@@ -39,6 +39,9 @@
 #   Define __USE_ISOC99 if we are using the boost interval lib to make sure
 #   a rounding scheme is available. 
 #
+#   Eric Brugger, Wed Jul 25 08:30:40 PDT 2012
+#   I added the classes vtkMultiSplitter and vtkVolumeFromCSGVolume.
+#
 #****************************************************************************/
 
 SET(VISIT_VTK_SOURCES
@@ -52,6 +55,7 @@ vtkDataSetRemoveGhostCells.C
 vtkDisjointCubesFacelistFilter.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
+vtkMultiSplitter.C
 vtkOBJWriter.C
 vtkOnionPeelFilter.C
 vtkPPMWriter.C
@@ -90,6 +94,7 @@ vtkVisItStructuredGridNormals.C
 vtkVisItTubeFilter.C
 vtkVisItTIFFWriter.C
 vtkVisItTensorGlyph.C
+vtkVolumeFromCSGVolume.C
 vtkVolumeFromVolume.C
 )
 

@@ -79,6 +79,26 @@ vtkDataSetFromVolume::PointList::~PointList()
 }
 
 
+void
+vtkDataSetFromVolume::PointList::Clear()
+{
+    for (int i = 0 ; i < listSize ; i++)
+    {
+        if (list[i] != NULL)
+        {
+            delete [] list[i];
+            list[i] = NULL;
+        }
+        else
+            break;
+    }
+    list[0] = new PointEntry[pointsPerList];
+
+    currentList = 0;
+    currentPoint = 0;
+}
+
+
 int
 vtkDataSetFromVolume::PointList::GetList(vtkIdType listId,
                                          const PointEntry *&outlist) const
@@ -216,6 +236,16 @@ vtkDataSetFromVolume::EdgeHashTable::~EdgeHashTable()
 }
  
  
+void
+vtkDataSetFromVolume::EdgeHashTable::Clear()
+{
+    delete [] hashes;
+    hashes = new EdgeHashEntry*[nHashes];
+    for (int i = 0 ; i < nHashes ; i++)
+        hashes[i] = NULL;
+}
+
+
 vtkIdType
 vtkDataSetFromVolume::EdgeHashTable::GetKey(vtkIdType p1, vtkIdType p2)
 {
