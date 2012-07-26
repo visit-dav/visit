@@ -50,6 +50,7 @@ list of changes in release 2.5.1.</p>
 <li>Command recording is broken when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
 <li>Saving a window with transparent plots on Windows, now correctly renders the transparent image.</li>
 <li>Setting LD_LIBRARY_PATH to VisIt's library directory prior to running a system Python is no longer needed to import the VisIt Python module.</li>
+<li>Importing the VisIt Python module using <i>from visit import *</i> once again adds VisIt module functions to the top-level namespace.</li>
 <li>NETCDF data no longer marks certain cells for later time slices when certain meta-data is set.</li>
 <li>VisIt no longer gives an error message for new plots made from a CSG mesh after changing the mesh management settings.</li>
 </ul>
