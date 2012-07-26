@@ -430,14 +430,32 @@ avtNETCDFReaderBase::ReadArray(const char *varname)
 //
 // Modifications:
 //   
+//   Hank Childs, Thu Jul 26 13:50:25 PDT 2012
+//   Make missing data supercede range information.  Despite online 
+//   documentation stating that range info should inform missing data, some
+//   files have range info that should *not* be used for missing data.  By
+//   superceding, the range info is ignored.
+//
 // ****************************************************************************
 
 bool
 avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMetaData *smd)
 {
+#define VALID_MIN    1
+#define VALID_MAX    2
+#define MISSING_DATA 4
+
+    // note that the ordering is important ... the values array is overwritten
+    // with each successive iteration ... missing_value trumps valid_min, for example.
     const char *fill_value[] = {"valid_range", "valid_min", "valid_max",
         "missing_value", "fill_value", "_FillValue", "_Fill_Value_"};
-    const int operation[] = {4, 2, 3, 1, 1, 1, 1};
+
+    const int operation[] = { VALID_MIN | VALID_MAX, VALID_MIN, VALID_MAX, MISSING_DATA, 
+                              MISSING_DATA, MISSING_DATA, MISSING_DATA};
+    int flags = 0;
+    double values[2];
+
+
     for(int i = 0; i < 7; ++i)
     {
         double *missingData = NULL;
@@ -470,24 +488,59 @@ avtNETCDFReaderBase::HandleMissingData(const std::string &varname, avtScalarMeta
                 }
             }
 
-            double arr[2];
-            arr[0] = missingData[0];
-            arr[1] = (nMissingData == 1) ? missingData[0] : missingData[1];
-            smd->SetMissingData(arr);
-            if(operation[i] == 1)
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
-            else if(operation[i] == 2)
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Min);
-            else if(operation[i] == 3)
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Max);
+            if(operation[i] == VALID_MIN)
+            {
+                values[0] = missingData[0];
+                flags |= VALID_MIN;
+            }
+            else if(operation[i] == VALID_MAX)
+            {
+                values[1] = missingData[0];
+                flags |= VALID_MAX;
+            }
+            else if(operation[i] == (VALID_MIN | VALID_MAX))
+            {
+                values[0] = missingData[0];
+                values[1] = missingData[1];
+                flags |= (VALID_MIN | VALID_MAX);
+            }
             else
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Range);
-
+            {
+                values[0] = missingData[0];
+                flags = MISSING_DATA;
+            }
             delete [] missingData;
-            return true;
         }
     }
-    return false;
+
+    double arr[2];
+    if(flags == VALID_MIN)
+    {
+        arr[0] = values[0];
+        smd->SetMissingData(arr);
+        smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Min);
+    }
+    else if(flags == VALID_MAX)
+    {
+        arr[0] = values[1];
+        smd->SetMissingData(arr);
+        smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Max);
+    }
+    else if(flags == (VALID_MIN | VALID_MAX))
+    {
+        arr[0] = values[0];
+        arr[1] = values[1];
+        smd->SetMissingData(arr);
+        smd->SetMissingDataType(avtScalarMetaData::MissingData_Valid_Range);
+    }
+    else if(flags > 0)
+    {
+        arr[0] = values[0];
+        smd->SetMissingData(arr);
+        smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+    }
+
+    return (flags > 0);
 }
 
 // ****************************************************************************

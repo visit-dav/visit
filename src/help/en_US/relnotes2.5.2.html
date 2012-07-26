@@ -25,6 +25,7 @@ list of changes in release 2.5.1.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.5.2</font></b></p>
 <ul>
+<li>Recent versions of Ubuntu can now make movies and launch the command line interface from the GUI.</li>
 <li>Plots using variables created with the DataBinning operator would delete their actors when changing active plots in the plot list. This caused the plot to appear in the Pending state and lead to unnecessary re-execution of the plot.</li>
 <li>Clearing pick points turns off the Spreadsheet plot's tracer plane.</li>
 <li>The Revolve operator now properly handles vector data.</li>
@@ -49,6 +50,7 @@ list of changes in release 2.5.1.</p>
 <li>Command recording is broken when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
 <li>Saving a window with transparent plots on Windows, now correctly renders the transparent image.</li>
 <li>Setting LD_LIBRARY_PATH to VisIt's library directory prior to running a system Python is no longer needed to import the VisIt Python module.</li>
+<li>NETCDF data no longer marks certain cells for later time slices when certain meta-data is set.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
@@ -61,6 +63,7 @@ list of changes in release 2.5.1.</p>
 <li>Libsim can now accept double-precision species mass fractions via the <i>VisIt_SpeciesData_setSpeciesMF()</i> function.</li>
 <li>Command recording will now prepend <i>visit.</i> to commands when the <i>visit</i> module is imported into a standard Python interpreter. This ensures that recorded commands can be played back.</li>
 <li>The parallel scaling of the multi-pass CSG discretization has been improved. Additionally, the maximum number of boundaries that the multi-pass CSG discretization can handle has been increased from 128 to 512.</li>
+<li>The NETCDF CCSM reader has improved identification of two-dimensional meshes.</li>
 </ul>
 
 
