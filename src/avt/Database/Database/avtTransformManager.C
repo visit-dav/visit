@@ -1570,6 +1570,10 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //    I modified the multi-pass discretizion of CSG meshes to only process
 //    a portion of the mesh on each processor instead of the entire mesh.
 //
+//    Eric Brugger, Thu Jul 26 14:36:12 PDT 2012
+//    I modified the routine to ignore the cache if any of the mesh
+//    discretization parameters have changed.
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
@@ -1596,10 +1600,27 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
         int csgdom = dom, csgreg;
         md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
 
+        // Determine if the cache is valid based on whether or not the
+        // discretization parameters have changed.
+        bool cache_valid = true;
+        void_ref_ptr vrdataRequest = cache.GetVoidRef(meshname.c_str(),
+                                   avtVariableCache::DATA_SPECIFICATION, ts, dom);
+        avtDataRequest *olddataRequest = (avtDataRequest *) *vrdataRequest;
+        if (olddataRequest != NULL)
+        {
+            if ((olddataRequest->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly()) ||
+                (olddataRequest->DiscTol() != dataRequest->DiscTol()) ||
+                (olddataRequest->FlatTol() != dataRequest->FlatTol()) ||
+                (olddataRequest->DiscMode() != dataRequest->DiscMode()))
+            {
+                cache_valid = false;
+            }
+        }
+
         // first, look for this material's mesh in xform's cache
         vtkDataSet *ds = (vtkDataSet *) cache.GetVTKObject(meshname.c_str(),
                              avtVariableCache::DATASET_NAME, ts, dom, "_all");
-        if (!ds)
+        if (!cache_valid || !ds)
         {
             //
             // Here, it must be the case that the csg mesh on which this material
@@ -1616,7 +1637,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
 
         // see if we already have transformed avtMaterial result cached
         void_ref_ptr dvr = cache.GetVoidRef(vname, type, ts, dom);
-        if (*dvr == 0)
+        if (!cache_valid || *dvr == 0)
         {
             int j, nvals = ds->GetNumberOfCells();
             vector<int> mapvals;

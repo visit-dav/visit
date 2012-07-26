@@ -32,7 +32,7 @@ list of changes in release 2.5.1.</p>
 <li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
 <li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
 <li>Volume plots using the splatting renderer now support data with double-precision coordinates.</li>
-<li>Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
+<li>The Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
 <li>The text in the "Time slider" annotation object no longer partially overlaps the time slider bar when it contains characters with descenders (i.e. "g", "j", "p", "q" or "y").</li>
 <li>Fixed double-clicking on a '.visit' file on Windows so that VisIt will open the related database.</li>
 <li>The linux-intel version of VisIt no longer displays the error message:
@@ -44,13 +44,14 @@ list of changes in release 2.5.1.</p>
 <li>Curve plots rendered by VisIt's scalable rendering mode are sometimes incomplete with certain numbers of processors when IceT image compositing is used.</li>
 <li>Pressing stop when playing an animation with multiple plots results in some plots not drawn.</li>
 <li>A blank image is displayed when frame advancing with scalable rendering mode.</li>
-<li>VisIt runs out of memory when plotting curves with 10M points.</li>
+<li>VisIt no longer runs out of memory when plotting curves with millions of points.</li>
 <li>Command recording for saving a window only records the commands needed to replicate the save settings; it does not contain the actual <i>SaveWindow()</i> function call.</li>
 <li>The VisIt Python module's <i>LaunchNowin()</i> function is not exposed immediately after the module gets imported.</li>
 <li>Command recording is broken when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
 <li>Saving a window with transparent plots on Windows, now correctly renders the transparent image.</li>
 <li>Setting LD_LIBRARY_PATH to VisIt's library directory prior to running a system Python is no longer needed to import the VisIt Python module.</li>
 <li>NETCDF data no longer marks certain cells for later time slices when certain meta-data is set.</li>
+<li>VisIt no longer gives an error message for new plots made from a CSG mesh after changing the mesh management settings.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
