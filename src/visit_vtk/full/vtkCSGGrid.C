@@ -56,6 +56,7 @@
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
 #include <vtkLine.h>
+#include <vtkMultiSplitter.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPlanes.h>
@@ -2229,9 +2230,14 @@ vtkCSGGrid::DiscretizeSpace(
 // Programmer:  Jeremy Meredith
 // Creation:    February 26, 2010
 //
+// Modifications:
+//   Eric Brugger, Wed Jul 25 10:00:27 PDT 2012
+//   Increase the number of boundaries that can be handled by the mulit-pass
+//   CSG discretization from 128 to 512.
+//
 // ****************************************************************************
 bool
-vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<16> &bits)
+vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<64> &bits)
 {
     int leftID  = leftIds[reg];
     int rightID = rightIds[reg];
@@ -2279,19 +2285,25 @@ vtkCSGGrid::EvaluateRegionBits(int reg, FixedLengthBitField<16> &bits)
 // Creation:    February 26, 2010
 //
 // Modifications:
-//    Jeremy Meredith, Mon Oct 24 16:07:11 EDT 2011
-//    Added support for 2D case.
+//   Jeremy Meredith, Mon Oct 24 16:07:11 EDT 2011
+//   Added support for 2D case.
+//
+//   Eric Brugger, Wed Jul 25 10:00:27 PDT 2012
+//   Increase the number of boundaries that can be handled by the mulit-pass
+//   CSG discretization from 128 to 512.
+//   Modified the multi-pass CSG discretization to perform the partitions
+//   against all the boundaries and then create a vtkDataSet at the end
+//   rather than creating a new vtkDataSet after partitioning with each
+//   boundary.
 //
 // ****************************************************************************
 bool
-vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
-                                     double minX, double maxX,
-                                     double minY, double maxY,
-                                     double minZ, double maxZ)
+vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
+                                     const int subRegion[6])
 {
-    if (numBoundaries > 128)
+    if (numBoundaries > 512)
     {
-        debug1 << "ERROR: We can't handle more than 128 boundaries yet.  "
+        debug1 << "ERROR: We can't handle more than 512 boundaries yet.  "
                << "This is a fixed limit in the code which can be adjusted.\n";
         return false;
     }
@@ -2299,51 +2311,29 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
     if (multipassProcessedGrid != NULL)
         return true;
 
-    /*
-    // fudge the bounds a bit
-    minX -= minX * (minX < 0.0 ? -tol : tol);
-    minY -= minY * (minY < 0.0 ? -tol : tol);
-    minZ -= minZ * (minZ < 0.0 ? -tol : tol);
-    minX += minX * (minX < 0.0 ? -tol : tol);
-    minY += minY * (minY < 0.0 ? -tol : tol);
-    minZ += minZ * (minZ < 0.0 ? -tol : tol);
-    */
-
-    tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
-    epsTol = tol;
-    int nX = (int) ((maxX - minX) / tol);
-    int nY = (int) ((maxY - minY) / tol);
-    int nZ = (int) ((maxZ - minZ) / tol);
-
-    // in 2D, we would get 0 nodes in Z; we need at least 1 for a valid mesh
-    if (nZ < 1)
-        nZ = 1;
-
+    //
     // set up a rectilinear grid
+    //
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     vtkFloatArray   *coords[3] = {vtkFloatArray::New(),
                                   vtkFloatArray::New(),
                                   vtkFloatArray::New()};
-    coords[0]->SetNumberOfTuples(nX);
-    coords[1]->SetNumberOfTuples(nY);
-    coords[2]->SetNumberOfTuples(nZ);
-    for (int i = 0 ; i < nX ; i++)
-        coords[0]->SetComponent(i, 0, minX + (maxX-minX)*float(i)/float(nX-1));
-    for (int i = 0 ; i < nY ; i++)
-        coords[1]->SetComponent(i, 0, minY + (maxY-minY)*float(i)/float(nY-1));
-    if (nZ > 1)
-    {
-        // 3D case
-        for (int i = 0 ; i < nZ ; i++)
-            coords[2]->SetComponent(i, 0, minZ + (maxZ-minZ)*float(i)/float(nZ-1));
-    }
-    else
-    {
-        // 2D case
-        coords[2]->SetComponent(0, 0, minZ);
-    }
-    int dims[3] = {nX,nY,nZ};
-    rgrid->SetDimensions(dims);
+    coords[0]->SetNumberOfTuples(subRegion[1]-subRegion[0]+1);
+    coords[1]->SetNumberOfTuples(subRegion[3]-subRegion[2]+1);
+    coords[2]->SetNumberOfTuples(subRegion[5]-subRegion[4]+1);
+    for (int i = subRegion[0] ; i < subRegion[1]+1 ; i++)
+        coords[0]->SetComponent(i-subRegion[0], 0, bnds[0] +
+            (bnds[1]-bnds[0])*float(i)/ float(dims[0]));
+    for (int i = subRegion[2] ; i < subRegion[3]+1 ; i++)
+        coords[1]->SetComponent(i-subRegion[2], 0, bnds[2] +
+            (bnds[3]-bnds[2])*float(i)/ float(dims[1]));
+    for (int i = subRegion[4] ; i < subRegion[5]+1 ; i++)
+        coords[2]->SetComponent(i-subRegion[4], 0, bnds[4] +
+            (bnds[5]-bnds[4])*float(i)/ float(dims[2]));
+    int dims2[3] = {subRegion[1]-subRegion[0]+1,
+                    subRegion[3]-subRegion[2]+1,
+                    subRegion[5]-subRegion[4]+1};
+    rgrid->SetDimensions(dims2);
     rgrid->SetXCoordinates(coords[0]);
     rgrid->SetYCoordinates(coords[1]);
     rgrid->SetZCoordinates(coords[2]);
@@ -2351,48 +2341,87 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(double tol,
     coords[1]->Delete();
     coords[2]->Delete();
 
-    multipassTags = new vector<FixedLengthBitField<16> >;
-    vtkUnstructuredGrid *output = NULL;
-    vtkDataSet *input = NULL;
-    for (int bndId = 0; bndId < numBoundaries; bndId++)
+    //
+    // Add ghost zones.
+    //
+    unsigned char realVal = 0;
+    unsigned char ghostVal = 1;
+
+    int nx = subRegion[1] - subRegion[0];
+    int ny = subRegion[3] - subRegion[2];
+    int nz = subRegion[5] - subRegion[4];
+    int ncells = nx * ny * nz;
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("avtGhostZones");
+    ghostCells->Allocate(ncells);
+
+    for (int i = 0; i < ncells; i++)
+        ghostCells->InsertNextValue(realVal);
+    if (subRegion[0] > 0)
     {
-        double *coeffs = &gridBoundaries[NUM_QCOEFFS*bndId];
-        vtkQuadric *quadric = vtkQuadric::New();
-        quadric->SetCoefficients(coeffs);
-        vtkVisItSplitter *regClipper = vtkVisItSplitter::New();
-        vector<FixedLengthBitField<16> > *oldtags = NULL;
-        if (output == NULL)
-        {
-            // first pass
-            input = rgrid;
-        }
-        else
-        {
-            input = output;
-            oldtags = multipassTags;
-            multipassTags = new vector<FixedLengthBitField<16> >;
-        }
-        regClipper->SetInput(input);
-        regClipper->SetOldTagBitField(oldtags);
-        regClipper->SetNewTagBitField(multipassTags);
-        regClipper->SetNewTagBit(bndId);
-        regClipper->SetClipFunction(quadric);
-        // It isn't necessary to force zero crossings to get good results;
-        // it might improve the quality a little, but it wasn't obvious.
-        //regClipper->SetUseZeroCrossings(true);
-        regClipper->Update();
-
-        output = regClipper->GetOutput();
-
-        output->Register(0);
-        output->SetSource(NULL);
-        regClipper->Delete();
-        quadric->Delete();
-        input->Delete();
-
-        if (oldtags)
-            delete oldtags;
+        int i = 0;
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
     }
+    if (subRegion[2] > 0)
+    {
+        int j = 0;
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
+    }
+    if (subRegion[4] > 0)
+    {
+        int k = 0;
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny; j++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
+    }
+    if (subRegion[1] < dims[0])
+    {
+        int i = nx - 1;
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
+    }
+    if (subRegion[3] < dims[1])
+    {
+        int j = ny - 1;
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
+    }
+    if (subRegion[5] < dims[2])
+    {
+        int k = nz - 1;
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny; j++)
+                ghostCells->SetValue(i+j*nx+k*nx*ny, ghostVal);
+    }
+    rgrid->GetCellData()->AddArray(ghostCells);
+    ghostCells->Delete();
+
+    //
+    // Split the rectilinear grid using the boundaries.
+    //
+    vtkUnstructuredGrid *output = NULL;
+    vtkMultiSplitter *regClipper = vtkMultiSplitter::New();
+
+    multipassTags = new vector<FixedLengthBitField<64> >;
+
+    regClipper->SetInput(rgrid);
+    regClipper->SetTagBitField(multipassTags);
+    regClipper->SetClipFunctions(gridBoundaries, numBoundaries);
+
+    regClipper->Update();
+
+    output = regClipper->GetOutput();
+
+    output->Register(0);
+    output->SetSource(NULL);
+    regClipper->Delete();
+    rgrid->Delete();
 
     multipassProcessedGrid = output;
 

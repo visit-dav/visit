@@ -113,6 +113,26 @@ vtkVolumeFromVolume::CentroidPointList::~CentroidPointList()
 }
 
 
+void
+vtkVolumeFromVolume::CentroidPointList::Clear()
+{
+    for (vtkIdType i = 0 ; i < listSize ; i++)
+    {
+        if (list[i] != NULL)
+        {
+            delete [] list[i];
+            list[i] = NULL;
+        }
+        else
+            break;
+    }
+    list[0] = new CentroidPointEntry[pointsPerList];
+
+    currentList = 0;
+    currentPoint = 0;
+}
+
+
 vtkIdType
 vtkVolumeFromVolume::CentroidPointList::GetList(vtkIdType listId,
                                     const CentroidPointEntry *&outlist) const
@@ -217,6 +237,21 @@ vtkVolumeFromVolume::ShapeList::~ShapeList()
  
 vtkIdType
 vtkVolumeFromVolume::ShapeList::GetList(vtkIdType listId, const vtkIdType *&outlist)
+    const
+{
+    if (listId < 0 || listId > currentList)
+    {
+        outlist = NULL;
+        return 0;
+    }
+ 
+    outlist = list[listId];
+    return (listId == currentList ? currentShape : shapesPerList);
+}
+ 
+ 
+vtkIdType
+vtkVolumeFromVolume::ShapeList::GetList(vtkIdType listId, vtkIdType *&outlist)
     const
 {
     if (listId < 0 || listId > currentList)

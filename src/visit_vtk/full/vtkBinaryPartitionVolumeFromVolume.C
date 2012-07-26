@@ -103,14 +103,18 @@ vtkBinaryPartitionVolumeFromVolume::vtkBinaryPartitionVolumeFromVolume(
 //    Brad Whitlock, Thu Mar 22 15:29:44 PDT 2012
 //    Call ComputeTags instead of going into generic ConstructDataSet.
 //
+//    Eric Brugger, Wed Jul 25 09:51:52 PDT 2012
+//    Increase the number of boundaries that can be handled by the mulit-pass
+//    CSG discretization from 128 to 512.
+//
 // ****************************************************************************
 
 void
 vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                     vtkUnstructuredGrid *output,
                                     vtkPoints *pts,
-                                    vector<FixedLengthBitField<16> > *oldTags,
-                                    vector<FixedLengthBitField<16> > *newTags,
+                                    vector<FixedLengthBitField<64> > *oldTags,
+                                    vector<FixedLengthBitField<64> > *newTags,
                                     int newTagBit)
 {
     ComputeTags(oldTags, newTags, newTagBit);
@@ -121,8 +125,8 @@ void
 vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCellData *inCD,
                                     vtkUnstructuredGrid *output,
                                     const int *dims, vtkDataArray *X, vtkDataArray *Y, vtkDataArray *Z,
-                                    vector<FixedLengthBitField<16> > *oldTags,
-                                    vector<FixedLengthBitField<16> > *newTags,
+                                    vector<FixedLengthBitField<64> > *oldTags,
+                                    vector<FixedLengthBitField<64> > *newTags,
                                     int newTagBit)
 {
     ComputeTags(oldTags, newTags, newTagBit);
@@ -131,8 +135,8 @@ vtkBinaryPartitionVolumeFromVolume::ConstructDataSet(vtkPointData *inPD, vtkCell
 
 void
 vtkBinaryPartitionVolumeFromVolume::ComputeTags(
-    vector<FixedLengthBitField<16> > *oldTags,
-    vector<FixedLengthBitField<16> > *newTags,
+    vector<FixedLengthBitField<64> > *oldTags,
+    vector<FixedLengthBitField<64> > *newTags,
     int newTagBit)
 {
     size_t ncells = 0;
@@ -160,7 +164,7 @@ vtkBinaryPartitionVolumeFromVolume::ComputeTags(
             {
                 // Update the partition bit
                 bool half = !(tagList->operator[](indexInShape));
-                FixedLengthBitField<16> bf;
+                FixedLengthBitField<64> bf;
                 if (oldTags)
                     bf = oldTags->operator[](shapeList[0]);
                 if (newTags && half)

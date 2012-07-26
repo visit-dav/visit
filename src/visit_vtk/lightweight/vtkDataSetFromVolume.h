@@ -74,6 +74,9 @@ class vtkPoints;
 //    Brad Whitlock, Wed Mar 14 13:49:57 PDT 2012
 //    Adapted the code to use vtkIdType.
 //
+//    Eric Brugger, Wed Jul 25 11:14:13 PDT 2012
+//    Added a Clear method to the PointList and EdgeHashTable classes.
+//
 // ****************************************************************************
 
 class VISIT_VTK_LIGHT_API vtkDataSetFromVolume
@@ -92,6 +95,8 @@ class VISIT_VTK_LIGHT_API PointList
                    PointList();
     virtual       ~PointList();
  
+    void           Clear();
+
     vtkIdType      AddPoint(vtkIdType, vtkIdType, float);
  
     vtkIdType      GetTotalNumberOfPoints(void) const;
@@ -174,6 +179,8 @@ class VISIT_VTK_LIGHT_API EdgeHashTable
                       EdgeHashTable(int, PointList &);
     virtual          ~EdgeHashTable();
  
+    void              Clear();
+
     vtkIdType         AddPoint(vtkIdType, vtkIdType, float);
     PointList        &GetPointList(void);
  

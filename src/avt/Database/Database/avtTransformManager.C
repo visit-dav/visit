@@ -69,6 +69,7 @@
 
 #include <vtkVisItUtility.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtParallel.h>
@@ -1151,10 +1152,53 @@ avtTransformManager::FindMatchingCSGDiscretization(
 }
 
 // ****************************************************************************
-//  Method: CSGToDiscrete transformation
+//  Method: ComputeCellSize
 //
-//  Purpose: Convert dataset and/or data arrays defined on it to from their
-//  the CSG form to a discrete, unstructured mesh form.
+//  Purpose:
+//    Calculate the size of a cell in the mesh based on the tolerance and
+//    the longest dimension.
+//
+//  Programmer: Eric Brugger
+//  Creation:   July 25, 2012 
+//
+//  Modifications:
+//
+// ****************************************************************************
+static
+double ComputeCellSize(double tol,
+                       double minX, double maxX,
+                       double minY, double maxY,
+                       double minZ, double maxZ)
+{
+    //
+    // Determine the size of a cell as a fraction of the longest dimension.
+    //
+    double cellSize;
+
+    if ((maxX - minX) > (maxY - minY))
+    {
+        if ((maxX - minX) > (maxZ - minZ))
+            cellSize = tol * (maxX - minX);
+        else
+            cellSize = tol * (maxZ - minZ);
+    }
+    else
+    {
+        if ((maxY - minY) > (maxZ - minZ))
+            cellSize = tol * (maxY - minY);
+        else
+            cellSize = tol * (maxZ - minZ);
+    }
+
+    return cellSize;
+}
+
+// ****************************************************************************
+//  Method: avtTransformManager::CSGToDiscrete
+//
+//  Purpose:
+//    Convert dataset and/or data arrays defined on it to from their
+//    the CSG form to a discrete, unstructured mesh form.
 //
 //  Note: We currently do not support point data
 //
@@ -1187,9 +1231,13 @@ avtTransformManager::FindMatchingCSGDiscretization(
 //    (since it's restricted to a fixed-length bitfield for the boundaries)
 //    in which case we fall back to the Uniform algorithm.
 //
+//    Eric Brugger, Wed Jul 25 09:02:59 PDT 2012
+//    I modified the multi-pass discretizion of CSG meshes to only process
+//    a portion of the mesh on each processor instead of the entire mesh.
+//
 // ****************************************************************************
 vtkDataSet *
-avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
+avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
     const avtDataRequest_p &dataRequest, vtkDataSet *ds, int dom)
 {
 #ifndef PARALLEL
@@ -1200,230 +1248,305 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
     const int nprocs = PAR_Size();
 #endif
 
-        if (ds->GetDataObjectType() == VTK_CSG_GRID)
+    if (ds->GetDataObjectType() != VTK_CSG_GRID)
+        return ds;
+
+    //
+    // look up this vtk object's "key" in GenericDb's cache
+    //
+    const char *vname, *type, *mat;
+    int ts;
+    if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, ds))
+    {
+        EXCEPTION1(PointerNotInCacheException, ds);
+    }
+    int csgdom = dom, csgreg;
+    md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
+
+    debug1 << "Preparing to obtain CSG discretized grid for "
+           << ", dom=" << dom
+           << ", csgdom=" << csgdom
+           << ", csgreg=" << csgreg
+           << endl;
+
+    //
+    // See if we have discretized result in xform's cache
+    //
+    vtkDataSet *dgrid = (vtkDataSet *) cache.GetVTKObject(vname, type, ts, dom, mat);
+    if (dgrid)
+    {
+        void_ref_ptr vrdataRequest = cache.GetVoidRef(vname,
+                                   avtVariableCache::DATA_SPECIFICATION, ts, dom);
+        avtDataRequest *olddataRequest = (avtDataRequest *) *vrdataRequest;
+        if ((olddataRequest->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly()) ||
+            (olddataRequest->DiscTol() != dataRequest->DiscTol()) ||
+            (olddataRequest->FlatTol() != dataRequest->FlatTol()) ||
+            (olddataRequest->DiscMode() != dataRequest->DiscMode()))
+            dgrid = 0;
+        else
+            debug1 << "Found discretized CSG grid in cache for current timestate." << endl;
+    }
+
+    //
+    // Ok, we didn't find a result for the current timestate. But, there might
+    // be a result from another timestate we could use. We look for one now.
+    //
+    if (dgrid == 0)
+        dgrid = FindMatchingCSGDiscretization(md, dataRequest, vname, type, ts, dom, mat);
+
+    //
+    // Ok, we need to discretize the CSG grid.
+    //
+    if (dgrid == 0)
+    {
+        debug1 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
+
+        vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
+        const double *bnds = csgmesh->GetBounds();
+
+        double tol;
+        double minX, maxX, minY, maxY, minZ, maxZ;
+
+        tol = dataRequest->DiscTol();
+        minX = bnds[0]; maxX = bnds[1];
+        minY = bnds[2]; maxY = bnds[3];
+        minZ = bnds[4]; maxZ = bnds[5];
+        tol = ComputeCellSize(tol, minX, maxX, minY, maxY, minZ, maxZ);
+        int nX = (int) ((maxX - minX) / tol);
+        int nY = (int) ((maxY - minY) / tol);
+        int nZ = (int) ((maxZ - minZ) / tol);
+
+        int nDims = (nZ < 1) ? 2 : 3;
+        int dims[3] = {nX, nY, nZ};
+
+        if (nZ < 1)
+            nZ = 1;
+
+        //
+        // Determine this processor's pieces.
+        //
+        int nXBlocks, nYBlocks, nZBlocks;
+#ifdef PARALLEL
+        if (nDims == 2)
         {
             //
-            // look up this vtk object's "key" in GenericDb's cache
+            // The arrays are intentionally ordered Y, Z, X because the
+            // function does poor decompositions when the X dimension is 1.
             //
-            const char *vname, *type, *mat;
-            int ts;
-            if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, ds))
-            {
-                EXCEPTION1(PointerNotInCacheException, ds);
-            }
-            int csgdom = dom, csgreg;
-            md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
-
-            debug1 << "Preparing to obtain CSG discretized grid for "
-                   << ", dom=" << dom
-                   << ", csgdom=" << csgdom
-                   << ", csgreg=" << csgreg
-                   << endl;
-
-            //
-            // See if we have discretized result in xform's cache
-            //
-            vtkDataSet *dgrid = (vtkDataSet *) cache.GetVTKObject(vname, type, ts, dom, mat);
-            if (dgrid)
-            {
-                void_ref_ptr vrdataRequest = cache.GetVoidRef(vname,
-                                           avtVariableCache::DATA_SPECIFICATION, ts, dom);
-                avtDataRequest *olddataRequest = (avtDataRequest *) *vrdataRequest;
-                if ((olddataRequest->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly()) ||
-                    (olddataRequest->DiscTol() != dataRequest->DiscTol()) ||
-                    (olddataRequest->FlatTol() != dataRequest->FlatTol()) ||
-                    (olddataRequest->DiscMode() != dataRequest->DiscMode()))
-                    dgrid = 0;
-                else
-                    debug1 << "Found discretized CSG grid in cache for current timestate." << endl;
-            }
-
-            //
-            // Ok, we didn't find a result for the current timestate. But, there might
-            // be a result from another timestate we could use. We look for one now.
-            //
-            if (dgrid == 0)
-                dgrid = FindMatchingCSGDiscretization(md, dataRequest, vname, type, ts, dom, mat);
-
-            if (dgrid == 0)
-            {
-                debug1 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
-
-                vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
-                const double *bnds = csgmesh->GetBounds();
-                if (dataRequest->DiscBoundaryOnly())
-                {
-                    dgrid = (vtkDataSet *) csgmesh->DiscretizeSurfaces(csgreg,
-                                                     dataRequest->DiscTol(),
-                                                     bnds[0], bnds[1], bnds[2],
-                                                     bnds[3], bnds[4], bnds[5]);
-                }
-                else if (dataRequest->DiscMode() == 0) // uniform
-                {
-                    dgrid = csgmesh->DiscretizeSpace(csgreg,
-                                                     dataRequest->DiscTol(),
-                                                     bnds[0], bnds[1], bnds[2],
-                                                     bnds[3], bnds[4], bnds[5]);
-                }
-                else if (dataRequest->DiscMode() == 1) // adaptive
-                {
-                    dgrid = csgmesh->DiscretizeSpace3(csgreg, rank, nprocs,
-                                                     dataRequest->DiscTol(),
-                                                     dataRequest->FlatTol(),
-                                                     bnds[0], bnds[1], bnds[2],
-                                                     bnds[3], bnds[4], bnds[5]);
-                }
-                else // if (dataRequest->DiscMode() == 2) // multi-pass
-                {
-                    // Look to see if there's a processed mesh we
-                    // stored for all domains.
-                    vtkDataSet *processed = 
-                        (vtkDataSet*)cache.GetVTKObject(vname, type, -1, -1, mat);
-
-                    // If so, make sure the settings used to generate it
-                    // match our current settings.
-                    if (processed)
-                    {
-                        void_ref_ptr oldVrDr = cache.GetVoidRef(vname,
-                                                                avtVariableCache::DATA_SPECIFICATION, -1, -1);
-                        avtDataRequest *oldDr = (avtDataRequest *) *oldVrDr;
-                        if (oldDr->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly() ||
-                            oldDr->DiscTol() != dataRequest->DiscTol() ||
-                            oldDr->FlatTol() != dataRequest->FlatTol() || 
-                            oldDr->DiscMode() != dataRequest->DiscMode())
-                        {
-                            processed = NULL;
-                        }
-                    }
-
-                    // If we didn't find a mesh, process it now.
-                    vtkCSGGrid *csgmesh = NULL;
-                    bool success = true;
-                    if (!processed)
-                    {
-                        csgmesh = vtkCSGGrid::SafeDownCast(ds);
-                        const double *bnds = csgmesh->GetBounds();
-                        success = csgmesh->DiscretizeSpaceMultiPass(
-                                                    dataRequest->DiscTol(),
-                                                    bnds[0], bnds[1], bnds[2],
-                                                    bnds[3], bnds[4], bnds[5]);
-                        if (success)
-                        {
-                            processed = ds;
-                            cache.CacheVTKObject(vname, type, -1, -1, mat, csgmesh);
-                            avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
-                            const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
-                            cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
-                                               -1, -1, vr);
-                        }
-                        else
-                        {
-                            // clear out any old one
-                            cache.CacheVTKObject(vname, type, -1, -1, mat, NULL);
-                        }
-                    }
-                    else
-                    {
-                        csgmesh = vtkCSGGrid::SafeDownCast(processed);
-                    }
-
-                    // On failure, revert to Uniform mode.
-                    if (success)
-                    {
-                        dgrid = csgmesh->GetMultiPassDiscretization(csgreg);
-                    }
-                    else
-                    {
-                        debug1 << "Something failed in the CSG multipass "
-                               << "algorithm; reverting to uniform\n";
-                        dgrid = csgmesh->DiscretizeSpace(csgreg,
-                                                    dataRequest->DiscTol(),
-                                                    bnds[0], bnds[1], bnds[2],
-                                                    bnds[3], bnds[4], bnds[5]);
-                    }
-
-                }
-                dgrid->Update();
-
-                //
-                // Cache the discretized mesh for this timestep
-                //
-                cache.CacheVTKObject(vname, type, ts, dom, mat, dgrid);
-                dgrid->Delete();
-
-                //
-                // Ok, this is a bit of a hack. We want to cache BOTH the
-                // discretized result AND the original CSG input mesh in such
-                // a way that a later ClearTimestep() WILL NOT delete 'em. So,
-                // we stick them in the cache at timestep=-1. Also, we use 
-                // a TransformManager unique 'type' of "DISCRETEIZED_CSG" to
-                // disambiguate between the csg input and its discretized output.
-                // We do this caching so that if a CSG grid does NOT change with
-                // time, we can avoid re-discretizing it each timestep. 
-                //
-                vtkCSGGrid *csgcopy = vtkCSGGrid::New();
-                csgcopy->ShallowCopy(csgmesh);
-                cache.CacheVTKObject(vname, type, -1, dom, mat, csgcopy);
-                csgcopy->Delete();
-
-                vtkDataSet *dgridcopy = dgrid->NewInstance();
-                dgridcopy->ShallowCopy(dgrid);
-                cache.CacheVTKObject(vname, "DISCRETIZED_CSG", -1, dom, mat, dgridcopy);
-                dgridcopy->Delete();
-
-                avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
-                const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
-                cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
-                    ts, dom, vr);
-                // Also, cache a copy of the data specification at time -1, too.
-                cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
-                    -1, dom, vr);
-            }
-
-            // copy same procuedure used in avtGenericDatabase to put object into
-            // dataset collection
-            vtkDataSet *rv = (vtkDataSet *) dgrid->NewInstance();
-            rv->CopyStructure(dgrid);
-            rv->GetFieldData()->ShallowCopy(dgrid->GetFieldData());
-
-            //
-            // Now handle any cell data on this mesh. CSGGrids can have only cell data
-            //
-            vtkCellData *cd = ds->GetCellData();
-            for (int i = 0; i < cd->GetNumberOfArrays(); i++)
-            {
-                vtkDataArray *da = cd->GetArray(i);
-                // look up this vtk object's "key" in GenericDb's cache
-                if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da))
-                {
-                    EXCEPTION1(PointerNotInCacheException, da);
-                }
-                vtkDataArray *newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
-                if (!newda)
-                {
-                    vector<int> mapvals;
-                    for (int j = 0; j < rv->GetNumberOfCells(); j++)
-                        mapvals.push_back(csgreg);
-                    debug1 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
-                    newda = BuildMappedArray(da, mapvals);
-                    if (newda)
-                    {
-                        cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
-                        newda->Delete();
-                    }
-                }
-                if (cd->GetScalars() == da)
-                    rv->GetCellData()->SetScalars(newda);
-                else if (cd->GetVectors() == da)
-                    rv->GetCellData()->SetVectors(newda);
-                else if (cd->GetTensors() == da)
-                    rv->GetCellData()->SetTensors(newda);
-                else
-                    rv->GetCellData()->AddArray(newda);
-            }
-            return rv;
+            avtDatabase::ComputeRectilinearDecomposition(nDims, nprocs, nY,
+                nZ, nX, &nYBlocks, &nZBlocks, &nXBlocks);
         }
-        return ds;
+        else
+        {
+            avtDatabase::ComputeRectilinearDecomposition(nDims, nprocs, nX,
+                nY, nZ, &nXBlocks, &nYBlocks, &nZBlocks);
+        }
+#else
+        nXBlocks = 1;
+        nYBlocks = 1;
+        nZBlocks = 1;
+#endif
+
+        int nBlocks = nXBlocks * nYBlocks * nZBlocks;
+
+        int deltaX = (nX + nXBlocks - 1) / nXBlocks;
+        int deltaY = (nY + nYBlocks - 1) / nYBlocks;
+        int deltaZ = (nZ + nZBlocks - 1) / nZBlocks;
+
+        int iBlock = rank;
+        int iXBlock = iBlock / (nYBlocks * nZBlocks);
+        int iMin = iXBlock == 0 ? 0 : iXBlock * deltaX - 1;
+        int iMax = (iXBlock + 1) * deltaX + 1 < nX ? (iXBlock + 1) * deltaX + 1 : nX;
+
+        iBlock = iBlock % (nYBlocks * nZBlocks);
+        int iYBlock = iBlock / nZBlocks;
+        int jMin = iYBlock == 0 ? 0 : iYBlock * deltaY - 1;
+        int jMax = (iYBlock + 1) * deltaY + 1 < nY ? (iYBlock + 1) * deltaY + 1 : nY;
+
+        int iZBlock = iBlock % nZBlocks;
+        int kMin = iZBlock == 0 ? 0 : iZBlock * deltaZ - 1;
+        int kMax = (iZBlock + 1) * deltaZ + 1 < nZ ? (iZBlock + 1) * deltaZ + 1 : nZ;
+
+        int subRegion[6];
+        subRegion[0] = iMin; subRegion[1] = iMax;
+        subRegion[2] = jMin; subRegion[3] = jMax;
+        subRegion[4] = kMin; subRegion[5] = kMax;
+
+        if (dataRequest->DiscBoundaryOnly())
+        {
+            dgrid = (vtkDataSet *) csgmesh->DiscretizeSurfaces(csgreg,
+                                             dataRequest->DiscTol(),
+                                             bnds[0], bnds[1], bnds[2],
+                                             bnds[3], bnds[4], bnds[5]);
+        }
+        else if (dataRequest->DiscMode() == 0) // uniform
+        {
+            dgrid = csgmesh->DiscretizeSpace(csgreg,
+                                             dataRequest->DiscTol(),
+                                             bnds[0], bnds[1], bnds[2],
+                                             bnds[3], bnds[4], bnds[5]);
+        }
+        else if (dataRequest->DiscMode() == 1) // adaptive
+        {
+            dgrid = csgmesh->DiscretizeSpace3(csgreg, rank, nprocs,
+                                              dataRequest->DiscTol(),
+                                              dataRequest->FlatTol(),
+                                              bnds[0], bnds[1], bnds[2],
+                                              bnds[3], bnds[4], bnds[5]);
+        }
+        else // if (dataRequest->DiscMode() == 2) // multi-pass
+        {
+            // Look to see if there's a processed mesh we
+            // stored for all domains.
+            vtkDataSet *processed = 
+                (vtkDataSet*)cache.GetVTKObject(vname, type, -1, -1, mat);
+
+            // If so, make sure the settings used to generate it
+            // match our current settings.
+            if (processed)
+            {
+                void_ref_ptr oldVrDr = cache.GetVoidRef(vname,
+                                                        avtVariableCache::DATA_SPECIFICATION, -1, -1);
+                avtDataRequest *oldDr = (avtDataRequest *) *oldVrDr;
+                if (oldDr->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly() ||
+                    oldDr->DiscTol() != dataRequest->DiscTol() ||
+                    oldDr->FlatTol() != dataRequest->FlatTol() || 
+                    oldDr->DiscMode() != dataRequest->DiscMode())
+                {
+                    processed = NULL;
+                }
+            }
+
+            // If we didn't find a mesh, process it now.
+            vtkCSGGrid *csgmesh = NULL;
+            bool success = true;
+            if (!processed)
+            {
+                csgmesh = vtkCSGGrid::SafeDownCast(ds);
+                const double *bnds = csgmesh->GetBounds();
+                success = csgmesh->DiscretizeSpaceMultiPass(
+                                               bnds, dims, subRegion);
+                if (success)
+                {
+                    processed = ds;
+                    cache.CacheVTKObject(vname, type, -1, -1, mat, csgmesh);
+                    avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
+                    const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
+                    cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
+                                       -1, -1, vr);
+                }
+                else
+                {
+                    // clear out any old one
+                    cache.CacheVTKObject(vname, type, -1, -1, mat, NULL);
+                }
+            }
+            else
+            {
+                csgmesh = vtkCSGGrid::SafeDownCast(processed);
+            }
+
+            // On failure, revert to Uniform mode.
+            if (success)
+            {
+                dgrid = csgmesh->GetMultiPassDiscretization(csgreg);
+            }
+            else
+            {
+                debug1 << "Something failed in the CSG multipass "
+                       << "algorithm; reverting to uniform\n";
+                dgrid = csgmesh->DiscretizeSpace(csgreg,
+                                                 dataRequest->DiscTol(),
+                                                 bnds[0], bnds[1], bnds[2],
+                                                 bnds[3], bnds[4], bnds[5]);
+            }
+
+        }
+        dgrid->Update();
+
+        //
+        // Cache the discretized mesh for this timestep
+        //
+        cache.CacheVTKObject(vname, type, ts, dom, mat, dgrid);
+        dgrid->Delete();
+
+        //
+        // Ok, this is a bit of a hack. We want to cache BOTH the
+        // discretized result AND the original CSG input mesh in such
+        // a way that a later ClearTimestep() WILL NOT delete 'em. So,
+        // we stick them in the cache at timestep=-1. Also, we use 
+        // a TransformManager unique 'type' of "DISCRETEIZED_CSG" to
+        // disambiguate between the csg input and its discretized output.
+        // We do this caching so that if a CSG grid does NOT change with
+        // time, we can avoid re-discretizing it each timestep. 
+        //
+        vtkCSGGrid *csgcopy = vtkCSGGrid::New();
+        csgcopy->ShallowCopy(csgmesh);
+        cache.CacheVTKObject(vname, type, -1, dom, mat, csgcopy);
+        csgcopy->Delete();
+
+        vtkDataSet *dgridcopy = dgrid->NewInstance();
+        dgridcopy->ShallowCopy(dgrid);
+        cache.CacheVTKObject(vname, "DISCRETIZED_CSG", -1, dom, mat, dgridcopy);
+        dgridcopy->Delete();
+
+        avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
+        const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
+        cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
+                           ts, dom, vr);
+        // Also, cache a copy of the data specification at time -1, too.
+        cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
+                           -1, dom, vr);
+    }
+
+    // copy same procuedure used in avtGenericDatabase to put object into
+    // dataset collection
+    vtkDataSet *rv = (vtkDataSet *) dgrid->NewInstance();
+    rv->CopyStructure(dgrid);
+    rv->GetFieldData()->ShallowCopy(dgrid->GetFieldData());
+
+    //
+    // Now handle any cell data on this mesh. CSGGrids can have only cell data
+    //
+    vtkCellData *cd = ds->GetCellData();
+    for (int i = 0; i < cd->GetNumberOfArrays(); i++)
+    {
+        vtkDataArray *da = cd->GetArray(i);
+        // look up this vtk object's "key" in GenericDb's cache
+        if (!gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da))
+        {
+            EXCEPTION1(PointerNotInCacheException, da);
+        }
+        vtkDataArray *newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+        if (!newda)
+        {
+            vector<int> mapvals;
+            for (int j = 0; j < rv->GetNumberOfCells(); j++)
+                mapvals.push_back(csgreg);
+            debug1 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
+            newda = BuildMappedArray(da, mapvals);
+            if (newda)
+            {
+                cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
+                newda->Delete();
+            }
+        }
+        if (cd->GetScalars() == da)
+            rv->GetCellData()->SetScalars(newda);
+        else if (cd->GetVectors() == da)
+            rv->GetCellData()->SetVectors(newda);
+        else if (cd->GetTensors() == da)
+            rv->GetCellData()->SetTensors(newda);
+        else
+            rv->GetCellData()->AddArray(newda);
+    }
+    vtkDataArray *ghostZones = dgrid->GetCellData()->GetArray("avtGhostZones");
+    rv->GetCellData()->AddArray(ghostZones);
+
+    std::string meshname = md->MeshForVar(vname);
+    md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+
+    return rv;
 }
 
 // ****************************************************************************
@@ -1443,9 +1566,13 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
 //    Added argument for the domain ID to the signature.  This is needed for
 //    efficiency when accessing the cache.
 //
+//    Eric Brugger, Wed Jul 25 09:02:59 PDT 2012
+//    I modified the multi-pass discretizion of CSG meshes to only process
+//    a portion of the mesh on each processor instead of the entire mesh.
+//
 // ****************************************************************************
 bool
-avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const md,
+avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
     const avtDataRequest_p &dataRequest, avtMaterial **mat, int dom)
 {
     const char *vname, *type;

@@ -331,11 +331,15 @@ vtkVisItSplitter::SetClipFunction(vtkImplicitFunction *func)
 //  Creation:    February 26, 2010
 //
 //  Modifications:
-//   Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
-//   Initial creation, copied from vtkVisItSplitter.
+//    Jeremy Meredith, Fri Feb 26 13:31:31 EST 2010
+//    Initial creation, copied from vtkVisItSplitter.
 //
 //    Brad Whitlock, Tue Mar 27 11:51:35 PDT 2012
 //    Move to FilterState.
+//
+//    Eric Brugger, Wed Jul 25 10:10:44 PDT 2012
+//    Increase the number of boundaries that can be handled by the mulit-pass
+//    CSG discretization from 128 to 512.
 //
 // ****************************************************************************
 
@@ -353,13 +357,13 @@ vtkVisItSplitter::SetInsideOut(bool io)
 
 
 void
-vtkVisItSplitter::SetOldTagBitField(std::vector<FixedLengthBitField<16> > *tags)
+vtkVisItSplitter::SetOldTagBitField(std::vector<FixedLengthBitField<64> > *tags)
 {
     state.oldTags = tags;
 }
 
 void
-vtkVisItSplitter::SetNewTagBitField(std::vector<FixedLengthBitField<16> > *tags)
+vtkVisItSplitter::SetNewTagBitField(std::vector<FixedLengthBitField<64> > *tags)
 {
     state.newTags = tags;
 }
@@ -482,6 +486,9 @@ private:
 // Creation:   Mon Mar 26 13:38:48 PDT 2012
 //
 // Modifications:
+//    Eric Brugger, Wed Jul 25 10:10:44 PDT 2012
+//    Increase the number of boundaries that can be handled by the mulit-pass
+//    CSG discretization from 128 to 512.
 //   
 // ****************************************************************************
 
@@ -505,8 +512,8 @@ public:
 
     void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
                           vtkUnstructuredGrid *output,
-                          std::vector<FixedLengthBitField<16> > *oldTags,
-                          std::vector<FixedLengthBitField<16> > *newTags,
+                          std::vector<FixedLengthBitField<64> > *oldTags,
+                          std::vector<FixedLengthBitField<64> > *newTags,
                           int                  newTagBit)
     {
         vfv.ConstructDataSet(GetPointData(), GetCellData(),
@@ -609,6 +616,9 @@ private:
 // Creation:   Mon Mar 26 13:38:48 PDT 2012
 //
 // Modifications:
+//    Eric Brugger, Wed Jul 25 10:10:44 PDT 2012
+//    Increase the number of boundaries that can be handled by the mulit-pass
+//    CSG discretization from 128 to 512.
 //   
 // ****************************************************************************
 
@@ -650,8 +660,8 @@ public:
 
     void ConstructDataSet(vtkBinaryPartitionVolumeFromVolume &vfv,
                           vtkUnstructuredGrid *output,
-                          std::vector<FixedLengthBitField<16> > *oldTags,
-                          std::vector<FixedLengthBitField<16> > *newTags,
+                          std::vector<FixedLengthBitField<64> > *oldTags,
+                          std::vector<FixedLengthBitField<64> > *newTags,
                           int                  newTagBit)
     {
         vfv.ConstructDataSet(GetPointData(), GetCellData(),

@@ -93,6 +93,10 @@ class vtkUnstructuredGrid;
 //    Brad Whitlock, Thu Mar 22 14:01:17 PDT 2012
 //    Adapted the code to use vtkIdType. Added double coordinate support.
 //
+//    Eric Brugger, Wed Jul 25 11:04:21 PDT 2012
+//    Added a clear method to CentroidPointList and added a version of
+//    ShapeList::GetList where none of its arguments had const qualifiers.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVolumeFromVolume : public vtkDataSetFromVolume
@@ -110,6 +114,8 @@ class VISIT_VTK_API CentroidPointList
                    CentroidPointList();
     virtual       ~CentroidPointList();
  
+    void           Clear();
+
     vtkIdType            AddPoint(vtkIdType, const vtkIdType*);
  
     vtkIdType            GetTotalNumberOfPoints(void) const;
@@ -134,6 +140,7 @@ class ShapeList
     vtkIdType      GetTotalNumberOfShapes(void) const;
     vtkIdType      GetNumberOfLists(void) const;
     vtkIdType      GetList(vtkIdType, const vtkIdType *&) const;
+    vtkIdType      GetList(vtkIdType, vtkIdType *&) const;
   protected:
     vtkIdType    **list;
     vtkIdType      currentList;
