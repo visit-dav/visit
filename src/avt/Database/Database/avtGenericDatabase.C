@@ -529,7 +529,8 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     avtSILRestrictionTraverser trav(silr);
     intVector domains, allDomains;
     std::string meshname = md->MeshForVar(spec->GetVariable());
-    if (md->GetMesh(meshname)->meshType != AVT_CSG_MESH)
+    if (md->GetMesh(meshname) != NULL &&
+        md->GetMesh(meshname)->meshType != AVT_CSG_MESH)
     {
         trav.GetDomainList(domains);
     }
