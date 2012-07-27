@@ -980,6 +980,10 @@ avtTransparencyActor::SetUpActor(void)
 //    mapper is doing color texturing, it will not return a colors array from
 //    MapScalars.
 //
+//    Kathleen Biagas, Fri Jul 27 10:44:24 PDT 2012
+//    Only create filters if needed.  Break upstream vtk pipeline by setting
+//    in_ds source to NULL. (Fixes crash/no data for rgrids on Windows).
+//
 // ****************************************************************************
 
 void
@@ -1053,26 +1057,33 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     // Okay, the real recalculation work starts here.  Start by confirming
     // that we are actually dealing with polydata.
     //
-    vtkGeometryFilter *gf = vtkGeometryFilter::New();
-    vtkDataSetRemoveGhostCells *ghost_filter=vtkDataSetRemoveGhostCells::New();
-    vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
-    vtkTransformFilter *xform_filter = vtkTransformFilter::New();
+    vtkGeometryFilter *gf = NULL;
+    vtkDataSetRemoveGhostCells *ghost_filter = NULL;
+    vtkVisItPolyDataNormals *normals = NULL;
+    vtkTransformFilter *xform_filter = NULL; 
     vtkTransform *xform = vtkTransform::New();
     vtkPolyData *pd = NULL;
+
+    // break upstream vtk pipeline
+    in_ds->SetSource(NULL);
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         pd = (vtkPolyData *) in_ds;
     }
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
+        gf = vtkGeometryFilter::New();
         gf->SetInput(in_ds);
+        ghost_filter = vtkDataSetRemoveGhostCells::New();
         ghost_filter->SetInputConnection(gf->GetOutputPort());
         ghost_filter->Update();
         pd = (vtkPolyData *) ghost_filter->GetOutput();
     }
     else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        gf = vtkGeometryFilter::New();
         gf->SetInput(in_ds);
+        normals = vtkVisItPolyDataNormals::New();
         if (mapper->GetScalarVisibility() != 0 &&
             in_ds->GetPointData()->GetScalars() == NULL &&
             in_ds->GetCellData()->GetScalars() != NULL)
@@ -1080,13 +1091,16 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             normals->SetNormalTypeToCell();
         }
         normals->SetInputConnection(gf->GetOutputPort());
+        ghost_filter = vtkDataSetRemoveGhostCells::New();
         ghost_filter->SetInputConnection(normals->GetOutputPort());
         // Apply any inherent rectilinear grid transforms from the input.
         if (in_ds->GetFieldData()->GetArray("RectilinearGridTransform"))
         {
             vtkDoubleArray *matrix = (vtkDoubleArray*)in_ds->GetFieldData()->
                                           GetArray("RectilinearGridTransform");
+            xform = vtkTransform::New();
             xform->SetMatrix(matrix->GetPointer(0));
+            xform_filter = vtkTransformFilter::New();
             xform_filter->SetInputConnection(ghost_filter->GetOutputPort());
             xform_filter->SetTransform(xform);
             xform_filter->Update();
@@ -1100,6 +1114,7 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     }
     else
     {
+        gf = vtkGeometryFilter::New();
         gf->SetInput(in_ds);
         gf->Update();
         pd = gf->GetOutput();
@@ -1313,12 +1328,17 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
     //
     // Clean up memory.
     //
-    gf->Delete();
     prepDS->Delete();
-    ghost_filter->Delete();
-    normals->Delete();
-    xform_filter->Delete();
-    xform->Delete();
+    if (gf)
+        gf->Delete();
+    if (ghost_filter)
+        ghost_filter->Delete();
+    if (normals)
+        normals->Delete();
+    if (xform_filter)
+        xform_filter->Delete();
+    if (xform)
+        xform->Delete();
 }
 
 
