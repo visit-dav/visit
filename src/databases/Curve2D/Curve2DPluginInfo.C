@@ -150,7 +150,7 @@ Curve2DGeneralPluginInfo::EnabledByDefault() const
 bool
 Curve2DGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  Curve2DGeneralPluginInfo::GetDefaultFilePatterns
