@@ -22,6 +22,7 @@ SET(LIBE_SOURCES
 Curve2DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtCurve2DFileFormat.C
+avtCurve2DWriter.C
 )
 
 INCLUDE_DIRECTORIES(
