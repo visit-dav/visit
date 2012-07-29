@@ -503,6 +503,11 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Brad Whitlock, Tue Feb 28 13:55:27 PST 2012
 //   Prevent a crash in the event that we're supposed to draw 0 labels.
 //
+//   Kathleen Biagas, Fri Jul 27 13:12:54 MST 2012
+//   Changed deprecated SetAlignmentPoint for text actors to newer 
+//   SetJustification methods on TextProperty to remove VTK warnings from our
+//   log files.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -829,14 +834,14 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       if(verticalOrientation)
         {
         pos[0] -= this->TickOffset;
-
-        this->LabelActors[labelCount]->SetAlignmentPoint(5); // hright, vcenter
+        this->LabelActors[labelCount]->GetTextProperty()->SetJustificationToRight();
+        this->LabelActors[labelCount]->GetTextProperty()->SetVerticalJustificationToCentered();
         }
       else
         {
         pos[1] -= this->TickOffset;
-
-        this->LabelActors[labelCount]->SetAlignmentPoint(7); // hcenter, vtop
+        this->LabelActors[labelCount]->GetTextProperty()->SetJustificationToCentered();
+        this->LabelActors[labelCount]->GetTextProperty()->SetVerticalJustificationToTop();
         }
       this->LabelActors[labelCount]->SetPosition(pos[0], pos[1]);
 
@@ -900,9 +905,15 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         }
       this->TitleActor->SetPosition(pos[0], pos[1]);
       if(this->TitleAtEnd)
-          this->TitleActor->SetAlignmentPoint(1); // hcenter, vbottom
+        {
+        this->TitleActor->GetTextProperty()->SetJustificationToCentered();
+        this->TitleActor->GetTextProperty()->SetVerticalJustificationToBottom();
+        }
       else
-          this->TitleActor->SetAlignmentPoint(5); // hright, vcenter
+        {
+        this->TitleActor->GetTextProperty()->SetJustificationToRight();
+        this->TitleActor->GetTextProperty()->SetVerticalJustificationToCentered();
+        }
       }
     else
       {
@@ -915,7 +926,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           pos[1] -= (this->LabelActors[0]->GetTextProperty()->GetFontSize());
         }
       this->TitleActor->SetPosition(pos[0], pos[1]);
-      this->TitleActor->SetAlignmentPoint(7); // hcenter, vtop
+      this->TitleActor->GetTextProperty()->SetJustificationToCentered(); 
+      this->TitleActor->GetTextProperty()->SetVerticalJustificationToTop(); 
       }
 
       // Optionally let the user override the alignment point.
