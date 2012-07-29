@@ -72,10 +72,18 @@
 
 #include <DebugStream.h>
 #include <BadDomainException.h>
+#include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#include <sstream>
 #include <vector>
+
+#ifdef _WIN32
+#define FSEEK _fseeki64
+#else
+#define FSEEK fseek
+#endif
 
 static int FormatLine(char *line);
 
@@ -447,6 +455,10 @@ avtBOVFileFormat::GetMesh(int dom, const char *meshname)
 //   Jeremy Meredith, Thu Jul 24 14:55:41 EDT 2008
 //   Change most int's and long's to long longs to support >4GB files.
 //
+//   Kathleen Biagas, Fri Jul 27 13:54:27 MST 2012
+//   Use FSEEK macro to get correct fseek version on Windows that will accept
+//   large offsets.
+//
 // ****************************************************************************
 
 template<class T>
@@ -461,7 +473,7 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
     long long zPage = start[2]*full_size[0]*full_size[1];
     long long seekOffset = zPage * sizeof(T) + offset;
     if(seekOffset > 0)
-        fseek(fp, seekOffset * ncomp, SEEK_SET);
+        FSEEK(fp, seekOffset * ncomp, SEEK_SET);
 
     // Now start reading the data
     long long dx = end[0] - start[0];
@@ -473,7 +485,7 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
          long long corner = start[1]*full_size[0] + start[0];
          seekOffset = (corner + extraseek) * sizeof(T);
          if(seekOffset > 0)
-             fseek(fp, seekOffset * ncomp, SEEK_CUR);
+             FSEEK(fp, seekOffset * ncomp, SEEK_CUR);
          extraseek = 0;
 
          for(long long y = start[1]; y < end[1]; ++y)
@@ -489,7 +501,7 @@ ReadBricklet(FILE *fp, T *dest, const long long *full_size,
                  long long left = start[0];
                  seekOffset = (right + left) * sizeof(T);
                  if(seekOffset > 0)
-                     fseek(fp, seekOffset * ncomp, SEEK_CUR);
+                     FSEEK(fp, seekOffset * ncomp, SEEK_CUR);
              }
          }
 
@@ -703,6 +715,10 @@ ReArrangeTuple2ToTuple3(T *start, vtkIdType nTuples)
 //    Brad Whitlock, Wed Apr  8 09:40:42 PDT 2009
 //    Added short int support.
 //
+//    Kathleen Biagas, Fri Jul 27 13:54:27 MST 2012
+//    Use FSEEK macro to get correct fseek version on Windows that will accept
+//    large offsets.
+//
 // ****************************************************************************
 
 void
@@ -750,7 +766,7 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 
         // Read past the specified offset.
         if(byteOffset > 0)
-            fseek(fp, byteOffset, SEEK_SET);
+            FSEEK(fp, byteOffset, SEEK_SET);
 
         size_t nread = fread(whole_buff, unit_size, whole_nelem, fp);
 
@@ -848,6 +864,9 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
 //    Brad Whitlock, Wed Apr  8 09:42:24 PDT 2009
 //    I added short int support.
 //
+//    Kathleen Biagas, Fri Jul 27 13:54:27 MST 2012
+//    Use FSEEK macro to get correct fseek version on Windows that will accept
+//    large offsets.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1093,7 +1112,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
             if(byteOffset > 0)
             {
                 debug4 << mName << "Seeking past " << byteOffset << " bytes" << endl;
-                fseek(file_handle, byteOffset, SEEK_SET);
+                FSEEK(file_handle, byteOffset, SEEK_SET);
             }
             
             size_t nread = fread(rv->GetVoidPointer(0), unit_size,
@@ -1656,7 +1675,20 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Yet another fix for compiler issue. Since headerLen is unsigned short,
 //    reserve maximum possible length as buffer and skip test.
 //
+//    Kathleen Biagas, Fri Jul 27 13:54:27 MST 2012
+//    Added a conversion routine to read the numerical values from the input
+//    string, to get better conversion to long long.
+//
 // ****************************************************************************
+
+template <class T>
+void
+Convert(char *s, T &val)
+{
+    std::istringstream ss(s);
+    if ((ss >> val).fail())
+        EXCEPTION0(ImproperUseException);
+}
 
 void
 avtBOVFileFormat::ReadTOC(void)
@@ -1906,7 +1938,7 @@ avtBOVFileFormat::ReadTOC(void)
                         EXCEPTION1(InvalidFilesException, fname);
                     }
                     *ptr = 0;
-                    full_size[0] = atoi(currPos);
+                    Convert(currPos, full_size[0]);
                     currPos = ptr + 1;
                     ptr = strchr(currPos, ',');
                     bool is2D = false;
@@ -1923,7 +1955,7 @@ avtBOVFileFormat::ReadTOC(void)
                         }
                     }
                     *ptr = 0;
-                    full_size[1] = atoi(currPos);
+                    Convert(currPos, full_size[1]);
                     currPos = ptr + 1;
                     if (!is2D)
                     {
@@ -1936,7 +1968,7 @@ avtBOVFileFormat::ReadTOC(void)
                             EXCEPTION1(InvalidFilesException, fname);
                         }
                         *ptr = 0;
-                        full_size[2] = atoi(currPos);
+                        Convert(currPos, full_size[2]);
                         currPos = ptr + 1;
                     }
                     else
@@ -2002,13 +2034,13 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "TIME:") == 0)
                 {
                     line += strlen("TIME:") + 1;
-                    dtime = atof(line);
+                    Convert(line, dtime);
                     timeIsAccurate = true;
                 }
                 else if (strcmp(line, "CYCLE:") == 0)
                 {
                     line += strlen("CYCLE:") + 1;
-                    cycle = atoi(line);
+                    Convert(line, cycle);
                     cycleIsAccurate = true;
                 }
                 else if (strcmp(line, "DATA_FILE:") == 0)
@@ -2020,11 +2052,11 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "DATA_SIZE:") == 0)
                 {
                     line += strlen("DATA_SIZE:") + 1;
-                    full_size[0] = atoi(line);
+                    Convert(line, full_size[0]);
                     line += strlen(line)+1;
-                    full_size[1] = atoi(line);
+                    Convert(line, full_size[1]);
                     line += strlen(line)+1;
-                    full_size[2] = atoi(line);
+                    Convert(line, full_size[2]);
                 }
                 else if (strcmp(line, "DATA_FORMAT:") == 0)
                 {
@@ -2051,16 +2083,16 @@ avtBOVFileFormat::ReadTOC(void)
                     if (strncmp(line, "COMPLEX", strlen("COMPLEX")) == 0)
                         dataNumComponents = 2;
                     else
-                        dataNumComponents = atoi(line);
+                        Convert(line, dataNumComponents);
                 }
                 else if (strcmp(line, "DATA_BRICKLETS:") == 0)
                 {
                     line += strlen("DATA_BRICKLETS:") + 1;
-                    bricklet_size[0] = atoi(line);
+                    Convert(line, bricklet_size[0]);
                     line += strlen(line)+1;
-                    bricklet_size[1] = atoi(line);
+                    Convert(line, bricklet_size[1]);
                     line += strlen(line)+1;
-                    bricklet_size[2] = atoi(line);
+                    Convert(line, bricklet_size[2]);
                 }
                 else if (strcmp(line, "VARIABLE:") == 0)
                 {
@@ -2088,44 +2120,44 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "VARIABLE_PALETTE_MIN:") == 0)
                 {
                     line += strlen("VARIABLE_PALETTE_MIN:") + 1;
-                    min = atof(line);
+                    Convert(line, min);
                     byteToFloatTransform = true;
                 }
                 else if (strcmp(line, "VARIABLE_PALETTE_MAX:") == 0)
                 {
                     line += strlen("VARIABLE_PALETTE_MAX:") + 1;
-                    max = atof(line);
+                    Convert(line, max);
                     byteToFloatTransform = true;
                 }
                 else if (strcmp(line, "VARIABLE_MIN:") == 0)
                 {
                     line += strlen("VARIABLE_MIN:") + 1;
-                    min = atof(line);
+                    Convert(line, min);
                     byteToFloatTransform = true;
                 }
                 else if (strcmp(line, "VARIABLE_MAX:") == 0)
                 {
                     line += strlen("VARIABLE_MAX:") + 1;
-                    max = atof(line);
+                    Convert(line, max);
                     byteToFloatTransform = true;
                 }
                 else if (strcmp(line, "BRICK_ORIGIN:") == 0)
                 {
                     line += strlen("BRICK_ORIGIN:") + 1;
-                    origin[0] = atof(line);
+                    Convert(line, origin[0]);
                     line += strlen(line)+1;
-                    origin[1] = atof(line);
+                    Convert(line, origin[1]);
                     line += strlen(line)+1;
-                    origin[2] = atof(line);
+                    Convert(line, origin[2]);
                 }
                 else if (strcmp(line, "BRICK_SIZE:") == 0)
                 {
                     line += strlen("BRICK_SIZE:") + 1;
-                    dimensions[0] = atof(line);
+                    Convert(line, dimensions[0]);
                     line += strlen(line)+1;
-                    dimensions[1] = atof(line);
+                    Convert(line, dimensions[1]);
                     line += strlen(line)+1;
-                    dimensions[2] = atof(line);
+                    Convert(line, dimensions[2]);
                 }
                 else if (strcmp(line, "VARIABLE_BRICK_MIN:") == 0)
                 {
@@ -2135,7 +2167,7 @@ avtBOVFileFormat::ReadTOC(void)
                     var_brick_min.resize(nbricks);
                     for (int i = 0 ; i < nbricks ; i++)
                     {
-                        var_brick_min[i] = atof(line);
+                        Convert(line, var_brick_min[i]);
                         if (i != nbricks-1)
                             line += strlen(line) + 1;
                     }
@@ -2148,7 +2180,7 @@ avtBOVFileFormat::ReadTOC(void)
                     var_brick_max.resize(nbricks);
                     for (int i = 0 ; i < nbricks ; i++)
                     {
-                        var_brick_max[i] = atof(line);
+                        Convert(line, var_brick_max[i]);
                         if (i != nbricks-1)
                             line += strlen(line) + 1;
                     }
@@ -2162,7 +2194,7 @@ avtBOVFileFormat::ReadTOC(void)
                 else if (strcmp(line, "BYTE_OFFSET:") == 0)
                 {
                     line += strlen("BYTE_OFFSET:") + 1;
-                    byteOffset = atoi(line);
+                    Convert(line, byteOffset);
                     byteOffset = byteOffset < 0 ? 0 : byteOffset;
                 }
                 else if (strcmp(line, "DIVIDE_BRICK:") == 0)
