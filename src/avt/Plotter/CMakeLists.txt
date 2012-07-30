@@ -42,7 +42,30 @@
 #   I moved some mappers to a different library since they may contain Qt. I
 #   also cleaned up obsolete stuff in this file.
 #
+#   Carson Brownlee, Sun May  6 16:25:28 PDT 2012
+#   Add support for Manta.
+#
 #****************************************************************************/
+
+SET(VISIT_VTK_MANTA_SOURCES
+Manta/vtkMantaPolyDataMapper.C 
+Manta/vtkMantaTexture.C
+Manta/vtkMantaProperty.C 
+Manta/vtkMantaActor.C 
+Manta/vtkMantaCamera.C 
+Manta/vtkMantaLight.C 
+Manta/vtkMantaDataSetMapper.C
+Manta/vtkMantaObjectFactory.C 
+Manta/vtkMantaRenderer.C 
+Manta/vtkMantaManager.C
+Manta/vtkMantaCubeAxesActor.C
+)
+
+# create configuration file to pass off cmake options
+CONFIGURE_FILE(
+  "${PROJECT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
+  "${PROJECT_BINARY_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h"
+)
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 avtGLEWInitializer.C 
@@ -121,6 +144,11 @@ ${AVTPLOTTER_VTK_SOURCES}
 ${AVTPLOTTER_OPENGL_SOURCES}
 )
 
+IF(VISIT_MANTA)
+  SET(AVTPLOTTER_SOURCES ${AVTPLOTTER_SOURCES} ${VISIT_VTK_MANTA_SOURCES} )
+ENDIF(VISIT_MANTA)
+
+
 INCLUDE_DIRECTORIES(
 ${VISIT_COMMON_INCLUDES}
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -136,6 +164,7 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+${VISIT_SOURCE_DIR}/avt/Plotter/Manta
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
@@ -151,11 +180,24 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
 TARGET_LINK_LIBRARIES(avtplotter_ser visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB})
+IF(VISIT_MANTA)
+  TARGET_LINK_LIBRARIES(avtplotter_ser ${MANTA_TARGET_LINK_LIBRARIES})
+ENDIF(VISIT_MANTA)
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
     TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkHybrid ${GLEW_LIB})
+IF(VISIT_MANTA)
+  TARGET_LINK_LIBRARIES(avtplotter_par ${MANTA_TARGET_LINK_LIBRARIES})
+  #IF(ICET_FOUND)
+  #  INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
+  #  LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
+  #ENDIF(ICET_FOUND)
+ENDIF(VISIT_MANTA)
+
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)
+
+
