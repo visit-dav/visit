@@ -53,6 +53,9 @@
 #   Eric Brugger, Wed Jun 27 11:36:45 PDT 2012
 #   Deleted terminator.
 #
+#   Eric Brugger, Mon Jul 30 10:27:10 PDT 2012
+#   Added gremlin.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -64,6 +67,7 @@ user=`whoami`
 #
 termite=true
 inca=true
+gremlin=true
 cielo=true
 
 dist=undefined
@@ -79,6 +83,7 @@ do
       -none)
          termite=false
          inca=false
+         gremlin=false
          cielo=false
          shift
          ;;
@@ -96,6 +101,14 @@ do
          ;;
       +inca)
          inca=true
+         shift
+         ;;
+      -gremlin)
+         gremlin=false
+         shift
+         ;;
+      +gremlin)
+         gremlin=true
          shift
          ;;
       -cielo)
@@ -122,6 +135,7 @@ then
    echo "Valid machine names:"
    echo "    termite (B-Div, Linux),"
    echo "    inca (LC, x86_64)"
+   echo "    gremlin (LC, x86_64)"
    echo "    cielo (LANL, x86_64)"
    exit
 fi
@@ -236,6 +250,58 @@ then
 fi
 
 #
+# Build on gremlin.
+#
+rm -f gremlin
+cat <<EOF > gremlin
+#!/bin/sh
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/gremlin ; then
+   mkdir /usr/tmp/$user/gremlin
+fi
+rm -rf /usr/tmp/$user/gremlin/visitbuild
+mkdir /usr/tmp/$user/gremlin/visitbuild
+mv gremlin_$dist.tar.gz /usr/tmp/$user/gremlin/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/gremlin/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on gremlin"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $gremlin = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on gremlin"
+      scp gremlin gremlin3:gremlin_buildit
+      scp $dist.tar.gz gremlin3:gremlin_$dist.tar.gz
+      ssh gremlin3 "chmod 750 gremlin_buildit;./gremlin_buildit" &
+   fi
+fi
+
+#
 # Build on cielo.
 #
 rm -f cielo
@@ -290,5 +356,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f termite inca cielo
+   rm -f termite inca gremlin cielo
 fi
