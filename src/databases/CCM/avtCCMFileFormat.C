@@ -105,6 +105,7 @@ avtCCMFileFormat::avtCCMFileFormat(const char *filename)
     ccmStateFound = false;
     ccmErr = kCCMIONoErr;
     subdividingSingleMesh = false;
+    initialized = false;
 }
 
 // ****************************************************************************
@@ -136,6 +137,9 @@ avtCCMFileFormat::~avtCCMFileFormat()
 //    Kathleen Bonnell, Thu Feb 28 15:00:24 PST 2008
 //    Added varsOnSubmesh.
 //
+//    Brad Whitlock, Mon Jul 30 16:32:08 PDT 2012
+//    Set ccmStateFound to false.
+//
 // ****************************************************************************
 
 void
@@ -144,6 +148,7 @@ avtCCMFileFormat::FreeUpResources(void)
     if(ccmOpened)
     {
         ccmOpened = false;
+        ccmStateFound = false;
         CCMIOCloseFile(&ccmErr, ccmRoot);
         ccmErr = kCCMIONoErr;
     }
@@ -160,6 +165,7 @@ avtCCMFileFormat::FreeUpResources(void)
     varsOnSubmesh.clear();
 
     subdividingSingleMesh = false;
+    initialized = false;
 }    
 
 
@@ -459,12 +465,18 @@ avtCCMFileFormat::GetFaces(CCMIOID faceID, CCMIOEntity faceType,
 //    determine if any variables are defined only on parts of the mesh, by 
 //    reading the number of cells, then mapData size for each var.
 //
+//    Brad Whitlock, Mon Jul 30 16:22:02 PDT 2012
+//    Allow for NULL metadata.
+//
 // ****************************************************************************
 
 void
 avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     const char *mName = "avtCCMFileFormat::PopulateDatabaseMetaData: ";
+
+    if(initialized)
+        return;
 
     // Count the number of processors in the file. 
     // Use that for the number of domains.
@@ -499,7 +511,8 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ccmErr = CCMIOGetTitle(&ccmErr, GetRoot(), &title);
     if(title != NULL)
     {
-        md->SetDatabaseComment(title);
+        if(md != NULL)
+            md->SetDatabaseComment(title);
         free(title);
     }
 #endif
@@ -528,20 +541,24 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if(nblocks == 1)
     {
         subdividingSingleMesh = true;
-        md->SetFormatCanDoDomainDecomposition(true);
+        if(md != NULL)
+            md->SetFormatCanDoDomainDecomposition(true);
     }
 #endif
 
     // Create a mesh.
-    avtMeshMetaData *mmd = new avtMeshMetaData;
-    mmd->name = "Mesh";
-    mmd->spatialDimension = dims;
-    mmd->topologicalDimension = dims;
-    mmd->meshType = AVT_UNSTRUCTURED_MESH;
-    mmd->numBlocks = nDomains;
-    mmd->cellOrigin = 1;
-    mmd->nodeOrigin = 1;
-    md->Add(mmd);
+    if(md != NULL)
+    {
+        avtMeshMetaData *mmd = new avtMeshMetaData;
+        mmd->name = "Mesh";
+        mmd->spatialDimension = dims;
+        mmd->topologicalDimension = dims;
+        mmd->meshType = AVT_UNSTRUCTURED_MESH;
+        mmd->numBlocks = nDomains;
+        mmd->cellOrigin = 1;
+        mmd->nodeOrigin = 1;
+        md->Add(mmd);
+    }
 
     // Find variable data
     if (hasSolution)
@@ -692,47 +709,56 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
                     if(cdims==kCCMIOScalar)
                     {
-                        avtScalarMetaData *smd = new avtScalarMetaData(usename, 
-                            "Mesh", centering);
-                        if (units != NULL)
+                        if(md != NULL)
                         {
-                            smd->hasUnits = true;
-                            smd->units = units;
+                            avtScalarMetaData *smd = new avtScalarMetaData(usename, 
+                                "Mesh", centering);
+                            if (units != NULL)
+                            {
+                                smd->hasUnits = true;
+                                smd->units = units;
+                            }
+                            smd->validVariable = validVariable;
+                            md->Add(smd);
                         }
-                        smd->validVariable = validVariable;
-                        md->Add(smd);
                         varsToFields[usename] = varField;
                     }
                     else if(cdims==kCCMIOVector)
                     {
-                        avtVectorMetaData *vmd = new avtVectorMetaData(usename, 
-                            "Mesh", centering, 3);
-                        if (units != NULL)
+                        if(md != NULL)
                         {
-                            vmd->hasUnits = true;
-                            vmd->units = units;
+                            avtVectorMetaData *vmd = new avtVectorMetaData(usename, 
+                                "Mesh", centering, 3);
+                            if (units != NULL)
+                            {
+                                vmd->hasUnits = true;
+                                vmd->units = units;
+                            }
+                            vmd->validVariable = validVariable;
+                            md->Add(vmd);
                         }
-                        vmd->validVariable = validVariable;
-                        md->Add(vmd);
                         varsToFields[usename] = varField;
                     }
                     else if(cdims==kCCMIOTensor)
                     {
-                        avtTensorMetaData *tmd = new avtTensorMetaData(usename, 
-                            "Mesh", centering, 9);
-                        if (units != NULL)
+                        if(md != NULL)
                         {
-                            tmd->hasUnits = true;
-                            tmd->units = units;
-                        }
+                            avtTensorMetaData *tmd = new avtTensorMetaData(usename, 
+                                "Mesh", centering, 9);
+                            if (units != NULL)
+                            {
+                                tmd->hasUnits = true;
+                                tmd->units = units;
+                            }
 #if 1
-                        // Just make tensor vars display for now. 
-                        // Don't plot them.
-                        tmd->validVariable = false;
+                            // Just make tensor vars display for now. 
+                            // Don't plot them.
+                            tmd->validVariable = false;
 #else
-                        tmd->validVariable = validVariable;
+                            tmd->validVariable = validVariable;
 #endif
-                        md->Add(tmd);
+                            md->Add(tmd);
+                        }
                         varsToFields[usename] = varField;
                     }
                 }
@@ -746,6 +772,8 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             oldFile = false;
         }
     }
+
+    initialized = true;
 }
 
 
@@ -783,6 +811,9 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    I refactored this routine into helper routines and added support for
 //    automatically subdividing a mesh on the fly.
 //
+//    Brad Whitlock, Mon Jul 30 16:22:14 PDT 2012
+//    Force initialization if the plugin has not been initialized.
+//
 // ****************************************************************************
 
 #ifndef MDSERVER
@@ -801,6 +832,10 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 
     vtkUnstructuredGrid *ugrid = NULL;
     vtkPoints *points = NULL;
+
+    // Force initialization if it has not been done.
+    if(!initialized)
+        PopulateDatabaseMetaData(NULL);
 
     TRY
     {
@@ -1517,6 +1552,9 @@ avtCCMFileFormat::GetCellMapData(const int domain, const std::string &var,
 //    Brad Whitlock, Thu Oct  1 13:08:35 PDT 2009
 //    Set domain to 0 if we're subdividing a single mesh.
 //
+//    Brad Whitlock, Mon Jul 30 16:22:14 PDT 2012
+//    Force initialization if the plugin has not been initialized.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1526,6 +1564,10 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
     const char *mName = "avtCCMFileFormat::GetVar: ";
     // Override domain if we're automatically dividing the data
     domain = subdividingSingleMesh ? 0 : domain;
+
+    // Force initialization if it has not been done.
+    if(!initialized)
+        PopulateDatabaseMetaData(NULL);
 
     VarFieldMap::const_iterator pos = varsToFields.find(varname);
     if (pos == varsToFields.end())
@@ -1607,6 +1649,9 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
 //    Brad Whitlock, Thu Oct  1 13:08:35 PDT 2009
 //    Set domain to 0 if we're subdividing a single mesh.
 //
+//    Brad Whitlock, Mon Jul 30 16:22:14 PDT 2012
+//    Force initialization if the plugin has not been initialized.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1614,6 +1659,10 @@ avtCCMFileFormat::GetVectorVar(int domain, const char *varname)
 {
     // Override domain if we're automatically dividing the data
     domain = subdividingSingleMesh ? 0 : domain;
+
+    // Force initialization if it has not been done.
+    if(!initialized)
+        PopulateDatabaseMetaData(NULL);
 
     VarFieldMap::const_iterator pos = varsToFields.find(varname);
     if (pos == varsToFields.end())
