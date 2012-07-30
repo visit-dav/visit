@@ -72,6 +72,9 @@ using     std::string;
 //  Programmer: Jeremy Meredith
 //  Creation:   June 22, 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 30 11:03:21 EDT 2012
+//    Added support for binary files, and for forces and potential energies.
 // ****************************************************************************
 
 avtGULPFileFormat::avtGULPFileFormat(const char *fn)
@@ -81,6 +84,7 @@ avtGULPFileFormat::avtGULPFileFormat(const char *fn)
     OpenFileAtBeginning();
 
     md_read = false;
+    has_force_and_pe = false;
 
     natoms = 0;
     ntimesteps = 0;
@@ -100,6 +104,10 @@ avtGULPFileFormat::avtGULPFileFormat(const char *fn)
 //  Programmer: Jeremy Meredith
 //  Creation:   June 22, 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 30 11:03:21 EDT 2012
+//    Added support for forces and potential energies.
+//
 // ****************************************************************************
 
 void
@@ -111,6 +119,10 @@ avtGULPFileFormat::FreeUpResources(void)
     vx.clear();
     vy.clear();
     vz.clear();
+    fx.clear();
+    fy.clear();
+    fz.clear();
+    pe.clear();
     current_timestep = -1;
 }
 
@@ -125,6 +137,10 @@ avtGULPFileFormat::FreeUpResources(void)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   June 22, 2010
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 30 11:03:21 EDT 2012
+//    Added support for forces and potential energies.
 //
 // ****************************************************************************
 
@@ -147,6 +163,21 @@ avtGULPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     velocity_expr.SetDefinition("{vx, vy, vz}");
     velocity_expr.SetType(Expression::VectorMeshVar);
     md->AddExpression(&velocity_expr);
+
+    if (has_force_and_pe)
+    {
+        AddScalarVarToMetaData(md, "fx", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "fy", "mesh", AVT_NODECENT);
+        AddScalarVarToMetaData(md, "fz", "mesh", AVT_NODECENT);
+        Expression force_expr;
+        force_expr.SetName("force");
+        force_expr.SetDefinition("{fx, fy, fz}");
+        force_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&force_expr);
+
+
+        AddScalarVarToMetaData(md, "PE", "mesh", AVT_NODECENT);
+    }
 }
 
 
@@ -216,6 +247,10 @@ avtGULPFileFormat::GetMesh(int ts, const char *name)
 //  Programmer: Jeremy Meredith
 //  Creation:   June 22, 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 30 11:03:21 EDT 2012
+//    Added support for forces and potential energies.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -225,7 +260,11 @@ avtGULPFileFormat::GetVar(int ts, const char *varname)
 
     if (string(varname) == "vx" ||
         string(varname) == "vy" ||
-        string(varname) == "vz")
+        string(varname) == "vz" ||
+        string(varname) == "fx" ||
+        string(varname) == "fy" ||
+        string(varname) == "fz" ||
+        string(varname) == "PE")
     {
         vtkFloatArray *scalars = vtkFloatArray::New();
         scalars->SetNumberOfTuples(natoms);
@@ -240,10 +279,30 @@ avtGULPFileFormat::GetVar(int ts, const char *varname)
             for (int i=0; i<natoms; i++)
                 ptr[i] = vy[i];
         }
-        else // (string(varname) == "vz")
+        else if (string(varname) == "vz")
         {
             for (int i=0; i<natoms; i++)
                 ptr[i] = vz[i];
+        }
+        else if (string(varname) == "fx")
+        {
+            for (int i=0; i<natoms; i++)
+                ptr[i] = fx[i];
+        }
+        else if (string(varname) == "fy")
+        {
+            for (int i=0; i<natoms; i++)
+                ptr[i] = fy[i];
+        }
+        else if (string(varname) == "fz")
+        {
+            for (int i=0; i<natoms; i++)
+                ptr[i] = fz[i];
+        }
+        else // (string(varname) == "PE")
+        {
+            for (int i=0; i<natoms; i++)
+                ptr[i] = pe[i];
         }
         return scalars;
     }
@@ -264,16 +323,48 @@ avtGULPFileFormat::GetVar(int ts, const char *varname)
 // Programmer:  Jeremy Meredith
 // Creation:    June 22, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Mon Jul 30 10:25:22 EDT 2012
+//   Added binary vs ascii check.
+//
 // ****************************************************************************
 void
 avtGULPFileFormat::OpenFileAtBeginning()
 {
     if (!in.is_open())
     {
-        in.open(filename.c_str());
+        in.open(filename.c_str(),ios::binary);
         if (!in)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+
+        // check for binary
+        char tmp[100];
+        in.read(tmp, 100);
+        int nread = in.gcount();
+        binary = false;
+        for (int i=0; i<nread; i++)
+        {
+            const unsigned char c = tmp[i];
+            if (c==0 || (c>1 && c<7) || (c>13 && c<32) || c>127)
+            {
+                binary = true;
+                break;
+            }
+        }
+
+        if (!binary)
+        {
+            // If it's ASCII, let's open it without the binary flag.
+            in.close();
+            in.clear();
+            in.open(filename.c_str());
+        }
+        else
+        {
+            in.clear();
+            in.seekg(0, ios::beg);
         }
     }
     else
@@ -297,6 +388,11 @@ avtGULPFileFormat::OpenFileAtBeginning()
 // Programmer:  Jeremy Meredith
 // Creation:    June 22, 2010
 //
+// Modifications:
+//   Jeremy Meredith, Mon Jul 30 10:25:22 EDT 2012
+//   Added binary vs ascii file support and for newer file versions
+//   with forces and potential energies.
+//
 // ****************************************************************************
 void
 avtGULPFileFormat::ReadAllMetaData()
@@ -307,97 +403,189 @@ avtGULPFileFormat::ReadAllMetaData()
     OpenFileAtBeginning();
     md_read = true;
 
-    char line[4096];
-    string buff, buff2;
-
-    string version;
-    in >> version;
-    if (version != "3.40")
-        cerr << "WARNING: Expected version 3.40, got "<<version
-             <<".  Things may not work as expected....\n";
-
-    in >> natoms;
-    if (natoms == 0)
-        InvalidFilesException(filename,
-                              "Didn't get valid atom count.");
-    in >> dimension;
-    if (dimension != 0)
-        InvalidFilesException(filename,
-                              "We only support 0-dimension files for now.");
-
-    in.getline(line, 4096); // rest of natoms/dimension line
-
-    istream::pos_type curpos;
-    while (in.good() && !in.eof())
+    if (binary)
     {
-        curpos = in.tellg();
-        bool good = true;
+        int rec;
+        in.read((char*)&rec, sizeof(int));
+        double version;
+        in.read((char*)&version, sizeof(double));
+        in.read((char*)&rec, sizeof(int));
 
-
-        in >> buff >> buff2;
-        if (buff != "#" || buff2 != "Time/KE/E/T")
+        has_force_and_pe = true;
+        if (version < 4)
         {
-            if (ntimesteps == 0)
-                InvalidFilesException(filename,
-                                   "Parse error, expected '#  Time/KE/E/T'");
+            cerr  << "WARNING: Expected version 4.0, got "<<version
+                  << ".  Things may not work as expected....\n";
+            cerr << "Assuming it's an earlier file version without forces, PEs\n";
+            has_force_and_pe = false;
+        }
+        
+
+        in.read((char*)&rec, sizeof(int));
+        int ndim;
+        in.read((char*)&natoms, sizeof(int));
+        in.read((char*)&ndim, sizeof(int));
+        in.read((char*)&rec, sizeof(int));
+
+        istream::pos_type curpos;
+        while (in.good() && !in.eof())
+        {
+            double ts_time, ts_ke, ts_e, ts_t;
+            in.read((char*)&rec, sizeof(int));
+            in.read((char*)&ts_time, sizeof(double));
+            in.read((char*)&ts_ke, sizeof(double));
+            in.read((char*)&ts_e, sizeof(double));
+            in.read((char*)&ts_t, sizeof(double));
+            in.read((char*)&rec, sizeof(int));
+
+            // mark at the start of the atom coords
+            curpos = in.tellg();
+
+            // skip atom positions
+            for (int axis=0; axis<3; axis++)
+            {
+                in.read((char*)&rec, sizeof(int));
+                in.seekg(rec, ios::cur); 
+                in.read((char*)&rec, sizeof(int));
+            }
+
+            // skip atom velocities
+            for (int axis=0; axis<3; axis++)
+            {
+                in.read((char*)&rec, sizeof(int));
+                in.seekg(rec, ios::cur); 
+                in.read((char*)&rec, sizeof(int));
+            }
+
+            // skip atom forces
+            if (has_force_and_pe)
+            {
+                for (int axis=0; axis<3; axis++)
+                {
+                    in.read((char*)&rec, sizeof(int));
+                    in.seekg(rec, ios::cur); 
+                    in.read((char*)&rec, sizeof(int));
+                }
+
+                in.read((char*)&rec, sizeof(int));
+                in.seekg(rec, ios::cur); 
+                in.read((char*)&rec, sizeof(int));
+            }
+
+            if (!in.good())
+            {
+                // skip this timestep; it's been truncated or the
+                // file ended (correctly) after the last timestep
+            }
             else
-                good = false;
+            {
+                file_positions.push_back(curpos);
+                times.push_back(ts_time);
+                ntimesteps++;
+            }
+        }
+    }
+    else
+    {
+        char line[4096];
+        string buff, buff2;
+
+        string version;
+        in >> version;
+
+        has_force_and_pe = false;
+        if (version != "3.40")
+        {
+            cerr << "WARNING: Expected version 3.40, got "<<version
+                 <<".  Things may not work as expected....\n";
+            cerr <<"Assuming it's a later file version with forces, PEs\n";
+            has_force_and_pe = true;
         }
 
-        double t;
-        in >> t;
-        in >> buff; // ignore KE
-        in >> buff; // ignore E
-        in >> buff; // ignore T
+        in >> natoms;
+        if (natoms == 0)
+            InvalidFilesException(filename,
+                                  "Didn't get valid atom count.");
+        in >> dimension;
+        //if (dimension != 0)
+        //    InvalidFilesException(filename,
+        //                          "We only support 0-dimension files for now.");
 
-        in >> buff >> buff2;
-        if (buff != "#" || buff2 != "Coordinates")
+        in.getline(line, 4096); // rest of natoms/dimension line
+
+        istream::pos_type curpos;
+        while (in.good() && !in.eof())
         {
-            if (ntimesteps == 0)
-                InvalidFilesException(filename,
-                                   "Parse error, expected '#  Coordinates'");
+            curpos = in.tellg();
+            bool good = true;
+
+
+            in >> buff >> buff2;
+            if (buff != "#" || buff2 != "Time/KE/E/T")
+            {
+                if (ntimesteps == 0)
+                    InvalidFilesException(filename,
+                                          "Parse error, expected '#  Time/KE/E/T'");
+                else
+                    good = false;
+            }
+
+            double t;
+            in >> t;
+            in >> buff; // ignore KE
+            in >> buff; // ignore E
+            in >> buff; // ignore T
+
+            in >> buff >> buff2;
+            if (buff != "#" || buff2 != "Coordinates")
+            {
+                if (ntimesteps == 0)
+                    InvalidFilesException(filename,
+                                          "Parse error, expected '#  Coordinates'");
+                else
+                    good = false;
+            }
+
+            in.getline(line, 4096); // rest of "Coordinates" line
+
+            for (int i=0; i<natoms; ++i)
+                in.getline(line, 4096);
+
+            in >> buff >> buff2;
+            if (buff != "#" || buff2 != "Velocities")
+            {
+                if (ntimesteps == 0)
+                    InvalidFilesException(filename,
+                                          "Parse error, expected '#  Velocities'");
+                else
+                    good = false;
+            }
+
+            in.getline(line, 4096); // rest of "Velocities" line
+
+            for (int i=0; i<natoms; ++i)
+                in.getline(line, 4096);
+
+            // check for early EOF or other parsing problem
+            if (!good || !in.good())
+            {
+                // skip this timestep; it's been truncated
+            }
             else
-                good = false;
-        }
-
-        in.getline(line, 4096); // rest of "Coordinates" line
-
-        for (int i=0; i<natoms; ++i)
-            in.getline(line, 4096);
-
-        in >> buff >> buff2;
-        if (buff != "#" || buff2 != "Velocities")
-        {
-            if (ntimesteps == 0)
-                InvalidFilesException(filename,
-                                   "Parse error, expected '#  Velocities'");
-            else
-                good = false;
-        }
-
-        in.getline(line, 4096); // rest of "Velocities" line
-
-        for (int i=0; i<natoms; ++i)
-            in.getline(line, 4096);
-
-        // check for early EOF or other parsing problem
-        if (!good || !in.good())
-        {
-            // skip this timestep; it's been truncated
-        }
-        else
-        {
-            file_positions.push_back(curpos);
-            times.push_back(t);
-            ntimesteps++;
+            {
+                file_positions.push_back(curpos);
+                times.push_back(t);
+                ntimesteps++;
+            }
         }
     }
 
-
 }
 
-//   Jeremy Meredith, Tue Jun 22 10:26:05 EDT 2010
-//   
+// Modifications:
+//   Jeremy Meredith, Mon Jul 30 10:25:22 EDT 2012
+//   Added binary vs ascii file support and for newer file versions
+//   with forces and potential energies.
 //
 void
 avtGULPFileFormat::ReadTimestep(int ts)
@@ -409,33 +597,168 @@ avtGULPFileFormat::ReadTimestep(int ts)
     OpenFileAtBeginning();
     current_timestep = ts;
 
-    char line[4096];
     in.seekg(file_positions[ts]);
-    in.getline(line, 4096); // skip the time comment header
-    in.getline(line, 4096); // skip the time, energy, etc
-    in.getline(line, 4096); // skip the coordinates comment header
 
-    current_timestep = -1;
-
-    // fill the atoms
-    x.resize(natoms);
-    z.resize(natoms);
-    y.resize(natoms);
-    for (int i=0; i<natoms; ++i)
+    if (binary)
     {
-        in >> x[i] >> y[i] >> z[i];
+        int rec;
+        double val;
+
+        // fill the atoms
+        x.resize(natoms);
+        y.resize(natoms);
+        z.resize(natoms);
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            x[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            y[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            z[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        // velocities
+        vx.resize(natoms);
+        vy.resize(natoms);
+        vz.resize(natoms);
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            vx[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            vy[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        in.read((char*)&rec, sizeof(int));
+        for (int i=0; i<natoms; ++i)
+        {
+            in.read((char*)&val, sizeof(double));
+            vz[i] = val;
+        }
+        in.read((char*)&rec, sizeof(int));
+
+        if (has_force_and_pe)
+        {
+            // forces
+            fx.resize(natoms);
+            fy.resize(natoms);
+            fz.resize(natoms);
+
+            in.read((char*)&rec, sizeof(int));
+            for (int i=0; i<natoms; ++i)
+            {
+                in.read((char*)&val, sizeof(double));
+                fx[i] = val;
+            }
+            in.read((char*)&rec, sizeof(int));
+
+            in.read((char*)&rec, sizeof(int));
+            for (int i=0; i<natoms; ++i)
+            {
+                in.read((char*)&val, sizeof(double));
+                fy[i] = val;
+            }
+            in.read((char*)&rec, sizeof(int));
+
+            in.read((char*)&rec, sizeof(int));
+            for (int i=0; i<natoms; ++i)
+            {
+                in.read((char*)&val, sizeof(double));
+                fz[i] = val;
+            }
+            in.read((char*)&rec, sizeof(int));
+
+            // pe
+            pe.resize(natoms);
+
+            in.read((char*)&rec, sizeof(int));
+            for (int i=0; i<natoms; ++i)
+            {
+                in.read((char*)&val, sizeof(double));
+                pe[i] = val;
+            }
+            in.read((char*)&rec, sizeof(int));
+        }
     }
-
-    in.getline(line, 4096); // finish the last line of atoms
-    in.getline(line, 4096); // skip the velocities comment header
-
-    // fill the velocities
-    vx.resize(natoms);
-    vz.resize(natoms);
-    vy.resize(natoms);
-    for (int i=0; i<natoms; ++i)
+    else
     {
-        in >> vx[i] >> vy[i] >> vz[i];
+        char line[4096];
+        in.getline(line, 4096); // skip the time comment header
+        in.getline(line, 4096); // skip the time, energy, etc
+        in.getline(line, 4096); // skip the coordinates comment header
+
+        // fill the atoms
+        x.resize(natoms);
+        z.resize(natoms);
+        y.resize(natoms);
+        for (int i=0; i<natoms; ++i)
+        {
+            in >> x[i] >> y[i] >> z[i];
+        }
+
+        in.getline(line, 4096); // finish the last line of atoms
+        in.getline(line, 4096); // skip the velocities comment header
+
+        // fill the velocities
+        vx.resize(natoms);
+        vz.resize(natoms);
+        vy.resize(natoms);
+        for (int i=0; i<natoms; ++i)
+        {
+            in >> vx[i] >> vy[i] >> vz[i];
+        }
+
+        if (has_force_and_pe)
+        {
+            // NOTE: We have no example ASCII files v4.0+ yet to test this.
+
+            // fill the forces
+            in.getline(line, 4096); // finish the last line of velocities
+            in.getline(line, 4096); // skip the forces comment header
+
+            fx.resize(natoms);
+            fz.resize(natoms);
+            fy.resize(natoms);
+            for (int i=0; i<natoms; ++i)
+            {
+                in >> fx[i] >> fy[i] >> fz[i];
+            }
+
+            // fill the PE values
+            in.getline(line, 4096); // finish the last line of forces
+            in.getline(line, 4096); // skip the PE comment header
+
+            pe.resize(natoms);
+            for (int i=0; i<natoms; ++i)
+            {
+                in >> pe[i];
+            }
+        }
     }
 }
 

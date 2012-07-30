@@ -56,6 +56,9 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   June 22, 2010
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Jul 30 11:03:21 EDT 2012
+//    Added support for binary files, and for forces and potential energies.
 // ****************************************************************************
 
 class avtGULPFileFormat : public avtMTSDFileFormat
@@ -82,7 +85,9 @@ class avtGULPFileFormat : public avtMTSDFileFormat
     ifstream            in;
     std::string         filename;
     bool                md_read;
+    bool                binary;
 
+    bool                has_force_and_pe;
     int                 ntimesteps;
     int                 current_timestep;
 
@@ -96,6 +101,11 @@ class avtGULPFileFormat : public avtMTSDFileFormat
     std::vector<float>  vx;
     std::vector<float>  vy;
     std::vector<float>  vz;
+    std::vector<float>  fx;
+    std::vector<float>  fy;
+    std::vector<float>  fz;
+    std::vector<float>  pe;
+
 
     void OpenFileAtBeginning();
     void ReadAllMetaData();
