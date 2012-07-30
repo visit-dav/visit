@@ -55,7 +55,7 @@ typedef avtVector Vector;
 
 #include <vector>
 
-struct WindingPair {
+struct WindingPairStat {
   unsigned int toroidal;
   unsigned int poloidal;
   double stat;
@@ -70,6 +70,23 @@ class FieldlineProperties;
 #ifndef POINCARE_FIELDLINE_PROPERTIES_H
 #define POINCARE_FIELDLINE_PROPERTIES_H
 
+class WindingPair {
+
+public:
+  WindingPair( unsigned int t, unsigned int p )
+  {
+    toroidal = t;
+    poloidal = p;
+  };
+
+  unsigned int first() { return toroidal; };
+  unsigned int second() { return poloidal; };
+
+  unsigned int toroidal;
+  unsigned int poloidal;  
+};
+
+
 class FieldlineProperties {
 
 public:
@@ -77,8 +94,10 @@ public:
   FieldlineProperties()
   {
     type = FieldlineProperties::UNKNOWN_TYPE;
-    analysisState = FieldlineProperties::UNKNOWN_STATE;
+
     analysisMethod = FieldlineProperties::DEFAULT_METHOD;
+    searchState    = FieldlineProperties::NO_SEARCH;
+    analysisState  = FieldlineProperties::UNKNOWN_ANALYSIS;
 
     source = FieldlineProperties::UNKNOWN_TYPE;
     
@@ -103,70 +122,85 @@ public:
     
     maxPunctures      = 0;
     nPuncturesNeeded  = 0;
+
+    parentOPointIC = 0;
+    childOPointIC = 0;
   };
 
 enum FieldlineType { UNKNOWN_TYPE  = 0,
 
-                     ORIGINAL_SEED = 1,
+                     PERIODIC = 0x0010,
+                     RATIONAL = 0x0010,
 
-                     PERIODIC = 10,
-                     RATIONAL = 10,
-                     O_POINT  = 11,
-                     X_POINT  = 12,
-                     
-                     QUASI_PERIODIC = 20,
-                     IRRATIONAL     = 20,
-                     FLUX_SURFACE   = 21,
-                     ISLAND_PRIMARY_CHAIN = 22,
-                     ISLAND_SECONDARY_CHAIN = 23,
-                     
-                     ISLAND_PRIMARY_SECONDARY_AXIS = 24,
-                     ISLAND_SECONDARY_SECONDARY_AXIS = 25,
+                     O_POINT  = 0x0011,
+                     X_POINT  = 0x0012,
 
+                     
+                     QUASI_PERIODIC = 0x0060,
+                     IRRATIONAL     = 0x0060,
+
+                     FLUX_SURFACE   = 0x0020,
+
+                     ISLAND_CHAIN                    = 0x0040,
+
+                     ISLAND_PRIMARY_CHAIN            = 0x0040,
+                     ISLAND_SECONDARY_CHAIN          = 0x0042,
+
+                     ISLAND_PRIMARY_SECONDARY_AXIS   = 0x0041,
+                     ISLAND_SECONDARY_SECONDARY_AXIS = 0x0043,
+                     
                      CHAOTIC = 30 };
   
-enum AnalysisMethod { DEFAULT_METHOD,
-                      RATIONAL_SEARCH,
-                      RATIONAL_MINIMIZE,
-                      RATIONAL_BRACKET }; //Remove a curve from continueExecute logic
+enum AnalysisMethod { UNKNOWN_METHOD = 0,
+                      DEFAULT_METHOD = 1,
 
-enum AnalysisState { UNKNOWN_STATE = 0,
+                      RATIONAL_SEARCH   = 10,
+                      RATIONAL_MINIMIZE = 11,
+                      RATIONAL_BRACKET  = 12 }; //Remove a curve from continueExecute logic
 
+enum AnalysisState { UNKNOWN_ANALYSIS = 0,
+
+                     COMPLETED  = 2,
+                     TERMINATED = 3,
+                     
                      OVERRIDE = 5,
 
+                     DELETE   = 7,
+
                      ADDING_POINTS = 10,
-                     RATIONAL_TEMPLATE_SEED = 11,
-                     RATIONAL_SURFACE_SEED = 12,
 
-                     O_POINT_SEED = 22,
-                     X_POINT_SEED = 23,
+                     ADD_O_POINTS = 15,
+                     ADD_X_POINTS = 16,
 
-                     COMPLETED  = 30,
-                     TERMINATED = 40,
-                     
-                     DELETE     = 99,
+                     ADD_BOUNDARY_POINT = 17 };
 
-                     ADD          = 50,
-                     ADD_O_POINTS = 51,
-                     ADD_X_POINTS = 52,
+enum SearchState { UNKNOWN_SEARCH = 0,
 
-                     ADD_RATIONAL_SEED_POINT = 55 };
+                   NO_SEARCH = 1,
 
-////// Code for rational surface search
-enum SearchingState { ORIGINAL_RATIONAL = 100,
-                      SEARCHING_SEED,
-                      WAITING_SEED,
-                      FINISHED_SEED,
-                      MINIMIZING_A      = 105,  // Used to bracket the minimum
-                      MINIMIZING_B,
-                      MINIMIZING_C,
-                      MINIMIZING_X0     = 110, // Used for Golden search routine
-                      MINIMIZING_X1,
-                      MINIMIZING_X2,
-                      MINIMIZING_X3,
-                      BRACKETING_A      = 120, //Used to bracket the minimum
-                      BRACKETING_B,
-                      BRACKETING_C };
+                   ////// Code for island width search
+                   ISLAND_O_POINT,
+                   ISLAND_BOUNDARY_SEARCH,
+
+                   ////// Code for island width search
+                      
+                   ////// Code for rational surface search
+                   ORIGINAL_RATIONAL = 100,
+                   SEARCHING_SEED,
+                   WAITING_SEED,
+                   FINISHED_SEED,
+                   MINIMIZING_A      = 105,  // Used to bracket the minimum
+                   MINIMIZING_B,
+                   MINIMIZING_C,
+                   MINIMIZING_X0     = 110, // Used for Golden search routine
+                   MINIMIZING_X1,
+                   MINIMIZING_X2,
+                   MINIMIZING_X3,
+                   BRACKETING_A      = 120, //Used to bracket the minimum
+                   BRACKETING_B,
+                   BRACKETING_C
+                      ////// Code for rational surface search
+};
 
 public:
 
@@ -180,14 +214,13 @@ public:
   AnalysisState analysisState;
 
   ////// Code for rational surface search
-  SearchingState searchState;
+  SearchState searchState;
 
   unsigned int iteration;
 
   double safetyFactor;
 
-
-  // Base number of windings
+  // Base number of transits
   unsigned int toroidalWinding;
   unsigned int poloidalWinding;
 
@@ -214,19 +247,40 @@ public:
   unsigned int toroidalResonance;
   unsigned int poloidalResonance;
 
-  std::vector< std::pair< unsigned int, unsigned int > > windingPairs;
+  std::vector< WindingPair > windingPairs;
+
+  std::map< WindingPair, unsigned int > topWindingPairs;
 
   unsigned int windingGroupOffset;
   unsigned int islands;
   unsigned int islandGroups;
 
+  // If a surface it is overlap found geometrically
+  // If an island (primary or secondary) toroidalPeriod / toroidalResonance
   float nnodes;
 
   unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
 
-  std::vector< avtVector > OPoints;
-  bool seedOPoints;
+  // Seeds for islands
+  avtVector lastSeedPoint;
+  std::vector< avtVector > seedPoints;
+
+  ////// Code for island width search
+  bool pastFirstSearchFailure;
+  double islandWidth;
+  double searchBaseDelta;
+  double searchDelta;
+  double searchIncrement;
+  double searchMagnitude;
+  avtVector searchNormal;
+  avtPoincareIC* parentOPointIC;
+  avtPoincareIC* childOPointIC;
+
+  unsigned int baseToroidalWinding;
+  unsigned int basePoloidalWinding;
+
+  ////// Code for island width search
 
   ////// Code for rational surface search
   // The rational points bounding the location of the minimization action
@@ -238,10 +292,10 @@ public:
 };
 #endif
 
+
 class FieldlineLib
 {
 public:
-
   Point interpert( Point lastPt, Point currPt, double t );
 
   int ccw( Vector v0, Vector v1 );
@@ -292,14 +346,14 @@ public:
                           double &averageSafetyFactor,
                           double &stdDev );
 
-  void SortWindingPairs( std::vector< WindingPair > &windingPairs,
-                         bool reverse = false );
+  void SortWindingPairStats( std::vector< WindingPairStat > &windingPairStats,
+                             bool reverse = false );
 
-  void RankWindingPairs( std::vector< WindingPair > &windingPairs,
-                         bool LT = true );
+  void RankWindingPairStats( std::vector< WindingPairStat > &windingPairStats,
+                             bool LT = true );
 
   void poloidalWindingCheck( std::vector< unsigned int > &poloidalWindingset,
-                             std::vector< WindingPair > &windingSetList );
+                             std::vector< WindingPairStat > &windingPairStats );
 
   void
   periodicityStats( std::vector< Point >& points,
@@ -349,15 +403,15 @@ public:
   void
   GetBaseWindingPairs( std::vector< unsigned int > &poloidalWindingCounts,
                        std::vector< Point > &poloidal_puncture_pts,
-                       std::vector< WindingPair > &baseWindingPairs,
+                       std::vector< WindingPairStat > &baseWindingPairStats,
                        double &windingPairConfidence,
                        unsigned int &toroidalWindingMax,
                        unsigned int &poloidalWindingMax,
                        unsigned int &windingNumberMatchIndex );
 
   void
-  GetPeriodWindingPairs( std::vector< WindingPair > &baseWindingPairs,
-                         std::vector< WindingPair > &periodWindingPairs,
+  GetPeriodWindingPairs( std::vector< WindingPairStat > &baseWindingPairStats,
+                         std::vector< WindingPairStat > &periodWindingPairStats,
                          std::vector< std::pair< unsigned int, double > > &toroidalStats,
                          std::vector< std::pair< unsigned int, double > > &poloidalStats );
 
@@ -384,7 +438,7 @@ public:
                           unsigned int nnodes,
                           unsigned int moduloValue,
                           std::vector< Point > &centers,
-                          std::vector< Point > &nearestBoundaryPoints );
+                          std::vector< Vector > &axis );
 
   Point findSkeletonCenter( Skeleton::Skeleton &s,
                             unsigned int nHullPts );

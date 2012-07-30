@@ -45,6 +45,8 @@
 
 #include <avtStateRecorderIntegralCurve.h>
 
+#include <map>
+
 // ****************************************************************************
 //  Class: avtPoincareIC
 //
@@ -71,6 +73,23 @@
 
 class avtPoincareIC;
 
+class WindingPair {
+
+public:
+  WindingPair( unsigned int t, unsigned int p )
+  {
+    toroidal = t;
+    poloidal = p;
+  };
+
+//  unsigned int first() { return toroidal; };
+//  unsigned int second() { return poloidal; };
+
+  unsigned int toroidal;
+  unsigned int poloidal;
+};
+
+
 class FieldlineProperties {
 
 public:
@@ -78,10 +97,10 @@ public:
   FieldlineProperties()
   {
     type = FieldlineProperties::UNKNOWN_TYPE;
-    analysisState = FieldlineProperties::UNKNOWN_STATE;
-    analysisMethod = FieldlineProperties::DEFAULT_METHOD;
 
-    searchState = FieldlineProperties::UNKNOWN_SEARCH;
+    analysisMethod = FieldlineProperties::DEFAULT_METHOD;
+    searchState    = FieldlineProperties::NO_SEARCH;
+    analysisState  = FieldlineProperties::UNKNOWN_ANALYSIS;
 
     source = FieldlineProperties::UNKNOWN_TYPE;
     
@@ -123,7 +142,7 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      QUASI_PERIODIC = 0x0060,
                      IRRATIONAL     = 0x0060,
 
-                     FLUX_SURFACE   = 0x0021,
+                     FLUX_SURFACE   = 0x0020,
 
                      ISLAND_CHAIN                    = 0x0040,
 
@@ -135,12 +154,14 @@ enum FieldlineType { UNKNOWN_TYPE  = 0,
                      
                      CHAOTIC = 30 };
   
-enum AnalysisMethod { DEFAULT_METHOD,
-                      RATIONAL_SEARCH,
-                      RATIONAL_MINIMIZE,
-                      RATIONAL_BRACKET }; //Remove a curve from continueExecute logic
+enum AnalysisMethod { UNKNOWN_METHOD = 0,
+                      DEFAULT_METHOD = 1,
 
-enum AnalysisState { UNKNOWN_STATE = 0,
+                      RATIONAL_SEARCH   = 10,
+                      RATIONAL_MINIMIZE = 11,
+                      RATIONAL_BRACKET  = 12 }; //Remove a curve from continueExecute logic
+
+enum AnalysisState { UNKNOWN_ANALYSIS = 0,
 
                      COMPLETED  = 2,
                      TERMINATED = 3,
@@ -154,36 +175,35 @@ enum AnalysisState { UNKNOWN_STATE = 0,
                      ADD_O_POINTS = 15,
                      ADD_X_POINTS = 16,
 
-                     ADD_WIDTH_POINT };
+                     ADD_BOUNDARY_POINT = 17 };
 
-enum SearchingState { UNKNOWN_SEARCH = 0,
+enum SearchState { UNKNOWN_SEARCH = 0,
 
-                      ////// Code for island width search
-                      ISLAND_O_POINT,
+                   NO_SEARCH = 1,
 
-                      ISLAND_PCA_SEARCH,
-                      ISLAND_WIDTH_SEARCH,
-                      ISLAND_WIDTH_COMPLETED,
-                      ////// Code for island width search
+                   ////// Code for island width search
+                   ISLAND_O_POINT,
+                   ISLAND_BOUNDARY_SEARCH,
+
+                   ////// Code for island width search
                       
-                      ////// Code for rational surface search
-                      ORIGINAL_RATIONAL = 100,
-                      SEARCHING_SEED,
-                      WAITING_SEED,
-                      FINISHED_SEED,
-                      MINIMIZING_A      = 105,  // Used to bracket the minimum
-                      MINIMIZING_B,
-                      MINIMIZING_C,
-                      MINIMIZING_X0     = 110, // Used for Golden search routine
-                      MINIMIZING_X1,
-                      MINIMIZING_X2,
-                      MINIMIZING_X3,
-                      BRACKETING_A      = 120, //Used to bracket the minimum
-                      BRACKETING_B,
-                      BRACKETING_C
+                   ////// Code for rational surface search
+                   ORIGINAL_RATIONAL = 100,
+                   SEARCHING_SEED,
+                   WAITING_SEED,
+                   FINISHED_SEED,
+                   MINIMIZING_A      = 105,  // Used to bracket the minimum
+                   MINIMIZING_B,
+                   MINIMIZING_C,
+                   MINIMIZING_X0     = 110, // Used for Golden search routine
+                   MINIMIZING_X1,
+                   MINIMIZING_X2,
+                   MINIMIZING_X3,
+                   BRACKETING_A      = 120, //Used to bracket the minimum
+                   BRACKETING_B,
+                   BRACKETING_C
                       ////// Code for rational surface search
 };
-
 
 
 public:
@@ -198,7 +218,7 @@ public:
   AnalysisState analysisState;
 
   ////// Code for rational surface search
-  SearchingState searchState;
+  SearchState searchState;
 
   unsigned int iteration;
 
@@ -231,7 +251,9 @@ public:
   unsigned int toroidalResonance;
   unsigned int poloidalResonance;
 
-  std::vector< std::pair< unsigned int, unsigned int > > windingPairs;
+  std::vector< WindingPair > windingPairs;
+
+  std::map< WindingPair, unsigned int > topWindingPairs;
 
   unsigned int windingGroupOffset;
   unsigned int islands;
@@ -251,7 +273,6 @@ public:
   ////// Code for island width search
   bool pastFirstSearchFailure;
   double islandWidth;
-  double searchBaseDelta;
   double searchDelta;
   double searchIncrement;
   double searchMagnitude;
@@ -333,27 +354,47 @@ public:
 
 // ostream operators for FieldlineProperties::AnalysisState's enum types
 inline std::ostream& operator<<( std::ostream& out, 
-                                 FieldlineProperties::AnalysisState status )
+                                 FieldlineProperties::AnalysisState state )
 {
-    switch( status )
+    switch( state )
     {
-    case FieldlineProperties::UNKNOWN_STATE:
-        return out << "UNKNOWN_STATE";
+    case FieldlineProperties::UNKNOWN_ANALYSIS:
+        return out << "UNKNOWN_ANALYSIS";
     case FieldlineProperties::OVERRIDE:
         return out << "OVERRIDE";
     case FieldlineProperties::ADDING_POINTS:
         return out << "ADDING_POINTS";
     case FieldlineProperties::ADD_O_POINTS:
         return out << "ADD_O_POINTS";
+    case FieldlineProperties::ADD_BOUNDARY_POINT:
+        return out << "ADD_BOUNDARY_POINT";
     case FieldlineProperties::COMPLETED:
         return out << "COMPLETED";
     case FieldlineProperties::TERMINATED:
         return out << "TERMINATED";
     default:
-        return out << "UNKNOWN";
+        return out << "???????";
     }
 }
 
+// ostream operators for FieldlineProperties::AnalysisState's enum types
+inline std::ostream& operator<<( std::ostream& out, 
+                                 FieldlineProperties::SearchState state )
+{
+    switch( state )
+    {
+    case FieldlineProperties::UNKNOWN_SEARCH:
+        return out << "UNKNOWN_SEARCH";
+    case FieldlineProperties::NO_SEARCH:
+        return out << "NO_SEARCH";
+    case FieldlineProperties::ISLAND_O_POINT:
+        return out << "ISLAND_O_POINT";
+    case FieldlineProperties::ISLAND_BOUNDARY_SEARCH:
+        return out << "ISLAND_BOUNDARY_SEARCH";
+    default:
+        return out << "???????";
+    }
+}
 
 inline std::ostream& operator<<( std::ostream& out, 
                                   FieldlineProperties::FieldlineType type )
@@ -381,7 +422,7 @@ inline std::ostream& operator<<( std::ostream& out,
     case FieldlineProperties::CHAOTIC:
         return out << "CHAOTIC";
     default:
-        return out << "UNKNOWN";
+        return out << "???????";
     }
 }
 #endif 

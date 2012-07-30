@@ -1,4 +1,5 @@
-/*****************************************************************************
+/*************************************
+****************************************
 *
 * Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
@@ -37,11 +38,20 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            RationaSurfaceLib.h                            //
+//                            RationalSurfaceLib.h                           //
 // ************************************************************************* //
 
 #ifndef RATIONAL_SURFACE_LIB_H
 #define RATIONAL_SURFACE_LIB_H
+
+
+
+#include "FieldlineAnalyzerLib.h"
+
+#include <math.h>
+#include <map>
+
+#define _USE_MATH_DEFINES
 
 #include <avtVector.h>
 #include <avtPoincareIC.h>
@@ -49,52 +59,40 @@
 #include <vector>
 
 
-const bool RATIONAL_DEBUG = 1;
+// Rational Search Settings
+//--------------------------
+// This is the max distance new seeds will be placed from each other
+#define MAX_SEED_SPACING               0.0125
 
+// Sometimes the rational search gets caught in a loop. This is a hard limit on that.
+#define MAX_ITERATIONS                 50
+
+// I'm not using this right now, the purpose was superceded by the introduction of MAX_SPACING
+#define MINIMIZING_SPACING_FACTOR      0.01
+
+// This clarifies that what I'm seeing are all rationals, to make life easier while programming
+#define HIDE_NON_RATIONALS             1
+
+// This is to enable logging
+#define RATIONAL_DEBUG                 1
+
+// This basically says how close two intersections have to be on the plane for the curve to be considered a rational
+#define MAX_SPACING                    .0001
+
+
+// This is a constant used in the minimization algorithm. The golden ratio is essentially used to guess
+// a new point if a minimum has not been bracketed
 const double golden_R = 0.61803399, golden_C = 1 - golden_R;
 
-/**     
- *
- *      pythDist
- *      Get the pythagorean distance between two points on the xz-plane
- *
- **/
-double pythDist( avtVector p1, avtVector p2 );
-
-/**     
- *
- *      getAngle
- *      Get the angle between three points, let c be the center.
- *
- */
-double getAngle( avtVector a, avtVector b, avtVector c );
-
-/**
- *      getSeeds
- *      Return a vector of seed points for the given rational
- *
- **/
-std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
-                                 double maxDistance = .025);
-
-
-/**
- *
- * Look at the distance between the centroid of each toroidal group
- * and the points that are in it.
- *
- **/
-float rationalDistance( std::vector< avtVector >& points,
+// HELPER METHODS //
+double PythDist( avtVector p1, avtVector p2 );
+double GetAngle( avtVector a, avtVector b, avtVector c );
+std::vector<avtVector> GetSeeds( avtPoincareIC *poincare_ic,
+                                 double maxDistance = .025); //MAX_SEED_SPACING
+float RationalDistance( std::vector< avtVector >& points,
                         unsigned int toroidalWinding,
                         unsigned int &index );
-
-/**
- *      findMinimizationIndex
- *      Takes in a curve, returns index of puncture point contained between
- *      pt1 and pt2
- *
- **/
-int findMinimizationIndex( std::vector<avtVector> puncturePts,
+int FindMinimizationIndex( std::vector<avtVector> puncturePts,
                            avtVector pt1,
                            avtVector pt2);
 #endif

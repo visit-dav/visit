@@ -79,18 +79,33 @@ class Point
 {
 public:
   Point (Number X = 0, Number Y = 0) : x (X), y (Y) { }
+
   Number x, y;
+
   bool operator == (const Point &p) const 
   { 
     return SIMILAR (x, p.x) && SIMILAR (y, p.y); 
   }
+
   Point operator * (const Number &n) const 
   { 
     return Point (n*x, n*y); 
   }
+
   int isInfinity (void) 
   { 
     return *this == Point (INFINITY, INFINITY); 
+  }
+
+  void normalize( )
+  {
+    double mag = sqrt(x*x + y*y);
+
+    if (mag != 0) 
+    { 
+      x /= mag;
+      y /= mag;
+    }
   }
 };
 
