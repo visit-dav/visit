@@ -51,6 +51,7 @@
 #include <avtFeatureEdgesFilter.h>
 #include <avtUserDefinedMapper.h>
 #include <avtMoleculeFilter.h>
+#include <avtCallback.h>
 #include <AtomicProperties.h>
 
 #include <DebugStream.h>
@@ -185,6 +186,10 @@ avtMoleculePlot::Create()
 //  Creation:   February  3, 2006
 //
 //  Modifications:
+//
+//     Carson Brownlee, July 27, 2012
+//     Fixing manta updates for molecule plot
+//
 // ****************************************************************************
 
 void
@@ -193,6 +198,8 @@ avtMoleculePlot::SetAtts(const AttributeGroup *a)
     renderer->SetAtts(a);
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const MoleculeAttributes*)a);
+    if (avtCallback::UseManta())  //Temporary fix to force updates
+      needsRecalculation = true;
     atts = *(const MoleculeAttributes*)a;
 
     moleculeFilter->SetAtts(&atts);
@@ -212,7 +219,7 @@ avtMoleculePlot::SetAtts(const AttributeGroup *a)
 //      extents The extents used by the plot.
 //
 //  Programmer: Jeremy Meredith
-//  Creation:   February  3, 2006 
+//  Creation:   February  3, 2006
 //
 // ****************************************************************************
 
@@ -234,7 +241,7 @@ avtMoleculePlot::GetDataExtents(vector<double> &extents)
 // ****************************************************************************
 // Method: avtMoleculePlot::SetColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's color table if the color table is the same as that of
 //   the plot or we are using the default color table for the plot.
 //
@@ -247,7 +254,7 @@ avtMoleculePlot::GetDataExtents(vector<double> &extents)
 // Creation:   March 23, 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -365,7 +372,7 @@ avtMoleculePlot::ApplyOperators(avtDataObject_p input)
 //  Method: avtMoleculePlot::ApplyOperators
 //
 //  Purpose:
-//      Performs the rendering transformation for an molecule plot. 
+//      Performs the rendering transformation for an molecule plot.
 //
 //  Arguments:
 //      input   The input data object.
@@ -390,7 +397,7 @@ avtMoleculePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtMoleculePlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior of the output.  
+//      Customizes the behavior of the output.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February  3, 2006
@@ -433,7 +440,7 @@ avtMoleculePlot::CustomizeBehavior(void)
 //  Method: avtMoleculePlot::CustomizeMapper
 //
 //  Purpose:
-//    Use the info to set the isolevels in the legend.  
+//    Use the info to set the isolevels in the legend.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   February  3, 2006
@@ -605,7 +612,7 @@ avtMoleculePlot::GetLegend(void)
 }
 
 // ****************************************************************************
-//  Method:  
+//  Method:
 //
 //  Purpose:
 //    Could this be any harder?  The variable legend is nice and
@@ -666,13 +673,13 @@ avtMoleculePlot::SetLegendRange()
     vector <string> usedLabels;
     behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
     int nlabels = usedLabels.size();
-    
+
     if (nlabels == 0)
     {
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage("No subsets present");
-    }  
-    else 
+    }
+    else
     {
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
@@ -816,7 +823,7 @@ avtMoleculePlot::SetLegendRange()
 
 
 // ****************************************************************************
-//  Method: avtMoleculePlot::CreateLegendColorMaps 
+//  Method: avtMoleculePlot::CreateLegendColorMaps
 //
 //  Purpose:
 //    Create the mapping between label names and colors.  This must be

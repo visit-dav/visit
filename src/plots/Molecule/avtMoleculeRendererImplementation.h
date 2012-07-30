@@ -43,6 +43,8 @@ class avtLookupTable;
 class vtkPolyData;
 class vtkDataArray;
 class MoleculeAttributes;
+class vtkRenderer;
+class vtkActor;
 struct avtViewInfo;
 
 // ****************************************************************************
@@ -79,6 +81,11 @@ class avtMoleculeRendererImplementation
                           bool is2D) = 0;
     virtual void   InvalidateColors() { };
     virtual void   SetLevelsLUT(avtLookupTable *) = 0;
+    virtual void   SetVTKRenderer(vtkRenderer* ren) { VTKRen = ren; }
+    virtual void   SetVTKActor(vtkActor* a) { VTKActor = a; }
+protected:
+    vtkRenderer* VTKRen;
+    vtkActor* VTKActor;
 private:
     avtLookupTable *levelsLUT;
 };

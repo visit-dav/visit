@@ -125,6 +125,7 @@ class vtkMantaManager : public vtkObject
     bool customBackground;
     std::string materialType;
     double reflectance;
+    double specularPower;
 };
 
 #endif

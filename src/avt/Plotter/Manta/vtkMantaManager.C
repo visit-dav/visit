@@ -33,6 +33,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include <Interface/Object.h>
 #include <Model/AmbientLights/ConstantAmbient.h>
 #include <Model/AmbientLights/AmbientOcclusion.h>
+#include <Model/AmbientLights/AmbientOcclusionBackground.h>
 #include <Model/Backgrounds/ConstantBackground.h>
 #include <Model/Primitives/Sphere.h>
 #include <Model/Materials/Lambertian.h>
@@ -93,8 +94,10 @@ vtkMantaManager::vtkMantaManager()
   customBackground = false;
   materialType = "default";
   reflectance = 0.0;
+  specularPower = 0;
   GetVar<std::string>("VISIT_MANTA_MATERIAL", materialType);
   GetVar<double>("VISIT_MANTA_REFLECTANCE", reflectance);
+  GetVar<double>("VISIT_MANTA_SPECULAR_POWER", specularPower);
   this->MantaFactory = new Manta::Factory( this->MantaEngine );
   this->Started = false;
 
@@ -231,13 +234,15 @@ void vtkMantaManager::StartEngine(int maxDepth,
     customBackground = true;
   }
   this->MantaScene->setBackground( background );
+  float aoIntensity = 0.7;
+  GetVar<float>("VISIT_MANTA_AO_INTENSITY", aoIntensity);
 
   // create empty world group
   if (!MantaWorldGroup)
     this->MantaWorldGroup = new Manta::Group();
   this->MantaScene->setObject( this->MantaWorldGroup );
 
-  this->MantaWorldGroup->add(new Manta::Sphere(new Manta::Lambertian(Manta::Color(Manta::RGBColor(1,0,0))), Manta::Vector(0,0,0), 0.1));
+  this->MantaWorldGroup->add(new Manta::Sphere(new Manta::Lambertian(Manta::Color(Manta::RGBColor(0,0,0))), Manta::Vector(0,0,0), 0.00001f));
 
   // create empty LightSet with ambient light
   this->MantaLightSet = new Manta::LightSet();
@@ -245,7 +250,12 @@ void vtkMantaManager::StartEngine(int maxDepth,
       new Manta::ConstantAmbient(
         Manta::Color(Manta::RGBColor( ambient[0], ambient[1], ambient[2] ))));
   if (GetVar<int>("VISIT_MANTA_AO_SAMPLES",intvar))
-    this->MantaLightSet->setAmbientLight(new Manta::AmbientOcclusion(Manta::Color(Manta::RGBColor(.7,.7,.7)), 10, intvar, false));
+  {
+    //if (customBackground)
+    //  this->MantaLightSet->setAmbientLight(new Manta::AmbientOcclusionBackground(Manta::Color(Manta::RGBColor(aoIntensity,aoIntensity,aoIntensity)), 10.0f, intvar, true, background));
+    //else
+      this->MantaLightSet->setAmbientLight(new Manta::AmbientOcclusion(Manta::Color(Manta::RGBColor(aoIntensity,aoIntensity,aoIntensity)), 10.0f, intvar, false));
+  }
   this->MantaLightSet->add(new Manta::PointLight(Manta::Vector(-2,4,-8), Manta::Color(Manta::RGB(0.0,0.0,0.0))));
   this->MantaScene->setLights( this->MantaLightSet );
 

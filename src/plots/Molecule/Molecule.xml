@@ -8,6 +8,7 @@
       avtOpenGLMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
+      avtMantaMoleculeRenderer.C
       avtMoleculeFilter.C
     </Files>
     <LIBS components="V">
@@ -17,6 +18,7 @@
     <Files components="E">
       avtMoleculeRenderer.C
       avtOpenGLMoleculeRenderer.C
+      avtMantaMoleculeRenderer.C
       avtOpenGLAtomTexturer2D.C
       avtOpenGLAtomTexturer3D.C
       avtMoleculeFilter.C
@@ -24,10 +26,12 @@
     <LIBS components="ESer">
       ${GLEW_LIB}
       ${OPENGL_gl_LIBRARY}
+      avtplotter_ser
     </LIBS>
     <LIBS components="EPar">
       ${GLEW_LIB}
       ${OPENGL_gl_LIBRARY}
+      avtplotter_ser
     </LIBS>
     <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MoleculeAttributes.code">
       <Enum name="AtomRenderingMode">

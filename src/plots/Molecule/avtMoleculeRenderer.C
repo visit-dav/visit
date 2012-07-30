@@ -57,6 +57,11 @@
 
 #include <avtCallback.h>
 #include <avtOpenGLMoleculeRenderer.h>
+#include <vtk/InitVTKRenderingConfig.h>
+#ifdef VISIT_MANTA
+  #include <avtMantaMoleculeRenderer.h>
+#endif
+#include <avtCallback.h>
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 
@@ -150,7 +155,7 @@ avtMoleculeRenderer::New(void)
 {
     return new avtMoleculeRenderer;
 }
- 
+
 // ****************************************************************************
 //  Method:  avtMoleculeRenderer::Render
 //
@@ -186,8 +191,13 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
     {
         if (rendererImplementation)
             delete rendererImplementation;
+#ifdef VISIT_MANTA
+        if (avtCallback::UseManta())
+          rendererImplementation = new avtMantaMoleculeRenderer;
+        else
+#endif VISIT_MANTA
+          rendererImplementation = new avtOpenGLMoleculeRenderer;
 
-        rendererImplementation = new avtOpenGLMoleculeRenderer;
         currentRendererIsValid = true;
 
         rendererImplementation->SetLevelsLUT(levelsLUT);
@@ -207,6 +217,8 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
     }
     vtkPolyData *polydata = (vtkPolyData*)ds;
 
+    rendererImplementation->SetVTKRenderer(VTKRen);
+    rendererImplementation->SetVTKActor(VTKActor);
     rendererImplementation->Render(polydata,
                                    atts,
                                    immediateModeRendering,
@@ -296,7 +308,7 @@ void
 avtMoleculeRenderer::GlobalLightingOn()
 {
     //
-    // Stupid hack -- when you turn off the ambient lighting, 
+    // Stupid hack -- when you turn off the ambient lighting,
     // it never sets the global ambient coefficient to zero.
     // However, it will repeatedly call GlobalLightingOn (followed by
     // calling GlobalSetAmbientCoefficient when it's necessary).  Thus,
@@ -340,7 +352,7 @@ avtMoleculeRenderer::GlobalLightingOff()
 //
 // ****************************************************************************
 void
-avtMoleculeRenderer::SetSpecularProperties(bool flag, double coeff, 
+avtMoleculeRenderer::SetSpecularProperties(bool flag, double coeff,
                                            double power,
                                            const ColorAttribute &color)
 {
@@ -376,17 +388,17 @@ avtMoleculeRenderer::InvalidateColors()
 // ****************************************************************************
 // Method: avtMoleculeRenderer::SetLevelsLUT
 //
-// Purpose: 
+// Purpose:
 //   Sets a lookup table for the renderer to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 29 12:02:11 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 avtMoleculeRenderer::SetLevelsLUT(avtLookupTable *lut)
 {
     levelsLUT = lut;

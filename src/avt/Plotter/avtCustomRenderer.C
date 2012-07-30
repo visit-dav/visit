@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <visitstream.h>
 
+#include <vtkActor.h>
 #include <vtkRenderer.h>
 
 #include <avtImageMapper.h>
@@ -69,6 +70,7 @@ avtCustomRenderer::avtCustomRenderer()
     overrideRenderCallback     = NULL;
     overrideRenderCallbackArgs = NULL;
     VTKRen = NULL;
+    VTKActor = NULL;
     immediateModeRendering = false;
 }
 
@@ -106,6 +108,20 @@ avtCustomRenderer::SetVTKRenderer(vtkRenderer *r)
         VTKRen->Register(NULL);
 }
 
+
+// ****************************************************************************
+//  Method: avtCustomRenderer::SetVTKActor
+//
+//  Programmer: Carson Brownlee
+//  Creation:   July 24, 2012
+//
+// ****************************************************************************
+
+void
+avtCustomRenderer::SetVTKActor(vtkActor *a)
+{
+    VTKActor = a;
+}
 
 void
 avtCustomRenderer::SetAlternateDisplay(void *)

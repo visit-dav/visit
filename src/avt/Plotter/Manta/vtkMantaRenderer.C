@@ -120,6 +120,32 @@ vtkStandardNewMacro(vtkMantaRenderer);
 
 typedef float BUFFERT;
 
+std::string GetVarString4(std::string var)
+{
+  std::string v = "";
+  char* str = getenv(var.c_str());
+  //if (!str)
+  //  cerr << "WARNING: \"" << var << "\" ENV not found\n";
+  if (str)
+    v = std::string(str);
+  return v;
+}
+
+  template<typename T>
+bool GetVar4(std::string var, T& val)
+{
+  T v;
+  std::stringstream str(GetVarString4(var));
+  if (str.str() == "")
+  {
+    cout << "unable to find " << var << endl;
+    return false;
+  }
+  str >> v;
+  val = v;
+  return true;
+}
+
 //----------------------------------------------------------------------------
 vtkMantaRenderer::vtkMantaRenderer() :
   EngineInited( false ), EngineStarted( false ),
@@ -133,8 +159,11 @@ vtkMantaRenderer::vtkMantaRenderer() :
   // Default options
   this->NumberOfWorkers = 8;
   this->EnableShadows = 0;
-  this->Samples = 8; //CD DEBUG
+  this->Samples = 1;
   this->MaxDepth = 5;
+  int newsamples = 1;
+  GetVar4<int>("VISIT_MANTA_SPP", this->Samples);
+  GetVar4<int>("VISIT_MANTA_SHADOWS", this->EnableShadows);
 
   // the default global ambient light created by vtkRenderer is too bright.
   this->SetAmbient( 0.0, 0.0, 0.0 );
@@ -338,12 +367,13 @@ vtkCamera* vtkMantaRenderer::MakeCamera()
   return vtkMantaCamera::New();
 }
 
+
 //----------------------------------------------------------------------------
 void vtkMantaRenderer::DeviceRender()
 {
   this->RenderWindow->MakeCurrent();
 
-  //printf("vtkMantaRenderer::DeviceRender (%d) , layer %d\n", this, this->GetLayer());
+  printf("vtkMantaRenderer::DeviceRender (%d) , layer %d\n", this, this->GetLayer());
   // In ParaView, we are wasting time in rendering the "sync layer" with
   // empty background image just to be dropped in LayerRender(). We just
   // don't start the engine with sync layer.
