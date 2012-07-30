@@ -138,6 +138,10 @@
 //    Set VISIT_ARCHIVE_DIR on windows to be /lib. Change minimum CMake
 //    version to 2.8.8.
 //
+//    Kathleen Biagas, Mon Jul 30 15:40:10 MST 2012
+//    No longer add definition _HDF5USEDLL_ for hdf5 based plugins, as this
+//    is now predefined in an hdf5 header.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -890,8 +894,6 @@ class CMakeGeneratorPlugin : public Plugin
         {
             if(libs[i].contains("BOXLIB"))
                  needWindowsDefines = true;
-            else if(libs[i].contains("HDF5"))
-                 needWindowsDefines = true;
             else if(libs[i].contains("HDF4"))
                  needWindowsDefines = true;
             else if(libs[i].contains("FITS"))
@@ -908,8 +910,6 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 if(libs[i].contains("BOXLIB"))
                      out << "  ADD_DEFINITIONS(-DBL_FORT_USE_UPPERCASE)" << endl;
-                else if(libs[i].contains("HDF5"))
-                     out << "  ADD_DEFINITIONS(-D_HDF5USEDLL_)" << endl;
                 else if(libs[i].contains("HDF4"))
                      out << "  ADD_DEFINITIONS(-D_HDFDLL_ -D_MFHDFLIB_ -D_HDFLIB_ -DINTEL86)" << endl;
                 else if(libs[i].contains("FITS"))
