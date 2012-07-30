@@ -495,6 +495,9 @@ QsortiCoordSorter(const void *arg1, const void *arg2)
 //
 //    Paul D. Stewart Mon Jul 16 2012
 //     Added logicalDimension and condensed things a bit.
+//   
+//    Paul D Stesart Jul 26, 2012
+//     Changed group origin to 0
 // ****************************************************************************
 
 void
@@ -565,7 +568,7 @@ avtBATLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->topologicalDimension = logicalDimension;
         mesh->spatialDimension = dimension;
         mesh->blockOrigin = 0;
-        mesh->groupOrigin = 1;
+        mesh->groupOrigin = 0;
 
         mesh->hasSpatialExtents = true;
         mesh->minSpatialExtents[0] = minSpatialExtents[0];
@@ -2680,6 +2683,10 @@ void avtBATLFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    Paul D Stewart, May 9, 2012,
 //    You no longer have a choice about seting up domain abutment information.
 //    Also added support for non-Cartesian grids.
+//    
+//    Paul D Stewart, Jul 26, 2012
+//     Cleaned up to reduce redundant code
+//
 // ****************************************************************************
 
 void
@@ -2695,9 +2702,21 @@ avtBATLFileFormat::BuildDomainNesting()
     //  ***********************************************************************
 
     // first, look to see if we don't already have it cached
-    void_ref_ptr vrTmp = cache->GetVoidRef("amr_mesh",
-                                           AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                           timestep, -1);
+    void_ref_ptr vrTmp; 
+    if (showProcessors)
+    {
+        vrTmp = cache->GetVoidRef("mesh_blockandproc",
+               AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+               timestep, -1);
+    }
+    else
+    {
+        vrTmp = cache->GetVoidRef("amr_mesh",
+               AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+               timestep, -1);
+    }
+
+
     debug5 << "BuildDomainNesting Marker 3" << endl;
 
     if ((*vrTmp == NULL))
@@ -2755,8 +2774,7 @@ avtBATLFileFormat::BuildDomainNesting()
 
             int t2 = visitTimer->StartTimer();
             avtStructuredDomainNesting *dn =
-                new avtStructuredDomainNesting(numBlocks, numLevels);
-
+            new avtStructuredDomainNesting(numBlocks, numLevels);
             dn->SetNumDimensions(dimension);
             debug5 << "BuildDomainNesting Marker 1" << endl;
 
@@ -2794,14 +2812,8 @@ avtBATLFileFormat::BuildDomainNesting()
                 logExts[2] = blocks[i].minGlobalLogicalExtents[2];
 
                 logExts[3] = blocks[i].maxGlobalLogicalExtents[0];
-                if (dimension >= 2)
-                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
-                else
-                    logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
-                if (dimension >= 3)
-                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-                else
-                    logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
+                logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
+                logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
 
                 dn->SetNestingForDomain(i, blocks[i].level,
                                         childBlocks, logExts);
@@ -2810,125 +2822,22 @@ avtBATLFileFormat::BuildDomainNesting()
 
             void_ref_ptr vr = void_ref_ptr(dn,
                                            avtStructuredDomainNesting::Destruct);
-
-            cache->CacheVoidRef("amr_mesh",
+            if (showProcessors)
+            {
+                cache->CacheVoidRef("mesh_blockandproc",
                                 AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
                                 timestep, -1, vr);
+            }
+            else
+            {
+                cache->CacheVoidRef("amr_mesh",
+                                AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                timestep, -1, vr);
+            }
             visitTimer->StopTimer(t2, "BATL setting up patch nesting");
         }
         debug5 << "BuildDomainNesting Marker 1" << endl;
 
-    }
-
-    //  ***********************************************************************
-    //  PROCESS THE "mesh_blockandproc" MESH
-    //  ***********************************************************************
-
-    if (showProcessors)
-    {
-        // first, look to see if we don't already have it cached
-        void_ref_ptr vrTmp2 = cache->GetVoidRef("mesh_blockandproc",
-                                                AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                                timestep, -1);
-
-        if ((*vrTmp2 == NULL))
-        {
-            int i;
-
-            avtStructuredDomainBoundaries *rdb = 0;
-
-            if (simParams.typeGeometry > 2)
-                rdb = new avtCurvilinearDomainBoundaries(true);
-            else
-                rdb = new avtRectilinearDomainBoundaries(true);
-
-            rdb->SetNumDomains(numBlocks);
-            for (i = 0; i < numBlocks; i++)
-            {
-                int logExts[6];
-                logExts[0] = blocks[i].minGlobalLogicalExtents[0];
-                logExts[1] = blocks[i].maxGlobalLogicalExtents[0];
-                logExts[2] = blocks[i].minGlobalLogicalExtents[1];
-                logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
-                logExts[4] = blocks[i].minGlobalLogicalExtents[2];
-                logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-                rdb->SetIndicesForAMRPatch(i, blocks[i].level, logExts);
-
-            }
-            rdb->CalculateBoundaries();
-
-            void_ref_ptr vrdb = void_ref_ptr(rdb,
-                                             avtStructuredDomainBoundaries::Destruct);
-            cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                                timestep, -1, vrdb);
-
-            //
-            // build the avtDomainNesting object
-            //
-
-            if (numLevels > 0)
-            {
-                avtStructuredDomainNesting *dn =
-                    new avtStructuredDomainNesting(numBlocks, numLevels);
-
-                dn->SetNumDimensions(dimension);
-
-                //
-                // Set refinement level ratio information
-                //
-
-                // NOTE: BATL files always have a 2:1 ratio
-                vector<int> ratios(3);
-                ratios[0] = 1;
-                ratios[1] = 1;
-                ratios[2] = 1;
-                dn->SetLevelRefinementRatios(0, ratios);
-                for (i = 1; i < numLevels; i++)
-                {
-                    vector<int> ratios(3);
-                    ratios[0] = 2;
-                    ratios[1] = 2;
-                    ratios[2] = 2;
-                    dn->SetLevelRefinementRatios(i, ratios);
-                }
-
-                //
-                // set each domain's level, children and logical extents
-                //
-                for (i = 0; i < numBlocks; i++)
-                {
-                    vector<int> childBlocks;
-
-                    vector<int> logExts(6);
-
-                    logExts[0] = blocks[i].minGlobalLogicalExtents[0];
-                    logExts[1] = blocks[i].minGlobalLogicalExtents[1];
-                    logExts[2] = blocks[i].minGlobalLogicalExtents[2];
-
-                    logExts[3] = blocks[i].maxGlobalLogicalExtents[0];
-                    if (dimension >= 2)
-                        logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
-                    else
-                        logExts[4] = blocks[i].maxGlobalLogicalExtents[1];
-                    if (dimension >= 3)
-                        logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-                    else
-                        logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-                    dn->SetNestingForDomain(i, blocks[i].level,
-                                            childBlocks, logExts);
-
-//                     dn->SetNestingForDomain(BATLIdToVisitId[i], blocks[i].level,
-//                                             childBlocks, logExts);
-                }
-
-                void_ref_ptr vr = void_ref_ptr(dn,
-                                               avtStructuredDomainNesting::Destruct);
-
-                cache->CacheVoidRef("mesh_blockandproc",
-                                    AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                    timestep, -1, vr);
-            }
-        }
     }
 }
 
