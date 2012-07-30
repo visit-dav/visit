@@ -41,12 +41,6 @@
 // ************************************************************************* //
 
 #include "RationalSurfaceLib.h"
-#include "FieldlineAnalyzerLib.h"
-
-#include <math.h>
-#include <map>
-
-#define _USE_MATH_DEFINES
 
 /**     
  *
@@ -54,7 +48,7 @@
  *      Get the pythagorean distance between two points
  *
  **/
-double pythDist( avtVector p1, avtVector p2 )
+double PythDist( avtVector p1, avtVector p2 )
 {
   return (p1 - p2).length();
 }
@@ -66,12 +60,12 @@ double pythDist( avtVector p1, avtVector p2 )
  *      Get the angle between three points, let b be the center.
  *
  */
-double getAngle( avtVector a, avtVector b, avtVector c )
+double GetAngle( avtVector a, avtVector b, avtVector c )
 {
-  return acos( (pythDist(b,a)*pythDist(b,a) + 
-                pythDist(b,c)*pythDist(b,c) -
-                pythDist(c,a)*pythDist(c,a)) / 
-               (2.0f * pythDist(b,a) * pythDist(b,c)) );
+  return acos( (PythDist(b,a)*PythDist(b,a) + 
+                PythDist(b,c)*PythDist(b,c) -
+                PythDist(c,a)*PythDist(c,a)) / 
+               (2.0f * PythDist(b,a) * PythDist(b,c)) );
 }
         
 
@@ -80,7 +74,7 @@ double getAngle( avtVector a, avtVector b, avtVector c )
  * return a vector of seed points for the given rational
  *
  **/
-std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
+std::vector<avtVector> GetSeeds( avtPoincareIC *poincare_ic,
                                  double maxDistance )
 {
   std::vector<avtVector> puncturePoints;
@@ -92,7 +86,7 @@ std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
   unsigned int windingGroupOffset = poincare_ic->properties.windingGroupOffset;
   
   // Calculate angle size for each puncture point and find the one
-  // that forms the largest angle (i.e. flatest protion of the
+  // that forms the largest angle (i.e. flattest protion of the
   // surface).
   int nSeeds = 0;
   double maxAngle = 0;
@@ -105,7 +99,7 @@ std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
     avtVector pt2 = puncturePoints[(i+windingGroupOffset) % toroidalWinding];
 
     // Save the maximum angle angle and the index of the puncture point.
-    double angle = getAngle( pt0, pt1, pt2 );
+    double angle = GetAngle( pt0, pt1, pt2 );
 
     if (maxAngle < angle)
     {
@@ -115,7 +109,7 @@ std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
 
     // Get the number of points needed to cover the range between two of
     // the puncture points.
-    double dist = pythDist(pt1, pt2);
+    double dist = PythDist(pt1, pt2);
 
     unsigned int seeds = dist / maxDistance;
 
@@ -159,15 +153,15 @@ std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
                (pt2[2] + pt1[2]) / 2);
 
   // Radius of the circle
-  double radius = pythDist(center, pt1);
+  double radius = PythDist(center, pt1);
 
   // Angle between two of the puncture points.
-  double delta = getAngle(pt1, center, pt0) / nSeeds;
+  double delta = GetAngle(pt1, center, pt0) / nSeeds;
 
   avtVector horizontal = center + avtVector(radius, 0, 0);
 
   // Base angle from the center puncture point.
-  double theta = getAngle(horizontal,center,pt1);
+  double theta = GetAngle(horizontal,center,pt1);
 
   if (RATIONAL_DEBUG)
     std::cerr << "center " << center << "  radius " << radius << "  "
@@ -192,16 +186,29 @@ std::vector<avtVector> getSeeds( avtPoincareIC *poincare_ic,
 
 /**
  *
- * Look at the distance between the centroid of each toroidal group
- * and the points that are in it.
+ * I AM DUBIOUS ABOUT THIS FUNCTION
+ * I THINK WE NEED OVERLAPPING PUNCTURE DISTANCES, NOT FROM A CENTROID
  *
  **/
-float rationalDistance( std::vector< avtVector >& points,
+float RationalDistance( std::vector< avtVector >& points,
                         unsigned int toroidalWinding,
                         unsigned int &index )
 {
-  float delta = 0;
+  
+  float delta = 0.0;
 
+  for (unsigned int i=0; i+toroidalWinding < points.size(); ++i)
+    {
+      
+      avtVector vec = points[i] - points[i+toroidalWinding];
+      if( delta < vec.length() )
+      {
+        delta = vec.length();
+        index = i;
+      }
+    }
+
+  /*
   for( unsigned int i=0; i<toroidalWinding; i++ )
   {
     // Get the local centroid for the toroidal group.
@@ -225,8 +232,9 @@ float rationalDistance( std::vector< avtVector >& points,
       }
     }
   }
-
+  */
   return delta;
+  
 }
 
 
@@ -236,7 +244,7 @@ float rationalDistance( std::vector< avtVector >& points,
  * between pt0 and pt1.
  *
  **/
-int findMinimizationIndex( std::vector<avtVector> puncturePts,
+int FindMinimizationIndex( std::vector<avtVector> puncturePts,
                            avtVector pt0,
                            avtVector pt1 )
 {
@@ -244,9 +252,9 @@ int findMinimizationIndex( std::vector<avtVector> puncturePts,
   {
     avtVector puncture = puncturePts[i];
 
-    double a = pythDist(pt0, puncture);
-    double b = pythDist(pt1, puncture);
-    double c = pythDist(pt0, pt1);
+    double a = PythDist(pt0, puncture);
+    double b = PythDist(pt1, puncture);
+    double c = PythDist(pt0, pt1);
 
     if( (pt0[0] < puncture[0] && pt1[0] > puncture[0] || 
          pt0[0] > puncture[0] && pt1[0] < puncture[0]) ||
