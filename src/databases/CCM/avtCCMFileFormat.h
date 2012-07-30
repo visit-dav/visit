@@ -201,6 +201,7 @@ protected:
     vtkPoints        *ReadPoints(int dom, const char *meshname);
     void              SelectCellsForThisProcessor(CellInfoVector &cellInfo, vtkPoints *);
 
+    bool              initialized;
     bool              subdividingSingleMesh;
 
     bool              ccmOpened;
