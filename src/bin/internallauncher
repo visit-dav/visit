@@ -770,6 +770,9 @@ $0 = shift @ARGV;
 #    Change invocation of xterm, to deal with change in -e option in xterm
 #    V271 option.
 #
+#    Eric Brugger, Mon Jul 30 10:11:10 PDT 2012
+#    I modified the script to run the chaos 4 version if running on gremlin.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2105,7 +2108,7 @@ for ($os) {
             push @supportedarchs, "linux-ia64";
         }
         elsif ($mach =~ /x86_64/) {
-            if ($host =~ /^atlas/ || $host =~ /^prism/ || $host =~ /^rzthriller/ || $host =~ /^rzbeast/) {
+            if ($host =~ /^atlas/ || $host =~ /^prism/ || $host =~ /^rzthriller/ || $host =~ /^rzbeast/ || $host =~ /^gremlin/) {
                 push @supportedarchs, "linux-x86_64-chaos4";
             }
             else {
