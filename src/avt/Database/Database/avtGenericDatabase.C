@@ -530,13 +530,13 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     intVector domains, allDomains;
     std::string meshname = md->MeshForVar(spec->GetVariable());
     if (md->GetMesh(meshname) != NULL &&
-        md->GetMesh(meshname)->meshType != AVT_CSG_MESH)
+        md->GetMesh(meshname)->meshType == AVT_CSG_MESH)
     {
-        trav.GetDomainList(domains);
+        trav.GetDomainListAllProcs(domains);
     }
     else
     {
-        trav.GetDomainListAllProcs(domains);
+        trav.GetDomainList(domains);
     }
     trav.GetDomainListAllProcs(allDomains);
 
