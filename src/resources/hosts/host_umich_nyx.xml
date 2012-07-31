@@ -3,14 +3,20 @@
     <Field name="hostNickname" type="string">nyx-login</Field>
     <Field name="host" type="string">nyx-login.engin.umich.edu</Field>
     <Field name="userName" type="string">notset</Field>
-    <Field name="hostAliases" type="string">nyx-login-intel# nyx-login-amd# nyx####</Field>
-    <Field name="directory" type="string">/home/software/rhel5/visit</Field>
+    <Field name="hostAliases" type="string">"nyx-login-intel# nyx-login-amd# nyx####"</Field>
+    <Field name="directory" type="string">/home/software/rhel6/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
+    <Field name="useGateway" type="bool">false</Field>
+    <Field name="gatewayHost" type="string"></Field>
     <Field name="clientHostDetermination" type="string">MachineName</Field>
     <Field name="manualClientHostName" type="string"></Field>
     <Field name="tunnelSSH" type="bool">true</Field>
+    <Field name="maximumNodesValid" type="bool">false</Field>
+    <Field name="maximumNodes" type="int">1</Field>
+    <Field name="maximumProcessorsValid" type="bool">false</Field>
+    <Field name="maximumProcessors" type="int">1</Field>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">2</Field>
@@ -41,11 +47,11 @@
         <Field name="machinefile" type="string"></Field>
         <Field name="visitSetsUpEnv" type="bool">false</Field>
         <Field name="canDoHWAccel" type="bool">false</Field>
-        <Field name="havePreCommand" type="bool">false</Field>
-        <Field name="hwAccelPreCommand" type="string"></Field>
-        <Field name="havePostCommand" type="bool">false</Field>
-        <Field name="hwAccelPostCommand" type="string"></Field>
-        <Field name="profileName" type="string">Parallel Interactive</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"Parallel Interactive"</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
@@ -77,11 +83,11 @@
         <Field name="machinefile" type="string"></Field>
         <Field name="visitSetsUpEnv" type="bool">false</Field>
         <Field name="canDoHWAccel" type="bool">false</Field>
-        <Field name="havePreCommand" type="bool">false</Field>
-        <Field name="hwAccelPreCommand" type="string"></Field>
-        <Field name="havePostCommand" type="bool">false</Field>
-        <Field name="hwAccelPostCommand" type="string"></Field>
-        <Field name="profileName" type="string">Serial Interactive</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"Serial Interactive"</Field>
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
@@ -113,11 +119,11 @@
         <Field name="machinefile" type="string"></Field>
         <Field name="visitSetsUpEnv" type="bool">false</Field>
         <Field name="canDoHWAccel" type="bool">false</Field>
-        <Field name="havePreCommand" type="bool">false</Field>
-        <Field name="hwAccelPreCommand" type="string"></Field>
-        <Field name="havePostCommand" type="bool">false</Field>
-        <Field name="hwAccelPostCommand" type="string"></Field>
-        <Field name="profileName" type="string">Parallel Batch (qsub)</Field>
+        <Field name="GPUsPerNode" type="int">1</Field>
+        <Field name="XArguments" type="string"></Field>
+        <Field name="launchXServers" type="bool">false</Field>
+        <Field name="XDisplay" type="string">:%l</Field>
+        <Field name="profileName" type="string">"Parallel Batch (qsub)"</Field>
     </Object>
     <Field name="activeProfile" type="int">1</Field>
 </Object>
