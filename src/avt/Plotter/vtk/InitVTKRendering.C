@@ -51,7 +51,7 @@
 #endif
 
 
-#include <InitVTKRenderingConfig.h>
+#include <vtk/InitVTKRenderingConfig.h>
 
 #ifdef VISIT_MANTA
 #include <vtkMantaObjectFactory.h>

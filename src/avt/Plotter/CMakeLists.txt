@@ -45,6 +45,9 @@
 #   Carson Brownlee, Sun May  6 16:25:28 PDT 2012
 #   Add support for Manta.
 #
+#   Kathleen Biagas, Tue Jul 31 12:08:32 MST 2012
+#   Change CONFIGURE_FILE settings so things work correctly with 
+#   out-of-source builds.
 #****************************************************************************/
 
 SET(VISIT_VTK_MANTA_SOURCES
@@ -63,8 +66,8 @@ Manta/vtkMantaCubeAxesActor.C
 
 # create configuration file to pass off cmake options
 CONFIGURE_FILE(
-  "${PROJECT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
-  "${PROJECT_BINARY_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h"
+  "${VISIT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
+  "${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h"
 )
 
 SET(AVTPLOTTER_OPENGL_SOURCES
