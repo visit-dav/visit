@@ -98,6 +98,9 @@
 #   Eric Brugger, Wed Jun 27 11:40:14 PDT 2012
 #   I deleted alastor.
 #
+#   Eric Brugger, Mon Jul 30 10:13:05 PDT 2012
+#   I replaced atlas with prism.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -145,7 +148,7 @@ hoth=true
 kickit=true
 sidious=true
 ubuntu1104_64=false
-atlas=true
+prism=true
 aztec=true
 rzthriller=true
 rzzeus=true
@@ -168,7 +171,7 @@ do
          kickit=false
          sidious=false
          ubuntu1104_64=false
-         atlas=false
+         prism=false
          aztec=false
          rzthriller=false
          rzzeus=false
@@ -209,12 +212,12 @@ do
          ubuntu1104_64=true
          shift
          ;;
-      -atlas)
-         atlas=false
+      -prism)
+         prism=false
          shift
          ;;
-      +atlas)
-         atlas=true
+      +prism)
+         prism=true
          shift
          ;;
       -aztec)
@@ -283,7 +286,7 @@ then
    echo "    kickit (B-Div, Linux),"
    echo "    sidious(B-Div, Linux),"
    echo "    Ubunut1104-64(B-Div, Linux),"
-   echo "    atlas (LC, Linux, x86_64),"
+   echo "    prism (LC, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
@@ -510,21 +513,21 @@ then
 fi
 
 #
-# Build on atlas.
+# Build on prism.
 #
-rm -f atlas
-cat <<EOF > atlas
+rm -f prism
+cat <<EOF > prism
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/atlas ; then
-   mkdir /usr/tmp/$user/atlas
+if test ! -d /usr/tmp/$user/prism ; then
+   mkdir /usr/tmp/$user/prism
 fi
-rm -rf /usr/tmp/$user/atlas/visitbuild
-mkdir /usr/tmp/$user/atlas/visitbuild
-mv atlas_$dist.tar.gz /usr/tmp/$user/atlas/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/atlas/visitbuild
+rm -rf /usr/tmp/$user/prism/visitbuild
+mkdir /usr/tmp/$user/prism/visitbuild
+mv prism_$dist.tar.gz /usr/tmp/$user/prism/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/prism/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -533,13 +536,13 @@ export PATH=\$PATH:/usr/bin/X11
 /usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 #
-# cpack for cmake 2.8.8 crashes on atlas so I am using the 2.8.3 version.
+# cpack for cmake 2.8.8 crashes on prism so I am using the 2.8.3 version.
 #
 /usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cpack --config ./CPackConfig.cmake >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on atlas"        > resultlog 2>&1
+echo "        build of visit on prism"        > resultlog 2>&1
 echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -550,17 +553,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): atlas" $emailName < resultlog
+mail  -s "VisIt build ($dist): prism" $emailName < resultlog
 EOF
 
-if [ $atlas = true ]
+if [ $prism = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on atlas"
-      scp atlas atlas:atlas_buildit
-      scp $dist.tar.gz atlas:atlas_$dist.tar.gz
-      ssh atlas608 "chmod 750 atlas_buildit;./atlas_buildit" &
+      echo "Building on prism"
+      scp prism prism:prism_buildit
+      scp $dist.tar.gz prism:prism_$dist.tar.gz
+      ssh prism0 "chmod 750 prism_buildit;./prism_buildit" &
    fi
 fi
 
@@ -640,7 +643,7 @@ export PATH=\$PATH:/usr/bin/X11
 /usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 #
-# cpack for cmake 2.8.8 crashes on atlas so I am using the 2.8.3 version.
+# cpack for cmake 2.8.8 crashes on rzthriller so I am using the 2.8.3 version.
 #
 /usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cpack --config ./CPackConfig.cmake >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -888,5 +891,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 atlas aztec rzthriller rzzeus euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 prism aztec rzthriller rzzeus euclid glory redsky
 fi
