@@ -53,6 +53,7 @@
 class     ColorAttribute;
 class     vtkDataSet;
 class     vtkRenderer;
+class     vtkActor;
 
 typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 
@@ -90,6 +91,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Hank Childs, Thu Sep 30 00:39:47 PDT 2010
 //    Add methods for setting the bbox.
 //
+//    Carson Brownlee, Fri Jul 27 13:54:29 PDT 2012
+//    Add method for setting the actor.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -119,11 +123,12 @@ class PLOTTER_API avtCustomRenderer
     virtual void            SetSurfaceRepresentation(int rep);
     virtual void            SetSpecularProperties(bool,double,double,
                                                   const ColorAttribute&);
- 
+
 
     void                    RegisterOverrideRenderCallback(
                                                OverrideRenderCallback, void *);
     void                    SetVTKRenderer(vtkRenderer *r);
+    void                    SetVTKActor(vtkActor *a);
     virtual void            SetAlternateDisplay(void *dpy);
 
     virtual void            ReducedDetailModeOn() {; }
@@ -134,6 +139,7 @@ class PLOTTER_API avtCustomRenderer
     double                  varmin, varmax;
     double                  bbox[6];
     vtkRenderer            *VTKRen;
+    vtkActor               *VTKActor;
     bool                    immediateModeRendering;
 
     virtual void            Render(vtkDataSet *) = 0;

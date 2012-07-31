@@ -505,7 +505,6 @@ OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
 OPTION(VISIT_MANTA "Use Manta ray tracer for polygonal rendering" OFF)
 IF (VISIT_MANTA)
   INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
-  #FIND_PACKAGE(Manta)
 ENDIF(VISIT_MANTA)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")

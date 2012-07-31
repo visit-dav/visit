@@ -73,6 +73,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include "vtkMantaConfigure.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkMantaTexture.h"
+#include "plotter_exports.h"
 //#include <avtMapper.h>
 //#include <AttributeSubject.h>
 //#include <ColorAttribute.h>
@@ -96,7 +97,7 @@ class vtkRenderWindow;
 class vtkMantaRenderer;
 class vtkMantaManager;
 
-class vtkMantaPolyDataMapper : public vtkPolyDataMapper
+class PLOTTER_API vtkMantaPolyDataMapper : public vtkPolyDataMapper
 {
   public:
     static vtkMantaPolyDataMapper *New(){ return new vtkMantaPolyDataMapper; }
@@ -105,7 +106,7 @@ class vtkMantaPolyDataMapper : public vtkPolyDataMapper
 
     // Description:
     // Implement superclass render method.
-    virtual void RenderPiece(vtkRenderer *ren, vtkActor *a);
+    virtual void RenderPiece(vtkRenderer *ren, vtkActor *a) ;
 
     // Description:
     // Release any graphics resources that are being consumed by this mapper.
@@ -116,6 +117,10 @@ class vtkMantaPolyDataMapper : public vtkPolyDataMapper
     // Description:
     // Draw method for Manta.
     virtual void Draw(vtkRenderer *ren, vtkActor *a);
+
+
+    void AddSphere(double x, double y, double z, double radius, unsigned char r, unsigned char g, unsigned char b);
+    void AddCylinder(double x, double y, double z, double x1, double y1, double z1, double radius, unsigned char r, unsigned char g, unsigned char b);
 
 
    // void SetMoleculeAtts(const MantaMoleculeAttributes& atts) { molecule_atts = atts; }
@@ -135,8 +140,8 @@ class vtkMantaPolyDataMapper : public vtkPolyDataMapper
     //ETX
 
   private:
-    vtkMantaPolyDataMapper(const vtkMantaPolyDataMapper&); // Not implemented.
-    void operator=(const vtkMantaPolyDataMapper&); // Not implemented.
+    //vtkMantaPolyDataMapper(const vtkMantaPolyDataMapper&); // Not implemented.
+    //void operator=(const vtkMantaPolyDataMapper&); // Not implemented.
 
     vtkMantaManager *MantaManager;
 
@@ -157,6 +162,26 @@ class vtkMantaPolyDataMapper : public vtkPolyDataMapper
     class Helper;
     Helper *MyHelper;
     //ETX
+    //
+    struct SphereData
+    {
+      public:
+        SphereData() {}
+        SphereData(double x_, double y_, double z_, double radius_, unsigned char r_, unsigned char g_, unsigned char b_) {x=x_;y=y_;z=z_;radius=radius_;r=r_;g=g_;b=b_;}
+        double x,y,z,radius;
+        unsigned char r,g,b;
+    };
+    struct CylinderData
+    {
+      public:
+        CylinderData() {}
+        CylinderData(double x1_, double y1_, double z1_, double x2_, double y2_, double z2_, double radius_, unsigned char r_, unsigned char g_, unsigned char b_) {p1[0]=x1_;p1[1]=y1_;p1[2]=z1_;p2[0]=x2_;p2[1]=y2_;p2[2]=z2_;radius=radius_;r=r_;g=g_;b=b_;}
+        double p1[3],p2[3],radius;
+        unsigned char r,g,b;
+    };
+
+    std::vector<SphereData> new_spheres;
+    std::vector<CylinderData> new_cylinders;
 };
 
 #endif

@@ -43,6 +43,8 @@
 #include <avtUserDefinedMapper.h>
 
 #include <vtkObjectFactory.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyData.h>
 #include <vtkRenderer.h>
 
 #include <ColorAttribute.h>
@@ -482,10 +484,13 @@ vtkUserDefinedMapperBridge::SetRenderer(avtCustomRenderer_p r)
 //    Added some exception handling.  Not a good idea to let an exception
 //    be thrown up through VTK's GL code.
 //
+//    Carson Brownlee, Fri Jul 27 13:57:44 PDT 2012
+//    Pass along vtkActor.
+//
 // ****************************************************************************
 
 void 
-vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *)
+vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *a)
 {
     //
     // Retrieve the view information and set it with the avt renderer.
@@ -500,6 +505,7 @@ vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *)
     //
     vtkDataSet *input = this->GetInput();
     ren->SetVTKRenderer(r);
+    ren->SetVTKActor(a);
     TRY
     {
         ren->Execute(input);
