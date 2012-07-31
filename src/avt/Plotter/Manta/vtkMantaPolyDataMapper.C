@@ -213,11 +213,21 @@ void vtkMantaPolyDataMapper::ReleaseGraphicsResources(vtkWindow *win)
   this->InternalColorTexture = NULL;
 }
 
+void vtkMantaPolyDataMapper::AddSphere(double x, double y, double z, double radius, unsigned char r, unsigned char g, unsigned char b)
+{
+  new_spheres.push_back(SphereData(x,y,z,radius,r,g,b));
+}
+void vtkMantaPolyDataMapper::AddCylinder(double x, double y, double z, double x1, double y1, double z1, double radius, unsigned char r, unsigned char g, unsigned char b)
+{
+  new_cylinders.push_back(CylinderData(x,y,z,x1,y1,z1,radius,r,g,b));
+}
+
 //----------------------------------------------------------------------------
 // Receives from Actor -> maps data to primitives
 // called by Mapper->Render() (which is called by Actor->Render())
 void vtkMantaPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
 {
+  cerr << "MPDM::RenderPiece\n";
   vtkMantaRenderer* mantaRenderer =
     vtkMantaRenderer::SafeDownCast(ren);
   if (!mantaRenderer)
@@ -272,7 +282,7 @@ void vtkMantaPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
   // and ColorTextureMap as a side effect.
   this->MapScalars( act->GetProperty()->GetOpacity() );
 
-  if ( this->ColorTextureMap )
+  /*if ( this->ColorTextureMap )
   {
     if (!this->InternalColorTexture)
     {
@@ -280,7 +290,7 @@ void vtkMantaPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
       this->InternalColorTexture->RepeatOff();
     }
     this->InternalColorTexture->SetInput(this->ColorTextureMap);
-  }
+  }*/
 
   // if something has changed, regenerate Manta primitives if required
   if ( this->GetMTime()  > this->BuildTime ||
@@ -294,10 +304,10 @@ void vtkMantaPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
 
     // If we are coloring by texture, then load the texture map.
     // Use Map as indicator, because texture hangs around.
-    if (this->ColorTextureMap)
+    /*if (this->ColorTextureMap)
     {
       this->InternalColorTexture->Load(ren);
-    }
+    }*/
 
     this->Draw(ren, act);
     this->BuildTime.Modified();
@@ -902,6 +912,16 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
 
   // Compute we need to for color
   this->Representation = mantaProperty->GetRepresentation();
+  if (mantaProperty->GetReflectance() < 0.0001f && this->MantaManager)
+  {
+    if (this->MantaManager->reflectance > 0.0001f)
+      mantaProperty->SetReflectance(this->MantaManager->reflectance);
+  }
+  //if (int(mantaProperty->GetSpecularPower()) < 1 && this->MantaManager)
+  {
+    if (int(this->MantaManager->specularPower) > 0)
+      mantaProperty->SetSpecularPower(this->MantaManager->specularPower);
+  }
 
   this->CellScalarColor = false;
   if (( this->ScalarMode == VTK_SCALAR_MODE_USE_CELL_DATA ||
@@ -922,7 +942,7 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
 
   if ( !this->ScalarVisibility || (!this->Colors && !this->ColorCoordinates))
   {
-    //cerr << "Solid color from actor's property" << endl;
+    cerr << "Solid color from actor's property" << endl;
     material = mantaProperty->GetMantaMaterial();
     if(!material)
     {
@@ -948,11 +968,11 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
     //  mantaProperty->SetSpecularColor(spec2);
     //}
 
-    //cerr << "Color scalar values directly (interpolation in color space)" << endl;
+    cerr << "Color scalar values directly (interpolation in color space)" << endl;
     Manta::Texture<Manta::Color> *texture = new Manta::TexCoordTexture();
     if ( mantaProperty->GetInterpolation() == VTK_FLAT )
     {
-      //cerr << "Flat" << endl;
+      cerr << "Flat" << endl;
       material = new Manta::Flat(texture);
     }
     else
@@ -965,26 +985,28 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
       }
       else
       {
-        if ( mantaProperty->GetSpecular() == 0 )
+        if ( mantaProperty->GetSpecular() == 0 && mantaProperty->GetReflectance() < 0.001f)
         {
           //cerr << "non specular" << endl;
           material = new Manta::Lambertian(texture);
         }
         else
         {
-          cerr << "phong" << endl;
+          cerr << "phong\n";
           double *specular = mantaProperty->GetSpecularColor();
           Manta::Texture<Manta::Color> *specularTexture =
             new Manta::Constant<Manta::Color>
             (Manta::Color(Manta::RGBColor(specular[0],
                                           specular[1],
                                           specular[2])));
+          Manta::Constant<Manta::ColorComponent>* refl = NULL;
+          refl = new Manta::Constant<Manta::ColorComponent>(mantaProperty->GetReflectance());
           material =
             new Manta::Phong
             (texture,
              specularTexture,
              static_cast<int> (mantaProperty->GetSpecularPower()),
-             NULL);
+             refl);
         }
       }
     }
@@ -1000,23 +1022,24 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
   }
   else if (this->ColorCoordinates)
   {
-    //cerr << "interpolate in data space, then color map each pixel" << endl;
-    Manta::Texture<Manta::Color> *texture =
-      this->InternalColorTexture->GetMantaTexture();
-    material = new Manta::Lambertian(texture);
+    cerr << "interpolate in data space, then color map each pixel" << endl;
+   // Manta::Texture<Manta::Color> *texture =
+    //  this->InternalColorTexture->GetMantaTexture();
+    //material = new Manta::Lambertian(texture);
+    material = new Manta::Lambertian(Manta::Color(Manta::RGBColor(1,0,0)));
 
     //this table is a color transfer function with colors that cover the scalar range
     //I think
-    for (int i = 0; i < this->ColorCoordinates->GetNumberOfTuples(); i++)
+    /*for (int i = 0; i < this->ColorCoordinates->GetNumberOfTuples(); i++)
     {
       double *tcoord = this->ColorCoordinates->GetTuple(i);
       texCoords.push_back( Manta::Vector(tcoord[0], 0, 0) );
-    }
+    }*/
   }
   else if (input->GetPointData()->GetTCoords() && actor->GetTexture() )
   {
-    //cerr << "color using actor's texture" << endl;
-    vtkMantaTexture *mantaTexture =
+    cerr << "color using actor's texture" << endl;
+    /*vtkMantaTexture *mantaTexture =
       vtkMantaTexture::SafeDownCast(actor->GetTexture());
     if (mantaTexture)
     {
@@ -1032,7 +1055,7 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
       double *tcoord = tcoords->GetTuple(i);
       texCoords.push_back
         ( Manta::Vector(tcoord[0], tcoord[1], tcoord[2]) );
-    }
+    }*/
   }
 
   // transform point coordinates according to actor's transformation matrix
@@ -1063,71 +1086,105 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
   Manta::Group *tubeGroup = new Manta::Group();
   Manta::Mesh *mesh = new Manta::Mesh();
 
-  //convert VTK_VERTEX cells to manta spheres
-  if ( input->GetNumberOfVerts() > 0 )
+  if (new_spheres.empty())
   {
-    vtkCellArray *ca = input->GetVerts();
-    ca->InitTraversal();
-    vtkIdType npts;
-    vtkIdType *pts;
-    vtkPoints *ptarray = points;
-    double coord[3];
-    vtkIdType cell;
-    Manta::Vector noTC(0.0,0.0,0.0);
-    while ((cell = ca->GetNextCell(npts, pts)))
+    //convert VTK_VERTEX cells to manta spheres
+    if ( input->GetNumberOfVerts() > 0 )
     {
-      //TODO: Make option to scale pointsize by scalar
-
-      ptarray->GetPoint(pts[0], coord);
-      Manta::TextureCoordinateSphere *sphere =
-        new Manta::TextureCoordinateSphere
-        (material,
-         Manta::Vector(coord[0], coord[1], coord[2]),
-         this->PointSize,
-         (texCoords.size()?
-          texCoords[(this->CellScalarColor?cell:pts[0])] : noTC)
-        );
-      sphereGroup->add(sphere);
-    }
-  }
-
-  //convert VTK_LINE type cells to manta cylinders
-  if ( input->GetNumberOfLines() > 0 )
-  {
-    vtkCellArray *ca = input->GetLines();
-    ca->InitTraversal();
-    vtkIdType npts;
-    vtkIdType *pts;
-    vtkPoints *ptarray = points;
-    double coord0[3];
-    double coord1[3];
-    vtkIdType cell;
-    Manta::Vector noTC(0.0,0.0,0.0);
-    while ((cell = ca->GetNextCell(npts, pts)))
-    {
-      ptarray->GetPoint(pts[0], coord0);
-      for (vtkIdType i = 1; i < npts; i++)
+      vtkCellArray *ca = input->GetVerts();
+      ca->InitTraversal();
+      vtkIdType npts;
+      vtkIdType *pts;
+      vtkPoints *ptarray = points;
+      double coord[3];
+      vtkIdType cell;
+      Manta::Vector noTC(0.0,0.0,0.0);
+      while ((cell = ca->GetNextCell(npts, pts)))
       {
-        //TODO: Make option to scale linewidth by scalar
-        ptarray->GetPoint(pts[i], coord1);
-        Manta::TextureCoordinateCylinder *segment =
-          new Manta::TextureCoordinateCylinder
+        //TODO: Make option to scale pointsize by scalar
+
+        ptarray->GetPoint(pts[0], coord);
+        Manta::TextureCoordinateSphere *sphere =
+          new Manta::TextureCoordinateSphere
           (material,
-           Manta::Vector(coord0[0], coord0[1], coord0[2]),
-           Manta::Vector(coord1[0], coord1[1], coord1[2]),
-           this->LineWidth,
+           Manta::Vector(coord[0], coord[1], coord[2]),
+           this->PointSize,
            (texCoords.size()?
-            texCoords[(this->CellScalarColor?cell:pts[0])] : noTC),
-           (texCoords.size()?
-            texCoords[(this->CellScalarColor?cell:pts[1])] : noTC)
+            texCoords[(this->CellScalarColor?cell:pts[0])] : noTC)
           );
-        tubeGroup->add(segment);
-        coord0[0] = coord1[0];
-        coord0[1] = coord1[1];
-        coord0[2] = coord1[2];
+        sphereGroup->add(sphere);
       }
     }
   }
+  for(std::vector<SphereData>::iterator itr = new_spheres.begin(); itr != new_spheres.end(); itr++)
+  {
+    SphereData& d = *itr;
+    Manta::TextureCoordinateSphere *sphere =
+      new Manta::TextureCoordinateSphere
+      (material,
+       Manta::Vector(d.x,d.y,d.z),
+       d.radius,
+       Manta::Vector(Manta::Real(d.r)/255.0,Manta::Real(d.g)/255.0,Manta::Real(d.b)/255.0)
+      );
+    sphereGroup->add(sphere);
+  }
+  new_spheres.resize(0);
+  //convert VTK_LINE type cells to manta cylinders
+  if (new_cylinders.empty())
+  {
+    if ( input->GetNumberOfLines() > 0 )
+    {
+      vtkCellArray *ca = input->GetLines();
+      ca->InitTraversal();
+      vtkIdType npts;
+      vtkIdType *pts;
+      vtkPoints *ptarray = points;
+      double coord0[3];
+      double coord1[3];
+      vtkIdType cell;
+      Manta::Vector noTC(0.0,0.0,0.0);
+      while ((cell = ca->GetNextCell(npts, pts)))
+      {
+        ptarray->GetPoint(pts[0], coord0);
+        for (vtkIdType i = 1; i < npts; i++)
+        {
+          //TODO: Make option to scale linewidth by scalar
+          ptarray->GetPoint(pts[i], coord1);
+          Manta::TextureCoordinateCylinder *segment =
+            new Manta::TextureCoordinateCylinder
+            (material,
+             Manta::Vector(coord0[0], coord0[1], coord0[2]),
+             Manta::Vector(coord1[0], coord1[1], coord1[2]),
+             this->LineWidth,
+             (texCoords.size()?
+              texCoords[(this->CellScalarColor?cell:pts[0])] : noTC),
+             (texCoords.size()?
+              texCoords[(this->CellScalarColor?cell:pts[1])] : noTC)
+            );
+          //tubeGroup->add(segment);
+          coord0[0] = coord1[0];
+          coord0[1] = coord1[1];
+          coord0[2] = coord1[2];
+        }
+      }
+    }
+  }
+  for(std::vector<CylinderData>::iterator itr = new_cylinders.begin(); itr != new_cylinders.end(); itr++)
+  {
+    CylinderData& d = *itr;
+    Manta::TextureCoordinateCylinder *segment =
+      new Manta::TextureCoordinateCylinder
+      (material,
+       Manta::Vector(d.p1[0],d.p1[1],d.p1[2]),
+       Manta::Vector(d.p2[0],d.p2[1],d.p2[2]),
+       d.radius,
+       Manta::Vector(Manta::Real(d.r)/255.0,Manta::Real(d.g)/255.0,Manta::Real(d.b)/255.0),
+       Manta::Vector(Manta::Real(d.r)/255.0,Manta::Real(d.g)/255.0,Manta::Real(d.b)/255.0)
+      );
+    tubeGroup->add(segment);
+  }
+  new_cylinders.resize(0);
+
 
   //convert coordinates to manta format
   //TODO: eliminate the copy

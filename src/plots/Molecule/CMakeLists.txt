@@ -33,6 +33,10 @@ avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
 
+IF(VISIT_MANTA)
+  SET(LIBV_SOURCES ${LIBV_SOURCES} avtMantaMoleculeRenderer.C)
+ENDIF(VISIT_MANTA)
+
 SET(LIBE_SOURCES
 MoleculeEnginePluginInfo.C
 avtMoleculePlot.C
@@ -43,6 +47,10 @@ avtOpenGLAtomTexturer3D.C
 avtMoleculeFilter.C
 ${COMMON_SOURCES}
 )
+
+IF(VISIT_MANTA)
+  SET(LIBE_SOURCES ${LIBE_SOURCES} avtMantaMoleculeRenderer.C)
+ENDIF(VISIT_MANTA)
 
 IF (NOT WIN32)
     SET_SOURCE_FILES_PROPERTIES(avtOpenGLAtomTexturer2D.C avtOpenGLAtomTexturer3D.C avtOpenGLMoleculeRenderer.C 
@@ -66,6 +74,7 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/Plotter
+${VISIT_INCLUDE_DIR}/avt/Plotter/Manta
 ${VISIT_INCLUDE_DIR}/avt/QtVisWindow
 ${VISIT_INCLUDE_DIR}/avt/View
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Colleagues
@@ -102,7 +111,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMoleculePlot visitcommon gui )
 
     ADD_LIBRARY(VMoleculePlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VMoleculePlot visitcommon viewer ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
+    TARGET_LINK_LIBRARIES(VMoleculePlot visitcommon viewer ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_ser )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMoleculePlot VMoleculePlot)
 
@@ -124,13 +133,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMoleculePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
+TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_ser)
 ADD_TARGET_DEFINITIONS(EMoleculePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMoleculePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtplotter_par avtpipeline_par ${GLEW_LIB} ${OPENGL_gl_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtplotter_par avtpipeline_par ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_ser )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_par)
     ADD_TARGET_DEFINITIONS(EMoleculePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

@@ -9,6 +9,12 @@
 # Additionally several .cmake scripts from the Manta build are executed to 
 # insure a similar build environment will be used by the project.
 # 
+# Modifications:
+#   
+#   Hank Childs, Fri Jul 27 14:13:40 PDT 2012
+#   Remove SWIG/Python support, since it isn't needed and screws up Python paths
+#   for the rest of the VisIt build.
+#
 ###############################################################################
 
 IF   (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
@@ -49,17 +55,8 @@ IF   (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
     ${MANTA_LINK_DIRECTORIES}
     )
 
-  # Initialize Python/SWIG.
-  SET(CMAKE_SWIG_OUTDIR ${LIBRARY_OUTPUT_PATH})
-  FIND_PATH(SWIG_DIR swig)
-  FIND_PACKAGE(SWIG)
-
-  # Important: Must use Manta's copy of UseSWIG.cmake
-  INCLUDE(${MANTA_SOURCE_DIR}/CMake/MantaUseSWIG.cmake)
-
   FIND_PACKAGE(PythonLibs)
   INCLUDE_DIRECTORIES(
-    ${PYTHON_INCLUDE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
