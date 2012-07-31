@@ -391,55 +391,6 @@ ZoomInteractor::OnMouseMove()
 
 
 // ****************************************************************************
-//  Method: ZoomInteractor::OnTimer
-//
-//  Purpose:
-//      Throw out the timer events so we can do zooms using only mouse
-//      movements.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 20, 2001
-//
-//  Modifications:
-//    Eric Brugger, Fri Apr 12 14:11:55 PDT 2002
-//    I modified the routine to handle the zooming in here rather than in
-//    superclass.
-//
-//    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
-//    Retreive LastPos from RenderWindowInteractor as it is no longer a member
-//    of the parent class. 
-//    
-//    Kathleen Bonnell, Wed Jun  8 10:01:52 PDT 2011
-//    Use current EventPostion instead of last.
-//
-// ****************************************************************************
-
-void
-ZoomInteractor::OnTimer(void)
-{
-    int Pos[2];
-    if (!rubberBandMode)
-    {
-    
-        vtkRenderWindowInteractor *rwi = Interactor;
-
-        switch (State)
-        {
-          case VTKIS_ZOOM:
-            rwi->GetEventPosition(Pos);
-            ZoomCamera(Pos[0], Pos[1]);
-
-            rwi->CreateTimer(VTKI_TIMER_UPDATE);
-            break;
-
-          default:
-            break;
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: ZoomInteractor::EndRubberBand
 //
 //  Purpose:

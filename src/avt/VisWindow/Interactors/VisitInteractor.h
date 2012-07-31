@@ -489,5 +489,3 @@ VisitInteractor::MatrixPrint(const char *name, const double m[3][3]) const
 }
 
 #endif
-
-

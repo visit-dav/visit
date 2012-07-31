@@ -98,7 +98,6 @@ class VISWINDOW_API ZoomInteractor : public VisitInteractor
     virtual               ~ZoomInteractor();
 
     virtual void           OnMouseMove();
-    virtual void           OnTimer(void);
  
   protected:
     int                    anchorX, anchorY;

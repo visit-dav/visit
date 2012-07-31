@@ -55,7 +55,92 @@
 
 Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
-    ;
+    ctrlOrShiftPushed = false;
+    shouldSpin = false;    
+}
+
+
+// ****************************************************************************
+//  Method: Zoom3D::OnTimer
+//
+//  Purpose:
+//      Throw out the timer events so we can do zooms using only mouse
+//      movements.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 20, 2001
+//
+//  Modifications:
+//    Eric Brugger, Fri Apr 12 14:11:55 PDT 2002
+//    I modified the routine to handle the zooming in here rather than in
+//    superclass.
+//
+//    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
+//    Retreive LastPos from RenderWindowInteractor as it is no longer a member
+//    of the parent class. 
+//    
+//    Kathleen Bonnell, Wed Jun  8 10:01:52 PDT 2011
+//    Use current EventPostion instead of last.
+//
+// ****************************************************************************
+
+void
+Zoom3D::OnTimer(void)
+{
+    if (!rubberBandMode)
+    {
+        vtkRenderWindowInteractor *rwi = Interactor;
+
+        int Pos[2];
+        rwi->GetEventPosition(Pos);
+
+        bool matchedUpState = true;
+        switch (State)
+        {
+        case VTKIS_PAN:
+          PanImage3D(Pos[0], Pos[1]);
+          
+          rwi->CreateTimer(VTKI_TIMER_UPDATE);
+          break;
+          
+        case VTKIS_ZOOM:
+          ZoomImage3D(Pos[0], Pos[1]);
+          
+          rwi->CreateTimer(VTKI_TIMER_UPDATE);
+          break;
+          
+        default:
+          matchedUpState = false;
+          break;
+        }
+        
+        if (!matchedUpState && shouldSpin)
+        {
+            VisWindow *vw = proxy;
+            if(!vw->GetSpinModeSuspended())
+            {
+                if (vw->GetSpinMode())
+                {
+                  OldX = spinOldX;
+                  OldY = spinOldY;
+                  RotateAboutFocus3D(spinNewX, spinNewY, false);
+                  IssueViewCallback(true);
+                  rwi->CreateTimer(VTKI_TIMER_UPDATE);
+                }
+                else
+                {
+                    DisableSpinMode();
+                }
+            }
+            else if(vw->GetSpinMode())
+            {
+              // Don't mess with the camera, just create another timer so
+              // we keep getting into this method until spin mode is no
+              // longer suspended.
+              rwi->CreateTimer(VTKI_TIMER_UPDATE);
+            }
+        }
+    }
 }
 
 
@@ -85,10 +170,27 @@ Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 void
 Zoom3D::StartLeftButtonAction()
 {
-    int x, y;
-    Interactor->GetEventPosition(x, y);
-    StartZoom();
-    StartRubberBand(x, y);
+    DisableSpinMode();
+
+    //
+    // If ctrl or shift is pushed, pan, otherwise zoom.  Save which one we
+    // did so we can issue the proper "End.." statement when the button is
+    // released.
+    //
+    if (Interactor->GetControlKey() || Interactor->GetShiftKey())
+    {
+        StartBoundingBox();
+        StartPan();
+        ctrlOrShiftPushed = true;
+    }
+    else
+    {
+        int x, y;
+        Interactor->GetEventPosition(x, y);
+        StartZoom();
+        StartRubberBand(x, y);
+        ctrlOrShiftPushed = false;
+    }
 }
 
 
@@ -124,9 +226,24 @@ Zoom3D::StartLeftButtonAction()
 void
 Zoom3D::EndLeftButtonAction()
 {
-    EndRubberBand();
-    ZoomCamera();
-    EndZoom();
+    //
+    // We must issue the proper end state for either pan or rotate depending
+    // on whether the shift or ctrl button was pushed.
+    //
+    if (ctrlOrShiftPushed)
+    {
+        EndBoundingBox();
+        EndPan();
+    }
+    else
+    {
+        EndRubberBand();
+        ZoomCamera();
+        EndZoom();
+    }
+
+    EnableSpinMode();
+
     IssueViewCallback();
 }
 
@@ -146,8 +263,16 @@ Zoom3D::EndLeftButtonAction()
 void
 Zoom3D::AbortLeftButtonAction()
 {
-    EndRubberBand();
-    EndZoom();
+    if (ctrlOrShiftPushed)
+    {
+        EndBoundingBox();
+        EndPan();
+    }
+    else
+    {
+        EndRubberBand();
+        EndZoom();
+    }
 }
 
 
@@ -188,7 +313,7 @@ Zoom3D::StartMiddleButtonAction()
 //
 //  Purpose:
 //      Handles the middle button being pushed up.  For Zoom3D, this means
-//      standard panning.
+//      standard zooming.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
@@ -364,5 +489,121 @@ Zoom3D::ZoomCamera(const int x, const int y)
         OldY = y;
 
         vw->SetView3D(newView3D);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: Zoom3D::OnMouseWheelForward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
+//    Brad Whitlock, Fri Mar  2 14:19:45 PST 2012
+//    I added a call to issue the view callback.
+//
+// ****************************************************************************
+
+void
+Zoom3D::OnMouseWheelForward()
+{
+    StartZoom();
+    ZoomImage3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
+
+
+// ****************************************************************************
+//  Method: Zoom3D::OnMouseWheelBackward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.  
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
+//    Brad Whitlock, Fri Mar  2 14:19:45 PST 2012
+//    I added a call to issue the view callback.
+//
+// ****************************************************************************
+
+void
+Zoom3D::OnMouseWheelBackward()
+{
+    StartZoom();
+    ZoomImage3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
+
+// ****************************************************************************
+//  Method: Zoom3D::EnableSpinMode
+//
+//  Purpose:
+//      Enables spin mode.  This will determine if spin mode is appropriate,
+//      and make the correct calls to start it, if so.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 29, 2002
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+Zoom3D::EnableSpinMode(void)
+{
+    VisWindow *vw = proxy;
+    if (vw->GetSpinMode())
+    {
+        shouldSpin = true;
+
+        //
+        // VTK will not be happy unless we enter one of its pre-defined modes.
+        // Timer seems as appropriate as any (there idea of spin is much
+        // different than ours).  Also, set up the first timer so our spinning
+        // can get started.
+        //
+        StartTimer();
+        vtkRenderWindowInteractor *rwi = Interactor;
+        rwi->CreateTimer(VTKI_TIMER_UPDATE);
+    }
+}
+
+// ****************************************************************************
+//  Method: Zoom3D::DisableSpinMode
+//
+//  Purpose:
+//      Disables spin mode if it is currently in action.  This may be called
+//      at any time, even if spin mode is not currently on or even enabled.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 29, 2002
+//
+// ****************************************************************************
+
+void
+Zoom3D::DisableSpinMode(void)
+{
+    if (shouldSpin)
+    {
+        EndTimer();
+        shouldSpin = false;
     }
 }

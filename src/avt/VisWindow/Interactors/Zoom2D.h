@@ -88,11 +88,15 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
                         Zoom2D(VisWindowInteractorProxy &);
     virtual             ~Zoom2D();
  
+    virtual void        OnTimer(void);
+
     virtual void        StartLeftButtonAction();
     virtual void        EndLeftButtonAction();
     virtual void        AbortLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
   protected:
     int                 lastGuideX;
@@ -112,8 +116,11 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     void                DrawGuideLines(int, int, int, int, const bool which[8]);
     void                DrawGuideLine(int, int, int, int);
 
+    void                PanCamera(const int x, const int y);
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
+
+    bool                ctrlOrShiftPushed;
 };
 
 

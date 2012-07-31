@@ -82,15 +82,27 @@ class VISWINDOW_API Zoom3D : public ZoomInteractor
   public:
                         Zoom3D(VisWindowInteractorProxy &);
 
+    virtual void        OnTimer(void);
+
     virtual void        StartLeftButtonAction();
     virtual void        EndLeftButtonAction();
     virtual void        AbortLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
 
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
+
   protected:
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
+
+    bool                ctrlOrShiftPushed;
+    bool                shouldSpin;
+
+    void                EnableSpinMode(void);
+    void                DisableSpinMode(void);
+
 };
 
 

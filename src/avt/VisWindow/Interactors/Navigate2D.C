@@ -359,5 +359,5 @@ void
 Navigate2D::ZoomCamera(const int x, const int y)
 {
     ZoomCamera2D(x, y);
-}
 
+}
