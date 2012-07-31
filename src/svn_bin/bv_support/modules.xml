@@ -35,6 +35,7 @@
             <lib name="adios"/>
             <lib name="visus"/>
             <lib name="pyside"/>
+            <lib name="manta"/>
         </optional>
 
 
@@ -72,6 +73,7 @@
             <lib name="adios"/>
             <lib name="visus"/>
             <lib name="pyside"/>
+            <lib name="manta"/>
         </group>
 
 
@@ -136,6 +138,7 @@
         <group name="nonio" comment="Build non I/O libraries">
             <lib name="icet"/>
             <lib name="mesa"/>
+            <lib name="manta"/>
         </group>
 
         <!--
