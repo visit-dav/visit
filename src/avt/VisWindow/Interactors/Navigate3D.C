@@ -263,9 +263,9 @@ Navigate3D::EndLeftButtonAction()
     else
     {
         EndRotate();
-
-        EnableSpinMode();
     }
+
+    EnableSpinMode();
 
     EndBoundingBox();
 
