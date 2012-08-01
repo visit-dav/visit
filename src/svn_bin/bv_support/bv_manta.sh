@@ -60,15 +60,6 @@ function bv_manta_host_profile
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR \${VISITHOME}/manta/$MANTA_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_MANTA ON TYPE BOOL)" \
-        >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(MANTA_SOURCE_DIR \${VISIT_MANTA_DIR}/include)" \
-        >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(MANTA_BUILD_PREFIX \${VISIT_MANTA_DIR})" \
-        >> $HOSTCONF
     fi
 }
 
@@ -109,8 +100,7 @@ function build_manta
     fi
 
     #
-    info "MANTA_BUILD_DIR:"
-    info $MANTA_BUILD_DIR
+    info "Configuring Manta . . ."
     cd ${MANTA_BUILD_DIR} || error "Can't cd to Manta build dir."
     #apply_manta_patch
     #if [[ $? != 0 ]] ; then
@@ -120,6 +110,7 @@ function build_manta
     #
     # Call configure
     #
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cCompiler="${C_COMPILER}"
     cFlags="${CFLAGS} ${C_OPT_FLAGS}"
     cxxCompiler="${CXX_COMPILER}"
@@ -143,7 +134,7 @@ function build_manta
             #
             #mkdir -p ${MANTA_PREFIX_DIR}/build
             #cmake .
-            cmake -DCMAKE_INSTALL_PREFIX=$MANTA_PREFIX_DIR .
+            ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX=$MANTA_PREFIX_DIR .
             if [[ $? != 0 ]] ; then
                  warn "Manta configure failed.  Giving up"
             return 1

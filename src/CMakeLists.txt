@@ -502,10 +502,6 @@ OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that f
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_MANTA "Use Manta ray tracer for polygonal rendering" OFF)
-IF (VISIT_MANTA)
-  INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
-ENDIF(VISIT_MANTA)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -606,6 +602,7 @@ VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the ViSUS library's include an
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
+VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
@@ -1084,6 +1081,12 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
 IF(MDSPLUS_FOUND)
     SET(HAVE_LIBMDSPLUS 1)
 ENDIF(MDSPLUS_FOUND)
+
+# Configure Manta support.
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
+IF(MANTA_FOUND)
+    SET(HAVE_LIBMANTA 1)
+ENDIF(MANTA_FOUND)
 
 
 IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
