@@ -1,6 +1,5 @@
 ###############################################################################
-# This scripts prompts the user to set the variable MANTA_SOURCE_DIR and 
-# MANTA_BUILD_PREFIX. After this is done, the script sets variables:
+# This script sets these variables:
 #
 # MANTA_INCLUDE               -- Paths containing Manta header files.
 # MANTA_TARGET_LINK_LIBRARIES -- List of Manta shared libraries.  (-l on link line)
@@ -15,16 +14,31 @@
 #   Remove SWIG/Python support, since it isn't needed and screws up Python paths
 #   for the rest of the VisIt build.
 #
+#   Eric Brugger, Mon Jul 30 15:36:54 PDT 2012
+#   Completely removed Python support. Made the code more like how other third
+#   party libraries are handled in visit.
+#
 ###############################################################################
 
-IF   (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-  # Set the include and link variables.
+SET_UP_THIRD_PARTY(MANTA lib include
+  Manta_Factory
+  Manta_UserInterface
+  Manta_Engine
+  Manta_Model
+  Manta_Image
+  Manta_Interface
+  Manta_Core_XUtils
+  Manta_Core About)
+
+IF (VISIT_MANTA_DIR)
+  SET(VISIT_MANTA ON TYPE BOOL)
+  SET(MANTA_SOURCE_DIR ${VISIT_MANTA_DIR}/include)
+  SET(MANTA_BUILD_PREFIX ${VISIT_MANTA_DIR})
+
   SET(MANTA_INCLUDE
-    ${MANTA_SOURCE_DIR}
-    ${MANTA_SOURCE_DIR}/SCIRun
-    ${MANTA_SOURCE_DIR}/SCIRun/include
-    ${MANTA_BUILD_PREFIX}/include
+    ${VISIT_MANTA_DIR}/include
     )
   
   SET(MANTA_TARGET_LINK_LIBRARIES
@@ -36,14 +50,12 @@ IF   (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
     Manta_Interface
     Manta_Core_XUtils
     Manta_Core
-#    SCIRun_Core
     About
     )
 
   SET(MANTA_LINK_DIRECTORIES
-    ${MANTA_BUILD_PREFIX}/lib
+    ${VISIT_MANTA_DIR}/lib
     )
-
 
   # Include Manta header files.
   INCLUDE_DIRECTORIES(
@@ -55,36 +67,22 @@ IF   (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
     ${MANTA_LINK_DIRECTORIES}
     )
 
-  FIND_PACKAGE(PythonLibs)
-  INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-
   # Load Manta macros.
-  INCLUDE(${MANTA_SOURCE_DIR}/CMake/Macros.cmake)
+  INCLUDE(${VISIT_MANTA_DIR}/include/CMake/Macros.cmake)
 
   # Set flags based on the architecture we are on (no compiler stuff)
-  INCLUDE (${MANTA_SOURCE_DIR}/CMake/ConfigArchitecture.cmake)
+  INCLUDE(${VISIT_MANTA_DIR}/include/CMake/ConfigArchitecture.cmake)
 
   # Determine information about the compiler
-  INCLUDE (${MANTA_SOURCE_DIR}/CMake/CompilerInfo.cmake)
+  INCLUDE(${VISIT_MANTA_DIR}/include/CMake/CompilerInfo.cmake)
 
   # Set various options based on the build type.
-  INCLUDE (${MANTA_SOURCE_DIR}/CMake/BuildType.cmake)
+  INCLUDE(${VISIT_MANTA_DIR}/include/CMake/BuildType.cmake)
 
   # Check if the build supports SSE
-  INCLUDE (${MANTA_SOURCE_DIR}/CMake/CheckSSE.cmake)  
+  INCLUDE(${VISIT_MANTA_DIR}/include/CMake/CheckSSE.cmake)  
 
   # Force compilation options for all code that includes Manta headers.
   FORCE_ADD_FLAGS("-DSCI_NOPERSISTENT")
 
-
-# Otherwise prompt the user to enter the desired Manta build to use.
-ELSE (MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
-
-  SET(MANTA_SOURCE_DIR "" CACHE PATH "Directory Manta was checked out into.")
-  SET(MANTA_BUILD_PREFIX "" CACHE PATH "Build directory containing lib/ bin/ etc. sub-directories.")
-
-  MESSAGE(FATAL_ERROR "Manually set the paths MANTA_SOURCE_DIR and MANTA_BUILD_PREFIX")
-
-ENDIF(MANTA_SOURCE_DIR AND MANTA_BUILD_PREFIX)
+ENDIF(VISIT_MANTA_DIR)
