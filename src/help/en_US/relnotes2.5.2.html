@@ -19,45 +19,45 @@ list of changes in release 2.5.1.</p>
 <p><b><font size="4">Configuration changes in version 2.5.2</font></b></p>
 <ul>
 <li>Host profiles were added for LLNL's <i>cab</i> machine.</li>
-<li>The host profiles for LLNL's atlas machine were removed due to machine retirement.</li>
+<li>The host profiles for LLNL's atlas machine were removed because the machine was retired.</li>
 <li>The <i>partition</i> in the host profile for ORNL's lens machine was changed from <i>analysis</i> to <i>computation</i>.</li>
-<li>VisIt now runs on the chaos 4 version on LLNL's rzbeast machine instead of the default chaos 5 version.</li>
+<li>VisIt now runs the chaos 4 version on LLNL's rzbeast and gremlin machines instead of the default chaos 5 version.</li>
 <li>The host profiles for the Flux and Nyx clusters at the University of Michigan Center for Advanced Computing were updated.</li>
 </ul>
 
 <p><b><font size="4">Bugs fixed in version 2.5.2</font></b></p>
 <ul>
 <li>Recent versions of Ubuntu can now make movies and launch the command line interface from the GUI.</li>
-<li>Plots using variables created with the DataBinning operator would delete their actors when changing active plots in the plot list. This caused the plot to appear in the Pending state and lead to unnecessary re-execution of the plot.</li>
-<li>Clearing pick points turns off the Spreadsheet plot's tracer plane.</li>
+<li>Plots using variables created with the DataBinning operator would delete their actors when changing the active plots in the plot list. This caused the plot to appear in the Pending state and lead to unnecessary re-execution of the plot.</li>
+<li>Clearing the pick points no longer turns off the Spreadsheet plot's tracer plane.</li>
 <li>The Revolve operator now properly handles vector data.</li>
 <li>Build_visit no longer hangs with the message "initializing qt vars" when run in graphical mode.</li>
 <li>Plots made using data from a libsim-instrumented simulation did not update their SIL restrictions when the simulation called <i>VisItTimestepChanged()</i>. This could cause existing plots' SIL restrictions to become out of date with respect to the simulation.</li>
 <li>Volume plots using the splatting renderer now support data with double-precision coordinates.</li>
 <li>The Spheral reader no longer converts its data to floating-point, but passes it down the pipeline in its native double-precision format.</li>
 <li>The text in the "Time slider" annotation object no longer partially overlaps the time slider bar when it contains characters with descenders (i.e. "g", "j", "p", "q" or "y").</li>
-<li>Fixed double-clicking on a '.visit' file on Windows so that VisIt will open the related database.</li>
+<li>Double-clicking on a '.visit' file on Windows once again starts VisIt with the related database.</li>
 <li>The linux-intel version of VisIt no longer displays the error message:
 <i><p>Error opening plugin file:<br>/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so<br>(/usr/local/visit/2.5.1/linux-intel/plugins/databases/libMITAPS_MOABDatabase.so: undefined symbol: H5DSis_scale)</p></i>
 </li>
-<li>The Reflect operator will now correctly show that quadrant graphics on Windows.</li>
+<li>The Reflect operator will now correctly show the quadrant graphics on Windows.</li>
 <li>The <i>VisItSetMPICommunicator()</i> function in Libsim has been fixed.</li>
 <li>A bug was corrected with the X Ray Image query where it would crash when run in parallel for some combinations of processor count and image size.</li>
-<li>Curve plots rendered by VisIt's scalable rendering mode are sometimes incomplete with certain numbers of processors when IceT image compositing is used.</li>
-<li>Pressing stop when playing an animation with multiple plots results in some plots not drawn.</li>
-<li>A blank image is displayed when frame advancing with scalable rendering mode.</li>
+<li>Curve plots rendered by VisIt's scalable rendering mode are now complete when IceT image compositing is used.</li>
+<li>Pressing stop when playing an animation with multiple plots now results in all the visible plots being drawn.</li>
+<li>A blank image is no longer displayed when frame advancing with scalable rendering mode.</li>
 <li>VisIt no longer runs out of memory when plotting curves with millions of points.</li>
-<li>Command recording for saving a window only records the commands needed to replicate the save settings; it does not contain the actual <i>SaveWindow()</i> function call.</li>
-<li>The VisIt Python module's <i>LaunchNowin()</i> function is not exposed immediately after the module gets imported.</li>
-<li>Command recording is broken when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
-<li>Saving a window with transparent plots on Windows, now correctly renders the transparent image.</li>
+<li>Command recording for saving a window now includes the actual <i>SaveWindow()</i> function call.</li>
+<li>The VisIt Python module's <i>LaunchNowin()</i> function is now exposed immediately after the module gets imported.</li>
+<li>Command recording now works when the <i>visit</i> Python module is imported into a standard Python interpreter using <i>import visit</i>.</li>
+<li>Saving a window with transparent plots on Windows now correctly renders the transparent image.</li>
 <li>Setting LD_LIBRARY_PATH to VisIt's library directory prior to running a system Python is no longer needed to import the VisIt Python module.</li>
 <li>Importing the VisIt Python module using <i>from visit import *</i> once again adds VisIt module functions to the top-level namespace.</li>
 <li>NETCDF data no longer marks certain cells for later time slices when certain meta-data is set.</li>
 <li>VisIt no longer gives an error message for new plots made from a CSG mesh after changing the mesh management settings.</li>
 <li>Changing a Pseudocolor plot's opacity on Windows will no longer crash the Viewer or yield an empty plot.</li>
-<li>BOV Reader on Windows can now handle very large files with very large offset specifications.</li>
-<li>The CCM reader can not be used with automatic file grouping.</li>
+<li>The BOV Reader on Windows can now handle very large files with very large offset specifications.</li>
+<li>The CCM reader can now be used with automatic file grouping.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.5.2</font></b></p>
