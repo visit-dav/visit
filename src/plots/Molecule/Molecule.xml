@@ -31,7 +31,7 @@
     <LIBS components="EPar">
       ${GLEW_LIB}
       ${OPENGL_gl_LIBRARY}
-      avtplotter_ser
+      avtplotter_par
     </LIBS>
     <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MoleculeAttributes.code">
       <Enum name="AtomRenderingMode">
