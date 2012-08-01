@@ -310,6 +310,13 @@
 #    Cyrus Harrison, Fri Apr  6 17:49:29 PDT 2012
 #    Use explicit call to python for beta report gen.
 #
+#    Eric Brugger, Wed Aug  1 11:59:16 PDT 2012
+#    I corrected a bug where all the tests that were executed after a test
+#    generated a core file were flagged as having failed.  This was caused
+#    by the "file" command now returning the full path of the executable
+#    instead of just the executable name, causing the "mv" command to fail.
+#    Now the script just takes the portion of the name after the last "\".
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -1039,7 +1046,8 @@ while test $testIndex -lt $testCount; do
                 fileType=`file $fname | cut -d':' -f2 | grep core`
                 if test "$fileType" != ""; then
                     error=1 
-                    coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
+                    corePath=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
+                    coreName=`echo $corePath | rev | cut -d'/' -f1 | rev`
                     #cp ../src/exe/$coreName cores/.
                     mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}.${coreFileNum}
                 else
