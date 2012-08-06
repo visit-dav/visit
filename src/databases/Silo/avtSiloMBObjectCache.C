@@ -43,6 +43,8 @@
 #include <avtSiloMBObjectCache.h>
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <DebugStream.h>
 using namespace std;
 
 // ****************************************************************************
@@ -55,6 +57,8 @@ using namespace std;
 //  Creation:   Wed Dec 21 14:30:09 PST 2011
 //
 //  Modifications:
+//   Cyrus Harrison, Mon Aug  6 11:37:08 PDT 2012
+//    Add more flexibility w/ by parsing namescheme block array name.
 //
 // ****************************************************************************
 
@@ -78,6 +82,8 @@ avtSiloMBNameGenerator::avtSiloMBNameGenerator
     // we need to create nameschemes.
     // this is for a specific use case, it will
     // be generalized after a some changes to the silo api
+
+
     fileVals  = (int*) DBGetVar(dbfile,"procs");
     if(fileVals != 0)
     {
@@ -88,7 +94,26 @@ avtSiloMBNameGenerator::avtSiloMBNameGenerator
             fileVals = 0;
         }
     }
-    blockVals = (int*) DBGetVar(dbfile,"DomainFiles");
+
+    // read the namescheme string and find out the name
+    // of the array we need.
+
+    string ns(block_ns);
+    // default to this if something goes wrong.
+    string arr_name("DomainFiles");
+
+    size_t pos = ns.rfind("|#");
+    if(pos != string::npos)
+    {
+        // get array name, ignore "|#" at start and "[n]" at end.
+        arr_name = ns.substr(pos + 2,ns.size() - (pos +5));
+    }
+
+    debug5 << "avtSiloMBNameGenerator: Using Silo object '"
+           <<  arr_name
+           << "' as the namescheme block map array." <<endl;
+
+    blockVals = (int*) DBGetVar(dbfile,arr_name.c_str());
     if(blockVals != 0)
     {
         blockNS = DBMakeNamescheme(block_ns,blockVals);
