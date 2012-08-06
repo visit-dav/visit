@@ -1243,8 +1243,10 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
 
     if (DebugStream::Level4())
+    {
+        debug4 << mName << "Returning meta data:" << endl;
         md->Print(DebugStream::Stream4());
-
+    }
     simv2_SimulationMetaData_free(h);
 #endif
 }
@@ -2435,11 +2437,13 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 //  Creation:    Mon Mar  1 16:50:18 PST 2010
 //
 //  Modifications:
+//    Brad Whitlock, Mon Aug  6 15:21:01 PDT 2012
+//    Allow for empty domain lists.
 //
 // ****************************************************************************
 
 void
-avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
+avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 {
 #ifndef MDSERVER
     const char *mName = "avtSimV2FileFormat::PopulateIOInformation: ";
@@ -2465,10 +2469,11 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation& ioInfo)
         return;
     }
 
-    int owner, dataType, nComps, nTuples;
+    int owner, dataType, nComps, nTuples = 0;
     void *data = 0;
-    if(simv2_VariableData_getData(mydoms, owner, dataType, nComps, nTuples, 
-       data) == VISIT_ERROR)
+    if(mydoms != VISIT_INVALID_HANDLE &&
+       simv2_VariableData_getData(mydoms, owner, dataType, nComps, nTuples,
+                                  data) == VISIT_ERROR)
     {
         debug1 << mName << "Could not get domain list data" << endl;
         simv2_FreeObject(h);

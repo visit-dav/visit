@@ -196,6 +196,7 @@ ENDFUNCTION(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION)
 ##
 ## Simulation targets
 ##
+ADD_SIMV2_SIMULATION(aresamr aresamr.c)
 
 ADD_SIMV2_SIMULATION(amr amr.c)
 ADD_FORTRAN_SIMV2_SIMULATION(famr famr.f)
@@ -217,6 +218,7 @@ ADD_SIMV2_SIMULATION(life life.c)
 ADD_PARALLEL_SIMV2_SIMULATION(life_par life.c)
 
 ADD_SIMV2_SIMULATION(mandelbrot mandelbrot.C patch.C)
+ADD_PARALLEL_SIMV2_SIMULATION(mandelbrot_par mandelbrot.C patch.C)
 
 ADD_SIMV2_SIMULATION(material material.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fmaterial fmaterial.f)

@@ -98,25 +98,28 @@ simv2_DomainList_setDomains(visit_handle h, int alldoms, visit_handle mydoms)
         return VISIT_ERROR;
     }
  
-    // Get the domains
-    int owner, dataType, nComps, nTuples;
-    void *data = 0;
-    if(simv2_VariableData_getData(mydoms, owner, dataType, nComps, 
-       nTuples, data) == VISIT_ERROR)
+    if(mydoms != VISIT_INVALID_HANDLE)
     {
-        return VISIT_ERROR;
-    }
+        // Get the domains
+        int owner, dataType, nComps, nTuples;
+        void *data = 0;
+        if(simv2_VariableData_getData(mydoms, owner, dataType, nComps, 
+           nTuples, data) == VISIT_ERROR)
+        {
+            return VISIT_ERROR;
+        }
 
-    // Error checking.
-    if(nComps != 1)
-    {
-        VisItError("DomainList must have 1 component");
-        return VISIT_ERROR;
-    }
-    if(dataType != VISIT_DATATYPE_INT)
-    {
-        VisItError("DomainList must contain int data");
-        return VISIT_ERROR;
+        // Error checking.
+        if(nComps != 1)
+        {
+            VisItError("DomainList must have 1 component");
+            return VISIT_ERROR;
+        }
+        if(dataType != VISIT_DATATYPE_INT)
+        {
+            VisItError("DomainList must contain int data");
+            return VISIT_ERROR;
+        }
     }
 
     if(obj != NULL)
@@ -156,24 +159,28 @@ simv2_DomainList_check(visit_handle h)
     VisIt_DomainList *obj = GetObject(h, "simv2_DomainList_check");
     if(obj != NULL)
     {
-        if(obj->mydoms == VISIT_INVALID_HANDLE)
+        if(obj->mydoms != VISIT_INVALID_HANDLE)
         {
-            VisItError("No domains were supplied for the DomainList");
-            return VISIT_ERROR;
-        }
-        int owner, dataType, nComps, nTuples;
-        void *data = NULL;
-        if(simv2_VariableData_getData(obj->mydoms, owner, dataType, nComps,
-            nTuples, data) == VISIT_OKAY)
-        {
-            int *doms = (int*)data;
-            for(int i = 0; i < nTuples; ++i)
+            int owner, dataType, nComps = 0, nTuples = 0;
+            void *data = NULL;
+            if(simv2_VariableData_getData(obj->mydoms, owner, dataType, nComps,
+                nTuples, data) == VISIT_OKAY)
             {
-                if(doms[i] < 0 || doms[i] >= obj->alldoms)
+                int *doms = (int*)data;
+                for(int i = 0; i < nTuples; ++i)
                 {
-                    VisItError("The domain list contained out of range domain numbers");
-                    return VISIT_ERROR;
+                    if(doms[i] < 0 || doms[i] >= obj->alldoms)
+                    {
+                        VisItError("The domain list contained out of range domain numbers");
+                        return VISIT_ERROR;
+                    }
                 }
+            }
+
+            if(nTuples <= 0)
+            {
+                VisItError("No domains were supplied for the DomainList");
+                return VISIT_ERROR;
             }
         }
         retval = VISIT_OKAY;

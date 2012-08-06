@@ -43,14 +43,28 @@
 #include <math.h>
 #include <string.h>
 
+//#define DEBUG_PRINT
+
+#include <iostream>
+#include <sstream>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include "patch.h"
 #include "SimulationExample.h"
+
+#define VISIT_COMMAND_PROCESS 0
+#define VISIT_COMMAND_SUCCESS 1
+#define VISIT_COMMAND_FAILURE 2
 
 /* Data Access Function prototypes */
 visit_handle SimGetMetaData(void *);
 visit_handle SimGetMesh(int, const char *, void *);
 visit_handle SimGetVariable(int, const char *, void *);
 visit_handle SimGetDomainNesting(const char *, void *);
+visit_handle SimGetDomainList(const char *, void *);
 
 /******************************************************************************
  * Code for calculating data values
@@ -218,8 +232,12 @@ calculate_amr(patch_t *patch, int level, int max_levels, int ratio)
 #define SIM_STOPPED       0
 #define SIM_RUNNING       1
 
+enum {ASSIGNMENT_STATIC, ASSIGNMENT_DYNAMIC, ASSIGNMENT_RANDOM, ASSIGNMENT_RANK0};
+
 struct simulation_data
 {
+    int     par_rank;
+    int     par_size;
     int     cycle;
     double  time;
     int     runMode;
@@ -230,6 +248,11 @@ struct simulation_data
     int     saveCounter;
     bool    autoupdate;
     patch_t patch;
+
+    int     *patch_list; /* Patch list for this rank. */
+    int      npatch_list;
+    int      patch_assignment;
+    int      patch_verbose;
 };
 
 void
@@ -245,15 +268,115 @@ simulation_data_ctor(simulation_data *sim)
     sim->saveCounter = 0;
     sim->autoupdate = false;
     patch_ctor(&sim->patch);
+
+    sim->patch_list = NULL;
+    sim->npatch_list = 0;
+    sim->patch_assignment = ASSIGNMENT_STATIC;
+    sim->patch_verbose = 0;
 }
 
 void
 simulation_data_dtor(simulation_data *sim)
 {
     patch_dtor(&sim->patch);
+    if(sim->patch_list != NULL)
+    {
+        free(sim->patch_list);
+        sim->patch_list = NULL;
+    }
+    sim->npatch_list = 0;
 }
 
 const char *cmd_names[] = {"halt", "step", "run", "update", "toggleupdates"};
+
+#ifdef PARALLEL
+/******************************************************************************
+ *
+ * Purpose: Fill in the patch_list so we know which ranks own which patches.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Aug  6 15:15:35 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void
+map_patches_to_processors(simulation_data *sim)
+{
+    /* Divide the patches among processors. */
+    patch_t **patches = patch_flat_array(&sim->patch);
+    int npatches = patch_num_patches(&sim->patch);
+
+    FREE(sim->patch_list);
+    sim->patch_list = (int *)malloc(sizeof(int) * npatches);
+    memset(sim->patch_list, 0, sizeof(int) * npatches);
+    sim->npatch_list = 0;
+    if(sim->patch_assignment == ASSIGNMENT_RANK0)
+    {
+        for(int i = 0; i < npatches; ++i)
+        {
+            /* All on rank 0. */
+            if(sim->par_rank == 0)
+            {
+                sim->patch_list[sim->npatch_list++] = patches[i]->id;
+            }
+        }
+    }
+    else if(sim->patch_assignment == ASSIGNMENT_STATIC)
+    {
+        for(int i = 0; i < npatches; ++i)
+        {
+            /* Static assignment based on rank. */
+            if(patches[i]->id % sim->par_size == sim->par_rank)
+            {
+                sim->patch_list[sim->npatch_list++] = patches[i]->id;
+            }
+        }
+    }
+    else if(sim->patch_assignment == ASSIGNMENT_DYNAMIC)
+    {
+        for(int i = 0; i < npatches; ++i)
+        {
+            /* Pathologically shuffle domains to different processors based 
+             * on the cycle to make sure we can handle that.
+             */
+            if((sim->cycle + patches[i]->id) % sim->par_size == sim->par_rank)
+            {
+                sim->patch_list[sim->npatch_list++] = patches[i]->id;
+            }
+        }
+    }
+    else if(sim->patch_assignment == ASSIGNMENT_RANDOM)
+    {
+        /* Get the random work assignment from rank 0. */
+        int *iptr = (int *)malloc(sizeof(int) * npatches);
+        for(int i = 0; i < npatches; ++i)
+            iptr[i] = rand() % sim->par_size;
+        MPI_Bcast(iptr, npatches, MPI_INT, 0, MPI_COMM_WORLD);
+
+        sim->npatch_list = 0;
+        FREE(sim->patch_list);
+        sim->patch_list = (int *)malloc(sizeof(int) * npatches);
+        for(int i = 0; i < npatches; ++i)
+        {
+            if(iptr[i] == sim->par_rank)
+                sim->patch_list[sim->npatch_list++] = i;
+        }
+        FREE(iptr);
+    }
+    FREE(patches);
+
+    if(sim->patch_verbose)
+    {
+        std::ostringstream s;
+        s << "Rank " << sim->par_rank << " domain list: ";
+        for(int i = 0; i < sim->npatch_list; ++i)
+            s << ", " << sim->patch_list[i];
+        std::cout << s.str() << std::endl;
+    }
+}
+#endif
 
 /******************************************************************************
  *
@@ -269,7 +392,8 @@ const char *cmd_names[] = {"halt", "step", "run", "update", "toggleupdates"};
 void
 simulate_one_timestep(simulation_data *sim)
 {
-    printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
+    if(sim->par_rank == 0)
+        printf("Simulating time step: cycle=%d, time=%lg\n", sim->cycle, sim->time);
 
     const float window0[] = {-1.6f, 0.6f, -1.1f, 1.1f};
 #define ORIGINX -1.5f
@@ -301,6 +425,10 @@ simulate_one_timestep(simulation_data *sim)
     patch_alloc_data(&sim->patch, NX, NY);
     calculate_amr(&sim->patch, 0, sim->max_levels, sim->refinement_ratio);
 
+#ifdef PARALLEL
+    map_patches_to_processors(sim);
+#endif
+
     /* If we're saving files then save one now. */
     if(VisItIsConnected())
     {
@@ -330,6 +458,79 @@ simulate_one_timestep(simulation_data *sim)
     sim->time += (M_PI / 30.);
 }
 
+#ifdef PARALLEL
+static int visit_broadcast_int_callback(int *value, int sender, void *cbdata)
+{
+    return MPI_Bcast(value, 1, MPI_INT, sender, MPI_COMM_WORLD);
+}
+
+static int visit_broadcast_string_callback(char *str, int len, int sender, void *cbdata)
+{
+//    simulation_data *sim = (simulation_data *)cbdata;
+    return MPI_Bcast(str, len, MPI_CHAR, sender, MPI_COMM_WORLD);
+}
+#endif
+
+
+/* Helper function for ProcessVisItCommand */
+static void BroadcastSlaveCommand(int *command, simulation_data *sim)
+{
+#ifdef PARALLEL
+    MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
+}
+
+/* Callback involved in command communication. */
+void SlaveProcessCallback(void *cbdata)
+{
+    simulation_data *sim = (simulation_data *)cbdata;
+    int command = VISIT_COMMAND_PROCESS;
+    BroadcastSlaveCommand(&command, sim);
+}
+
+/* Process commands from viewer on all processors. */
+int ProcessVisItCommand(simulation_data *sim)
+{
+    int command;
+    if (sim->par_rank==0)
+    {  
+        int success = VisItProcessEngineCommand();
+
+        if (success == VISIT_OKAY)
+        {
+            command = VISIT_COMMAND_SUCCESS;
+            BroadcastSlaveCommand(&command, sim);
+            return 1;
+        }
+        else
+        {
+            command = VISIT_COMMAND_FAILURE;
+            BroadcastSlaveCommand(&command, sim);
+            return 0;
+        }
+    }
+    else
+    {
+        /* Note: only through the SlaveProcessCallback callback
+         * above can the rank 0 process send a VISIT_COMMAND_PROCESS
+         * instruction to the non-rank 0 processes. */
+        while (1)
+        {
+            BroadcastSlaveCommand(&command, sim);
+            switch (command)
+            {
+            case VISIT_COMMAND_PROCESS:
+                VisItProcessEngineCommand();
+                break;
+            case VISIT_COMMAND_SUCCESS:
+                return 1;
+            case VISIT_COMMAND_FAILURE:
+                return 0;
+            }
+        }
+    }
+}
+
 /******************************************************************************
  *
  * Purpose: Called to handle case 3 from VisItDetectInput where we have console
@@ -350,11 +551,19 @@ ProcessConsoleCommand(simulation_data *sim)
     /* Read A Command */
     char cmd[1000];
 
-    if(VisItReadConsole(1000, cmd) == VISIT_ERROR)
+    if (sim->par_rank == 0)
     {
-        sprintf(cmd, "quit");
-        printf("quit\n");
+        if(VisItReadConsole(1000, cmd) == VISIT_ERROR)
+        {
+            sprintf(cmd, "quit");
+            printf("quit\n");
+        }
     }
+
+#ifdef PARALLEL
+    /* Broadcast the command to all processors. */
+    MPI_Bcast(cmd, 1000, MPI_CHAR, 0, MPI_COMM_WORLD);
+#endif
 
     if(strcmp(cmd, "quit") == 0)
         sim->done = 1;
@@ -372,6 +581,8 @@ ProcessConsoleCommand(simulation_data *sim)
     }
     else if(strcmp(cmd, "update") == 0)
     {
+        if(sim->par_rank == 0)
+             std::cout << "VisItTimeStepChanged() before update" << std::endl;
         VisItTimeStepChanged();
         VisItUpdatePlots();
     }
@@ -388,7 +599,7 @@ ProcessConsoleCommand(simulation_data *sim)
     {
         int level;
         sscanf(cmd+6+1, "%d", &level);
-        if(level > 1 && level < 10)
+        if(level >= 1 && level < 10)
             sim->max_levels = level;
     }
     else if(strncmp(cmd, "ratio", 5) == 0)
@@ -407,7 +618,19 @@ ProcessConsoleCommand(simulation_data *sim)
             VisItUpdatePlots();
         } 
     }
-    else if(strcmp(cmd, "help") == 0)
+    else if(strcmp(cmd, "static") == 0)
+        sim->patch_assignment = ASSIGNMENT_STATIC;
+    else if(strcmp(cmd, "dynamic") == 0)
+        sim->patch_assignment = ASSIGNMENT_DYNAMIC;
+    else if(strcmp(cmd, "random") == 0)
+        sim->patch_assignment = ASSIGNMENT_RANDOM;
+    else if(strcmp(cmd, "rank0") == 0)
+        sim->patch_assignment = ASSIGNMENT_RANK0;
+    else if(strcmp(cmd, "verbose on") == 0)
+        sim->patch_verbose = 1;
+    else if(strcmp(cmd, "verbose off") == 0)
+        sim->patch_verbose = 0;
+    else if(strcmp(cmd, "help") == 0 && sim->par_rank == 0)
     {
         printf("Commands:\n");
         printf("   quit           Quit the simulation\n");
@@ -420,6 +643,11 @@ ProcessConsoleCommand(simulation_data *sim)
         printf("   levels num     Set the number of levels allowed for AMR\n");
         printf("   ratio  num     Set the AMR refinement ratio\n");
         printf("   toggleupdates  Toggle whether the sim automatically updates plots\n");
+        printf("   static         Use static patch to processor mapping\n");
+        printf("   dynamic        Use dynamic patch to processor mapping\n");
+        printf("   random         Use random patch to processor mapping\n");
+        printf("   rank0          Use rank0 patch to processor mapping\n");
+        printf("   verbose on/off Print processor mapping\n");
     }
 }
 
@@ -549,13 +777,9 @@ ui_updateplots_changed(int value, void *cbdata)
  *
  *****************************************************************************/
 
-void mainloop(void)
+void mainloop(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
-
-    // Set up some simulation data.
-    simulation_data sim;
-    simulation_data_ctor(&sim);
 
     /* Register some ui actions */
     VisItUI_clicked("STEP", ui_step_clicked, &sim);
@@ -570,71 +794,86 @@ void mainloop(void)
     /* If we're not running by default then simulate once there's something
      * once VisIt connects.
      */
-    if(sim.runMode == SIM_STOPPED)
-        simulate_one_timestep(&sim);
+    if(sim->runMode == SIM_STOPPED)
+        simulate_one_timestep(sim);
 
     /* main loop */
-    fprintf(stderr, "command> ");
-    fflush(stderr);
+    if(sim->par_rank == 0)
+    {
+        fprintf(stderr, "command> ");
+        fflush(stderr);
+    }
     do
     {
-        blocking = (sim.runMode == SIM_STOPPED) ? 1 : 0;
+        blocking = (sim->runMode == SIM_STOPPED) ? 1 : 0;
         /* Get input from VisIt or timeout so the simulation can run. */
-        visitstate = VisItDetectInput(blocking, fileno(stdin));
-
+        if(sim->par_rank == 0)
+        {
+            visitstate = VisItDetectInput(blocking, fileno(stdin));
+        }
+#ifdef PARALLEL
+        /* Broadcast the return value of VisItDetectInput to all procs. */
+        MPI_Bcast(&visitstate, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
         /* Do different things depending on the output from VisItDetectInput. */
-        if(visitstate >= -5 && visitstate <= -1)
+        switch(visitstate)
         {
-            fprintf(stderr, "Can't recover from error!\n");
-            err = 1;
-        }
-        else if(visitstate == 0)
-        {
+        case 0:
             /* There was no input from VisIt, return control to sim. */
-            simulate_one_timestep(&sim);
-        }
-        else if(visitstate == 1)
-        {
+            simulate_one_timestep(sim);
+            break;
+        case 1:
             /* VisIt is trying to connect to sim. */
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
-                sim.runMode = SIM_STOPPED;
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback, (void*)&sim);
+                VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
+                VisItSetSlaveProcessCallback2(SlaveProcessCallback, (void*)sim);
 
-                VisItSetGetMetaData(SimGetMetaData, (void*)&sim);
-                VisItSetGetMesh(SimGetMesh, (void*)&sim);
-                VisItSetGetVariable(SimGetVariable, (void*)&sim);
-                VisItSetGetDomainNesting(SimGetDomainNesting, (void*)&sim);
+                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+                VisItSetGetMesh(SimGetMesh, (void*)sim);
+                VisItSetGetVariable(SimGetVariable, (void*)sim);
+                VisItSetGetDomainNesting(SimGetDomainNesting, (void*)sim);
+#ifdef PARALLEL
+                VisItSetGetDomainList(SimGetDomainList, (void*)sim);
+#endif
             }
-            else
-                fprintf(stderr, "VisIt did not connect\n");
-        }
-        else if(visitstate == 2)
-        {
+            else 
+            {
+                /* Print the error message */
+                char *err = VisItGetLastError();
+                fprintf(stderr, "VisIt did not connect: %s\n", err);
+                free(err);
+            }
+            break;
+        case 2:
             /* VisIt wants to tell the engine something. */
-            if(VisItProcessEngineCommand() == VISIT_ERROR)
+            if(!ProcessVisItCommand(sim))
             {
                 /* Disconnect on an error or closed connection. */
                 VisItDisconnect();
                 /* Start running again if VisIt closes. */
-                sim.runMode = SIM_RUNNING;
+                /*sim->runMode = SIM_RUNNING;*/
             }
-        }
-        else if(visitstate == 3)
-        {
+            break;
+        case 3:
             /* VisItDetectInput detected console input - do something with it.
              * NOTE: you can't get here unless you pass a file descriptor to
              * VisItDetectInput instead of -1.
              */
-            ProcessConsoleCommand(&sim);
-            fprintf(stderr, "command> ");
-            fflush(stderr);
+            ProcessConsoleCommand(sim);
+            if (sim->par_rank == 0)
+            {
+                fprintf(stderr, "command> ");
+                fflush(stderr);
+            }
+            break;
+        default:
+            fprintf(stderr, "Can't recover from error %d!\n", visitstate);
+            err = 1;
+            break;
         }
-    } while(!sim.done && err == 0);
-
-    // Clean up
-    simulation_data_dtor(&sim);
+    } while(!sim->done && err == 0);
 }
 
 /******************************************************************************
@@ -654,25 +893,69 @@ void mainloop(void)
 
 int main(int argc, char **argv)
 {
-    VisItOpenTraceFile("mandelbrot_trace.txt");
+    char *env = NULL;
+    simulation_data sim;
+    simulation_data_ctor(&sim);
+
+#ifdef PARALLEL
+    /* Initialize MPI */
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &sim.par_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &sim.par_size);
+#else
+    sim.par_rank = 0;
+    sim.par_size = 1;
+#endif
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
     VisItSetupEnvironment();
 
+#ifdef PARALLEL
+    /* Install callback functions for global communication. */
+    VisItSetBroadcastIntFunction2(visit_broadcast_int_callback, (void*)&sim);
+    VisItSetBroadcastStringFunction2(visit_broadcast_string_callback, (void*)&sim);
+
+    /* Tell libsim whether the simulation is parallel. */
+    VisItSetParallel(sim.par_size > 1);
+    VisItSetParallelRank(sim.par_rank);
+#endif
+    /* Only read the environment on rank 0. This could happen before MPI_Init if
+     * we are using an MPI that does not like to let us spawn processes but we
+     * would not know our processor rank.
+     */
+    if(sim.par_rank == 0)
+        env = VisItGetEnvironment();
+
+    /* Pass the environment to all other processors collectively. */
+    VisItSetupEnvironment2(env);
+    if(env != NULL)
+        free(env);
+
     /* Write out .sim2 file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("mandelbrot",
-        "Demonstrates creating the Mandelbrot set on an AMR mesh",
-        "/path/to/where/sim/was/started",
-        NULL, "mandelbrot.ui", NULL);
+    if(sim.par_rank == 0)
+    {
+        VisItInitializeSocketAndDumpSimFile(
+#ifdef PARALLEL
+            "mandelbrot_par",
+#else
+            "mandelbrot",
+#endif
+            "Demonstrates creating the Mandelbrot set on an AMR mesh",
+            "/path/to/where/sim/was/started",
+            NULL, "mandelbrot.ui", NULL);
+    }
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();
 
     /* Call the main loop. */
-    mainloop();
+    mainloop(&sim);
 
-    VisItCloseTraceFile();
+    simulation_data_dtor(&sim);
+#ifdef PARALLEL
+    MPI_Finalize();
+#endif
 
     return 0;
 }
@@ -701,7 +984,6 @@ SimGetMetaData(void *cbdata)
     {
         visit_handle mmd = VISIT_INVALID_HANDLE;
         visit_handle vmd = VISIT_INVALID_HANDLE;
-        visit_handle cmd = VISIT_INVALID_HANDLE;
 
         /* Set the simulation state. */
         VisIt_SimulationMetaData_setMode(md, (sim->runMode == SIM_STOPPED) ?
@@ -759,7 +1041,7 @@ SimGetMetaData(void *cbdata)
         }
 
         /* Add some custom commands. */
-        for(int i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
+        for(size_t i = 0; i < sizeof(cmd_names)/sizeof(const char *); ++i)
         {
             visit_handle cmd = VISIT_INVALID_HANDLE;
             if(VisIt_CommandMetaData_alloc(&cmd) == VISIT_OKAY)
@@ -849,6 +1131,8 @@ SimGetMesh(int domain, const char *name, void *cbdata)
  * Date:       Thu Mar 19 14:31:51 PDT 2009
  *
  * Modifications:
+ *   Brad Whitlock, Mon Aug  6 14:56:11 PDT 2012
+ *   Added debug printing.
  *
  *****************************************************************************/
 
@@ -863,6 +1147,11 @@ SimGetDomainNesting(const char *name, void *cbdata)
         int npatches = patch_num_patches(&sim->patch);
         int nlevels = patch_num_levels(&sim->patch);
         VisIt_DomainNesting_set_dimensions(h, npatches, nlevels, 2);
+#ifdef DEBUG_PRINT
+        std::ostringstream s;
+        s << "Domain Nesting (cycle " << sim->cycle << "): npatches=" << npatches
+          << ", nlevels=" << nlevels << ", ndims=2" << std::endl;
+#endif
 
         int ratios[3];
         for(int level = 0; level < nlevels; ++level)
@@ -870,7 +1159,6 @@ SimGetDomainNesting(const char *name, void *cbdata)
             if(level == 0)
             {
                 ratios[0] = ratios[1] = ratios[2] = 1;
-                VisIt_DomainNesting_set_levelRefinement(h, level, ratios);
             }
             else
             {
@@ -879,6 +1167,9 @@ SimGetDomainNesting(const char *name, void *cbdata)
                 ratios[2] = 1;
             }
             VisIt_DomainNesting_set_levelRefinement(h, level, ratios);
+#ifdef DEBUG_PRINT
+            s << "\tlevel " << level << " refinement " << ratios[0] << ", " << ratios[1] << ", " << ratios[2] << std::endl;
+#endif
         }
 
         patch_t **patches = patch_flat_array(&sim->patch);
@@ -893,7 +1184,15 @@ SimGetDomainNesting(const char *name, void *cbdata)
                 for(int j = 0; j < nchild_patches; ++j)
                     child_patches[j] = patches[i]->subpatches[j].id;
             }
-
+#ifdef DEBUG_PRINT
+            s << "\tpatch " << i << " id=" << patches[i]->id << ", level=" << patches[i]->level << std::endl;
+            s << "\t\txext=" << patches[i]->logical_extents[0] << ", " << patches[i]->logical_extents[1] << std::endl;
+            s << "\t\tyext=" << patches[i]->logical_extents[2] << ", " << patches[i]->logical_extents[3] << std::endl;
+            s << "\t\tnChildren=" << nchild_patches << ", children={";
+            for(int j = 0; j < nchild_patches; ++j)
+                s << child_patches[j] << ", ";
+            s << "}" << std::endl;
+#endif
             // logical extents are stored lowI,lowJ,lowL,hiI,hiJ,hiK
             logicalExtents[0] = patches[i]->logical_extents[0];
             logicalExtents[1] = patches[i]->logical_extents[2];
@@ -909,6 +1208,11 @@ SimGetDomainNesting(const char *name, void *cbdata)
             FREE(child_patches);
         }
         FREE(patches);
+
+#ifdef DEBUG_PRINT
+        if(sim->par_rank == 0)
+            std::cout << s.str();
+#endif
     }
 
     return h;
@@ -941,5 +1245,37 @@ SimGetVariable(int domain, const char *name, void *cbdata)
             patch->nx * patch->ny, (char *)patch->data);
     }
 
+    return h;
+}
+
+/******************************************************************************
+ *
+ * Purpose: This callback function returns a domain list.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Aug  6 14:55:17 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+visit_handle
+SimGetDomainList(const char *name, void *cbdata)
+{
+    visit_handle h = VISIT_INVALID_HANDLE;
+    if(VisIt_DomainList_alloc(&h) != VISIT_ERROR)
+    {
+        visit_handle hdl = VISIT_INVALID_HANDLE;
+        simulation_data *sim = (simulation_data *)cbdata;
+        int npatches = patch_num_patches(&sim->patch);
+
+        if(sim->npatch_list > 0)
+        {
+            VisIt_VariableData_alloc(&hdl);
+            VisIt_VariableData_setDataI(hdl, VISIT_OWNER_SIM, 1, sim->npatch_list, sim->patch_list);
+        }
+
+        VisIt_DomainList_setDomains(h, npatches, hdl);
+    }
     return h;
 }
