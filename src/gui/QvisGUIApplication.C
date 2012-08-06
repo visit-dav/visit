@@ -7087,6 +7087,13 @@ QvisGUIApplication::UpdateMetaDataAttributes(Subject *subj, void *data)
 void
 QvisGUIApplication::HandleMetaDataUpdate()
 {
+    const char *mName = "QvisGUIApplication::HandleMetaDataUpdate: ";
+    if (DebugStream::Level4())
+    {
+        debug4 << mName << "Received new metadata from viewer:" << endl;
+        GetViewerState()->GetDatabaseMetaData()->Print(DebugStream::Stream4());
+    }
+
     // Poke the metadata into the file server
     fileServer->SetOpenFileMetaData(GetViewerState()->GetDatabaseMetaData(),
                                     GetStateForSource(fileServer->GetOpenFile()));

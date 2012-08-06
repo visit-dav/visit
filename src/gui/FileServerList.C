@@ -3309,7 +3309,7 @@ FileServerList::GetSeparatorString(const string &host)
 void
 FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState)
 {
-   if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
+    if(fileMetaData.find(openFile.FullName()) != fileMetaData.end())
     {
         *(fileMetaData[openFile.FullName()]) = *md;
         // hack to have it return that the file changed
@@ -3319,7 +3319,7 @@ FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState
     else
     {
         debug1 << "Attempted to insert metadata for a file that has not been "
-                  "opened." << endl;
+                  "opened. openFile=" << openFile.FullName() << endl;
     } 
 }
 
