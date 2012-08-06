@@ -9453,6 +9453,10 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //   
 //    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL
+//
+//    Brad Whitlock, Mon Aug  6 12:12:22 PDT 2012
+//    Print the metadata we're sending to the client.
+//
 // ****************************************************************************
 
 void
@@ -9460,12 +9464,21 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
                                      const string &file,
                                      const avtDatabaseMetaData *md)
 {
+    const char *mName = "ViewerSubject::HandleMetaDataUpdated: ";
+
     TRY
     {
         // Handle MetaData updates
         ViewerFileServer *fs = ViewerFileServer::Instance();
 
         *GetViewerState()->GetDatabaseMetaData() = *md;
+        if (DebugStream::Level4())
+        {
+            debug4 << mName << "Received metadata from simulation "
+                   << host << ":" << file << endl;
+            GetViewerState()->GetDatabaseMetaData()->Print(DebugStream::Stream4());
+        }
+
         fs->SetSimulationMetaData(host, file, *GetViewerState()->GetDatabaseMetaData());
         // The file server will modify the metadata slightly; make sure
         // we picked up the new one.
@@ -9473,11 +9486,19 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
         ViewerWindowManager *wM=ViewerWindowManager::Instance();
         ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
         plotList->UpdateExpressionList(false);
+
+        if (DebugStream::Level4())
+        {
+            debug4 << mName << "Sending metadata to the client: " << endl;
+            GetViewerState()->GetDatabaseMetaData()->Print(DebugStream::Stream4());
+        }
+
         GetViewerState()->GetDatabaseMetaData()->SelectAll();
         GetViewerState()->GetDatabaseMetaData()->Notify();
     }
     CATCHALL
     {
+        debug1 << "Could not accept the new metadata from " << host << ":" << file << endl;
         ; // nothing
     }
     ENDTRY

@@ -3401,7 +3401,11 @@ Engine::ResetTimeout(int timeout)
 //    Allow xfer's updates so we can send the data back to the viewer in
 //    case we're already responding to an update from the viewer.
 //
+//    Brad Whitlock, Mon Aug  6 12:07:59 PDT 2012
+//    Print the metadata we're sending.
+//
 // ****************************************************************************
+
 void
 Engine::PopulateSimulationMetaData(const std::string &db,
                                    const std::string &fmt)
@@ -3428,6 +3432,12 @@ Engine::PopulateSimulationMetaData(const std::string &db,
     // Send the metadata and SIL to the viewer
     if(!quitRPC->GetQuit())
     {
+        if (DebugStream::Level4())
+        {
+            debug4 << "Engine::PopulateSimulationMetaData: sending metadata to client:" << endl;
+            metaData->Print(DebugStream::Stream4());
+        }
+
         simxfer->SetUpdate(true);
         metaData->Notify();
         silAtts->SelectAll();
@@ -3453,7 +3463,14 @@ Engine::PopulateSimulationMetaData(const std::string &db,
 //    Skip this if there's not a filename -- it means we haven't had
 //    a chance to open the simulation file yet.
 //
+//    Brad Whitlock, Mon Aug  6 12:05:09 PDT 2012
+//    Re-add the database to the load balancer so it gets a new domain to
+//    processor mapping for the new time step. This is needed since in AMR,
+//    the domains can move randomly to different processors or there can be
+//    a different number of domains.
+//
 // ****************************************************************************
+
 void
 Engine::SimulationTimeStepChanged()
 {
@@ -3471,6 +3488,9 @@ Engine::SimulationTimeStepChanged()
 
     // Send new metadata to the viewer
     PopulateSimulationMetaData(filename, format);
+
+    // Force new io information into the load balancer.
+    lb->AddDatabase(filename, *database, 0);
 }
 
 // ****************************************************************************
