@@ -548,7 +548,7 @@ avtPoincareFilter::ContinueExecute()
               // not be deleted.
               if( properties.source & FieldlineProperties::ISLAND_CHAIN )
               {
-                if( 1 || verboseFlag )
+                if( verboseFlag )
                   std::cerr << "O Point search deleting O Point seed "
                             << poincare_ic->id << std::endl;
                 
@@ -654,7 +654,7 @@ avtPoincareFilter::ContinueExecute()
                   seed_poincare_ic->properties.iteration =
                     properties.iteration + 1;
 
-                  if( 1 || verboseFlag )
+                  if( verboseFlag )
                     std::cerr << "Island boundary search deleting O Point seed "
                               << poincare_ic->id << std::endl;
                 
@@ -765,7 +765,7 @@ avtPoincareFilter::ContinueExecute()
               // not be deleted.
 //            if( properties.source & FieldlineProperties::ISLAND_CHAIN )
               {
-                if( 1 || verboseFlag )
+                if( verboseFlag )
                   std::cerr << "Island boundary search deleting boundary seed "
                             << poincare_ic->id << std::endl;
                 
@@ -801,7 +801,7 @@ avtPoincareFilter::ContinueExecute()
                 properties.analysisState == FieldlineProperties::COMPLETED &&
                 properties.searchState == FieldlineProperties::ISLAND_O_POINT )
             {
-              if( 1 || verboseFlag )
+              if( verboseFlag )
                 std::cerr << "Deleting an O Point seed that resulted in a surface "
                           << poincare_ic->id << std::endl;
               
@@ -842,7 +842,7 @@ avtPoincareFilter::ContinueExecute()
           // Each Seed is marked as a Searching_seed
           // a_IC and c_IC are used later
           // For now, we just create each seed and wait for them to come back
-          std::vector<avtVector> seeds = getSeeds(poincare_ic);
+          std::vector<avtVector> seeds = GetSeeds(poincare_ic);
 
           for( unsigned int s=0; s<seeds.size(); ++s )
           {
@@ -909,10 +909,10 @@ avtPoincareFilter::ContinueExecute()
           unsigned int index = 0;
 
           float maxOrigDist =
-            rationalDistance( orig_puncture_points, toroidalWinding, index );
+            RationalDistance( orig_puncture_points, toroidalWinding, index );
           
           float maxDist =
-            rationalDistance( seed_puncture_points, toroidalWinding, index );
+            RationalDistance( seed_puncture_points, toroidalWinding, index );
           
           if (RATIONAL_DEBUG)
           {
@@ -1100,13 +1100,13 @@ avtPoincareFilter::ContinueExecute()
           fieldlib.getPunctures(_c->points,xzplane,c_puncturePoints);
                 
           // Need to get distances for each a, b & c
-          int a_i = findMinimizationIndex(a_puncturePoints,
+          int a_i = FindMinimizationIndex(a_puncturePoints,
                                           _b->properties.rationalPt1,
                                           _b->properties.rationalPt2);
-          int b_i = findMinimizationIndex(b_puncturePoints,
+          int b_i = FindMinimizationIndex(b_puncturePoints,
                                           _b->properties.rationalPt1,
                                           _b->properties.rationalPt2);
-          int c_i = findMinimizationIndex(c_puncturePoints,
+          int c_i = FindMinimizationIndex(c_puncturePoints,
                                           _b->properties.rationalPt1,
                                           _b->properties.rationalPt2);
 
@@ -1164,9 +1164,9 @@ avtPoincareFilter::ContinueExecute()
           if (cont)
           {
             // Find distance between puncture points
-            float a_dist = pythDist(a_puncturePoints[a_i],a_puncturePoints[a_i + _a->properties.toroidalWinding]);
-            float b_dist = pythDist(b_puncturePoints[b_i],b_puncturePoints[b_i + _b->properties.toroidalWinding]);
-            float c_dist = pythDist(c_puncturePoints[c_i],c_puncturePoints[c_i + _c->properties.toroidalWinding]);
+            float a_dist = PythDist(a_puncturePoints[a_i],a_puncturePoints[a_i + _a->properties.toroidalWinding]);
+            float b_dist = PythDist(b_puncturePoints[b_i],b_puncturePoints[b_i + _b->properties.toroidalWinding]);
+            float c_dist = PythDist(c_puncturePoints[c_i],c_puncturePoints[c_i + _c->properties.toroidalWinding]);
 
             if (RATIONAL_DEBUG)
               std::cerr << "LINE " << __LINE__ << "  " << "a_dist, b_dist, c_dist: "<< a_dist<<", "<<b_dist<<", "<<c_dist  << std::endl;
@@ -1196,8 +1196,8 @@ avtPoincareFilter::ContinueExecute()
               b_z = b_puncturePoints[b_i][2];
               c_x = c_puncturePoints[c_i][0];
               c_z = c_puncturePoints[c_i][2];
-              bx_ax = fabs(pythDist(a_puncturePoints[a_i],b_puncturePoints[b_i]));
-              cx_bx = fabs(pythDist(b_puncturePoints[b_i],c_puncturePoints[c_i]));
+              bx_ax = fabs(PythDist(a_puncturePoints[a_i],b_puncturePoints[b_i]));
+              cx_bx = fabs(PythDist(b_puncturePoints[b_i],c_puncturePoints[c_i]));
                 
               if (RATIONAL_DEBUG)
               {
@@ -1389,9 +1389,9 @@ avtPoincareFilter::ContinueExecute()
           fieldlib.getPunctures(_c->points,xzplane,c_puncturePoints);
 
           // Need to get distances
-          int a_i = findMinimizationIndex(a_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
-          int b_i = findMinimizationIndex(b_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
-          int c_i = findMinimizationIndex(c_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
+          int a_i = FindMinimizationIndex(a_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
+          int b_i = FindMinimizationIndex(b_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
+          int c_i = FindMinimizationIndex(c_puncturePoints,_b->properties.rationalPt1,_b->properties.rationalPt2);
           if (RATIONAL_DEBUG)
             std::cerr << "LINE " << __LINE__ << "  " << "a_i, b_i, c_i: "<< a_i<<", "<<b_i<<", "<<c_i  << std::endl;
           bool cont = true;
@@ -1437,11 +1437,11 @@ avtPoincareFilter::ContinueExecute()
           if (cont)
           {
             // Find distance between puncture points
-            float a_dist = pythDist(a_puncturePoints[a_i],
+            float a_dist = PythDist(a_puncturePoints[a_i],
                                     a_puncturePoints[a_i + _a->properties.toroidalWinding]);
-            float b_dist = pythDist(b_puncturePoints[b_i],
+            float b_dist = PythDist(b_puncturePoints[b_i],
                                     b_puncturePoints[b_i + _b->properties.toroidalWinding]);
-            float c_dist = pythDist(c_puncturePoints[c_i],
+            float c_dist = PythDist(c_puncturePoints[c_i],
                                     c_puncturePoints[c_i + _c->properties.toroidalWinding]);
 
             if (RATIONAL_DEBUG)
@@ -1574,16 +1574,16 @@ avtPoincareFilter::ContinueExecute()
             std::cerr << "LINE " << __LINE__ << "  " << "x3 ID: "<<_x3->id << std::endl;
               
           // Need to get distances, so get the index first
-          int x0_i = findMinimizationIndex(x0_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
-          int x1_i = findMinimizationIndex(x1_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
-          int x2_i = findMinimizationIndex(x2_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
-          int x3_i = findMinimizationIndex(x3_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
+          int x0_i = FindMinimizationIndex(x0_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
+          int x1_i = FindMinimizationIndex(x1_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
+          int x2_i = FindMinimizationIndex(x2_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
+          int x3_i = FindMinimizationIndex(x3_puncturePoints,_x0->properties.rationalPt1,_x0->properties.rationalPt2);
               
           // Find distance between puncture points
-          float x0_dist = pythDist(x0_puncturePoints[x0_i],x0_puncturePoints[x0_i + _x0->properties.toroidalWinding]);
-          float x1_dist = pythDist(x1_puncturePoints[x1_i],x1_puncturePoints[x1_i + _x1->properties.toroidalWinding]);
-          float x2_dist = pythDist(x2_puncturePoints[x2_i],x2_puncturePoints[x2_i + _x2->properties.toroidalWinding]);
-          float x3_dist = pythDist(x3_puncturePoints[x3_i],x3_puncturePoints[x3_i + _x3->properties.toroidalWinding]);
+          float x0_dist = PythDist(x0_puncturePoints[x0_i],x0_puncturePoints[x0_i + _x0->properties.toroidalWinding]);
+          float x1_dist = PythDist(x1_puncturePoints[x1_i],x1_puncturePoints[x1_i + _x1->properties.toroidalWinding]);
+          float x2_dist = PythDist(x2_puncturePoints[x2_i],x2_puncturePoints[x2_i + _x2->properties.toroidalWinding]);
+          float x3_dist = PythDist(x3_puncturePoints[x3_i],x3_puncturePoints[x3_i + _x3->properties.toroidalWinding]);
               
           float x0_x, x0_y, x1_x, x1_y, x2_x, x2_y, x3_x, x3_y;
           x0_x = x0_puncturePoints[x0_i][0]; x0_y = x0_puncturePoints[x0_i][2];
@@ -1597,7 +1597,7 @@ avtPoincareFilter::ContinueExecute()
           avtVector zeroVec = avtVector(0,0,0);
           avtPoincareIC *newIC;
           int j;     
-          double range = fabs(pythDist(x3_puncturePoints[x3_i],x0_puncturePoints[x0_i]));
+          double range = fabs(PythDist(x3_puncturePoints[x3_i],x0_puncturePoints[x0_i]));
           double spacing = sqrt(x1_puncturePoints[x1_i][0] * x1_puncturePoints[x1_i][0] + x1_puncturePoints[x1_i][2] * x1_puncturePoints[x1_i][2])  * .001; // Somewhat of a magic number, just trying to narrow down precision
           // Basically, if we aren't close enough
           if (range > spacing)
