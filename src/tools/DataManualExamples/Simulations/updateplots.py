@@ -52,6 +52,8 @@ from simV2 import *
 # Date:       Fri Mar 18 14:24:17 PDT 2011
 #
 # Modifications:
+#  Cyrus Harrison, Tue Aug  7 09:50:58 PDT 2012
+#  Change a few instances of 'sim' to 'self'.
 #
 #*****************************************************************************
 
@@ -89,10 +91,10 @@ class Simulation:
         VisItTimeStepChanged()
         VisItUpdatePlots()
         if self.savingFiles:
-            filename = "updateplots%04d.jpg" % sim.saveCounter
+            filename = "updateplots%04d.jpg" % self.saveCounter
             if VisItSaveWindow(filename, 800, 800, VISIT_IMAGEFORMAT_JPEG) == VISIT_OKAY:
-                sim.saveCounter = sim.saveCounter + 1
-                if sim.par_rank == 0:
+                self.saveCounter += 1
+                if self.par_rank == 0:
                     print "Saved",filename
             else:
                 print "The image could not be saved to",filename
