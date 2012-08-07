@@ -73,6 +73,11 @@ class vtkPoints;
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
 //
+//   Kathleen Biagas, Tue Aug  7 10:55:50 PDT 2012
+//   Added ScalarsForRadius var, so that a non-default scalar can be used 
+//    to scale the radius.
+// 
+
 class VISIT_VTK_API vtkVisItTubeFilter : public vtkPolyDataAlgorithm
 {
 public:
@@ -181,9 +186,12 @@ public:
   vtkSetClampMacro(TextureLength,double,0.000001,VTK_LARGE_INTEGER);
   vtkGetMacro(TextureLength,double);
 
+  vtkSetStringMacro(ScalarsForRadius);
+  vtkGetStringMacro(ScalarsForRadius);
+
 protected:
   vtkVisItTubeFilter();
-  ~vtkVisItTubeFilter() {}
+  ~vtkVisItTubeFilter();
 
   // Usual data generation method
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
@@ -200,7 +208,9 @@ protected:
   int Offset;  //control the generation of the sides
   int GenerateTCoords; //control texture coordinate generation
   double TextureLength; //this length is mapped to [0,1) texture space
-  
+
+  char *ScalarsForRadius; 
+
   // Helper methods
   int GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                      vtkIdType npts, vtkIdType *pts,

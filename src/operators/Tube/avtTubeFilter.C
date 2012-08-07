@@ -189,6 +189,9 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Use "scaleFactor" for scaling, which may either come from an absolute
 //    value or from a fractino of the bounding box.
 //
+//    Kathleen Biagas, Tue Aug  7 10:52:13 PDT 2012
+//    Send the scale variable to the vtk tube filter when needed.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -257,7 +260,12 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // format.
         vtktube->SetInput(cpd->GetOutput());
         if (atts.GetScaleByVarFlag())
+        {
             vtktube->SetVaryRadius(VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR);
+            std::string v = atts.GetScaleVariable();
+            if (!v.empty() && v != "default")
+                vtktube->SetScalarsForRadius(v.c_str());
+        }
         else
             vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
         vtktube->SetRadius(scaleFactor);
@@ -313,19 +321,34 @@ avtTubeFilter::UpdateDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   October 20, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Aug  7 10:50:38 PDT 2012
+//    Request secondary variable for scaling radius when needed.
+//
 // ****************************************************************************
 
 avtContract_p
 avtTubeFilter::ModifyContract(avtContract_p c)
 {
+    avtContract_p spec = new avtContract(c);
     if (atts.GetScaleByVarFlag() == false &&
         atts.GetTubeRadiusType() == TubeAttributes::FractionOfBBox)
     {
         avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
         if (it == NULL)
-            c->NoStreaming();
+            spec->NoStreaming();
     }
-    return c;
+    if (atts.GetScaleByVarFlag())
+    { 
+        std::string v = atts.GetScaleVariable();
+        if (!v.empty() && v != "default")
+        {
+            avtDataRequest_p dataRequest = spec->GetDataRequest();
+            dataRequest->AddSecondaryVariable(v.c_str());
+        }
+    }
+        
+    return spec;
 }
 
 

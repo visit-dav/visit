@@ -48,11 +48,22 @@ vtkVisItTubeFilter::vtkVisItTubeFilter()
 
     this->GenerateTCoords = VTK_TCOORDS_OFF;
     this->TextureLength = 1.0;
+    this->ScalarsForRadius = NULL;
+}
+
+vtkVisItTubeFilter::~vtkVisItTubeFilter()
+{
+    this->SetScalarsForRadius(NULL);
 }
 
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
 //
+//    Kathleen Biagas, Tue Aug  7 10:58:16 PDT 2012
+//    Use ScalarsForRadius to retrieve the scalars, if it is NULL, then
+//    GetScalars will retrieve the active scalar array.
+//
+
 int vtkVisItTubeFilter::RequestData(
                                     vtkInformation *vtkNotUsed(request),
                                     vtkInformationVector **inputVector,
@@ -74,12 +85,13 @@ int vtkVisItTubeFilter::RequestData(
     vtkCellData *outCD=output->GetCellData();
     vtkCellArray *inLines;
     vtkDataArray *inNormals;
-    vtkDataArray *inScalars=pd->GetScalars();
+    vtkDataArray *inScalars = pd->GetScalars(this->ScalarsForRadius);
+
     bool cellScalars = false;
     if (!inScalars)
     {
         cellScalars = true;
-        inScalars = cd->GetScalars();
+        inScalars = cd->GetScalars(this->ScalarsForRadius);
     }
     vtkDataArray *inVectors=pd->GetVectors();
 
