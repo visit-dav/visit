@@ -260,6 +260,9 @@ avtSimV2FileFormat::ActivateTimestep()
 //   Brad Whitlock, Wed Aug 17 12:20:43 PDT 2011
 //   I added support for node/cell origin and spatial extents.
 //
+//   Brad Whitlock, Wed Aug  8 14:19:31 PDT 2012
+//   Always assume that the number of groupIds is equal to the number of domains.
+//
 // ****************************************************************************
 
 void
@@ -377,8 +380,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         free(groupPieceName);
     }
  
-    int groupLen = (mesh->meshType == AVT_AMR_MESH) ? 
-        mesh->numBlocks : mesh->numGroups;
+    int groupLen = mesh->numBlocks;
     mesh->groupIds.resize(groupLen);
     for (int g = 0; g<groupLen; g++)
     {
