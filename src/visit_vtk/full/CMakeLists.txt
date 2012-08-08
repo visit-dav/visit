@@ -42,6 +42,9 @@
 #   Eric Brugger, Wed Jul 25 08:30:40 PDT 2012
 #   I added the classes vtkMultiSplitter and vtkVolumeFromCSGVolume.
 #
+#    Kathleen Biagas, Wed Aug  8 08:15:26 PDT 2012
+#    Removed vtkDisjointCubesFacelistFilter.
+#
 #****************************************************************************/
 
 SET(VISIT_VTK_SOURCES
@@ -52,7 +55,6 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
-vtkDisjointCubesFacelistFilter.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMultiSplitter.C
