@@ -75,7 +75,7 @@ class CracksClipperCommonPluginInfo : public virtual CommonOperatorPluginInfo, p
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const char *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class CracksClipperGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual CracksClipperCommonPluginInfo
@@ -94,6 +94,7 @@ class CracksClipperViewerPluginInfo : public virtual ViewerOperatorPluginInfo, p
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
+    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,

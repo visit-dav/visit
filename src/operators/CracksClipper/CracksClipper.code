@@ -13,7 +13,7 @@ CracksClipperAttributes::ChangesRequireRecalculation(const CracksClipperAttribut
 
 Target: xml2info
 Function: CracksClipperCommonPluginInfo::GetCreatedExpressions
-Declaration: virtual ExpressionList *GetCreatedExpressions(const char *);
+Declaration: virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 Definition:
 
 // ***************************************************************************
@@ -26,24 +26,37 @@ Definition:
 //  Creation:    September 27, 2010
 //
 //  Modifications:
-//    
+//    Kathleen Biagas, Thu Aug  9 16:16:59 PDT 2012
+//    Match new API for this method.
+//
 // ***************************************************************************
 
 ExpressionList *
-CracksClipperCommonPluginInfo::GetCreatedExpressions(const char *mesh)
+CracksClipperCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
 {
-    char name[1024];
-    char defn[1024];
+    int i;
+    char name[1024], defn[1024];
     ExpressionList *el = new ExpressionList;
- 
-    Expression e2;
-    sprintf(name, "operators/CracksClipper/%s/den", mesh);
-    e2.SetName(name);
-    e2.SetType(Expression::ScalarMeshVar);
-    e2.SetFromOperator(true);
-    sprintf(defn, "cell_constant(%s, 0.)", mesh);
-    e2.SetDefinition(defn);
-    el->AddExpressions(e2);
-
+    int numMeshes = md->GetNumMeshes();
+    for (i = 0 ; i < numMeshes ; i++)
+    {
+        const avtMeshMetaData *mmd = md->GetMesh(i);
+        {
+            Expression e2;
+            sprintf(name, "operators/CracksClipper/%s/den", mmd->name.c_str());
+            e2.SetName(name);
+            e2.SetType(Expression::ScalarMeshVar);
+            e2.SetFromOperator(true);
+            e2.SetOperatorName("CracksClipper");
+            sprintf(defn, "cell_constant(%s, 0.)", mmd->name.c_str());
+            e2.SetDefinition(defn);
+            el->AddExpressions(e2);
+        }
+    }
+    const ExpressionList &oldEL = md->GetExprList();
+    for (i = 0 ; i < oldEL.GetNumExpressions() ; i++)
+    {
+        const Expression &e = oldEL.GetExpressions(i);
+    }
     return el;
 }
