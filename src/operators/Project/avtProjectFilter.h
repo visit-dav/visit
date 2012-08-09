@@ -103,6 +103,8 @@ class avtProjectFilter : public avtPluginDataTreeIterator
     void                ProjectPoint(double &x, double &y, double &z);
     vtkPointSet        *ProjectPointSet(vtkPointSet*);
     vtkPointSet        *ProjectRectilinearGrid(vtkRectilinearGrid*);
+
+    template <class T> 
     void                ProjectVectors(vtkDataSet*,vtkDataSet*,
                                        vtkDataArray*,vtkDataArray*,bool);
 };

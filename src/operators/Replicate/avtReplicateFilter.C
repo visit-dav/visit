@@ -665,6 +665,8 @@ avtReplicateFilter::OffsetDataArray(vtkDataArray *coords, double val)
 //  Note: taken largely from avtReflectFilter.C
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Aug  8 15:25:37 PDT 2012
+//    Ensure new vtkPoints object has same data type as input.
 //
 // ****************************************************************************
 
@@ -675,7 +677,7 @@ avtReplicateFilter::ReplicatePointSet(vtkPointSet *ds, double offset[3])
     out->ShallowCopy(ds);
 
     vtkPoints *inPts  = ds->GetPoints();
-    vtkPoints *outPts = vtkPoints::New();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
     int nPts = inPts->GetNumberOfPoints();
     outPts->SetNumberOfPoints(nPts);
 
@@ -730,6 +732,8 @@ avtReplicateFilter::ReplicatePointSet(vtkPointSet *ds, double offset[3])
 //    Added support for shifting atoms to a unit cell at a different origin
 //    than the current one.
 //
+//    Kathleen Biagas, Wed Aug  8 15:27:07 PDT 2012
+//    Ensure output vtkPoints has same data type as input.
 //
 // ****************************************************************************
 static void
@@ -845,7 +849,7 @@ avtReplicateFilter::ReplicateAndShiftUnitCellAtoms(vtkPolyData *in)
     vtkPolyData  *out      = (vtkPolyData*)in->NewInstance();
     vtkPointData *outPD    = out->GetPointData();
     vtkCellData  *outCD    = out->GetCellData();
-    vtkPoints    *outPts   = vtkPoints::New();
+    vtkPoints    *outPts   = vtkPoints::New(inPts->GetDataType());
     vtkCellArray *outVerts = vtkCellArray::New();
     vtkCellArray *outLines = vtkCellArray::New();
     out->GetFieldData()->ShallowCopy(in->GetFieldData());
