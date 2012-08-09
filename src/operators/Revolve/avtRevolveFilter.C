@@ -50,6 +50,7 @@
 #include <vtkIdList.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
+#include <vtkTemplateAliasMacro.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtExtents.h>
@@ -57,6 +58,7 @@
 #include <BadVectorException.h>
 #include <InvalidCellTypeException.h>
 #include <InvalidDimensionsException.h>
+#include <vtkVisItUtility.h>
 
 static void GetRotationMatrix(double angle, double axis[3], vtkMatrix4x4 *mat, 
                               avtMeshCoordType mt);
@@ -233,6 +235,130 @@ avtRevolveFilter::GetAxis(avtMeshCoordType mt, double *axis)
     }
 }
 
+//
+// Templated methods for revolving points and vectors
+//
+
+template <class T> void
+RevolvePoints(int niter, int nsteps, vtkIdType npts, double stop_angle, 
+    double start_angle, double axis[3], vtkMatrix4x4 *mat, avtMeshCoordType mt,
+    vtkDataSet *in_ds, T *ptr)
+{
+    for (int i = 0 ; i < niter ; ++i)
+    {
+        double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
+        GetRotationMatrix(angle, axis, mat, mt);
+        for (vtkIdType j = 0 ; j < npts ; ++j)
+        {
+            double pt[4];
+            in_ds->GetPoint(j, pt);
+            pt[3] = 1.;
+            double outpt[4];
+            mat->MultiplyPoint(pt, outpt);
+            ptr[0] = (T)outpt[0];
+            ptr[1] = (T)outpt[1];
+            ptr[2] = (T)outpt[2];
+            ptr+=3;
+        }
+    }
+}
+
+void
+RevolvePoints(vtkDataArray *pts, int niter, int nsteps, vtkIdType npts, 
+    double stop_angle, double start_angle, double axis[3], vtkMatrix4x4 *mat, 
+    avtMeshCoordType mt, vtkDataSet *in_ds)
+{
+    switch(pts->GetDataType())
+    {
+        vtkTemplateAliasMacro(
+            RevolvePoints(niter, nsteps, npts, stop_angle, start_angle, 
+                          axis, mat, mt, in_ds,
+                          static_cast<VTK_TT *>(pts->GetVoidPointer(0))));
+    }
+}
+
+template<class T> void
+RevolveNodeVectors(int istop, vtkIdType jstop, int nsteps, 
+    double stop_angle, double start_angle, double axis[3], 
+    vtkMatrix4x4 *mat, avtMeshCoordType mt, T* vecptr)
+{
+    for (int i = 0 ; i < istop ; ++i)
+    {
+        double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
+        GetRotationMatrix(angle, axis, mat, mt);
+
+        for (vtkIdType j = 0 ; j < jstop ; ++j)
+        {
+            double in_pt[4];
+            in_pt[0] = (double)vecptr[0];
+            in_pt[1] = (double)vecptr[1];
+            in_pt[2] = (double)vecptr[2];
+            in_pt[3] = 1.;
+            double out_pt[4];
+            mat->MultiplyPoint(in_pt, out_pt);
+            vecptr[0] = (T)out_pt[0];
+            vecptr[1] = (T)out_pt[1];
+            vecptr[2] = (T)out_pt[2];
+            vecptr += 3;
+        }
+    }
+}
+
+template<class T> void
+RevolveCellVectors(int istop, vtkIdType jstop, int nsteps, 
+    double stop_angle, double start_angle, double axis[3], 
+    vtkMatrix4x4 *mat, avtMeshCoordType mt, T* vecptr)
+{
+    for (int i = 0 ; i < istop ; ++i)
+    {
+        double angle = ((stop_angle-start_angle)*(i+0.5))/(nsteps-1) + 
+                         start_angle;
+        GetRotationMatrix(angle, axis, mat, mt);
+
+        for (vtkIdType j = 0 ; j < jstop ; ++j)
+        {
+            double in_pt[4];
+            in_pt[0] = (double)vecptr[0];
+            in_pt[1] = (double)vecptr[1];
+            in_pt[2] = (double)vecptr[2];
+            in_pt[3] = 1.;
+            double out_pt[4];
+            mat->MultiplyPoint(in_pt, out_pt);
+            vecptr[0] = (T)out_pt[0];
+            vecptr[1] = (T)out_pt[1];
+            vecptr[2] = (T)out_pt[2];
+            vecptr += 3;
+        }
+    }
+}
+
+void
+RevolveVectors(vtkDataArray *vectors, bool cellVectors, int istop, 
+    vtkIdType jstop, int nsteps, double stop_angle, double start_angle, 
+    double axis[3], vtkMatrix4x4 *mat, avtMeshCoordType mt)
+{
+    if (!cellVectors)
+    {
+      switch(vectors->GetDataType())
+      {
+        vtkTemplateAliasMacro(
+            RevolveNodeVectors(istop, jstop, nsteps,
+                           stop_angle, start_angle, axis, mat, mt, 
+                           static_cast<VTK_TT *>(vectors->GetVoidPointer(0))));
+      }
+    }
+    else 
+    {
+      switch(vectors->GetDataType())
+      {
+        vtkTemplateAliasMacro(
+            RevolveCellVectors(istop, jstop, nsteps,
+                           stop_angle, start_angle, axis, mat, mt, 
+                           static_cast<VTK_TT *>(vectors->GetVoidPointer(0))));
+      }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtRevolveFilter::ExecuteData
@@ -265,13 +391,15 @@ avtRevolveFilter::GetAxis(avtMeshCoordType mt, double *axis)
 //    Eric Brugger, Tue Jul 10 11:37:19 PDT 2012
 //    Added support for vector data.
 //
+//    Kathleen Biagas, Wed Aug  8 15:05:26 PDT 2012
+//    Support double-precision by use of templated methods for points and 
+//    vectors.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    int   i, j;
-
     //
     // Get information about how to revolve.
     //
@@ -296,10 +424,10 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     //
     vtkMatrix4x4 *mat = vtkMatrix4x4::New();
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    vtkPoints *pts = vtkPoints::New();
-    int npts = in_ds->GetNumberOfPoints();
-    int ncells = in_ds->GetNumberOfCells();
-    int n_out_pts = npts*nsteps;
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
+    vtkIdType npts = in_ds->GetNumberOfPoints();
+    vtkIdType ncells = in_ds->GetNumberOfCells();
+    vtkIdType n_out_pts = npts*nsteps;
     pts->SetNumberOfPoints(n_out_pts);
     ugrid->SetPoints(pts);
 
@@ -307,24 +435,8 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // Create the points for each timestep.
     //
     int niter = (fabs(stop_angle-start_angle-360.) < 0.001 ? nsteps-1 : nsteps);
-    float *ptr = (float *) pts->GetVoidPointer(0);
-    for (i = 0 ; i < niter ; i++)
-    {
-        double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
-        GetRotationMatrix(angle, axis, mat, mt);
-        for (j = 0 ; j < npts ; j++)
-        {
-            double pt[4];
-            in_ds->GetPoint(j, pt);
-            pt[3] = 1.;
-            double outpt[4];
-            mat->MultiplyPoint(pt, outpt);
-            ptr[0] = outpt[0];
-            ptr[1] = outpt[1];
-            ptr[2] = outpt[2];
-            ptr += 3;
-        }
-    }
+    RevolvePoints(pts->GetData(), niter, nsteps, npts, stop_angle, start_angle, 
+                  axis, mat, mt, in_ds);
 
     //
     // Now set up the connectivity.  The output will consist of revolved
@@ -332,27 +444,27 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // given to the case where an edge of a cell lies directly on the axis of
     // revolution (ie: you get a degenerate hex, not a wedge).
     //
-    int n_out_cells = ncells*(nsteps-1);
+    vtkIdType n_out_cells = ncells*(nsteps-1);
     ugrid->Allocate(8*n_out_cells);
     bool overlap_ends = (fabs(stop_angle-start_angle-360.) < 0.001);
-    for (i = 0 ; i < ncells ; i++)
+    for (vtkIdType i = 0 ; i < ncells ; ++i)
     {
          vtkCell *cell = in_ds->GetCell(i);
          int c = cell->GetCellType();
          if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL &&
              c != VTK_LINE)
          {
-             EXCEPTION1(InvalidCellTypeException, "anything but lines, quads, and"
-                                                  " tris.");
+             EXCEPTION1(InvalidCellTypeException, "anything but lines, quads,"
+                                                   " and tris.");
          }
          vtkIdList *list = cell->GetPointIds();
 
          if (c == VTK_TRIANGLE)
          {
-             int pt0 = list->GetId(0);
-             int pt1 = list->GetId(1);
-             int pt2 = list->GetId(2);
-             for (j = 0 ; j < nsteps-1 ; j++)
+             vtkIdType pt0 = list->GetId(0);
+             vtkIdType pt1 = list->GetId(1);
+             vtkIdType pt2 = list->GetId(2);
+             for (int j = 0 ; j < nsteps-1 ; ++j)
              {
                  vtkIdType wedge[6];
                  wedge[0] = npts*j + pt0;
@@ -372,10 +484,10 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
          }
          else if(c == VTK_LINE)
          {
-             int pt0 = list->GetId(0);
-             int pt1 = list->GetId(1);
-             int npts_times_j = 0;
-             for(j = 0; j < nsteps - 1; ++j)
+             vtkIdType pt0 = list->GetId(0);
+             vtkIdType pt1 = list->GetId(1);
+             vtkIdType npts_times_j = 0;
+             for(int j = 0; j < nsteps - 1; ++j)
              {
                  vtkIdType quad[4];
                  if(j < nsteps-2)
@@ -398,16 +510,16 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
          }
          else
          {
-             int pt0 = list->GetId(0);
-             int pt1 = list->GetId(1);
-             int pt2 = list->GetId(2);
-             int pt3 = list->GetId(3);
+             vtkIdType pt0 = list->GetId(0);
+             vtkIdType pt1 = list->GetId(1);
+             vtkIdType pt2 = list->GetId(2);
+             vtkIdType pt3 = list->GetId(3);
              if (c == VTK_PIXEL)
              {
                  pt2 = list->GetId(3);
                  pt3 = list->GetId(2);
              }
-             for (j = 0 ; j < nsteps-1 ; j++)
+             for (int j = 0 ; j < nsteps-1 ; ++j)
              {
                  vtkIdType hex[8];
                  hex[0] = npts*j + pt0;
@@ -433,7 +545,7 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkCellData *incd   = in_ds->GetCellData();
     vtkCellData *outcd  = ugrid->GetCellData();
     outcd->CopyAllocate(incd, n_out_cells);
-    for (i = 0 ; i < n_out_cells ; i++)
+    for (vtkIdType i = 0 ; i < n_out_cells ; ++i)
     {
         outcd->CopyData(incd, i/(nsteps-1), i);
     }
@@ -441,7 +553,7 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkPointData *inpd  = in_ds->GetPointData();
     vtkPointData *outpd = ugrid->GetPointData();
     outpd->CopyAllocate(inpd, n_out_pts);
-    for (i = 0 ; i < n_out_pts ; i++)
+    for (vtkIdType i = 0 ; i < n_out_pts ; ++i)
     {
         outpd->CopyData(inpd, i%npts, i);
     }
@@ -453,51 +565,15 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vectors = ugrid->GetPointData()->GetVectors();
     if (vectors)
     {
-        float *vecptr  = (float*)vectors->GetVoidPointer(0);
-        for (i = 0 ; i < niter ; i++)
-        {
-            double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
-            GetRotationMatrix(angle, axis, mat, mt);
-            for (j = 0 ; j < npts ; j++)
-            {
-                double in_pt[4];
-                in_pt[0] = vecptr[0];
-                in_pt[1] = vecptr[1];
-                in_pt[2] = vecptr[2];
-                in_pt[3] = 1.;
-                double out_pt[4];
-                mat->MultiplyPoint(in_pt, out_pt);
-                vecptr[0] = out_pt[0];
-                vecptr[1] = out_pt[1];
-                vecptr[2] = out_pt[2];
-                vecptr += 3;
-            }
-        }
+        RevolveVectors(vectors, false, niter, npts, nsteps, 
+                      stop_angle, start_angle, axis, mat, mt);
     }
+
     vectors = ugrid->GetCellData()->GetVectors();
     if (vectors)
     {
-        float *vecptr  = (float*)vectors->GetVoidPointer(0);
-        for (i = 0 ; i < nsteps-1 ; i++)
-        {
-            double angle = ((stop_angle-start_angle)*(i+0.5))/(nsteps-1) +
-                           start_angle;
-            GetRotationMatrix(angle, axis, mat, mt);
-            for (j = 0 ; j < ncells ; j++)
-            {
-                double in_pt[4];
-                in_pt[0] = vecptr[0];
-                in_pt[1] = vecptr[1];
-                in_pt[2] = vecptr[2];
-                in_pt[3] = 1.;
-                double out_pt[4];
-                mat->MultiplyPoint(in_pt, out_pt);
-                vecptr[0] = out_pt[0];
-                vecptr[1] = out_pt[1];
-                vecptr[2] = out_pt[2];
-                vecptr += 3;
-            }
-        }
+        RevolveVectors(vectors, true, nsteps-1, ncells, nsteps, 
+                      stop_angle, start_angle, axis, mat, mt);
     }
  
     //
@@ -644,14 +720,14 @@ avtRevolveFilter::RevolveExtents(double *dbounds, int spat_dim)
     //
     // Revolve the bounding box for each increment in theta.
     //
-    for (int i = 0 ; i < nsteps ; i++)
+    for (int i = 0 ; i < nsteps ; ++i)
     {
         double angle = ((stop_angle-start_angle)*i)/(nsteps-1) + start_angle;
         GetRotationMatrix(angle, axis, mat, mt);
         int iters = 1;
-        for (int k = 0 ; k < spat_dim ; k++)
+        for (int k = 0 ; k < spat_dim ; ++k)
             iters *= 2;
-        for (int j = 0 ; j < iters ; j++)
+        for (int j = 0 ; j < iters ; ++j)
         {
             double pt[4];
             pt[0] = (spat_dim >= 1 ? (j & 1 ? dbounds[1] : dbounds[0]) : 0.);

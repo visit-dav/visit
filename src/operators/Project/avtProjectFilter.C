@@ -52,6 +52,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <vtkVisItUtility.h>
 
 #include <ImproperUseException.h>
 
@@ -162,6 +163,9 @@ avtProjectFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Tue Aug  3 09:28:35 PDT 2010
 //    Fix bug with project of cell-centered vectors.
 //
+//    Kathleen Biagas, Wed Aug  8 17:31:54 PDT 2012
+//    Use templatized ProjectVectors.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -197,7 +201,10 @@ avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vtkDataArray *arr = vectors->NewInstance();
         arr->SetNumberOfComponents(3);
         arr->Allocate(3*vectors->GetNumberOfTuples());
-        ProjectVectors(in_ds, out_ds, vectors, arr, false);
+        if (arr->GetDataType() == VTK_FLOAT)
+            ProjectVectors<float>(in_ds, out_ds, vectors, arr, false);
+        else if (arr->GetDataType() == VTK_DOUBLE)
+            ProjectVectors<double>(in_ds, out_ds, vectors, arr, false);
         arr->SetName(vectors->GetName());
         out_ds->GetPointData()->RemoveArray(vectors->GetName());
         out_ds->GetPointData()->SetVectors(arr);
@@ -209,7 +216,10 @@ avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vtkDataArray *arr = vectors->NewInstance();
         arr->SetNumberOfComponents(3);
         arr->Allocate(3*vectors->GetNumberOfTuples());
-        ProjectVectors(in_ds, out_ds, vectors, arr, true);
+        if (arr->GetDataType() == VTK_FLOAT)
+            ProjectVectors<float>(in_ds, out_ds, vectors, arr, true);
+        else if (arr->GetDataType() == VTK_DOUBLE)
+            ProjectVectors<double>(in_ds, out_ds, vectors, arr, true);
         arr->SetName(vectors->GetName());
         out_ds->GetCellData()->RemoveArray(vectors->GetName());
         out_ds->GetCellData()->SetVectors(arr);
@@ -399,6 +409,9 @@ avtProjectFilter::ProjectPoint(double &x,double &y,double &z)
 //    Jeremy Meredith, Fri Sep 10 16:16:12 PDT 2004
 //    Always convert to a curvilinear grid.  The extra code wasn't even
 //    worth it because I expect no one will ever want to do it.
+//    
+//    Kathleen Biagas, Wed Aug  8 15:37:10 PDT 2012
+//    Preserve coordinate data type.
 //
 // ****************************************************************************
 vtkPointSet *
@@ -409,7 +422,7 @@ avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
 
     int  numPts = dims[0]*dims[1]*dims[2];
 
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     pts->SetNumberOfPoints(numPts);
 
     vtkDataArray *x = in_ds->GetXCoordinates();
@@ -423,7 +436,7 @@ avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
         {
             for (int i = 0 ; i < dims[0] ; i++)
             {
-                float pt[3];
+                double pt[3];
                 pt[0] = x->GetComponent(i,0);
                 pt[1] = y->GetComponent(j,0);
                 pt[2] = z->GetComponent(k,0);
@@ -473,7 +486,11 @@ avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
 //    In the special case where we have a curvilinear mesh with dimensions
 //    1xYxZ or Xx1xZ, then change the projected mesh to be XxYx1.
 //
+//    Kathleen Biagas, Wed Aug  8 17:33:35 PDT 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
+
 vtkPointSet *
 avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
 {
@@ -484,14 +501,27 @@ avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
     int npoints = old_pts->GetNumberOfPoints();
 
     // Make a new point array
-    vtkPoints *new_pts = old_pts->NewInstance();
+    vtkPoints *new_pts = vtkPoints::New(old_pts->GetDataType());
     new_pts->DeepCopy(old_pts);
-    float *points = (float*)new_pts->GetVoidPointer(0); // Assume float
-    for (int i = 0 ; i < npoints ; i++)
+    if (old_pts->GetDataType() == VTK_FLOAT)
     {
-        ProjectPoint(points[i*3+0],
-                     points[i*3+1],
-                     points[i*3+2]);
+        float *points = (float*)new_pts->GetVoidPointer(0); 
+        for (int i = 0 ; i < npoints ; i++)
+        {
+            ProjectPoint(points[i*3+0],
+                         points[i*3+1],
+                         points[i*3+2]);
+        }
+    }
+    else if (old_pts->GetDataType() == VTK_DOUBLE)
+    {
+        double *points = (double*)new_pts->GetVoidPointer(0);
+        for (int i = 0 ; i < npoints ; i++)
+        {
+            ProjectPoint(points[i*3+0],
+                         points[i*3+1],
+                         points[i*3+2]);
+        }
     }
     out_ds->SetPoints(new_pts);
     new_pts->Delete();
@@ -548,8 +578,12 @@ avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
 //    Kathleen Bonnell, Thu Dec  9 14:49:04 PST 2010
 //    Normalize the vector before projection in the AsDirection case.
 //
+//    Kathleen Biagas, Wed Aug  8 17:36:03 PDT 2012
+//    Templatized to handle different data types.
+//
 // ****************************************************************************
-void
+
+template <class T> void
 avtProjectFilter::ProjectVectors(vtkDataSet *old_ds, 
                                  vtkDataSet *new_ds,
                                  vtkDataArray *in,
@@ -560,8 +594,8 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
     const double instantEpsInv = 1.e+5;
 
     int nvectors  = in->GetNumberOfTuples();
-    float *inptr  = (float*)in->GetVoidPointer(0);
-    float *outptr = (float*)out->GetVoidPointer(0);
+    T *inptr  = (T*)in->GetVoidPointer(0);
+    T *outptr = (T*)out->GetVoidPointer(0);
 
     for (int i=0; i<nvectors; i++)
     {

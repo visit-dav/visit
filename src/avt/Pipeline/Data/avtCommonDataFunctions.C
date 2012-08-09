@@ -1850,6 +1850,10 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //
 //    Mark C. Miller, Mon Jan 10 07:21:59 PST 2011
 //    Replaced isfinite with visitIsFinite.
+//
+//    Kathleen Biagas, Wed Aug  8 09:26:51 PDT 2012
+//    Allow doubles.
+//
 // ****************************************************************************
 
 void
@@ -1887,27 +1891,43 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
         return;
     }
     //
-    // We only know how to deal with floats.
+    // We only know how to deal with floats / doubles.
     //
-    if (da->GetDataType() != VTK_FLOAT)
+    if (da->GetDataType() == VTK_FLOAT)
     {
-        return;
+        float *ptr = (float *) da->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
+        {
+            if ((ghosts != NULL) && (ghosts[i] != '\0'))
+                continue;
+
+            double val = MajorEigenvalue(ptr);
+
+            if (!visitIsFinite(val))
+                continue;
+
+            exts[0] = (exts[0] < val ? exts[0] : val);
+            exts[1] = (exts[1] > val ? exts[1] : val);
+            ptr+=ncomps;
+        }
     }
-
-    float *ptr = (float *) da->GetVoidPointer(0);
-    for (int i = 0 ; i < nvals ; i++)
+    else if (da->GetDataType() == VTK_DOUBLE)
     {
-        if ((ghosts != NULL) && (ghosts[i] != '\0'))
-            continue;
+        double *ptr = (double *) da->GetVoidPointer(0);
+        for (int i = 0 ; i < nvals ; i++)
+        {
+            if ((ghosts != NULL) && (ghosts[i] != '\0'))
+                continue;
 
-        double val = MajorEigenvalue(ptr);
+            double val = MajorEigenvalue(ptr);
 
-        if (!visitIsFinite(val))
-            continue;
+            if (!visitIsFinite(val))
+                continue;
 
-        exts[0] = (exts[0] < val ? exts[0] : val);
-        exts[1] = (exts[1] > val ? exts[1] : val);
-        ptr+=ncomps;
+            exts[0] = (exts[0] < val ? exts[0] : val);
+            exts[1] = (exts[1] > val ? exts[1] : val);
+            ptr+=ncomps;
+        }
     }
 }
 
