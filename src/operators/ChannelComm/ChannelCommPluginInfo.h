@@ -74,7 +74,7 @@ class ChannelCommCommonPluginInfo : public virtual CommonOperatorPluginInfo, pub
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const char *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class ChannelCommGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual ChannelCommCommonPluginInfo
@@ -93,6 +93,7 @@ class ChannelCommViewerPluginInfo : public virtual ViewerOperatorPluginInfo, pub
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
+    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
