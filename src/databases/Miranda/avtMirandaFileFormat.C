@@ -615,12 +615,19 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->meshType = AVT_RECTILINEAR_MESH;
         if (dim == 3)
         {
-            double extents[6] = {fOrigin[0] - fStride[0]/2.0,
+          /*  double extents[6] = {fOrigin[0] - fStride[0]/2.0,
                                  fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
                                  fOrigin[1] - fStride[1]/2.0,
                                  fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1],
                                  fOrigin[2] - fStride[2]/2.0,
                                  fOrigin[2] - fStride[2]/2.0 + (iNumBlocks[2]*iBlockSize[2])*fStride[2]
+                                 };*/
+            double extents[6] = {fOrigin[0],
+                                 fOrigin[0] + (iNumBlocks[0]*iBlockSize[0]-1)*fStride[0],
+                                 fOrigin[1],
+                                 fOrigin[1] + (iNumBlocks[1]*iBlockSize[1]-1)*fStride[1],
+                                 fOrigin[2],
+                                 fOrigin[2] + (iNumBlocks[2]*iBlockSize[2]-1)*fStride[2]
                             };
             if (sFileVersion == "2.0") {
               extents[1] += (iInteriorSize[0] - iBoundarySize[0])*fStride[0];
@@ -670,7 +677,8 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->Add(mesh);
 
     // Add the variables    
-    enum avtCentering centering = (bCurvilinear) ? AVT_NODECENT : AVT_ZONECENT;
+    // enum avtCentering centering = (bCurvilinear) ? AVT_NODECENT : AVT_ZONECENT;
+    enum avtCentering centering = AVT_NODECENT;
     int ii;
     for (ii = 0 ; ii < aVarNames.size() ; ii++)
     {
@@ -732,7 +740,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 if (iBlockZ == iNumBlocks[2]-1)
                     bbox[5] -= (iInteriorSize[2] - iBoundarySize[2]);          
             }
-            else if (bCurvilinear)
+            else /* if (bCurvilinear) */
             {
                 if (iBlockX == iNumBlocks[0]-1)
                     bbox[1]--;
@@ -1133,17 +1141,20 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
   debug4 << "GetRectilinearMesh("<<domain<<")"<< endl; 
 
-    int ii;    
     int iBlockX, iBlockY, iBlockZ;
     DomainToIJK( domain, iBlockX, iBlockY, iBlockZ );
- 
-    int gridsize[3]= { iBlockSize[0]+1, iBlockSize[1]+1, iBlockSize[2]+1 }; 
+
+    int neighbors[8], gridsize[3], ii, jj;
+
+    /*  int gridsize[3]= { iBlockSize[0]+1, iBlockSize[1]+1, iBlockSize[2]+1 }; 
     if (dim == 2) {
       gridsize[2] = 1; 
     }
-    
+    */ 
     if (sFileVersion == "2.0") {
       GetBlockDims(domain, gridsize); 
+    } else {
+      FindNeighborDomains(domain, neighbors, gridsize);
     }
 
     rgrid->SetDimensions(gridsize);    
@@ -1157,14 +1168,14 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     z->SetNumberOfTuples(gridsize[2]);
 
     for (ii = 0 ; ii < gridsize[0] ; ii++)
-        x->SetTuple1(ii, fOrigin[0] + (iBlockX*iBlockSize[0]+ii-0.5)*fStride[0]);
+        x->SetTuple1(ii, fOrigin[0] + (iBlockX*iBlockSize[0]+ii)*fStride[0]);
 
     for (ii = 0 ; ii < gridsize[1] ; ii++)
-        y->SetTuple1(ii, fOrigin[1] + (iBlockY*iBlockSize[1]+ii-0.5)*fStride[1]);
+        y->SetTuple1(ii, fOrigin[1] + (iBlockY*iBlockSize[1]+ii)*fStride[1]);
 
     if (dim == 3)
         for (ii = 0 ; ii < gridsize[2] ; ii++)
-            z->SetTuple1(ii, fOrigin[2] + (iBlockZ*iBlockSize[2]+ii-0.5)*fStride[2]);
+            z->SetTuple1(ii, fOrigin[2] + (iBlockZ*iBlockSize[2]+ii)*fStride[2]);
     else
         z->SetTuple1(0, 0.);
 
@@ -1663,7 +1674,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
               }
           }
         
-        if (bCurvilinear)
+        // if (bCurvilinear) /* always node-centered */
           {
             //In this case, we have node-centered material fractions 
             //that need to be averaged onto the zones.
@@ -1759,15 +1770,16 @@ avtMirandaFileFormat::FindNeighborDomains(int domain, int *neighbors,
         realdim[ii] = iBlockSize[ii];
 
 
-    if (!bCurvilinear)
+    /*  if (!bCurvilinear)
     {
         // don't need to read any neighbors for rectilinear case
         neighbors[0] = domain;
         for (ii = 1; ii < 8; ii++)
             neighbors[ii] = -1;
     }
-    else
-    {
+    else 
+    { */
+
         int di, dj, dk;
         int incr[3];
         DomainToIJK(domain, di, dj, dk);
@@ -1807,7 +1819,7 @@ avtMirandaFileFormat::FindNeighborDomains(int domain, int *neighbors,
                 }
             }
         }
-    }
+        /*     } */
 }
 
 // ****************************************************************************
