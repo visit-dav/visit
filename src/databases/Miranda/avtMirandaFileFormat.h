@@ -98,13 +98,19 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
+    std::string                 sFileVersion; 
     int                    dim;           // dimensionality.  2 or 3
     int                    flatDim;       // if dim==2, flatDim == 0,1,or 2
     
+
     double                 fOrigin[3];    // sample 0,0,0 is centered on fOrigin
     double                 fStride[3];    // spacing between samples
     
-    int                    iBlockSize[3];
+    int                    iGlobalDim[3];  // dimension of entire domain
+
+    int                    iBlockSize[3]; // size of miranda compute domains per processor -- for version 2.0, this is smaller than the actual output to disk because it has zero shared nodes with adjacent blocks
+    int                    iInteriorSize[3]; // format 2.0:  size of interior viz blocks written to disk for blocks 0 to iNumBlocks[i-2]
+    int                    iBoundarySize[3];// format 2.0:  size of viz blocks written to disk for block iNumBlocks[i-1] (upper edge of domain)
     int                    iNumBlocks[3];
     
     std::vector<std::string> aVarNames;
@@ -131,17 +137,17 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
 
     bool                   bCurvilinear;
 
-
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           DomainToIJK(int domain, int &i, int &j, int &k);
 
+    void                   GetBlockDims(int domain, int dims[3]);
+    virtual vtkDataSet    *GetCurvilinearMesh2(int domain);
     virtual vtkDataSet    *GetCurvilinearMesh(int domain);
     virtual vtkDataSet    *GetRectilinearMesh(int domain);
-
-    virtual void           PackData(float *dst, const float * const *src, 
+     void                   InterleaveData(float *__restrict dst, float *__restrict src, int *dstDim, int nComp);
+    virtual void           PackData(float *__restrict dst, const  float * const  *__restrict src, 
                                     const int *dstDim, int nComp, bool interleave);
-
-    virtual void           ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename);
+    virtual void           ReadRawScalar(FILE *fd, int iComp, float *out, const char *filename, int domain);
     virtual void           FindNeighborDomains(int domain, int *neighbors, int *realdim);
 
     static  void           SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens = true );
