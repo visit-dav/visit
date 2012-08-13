@@ -1004,9 +1004,12 @@ CommandMetaDataToCommandSpec(visit_handle h, avtSimulationCommandSpecification &
 //  Creation:   Tue Mar  9 10:31:56 PST 2010
 //
 //  Modifications:
-//
 //    Mark C. Miller, Tue Oct 19 20:23:57 PDT 2010
 //    Added test of debug level before calling MD's Print() method.
+//
+//    Brad Whitlock, Fri Aug 10 10:38:20 PDT 2012
+//    I moved CalculateBoundaries into the simv2 runtime.
+//
 // ****************************************************************************
 
 void
@@ -1172,7 +1175,6 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                         simv2_DomainBoundaries_avt(boundaries);
                     if(sdb != NULL)
                     {
-                        sdb->CalculateBoundaries();
                         void_ref_ptr vr = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
                         const char *cache_meshname = (numMultiblock > 1) ? md->GetMesh(i)->name.c_str() : "any_mesh";
                         debug4 << mName << "Caching domain boundaries for mesh:" << cache_meshname << endl;

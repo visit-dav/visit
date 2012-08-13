@@ -1169,6 +1169,19 @@
       external visitdboundssetrectindices
       integer  visitdboundssetrectindices
 
+! visitdboundssetextents(visit_handle obj, int domain, const int extents);
+      external visitdboundssetextents
+      integer  visitdboundssetextents
+
+! visitdboundsaddneighbor(visit_handle obj, int domain, int mi, 
+!                         const int orientation, const int extents)
+      external visitdboundsaddneighbor
+      integer  visitdboundsaddneighbor
+
+! visitdboundsfinish(visit_handle obj, int domain)
+      external visitdboundsfinish
+      integer  visitdboundsfinish
+
 
 ! VisIt_DomainList functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
