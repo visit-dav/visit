@@ -675,7 +675,7 @@ avtRPOTFilter::CreateFinalOutput()
                 useScaleModelStr = "1";
         }
         string dumpStr = "";
-        if (1)
+        if (0)
         {
             char tmp[128];
             sprintf(tmp, "save.image(file='tmp_%d.RData')\n", PAR_Rank());
