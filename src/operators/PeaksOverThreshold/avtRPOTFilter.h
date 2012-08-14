@@ -32,9 +32,14 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     PeaksOverThresholdAttributes::AggregationType aggregation;
     PeaksOverThresholdAttributes::SeasonType displaySeason;
     PeaksOverThresholdAttributes::MonthType displayMonth;
+    PeaksOverThresholdAttributes::CovariateType covariateType;
 
     float annualPercentile, monthlyPercentile[12], seasonalPercentile[4];
     float cutoff;
+    bool useLocationModel, useScaleModel, useShapeModel;
+    bool computeParamValues, computeCovariates, computeRVDifferences;
+    int yearOneValue;
+    std::vector<int> covariateReturnYears, rvDifferences;
 
     std::string codeDir;
     bool dumpData;
@@ -54,6 +59,7 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     float                   CalculateThreshold(int loc, int arr);
     int                     GetIndexFromDay(int t);
     int                     GetMonthFromDay(int t);
+    int                     GetYearFromDay(int t);
     int                     GetSeasonFromDay(int t);
     std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
     std::string             GetDumpFileName(int idx, int var);
@@ -62,7 +68,7 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     int numTuples, numTimes, numYears, numBins;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
-    //values[location][aggregation][time_i]
+
     class sample
     {
     public:
@@ -71,7 +77,7 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
         float val;
         int time;
     };
-    
+    //values[location][aggregation][time_i]    
     std::vector<std::vector<std::vector<sample> > > values;
 
     void DebugData(int loc, std::string nm);

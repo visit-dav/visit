@@ -88,6 +88,12 @@ public:
         NOV,
         DEC
     };
+    enum CovariateType
+    {
+        LOCATION,
+        SCALE,
+        SHAPE
+    };
 
     // These constructors are for objects of this class
     PeaksOverThresholdAttributes();
@@ -116,6 +122,8 @@ public:
     virtual void SelectAll();
     void SelectSeasonalPercentile();
     void SelectMonthlyPercentile();
+    void SelectCovariateReturnYears();
+    void SelectRvDifferences();
 
     // Property setting methods
     void SetAggregation(AggregationType aggregation_);
@@ -125,29 +133,37 @@ public:
     void SetSeason(SeasonType season_);
     void SetMonth(MonthType month_);
     void SetCutoff(float cutoff_);
-    void SetUseLocationModel(bool useLocationModel_);
-    void SetUseScaleModel(bool useScaleModel_);
-    void SetUseShapeModel(bool useShapeModel_);
+    void SetComputeParamValues(bool computeParamValues_);
+    void SetComputeCovariates(bool computeCovariates_);
+    void SetCovariateModel(CovariateType covariateModel_);
+    void SetCovariateReturnYears(const intVector &covariateReturnYears_);
+    void SetComputeRVDifferences(bool computeRVDifferences_);
+    void SetRvDifferences(const int *rvDifferences_);
     void SetYearOneValue(int yearOneValue_);
     void SetDataScaling(double dataScaling_);
     void SetDumpData(bool dumpData_);
 
     // Property getting methods
     AggregationType GetAggregation() const;
-    double       GetAnnualPercentile() const;
-    const double *GetSeasonalPercentile() const;
-          double *GetSeasonalPercentile();
-    const double *GetMonthlyPercentile() const;
-          double *GetMonthlyPercentile();
-    SeasonType   GetSeason() const;
-    MonthType    GetMonth() const;
-    float        GetCutoff() const;
-    bool         GetUseLocationModel() const;
-    bool         GetUseScaleModel() const;
-    bool         GetUseShapeModel() const;
-    int          GetYearOneValue() const;
-    double       GetDataScaling() const;
-    bool         GetDumpData() const;
+    double          GetAnnualPercentile() const;
+    const double    *GetSeasonalPercentile() const;
+          double    *GetSeasonalPercentile();
+    const double    *GetMonthlyPercentile() const;
+          double    *GetMonthlyPercentile();
+    SeasonType      GetSeason() const;
+    MonthType       GetMonth() const;
+    float           GetCutoff() const;
+    bool            GetComputeParamValues() const;
+    bool            GetComputeCovariates() const;
+    CovariateType   GetCovariateModel() const;
+    const intVector &GetCovariateReturnYears() const;
+          intVector &GetCovariateReturnYears();
+    bool            GetComputeRVDifferences() const;
+    const int       *GetRvDifferences() const;
+          int       *GetRvDifferences();
+    int             GetYearOneValue() const;
+    double          GetDataScaling() const;
+    bool            GetDumpData() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -169,6 +185,11 @@ public:
 protected:
     static std::string MonthType_ToString(int);
 public:
+    static std::string CovariateType_ToString(CovariateType);
+    static bool CovariateType_FromString(const std::string &, CovariateType &);
+protected:
+    static std::string CovariateType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -186,9 +207,12 @@ public:
         ID_season,
         ID_month,
         ID_cutoff,
-        ID_useLocationModel,
-        ID_useScaleModel,
-        ID_useShapeModel,
+        ID_computeParamValues,
+        ID_computeCovariates,
+        ID_covariateModel,
+        ID_covariateReturnYears,
+        ID_computeRVDifferences,
+        ID_rvDifferences,
         ID_yearOneValue,
         ID_dataScaling,
         ID_dumpData,
@@ -196,24 +220,27 @@ public:
     };
 
 private:
-    int    aggregation;
-    double annualPercentile;
-    double seasonalPercentile[4];
-    double monthlyPercentile[12];
-    int    season;
-    int    month;
-    float  cutoff;
-    bool   useLocationModel;
-    bool   useScaleModel;
-    bool   useShapeModel;
-    int    yearOneValue;
-    double dataScaling;
-    bool   dumpData;
+    int       aggregation;
+    double    annualPercentile;
+    double    seasonalPercentile[4];
+    double    monthlyPercentile[12];
+    int       season;
+    int       month;
+    float     cutoff;
+    bool      computeParamValues;
+    bool      computeCovariates;
+    int       covariateModel;
+    intVector covariateReturnYears;
+    bool      computeRVDifferences;
+    int       rvDifferences[2];
+    int       yearOneValue;
+    double    dataScaling;
+    bool      dumpData;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbbidb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbii*bIidb"
 
 #endif

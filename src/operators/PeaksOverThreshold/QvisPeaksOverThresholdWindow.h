@@ -93,9 +93,12 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void seasonChanged(int val);
     void monthChanged(int val);
     void cutoffProcessText();
-    void useLocationModelChanged(bool val);
-    void useScaleModelChanged(bool val);
-    void useShapeModelChanged(bool val);
+    void computeParamValuesChanged(bool val);
+    void computeCovariatesChanged(bool val);
+    void covariateModelChanged(int val);
+    void covariateReturnYearsProcessText();
+    void computeRVDifferencesChanged(bool val);
+    void rvDifferencesProcessText();
     void yearOneValueProcessText();
     void dataScalingProcessText();
     void dumpDataChanged(bool val);
@@ -110,9 +113,13 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QWidget      *month;
     QButtonGroup *monthButtonGroup;
     QLineEdit *cutoff;
-    QCheckBox *useLocationModel;
-    QCheckBox *useScaleModel;
-    QCheckBox *useShapeModel;
+    QCheckBox *computeParamValues;
+    QCheckBox *computeCovariates;
+    QWidget      *covariateModel;
+    QButtonGroup *covariateModelButtonGroup;
+    QLineEdit *covariateReturnYears;
+    QCheckBox *computeRVDifferences;
+    QLineEdit *rvDifferences;
     QLineEdit *yearOneValue;
     QLineEdit *dataScaling;
     QCheckBox *dumpData;
@@ -123,6 +130,9 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLabel *seasonLabel;
     QLabel *monthLabel;
     QLabel *cutoffLabel;
+    QLabel *covariateModelLabel;
+    QLabel *covariateReturnYearsLabel;
+    QLabel *rvDifferencesLabel;
     QLabel *yearOneValueLabel;
     QLabel *dataScalingLabel;
 

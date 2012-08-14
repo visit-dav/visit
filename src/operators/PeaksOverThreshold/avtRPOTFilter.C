@@ -46,6 +46,13 @@ avtRPOTFilter::avtRPOTFilter()
     dumpData = false;
     cutoff = 0.0f;
     numBins = 0;
+    
+    useLocationModel = false;
+    useScaleModel = false;
+    useShapeModel = false;
+    yearOneValue = 0;
+    computeRVDifferences = false;
+    computeCovariates = false;
 }
 
 // ****************************************************************************
@@ -99,7 +106,7 @@ avtRPOTFilter::DataCanBeParallelizedOverTime()
 int
 avtRPOTFilter::GetMonthFromDay(int t)
 {
-    int year = t/365;
+    int year = GetYearFromDay(t);
     int dayMonth[12] = {31,59,90,120,151,181,213,244,274,304,334,365}; //no leap year
     int dayInYear = t % 365;
 
@@ -109,6 +116,20 @@ avtRPOTFilter::GetMonthFromDay(int t)
             return i;
     
     EXCEPTION1(ImproperUseException, "Date out of range.");
+}
+
+// ****************************************************************************
+// Method:  avtRPOTFilter::GetYearFromDay
+//
+// Programmer:  Dave Pugmire
+// Creation:    February  7, 2012
+//
+// ****************************************************************************
+
+int
+avtRPOTFilter::GetYearFromDay(int t)
+{
+    return t/365;
 }
 
 // ****************************************************************************
@@ -453,7 +474,7 @@ avtRPOTFilter::CreateFinalOutput()
             int nt = values[i][b].size();
             for (int t=0; t<nt; t++)
             {
-                if(PAR_Rank()== 0 ) cout<<values[i][b][t].time<<endl;
+                //if(PAR_Rank()== 0 ) cout<<values[i][b][t].time<<endl;
                 tmp[values[i][b][t].time] = values[i][b][t].val;
                 flags[values[i][b][t].time] = 1;
             }
@@ -498,14 +519,28 @@ avtRPOTFilter::CreateFinalOutput()
             
     vector<float> thresholds(numBins);
     
-    vector<vector<float> > outputs[2];
-    outputs[0].resize(numBins);
-    outputs[1].resize(numBins);
-    for (int b = 0; b < numBins; b++)
+    int nValsPerOut = 1;
+    if (computeCovariates)
     {
-        outputs[0][b].resize(numTuples);
-        outputs[1][b].resize(numTuples);
+        nValsPerOut *= covariateReturnYears.size();
+        if (computeRVDifferences)
+            nValsPerOut++;
     }
+    
+    vector<vector<vector<float> > > outputs_rv, outputs_serv;
+    outputs_rv.resize(nValsPerOut);
+    outputs_serv.resize(nValsPerOut);
+    for (int n = 0; n < nValsPerOut; n++)
+    {
+        outputs_rv[n].resize(numBins);
+        outputs_serv[n].resize(numBins);
+        for (int b = 0; b < numBins; b++)
+        {
+            outputs_rv[n][b].resize(numTuples);
+            outputs_serv[n][b].resize(numTuples);
+        }
+    }
+    
     for (int i = idx0; i < idxN; i++)
     {
         //DebugData(i, "./dumps/x0");
@@ -520,15 +555,20 @@ avtRPOTFilter::CreateFinalOutput()
                 if (values[i][b][t].val > thresholds[b])
                     numExceedences++;
         }
+        //cout<<"numExceedences: "<<numExceedences<<endl;
         vtkDoubleArray *exceedences = vtkDoubleArray::New();
         vtkIntArray *dayIndices = vtkIntArray::New();
         vtkIntArray *monthIndices = vtkIntArray::New();
+        vtkIntArray *yearIndices = vtkIntArray::New();
         exceedences->SetNumberOfComponents(1);
         exceedences->SetNumberOfTuples(numExceedences);
         dayIndices->SetNumberOfComponents(1);
         dayIndices->SetNumberOfTuples(numExceedences);
         monthIndices->SetNumberOfComponents(1);
         monthIndices->SetNumberOfTuples(numExceedences);
+        yearIndices->SetNumberOfComponents(1);
+        yearIndices->SetNumberOfTuples(numExceedences);
+        
         int idx = 0;
         for (int b = 0; b < numBins; b++)
         {
@@ -539,6 +579,8 @@ avtRPOTFilter::CreateFinalOutput()
                     exceedences->SetValue(idx, values[i][b][t].val);
                     dayIndices->SetValue(idx, values[i][b][t].time+1);
                     monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].time)+1);
+                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].time)+1+yearOneValue);
+                 
                     idx++;
                     if (idx == numExceedences)
                         break;
@@ -577,57 +619,177 @@ avtRPOTFilter::CreateFinalOutput()
                 thresh->SetValue(t, thresholds[t]);
             RI->AssignVTKDataArrayToRVariable(thresh, "thresholds");
         }
-        char dumpStr[128];
-        sprintf(dumpStr, "'tmp_%d.RData'", PAR_Rank());
+        
+        int nCovariates = 0;
+        string covarNm = "NULL", covByYear = "NULL", newDataStr = "NULL", rvDiffStr = "NULL";
+        string useLocModelStr = "NULL", useShapeModelStr = "NULL", useScaleModelStr = "NULL";
+        string returnParamsStr = "FALSE";
+
+        if (computeParamValues)
+            returnParamsStr = "TRUE";
+        
+        if (computeCovariates)
+        {
+            nCovariates = 1;
+            covarNm = "cov";
+            covByYear = "covByYear";
+
+            vtkIntArray *covByYearArr = vtkIntArray::New();
+            covByYearArr->SetNumberOfComponents(1);
+            covByYearArr->SetNumberOfTuples(numYears);
+
+            for (int y = 0; y < numYears; y++)
+                covByYearArr->SetValue(y, y+1 + yearOneValue);
+
+            RI->AssignVTKDataArrayToRVariable(yearIndices, covarNm.c_str());
+            RI->AssignVTKDataArrayToRVariable(covByYearArr, covByYear.c_str());
+            covByYearArr->Delete();
+            
+            newDataStr = "newData";
+            vtkIntArray *newData = vtkIntArray::New();
+            newData->SetNumberOfComponents(1);
+            newData->SetNumberOfTuples(covariateReturnYears.size());
+            for (int y = 0; y < covariateReturnYears.size(); y++)
+            {
+                newData->SetValue(y, covariateReturnYears[y]);
+            }
+            RI->AssignVTKDataArrayToRVariable(newData, newDataStr.c_str());
+            newData->Delete();
+
+            if (computeRVDifferences)
+            {
+                rvDiffStr = "rvDiff";
+                vtkIntArray *rvDiff = vtkIntArray::New();
+                rvDiff->SetNumberOfComponents(1);
+                rvDiff->SetNumberOfTuples(rvDifferences.size());
+                for (int y = 0; y < rvDifferences.size(); y++)
+                    rvDiff->SetValue(y, rvDifferences[y]);
+                RI->AssignVTKDataArrayToRVariable(rvDiff, rvDiffStr.c_str());
+                rvDiff->Delete();
+            }
+            if (covariateType == PeaksOverThresholdAttributes::LOCATION)
+                useLocModelStr = "1";
+            else if (covariateType == PeaksOverThresholdAttributes::SHAPE)
+                useShapeModelStr = "1";
+            else if (covariateType == PeaksOverThresholdAttributes::SCALE)
+                useScaleModelStr = "1";
+        }
+        string dumpStr = "";
+        if (1)
+        {
+            char tmp[128];
+            sprintf(tmp, "save.image(file='tmp_%d.RData')\n", PAR_Rank());
+            dumpStr = tmp;
+        }
+        string outputStr = "rv = output$returnValue\n";
+        outputStr += "se_rv = output$se.returnValue\n";
+        if (computeCovariates && computeRVDifferences)
+        {
+            outputStr += "rvDiff = output$returnValueDiff;\n";
+            outputStr += "se_rvDiff = output$se.returnValueDiff;\n";
+        }
+
         sprintf(potCmd,
                 "require(ismev)\n" \
                 "output = potFit(data = exceedences, day = dayIndices, month = monthIndices, "\
-                "nYears=%d, threshold=%s, aggregation=%s)\n"\
-                "save.image(file=%s)\n"     \
-                "rv = output$returnValue\n" \
-                "se_rv = output$se.returnValue\n",
-                numYears, threshStr.c_str(), aggrStr.c_str(), dumpStr);
+                "nYears=%d, threshold=%s, aggregation=%s, " \
+                "nCovariates=%d, covariates=%s, covariatesByYear=%s, locationModel=%s, scaleModel=%s, shapeModel=%s,"\
+                "newData=%s, rvDifference=%s," \
+                "returnParams=%s"\
+                ")\n"\
+                "%s" \
+                "%s",
+                numYears, threshStr.c_str(), aggrStr.c_str(),
+                nCovariates, covarNm.c_str(), covByYear.c_str(),
+                useLocModelStr.c_str(), useShapeModelStr.c_str(), useScaleModelStr.c_str(),
+                newDataStr.c_str(), rvDiffStr.c_str(),
+                returnParamsStr.c_str(),
+                dumpStr.c_str(),
+                outputStr.c_str());
+        
         string command = fileLoad;
         command += potCmd;
-        //cout<<"command="<<command<<endl;
+        //cout<<command<<endl;
         RI->EvalRscript(command.c_str());
 
         vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));
         vtkDoubleArray *out_serv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rv"));
+        //cout<<"out_rv  : "<<out_rv->GetNumberOfComponents()<<" x "<<out_rv->GetNumberOfTuples()<<endl;
+        //cout<<"out_serv: "<<out_serv->GetNumberOfComponents()<<" x "<<out_serv->GetNumberOfTuples()<<endl;
+
+        int N = nValsPerOut;
+        if (computeRVDifferences)
+            N--;
         
         for (int b = 0; b < numBins; b++)
         {
-            outputs[0][b][i] = (float)out_rv->GetComponent(b,0);
-            outputs[1][b][i] = (float)out_serv->GetComponent(b,0);
+            for (int n = 0; n < N; n++)
+            {
+                outputs_rv[n][b][i] = (float)out_rv->GetComponent(b,n);
+                outputs_serv[n][b][i] = (float)out_serv->GetComponent(b,n);
+            }
         }
+        
+        vtkDoubleArray *out_rvDiff = NULL, *out_servDiff = NULL;
+        if (computeCovariates && computeRVDifferences)
+        {
+            out_rvDiff = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rvDiff"));
+            out_servDiff = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rvDiff"));
+            //cout<<"out_rvDiff  : "<<out_rvDiff->GetNumberOfComponents()<<" x "<<out_rvDiff->GetNumberOfTuples()<<endl;
+            //cout<<"out_servDiff: "<<out_servDiff->GetNumberOfComponents()<<" x "<<out_servDiff->GetNumberOfTuples()<<endl;
+            int N = nValsPerOut-1;
+            for (int n = nValsPerOut-1; n < nValsPerOut; n++)
+            {
+                for (int b = 0; b < numBins; b++)
+                {
+                    outputs_rv[n][b][i] = (float)out_rv->GetComponent(b,0);
+                    outputs_serv[n][b][i] = (float)out_serv->GetComponent(b,0);
+                }
+            }
+        }
+        
+        exceedences->Delete();
+        dayIndices->Delete();
+        monthIndices->Delete();
+        yearIndices->Delete();
     }
 
 #if PARALLEL
-    float *in = new float[numTuples];
-    float *sum = new float[numTuples];
-
-    for (int v = 0; v < 2; v++)
+    float *in0 = new float[numTuples], *in1 = new float[numTuples];
+    float *sum0 = new float[numTuples], *sum1 = new float[numTuples];
+    int N = outputs_rv.size();
+    
+    for (int n = 0; n < N; n++)
     {
         for (int b = 0; b<numBins; b++)
         {
             for (int i=0; i<numTuples; i++)
             {
                 if (i >= idx0 && i < idxN)
-                    in[i] = outputs[v][b][i];
+                {
+                    in0[i] = outputs_rv[n][b][i];
+                    in1[i] = outputs_serv[n][b][i];
+                }
                 else
-                    in[i] = 0.0f;
+                    in0[i] = in1[i] = 0.0f;
             }
-            
-            SumFloatArray(in, sum, numTuples);
+            SumFloatArray(in0, sum0, numTuples);
+            SumFloatArray(in1, sum1, numTuples);
             if (PAR_Rank() == 0)
             {
                 for (int i=0; i<numTuples; i++)
-                    outputs[v][b][i] = sum[i];
-            }       
+                {
+                    outputs_rv[n][b][i] = sum0[i];
+                    outputs_serv[n][b][i] = sum1[i];
+                }
+            }
         }
     }
-    delete [] in;
-    delete [] sum;
+    delete [] in0;
+    delete [] in1;
+    delete [] sum0;
+    delete [] sum1;
+
 #endif
     if (PAR_Rank() == 0)
     {
@@ -646,7 +808,7 @@ avtRPOTFilter::CreateFinalOutput()
         int idx = 0;
         for (int i = 0; i < numTuples; i++, idx++)
         {
-            outVar->SetValue(i, outputs[0][displayIdx][i]);
+            outVar->SetValue(i, outputs_rv[0][displayIdx][i]);
         }
     
         if (nodeCenteredData)
@@ -659,19 +821,26 @@ avtRPOTFilter::CreateFinalOutput()
         avtDataTree_p outputTree = new avtDataTree(outDS, 0);
         SetOutputDataTree(outputTree);
         outDS->Delete();
+
         if (dumpData)
         {
-            for (int v = 0; v < 2; v++)
+            int N = outputs_rv.size();
+            for (int b = 0; b < numBins; b++)
             {
-                for (int b = 0; b < numBins; b++)
-                {
-                    string nm = GetDumpFileName(b, v);
-                    ofstream ofile(nm.c_str());
-                    
-                    for (int i = 0; i < numTuples-1; i++)
-                        ofile<<outputs[v][b][i]<<", ";
-                    ofile<<outputs[v][b][numTuples]<<endl;
-                }
+                string nm0 = GetDumpFileName(b, 0);
+                string nm1 = GetDumpFileName(b, 1);
+                ofstream ofile0(nm0.c_str());
+                ofstream ofile1(nm1.c_str());
+                //cout<<nm0<<": "<<N<<" x "<<numTuples<<endl;
+                //cout<<nm1<<": "<<N<<" x "<<numTuples<<endl;
+                for (int n = 0; n < N; n++)
+                    for (int i = 0; i < numTuples; i++)
+                    {
+                        ofile0<<outputs_rv[n][b][i]<<" ";
+                        ofile1<<outputs_serv[n][b][i]<<" ";
+                    }
+                ofile0<<endl;
+                ofile1<<endl;
             }
         }
     }

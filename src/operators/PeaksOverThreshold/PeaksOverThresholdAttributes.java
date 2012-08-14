@@ -41,6 +41,8 @@ package llnl.visit.operators;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
+import java.lang.Integer;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: PeaksOverThresholdAttributes
@@ -59,7 +61,7 @@ import llnl.visit.Plugin;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 13;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -83,6 +85,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public final static int MONTHTYPE_OCT = 9;
     public final static int MONTHTYPE_NOV = 10;
     public final static int MONTHTYPE_DEC = 11;
+
+    public final static int COVARIATETYPE_LOCATION = 0;
+    public final static int COVARIATETYPE_SCALE = 1;
+    public final static int COVARIATETYPE_SHAPE = 2;
 
 
     public PeaksOverThresholdAttributes()
@@ -112,9 +118,14 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
         cutoff = 0f;
-        useLocationModel = false;
-        useScaleModel = false;
-        useShapeModel = false;
+        computeParamValues = false;
+        computeCovariates = false;
+        covariateModel = COVARIATETYPE_LOCATION;
+        covariateReturnYears = new Vector();
+        computeRVDifferences = false;
+        rvDifferences = new int[2];
+        rvDifferences[0] = 0;
+        rvDifferences[1] = 0;
         yearOneValue = 1900;
         dataScaling = 86500;
         dumpData = false;
@@ -147,9 +158,14 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = SEASONTYPE_WINTER;
         month = MONTHTYPE_JAN;
         cutoff = 0f;
-        useLocationModel = false;
-        useScaleModel = false;
-        useShapeModel = false;
+        computeParamValues = false;
+        computeCovariates = false;
+        covariateModel = COVARIATETYPE_LOCATION;
+        covariateReturnYears = new Vector();
+        computeRVDifferences = false;
+        rvDifferences = new int[2];
+        rvDifferences[0] = 0;
+        rvDifferences[1] = 0;
         yearOneValue = 1900;
         dataScaling = 86500;
         dumpData = false;
@@ -174,9 +190,20 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         season = obj.season;
         month = obj.month;
         cutoff = obj.cutoff;
-        useLocationModel = obj.useLocationModel;
-        useScaleModel = obj.useScaleModel;
-        useShapeModel = obj.useShapeModel;
+        computeParamValues = obj.computeParamValues;
+        computeCovariates = obj.computeCovariates;
+        covariateModel = obj.covariateModel;
+        covariateReturnYears = new Vector();
+        for(i = 0; i < obj.covariateReturnYears.size(); ++i)
+        {
+            Integer iv = (Integer)obj.covariateReturnYears.elementAt(i);
+            covariateReturnYears.addElement(new Integer(iv.intValue()));
+        }
+        computeRVDifferences = obj.computeRVDifferences;
+        rvDifferences = new int[2];
+        rvDifferences[0] = obj.rvDifferences[0];
+        rvDifferences[1] = obj.rvDifferences[1];
+
         yearOneValue = obj.yearOneValue;
         dataScaling = obj.dataScaling;
         dumpData = obj.dumpData;
@@ -208,6 +235,20 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         for(i = 0; i < 12 && monthlyPercentile_equal; ++i)
             monthlyPercentile_equal = (monthlyPercentile[i] == obj.monthlyPercentile[i]);
 
+        // Compare the elements in the covariateReturnYears vector.
+        boolean covariateReturnYears_equal = (obj.covariateReturnYears.size() == covariateReturnYears.size());
+        for(i = 0; (i < covariateReturnYears.size()) && covariateReturnYears_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer covariateReturnYears1 = (Integer)covariateReturnYears.elementAt(i);
+            Integer covariateReturnYears2 = (Integer)obj.covariateReturnYears.elementAt(i);
+            covariateReturnYears_equal = covariateReturnYears1.equals(covariateReturnYears2);
+        }
+        // Compare the rvDifferences arrays.
+        boolean rvDifferences_equal = true;
+        for(i = 0; i < 2 && rvDifferences_equal; ++i)
+            rvDifferences_equal = (rvDifferences[i] == obj.rvDifferences[i]);
+
         // Create the return value
         return ((aggregation == obj.aggregation) &&
                 (annualPercentile == obj.annualPercentile) &&
@@ -216,9 +257,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 (season == obj.season) &&
                 (month == obj.month) &&
                 (cutoff == obj.cutoff) &&
-                (useLocationModel == obj.useLocationModel) &&
-                (useScaleModel == obj.useScaleModel) &&
-                (useShapeModel == obj.useShapeModel) &&
+                (computeParamValues == obj.computeParamValues) &&
+                (computeCovariates == obj.computeCovariates) &&
+                (covariateModel == obj.covariateModel) &&
+                covariateReturnYears_equal &&
+                (computeRVDifferences == obj.computeRVDifferences) &&
+                rvDifferences_equal &&
                 (yearOneValue == obj.yearOneValue) &&
                 (dataScaling == obj.dataScaling) &&
                 (dumpData == obj.dumpData));
@@ -283,40 +327,66 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(6);
     }
 
-    public void SetUseLocationModel(boolean useLocationModel_)
+    public void SetComputeParamValues(boolean computeParamValues_)
     {
-        useLocationModel = useLocationModel_;
+        computeParamValues = computeParamValues_;
         Select(7);
     }
 
-    public void SetUseScaleModel(boolean useScaleModel_)
+    public void SetComputeCovariates(boolean computeCovariates_)
     {
-        useScaleModel = useScaleModel_;
+        computeCovariates = computeCovariates_;
         Select(8);
     }
 
-    public void SetUseShapeModel(boolean useShapeModel_)
+    public void SetCovariateModel(int covariateModel_)
     {
-        useShapeModel = useShapeModel_;
+        covariateModel = covariateModel_;
         Select(9);
+    }
+
+    public void SetCovariateReturnYears(Vector covariateReturnYears_)
+    {
+        covariateReturnYears = covariateReturnYears_;
+        Select(10);
+    }
+
+    public void SetComputeRVDifferences(boolean computeRVDifferences_)
+    {
+        computeRVDifferences = computeRVDifferences_;
+        Select(11);
+    }
+
+    public void SetRvDifferences(int[] rvDifferences_)
+    {
+        rvDifferences[0] = rvDifferences_[0];
+        rvDifferences[1] = rvDifferences_[1];
+        Select(12);
+    }
+
+    public void SetRvDifferences(int e0, int e1)
+    {
+        rvDifferences[0] = e0;
+        rvDifferences[1] = e1;
+        Select(12);
     }
 
     public void SetYearOneValue(int yearOneValue_)
     {
         yearOneValue = yearOneValue_;
-        Select(10);
+        Select(13);
     }
 
     public void SetDataScaling(double dataScaling_)
     {
         dataScaling = dataScaling_;
-        Select(11);
+        Select(14);
     }
 
     public void SetDumpData(boolean dumpData_)
     {
         dumpData = dumpData_;
-        Select(12);
+        Select(15);
     }
 
     // Property getting methods
@@ -327,9 +397,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public int      GetSeason() { return season; }
     public int      GetMonth() { return month; }
     public float    GetCutoff() { return cutoff; }
-    public boolean  GetUseLocationModel() { return useLocationModel; }
-    public boolean  GetUseScaleModel() { return useScaleModel; }
-    public boolean  GetUseShapeModel() { return useShapeModel; }
+    public boolean  GetComputeParamValues() { return computeParamValues; }
+    public boolean  GetComputeCovariates() { return computeCovariates; }
+    public int      GetCovariateModel() { return covariateModel; }
+    public Vector   GetCovariateReturnYears() { return covariateReturnYears; }
+    public boolean  GetComputeRVDifferences() { return computeRVDifferences; }
+    public int[]    GetRvDifferences() { return rvDifferences; }
     public int      GetYearOneValue() { return yearOneValue; }
     public double   GetDataScaling() { return dataScaling; }
     public boolean  GetDumpData() { return dumpData; }
@@ -352,16 +425,22 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(WriteSelect(6, buf))
             buf.WriteFloat(cutoff);
         if(WriteSelect(7, buf))
-            buf.WriteBool(useLocationModel);
+            buf.WriteBool(computeParamValues);
         if(WriteSelect(8, buf))
-            buf.WriteBool(useScaleModel);
+            buf.WriteBool(computeCovariates);
         if(WriteSelect(9, buf))
-            buf.WriteBool(useShapeModel);
+            buf.WriteInt(covariateModel);
         if(WriteSelect(10, buf))
-            buf.WriteInt(yearOneValue);
+            buf.WriteIntVector(covariateReturnYears);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(dataScaling);
+            buf.WriteBool(computeRVDifferences);
         if(WriteSelect(12, buf))
+            buf.WriteIntArray(rvDifferences);
+        if(WriteSelect(13, buf))
+            buf.WriteInt(yearOneValue);
+        if(WriteSelect(14, buf))
+            buf.WriteDouble(dataScaling);
+        if(WriteSelect(15, buf))
             buf.WriteBool(dumpData);
     }
 
@@ -391,21 +470,30 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             SetCutoff(buf.ReadFloat());
             break;
         case 7:
-            SetUseLocationModel(buf.ReadBool());
+            SetComputeParamValues(buf.ReadBool());
             break;
         case 8:
-            SetUseScaleModel(buf.ReadBool());
+            SetComputeCovariates(buf.ReadBool());
             break;
         case 9:
-            SetUseShapeModel(buf.ReadBool());
+            SetCovariateModel(buf.ReadInt());
             break;
         case 10:
-            SetYearOneValue(buf.ReadInt());
+            SetCovariateReturnYears(buf.ReadIntVector());
             break;
         case 11:
-            SetDataScaling(buf.ReadDouble());
+            SetComputeRVDifferences(buf.ReadBool());
             break;
         case 12:
+            SetRvDifferences(buf.ReadIntArray());
+            break;
+        case 13:
+            SetYearOneValue(buf.ReadInt());
+            break;
+        case 14:
+            SetDataScaling(buf.ReadDouble());
+            break;
+        case 15:
             SetDumpData(buf.ReadBool());
             break;
         }
@@ -462,9 +550,19 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             str = str + "MONTHTYPE_DEC";
         str = str + "\n";
         str = str + floatToString("cutoff", cutoff, indent) + "\n";
-        str = str + boolToString("useLocationModel", useLocationModel, indent) + "\n";
-        str = str + boolToString("useScaleModel", useScaleModel, indent) + "\n";
-        str = str + boolToString("useShapeModel", useShapeModel, indent) + "\n";
+        str = str + boolToString("computeParamValues", computeParamValues, indent) + "\n";
+        str = str + boolToString("computeCovariates", computeCovariates, indent) + "\n";
+        str = str + indent + "covariateModel = ";
+        if(covariateModel == COVARIATETYPE_LOCATION)
+            str = str + "COVARIATETYPE_LOCATION";
+        if(covariateModel == COVARIATETYPE_SCALE)
+            str = str + "COVARIATETYPE_SCALE";
+        if(covariateModel == COVARIATETYPE_SHAPE)
+            str = str + "COVARIATETYPE_SHAPE";
+        str = str + "\n";
+        str = str + intVectorToString("covariateReturnYears", covariateReturnYears, indent) + "\n";
+        str = str + boolToString("computeRVDifferences", computeRVDifferences, indent) + "\n";
+        str = str + intArrayToString("rvDifferences", rvDifferences, indent) + "\n";
         str = str + intToString("yearOneValue", yearOneValue, indent) + "\n";
         str = str + doubleToString("dataScaling", dataScaling, indent) + "\n";
         str = str + boolToString("dumpData", dumpData, indent) + "\n";
@@ -480,9 +578,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private int      season;
     private int      month;
     private float    cutoff;
-    private boolean  useLocationModel;
-    private boolean  useScaleModel;
-    private boolean  useShapeModel;
+    private boolean  computeParamValues;
+    private boolean  computeCovariates;
+    private int      covariateModel;
+    private Vector   covariateReturnYears; // vector of Integer objects
+    private boolean  computeRVDifferences;
+    private int[]    rvDifferences;
     private int      yearOneValue;
     private double   dataScaling;
     private boolean  dumpData;

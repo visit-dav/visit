@@ -211,21 +211,72 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
 
     SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
     str += tmpStr;
-    if(atts->GetUseLocationModel())
-        SNPRINTF(tmpStr, 1000, "%suseLocationModel = 1\n", prefix);
+    if(atts->GetComputeParamValues())
+        SNPRINTF(tmpStr, 1000, "%scomputeParamValues = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseLocationModel = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%scomputeParamValues = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetUseScaleModel())
-        SNPRINTF(tmpStr, 1000, "%suseScaleModel = 1\n", prefix);
+    if(atts->GetComputeCovariates())
+        SNPRINTF(tmpStr, 1000, "%scomputeCovariates = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseScaleModel = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%scomputeCovariates = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetUseShapeModel())
-        SNPRINTF(tmpStr, 1000, "%suseShapeModel = 1\n", prefix);
+    const char *covariateModel_names = "LOCATION, SCALE, SHAPE";
+    switch (atts->GetCovariateModel())
+    {
+      case PeaksOverThresholdAttributes::LOCATION:
+          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sLOCATION  # %s\n", prefix, prefix, covariateModel_names);
+          str += tmpStr;
+          break;
+      case PeaksOverThresholdAttributes::SCALE:
+          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sSCALE  # %s\n", prefix, prefix, covariateModel_names);
+          str += tmpStr;
+          break;
+      case PeaksOverThresholdAttributes::SHAPE:
+          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sSHAPE  # %s\n", prefix, prefix, covariateModel_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    {   const intVector &covariateReturnYears = atts->GetCovariateReturnYears();
+        SNPRINTF(tmpStr, 1000, "%scovariateReturnYears = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < covariateReturnYears.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", covariateReturnYears[i]);
+            str += tmpStr;
+            if(i < covariateReturnYears.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetComputeRVDifferences())
+        SNPRINTF(tmpStr, 1000, "%scomputeRVDifferences = 1\n", prefix);
     else
-        SNPRINTF(tmpStr, 1000, "%suseShapeModel = 0\n", prefix);
+        SNPRINTF(tmpStr, 1000, "%scomputeRVDifferences = 0\n", prefix);
     str += tmpStr;
+    {   const int *rvDifferences = atts->GetRvDifferences();
+        SNPRINTF(tmpStr, 1000, "%srvDifferences = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 2; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", rvDifferences[i]);
+            str += tmpStr;
+            if(i < 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     SNPRINTF(tmpStr, 1000, "%syearOneValue = %d\n", prefix, atts->GetYearOneValue());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
@@ -505,7 +556,7 @@ PeaksOverThresholdAttributes_GetCutoff(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetUseLocationModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetComputeParamValues(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -513,23 +564,23 @@ PeaksOverThresholdAttributes_SetUseLocationModel(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the useLocationModel in the object.
-    obj->data->SetUseLocationModel(ival != 0);
+    // Set the computeParamValues in the object.
+    obj->data->SetComputeParamValues(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetUseLocationModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetComputeParamValues(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseLocationModel()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeParamValues()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetUseScaleModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetComputeCovariates(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -537,23 +588,23 @@ PeaksOverThresholdAttributes_SetUseScaleModel(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the useScaleModel in the object.
-    obj->data->SetUseScaleModel(ival != 0);
+    // Set the computeCovariates in the object.
+    obj->data->SetComputeCovariates(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetUseScaleModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetComputeCovariates(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseScaleModel()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeCovariates()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetUseShapeModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetCovariateModel(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -561,18 +612,168 @@ PeaksOverThresholdAttributes_SetUseShapeModel(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the useShapeModel in the object.
-    obj->data->SetUseShapeModel(ival != 0);
+    // Set the covariateModel in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetCovariateModel(PeaksOverThresholdAttributes::CovariateType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid covariateModel value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "LOCATION, SCALE, SHAPE.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetUseShapeModel(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetCovariateModel(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseShapeModel()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCovariateModel()));
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetCovariateReturnYears(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    intVector  &vec = obj->data->GetCovariateReturnYears();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the covariateReturnYears in the object as modified.
+    obj->data->SelectCovariateReturnYears();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetCovariateReturnYears(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the covariateReturnYears.
+    const intVector &covariateReturnYears = obj->data->GetCovariateReturnYears();
+    PyObject *retval = PyTuple_New(covariateReturnYears.size());
+    for(size_t i = 0; i < covariateReturnYears.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(covariateReturnYears[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetComputeRVDifferences(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the computeRVDifferences in the object.
+    obj->data->SetComputeRVDifferences(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetComputeRVDifferences(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeRVDifferences()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetRvDifferences(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int *ivals = obj->data->GetRvDifferences();
+    if(!PyArg_ParseTuple(args, "ii", &ivals[0], &ivals[1]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 2)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
+                else if(PyInt_Check(item))
+                    ivals[i] = int(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    ivals[i] = int(PyLong_AsDouble(item));
+                else
+                    ivals[i] = 0;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the rvDifferences in the object as modified.
+    obj->data->SelectRvDifferences();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetRvDifferences(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the rvDifferences.
+    PyObject *retval = PyTuple_New(2);
+    const int *rvDifferences = obj->data->GetRvDifferences();
+    for(int i = 0; i < 2; ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(rvDifferences[i])));
     return retval;
 }
 
@@ -666,12 +867,18 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetMonth", PeaksOverThresholdAttributes_GetMonth, METH_VARARGS},
     {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
     {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
-    {"SetUseLocationModel", PeaksOverThresholdAttributes_SetUseLocationModel, METH_VARARGS},
-    {"GetUseLocationModel", PeaksOverThresholdAttributes_GetUseLocationModel, METH_VARARGS},
-    {"SetUseScaleModel", PeaksOverThresholdAttributes_SetUseScaleModel, METH_VARARGS},
-    {"GetUseScaleModel", PeaksOverThresholdAttributes_GetUseScaleModel, METH_VARARGS},
-    {"SetUseShapeModel", PeaksOverThresholdAttributes_SetUseShapeModel, METH_VARARGS},
-    {"GetUseShapeModel", PeaksOverThresholdAttributes_GetUseShapeModel, METH_VARARGS},
+    {"SetComputeParamValues", PeaksOverThresholdAttributes_SetComputeParamValues, METH_VARARGS},
+    {"GetComputeParamValues", PeaksOverThresholdAttributes_GetComputeParamValues, METH_VARARGS},
+    {"SetComputeCovariates", PeaksOverThresholdAttributes_SetComputeCovariates, METH_VARARGS},
+    {"GetComputeCovariates", PeaksOverThresholdAttributes_GetComputeCovariates, METH_VARARGS},
+    {"SetCovariateModel", PeaksOverThresholdAttributes_SetCovariateModel, METH_VARARGS},
+    {"GetCovariateModel", PeaksOverThresholdAttributes_GetCovariateModel, METH_VARARGS},
+    {"SetCovariateReturnYears", PeaksOverThresholdAttributes_SetCovariateReturnYears, METH_VARARGS},
+    {"GetCovariateReturnYears", PeaksOverThresholdAttributes_GetCovariateReturnYears, METH_VARARGS},
+    {"SetComputeRVDifferences", PeaksOverThresholdAttributes_SetComputeRVDifferences, METH_VARARGS},
+    {"GetComputeRVDifferences", PeaksOverThresholdAttributes_GetComputeRVDifferences, METH_VARARGS},
+    {"SetRvDifferences", PeaksOverThresholdAttributes_SetRvDifferences, METH_VARARGS},
+    {"GetRvDifferences", PeaksOverThresholdAttributes_GetRvDifferences, METH_VARARGS},
     {"SetYearOneValue", PeaksOverThresholdAttributes_SetYearOneValue, METH_VARARGS},
     {"GetYearOneValue", PeaksOverThresholdAttributes_GetYearOneValue, METH_VARARGS},
     {"SetDataScaling", PeaksOverThresholdAttributes_SetDataScaling, METH_VARARGS},
@@ -761,12 +968,25 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "cutoff") == 0)
         return PeaksOverThresholdAttributes_GetCutoff(self, NULL);
-    if(strcmp(name, "useLocationModel") == 0)
-        return PeaksOverThresholdAttributes_GetUseLocationModel(self, NULL);
-    if(strcmp(name, "useScaleModel") == 0)
-        return PeaksOverThresholdAttributes_GetUseScaleModel(self, NULL);
-    if(strcmp(name, "useShapeModel") == 0)
-        return PeaksOverThresholdAttributes_GetUseShapeModel(self, NULL);
+    if(strcmp(name, "computeParamValues") == 0)
+        return PeaksOverThresholdAttributes_GetComputeParamValues(self, NULL);
+    if(strcmp(name, "computeCovariates") == 0)
+        return PeaksOverThresholdAttributes_GetComputeCovariates(self, NULL);
+    if(strcmp(name, "covariateModel") == 0)
+        return PeaksOverThresholdAttributes_GetCovariateModel(self, NULL);
+    if(strcmp(name, "LOCATION") == 0)
+        return PyInt_FromLong(long(PeaksOverThresholdAttributes::LOCATION));
+    if(strcmp(name, "SCALE") == 0)
+        return PyInt_FromLong(long(PeaksOverThresholdAttributes::SCALE));
+    if(strcmp(name, "SHAPE") == 0)
+        return PyInt_FromLong(long(PeaksOverThresholdAttributes::SHAPE));
+
+    if(strcmp(name, "covariateReturnYears") == 0)
+        return PeaksOverThresholdAttributes_GetCovariateReturnYears(self, NULL);
+    if(strcmp(name, "computeRVDifferences") == 0)
+        return PeaksOverThresholdAttributes_GetComputeRVDifferences(self, NULL);
+    if(strcmp(name, "rvDifferences") == 0)
+        return PeaksOverThresholdAttributes_GetRvDifferences(self, NULL);
     if(strcmp(name, "yearOneValue") == 0)
         return PeaksOverThresholdAttributes_GetYearOneValue(self, NULL);
     if(strcmp(name, "dataScaling") == 0)
@@ -801,12 +1021,18 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetMonth(self, tuple);
     else if(strcmp(name, "cutoff") == 0)
         obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
-    else if(strcmp(name, "useLocationModel") == 0)
-        obj = PeaksOverThresholdAttributes_SetUseLocationModel(self, tuple);
-    else if(strcmp(name, "useScaleModel") == 0)
-        obj = PeaksOverThresholdAttributes_SetUseScaleModel(self, tuple);
-    else if(strcmp(name, "useShapeModel") == 0)
-        obj = PeaksOverThresholdAttributes_SetUseShapeModel(self, tuple);
+    else if(strcmp(name, "computeParamValues") == 0)
+        obj = PeaksOverThresholdAttributes_SetComputeParamValues(self, tuple);
+    else if(strcmp(name, "computeCovariates") == 0)
+        obj = PeaksOverThresholdAttributes_SetComputeCovariates(self, tuple);
+    else if(strcmp(name, "covariateModel") == 0)
+        obj = PeaksOverThresholdAttributes_SetCovariateModel(self, tuple);
+    else if(strcmp(name, "covariateReturnYears") == 0)
+        obj = PeaksOverThresholdAttributes_SetCovariateReturnYears(self, tuple);
+    else if(strcmp(name, "computeRVDifferences") == 0)
+        obj = PeaksOverThresholdAttributes_SetComputeRVDifferences(self, tuple);
+    else if(strcmp(name, "rvDifferences") == 0)
+        obj = PeaksOverThresholdAttributes_SetRvDifferences(self, tuple);
     else if(strcmp(name, "yearOneValue") == 0)
         obj = PeaksOverThresholdAttributes_SetYearOneValue(self, tuple);
     else if(strcmp(name, "dataScaling") == 0)
