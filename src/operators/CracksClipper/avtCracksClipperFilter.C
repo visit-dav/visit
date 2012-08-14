@@ -41,21 +41,7 @@
 // ************************************************************************* //
 
 #include <avtCracksClipperFilter.h>
-#include <vtkCell.h>
-#include <vtkCellData.h>
-#include <vtkCracksClipper.h>
-#include <vtkCrackWidthFilter.h>
-#include <vtkExtractCells.h>
-#include <vtkFloatArray.h>
-#include <vtkIdList.h>
-#include <vtkIntArray.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkAppendFilter.h>
-#include <vtkVisItUtility.h>
 
-#include <avtCallback.h>
 #include <avtCracksDensityFilter.h>
 #include <avtRemoveCracksFilter.h>
 #include <avtDataObject.h>
@@ -185,6 +171,9 @@ avtCracksClipperFilter::Equivalent(const AttributeGroup *a)
 //    density is calculated is now based on if this operator was instantiated
 //    via it's created variable, or not.
 //
+//    Kathleen Biagas, Tue Aug 14 14:56:21 MST 2012
+//    Set var name for the density filter.
+//
 // ****************************************************************************
 
 void
@@ -222,6 +211,7 @@ avtCracksClipperFilter::Execute(void)
         //
         avtCracksDensityFilter density;
         density.SetInput(volume.GetOutput());
+        density.SetVarName(varname);
 
         //
         // Force the network to execute
@@ -279,108 +269,88 @@ avtCracksClipperFilter::Execute(void)
 //    Added logic to determine if this operator was instantiated via it's
 //    'created' density var.
 //
+//    Kathleen Biagas, Tue Aug 14 14:56:21 MST 2012
+//    Changed logic for cleaner code, and to ensure the proper variable name
+//    is used when calculating density.
+//
 // ****************************************************************************
 
 avtContract_p
-avtCracksClipperFilter::ModifyContract(avtContract_p contract)
+avtCracksClipperFilter::ModifyContract(avtContract_p inContract)
 {
-    avtDataRequest_p ds = contract->GetDataRequest();
-
     calculateDensity = false;
-    if (strncmp(ds->GetVariable(), "operators/CracksClipper",
+
+    if (strncmp(pipelineVariable, "operators/CracksClipper",
                 strlen("operators/CracksClipper")) == 0)
     {
         calculateDensity = true;
+        varname = pipelineVariable;
     }
 
     // Retrieve secondary variables, if any, to pass along to the 
     // newly created DataSpec
-    std::vector<CharStrRef> csv = ds->GetSecondaryVariablesWithoutDuplicates();
-    std::vector<std::string> removeMe;
-    if (!calculateDensity)
-    {
-        for (int i = 0; i < csv.size(); i++)
-        {
-            if (strncmp(*(csv[i]), "operators/CracksClipper",
-                strlen("operators/CracksClipper")) == 0)
-            {
-                calculateDensity = true;
-                removeMe.push_back(*(csv[i]));
-            }
-        }
-    }
-
-    // Create a new dataRequest so that we can add secondary vars
-    avtDataRequest_p nds;
+    avtDataRequest_p inDR = inContract->GetDataRequest();
+    avtDataRequest_p outDR; 
+    avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     if (calculateDensity)
     {
-        nds = new avtDataRequest(atts.GetInMassVar().c_str(),
-                ds->GetTimestep(), ds->GetRestriction());
+        outDR = new avtDataRequest(inDR, inAtts.GetMeshname().c_str());   
     }
     else
     {
-        nds = new avtDataRequest(ds->GetVariable(),
-                ds->GetTimestep(), ds->GetRestriction());
+        outDR = new avtDataRequest(inDR);
     }
+
+
+    std::vector<CharStrRef> vars2 = inDR->GetSecondaryVariablesWithoutDuplicates();
 
     // Add any previously existing SecondaryVariables.
-    for (size_t i = 0; i < csv.size(); i++)
+    for (size_t i = 0; i < vars2.size(); i++)
     {
-        nds->AddSecondaryVariable(*(csv[i]));
-        if (strncmp(*(csv[i]), "operators/CracksClipper",
-            strlen("operators/CracksClipper")) == 0)
-        {
-            calculateDensity = true;
-        }
+        outDR->AddSecondaryVariable(*(vars2[i]));
     }
-
-    // remove the special variable for this operator
-    for (size_t i = 0; i < removeMe.size(); ++i)
-    {
-        nds->RemoveSecondaryVariable(removeMe[i].c_str());
-    }
-
     // Add secondary variables necessary for CracksClipper
-    nds->AddSecondaryVariable(atts.GetCrack1Var().c_str());
-    nds->AddSecondaryVariable(atts.GetCrack2Var().c_str());
-    nds->AddSecondaryVariable(atts.GetCrack3Var().c_str());
+    outDR->AddSecondaryVariable(atts.GetCrack1Var().c_str());
+    outDR->AddSecondaryVariable(atts.GetCrack2Var().c_str());
+    outDR->AddSecondaryVariable(atts.GetCrack3Var().c_str());
+    outDR->AddSecondaryVariable(atts.GetStrainVar().c_str());
 
     if (calculateDensity)
     {
-        nds->AddSecondaryVariable(atts.GetInMassVar().c_str());
+        outDR->AddSecondaryVariable(atts.GetInMassVar().c_str());
     }
 
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
 
     ExpressionList *elist = ParsingExprList::Instance()->GetList();
     Expression *e = new Expression();
 
-    std::string edef = std::string("volume2(<") + data.GetMeshname() + std::string(">)");
+    std::string edef = std::string("volume2(<") + inAtts.GetMeshname() + 
+                       std::string(">)");
     e->SetName("cracks_vol");
     e->SetDefinition(edef.c_str());
     e->SetType(Expression::ScalarMeshVar);
     elist->AddExpressions(*e);
     delete e;
 
-    nds->AddSecondaryVariable("cracks_vol");
+    outDR->AddSecondaryVariable("cracks_vol");
 
-    nds->AddSecondaryVariable(atts.GetStrainVar().c_str());
-    avtContract_p rv = new avtContract(contract, nds);
+
+    avtContract_p rv = new avtContract(inContract, outDR);
 
     //
     // Since this filter 'clips' the dataset, the zone and possibly
     // node numbers will be invalid, request them when needed.
     //
-    if (contract->GetDataRequest()->MayRequireZones() || 
-        contract->GetDataRequest()->MayRequireNodes())
+    if (inContract->GetDataRequest()->MayRequireZones() || 
+        inContract->GetDataRequest()->MayRequireNodes())
     {
-        if (data.ValidActiveVariable())
+        if (inAtts.ValidActiveVariable())
         {
-            if (data.GetCentering() == AVT_NODECENT)
+            if (inAtts.GetCentering() == AVT_NODECENT)
             {
                 rv->GetDataRequest()->TurnNodeNumbersOn();
             }
-            else if (data.GetCentering() == AVT_ZONECENT)
+            else if (inAtts.GetCentering() == AVT_ZONECENT)
             {
                 rv->GetDataRequest()->TurnZoneNumbersOn();
             }
@@ -437,6 +407,10 @@ avtCracksClipperFilter::UpdateDataObjectInfo()
 //    Kathleen Bonnell, Wed Sep 29 08:55:31 PDT 2010
 //    Re-add the density variable to the pipeline if needed.
 // 
+//    Kathleen Biagas, Tue Aug 14 15:00:03 MST 2012
+//    Move code that re-adds density variable to the pipeline to 
+//    avtCracksDensityFilter, so the data range can be properly set.
+// 
 // ****************************************************************************
 
 void
@@ -449,17 +423,6 @@ avtCracksClipperFilter::PostExecute()
     outAtts.RemoveVariable(atts.GetCrack2Var().c_str());
     outAtts.RemoveVariable(atts.GetCrack3Var().c_str());
     outAtts.RemoveVariable(atts.GetStrainVar().c_str());
-
-    if (calculateDensity)
-    {
-        outAtts.RemoveVariable(atts.GetInMassVar().c_str());
-
-        outAtts.AddVariable("operators/CracksClipper/den");
-        outAtts.SetActiveVariable("operators/CracksClipper/den");
-        outAtts.SetVariableDimension(1);
-        outAtts.SetVariableType(AVT_SCALAR_VAR);
-        outAtts.SetCentering(AVT_ZONECENT);
-    }
 }
 
 

@@ -40,14 +40,10 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkMassProperties.h>
-#include <vtkMath.h>
 #include <vtkObjectFactory.h>
-#include <vtkPolyData.h>
-#include <vtkQuad.h>
 #include <vtkSlicer.h>
-#include <vtkTriangle.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -77,15 +73,16 @@ vtkStandardNewMacro(vtkCrackWidthFilter);
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006 
 //    Removed vtkCellIntersections, added vtkMassProperties, vtkSlicer.
 //
+//    Kathleen Biagas, Tue Aug 14 13:05:17 MST 2012 
+//    Removed unused vtkQuad and vtkTriangle.
+//
 // ***************************************************************************
 
 vtkCrackWidthFilter::vtkCrackWidthFilter()
 {
-  this->triangle = vtkTriangle::New();
-  this->quad = vtkQuad::New();
-  this->MaxCrack1Width = 0.f;
-  this->MaxCrack2Width = 0.f;
-  this->MaxCrack3Width = 0.f;
+  this->MaxCrack1Width = 0.;
+  this->MaxCrack2Width = 0.;
+  this->MaxCrack3Width = 0.;
   this->Crack1Var = NULL;
   this->Crack2Var = NULL;
   this->Crack3Var = NULL;
@@ -108,20 +105,13 @@ vtkCrackWidthFilter::vtkCrackWidthFilter()
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006 
 //    Removed vtkCellIntersections, added vtkMassProperties, vtkSlicer.
 //
+//    Kathleen Biagas, Tue Aug 14 13:05:17 MST 2012 
+//    Removed unused vtkQuad and vtkTriangle.
+//
 // ***************************************************************************
 
 vtkCrackWidthFilter::~vtkCrackWidthFilter()
 {
-  if (this->triangle)
-    {
-    this->triangle->Delete();
-    this->triangle = NULL;
-    }
-  if (this->quad)
-    {
-    this->quad->Delete();
-    this->quad = NULL;
-    }
    this->SetCrack1Var(NULL);
    this->SetCrack2Var(NULL);
    this->SetCrack3Var(NULL);
@@ -139,7 +129,7 @@ vtkCrackWidthFilter::~vtkCrackWidthFilter()
 }
 
 // ***************************************************************************
-//  Method:  OrderThem 
+//  Method:  vtkCrackWidthFilter_OrderThem 
 //
 //  Purpose:  Creates a max-to-min ordering based on the passed deltas. 
 //
@@ -150,7 +140,9 @@ vtkCrackWidthFilter::~vtkCrackWidthFilter()
 //
 // ***************************************************************************
 
-void OrderThem(double delta1, double delta2, double delta3, int co[3])
+void 
+vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3, 
+    int co[3])
 {
   int min, mid, max;
   if (delta1 <= delta2 && delta1 <= delta3)
@@ -191,6 +183,9 @@ void OrderThem(double delta1, double delta2, double delta3, int co[3])
 //    Modified to determine crack width in max-to-min order based on
 //    the value of the StrainVar for each crack dir.  Do ALL crack widths.
 //
+//    Kathleen Biagas, Tue Aug 14 1:07:23 MST 2012
+//    Support double-precision.
+//
 // ***************************************************************************
 
 void
@@ -209,16 +204,16 @@ vtkCrackWidthFilter::Execute()
   vtkCellData *inCD = input->GetCellData();
   this->Slicer->SetInput(input);
 
-  vtkFloatArray *cd1 = NULL;
+  vtkDataArray *cd1 = NULL;
   if (this->Crack1Var != NULL)
-    cd1 = (vtkFloatArray*)inCD->GetArray(this->Crack1Var);
-  vtkFloatArray *cd2 = NULL;
+    cd1 = inCD->GetArray(this->Crack1Var);
+  vtkDataArray *cd2 = NULL;
   if (this->Crack2Var != NULL)
-    cd2 = (vtkFloatArray*)inCD->GetArray(this->Crack2Var);
-  vtkFloatArray *cd3 = NULL;
+    cd2 = inCD->GetArray(this->Crack2Var);
+  vtkDataArray *cd3 = NULL;
   if (this->Crack3Var != NULL)
-    cd3 = (vtkFloatArray*)inCD->GetArray(this->Crack3Var);
-  vtkFloatArray *strain = (vtkFloatArray*)inCD->GetArray(this->StrainVar);
+    cd3 = inCD->GetArray(this->Crack3Var);
+  vtkDataArray *strain = inCD->GetArray(this->StrainVar);
 
   if (strain == NULL)
     EXCEPTION0(ImproperUseException); 
@@ -231,22 +226,22 @@ vtkCrackWidthFilter::Execute()
   vtkIdType numCells = input->GetNumberOfCells();
 
   // Prepare the arrays
-  vtkFloatArray *crack1Width = vtkFloatArray::New();
+  vtkDoubleArray *crack1Width = vtkDoubleArray::New();
   crack1Width->SetName("avtCrack1Width");
   crack1Width->SetNumberOfComponents(1);
   crack1Width->SetNumberOfTuples(numCells);
 
-  vtkFloatArray *crack2Width = vtkFloatArray::New();
+  vtkDoubleArray *crack2Width = vtkDoubleArray::New();
   crack2Width->SetName("avtCrack2Width");
   crack2Width->SetNumberOfComponents(1);
   crack2Width->SetNumberOfTuples(numCells);
  
-  vtkFloatArray *crack3Width = vtkFloatArray::New();
+  vtkDoubleArray *crack3Width = vtkDoubleArray::New();
   crack3Width->SetName("avtCrack3Width");
   crack3Width->SetNumberOfComponents(1);
   crack3Width->SetNumberOfTuples(numCells);
 
-  vtkFloatArray *cellCenters = vtkFloatArray::New();
+  vtkDoubleArray *cellCenters = vtkDoubleArray::New();
   cellCenters->SetName("avtCellCenters");
   cellCenters->SetNumberOfComponents(3);
   cellCenters->SetNumberOfTuples(numCells);
@@ -271,7 +266,7 @@ vtkCrackWidthFilter::Execute()
   // step through cells, calculating cell centers and crack widths for 
   // each crack direction.  Terminate early when possible.
   // 
-  vtkFloatArray *crackWidth;
+  vtkDoubleArray *crackWidth;
   double delta, cw, zVol, *dir, *maxCW;
   int crackOrder[3]; 
 
@@ -291,7 +286,7 @@ vtkCrackWidthFilter::Execute()
       continue;
       }
 
-    OrderThem(delta1, delta2, delta3, crackOrder);
+    vtkCrackWidthFilter_OrderThem(delta1, delta2, delta3, crackOrder);
 
     vtkCell *cell = input->GetCell(cellId);
     vtkVisItUtility::GetCellCenter(cell, center);

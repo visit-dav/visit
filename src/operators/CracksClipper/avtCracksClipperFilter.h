@@ -73,6 +73,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Wed Sep 29 08:58:10 PDT 2010
 //    Add ivar 'calculateDensity'.
 //
+//    Kathleen Biagas, Tue Aug 14 15:05:23 MST 2012
+//    Add ivar 'varname'.
+//
 // ****************************************************************************
 
 class avtCracksClipperFilter : virtual public avtPluginFilter,
@@ -94,6 +97,7 @@ class avtCracksClipperFilter : virtual public avtPluginFilter,
   protected:
     CracksClipperAttributes   atts;
     bool                  calculateDensity;
+    std::string           varname;
 
     virtual void          Execute(void);
     virtual void          PostExecute(void);
