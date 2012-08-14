@@ -26,6 +26,11 @@
         NOV
         DEC
       </Enum>
+      <Enum name="CovariateType">
+        LOCATION
+        SCALE
+        SHAPE
+      </Enum>
       <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
         ANNUAL
       </Field>
@@ -61,14 +66,23 @@
       <Field name="cutoff" label="Cutoff" type="float">
         0.000000
       </Field>
-      <Field name="useLocationModel" label="Use Time-varying location parameter" type="bool">
+      <Field name="computeParamValues" label="Output parameter values" type="bool">
         false
       </Field>
-      <Field name="useScaleModel" label="Use Time-varying scale parameter" type="bool">
+      <Field name="computeCovariates" label="Compute covariates" type="bool">
         false
       </Field>
-      <Field name="useShapeModel" label="Use Time-varying shape parameter" type="bool">
+      <Field name="covariateModel" label="Time varying covariate model" type="enum" subtype="CovariateType" enabler="computeCovariates:true">
+        LOCATION
+      </Field>
+      <Field name="covariateReturnYears" label="Covariate return years" type="intVector" enabler="computeCovariates:true">
+      </Field>
+      <Field name="computeRVDifferences" label="Compute RV differences" type="bool">
         false
+      </Field>
+      <Field name="rvDifferences" label="RV Differences" type="intArray" length="2" enabler="computeRVDifferences:true">
+        0
+        0
       </Field>
       <Field name="yearOneValue" label="Year begin" type="int">
         1900
