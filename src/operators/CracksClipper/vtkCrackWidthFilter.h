@@ -43,9 +43,7 @@
 
 class vtkCell;
 class vtkMassProperties;
-class vtkQuad;
 class vtkSlicer;
-class vtkTriangle;
 
 // ****************************************************************************
 //  Class:  vtkCrackWidthFilter
@@ -66,6 +64,9 @@ class vtkTriangle;
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006 
 //    Removed use of vtkCellIntersections, added vtkMassProperties, vtkSlicer.
 //    Changed args for CrackWidthForCell.
+//
+//    Kathleen Biagas, Tue Aug 14 15:55:27 MST 2012
+//    Removed unused vtkQuad and vtkTriangle.
 //
 // ****************************************************************************
 
@@ -94,8 +95,6 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
     void Execute();
 
   private:
-    vtkTriangle *triangle;
-    vtkQuad *quad;
     double MaxCrack1Width;
     double MaxCrack2Width;
     double MaxCrack3Width;

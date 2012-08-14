@@ -44,7 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkIntArray.h>
 
 #include <DebugStream.h>
@@ -155,12 +155,55 @@ avtCracksDensityFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Sep 29 09:03:04 PDT 2010
 //    Changed output name to "operators/CracksClipper/den".
 //
+//    Kathleen Biagas, Fri Aug 10 13:21:06 PDT 2012
+//    Support double precision data. Re-add density var to pipeline so that
+//    data range can be properly set. Use pipeline var (varname).
+//
 // ****************************************************************************
+
+template <typename T1, typename T2> void
+avtCracksDensityFilter_CalculateDensity(int numOriginalCells, int numNewCells, 
+    T1 *emsp, T2 *volp, int* cozp, T1* denp)
+{
+    // find the new volume of the original cells
+    double *newVol = new double[numOriginalCells];
+    for (int i = 0; i < numOriginalCells; i++)
+    {
+        newVol[i] = 0;
+    }
+    for (int i = 0; i < numNewCells; i++)
+    {
+        newVol[cozp[i]] += volp[i];
+    }
+
+    double *volSum = new double[numNewCells];
+    for (int i = 0; i < numNewCells; i++)
+    { 
+        volSum[i] = newVol[cozp[i]]; 
+    } 
+
+    for (int i = 0; i < numNewCells; i++)
+    { 
+        if (volSum[i] != 0.)
+            denp[i] = emsp[i]/volSum[i];
+        else 
+            denp[i] = emsp[i];
+    } 
+
+    delete [] newVol;
+    delete [] volSum;
+}
 
 vtkDataSet *
 avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    vtkFloatArray *vol = (vtkFloatArray*)(in_ds->GetCellData()->GetArray("ccvol"));
+    if (varname.empty())
+    {
+        avtCallback::IssueWarning("Could not find necessary var name," 
+            " in which to store density calculation.");
+        return in_ds; 
+    }
+    vtkDataArray *vol = in_ds->GetCellData()->GetArray("ccvol");
     if (vol == NULL)
     {
         avtCallback::IssueWarning("Could not find necessary volume data," 
@@ -169,7 +212,8 @@ avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds; 
     } 
 
-    vtkIntArray *coz = (vtkIntArray*)(in_ds->GetCellData()->GetArray("cracksOriginalZones"));
+    vtkIntArray *coz = vtkIntArray::SafeDownCast(
+        in_ds->GetCellData()->GetArray("cracksOriginalZones"));
     if (coz == NULL)
     {
         avtCallback::IssueWarning("Could not find necessary original zones"
@@ -179,7 +223,7 @@ avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     std::string massVar = atts.GetInMassVar();
-    vtkFloatArray *ems = (vtkFloatArray*)(in_ds->GetCellData()->GetArray(massVar.c_str()));
+    vtkDataArray *ems = in_ds->GetCellData()->GetArray(massVar.c_str());
     if (ems == NULL)
     {
         std::string msg = "Could not find mass varaible: " + massVar;
@@ -188,7 +232,8 @@ avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds; 
     } 
 
-    vtkIntArray *noc = (vtkIntArray*)(in_ds->GetFieldData()->GetArray("originalNumCells"));
+    vtkIntArray *noc = vtkIntArray::SafeDownCast(
+        in_ds->GetFieldData()->GetArray("originalNumCells"));
     if (noc == NULL)
     {
         avtCallback::IssueWarning("Could not find necessary number of zones"
@@ -197,50 +242,62 @@ avtCracksDensityFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         return in_ds; 
     }
 
-    float *volp = (float*)vol->GetVoidPointer(0);
-    float *emsp = (float*)ems->GetVoidPointer(0);
-    int *cozp   = (int*)coz->GetVoidPointer(0);
-    int numOriginalCells = noc->GetValue(0);
-    int numNewCells = in_ds->GetNumberOfCells();
-
-
-    // find the new volume of the original cells
-    float *newVol = new float[numOriginalCells];
-    int i;
-    for (i = 0; i < numOriginalCells; i++)
-    {
-        newVol[i] = 0.f;
-    }
-    for (i = 0; i < numNewCells; i++)
-    {
-        newVol[cozp[i]] += volp[i];
-    }
-
-    vtkFloatArray *den = vtkFloatArray::New();
+    vtkIdType numNewCells = in_ds->GetNumberOfCells();
+    vtkDataArray *den = ems->NewInstance();
+    den->SetName(varname.c_str());
     den->SetNumberOfComponents(1);
     den->SetNumberOfTuples(numNewCells);
-    den->SetName("operators/CracksClipper/den");
 
-    float *volSum = new float[numNewCells];
-    for (i = 0; i < numNewCells; i++)
-    { 
-        volSum[i] = newVol[cozp[i]]; 
-    } 
+    int numOriginalCells = noc->GetValue(0);
 
-    for (i = 0; i < numNewCells; i++)
-    { 
-        if (volSum[i] != 0.f)
-            den->SetValue(i, emsp[i]/volSum[i]);
-        else 
-            den->SetValue(i, emsp[i]);
-    } 
+#define typeVol(massType) \
+{ \
+    if (vol->GetDataType() == VTK_DOUBLE) \
+    { \
+         avtCracksDensityFilter_CalculateDensity(numOriginalCells, numNewCells, \
+             (massType*) ems->GetVoidPointer(0), \
+             (double*) vol->GetVoidPointer(0), \
+             (int*)coz->GetVoidPointer(0), \
+             (massType*) den->GetVoidPointer(0)); \
+    } \
+    else \
+    { \
+         avtCracksDensityFilter_CalculateDensity(numOriginalCells, numNewCells, \
+             (massType*) ems->GetVoidPointer(0), \
+             (float*) vol->GetVoidPointer(0), \
+             (int*)coz->GetVoidPointer(0), \
+             (massType*) den->GetVoidPointer(0)); \
+    } \
+}
 
-    delete [] newVol;
-    delete [] volSum;
+    if (ems->GetDataType() == VTK_DOUBLE)
+    {
+        typeVol(double);
+    }
+    else
+    {
+        typeVol(float);
+    }
 
     vtkDataSet *rv = in_ds;
-    rv->GetCellData()->AddArray(den);
+    rv->GetCellData()->SetScalars(den);
+    rv->GetCellData()->RemoveArray("ccvol");
+    rv->GetCellData()->RemoveArray(massVar.c_str());
     den->Delete();
 
+    // Re-add the density variable to the pipeline here so that the 
+    // data range can be set properly.
+    double range[2] = {FLT_MAX, -FLT_MAX};
+    GetDataRange(rv, range, varname.c_str(), false);
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.RemoveVariable(massVar.c_str());
+    outAtts.AddVariable(varname.c_str());
+    outAtts.SetActiveVariable(varname.c_str());
+    outAtts.SetVariableDimension(1);
+    outAtts.SetVariableType(AVT_SCALAR_VAR);
+    outAtts.SetCentering(AVT_ZONECENT);
+    outAtts.GetThisProcsOriginalDataExtents(varname.c_str())->Set(range);
+    outAtts.GetThisProcsActualDataExtents(varname.c_str())->Set(range);
+    
     return rv;
 }

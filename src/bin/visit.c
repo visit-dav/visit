@@ -539,7 +539,7 @@ VisItLauncherMain(int argc, char *argv[])
     //
     // Migrate config files 
     // 
-    if (component == "gui"  || component == "cli")
+    if (!usingDev && (component == "gui"  || component == "cli"))
     {
         TestForConfigFiles(component);
     }

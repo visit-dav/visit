@@ -45,8 +45,8 @@
 #include <vtkCellData.h>
 #include <vtkCracksClipper.h>
 #include <vtkCrackWidthFilter.h>
+#include <vtkDataArray.h>
 #include <vtkExtractCells.h>
-#include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
@@ -65,7 +65,7 @@
 
 
 // ****************************************************************************
-//  Method: GetCrackVar 
+//  Method: avtRemoveCracksFilter_GetCrackVar 
 //
 //  Purpose:  Convenience method to return a crack variable.
 //
@@ -80,7 +80,7 @@
 // ****************************************************************************
 
 const char * 
-GetCrackVar(int which, CracksClipperAttributes *a)
+avtRemoveCracksFilter_GetCrackVar(int which, CracksClipperAttributes *a)
 {
     if (0 == which) 
         return a->GetCrack1Var().c_str();
@@ -92,7 +92,7 @@ GetCrackVar(int which, CracksClipperAttributes *a)
 
 
 // ****************************************************************************
-//  Method: GetShowCrack 
+//  Method: avtRemoveCracksFilter_GetShowCrack 
 //
 //  Purpose:  Convenience method to return the value of ShowCrack.
 //
@@ -102,7 +102,7 @@ GetCrackVar(int which, CracksClipperAttributes *a)
 // ****************************************************************************
 
 bool  
-GetShowCrack(int which, CracksClipperAttributes *a)
+avtRemoveCracksFilter_GetShowCrack(int which, CracksClipperAttributes *a)
 {
     if (0 == which) 
         return a->GetShowCrack1();
@@ -113,7 +113,7 @@ GetShowCrack(int which, CracksClipperAttributes *a)
 }
 
 // ****************************************************************************
-//  Method: GetCrackWidth 
+//  Method: avtRemoveCracksFilter_GetCrackWidth 
 //
 //  Purpose:  Convenience method to return the crack width.
 //
@@ -127,7 +127,7 @@ GetShowCrack(int which, CracksClipperAttributes *a)
 // ****************************************************************************
 
 const char * 
-GetCrackWidth(int which)
+avtRemoveCracksFilter_GetCrackWidth(int which)
 {
     if (0 == which) 
         return "avtCrack1Width";
@@ -139,7 +139,7 @@ GetCrackWidth(int which)
 
 
 // ****************************************************************************
-//  Method: GetCrackWidth 
+//  Method: avtRemoveCracksFilter_OrderThem 
 //
 //  Purpose:  Convenience method to create max-to-min odering of delta. 
 //
@@ -149,7 +149,7 @@ GetCrackWidth(int which)
 // ****************************************************************************
 
 void 
-OrderThem2(double delta[3], int co[3])
+avtRemoveCracksFilter_OrderThem(double delta[3], int co[3])
 {
   int min, mid, max;
   if (delta[0] <= delta[1] && delta[0] <= delta[2])
@@ -351,7 +351,7 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     cwf->SetStrainVar(atts.GetStrainVar().c_str());
     cwf->Update();
 
-    float mw[3];
+    double mw[3];
     for (int i = 0; i < 3; i++)
     {
         mw[i] = cwf->GetMaxCrackWidth(i);
@@ -388,7 +388,8 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         ManageMemory(output);
         output->Delete();
     }
-    rv->GetFieldData()->AddArray(numOCells);
+    if (rv != NULL)
+        rv->GetFieldData()->AddArray(numOCells);
 
     cwf->Delete();
     useThis->Delete();
@@ -426,6 +427,9 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //
 //    Kathleen Bonnell, Tue Jul 1 15:09:54 PDT 2008 
 //    Removed unreferenced variable.
+//
+//    Kathleen Biagas, Tue Aug 14 15:18:47 MST 2012
+//    Support double precision.
 //
 // ****************************************************************************
 
@@ -490,7 +494,8 @@ avtRemoveCracksFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
 
     int nc = strain->GetNumberOfTuples();
     int idx[3] = {0, 4, 8};
-    float *s = (float*)strain->GetVoidPointer(0);
+
+
     for (i = 0; i < 3; i++)
     {
         if (!np[i]) // this crack direction is not needed
@@ -501,7 +506,7 @@ avtRemoveCracksFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
 
         for (int j = 0; j < nc && !np[i]; j++)
         {
-            if (s[9*j+comp] != 0)
+            if (strain->GetComponent(j,comp) != 0)
                 np[i] = true;
         }
     }
@@ -533,13 +538,16 @@ avtRemoveCracksFilter::NeedsProcessing(vtkDataSet *ds, bool *np)
 //    Jeremy Meredith, Thu Aug  7 15:30:34 EDT 2008
 //    Use const char* for string literals.
 //
+//    Kathleen Biagas, Tue Aug 14 15:18:47 MST 2012
+//    Support double precision.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
 {
-    vtkFloatArray *strain = (vtkFloatArray*)inds->GetCellData()->
-                             GetArray(atts.GetStrainVar().c_str());
+    vtkDataArray *strain = inds->GetCellData()->
+                           GetArray(atts.GetStrainVar().c_str());
 
     int nc = inds->GetNumberOfCells(); 
     const char *centers = "avtCellCenters";
@@ -550,16 +558,16 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
     vtkDataSet *dsToUse = inds->NewInstance();
     dsToUse->ShallowCopy(inds);
     double delta[3];
-    int i, cellId;
+    vtkIdType cellId;
     int processedCell[3] = {0, 0, 0};
     vtkIdList *cellsToKeepIntact = vtkIdList::New();
 
     vtkDataSet *apdInput[5];
-    for (i = 0; i < 5; i++)
+    for (int i = 0; i < 5; i++)
         apdInput[i] = dsToUse->NewInstance();
     int apdInputNum = 0;
                            
-    for (i = 0; i < nc; i++)
+    for (int i = 0; i < nc; i++)
     {
         cellId = i;
         delta[0] = strain->GetComponent(i, 0);
@@ -574,18 +582,19 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
 
         
         int crackOrder[3] = {0, 1, 2};
-        OrderThem2(delta, crackOrder);
+        avtRemoveCracksFilter_OrderThem(delta, crackOrder);
         bool first = true;
         for (int j = 0; j < 3; j++)
         {
             int whichCrack = crackOrder[j];
             processedCell[whichCrack] = 0;
-            if (!GetShowCrack(whichCrack, &atts) || delta[whichCrack] == 0)
+            if (!avtRemoveCracksFilter_GetShowCrack(whichCrack, &atts) || 
+                delta[whichCrack] == 0)
             {
                 continue;
             }
-            crackvar = GetCrackVar(whichCrack, &atts);
-            crackwidth = GetCrackWidth(whichCrack);
+            crackvar = avtRemoveCracksFilter_GetCrackVar(whichCrack, &atts);
+            crackwidth = avtRemoveCracksFilter_GetCrackWidth(whichCrack);
 
             if (first)
                 dsToUse->ShallowCopy(inds);
@@ -627,12 +636,13 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
             negClip->Update();
             negClip->Delete();
 
-            first = false;
             if (outds2->GetNumberOfCells() <= 0)
             {
                outds2->Delete();
                outds2 = NULL;
             }
+
+            first = false;
  
             if (outds1 == NULL && outds2 == NULL)
             {

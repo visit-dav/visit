@@ -84,6 +84,9 @@ class vtkUnstructuredGrid;
 //    Group members into FilterState class so it's easier to pass the filter's
 //    state to internal template functions.
 //
+//    Kathleen Biagas, Tue Aug 15 11:22:11 MST 2012
+//    Renamed SetUpClipFunction to ModifyClip.  Added SetPrecomputeClipScalars.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItClipper
@@ -104,7 +107,8 @@ class VISIT_VTK_API vtkVisItClipper
     virtual vtkUnstructuredGrid *GetOtherOutput();
 
     void SetCellList(const vtkIdType *, vtkIdType);
-    virtual void SetUpClipFunction(int) { ; };
+    void SetPrecomputeClipScalars(const bool v);
+    virtual void ModifyClip(vtkIdType) {; };
 
     struct FilterState
     {
@@ -128,6 +132,7 @@ class VISIT_VTK_API vtkVisItClipper
         bool                 insideOut;
         bool                 useZeroCrossings;
         bool                 computeInsideAndOut;
+        bool                 precomputeClipScalars;
     };
 
   protected:
