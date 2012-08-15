@@ -408,3 +408,31 @@ avtDualMeshFilter::ExamineContract(avtContract_p contract)
 }
 
 
+// ****************************************************************************
+// Method: avtDualMeshFilter::ModifyContract
+//
+// Purpose: 
+//   Modify the data request in the contract.
+//
+// Arguments:
+//   spec : The pipeline specification.
+//
+// Returns:    A new pipeline specification.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 15 12:23:39 PDT 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtContract_p
+avtDualMeshFilter::ModifyContract(avtContract_p spec)
+{
+    avtContract_p rv = new avtContract(spec);
+
+    // Indicate that we want to ignore missing data instead of removing it.
+    rv->GetDataRequest()->IgnoreMissingData();
+
+    return rv;
+}
