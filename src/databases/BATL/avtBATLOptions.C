@@ -69,7 +69,6 @@ GetBATLReadOptions(void)
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Show generating processor instead of refinement level", false);
     rv->SetBool("Use new style curve generation", true);
-    rv->SetBool("Set up patch abutment information", true);
     return rv;
 }
 
