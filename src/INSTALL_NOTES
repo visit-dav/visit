@@ -3,11 +3,46 @@
                        Installation instructions for VisIt
                       =====================================
 
-This document contains instructions for installing VisIt on both Unix and
-Windows systems.  The Unix installation instructions are first followed
-by the Windows installation instructions.
+This document contains instructions for installing VisIt on Windows, MacOS X,
+and Unix systems.  The Windows and MacOS X installation instructions are first,
+followed by the Unix installation instructions.
 
-Unix and Mac OS X:
+* Note that VisIt can be installed in 2 different ways on MacOS X: as an 
+  application bundle and as a gzipped tar file, as on Unix installations.
+
+
+Windows:
+========
+
+1.  Copy the visit2.5.2.exe or visit2.5.2_x64.exe installer program to your desktop.
+
+2.  Double click on the installer program icon to run the installer.
+
+3.  Follow the directions provided by the installer.
+
+
+MacOS X (application bundle):
+==============================
+
+Downloads:
+* VisIt-2.5.2-i386-installer.dmg    : 32-bit Mac
+* VisIt-2.5.2-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
+
+1. Download the appropriate file and copy it to the desktop.
+
+2. Double click on the file to open it. This will cause MacOS to mount the
+   disk image and open it in Finder.
+
+3. Once the disk image is open in Finder, copy the VisIt application to
+   the desktop.
+
+4. Eject the disk image in Finder.
+
+5. Double click on the VisIt application to run VisIt.
+
+
+Unix and MacOS X (gzipped tar file):
+=====================================
 
 1.  Run the visit-install script to install visit.  If you have built your
     own visit binary distribution, you can find the visit-install script
@@ -63,11 +98,3 @@ Unix and Mac OS X:
 
 3.  If you are installing VisIt on a Linux system with an NVidia graphics
     card, we recommend using the latest driver.
-
-Windows:
-
-1.  Copy the file visit2.5.2.exe to your desktop.
-
-2.  Double click on the visit2.5.2.exe icon to run the installer.
-
-3.  Follow the directions provided by the installer.
