@@ -119,9 +119,9 @@ if ($verbose)
 if ($passwd ne "")
 {
     # authenticate as admin and save the cookie
-    @auth = `wget -q -O- --keep-session-cookies --save-cookies=tmpcookies "https://elist.ornl.gov/mailman/admin/visit-developers/members?adminpw=$passwd"`;
+    @auth = `wget --no-check-certificate -q -O- --keep-session-cookies --save-cookies=tmpcookies "https://elist.ornl.gov/mailman/admin/visit-developers/members?adminpw=$passwd"`;
     # get the list using the authentication session cookie
-    @html = `wget -q -O- --load-cookies=tmpcookies "https://elist.ornl.gov/mailman/roster/visit-developers"`;
+    @html = `wget --no-check-certificate -q -O- --load-cookies=tmpcookies "https://elist.ornl.gov/mailman/roster/visit-developers"`;
     # get just the members
     @members = grep(m|href="../options/visit-developers/|, @html);
     if ((scalar @members) < 1)
