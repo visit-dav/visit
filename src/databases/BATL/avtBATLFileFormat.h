@@ -249,7 +249,6 @@ protected:
     std::vector<int>          BATLIdToVisitId;
     bool                      showProcessors;
     bool                      newStyleCurves;
-    bool                      addStructuredDomainBoundaries;
     bool                      showUnits;
 };
 
