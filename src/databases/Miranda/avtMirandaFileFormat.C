@@ -44,9 +44,7 @@
 
 
 #include <string>
-#include <boost/cstdint.hpp>
-using boost::int32_t;
-#include "boost/format.hpp"
+
 #ifdef _WIN32
 #include <direct.h> /* for _getcwd */
 #else
@@ -74,7 +72,6 @@ using boost::int32_t;
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <snprintf.h>
-#include <boost/shared_array.hpp>
 
 using std::string;
 
@@ -134,9 +131,55 @@ static void Fix2DFileOrder(int a, int b, int *fileOrder)
     }
 }
 
+// ****************************************************************************
+// Class: format
+//
+// Purpose:
+//   Small stand-in for boost::format.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 14 16:45:52 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
 
+class format
+{
+public:
+    format() : count(1), fmt() { }
+    format(const format &f) : count(f.count), fmt(f.fmt) { }
+    format(const std::string &f) : count(1), fmt(f) { }
+    format operator % (std::string value)
+    {
+        format retval(*this);
+        std::string f(currentFormat());
+        std::string::size_type n = fmt.find(f);
+        if(n != std::string::npos)
+            retval.fmt.replace(n, f.size(), value.c_str());
+        retval.count = count + 1;
+        return retval;
+    }
+    format operator % (int value)
+    {
+        char tmp[20];
+        sprintf(tmp, "%d", value);
+        return this->operator % (std::string(tmp));
+    }
+    operator std::string () {return fmt; }
+private:    
+    std::string currentFormat()
+    {
+        char tmp[20];
+        sprintf(tmp, "%%%d%%", count);
+        return std::string(tmp);
+    }
 
-
+    int         count;
+    std::string fmt;
+};
 
 // ****************************************************************************
 //  Method: avtMiranda constructor
@@ -977,18 +1020,28 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
 
   // We can just read the entire contents of the domain file in version 2.0
   // This is in fact the point of having a version 2.0 file format.  
-  boost::shared_array<float> bufp(new float[nSrcTuples*3]);
-  
-  int comp = 0, bufcomp = 0; 
-  for (comp=0; comp < 3; comp++) {
-    if (dim == 2 && comp == flatDim) 
-      continue;    
-    ReadRawScalar(fd, comp, bufp.get() + bufcomp*nSrcTuples, filename, domain); 
-    bufcomp++; 
+  float *bufp = new float[nSrcTuples*3];
+  TRY
+  {
+      int comp = 0, bufcomp = 0; 
+      for (comp=0; comp < 3; comp++)
+      {
+          if (dim == 2 && comp == flatDim) 
+              continue;    
+          ReadRawScalar(fd, comp, bufp + bufcomp*nSrcTuples, filename, domain); 
+          bufcomp++; 
+      }
+      fclose(fd); 
   }
-  fclose(fd); 
-  
-  InterleaveData((float *)(array->GetVoidPointer(0)), bufp.get(), domainsize, 3);
+  CATCHALL
+  {
+      fclose(fd);
+      delete [] bufp;
+      RETHROW;
+  }
+  ENDTRY
+
+  InterleaveData((float *)(array->GetVoidPointer(0)), bufp, domainsize, 3);
 
   vtkPoints *p = vtkPoints::New();
   p->SetData(array);
@@ -1009,7 +1062,9 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
   sgrid->GetFieldData()->AddArray(arr);
   arr->Delete();
 
-  TIMERSTOP(str(boost::format("GetCurvilinearMesh2(%1%)")%domain)); 
+  delete [] bufp;
+
+  TIMERSTOP(str(format("GetCurvilinearMesh2(%1%)")%domain)); 
   return sgrid;
 
 }
@@ -1105,7 +1160,7 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
     arr->SetName("base_index");
     sgrid->GetFieldData()->AddArray(arr);
     arr->Delete();
-    TIMERSTOP(str(boost::format("GetCurvilinearMesh(%1%)")%domain)); 
+    TIMERSTOP(str(format("GetCurvilinearMesh(%1%)")%domain)); 
 
     return sgrid;
 }
@@ -1322,7 +1377,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
             delete[] aRawBlocks[ii];
         }
     }
-    TIMERSTOP(str(boost::format("GetVar(%1%, %2%, %3%)")%timestate%domain%varname));
+    TIMERSTOP(str(format("GetVar(%1%, %2%, %3%)")%timestate%domain%varname));
 
     return var;
 }
@@ -1411,24 +1466,35 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
       if (fd == NULL)
         EXCEPTION1(InvalidFilesException, filename);
       
-      boost::shared_array<float> bufp(new float[nTuples*nComps]);
-      int iCurrComp = 0;
-      for (jj = 0; jj < nComps; jj++)
-        {
-          if (bFlattenVec && jj==flatDim)
-            continue;
+      float *bufp = new float[nTuples*nComps];
+      TRY
+      {
+          int iCurrComp = 0;
+          for (jj = 0; jj < nComps; jj++)
+          {
+              if (bFlattenVec && jj==flatDim)
+                  continue;
           
-          ReadRawScalar(fd, nPrevComp+jj, bufp.get() + iCurrComp*nTuples, filename, domain);
+              ReadRawScalar(fd, nPrevComp+jj, bufp + iCurrComp*nTuples, filename, domain);
           
-          iCurrComp++;
-        }
+              iCurrComp++;
+          }
+      }
+      CATCHALL
+      {
+          fclose(fd);
+          delete [] bufp;
+          RETHROW;
+      }
+      ENDTRY
+
       if (bFlattenVec)
-        memset(bufp.get() + 2*nTuples, 0, nTuples*sizeof(float));
+        memset(bufp + 2*nTuples, 0, nTuples*sizeof(float));
       
-      InterleaveData( (float *)(var->GetVoidPointer(0)), bufp.get(), dims, nComps );      
+      InterleaveData( (float *)(var->GetVoidPointer(0)), bufp, dims, nComps );      
          
       fclose(fd); 
-
+      delete [] bufp;
     } else {
       int neighbors[8], realdim[3];
       float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
@@ -1478,7 +1544,7 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
             delete[] aRawBlocks[ii];
         }
     }
-    TIMERSTOP(str(boost::format("GetVectorVar(%1%, %2%, %3%)")%timestate%domain%varname));
+    TIMERSTOP(str(format("GetVectorVar(%1%, %2%, %3%)")%timestate%domain%varname));
     return var;    
 }
 // ****************************************************************************
@@ -1726,7 +1792,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
               delete[] aRawBlocks[ii];
           }
     }
-    TIMERSTOP(str(boost::format("GetAuxiliaryData(%1%, %2%, %3%, %4%)")%var%timestate%domain%type));
+    TIMERSTOP(str(format("GetAuxiliaryData(%1%, %2%, %3%, %4%)")%var%timestate%domain%type));
     return rv;
 }
 
@@ -1848,7 +1914,7 @@ avtMirandaFileFormat::InterleaveData( float * __restrict dst, float *__restrict 
       dst[nComp*item+comp] = src[comp*numItems + item]; 
     }    
   }
-  TIMERSTOP(str(boost::format("InterleaveData(<%1%, %2%, %3%>, %4%)")%dstDim[0]%dstDim[1]%dstDim[2]%nComp));
+  TIMERSTOP(str(format("InterleaveData(<%1%, %2%, %3%>, %4%)")%dstDim[0]%dstDim[1]%dstDim[2]%nComp));
   return; 
 }
 
@@ -1932,7 +1998,7 @@ avtMirandaFileFormat::PackData(float *__restrict dst, const  float *  const * __
             }
         }
     }
-  TIMERSTOP(str(boost::format("PackData(<%1%, %2%, %3%>, %4%)")%dstDim[0]%dstDim[1]%dstDim[2]%nComp));
+  TIMERSTOP(str(format("PackData(<%1%, %2%, %3%>, %4%)")%dstDim[0]%dstDim[1]%dstDim[2]%nComp));
 }
 
 
@@ -1967,13 +2033,13 @@ avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char 
     int header, nItemsRead, ii;
     int err;
 
-    err = fseek(fd, iComp*(nPoints*sizeof(float) + 2*sizeof(int32_t)), SEEK_SET);
+    err = fseek(fd, iComp*(nPoints*sizeof(float) + 2*sizeof(int)), SEEK_SET);
     if (err)
         EXCEPTION1(InvalidFilesException, filename);
 
     // Fortran records have a 32 bit int that tells their length.  
     // We read that here to test endianism. 
-    fread(&header, sizeof(int32_t), 1, fd);
+    fread(&header, sizeof(int), 1, fd);
     nItemsRead = fread(out, sizeof(float), nPoints, fd);
     if (nItemsRead != nPoints)
         EXCEPTION1(InvalidFilesException, filename);
@@ -1990,6 +2056,6 @@ avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char 
             ByteSwap32(f);
         }
     }
-    TIMERSTOP(str(boost::format("ReadRawScalar(%1%, %2%, %3%)")%iComp% filename % domain));
+    TIMERSTOP(str(format("ReadRawScalar(%1%, %2%, %3%)")%iComp% filename % domain));
 }
 
