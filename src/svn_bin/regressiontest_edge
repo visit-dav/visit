@@ -32,6 +32,11 @@
 #   Mark C. Miller, Wed Jun 27 12:30:13 PDT 2012
 #   Removed zipwrapper tests from skip list because the tests were updated
 #   to use STL in place of VTK.
+#
+#   Wed Aug 15 12:31:00 PDT 2012
+#   Update to use python test suite
+#
+
 
 #
 # Determine the users name and e-mail address.
@@ -76,6 +81,14 @@ case $user in
         userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
+    harrison37)
+        userNersc=cyrush
+        userEmail=cyrush@llnl.gov
+        ;;
+    cyrush)
+        userNersc=cyrush
+        userEmail=cyrush@llnl.gov
+        ;;
     whitlocb)
         userNersc=whitlocb
         userEmail=whitlock2@llnl.gov
@@ -97,6 +110,7 @@ revision="latest"
 serial="false"
 testHost="edge"
 testDir="/nfs/tmp2"
+post="true"
 
 for abc
 do
@@ -129,6 +143,10 @@ do
             testHost=$2
             shift 2
             ;;
+        -no-post)
+            post="false"
+            shift
+            ;;
     esac
 done
 
@@ -153,36 +171,10 @@ else
     modes="$testHost,serial $testHost,parallel $testHost,scalable,parallel,icet"
 fi
 
-skipList_for_Edge="\
-    $testHost,parallel:tests/hybrid/missingdata.py:missingdata_0_04 \
-    $testHost,scalable,parallel,icet:tests/hybrid/missingdata.py:missingdata_0_04 \
-    $testHost,serial:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
-    $testHost,parallel:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
-    $testHost,scalable,parallel,icet:tests/plots/streamline_geom.py:streamline_geom_08,streamline_geom_09 \
-    $testHost,parallel:tests/plots/pics.py:pics_MB_2D_rect_POS_DormandPrince_stream_both,pics_MB_2D_rect_POD_DormandPrince_stream_both,pics_MB_3D_rect_POS_DormandPrince_stream_both,pics_MB_3D_rect_POD_DormandPrince_stream_both \
-    $testHost,scalable,parallel,icet:tests/plots/pics.py:pics_MB_3D_rect_POD_DormandPrince_stream_both \
-    $testHost,serial:tests/plots/pathlines.py \
-    $testHost,parallel:tests/plots/pathlines.py \
-    $testHost,scalable,parallel,icet:tests/plots/pathlines.py \
-    $testHost,serial:tests/plots/pics.py \
-    $testHost,parallel:tests/plots/pics.py \
-    $testHost,scalable,parallel,icet:tests/plots/pics.py \
-    $testHost,serial:tests/operators/persistent_particles.py \
-    $testHost,parallel:tests/operators/persistent_particles.py \
-    $testHost,scalable,parallel,icet:tests/operators/persistent_particles.py \
-    $testHost,serial:tests/databases/itaps.py:itaps_14,itaps_15 \
-    $testHost,parallel:tests/databases/itaps.py:itaps_14,itaps_15 \
-    $testHost,scalable,parallel,icet:tests/databases/itaps.py:itaps_14,itaps_15 \
-    $testHost,scalable,parallel,icet:tests/operators/transform.py:ops_transform05 \
-    $testHost,parallel:tests/rendering/compositing.py \
-    $testHost,scalable,parallel,icet:tests/rendering/compositing.py \
-    $testHost,serial:tests/hybrid/selections.py \
-    $testHost,parallel:tests/hybrid/selections.py \
-    $testHost,scalable,parallel,icet:tests/hybrid/selections.py \
-    $testHost,parallel:tests/session/legendproperties.py:legendproperties00,legendproperties01 \
-    $testHost,scalable,parallel,icet:tests/session/legendproperties.py:legendproperties00,legendproperties01"
-
-skipList="\$skipList_for_Edge"
+# Check out the source
+if test "$debug" = "true" ; then
+   echo "Removing any old test files at: $testDir/$user/$workingDir" | mail -s "Checkout started" $userEmail
+fi
 
 # Create the test directory.
 if test ! -e $testDir/$user; then
@@ -208,13 +200,13 @@ if test "$branch" = "trunk" ; then
     fi
 else
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.2RC/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/branches/2.5RC/test -r $revision >> buildlog 2>&1
     fi
 fi
 if test "$debug" = "true" ; then
@@ -241,24 +233,29 @@ if test "$debug" = "true" ; then
     echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
 fi
 
+
+if test "$debug" = "true" ; then
+    echo "Starting tests:\`date\`" | mail -s "Starting tests" $userEmail
+fi
+
 # Run the tests, consolidating the results in one directory
 cd ../test
 rm -rf \$dateTag
 mkdir \$dateTag
+mkdir \$dateTag/output
 for m in \$modes; do
-    # set pixel diff-tolerances slightly above zero for mode
-    # containing 'scalable'
-    diffTols=""
-    if test -n "\$(echo \$m | grep scalable)"; then
-        diffTols="-pixdiff 2 -avgdiff 1"
+    theMode=\`echo \$m | tr ',' '_'\`
+    resDir=\$dateTag/output/\$theMode
+
+    if test "$debug" = "true" ; then
+        echo "runtest with mode = \$m" | mail -s "runtest with mode = \$m" $userEmail
     fi
 
     # Run the test
-    ./runtest -q -s "\$skipList_for_Edge" -m "\$m" -l 600 \$diffTols -notrackmem >> ../buildlog 2>&1
+    ./runtest -o \$resDir -m "\$m" >> ../buildlog 2>&1
+    mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
-    theMode=\`echo \$m | tr ',' '_'\`
-    mv html \$dateTag/\$theMode
     if test "$debug" = "true" ; then
         echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
     fi
@@ -279,46 +276,48 @@ for m in \$modes; do
     fi
 done
 
-# If the test suite passed then update the revision number indicating the
-# last pass.
-cd ..
-if test "\$hasFailed" = ""; then
-    svn update src/svn_bin/lastpass_$testHost
-    svnRevision=\`svn info src | grep "Revision:" | cut -d' ' -f2\`
-    rm -f src/svn_bin/lastpass_$testHost
-    echo "\$svnRevision" > src/svn_bin/lastpass_$testHost
-    svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_$testHost
+if test "$post" = "true" ; then
+    # If the test suite passed then update the revision number indicating the
+    # last pass.
+    cd ..
+    if test "\$hasFailed" = ""; then
+        svn update src/svn_bin/lastpass_$testHost
+        svnRevision=\`svn info src | grep "Revision:" | cut -d' ' -f2\`
+        rm -f src/svn_bin/lastpass_$testHost
+        echo "\$svnRevision" > src/svn_bin/lastpass_$testHost
+        svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_$testHost
+    fi
+
+    # Tar up the results
+    cd test
+    tar -xzvf - \$dateTag html.tar.gz
+
+    # Copy the results to euclid
+    scp html.tar.gz $userNersc@euclid.nersc.gov:
+    if test "$debug" = "true" ; then
+        echo "Results copied to euclid at: `date`" | mail -s "Results copied" $userEmail
+    fi
+
+    # Post the results.
+    cd ..
+    scp src/svn_bin/visit-update-test-website $userNersc@euclid.nersc.gov:
+    ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
+    if test "$debug" = "true" ; then
+        echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
+    fi
+
+    # Send out an e-mail notifying the users of the test suite status.
+    if test "\$hasFailed" = ""; then
+        src/svn_bin/visit-notify-test-failure -pass -host $testHost
+    else
+        src/svn_bin/visit-notify-test-failure -host $testHost
+    fi
+
+    # Set the permissions so that others may access the test directory.
+    cd ..
+    chgrp -R visit $workingDir
+    chmod -R g+rwX,o+rX $workingDir
 fi
-
-# Tar up the results
-cd test
-tar cf - \$dateTag | gzip > html.tar.gz
-
-# Copy the results to euclid
-scp html.tar.gz $userNersc@euclid.nersc.gov:
-if test "$debug" = "true" ; then
-    echo "Results copied to euclid at: `date`" | mail -s "Results copied" $userEmail
-fi
-
-# Post the results.
-cd ..
-scp src/svn_bin/visit-update-test-website $userNersc@euclid.nersc.gov:
-ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
-if test "$debug" = "true" ; then
-    echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
-fi
-
-# Send out an e-mail notifying the users of the test suite status.
-if test "\$hasFailed" = ""; then
-   src/svn_bin/visit-notify-test-failure -pass -host $testHost
-else
-   src/svn_bin/visit-notify-test-failure -host $testHost
-fi
-
-# Set the permissions so that others may access the test directory.
-cd ..
-chgrp -R visit $workingDir
-chmod -R g+rwX,o+rX $workingDir
 
 EOF
 
