@@ -7,6 +7,8 @@
 import cgi, string, sys, cStringIO
 import keyword, token, tokenize
 
+from os.path import join as pjoin
+
 _KEYWORD = token.NT_OFFSET + 1
 _TEXT    = token.NT_OFFSET + 2
 
@@ -98,6 +100,6 @@ class Parser:
         self.out.write(cgi.escape(toktext))
         self.out.write('</font>')
 
-def ColorizePython(category, filename, filebase):
-    source = open("tests/%s/%s"%(category,filename)).read()
-    Parser(source, open('html/%s_%s_py.html' % (category, filebase), 'wt')).format(None, None, "%s/%s"%(category,filename))
+def ColorizePython(visitTestDir ,visitResultDir,category, filename, filebase):
+    source = open(pjoin(visitTestDir,"tests",category,filename)).read()
+    Parser(source, open(pjoin(visitResultDir,"html",'%s_%s_py.html' % (category, filebase)), 'wt')).format(None, None, "%s/%s"%(category,filename))

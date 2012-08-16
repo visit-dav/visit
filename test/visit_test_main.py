@@ -1,125 +1,49 @@
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#*****************************************************************************
+"""
+file: visit_test_main.py
+description: Provides VisIt environment to executes test suite scripts.
+author:  Cyrus Harrison
+date:    May 30, 2012
+
+notes:   Ported/refactored from 'Testing.py'
+"""
 # ----------------------------------------------------------------------------
-#       Code to help in the VisIt test suite
-#
-#  Programmer: Jeremy Meredith
-#  Date:       April 17, 2002
-#
 #  Modifications:
-#    Hank Childs, Fri May 24 08:43:58 PDT 2002
-#    Renamed SaveImageAtts to SaveWindowAtts.
-#
-#    Jeremy Meredith, Fri Jul 19 17:27:10 PDT 2002
-#    Added python coloring code.  Added a third exit code for small errors.
-#    Added code to write each individual test case to its own html file
-#    and each test script to its own as well, and changed the formatting.
-#
-#    Jeremy Meredith, Thu Aug 29 15:10:45 PDT 2002
-#    Improved the log file writing.
-#
-#    Jeremy Meredith, Fri Sep 13 17:11:48 PDT 2002
-#    Made it brighten the difference image before saving to make it
-#    easier to spot differences.  Made the per test case statistics
-#    be in float format instead of decimal.
-#
-#    Hank Childs, Wed Nov 20 14:58:17 PST 2002
-#    Explicitly test for divide by zero error.
-#
-#    Kathleen Bonnell, Fri Jun  6 12:09:41 PDT 2003  
-#    Added TestText.
-#
-#    Jeremy Meredith, Mon Jun  9 17:53:36 PDT 2003
-#    Moved the colorize-python code into its own module.
-#    Added more advanced differencing to the textual comparisons.
-#
-#    Jeremy Meredith, Thu Jul 24 09:52:21 PDT 2003
-#    Stopped saving baseline images.  It was messing things up.  Instead,
-#    I made a default baseline image that clearly states "No Baseline Image".
-#
-#    Jeremy Meredith, Mon Aug 11 17:46:22 PDT 2003
-#    Upped the quality level on output images to 90% (from the default of 75%)
-#
-#    Jeremy Meredith, Mon Aug 18 15:19:01 PDT 2003
-#    Added timings.
-#
-#    Brad Whitlock, Mon Mar 22 13:51:17 PST 2004
-#    Added TestSection.
-#
-#    Mark C. Miller, Tue Mar 30 15:48:25 PST 2004
-#    Added new global, iactive, for interactive mode
-#
-#    Brad Whitlock, Tue Mar 30 15:56:38 PST 2004
-#    I added code to create a graph of memory usage as the test runs.
-#
-#    Brad Whitlock, Fri Apr 2 10:00:09 PDT 2004
-#    I fixed the memory tracking code so it should work when run in the
-#    nightly test suite. Previously, it was failing because os.getlogin()
-#    was throwing an exception, which prevented us from processing
-#    any of the output from top. That resulted in empty memory plots.
-#
-#    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
-#    Changed scalable rendering controls to use activation mode
-#
-#    Jeremy Meredith, Thu Oct 21 13:24:51 PDT 2004
-#    Difference images now are monochrome instead of grayscale.
-#
-#    Mark C. Miller, Mon Nov 29 18:52:41 PST 2004
-#    Added code to do differences based upon check sums, if available
-#    Made it so thumb and full size images for baseline and diff are NOT
-#    generated in cases where test passes
-#
-#    Mark C. Miller, Mon Feb 14 20:24:23 PST 2005
-#    Added code to deal with where to find ImageMagick convert utility
-#    Removed code to re-define some CLI functions for HDF5 test mode
-#
-#    Mark C. Miller, Tue May 10 19:53:08 PDT 2005
-#    Made it smarter about measuring differences
-#
-#    Mark C. Miller, Mon Jan 23 16:11:59 PST 2006
-#    Changed default SaveWindowAttributes to NOT use screen capture. So,
-#    had to explicitly invoke it here.
-#
-#    Mark C. Miller, Sat Feb 11 12:07:27 PST 2006
-#    Force save in screen capture for background image
-#
-#    Mark C. Miller, Tue Nov 21 09:06:25 PST 2006
-#    Changed code to remove userInfo from annotations to
-#    SetDefaultAnnotationAttributes so it will take effect in all windows.
-#    Re-organized code in this file to place functions at top and main 
-#    execution lines at bottom
-#
-#    Mark C. Miller, Mon Nov 27 12:44:37 PST 2006
-#    Work around bug in calling SetDefaultAnnotationAttributes by also
-#    calling SetAnnotationAttributes
-#
-#    Mark C. Miller, hu Feb  8 17:13:14 PST 2007
-#    Added population of 'silo' mode and logic to FilterTestText to
-#    deal with test view used for silo's tests
-#
-#    Mark C. Miller, Tue Jan 29 16:37:53 PST 2008
-#    Removed 'optimized' mode. Added -numdifftol command line option
-#    and numdifftol global tolerance for relative numerical differences.
-#
-#    Tom Fogal, Wed Jan  6 18:06:09 MST 2010
-#    Print out the import error so we have a chance of debugging it.
-#
-#    Jeremy Meredith, Tue Jan 19 11:43:41 EST 2010
-#    Set the preferred plugin list to be exclusively Silo.  This mimics
-#    the old behavior.
-#
-#    Mark C. Miller, Fri Jan 22 20:17:13 PST 2010
-#    Added this comment to explain a previous update in which I added
-#    externDbPaths variable and FindAndOpenDatabase() function.
-#
-#    Jeremy Meredith, Fri Mar 26 10:33:44 EDT 2010
-#    It was decided that Silo should be a global preferred file format
-#    for all users everywhere, so I removed the setting in this file.
-#
-#   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
-#   I made several changes to the return code behavior of the script.  It
-#   returns error code 119 if the test succeeded and the test had some skips.
-#   It returns error code 120 if the test had acceptable differences and
-#   had some skips.  It returns error code 113 if the differences were
-#   unacceptable regardless of whether some tests were skipped.
 #
 # ----------------------------------------------------------------------------
 
@@ -130,112 +54,121 @@ import os
 import glob
 import subprocess
 import thread
+import json
+import shutil
 
 import HtmlDiff
 import HtmlPython
 
 from stat import *
 
+# check for pil
 pil_available = True
 try:
     from PIL import Image, ImageChops, ImageStat
 except ImportError, err:
     pil_available=False
 
-# try to use visit_utils for logging?
+# used to acccess visit_test_common
+sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
-###############################################################################
+from visit_test_common import *
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #
 # Path helper Methods
 #
-###############################################################################
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
-def abs_path(*args):
-    """
-    Helper for constructing absolute paths from a string, or lists of strings.
-    """
-    rargs = []
-    for arg in args:
-        if os.path.isabs(arg) or arg.count("/")  == 0:
-            rargs.append(arg)
-        else:
-            toks = arg.split("/")
-            rargs.extend(toks)
-    res = pjoin(*rargs)
-    return res
-
+# ----------------------------------------------------------------------------
+#  Method: out_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def out_path(*args):
     """
     Generates proper absolute path relative to the test suite results directory.
     """
-    rargs = [TestEnv.visitResultDir]
+    rargs = [TestEnv.params["result_dir"]]
     rargs.extend(args)
     return abs_path(*rargs)
 
+# ----------------------------------------------------------------------------
+#  Method: data_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def data_path(*args):
     """
     Generates proper absolute path relative to the 'data' directory.
     """
-    rargs = [TestEnv.visitDataDir]
+    rargs = [TestEnv.params["visit_data_dir"]]
     rargs.extend(args)
     return abs_path(*rargs)
 
+# ----------------------------------------------------------------------------
+#  Method: silo_data_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def silo_data_path(*args):
     """
     Helper that generates proper silo data absolute file paths.
     Incorporates SILO_MODE logic.
     """
-    rargs = ["silo_%s_test_data" % SILO_MODE]
+    rargs = ["silo_%s_test_data" % TestEnv.params["silo_mode"]]
     rargs.extend(args)
     return data_path(*rargs)
 
+
+# ----------------------------------------------------------------------------
+#  Method: test_root_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def test_root_path(*args):
+    """
+    Generates proper absolute path relative to the 'test/' directory.
+    """
+    rargs = [TestEnv.params["visit_top_dir"],"test"]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
+
+# ----------------------------------------------------------------------------
+#  Method: tests_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def tests_path(*args):
     """
     Generates proper absolute path relative to the 'test/tests' directory.
     """
-    rargs = [TestEnv.visitTopDir,"test","tests"]
+    rargs = [test_root_path(),"tests"]
     rargs.extend(args)
     return abs_path(*rargs)
 
+# ----------------------------------------------------------------------------
+#  Method: TestScriptPath
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 21 2010
+# ----------------------------------------------------------------------------
 def TestScriptPath():
     """
     Helper that provides the full path to the current script file
-
-    Programmer: Cyrus Harrison
-    Date:      Fri May 21 10:05:58 PDT 2010
     """
-    script_file     = os.environ['VISIT_TEST_NAME']
-    script_category = os.environ['VISIT_TEST_CATEGORY']
+    script_file     = TestEnv.params["file"]
+    script_category = TestEnv.params["category"]
     script_dir      = tests_path(script_category,script_file)
     return script_dir
-
-def sexe(cmd,ret_output=False,echo = False):
-    """
-    Helper for executing shell commands.
-    """
-    if echo:
-        Log("[exe: %s]" % cmd)
-    if ret_output:
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        res =p.communicate()[0]
-        return p.returncode,res
-    else:
-        return subprocess.call(cmd,shell=True)
-
-def Log(msg):
-    """
-    Prints message to screen and also records to a log file.
-    """
-    print msg
-    if (os.path.isfile("log")):
-        log = open("log", 'a')
-        log.write(msg)
-        if msg.count("\n") == 0:
-            log.write("\n")
-        log.close()
 
 # ----------------------------------------------------------------------------
 # Function: GenFileNames
@@ -257,34 +190,249 @@ def Log(msg):
 #   image is mode specific.
 #
 # ----------------------------------------------------------------------------
-def GenFileNames(file, ext):
-    pyfilebase = TestEnv.pyfilebase 
-    category   = TestEnv.category
-    modeStr    = TestEnv.modeStr
+def GenFileNames(test_case, ext):
+    pyfilebase = TestEnv.params["name"]
+    category   = TestEnv.params["category"]
+    modes      = TestEnv.params["modes"]
 
-    dcur_cat   = pjoin(TestEnv.visitResultDir,"current",category)
-    dcur_base  = pjoin(dcur_cat,TestEnv.pyfilebase)
-    ddiff_cat  = pjoin(TestEnv.visitResultDir,"diff",category)
-    ddiff_base = pjoin(ddiff_cat,TestEnv.pyfilebase)
+    dcur_cat   = out_path("current",category)
+    dcur_base  = pjoin(dcur_cat,pyfilebase)
+    ddiff_cat  = out_path("diff",category)
+    ddiff_base = pjoin(ddiff_cat,pyfilebase)
 
     for rdir in [dcur_cat, dcur_base, ddiff_cat, ddiff_base]:
         if not os.path.isdir(rdir):
             os.mkdir(rdir)
     # create file names
-    cur  = pjoin(dcur_base,file + ext)
-    diff = pjoin(ddiff_base,file + ext)
-    base = pjoin(TestEnv.visitTestDir,"baseline",
-                 category,pyfilebase,file + ext)
+    cur  = pjoin(dcur_base,test_case  + ext)
+    diff = pjoin(ddiff_base,test_case + ext)
+    base = test_root_path("baseline",category,pyfilebase,test_case + ext)
     altbase = ""
-    modeSpecific = 0
-    if modeStr != "":
-        altbase = pjoin(TestEnv.visitTestDir,
-                        "baseline",category,pyfilebase,modeStr,file + ext)
-        if (os.path.isfile(altbase)):
+    mode_specific = 0
+    if modes != "":
+        mode_dir = modes.replace(",","_")
+        altbase  = test_root_path("baseline",category,pyfilebase,mode_dir,test_case + ext)
+        modefile = test_root_path("baseline",category,pyfilebase,"mode_specific.json")
+        if os.path.isfile(altbase):
+            # check for alternate mapping from
             base = altbase
-            modeSpecific = 1
+            mode_specific = 0
+            Log("Using mode specific baseline: %s" % base)
+        elif os.path.isfile(modefile):
+            modemap = json.loads(open(modefile).read())
+            if modes in modemap["modes"]:
+                selected_mode = modemap["modes"][modes]
+                case_file     = test_case + ext
+                if case_file in selected_mode.keys():
+                    ms_dir  = selected_mode[case_file]
+                    altbase = test_root_path("baseline",category,pyfilebase,ms_dir,case_file)
+                    base = altbase
+                    mode_specific = 1
+                    Log("Using mode specific baseline: %s (from %s)" % (base,modefile))
+    return (cur, diff, base, altbase, mode_specific)
 
-    return (cur, diff, base, altbase, modeSpecific)
+# ----------------------------------------------------------------------------
+#  Method: CalcDiffState
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def CalcDiffState(p_pixs, d_pixs, davg):
+    if p_pixs != 0:
+        dpix = d_pixs * 100.0 / p_pixs
+        if dpix > TestEnv.params["pixdiff"]:
+            if davg > TestEnv.params["avgdiff"]:
+                diff_state = 'Unacceptable'
+            else:
+                diff_state = 'Acceptable'
+        else:
+            diff_state  = 'Acceptable'
+    else:
+        if d_pixs != 0:
+            dpix = 1000000.0
+            diff_state = 'Unacceptable'
+        else:
+            dpix = 0.0
+            diff_state = 'None'
+    return diff_state, dpix
+
+# ----------------------------------------------------------------------------
+#  Method: LogTestStart
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def LogTestStart():
+    """
+    Add test file info to log file, and begin test html output.
+    """
+    msg  = "\n"
+    msg += " - - - - - - - - - - - - - - -\n"
+    msg += "  START:  Test script %s\n" % TestEnv.params["file"]
+    msg += "\n"
+    Log(msg)
+    HTMLTestStart()
+
+# ----------------------------------------------------------------------------
+#  Method: LogTestExit
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def LogTestExit(excode):
+    """
+    Add test exit info to log file, and complete test html output.
+    """
+    msg  = "\n"
+    msg += "  EXIT:   Test script %s\n" % TestEnv.params["file"]
+    msg += "  EXCODE: %d\n" % excode
+    msg += " - - - - - - - - - - - - - - -\n"
+    msg += "\n"
+    Log(msg)
+    HTMLTestExit()
+
+
+
+# ----------------------------------------------------------------------------
+#  Method: HTMLTestStart
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def HTMLTestStart():
+    """
+    Begin test html output. 
+    """
+    # TODO: use template file
+    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'wt')
+    html.write("<SCRIPT TYPE=\"text/javascript\">\n")
+    html.write("<!--\n")
+    html.write("function popup(mylink, name)\n")
+    html.write("{\n")
+    html.write("if (! window.focus)return true;\n")
+    html.write("var href;\n")
+    html.write("if (typeof(mylink) == 'string')\n")
+    html.write("   href=mylink;\n")
+    html.write("else\n")
+    html.write("   href=mylink.href;\n")
+    html.write("window.open(href,name,'width=500,height=500,scrollbars=no');\n")
+    html.write("return false;\n")
+    html.write("}\n")
+    html.write("//-->\n")
+    html.write("</SCRIPT>\n")
+    html.write("<html><head><title>Results for %s/%s</title></head>\n" % (TestEnv.params["category"],TestEnv.params["file"]))
+    html.write("<body bgcolor=\"#a0a0f0\">\n")
+    html.write("<H1>Results of VisIt Regression Test - <a href=%s_%s_py.html>%s/%s</a></H1>\n" % (TestEnv.params["category"],TestEnv.params["name"],TestEnv.params["category"],TestEnv.params["name"]))
+    html.write("<H2><a href=%s_%s_timings.html>(Full Timings)</a></H2>\n" % (TestEnv.params["category"],TestEnv.params["name"]))
+    html.write("<table border>\n")
+    html.write(" <tr>\n")
+    html.write("  <td rowspan=2><b><i>Test Case</b></i></td>\n")
+    html.write("  <td colspan=2 align=center><b><i>Errors</b></i></td>\n")
+    html.write("  <td colspan=3 align=center><b><i>Images</b></i></td>\n")
+    html.write(" </tr>\n")
+    html.write(" <tr>\n")
+    html.write("  <td>%Diffs</td>\n")
+    html.write("  <td>Maximum</td>\n")
+    html.write("  <td>Baseline</td>\n")
+    html.write("  <td>Current</td>\n")
+    html.write("  <td>Diff Map</td>\n")
+    html.write(" </tr>\n")
+    html.write("\n")
+
+# ----------------------------------------------------------------------------
+#  Method: HTMLTestExit
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def HTMLTestExit():
+    """
+    Complete test html output.
+    """
+    # TODO use template file
+    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
+    html.write("</table>\n")
+    html.write("</body>\n")
+    html.write("</html>\n")
+
+# ----------------------------------------------------------------------------
+#  Method: LogTextTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def LogTextTestResult(file,nchanges,nlines,failed,skip):
+    """
+    Log the result of a text based test.
+    """
+    if failed:
+        if skip:
+            Log("    Test case '%s' SKIPPED" % file)
+        else:
+            Log("    Test case '%s' FAILED" % file)
+    else:
+        if nchanges < 0:
+            Log("    Test case '%s' UNKNOWN" % file)
+        else:
+            Log("    Test case '%s' PASSED" % file)
+    # write html result
+    # TODO use template file
+    HTMLTextTestResult(file,nchanges,nlines,failed,skip)
+
+
+# ----------------------------------------------------------------------------
+#  Method: HTMLTextTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def HTMLTextTestResult(file,nchanges,nlines,failed,skip):
+    """
+    Creates html entry for the result of a text based test.
+    """
+    # TODO use template file
+    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
+    # write to the html file
+    color = "#00ff00"
+    if failed:
+        if skip:
+            color = "#0000ff"
+        else:
+            color = "#ff0000"
+    else:
+        if (nchanges < 0):
+            color = "#00ffff"
+    html.write(" <tr>\n")
+    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
+    html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
+    html.write(" </tr>\n")
+
+# ----------------------------------------------------------------------------
+#  Method: LogImageTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def LogImageTestResult(file,diffState,modeSpecific,tPixs, pPixs, dPixs, dpix, davg):
+    """
+    Log the result of an image based test.
+    """
+    # write data to the log file if there is one
+    if diffState == 'None':
+        Log("    Test case '%s' PASSED" % file)
+    elif diffState == 'Acceptable':
+        Log("    Test case '%s' PASSED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
+            (file, tPixs, pPixs, dPixs, dpix, davg))
+    elif diffState == 'Unacceptable':
+        Log("    Test case '%s' FAILED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
+            (file, tPixs, pPixs, dPixs, dpix, davg))
+    elif diffState == 'Skipped':
+        Log("    Test case '%s' SKIPPED" % file)
+    else:
+        Log("    Test case '%s' UNKNOWN:#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK")
+    # write html result
+    HTMLImageTestResult(file,diffState,modeSpecific,
+                        tPixs, pPixs,dPixs, dpix, davg)
 
 # ----------------------------------------------------------------------------
 # Function: Test
@@ -339,154 +487,21 @@ def GenFileNames(file, ext):
 #   has already been saved.
 #
 # ----------------------------------------------------------------------------
-
-def CalcDiffState(p_pixs, d_pixs, davg):
-    if p_pixs != 0:
-        dpix = d_pixs * 100.0 / p_pixs
-        if dpix > TestEnv.pixdifftol:
-            if davg > TestEnv.avgdifftol:
-                diff_state = 'Unacceptable'
-            else:
-                diff_state = 'Acceptable'
-        else:
-            diff_state  = 'Acceptable'
-    else:
-        if d_pixs != 0:
-            dpix = 1000000.0
-            diff_state = 'Unacceptable'
-        else:
-            dpix = 0.0
-            diff_state = 'None'
-    return diff_state, dpix
-
-def LogTestStart():
-    # add test file info to log file
-    msg  = "\n"
-    msg += " - - - - - - - - - - - - - - -\n"
-    msg += "  START:  Test script %s\n" % TestEnv.pyfilename
-    msg += "\n"
-    Log(msg)
-    HTMLTestStart()
-
-def LogTestExit(excode):
-    msg  = "\n"
-    msg += "  EXIT:   Test script %s\n" % TestEnv.pyfilename
-    msg += "  EXCODE: %d\n" % excode
-    msg += " - - - - - - - - - - - - - - -\n"
-    msg += "\n"
-    Log(msg)
-    HTMLTestExit()
-
-def HTMLTestStart():
-    # set up our html output
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'wt')
-    html.write("<SCRIPT TYPE=\"text/javascript\">\n")
-    html.write("<!--\n")
-    html.write("function popup(mylink, name)\n")
-    html.write("{\n")
-    html.write("if (! window.focus)return true;\n")
-    html.write("var href;\n")
-    html.write("if (typeof(mylink) == 'string')\n")
-    html.write("   href=mylink;\n")
-    html.write("else\n")
-    html.write("   href=mylink.href;\n")
-    html.write("window.open(href,name,'width=500,height=500,scrollbars=no');\n")
-    html.write("return false;\n")
-    html.write("}\n")
-    html.write("//-->\n")
-    html.write("</SCRIPT>\n")
-    html.write("<html><head><title>Results for %s/%s</title></head>\n" % (TestEnv.category,TestEnv.pyfilename))
-    html.write("<body bgcolor=\"#a0a0f0\">\n")
-    html.write("<H1>Results of VisIt Regression Test - <a href=%s_%s_py.html>%s/%s</a></H1>\n" % (TestEnv.category,TestEnv.pyfilebase,TestEnv.category,TestEnv.pyfilename))
-    html.write("<H2><a href=%s_%s_timings.html>(Full Timings)</a></H2>\n" % (TestEnv.category,TestEnv.pyfilebase))
-    html.write("<table border>\n")
-    html.write(" <tr>\n")
-    html.write("  <td rowspan=2><b><i>Test Case</b></i></td>\n")
-    html.write("  <td colspan=2 align=center><b><i>Errors</b></i></td>\n")
-    html.write("  <td colspan=3 align=center><b><i>Images</b></i></td>\n")
-    html.write(" </tr>\n")
-    html.write(" <tr>\n")
-    html.write("  <td>%Diffs</td>\n")
-    html.write("  <td>Maximum</td>\n")
-    html.write("  <td>Baseline</td>\n")
-    html.write("  <td>Current</td>\n")
-    html.write("  <td>Diff Map</td>\n")
-    html.write(" </tr>\n")
-    html.write("\n")
-
-def HTMLTestExit():
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'a')
-    html.write("</table>\n")
-    html.write("</body>\n")
-    html.write("</html>\n")
-
-
-def LogTextTestResult(file,nchanges,nlines,failed,skip):
-    # write data to the log file if there is one
-    if failed:
-        if skip:
-            Log("    Test case '%s' SKIPPED" % file)
-        else:
-            Log("    Test case '%s' FAILED" % file)
-    else:
-        if nchanges < 0:
-            Log("    Test case '%s' UNKNOWN" % file)
-        else:
-            Log("    Test case '%s' PASSED" % file)
-    # write html result
-    HTMLTextTestResult(file,nchanges,nlines,failed,skip)
-
-def HTMLTextTestResult(file,nchanges,nlines,failed,skip):
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'a')
-    # write to the html file
-    color = "#00ff00"
-    if failed:
-        if skip:
-            color = "#0000ff"
-        else:
-            color = "#ff0000"
-    else:
-        if (nchanges < 0):
-            color = "#00ffff"
-    html.write(" <tr>\n")
-    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
-    html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
-    html.write(" </tr>\n")
-
-
-def LogImageTestResult(file,diffState,modeSpecific,tPixs, pPixs, dPixs, dpix, davg):
-    # write data to the log file if there is one
-    if diffState == 'None':
-        Log("    Test case '%s' PASSED" % file)
-    elif diffState == 'Acceptable':
-        Log("    Test case '%s' PASSED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
-            (file, tPixs, pPixs, dPixs, dpix, davg))
-    elif diffState == 'Unacceptable':
-        Log("    Test case '%s' FAILED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
-            (file, tPixs, pPixs, dPixs, dpix, davg))
-    elif diffState == 'Skipped':
-        Log("    Test case '%s' SKIPPED" % file)
-    else:
-        Log("    Test case '%s' UNKNOWN:#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK")
-    # write html result
-    HTMLImageTestResult(file,diffState,modeSpecific,tPixs, pPixs,
-                        dPixs, dpix, davg)
-
-def Test(file, altSWA=0, alreadySaved=0):
+def Test(case_name, altSWA=0, alreadySaved=0):
     CheckInteractive()
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
     #global maxds
     #global numskip
 
-    (cur, diff, base, altbase, modeSpecific) = GenFileNames(file, ".png")
+    (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".png")
 
     # save the window in visit
     if alreadySaved == 0:
         if altSWA != 0:
-            sa=altSWA
+            sa = altSWA
         else:
-            sa=SaveWindowAttributes()
+            sa = SaveWindowAttributes()
             sa.screenCapture=1
         sa.family   = 0
         sa.fileName = cur
@@ -496,21 +511,21 @@ def Test(file, altSWA=0, alreadySaved=0):
         SaveWindow()
 
     diffState = 'Unknown'
-    skip      = file in TestEnv.skipCases
+    skip      = TestEnv.check_skip(case_name)
     tPixs     = 0
     pPixs     = 0
     dPixs     = 0
     dpix      = 0.0
     davg      = 0.0
-    if TestEnv.usePIL:
-        (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(file, cur, diff,
+    if TestEnv.params["use_pil"]:
+        (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(case_name, cur, diff,
                                                    base, altbase)
         diffState, dpix = CalcDiffState(pPixs, dPixs, davg)
     if skip:
         diffState = 'Skipped'
-        TestEnv.numskip += 1
+        TestEnv.results["numskip"]+= 1
 
-    LogImageTestResult(file,diffState, modeSpecific,
+    LogImageTestResult(case_name,diffState, modeSpecific,
                        dpix, tPixs, pPixs, dPixs, davg)
 
     # update maxmimum diff state
@@ -521,13 +536,11 @@ def Test(file, altSWA=0, alreadySaved=0):
         'Unknown' :      3,
         'Skipped' :      0
     }
-    TestEnv.maxds = max(TestEnv.maxds, diffVals[diffState])
+    TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
 
 # ----------------------------------------------------------------------------
 # Function: HTMLImageTestResult
 #
-# Purpose:
-#   Writes HTML stuff for a single test image 
 #
 # Modifications:
 #   Mark C. Miller, Mon Jul  6 22:07:07 PDT 2009
@@ -545,7 +558,11 @@ def Test(file, altSWA=0, alreadySaved=0):
 def HTMLImageTestResult(file,
                         diffState, modeSpecific,
                         dpix, tPixs, pPixs, dPixs, davg):
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'a')
+    """
+    Writes HTML entry for a single test image.
+    """
+    # TODO use template file
+    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
 
     # write to the html file
     color = "#ffffff"
@@ -638,13 +655,11 @@ def HTMLImageTestResult(file,
 # ----------------------------------------------------------------------------
 # Function: GetBackgroundImage 
 #
-# Purpose:
-#   Returns the image of just VisIt's background without any plots
-#
 # ----------------------------------------------------------------------------
-
 def GetBackgroundImage(file):
-
+    """
+    Returns the image of just VisIt's background without any plots
+    """
     notHiddenList = []
     activeList = []
 
@@ -712,9 +727,6 @@ def GetBackgroundImage(file):
 # ----------------------------------------------------------------------------
 # Function: DiffUsingPIL 
 #
-# Purpose:
-#   Diffs test results using PIL, outputs HTML, makes jpeg images,
-#
 # Modifications:
 #   Jeremy Meredith, Tue Jun  7 12:14:11 PDT 2005
 #   Fixed error reporting for missing baseline images.
@@ -731,7 +743,9 @@ def GetBackgroundImage(file):
 # ----------------------------------------------------------------------------
 
 def DiffUsingPIL(file, cur, diff, baseline, altbase):
-
+    """
+    Diffs test results using PIL.
+    """
     # open it using PIL Image
     newimg = Image.open(cur)
     size = newimg.size;
@@ -750,7 +764,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
                 oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
-            oldimg = Image.open('nobaseline.pnm')
+            oldimg = Image.open(test_root_path('nobaseline.pnm'))
             oldimg = oldimg.resize(size, Image.BICUBIC)
     except:
         oldimg = Image.open('nobaseline.pnm')
@@ -781,10 +795,10 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
     if (dmax > 0 and dmax != dmin):
 
         # brighten the difference image before we save it
-        map = []
-        map.append(0)
-        for i in range(1,256): map.append(255)
-        mdiffimg = mdiffimg.point(map)
+        pmap = []
+        pmap.append(0)
+        for i in range(1,256): pmap.append(255)
+        mdiffimg = mdiffimg.point(pmap)
 
         annotAtts = GetAnnotationAttributes()
 
@@ -843,8 +857,6 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 # ----------------------------------------------------------------------------
 # Function: FilterTestText
 #
-# Purpose:
-#   Filters words from the test text before it gets saved.
 #
 # Modifications:
 #   Mark C. Miller, Tue Jan 29 18:57:45 PST 2008
@@ -903,13 +915,17 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
+    """
+    Filters words from the test text before it gets saved.
+    """
     #
     # We have to filter out the absolute path information we might see in
     # this string. runtest passes the value for visitTopDir here.
     #
-    inText = string.replace(inText, TestEnv.visitDataDir, "VISIT_TOP_DIR/data")
-    inText = string.replace(inText, TestEnv.visitTestDir, "VISIT_TOP_DIR/test")
-    numdifftol = TestEnv.numdifftol
+    inText = string.replace(inText, out_path(), "VISIT_TOP_DIR/test")
+    inText = string.replace(inText, test_root_path(), "VISIT_TOP_DIR/test")
+    inText = string.replace(inText, data_path(), "VISIT_TOP_DIR/data")
+    numdifftol = TestEnv.params["numdiff"]
     #
     # Only consider doing any string substitution if numerical diff threshold
     # is non-zero
@@ -988,12 +1004,18 @@ def FilterTestText(inText, baseText):
 
         return inText
 
+# ----------------------------------------------------------------------------
+#  Method: CheckInteractive
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def CheckInteractive():
     """
     Helper which pauses if we are in interactive mode.
     """
     # if interactive, pause for user
-    if TestEnv.iactive:
+    if TestEnv.params["interactive"]:
         print "***********************"
         print "***********************"
         print "***********************"
@@ -1007,9 +1029,6 @@ def CheckInteractive():
 # ----------------------------------------------------------------------------
 # Function: TestText
 #
-# Purpose:
-#   Write out text to file, diff it with the baseline, and add it's data to 
-#   the html
 #
 # Modifications:
 #   Brad Whitlock, Tue Mar 30 16:39:43 PST 2004
@@ -1039,17 +1058,17 @@ def CheckInteractive():
 #   indicates if it is a mode specific image or not.
 #
 # ----------------------------------------------------------------------------
-def TestText(file, inText):
+def TestText(case_name, inText):
+    """
+    Write out text to file, diff it with the baseline, and log the result.
+    """
     CheckInteractive()
-    global maxds
-    global numskip
 
     # create file names
-    (cur, diff, base, altbase, modeSpecific) = GenFileNames(file, ".txt")
+    (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".txt")
 
     if os.path.isfile(base):
-        fin = open(base)
-        baseText = fin.read()
+        baseText = open(base).read()
     else:
         Log("Warning: No baseline text file: %s" % base)
         base = "notext.txt"
@@ -1069,10 +1088,10 @@ def TestText(file, inText):
     # diff the baseline and current text files
     d = HtmlDiff.Differencer(base, cur)
     # change to use difflib
-    (nchanges, nlines) = d.Difference(out_path("html","%s.html"%file), file)
+    (nchanges, nlines) = d.Difference(out_path("html","%s.html"%case_name), case_name)
 
     # save the diff output 
-    # TODO, this wont work on WINDOWS!
+    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
     # we can use difflib
     diff_cmd = "diff " + base + " " + cur
     r,diff_out = sexe(diff_cmd,ret_output = True)
@@ -1082,40 +1101,57 @@ def TestText(file, inText):
 
     # did the test fail?
     failed = (nchanges > 0)
-    skip   = file in TestEnv.skipCases
+    skip   =  TestEnv.check_skip(case_name)
 
-    LogTextTestResult(file,nchanges,nlines,failed,skip)
+    LogTextTestResult(case_name,nchanges,nlines,failed,skip)
 
     # Increment the number of skips if appropriate
     if skip:
-        TestEnv.numskip += 1
+        TestEnv.results["numskip"] += 1
 
     # set error codes
-    # TODO: This doesn't seem correct, these should accumulate
+    # TODO: This doesn't seem correct, these should accumulate?
     if failed:
         if skip:
-            TestEnv.maxds = 0
+            TestEnv.results["maxds "]= 0
         else:
-            TestEnv.maxds = 2
+            TestEnv.results["maxds "]= 2
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
 #
-# Purpose:
-#   Write a section header into the results table so it is easier to understand
-#   the results for a large test.
-#
 # ----------------------------------------------------------------------------
-
 def TestSection(sectionName):
+    """
+    Write a section header into the results table so it is easier to understand
+    the results for a large test.
+    """
     LogSectionStart(sectionName)
 
+# ----------------------------------------------------------------------------
+# Function: LogSection
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def LogSectionStart(sectionName):
+    """
+    Log start of a test section, and create html entry.
+    """
     Log("    BEGIN SECTION: %s" % sectionName)
     HTMLSectionStart(sectionName)
 
+# ----------------------------------------------------------------------------
+# Function: LogSection
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def HTMLSectionStart(sectionName):
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'a')
+    """
+    Create html entry for the start of a test section.
+    """
+    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
     html.write(" <tr>\n")
     html.write("  <td colspan=6 align=center bgcolor=\"#0000ff\"><font color=\"#ffffff\"><b>%s</b></font></td>\n" % sectionName)
     html.write(" </tr>\n")
@@ -1123,9 +1159,6 @@ def HTMLSectionStart(sectionName):
 
 # ----------------------------------------------------------------------------
 # Function: Exit
-#
-# Purpose:
-#   Exit with the appropriate error code.  Must be called at end of test cases.
 #
 # Modifications:
 #   Eric Brugger, Thu Apr 22 12:56:41 PDT 2010
@@ -1137,30 +1170,36 @@ def HTMLSectionStart(sectionName):
 # ----------------------------------------------------------------------------
 
 def Exit(excode=0):
-    html = open(out_path("html","%s_%s.html" % (TestEnv.category, TestEnv.pyfilebase)), 'a')
+    """
+    Exit with the appropriate error code.  Must be called at end of test cases.
+    """
     # future mem tracking logic will need to clear engine cache:
     #ClearCacheForAllEngines()
     rcode = None
-    if TestEnv.iactive == 0:
+    if TestEnv.params["interactive"] == 0:
         if (excode):
             rcode = excode
-    if rcode is None and TestEnv.maxds == 0:
-        if TestEnv.numskip == 0:
+    if rcode is None and TestEnv.results["maxds"] == 0:
+        if TestEnv.results["numskip"] == 0:
             rcode = 111
         else:
             rcode = 119
-    if rcode is None and TestEnv.maxds == 1:
-        if TestEnv.numskip == 0:
+    if rcode is None and TestEnv.results["maxds"] == 1:
+        if TestEnv.results["numskip"] == 0:
             rcode = 112
         else:
             rcode = 120
-    if rcode is None and TestEnv.maxds == 2:
+    if rcode is None and TestEnv.results["maxds"] == 2:
         rcode = 113
     if rcode is None:
         rcode  = 114
     LogTestExit(rcode)
     sys.exit(rcode)
 
+# ----------------------------------------------------------------------------
+# Function: TurnOnAllAnnotations
+#
+# ----------------------------------------------------------------------------
 def TurnOnAllAnnotations(givenAtts=0):
     """
     Turns on all annotations.
@@ -1181,6 +1220,10 @@ def TurnOnAllAnnotations(givenAtts=0):
     a.legendInfoFlag = 1
     SetAnnotationAttributes(a)
 
+# ----------------------------------------------------------------------------
+# Function: TurnOffAllAnnotations
+#
+# ----------------------------------------------------------------------------
 def TurnOffAllAnnotations(givenAtts=0):
     """
     Turns off all annotations.
@@ -1201,7 +1244,10 @@ def TurnOffAllAnnotations(givenAtts=0):
     a.legendInfoFlag = 0
     SetAnnotationAttributes(a)
 
-
+# ----------------------------------------------------------------------------
+# Function: FindAndOpenDatabase
+#
+# ----------------------------------------------------------------------------
 def FindAndOpenDatabase(dbname, extraPaths=()):
     """
     Searches in places where we're likely to find data files that we do NOT
@@ -1224,88 +1270,100 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
 #   Argument/Environment Processing
 #############################################################################
 
+# ----------------------------------------------------------------------------
+#  Class: TestEnv
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 class TestEnv(object):
     """
     Class that holds high level environment options.
 
     Replaces old use of old global vars.
     """
-    # interactive?
-    iactive     = 0
-    # pil related
-    usePIL      = 1
-    avgdifftol  = 0.0
-    pixdifftol  = 0
-    numdifftol  = 0.0
-    # mode inof 
-    serial    = 1
-    scalable  = 0
-    parallel  = 0
-    silo      = 0
-    modeStr   = ""
-    SILO_MODE = "hdf5"
-    # these are outputs
-    maxds       = 0
-    numskip     = 0
+    params  = {"interactive": 0,
+               "use_pil":     True,
+               "avgdiff":     0.0,
+               "pixdiff":     0,
+               "numdiff":     0.0,
+               "serial" :     True,
+               "scalable":    False,
+               "parallel":    False,
+               "silo_mode":   "hdf5"}
+    results = {"maxds":   0,
+               "numskip": 0}
     @classmethod
-    def Setup(cls):
-        # Process command line arguments.
-        for arg in sys.argv:
-            if (arg == "-noPIL"):
-                cls.usePIL = 0
-            if (arg == "-interactive"):
-                cls.iactive = 1
-            subargs = string.split(arg,"=")
-            if (subargs[0] == "-pixdiff"):
-                cls.pixdifftol = float(subargs[1])
-            if (subargs[0] == "-avgdiff"):
-                cls.avgdifftol = float(subargs[1])
-            if (subargs[0] == "-numdiff"):
-                cls.numdifftol = float(subargs[1])
-        cls.visitTopDir    = os.environ['VISIT_TOP_DIR']
-        cls.visitDataDir   = os.path.abspath(pjoin(cls.visitTopDir,"data"))
-        cls.visitTestDir   = os.path.abspath(pjoin(cls.visitTopDir,"test"))
-        cls.visitResultDir = cls.visitTestDir
-        cls.pyfilename     = os.environ['VISIT_TEST_NAME']
-        cls.pyfilebase     = cls.pyfilename[:-3]
-        cls.category       = os.environ['VISIT_TEST_CATEGORY']
-        cls.modes          = string.split(os.environ['VISIT_TEST_MODES'],",")
-        cls.skipCases      = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
-        if os.environ.has_key("VISIT_RESULT_DIR"):
-            cls.visitResultDir = os.path.abspath(os.environ["VISIT_RESULT_DIR"])
+    def setup(cls,params_file):
+        tparams = json.loads(open(params_file).read())
+        cls.params.update(tparams)
+        if not cls.params["skip_file"] is None and os.path.isfile(cls.params["skip_file"]):
+            cls.skiplist = json.loads(open(cls.params["skip_file"]).read())
+        else:
+            cls.skiplist = None
         # parse modes for various possible modes
-        for mode in cls.modes:
-            if cls.modeStr == "":
-                cls.modeStr = mode
-            else:
-                if mode != "":
-                    cls.modeStr = cls.modeStr + "_" + mode
+        for mode in string.split(cls.params["modes"],","):
             if mode == "scalable":
-                cls.scalable = 1
+                cls.params["scalable"] = True
             if mode == "parallel":
-                cls.parallel = 1
-                cls.serial = 0
-            if mode == "silo":
-                cls.silo = 1
+                cls.params["parallel"] = True
+                cls.params["serial"]   = False
             if mode == "pdb":
-                cls.SILO_MODE = "pdb"
-            if cls.usePIL and not pil_available:
+                cls.params["silo_mode"] = "pdb"
+            if cls.params["use_pil"] and not pil_available:
                 Log("WARNING: unable to import modules from PIL: %s" % str(err))
-                cls.usePIL = 0
+                cls.params["use_pil"] = False
+        if cls.params["fuzzy_match"]:
+            # default tols for scalable mode
+            if cls.params["pixdiff"] < 2:
+                cls.params["use_pil"] = 2
+            if cls.params["avgdiff"] < 1:
+                cls.params["avgdiff"] = 1
+        cls.SILO_MODE = cls.params["silo_mode"]
+    @classmethod
+    def check_skip(cls,case_name):
+        if cls.skiplist is None:
+            return False
+        # look for modes that match
+        for v in cls.skiplist['skip_list']:
+            if v['mode'] ==cls.params["modes"]:
+                for test in v['tests']:
+                    if test['category'] == cls.params["category"]:
+                        # see if the file matches
+                        if test['file'] == cls.params["file"]:
+                            if not test.has_key("cases"):
+                                return True
+                            else:
+                                if case_name in test['cases']:
+                                    return True
+        return False
 
+
+# ----------------------------------------------------------------------------
+#  Class: InitTestEnv
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def InitTestEnv():
     """
-    Sets up VisIt for a test.
+    Sets up VisIt to execute a test script.
     """
+    # default file
+    params_file="params.json"
+    for arg in sys.argv:
+        subargs = string.split(arg,"=")
+        if (subargs[0] == "--params"):
+            params_file = subargs[1]
     # main setup
-    TestEnv.Setup()
+    TestEnv.setup(params_file)
     # remove the user name
     annot = AnnotationAttributes()
     annot.userInfoFlag = 0
     SetDefaultAnnotationAttributes(annot)
     SetAnnotationAttributes(annot)
     # set scalable rendering mode if desired
-    if TestEnv.scalable:
+    if TestEnv.params["scalable"]:
         ra = GetRenderingAttributes()
         ra.scalableActivationMode = ra.Always
         SetRenderingAttributes(ra)
@@ -1314,10 +1372,10 @@ def InitTestEnv():
         ra.scalableActivationMode = ra.Never
         SetRenderingAttributes(ra)
     # start parallel engine if parallel
-    haveParallelEngine = 1L
-    if TestEnv.parallel:
-        haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
-    if haveParallelEngine == 0L:
+    haveParallelEngine = True
+    if TestEnv.params["parallel"]:
+        haveParallelEngine = (OpenComputeEngine("localhost", ("-np", "2")) == 1)
+    if haveParallelEngine == False:
         Exit()
     else:
         OpenComputeEngine("localhost")
@@ -1329,17 +1387,17 @@ def InitTestEnv():
     if not os.path.isdir(out_path("html")):
         os.mkdir(out_path("html"))
     # colorize the source file, and write to an html file
-    HtmlPython.ColorizePython(TestEnv.visitTestDir,
-                              TestEnv.visitResultDir,
-                              TestEnv.category,
-                              TestEnv.pyfilename,
-                              TestEnv.pyfilebase)
+    HtmlPython.ColorizePython(test_root_path(),
+                              out_path(),
+                              TestEnv.params["category"],
+                              TestEnv.params["file"],
+                              TestEnv.params["name"])
     LogTestStart()
 
-# keep this as a global for now.
-SILO_MODE = TestEnv.SILO_MODE
-
 InitTestEnv()
+
+#keep as global var for now
+SILO_MODE = TestEnv.SILO_MODE
 
 
 

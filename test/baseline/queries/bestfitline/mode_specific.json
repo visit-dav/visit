@@ -1,0 +1,8 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"bestline_3_00.png" : "scalable_parallel",
+         "bestline_3_01.png" : "scalable_parallel",
+         "bestline_3_02.png" : "scalable_parallel",
+         "bestline_3_03.png" : "scalable_parallel"}
+     }
+}

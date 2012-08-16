@@ -21,7 +21,8 @@
 TurnOnAllAnnotations()
 
 # Set up the visualization by restoring a session file.
-RestoreSession("tests/session/textannot.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","textannot.session"), 0,
+                                   data_path("pdb_test_data","allinone00.pdb"))
 
 # Save a test frame for some of the frames in the animation so we can see
 # if the time slider is working.

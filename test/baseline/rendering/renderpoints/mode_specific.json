@@ -1,0 +1,16 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"renderpoint_0_12.png" : "scalable_parallel",
+         "renderpoint_0_13.png" : "scalable_parallel",
+         "renderpoint_0_14.png" : "scalable_parallel",
+         "renderpoint_2_00.png" : "scalable_parallel",
+         "renderpoint_2_01.png" : "scalable_parallel",
+         "renderpoint_2_02.png" : "scalable_parallel",
+         "renderpoint_2_03.png" : "scalable_parallel",
+         "renderpoint_2_04.png" : "scalable_parallel",
+         "renderpoint_2_06.png" : "scalable_parallel",
+         "renderpoint_2_07.png" : "scalable_parallel",
+         "renderpoint_2_08.png" : "scalable_parallel",
+         "renderpoint_2_00.png" : "scalable_parallel"}
+     }
+}

@@ -142,36 +142,44 @@ Test("silo_04")
 # we just hide the plots to keep camera
 HideActivePlots()
 
+
+
+
 #
 # Do some os work to create what VisIt will see as a 
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
-for f in glob.glob(silo_data_path("gorfo*")):
+
+#TODO BROKEN:
+# Cyrus: I tried to change this, from prev code
+# b/c symlinks won't work on Windows.
+#
+# also silo paths in multipart_multi_ucd3d, don't point to 
+# gorfo files,they won't work out of the data dir
+# (and we shouldn't be modifying the data dir !)
+
+# remove any gorfos 
+for f in glob.glob("gorfo_*"):
     os.remove(f)
-cwd = os.getcwd()
-os.chdir(data_path("silo_%s_test_data") % SILO_MODE)
-i = 1
-for filename in os.listdir("."):
-    if filename == "multipart_multi_ucd3d.silo":
-        os.system("ln -s %s gorfo_1000"%filename)
-        os.system("ln -s %s gorfo_2000"%filename)
-        os.system("ln -s %s gorfo_3000"%filename)
-    elif string.find(filename, "multipart_multi_ucd3d") == 0:
-        name1="gorfo_1000.%d"%i
-        name2="gorfo_2000.%d"%i
-        name3="gorfo_3000.%d"%i
-        os.system("ln -s %s %s"%(filename,name1))
-        os.system("ln -s %s %s"%(filename,name2))
-        os.system("ln -s %s %s"%(filename,name3))
+
+i = 0
+for filename in glob.glob(silo_data_path("multipart_multi_ucd3d*.silo")):
+    if filename.endswith("multipart_multi_ucd3d.silo"):
+        shutil.copy(silo_data_path(filename),"gorfo_1000")
+        shutil.copy(silo_data_path(filename),"gorfo_2000")
+        shutil.copy(silo_data_path(filename),"gorfo_3000")
+    else:
+        shutil.copy(silo_data_path(filename),"gorfo_1000.%d" %i)
+        shutil.copy(silo_data_path(filename),"gorfo_2000.%d" %i)
+        shutil.copy(silo_data_path(filename),"gorfo_2000.%d" %i)
     i = i + 1
-os.chdir(cwd)
 
 #
 # Test opening a 'virtual' database of multi-part silo files
 # at something other than its first timestep
 #
-OpenDatabase(silo_data_path("gorfo_* database"),1)
+OpenDatabase("gorfo_* database",1)
 
 AddPlot("Pseudocolor","d")
 AddPlot("Mesh", "mesh1")
@@ -182,10 +190,6 @@ Test("silo_05")
 TimeSliderNextState()
 Test("silo_06")
 
-#
-# remove all the gorfo files we created above
-#
-os.system("rm -f ../data/silo_%s_test_data/gorfo*"%SILO_MODE)
 
 DeleteAllPlots()
 

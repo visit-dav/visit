@@ -1,0 +1,11 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"samrai_07.png" : "scalable_parallel",
+         "samrai_08.png" : "scalable_parallel",
+         "samrai_09.png" : "scalable_parallel",
+         "samrai_10.png" : "scalable_parallel",
+         "samrai_11.png" : "scalable_parallel",
+         "samrai_12.png" : "scalable_parallel",
+         "samrai_24.png" : "scalable_parallel"}
+     }
+}

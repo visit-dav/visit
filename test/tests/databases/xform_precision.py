@@ -41,7 +41,7 @@ DrawPlots()
 Test("float_xform_02")
 DeleteAllPlots()
 
-CloseDatabase(data_path("data/silo_%s_test_data/quad_disk.silo") %SILO_MODE)
+CloseDatabase(silo_data_path("quad_disk.silo"))
 OpenDatabase(silo_data_path("quad_disk.silo"))
 
 

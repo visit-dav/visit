@@ -1086,7 +1086,9 @@ def PickBigSilMat():
 def PickOnionPeel2():
     #From defect VisIt00003981, onionpeel and window ACTUAL_EXTENTS 
     #pick not working
-    RestoreSession("tests/queries/pickonionpeel.session", 0)
+    print tests_path("queries","pickonionpeel.session"), 0,silo_data_path("curv3d.silo")
+    RestoreSessionWithDifferentSources(tests_path("queries","pickonionpeel.session"), 0,
+                                       silo_data_path("curv3d.silo"))
     vars = "default"
     Pick(196, 194, vars)
     s = GetPickOutput()
@@ -1405,6 +1407,7 @@ def PickAfterEngineClosed():
 # Tests that pick works after an engine has crashed.
 #
 def PickAfterEngineCrashed():
+    #TODO: THIS WONT WORK ON WINDOWs
     def CrashCB():
         try:
             # Read the output of ps
@@ -1428,11 +1431,13 @@ def PickAfterEngineCrashed():
             # Kill all of the engines in the pid list.
             if len(pids) < 1:
                 print >>sys.stderr, "Killing all engines because we could not get a list of pids"
+                # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                 os.system("killall engine_ser")
                 os.system("killall engine_par")
             else:
                 for pid in pids:
                     print >>sys.stderr, "Killing engine %s" % pid
+                    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
                     os.system("kill -9 %s" % pid)
         except:
             # There was an error. Just close the engine instead of killing it.

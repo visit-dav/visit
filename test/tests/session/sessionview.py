@@ -20,23 +20,35 @@
 TurnOnAllAnnotations()
 
 # Open the first session file
-RestoreSession("tests/session/sessionview1.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionview1.session"), 0,
+                                   silo_data_path("globe.silo"))
+
 Test("sessionview00")
 
 # Open the second session file
 RestoreSession("tests/session/sessionview2.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionview2.session"), 0,
+                                   data_path("ANALYZE_test_data",
+                                             "s01_anatomy_stripped.hdr"))
+
+
 Test("sessionview01")
 
 # Open the first session file again. This used to crash VisIt
-RestoreSession("tests/session/sessionview1.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionview1.session"), 0,
+                                   silo_data_path("globe.silo"))
+
 Test("sessionview02")
 
 # Open the second session file again.
-RestoreSession("tests/session/sessionview2.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionview2.session"), 0,
+                                   data_path("ANALYZE_test_data",
+                                             "s01_anatomy_stripped.hdr"))
 Test("sessionview03")
 
 # Open the first session file
-RestoreSession("tests/session/sessionview1.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionview1.session"), 0,
+                                   silo_data_path("globe.silo"))
 Test("sessionview04")
 
 Exit()

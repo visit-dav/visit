@@ -17,4 +17,4 @@
 # ----------------------------------------------------------------------------
 
 useCompression = 1
-Source("tests/rendering/scalable.py")
+Source(tests_path("rendering","scalable.py"))

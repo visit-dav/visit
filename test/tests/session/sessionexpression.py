@@ -19,6 +19,8 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-RestoreSession("tests/session/sessionexpression.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","sessionexpression.session"), 0,
+                                   ( silo_data_path("globe.silo"),
+                                     silo_data_path("wave.visit")))
 Test("sessionexpression00")
 Exit()

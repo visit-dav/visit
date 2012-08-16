@@ -1,0 +1,6 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"pathlines_03.txt" : "scalable_parallel",
+         "pathlines_09.txt" : "scalable_parallel"}
+     }
+}

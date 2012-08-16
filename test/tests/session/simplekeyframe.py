@@ -45,7 +45,8 @@ def TestSetup(testName):
 TurnOnAllAnnotations()
 
 # Set up the visualization by restoring a session file.
-RestoreSession("tests/session/simplekeyframe.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","simplekeyframe.session"), 0,
+                                   silo_data_path("globe.silo"))
 
 TestSection("Testing keyframes from a restored session file.")
 

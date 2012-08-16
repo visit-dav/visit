@@ -56,7 +56,7 @@ def TestNetworkReset():
     usingSR = ""
     for i in range(TimeSliderGetNStates()):
         SetTimeSliderState(i)
-
+        # TODO_WINDOWS THIS WONT WORK ON WINDOWS
         # Kill the compute engine partway through to simulate it getting
         # booted out of the batch queue.
         if(i == 5):

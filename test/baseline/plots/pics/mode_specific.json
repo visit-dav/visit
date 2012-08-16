@@ -1,0 +1,6 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"pics_MB_3D_ugrid_POD_stream_both.png" : "scalable_parallel",
+         "pics_MB_3D_ugrid_POS_stream_both.png" : "scalable_parallel"}
+     }
+}

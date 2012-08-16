@@ -8,12 +8,13 @@
 #              vice versa.
 #
 #  Programmer: Mark C. Miller
-#  Date:       25Jan10 
+#  Date:       25Jan10
 #
 # ----------------------------------------------------------------------------
 
-if SILO_MODE == "pdb":
-    SILO_MODE = "hdf5"
+if TestEnv.params["silo_mode"] == "pdb":
+    TestEnv.params["silo_mode"] = "hdf5"
 else:
-    SILO_MODE = "pdb"
-Source("tests/databases/silo.py")
+    TestEnv.params["silo_mode"] = "pdb"
+
+Source(tests_path("databases","silo.py"))

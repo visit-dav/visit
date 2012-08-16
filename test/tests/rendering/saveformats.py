@@ -24,6 +24,93 @@
 #    Mark C. Miller, Wed Apr  7 19:02:29 PDT 2010
 #    Be smarter about testing curve formats while in scalable mode.
 # ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Function: FileExists 
+#
+# Purpose:
+#   Tests if a file exists and, if the file is being written, waits
+#   until the file size does not change for growthInterval seconds. If the
+#   file exists but is of zero size, that is the same as it NOT existing
+#
+# waitToAppear: number of seconds to wait for the file to first appear
+# growhtInterval: number of seconds between successive stats on the file 
+#
+# Programmer: Mark C. Miller
+#             September 20, 2005
+#
+# ----------------------------------------------------------------------------
+def FileExists(name, waitToAppear, growthInterval):
+    if os.path.isfile(name) == 0:
+        time.sleep(waitToAppear)
+    if os.path.isfile(name) == 0:
+        return 0
+    curSize = os.stat(name)[ST_SIZE]
+    if growthInterval == 0:
+        if curSize == 0:
+            return 0
+    else:
+            return 1
+    while 1:
+        time.sleep(growthInterval)
+        size = os.stat(name)[ST_SIZE]
+        if size == curSize:
+            if curSize == 0:
+                return 0
+            else:
+                return 1
+            curSize = size
+
+# find tif to rgb image convert utility
+if os.environ.has_key('VISIT_TEST_CONVERT'):
+    imgConverter = os.environ['VISIT_TEST_CONVERT']
+elif (os.path.isfile("/usr/bin/convert")):
+    imgConverter = "/usr/bin/convert"
+else:
+    imgConverter = "convert"
+
+# ----------------------------------------------------------------------------
+# Function: SaveFileInfo
+#
+# Purpose:
+#   Return a string representing the appropriate extension for the
+#   given file format and return bools indicating if the format supports
+#   curves, images and/or geometry.
+#
+# Programmer: Mark C. Miller
+#             September 20, 2005
+#
+# ----------------------------------------------------------------------------
+def SaveFileInfo(fmt):
+    swa = SaveWindowAttributes()
+    if (fmt == swa.POSTSCRIPT):
+        return ("ps", 1, 0, 0)
+    elif (fmt == swa.CURVE):
+        return ("curve", 1, 0, 0)
+    elif (fmt == swa.ULTRA):
+        return ("ultra", 1, 0, 0)
+    elif (fmt == swa.BMP):
+        return ("bmp", 0, 1, 0)
+    elif (fmt == swa.JPEG):
+        return ("jpeg", 0, 1, 0)
+    elif (fmt == swa.PNG):
+        return ("png", 0, 1, 0)
+    elif (fmt == swa.PPM):
+        return ("ppm", 0, 1, 0)
+    elif (fmt == swa.RGB):
+        return ("rgb", 0, 1, 0)
+    elif (fmt == swa.TIFF):
+        return ("tif", 0, 1, 0)
+    elif (fmt == swa.STL):
+        return ("stl", 0, 0, 1)
+    elif (fmt == swa.OBJ):
+        return ("obj", 0, 0, 1)
+    elif (fmt == swa.VTK):
+        return ("vtk", 0, 0, 1)
+    else:
+        return ("unknown", 0, 0, 0)
+
+
 swa=SaveWindowAttributes()
 swa.family = 0
 
@@ -49,14 +136,14 @@ def TestSaveFormat(fmt):
     swatmp = swa
     swatmp.format = fmt
     if isI:
-        swatmp.fileName = "current/saveformat_tmp.%s"%ext
+        swatmp.fileName = "saveformat_tmp.%s"%ext
     else:
-        swatmp.fileName = "current/saveformat_tmp"
+        swatmp.fileName = "saveformat_tmp"
     SetSaveWindowAttributes(swatmp)
     try:
         SaveWindow()
     except:
-        if scalable:
+        if TestEnv.params["scalable"]:
             if GetLastError() == "You cannot save curve formats (ultra, curve) from " \
                                  "a window that is currently in scalable rendering mode.":
                 TestText("saveformat_%s%s"%(mode,ext), "Passed\n")
@@ -83,9 +170,10 @@ def TestSaveFormat(fmt):
     elif isI:
         if swatmp.screenCapture == 0:
             mode = "offscreen_"
-        tiffFileName = "current/saveformat_tmp.tif"
+        tiffFileName = "saveformat_tmp.tif"
         tiffFileExists = 0
         imageFileExists = FileExists(swatmp.fileName, 1, 0)
+        # TODO_WINDOWS ?
         if imageFileExists:
             os.system("%s %s -compress none %s"%(imgConverter, swatmp.fileName, tiffFileName))
             tiffFileExists = FileExists(tiffFileName, 1, 0)
@@ -115,8 +203,9 @@ def TestSaveFormat(fmt):
     TestText("saveformat_%s%s"%(mode,ext), result)
     SetActiveWindow(1)
 
+
 TestSection("Curve Formats")
-OpenDatabase(data_path("curve_test_data/c062.curve"))
+OpenDatabase(data_path("curve_test_data","c062.curve"))
 
 AddPlot("Curve", "going_down")
 DrawPlots()
@@ -125,7 +214,7 @@ for f in CFormats:
 
 TestSection("Image Formats via Screen Capture")
 DeleteAllPlots()
-CloseDatabase(data_path("curve_test_data/c062.curve"))
+CloseDatabase(data_path("curve_test_data","c062.curve"))
 
 OpenDatabase(silo_data_path("multi_rect2d.silo"))
 
