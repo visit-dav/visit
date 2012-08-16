@@ -691,6 +691,9 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 //    Hank Childs, Fri Jan 13 09:58:47 PST 2006
 //    Invalidate spatial meta-data.
 //
+//    Kathleen Biagas, Thu Aug 16 14:56:29 MST 2012
+//    Indicate points were transformed by this operator.
+//
 // ****************************************************************************
 void
 avtProjectFilter::UpdateDataObjectInfo(void)
@@ -740,6 +743,9 @@ avtProjectFilter::UpdateDataObjectInfo(void)
         break;
     }
 
+    GetOutput()->GetInfo().GetValidity().SetPointsWereTransformed(true);
+    outAtts.SetCanUseInvTransform(false);
+    outAtts.SetCanUseTransform(false);
 }
 
 // ****************************************************************************
