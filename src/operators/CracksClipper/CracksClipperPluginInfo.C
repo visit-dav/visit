@@ -133,7 +133,7 @@ CracksClipperGeneralPluginInfo::GetID() const
 bool
 CracksClipperGeneralPluginInfo::EnabledByDefault() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************
