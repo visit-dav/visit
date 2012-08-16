@@ -16,12 +16,21 @@
 
 TurnOnAllAnnotations()
 
-RestoreSession("tests/session/restorewithsources.session", 0)
+tpath = tests_path("session","restorewithsources.session")
+dpath = silo_data_path("rect3d.silo") 
+print repr(tpath)
+print repr(silo_data_path("rect3d.silo") )
+
+RestoreSessionWithDifferentSources(tests_path("session","restorewithsources.session"),
+                                   0,
+                                   silo_data_path("rect3d.silo") )
+
+
 Test("restorewithsources00")
 
 # Now, try restoring the session with a different data file. Note that since
 # there's just one source, we pass a string instead of a tuple of strings.
-RestoreSessionWithDifferentSources(tests_path("session/restorewithsources.session"),
+RestoreSessionWithDifferentSources(tests_path("session","restorewithsources.session"),
                                    0,
                                    silo_data_path("rect2d.silo") )
 Test("restorewithsources01")

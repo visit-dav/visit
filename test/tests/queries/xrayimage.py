@@ -31,11 +31,14 @@ DrawPlots()
 # old style argument passing
 Query("XRay Image", "png", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
-if not os.path.isdir("current/queries"):
-    os.mkdir("current/queries")
-if not os.path.isdir("current/queries/xrayimage"):
-    os.mkdir("current/queries/xrayimage")
-os.rename("output00.png", "current/queries/xrayimage/xrayimage00.png")
+
+if not os.path.isdir(out_path("current","queries")):
+    os.mkdir(out_path("current","queries"))
+out_base = out_path("current","queries","xrayimage")
+if not os.path.isdir(out_base):
+    os.mkdir(out_base)
+
+os.rename("output00.png", out_path(out_base,"xrayimage00.png"))
 Test("xrayimage00", 0, 1)
 
 s = GetQueryOutputString()
@@ -61,8 +64,9 @@ DrawPlots()
 params = dict(output_type="png", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage02.png")
-os.rename("output01.png", "current/queries/xrayimage/xrayimage03.png")
+os.rename("output00.png", out_path(out_base,"xrayimage02.png"))
+os.rename("output01.png", out_path(out_base,"xrayimage03.png"))
+
 Test("xrayimage02", 0, 1)
 Test("xrayimage03", 0, 1)
 
@@ -89,7 +93,7 @@ params['height'] = 10.
 params['vars'] = ("d", "p")
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage05.png")
+os.rename("output00.png", out_path(out_base,"xrayimage05.png"))
 Test("xrayimage05", 0, 1)
 
 s = GetQueryOutputString()
@@ -99,7 +103,7 @@ params['theta'] = 90
 params['phi'] =  0
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage07.png")
+os.rename("output00.png", out_path(out_base,"xrayimage07.png"))
 Test("xrayimage07", 0, 1)
 
 s = GetQueryOutputString()
@@ -130,7 +134,7 @@ params['height'] = 1.
 params['vars'] = ("w1", "v1")
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage09.png")
+os.rename("output00.png", out_path(out_base,"xrayimage09.png"))
 Test("xrayimage09", 0, 1)
 
 s = GetQueryOutputString()
@@ -142,7 +146,7 @@ params['height'] = 4.
 
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage11.png")
+os.rename("output00.png", out_path(out_base,"xrayimage11.png"))
 Test("xrayimage11", 0, 1)
 
 s = GetQueryOutputString()
@@ -153,7 +157,7 @@ params['theta'] = 0
 params['vars'] = ("w1", "v2")
 Query("XRay Image", params) 
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage13.png")
+os.rename("output00.png", out_path(out_base,"xrayimage13.png"))
 Test("xrayimage13", 0, 1)
 
 s = GetQueryOutputString()
@@ -162,7 +166,7 @@ TestText("xrayimage14", s)
 params['theta'] = 90
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage15.png")
+os.rename("output00.png", out_path(out_base,"xrayimage15.png"))
 Test("xrayimage15", 0, 1)
 
 s = GetQueryOutputString()
@@ -175,7 +179,7 @@ params['height'] = 8.
 params['vars'] = ("w1", "v3")
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage17.png")
+os.rename("output00.png", out_path(out_base,"xrayimage17.png"))
 Test("xrayimage17", 0, 1)
 
 
@@ -187,7 +191,7 @@ params['width'] = 20.
 params['height'] = 20.
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage19.png")
+os.rename("output00.png", out_path(out_base,"xrayimage19.png"))
 Test("xrayimage19", 0, 1)
 
 s = GetQueryOutputString()
@@ -198,7 +202,7 @@ params['theta'] = 0
 params['vars'] = ("w1", "v4")
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage21.png")
+os.rename("output00.png", out_path(out_base,"xrayimage21.png"))
 Test("xrayimage21", 0, 1)
 
 s = GetQueryOutputString()
@@ -207,7 +211,7 @@ TestText("xrayimage22", s)
 params['theta'] = 90
 Query("XRay Image", params)
 
-os.rename("output00.png", "current/queries/xrayimage/xrayimage23.png")
+os.rename("output00.png", out_path(out_base,"xrayimage23.png"))
 Test("xrayimage23", 0, 1)
 
 s = GetQueryOutputString()

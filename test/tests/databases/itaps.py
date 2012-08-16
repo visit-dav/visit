@@ -187,29 +187,20 @@ DeleteAllPlots()
 #
 # Loop to test all three implementations are built, co-existing and working
 #
-if not parallel:
-    n=13
-    for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
-        OpenDatabase(data_path("iTaps_test_data/%s/%s")%imp,0, "ITAPS_%s_1.0" % imp[0])
-        AddPlot("Mesh","mesh")
-        DrawPlots()
-        ResetView()
-        if imp[0] == "FMDB":
-            v = GetView3D()
-            v.RotateAxis(0,90.0)
-            SetView3D(v)
-        Test("itaps_%d"%n)
-        DeleteAllPlots()
-        CloseDatabase(data_path("iTaps_test_data/%s/%s")%imp)
+n=13
+for imp in (("MOAB","mixed-hex-pyr-tet"),("FMDB","human-1-fmdb.sms"),("GRUMMP","tire.vmesh")):
+    OpenDatabase(data_path("iTaps_test_data/%s/%s")%imp,0, "ITAPS_%s_1.0" % imp[0])
+    AddPlot("Mesh","mesh")
+    DrawPlots()
+    ResetView()
+    if imp[0] == "FMDB":
+        v = GetView3D()
+        v.RotateAxis(0,90.0)
+        SetView3D(v)
+    Test("itaps_%d"%n)
+    DeleteAllPlots()
+    CloseDatabase(data_path("iTaps_test_data/%s/%s")%imp)
 
-        n = n + 1
-else:
-    global skipCases
-    oldSkipCases = skipCases
-    skipCases = ("itaps_13","itaps_14","itaps_15")
-    Test("itaps_13")
-    Test("itaps_14")
-    Test("itaps_15")
-    skipCases = oldSkipCases
+    n = n + 1
 
 Exit()

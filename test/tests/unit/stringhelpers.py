@@ -9,10 +9,9 @@
 # ----------------------------------------------------------------------------
 import os, subprocess
 # TODO: NEEDS TO BE FIXED FOR OUT OF SOURCE BUILD
-tapp = pjoin(visitTopDir,"src","exe","StringHelpers_test")
-subp = subprocess.Popen(tapp, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-subp.wait()
-if subp.returncode == 0:
+tapp = pjoin(TestEnv.params["visit_top_dir"],"src","exe","StringHelpers_test")
+rcode, outdata = sexe(tapp,ret_output=True)
+if rcode == 0:
     excode = 111
 else:
     excode = 113

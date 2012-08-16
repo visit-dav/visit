@@ -26,8 +26,10 @@ sa.screenCapture = 0
 sa.width,sa.height = 300,300
 
 TurnOnAllAnnotations()
+RestoreSessionWithDifferentSources(tests_path("session","legendproperties.session"), 0,
+                                   silo_data_path("bigsil.silo"))
 
-RestoreSession("tests/session/legendproperties.session", 0)
+
 Test("legendproperties00", altSWA=sa)
 
 # Now that we've restored the session, see if we can get the legend objects

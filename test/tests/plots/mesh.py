@@ -219,7 +219,7 @@ def TestRect3d():
     SetOperatorOptions(box)
 
     DrawPlots()
-   
+
     SetViewExtentsType("actual") 
     v = GetView3D()
     v.viewNormal = (0.27, 0.27, 0.93)
@@ -254,12 +254,12 @@ def TestAutoOpaqueFlag():
     AddPlot("Pseudocolor", "u")
     DrawPlots()
     Test("mesh_opaque_02")
-    
+
     # Hide the Pseudocolor plot and make sure that the mesh plot
     # goes opaque.
     HideActivePlots()
     Test("mesh_opaque_03")
-    
+
     # Unhide the Pseudocolor plot and then delete it. Make sure that the
     # mesh plot goes opaque.
     HideActivePlots()
@@ -268,9 +268,10 @@ def TestAutoOpaqueFlag():
     Test("mesh_opaque_05")
     DeleteAllPlots()
 
-    # Restore a session file that has a keyfram animation where the mesh
+    # Restore a session file that has a keyframe animation where the mesh
     # plot exists over all frames but the Pseudocolor plot does not.
-    RestoreSession("tests/plots/mesh_opaque.session", 0)
+    RestoreSessionWithDifferentSources(tests_path("plots","mesh_opaque.session"), 0,
+                                       silo_data_path("wave*.silo database"))
     # Turn off all annotations but preserve the background colors.
     TurnOffAllAnnotations(GetAnnotationAttributes())
     Test("mesh_opaque_06")

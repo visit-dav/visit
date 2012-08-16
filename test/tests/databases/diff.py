@@ -23,9 +23,9 @@ winToStrMap = {1 : "L-R", 2 : "R-L", 3 : "Left", 4 : "Right"}
 def TestWindows(base, num):
     for win in (1,3,4):
         SetActiveWindow(win)
-	DrawPlots()
+        DrawPlots()
         TurnOffAllAnnotations()
-	if num < 0:
+        if num < 0:
             Test("diff_%s_%s"%(base,winToStrMap[win]))
         else:
             Test("diff_%s_%d_%s"%(base,num,winToStrMap[win]))

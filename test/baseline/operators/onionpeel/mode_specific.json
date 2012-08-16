@@ -1,0 +1,9 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"ops_onionpeel_01.png" : "scalable_parallel",
+         "ops_onionpeel_02.png" : "scalable_parallel",
+         "ops_onionpeel_03.png" : "scalable_parallel",
+         "ops_onionpeel_05.png" : "scalable_parallel",
+         "ops_onionpeel_06.png" : "scalable_parallel"}
+     }
+}

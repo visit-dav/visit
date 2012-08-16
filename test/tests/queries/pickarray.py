@@ -79,10 +79,10 @@ text = GetPickOutput() + "\n"
 
 e = ExportDBAttributes()
 e.db_type = "VTK"
-e.filename = "current/globe_temp"
+e.filename = "globe_temp"
 e.variables = ("u", "dx", "dy")
 ExportDatabase(e)
-ReplaceDatabase("current/globe_temp.vtk")
+ReplaceDatabase("globe_temp.vtk")
 Pick(128, 107, vars)
 text += GetPickOutput()
 text += "\n"

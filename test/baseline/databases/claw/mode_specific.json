@@ -1,0 +1,7 @@
+{"modes":
+    {"scalable,parallel,icet":
+        {"claw_01.png" : "scalable_parallel",
+         "claw_02.png" : "scalable_parallel",
+         "claw_03.png" : "scalable_parallel"}
+     }
+}

@@ -20,7 +20,9 @@
 TurnOnAllAnnotations()
 
 # Open the session file
-RestoreSession("tests/session/view3d.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","view3d.session"), 0,
+                                   silo_data_path("globe.silo"))
+
 Test("view3d00")
 
 Exit()

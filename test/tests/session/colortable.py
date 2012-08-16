@@ -18,6 +18,7 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-RestoreSession("tests/session/colortable.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","colortable.session"), 0,
+                                   silo_data_path("globe.silo"))
 Test("colortable00")
 Exit()

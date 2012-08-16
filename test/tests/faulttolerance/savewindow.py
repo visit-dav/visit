@@ -30,6 +30,7 @@ pa = GetProcessAttributes("engine")
 enginePid = int(pa.pids[0])
 
 s = ""
+# TODO_WINDOWS THIS WONT WORK ON WINDOWS
 for i in range(6):
     TimeSliderSetState(i)
     if i == 3:

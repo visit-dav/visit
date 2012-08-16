@@ -20,6 +20,9 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-RestoreSession("tests/session/wavecontour.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","wavecontour.session"), 0,
+                                   silo_data_path("wave.visit"))
+# tslider state is lost w/ restore with sources
+TimeSliderSetState(28)
 Test("wavecontour00")
 Exit()

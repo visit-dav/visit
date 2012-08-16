@@ -89,9 +89,11 @@ pa.maxFlag = 1
 pa.min = 0
 pa.max = 20 
 
-os.system("mkdir silo_datatypes")
-os.system("mkdir silo_datatypes/current")
-os.system("mkdir silo_datatypes/diff")
+for path in ["silo_datatypes",
+             pjoin("silo_datatypes","current"),
+             pjoin("silo_datatypes","diff")]:
+    if not os.path.isdir(path):
+        os.mkdir(path)
 for smode in ("hdf5", "pdb"):
     for fsmode in ("off", "on"): # force single modes
         SetForceSingle(fsmode)
@@ -115,7 +117,7 @@ for smode in ("hdf5", "pdb"):
                     ResetView()
                     swa=SaveWindowAttributes()
                     swa.outputToCurrentDirectory = 0
-                    swa.outputDirectory = "silo_datatypes/current"
+                    swa.outputDirectory = pjoin("silo_datatypes","current")
                     swa.screenCapture=1
                     swa.family   = 0
                     swa.fileName = filename
@@ -125,11 +127,13 @@ for smode in ("hdf5", "pdb"):
                     DeleteAllPlots()
                     tPixs = pPixs = dPixs = 0
                     davg = 0.0
-                    if usePIL:
+                    if TestEnv.params["use_pil"]:
                          file=filename
-                         cur="silo_datatypes/current/%s.png"%filename
-                         diff="silo_datatypes/diff/%s.png"%filename
-                         base="baseline/databases/silo_datatypes/silo_datatypes_%s_%s.png"%(mt,fvarname)
+                         cur  = pjoin("silo_datatypes","current","%s.png" % filename)
+                         diff = pjoin("silo_datatypes","diff","%s.png" % filename)
+                         base = test_root_path("baseline","databases",
+                                               "silo_datatypes",
+                                               "silo_datatypes_%s_%s.png"%(mt,fvarname))
                          (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(file, cur, diff, base, "")
                          result = "PASSED"
                          if (dPixs > 0 and davg > 1):
@@ -137,7 +141,7 @@ for smode in ("hdf5", "pdb"):
                          diffResults += "%s_%s:    %s\n"%(mt,varname,result)
             CloseDatabase(dbname)
         TestText("silo_datatypes_diffs_%s_fs%s"%(smode,fsmode),diffResults)
-os.system("rm -rf silo_datatypes")
+shutil.rmtree("silo_datatypes")
 SetSaveWindowAttributes(backup)
 
 Exit()

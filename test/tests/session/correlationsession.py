@@ -43,7 +43,11 @@ TurnOnAllAnnotations()
 # Restore the session file and make sure that it at the right time step
 # and has the right time slider.
 #
-RestoreSession("tests/session/correlationsession.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","correlationsession.session"), 0,
+                                   [data_path("pdb_test_data","dbA00.pdb"),
+                                    data_path("pdb_test_data","dbB00.pdb"),
+                                    data_path("pdb_test_data","dbC00.pdb")])
+
 Test("correlationsession00")
 TestLength("correlationsession01")
 

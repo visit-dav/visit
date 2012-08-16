@@ -63,7 +63,7 @@ Test("export_db_02")
 DeleteAllPlots()
 OpenDatabase(silo_data_path("wave.visit"))
 
-DefineScalarExpression("cmfe", "conn_cmfe(coord(<../data/silo_%s_test_data/wave0020.silo:quadmesh>)[1], quadmesh)"%SILO_MODE)
+DefineScalarExpression("cmfe", "conn_cmfe(coord(<%s:quadmesh>)[1], quadmesh)" % silo_data_path("wave0020.silo"))
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 e.variables = ("cmfe")

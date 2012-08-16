@@ -184,9 +184,9 @@ def test1(testindex):
     f1 = open("wave1.visit","wt")
     f2 = open("wave2.visit","wt")
     for line in lines:
-        f0.write(data_path("silo_%s_test_data",line) % SILO_MODE )
-        f1.write(data_path("silo_%s_test_data",line) % SILO_MODE )
-        f2.write(data_path("silo_%s_test_data",line) % SILO_MODE )
+        f0.write(silo_data_path(line))
+        f1.write(silo_data_path(line))
+        f2.write(silo_data_path(line))
     f0.close()
     f1.close()
     f2.close()

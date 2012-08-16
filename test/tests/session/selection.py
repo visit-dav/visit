@@ -20,8 +20,9 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
+RestoreSessionWithDifferentSources(tests_path("session","selection.session"), 0,
+                                   silo_data_path("multi_curv2d.silo"))
 
-RestoreSession("tests/session/selection.session", 0)
 Test("selection_00")
 
 Exit()

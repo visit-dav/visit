@@ -18,6 +18,7 @@
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
-RestoreSession("tests/session/rect3d-contour.session", 0)
+RestoreSessionWithDifferentSources(tests_path("session","rect3d-contour.session"), 0,
+                                   silo_data_path("rect3d.silo"))
 Test("rect3d-contour00")
 Exit()

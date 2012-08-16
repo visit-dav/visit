@@ -17,4 +17,4 @@
 # ----------------------------------------------------------------------------
 
 useCompression = 1
-Source(tests_path("plots/mesh.py"))
+Source(tests_path("plots","mesh.py"))

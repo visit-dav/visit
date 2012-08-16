@@ -29,8 +29,9 @@
 # ----------------------------------------------------------------------------
 
 import sys
-# TODO FIX
-sys.path.append("../src/lib")
+import os
+from os.path import join as pjoin
+sys.path.append(pjoin(os.environ['VISITARCHHOME'],"lib"))
 
 import visit_writer
 
@@ -38,7 +39,7 @@ import visit_writer
 # We can't run this test while in SR mode
 # So, exit and indicate the test was skipped.
 # 'scalable' is defined in Testing.py
-if scalable != 0:
+if TestEnv.params["scalable"] != 0:
     Exit(121)
 
 # BEGIN USER MODIFIABLE SECTION
@@ -68,7 +69,7 @@ import math
 sw = GetSaveWindowAttributes()
 sw.format = sw.ULTRA
 sw.family = 0
-sw.fileName = "current/tmp"
+sw.fileName = "tmp"
 SetSaveWindowAttributes(sw)
 
 import string
@@ -81,7 +82,7 @@ def GetNum(line):
 
 # Opens up the file "tmp.ultra" and gets the maximum position.
 def GetMaximumPosition():
-   uf = open("current/tmp.ultra", "r")
+   uf = open("tmp.ultra", "r")
    line = uf.readline()  # Remove header
    line = uf.readline()
    num = GetNum(line)
@@ -126,7 +127,7 @@ for j in range(nPhiSteps):
         points = points + [FX, FY, FZ]
         DeleteAllPlots()
         SetActiveWindow(1)
-        
+
 dims = (nThetaSteps, nPhiSteps, 1)
 
 visit_writer.WriteCurvilinearMesh("locus", 0, dims, points, [["max", 1, 1, vals]])

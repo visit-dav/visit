@@ -11,19 +11,24 @@ $$index_header
     <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
     <script type="text/javascript" id="js">$(document).ready(function() {
      // call the tablesorter plugin
-     $("table").tablesorter({
+     $("table").tablesorter({ 
          // sort on the first column and third column, order asc
-         sortList: []
+         sortList: [[0,0]]
    });
 }); </script>
+    <script type="text/javascript">
+
+</script>
 
 </head>
 
-<H2>Results of VisIt Regression Test ( $run_mode ) -  $timestamp</H2>
-
+<H2>Results of VisIt Regression Test ( $run_mode )</H2>
+Test suite run started at $timestamp.<br>
+(Click on table header to sort)
 <table border=0 class=tablesorter>
 <thead>
 <tr>
+    <th>Index</th>
     <th>Category </th>
     <th>Test File </th>
     <th>Status </th>
@@ -35,6 +40,7 @@ $$
 
 $$index_entry
 <tr >
+   <td>$test_idx</td>
     <td>$category</td>
     <td><a href="$details.html">$name</a></td>
     <td class="$result_color">$result_text</td>
@@ -42,8 +48,20 @@ $$index_entry
 </tr>
 $$
 
+$$index_entry_skip
+<tr >
+   <td>$test_idx</td>
+    <td>$category</td>
+    <td>$name</td>
+    <td class="$result_color">$result_text</td>
+    <td>$run_time</td>
+</tr>
+$$
+
+
 $$index_footer
 </tbody>
 </table>
+Test suite run complete at $timestamp ($runtime seconds).
 </html>
 $$
