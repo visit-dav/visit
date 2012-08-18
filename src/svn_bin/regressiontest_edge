@@ -252,7 +252,7 @@ for m in \$modes; do
     fi
 
     # Run the test
-    ./runtest -o \$resDir -m "\$m" >> ../buildlog 2>&1
+    ./runtest -o \$resDir -m "\$m" -n 1>> ../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
