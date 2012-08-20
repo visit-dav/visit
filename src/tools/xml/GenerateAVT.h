@@ -698,10 +698,10 @@ class AVTGeneratorPlugin : public PluginBase
                 c << "avt"<<name<<"Filter::ModifyContract(avtContract_p in_contract)" << Endl;
                 c << "{" << Endl;
                 c << "    avtContract_p rv;" << Endl;
-                c << "    if (strncmp(pipelineVariable, \"operators/" << name << "\", strlen(\"operators/" << name << "\")) == 0)" << Endl;
+                c << "    if (strncmp(pipelineVariable, \"operators/" << name << "/\", strlen(\"operators/" << name << "/\")) == 0)" << Endl;
                 c << "    {" << Endl;
                 c << "        outVarName = pipelineVariable;" << Endl;
-                c << "        const char *justTheVar = pipelineVariable + strlen(\"operators/" << name << "\");" << Endl;
+                c << "        const char *justTheVar = pipelineVariable + strlen(\"operators/" << name << "/\");" << Endl;
                 c << "        avtDataRequest_p dr = new avtDataRequest(in_contract->GetDataRequest(), justTheVar);" << Endl;
                 c << "        rv = new avtContract(in_contract, dr);" << Endl;
                 c << "    }" << Endl;
