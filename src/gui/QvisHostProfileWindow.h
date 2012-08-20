@@ -162,6 +162,9 @@ class QRadioButton;
 //    New widgets for parallel GPU configuration.
 //    Removed deprecated/broken precommand/postcommand settings.
 //
+//    Brad Whitlock, Wed Aug 15 13:55:13 PDT 2012
+//    I added controls to set the ssh command.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -233,6 +236,8 @@ private slots:
     void userNameChanged(const QString &username);
     void toggleSSHPort(bool);
     void sshPortChanged(const QString &port);
+    void toggleSSHCommand(bool);
+    void sshCommandChanged(const QString &port);
     void toggleUseGateway(bool);
     void gatewayHostChanged(const QString &port);
     void clientHostNameMethodChanged(int);
@@ -342,6 +347,8 @@ private:
     QLabel       *clientHostNameMethodLabel;
     QCheckBox    *sshPortCheckBox;
     QLineEdit    *sshPort;
+    QCheckBox    *sshCommandCheckBox;
+    QLineEdit    *sshCommand;
     QCheckBox    *useGatewayCheckBox;
     QLineEdit    *gatewayHost;
     QLabel       *engineArgumentsLabel;

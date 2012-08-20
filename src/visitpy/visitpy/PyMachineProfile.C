@@ -99,6 +99,27 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssshPort = %d\n", prefix, atts->GetSshPort());
     str += tmpStr;
+    if(atts->GetSshCommandSpecified())
+        SNPRINTF(tmpStr, 1000, "%ssshCommandSpecified = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%ssshCommandSpecified = 0\n", prefix);
+    str += tmpStr;
+    {   const stringVector &sshCommand = atts->GetSshCommand();
+        SNPRINTF(tmpStr, 1000, "%ssshCommand = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < sshCommand.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "\"%s\"", sshCommand[i].c_str());
+            str += tmpStr;
+            if(i < sshCommand.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     if(atts->GetUseGateway())
         SNPRINTF(tmpStr, 1000, "%suseGateway = 1\n", prefix);
     else
@@ -362,6 +383,79 @@ MachineProfile_GetSshPort(PyObject *self, PyObject *args)
 {
     MachineProfileObject *obj = (MachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSshPort()));
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetSshCommandSpecified(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the sshCommandSpecified in the object.
+    obj->data->SetSshCommandSpecified(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetSshCommandSpecified(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetSshCommandSpecified()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+MachineProfile_SetSshCommand(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+
+    stringVector  &vec = obj->data->GetSshCommand();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the sshCommand in the object as modified.
+    obj->data->SelectSshCommand();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MachineProfile_GetSshCommand(PyObject *self, PyObject *args)
+{
+    MachineProfileObject *obj = (MachineProfileObject *)self;
+    // Allocate a tuple the with enough entries to hold the sshCommand.
+    const stringVector &sshCommand = obj->data->GetSshCommand();
+    PyObject *retval = PyTuple_New(sshCommand.size());
+    for(size_t i = 0; i < sshCommand.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(sshCommand[i].c_str()));
     return retval;
 }
 
@@ -749,6 +843,10 @@ PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
     {"GetSshPortSpecified", MachineProfile_GetSshPortSpecified, METH_VARARGS},
     {"SetSshPort", MachineProfile_SetSshPort, METH_VARARGS},
     {"GetSshPort", MachineProfile_GetSshPort, METH_VARARGS},
+    {"SetSshCommandSpecified", MachineProfile_SetSshCommandSpecified, METH_VARARGS},
+    {"GetSshCommandSpecified", MachineProfile_GetSshCommandSpecified, METH_VARARGS},
+    {"SetSshCommand", MachineProfile_SetSshCommand, METH_VARARGS},
+    {"GetSshCommand", MachineProfile_GetSshCommand, METH_VARARGS},
     {"SetUseGateway", MachineProfile_SetUseGateway, METH_VARARGS},
     {"GetUseGateway", MachineProfile_GetUseGateway, METH_VARARGS},
     {"SetGatewayHost", MachineProfile_SetGatewayHost, METH_VARARGS},
@@ -818,6 +916,10 @@ PyMachineProfile_getattr(PyObject *self, char *name)
         return MachineProfile_GetSshPortSpecified(self, NULL);
     if(strcmp(name, "sshPort") == 0)
         return MachineProfile_GetSshPort(self, NULL);
+    if(strcmp(name, "sshCommandSpecified") == 0)
+        return MachineProfile_GetSshCommandSpecified(self, NULL);
+    if(strcmp(name, "sshCommand") == 0)
+        return MachineProfile_GetSshCommand(self, NULL);
     if(strcmp(name, "useGateway") == 0)
         return MachineProfile_GetUseGateway(self, NULL);
     if(strcmp(name, "gatewayHost") == 0)
@@ -877,6 +979,10 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = MachineProfile_SetSshPortSpecified(self, tuple);
     else if(strcmp(name, "sshPort") == 0)
         obj = MachineProfile_SetSshPort(self, tuple);
+    else if(strcmp(name, "sshCommandSpecified") == 0)
+        obj = MachineProfile_SetSshCommandSpecified(self, tuple);
+    else if(strcmp(name, "sshCommand") == 0)
+        obj = MachineProfile_SetSshCommand(self, tuple);
     else if(strcmp(name, "useGateway") == 0)
         obj = MachineProfile_SetUseGateway(self, tuple);
     else if(strcmp(name, "gatewayHost") == 0)

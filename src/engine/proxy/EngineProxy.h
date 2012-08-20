@@ -314,6 +314,11 @@ public:
     EngineProxy(bool sim = false);
     virtual ~EngineProxy();
 
+    virtual void Create(const MachineProfile &profile, 
+                        ConnectCallback *connectCallback = 0, 
+                        void *connectCallbackData = 0,
+                        bool createAsThoughLocal = false);
+
     // This version of Create is specifically for reverse launch.
     void Connect(const stringVector &args);
 
@@ -342,16 +347,6 @@ public:
     EngineState             *GetEngineState() { return state; }
     EngineMethods           *GetEngineMethods() { return methods; }
 
-    virtual void Create(const std::string &hostName,
-                MachineProfile::ClientHostDetermination chd,
-                const std::string &clientHostName,
-                bool manualSSHPort,
-                int sshPort,
-                bool useTunneling,
-                bool useGateway,
-                const std::string &gatewayHost,
-                ConnectCallback *connectCallback = 0,
-                void *data = 0, bool createAsThoughLocal = false);
 protected:
     virtual void             SetupComponentRPCs();
     void                     ExtractEngineInformation();

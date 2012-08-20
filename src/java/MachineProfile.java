@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class MachineProfile extends AttributeSubject
 {
-    private static int MachineProfile_numAdditionalAtts = 19;
+    private static int MachineProfile_numAdditionalAtts = 21;
 
     // Enum values
     public final static int CLIENTHOSTDETERMINATION_MACHINENAME = 0;
@@ -77,6 +77,9 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = false;
         sshPortSpecified = false;
         sshPort = 22;
+        sshCommandSpecified = false;
+        sshCommand = new Vector();
+        sshCommand.addElement(new String("ssh"));
         useGateway = false;
         gatewayHost = new String("");
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
@@ -102,6 +105,9 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = false;
         sshPortSpecified = false;
         sshPort = 22;
+        sshCommandSpecified = false;
+        sshCommand = new Vector();
+        sshCommand.addElement(new String("ssh"));
         useGateway = false;
         gatewayHost = new String("");
         clientHostDetermination = CLIENTHOSTDETERMINATION_MACHINENAME;
@@ -129,6 +135,11 @@ public class MachineProfile extends AttributeSubject
         shareOneBatchJob = obj.shareOneBatchJob;
         sshPortSpecified = obj.sshPortSpecified;
         sshPort = obj.sshPort;
+        sshCommandSpecified = obj.sshCommandSpecified;
+        sshCommand = new Vector(obj.sshCommand.size());
+        for(i = 0; i < obj.sshCommand.size(); ++i)
+            sshCommand.addElement(new String((String)obj.sshCommand.elementAt(i)));
+
         useGateway = obj.useGateway;
         gatewayHost = new String(obj.gatewayHost);
         clientHostDetermination = obj.clientHostDetermination;
@@ -165,6 +176,15 @@ public class MachineProfile extends AttributeSubject
     {
         int i;
 
+        // Compare the elements in the sshCommand vector.
+        boolean sshCommand_equal = (obj.sshCommand.size() == sshCommand.size());
+        for(i = 0; (i < sshCommand.size()) && sshCommand_equal; ++i)
+        {
+            // Make references to String from Object.
+            String sshCommand1 = (String)sshCommand.elementAt(i);
+            String sshCommand2 = (String)obj.sshCommand.elementAt(i);
+            sshCommand_equal = sshCommand1.equals(sshCommand2);
+        }
         // Compare the elements in the launchProfiles vector.
         boolean launchProfiles_equal = (obj.launchProfiles.size() == launchProfiles.size());
         for(i = 0; (i < launchProfiles.size()) && launchProfiles_equal; ++i)
@@ -183,6 +203,8 @@ public class MachineProfile extends AttributeSubject
                 (shareOneBatchJob == obj.shareOneBatchJob) &&
                 (sshPortSpecified == obj.sshPortSpecified) &&
                 (sshPort == obj.sshPort) &&
+                (sshCommandSpecified == obj.sshCommandSpecified) &&
+                sshCommand_equal &&
                 (useGateway == obj.useGateway) &&
                 (gatewayHost.equals(obj.gatewayHost)) &&
                 (clientHostDetermination == obj.clientHostDetermination) &&
@@ -245,64 +267,76 @@ public class MachineProfile extends AttributeSubject
         Select(7);
     }
 
+    public void SetSshCommandSpecified(boolean sshCommandSpecified_)
+    {
+        sshCommandSpecified = sshCommandSpecified_;
+        Select(8);
+    }
+
+    public void SetSshCommand(Vector sshCommand_)
+    {
+        sshCommand = sshCommand_;
+        Select(9);
+    }
+
     public void SetUseGateway(boolean useGateway_)
     {
         useGateway = useGateway_;
-        Select(8);
+        Select(10);
     }
 
     public void SetGatewayHost(String gatewayHost_)
     {
         gatewayHost = gatewayHost_;
-        Select(9);
+        Select(11);
     }
 
     public void SetClientHostDetermination(int clientHostDetermination_)
     {
         clientHostDetermination = clientHostDetermination_;
-        Select(10);
+        Select(12);
     }
 
     public void SetManualClientHostName(String manualClientHostName_)
     {
         manualClientHostName = manualClientHostName_;
-        Select(11);
+        Select(13);
     }
 
     public void SetTunnelSSH(boolean tunnelSSH_)
     {
         tunnelSSH = tunnelSSH_;
-        Select(12);
+        Select(14);
     }
 
     public void SetMaximumNodesValid(boolean maximumNodesValid_)
     {
         maximumNodesValid = maximumNodesValid_;
-        Select(13);
+        Select(15);
     }
 
     public void SetMaximumNodes(int maximumNodes_)
     {
         maximumNodes = maximumNodes_;
-        Select(14);
+        Select(16);
     }
 
     public void SetMaximumProcessorsValid(boolean maximumProcessorsValid_)
     {
         maximumProcessorsValid = maximumProcessorsValid_;
-        Select(15);
+        Select(17);
     }
 
     public void SetMaximumProcessors(int maximumProcessors_)
     {
         maximumProcessors = maximumProcessors_;
-        Select(16);
+        Select(18);
     }
 
     public void SetActiveProfile(int activeProfile_)
     {
         activeProfile = activeProfile_;
-        Select(18);
+        Select(20);
     }
 
     // Property getting methods
@@ -314,6 +348,8 @@ public class MachineProfile extends AttributeSubject
     public boolean GetShareOneBatchJob() { return shareOneBatchJob; }
     public boolean GetSshPortSpecified() { return sshPortSpecified; }
     public int     GetSshPort() { return sshPort; }
+    public boolean GetSshCommandSpecified() { return sshCommandSpecified; }
+    public Vector  GetSshCommand() { return sshCommand; }
     public boolean GetUseGateway() { return useGateway; }
     public String  GetGatewayHost() { return gatewayHost; }
     public int     GetClientHostDetermination() { return clientHostDetermination; }
@@ -346,24 +382,28 @@ public class MachineProfile extends AttributeSubject
         if(WriteSelect(7, buf))
             buf.WriteInt(sshPort);
         if(WriteSelect(8, buf))
-            buf.WriteBool(useGateway);
+            buf.WriteBool(sshCommandSpecified);
         if(WriteSelect(9, buf))
-            buf.WriteString(gatewayHost);
+            buf.WriteStringVector(sshCommand);
         if(WriteSelect(10, buf))
-            buf.WriteInt(clientHostDetermination);
+            buf.WriteBool(useGateway);
         if(WriteSelect(11, buf))
-            buf.WriteString(manualClientHostName);
+            buf.WriteString(gatewayHost);
         if(WriteSelect(12, buf))
-            buf.WriteBool(tunnelSSH);
+            buf.WriteInt(clientHostDetermination);
         if(WriteSelect(13, buf))
-            buf.WriteBool(maximumNodesValid);
+            buf.WriteString(manualClientHostName);
         if(WriteSelect(14, buf))
-            buf.WriteInt(maximumNodes);
+            buf.WriteBool(tunnelSSH);
         if(WriteSelect(15, buf))
-            buf.WriteBool(maximumProcessorsValid);
+            buf.WriteBool(maximumNodesValid);
         if(WriteSelect(16, buf))
-            buf.WriteInt(maximumProcessors);
+            buf.WriteInt(maximumNodes);
         if(WriteSelect(17, buf))
+            buf.WriteBool(maximumProcessorsValid);
+        if(WriteSelect(18, buf))
+            buf.WriteInt(maximumProcessors);
+        if(WriteSelect(19, buf))
         {
             buf.WriteInt(launchProfiles.size());
             for(int i = 0; i < launchProfiles.size(); ++i)
@@ -372,7 +412,7 @@ public class MachineProfile extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(18, buf))
+        if(WriteSelect(20, buf))
             buf.WriteInt(activeProfile);
     }
 
@@ -405,33 +445,39 @@ public class MachineProfile extends AttributeSubject
             SetSshPort(buf.ReadInt());
             break;
         case 8:
-            SetUseGateway(buf.ReadBool());
+            SetSshCommandSpecified(buf.ReadBool());
             break;
         case 9:
-            SetGatewayHost(buf.ReadString());
+            SetSshCommand(buf.ReadStringVector());
             break;
         case 10:
-            SetClientHostDetermination(buf.ReadInt());
+            SetUseGateway(buf.ReadBool());
             break;
         case 11:
-            SetManualClientHostName(buf.ReadString());
+            SetGatewayHost(buf.ReadString());
             break;
         case 12:
-            SetTunnelSSH(buf.ReadBool());
+            SetClientHostDetermination(buf.ReadInt());
             break;
         case 13:
-            SetMaximumNodesValid(buf.ReadBool());
+            SetManualClientHostName(buf.ReadString());
             break;
         case 14:
-            SetMaximumNodes(buf.ReadInt());
+            SetTunnelSSH(buf.ReadBool());
             break;
         case 15:
-            SetMaximumProcessorsValid(buf.ReadBool());
+            SetMaximumNodesValid(buf.ReadBool());
             break;
         case 16:
-            SetMaximumProcessors(buf.ReadInt());
+            SetMaximumNodes(buf.ReadInt());
             break;
         case 17:
+            SetMaximumProcessorsValid(buf.ReadBool());
+            break;
+        case 18:
+            SetMaximumProcessors(buf.ReadInt());
+            break;
+        case 19:
             {
                 int len = buf.ReadInt();
                 launchProfiles.clear();
@@ -442,9 +488,9 @@ public class MachineProfile extends AttributeSubject
                     launchProfiles.addElement(tmp);
                 }
             }
-            Select(17);
+            Select(19);
             break;
-        case 18:
+        case 20:
             SetActiveProfile(buf.ReadInt());
             break;
         }
@@ -461,6 +507,8 @@ public class MachineProfile extends AttributeSubject
         str = str + boolToString("shareOneBatchJob", shareOneBatchJob, indent) + "\n";
         str = str + boolToString("sshPortSpecified", sshPortSpecified, indent) + "\n";
         str = str + intToString("sshPort", sshPort, indent) + "\n";
+        str = str + boolToString("sshCommandSpecified", sshCommandSpecified, indent) + "\n";
+        str = str + stringVectorToString("sshCommand", sshCommand, indent) + "\n";
         str = str + boolToString("useGateway", useGateway, indent) + "\n";
         str = str + stringToString("gatewayHost", gatewayHost, indent) + "\n";
         str = str + indent + "clientHostDetermination = ";
@@ -495,13 +543,13 @@ public class MachineProfile extends AttributeSubject
     public void AddLaunchProfiles(LaunchProfile obj)
     {
         launchProfiles.addElement(new LaunchProfile(obj));
-        Select(17);
+        Select(19);
     }
 
     public void ClearLaunchProfiles()
     {
         launchProfiles.clear();
-        Select(17);
+        Select(19);
     }
 
     public void RemoveLaunchProfiles(int index)
@@ -509,7 +557,7 @@ public class MachineProfile extends AttributeSubject
         if(index >= 0 && index < launchProfiles.size())
         {
             launchProfiles.remove(index);
-            Select(17);
+            Select(19);
         }
     }
 
@@ -534,6 +582,8 @@ public class MachineProfile extends AttributeSubject
     private boolean shareOneBatchJob;
     private boolean sshPortSpecified;
     private int     sshPort;
+    private boolean sshCommandSpecified;
+    private Vector  sshCommand; // vector of String objects
     private boolean useGateway;
     private String  gatewayHost;
     private int     clientHostDetermination;

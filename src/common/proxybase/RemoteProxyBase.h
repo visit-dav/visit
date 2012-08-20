@@ -94,6 +94,10 @@ class RemoteProcess;
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Tue Jun  5 17:30:06 PDT 2012
+//    Change Create method so it takes a MachineProfile instead of a bunch
+//    of separate options.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -102,22 +106,15 @@ public:
     RemoteProxyBase(const std::string &componentName);
     virtual ~RemoteProxyBase();
 
-    void SetRemoteUserName(const std::string &rName);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
     void AddArgument(const std::string &arg);
     void AddProfileArguments(const MachineProfile &machine,
                              bool addParallelArgs);
 
-    virtual void Create(const std::string &hostName,
-                MachineProfile::ClientHostDetermination chd,
-                const std::string &clientHostName,
-                bool manualSSHPort,
-                int sshPort,
-                bool useTunneling,
-                bool useGateway,
-                const std::string &gatewayHost,
-                ConnectCallback *connectCallback = 0,
-                void *data = 0, bool createAsThoughLocal = false);
+    virtual void Create(const MachineProfile &profile, 
+                        ConnectCallback *connectCallback = 0, 
+                        void *connectCallbackData = 0,
+                        bool createAsThoughLocal = false);
     void Close();
     virtual void SendKeepAlive();
 
@@ -146,7 +143,6 @@ protected:
     QuitRPC              quitRPC;
     KeepAliveRPC         keepAliveRPC;
 
-    std::string          remoteUserName;
     int                  nWrite;
     int                  nRead;
 

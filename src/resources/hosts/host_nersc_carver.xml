@@ -2,7 +2,6 @@
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">"NERSC Carver"</Field>
     <Field name="host" type="string">carver.nersc.gov</Field>
-    <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string"></Field>
     <Field name="directory" type="string">/usr/common/graphics/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>

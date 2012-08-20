@@ -179,6 +179,35 @@ EngineProxy::~EngineProxy()
 // Method: EngineProxy::Create
 //
 // Purpose: 
+//   Create the engine.
+//
+// Arguments:
+//   profile             : The profile to use when launching the engine.
+//   connectCallback     : A callback function.
+//   connectCallbackData : Data for the callback function.
+//   createAsThoughLocal : Whether to create local arguments.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 15 11:21:21 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+EngineProxy::Create(const MachineProfile &profile, 
+    ConnectCallback *connectCallback, void *connectCallbackData,
+    bool createAsThoughLocal)
+{
+    RemoteProxyBase::Create(profile, 
+        connectCallback, connectCallbackData, createAsThoughLocal);
+    methods->SetRemoteProcess(component);
+}
+
+// ****************************************************************************
+// Method: EngineProxy::Connect
+//
+// Purpose: 
 //   This method is used to connect to an existing compute engine.
 //
 // Arguments:
@@ -575,30 +604,4 @@ EngineProxy::SendKeepAlive()
         if (component->GetWriteConnection(1)->DirectRead(buf, KEEPALIVE_SIZE) < 0)
             debug1 << "Error reading keep alive data from engine!!!!\n";
     }
-}
-
-void
-EngineProxy::Create(const std::string &hostName,
-            MachineProfile::ClientHostDetermination chd,
-            const std::string &clientHostName,
-            bool manualSSHPort,
-            int sshPort,
-            bool useTunneling,
-            bool useGateway,
-            const std::string &gatewayHost,
-            ConnectCallback *connectCallback,
-            void *data, bool createAsThoughLocal)
-{
-    RemoteProxyBase::Create(hostName,
-                            chd,
-                            clientHostName,
-                            manualSSHPort,
-                            sshPort,
-                            useTunneling,
-                            useGateway,
-                            gatewayHost,
-                            connectCallback,
-                            data,
-                            createAsThoughLocal);
-    methods->SetRemoteProcess(component);
 }

@@ -79,18 +79,12 @@ public:
 
     virtual std::string GetComponentName() const;
 
-    std::map<int,int> GetPortTunnelMap();
+    virtual void Create(const MachineProfile &profile, 
+                        ConnectCallback *connectCallback = 0, 
+                        void *connectCallbackData = 0,
+                        bool createAsThoughLocal = false);
 
-    virtual void Create(const std::string &hostName,
-                MachineProfile::ClientHostDetermination chd,
-                const std::string &clientHostName,
-                bool manualSSHPort,
-                int sshPort,
-                bool useTunneling,
-                bool useGateway,
-                const std::string &gatewayHost,
-                ConnectCallback *connectCallback = 0,
-                void *data = 0, bool createAsThoughLocal = false);
+    std::map<int,int> GetPortTunnelMap();
 
     LauncherMethods *GetLauncherMethods() { return methods; }
     LauncherState   *GetLauncherState() { return state; }
@@ -99,7 +93,7 @@ protected:
     virtual void SetupComponentRPCs();
 private:
     LauncherMethods *methods;
-    LauncherState *state;
+    LauncherState   *state;
 };
 
 #endif

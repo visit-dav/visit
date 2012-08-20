@@ -458,6 +458,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Tue Jun  5 16:09:54 PDT 2012
+//    Use simpler RemoteProcess::Open.
+//
 // ****************************************************************************
 
 void
@@ -503,16 +506,13 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
         //
         // Add any extra arguments to the viewer before opening it.
         //
-        for (int i = 0; i < argv.size(); ++i)
+        for (size_t i = 0; i < argv.size(); ++i)
             viewer->AddArgument(argv[i]);
 
         //
         // Open the viewer.
         //
-        viewer->Open("localhost",
-                     MachineProfile::MachineName, "", 
-                     false, 0, false, false, "",
-                     1, 1);
+        viewer->Open(MachineProfile::Default(), 1, 1);
 
         // Use viewer's connections for xfer.
         xfer->SetInputConnection(viewer->GetWriteConnection());
@@ -680,7 +680,6 @@ ViewerProxy::InitializePlugins(PluginManager::PluginCategory t, const char *plug
 void
 ViewerProxy::LoadPlugins()
 {
-    int i;
     int nPlots = state->GetNumPlotStateObjects();
     int nOperators = state->GetNumOperatorStateObjects();
     if (nPlots > 0 || nOperators > 0)
@@ -700,7 +699,7 @@ ViewerProxy::LoadPlugins()
     // by the plugin attributes
     //
     PluginManagerAttributes *pluginManagerAttributes = state->GetPluginManagerAttributes();
-    for (i=0; i<pluginManagerAttributes->GetId().size(); i++)
+    for (size_t i=0; i<pluginManagerAttributes->GetId().size(); i++)
     {
         if (! pluginManagerAttributes->GetEnabled()[i]) // not enabled
         {
@@ -756,7 +755,7 @@ ViewerProxy::LoadPlugins()
     // Initialize the plot attribute state objects.
     //
     nPlots = plotPlugins->GetNEnabledPlugins();
-    for (i = 0; i < nPlots; ++i)
+    for (int i = 0; i < nPlots; ++i)
     {
         CommonPlotPluginInfo *info =
             plotPlugins->GetCommonPluginInfo(plotPlugins->GetEnabledID(i));
@@ -771,7 +770,7 @@ ViewerProxy::LoadPlugins()
     // Initialize the operator attribute state objects.
     //
     nOperators = operatorPlugins->GetNEnabledPlugins();
-    for (i = 0; i < nOperators; ++i)
+    for (int i = 0; i < nOperators; ++i)
     {
         CommonOperatorPluginInfo *info = 
             operatorPlugins->GetCommonPluginInfo(operatorPlugins->GetEnabledID(i));
@@ -1023,10 +1022,10 @@ ViewerProxy::MethodRequestHasRequiredInformation() const
         }
         else
         {
-            int sCount = 0; 
-            int dCount = 0;
-            int iCount = 0;
-            for(int i = 0; i < proto.size(); ++i)
+            size_t sCount = 0; 
+            size_t dCount = 0;
+            size_t iCount = 0;
+            for(size_t i = 0; i < proto.size(); ++i)
             {
                 if(proto[i] == 's')
                     ++sCount;

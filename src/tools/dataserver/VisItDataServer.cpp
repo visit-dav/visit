@@ -43,6 +43,8 @@
 
 #include <Expression.h>
 #include <ExpressionList.h>
+#include <LaunchProfile.h>
+#include <MachineProfile.h>
 
 #include <avtColorTables.h>
 #include <avtDataObjectReader.h>
@@ -190,18 +192,36 @@ VisItDataServerPrivate::DebugEngine()
     engine.AddArgument("-xterm");
 }
 
+// ****************************************************************************
+// Method: VisItDataServerPrivate::Open
+//
+// Purpose: 
+//   Open the mdserver and the engine.
+//
+// Arguments:
+//   argc : The number of command line arguments to VisItInit.
+//   argv : The command line arguments for VisItInit.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 23 15:41:53 PDT 2012
+//
+// Modifications:
+//   Brad Whitlock, Thu Jun 14 13:07:16 PDT 2012
+//   I modified the interface so it uses MachineProfile.
+//
+// ****************************************************************************
+
 void
 VisItDataServerPrivate::Open(int argc, char *argv[])
 {
-    // Arguments to create proxies on localhost.
-    std::string                             hostName("localhost");
-    MachineProfile::ClientHostDetermination chd = MachineProfile::MachineName;
-    std::string                             clientHostName("localhost");
-    bool                                    manualSSHPort = false;
-    int                                     sshPort = 22;
-    bool                                    useTunneling = false;
-    bool                                    useGateway = false;
-    std::string                             gatewayHost;
+    // Profile to launch the engine in serial on localhost. A parallel
+    // launch would include more information in the MachineProfile and 
+    // would set the parallel options in the LaunchProfile.
+    MachineProfile localhost;
+    LaunchProfile  lp;
+    lp.SetProfileName("serial");
+    lp.SetParallel(false);
+    localhost.AddLaunchProfiles(lp);
 
     // Initialize
     VisItInit::SetComponentName("VisItDataServerPrivate");
@@ -218,27 +238,13 @@ VisItDataServerPrivate::Open(int argc, char *argv[])
     //
     // Create the mdserver
     //
-    mdserver.Create(hostName,
-                  chd,
-                  clientHostName,
-                  manualSSHPort,
-                  sshPort,
-                  useTunneling,
-                  useGateway,
-                  gatewayHost);
+    mdserver.Create(localhost);
     mdserver.GetMDServerMethods()->LoadPlugins();
 
     //
     // Create the engine
     //
-    engine.Create(hostName,
-                  chd,
-                  clientHostName,
-                  manualSSHPort,
-                  sshPort,
-                  useTunneling,
-                  useGateway,
-                  gatewayHost);
+    engine.Create(localhost);
 }
 
 void
