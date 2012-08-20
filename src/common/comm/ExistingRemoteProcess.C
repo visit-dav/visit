@@ -87,7 +87,7 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   Opens sockets and launches a remote process using ssh.
 //
 // Arguments:
-//   rHost    : The remote host to run on.
+//   profile  : The machine profile of the remote host to run on.
 //   numRead  : The number of read sockets to create to the remote process.
 //   numWrite : The number of write sockets to create to the remote process.
 //   createAsThoughLocal : Forces local process creation.
@@ -133,26 +133,23 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   Brad Whitlock, Fri Jan 13 15:13:12 PST 2012
 //   I updated the signature for CreateCommandLine.
 //
+//   Brad Whitlock, Tue Jun  5 15:54:12 PDT 2012
+//   Pass in MachineProfile.
+//
 // ****************************************************************************
 
 bool
-ExistingRemoteProcess::Open(const std::string &rHost,
-                            MachineProfile::ClientHostDetermination chd,
-                            const std::string &clientHostName,
-                            bool manualSSHPort,
-                            int sshPort, bool useTunneling,
-                            bool useGateway, const std::string &gatewayHost,
+ExistingRemoteProcess::Open(const MachineProfile &profile,
                             int numRead, int numWrite,
                             bool createAsThoughLocal)
 {
     // Start making the connections and start listening.
-    if(!StartMakingConnection(rHost, numRead, numWrite))
+    if(!StartMakingConnection(profile.GetHost(), numRead, numWrite))
         return false;
 
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
-    CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, useTunneling, numRead, numWrite);
+    CreateCommandLine(commandLine, profile, numRead, numWrite);
 
     debug5 << "ExistingRemoteProcess::Open: commandLine = {" << endl;
     for(size_t i = 0; i < commandLine.size(); ++i)
@@ -164,7 +161,7 @@ ExistingRemoteProcess::Open(const std::string &rHost,
     //
     if(connectCallback != NULL)
     {
-        (*connectCallback)(rHost, commandLine, connectCallbackData);
+        (*connectCallback)(profile.GetHost(), commandLine, connectCallbackData);
     }
 
     // Finish the connections.

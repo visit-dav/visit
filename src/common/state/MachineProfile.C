@@ -101,6 +101,8 @@ void MachineProfile::Init()
     shareOneBatchJob = false;
     sshPortSpecified = false;
     sshPort = 22;
+    sshCommandSpecified = false;
+    sshCommand.push_back("ssh");
     useGateway = false;
     clientHostDetermination = MachineName;
     tunnelSSH = false;
@@ -140,6 +142,8 @@ void MachineProfile::Copy(const MachineProfile &obj)
     shareOneBatchJob = obj.shareOneBatchJob;
     sshPortSpecified = obj.sshPortSpecified;
     sshPort = obj.sshPort;
+    sshCommandSpecified = obj.sshCommandSpecified;
+    sshCommand = obj.sshCommand;
     useGateway = obj.useGateway;
     gatewayHost = obj.gatewayHost;
     clientHostDetermination = obj.clientHostDetermination;
@@ -343,6 +347,8 @@ MachineProfile::operator == (const MachineProfile &obj) const
             (shareOneBatchJob == obj.shareOneBatchJob) &&
             (sshPortSpecified == obj.sshPortSpecified) &&
             (sshPort == obj.sshPort) &&
+            (sshCommandSpecified == obj.sshCommandSpecified) &&
+            (sshCommand == obj.sshCommand) &&
             (useGateway == obj.useGateway) &&
             (gatewayHost == obj.gatewayHost) &&
             (clientHostDetermination == obj.clientHostDetermination) &&
@@ -505,6 +511,8 @@ MachineProfile::SelectAll()
     Select(ID_shareOneBatchJob,        (void *)&shareOneBatchJob);
     Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     Select(ID_sshPort,                 (void *)&sshPort);
+    Select(ID_sshCommandSpecified,     (void *)&sshCommandSpecified);
+    Select(ID_sshCommand,              (void *)&sshCommand);
     Select(ID_useGateway,              (void *)&useGateway);
     Select(ID_gatewayHost,             (void *)&gatewayHost);
     Select(ID_clientHostDetermination, (void *)&clientHostDetermination);
@@ -571,6 +579,14 @@ MachineProfile::CreateSubAttributeGroup(int)
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
 //
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
+//   Brad Whitlock, Mon Aug 20 13:50:28 PDT 2012
+//   Always save the host and hostAliases because without them those fields can
+//   end up being populated by the local machine name. That can cause an
+//   unintended host profile match where the mdserver will fail to launch.
+//
 // ****************************************************************************
 
 bool
@@ -584,15 +600,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
     DataNode *node = new DataNode("MachineProfile");
 
     node->AddNode(new DataNode("hostNickname", hostNickname));
-
-    if(completeSave || IsSelected(ID_host))
-        node->AddNode(new DataNode("host", host));
+    node->AddNode(new DataNode("host", host));
 
     if(completeSave || IsSelected(ID_userName))
         node->AddNode(new DataNode("userName", userName));
 
-    if(completeSave || IsSelected(ID_hostAliases))
-        node->AddNode(new DataNode("hostAliases", hostAliases));
+    node->AddNode(new DataNode("hostAliases", hostAliases));
 
     if(completeSave || IsSelected(ID_directory))
         node->AddNode(new DataNode("directory", directory));
@@ -605,6 +618,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
 
     if(completeSave || IsSelected(ID_sshPort))
         node->AddNode(new DataNode("sshPort", sshPort));
+
+    if(completeSave || IsSelected(ID_sshCommandSpecified))
+        node->AddNode(new DataNode("sshCommandSpecified", sshCommandSpecified));
+
+    if(completeSave || IsSelected(ID_sshCommand))
+        node->AddNode(new DataNode("sshCommand", sshCommand));
 
     if(completeSave || IsSelected(ID_useGateway))
         node->AddNode(new DataNode("useGateway", useGateway));
@@ -665,6 +684,9 @@ MachineProfile::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
 //
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
 // ****************************************************************************
 
 void
@@ -695,6 +717,10 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetSshPortSpecified(node->AsBool());
     if((node = searchNode->GetNode("sshPort")) != 0)
         SetSshPort(node->AsInt());
+    if((node = searchNode->GetNode("sshCommandSpecified")) != 0)
+        SetSshCommandSpecified(node->AsBool());
+    if((node = searchNode->GetNode("sshCommand")) != 0)
+        SetSshCommand(node->AsStringVector());
     if((node = searchNode->GetNode("useGateway")) != 0)
         SetUseGateway(node->AsBool());
     if((node = searchNode->GetNode("gatewayHost")) != 0)
@@ -841,6 +867,20 @@ MachineProfile::SetSshPort(int sshPort_)
 {
     sshPort = sshPort_;
     Select(ID_sshPort, (void *)&sshPort);
+}
+
+void
+MachineProfile::SetSshCommandSpecified(bool sshCommandSpecified_)
+{
+    sshCommandSpecified = sshCommandSpecified_;
+    Select(ID_sshCommandSpecified, (void *)&sshCommandSpecified);
+}
+
+void
+MachineProfile::SetSshCommand(const stringVector &sshCommand_)
+{
+    sshCommand = sshCommand_;
+    Select(ID_sshCommand, (void *)&sshCommand);
 }
 
 void
@@ -1030,6 +1070,24 @@ MachineProfile::GetSshPort() const
 }
 
 bool
+MachineProfile::GetSshCommandSpecified() const
+{
+    return sshCommandSpecified;
+}
+
+const stringVector &
+MachineProfile::GetSshCommand() const
+{
+    return sshCommand;
+}
+
+stringVector &
+MachineProfile::GetSshCommand()
+{
+    return sshCommand;
+}
+
+bool
 MachineProfile::GetUseGateway() const
 {
     return useGateway;
@@ -1145,6 +1203,12 @@ void
 MachineProfile::SelectDirectory()
 {
     Select(ID_directory, (void *)&directory);
+}
+
+void
+MachineProfile::SelectSshCommand()
+{
+    Select(ID_sshCommand, (void *)&sshCommand);
 }
 
 void
@@ -1394,6 +1458,8 @@ MachineProfile::GetFieldName(int index) const
     case ID_shareOneBatchJob:        return "shareOneBatchJob";
     case ID_sshPortSpecified:        return "sshPortSpecified";
     case ID_sshPort:                 return "sshPort";
+    case ID_sshCommandSpecified:     return "sshCommandSpecified";
+    case ID_sshCommand:              return "sshCommand";
     case ID_useGateway:              return "useGateway";
     case ID_gatewayHost:             return "gatewayHost";
     case ID_clientHostDetermination: return "clientHostDetermination";
@@ -1437,6 +1503,8 @@ MachineProfile::GetFieldType(int index) const
     case ID_shareOneBatchJob:        return FieldType_bool;
     case ID_sshPortSpecified:        return FieldType_bool;
     case ID_sshPort:                 return FieldType_int;
+    case ID_sshCommandSpecified:     return FieldType_bool;
+    case ID_sshCommand:              return FieldType_stringVector;
     case ID_useGateway:              return FieldType_bool;
     case ID_gatewayHost:             return FieldType_string;
     case ID_clientHostDetermination: return FieldType_enum;
@@ -1480,6 +1548,8 @@ MachineProfile::GetFieldTypeName(int index) const
     case ID_shareOneBatchJob:        return "bool";
     case ID_sshPortSpecified:        return "bool";
     case ID_sshPort:                 return "int";
+    case ID_sshCommandSpecified:     return "bool";
+    case ID_sshCommand:              return "stringVector";
     case ID_useGateway:              return "bool";
     case ID_gatewayHost:             return "string";
     case ID_clientHostDetermination: return "enum";
@@ -1557,6 +1627,16 @@ MachineProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (sshPort == obj.sshPort);
         }
         break;
+    case ID_sshCommandSpecified:
+        {  // new scope
+        retval = (sshCommandSpecified == obj.sshCommandSpecified);
+        }
+        break;
+    case ID_sshCommand:
+        {  // new scope
+        retval = (sshCommand == obj.sshCommand);
+        }
+        break;
     case ID_useGateway:
         {  // new scope
         retval = (useGateway == obj.useGateway);
@@ -1632,6 +1712,59 @@ MachineProfile::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 std::string MachineProfile::defaultUserName("notset");
+
+// ****************************************************************************
+// Method: MachineProfile::UserName
+//
+// Purpose: 
+//   Return the userName. We have to use this instead of GetUserName since that
+//   is a macro definition on Windows that changes the name to GetUserNameA.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 15:56:10 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+const std::string &
+MachineProfile::UserName() const
+{
+    return userName;
+}
+
+// ****************************************************************************
+// Method: MachineProfile::Default
+//
+// Purpose: 
+//   Return a basic MachineProfile for the specified host.
+//
+// Arguments:
+//   host : The host where we want to launch.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MachineProfile
+MachineProfile::Default(const std::string &host, const std::string &user)
+{
+    MachineProfile profile;
+    std::string h("localhost");
+    if(!host.empty())
+        h = host;
+    profile.SetHost(h);
+    if(user.empty())
+        profile.SetUserName(defaultUserName);
+    else
+        profile.SetUserName(user);
+    profile.SetHostAliases(h);
+    profile.SetHostNickname(h);
+    profile.SetClientHostDetermination(MachineProfile::MachineName);
+    return profile;
+}
 
 // ****************************************************************************
 //  Method:  SplitHostPattern
@@ -1866,7 +1999,10 @@ MachineProfile::GetActiveLaunchProfile() const
 //
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
-//   
+//
+//   Brad Whitlock, Tue Jun  5 12:04:56 PDT 2012
+//   I added sshCommand, sshCommandSpecified.
+//
 // ****************************************************************************
 
 void
@@ -1890,6 +2026,10 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     if (sshPort != other.sshPort)
         Select(ID_sshPort,                 (void *)&sshPort);
+    if (sshCommandSpecified != other.sshCommandSpecified)
+        Select(ID_sshCommandSpecified,        (void *)&sshCommandSpecified);
+    if (sshCommand != other.sshCommand)
+        Select(ID_sshCommand,                 (void *)&sshCommand);
     if (useGateway != other.useGateway)
         Select(ID_useGateway,              (void *)&useGateway);
     if (gatewayHost != other.gatewayHost)
@@ -1925,5 +2065,55 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
             }
         }
     }
+}
+
+// ****************************************************************************
+// Method: MachineProfile::Print
+//
+// Purpose: 
+//   Print the MachineProfile to a stream.
+//
+// Arguments:
+//   out : The output stream.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MachineProfile::Print(ostream &out) const
+{
+    out << "hostNickName=" << GetHostNickname() << endl;
+    out << "host=" << GetHost() << endl;
+    out << "username=" << GetUserName() << endl;
+    out << "hostAliases=" << GetHostAliases() << endl;
+    out << "directory=" << GetDirectory() << endl;
+    out << "shareOneBatchJob=" << (GetShareOneBatchJob()?"true":"false") << endl;
+    out << "tunnelSSH=" << (GetTunnelSSH()?"true":"false") << endl;
+    out << "sshPortSpecified=" << (GetSshPortSpecified()?"true":"false") << endl;
+    out << "sshPort=" << GetSshPort() << endl;
+    out << "sshCommandSpecified=" << (GetSshCommandSpecified()?"true":"false") << endl;
+    out << "sshCommand={";
+    size_t len = GetSshCommand().size();
+    for(size_t i = 0; i < len; ++i)
+    {
+        out << GetSshCommand()[i];
+        if(i < len-1)
+            out << ", ";
+    }
+    out << "}" << endl;
+    out << "useGateway=" << (GetUseGateway()?"true":"false") << endl;
+    out << "gatewayHost=" << GetGatewayHost() << endl;
+    out << "clientHostDetermination=" << ClientHostDetermination_ToString(GetClientHostDetermination()) << endl;
+    out << "manualClientHostName=" << GetManualClientHostName() << endl;
+    out << "maximumNodesValid=" << (GetMaximumNodesValid()?"true":"false") << endl;
+    out << "maximumNodes=" << GetMaximumNodes() << endl;
+    out << "maximumProcessorsValid=" << (GetMaximumProcessorsValid()?"true":"false") << endl;
+    out << "maximumProcessors=" << GetMaximumProcessors() << endl;
+
+    // Don't print launch profiles...
 }
 

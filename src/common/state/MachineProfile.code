@@ -6,6 +6,65 @@ Declaration: static std::string defaultUserName;
 Definition:
 std::string MachineProfile::defaultUserName("notset");
 
+Function: UserName
+Declaration: const std::string &UserName() const;
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::UserName
+//
+// Purpose: 
+//   Return the userName. We have to use this instead of GetUserName since that
+//   is a macro definition on Windows that changes the name to GetUserNameA.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 15:56:10 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+const std::string &
+MachineProfile::UserName() const
+{
+    return userName;
+}
+
+Function: Default
+Declaration: static MachineProfile Default(const std::string &host=std::string(), const std::string &user=std::string());
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::Default
+//
+// Purpose: 
+//   Return a basic MachineProfile for the specified host.
+//
+// Arguments:
+//   host : The host where we want to launch.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+MachineProfile
+MachineProfile::Default(const std::string &host, const std::string &user)
+{
+    MachineProfile profile;
+    std::string h("localhost");
+    if(!host.empty())
+        h = host;
+    profile.SetHost(h);
+    if(user.empty())
+        profile.SetUserName(defaultUserName);
+    else
+        profile.SetUserName(user);
+    profile.SetHostAliases(h);
+    profile.SetHostNickname(h);
+    profile.SetClientHostDetermination(MachineProfile::MachineName);
+    return profile;
+}
+
 Function: SplitHostPattern
 Declaration: static std::vector<std::string> SplitHostPattern(const std::string &host);
 Definition:
@@ -266,6 +325,9 @@ Definition:
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
 //
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
 // ****************************************************************************
 
 void
@@ -296,6 +358,10 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetSshPortSpecified(node->AsBool());
     if((node = searchNode->GetNode("sshPort")) != 0)
         SetSshPort(node->AsInt());
+    if((node = searchNode->GetNode("sshCommandSpecified")) != 0)
+        SetSshCommandSpecified(node->AsBool());
+    if((node = searchNode->GetNode("sshCommand")) != 0)
+        SetSshCommand(node->AsStringVector());
     if((node = searchNode->GetNode("useGateway")) != 0)
         SetUseGateway(node->AsBool());
     if((node = searchNode->GetNode("gatewayHost")) != 0)
@@ -416,6 +482,14 @@ Definition:
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
 //
+//   Brad Whitlock, Tue Jun  5 12:04:03 PDT 2012
+//   Added sshCommand, sshCommandSpecified.
+//
+//   Brad Whitlock, Mon Aug 20 13:50:28 PDT 2012
+//   Always save the host and hostAliases because without them those fields can
+//   end up being populated by the local machine name. That can cause an
+//   unintended host profile match where the mdserver will fail to launch.
+//
 // ****************************************************************************
 
 bool
@@ -429,15 +503,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
     DataNode *node = new DataNode("MachineProfile");
 
     node->AddNode(new DataNode("hostNickname", hostNickname));
-
-    if(completeSave || IsSelected(ID_host))
-        node->AddNode(new DataNode("host", host));
+    node->AddNode(new DataNode("host", host));
 
     if(completeSave || IsSelected(ID_userName))
         node->AddNode(new DataNode("userName", userName));
 
-    if(completeSave || IsSelected(ID_hostAliases))
-        node->AddNode(new DataNode("hostAliases", hostAliases));
+    node->AddNode(new DataNode("hostAliases", hostAliases));
 
     if(completeSave || IsSelected(ID_directory))
         node->AddNode(new DataNode("directory", directory));
@@ -450,6 +521,12 @@ MachineProfile::CreateNode(DataNode *parentNode,
 
     if(completeSave || IsSelected(ID_sshPort))
         node->AddNode(new DataNode("sshPort", sshPort));
+
+    if(completeSave || IsSelected(ID_sshCommandSpecified))
+        node->AddNode(new DataNode("sshCommandSpecified", sshCommandSpecified));
+
+    if(completeSave || IsSelected(ID_sshCommand))
+        node->AddNode(new DataNode("sshCommand", sshCommand));
 
     if(completeSave || IsSelected(ID_useGateway))
         node->AddNode(new DataNode("useGateway", useGateway));
@@ -511,7 +588,10 @@ Definition:
 //
 //   Brad Whitlock, Thu Oct  6 11:20:21 PDT 2011
 //   Added maximumNodesValid, maximumNodes, maximumProcessorsValid, maximumProcessors
-//   
+//
+//   Brad Whitlock, Tue Jun  5 12:04:56 PDT 2012
+//   I added sshCommand, sshCommandSpecified.
+//
 // ****************************************************************************
 
 void
@@ -535,6 +615,10 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
         Select(ID_sshPortSpecified,        (void *)&sshPortSpecified);
     if (sshPort != other.sshPort)
         Select(ID_sshPort,                 (void *)&sshPort);
+    if (sshCommandSpecified != other.sshCommandSpecified)
+        Select(ID_sshCommandSpecified,        (void *)&sshCommandSpecified);
+    if (sshCommand != other.sshCommand)
+        Select(ID_sshCommand,                 (void *)&sshCommand);
     if (useGateway != other.useGateway)
         Select(ID_useGateway,              (void *)&useGateway);
     if (gatewayHost != other.gatewayHost)
@@ -624,5 +708,58 @@ MachineProfile::SetMaximumProcessors(int nprocs)
         if(changed)
             SelectLaunchProfiles();
     }
+}
+
+Function: Print
+Declaration: void Print(ostream &) const;
+Definition:
+// ****************************************************************************
+// Method: MachineProfile::Print
+//
+// Purpose: 
+//   Print the MachineProfile to a stream.
+//
+// Arguments:
+//   out : The output stream.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun  5 15:00:37 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+MachineProfile::Print(ostream &out) const
+{
+    out << "hostNickName=" << GetHostNickname() << endl;
+    out << "host=" << GetHost() << endl;
+    out << "username=" << GetUserName() << endl;
+    out << "hostAliases=" << GetHostAliases() << endl;
+    out << "directory=" << GetDirectory() << endl;
+    out << "shareOneBatchJob=" << (GetShareOneBatchJob()?"true":"false") << endl;
+    out << "tunnelSSH=" << (GetTunnelSSH()?"true":"false") << endl;
+    out << "sshPortSpecified=" << (GetSshPortSpecified()?"true":"false") << endl;
+    out << "sshPort=" << GetSshPort() << endl;
+    out << "sshCommandSpecified=" << (GetSshCommandSpecified()?"true":"false") << endl;
+    out << "sshCommand={";
+    size_t len = GetSshCommand().size();
+    for(size_t i = 0; i < len; ++i)
+    {
+        out << GetSshCommand()[i];
+        if(i < len-1)
+            out << ", ";
+    }
+    out << "}" << endl;
+    out << "useGateway=" << (GetUseGateway()?"true":"false") << endl;
+    out << "gatewayHost=" << GetGatewayHost() << endl;
+    out << "clientHostDetermination=" << ClientHostDetermination_ToString(GetClientHostDetermination()) << endl;
+    out << "manualClientHostName=" << GetManualClientHostName() << endl;
+    out << "maximumNodesValid=" << (GetMaximumNodesValid()?"true":"false") << endl;
+    out << "maximumNodes=" << GetMaximumNodes() << endl;
+    out << "maximumProcessorsValid=" << (GetMaximumProcessorsValid()?"true":"false") << endl;
+    out << "maximumProcessors=" << GetMaximumProcessors() << endl;
+
+    // Don't print launch profiles...
 }
 

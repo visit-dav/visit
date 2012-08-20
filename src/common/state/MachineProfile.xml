@@ -26,6 +26,12 @@
     <Field name="sshPort" label="SSH port" type="int">
       22
     </Field>
+    <Field name="sshCommandSpecified" label="SSH command specified" type="bool">
+      false
+    </Field>
+    <Field name="sshCommand" label="SSH command" type="stringVector">
+      ssh
+    </Field>
     <Field name="useGateway" label="Use gateway" type="bool">
       false
     </Field>
@@ -58,6 +64,10 @@
     </Field>
     <Function name="defaultUserName" user="true" member="true">
     </Function>
+    <Function name="UserName" user="true" member="true">
+    </Function>
+    <Function name="Default" user="true" member="true">
+    </Function>
     <Function name="SplitHostPattern" user="true" member="true">
     </Function>
     <Function name="ProfileMatchesHost" user="true" member="true">
@@ -81,6 +91,8 @@
     <Function name="SetMaximumNodes" user="false" member="true">
     </Function>
     <Function name="SetMaximumProcessors" user="false" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       Utility.h

@@ -264,259 +264,43 @@ ViewerServerManager::RealHostName(const char *hostName) const
 }
 
 // ****************************************************************************
-// Method: ViewerServerManager::AddProfileArguments
+// Method: ViewerServerManager::GetMachineProfile
 //
 // Purpose: 
 //   This method finds a host profile that matches the specified hostname
-//   and adds the profile arguments to the component proxy.
+//   and returns it.
 //
 // Arguments:
-//   component : The proxy to which we're adding arguments.
-//   host      : The host where the component will be run.
+//   host : The name of the host.
+//
+// Returns:    A MachineProfile object for the host.
+//
+// Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue May 6 14:00:21 PST 2003
+// Creation:   Tue Jun  5 16:57:10 PDT 2012
 //
 // Modifications:
-//   Eric Brugger, Wed Dec  3 08:27:47 PST 2003
-//   I removed the default timeout passed to the mdserver.
-//
-//   Brad Whitlock, Thu Aug 5 10:28:33 PDT 2004
-//   I made it call RemoteProxyBase::AddProfileArguments.
-//
-//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//   Split HostProfile int MachineProfile and LaunchProfile.
-//
-// ****************************************************************************
-
-void
-ViewerServerManager::AddProfileArguments(RemoteProxyBase *component,
-    const std::string &host)
-{
-    //
-    // Check for a host profile for the hostName. If one exists, add
-    // any arguments to the command line for the engine proxy.
-    //
-    const MachineProfile *profile =
-         clientAtts->GetMachineProfileForHost(host);
-    if(profile != 0)
-        component->AddProfileArguments(*profile, false);
-}
-
-// ****************************************************************************
-// Method: ViewerServerManager::GetClientMachineNameOptions
-//
-// Purpose: 
-//   This method finds a host profile that matches the specified hostname
-//   and returns the client host name options.
-//
-// Arguments:
-//   host          : The host where the component will be run.
-//   chd           : The type of client host name determination to use.
-//   clientHostName: The manual host name, if manual determination is requested
-//
-// Programmer: Jeremy Meredith
-// Creation:   October  9, 2003
-//
-// Modifications:
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.
 //   
 // ****************************************************************************
 
-void
-ViewerServerManager::GetClientMachineNameOptions(const std::string &host,
-                                 MachineProfile::ClientHostDetermination &chd,
-                                 std::string &clientHostName)
+MachineProfile
+ViewerServerManager::GetMachineProfile(const std::string &host) const
 {
-    //
-    // Check for a host profile for the hostName. If one exists, 
-    // return the client host name options.
-    //
     const MachineProfile *profile =
          clientAtts->GetMachineProfileForHost(host);
-    if(profile != 0)
-    {
-        chd = profile->GetClientHostDetermination();
-        clientHostName = profile->GetManualClientHostName();
-    }
+    MachineProfile p2;
+    if(profile != NULL)
+        p2 = *profile;
     else
-    {
-        chd = MachineProfile::MachineName;
-        clientHostName = "";
-    }
-}
+        p2 = MachineProfile::Default(host);
 
-// ****************************************************************************
-// Method: ViewerServerManager::GetClientSSHPortOptions
-//
-// Purpose: 
-//   This method finds a host profile that matches the specified hostname
-//   and returns the ssh port options.
-//
-// Arguments:
-//   host          : The host where the component will be run.
-//   manualSSHPort : True if a manual ssh port was specified
-//   sshPort       : The manual ssh port
-//
-// Programmer: Jeremy Meredith
-// Creation:   October  9, 2003
-//
-// Modifications:
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.
-//   
-// ****************************************************************************
-
-void
-ViewerServerManager::GetSSHPortOptions(const std::string &host,
-                                       bool &manualSSHPort,
-                                       int &sshPort)
-{
-    //
-    // Check for a host profile for the hostName. If one exists, 
-    // return the ssh port options.
-    //
-    const MachineProfile *profile =
-         clientAtts->GetMachineProfileForHost(host);
-    if(profile != 0)
-    {
-        manualSSHPort = profile->GetSshPortSpecified();
-        sshPort = profile->GetSshPort();
-    }
-    else
-    {
-        manualSSHPort = false;
-        sshPort = -1;
-    }
-}
-
-// ****************************************************************************
-// Method: ViewerServerManager::GetSSHTunnelOptions
-//
-// Purpose: 
-//   This method finds a host profile that matches the specified hostname
-//   and returns the ssh tunneling options.
-//
-// Arguments:
-//   host          : The host where the component will be run.
-//   tunnelSSH     : True if we need to attempt tunneling
-//
-// Programmer: Jeremy Meredith
-// Creation:   May 22, 2007
-//
-// Modifications:
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
-//   
-//    Jeremy Meredith, Wed Dec  3 16:48:35 EST 2008
-//    Allowed commandline override forcing-on of SSH tunneling.
-//
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.
-//
-// ****************************************************************************
-
-void
-ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
-                                         bool &tunnelSSH)
-{
-    //
-    // Check for a host profile for the hostName. If one exists, 
-    // return the ssh tunneling options.
-    //
     if (sshTunnelingForcedOn)
     {
-        tunnelSSH = true;
+        p2.SetTunnelSSH(true);
     }
-    else
-    {
-        const MachineProfile *profile =
-            clientAtts->GetMachineProfileForHost(host);
-        if(profile != 0)
-        {
-            tunnelSSH = profile->GetTunnelSSH();
-        }
-        else
-        {
-            tunnelSSH = false;
-        }
-    }
-}
 
-// ****************************************************************************
-// Method: ViewerServerManager::GetUseGatewayOptions
-//
-// Purpose: 
-//   This method finds a host profile that matches the specified hostname
-//   and returns the gateway options.
-//
-// Arguments:
-//   host          : The host where the component will be run.
-//   useGateway    : True if we need to use a gateway.
-//   gatewayHost   : The name of the gateway host.
-//
-// Programmer: Eric Brugger
-// Creation:   May 2, 2011
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-ViewerServerManager::GetUseGatewayOptions(const std::string &host,
-                                          bool &useGateway,
-                                          std::string &gatewayHost)
-{
-    const MachineProfile *profile =
-        clientAtts->GetMachineProfileForHost(host);
-    if(profile != 0)
-    {
-        useGateway = profile->GetUseGateway();
-        gatewayHost = profile->GetGatewayHost();
-    }
-    else
-    {
-        useGateway = false;
-        gatewayHost = "";
-    }
-}
-
-// ****************************************************************************
-//  Method: ViewerServerManager::ShouldShareBatchJob
-//
-//  Purpose: 
-//    This method finds a host profile that matches the specified hostname
-//    and checks if the MDServer and Engine should share a single batch
-//    job.  (If so, then the launcher should start in batch.)
-//
-//  Arguments:
-//    host      : The host where the component will be run.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   June 17, 2003
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//    Split HostProfile int MachineProfile and LaunchProfile.
-//   
-// ****************************************************************************
-
-bool
-ViewerServerManager::ShouldShareBatchJob(const std::string &host)
-{
-    //
-    // Check for a host profile for the hostName. If one exists, check it.
-    //
-    const MachineProfile *profile =
-         clientAtts->GetMachineProfileForHost(host);
-    if (profile != 0)
-    {
-        return profile->GetShareOneBatchJob();
-    }
-    else
-    {
-        return false;
-    }
+    return p2;
 }
 
 // ****************************************************************************
@@ -803,6 +587,7 @@ ViewerServerManager::StartLauncher(const std::string &host,
         {
             shouldShareBatchJob = mp->GetShareOneBatchJob();
             profile = *mp;
+            profile.SetHost(host);
         }
 
         if (shouldShareBatchJob)
@@ -814,6 +599,16 @@ ViewerServerManager::StartLauncher(const std::string &host,
 
             if (! chooser->SelectProfile(clientAtts, host, false, profile))
                 return;
+        }
+
+        if(HostIsLocalHost(host))
+        {
+            // We don't set up tunnels on localhost.
+            profile.SetTunnelSSH(false);
+
+            // We don't use a gateway on localhost.
+            profile.SetUseGateway(false);
+            profile.SetGatewayHost("");
         }
 
         // Create a new launcher proxy and add the right arguments to it.
@@ -840,30 +635,10 @@ ViewerServerManager::StartLauncher(const std::string &host,
                 dialog->setIgnoreHide(true);
             }
 
-            // Get the client machine name options
-            MachineProfile::ClientHostDetermination chd;
-            std::string clientHostName;
-            GetClientMachineNameOptions(host, chd, clientHostName);
-
-            // Get the ssh port options
-            bool manualSSHPort;
-            int  sshPort;
-            GetSSHPortOptions(host, manualSSHPort, sshPort);
-
-            bool useTunneling;
-            GetSSHTunnelOptions(host, useTunneling);
-
-            // Get the gateway options
-            bool useGateway;
-            std::string gatewayHost;
-            GetUseGatewayOptions(host, useGateway, gatewayHost);
-
             //
             // Launch the VisIt component launcher on the specified host.
             //
-            newLauncher->Create(host, chd, clientHostName,
-                                manualSSHPort, sshPort, useTunneling,
-                                useGateway, gatewayHost);
+            newLauncher->Create(profile);
             launchers[host].launcher = newLauncher;
 
             // Create a socket notifier for the launcher's data socket so

@@ -135,20 +135,10 @@ protected:
         SetupConnectionProgressDialog(RemoteProxyBase *component,
                                       ViewerConnectionProgressDialog *dialog);
 
-    static bool ShouldShareBatchJob(const std::string &host);
+    MachineProfile GetMachineProfile(const std::string &host) const;
+
     static void AddArguments(RemoteProxyBase *component,
                       const stringVector &args);
-    static void AddProfileArguments(RemoteProxyBase *component,
-                      const std::string &host);
-
-    static void GetClientMachineNameOptions(const std::string &host,
-                                     MachineProfile::ClientHostDetermination &chd,
-                                     std::string &clientHostName);
-    static void GetSSHPortOptions(const std::string &host,
-                                  bool &manualSSHPort, int &sshPort);
-    static void GetSSHTunnelOptions(const std::string &host, bool &tunnelSSH);
-    static void GetUseGatewayOptions(const std::string &host, bool &useGateway,
-                                     std::string &gatewayHost);
 
     static void OpenWithLauncher(const std::string &host,
                                  const stringVector &args, 

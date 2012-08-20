@@ -2,7 +2,6 @@
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">"MCS Login"</Field>
     <Field name="host" type="string">"login1.mcs.anl.gov"</Field>
-    <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">""</Field>
     <Field name="directory" type="string">"/soft/apps/packages/visit"</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>

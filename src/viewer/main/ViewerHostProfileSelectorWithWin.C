@@ -342,6 +342,7 @@ ViewerHostProfileSelectorWithWin::SelectProfile(
 
             if (rejected)
             {
+                debug2 << "   Cancel engine selection." << endl;
                 return false;
             }
 

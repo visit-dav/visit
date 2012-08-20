@@ -230,6 +230,9 @@ ViewerClientConnection::~ViewerClientConnection()
 //   I added the ability to use a gateway machine when connecting to a
 //   remote host.
 //
+//   Brad Whitlock, Tue Jun  5 16:35:01 PDT 2012
+//   Pass MachineProfile::Default output to RemoteProcess.
+//
 // ****************************************************************************
 
 void
@@ -283,8 +286,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
 
     // Try opening the client.
     debug1 << mName << "Opening client connection." << endl;
-    remoteProcess->Open("localhost", MachineProfile::MachineName, "",
-                        false, 0, false, false, "", 1, 1);
+    remoteProcess->Open(MachineProfile::Default(), 1, 1);
 
     debug1 << mName << "Successfully opened client connection." << endl;
 

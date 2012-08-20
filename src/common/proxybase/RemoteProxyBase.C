@@ -64,7 +64,7 @@
 
 RemoteProxyBase::RemoteProxyBase(const std::string &compName) :
     componentName(compName), xfer(), quitRPC(), keepAliveRPC(),
-    remoteUserName(), argv()
+    argv()
 {
     component = 0;
     nWrite = nRead = 1;
@@ -98,7 +98,8 @@ RemoteProxyBase::~RemoteProxyBase()
 //   Creates the remote process and hooks up RPCs so that it can be used.
 //
 // Arguments:
-//   hostName        : The host where the proxy should be created.
+//   profile         : The machine profile of the host where the proxy should 
+//                     be created.
 //   connectCallback : A callback that can be used to launch the component.
 //   data            : Data to be used with the connect callback.
 //
@@ -129,18 +130,15 @@ RemoteProxyBase::~RemoteProxyBase()
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Tue Jun  5 15:57:00 PDT 2012
+//    Pass in the MachineProfile.
+//
 // ****************************************************************************
 
 void
-RemoteProxyBase::Create(const std::string &hostName,
-                        MachineProfile::ClientHostDetermination chd,
-                        const std::string &clientHostName,
-                        bool manualSSHPort,
-                        int sshPort,
-                        bool useTunneling,
-                        bool useGateway,
-                        const std::string &gatewayHost,
-                        ConnectCallback *connectCallback, void *data,
+RemoteProxyBase::Create(const MachineProfile &profile,
+                        ConnectCallback *connectCallback,
+                        void *connectCallbackData,
                         bool createAsThoughLocal)
 {
     // Create a remote process object for the remote component.
@@ -153,7 +151,7 @@ RemoteProxyBase::Create(const std::string &hostName,
         ExistingRemoteProcess *p = 
             new ExistingRemoteProcess(GetVisItString());
         p->SetConnectCallback(connectCallback);
-        p->SetConnectCallbackData(data);
+        p->SetConnectCallbackData(connectCallbackData);
         component = p;
     }
 
@@ -169,10 +167,7 @@ RemoteProxyBase::Create(const std::string &hostName,
     //
     // Open the remote component.
     //
-    component->Open(hostName, chd, clientHostName,
-                    manualSSHPort, sshPort, useTunneling,
-                    useGateway, gatewayHost,
-                    nRead, nWrite, createAsThoughLocal);
+    component->Open(profile, nRead, nWrite, createAsThoughLocal);
 
     //
     // Hook up the sockets to the xfer object.
@@ -288,28 +283,6 @@ RemoteProxyBase::SendKeepAlive()
 }
 
 // ****************************************************************************
-// Method: RemoteProxyBase::SetRemoteUserName
-//
-// Purpose: 
-//   Sets the username to use on the remote machine.
-//
-// Arguments:
-//   rName : The remote user name.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri May 2 14:59:26 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-RemoteProxyBase::SetRemoteUserName(const std::string &rName)
-{
-    remoteUserName = rName;
-}
-
-// ****************************************************************************
 // Method: RemoteProxyBase::SetProgressCallback
 //
 // Purpose: 
@@ -421,14 +394,6 @@ void
 RemoteProxyBase::AddProfileArguments(const MachineProfile &machine,
                                      bool addParallelArgs)
 {
-    //
-    // Set the user's login name.
-    //
-#if defined(_WIN32) && defined(GetUserName)
-#undef GetUserName
-#endif
-    SetRemoteUserName(machine.GetUserName());
-
     // Add the directory arugment
     if (machine.GetDirectory() != "")
     {
@@ -704,12 +669,6 @@ RemoteProxyBase::GetVisItString() const
 void
 RemoteProxyBase::AddExtraArguments()
 {
-    //
-    // Set the remote user name.
-    //
-    if(remoteUserName.size() > 0)
-        component->SetRemoteUserName(remoteUserName);
-
     //
     // Add any extra arguments to the component before opening it.
     //

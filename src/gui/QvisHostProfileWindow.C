@@ -208,6 +208,9 @@ QvisHostProfileWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Oct  6 10:55:59 PDT 2011
 //   I added max nodes and max processors.
 //
+//   Brad Whitlock, Wed Aug 15 13:58:14 PDT 2012
+//   I added ssh command.
+//
 // ****************************************************************************
 
 QWidget *
@@ -370,8 +373,18 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cLayout->addWidget(clientHostName, cRow, 2, 1,2);
     cRow++;
 
+    sshCommand = new QLineEdit(connectionGroup);
+    sshCommandCheckBox = new QCheckBox(tr("SSH command"), connectionGroup);
+    connect(sshCommand, SIGNAL(textChanged(const QString &)),
+            this, SLOT(sshCommandChanged(const QString &)));
+    connect(sshCommandCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSSHCommand(bool)));
+    cLayout->addWidget(sshCommandCheckBox, cRow, 0, 1, 2);
+    cLayout->addWidget(sshCommand, cRow, 2, 1, 2);
+    cRow++;
+
     sshPort = new QLineEdit(connectionGroup);
-    sshPortCheckBox = new QCheckBox(tr("Specify SSH port"), connectionGroup);
+    sshPortCheckBox = new QCheckBox(tr("SSH port"), connectionGroup);
     connect(sshPort, SIGNAL(textChanged(const QString &)),
             this, SLOT(sshPortChanged(const QString &)));
     connect(sshPortCheckBox, SIGNAL(toggled(bool)),
@@ -996,6 +1009,9 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Thu Oct  6 12:08:27 PDT 2011
 //   I added max node/processor widgets.
 //
+//   Brad Whitlock, Wed Aug 15 13:58:46 PDT 2012
+//   I added ssh command.
+//
 // ****************************************************************************
 
 void
@@ -1007,6 +1023,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
     userName->blockSignals(true);
     clientHostNameMethod->blockSignals(true);
     clientHostName->blockSignals(true);
+    sshCommandCheckBox->blockSignals(true);
+    sshCommand->blockSignals(true);
     sshPortCheckBox->blockSignals(true);
     sshPort->blockSignals(true);
     useGatewayCheckBox->blockSignals(true);
@@ -1030,6 +1048,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
         userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         clientHostNameMethod->button(0)->setChecked(true);
         clientHostName->setText("");
+        sshCommandCheckBox->setChecked(false);
+        sshCommand->setText("");
         sshPortCheckBox->setChecked(false);
         sshPort->setText("");
         useGatewayCheckBox->setChecked(false);
@@ -1060,10 +1080,10 @@ QvisHostProfileWindow::UpdateMachineProfile()
         hostAliases->setCursorPosition(0);
         hostNickname->setText(mp.GetHostNickname().c_str());
         hostNickname->setCursorPosition(0);
-        if(mp.GetUserName() == "notset")
+        if(mp.UserName() == "notset")
             userName->setText(GetViewerProxy()->GetLocalUserName().c_str());
         else
-            userName->setText(mp.GetUserName().c_str());
+            userName->setText(mp.UserName().c_str());
         switch (mp.GetClientHostDetermination())
         {
           case MachineProfile::MachineName:
@@ -1077,10 +1097,19 @@ QvisHostProfileWindow::UpdateMachineProfile()
             break;
         }
         clientHostName->setText(mp.GetManualClientHostName().c_str());
+
+        sshCommandCheckBox->setChecked(mp.GetSshCommandSpecified());
+        QString sshcmd;
+        for(size_t i = 0; i < mp.GetSshCommand().size(); ++i)
+        {
+            sshcmd += QString(mp.GetSshCommand()[i].c_str());
+            if(i < mp.GetSshCommand().size()-1)
+                sshcmd += QString(" ");
+        }
+        sshCommand->setText(sshcmd);
         sshPortCheckBox->setChecked(mp.GetSshPortSpecified());
-        char portStr[256];
-        SNPRINTF(portStr, 256, "%d", mp.GetSshPort());
-        sshPort->setText(portStr);
+        sshPort->setText(QString().setNum(mp.GetSshPort()));
+
         useGatewayCheckBox->setChecked(mp.GetUseGateway());
         gatewayHost->setText(mp.GetGatewayHost().c_str());
         tunnelSSH->setChecked(mp.GetTunnelSSH());
@@ -1136,6 +1165,8 @@ QvisHostProfileWindow::UpdateMachineProfile()
     userName->blockSignals(false);
     clientHostNameMethod->blockSignals(false);
     clientHostName->blockSignals(false);
+    sshCommandCheckBox->blockSignals(false);
+    sshCommand->blockSignals(false);
     sshPortCheckBox->blockSignals(false);
     sshPort->blockSignals(false);
     useGatewayCheckBox->blockSignals(false);
@@ -1494,12 +1525,14 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Brad Whitlock, Thu Dec  1 11:46:54 PST 2011
 //    Update widget sensitivity based on whether we're sharing 1 batch job.
 //
+//    Brad Whitlock, Wed Aug 15 14:11:06 PDT 2012
+//    Added sshCommand.
+//
 // ****************************************************************************
 
 void
 QvisHostProfileWindow::UpdateWindowSensitivity()
 {
-    HostProfileList *profiles = (HostProfileList *)subject;
     bool hostEnabled = (currentMachine != NULL);
     bool launchEnabled = (currentLaunch != NULL);
     bool parEnabled = launchEnabled ? (currentLaunch->GetParallel()) : false;
@@ -1537,6 +1570,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
                                currentMachine->GetTunnelSSH() == false &&
                                currentMachine->GetClientHostDetermination() ==
                                               MachineProfile::ManuallySpecified);
+    sshCommand->setEnabled(hostEnabled && currentMachine->GetSshCommandSpecified());
     sshPort->setEnabled(hostEnabled && currentMachine->GetSshPortSpecified());
     gatewayHost->setEnabled(hostEnabled && currentMachine->GetUseGateway());
 #ifdef SHARE_BATCH_JOB_HOST_ISSUES
@@ -1700,6 +1734,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
 //   I added the ability to specify a gateway machine to use to get to the
 //   remote host.
 //
+//   Brad Whitlock, Wed Aug 15 14:11:34 PDT 2012
+//   Add ssh command.
+//
 // ****************************************************************************
 
 bool
@@ -1772,7 +1809,7 @@ QvisHostProfileWindow::GetCurrentValues()
         {
             needNotify = true;
             msg = tr("Username cannot be empty, reverting to \"%1\".").
-                  arg(currentMachine->GetUserName().c_str());
+                  arg(currentMachine->UserName().c_str());
             Message(msg);
         }
     }
@@ -1978,6 +2015,21 @@ QvisHostProfileWindow::GetCurrentValues()
             needNotify = true;
 
         currentMachine->SetManualClientHostName(newClientHostName);
+    }
+
+    // Do the ssh command
+    if (currentMachine)
+    {
+        temp = sshCommand->text();
+
+        stringVector newCommand;
+        QStringList cmd(temp.split(' '));
+        for(int i = 0; i < cmd.size(); ++i)
+            newCommand.push_back(cmd[i].toStdString());
+        if (currentMachine->GetSshCommand() != newCommand)
+            needNotify = true;
+
+        currentMachine->SetSshCommand(newCommand);
     }
 
     // Do the ssh port
@@ -3213,6 +3265,66 @@ QvisHostProfileWindow::sshPortChanged(const QString &portStr)
     int port = atoi(portStr.toStdString().c_str());
 
     currentMachine->SetSshPort(port);
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::toggleSSHCommand
+//
+//  Purpose:
+//    Change the flag to use the specified ssh command for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    state      true to use the specified command, false to use the default
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Aug 15 14:15:53 PDT 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleSSHCommand(bool state)
+{
+    if (currentMachine == NULL)
+        return;
+
+    currentMachine->SetSshCommandSpecified(state);
+    UpdateWindowSensitivity();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisHostProfileWindow::sshCommandChanged
+//
+//  Purpose:
+//    Change the remote ssh command for all profiles with the
+//    same remote host name based on a changed widget value.
+//
+//  Arguments:
+//    command : The string indicating the ssh command.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Aug 15 14:16:42 PDT 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::sshCommandChanged(const QString &s)
+{
+    if (currentMachine == NULL)
+        return;
+
+    stringVector newCommand;
+    QStringList cmd(s.split(' '));
+    for(int i = 0; i < cmd.size(); ++i)
+        newCommand.push_back(cmd[i].toStdString());
+
+    currentMachine->SetSshCommand(newCommand);
 }
 
 // ****************************************************************************

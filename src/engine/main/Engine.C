@@ -1246,6 +1246,9 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
 //
+//    Brad Whitlock, Tue Jun  5 17:20:36 PDT 2012
+//    Pass default machine profile to Open.
+//
 // ****************************************************************************
 
 bool
@@ -1265,14 +1268,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
             viewer->AddArgument("-viewer");
             for(size_t j = 0; j < viewerArgs.size(); ++j)
                 viewer->AddArgument(viewerArgs[j]);
-            viewer->Open("localhost",              // host
-                         MachineProfile::MachineName, // client host determination
-                         "",                       // client host name
-                         false,                    // manual SSH port
-                         0,                        // ssh port
-                         false,                    // ssh tunnelling
-                         false,                    // use gateway
-                         "",                       // gateway host name
+            viewer->Open(MachineProfile::Default(),// default machine profile
                          1,                        // num read sockets
                          simulationPluginsEnabled ? 3 : 2); // num write sockets
         }

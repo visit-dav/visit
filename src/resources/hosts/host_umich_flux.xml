@@ -2,7 +2,6 @@
 <Object name="MachineProfile">
     <Field name="hostNickname" type="string">flux-login</Field>
     <Field name="host" type="string">flux-login.engin.umich.edu</Field>
-    <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">"nyx#### flux-login#"</Field>
     <Field name="directory" type="string">/home/software/rhel6/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>

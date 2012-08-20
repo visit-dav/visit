@@ -486,7 +486,10 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    I added a dialog argument and renamed the method. I changed the code so 
 //    we launch the engine directly when the mdserver and the engine have to
 //    share the same batch job.
-//    
+//
+//    Brad Whitlock, Tue Jun  5 17:11:18 PDT 2012
+//    Pass MachineProfile down into Create.
+//
 // ****************************************************************************
 
 bool
@@ -585,28 +588,21 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
     bool rethrowCancel = false;
     TRY
     {
-        // Get the client machine name options
-        MachineProfile::ClientHostDetermination chd;
-        string clientHostName;
-        GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
-
-        // Get the ssh port options
-        bool manualSSHPort;
-        int  sshPort;
-        GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
-
         // We don't set up tunnels when launching an engine, just the VCL
-        bool useTunneling = false;
+        newEngine.profile.SetTunnelSSH(false);
 
         // We don't use a gateway when launching an engine, just the VCL
-        bool useGateway = false;
-        string gatewayHost = "";
+        newEngine.profile.SetUseGateway(false);
+        newEngine.profile.SetGatewayHost(std::string());
 
         //
         // Launch the engine.
         //
         TRY
         {
+            // Be sure that the hostname is right in the profile.
+            newEngine.profile.SetHost(ek.HostName());
+
             if (HostIsLocalHost(ek.HostName()))
             {
                 if(reverseLaunch)
@@ -617,13 +613,11 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                 else
                 {
                     debug1 << mName << "Launching a local engine" << endl;
-                    newEngine.proxy->Create("localhost", chd, clientHostName,
-                                            manualSSHPort, sshPort,
-                                            useTunneling,
-                                            useGateway, gatewayHost);
+                    newEngine.profile.SetHost("localhost");
+                    newEngine.proxy->Create(newEngine.profile);
                 }
             }
-            else if(ShouldShareBatchJob(ek.HostName()))
+            else if(newEngine.profile.GetShareOneBatchJob())
             {
 #ifdef VISIT_SUPPORTS_WINDOWS_HPC
                 bool launchWindowsHPC = false;
@@ -646,10 +640,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                      // Launch the engine directly through the job launcher API.
                      debug1 << mName << "Launching an engine through Windows HPC launcher" << endl;
                      rethrowCancel = true;
-                     newEngine.proxy->Create(ek.HostName(), chd, clientHostName,
-                                             manualSSHPort, sshPort,
-                                             useTunneling,
-                                             useGateway, gatewayHost,
+                     newEngine.proxy->Create(newEngine.profile,
                                              ViewerSubmitParallelEngineToWindowsHPC, (void*)&newEngine.profile,
                                              true);
                 }
@@ -658,11 +649,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                 {
                      debug1 << mName << "Launching an engine directly" << endl;
 
-                     newEngine.proxy->Create(ek.HostName(), chd, clientHostName,
-                                             manualSSHPort, sshPort,
-                                             useTunneling,
-                                             useGateway, gatewayHost,
-                                             NULL, NULL, false);
+                     newEngine.proxy->Create(newEngine.profile, NULL, NULL, false);
                 }
             }
             else
@@ -670,10 +657,7 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
                 debug1 << mName << "Launching an engine with the launcher" << endl;
 
                 // Use VisIt's launcher to start the remote engine.
-                newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
-                                  manualSSHPort, sshPort, useTunneling,
-                                  useGateway, gatewayHost,
-                                  OpenWithLauncher, (void *)dialog, true);
+                newEngine.proxy->Create(newEngine.profile, OpenWithLauncher, (void *)dialog, true);
             }
 
             debug1 << mName << "Send keep alive and engine properties rpc" << endl;
@@ -860,6 +844,9 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
 //    Brad Whitlock, Mon Oct 10 12:32:22 PDT 2011
 //    Get the engine properties.
 //
+//    Brad Whitlock, Tue Jun  5 17:11:02 PDT 2012
+//    Use profile to launch.
+//
 // ****************************************************************************
 
 bool
@@ -916,24 +903,16 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     //
     TRY
     {
-        // Get the client machine name options
-        MachineProfile::ClientHostDetermination chd;
-        string clientHostName;
-        GetClientMachineNameOptions(ek.HostName(), chd, clientHostName);
-
-        // Get the ssh port options
-        bool manualSSHPort;
-        int  sshPort;
-        GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
+        MachineProfile profile = GetMachineProfile(ek.HostName());
 
         // We don't set up tunnels when connecting to a simulation,
         // just when launching the VCL
-        bool useTunneling = false;
+        profile.SetTunnelSSH(false);
 
         // We don't use a gateway when connecting to a simulation,
         // just when launching the VCL
-        bool useGateway = false;
-        string gatewayHost = "";
+        profile.SetUseGateway(false);
+        profile.SetGatewayHost("");
 
         //
         // Launch the engine.
@@ -949,15 +928,12 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.p = simPort;
         simData.k = simSecurityKey;
         simData.d = CreateConnectionProgressDialog(ek.HostName());
+        simData.tunnel = profile.GetTunnelSSH();
         SetupConnectionProgressDialog(newEngine.proxy, simData.d);
 
-        GetSSHTunnelOptions(ek.HostName(), simData.tunnel);
-
-        newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
-                          manualSSHPort, sshPort, useTunneling,
-                          useGateway, gatewayHost,
-                          SimConnectThroughLauncher, (void *)&simData,
-                          true);
+        newEngine.proxy->Create(profile,
+                                SimConnectThroughLauncher, (void *)&simData,
+                                true);
 
         newEngine.properties = newEngine.proxy->GetEngineMethods()->GetEngineProperties();
 

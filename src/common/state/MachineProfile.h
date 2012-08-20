@@ -99,6 +99,7 @@ public:
     void SelectHostAliases();
     void SelectHostNickname();
     void SelectDirectory();
+    void SelectSshCommand();
     void SelectGatewayHost();
     void SelectManualClientHostName();
     void SelectLaunchProfiles();
@@ -112,6 +113,8 @@ public:
     void SetShareOneBatchJob(bool shareOneBatchJob_);
     void SetSshPortSpecified(bool sshPortSpecified_);
     void SetSshPort(int sshPort_);
+    void SetSshCommandSpecified(bool sshCommandSpecified_);
+    void SetSshCommand(const stringVector &sshCommand_);
     void SetUseGateway(bool useGateway_);
     void SetGatewayHost(const std::string &gatewayHost_);
     void SetClientHostDetermination(ClientHostDetermination clientHostDetermination_);
@@ -124,33 +127,36 @@ public:
     void SetActiveProfile(int activeProfile_);
 
     // Property getting methods
-    const std::string &GetHost() const;
-          std::string &GetHost();
-    const std::string &GetUserName() const;
-          std::string &GetUserName();
-    const std::string &GetHostAliases() const;
-          std::string &GetHostAliases();
-    const std::string &GetHostNickname() const;
-          std::string &GetHostNickname();
-    const std::string &GetDirectory() const;
-          std::string &GetDirectory();
-    bool              GetShareOneBatchJob() const;
-    bool              GetSshPortSpecified() const;
-    int               GetSshPort() const;
-    bool              GetUseGateway() const;
-    const std::string &GetGatewayHost() const;
-          std::string &GetGatewayHost();
+    const std::string  &GetHost() const;
+          std::string  &GetHost();
+    const std::string  &GetUserName() const;
+          std::string  &GetUserName();
+    const std::string  &GetHostAliases() const;
+          std::string  &GetHostAliases();
+    const std::string  &GetHostNickname() const;
+          std::string  &GetHostNickname();
+    const std::string  &GetDirectory() const;
+          std::string  &GetDirectory();
+    bool               GetShareOneBatchJob() const;
+    bool               GetSshPortSpecified() const;
+    int                GetSshPort() const;
+    bool               GetSshCommandSpecified() const;
+    const stringVector &GetSshCommand() const;
+          stringVector &GetSshCommand();
+    bool               GetUseGateway() const;
+    const std::string  &GetGatewayHost() const;
+          std::string  &GetGatewayHost();
     ClientHostDetermination GetClientHostDetermination() const;
-    const std::string &GetManualClientHostName() const;
-          std::string &GetManualClientHostName();
-    bool              GetTunnelSSH() const;
-    bool              GetMaximumNodesValid() const;
-    int               GetMaximumNodes() const;
-    bool              GetMaximumProcessorsValid() const;
-    int               GetMaximumProcessors() const;
+    const std::string  &GetManualClientHostName() const;
+          std::string  &GetManualClientHostName();
+    bool               GetTunnelSSH() const;
+    bool               GetMaximumNodesValid() const;
+    int                GetMaximumNodes() const;
+    bool               GetMaximumProcessorsValid() const;
+    int                GetMaximumProcessors() const;
     const AttributeGroupVector &GetLaunchProfiles() const;
           AttributeGroupVector &GetLaunchProfiles();
-    int               GetActiveProfile() const;
+    int                GetActiveProfile() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -183,6 +189,8 @@ public:
 
     // User-defined methods
     static std::string defaultUserName;
+    const std::string &UserName() const;
+    static MachineProfile Default(const std::string &host=std::string(), const std::string &user=std::string());
     static std::vector<std::string> SplitHostPattern(const std::string &host);
     bool ProfileMatchesHost(const std::string&) const;
     std::string GetShortHostname() const;
@@ -191,6 +199,7 @@ public:
     static void SetDefaultUserName(const std::string &n);
     LaunchProfile *GetActiveLaunchProfile() const;
     void SelectOnlyDifferingFields(MachineProfile &other);
+    void Print(ostream &) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -202,6 +211,8 @@ public:
         ID_shareOneBatchJob,
         ID_sshPortSpecified,
         ID_sshPort,
+        ID_sshCommandSpecified,
+        ID_sshCommand,
         ID_useGateway,
         ID_gatewayHost,
         ID_clientHostDetermination,
@@ -227,6 +238,8 @@ private:
     bool                 shareOneBatchJob;
     bool                 sshPortSpecified;
     int                  sshPort;
+    bool                 sshCommandSpecified;
+    stringVector         sshCommand;
     bool                 useGateway;
     std::string          gatewayHost;
     int                  clientHostDetermination;
@@ -243,6 +256,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MACHINEPROFILE_TMFS "sssssbbibsisbbibia*i"
+#define MACHINEPROFILE_TMFS "sssssbbibs*bsisbbibia*i"
 
 #endif

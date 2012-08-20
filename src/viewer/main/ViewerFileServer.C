@@ -1411,6 +1411,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Launch the mdserver through the engine if they should share the same
 //    batch job.
 //
+//    Brad Whitlock, Tue Jun  5 17:16:31 PDT 2012
+//    Pass a MachineProfile down into the proxy's Create.
+//
 // ****************************************************************************
 
 void
@@ -1431,28 +1434,19 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     MDServerProxy *newServer = new MDServerProxy;
     TRY
     {
-        // Add arguments from a matching host profile to the mdserver proxy.
-        AddProfileArguments(newServer, host);
-
         // Add regular arguments to the new mdserver proxy.
         AddArguments(newServer, args);
 
-        // Get the client machine name options
-        MachineProfile::ClientHostDetermination chd;
-        std::string clientHostName;
-        GetClientMachineNameOptions(host, chd, clientHostName);
-
-        // Get the ssh port options
-        bool manualSSHPort;
-        int  sshPort;
-        GetSSHPortOptions(host, manualSSHPort, sshPort);
-
+        MachineProfile profile = GetMachineProfile(host);
         // We don't set up tunnels when launching an MD server, just the VCL
-        bool useTunneling = false;
+        profile.SetTunnelSSH(false);
 
         // We don't use a gateway when launching an MD server, just the VCL
-        bool useGateway = false;
-        std::string gatewayHost = "";
+        profile.SetUseGateway(false);
+        profile.SetGatewayHost("");
+
+        // Add arguments from a matching host profile to the mdserver proxy.
+        newServer->AddProfileArguments(profile, false);
 
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
@@ -1463,28 +1457,21 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         if (HostIsLocalHost(host))
         {
             debug1 << mName << "Creating on localhost" << endl;
-            newServer->Create("localhost", chd, clientHostName,
-                              manualSSHPort, sshPort, useTunneling,
-                              useGateway, gatewayHost);
+            profile.SetHost("localhost");
+            newServer->Create(profile);
         }
-        else if(ShouldShareBatchJob(host))
+        else if(profile.GetShareOneBatchJob())
         {
             debug1 << mName << "Sharing connection with engine." << endl;
 
             // Use VisIt's engine to start the remote mdserver.
-            newServer->Create(host, chd, clientHostName,
-                              manualSSHPort, sshPort, useTunneling,
-                              useGateway, gatewayHost,
-                              OpenWithEngine, (void*)dialog, true);
+            newServer->Create(profile, OpenWithEngine, (void*)dialog, true);
         }
         else
         {
             debug1 << mName << "Creating on host " << host << endl;
             // Use VisIt's launcher to start the remote mdserver.
-            newServer->Create(host, chd, clientHostName,
-                              manualSSHPort, sshPort, useTunneling,
-                              useGateway, gatewayHost,
-                              OpenWithLauncher, (void*)dialog, true);
+            newServer->Create(profile, OpenWithLauncher, (void*)dialog, true);
         }
 
         // Add the information about the new server to the 

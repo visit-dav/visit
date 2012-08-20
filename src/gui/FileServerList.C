@@ -853,6 +853,9 @@ FileServerList::SetHost(const string &host)
 //   I added the ability to use a gateway machine when connecting to a
 //   remote host.
 //
+//   Brad Whitlock, Tue Jun  5 16:31:21 PDT 2012
+//   Pass in default machine profile.
+//
 // ****************************************************************************
 
 void
@@ -871,9 +874,8 @@ FileServerList::StartServer(const string &host)
         info->server = new MDServerProxy();
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
-        info->server->Create(host,
-                             MachineProfile::MachineName, "", false, 0, false,
-                             false, "", connectCallback, connectCallbackData);
+        info->server->Create(MachineProfile::Default(host),
+                             connectCallback, connectCallbackData);
         connectingServer = false;
 
         // Get the current directory from the server

@@ -75,6 +75,9 @@
 //   I added the ability to use a gateway machine when connecting to a
 //   remote host.
 //
+//   Brad Whitlock, Tue Jun  5 17:24:03 PDT 2012
+//   Pass in MachineProfile to Open.
+//
 // ****************************************************************************
 
 class COMM_API ExistingRemoteProcess : public RemoteProcess
@@ -82,13 +85,7 @@ class COMM_API ExistingRemoteProcess : public RemoteProcess
 public:
     ExistingRemoteProcess(const std::string &rProgram);
     virtual ~ExistingRemoteProcess();
-    virtual bool Open(const std::string &rHost,
-                      MachineProfile::ClientHostDetermination chd,
-                      const std::string &clientHostName,
-                      bool manualSSHPort,
-                      int sshPort, bool useTunneling,
-                      bool useGateway,
-                      const std::string &gatewayHost,
+    virtual bool Open(const MachineProfile &profile,
                       int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void SetConnectCallback(ConnectCallback *cb);
