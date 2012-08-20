@@ -178,6 +178,9 @@
 //    Eric Brugger, Mon Aug 20 10:31:27 PDT 2012
 //    Added curve_integrate.
 //
+//    Eric Brugger, Mon Aug 20 13:21:19 PDT 2012
+//    Added curve_cmfe and curve_domain.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -353,6 +356,7 @@ const char *expr_misc[] = {
     "cell_constant",
     "conn_components",
     "curl",
+    "curve_domain",
     "curve_integrate",
     "cycle",
     "divergence",
@@ -388,6 +392,7 @@ const char *expr_imageprocessing[] = {
 
 const char *expr_comparison[] = {
     "conn_cmfe",
+    "curve_cmfe",
     "pos_cmfe",
     "symm_point",
     "symm_plane",
@@ -1594,6 +1599,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Fixed value_for_material so it shows up correctly in windows.
 //    (was showing arguments first, then expression name).
 //
+//    Eric Brugger, Mon Aug 20 13:21:19 PDT 2012
+//    Added curve_cmfe and curve_domain.
+//
 // ****************************************************************************
 
 QString
@@ -1614,7 +1622,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     }
 
 
-    if (func_name == "conn_cmfe")
+    if (func_name == "conn_cmfe" || func_name == "curve_cmfe")
     {
         res += QString("(<filename:var>, <meshname>)");
         doParens = false;
@@ -1768,6 +1776,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "map")
     {
         res += QString("(var, [input1, input2, ...], [output1, output2, ...])");
+        doParens = false;
+    }
+    else if (func_name == "curve_domain")
+    {
+        res += QString("(<range_curve>, <domain_curve>)");
         doParens = false;
     }
 
