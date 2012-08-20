@@ -66,6 +66,7 @@
 #include <avtCurvatureExpression.h>
 #include <avtCurveDomainExpression.h>
 #include <avtCurveExpression.h>
+#include <avtCurveIntegrateExpression.h>
 #include <avtCylindricalCoordinatesExpression.h>
 #include <avtDegreeExpression.h>
 #include <avtDisplacementExpression.h>
@@ -477,6 +478,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Wed Aug 25 16:45:25 PDT 2010
 //    Preserve 'apply_ddf' as alias for 'apply_data_binning'.
 //
+//    Eric Brugger, Mon Aug 20 10:14:23 PDT 2012
+//    Added curve_integrate.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -612,6 +616,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtConstantFunctionExpression(true);
     if (functionName == "curve_domain")
         return new avtCurveDomainExpression();
+    if (functionName == "curve_integrate")
+        return new avtCurveIntegrateExpression();
     if (functionName == "curve")
         return new avtCurveExpression();
 

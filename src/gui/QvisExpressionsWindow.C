@@ -175,6 +175,9 @@
 //    Hank Childs, Fri Feb  4 14:00:21 PST 2011
 //    Added external_cell expression.
 //
+//    Eric Brugger, Mon Aug 20 10:31:27 PDT 2012
+//    Added curve_integrate.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -350,6 +353,7 @@ const char *expr_misc[] = {
     "cell_constant",
     "conn_components",
     "curl",
+    "curve_integrate",
     "cycle",
     "divergence",
     "enumerate",

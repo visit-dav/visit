@@ -57,6 +57,9 @@
 #    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 #    Rename avtExternalNodeExpression to avtFindExternalExpression.
 #
+#    Eric Brugger, Mon Aug 20 08:59:10 PDT 2012
+#    Added avtCurveIntegrateExpression.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -127,6 +130,7 @@ General/avtCoordinateExtremaExpression.C
 General/avtCurlExpression.C
 General/avtCurveDomainExpression.C
 General/avtCurveExpression.C
+General/avtCurveIntegrateExpression.C
 General/avtDataIdExpression.C
 General/avtDegreeExpression.C
 General/avtDistanceToBestFitLineExpression.C
