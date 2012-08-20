@@ -97,6 +97,9 @@ avtCurveDomainExpression::~avtCurveDomainExpression()
 //  Creation:     March 5, 2009
 //
 //  Modifications:
+//    Eric Brugger, Mon Aug 20 11:29:34 PDT 2012
+//    I modified the routine to delete points where the coordinates weren't
+//    monotonically increasing.
 //
 // ****************************************************************************
 
@@ -108,19 +111,38 @@ avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
     vtkDataArray *xval = in_ds->GetPointData()->GetArray(varnames[1]);
 
     vtkIdType npts = xval->GetNumberOfTuples();
-    vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(npts, xval->GetDataType());
+    int nptsValid = 1;
+    double xmax = xval->GetTuple1(0);
+    for (vtkIdType i = 1; i < npts; ++i)
+    {
+        if (xval->GetTuple1(i) > xmax)
+        {
+            nptsValid++;
+            xmax = xval->GetTuple1(i);
+        }
+    }
+    vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(nptsValid, xval->GetDataType());
 
     vtkDataArray *newX = rv->GetXCoordinates();
     vtkDataArray *newY = yval->NewInstance();
-    newY->SetNumberOfTuples(npts);
+    newY->SetNumberOfTuples(nptsValid);
     newY->SetName(GetOutputVariableName());
     rv->GetPointData()->SetScalars(newY);
     newY->Delete();
 
+    newX->SetTuple1(0, xval->GetTuple1(0));
+    newY->SetTuple1(0, yval->GetTuple1(0));
+    nptsValid = 1;
+    xmax = xval->GetTuple1(0);
     for (vtkIdType i = 0; i < npts; ++i)
     {
-        newX->SetTuple1(i, xval->GetTuple1(i));
-        newY->SetTuple1(i, yval->GetTuple1(i));
+        if (xval->GetTuple1(i) > xmax)
+        {
+            newX->SetTuple1(nptsValid, xval->GetTuple1(i));
+            newY->SetTuple1(nptsValid, yval->GetTuple1(i));
+            nptsValid++;
+            xmax = xval->GetTuple1(i);
+        }
     }
 
     return rv;
