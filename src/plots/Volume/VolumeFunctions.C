@@ -327,6 +327,9 @@ VolumeSkewTransform(const VolumeAttributes &atts,
 //   Allen Harvey, Wed Jun  6 14:02:58 PDT 2012
 //   Change implementation so it looks up the proper array based on the name.
 //
+//   Brad Whitlock, Mon Aug 20 16:26:27 PDT 2012
+//   If no variable name was passed, return the active scalar.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -334,10 +337,10 @@ VolumeGetScalar(vtkDataSet *ds, const char *name)
 {
     vtkPointData *pd = ds->GetPointData();
     vtkDataArray *data = NULL;
-    if(pd->GetNumberOfArrays() > 0)
-        data = pd->GetArray(0);
 
-    if (data != NULL)  
+    if(name == NULL)
+        data = pd->GetScalars();
+    else
     {
         //
         // The data is not set up as the active scalars.  Try to guess what
@@ -396,6 +399,10 @@ VolumeGetScalar(vtkDataSet *ds, const char *name)
 //    data scaling is now done in the engine so we can histogram it and not
 //    have to recalculate it for each render.
 //
+//    Brad Whitlock, Mon Aug 20 16:27:28 PDT 2012
+//    Pass NULL into VolumeGetScalar when we obtain the color variable so we
+//    can request the active scalar.
+//
 // ****************************************************************************
 
 bool
@@ -406,7 +413,7 @@ VolumeGetScalars(const VolumeAttributes &atts, vtkDataSet *ds,
     const char *ov = atts.GetOpacityVariable().c_str();
 
     vtkPointData *pd = ds->GetPointData();
-    data = VolumeGetScalar(ds, ov);
+    data = VolumeGetScalar(ds, NULL);
     if (data == NULL)
     {
         return false;

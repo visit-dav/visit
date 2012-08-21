@@ -230,7 +230,9 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 // Creation:   Thu Dec 18 14:13:43 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Aug 20 16:31:01 PDT 2012
+//   Get the color variable by passing NULL into VolumeGetScalar.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -243,8 +245,8 @@ avtLowerResolutionVolumeFilter::ExecuteData(vtkDataSet *ds, int, std::string)
     // whose scalars are transformed by the appropriate scaling rule.
     if(atts.GetScaling() != VolumeAttributes::Linear)
     {
-        // Get the array that we're "modifying".
-        vtkDataArray *src = VolumeGetScalar(ds, atts.GetOpacityVariable().c_str());
+        // Get the array that we're "scaling".
+        vtkDataArray *src = VolumeGetScalar(ds, NULL);
         if(src == 0)
         {
             EXCEPTION0(ImproperUseException);
