@@ -33,7 +33,7 @@
 #   Removed zipwrapper tests from skip list because the tests were updated
 #   to use STL in place of VTK.
 #
-#   Wed Aug 15 12:31:00 PDT 2012
+#   Cyrus Harrison, Wed Aug 15 12:31:00 PDT 2012
 #   Update to use python test suite
 #
 
@@ -109,8 +109,9 @@ branch="trunk"
 revision="latest"
 serial="false"
 testHost="edge"
-testDir="/nfs/tmp2"
+testDir="/usr/tmp/"
 post="true"
+nerscHost="carver.nersc.gov"
 
 for abc
 do
@@ -163,7 +164,7 @@ rm -f $testHost
 cat <<EOF > $testHost
 #!/bin/sh
 
-dateTag=\`date +%y%b%d-%H:%M\`
+dateTag=\`date +%Y-%m-%d-%H:%M\`
 
 if test "$serial" = "true" ; then
     modes="$testHost,serial"
@@ -290,18 +291,18 @@ if test "$post" = "true" ; then
 
     # Tar up the results
     cd test
-    tar -xzvf - \$dateTag html.tar.gz
+    tar -czvf \$dateTag/html.tar.gz
 
-    # Copy the results to euclid
-    scp html.tar.gz $userNersc@euclid.nersc.gov:
+    # Copy the results to nersc
+    scp html.tar.gz $userNersc@$nerscHost:
     if test "$debug" = "true" ; then
-        echo "Results copied to euclid at: `date`" | mail -s "Results copied" $userEmail
+        echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
 
     # Post the results.
     cd ..
-    scp src/svn_bin/visit-update-test-website $userNersc@euclid.nersc.gov:
-    ssh $userNersc@euclid.nersc.gov "./visit-update-test-website"
+    scp src/svn_bin/visit-update-test-website $userNersc@$nerscHost:
+    ssh $userNersc@$nerscHost "./visit-update-test-website"
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
