@@ -109,6 +109,9 @@ avtWarpFilter::~avtWarpFilter()
 //    Brad Whitlock, Tue Mar 30 15:33:46 PDT 2010
 //    Use avtCurveTransform, if it exists, to transform the curve points.
 //
+//    Kathleen Biagas, Tue Aug 21 16:48:31 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 #include <vtkVisItUtility.h>
@@ -141,8 +144,7 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
     int nPts = xc->GetNumberOfTuples();
 
-    vtkPoints *pts = vtkPoints::New();
-    pts->SetDataType(xc->GetDataType());
+    vtkPoints *pts = vtkPoints::New(xc->GetDataType());
     pts->SetNumberOfPoints(nPts);
 
     vtkCellArray *verts = vtkCellArray::New();
@@ -156,13 +158,13 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
             pts->SetPoint(i, xc->GetTuple1(i), sc->GetTuple1(i), 0.); 
         else
         {
-            float inpoint[4];
+            double inpoint[4];
             inpoint[0] = xc->GetTuple1(i);
             inpoint[1] = sc->GetTuple1(i);
             inpoint[2] = 0.;
             inpoint[3] = 1.;
 
-            float outpoint[4];
+            double outpoint[4];
             t->MultiplyPoint(inpoint, outpoint);
 
             outpoint[0] /= outpoint[3];

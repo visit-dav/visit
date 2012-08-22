@@ -55,6 +55,7 @@
 
 #include <DebugStream.h>
 #include <VisItException.h>
+#include <vtkVisItUtility.h>
 
 
 using     std::string;
@@ -133,6 +134,9 @@ avtFeatureEdgesFilter::~avtFeatureEdgesFilter()
 //    Hank Childs, Thu Mar 31 11:16:23 PST 2005
 //    Fix problem with single cell case ['6105].
 //
+//    Kathleen Biagas, Tue Aug 21 16:50:07 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -169,7 +173,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         
         vtkIdList *ids = cell->GetPointIds();
         int npts = ids->GetNumberOfIds();
-        vtkPoints *pts = vtkPoints::New();
+        vtkPoints *pts = vtkVisItUtility::NewPoints(inDS);
         pts->SetNumberOfPoints(npts);
         outPD->CopyAllocate(inPD, npts);
         std::vector<int> origId(npts, -1);

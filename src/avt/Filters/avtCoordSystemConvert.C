@@ -344,6 +344,9 @@ TransformSingleVector(avtCoordSystemConvert::VectorTransformMethod method,
 //    to this function; since some of the methods require the original
 //    and transformed cell/point coordinates, so it has to be done here.
 //
+//    Kathleen Biagas, Tue Aug 21 16:53:09 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 static vtkDataSet *
@@ -358,7 +361,7 @@ Transform(vtkDataSet *in_ds,
     // Transform the points
     //
     vtkPoints *pts = vtkVisItUtility::GetPoints(in_ds);
-    vtkPoints *newPts = vtkPoints::New();
+    vtkPoints *newPts = vtkPoints::New(pts->GetDataType());
     newPts->SetNumberOfPoints(numPts);
     for (int i = 0 ; i < numPts ; i++)
     {
@@ -524,6 +527,9 @@ Transform(vtkDataSet *in_ds,
 //    Hank Childs, Mon Feb 28 15:04:00 PST 2011
 //    Fix wraparound for poly data as well.
 //
+//    Kathleen Biagas, Tue Aug 21 16:53:32 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 static vtkDataSet *
@@ -568,7 +574,7 @@ FixWraparounds(vtkDataSet *in_ds, int comp_idx)
     vtkPoints *pts = ugrid->GetPoints();
     int npts = pts->GetNumberOfPoints();
 
-    vtkPoints *new_pts = vtkPoints::New();
+    vtkPoints *new_pts = vtkPoints::New(pts->GetDataType());
     new_pts->SetNumberOfPoints(2*npts);
     vtkUnstructuredGrid *new_grid = vtkUnstructuredGrid::New();
     new_grid->SetPoints(new_pts);

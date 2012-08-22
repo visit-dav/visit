@@ -1251,8 +1251,8 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             //
             // Create the point list.  This will have a lot of repeated points.
             //
-            vtkPoints *pts = vtkPoints::New();
             vtkPoints *in_pts = pd->GetPoints();
+            vtkPoints *pts = vtkPoints::New(in_pts->GetDataType());
             pts->SetNumberOfPoints(count);
             for (vtkIdType i = 0 ; i < count ; i++)
             {

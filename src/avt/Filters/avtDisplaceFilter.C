@@ -52,6 +52,7 @@
 
 #include <avtDatasetExaminer.h>
 #include <avtExtents.h>
+#include <vtkVisItUtility.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -160,6 +161,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //    Hank Childs, Fri Sep 28 07:40:16 PDT 2007
 //    Fix bug with cell centered data and rectilinear grids.
 //
+//    Kathleen Biagas, Tue Aug 21 16:52:12 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -233,7 +237,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         sg->SetDimensions(dims);
         sg->GetCellData()->ShallowCopy(rg->GetCellData());
         sg->GetPointData()->ShallowCopy(rg->GetPointData());
-        vtkPoints *pts = vtkPoints::New();
+        vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
         int npts = dims[0]*dims[1]*dims[2];
         pts->SetNumberOfPoints(npts);
         for (int i = 0 ; i < npts ; i++)
@@ -241,9 +245,9 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             int xi = i % dims[0];
             int yi = (i / dims[0]) % dims[1];
             int zi = i / (dims[0]*dims[1]);
-            float x = rg->GetXCoordinates()->GetTuple1(xi);
-            float y = rg->GetYCoordinates()->GetTuple1(yi);
-            float z = rg->GetZCoordinates()->GetTuple1(zi);
+            double x = rg->GetXCoordinates()->GetTuple1(xi);
+            double y = rg->GetYCoordinates()->GetTuple1(yi);
+            double z = rg->GetZCoordinates()->GetTuple1(zi);
             double *vec = vecs->GetTuple3(i);
             x += factor*vec[0];
             y += factor*vec[1];

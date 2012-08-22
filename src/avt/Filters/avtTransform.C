@@ -58,6 +58,7 @@
 
 #include <DebugStream.h>
 #include <VisItException.h>
+#include <vtkVisItUtility.h>
 
 
 static bool IsIdentity(vtkMatrix4x4 *);
@@ -589,6 +590,9 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
 //    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
 //    Flag for vector transformations.
 //
+//    Kathleen Biagas, Tue Aug 21 16:49:12 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -603,7 +607,7 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
 
     int  numPts = dims[0]*dims[1]*dims[2];
 
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(rgrid);
     pts->SetNumberOfPoints(numPts);
 
     vtkDataArray *x = rgrid->GetXCoordinates();
@@ -617,13 +621,13 @@ avtTransform::TransformRectilinearToCurvilinear(vtkRectilinearGrid *rgrid)
         {
             for (int i = 0 ; i < dims[0] ; i++)
             {
-                float inpoint[4];
+                double inpoint[4];
                 inpoint[0] = x->GetComponent(i,0);
                 inpoint[1] = y->GetComponent(j,0);
                 inpoint[2] = z->GetComponent(k,0);
                 inpoint[3] = 1.;
 
-                float outpoint[4];
+                double outpoint[4];
                 t->MultiplyPoint(inpoint, outpoint);
 
                 outpoint[0] /= outpoint[3];

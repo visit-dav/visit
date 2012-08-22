@@ -56,6 +56,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <vtkVisItUtility.h>
 
 // ****************************************************************************
 //  Method: avtMetricThresholdFilter constructor
@@ -278,12 +279,16 @@ avtMetricThresholdFilter::UpdateDataObjectInfo(void)
 //  Programmer: Akira Haddox
 //  Creation:   June 20, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Aug 21 16:16:32 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
  
 vtkPoints *
 avtMetricThresholdFilter::CreateRectilinearPoints(vtkRectilinearGrid *grid)
 {
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(grid);
 
     vtkDataArray *xC = grid->GetXCoordinates();
     vtkDataArray *yC = grid->GetYCoordinates();
@@ -299,7 +304,7 @@ avtMetricThresholdFilter::CreateRectilinearPoints(vtkRectilinearGrid *grid)
         for (int j = 0 ; j < numY; j++)
             for (int k = 0 ; k < numZ; k++)
             {
-                float pt[3];
+                double pt[3];
                 pt[0] = xC->GetComponent(i,0);
                 pt[1] = yC->GetComponent(j,0);
                 pt[2] = zC->GetComponent(k,0);
@@ -337,7 +342,7 @@ inline bool Between(double _a, double _b, double _c)
 }
 
 inline bool
-avtMetricThresholdFilter::PassesTest(int type, float value)
+avtMetricThresholdFilter::PassesTest(int type, double value)
 {
     switch (type)
     {

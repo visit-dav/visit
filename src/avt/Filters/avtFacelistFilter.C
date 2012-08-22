@@ -1388,7 +1388,7 @@ avtFacelistFilter::FindEdges(vtkDataSet *in_ds)
     outPD->CopyAllocate(inPD, nPtsUsed);
     outCD->CopyAllocate(inCD, nEdges);
 
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     pts->SetNumberOfPoints(nPtsUsed);
     out_ds->SetPoints(pts);
     pts->Delete();

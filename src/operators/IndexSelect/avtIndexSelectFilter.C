@@ -47,7 +47,6 @@
 #include <vtkCellData.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkMaskPoints.h>
-#include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -1260,6 +1259,8 @@ avtIndexSelectFilter::VerifyInput()
 //  Creation:   April 14, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 21 16:14:59 MST 2012
+//    Preserve coordinate type.
 //
 // ****************************************************************************
 
@@ -1298,7 +1299,7 @@ avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
 
        // Make a new coord with a new value at the end.
        vtkDataArray *coor = GetCoordinates(rgrid, d0);
-       vtkDataArray *coor_new = vtkFloatArray::New();
+       vtkDataArray *coor_new = coor->NewInstance();
        coor_new->SetNumberOfTuples(dims_out[d0]);
        for (int i=0; i<dims[d0]; ++i)
            coor_new->SetTuple1(i, coor->GetTuple1(i));
@@ -1329,7 +1330,7 @@ avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
      dims_out[2] = dims_in[2] + (wrap[2] ? 1 : 0);
 
      vtkPoints *pts = sgrid->GetPoints();
-     vtkPoints *new_pts = vtkPoints::New();
+     vtkPoints *new_pts = vtkPoints::New(pts->GetDataType());
      vtkStructuredGrid *out_sg = vtkStructuredGrid::New();
      out_sg->SetDimensions(dims_out);
      out_sg->SetPoints(new_pts);

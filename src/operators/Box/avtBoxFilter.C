@@ -57,6 +57,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtSpatialBoxSelection.h>
+#include <vtkVisItUtility.h>
 
 #include <DebugStream.h>
 
@@ -253,7 +254,7 @@ vtkBoxFilter::Execute(void)
     // Set up some the VTK vars that will (eventually) be copied over
     // to the output.
     //
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(input);
     pts->Allocate(nPts/4,nPts);
     vtkUnstructuredGrid *output = GetOutput();
     output->Allocate(nCells);
