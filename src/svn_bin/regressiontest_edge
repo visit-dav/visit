@@ -109,9 +109,9 @@ branch="trunk"
 revision="latest"
 serial="false"
 testHost="edge"
-testDir="/usr/tmp/"
+testDir="/nfs/tmp2/"
 post="true"
-nerscHost="carver.nersc.gov"
+nerscHost="euclid.nersc.gov"
 
 for abc
 do
@@ -177,6 +177,8 @@ if test "$debug" = "true" ; then
    echo "Removing any old test files at: $testDir/$user/$workingDir" | mail -s "Checkout started" $userEmail
 fi
 
+echo "Removing any old test files at: $testDir/$user/$workingDir"
+
 # Create the test directory.
 if test ! -e $testDir/$user; then
     mkdir $testDir/$user
@@ -189,6 +191,9 @@ cd $testDir/$user/$workingDir
 if test "$debug" = "true" ; then
    echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
 fi
+
+echo "Checkout of $branch started at: \`date\`"
+
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
         svn co svn+ssh://$userNersc@portal-auth.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
@@ -214,6 +219,8 @@ if test "$debug" = "true" ; then
     echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
 fi
 
+echo "Checkout of $branch completed at: \`date\`"
+
 # Build the code
 cd src
 export PATH=\$PATH:/usr/bin/X11
@@ -221,11 +228,18 @@ export PATH=\$PATH:/usr/bin/X11
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/edge83.cmake
 fi
-/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DVISIT_CONFIG_SITE=config-site/edge83.cmake -DCMAKE_BUILD_TYPE=Release -DVISIT_BUILD_ALL_PLUGINS=1 -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON >> ../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake \
+    -DVISIT_CONFIG_SITE=config-site/edge83.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DVISIT_BUILD_ALL_PLUGINS=1 \
+    -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
+    . >> ../buildlog 2>&1
 make -j 12 >> ../buildlog 2>&1
 if test "$debug" = "true" ; then
     echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
 fi
+
+echo "Source build completed at: \`date\`"
 
 # Build the test data
 cd ../data
@@ -234,32 +248,39 @@ if test "$debug" = "true" ; then
     echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
 fi
 
+echo "Data build completed at: \`date\`"
 
 if test "$debug" = "true" ; then
     echo "Starting tests:\`date\`" | mail -s "Starting tests" $userEmail
 fi
 
+echo "Starting tests:\`date\`"
+
 # Run the tests, consolidating the results in one directory
 cd ../test
 rm -rf \$dateTag
 mkdir \$dateTag
-mkdir \$dateTag/output
+mkdir output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
-    resDir=\$dateTag/output/\$theMode
+    resDir=output/\$theMode
 
     if test "$debug" = "true" ; then
         echo "runtest with mode = \$m" | mail -s "runtest with mode = \$m" $userEmail
     fi
 
+    echo "runtest with mode = \$m"
+
+
     # Run the test
-    ./runtest -o \$resDir -m "\$m" -n 1>> ../buildlog 2>&1
+    ./runtest -o \$resDir -m "\$m" -n 1 >> buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
     if test "$debug" = "true" ; then
         echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
     fi
+    echo "Test \$m completed at: \`date\`"
 done
 
 # Determine if the test suite passed or failed.
@@ -291,13 +312,15 @@ if test "$post" = "true" ; then
 
     # Tar up the results
     cd test
-    tar -czvf \$dateTag/html.tar.gz
+    tar -czvf  html.tar.gz \$dateTag
 
     # Copy the results to nersc
     scp html.tar.gz $userNersc@$nerscHost:
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
     fi
+
+    echo "Results copied to $nerscHost at: `date`"
 
     # Post the results.
     cd ..
@@ -306,6 +329,8 @@ if test "$post" = "true" ; then
     if test "$debug" = "true" ; then
         echo "Results posted at: `date`" | mail -s "Results posted" $userEmail
     fi
+
+    echo "Results posted at: `date`"
 
     # Send out an e-mail notifying the users of the test suite status.
     if test "\$hasFailed" = ""; then
@@ -327,6 +352,6 @@ chmod 750 $testHost
 # Run the test suite.
 if test "$testHost" = "edge" ; then
     scp edge edge:edge_testit
-
-    ssh edge "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -q pbatch -A bdivp -z ./edge_testit"
+    subTag=`date +%Y-%m-%d-%H:%M`
+    ssh edge "msub -l nodes=1:ppn=12 -l gres=ignore -l walltime=12:00:00 -o edge_testit_$subTag.out -q pbatch -A bdivp -z ./edge_testit"
 fi
