@@ -64,6 +64,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkTemplateAliasMacro.h>
 #include <vtkTrivialProducer.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedCharArray.h>
@@ -165,8 +166,8 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
                 {
                     for (int k=0; k<=1; k++)
                     {
-                        float pt_in[4]={bnds[0*2+i],bnds[1*2+j],bnds[2*2+k],1};
-                        float pt[4];
+                        double pt_in[4]={bnds[0*2+i],bnds[1*2+j],bnds[2*2+k],1};
+                        double pt[4];
                         vtkMatrix4x4::MultiplyPoint(xform, pt_in, pt);
                         for (int axis=0; axis<3; axis++)
                         {
@@ -1445,50 +1446,9 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
     bool checkForFiniteByDefault = false;
     switch (da->GetDataType())
     {
-        case VTK_CHAR:
-            GetScalarRange((char*) da->GetVoidPointer(0), nvals, exts, 
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_CHAR:
-            GetScalarRange((unsigned char*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_SHORT:
-            GetScalarRange((short*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_SHORT:
-            GetScalarRange((unsigned short*) da->GetVoidPointer(0), nvals,exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_INT:           
-            GetScalarRange((int*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_INT:  
-            GetScalarRange((unsigned int*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_LONG:          
-            GetScalarRange((long*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_LONG: 
-            GetScalarRange((unsigned long*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_FLOAT:         
-            GetScalarRange((float*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_DOUBLE:        
-            GetScalarRange((double*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_ID_TYPE:       
-            GetScalarRange((vtkIdType*) da->GetVoidPointer(0), nvals, exts,
-                           ghosts, checkForFiniteByDefault);
-            break;
+        vtkTemplateAliasMacro(GetScalarRange(
+            static_cast<VTK_TT*>(da->GetVoidPointer(0)), 
+            nvals, exts, ghosts, checkForFiniteByDefault));
     }
 }
 
@@ -1593,50 +1553,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
     
         switch (da->GetDataType())
         {
-          case VTK_CHAR:
-            GetComponentRange((char*) da->GetVoidPointer(0), ntuples,
-                              comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_UNSIGNED_CHAR:
-            GetComponentRange((unsigned char*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_SHORT:
-            GetComponentRange((short*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_UNSIGNED_SHORT:
-            GetComponentRange((unsigned short*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps,compexts, ghosts);
-            break;
-          case VTK_INT:           
-            GetComponentRange((int*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_UNSIGNED_INT:  
-            GetComponentRange((unsigned int*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_LONG:          
-            GetComponentRange((long*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_UNSIGNED_LONG: 
-            GetComponentRange((unsigned long*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_FLOAT:         
-            GetComponentRange((float*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_DOUBLE:        
-            GetComponentRange((double*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
-          case VTK_ID_TYPE:       
-            GetComponentRange((vtkIdType*) da->GetVoidPointer(0),
-                              ntuples, comp, ncomps, compexts, ghosts);
-            break;
+          vtkTemplateAliasMacro(GetComponentRange(
+            static_cast<VTK_TT*>(da->GetVoidPointer(0)), 
+            ntuples, comp, ncomps, compexts, ghosts));
         }
     }
 }
@@ -1767,50 +1686,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
     bool checkForFiniteByDefault = false;
     switch (da->GetDataType())
     {
-        case VTK_CHAR:
-            GetMagnitudeRange((char*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_CHAR:
-            GetMagnitudeRange((unsigned char*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_SHORT:
-            GetMagnitudeRange((short*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_SHORT:
-            GetMagnitudeRange((unsigned short*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_INT:           
-            GetMagnitudeRange((int*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_INT:  
-            GetMagnitudeRange((unsigned int*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_LONG:          
-            GetMagnitudeRange((long*) da->GetVoidPointer(0), nvals, 
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_UNSIGNED_LONG: 
-            GetMagnitudeRange((unsigned long*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_FLOAT:         
-            GetMagnitudeRange((float*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_DOUBLE:        
-            GetMagnitudeRange((double*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
-        case VTK_ID_TYPE:       
-            GetMagnitudeRange((vtkIdType*) da->GetVoidPointer(0), nvals,
-                              ncomps, exts, ghosts, checkForFiniteByDefault);
-            break;
+        vtkTemplateAliasMacro(GetMagnitudeRange(
+            static_cast<VTK_TT*>(da->GetVoidPointer(0)), 
+            nvals, ncomps, exts, ghosts, checkForFiniteByDefault));
     }
 }
 
@@ -1856,6 +1734,57 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //
 // ****************************************************************************
 
+template <class T> static double
+MajorEigenvalueT(T *vals)
+{
+    double *input[3];
+    double row1[3];
+    double row2[3];
+    double row3[3];
+    input[0] = row1;
+    input[1] = row2;
+    input[2] = row3;
+    input[0][0] = (double)vals[0];
+    input[0][1] = (double)vals[1];
+    input[0][2] = (double)vals[2];
+    input[1][0] = (double)vals[3];
+    input[1][1] = (double)vals[4];
+    input[1][2] = (double)vals[5];
+    input[2][0] = (double)vals[6];
+    input[2][1] = (double)vals[7];
+    input[2][2] = (double)vals[8];
+    double *eigenvecs[3];
+    double outrow1[3];
+    double outrow2[3];
+    double outrow3[3];
+    eigenvecs[0] = outrow1;
+    eigenvecs[1] = outrow2;
+    eigenvecs[2] = outrow3;
+    double eigenvals[3];
+    vtkMath::Jacobi(input, eigenvals, eigenvecs);
+    return eigenvals[0];
+}
+
+template <class T> static void
+GetMajorEigenvalueRange(T *ptr, int n, int ncomps, double *exts, 
+                  unsigned char *ghosts)
+{
+    for (int i = 0 ; i < n; ++i)
+    {
+        if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
+        double val = MajorEigenvalueT(ptr);
+
+        if (!visitIsFinite(val))
+            continue;
+
+        exts[0] = (exts[0] < val ? exts[0] : val);
+        exts[1] = (exts[1] > val ? exts[1] : val);
+        ptr+=ncomps;
+    }
+}
+
 void
 GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
                             bool ignoreGhost)
@@ -1890,44 +1819,11 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
     {
         return;
     }
-    //
-    // We only know how to deal with floats / doubles.
-    //
-    if (da->GetDataType() == VTK_FLOAT)
+    switch (da->GetDataType())
     {
-        float *ptr = (float *) da->GetVoidPointer(0);
-        for (int i = 0 ; i < nvals ; i++)
-        {
-            if ((ghosts != NULL) && (ghosts[i] != '\0'))
-                continue;
-
-            double val = MajorEigenvalue(ptr);
-
-            if (!visitIsFinite(val))
-                continue;
-
-            exts[0] = (exts[0] < val ? exts[0] : val);
-            exts[1] = (exts[1] > val ? exts[1] : val);
-            ptr+=ncomps;
-        }
-    }
-    else if (da->GetDataType() == VTK_DOUBLE)
-    {
-        double *ptr = (double *) da->GetVoidPointer(0);
-        for (int i = 0 ; i < nvals ; i++)
-        {
-            if ((ghosts != NULL) && (ghosts[i] != '\0'))
-                continue;
-
-            double val = MajorEigenvalue(ptr);
-
-            if (!visitIsFinite(val))
-                continue;
-
-            exts[0] = (exts[0] < val ? exts[0] : val);
-            exts[1] = (exts[1] > val ? exts[1] : val);
-            ptr+=ncomps;
-        }
+        vtkTemplateAliasMacro(GetMajorEigenvalueRange(
+            static_cast<VTK_TT*>(da->GetVoidPointer(0)),
+            nvals, ncomps, exts, ghosts ));
     }
 }
 
@@ -2000,11 +1896,11 @@ CFindMaximum(avtDataRepresentation &data, void *arg, bool &success)
     }
 
     int nS = s->GetNumberOfTuples();
-    float localMax = -FLT_MAX;
+    double localMax = -FLT_MAX;
     int ind = -1;
     for (int i = 0 ; i < nS ; i++)
     {
-        float v = s->GetTuple1(i);
+        double v = s->GetTuple1(i);
         if (v > localMax)
         {
             localMax = v;
@@ -2106,11 +2002,11 @@ CFindMinimum(avtDataRepresentation &data, void *arg, bool &success)
     }
 
     int nS = s->GetNumberOfTuples();
-    float localMin = FLT_MAX;
+    double localMin = FLT_MAX;
     int ind = -1;
     for (int i = 0 ; i < nS ; i++)
     {
-        float v = s->GetTuple1(i);
+        double v = s->GetTuple1(i);
         if (v < localMin)
         {
             localMin = v;
@@ -2792,47 +2688,21 @@ CGetNumberOfRealNodes(avtDataRepresentation &data, void *sum, bool &)
 //  Creation:   March 11, 2004 
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 21 12:02:57 MST 2012
+//    Call templated method.
 //
 // ****************************************************************************
 
 double
 MajorEigenvalue(float *vals)
 {
-    double dv[9];
-    for (int i = 0; i < 9; i++)
-        dv[i] = vals[i];
-    return MajorEigenvalue(dv);
+    return MajorEigenvalueT(vals);
 }
 
 double
 MajorEigenvalue(double *vals)
 {
-    double *input[3];
-    double row1[3];
-    double row2[3];
-    double row3[3];
-    input[0] = row1;
-    input[1] = row2;
-    input[2] = row3;
-    input[0][0] = vals[0];
-    input[0][1] = vals[1];
-    input[0][2] = vals[2];
-    input[1][0] = vals[3];
-    input[1][1] = vals[4];
-    input[1][2] = vals[5];
-    input[2][0] = vals[6];
-    input[2][1] = vals[7];
-    input[2][2] = vals[8];
-    double *eigenvecs[3];
-    double outrow1[3];
-    double outrow2[3];
-    double outrow3[3];
-    eigenvecs[0] = outrow1;
-    eigenvecs[1] = outrow2;
-    eigenvecs[2] = outrow3;
-    double eigenvals[3];
-    vtkMath::Jacobi(input, eigenvals, eigenvecs);
-    return eigenvals[0];
+    return MajorEigenvalueT(vals);
 }
 
 // ****************************************************************************
@@ -3030,8 +2900,6 @@ CGetCompressionInfoFromDataString(const unsigned char *dstr,
 }
 
 
-
-
 // ****************************************************************************
 //  Function:  CApplyTransformToRectGrid
 //
@@ -3045,7 +2913,12 @@ CGetCompressionInfoFromDataString(const unsigned char *dstr,
 //  Programmer:  Jeremy Meredith
 //  Creation:    February 15, 2007
 //
+//  Modifications:
+//    Kathleen Biagas, Aug 21 09:32:17 MST 2012
+//    Perserve coordinate type.
+//
 // ****************************************************************************
+
 void
 CApplyTransformToRectGrid(avtDataRepresentation &data,
                           void *xform_, bool &)
@@ -3058,7 +2931,7 @@ CApplyTransformToRectGrid(avtDataRepresentation &data,
     vtkDataSet *ds = data.GetDataVTK();
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) ds;
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
         double *xform = (double*)xform_;
 
         vtkMatrix4x4 *t = vtkMatrix4x4::New();
@@ -3074,7 +2947,7 @@ CApplyTransformToRectGrid(avtDataRepresentation &data,
 
         int  numPts = dims[0]*dims[1]*dims[2];
 
-        vtkPoints *pts = vtkPoints::New();
+        vtkPoints *pts = vtkVisItUtility::NewPoints(rgrid);
         pts->SetNumberOfPoints(numPts);
 
         vtkDataArray *x = rgrid->GetXCoordinates();
@@ -3088,13 +2961,13 @@ CApplyTransformToRectGrid(avtDataRepresentation &data,
             {
                 for (int i = 0 ; i < dims[0] ; i++)
                 {
-                    float inpoint[4];
+                    double inpoint[4];
                     inpoint[0] = x->GetComponent(i,0);
                     inpoint[1] = y->GetComponent(j,0);
                     inpoint[2] = z->GetComponent(k,0);
                     inpoint[3] = 1.;
 
-                    float outpoint[4];
+                    double outpoint[4];
                     t->MultiplyPoint(inpoint, outpoint);
 
                     outpoint[0] /= outpoint[3];
@@ -3270,39 +3143,9 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
  
     switch (arr->GetDataType())
     {
-        case VTK_CHAR:
-            PopulateHistogram((char*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_UNSIGNED_CHAR:
-            PopulateHistogram((unsigned char*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_SHORT:
-            PopulateHistogram((short*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_UNSIGNED_SHORT:
-            PopulateHistogram((unsigned short*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_INT:           
-            PopulateHistogram((int*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_UNSIGNED_INT:  
-            PopulateHistogram((unsigned int*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_LONG:          
-            PopulateHistogram((long*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_UNSIGNED_LONG: 
-            PopulateHistogram((unsigned long*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_FLOAT:         
-            PopulateHistogram((float*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_DOUBLE:        
-            PopulateHistogram((double*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
-        case VTK_ID_TYPE:       
-            PopulateHistogram((vtkIdType*) arr->GetVoidPointer(0), ntups, nbins, min, max, numVals);
-            break;
+        vtkTemplateAliasMacro(PopulateHistogram( 
+            static_cast<VTK_TT*>(arr->GetVoidPointer(0)), 
+            ntups, nbins, min, max, numVals));
     }
 }
 

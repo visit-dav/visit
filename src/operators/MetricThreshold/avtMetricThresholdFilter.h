@@ -87,7 +87,7 @@ class avtMetricThresholdFilter : public avtPluginDataTreeIterator
 
     vtkDataSet          *ExecuteOnScalarData(vtkDataSet *, vtkDataArray *);
     vtkPoints           *CreateRectilinearPoints(vtkRectilinearGrid *);
-    inline bool          PassesTest(int type, float value);
+    inline bool          PassesTest(int type, double value);
 };
 
 

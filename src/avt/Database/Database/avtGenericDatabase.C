@@ -7909,6 +7909,9 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 //    Hank Childs, Sun Oct 28 15:02:31 PST 2007
 //    If there is ghost data in the input, then ignore that ghost data.
 //
+//    Kathleen Biagas, Tue Aug 21 14:18:32 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -8300,7 +8303,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     // won't be very many (so memory cost won't be high) and it makes
     // our indexing so easy this way.
     //
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(rgrid);
     int nPts = numIlist*numJlist*numKlist;
     pts->SetNumberOfPoints(nPts);
     int iOff = 0;
@@ -10398,6 +10401,9 @@ avtGenericDatabase::AssociateBounds(vtkDataSet *ds)
 //    Make sure that all of the dimensions are too big or too small, not just
 //    one of them.
 //
+//    Kathleen Biagas, Tue Aug 21 14:17:12 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 void
@@ -10530,18 +10536,46 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
         {
             vtkPointSet *ps = (vtkPointSet *) ds;
             vtkPoints *pts = ps->GetPoints();
-            vtkPoints *newPts = vtkPoints::New();
-            int npts = pts->GetNumberOfPoints();
+            vtkPoints *newPts = vtkPoints::New(pts->GetDataType());
+            vtkIdType npts = pts->GetNumberOfPoints();
             newPts->SetNumberOfPoints(npts);
-            float *np = (float *) newPts->GetVoidPointer(0);
-            float *p  = (float *) pts->GetVoidPointer(0);
-            int nvals = 3*npts;
-            for (int i = 0 ; i < nvals ; i++)
+            if (pts->GetDataType() == VTK_FLOAT)
             {
-                np[i] = p[i] / scaleFactor;
+                float *np = (float *) newPts->GetVoidPointer(0);
+                float *p  = (float *) pts->GetVoidPointer(0);
+                int nvals = 3*npts;
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    np[i] = p[i] / scaleFactor;
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
             }
-            ps->SetPoints(newPts);
-            newPts->Delete();
+            else if (pts->GetDataType() == VTK_DOUBLE)
+            {
+                double *np = (double *) newPts->GetVoidPointer(0);
+                double *p  = (double *) pts->GetVoidPointer(0);
+                int nvals = 3*npts;
+                for (int i = 0 ; i < nvals ; i++)
+                {
+                    np[i] = p[i] / scaleFactor;
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
+            }
+            else 
+            {
+                for (int i = 0 ; i < npts ; i++)
+                {
+                    double *np = pts->GetPoint(i);
+                    np[0] = np[0] / scaleFactor;
+                    np[1] = np[1] / scaleFactor;
+                    np[2] = np[2] / scaleFactor;
+                    newPts->SetPoint(i, np);
+                }
+                ps->SetPoints(newPts);
+                newPts->Delete();
+            }
         }
         break;
       case VTK_RECTILINEAR_GRID:
@@ -10551,10 +10585,10 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
             in[0] = rg->GetXCoordinates();
             in[1] = rg->GetYCoordinates();
             in[2] = rg->GetZCoordinates();
-            vtkFloatArray *out[3];
+            vtkDataArray *out[3];
             for (int i = 0 ; i < 3 ; i++)
             {
-                out[i] = vtkFloatArray::New();
+                out[i] = in[i]->NewInstance();
                 int ntuples = in[i]->GetNumberOfTuples();
                 out[i]->SetNumberOfTuples(ntuples);
                 for (int j = 0 ; j < ntuples ; j++)

@@ -119,8 +119,8 @@ vtkPolarTransformFilter::Execute(void)
     // First copy over the points.  We will transform them to polar coordinates
     // as we copy them.
     //
-    vtkPoints *newPts = vtkPoints::New();
     vtkPoints *oldPts = input->GetPoints();
+    vtkPoints *newPts = vtkPoints::New(oldPts->GetDataType());
     newPts->Allocate(nPts + 2*nCells); // Justification for this
                                        // large of a buffer is below.
 

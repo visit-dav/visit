@@ -43,7 +43,6 @@
 #include <avtCreateBondsFilter.h>
 
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
 #include <vtkGeometryFilter.h>
@@ -371,7 +370,11 @@ avtCreateBondsFilter::ExecuteData(vtkDataSet *in_ds, int, string)
 //   Use the element variable specified in the attributes.
 //   Support any type of input nodal array.
 //
+//   Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012
+//   Preserve coordinate type.
+//
 // ****************************************************************************
+
 vtkDataSet *
 avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
                                        float minx, float maxx,
@@ -411,7 +414,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     vtkPolyData  *out      = in->NewInstance();
     vtkPointData *outPD    = out->GetPointData();
     vtkCellData  *outCD    = out->GetCellData();
-    vtkPoints    *outPts   = vtkPoints::New();
+    vtkPoints    *outPts   = vtkPoints::New(inPts->GetDataType());
     vtkCellArray *outVerts = vtkCellArray::New();
     vtkCellArray *outLines = vtkCellArray::New();
     out->GetFieldData()->ShallowCopy(in->GetFieldData());
@@ -735,6 +738,9 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 //    Use the element variable specified in the attributes.
 //    Support any type of input nodal array.
 //
+//    Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012 
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -773,7 +779,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
     vtkPolyData  *out      = in->NewInstance();
     vtkPointData *outPD    = out->GetPointData();
     vtkCellData  *outCD    = out->GetCellData();
-    vtkPoints    *outPts   = vtkPoints::New();
+    vtkPoints    *outPts   = vtkPoints::New(inPts->GetDataType());
     vtkCellArray *outVerts = vtkCellArray::New();
     vtkCellArray *outLines = vtkCellArray::New();
     out->GetFieldData()->ShallowCopy(in->GetFieldData());

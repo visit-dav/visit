@@ -48,7 +48,7 @@
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
-#include <vtkFloatArray.h>
+#include <vtkVisItUtility.h>
 
 #include <GeometricHelpers.h>
 
@@ -151,6 +151,10 @@ avtDeformSphereGlyphFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 19, 2009
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Aug 21 16:11:37 MST 2012
+//    Perserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -181,7 +185,7 @@ avtDeformSphereGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
     // set up the output data
     vtkPolyData *output = vtkPolyData::New();
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     output->SetPoints(pts);
     pts->Delete();
     vtkCellArray *polys = vtkCellArray::New();
