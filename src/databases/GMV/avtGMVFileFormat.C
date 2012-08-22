@@ -942,12 +942,60 @@ gmvCreateVariable(const char *varname)
 
     if(retval != 0)
         retval->SetName(varname);
+    else
+    {
+        debug1 << mName << "EMPTY variable " << varname << endl;
+    }
 
     return retval;
 }
 #endif
-///////////////////////////////////////////////////////////////////////////////
 
+// ****************************************************************************
+// Method: gmvValidVariable
+//
+// Purpose: 
+//   Determine whether gmvCreateVariable would return a valid array.
+//
+// Arguments:  None -- but the current gmv structure is used.
+//
+// Returns:    
+//
+// Note:       Called on engine and mdserver.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 12:23:05 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool 
+gmvValidVariable()
+{
+    bool retval = false;
+    if(gmv_data.ndoubledata1 > 0 && gmv_data.ndoubledata2 > 0 && gmv_data.ndoubledata3 > 0)
+    {
+        retval = true;
+    }
+    // Scalar case
+    else if(gmv_data.ndoubledata1 > 0)
+    {
+        retval = true;
+    }
+    else if(gmv_data.nlongdata1 > 0)
+    {
+        retval = true;
+    }
+    else if(gmv_data.nchardata1 > 0)
+    {
+        retval = true;
+    }
+
+    return retval;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
 //  Method: avtGMVFileFormat constructor
@@ -1117,6 +1165,9 @@ removets(const char *s)
 //   Brad Whitlock, Tue Feb 21 14:06:14 PST 2012
 //   Fix memory leaks. Only consider the file to be open if err == 0.
 //
+//   Brad Whitlock, Wed Aug 22 12:41:41 PDT 2012
+//   be more defensive about gmvCreateVariable returning NULL.
+//
 // ****************************************************************************
 
 void
@@ -1261,7 +1312,7 @@ avtGMVFileFormat::ReadData()
                         bool valid = true;
 #ifndef MDSERVER
                         vtkDataArray *arr = gmvCreateVariable("velocity");
-                        if(pos->second.polyhedralSplit != NULL)
+                        if(arr != 0 && pos->second.polyhedralSplit != NULL)
                         {
                             vtkDataArray *expanded = pos->second.polyhedralSplit->
                                 ExpandDataArray(arr, gmv_data.datatype == CELL);
@@ -1272,14 +1323,16 @@ avtGMVFileFormat::ReadData()
                         if(gmv_data.datatype == NODE)
                         {
 #ifndef MDSERVER
-                            pos->second.dataset->GetPointData()->AddArray(arr);
+                            if(arr != 0)
+                                pos->second.dataset->GetPointData()->AddArray(arr);
 #endif
                             c = AVT_NODECENT;
                         }
                         else if(gmv_data.datatype == CELL)
                         {
 #ifndef MDSERVER
-                            pos->second.dataset->GetCellData()->AddArray(arr);
+                            if(arr != 0)
+                                pos->second.dataset->GetCellData()->AddArray(arr);
 #endif
                             c = AVT_ZONECENT;
                         }
@@ -1289,7 +1342,10 @@ avtGMVFileFormat::ReadData()
                             debug1 << "Unsupported variable centering" << endl;
                         }
 #ifndef MDSERVER
-                        arr->Delete(); arr = 0;
+                        if(arr != 0)
+                        {
+                            arr->Delete(); arr = 0;
+                        }
 #endif
                         avtVectorMetaData *vmd = new avtVectorMetaData;
                         vmd->name = "velocity";
@@ -1318,7 +1374,7 @@ avtGMVFileFormat::ReadData()
                             arr = expanded;
                         }
 #endif
-                        bool valid = true;
+                        bool valid = gmvValidVariable();
                         avtCentering c = AVT_UNKNOWN_CENT;
                         if(gmv_data.datatype == NODE)
                         {
@@ -1361,7 +1417,7 @@ avtGMVFileFormat::ReadData()
 #ifndef MDSERVER
                         vtkDataArray *arr = gmvCreateVariable(name.c_str());
                         // Expand out the data if we needed to split cells or add nodes.
-                        if(pos->second.polyhedralSplit != NULL)
+                        if(arr != 0 && pos->second.polyhedralSplit != NULL)
                         {
                             vtkDataArray *expanded = pos->second.polyhedralSplit->
                                 ExpandDataArray(arr, gmv_data.datatype == CELL);
@@ -1369,19 +1425,21 @@ avtGMVFileFormat::ReadData()
                             arr = expanded;
                         }
 #endif
-                        bool valid = true;
+                        bool valid = gmvValidVariable();
                         avtCentering c = AVT_UNKNOWN_CENT;
                         if(gmv_data.datatype == NODE)
                         {
 #ifndef MDSERVER
-                            pos->second.dataset->GetPointData()->AddArray(arr);
+                            if(arr != 0)
+                                pos->second.dataset->GetPointData()->AddArray(arr);
 #endif
                             c = AVT_NODECENT;
                         }
                         else if(gmv_data.datatype == CELL)
                         {
 #ifndef MDSERVER
-                            pos->second.dataset->GetCellData()->AddArray(arr);
+                            if(arr != 0)
+                                pos->second.dataset->GetCellData()->AddArray(arr);
 #endif
                             c = AVT_ZONECENT;
                         }
@@ -1391,7 +1449,10 @@ avtGMVFileFormat::ReadData()
                             debug1 << "Unsupported variable centering" << endl;
                         }
 #ifndef MDSERVER
-                        arr->Delete(); arr = 0;
+                        if(arr != 0)
+                        {
+                            arr->Delete(); arr = 0;
+                        }
 #endif
                         avtScalarMetaData *smd = new avtScalarMetaData;
                         smd->name = name;
@@ -1442,16 +1503,21 @@ avtGMVFileFormat::ReadData()
                         {
                             EXCEPTION1(InvalidFilesException,"Variable without mesh");
                         }
+                        bool valid = gmvValidVariable();
 #ifndef MDSERVER
                         vtkDataArray *arr = gmvCreateVariable(name.c_str());
-                        pos->second.dataset->GetPointData()->AddArray(arr);
-                        arr->Delete();
+                        if(arr != 0)
+                        {
+                            pos->second.dataset->GetPointData()->AddArray(arr);
+                            arr->Delete();
+                            valid = true;
+                        }
 #endif
                         avtScalarMetaData *smd = new avtScalarMetaData;
                         smd->name = name;
                         smd->meshName = meshname;
                         smd->centering = AVT_NODECENT;
-                        smd->validVariable = true;
+                        smd->validVariable = valid;
                         md.Add(smd);
                     }
                     break;
