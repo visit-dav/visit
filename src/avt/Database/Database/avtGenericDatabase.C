@@ -6589,6 +6589,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Mark C. Miller, Wed Aug 22 08:43:26 PDT 2012
+//    Added logic to cleanup VTK objects before EXCEPTION
 // ****************************************************************************
 
 bool
@@ -6659,7 +6662,12 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         vtkIntArray *g = (vtkIntArray *)
             rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeNumbers");
         if (g == NULL)  // Name of array changed out from underneath us?
+        {
+            copy->Delete();
+            rpf->Delete();
+            ff->Delete();
             EXCEPTION0(ImproperUseException);
+        }
         vtkIntArray *l = (vtkIntArray *)
                rpf->GetOutput()->GetPointData()->GetArray("avtOriginalNodeId");
 

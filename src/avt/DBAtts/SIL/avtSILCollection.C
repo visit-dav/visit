@@ -46,6 +46,8 @@
 
 #include <avtSILNamespace.h>
 
+#include <ImproperUseException.h>
+
 
 using     std::string;
 using     std::vector;
@@ -94,6 +96,27 @@ avtSILCollection::~avtSILCollection()
     }
 }
 
+// ****************************************************************************
+//  Method: avtSILCollection destructor
+//
+//  Programmer: Mark C. Miller, Wed Aug 22 08:33:09 PDT 2012
+//
+//  Added private operator= and copy constructor to prevent inadvertent use.
+//  The class has a data member that points to heap memory but these
+//  methods were never implemented and it was easier to simply prevent their
+//  accidental use than to figure out how best to implement them.
+
+// ****************************************************************************
+avtSILCollection::avtSILCollection(const avtSILCollection&)
+{
+    EXCEPTION0(ImproperUseException);
+}
+
+const avtSILCollection&
+avtSILCollection::operator=(const avtSILCollection&)
+{
+    EXCEPTION0(ImproperUseException);
+}
 
 // ****************************************************************************
 //  Method: avtSILCollection::Print

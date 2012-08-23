@@ -123,6 +123,8 @@ avtFindExternalExpression::~avtFindExternalExpression()
 //    Hank Childs, Tue Feb  8 13:24:25 PST 2011
 //    Add support for "corner case" where nothing is on the exterior.
 //
+//    Mark C. Miller, Wed Aug 22 09:30:01 PDT 2012
+//    Fixed leak of 'pdrpf' on early return due to EXCEPTION.
 // ****************************************************************************
 
 vtkDataArray *
@@ -174,6 +176,8 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
     {
         if (ds->GetNumberOfCells() > 0)
         {
+            if (pdrpf != NULL)
+                pdrpf->Delete();
             EXCEPTION2(ExpressionException, outputVariableName, "An internal "
                    "error occurred when calculating the external nodes.");
         }

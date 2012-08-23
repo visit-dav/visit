@@ -3234,6 +3234,9 @@ avtRectilinearDomainBoundaries::ExchangeMesh(vector<int>         domainNum,
     }
     visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in rectmesh version)");
 
+    if (ghosts)
+        bhf_uchar->FreeBoundaryData(ghosts);
+
     return out;
 }
 

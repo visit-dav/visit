@@ -171,12 +171,16 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 //
 // Modifications:
 //
+//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
+//    Fix leak of result returned from GetSystemConfigFile.
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 {
-    std::ifstream is(GetSystemConfigFile("networks.dat"));
+    char *scf = GetSystemConfigFile("networks.dat");
+    std::ifstream is(scf);
+    delete [] scf;
 
     std::string line;
     while(std::getline(is, line))
@@ -205,12 +209,16 @@ QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 //
 // Modifications:
 //
+//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
+//    Fix leak of result returned from GetSystemConfigFile.
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 {
-    std::ifstream is(GetSystemConfigFile("default_configs.dat"));
+    char *scf = GetSystemConfigFile("default_configs.dat");
+    std::ifstream is(scf);
+    delete [] scf;
 
     std::string line;
     while(std::getline(is, line))
@@ -284,6 +292,8 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   Brad Whitlock, Fri Nov 11 09:52:13 PST 2011
 //   Prevent copying of "closed" profiles when we did not ask for them.
 //
+//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
+//    Fix leak of result returned from GetSystemConfigFile.
 // ****************************************************************************
 
 void
@@ -297,10 +307,12 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
     {
         if (it->checkBox->isChecked())
         {
+            char *scf1 = GetSystemConfigFile("");
+            char *scf2 = GetSystemConfigFile("allhosts/");
             QString srcHostProfileDirName = QString::fromStdString(
-                    GetIsDevelopmentVersion() ?
-                    GetSystemConfigFile("") :
-                    GetSystemConfigFile("allhosts/"));
+                    GetIsDevelopmentVersion() ?  scf1 : scf2);
+            delete [] scf1;
+            delete [] scf2;
             QDir srcHostProfileDir(
                     srcHostProfileDirName,
                     QString("host_") + it->shortName + QString("_*.xml"));
@@ -334,12 +346,14 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
                     std::string("-") +
                     it->shortName.toStdString() +
                     std::string(".ini");
-                QString srcCfgPath = GetSystemConfigFile(srcCfgName.c_str());
+                char *scf = GetSystemConfigFile(srcCfgName.c_str());
+                QString srcCfgPath = QString(scf);
                 if (QFile::exists(srcCfgPath))
                 {
                     installConfigFile(
                             srcCfgPath, GetDefaultConfigFile(configFilename[i]));
                 }
+                delete [] scf;
             }
         }
     }

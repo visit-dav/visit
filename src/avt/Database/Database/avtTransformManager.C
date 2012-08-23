@@ -1574,6 +1574,8 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //    I modified the routine to ignore the cache if any of the mesh
 //    discretization parameters have changed.
 //
+//    Mark C. Miller, Wed Aug 22 09:01:36 PDT 2012
+//    Fixed leak of matnames
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
@@ -1666,6 +1668,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
             delete [] matnos;
             for (j = 0; j < nmats; j++)
                 free(matnames[j]);
+            delete [] matnames;
 
             if (newmat)
             {

@@ -295,6 +295,7 @@ avtCurveCMFEExpression::RemoveDuplicateX(vtkRectilinearGrid *rgrid)
     }
     
 
+    delete [] y;
     delete [] Y;
     delete [] sum;
     return rg;

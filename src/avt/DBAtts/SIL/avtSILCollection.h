@@ -93,6 +93,11 @@ typedef enum
 //    Remove method GetSubsetList, add GetNumberOfSubsets, GetSubset in its
 //    place (prevents memory bloat).
 //
+//    Mark C. Miller, Wed Aug 22 08:28:17 PDT 2012
+//    Added private operator= and copy constructor to prevent inadvertent use.
+//    The class has a data member that points to heap memory but these
+//    methods were never implemented and it was easier to simply prevent their
+//    accidental use than to figure out how best to implement them.
 // ****************************************************************************
 
 class DBATTS_API avtSILCollection
@@ -125,6 +130,11 @@ class DBATTS_API avtSILCollection
     SILCategoryRole         role;
     int                     supersetIndex;
     avtSILNamespace        *subsets;
+
+  private:
+    const avtSILCollection& operator=(const avtSILCollection& sc);
+    avtSILCollection(const avtSILCollection& sc);
+  
 };
 
 
