@@ -107,6 +107,7 @@ int word2int(unsigned wordin);
 
 
 
+/* Mark C. Miller, Wed Aug 22, 2012: fix leak of filnam */
 int gmvread_checkfile(char *filnam)
 {
    /*                           */
@@ -116,6 +117,7 @@ int gmvread_checkfile(char *filnam)
    char magic[9], filetype[9];
    FILE *gmvchk;
    char* slash;
+   int alloc_filnam = 0;
 
    int chk_gmvend(FILE *gmvchk);
 
@@ -134,6 +136,7 @@ int gmvread_checkfile(char *filnam)
        strcat(temp, filnam);
        free( filnam );
        filnam = (char*)malloc(len *sizeof(char));
+       alloc_filnam = 1;
        strcpy(filnam, temp);
        free(temp);       
       }
@@ -153,8 +156,10 @@ int gmvread_checkfile(char *filnam)
    if(gmvchk == NULL)
       {
        fprintf(stderr,"GMV cannot open file %s\n",filnam);
+       if (alloc_filnam) free(filnam);
        return 1;
       }
+   if (alloc_filnam) free(filnam);
     
    /*  Read header. */
    binread(magic,charsize, CHAR, (long)8, gmvchk);
@@ -240,6 +245,7 @@ int gmvread_checkfile(char *filnam)
 }
 
 
+/* Mark C. Miller, Wed Aug 22, 2012: fix leak of filnam */
 int gmvread_open(char *filnam)
 {
    /*                                    */
@@ -248,6 +254,7 @@ int gmvread_open(char *filnam)
    int chkend, ilast, i, isize;
    char magic[9], filetype[9];
    char* slash;
+   int alloc_filnam = 0;
 
    int chk_gmvend(FILE *gmvin);
     
@@ -266,6 +273,7 @@ int gmvread_open(char *filnam)
        strcat(temp, filnam);
        free( filnam );
        filnam = (char*)malloc(len *sizeof(char));
+       alloc_filnam = 1;
        strcpy(filnam, temp);
        free(temp);
       }
@@ -285,6 +293,7 @@ int gmvread_open(char *filnam)
    if(gmvin == NULL)
       {
        fprintf(stderr,"GMV cannot open file %s\n",filnam);
+       if (alloc_filnam) free(filnam);
        return 1;
       }
     
@@ -293,6 +302,7 @@ int gmvread_open(char *filnam)
    if (strncmp(magic,"gmvinput",8) != 0)
       {
        fprintf(stderr,"This is not a GMV input file.\n");
+       if (alloc_filnam) free(filnam);
        return 2;
       }
 
@@ -304,6 +314,7 @@ int gmvread_open(char *filnam)
        if (!chkend)
          {
           fprintf(stderr,"Error - endgmv not found.\n");
+          if (alloc_filnam) free(filnam);
           return 3;
          }
       }
@@ -358,6 +369,7 @@ int gmvread_open(char *filnam)
        "  ascii, ieee, ieeei4r4, ieeei4r8, ieeei8r4, ieeei8r8.\n");
       fprintf(stderr,
        "  iecxi4r4, iecxi4r8, iecxi8r4, iecxi8r8.\n");
+      if (alloc_filnam) free(filnam);
       return 4;
      }
 
@@ -367,6 +379,7 @@ int gmvread_open(char *filnam)
       if (sizeof(long) < 8)
         {
          fprintf(stderr,"Cannot read 64bit I* types on this machine.\n");
+         if (alloc_filnam) free(filnam);
          return 4;
         }
      }
@@ -414,6 +427,7 @@ int gmvread_open(char *filnam)
         }
      }
    
+   if (alloc_filnam) free(filnam);
    return 0;
 }
 
@@ -6432,6 +6446,7 @@ static FILE *gmvrayin;
 void readrays(FILE* gmvrayin, int ftype);
 void readrayids(FILE* gmvrayin, int ftype);
 
+/* Mark C. Miller, Wed Aug 22, 2012: fix leak of filnam */
 int gmvrayread_open(char *filnam)
 {
    /*                                        */
@@ -6440,6 +6455,7 @@ int gmvrayread_open(char *filnam)
    int chkend;
    char magic[9], filetype[9];
    char * slash;
+   int alloc_filnam = 0;
 
    int chk_rayend(FILE *gmvrayin);
 
@@ -6458,6 +6474,7 @@ int gmvrayread_open(char *filnam)
        strcat(temp, filnam);
        free( filnam );
        filnam = (char*)malloc(len *sizeof(char));
+       alloc_filnam = 1;
        strcpy(filnam, temp);
        free(temp);
       }
@@ -6478,6 +6495,7 @@ int gmvrayread_open(char *filnam)
    if(gmvrayin == NULL)
       {
        fprintf(stderr,"GMV cannot open file %s\n",filnam);
+       if (alloc_filnam) free(filnam);
        return 1;
       }
     
@@ -6486,6 +6504,7 @@ int gmvrayread_open(char *filnam)
    if (strncmp(magic,"gmvrays",7) != 0)
       {
        fprintf(stderr,"This is not a GMV ray input file.\n");
+       if (alloc_filnam) free(filnam);
        return 2;
       }
 
@@ -6496,6 +6515,7 @@ int gmvrayread_open(char *filnam)
        if (!chkend)
          {
           fprintf(stderr,"Error - endray not found.\n");
+          if (alloc_filnam) free(filnam);
           return 3;
          }
       }
@@ -6549,6 +6569,7 @@ int gmvrayread_open(char *filnam)
        "  ascii, ieee, ieeei4r4, ieeei4r8, ieeei8r4, ieeei8r8.\n");
       fprintf(stderr,
        "  iecxi4r4, iecxi4r8, iecxi8r4, iecxi8r8.\n");
+      if (alloc_filnam) free(filnam);
       return 4;
      }
 
@@ -6558,6 +6579,7 @@ int gmvrayread_open(char *filnam)
       if (sizeof(long) < 8)
         {
          fprintf(stderr,"Cannot read 64bit I* types on this machine.\n");
+         if (alloc_filnam) free(filnam);
          return 4;
         }
      }
@@ -6583,6 +6605,7 @@ int gmvrayread_open(char *filnam)
      }
    if (ftype == ASCII) fscanf(gmvrayin,"%s%s",magic,filetype);
 
+   if (alloc_filnam) free(filnam);
    return 0;
 }
 

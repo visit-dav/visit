@@ -884,6 +884,9 @@ void avtFTLEFilter::ComputeNativeDataSetResolution(std::vector<avtIntegralCurve*
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
+//    Mark C. Miller, Wed Aug 22 19:22:40 PDT 2012
+//    Fix leak of all_indices, index_counts, all_result, result_counts on 
+//    rank 0 (root).
 // ****************************************************************************
 
 void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurve*> &ics)
@@ -919,10 +922,10 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
 
     //std::flush(cout);
 
-    int* all_indices;
-    int* index_counts;
-    double* all_result;
-    int *result_counts;
+    int* all_indices = 0;
+    int* index_counts = 0;
+    double* all_result = 0;
+    int *result_counts = 0;
 
     Barrier();
 
@@ -1120,6 +1123,11 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
         range[0] = minv;
         range[1] = maxv;
         e->Set(range);
+
+        if (all_indices) delete [] all_indices;
+        if (index_counts) delete [] index_counts;
+        if (all_result) delete [] all_result;
+        if (result_counts) delete [] result_counts;
     }
 }
 

@@ -29,6 +29,7 @@ static OBJECT **object_list = NULL;
 int object_lineparse(char *, OBJECT *);
 OBJECTFILE object_fopen(const char *filename, const char *mode);
 void object_fclose(OBJECTFILE file);
+/* Mark C. Miller, Wed Aug 22 15:22:30 PDT 2012: Fixed leak of list. */
 void object_set(char *get, ... )
 {
     va_list ap;
@@ -40,9 +41,9 @@ void object_set(char *get, ... )
     while (string != NULL)
     {
         ptr = va_arg(ap, void **);
+        list = strdup((char *)ptr);
         if (strcmp(string, "files") == 0)
         {
-            list = strdup((char *)ptr);
             nfiles = 0;
             file = strtok(list, " ");
             while (file != NULL)
@@ -52,7 +53,9 @@ void object_set(char *get, ... )
             }
         }
         string = strtok(NULL, " ");
+        free(list);
     }
+    free(what);
     va_end(ap);
 }
 
@@ -293,6 +296,7 @@ void object_compilevalue(OBJECT*object)
     if (object->valueptr) *object->valueptr = object->value;
 }
 
+/* Mark C. Miller, Wed Aug 22 15:27:25 PDT 2012: Fixed leak of name_save */
 FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 {
     static int lbuff = 0, msize = 0;
@@ -329,6 +333,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         ptr = strtok(NULL, ";");
         nname++;
     }
+    free(name_save);
     string = object->value;
     lstring = strlen(string) + 1;
     if (lstring > lbuff)    /* Create some temp character  array */

@@ -612,17 +612,22 @@ F_VISITDISCONNECT(void)
  *
  * Modifications:
  *
+ *   Mark C. Miller, Wed Aug 22 19:03:08 PDT 2012
+ *   Fixed leak of result returned from VisitGetLastError as well as calling
+ *   VisItGetLastError a second time when first call clears the last error.
  *****************************************************************************/
 
 FORTRAN
 F_VISITGETLASTERROR(char *dest, int *bufsize)
 {
     int M = *bufsize-1;
-    int S = strlen(VisItGetLastError())-1;
+    char *vgle = VisItGetLastError();
+    int S = strlen(vgle)-1;
     if(S < M)
         M = S;
-    strncpy(dest, VisItGetLastError(), M);
+    strncpy(dest, vgle, M);
     dest[M] = '\0';
+    free(vgle);
     return VISIT_OKAY;
 }
 

@@ -272,6 +272,10 @@ avtModelFitFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     return in_ds;
 }
 
+//    Mark C. Miller, Wed Aug 22 19:57:54 PDT 2012
+//    Removed superfolous code allocating and initializing local variables,
+//    score_mins and score_maxs. Nothing in the function was using these
+//    variables.  
 void
 avtModelFitFilter::PostExecute()
 {  
@@ -284,13 +288,6 @@ avtModelFitFilter::PostExecute()
     intVector tup_match;
     doubleVector mins;
     doubleVector point;
-
-    double *score_mins, *score_maxs;
-    score_mins = (double *)malloc(sizeof(double)*num_relats);
-    score_maxs = (double *)malloc(sizeof(double)*num_relats);
-
-    for(int i = 0; i < num_relats; i++)
-    score_mins[i] = score_maxs[i] = -1;
 
     int tup_index, var_index;
     vtkDataArray *darray;

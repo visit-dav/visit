@@ -108,6 +108,8 @@ avtSurfaceNormalExpression::~avtSurfaceNormalExpression()
 //    Hank Childs, Fri Sep 24 10:18:38 PDT 2010
 //    Add support for rectilinear grids.
 //
+//    Mark C. Miller, Wed Aug 22 09:29:42 PDT 2012
+//    Fixed leak of 'n' on early return due to EXCEPTION.
 // ****************************************************************************
 
 vtkDataArray *
@@ -149,6 +151,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
     else
         arr = out->GetCellData()->GetNormals();
     
+    n->Delete();
+
     if (arr == NULL)
     {
         EXCEPTION2(ExpressionException, outputVariableName, 
@@ -156,8 +160,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
                    "the surface normals could not be calculated.  Please "
                    "contact a VisIt developer.");
     }
+
     arr->Register(NULL);
-    n->Delete();
 
     return arr;
 }

@@ -606,6 +606,7 @@ namespace paraDIS {
   }
   //===========================================================================
   // see also DebugPrintArms() -- this just tabulates a summary
+  // Mark C. Miller, Wed Aug 22, 2012: fixed leak of armLengthBins, armBins
   void DataSet::PrintArmStats(void) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
@@ -773,6 +774,8 @@ namespace paraDIS {
       }
       printf("%-12s%-12ld%-12.3f\n", "TOTAL", totalArms, totalLength); 
     }
+    free(armLengthBins);
+    free(armBins);
 
 #ifdef DEBUG_SEGMENTS
     // check against segment lengths: 

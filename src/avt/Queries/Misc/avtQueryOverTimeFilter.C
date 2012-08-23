@@ -368,6 +368,8 @@ avtQueryOverTimeFilter::Execute(void)
 //  Programmer: Hank Childs
 //  Creation:   December 24, 2010
 //
+//    Mark C. Miller, Wed Aug 22 15:18:26 PDT 2012
+//    Fixed leak of stuff query points to.
 // ****************************************************************************
 
 bool
@@ -377,9 +379,10 @@ avtQueryOverTimeFilter::FilterSupportsTimeParallelization(void)
     qatts.SetTimeStep(currentTime);
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
-    return query->QuerySupportsTimeParallelization();
+    bool result = query->QuerySupportsTimeParallelization();
+    delete query;
+    return result;
 }
-
 
 // ****************************************************************************
 //  Method: avtQueryOverTimeFilter::UpdateDataObjectInfo

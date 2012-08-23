@@ -202,7 +202,7 @@ DDCMDHeader::DDCMDHeader(const char *fname, const char *subname)
     nGroups = object_getv1(obj, (char*)"groups", (void**)&groupNames, STRING);
     nTypes = object_getv1(obj, (char*)"types", (void**)&typeNames, STRING);
 
-    free(obj);
+    object_free(obj);
 
     //
     // Determine whether we have a cgrid or an atom file.
@@ -2270,7 +2270,7 @@ avtDDCMDFileFormat::avtDDCMDFileFormat(const char *filename)
             free(fileNames);
         }
 
-        free(obj);
+        object_free(obj);
     }
 
     dataRead = false;

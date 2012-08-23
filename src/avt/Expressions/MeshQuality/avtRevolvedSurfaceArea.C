@@ -147,6 +147,8 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    Mark C. Miller, Wed Aug 22 09:43:01 PDT 2012
+//    Fixed leaks of VTK objects from early return.
 // ****************************************************************************
 
 vtkDataArray *
@@ -215,6 +217,10 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     // We need line segment polydata, and should have it by now.
     if (ds_1d_nogz->GetDataObjectType() != VTK_POLY_DATA)
     {
+        tmp_ds->Delete();
+        geomFilter->Delete();
+        gzFilter->Delete();
+        boundaryFilter->Delete();
         debug1 << "ERROR:Did not get polydata from ghost zone filter output\n";
         return NULL;
     }
