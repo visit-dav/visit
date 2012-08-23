@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <SocketBridge.h>
+#include <unistd.h>
 
 
 // ****************************************************************************
