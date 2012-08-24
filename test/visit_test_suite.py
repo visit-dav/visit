@@ -217,7 +217,7 @@ def run_visit_test(args):
         curr_dir = os.getcwd()
         os.chdir(run_dir)
         rcode = sexe(rcmd,
-                     suppress_output=(not opts.verbose),
+                     suppress_output=(not (opts.verbose or opts.lessverbose)),
                      echo=False)
         # get end timestamp
         etime = time.time()
