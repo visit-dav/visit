@@ -45,7 +45,6 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
-#include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -53,6 +52,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtExtents.h>
 
@@ -295,6 +295,8 @@ avtExtrudeFilter::CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, int nStep
 // Creation:   Thu Jun 23 10:47:41 PDT 2011
 //
 // Modifications:
+//   Kathleen Biagas, Fri Aug 24, 16:24:21 MST 2012
+//   Preserve coordinate type.
 //   
 // ****************************************************************************
 
@@ -328,11 +330,11 @@ avtExtrudeFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
         coords[1] = rgrid->GetYCoordinates()->NewInstance();
         coords[1]->DeepCopy(rgrid->GetYCoordinates());
 
-        coords[2] = vtkFloatArray::New();
+        coords[2] = coords[0]->NewInstance();
         coords[2]->SetNumberOfTuples(dims[2]);
         for(int i = 0; i < dims[2]; ++i)
         {
-            float t = float(i) / float(dims[2]-1);
+            double t = double(i) / double(dims[2]-1);
             coords[2]->SetTuple1(i, t * atts.GetLength());
         }
 
@@ -372,35 +374,47 @@ avtExtrudeFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
 // Creation:   Thu Jun 23 10:49:03 PDT 2011
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Aug 24, 16:24:21 MST 2012
+//   Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkPoints *
 avtExtrudeFilter::CreateExtrudedPoints(vtkPoints *oldPoints, int nSteps) const
 {
     vtkIdType nOldNodes = oldPoints->GetNumberOfPoints();
-    vtkPoints *points = vtkPoints::New();
+    vtkPoints *points = vtkPoints::New(oldPoints->GetDataType());
     points->SetNumberOfPoints(nOldNodes * nSteps);
-        
-    float *pts = (float *) points->GetVoidPointer(0);
-    for(int k = 0; k < nSteps; ++k)
+
+#define extrude_points(type) \
+{ \
+    type *pts = (type *) points->GetVoidPointer(0); \
+    for(int k = 0; k < nSteps; ++k) \
+    { \
+        type t = type(k) / type(nSteps-1); \
+        avtVector offset(atts.GetAxis()); \
+        offset.normalize(); \
+        offset *= (atts.GetLength() * t); \
+        for(int j = 0; j < nOldNodes; ++j) \
+        { \
+            double pt[3]; \
+            oldPoints->GetPoint(j, pt); \
+            *pts++ = pt[0] + offset.x; \
+            *pts++ = pt[1] + offset.y; \
+            *pts++ = pt[2] + offset.z; \
+        } \
+    } \
+}
+
+    if(oldPoints->GetDataType() == VTK_FLOAT)
     {
-        float t = float(k) / float(nSteps-1);
-        avtVector offset(atts.GetAxis());
-        offset.normalize();
-        offset *= (atts.GetLength() * t);
-
-        for(int j = 0; j < nOldNodes; ++j)
-        {
-            double pt[3];
-            oldPoints->GetPoint(j, pt);
-
-            *pts++ = pt[0] + offset.x;
-            *pts++ = pt[1] + offset.y;
-            *pts++ = pt[2] + offset.z;
-        }
+        extrude_points(float);
     }
-
+    else if(oldPoints->GetDataType() == VTK_DOUBLE)
+    {
+        extrude_points(double);
+    }
+ 
     return points;
 }
 
@@ -421,6 +435,8 @@ avtExtrudeFilter::CreateExtrudedPoints(vtkPoints *oldPoints, int nSteps) const
 // Creation:   Thu Jun 23 10:50:10 PDT 2011
 //
 // Modifications:
+//   Kathleen Biagas, Fri Aug 24, 16:24:21 MST 2012
+//   Preserve coordinate type.
 //   
 // ****************************************************************************
 
@@ -461,28 +477,40 @@ avtExtrudeFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds) const
 
         dims[2] = atts.GetSteps()+1;
 
-        points = vtkPoints::New();
+        points = vtkVisItUtility::NewPoints(rgrid);
         points->SetNumberOfPoints(dims[0] * dims[1] * dims[2]);
-        float *pts = (float *) points->GetVoidPointer(0);
-        for(int k = 0; k < dims[2]; ++k)
+
+#define extrude_coords(type) \
+{ \
+        type *pts = (type *) points->GetVoidPointer(0); \
+        for(int k = 0; k < dims[2]; ++k) \
+        { \
+            type t = type(k) / type(dims[2]-1); \
+            avtVector offset(atts.GetAxis()); \
+            offset.normalize(); \
+            offset *= (atts.GetLength() * t); \
+ \
+            for(int j = 0; j < dims[1]; ++j) \
+            { \
+                double y = rgrid->GetYCoordinates()->GetTuple1(j); \
+                for(int i = 0; i < dims[0]; ++i) \
+                { \
+                    double x = rgrid->GetXCoordinates()->GetTuple1(i); \
+ \
+                    *pts++ = x + offset.x; \
+                    *pts++ = y + offset.y; \
+                    *pts++ = offset.z; \
+                } \
+            } \
+        } \
+}
+        if (points->GetDataType() == VTK_FLOAT)
         {
-            float t = float(k) / float(dims[2]-1);
-            avtVector offset(atts.GetAxis());
-            offset.normalize();
-            offset *= (atts.GetLength() * t);
-
-            for(int j = 0; j < dims[1]; ++j)
-            {
-                double y = rgrid->GetYCoordinates()->GetTuple1(j);
-                for(int i = 0; i < dims[0]; ++i)
-                {
-                    double x = rgrid->GetXCoordinates()->GetTuple1(i);
-
-                    *pts++ = x + offset.x;
-                    *pts++ = y + offset.y;
-                    *pts++ = offset.z;
-                }
-            }
+            extrude_coords(float);
+        }
+        else if (points->GetDataType() == VTK_DOUBLE)
+        {
+            extrude_coords(double);
         }
     }
     else
