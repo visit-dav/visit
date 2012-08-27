@@ -47,7 +47,7 @@
 
 #include <string>
 
-#include <avtMultipleInputExpressionFilter.h>
+#include <avtUnaryMathExpression.h>
 
 
 // ****************************************************************************
@@ -62,7 +62,7 @@
 // ****************************************************************************
 
 class EXPRESSION_API avtCurveIntegrateExpression 
-    : virtual public avtMultipleInputExpressionFilter
+    : virtual public avtUnaryMathExpression
 {
   public:
                              avtCurveIntegrateExpression();
@@ -72,11 +72,9 @@ class EXPRESSION_API avtCurveIntegrateExpression
     virtual const char      *GetDescription() 
                                  { return "Integrate a curve"; }
 
-    virtual int              NumVariableArguments() { return 1; }
-
   protected:
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-    virtual vtkDataArray    *DeriveVariable(vtkDataSet *) { return NULL;}
+    virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
+                                          int ncomponents, int ntuples);
     virtual avtVarType       GetVariableType(void) { return AVT_CURVE; };
 };
 
