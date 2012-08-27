@@ -101,35 +101,20 @@ avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtCurveIntegrateExpression::ExecuteData(vtkDataSet *in_ds, int index,
-                                         std::string label)
+void
+avtCurveIntegrateExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+                                         int ncomponents, int ntuples)
 {
-    vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(in_ds);
-    vtkDataArray *xvals = curve->GetXCoordinates();
-    vtkDataArray *yvals = curve->GetPointData()->GetArray(varnames[0]);
-
-    vtkIdType npts = yvals->GetNumberOfTuples();
-    vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(npts, yvals->GetDataType());
-
-    vtkDataArray *newXvals = rv->GetXCoordinates();
-    vtkDataArray *newYvals = yvals->NewInstance();
-    newYvals->SetNumberOfTuples(npts);
-    newYvals->SetName(GetOutputVariableName());
-    rv->GetPointData()->SetScalars(newYvals);
-    newYvals->Delete();
+    vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(cur_mesh);
+    vtkDataArray *xcoords = curve->GetXCoordinates();
 
     double sum = 0.;
-    newXvals->SetTuple1(0, xvals->GetTuple1(0));
-    newYvals->SetTuple1(0, sum);
-    for (vtkIdType i = 1; i < npts; ++i)
+    out->SetTuple1(0, sum);
+    for (vtkIdType i = 1; i < ntuples; ++i)
     {
-        double dx = xvals->GetTuple1(i) - xvals->GetTuple1(i-1);
-        double dy = (yvals->GetTuple1(i-1) + yvals->GetTuple1(i)) / 2.;
-        sum += dx  * dy;
-        newXvals->SetTuple1(i, xvals->GetTuple1(i));
-        newYvals->SetTuple1(i, sum);
+        double dx = xcoords->GetTuple1(i) - xcoords->GetTuple1(i-1);
+        double dy = (in->GetTuple1(i-1) + in->GetTuple1(i)) / 2.;
+        sum += dx * dy;
+        out->SetTuple1(i, sum);
     }
-
-    return rv;
 }
