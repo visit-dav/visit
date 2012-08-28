@@ -67,6 +67,7 @@
 #include <avtCurveDomainExpression.h>
 #include <avtCurveExpression.h>
 #include <avtCurveIntegrateExpression.h>
+#include <avtCurveSwapXYExpression.h>
 #include <avtCylindricalCoordinatesExpression.h>
 #include <avtDegreeExpression.h>
 #include <avtDisplacementExpression.h>
@@ -481,6 +482,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Eric Brugger, Mon Aug 20 10:14:23 PDT 2012
 //    Added curve_integrate.
 //
+//    Eric Brugger, Mon Aug 27 11:34:02 PDT 2012
+//    Added curve_swapxy.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -618,6 +622,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCurveDomainExpression();
     if (functionName == "curve_integrate")
         return new avtCurveIntegrateExpression();
+    if (functionName == "curve_swapxy")
+        return new avtCurveSwapXYExpression();
     if (functionName == "curve")
         return new avtCurveExpression();
 

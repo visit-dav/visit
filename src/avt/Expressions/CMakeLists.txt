@@ -60,6 +60,9 @@
 #    Eric Brugger, Mon Aug 20 08:59:10 PDT 2012
 #    Added avtCurveIntegrateExpression.
 #
+#    Eric Brugger, Mon Aug 27 11:32:43 PDT 2012
+#    Added avtCurveSwapXYExpression.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -131,6 +134,7 @@ General/avtCurlExpression.C
 General/avtCurveDomainExpression.C
 General/avtCurveExpression.C
 General/avtCurveIntegrateExpression.C
+General/avtCurveSwapXYExpression.C
 General/avtDataIdExpression.C
 General/avtDegreeExpression.C
 General/avtDistanceToBestFitLineExpression.C
