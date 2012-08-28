@@ -37,85 +37,47 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                     avtCurveIntegrateExpression.C                         //
+//                        avtCurveSwapXYExpression.h                         //
 // ************************************************************************* //
 
-#include <avtCurveIntegrateExpression.h>
+#ifndef AVT_CURVESWAPXY_EXPRESSION_H
+#define AVT_CURVESWAPXY_EXPRESSION_H
 
-#include <math.h>
-#include <float.h>
+#include <expression_exports.h>
 
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkPointData.h>
-#include <vtkRectilinearGrid.h>
+#include <string>
 
-#include <vtkVisItUtility.h>
+#include <avtSingleInputExpressionFilter.h>
 
 
 // ****************************************************************************
-//  Method: avtCurveIntegrateExpression constructor
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
-//
-// ****************************************************************************
-
-avtCurveIntegrateExpression::avtCurveIntegrateExpression()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtCurveIntegrateExpression destructor
-//
-//  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
-//
-// ****************************************************************************
-
-avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtCurveIntegrateExpression::DoOperation
+//  Class: avtCurveSwapXYExpression
 //
 //  Purpose:
-//      The code to integrate the curve.
-//
-//  Arguments:
-//      in        The input data array.
-//      out       The output data array.
-//      <unused>  The number of components.
-//      ntuples   The number of tuples in the data arrays.
-//
-//  Returns:      The output dataset.
+//      Swap the x and y coordinates of a curve.
 //
 //  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
-//
-//  Modifications:
+//  Creation:   August 27, 2012
 //
 // ****************************************************************************
 
-void
-avtCurveIntegrateExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples)
+class EXPRESSION_API avtCurveSwapXYExpression 
+    : virtual public avtSingleInputExpressionFilter
 {
-    vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(cur_mesh);
-    vtkDataArray *xcoords = curve->GetXCoordinates();
+  public:
+                             avtCurveSwapXYExpression();
+    virtual                 ~avtCurveSwapXYExpression();
 
-    double sum = 0.;
-    out->SetTuple1(0, sum);
-    for (vtkIdType i = 1; i < ntuples; ++i)
-    {
-        double dx = xcoords->GetTuple1(i) - xcoords->GetTuple1(i-1);
-        double dy = (in->GetTuple1(i-1) + in->GetTuple1(i)) / 2.;
-        sum += dx * dy;
-        out->SetTuple1(i, sum);
-    }
-}
+    virtual const char      *GetType() { return "avtCurveSwapXYExpression"; }
+    virtual const char      *GetDescription() 
+                                 { return "Swap the x and y coordinates of a curve"; }
+
+  protected:
+
+    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
+    virtual vtkDataArray    *DeriveVariable(vtkDataSet *) { return NULL;}
+    virtual avtVarType       GetVariableType(void) { return AVT_CURVE; };
+};
+
+
+#endif

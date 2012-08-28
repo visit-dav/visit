@@ -80,5 +80,3 @@ class EXPRESSION_API avtCurveIntegrateExpression
 
 
 #endif
-
-

@@ -88,8 +88,9 @@ avtCurveDomainExpression::~avtCurveDomainExpression()
 //      Does the actual VTK code to modify the dataset.
 //
 //  Arguments:
-//      inDS      The input dataset.
+//      in_ds     The input dataset.
 //      <unused>  The domain number.
+//      <unused>  The label.
 //
 //  Returns:      The output dataset.
 //
@@ -105,7 +106,7 @@ avtCurveDomainExpression::~avtCurveDomainExpression()
 
 vtkDataSet *
 avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
-                                 std::string label)
+                                      std::string label)
 {
     vtkDataArray *yval = in_ds->GetPointData()->GetArray(varnames[0]);
     vtkDataArray *xval = in_ds->GetPointData()->GetArray(varnames[1]);
@@ -134,7 +135,7 @@ avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
     newY->SetTuple1(0, yval->GetTuple1(0));
     nptsValid = 1;
     xmax = xval->GetTuple1(0);
-    for (vtkIdType i = 0; i < npts; ++i)
+    for (vtkIdType i = 1; i < npts; ++i)
     {
         if (xval->GetTuple1(i) > xmax)
         {
@@ -147,5 +148,3 @@ avtCurveDomainExpression::ExecuteData(vtkDataSet *in_ds, int index,
 
     return rv;
 }
-
-

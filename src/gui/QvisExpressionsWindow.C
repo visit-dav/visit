@@ -181,6 +181,9 @@
 //    Eric Brugger, Mon Aug 20 13:21:19 PDT 2012
 //    Added curve_cmfe and curve_domain.
 //
+//    Eric Brugger, Mon Aug 27 13:16:58 PDT 2012
+//    Added curve_swapxy.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -358,6 +361,7 @@ const char *expr_misc[] = {
     "curl",
     "curve_domain",
     "curve_integrate",
+    "curve_swapxy",
     "cycle",
     "divergence",
     "enumerate",

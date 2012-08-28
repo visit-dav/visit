@@ -84,5 +84,3 @@ class EXPRESSION_API avtCurveDomainExpression
 
 
 #endif
-
-

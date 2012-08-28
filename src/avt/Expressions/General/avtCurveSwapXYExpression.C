@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                     avtCurveIntegrateExpression.C                         //
+//                       avtCurveSwapXYExpression.C                          //
 // ************************************************************************* //
 
-#include <avtCurveIntegrateExpression.h>
+#include <avtCurveSwapXYExpression.h>
 
 #include <math.h>
 #include <float.h>
@@ -54,68 +54,108 @@
 
 
 // ****************************************************************************
-//  Method: avtCurveIntegrateExpression constructor
+//  Method: avtCurveSwapXYExpression constructor
 //
 //  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
+//  Creation:   August 27, 2012
 //
 // ****************************************************************************
 
-avtCurveIntegrateExpression::avtCurveIntegrateExpression()
+avtCurveSwapXYExpression::avtCurveSwapXYExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtCurveIntegrateExpression destructor
+//  Method: avtCurveSwapXYExpression destructor
 //
 //  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
+//  Creation:   August 27, 2012
 //
 // ****************************************************************************
 
-avtCurveIntegrateExpression::~avtCurveIntegrateExpression()
+avtCurveSwapXYExpression::~avtCurveSwapXYExpression()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtCurveIntegrateExpression::DoOperation
+//  Method: avtCurveSwapXYExpression::ExecuteData
 //
 //  Purpose:
-//      The code to integrate the curve.
+//      The code to swap the x and y coordinates of the curve.
 //
 //  Arguments:
-//      in        The input data array.
-//      out       The output data array.
-//      <unused>  The number of components.
-//      ntuples   The number of tuples in the data arrays.
+//      in_ds     The input dataset.
+//      <unused>  The domain number.
+//      <unused>  The label.
 //
 //  Returns:      The output dataset.
 //
 //  Programmer: Eric Brugger
-//  Creation:   August 17, 2012
+//  Creation:   August 27, 2012
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-void
-avtCurveIntegrateExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                         int ncomponents, int ntuples)
+vtkDataSet *
+avtCurveSwapXYExpression::ExecuteData(vtkDataSet *in_ds, int index,
+                                      std::string label)
 {
-    vtkRectilinearGrid *curve = vtkRectilinearGrid::SafeDownCast(cur_mesh);
-    vtkDataArray *xcoords = curve->GetXCoordinates();
+    //
+    // Get the inputs.
+    //
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(in_ds);
+    vtkDataArray *xval = rgrid->GetXCoordinates();
+    vtkDataArray *yval = in_ds->GetPointData()->GetArray(activeVariable);
+    vtkIdType npts = xval->GetNumberOfTuples();
 
-    double sum = 0.;
-    out->SetTuple1(0, sum);
-    for (vtkIdType i = 1; i < ntuples; ++i)
+    //
+    // Determine the number of valid points.
+    //
+    int nptsValid = 1;
+    double ymax = yval->GetTuple1(0);
+    for (vtkIdType i = 1; i < npts; ++i)
     {
-        double dx = xcoords->GetTuple1(i) - xcoords->GetTuple1(i-1);
-        double dy = (in->GetTuple1(i-1) + in->GetTuple1(i)) / 2.;
-        sum += dx * dy;
-        out->SetTuple1(i, sum);
+        if (yval->GetTuple1(i) > ymax)
+        {
+            nptsValid++;
+            ymax = yval->GetTuple1(i);
+        }
     }
+
+    //
+    // Create the output data set.
+    //
+    vtkRectilinearGrid *rv = vtkVisItUtility::Create1DRGrid(nptsValid, xval->GetDataType());
+
+    vtkDataArray *newX = rv->GetXCoordinates();
+    vtkDataArray *newY = yval->NewInstance();
+    newY->SetNumberOfTuples(nptsValid);
+    newY->SetName(GetOutputVariableName());
+    rv->GetPointData()->SetScalars(newY);
+    newY->Delete();
+
+    //
+    // Set the x and y values.
+    //
+    newX->SetTuple1(0, yval->GetTuple1(0));
+    newY->SetTuple1(0, xval->GetTuple1(0));
+    nptsValid = 1;
+    ymax = yval->GetTuple1(0);
+    for (vtkIdType i = 1; i < npts; ++i)
+    {
+        if (yval->GetTuple1(i) > ymax)
+        {
+            newX->SetTuple1(nptsValid, yval->GetTuple1(i));
+            newY->SetTuple1(nptsValid, xval->GetTuple1(i));
+            nptsValid++;
+            ymax = yval->GetTuple1(i);
+        }
+    }
+
+    return rv;
 }
