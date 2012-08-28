@@ -497,7 +497,7 @@ void avtWPPImageFileFormat::Initialize()
 
     double plane_value = 0;
     int slice_plane;
-    char *ptr = 0;
+    const char *ptr = 0;
     if((ptr = strstr( m_filename.c_str(), "x=")) != NULL)
        slice_plane = 0;
     else if((ptr = strstr(m_filename.c_str(), "y=")) != NULL)
