@@ -98,6 +98,7 @@ bool avtOpenGLSLIVRVolumeRenderer::slivrInit = false;
 avtOpenGLSLIVRVolumeRenderer::avtOpenGLSLIVRVolumeRenderer() : oldAtts()
 {
     context = 0;
+    videoCardMemorySize = video_card_memory_size();
 }
 
 // ****************************************************************************
@@ -229,11 +230,6 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
         delete context->cmap2[c];
     context->cmap2.clear();
 
-    const float opacityScaling = 0.002;
-
-    // Look in the atts. Does the cmap look 2D?
-    //    cmap2D = atts.GetOpacityVariable() != "default"; // || atts.DoMultivariate()
-    
     if(cmap2D)
     {
         // Make a ColorMap2 from the plot atts.
@@ -309,8 +305,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
             *fptr++ = (float(*cptr++) / 255.f);
             *fptr++ = (float(*cptr++) / 255.f);
             *fptr++ = (float(*cptr++) / 255.f);
-            *fptr++ = (float(*cptr++) / 255.f) * 
-                      atts.GetOpacityAttenuation() * opacityScaling;
+            *fptr++ = (float(*cptr++) / 255.f);
         }
 #ifdef TAKE_ENTRY_ZERO_FOR_NO_DATA
         rgba_f[0] = 0.;
@@ -403,15 +398,18 @@ avtOpenGLSLIVRVolumeRenderer::Render(
 
     // If the context needs to be created, do so now.
     vtkRectilinearGrid *grid = (vtkRectilinearGrid *)volume.grid;
-    CreateContext(grid,
-                  volume.data.data, volume.opacity.data,
-                  props.atts, 
-                  volume.data.min, volume.data.max,
-                  volume.opacity.min, volume.opacity.max,
-                  volume.gmn);
-
+    if (context == 0)
+      CreateContext(grid,
+                    volume.data.data, volume.opacity.data,
+                    props.atts, 
+                    volume.data.min, volume.data.max,
+                    volume.opacity.min, volume.opacity.max,
+                    volume.gmn);
     if(context == 0)
         return;
+
+    // create a range from -1 to 1 instead of from 0 - 1
+    context->renderer->set_slice_alpha(props.atts.GetOpacityAttenuation()*2.0 - 1.0);
 
     // Render the context.
     debug5 << mName << "Rendering..." << endl;
@@ -493,6 +491,8 @@ avtOpenGLSLIVRVolumeRenderer::SlivrContext::~SlivrContext()
         nrrdNuke(cmap2_image);
     if(renderer != 0)
         delete renderer;
+    for(int i=0;i<planes.size();i++)
+      delete planes[i];
 }
 
 // ****************************************************************************
@@ -581,6 +581,17 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
 
     float samplingRate = atts.GetRendererSamples();
 
+    int vcm = videoCardMemorySize;
+    debug5 << mName << "video_card_memory_size = " << vcm << endl;
+
+    if (vcm==0)
+    {
+      std::stringstream sstr;
+      sstr << "Insufficient video card memory to run SLIVR.";
+      avtCallback::IssueWarning(sstr.str().c_str());
+      return;
+    }
+
     debug5 << mName << "Creating new context" << endl;
     context = new SlivrContext();
     if(context == 0)
@@ -617,9 +628,17 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
                 if(fdata[k] < NO_DATA)
                     ccdata[k] = 0;
                 else
-                {
-                    float t = (fdata[k] - vmin) * inv_d;
-                    ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
+                {   
+                  // Changed to match SCIRun.
+                  float val = fdata[k];
+                  if (val > vmax)
+                    val = vmax;
+                  else
+                    if (val < vmin)
+                      val = vmin;
+            
+                  float t = (val - vmin) * inv_d;
+                  ccdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
                 }
             }
             ccdata += nvals;
@@ -633,12 +652,13 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
     }
     else
     {
+      if (data->GetDataType()==VTK_FLOAT)
+      {
 #ifdef CREATE_UCHAR_NRRD
         int nvals = size[0]*size[1]*size[2];
         unsigned char *cdata = new unsigned char[nvals];
         float *fdata = (float *)data->GetVoidPointer(0);
         float d = vmax - vmin;
-#ifdef TAKE_ENTRY_ZERO_FOR_NO_DATA
         float inv_d = 1.f / d;
         for(int k = 0; k < nvals; ++k)
         {
@@ -646,16 +666,18 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
                 cdata[k] = 0;
             else
             {
-                float t = (fdata[k] - vmin) * inv_d;
-                cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
+              // Changed to match SCIRun.
+              float val = fdata[k];
+              if (val > vmax)
+                val = vmax;
+              else
+                if (val < vmin)
+                  val = vmin;
+          
+              float t = (val - vmin) * inv_d;                
+              cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
             }
         }
-#else
-        for(int k = 0; k < nvals; ++k)
-        {
-            cdata[k] = (unsigned char)(int)((fdata[k] - vmin) * 255. / d);
-        }
-#endif
         nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
                      3, size);
 
@@ -665,6 +687,43 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
         nrrdWrap_nva(context->data, data->GetVoidPointer(0), nrrdTypeFloat, 
                      3, size);
 #endif
+      }
+      else
+      {
+#ifdef CREATE_UCHAR_NRRD
+        int nvals = size[0]*size[1]*size[2];
+        unsigned char *cdata = new unsigned char[nvals];
+        double *fdata = (double *)data->GetVoidPointer(0);
+        double d = vmax - vmin;
+        double inv_d = 1.f / d;
+        for(int k = 0; k < nvals; ++k)
+        {
+            if(fdata[k] < NO_DATA)
+                cdata[k] = 0;
+            else
+            {
+              // Changed to match SCIRun.
+              double val = fdata[k];
+              if (val > vmax)
+                val = vmax;
+              else
+                if (val < vmin)
+                  val = vmin;
+          
+              double t = (val - vmin) * inv_d;                 
+              cdata[k] = (unsigned char)(((int)(t * 254.)) + 1);
+            }
+        }
+        nrrdWrap_nva(context->data, cdata, nrrdTypeUChar, 
+                     3, size);
+
+        // Store the pointer to the data in the nrrd so we can free it later.
+        context->data->ptr = (void*)cdata;
+#else
+        nrrdWrap_nva(context->data, data->GetVoidPointer(0), nrrdTypeDouble, 
+                     3, size);
+#endif
+      }
     }
 
     // Set the data min, max values.
@@ -723,7 +782,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
     context->tex->build(context->data, 0, //context->gm_data, 
                         vmin, vmax, 
                         0., 1., // gmin, gmax -- gradient
-                        video_card_memory_size());
+                        videoCardMemorySize);
     debug5 << mName << "Built texture" << endl;
 
     // Initialize colors using VisIt's transfer function.
@@ -732,9 +791,6 @@ avtOpenGLSLIVRVolumeRenderer::CreateContext(vtkRectilinearGrid *grid,
     debug5 << mName << "Built colormap" << endl;
 
     // Create the renderer.
-    int vcm = video_card_memory_size();
-    debug5 << "video_card_memory_size = " << vcm << endl;
-
     context->renderer = new SLIVR::VolumeRenderer(context->tex, 
         context->cm, context->cmap2, context->planes, vcm*1024*1024);
     context->renderer->set_sampling_rate(samplingRate);

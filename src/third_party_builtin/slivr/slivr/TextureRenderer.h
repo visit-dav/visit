@@ -45,8 +45,6 @@ namespace SLIVR {
 class FragmentProgramARB;
 class VolShaderFactory;
 
-typedef void (*PendingDeleteTextureCallback_type)(unsigned int);
-
 class SLIVRSHARE TextureRenderer 
 {
 public:
@@ -80,8 +78,6 @@ public:
   void get_bounds(BBox& bb) const { tex_->get_bounds(bb); }
 
   bool get_lighting() const { return lighting_; }
-
-  void set_pending_delete_texture_callback(PendingDeleteTextureCallback_type callback) { pending_delete_texture_callback_ = callback; }
 
 protected:
   Texture *tex_;
@@ -136,8 +132,6 @@ protected:
       nx(x), ny(y), nz(z), nb(b), id(i), brick(0), comp(0), textype(f) {}
   };
   vector<TexParam> tex_pool_;
-  
-  PendingDeleteTextureCallback_type pending_delete_texture_callback_;
   
   // Tests the bounding box against the current MODELVIEW and
   // PROJECTION matrices to determine if it is within the viewport.

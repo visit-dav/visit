@@ -398,15 +398,17 @@ Texture::build_bricks(vector<TextureBrick*> &bricks,
 
   bricks.clear();
 
+  int overlapLayers = 3;
+  double overlapLayers_div2 = overlapLayers*0.5;
   for (int k = 0; k < sz_z; k += bsize[2])
   {
-    if (k) k--;
+    if (k) k=std::max(0,k-overlapLayers);
     for (int j = 0; j < sz_y; j += bsize[1])
     {
-      if (j) j--;
+      if (j) j=std::max(0,j-overlapLayers);
       for (int i = 0; i < sz_x; i += bsize[0])
       {
-        if (i) i--;
+        if (i) i=std::max(0,i-overlapLayers);
         const int mx = Min(bsize[0], sz_x - i);
         const int my = Min(bsize[1], sz_y - j);
         const int mz = Min(bsize[2], sz_z - k);
@@ -422,37 +424,37 @@ Texture::build_bricks(vector<TextureBrick*> &bricks,
         }
 
         // Compute Texture Box.
-        const double tx0 = i?((mx2 - mx + 0.5) / mx2): 0.0;
-        const double ty0 = j?((my2 - my + 0.5) / my2): 0.0;
-        const double tz0 = k?((mz2 - mz + 0.5) / mz2): 0.0;
+        const double tx0 = i?((mx2 - mx + overlapLayers_div2) / mx2): 0.0;
+        const double ty0 = j?((my2 - my + overlapLayers_div2) / my2): 0.0;
+        const double tz0 = k?((mz2 - mz + overlapLayers_div2) / mz2): 0.0;
         
-        double tx1 = 1.0 - 0.5 / mx2;
+        double tx1 = 1.0 - overlapLayers_div2 / mx2;
         if (mx < bsize[0]) tx1 = 1.0;
         if (sz_x - i == bsize[0]) tx1 = 1.0;
 
-        double ty1 = 1.0 - 0.5 / my2;
+        double ty1 = 1.0 - overlapLayers_div2 / my2;
         if (my < bsize[1]) ty1 = 1.0;
         if (sz_y - j == bsize[1]) ty1 = 1.0;
 
-        double tz1 = 1.0 - 0.5 / mz2;
+        double tz1 = 1.0 - overlapLayers_div2 / mz2;
         if (mz < bsize[2]) tz1 = 1.0;
         if (sz_z - k == bsize[2]) tz1 = 1.0;
 
         BBox tbox(Point(tx0, ty0, tz0), Point(tx1, ty1, tz1));
 
         // Compute BBox.
-        double bx1 = Min((i + bsize[0] - 0.5) / (double)sz_x, 1.0);
+        double bx1 = Min((i + bsize[0] - overlapLayers_div2) / (double)sz_x, 1.0);
         if (sz_x - i == bsize[0]) bx1 = 1.0;
 
-        double by1 = Min((j + bsize[1] - 0.5) / (double)sz_y, 1.0);
+        double by1 = Min((j + bsize[1] - overlapLayers_div2) / (double)sz_y, 1.0);
         if (sz_y - j == bsize[1]) by1 = 1.0;
 
-        double bz1 = Min((k + bsize[2] - 0.5) / (double)sz_z, 1.0);
+        double bz1 = Min((k + bsize[2] - overlapLayers_div2) / (double)sz_z, 1.0);
         if (sz_z - k == bsize[2]) bz1 = 1.0;
 
-        BBox bbox(Point(i==0?0:(i+0.5) / (double)sz_x,
-                        j==0?0:(j+0.5) / (double)sz_y,
-                        k==0?0:(k+0.5) / (double)sz_z),
+        BBox bbox(Point(i==0?0:(i+overlapLayers_div2) / (double)sz_x,
+                        j==0?0:(j+overlapLayers_div2) / (double)sz_y,
+                        k==0?0:(k+overlapLayers_div2) / (double)sz_z),
                   Point(bx1, by1, bz1));
 
         TextureBrick *b = new TextureBrick(0, 0, mx2, my2, mz2, numc, numb, 

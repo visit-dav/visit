@@ -98,8 +98,7 @@ TextureRenderer::TextureRenderer(Texture* tex,
   use_blend_buffer_(true),
   free_tex_mem_(tex_mem),
   use_stencil_(false),
-  clear_pool_(false),
-  pending_delete_texture_callback_(NULL)
+  clear_pool_(false)
 {
 }
 
@@ -126,8 +125,7 @@ TextureRenderer::TextureRenderer(const TextureRenderer& copy) :
   use_blend_buffer_(copy.use_blend_buffer_),
   free_tex_mem_(copy.free_tex_mem_),
   use_stencil_(copy.use_stencil_),
-  clear_pool_(true),
-  pending_delete_texture_callback_(copy.pending_delete_texture_callback_)
+  clear_pool_(true)
 {
 }
 
@@ -137,13 +135,13 @@ TextureRenderer::~TextureRenderer()
   delete cmap2_shader_glsl_;
   delete vol_shader_factory_;
   
-  if (pending_delete_texture_callback_ != NULL)
+  for (size_t i = 0; i < tex_pool_.size(); i++)
   {
-    for (size_t i = 0; i < tex_pool_.size(); i++)
-    {
-      pending_delete_texture_callback_(tex_pool_[i].id);
-    }
+    glDeleteTextures(1, (GLuint*)&tex_pool_[i].id);  
   }
+
+  glDeleteFramebuffersEXT(1, &blend_framebuffer_);
+  glDeleteTextures(1, &blend_tex_id_);
 }
 
 
@@ -265,12 +263,9 @@ TextureRenderer::clear_tex_pool()
     size_t size = (tex_pool_[i].nx * tex_pool_[i].ny * 
 		   tex_pool_[i].nz * tex_pool_[i].nb);
     // delete tex object.
-    if(glIsTexture(tex_pool_[i].id))
-    {
-      glDeleteTextures(1, (GLuint*)&tex_pool_[i].id);
-      tex_pool_[i].id = 0;
-      free_tex_mem_ += size;
-    }
+    glDeleteTextures(1, (GLuint*)&tex_pool_[i].id);
+    tex_pool_[i].id = 0;
+    free_tex_mem_ += size;
   }
   clear_pool_ = false;
 }
@@ -397,10 +392,8 @@ TextureRenderer::load_brick(vector<TextureBrick*> &bricks, int bindex,
           }
           if (free_idx != -1)
           {
-            // delete found object
-            if(glIsTexture(tex_pool_[free_idx].id)) {
-              glDeleteTextures(1, (GLuint*)&tex_pool_[free_idx].id);
-	    }
+            // delete found object            
+            glDeleteTextures(1, (GLuint*)&tex_pool_[free_idx].id);
             tex_pool_[free_idx].id = 0;
           }
           free_tex_mem_ += size_max;
@@ -421,6 +414,8 @@ TextureRenderer::load_brick(vector<TextureBrick*> &bricks, int bindex,
           // reuse existing entry
           tex_pool_[idx[c]].nx = nx; tex_pool_[idx[c]].ny = ny;
           tex_pool_[idx[c]].nz = nz; tex_pool_[idx[c]].nb = nb;
+          //make sure the previous texture has been deleted
+          glDeleteTextures(1, (GLuint*)&tex_pool_[idx[c]].id);
           tex_pool_[idx[c]].id = tex_id;
         }
         free_tex_mem_ -= new_size;

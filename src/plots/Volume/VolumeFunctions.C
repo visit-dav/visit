@@ -1294,8 +1294,8 @@ VolumeHistograms(const VolumeAttributes &atts,
         }
     }
 
-    // Go through the 2D histogram data and scale it to [.1,1.] so we can
-    // use the results as a decent GL texture.
+    // Go through the 2D histogram data, apply gamma correction to make things more visible,
+    // and scale it to [.1,1.] so we can use the results as a decent GL texture.
     if(hist2_max > 0.)
     {
         int hist_size2 = hist_size * hist_size;
@@ -1303,9 +1303,10 @@ VolumeHistograms(const VolumeAttributes &atts,
         for (int index = 0; index < hist_size2; ++index)
         {
             if(hist2[index] > 0.)
-                hist2[index] = hist2[index] * h_scale + 0.1;
+                hist2[index] = pow(hist2[index] * h_scale + 0.1,0.5); // gamma: v=(v*h+0.1)^0.5
         }
     }
+
     // Normalize the 1D histogram data.
     if(hist_max > 0.)
     {
