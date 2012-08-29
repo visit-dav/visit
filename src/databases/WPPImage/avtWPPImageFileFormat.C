@@ -496,9 +496,9 @@ void avtWPPImageFileFormat::Initialize()
     debug5 << "No grid file, assuming Cartesian grid" << endl;
 
     double plane_value = 0;
-    int slice_plane;
+    int slice_plane = 2;
     const char *ptr = 0;
-    if((ptr = strstr( m_filename.c_str(), "x=")) != NULL)
+    if((ptr = strstr(m_filename.c_str(), "x=")) != NULL)
        slice_plane = 0;
     else if((ptr = strstr(m_filename.c_str(), "y=")) != NULL)
        slice_plane = 1;

@@ -129,6 +129,9 @@
 #    Brad Whitlock, Fri May 11 15:02:31 PDT 2012
 #    Add BATL reader.
 #
+#    Eric Brugger, Tue Aug 28 16:33:00 PDT 2012
+#    Add WPPImage reader.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -305,6 +308,7 @@ TSurf
 Tecplot
 VASP
 VTK
+WPPImage
 WavefrontOBJ
 XSF
 XYZ
