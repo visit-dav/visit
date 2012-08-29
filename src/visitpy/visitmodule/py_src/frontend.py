@@ -93,19 +93,16 @@ class VisItModuleState(object):
             vcmd = cls.__visit_cmd(vdir,cls.launch_args)
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
-            print "Using visitmodule: %s" % mod
+            #print "Using visitmodule: %s" % mod
             for k in env.keys():
                 if k != "LIBPATH" and k != "VISITARCHHOME":
-                    print k, env[k]
                     os.environ[k] = env[k]
-            #print os.environ
             mod = cls.__load_visitmodule(mod)
             for arg in cls.launch_args:
                 mod.AddArgument(arg)
             if not cls.debug_lvl is None:
                 mod.SetDebugLevel(str(cls.debug_lvl))
             vcmd = cls.__visit_cmd(vdir,[])
-            
             # this will add functions to the current
             # 'visit' module
             mod.Launch(vcmd)
