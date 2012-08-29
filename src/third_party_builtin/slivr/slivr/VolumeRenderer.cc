@@ -98,13 +98,15 @@ VolumeRenderer::VolumeRenderer(const VolumeRenderer& copy):
   adaptive_(copy.adaptive_),
   draw_level_(copy.draw_level_),
   level_alpha_(copy.level_alpha_),
-  planes_(copy.planes_)
+  planes_(copy.planes_),
+  depth_rb_(0)
 {
 }
 
 
 VolumeRenderer::~VolumeRenderer()
 {
+  glDeleteRenderbuffersEXT(1, &depth_rb_);
 }
 
 
@@ -175,6 +177,8 @@ VolumeRenderer::draw(bool draw_wireframe_p, bool interactive_mode_p,
 void
 VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
 {
+  glPushMatrix();
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
   CHECK_OPENGL_ERROR();
   Ray view_ray = compute_view();
   double length = view_ray.direction().length2();
@@ -307,10 +311,9 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
 
     if (blend_framebuffer_ == 0) {
       glEnable(GL_TEXTURE_RECTANGLE_ARB);
-      GLuint depth_rb;
       glGenFramebuffersEXT(1, &blend_framebuffer_);
       glGenTextures(1, &blend_tex_id_);
-      glGenRenderbuffersEXT(1, &depth_rb);
+      glGenRenderbuffersEXT(1, &depth_rb_);
       
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, blend_framebuffer_);
 
@@ -335,12 +338,12 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
       CHECK_OPENGL_ERROR();
 
       // Initialize depth renderbuffer
-      glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_rb);
+      glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_rb_);
       glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
 			       GL_DEPTH_COMPONENT24, w, h);
       glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
 				   GL_DEPTH_ATTACHMENT_EXT,
-				   GL_RENDERBUFFER_EXT, depth_rb);
+				   GL_RENDERBUFFER_EXT, depth_rb_);
     }
 
     CHECK_OPENGL_ERROR();
@@ -760,6 +763,8 @@ VolumeRenderer::draw_volume(bool interactive_mode_p, bool orthographic_p)
   }
 
   CHECK_OPENGL_ERROR();
+  glPopAttrib();
+  glPopMatrix();
 }
 
 

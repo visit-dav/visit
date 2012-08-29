@@ -110,6 +110,7 @@ protected:
     static bool      slivrInit;
     SlivrContext    *context;
     VolumeAttributes oldAtts;
+    int              videoCardMemorySize;
 };
 
 #endif

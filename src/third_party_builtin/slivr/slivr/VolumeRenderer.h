@@ -89,6 +89,7 @@ protected:
   vector< bool > draw_level_;
   vector< double > level_alpha_;
   vector<Plane *> planes_;
+  GLuint depth_rb_;
 };
 
 } // End namespace SLIVR

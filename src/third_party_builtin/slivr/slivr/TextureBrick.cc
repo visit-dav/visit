@@ -240,7 +240,7 @@ TextureBrick::compute_polygons(const Ray& view,
       }
     }
     
-    if (degree < 3) continue;
+    if (degree < 3 || degree > 6) continue;
     
     if (degree > 3)
     {

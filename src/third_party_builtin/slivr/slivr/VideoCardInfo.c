@@ -451,16 +451,16 @@ int video_card_memory_size()
 
 int video_card_memory_size()
 {
-    AGLRendererInfo info;
-    info = aglQueryRendererInfo(NULL, 0);
-    if(!info) {
-	return 0;
-    }
-    else {
-      GLint mem;
-      aglDescribeRenderer(info, AGL_VIDEO_MEMORY, &mem);
-      return mem/1024/1024;
-    }
+  AGLRendererInfo info;
+  info = aglQueryRendererInfoForCGDirectDisplayIDs(NULL, 0);
+  if (!info) 
+    return 0;
+
+  GLint mem;
+  aglDescribeRenderer(info, AGL_VIDEO_MEMORY, &mem);
+  aglDestroyRendererInfo(info);
+
+  return mem/1024/1024;
 }
 
 #else
