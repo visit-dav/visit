@@ -18,6 +18,8 @@
 // Creation:   Tue Dec 23 09:02:01 PST 2008
 //
 // Modifications:
+//   Kathleen Biagas, Thu Aug 30 15:05:12 MST 2012
+//   Added SetTuple(const T*val).
 //   
 // ****************************************************************************
 
@@ -41,6 +43,8 @@ public:
     void SetTuple1(T val)                                     { *ptr = val;                            }
     void SetTuple1(vtkIdType i, T val)                        { start[i*N] = val;                      }
     void SetTuple(vtkIdType i, const T *val)                  { memcpy(start + i*N, val, sizeof(T)*N); }
+
+    void SetTuple(const T *val)                               { memcpy(ptr, val, sizeof(T)*N); }
 
     T GetTuple1() const                                       { return *ptr;        }
     T GetTuple1(vtkIdType i) const                            { return start[i*N];  }
@@ -81,6 +85,8 @@ private:
 // Creation:   Tue Dec 23 09:02:01 PST 2008
 //
 // Modifications:
+//   Kathleen Biagas, Thu Aug 30 15:05:12 MST 2012
+//   Added Set/GetTuple method that don't take an index.
 //   
 // ****************************************************************************
 
@@ -101,10 +107,12 @@ public:
     void SetTuple1(double val)               { array->SetTuple1(index, val);   }
     void SetTuple1(vtkIdType i, double val)  { array->SetTuple1(i, val);       }
     void SetTuple(vtkIdType i, const double *val) { array->SetTuple(i, val);   }
+    void SetTuple(const double *val)         { array->SetTuple(index, val);   }
 
     double GetTuple1()                       { return array->GetTuple1(index); }
     double GetTuple1(vtkIdType i)            { return array->GetTuple1(i);     }
     double *GetTuple(vtkIdType i)            { return array->GetTuple(i);      }//does this work?
+    double *GetTuple()                       { return array->GetTuple(index); }
 
     void SetComponent(vtkIdType tuple, int comp, double val) { array->SetComponent(tuple, comp, val); }
     void SetComponent(int comp, double val)                  { array->SetComponent(index, comp, val); }

@@ -50,7 +50,9 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
+#include <avtAccessor.h>
 #include <avtSweepPlanePartitionStrategy.h>
 #include <avtMultiResolutionPartitionStrategy.h>
 
@@ -285,6 +287,49 @@ avtStructuredMeshChunker::ChunkRectilinearMesh(vtkRectilinearGrid *rgrid,
 
 
 // ****************************************************************************
+//  Method: avtStructuredMeshChunker_CopyPoints
+//
+//  Purpose:
+//      Templatized helper function to Copy points, 
+//      while preserving coordinate type.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 30, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <class Accessor> inline void
+avtStructuredMeshChunker_CopyPoints(bool copyPointData, int *dims,
+    int *index_size, int *start_index, vtkPointData *newPD, 
+    vtkPointData *origPD, Accessor orig_pts, Accessor new_pts)
+{
+    for (int k = 0 ; k < index_size[2] ; ++k)
+    {
+        int oldKBase = (k+start_index[2])*(dims[1]*dims[0]);
+        int newKBase = (k)*(index_size[1]*index_size[0]);
+        for (int j = 0 ; j < index_size[1] ; ++j)
+        {
+            int oldJBase = (j+start_index[1])*(dims[0]);
+            int newJBase = (j)*(index_size[0]);
+            for (int i = 0 ; i < index_size[0] ; ++i)
+            {
+                int oldIBase = (i+start_index[0]);
+                int newIBase = (i);
+
+                int oldIndex = oldKBase + oldJBase + oldIBase;
+                int newIndex = newKBase + newJBase + newIBase;
+                new_pts.SetTuple(newIndex, orig_pts.GetTuple(newIndex));
+                if (copyPointData)
+                    newPD->CopyData(origPD, oldIndex, newIndex);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method: ChunkCurvilinearMesh
 //
 //  Purpose:
@@ -303,6 +348,9 @@ avtStructuredMeshChunker::ChunkRectilinearMesh(vtkRectilinearGrid *rgrid,
 //    Hank Childs, Sun Apr  3 13:20:48 PDT 2005
 //    Allow for full grids to be copies of the input.  Note: change was made
 //    before above changes, but merged after.
+//
+//    Kathleen Biagas, Thu Aug 30 14:51:27 MST 2012
+//    Utilize helper function in order to preserve coordinate type.
 //
 // ****************************************************************************
 
@@ -330,7 +378,7 @@ avtStructuredMeshChunker::ChunkCurvilinearMesh(vtkStructuredGrid *sgrid,
     //
     vtkPointData *origPD = sgrid->GetPointData();
     vtkCellData *origCD = sgrid->GetCellData();
-    float *orig_pts = (float *) sgrid->GetPoints()->GetVoidPointer(0);
+    vtkPoints *origPts = sgrid->GetPoints();
     int nGrids = outDescr.size();
     for (int gridI = 0 ; gridI < nGrids ; gridI++)
     {
@@ -349,13 +397,12 @@ avtStructuredMeshChunker::ChunkCurvilinearMesh(vtkStructuredGrid *sgrid,
         vtkStructuredGrid *grid = vtkStructuredGrid::New();
         grid->SetDimensions(desc.index_size);
 
-        vtkPoints *pts = vtkPoints::New();
+        vtkPoints *pts = vtkPoints::New(origPts->GetDataType());
         grid->SetPoints(pts);
         pts->Delete();
         int npts = desc.NumPoints();
         int ncells = desc.NumCells();
         pts->SetNumberOfPoints(npts);
-        float *new_pts = (float *) pts->GetVoidPointer(0);
 
         vtkPointData *newPD = grid->GetPointData();
         bool copyPointData = (origPD->GetNumberOfArrays() > 0);
@@ -369,30 +416,26 @@ avtStructuredMeshChunker::ChunkCurvilinearMesh(vtkStructuredGrid *sgrid,
         //
         // Copy over the point data and the points themselves.
         //
-        for (k = 0 ; k < desc.index_size[2] ; k++)
+        if (origPts->GetDataType() == VTK_FLOAT)
         {
-            int oldKBase = (k+desc.start_index[2])*(dims[1]*dims[0]);
-            int newKBase = (k)*(desc.index_size[1]*desc.index_size[0]);
-            for (j = 0 ; j < desc.index_size[1] ; j++)
-            {
-                int oldJBase = (j+desc.start_index[1])*(dims[0]);
-                int newJBase = (j)*(desc.index_size[0]);
-                for (i = 0 ; i < desc.index_size[0] ; i++)
-                {
-                    int oldIBase = (i+desc.start_index[0]);
-                    int newIBase = (i);
-
-                    int oldIndex = oldKBase + oldJBase + oldIBase;
-                    int newIndex = newKBase + newJBase + newIBase;
- 
-                    new_pts[3*newIndex]   = orig_pts[3*newIndex];
-                    new_pts[3*newIndex+1] = orig_pts[3*newIndex+1];
-                    new_pts[3*newIndex+2] = orig_pts[3*newIndex+2];
-
-                    if (copyPointData)
-                        newPD->CopyData(origPD, oldIndex, newIndex);
-                }
-            }
+            avtStructuredMeshChunker_CopyPoints(copyPointData, dims,
+                desc.index_size, desc.start_index, newPD, origPD,
+                avtDirectAccessor<float>(origPts->GetData()),
+                avtDirectAccessor<float>(pts->GetData()));
+        }
+        else if (origPts->GetDataType() == VTK_DOUBLE)
+        {
+            avtStructuredMeshChunker_CopyPoints(copyPointData, dims,
+                desc.index_size, desc.start_index, newPD, origPD,
+                avtDirectAccessor<double>(origPts->GetData()),
+                avtDirectAccessor<double>(pts->GetData()));
+        }
+        else 
+        {
+            avtStructuredMeshChunker_CopyPoints(copyPointData, dims,
+                desc.index_size, desc.start_index, newPD, origPD,
+                avtTupleAccessor(origPts->GetData()),
+                avtTupleAccessor(pts->GetData()));
         }
 
         //
@@ -983,6 +1026,86 @@ avtStructuredMeshChunker::GetUnstructuredCellList(
 
 
 // ****************************************************************************
+//  Method: avtStructuredMeshChunker_CopyRGridPoints
+//
+//  Purpose:
+//      Templatized helper function to Copy RectilinearGrid coordinates
+//      to points, preserving coordinate type.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 30, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template<class Accessor> inline void
+avtStructuredMeshChunker_CopyRGridPoints( int nOrigPts, bool *needPt, 
+    const int *dims, int *newPtIndex, vtkPointData *origPD, vtkPointData* newPD,
+    Accessor x, Accessor y, Accessor z, Accessor pts)
+
+{
+    int nextIndex = 0;
+    pts.InitTraversal();
+    for (int i = 0 ; i < nOrigPts ; ++i)
+    {
+        if (needPt[i])
+        {
+            int I = (i%dims[0]);
+            int J = (i/dims[0])%dims[1];
+            int K = i/(dims[0]*dims[1]);
+            pts.SetComponent(0, x.GetComponent(I));
+            pts.SetComponent(1, x.GetComponent(J));
+            pts.SetComponent(2, x.GetComponent(K));
+            newPD->CopyData(origPD, i, nextIndex);
+            newPtIndex[i] = nextIndex++;
+            ++pts;
+        }
+        else
+            newPtIndex[i] = -1;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtStructuredMeshChunker_CopySGridPoints
+//
+//  Purpose:
+//      Templatized helper function to Copy points, 
+//      while preserving coordinate type.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 30, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template<class Accessor> inline void
+avtStructuredMeshChunker_CopySGridPoints( int nOrigPts, bool *needPt, 
+    const int *dims, int *newPtIndex, vtkPointData *origPD, vtkPointData* newPD,
+    Accessor orig_pts, Accessor new_pts)
+{
+    orig_pts.InitTraversal();
+    new_pts.InitTraversal();
+    int nextIndex = 0;
+    for (int i = 0 ; i < nOrigPts ; ++i)
+    {
+        if (needPt[i])
+        {
+            new_pts.SetTuple(orig_pts.GetTuple());
+            newPD->CopyData(origPD, i, nextIndex);
+            newPtIndex[i] = nextIndex++;
+            ++new_pts;
+            ++orig_pts;
+        }
+        else
+            newPtIndex[i] = -1;
+    }
+}
+
+
+// ****************************************************************************
 //  Method: avtStructuredMeshChunker::CreateUnstructuredGrid
 //
 //  Purpose:
@@ -993,6 +1116,10 @@ avtStructuredMeshChunker::GetUnstructuredCellList(
 //
 //  Programmer: Hank Childs
 //  Creation:   September 19, 2004
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 30 14:51:27 MST 2012
+//    Utilize helper functions in order to preserve coordinate type.
 //
 // ****************************************************************************
 
@@ -1032,11 +1159,10 @@ avtStructuredMeshChunker::CreateUnstructuredGrid(vtkDataSet *in_ds,
         if (needPt[i])
             nNewPts++;
 
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     pts->SetNumberOfPoints(nNewPts);
     ugrid->SetPoints(pts);
     pts->Delete();
-    float *pts_ptr = (float *) pts->GetVoidPointer(0);
 
     vtkPointData *newPD = ugrid->GetPointData();
     vtkPointData *origPD = in_ds->GetPointData();
@@ -1046,45 +1172,66 @@ avtStructuredMeshChunker::CreateUnstructuredGrid(vtkDataSet *in_ds,
     int nextIndex = 0;
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-        float *x = (float *) rgrid->GetXCoordinates()->GetVoidPointer(0);
-        float *y = (float *) rgrid->GetYCoordinates()->GetVoidPointer(0);
-        float *z = (float *) rgrid->GetZCoordinates()->GetVoidPointer(0);
-        for (i = 0 ; i < nOrigPts ; i++)
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(in_ds);
+        vtkDataArray *xc = rgrid->GetXCoordinates();
+        vtkDataArray *yc = rgrid->GetXCoordinates();
+        vtkDataArray *zc = rgrid->GetXCoordinates();
+        int xt = xc->GetDataType();
+        int yt = yc->GetDataType();
+        int zt = zc->GetDataType();
+        bool same = xt == yt && yt == zt;
+        if (same && xt == VTK_FLOAT)
         {
-            if (needPt[i])
-            {
-                int I = (i%dims[0]);
-                int J = (i/dims[0])%dims[1];
-                int K = i/(dims[0]*dims[1]);
-                pts_ptr[3*nextIndex] = x[I];
-                pts_ptr[3*nextIndex+1] = y[J];
-                pts_ptr[3*nextIndex+2] = z[K];
-                newPD->CopyData(origPD, i, nextIndex);
-                newPtIndex[i] = nextIndex;
-                nextIndex++;
-            }
-            else
-                newPtIndex[i] = -1;
+            avtStructuredMeshChunker_CopyRGridPoints(nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtDirectAccessor<float>(xc),
+                avtDirectAccessor<float>(yc),
+                avtDirectAccessor<float>(zc),
+                avtDirectAccessor<float>(pts->GetData()));
+        }
+        else if (same && xt == VTK_DOUBLE)
+        {
+            avtStructuredMeshChunker_CopyRGridPoints(nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtDirectAccessor<double>(xc),
+                avtDirectAccessor<double>(yc),
+                avtDirectAccessor<double>(zc),
+                avtDirectAccessor<double>(pts->GetData()));
+        }
+        else
+        {
+            avtStructuredMeshChunker_CopyRGridPoints(nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtTupleAccessor(xc),
+                avtTupleAccessor(yc),
+                avtTupleAccessor(zc),
+                avtTupleAccessor(pts->GetData()));
         }
     }
     else
     {
-        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-        float *orig_pts = (float *) sgrid->GetPoints()->GetVoidPointer(0);
-        for (i = 0 ; i < nOrigPts ; i++)
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::SafeDownCast(in_ds);
+        vtkPoints *orig_pts = sgrid->GetPoints();
+        if (orig_pts->GetDataType() == VTK_FLOAT)
         {
-            if (needPt[i])
-            {
-                pts_ptr[3*nextIndex] = orig_pts[3*nextIndex];
-                pts_ptr[3*nextIndex+1] = orig_pts[3*nextIndex+1];
-                pts_ptr[3*nextIndex+2] = orig_pts[3*nextIndex+2];
-                newPD->CopyData(origPD, i, nextIndex);
-                newPtIndex[i] = nextIndex;
-                nextIndex++;
-            }
-            else
-                newPtIndex[i] = -1;
+            avtStructuredMeshChunker_CopySGridPoints( nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtDirectAccessor<float>(orig_pts->GetData()),
+                avtDirectAccessor<float>(pts->GetData()));
+        }
+        else if (orig_pts->GetDataType() == VTK_DOUBLE)
+        {
+            avtStructuredMeshChunker_CopySGridPoints( nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtDirectAccessor<float>(orig_pts->GetData()),
+                avtDirectAccessor<float>(pts->GetData()));
+        }
+        else 
+        {
+            avtStructuredMeshChunker_CopySGridPoints( nOrigPts, needPt, 
+                dims, newPtIndex, origPD, newPD,
+                avtTupleAccessor(orig_pts->GetData()),
+                avtTupleAccessor(pts->GetData()));
         }
     }
 
