@@ -44,7 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -121,6 +121,9 @@ avtStructuredMeshChunker::ChunkStructuredMesh(vtkDataSet *sgrid,
 //    Allow for full grids to be copies of the input.  Note: change was made
 //    before above changes, but merged after.
 //
+//    Kathleen Biagas, Thu Aug 30 13:35:01 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 void
@@ -169,35 +172,35 @@ avtStructuredMeshChunker::ChunkRectilinearMesh(vtkRectilinearGrid *rgrid,
         vtkRectilinearGrid *grid = vtkRectilinearGrid::New();
         grid->SetDimensions(desc.index_size);
 
-        vtkFloatArray *newX = vtkFloatArray::New();
+        vtkDataArray *newX = origX->NewInstance();
         int numX = desc.index_size[0];
         int startX = desc.start_index[0];
         newX->SetNumberOfTuples(numX);
         for (i = 0 ; i < numX ; i++)
         {
-            newX->SetValue(i, origX->GetTuple1(startX+i));
+            newX->SetTuple1(i, origX->GetTuple1(startX+i));
         }
         grid->SetXCoordinates(newX);
         newX->Delete();
         
-        vtkFloatArray *newY = vtkFloatArray::New();
+        vtkDataArray *newY = origY->NewInstance();
         int numY = desc.index_size[1];
         int startY = desc.start_index[1];
         newY->SetNumberOfTuples(numY);
         for (i = 0 ; i < numY ; i++)
         {
-            newY->SetValue(i, origY->GetTuple1(startY+i));
+            newY->SetTuple1(i, origY->GetTuple1(startY+i));
         }
         grid->SetYCoordinates(newY);
         newY->Delete();
         
-        vtkFloatArray *newZ = vtkFloatArray::New();
+        vtkDataArray *newZ = origZ->NewInstance();
         int numZ = desc.index_size[2];
         int startZ = desc.start_index[2];
         newZ->SetNumberOfTuples(numZ);
         for (i = 0 ; i < numZ ; i++)
         {
-            newZ->SetValue(i, origZ->GetTuple1(startZ+i));
+            newZ->SetTuple1(i, origZ->GetTuple1(startZ+i));
         }
         grid->SetZCoordinates(newZ);
         newZ->Delete();
