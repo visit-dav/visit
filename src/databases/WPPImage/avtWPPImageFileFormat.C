@@ -76,10 +76,10 @@ using namespace std;
 #include <unistd.h>
 
 #define O_BINARY 0
-#define CLOSE   ::_close
-#define OPEN    ::_open
-#define LSEEK   ::_lseek
-#define READ    ::_read
+#define CLOSE   ::close
+#define OPEN    ::open
+#define LSEEK   ::lseek
+#define READ    ::read
 
 #endif
 
