@@ -293,9 +293,9 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     //
     int TH_transform = visitTimer->StartTimer(); 
     vtkMatrix4x4 *worldToView = CreateWorldToDisplayMatrix();
-    double *xformedpts = new double[3 * inPts->GetNumberOfPoints()];
+    double *xformedpts = new double[3 * input->GetNumberOfPoints()];
     double pt[3], p2[4];
-    for (j=0; j < inPts->GetNumberOfPoints(); j++)
+    for (j=0; j < input->GetNumberOfPoints(); j++)
     {
         inPts->GetPoint(j, pt);
 
