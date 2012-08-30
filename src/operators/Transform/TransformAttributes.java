@@ -84,28 +84,28 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         super(TransformAttributes_numAdditionalAtts);
 
         doRotate = false;
-        rotateOrigin = new float[3];
-        rotateOrigin[0] = 0f;
-        rotateOrigin[1] = 0f;
-        rotateOrigin[2] = 0f;
-        rotateAxis = new float[3];
-        rotateAxis[0] = 0f;
-        rotateAxis[1] = 0f;
-        rotateAxis[2] = 1f;
-        rotateAmount = 0f;
+        rotateOrigin = new double[3];
+        rotateOrigin[0] = 0;
+        rotateOrigin[1] = 0;
+        rotateOrigin[2] = 0;
+        rotateAxis = new double[3];
+        rotateAxis[0] = 0;
+        rotateAxis[1] = 0;
+        rotateAxis[2] = 1;
+        rotateAmount = 0;
         rotateType = ANGLETYPE_DEG;
         doScale = false;
-        scaleOrigin = new float[3];
-        scaleOrigin[0] = 0f;
-        scaleOrigin[1] = 0f;
-        scaleOrigin[2] = 0f;
-        scaleX = 1f;
-        scaleY = 1f;
-        scaleZ = 1f;
+        scaleOrigin = new double[3];
+        scaleOrigin[0] = 0;
+        scaleOrigin[1] = 0;
+        scaleOrigin[2] = 0;
+        scaleX = 1;
+        scaleY = 1;
+        scaleZ = 1;
         doTranslate = false;
-        translateX = 0f;
-        translateY = 0f;
-        translateZ = 0f;
+        translateX = 0;
+        translateY = 0;
+        translateZ = 0;
         transformType = TRANSFORMTYPE_SIMILARITY;
         inputCoordSys = COORDINATESYSTEM_CARTESIAN;
         outputCoordSys = COORDINATESYSTEM_SPHERICAL;
@@ -135,28 +135,28 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         super(TransformAttributes_numAdditionalAtts + nMoreFields);
 
         doRotate = false;
-        rotateOrigin = new float[3];
-        rotateOrigin[0] = 0f;
-        rotateOrigin[1] = 0f;
-        rotateOrigin[2] = 0f;
-        rotateAxis = new float[3];
-        rotateAxis[0] = 0f;
-        rotateAxis[1] = 0f;
-        rotateAxis[2] = 1f;
-        rotateAmount = 0f;
+        rotateOrigin = new double[3];
+        rotateOrigin[0] = 0;
+        rotateOrigin[1] = 0;
+        rotateOrigin[2] = 0;
+        rotateAxis = new double[3];
+        rotateAxis[0] = 0;
+        rotateAxis[1] = 0;
+        rotateAxis[2] = 1;
+        rotateAmount = 0;
         rotateType = ANGLETYPE_DEG;
         doScale = false;
-        scaleOrigin = new float[3];
-        scaleOrigin[0] = 0f;
-        scaleOrigin[1] = 0f;
-        scaleOrigin[2] = 0f;
-        scaleX = 1f;
-        scaleY = 1f;
-        scaleZ = 1f;
+        scaleOrigin = new double[3];
+        scaleOrigin[0] = 0;
+        scaleOrigin[1] = 0;
+        scaleOrigin[2] = 0;
+        scaleX = 1;
+        scaleY = 1;
+        scaleZ = 1;
         doTranslate = false;
-        translateX = 0f;
-        translateY = 0f;
-        translateZ = 0f;
+        translateX = 0;
+        translateY = 0;
+        translateZ = 0;
         transformType = TRANSFORMTYPE_SIMILARITY;
         inputCoordSys = COORDINATESYSTEM_CARTESIAN;
         outputCoordSys = COORDINATESYSTEM_SPHERICAL;
@@ -188,12 +188,12 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         int i;
 
         doRotate = obj.doRotate;
-        rotateOrigin = new float[3];
+        rotateOrigin = new double[3];
         rotateOrigin[0] = obj.rotateOrigin[0];
         rotateOrigin[1] = obj.rotateOrigin[1];
         rotateOrigin[2] = obj.rotateOrigin[2];
 
-        rotateAxis = new float[3];
+        rotateAxis = new double[3];
         rotateAxis[0] = obj.rotateAxis[0];
         rotateAxis[1] = obj.rotateAxis[1];
         rotateAxis[2] = obj.rotateAxis[2];
@@ -201,7 +201,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         rotateAmount = obj.rotateAmount;
         rotateType = obj.rotateType;
         doScale = obj.doScale;
-        scaleOrigin = new float[3];
+        scaleOrigin = new double[3];
         scaleOrigin[0] = obj.scaleOrigin[0];
         scaleOrigin[1] = obj.scaleOrigin[1];
         scaleOrigin[2] = obj.scaleOrigin[2];
@@ -317,7 +317,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetRotateOrigin(float[] rotateOrigin_)
+    public void SetRotateOrigin(double[] rotateOrigin_)
     {
         rotateOrigin[0] = rotateOrigin_[0];
         rotateOrigin[1] = rotateOrigin_[1];
@@ -325,7 +325,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetRotateOrigin(float e0, float e1, float e2)
+    public void SetRotateOrigin(double e0, double e1, double e2)
     {
         rotateOrigin[0] = e0;
         rotateOrigin[1] = e1;
@@ -333,7 +333,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetRotateAxis(float[] rotateAxis_)
+    public void SetRotateAxis(double[] rotateAxis_)
     {
         rotateAxis[0] = rotateAxis_[0];
         rotateAxis[1] = rotateAxis_[1];
@@ -341,7 +341,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
-    public void SetRotateAxis(float e0, float e1, float e2)
+    public void SetRotateAxis(double e0, double e1, double e2)
     {
         rotateAxis[0] = e0;
         rotateAxis[1] = e1;
@@ -349,7 +349,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
-    public void SetRotateAmount(float rotateAmount_)
+    public void SetRotateAmount(double rotateAmount_)
     {
         rotateAmount = rotateAmount_;
         Select(3);
@@ -367,7 +367,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(5);
     }
 
-    public void SetScaleOrigin(float[] scaleOrigin_)
+    public void SetScaleOrigin(double[] scaleOrigin_)
     {
         scaleOrigin[0] = scaleOrigin_[0];
         scaleOrigin[1] = scaleOrigin_[1];
@@ -375,7 +375,7 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
-    public void SetScaleOrigin(float e0, float e1, float e2)
+    public void SetScaleOrigin(double e0, double e1, double e2)
     {
         scaleOrigin[0] = e0;
         scaleOrigin[1] = e1;
@@ -383,19 +383,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
-    public void SetScaleX(float scaleX_)
+    public void SetScaleX(double scaleX_)
     {
         scaleX = scaleX_;
         Select(7);
     }
 
-    public void SetScaleY(float scaleY_)
+    public void SetScaleY(double scaleY_)
     {
         scaleY = scaleY_;
         Select(8);
     }
 
-    public void SetScaleZ(float scaleZ_)
+    public void SetScaleZ(double scaleZ_)
     {
         scaleZ = scaleZ_;
         Select(9);
@@ -407,19 +407,19 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         Select(10);
     }
 
-    public void SetTranslateX(float translateX_)
+    public void SetTranslateX(double translateX_)
     {
         translateX = translateX_;
         Select(11);
     }
 
-    public void SetTranslateY(float translateY_)
+    public void SetTranslateY(double translateY_)
     {
         translateY = translateY_;
         Select(12);
     }
 
-    public void SetTranslateZ(float translateZ_)
+    public void SetTranslateZ(double translateZ_)
     {
         translateZ = translateZ_;
         Select(13);
@@ -558,42 +558,42 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     }
 
     // Property getting methods
-    public boolean GetDoRotate() { return doRotate; }
-    public float[] GetRotateOrigin() { return rotateOrigin; }
-    public float[] GetRotateAxis() { return rotateAxis; }
-    public float   GetRotateAmount() { return rotateAmount; }
-    public int     GetRotateType() { return rotateType; }
-    public boolean GetDoScale() { return doScale; }
-    public float[] GetScaleOrigin() { return scaleOrigin; }
-    public float   GetScaleX() { return scaleX; }
-    public float   GetScaleY() { return scaleY; }
-    public float   GetScaleZ() { return scaleZ; }
-    public boolean GetDoTranslate() { return doTranslate; }
-    public float   GetTranslateX() { return translateX; }
-    public float   GetTranslateY() { return translateY; }
-    public float   GetTranslateZ() { return translateZ; }
-    public int     GetTransformType() { return transformType; }
-    public int     GetInputCoordSys() { return inputCoordSys; }
-    public int     GetOutputCoordSys() { return outputCoordSys; }
-    public double  GetM00() { return m00; }
-    public double  GetM01() { return m01; }
-    public double  GetM02() { return m02; }
-    public double  GetM03() { return m03; }
-    public double  GetM10() { return m10; }
-    public double  GetM11() { return m11; }
-    public double  GetM12() { return m12; }
-    public double  GetM13() { return m13; }
-    public double  GetM20() { return m20; }
-    public double  GetM21() { return m21; }
-    public double  GetM22() { return m22; }
-    public double  GetM23() { return m23; }
-    public double  GetM30() { return m30; }
-    public double  GetM31() { return m31; }
-    public double  GetM32() { return m32; }
-    public double  GetM33() { return m33; }
-    public boolean GetInvertLinearTransform() { return invertLinearTransform; }
-    public int     GetVectorTransformMethod() { return vectorTransformMethod; }
-    public boolean GetTransformVectors() { return transformVectors; }
+    public boolean  GetDoRotate() { return doRotate; }
+    public double[] GetRotateOrigin() { return rotateOrigin; }
+    public double[] GetRotateAxis() { return rotateAxis; }
+    public double   GetRotateAmount() { return rotateAmount; }
+    public int      GetRotateType() { return rotateType; }
+    public boolean  GetDoScale() { return doScale; }
+    public double[] GetScaleOrigin() { return scaleOrigin; }
+    public double   GetScaleX() { return scaleX; }
+    public double   GetScaleY() { return scaleY; }
+    public double   GetScaleZ() { return scaleZ; }
+    public boolean  GetDoTranslate() { return doTranslate; }
+    public double   GetTranslateX() { return translateX; }
+    public double   GetTranslateY() { return translateY; }
+    public double   GetTranslateZ() { return translateZ; }
+    public int      GetTransformType() { return transformType; }
+    public int      GetInputCoordSys() { return inputCoordSys; }
+    public int      GetOutputCoordSys() { return outputCoordSys; }
+    public double   GetM00() { return m00; }
+    public double   GetM01() { return m01; }
+    public double   GetM02() { return m02; }
+    public double   GetM03() { return m03; }
+    public double   GetM10() { return m10; }
+    public double   GetM11() { return m11; }
+    public double   GetM12() { return m12; }
+    public double   GetM13() { return m13; }
+    public double   GetM20() { return m20; }
+    public double   GetM21() { return m21; }
+    public double   GetM22() { return m22; }
+    public double   GetM23() { return m23; }
+    public double   GetM30() { return m30; }
+    public double   GetM31() { return m31; }
+    public double   GetM32() { return m32; }
+    public double   GetM33() { return m33; }
+    public boolean  GetInvertLinearTransform() { return invertLinearTransform; }
+    public int      GetVectorTransformMethod() { return vectorTransformMethod; }
+    public boolean  GetTransformVectors() { return transformVectors; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -601,31 +601,31 @@ public class TransformAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteBool(doRotate);
         if(WriteSelect(1, buf))
-            buf.WriteFloatArray(rotateOrigin);
+            buf.WriteDoubleArray(rotateOrigin);
         if(WriteSelect(2, buf))
-            buf.WriteFloatArray(rotateAxis);
+            buf.WriteDoubleArray(rotateAxis);
         if(WriteSelect(3, buf))
-            buf.WriteFloat(rotateAmount);
+            buf.WriteDouble(rotateAmount);
         if(WriteSelect(4, buf))
             buf.WriteInt(rotateType);
         if(WriteSelect(5, buf))
             buf.WriteBool(doScale);
         if(WriteSelect(6, buf))
-            buf.WriteFloatArray(scaleOrigin);
+            buf.WriteDoubleArray(scaleOrigin);
         if(WriteSelect(7, buf))
-            buf.WriteFloat(scaleX);
+            buf.WriteDouble(scaleX);
         if(WriteSelect(8, buf))
-            buf.WriteFloat(scaleY);
+            buf.WriteDouble(scaleY);
         if(WriteSelect(9, buf))
-            buf.WriteFloat(scaleZ);
+            buf.WriteDouble(scaleZ);
         if(WriteSelect(10, buf))
             buf.WriteBool(doTranslate);
         if(WriteSelect(11, buf))
-            buf.WriteFloat(translateX);
+            buf.WriteDouble(translateX);
         if(WriteSelect(12, buf))
-            buf.WriteFloat(translateY);
+            buf.WriteDouble(translateY);
         if(WriteSelect(13, buf))
-            buf.WriteFloat(translateZ);
+            buf.WriteDouble(translateZ);
         if(WriteSelect(14, buf))
             buf.WriteInt(transformType);
         if(WriteSelect(15, buf))
@@ -680,13 +680,13 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             SetDoRotate(buf.ReadBool());
             break;
         case 1:
-            SetRotateOrigin(buf.ReadFloatArray());
+            SetRotateOrigin(buf.ReadDoubleArray());
             break;
         case 2:
-            SetRotateAxis(buf.ReadFloatArray());
+            SetRotateAxis(buf.ReadDoubleArray());
             break;
         case 3:
-            SetRotateAmount(buf.ReadFloat());
+            SetRotateAmount(buf.ReadDouble());
             break;
         case 4:
             SetRotateType(buf.ReadInt());
@@ -695,28 +695,28 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             SetDoScale(buf.ReadBool());
             break;
         case 6:
-            SetScaleOrigin(buf.ReadFloatArray());
+            SetScaleOrigin(buf.ReadDoubleArray());
             break;
         case 7:
-            SetScaleX(buf.ReadFloat());
+            SetScaleX(buf.ReadDouble());
             break;
         case 8:
-            SetScaleY(buf.ReadFloat());
+            SetScaleY(buf.ReadDouble());
             break;
         case 9:
-            SetScaleZ(buf.ReadFloat());
+            SetScaleZ(buf.ReadDouble());
             break;
         case 10:
             SetDoTranslate(buf.ReadBool());
             break;
         case 11:
-            SetTranslateX(buf.ReadFloat());
+            SetTranslateX(buf.ReadDouble());
             break;
         case 12:
-            SetTranslateY(buf.ReadFloat());
+            SetTranslateY(buf.ReadDouble());
             break;
         case 13:
-            SetTranslateZ(buf.ReadFloat());
+            SetTranslateZ(buf.ReadDouble());
             break;
         case 14:
             SetTransformType(buf.ReadInt());
@@ -791,9 +791,9 @@ public class TransformAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + boolToString("doRotate", doRotate, indent) + "\n";
-        str = str + floatArrayToString("rotateOrigin", rotateOrigin, indent) + "\n";
-        str = str + floatArrayToString("rotateAxis", rotateAxis, indent) + "\n";
-        str = str + floatToString("rotateAmount", rotateAmount, indent) + "\n";
+        str = str + doubleArrayToString("rotateOrigin", rotateOrigin, indent) + "\n";
+        str = str + doubleArrayToString("rotateAxis", rotateAxis, indent) + "\n";
+        str = str + doubleToString("rotateAmount", rotateAmount, indent) + "\n";
         str = str + indent + "rotateType = ";
         if(rotateType == ANGLETYPE_DEG)
             str = str + "ANGLETYPE_DEG";
@@ -801,14 +801,14 @@ public class TransformAttributes extends AttributeSubject implements Plugin
             str = str + "ANGLETYPE_RAD";
         str = str + "\n";
         str = str + boolToString("doScale", doScale, indent) + "\n";
-        str = str + floatArrayToString("scaleOrigin", scaleOrigin, indent) + "\n";
-        str = str + floatToString("scaleX", scaleX, indent) + "\n";
-        str = str + floatToString("scaleY", scaleY, indent) + "\n";
-        str = str + floatToString("scaleZ", scaleZ, indent) + "\n";
+        str = str + doubleArrayToString("scaleOrigin", scaleOrigin, indent) + "\n";
+        str = str + doubleToString("scaleX", scaleX, indent) + "\n";
+        str = str + doubleToString("scaleY", scaleY, indent) + "\n";
+        str = str + doubleToString("scaleZ", scaleZ, indent) + "\n";
         str = str + boolToString("doTranslate", doTranslate, indent) + "\n";
-        str = str + floatToString("translateX", translateX, indent) + "\n";
-        str = str + floatToString("translateY", translateY, indent) + "\n";
-        str = str + floatToString("translateZ", translateZ, indent) + "\n";
+        str = str + doubleToString("translateX", translateX, indent) + "\n";
+        str = str + doubleToString("translateY", translateY, indent) + "\n";
+        str = str + doubleToString("translateZ", translateZ, indent) + "\n";
         str = str + indent + "transformType = ";
         if(transformType == TRANSFORMTYPE_SIMILARITY)
             str = str + "TRANSFORMTYPE_SIMILARITY";
@@ -866,41 +866,41 @@ public class TransformAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
-    private boolean doRotate;
-    private float[] rotateOrigin;
-    private float[] rotateAxis;
-    private float   rotateAmount;
-    private int     rotateType;
-    private boolean doScale;
-    private float[] scaleOrigin;
-    private float   scaleX;
-    private float   scaleY;
-    private float   scaleZ;
-    private boolean doTranslate;
-    private float   translateX;
-    private float   translateY;
-    private float   translateZ;
-    private int     transformType;
-    private int     inputCoordSys;
-    private int     outputCoordSys;
-    private double  m00;
-    private double  m01;
-    private double  m02;
-    private double  m03;
-    private double  m10;
-    private double  m11;
-    private double  m12;
-    private double  m13;
-    private double  m20;
-    private double  m21;
-    private double  m22;
-    private double  m23;
-    private double  m30;
-    private double  m31;
-    private double  m32;
-    private double  m33;
-    private boolean invertLinearTransform;
-    private int     vectorTransformMethod;
-    private boolean transformVectors;
+    private boolean  doRotate;
+    private double[] rotateOrigin;
+    private double[] rotateAxis;
+    private double   rotateAmount;
+    private int      rotateType;
+    private boolean  doScale;
+    private double[] scaleOrigin;
+    private double   scaleX;
+    private double   scaleY;
+    private double   scaleZ;
+    private boolean  doTranslate;
+    private double   translateX;
+    private double   translateY;
+    private double   translateZ;
+    private int      transformType;
+    private int      inputCoordSys;
+    private int      outputCoordSys;
+    private double   m00;
+    private double   m01;
+    private double   m02;
+    private double   m03;
+    private double   m10;
+    private double   m11;
+    private double   m12;
+    private double   m13;
+    private double   m20;
+    private double   m21;
+    private double   m22;
+    private double   m23;
+    private double   m30;
+    private double   m31;
+    private double   m32;
+    private double   m33;
+    private boolean  invertLinearTransform;
+    private int      vectorTransformMethod;
+    private boolean  transformVectors;
 }
 

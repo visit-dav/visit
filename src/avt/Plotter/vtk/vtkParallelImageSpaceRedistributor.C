@@ -243,6 +243,9 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    Hank Childs, Sun May 23 16:07:23 CDT 2010
 //    Use VTK fast tracks and don't send geometry that is fully transparent.
 //
+//    Kathleen Biagas, Wed Aug 29 09:15:07 MST 2012
+//    Preserve input coordinate type.
+//
 // ****************************************************************************
 void
 vtkParallelImageSpaceRedistributor::Execute(void)
@@ -267,9 +270,8 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     }
 
     int   i, j;
-    MPI_Status stat;
 
-    vtkPolyData *input = GetInput();
+    vtkPolyData  *input      = GetInput();
     vtkPoints    *inPts      = input->GetPoints();
     vtkPointData *inPD       = input->GetPointData();
     vtkCellData  *inCD       = input->GetCellData();
@@ -291,14 +293,14 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     //
     int TH_transform = visitTimer->StartTimer(); 
     vtkMatrix4x4 *worldToView = CreateWorldToDisplayMatrix();
-    float *xformedpts = new float[3 * input->GetNumberOfPoints()];
+    double *xformedpts = new double[3 * inPts->GetNumberOfPoints()];
     double pt[3], p2[4];
-    for (j=0; j < input->GetNumberOfPoints(); j++)
+    for (j=0; j < inPts->GetNumberOfPoints(); j++)
     {
-        input->GetPoint(j, pt);
+        inPts->GetPoint(j, pt);
 
         double p1[4] = {0,0,0,1}; // set homogenous to 1.0
-        input->GetPoint(j, p1);
+        inPts->GetPoint(j, p1);
 
         worldToView->MultiplyPoint(p1, p2);
         if (p2[3] != 0)
@@ -466,7 +468,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
         {
             vtkPolyDataRelevantPointsFilter *rpf = 
                                      vtkPolyDataRelevantPointsFilter::New();
-            outgoingPolyData[i]->SetPoints(input->GetPoints());
+            outgoingPolyData[i]->SetPoints(inPts);
             outgoingPolyData[i]->GetPointData()->ShallowCopy(inPD);
             rpf->SetInput(outgoingPolyData[i]);
             rpf->Update();
@@ -477,9 +479,9 @@ vtkParallelImageSpaceRedistributor::Execute(void)
         }
         else // just duplicate points ... it will be much faster.
         {
-            vtkPolyData *opd = outgoingPolyData[i]; // ease of reference
+            vtkPolyData *opd    = outgoingPolyData[i]; // ease of reference
             vtkPointData *outPD = opd->GetPointData();
-            vtkPoints *newPts = vtkPoints::New();
+            vtkPoints *newPts   = vtkPoints::New(inPts->GetDataType());
             newPts->SetNumberOfPoints(outgoingPointCount[i]);
             opd->GetPointData()->CopyAllocate(inPD,outgoingPointCount[i]);
             cellArrays[0] = opd->GetVerts();
@@ -775,7 +777,7 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
 // ****************************************************************************
 
 int
-vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(float *pts,
+vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
                                                vtkIdType npts,
                                                vtkIdType *cellPts,
                                                vector<int> &procs)
@@ -794,7 +796,7 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(float *pts,
     //
 
     // create 2d bounding box
-    float minx, maxx, miny, maxy, tempx, tempy;
+    double minx, maxx, miny, maxy, tempx, tempy;
     minx = maxx = pts[3*cellPts[0]];
     miny = maxy = pts[3*cellPts[0]+1];
 
@@ -859,7 +861,7 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(float *pts,
 // ****************************************************************************
 
 void
-vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(float *pts,
+vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
                                                vtkIdType npts,
                                                vtkIdType *cellPts,
                                                vector<int> &outgoingCellCount,
@@ -870,7 +872,7 @@ vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(float *pts,
     //
 
     // create 2d bounding box
-    float minx, maxx, miny, maxy, tempx, tempy;
+    double minx, maxx, miny, maxy, tempx, tempy;
     minx = maxx = pts[3*cellPts[0]];
     miny = maxy = pts[3*cellPts[0]+1];
 

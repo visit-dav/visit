@@ -194,7 +194,7 @@ class PLOTTER_API avtTransparencyActor
     bool                                             cachedTransparencies;
 
     void                                             SetUpActor(void);
-    void                                             PrepareDataset(int, int);
+    void                                             PrepareDataset(size_t, size_t);
     void                                             DetermineTransparencies();
 };
 #endif

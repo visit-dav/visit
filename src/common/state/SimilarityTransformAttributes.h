@@ -98,40 +98,40 @@ public:
 
     // Property setting methods
     void SetDoRotate(bool doRotate_);
-    void SetRotateOrigin(const float *rotateOrigin_);
-    void SetRotateAxis(const float *rotateAxis_);
-    void SetRotateAmount(float rotateAmount_);
+    void SetRotateOrigin(const double *rotateOrigin_);
+    void SetRotateAxis(const double *rotateAxis_);
+    void SetRotateAmount(double rotateAmount_);
     void SetRotateType(AngleType rotateType_);
     void SetDoScale(bool doScale_);
-    void SetScaleOrigin(const float *scaleOrigin_);
-    void SetScaleX(float scaleX_);
-    void SetScaleY(float scaleY_);
-    void SetScaleZ(float scaleZ_);
+    void SetScaleOrigin(const double *scaleOrigin_);
+    void SetScaleX(double scaleX_);
+    void SetScaleY(double scaleY_);
+    void SetScaleZ(double scaleZ_);
     void SetDoTranslate(bool doTranslate_);
-    void SetTranslateX(float translateX_);
-    void SetTranslateY(float translateY_);
-    void SetTranslateZ(float translateZ_);
+    void SetTranslateX(double translateX_);
+    void SetTranslateY(double translateY_);
+    void SetTranslateZ(double translateZ_);
     void SetTransformVectors(bool transformVectors_);
 
     // Property getting methods
-    bool        GetDoRotate() const;
-    const float *GetRotateOrigin() const;
-          float *GetRotateOrigin();
-    const float *GetRotateAxis() const;
-          float *GetRotateAxis();
-    float       GetRotateAmount() const;
-    AngleType   GetRotateType() const;
-    bool        GetDoScale() const;
-    const float *GetScaleOrigin() const;
-          float *GetScaleOrigin();
-    float       GetScaleX() const;
-    float       GetScaleY() const;
-    float       GetScaleZ() const;
-    bool        GetDoTranslate() const;
-    float       GetTranslateX() const;
-    float       GetTranslateY() const;
-    float       GetTranslateZ() const;
-    bool        GetTransformVectors() const;
+    bool         GetDoRotate() const;
+    const double *GetRotateOrigin() const;
+          double *GetRotateOrigin();
+    const double *GetRotateAxis() const;
+          double *GetRotateAxis();
+    double       GetRotateAmount() const;
+    AngleType    GetRotateType() const;
+    bool         GetDoScale() const;
+    const double *GetScaleOrigin() const;
+          double *GetScaleOrigin();
+    double       GetScaleX() const;
+    double       GetScaleY() const;
+    double       GetScaleZ() const;
+    bool         GetDoTranslate() const;
+    double       GetTranslateX() const;
+    double       GetTranslateY() const;
+    double       GetTranslateZ() const;
+    bool         GetTransformVectors() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -172,26 +172,26 @@ public:
     };
 
 private:
-    bool  doRotate;
-    float rotateOrigin[3];
-    float rotateAxis[3];
-    float rotateAmount;
-    int   rotateType;
-    bool  doScale;
-    float scaleOrigin[3];
-    float scaleX;
-    float scaleY;
-    float scaleZ;
-    bool  doTranslate;
-    float translateX;
-    float translateY;
-    float translateZ;
-    bool  transformVectors;
+    bool   doRotate;
+    double rotateOrigin[3];
+    double rotateAxis[3];
+    double rotateAmount;
+    int    rotateType;
+    bool   doScale;
+    double scaleOrigin[3];
+    double scaleX;
+    double scaleY;
+    double scaleZ;
+    bool   doTranslate;
+    double translateX;
+    double translateY;
+    double translateZ;
+    bool   transformVectors;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SIMILARITYTRANSFORMATTRIBUTES_TMFS "bFFfibFfffbfffb"
+#define SIMILARITYTRANSFORMATTRIBUTES_TMFS "bDDdibDdddbdddb"
 
 #endif

@@ -81,7 +81,7 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%sdoRotate = 0\n", prefix);
     str += tmpStr;
-    {   const float *rotateOrigin = atts->GetRotateOrigin();
+    {   const double *rotateOrigin = atts->GetRotateOrigin();
         SNPRINTF(tmpStr, 1000, "%srotateOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
@@ -97,7 +97,7 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const float *rotateAxis = atts->GetRotateAxis();
+    {   const double *rotateAxis = atts->GetRotateAxis();
         SNPRINTF(tmpStr, 1000, "%srotateAxis = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
@@ -135,7 +135,7 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
     else
         SNPRINTF(tmpStr, 1000, "%sdoScale = 0\n", prefix);
     str += tmpStr;
-    {   const float *scaleOrigin = atts->GetScaleOrigin();
+    {   const double *scaleOrigin = atts->GetScaleOrigin();
         SNPRINTF(tmpStr, 1000, "%sscaleOrigin = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
@@ -331,8 +331,8 @@ TransformAttributes_SetRotateOrigin(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float *fvals = obj->data->GetRotateOrigin();
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    double *dvals = obj->data->GetRotateOrigin();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -348,13 +348,13 @@ TransformAttributes_SetRotateOrigin(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = PyLong_AsDouble(item);
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -374,9 +374,9 @@ TransformAttributes_GetRotateOrigin(PyObject *self, PyObject *args)
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rotateOrigin.
     PyObject *retval = PyTuple_New(3);
-    const float *rotateOrigin = obj->data->GetRotateOrigin();
+    const double *rotateOrigin = obj->data->GetRotateOrigin();
     for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(rotateOrigin[i])));
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(rotateOrigin[i]));
     return retval;
 }
 
@@ -385,8 +385,8 @@ TransformAttributes_SetRotateAxis(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float *fvals = obj->data->GetRotateAxis();
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    double *dvals = obj->data->GetRotateAxis();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -402,13 +402,13 @@ TransformAttributes_SetRotateAxis(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = PyLong_AsDouble(item);
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -428,9 +428,9 @@ TransformAttributes_GetRotateAxis(PyObject *self, PyObject *args)
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rotateAxis.
     PyObject *retval = PyTuple_New(3);
-    const float *rotateAxis = obj->data->GetRotateAxis();
+    const double *rotateAxis = obj->data->GetRotateAxis();
     for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(rotateAxis[i])));
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(rotateAxis[i]));
     return retval;
 }
 
@@ -439,12 +439,12 @@ TransformAttributes_SetRotateAmount(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the rotateAmount in the object.
-    obj->data->SetRotateAmount(fval);
+    obj->data->SetRotateAmount(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -454,7 +454,7 @@ TransformAttributes_SetRotateAmount(PyObject *self, PyObject *args)
 TransformAttributes_GetRotateAmount(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetRotateAmount()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetRotateAmount());
     return retval;
 }
 
@@ -520,8 +520,8 @@ TransformAttributes_SetScaleOrigin(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float *fvals = obj->data->GetScaleOrigin();
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    double *dvals = obj->data->GetScaleOrigin();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -537,13 +537,13 @@ TransformAttributes_SetScaleOrigin(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    dvals[i] = double(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    dvals[i] = PyLong_AsDouble(item);
                 else
-                    fvals[i] = 0.;
+                    dvals[i] = 0.;
             }
         }
         else
@@ -563,9 +563,9 @@ TransformAttributes_GetScaleOrigin(PyObject *self, PyObject *args)
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the scaleOrigin.
     PyObject *retval = PyTuple_New(3);
-    const float *scaleOrigin = obj->data->GetScaleOrigin();
+    const double *scaleOrigin = obj->data->GetScaleOrigin();
     for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(scaleOrigin[i])));
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(scaleOrigin[i]));
     return retval;
 }
 
@@ -574,12 +574,12 @@ TransformAttributes_SetScaleX(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the scaleX in the object.
-    obj->data->SetScaleX(fval);
+    obj->data->SetScaleX(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -589,7 +589,7 @@ TransformAttributes_SetScaleX(PyObject *self, PyObject *args)
 TransformAttributes_GetScaleX(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetScaleX()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleX());
     return retval;
 }
 
@@ -598,12 +598,12 @@ TransformAttributes_SetScaleY(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the scaleY in the object.
-    obj->data->SetScaleY(fval);
+    obj->data->SetScaleY(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -613,7 +613,7 @@ TransformAttributes_SetScaleY(PyObject *self, PyObject *args)
 TransformAttributes_GetScaleY(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetScaleY()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleY());
     return retval;
 }
 
@@ -622,12 +622,12 @@ TransformAttributes_SetScaleZ(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the scaleZ in the object.
-    obj->data->SetScaleZ(fval);
+    obj->data->SetScaleZ(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -637,7 +637,7 @@ TransformAttributes_SetScaleZ(PyObject *self, PyObject *args)
 TransformAttributes_GetScaleZ(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetScaleZ()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleZ());
     return retval;
 }
 
@@ -670,12 +670,12 @@ TransformAttributes_SetTranslateX(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the translateX in the object.
-    obj->data->SetTranslateX(fval);
+    obj->data->SetTranslateX(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -685,7 +685,7 @@ TransformAttributes_SetTranslateX(PyObject *self, PyObject *args)
 TransformAttributes_GetTranslateX(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTranslateX()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateX());
     return retval;
 }
 
@@ -694,12 +694,12 @@ TransformAttributes_SetTranslateY(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the translateY in the object.
-    obj->data->SetTranslateY(fval);
+    obj->data->SetTranslateY(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -709,7 +709,7 @@ TransformAttributes_SetTranslateY(PyObject *self, PyObject *args)
 TransformAttributes_GetTranslateY(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTranslateY()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateY());
     return retval;
 }
 
@@ -718,12 +718,12 @@ TransformAttributes_SetTranslateZ(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
     // Set the translateZ in the object.
-    obj->data->SetTranslateZ(fval);
+    obj->data->SetTranslateZ(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -733,7 +733,7 @@ TransformAttributes_SetTranslateZ(PyObject *self, PyObject *args)
 TransformAttributes_GetTranslateZ(PyObject *self, PyObject *args)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTranslateZ()));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateZ());
     return retval;
 }
 
