@@ -52,6 +52,7 @@
 #include <vtkPointData.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtGhostData.h>
 #include <avtMaterial.h>
@@ -363,12 +364,42 @@ vector<vtkDataSet*>
 avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
                                             vector<vtkDataSet*> meshes)
 {
+    if (!meshes.size())
+    {
+        return ExchangeMeshT<float>(domainNum, meshes);
+    }
+
+    vtkPoints *pts = vtkUnstructuredGrid::SafeDownCast(meshes[0])->GetPoints();
+    switch (pts->GetDataType())
+    {
+        case VTK_FLOAT:
+            return ExchangeMeshT<float>(domainNum, meshes);
+        case VTK_DOUBLE:
+            return ExchangeMeshT<double>(domainNum, meshes);
+        case VTK_INT:
+            return ExchangeMeshT<int>(domainNum, meshes);
+        default:
+            string exc_mesg = "avtUnstructuredDomainBoundaries does not know "
+                              "how to exchange meshes from array type "
+                              + string(pts->GetData()->GetClassName());
+            EXCEPTION1(VisItException, exc_mesg);
+    }
+    // (To avoid compiler warnings). This code is never reached.
+    return meshes;
+}
+
+
+template <typename T>
+vector<vtkDataSet*>
+avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
+                                            vector<vtkDataSet*> meshes)
+{
     vector<vtkDataSet*> out(meshes.size(), NULL);
 
     // Gather the information we need
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
-    float ***gainedPoints;
+    T ***gainedPoints;
     int ***cellTypes;
     int ****cellPoints;
     int ***origPointIds;
@@ -393,7 +424,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         
         // Create the VTK objects
         vtkUnstructuredGrid    *outm  = vtkUnstructuredGrid::New(); 
-        vtkPoints              *outp  = vtkPoints::New();
+        vtkPoints *outp  = vtkPoints::New(mesh->GetPoints()->GetDataType());
 
         outm->DeepCopy(meshes[d]);
 
@@ -402,8 +433,8 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
         outp->SetNumberOfPoints(nOldPoints + nGivenPoints);
 
         // Copy the old coordinates over
-        float *oldcoord = (float *)mesh->GetPoints()->GetVoidPointer(0);
-        float *newcoord = (float *)outp->GetVoidPointer(0);
+        T *oldcoord = (T *)mesh->GetPoints()->GetVoidPointer(0);
+        T *newcoord = (T *)outp->GetVoidPointer(0);
         CopyPointer(oldcoord, newcoord, 3, nOldPoints);
 
         // Put in the new coordinates
@@ -424,7 +455,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
             // of points is.
             startingPoint[pair<int,int>(sendDom, recvDom)] = newId;
             
-            float *pts = gainedPoints[sendDom][recvDom];
+            T *pts = gainedPoints[sendDom][recvDom];
             int *origPointIdsThisDomain = origPointIds[sendDom][recvDom];
 
             for (i = 0; i < nGivenPointsThisDomain; ++i)
@@ -1491,12 +1522,13 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //
 // ****************************************************************************
 
+template <class T>
 void
 avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                                  const vector<int> &domain2proc,
                                  const vector<int> &domainNum,
                                  const vector<vtkDataSet *> &meshes,
-                                 float ***&gainedPoints, int ***&cellTypes,
+                                 T ***&gainedPoints, int ***&cellTypes,
                                  int ****&cellPoints, int ***&origPointIds,
                                  int **&nGainedPoints, int **&nGainedCells,
                                  int ***&nPointsPerCell)
@@ -1514,7 +1546,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     int mpiCellPointIdsTag = GetUniqueMessageTag();
 #endif
 
-    gainedPoints = new float**[nTotalDomains];
+    gainedPoints = new T**[nTotalDomains];
     cellTypes = new int**[nTotalDomains];
     cellPoints = new int***[nTotalDomains];
     origPointIds = new int**[nTotalDomains];
@@ -1526,7 +1558,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     
     for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
     {
-        gainedPoints[sendDom] = new float*[nTotalDomains];
+        gainedPoints[sendDom] = new T*[nTotalDomains];
         cellTypes[sendDom] = new int*[nTotalDomains];
         cellPoints[sendDom] = new int**[nTotalDomains];
         origPointIds[sendDom] = new int*[nTotalDomains];
@@ -1572,18 +1604,18 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 size_t nPts = givenPoints[index].size();
                 nGainedPoints[sendDom][recvDom] += nPts;
                 
-                gainedPoints[sendDom][recvDom] = new float[nPts * 3];
+                gainedPoints[sendDom][recvDom] = new T[nPts * 3];
                 origPointIds[sendDom][recvDom] = new int[nPts];
 
-                float *gainedPtr = gainedPoints[sendDom][recvDom];
+                T *gainedPtr = gainedPoints[sendDom][recvDom];
                 int *origIdPtr = origPointIds[sendDom][recvDom];
-                float *fromPtr = (float *)(givingUg ->GetPoints()
+                T *fromPtr = (T *)(givingUg ->GetPoints()
                                                     ->GetVoidPointer(0));
                 for (i = 0; i < nPts; ++i)
                 {
                     *(origIdPtr++) = givenPoints[index][i];
                     
-                    float *ptPtr = fromPtr + 3 * givenPoints[index][i];
+                    T *ptPtr = fromPtr + 3 * givenPoints[index][i];
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
@@ -1618,6 +1650,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // If this process owns the receiving domain, we recv information.
             else if (domain2proc[recvDom] == rank)
             {
+                MPI_Datatype type = GetMPIDataType<T>();
                 MPI_Status stat;
 
                 int fRank = domain2proc[sendDom];
@@ -1630,11 +1663,11 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                     continue;
                 
                 nGainedPoints[sendDom][recvDom] += nPts;
-                gainedPoints[sendDom][recvDom] = new float[nPts * 3];
+                gainedPoints[sendDom][recvDom] = new T[nPts * 3];
                 origPointIds[sendDom][recvDom] = new int[nPts];
 
                 // Get the gained points
-                MPI_Recv(gainedPoints[sendDom][recvDom], nPts * 3, MPI_FLOAT,
+                MPI_Recv(gainedPoints[sendDom][recvDom], nPts * 3, type,
                          fRank, mpiGainedPointsTag, VISIT_MPI_COMM, &stat);
 
                 // Get the original ids for the gained points
@@ -1689,6 +1722,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             else if (domain2proc[sendDom] == rank)
             {
                 int i;
+                MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
                 int index = GetGivenIndex(sendDom, recvDom); 
@@ -1711,12 +1745,12 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 int nPts = givenPoints[index].size();
 
                 // Build the point data to send
-                float *gainedPtrStart = new float[nPts * 3];
+                T *gainedPtrStart = new T[nPts * 3];
                 int *origIdPtrStart = new int[nPts];
-                float *fromPtr = (float *)(givingUg ->GetPoints()
+                T *fromPtr = (T *)(givingUg ->GetPoints()
                                                     ->GetVoidPointer(0));
 
-                float *gainedPtr = gainedPtrStart;
+                T *gainedPtr = gainedPtrStart;
                 int *origIdPtr = origIdPtrStart;
 
                 int k;
@@ -1724,7 +1758,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 {
                     *(origIdPtr++) = givenPoints[index][k];
                     
-                    float *ptPtr = fromPtr + 3 * givenPoints[index][k];
+                    T *ptPtr = fromPtr + 3 * givenPoints[index][k];
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
                     *(gainedPtr++) = *(ptPtr++);
@@ -1734,16 +1768,17 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM); 
                 
                 // Send the gained points
-                MPI_Send(gainedPtrStart, nPts * 3, MPI_FLOAT, tRank, mpiGainedPointsTag,
-                         VISIT_MPI_COMM);
+                MPI_Send(gainedPtrStart, nPts * 3, type, tRank, 
+                         mpiGainedPointsTag, VISIT_MPI_COMM);
                 
                 // Send the original ids for the gained points
-                MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank, mpiOriginalIdsTag, 
-                         VISIT_MPI_COMM);
+                MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank, 
+                         mpiOriginalIdsTag, VISIT_MPI_COMM);
 
                 // Send the number of given cells
                 int nCells = givenCells[index].size();
-                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, VISIT_MPI_COMM);
+                MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag, 
+                         VISIT_MPI_COMM);
                 
                 // Prepare for sending the cell info
                 int *cellPtr = new int[nCells];
@@ -2438,8 +2473,6 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
-#if !(defined(_MSC_VER) && (_MSC_VER <= 1200))
-// not on windows or not on windows using MSVC 6
 template <class T>
 void
 avtUnstructuredDomainBoundaries::CommunicateDataInformation(
@@ -2604,7 +2637,6 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
     MPI_Barrier(VISIT_MPI_COMM);
 #endif
 }
-#endif
 
 // ****************************************************************************
 //  Method: avtUnstructuredDomainBoundaries::CreateGhostNodes

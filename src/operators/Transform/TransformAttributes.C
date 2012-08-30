@@ -1025,11 +1025,38 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("doRotate")) != 0)
         SetDoRotate(node->AsBool());
     if((node = searchNode->GetNode("rotateOrigin")) != 0)
-        SetRotateOrigin(node->AsFloatArray());
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateOrigin(da);
+        }
+    }
     if((node = searchNode->GetNode("rotateAxis")) != 0)
-        SetRotateAxis(node->AsFloatArray());
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateAxis(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateAxis(da);
+        }
+    }
     if((node = searchNode->GetNode("rotateAmount")) != 0)
-        SetRotateAmount(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetRotateAmount(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetRotateAmount((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("rotateType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1049,21 +1076,62 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("doScale")) != 0)
         SetDoScale(node->AsBool());
     if((node = searchNode->GetNode("scaleOrigin")) != 0)
-        SetScaleOrigin(node->AsFloatArray());
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetScaleOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetScaleOrigin(da);
+        }
+    }
     if((node = searchNode->GetNode("scaleX")) != 0)
-        SetScaleX(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleX((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("scaleY")) != 0)
-        SetScaleY(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleY((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("scaleZ")) != 0)
-        SetScaleZ(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleZ((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("doTranslate")) != 0)
         SetDoTranslate(node->AsBool());
     if((node = searchNode->GetNode("translateX")) != 0)
-        SetTranslateX(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateX((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("translateY")) != 0)
-        SetTranslateY(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateY((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("translateZ")) != 0)
-        SetTranslateZ(node->AsFloat());
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateZ((double)node->AsFloat());
+    }
     if((node = searchNode->GetNode("transformType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1165,7 +1233,6 @@ TransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("transformVectors")) != 0)
         SetTransformVectors(node->AsBool());
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1178,7 +1245,7 @@ TransformAttributes::SetDoRotate(bool doRotate_)
 }
 
 void
-TransformAttributes::SetRotateOrigin(const float *rotateOrigin_)
+TransformAttributes::SetRotateOrigin(const double *rotateOrigin_)
 {
     rotateOrigin[0] = rotateOrigin_[0];
     rotateOrigin[1] = rotateOrigin_[1];
@@ -1187,7 +1254,7 @@ TransformAttributes::SetRotateOrigin(const float *rotateOrigin_)
 }
 
 void
-TransformAttributes::SetRotateAxis(const float *rotateAxis_)
+TransformAttributes::SetRotateAxis(const double *rotateAxis_)
 {
     rotateAxis[0] = rotateAxis_[0];
     rotateAxis[1] = rotateAxis_[1];
@@ -1196,7 +1263,7 @@ TransformAttributes::SetRotateAxis(const float *rotateAxis_)
 }
 
 void
-TransformAttributes::SetRotateAmount(float rotateAmount_)
+TransformAttributes::SetRotateAmount(double rotateAmount_)
 {
     rotateAmount = rotateAmount_;
     Select(ID_rotateAmount, (void *)&rotateAmount);
@@ -1217,7 +1284,7 @@ TransformAttributes::SetDoScale(bool doScale_)
 }
 
 void
-TransformAttributes::SetScaleOrigin(const float *scaleOrigin_)
+TransformAttributes::SetScaleOrigin(const double *scaleOrigin_)
 {
     scaleOrigin[0] = scaleOrigin_[0];
     scaleOrigin[1] = scaleOrigin_[1];
@@ -1226,21 +1293,21 @@ TransformAttributes::SetScaleOrigin(const float *scaleOrigin_)
 }
 
 void
-TransformAttributes::SetScaleX(float scaleX_)
+TransformAttributes::SetScaleX(double scaleX_)
 {
     scaleX = scaleX_;
     Select(ID_scaleX, (void *)&scaleX);
 }
 
 void
-TransformAttributes::SetScaleY(float scaleY_)
+TransformAttributes::SetScaleY(double scaleY_)
 {
     scaleY = scaleY_;
     Select(ID_scaleY, (void *)&scaleY);
 }
 
 void
-TransformAttributes::SetScaleZ(float scaleZ_)
+TransformAttributes::SetScaleZ(double scaleZ_)
 {
     scaleZ = scaleZ_;
     Select(ID_scaleZ, (void *)&scaleZ);
@@ -1254,21 +1321,21 @@ TransformAttributes::SetDoTranslate(bool doTranslate_)
 }
 
 void
-TransformAttributes::SetTranslateX(float translateX_)
+TransformAttributes::SetTranslateX(double translateX_)
 {
     translateX = translateX_;
     Select(ID_translateX, (void *)&translateX);
 }
 
 void
-TransformAttributes::SetTranslateY(float translateY_)
+TransformAttributes::SetTranslateY(double translateY_)
 {
     translateY = translateY_;
     Select(ID_translateY, (void *)&translateY);
 }
 
 void
-TransformAttributes::SetTranslateZ(float translateZ_)
+TransformAttributes::SetTranslateZ(double translateZ_)
 {
     translateZ = translateZ_;
     Select(ID_translateZ, (void *)&translateZ);
@@ -1438,31 +1505,31 @@ TransformAttributes::GetDoRotate() const
     return doRotate;
 }
 
-const float *
+const double *
 TransformAttributes::GetRotateOrigin() const
 {
     return rotateOrigin;
 }
 
-float *
+double *
 TransformAttributes::GetRotateOrigin()
 {
     return rotateOrigin;
 }
 
-const float *
+const double *
 TransformAttributes::GetRotateAxis() const
 {
     return rotateAxis;
 }
 
-float *
+double *
 TransformAttributes::GetRotateAxis()
 {
     return rotateAxis;
 }
 
-float
+double
 TransformAttributes::GetRotateAmount() const
 {
     return rotateAmount;
@@ -1480,31 +1547,31 @@ TransformAttributes::GetDoScale() const
     return doScale;
 }
 
-const float *
+const double *
 TransformAttributes::GetScaleOrigin() const
 {
     return scaleOrigin;
 }
 
-float *
+double *
 TransformAttributes::GetScaleOrigin()
 {
     return scaleOrigin;
 }
 
-float
+double
 TransformAttributes::GetScaleX() const
 {
     return scaleX;
 }
 
-float
+double
 TransformAttributes::GetScaleY() const
 {
     return scaleY;
 }
 
-float
+double
 TransformAttributes::GetScaleZ() const
 {
     return scaleZ;
@@ -1516,19 +1583,19 @@ TransformAttributes::GetDoTranslate() const
     return doTranslate;
 }
 
-float
+double
 TransformAttributes::GetTranslateX() const
 {
     return translateX;
 }
 
-float
+double
 TransformAttributes::GetTranslateY() const
 {
     return translateY;
 }
 
-float
+double
 TransformAttributes::GetTranslateZ() const
 {
     return translateZ;
@@ -1773,19 +1840,19 @@ TransformAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_doRotate:              return FieldType_bool;
-    case ID_rotateOrigin:          return FieldType_floatArray;
-    case ID_rotateAxis:            return FieldType_floatArray;
-    case ID_rotateAmount:          return FieldType_float;
+    case ID_rotateOrigin:          return FieldType_doubleArray;
+    case ID_rotateAxis:            return FieldType_doubleArray;
+    case ID_rotateAmount:          return FieldType_double;
     case ID_rotateType:            return FieldType_enum;
     case ID_doScale:               return FieldType_bool;
-    case ID_scaleOrigin:           return FieldType_floatArray;
-    case ID_scaleX:                return FieldType_float;
-    case ID_scaleY:                return FieldType_float;
-    case ID_scaleZ:                return FieldType_float;
+    case ID_scaleOrigin:           return FieldType_doubleArray;
+    case ID_scaleX:                return FieldType_double;
+    case ID_scaleY:                return FieldType_double;
+    case ID_scaleZ:                return FieldType_double;
     case ID_doTranslate:           return FieldType_bool;
-    case ID_translateX:            return FieldType_float;
-    case ID_translateY:            return FieldType_float;
-    case ID_translateZ:            return FieldType_float;
+    case ID_translateX:            return FieldType_double;
+    case ID_translateY:            return FieldType_double;
+    case ID_translateZ:            return FieldType_double;
     case ID_transformType:         return FieldType_enum;
     case ID_inputCoordSys:         return FieldType_enum;
     case ID_outputCoordSys:        return FieldType_enum;
@@ -1833,19 +1900,19 @@ TransformAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_doRotate:              return "bool";
-    case ID_rotateOrigin:          return "floatArray";
-    case ID_rotateAxis:            return "floatArray";
-    case ID_rotateAmount:          return "float";
+    case ID_rotateOrigin:          return "doubleArray";
+    case ID_rotateAxis:            return "doubleArray";
+    case ID_rotateAmount:          return "double";
     case ID_rotateType:            return "enum";
     case ID_doScale:               return "bool";
-    case ID_scaleOrigin:           return "floatArray";
-    case ID_scaleX:                return "float";
-    case ID_scaleY:                return "float";
-    case ID_scaleZ:                return "float";
+    case ID_scaleOrigin:           return "doubleArray";
+    case ID_scaleX:                return "double";
+    case ID_scaleY:                return "double";
+    case ID_scaleZ:                return "double";
     case ID_doTranslate:           return "bool";
-    case ID_translateX:            return "float";
-    case ID_translateY:            return "float";
-    case ID_translateZ:            return "float";
+    case ID_translateX:            return "double";
+    case ID_translateY:            return "double";
+    case ID_translateZ:            return "double";
     case ID_transformType:         return "enum";
     case ID_inputCoordSys:         return "enum";
     case ID_outputCoordSys:        return "enum";

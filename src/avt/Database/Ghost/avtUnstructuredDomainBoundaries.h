@@ -107,106 +107,121 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                        const std::vector<int> &points,
                                        bool filterShared = false);
     
-    virtual std::vector<vtkDataSet*>       ExchangeMesh(std::vector<int>       domainNum,
+    virtual std::vector<vtkDataSet*>    ExchangeMesh(
+                                         std::vector<int> domainNum,
                                          std::vector<vtkDataSet*>   meshes);
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>     domainNum,
-                                         bool                  isPointData,
+    virtual std::vector<vtkDataArray*>  ExchangeScalar(
+                                         std::vector<int> domainNum,
+                                         bool isPointData,
                                          std::vector<vtkDataArray*> scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
-                                         bool                   isPointData,
-                                         std::vector<vtkDataArray*>  vectors);
-
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
-                                         bool                   isPointData,
-                                         std::vector<vtkDataArray*>  vectors);
-
-    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
-                                         bool                  isPointData,
+    virtual std::vector<vtkDataArray*>  ExchangeFloatVector(
+                                         std::vector<int> domainNum,
+                                         bool isPointData,
                                          std::vector<vtkDataArray*> vectors);
 
-    virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
-                                        std::vector<avtMaterial*>   mats);
-    virtual std::vector<avtMaterial*>      ExchangeMixedMaterials(
-                                        std::vector<int>   domainNum,
-                                        std::vector<avtMaterial*>   mats);
-    virtual std::vector<avtMaterial*>      ExchangeCleanMaterials(
-                                        std::vector<int>   domainNum,
-                                        std::vector<avtMaterial*>   mats);
+    virtual std::vector<vtkDataArray*>  ExchangeDoubleVector(
+                                         std::vector<int> domainNum,
+                                         bool isPointData,
+                                         std::vector<vtkDataArray*> vectors);
 
-    virtual std::vector<avtMixedVariable*> ExchangeMixVar(std::vector<int>     domainNum,
-                                        const std::vector<avtMaterial*>   mats,
-                                        std::vector<avtMixedVariable*>    mixvars);
+    virtual std::vector<vtkDataArray*>  ExchangeIntVector(
+                                         std::vector<int> domainNum,
+                                         bool isPointData,
+                                         std::vector<vtkDataArray*> vectors);
+
+    virtual std::vector<avtMaterial*>   ExchangeMaterial(
+                                         std::vector<int> domainNum,
+                                         std::vector<avtMaterial*>   mats);
+    virtual std::vector<avtMaterial*>   ExchangeMixedMaterials(
+                                         std::vector<int> domainNum,
+                                         std::vector<avtMaterial*>   mats);
+    virtual std::vector<avtMaterial*>   ExchangeCleanMaterials(
+                                         std::vector<int> domainNum,
+                                         std::vector<avtMaterial*>   mats);
+
+    virtual std::vector<avtMixedVariable*> ExchangeMixVar(
+                                      std::vector<int> domainNum,
+                                      const std::vector<avtMaterial*>  mats,
+                                      std::vector<avtMixedVariable*> mixvars);
     
-    virtual void                      CreateGhostNodes(std::vector<int>   domainNum,
+    virtual void                CreateGhostNodes(std::vector<int>   domainNum,
                                                std::vector<vtkDataSet*> meshes,
                                                std::vector<int> &allDomains);
-    virtual bool                      CreatesRobustGhostNodes(void) 
+    virtual bool                CreatesRobustGhostNodes(void) 
                                                              { return false; };
 
-    virtual bool                      RequiresCommunication(avtGhostDataType);
-    virtual bool                      ConfirmMesh(std::vector<int>      domainNum,
-                                        std::vector<vtkDataSet*> meshes);
+    virtual bool                RequiresCommunication(avtGhostDataType);
+    virtual bool                ConfirmMesh(std::vector<int> domainNum,
+                                            std::vector<vtkDataSet*> meshes);
     
   protected:
-    int                               GetGivenIndex(int from, int to);
 
-    int                             nTotalDomains;
+    int                                  nTotalDomains;
     
     std::vector<std::pair<int, int> >    giveIndex;
-    std::vector<std::vector<int> >            givenCells;
-    std::vector<std::vector<int> >            givenPoints;
-    std::vector<std::map<int, int> >          sharedPointsMap;
+    std::vector<std::vector<int> >       givenCells;
+    std::vector<std::vector<int> >       givenPoints;
+    std::vector<std::map<int, int> >     sharedPointsMap;
 
     // [<send, recv>] = startingCell for recvDom
     std::map<std::pair<int, int>, int>   startingCell;
     std::map<std::pair<int, int>, int>   startingPoint;
 
+    int                         GetGivenIndex(int from, int to);
 
     template <class T>
-    std::vector<vtkDataArray*>        ExchangeData(std::vector<int> &domainNum,
-                                              bool isPointData,
-                                              std::vector<vtkDataArray*> &data);
-    // Communication methods
-    std::vector<int>     CreateDomainToProcessorMap(const std::vector<int> &domainNum);
+    std::vector<vtkDataArray*>  ExchangeData(
+                                    std::vector<int> &domainNum,
+                                    bool isPointData,
+                                    std::vector<vtkDataArray*> &data);
 
-    void            CommunicateMeshInformation(const std::vector<int> &domain2proc,
-                                               const std::vector<int> &domainNum,
-                                               const std::vector<vtkDataSet *> &,
-                                               float ***&gainedPoints,
-                                               int ***&cellTypes,
-                                               int ****&cellPoints,
-                                               int ***&origPointIds,
-                                               int **&nGainedPoints,
-                                               int **&nGainedCells,
-                                               int ***&nPointsPerCell);
+    template <class T>
+    std::vector<vtkDataSet*>  ExchangeMeshT(
+                               std::vector<int> domainNum,
+                               std::vector<vtkDataSet*> meshes);
+
+    // Communication methods
+    std::vector<int>     CreateDomainToProcessorMap(
+                               const std::vector<int> &domainNum);
+
+    template <class T>
+    void            CommunicateMeshInformation(
+                               const std::vector<int> &domain2proc,
+                               const std::vector<int> &domainNum,
+                               const std::vector<vtkDataSet *> &,
+                               T ***&gainedPoints,
+                               int ***&cellTypes,
+                               int ****&cellPoints,
+                               int ***&origPointIds,
+                               int **&nGainedPoints,
+                               int **&nGainedCells,
+                               int ***&nPointsPerCell);
 
     void            CommunicateMaterialInformation(
-                                               const std::vector<int> &domain2proc,
-                                               const std::vector<int> &domainNum,
-                                               const std::vector<avtMaterial*> &,
-                                               int **&, int **&, int ***&,
-                                               int ***&, float ***&);
+                               const std::vector<int> &domain2proc,
+                               const std::vector<int> &domainNum,
+                               const std::vector<avtMaterial*> &,
+                               int **&, int **&, int ***&,
+                               int ***&, float ***&);
 
     void            CommunicateMixvarInformation(
-                                           const std::vector<int> &domain2proc,
-                                           const std::vector<int> &domainNum,
-                                           const std::vector<avtMaterial*> &,
-                                           const std::vector<avtMixedVariable *> &,
-                                           int **&, float ***&);
+                               const std::vector<int> &domain2proc,
+                               const std::vector<int> &domainNum,
+                               const std::vector<avtMaterial*> &,
+                               const std::vector<avtMixedVariable *> &,
+                               int **&, float ***&);
                       
 
-#if !(defined(_MSC_VER) && (_MSC_VER <= 1200)) 
-// not using MSVC 6 or earlier
     template <class T>
-    void            CommunicateDataInformation(const std::vector<int> &domain2proc,
-                                               const std::vector<int> &domainNum,
-                                               const std::vector<vtkDataArray *>&,
-                                               bool isPointData,
-                                               T ***&gainedData,
-                                               int **&nGainedTuples);
-#endif
+    void            CommunicateDataInformation(
+                               const std::vector<int> &domain2proc,
+                               const std::vector<int> &domainNum,
+                               const std::vector<vtkDataArray *>&,
+                               bool isPointData,
+                               T ***&gainedData,
+                               int **&nGainedTuples);
 };
 
 #endif

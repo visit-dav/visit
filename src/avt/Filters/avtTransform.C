@@ -44,7 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMatrixToHomogeneousTransform.h>
 #include <vtkMatrixToLinearTransform.h>
@@ -63,12 +63,18 @@
 
 static bool IsIdentity(vtkMatrix4x4 *);
 static void TransformVecAsDisplacement(vtkMatrixToLinearTransform *t,
-                                       vtkDataArray *outVecs, vtkDataArray *inVecs,
-                                       vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                                       vtkDataArray *outVecs, 
+                                       vtkDataArray *inVecs,
+                                       vtkDataArray *x, 
+                                       vtkDataArray *y, 
+                                       vtkDataArray *z,
                                        int *dims);
 static void TransformVecAsDirection(vtkMatrixToLinearTransform *t,
-                                    vtkDataArray *outVecs, vtkDataArray *inVecs,
-                                    vtkDataArray *x, vtkDataArray *y, vtkDataArray *z,
+                                    vtkDataArray *outVecs, 
+                                    vtkDataArray *inVecs,
+                                    vtkDataArray *x, 
+                                    vtkDataArray *y, 
+                                    vtkDataArray *z,
                                     int *dims,
                                     vtkPoints *pts);
 
@@ -111,12 +117,14 @@ static inline double vtkHomogeneousTransformPoint(T1 M[4][4],
   return f;
 }
 
-void vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(vtkPoints *inPts,
-                                                            vtkPoints *outPts,
-                                                            vtkDataArray *inNms, 
-                                                            vtkDataArray *outNms,
-                                                            vtkDataArray *inVrs, 
-                                                            vtkDataArray *outVrs)
+void 
+vtkVisItMatrixToHomogeneousTransform::TransformPointsNormalsVectors(
+         vtkPoints *inPts,
+         vtkPoints *outPts,
+         vtkDataArray *inNms, 
+         vtkDataArray *outNms,
+         vtkDataArray *inVrs, 
+         vtkDataArray *outVrs)
 {
   int n = inPts->GetNumberOfPoints();
   double (*M)[4] = this->Matrix->Element;
@@ -387,7 +395,7 @@ avtTransform::TransformRectilinear(vtkRectilinearGrid *rgrid)
 
         vtkRectilinearGrid *out = vtkRectilinearGrid::New();
         out->ShallowCopy(rgrid);
-        vtkFloatArray *ct = vtkFloatArray::New();
+        vtkDoubleArray *ct = vtkDoubleArray::New();
         ct->SetNumberOfTuples(16);
         ct->SetName("avtCurveTransform");
         for(int i = 0; i < 16; ++i)
@@ -486,7 +494,7 @@ vtkDataSet *
 avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
 {
     int    i;
-    float  outpt[4];
+    double  outpt[4];
     vtkMatrix4x4 *mat = GetTransform();
 
     vtkRectilinearGrid *out = vtkRectilinearGrid::New();
@@ -499,7 +507,7 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
     vtkDataArray *x_new  = x_orig->NewInstance();
     int nx = x_orig->GetNumberOfTuples();
     x_new->SetNumberOfTuples(nx);
-    float xpt[4] = { 0., 0., 0., 1. };
+    double xpt[4] = { 0., 0., 0., 1. };
     for (i = 0 ; i < nx ; i++)
     {
         xpt[0] = x_orig->GetTuple1(i);
@@ -516,7 +524,7 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
     vtkDataArray *y_new  = y_orig->NewInstance();
     int ny = y_orig->GetNumberOfTuples();
     y_new->SetNumberOfTuples(ny);
-    float ypt[4] = { 0., 0., 0., 1. };
+    double ypt[4] = { 0., 0., 0., 1. };
     for (i = 0 ; i < ny ; i++)
     {
         ypt[1] = y_orig->GetTuple1(i);
@@ -533,7 +541,7 @@ avtTransform::TransformRectilinearToRectilinear(vtkRectilinearGrid *rgrid)
     vtkDataArray *z_new  = z_orig->NewInstance();
     int nz = z_orig->GetNumberOfTuples();
     z_new->SetNumberOfTuples(nz);
-    float zpt[4] = { 0., 0., 0., 1. };
+    double zpt[4] = { 0., 0., 0., 1. };
     for (i = 0 ; i < nz ; i++)
     {
         zpt[2] = z_orig->GetTuple1(i);
@@ -797,7 +805,7 @@ IsIdentity(vtkMatrix4x4 *mat)
     {
         for (int j = 0 ; j < 4 ; j++)
         {
-            float e = mat->GetElement(i, j);
+            double e = mat->GetElement(i, j);
             if (i == j && e != 1.)
                 return false;
             else if (i != j && e != 0.)

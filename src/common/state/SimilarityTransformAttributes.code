@@ -93,3 +93,146 @@ SimilarityTransformAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Function: SetFromNode
+Declaration: void SetFromNode(DataNode *parentNode)
+Definition:
+// ****************************************************************************
+// Method: SimilarityTransformAttributes::SetFromNode
+//
+// Purpose: 
+//   This method sets attributes in this object from values in a DataNode 
+//    representation of the object.
+//
+// Programmer:  Kathleen Biagas
+// Creation:    August 28, 2012 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SimilarityTransformAttributes::SetFromNode(DataNode *parentNode)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("SimilarityTransformAttributes");
+    if(searchNode == 0)
+        return;
+
+    DataNode *node;
+    if((node = searchNode->GetNode("doRotate")) != 0)
+        SetDoRotate(node->AsBool());
+    if((node = searchNode->GetNode("rotateOrigin")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateOrigin(da);
+        }
+    }
+    if((node = searchNode->GetNode("rotateAxis")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetRotateAxis(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetRotateAxis(da);
+        }
+    }
+    if((node = searchNode->GetNode("rotateAmount")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetRotateAmount(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetRotateAmount((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("rotateType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetRotateType(AngleType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AngleType value;
+            if(AngleType_FromString(node->AsString(), value))
+                SetRotateType(value);
+        }
+    }
+    if((node = searchNode->GetNode("doScale")) != 0)
+        SetDoScale(node->AsBool());
+    if((node = searchNode->GetNode("scaleOrigin")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_ARRAY_NODE)
+        {
+            SetScaleOrigin(node->AsDoubleArray());
+        }
+        else if(node->GetNodeType() == FLOAT_ARRAY_NODE)
+        {
+            const float *fa = node->AsFloatArray();
+            double da[3] = {fa[0], fa[1], fa[2]};
+            SetScaleOrigin(da);
+        }
+    }
+    if((node = searchNode->GetNode("scaleX")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleX((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("scaleY")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleY((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("scaleZ")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetScaleZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetScaleZ((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("doTranslate")) != 0)
+        SetDoTranslate(node->AsBool());
+    if((node = searchNode->GetNode("translateX")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateX(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateX((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("translateY")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateY(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateY((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("translateZ")) != 0)
+    {
+        if(node->GetNodeType() == DOUBLE_NODE)
+            SetTranslateZ(node->AsDouble());
+        else if(node->GetNodeType() == FLOAT_NODE)
+            SetTranslateZ((double)node->AsFloat());
+    }
+    if((node = searchNode->GetNode("transformVectors")) != 0)
+        SetTransformVectors(node->AsBool());
+}
+
+

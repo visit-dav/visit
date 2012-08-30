@@ -43,7 +43,7 @@
 #include <avtSimilarityTransformFilter.h>
 
 #include <avtExtents.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 
@@ -129,7 +129,7 @@ avtSimilarityTransformFilter::SetAtts(const AttributeGroup *a)
 
     SetVectorTransform(atts.GetTransformVectors());
 
-    const float *axis = atts.GetRotateAxis();
+    const double *axis = atts.GetRotateAxis();
     if (axis[0] == 0. && axis[1] == 0. && axis[2] == 0.)
     {
         EXCEPTION1(BadVectorException, "Rotation Axis");
@@ -179,21 +179,21 @@ avtSimilarityTransformFilter::SetupMatrix()
     //
     if (atts.GetDoRotate())
     {
-        float oX = atts.GetRotateOrigin()[0];
-        float oY = atts.GetRotateOrigin()[1];
-        float oZ = atts.GetRotateOrigin()[2];
+        double oX = atts.GetRotateOrigin()[0];
+        double oY = atts.GetRotateOrigin()[1];
+        double oZ = atts.GetRotateOrigin()[2];
 
-        float X = atts.GetRotateAxis()[0];
-        float Y = atts.GetRotateAxis()[1];
-        float Z = atts.GetRotateAxis()[2];
-        float p = atts.GetRotateAmount();
+        double X = atts.GetRotateAxis()[0];
+        double Y = atts.GetRotateAxis()[1];
+        double Z = atts.GetRotateAxis()[2];
+        double p = atts.GetRotateAmount();
 
         // Convert to radians
         if (atts.GetRotateType() == atts.Deg)
             p *= 3.1415926535898/180.;
 
         // Normalize the axis vector
-        float len = sqrt(X*X + Y*Y + Z*Z);
+        double len = sqrt(X*X + Y*Y + Z*Z);
         if (len)
         {
             X /= len;
@@ -202,8 +202,8 @@ avtSimilarityTransformFilter::SetupMatrix()
         }
 
         // Compose the quaternion
-        float sin_p = sin(p / 2.);
-        float cos_p = cos(p / 2.);
+        double sin_p = sin(p / 2.);
+        double cos_p = cos(p / 2.);
 
         double q[4] = { X*sin_p, Y*sin_p, Z*sin_p, cos_p };
 
@@ -262,9 +262,9 @@ avtSimilarityTransformFilter::SetupMatrix()
     //
     if (atts.GetDoScale())
     {
-        float oX = atts.GetScaleOrigin()[0];
-        float oY = atts.GetScaleOrigin()[1];
-        float oZ = atts.GetScaleOrigin()[2];
+        double oX = atts.GetScaleOrigin()[0];
+        double oY = atts.GetScaleOrigin()[1];
+        double oZ = atts.GetScaleOrigin()[2];
 
         double X = atts.GetScaleX();
         double Y = atts.GetScaleY();
@@ -430,8 +430,8 @@ avtSimilarityTransformFilter::UpdateDataObjectInfo(void)
 
     if (atts.GetDoRotate())
     {
-        float X = atts.GetRotateAxis()[0];
-        float Y = atts.GetRotateAxis()[1];
+        double X = atts.GetRotateAxis()[0];
+        double Y = atts.GetRotateAxis()[1];
         if (X != 0. || Y != 0.)
         {
             avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
@@ -537,6 +537,8 @@ avtSimilarityTransformFilter::PostExecute()
 //  Creation:   March 28, 2008 
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Aug 22 16:00:03 MST 2012
+//    Preserve data type of the scalars.
 //
 // ****************************************************************************
 
@@ -550,19 +552,19 @@ avtSimilarityTransformFilter::TransformData(vtkRectilinearGrid *rgrid)
 
     if (doScale || doTrans)
     {
-        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(
-             rgrid->GetPointData()->GetScalars());
-        vtkFloatArray *transScalars = vtkFloatArray::New();
+        vtkDataArray *scalars = rgrid->GetPointData()->GetScalars();
+        vtkDataArray *transScalars = scalars->NewInstance();
         transScalars->SetNumberOfTuples(scalars->GetNumberOfTuples());
         transScalars->SetName(scalars->GetName());
         transScalars->DeepCopy(scalars);
-        float *transV = transScalars->GetPointer(0); 
-        for (int i = 0; i < scalars->GetNumberOfTuples(); i++)
+        for (vtkIdType i = 0; i < scalars->GetNumberOfTuples(); i++)
         {
+            double val = transScalars->GetTuple1(i);
             if (doScale)
-                transV[i] *= yScaleVal;
+                val *= yScaleVal;
             if (doTrans)
-                transV[i] += yTransVal;
+                val += yTransVal;
+            transScalars->SetTuple1(i, val);
         }
         rgrid->GetPointData()->SetScalars(transScalars);
         transScalars->Delete();

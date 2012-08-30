@@ -485,10 +485,10 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             doRotate->blockSignals(false);
             break;
           case TransformAttributes::ID_rotateOrigin:
-            rotateOrigin->setText(FloatsToQString(atts->GetRotateOrigin(),3));
+            rotateOrigin->setText(DoublesToQString(atts->GetRotateOrigin(),3));
             break;
           case TransformAttributes::ID_rotateAxis:
-            rotateAxis->setText(FloatsToQString(atts->GetRotateAxis(),3));
+            rotateAxis->setText(DoublesToQString(atts->GetRotateAxis(),3));
             break;
           case TransformAttributes::ID_rotateAmount:
             temp.setNum(atts->GetRotateAmount());
@@ -527,7 +527,7 @@ QvisTransformWindow::UpdateWindow(bool doAll)
             doScale->blockSignals(false);
             break;
           case TransformAttributes::ID_scaleOrigin:
-            scaleOrigin->setText(FloatsToQString(atts->GetScaleOrigin(),3));
+            scaleOrigin->setText(DoublesToQString(atts->GetScaleOrigin(),3));
             break;
           case TransformAttributes::ID_scaleX:
             temp.setNum(atts->GetScaleX());
@@ -731,13 +731,13 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do rotateOrigin
     if(which_widget == TransformAttributes::ID_rotateOrigin || doAll)
     {
-        float val[3];
-        if(LineEditGetFloats(rotateOrigin, val, 3))
+        double val[3];
+        if(LineEditGetDoubles(rotateOrigin, val, 3))
             atts->SetRotateOrigin(val);
         else
         {
             ResettingError(tr("rotate origin"), 
-                FloatsToQString(atts->GetRotateOrigin(), 3));
+                DoublesToQString(atts->GetRotateOrigin(), 3));
             atts->SetRotateOrigin(atts->GetRotateOrigin());
         }
     }
@@ -745,8 +745,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do rotateAxis
     if(which_widget == TransformAttributes::ID_rotateAxis || doAll)
     {
-        float val[3];
-        if((okay = LineEditGetFloats(rotateAxis, val, 3)) == true)
+        double val[3];
+        if((okay = LineEditGetDoubles(rotateAxis, val, 3)) == true)
         {
             okay = (val[0] != 0. || val[1] != 0. || val[2] != 0);
             if (okay)
@@ -756,7 +756,7 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
         if(!okay)
         {
             ResettingError(tr("rotate axis"),
-                FloatsToQString(atts->GetRotateAxis(), 3));
+                DoublesToQString(atts->GetRotateAxis(), 3));
             atts->SetRotateAxis(atts->GetRotateAxis());
         }
     }
@@ -764,8 +764,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do rotateAmount
     if(which_widget == TransformAttributes::ID_rotateAmount || doAll)
     {
-        float val;
-        if(LineEditGetFloat(rotateAmount, val))
+        double val;
+        if(LineEditGetDouble(rotateAmount, val))
             atts->SetRotateAmount(val);
         else
         {
@@ -778,13 +778,13 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do scaleOrigin
     if(which_widget == TransformAttributes::ID_scaleOrigin || doAll)
     {
-        float val[3];
-        if(LineEditGetFloats(scaleOrigin, val, 3))
+        double val[3];
+        if(LineEditGetDoubles(scaleOrigin, val, 3))
             atts->SetScaleOrigin(val);
         else
         {
             ResettingError(tr("scale origin"),
-                FloatsToQString(atts->GetScaleOrigin(), 3));
+                DoublesToQString(atts->GetScaleOrigin(), 3));
             atts->SetScaleOrigin(atts->GetScaleOrigin());
         }
     }
@@ -792,8 +792,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do scaleX
     if(which_widget == TransformAttributes::ID_scaleX || doAll)
     {
-        float val;
-        if(LineEditGetFloat(scaleX, val))
+        double val;
+        if(LineEditGetDouble(scaleX, val))
             atts->SetScaleX(val);
         else
         {
@@ -805,8 +805,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do scaleY
     if(which_widget == TransformAttributes::ID_scaleY || doAll)
     {
-        float val;
-        if(LineEditGetFloat(scaleY, val))
+        double val;
+        if(LineEditGetDouble(scaleY, val))
             atts->SetScaleY(val);
         else
         {
@@ -818,8 +818,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do scaleZ
     if(which_widget == TransformAttributes::ID_scaleZ || doAll)
     {
-        float val;
-        if(LineEditGetFloat(scaleZ, val))
+        double val;
+        if(LineEditGetDouble(scaleZ, val))
             atts->SetScaleZ(val);
         else
         {
@@ -831,8 +831,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do translateX
     if(which_widget == TransformAttributes::ID_translateX || doAll)
     {
-        float val;
-        if(LineEditGetFloat(translateX, val))
+        double val;
+        if(LineEditGetDouble(translateX, val))
             atts->SetTranslateX(val);
         else
         {
@@ -844,8 +844,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do translateY
     if(which_widget == TransformAttributes::ID_translateY || doAll)
     {
-        float val;
-        if(LineEditGetFloat(translateY, val))
+        double val;
+        if(LineEditGetDouble(translateY, val))
             atts->SetTranslateY(val);
         else
         {
@@ -857,8 +857,8 @@ QvisTransformWindow::GetCurrentValues(int which_widget)
     // Do translateZ
     if(which_widget == TransformAttributes::ID_translateZ || doAll)
     {
-        float val;
-        if(LineEditGetFloat(translateZ, val))
+        double val;
+        if(LineEditGetDouble(translateZ, val))
             atts->SetTranslateZ(val);
         else
         {

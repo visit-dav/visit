@@ -119,12 +119,11 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     unsigned char   *GetDataString(int &length, vtkPolyData *asVTK);
     vtkPolyData     *GetDataVTK(unsigned char *asChar,
                                 unsigned int asCharLength);
-    int              WhichProcessorsForCell(float *pts, vtkIdType npts,
+    int              WhichProcessorsForCell(double *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&);
-    void             IncrementOutgoingCellCounts(float *pts, vtkIdType npts,
+    void             IncrementOutgoingCellCounts(double *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&, 
                                      std::vector<int>&);
-    float           *CreateTransformedPoints();
     vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };
 

@@ -55,7 +55,6 @@
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkDepthSortPolyData.h>
 #include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
 #include <vtkGeometryFilter.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
@@ -317,18 +316,16 @@ int
 avtTransparencyActor::AddInput(vector<vtkDataSet *> &d, 
                           vector<vtkDataSetMapper *> &m, vector<vtkActor *> &a)
 {
-    int  i;
-
-    int index = datasets.size();
+    int index = (int)datasets.size();
     datasets.push_back(d);
     mappers.push_back(m);
     actors.push_back(a);
     useActor.push_back(true);
     visibility.push_back(true);
 
-    int size = d.size();
+    size_t size = d.size();
     vector<vtkPolyData *> pd;
-    for (i = 0 ; i < size ; i++)
+    for (size_t i = 0 ; i < size ; ++i)
     {
         pd.push_back(NULL);
     }
@@ -366,7 +363,7 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
 {
     if (ind >= datasets.size() || ind < 0)
     {
-        EXCEPTION2(BadIndexException, ind, datasets.size());
+        EXCEPTION2(BadIndexException, ind, (int)datasets.size());
     }
 
     datasets[ind] = d;
@@ -411,7 +408,7 @@ avtTransparencyActor::RemoveInput(int ind)
 {
     if (ind >= useActor.size() || ind < 0)
     {
-        EXCEPTION2(BadIndexException, ind, useActor.size());
+        EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
 
     for (size_t i = 0 ; i < preparedDataset[ind].size() ; i++)
@@ -448,7 +445,7 @@ avtTransparencyActor::TurnOffInput(int ind)
 {
     if (ind >= useActor.size() || ind < 0)
     {
-        EXCEPTION2(BadIndexException, ind, useActor.size());
+        EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
 
     useActor[ind] = false;
@@ -474,7 +471,7 @@ avtTransparencyActor::TurnOnInput(int ind)
 {
     if (ind >= useActor.size() || ind < 0)
     {
-        EXCEPTION2(BadIndexException, ind, useActor.size());
+        EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
 
     useActor[ind] = true;
@@ -500,7 +497,7 @@ avtTransparencyActor::SetVisibility(int ind, bool val)
 {
     if (ind >= useActor.size() || ind < 0)
     {
-        EXCEPTION2(BadIndexException, ind, useActor.size());
+        EXCEPTION2(BadIndexException, ind, (int)useActor.size());
     }
 
     visibility[ind] = val;
@@ -987,7 +984,7 @@ avtTransparencyActor::SetUpActor(void)
 // ****************************************************************************
 
 void
-avtTransparencyActor::PrepareDataset(int input, int subinput)
+avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
 {
     inputModified = false;
 
@@ -1287,14 +1284,13 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
             vtkDataArray *cell_normals = pd->GetCellData()->GetNormals();
             if (cell_normals != NULL)
             {
-                vtkDataArray *newNormals = NULL;
+                vtkDataArray *newNormals = cell_normals->NewInstance();
+                newNormals->SetNumberOfComponents(3);
+                newNormals->SetNumberOfTuples(count);
+                newNormals->SetName("Normals");
                 if(cell_normals->GetDataType() == VTK_FLOAT)
                 {
                     const float *cn = (float *) cell_normals->GetVoidPointer(0);
-                    newNormals = vtkFloatArray::New();
-                    newNormals->SetNumberOfComponents(3);
-                    newNormals->SetNumberOfTuples(count);
-                    newNormals->SetName("Normals");
                     float *newNormalPtr = (float*)newNormals->GetVoidPointer(0);
                     for (vtkIdType i = 0 ; i < count ; i++)
                     {
@@ -1303,12 +1299,19 @@ avtTransparencyActor::PrepareDataset(int input, int subinput)
                         *newNormalPtr++ = cn[cellIds[i]*3+2];
                     }
                 }
+                else if(cell_normals->GetDataType() == VTK_DOUBLE)
+                {
+                    double *cn = (double *) cell_normals->GetVoidPointer(0);
+                    double *nn = (double*)newNormals->GetVoidPointer(0);
+                    for (vtkIdType i = 0 ; i < count ; i++)
+                    {
+                        *nn++ = cn[cellIds[i]*3];
+                        *nn++ = cn[cellIds[i]*3+1];
+                        *nn++ = cn[cellIds[i]*3+2];
+                    }
+                }
                 else
                 {
-                    newNormals = cell_normals->NewInstance();
-                    newNormals->SetNumberOfComponents(3);
-                    newNormals->SetNumberOfTuples(count);
-                    newNormals->SetName("Normals");
                     for (vtkIdType i = 0 ; i < count ; i++)
                         newNormals->SetTuple(i, cell_normals->GetTuple(cellIds[i]));
                 }
@@ -1447,12 +1450,12 @@ void
 avtTransparencyActor::DetermineTransparencies()
 {
     transparenciesExist = false;
-    int numActors = datasets.size();
+    size_t numActors = datasets.size();
     for (int i = 0 ; i < numActors && !transparenciesExist; i++)
     {
         if (useActor[i] && visibility[i] == true)
         {
-            int numParts = datasets[i].size();
+            size_t numParts = datasets[i].size();
             for (int j = 0 ; j < numParts && !transparenciesExist; j++)
             {
                 vtkDataSet       *in_ds  = datasets[i][j];
