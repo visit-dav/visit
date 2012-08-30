@@ -54,6 +54,9 @@
 #    I modified the script to return visit-core-support@elist.ornl.gov
 #    if the name is not in the list.
 #
+#    Matthew Wheeler, Fri Aug 24 12:30:00 BST 2012
+#    Added case for userid "wheeler".
+#
 # *****************************************************************************
 
 
@@ -153,6 +156,10 @@ case $1 in
     # Iuri Prilepov, UC Davis & Lawrence Berkeley
     "iuri")
         emaddr=iprilepov@lbl.gov
+        ;;
+    # Matthew Wheeler, AWE UK
+    "wheeler")
+        emaddr=Matthew.Wheeler@awe.co.uk
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
