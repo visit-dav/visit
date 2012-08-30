@@ -464,10 +464,10 @@ void avtWPPImageFileFormat::Initialize()
 
     size_t k=m_filename.rfind('.');
 
-    if( k != string::npos )
+    if( k != string::npos ) 
         m_mode = m_filename.substr(k+1);
     else
-        m_mode = " ";
+        m_mode = "(no dot in filename)";
     if( !(m_mode == "ux" || m_mode == "uy" || m_mode == "uz" || m_mode == "rho" ||
           m_mode == "lambda" || m_mode == "mu" || m_mode == "p" || m_mode == "s" ||
           m_mode == "div" || m_mode == "curl" || m_mode == "veldiv" || m_mode == "velcurl" ||
@@ -481,10 +481,20 @@ void avtWPPImageFileFormat::Initialize()
     }
     debug5 << "mode = " << m_mode << endl;
 
-    int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
+    size_t find3D = m_filename.find("3D");
+    if (find3D != string::npos && find3D == k-2)     {
+      // We have a '3D.mode' type file -- this is for volimage
+      snprintf(errmsg,500,"Error: WPPImage reader does not read 3D volimage files -- use the volimage reader instead." , m_mode.c_str() );
+      debug1 << errmsg << endl; 
+      EXCEPTION1( InvalidDBTypeException, errmsg );
+    } else { 
+      debug5 << "Not a volimage file, continuing..." << endl; 
+    }
+      
+    int fd = open( m_filename.c_str(), O_RDONLY|O_BINARY );
     if( fd == -1 )
     {
-        SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+        snprintf(errmsg,500,"Error in WPPImage opening file %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "file opened " << endl;
