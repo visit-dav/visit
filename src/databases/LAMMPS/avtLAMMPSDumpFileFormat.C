@@ -547,6 +547,10 @@ avtLAMMPSDumpFileFormat::ReadTimeStep(int timestep)
 //    Jeremy Meredith, Tue Apr 27 14:41:11 EDT 2010
 //    The number of atoms can now vary per timestep.
 //
+//    Matthew Wheeler, Fri Aug 31 15:51:00 BST 2012
+//    Modified and rearranged the BOX BOUNDS code to ignore irrelevant trailing
+//    boundary style fields, so data is handled as in the LAMMPS documentation.
+//
 // ****************************************************************************
 void
 avtLAMMPSDumpFileFormat::ReadAllMetaData()
@@ -574,19 +578,19 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
             in.getline(buff,1000);
             cycles.push_back(strtol(buff, NULL, 10));
         }
-        else if (item == "BOX BOUNDS")
-        {
-            in >> xMin >> xMax;
-            in >> yMin >> yMax;
-            in >> zMin >> zMax;
-            in.getline(buff, 1000); // get rest of Z line
-        }
-        else if (item == "BOX BOUNDS xy xz yz")
+        else if (item.substr(0,19) == "BOX BOUNDS xy xz yz")
         {
             float xy, xz, yz;
             in >> xMin >> xMax >> xy;
             in >> yMin >> yMax >> xz;
             in >> zMin >> zMax >> yz;
+            in.getline(buff, 1000); // get rest of Z line
+        }
+        else if (item.substr(0,10) == "BOX BOUNDS")
+        {
+            in >> xMin >> xMax;
+            in >> yMin >> yMax;
+            in >> zMin >> zMax;
             in.getline(buff, 1000); // get rest of Z line
         }
         else if (item == "NUMBER OF ATOMS")
