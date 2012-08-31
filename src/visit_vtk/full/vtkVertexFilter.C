@@ -83,6 +83,9 @@ vtkVertexFilter::vtkVertexFilter()
 //    Hank Childs, Thu Sep  7 14:34:48 PDT 2006
 //    Code around VTK slowness for convex point sets ['7311].
 //
+//    Kathleen Biagas, Thu Aug 30 16:55:32 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 void vtkVertexFilter::Execute(void)
@@ -100,7 +103,7 @@ void vtkVertexFilter::Execute(void)
   int nPts   = input->GetNumberOfPoints();
   int nCells = input->GetNumberOfCells();
 
-  vtkPoints *outPts  = vtkPoints::New();
+  vtkPoints *outPts  = vtkVisItUtility::NewPoints(input);
   int        nOutPts = 0;
 
   if (VertexAtPoints)

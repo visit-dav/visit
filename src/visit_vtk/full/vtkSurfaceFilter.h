@@ -65,8 +65,8 @@
 #include <visit_vtk_exports.h>
 
 #include <vtkDataSetToUnstructuredGridFilter.h>
-#include <vtkFloatArray.h>
 
+class vtkDataAray;
 class vtkPointSet;
 class vtkRectilinearGrid;
 
@@ -87,8 +87,8 @@ public:
 
   // Description:
   // Set/Get the scalars to use for z-values in the output. 
-  virtual void SetinScalars(vtkFloatArray*); 
-  vtkGetObjectMacro(inScalars, vtkFloatArray); 
+  virtual void SetinScalars(vtkDataArray*); 
+  vtkGetObjectMacro(inScalars, vtkDataArray); 
 
  
 protected:
@@ -101,7 +101,7 @@ protected:
 
 // Protected Data Members
 
-  vtkFloatArray *inScalars;
+  vtkDataArray *inScalars;
 
 private:
   vtkSurfaceFilter(const vtkSurfaceFilter&);

@@ -698,7 +698,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     }
 
     vtkIdList *cells = vtkIdList::New();
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkVisItUtility::NewPoints(in_ds);
     double cpt[3];
     for (int i = 0; i < isectedCells.size(); i++)
     {
