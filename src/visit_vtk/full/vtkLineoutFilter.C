@@ -161,7 +161,7 @@ vtkLineoutFilter::Execute()
 
   vtkIdType i, index, numPoints = validPoints->GetNumberOfTuples();
 
-  vtkPoints *outPts = vtkPoints::New();
+  vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
   outPolys->SetPoints(outPts);
   outPts->Delete();
 

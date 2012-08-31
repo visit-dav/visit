@@ -66,6 +66,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 
 // ======================================================================
@@ -75,7 +76,7 @@
 // ======================================================================
 
 vtkStandardNewMacro(vtkSurfaceFilter);
-vtkCxxSetObjectMacro(vtkSurfaceFilter, inScalars, vtkFloatArray); 
+vtkCxxSetObjectMacro(vtkSurfaceFilter, inScalars, vtkDataArray); 
 
 
 //======================================================================
@@ -148,6 +149,10 @@ vtkSurfaceFilter::Execute()
 // Modifications:
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
+//
+//    Kathleen Biagas, Thu Aug 30 16:26:44 MST 2012
+//    Preserve coordinate type.
+//
 //=======================================================================
 void 
 vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
@@ -159,17 +164,17 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
   int *cellTypes = new int [numCells];
   vtkCellArray *cells = vtkCellArray::New();
 
-  vtkPoints *outPoints = vtkPoints::New();
+  vtkPoints *outPoints = vtkVisItUtility::NewPoints(rg);
   outPoints->SetNumberOfPoints(numPoints);
 
   int dims[3];
   rg->GetDimensions(dims);
   double point[3]; 
-  float val;
+  double val;
   for (int i = 0; i < numPoints; ++i)
   {
     rg->GetPoint(i, point);
-    val = inScalars->GetValue(i); 
+    val = inScalars->GetTuple1(i); 
     if (dims[2] == 1) // replace z coordinates with val
     {
         point[2] = val;
@@ -229,6 +234,9 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
 //    Hank Childs, Thu Sep 12 19:12:35 PDT 2002
 //    Fix memory leak.
 //
+//    Kathleen Biagas, Thu Aug 30 16:26:44 MST 2012
+//    Preserve coordinate type.
+//
 //=======================================================================
 void 
 vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps)
@@ -244,14 +252,14 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps)
       return;
   }
 
-  vtkPoints *outPoints = vtkPoints::New();
+  vtkPoints *outPoints = vtkPoints::New(inPoints->GetDataType());
   outPoints->SetNumberOfPoints(inPoints->GetNumberOfPoints());
 
   double point[3];
   for (int i = 0; i < inScalars->GetNumberOfTuples(); ++i)
   {
      inPoints->GetPoint(i, point);
-     point[2] = inScalars->GetValue(i);
+     point[2] = inScalars->GetTuple1(i);
      outPoints->SetPoint(i, point); 
   }
   int numCells = ps->GetNumberOfCells();

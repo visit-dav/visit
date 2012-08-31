@@ -29,6 +29,7 @@
 #include "vtkUniformGrid.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkVertex.h"
+#include <vtkVisItUtility.h>
 
 #include "BJHash.h"
 
@@ -364,7 +365,7 @@ int vtkEnumThreshold::RequestData(
 
     numPts = input->GetNumberOfPoints();
     output->Allocate(input->GetNumberOfCells());
-    newPoints = vtkPoints::New();
+    newPoints = vtkVisItUtility::NewPoints(input);
     newPoints->Allocate(numPts);
 
     pointMap = vtkIdList::New(); //maps old point ids into new
@@ -477,7 +478,7 @@ int vtkEnumThreshold::RequestData(
                             // Build a temporary vertex cell so it
                             // can be added by the macro.
                             vtkVertex *tmpVert = vtkVertex::New();
-                            vtkPoints *dummyPoints = vtkPoints::New();
+                            vtkPoints *dummyPoints = vtkVisItUtility::NewPoints(input);
                             dummyPoints->InsertNextPoint(0.0, 0.0, 0.0);
                             tmpVert->Initialize(1, &ptId, dummyPoints);
 

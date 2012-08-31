@@ -627,7 +627,6 @@ vtkPolyDataOnionPeelFilter::GenerateOutputGrid()
     vtkPointData        *outPD      = output->GetPointData();
     vtkCellData         *outCD      = output->GetCellData();
     vtkIdList           *cellPts    = vtkIdList::New();
-    vtkPoints           *newGridPts = vtkPoints::New();
     int i, cellId, newCellId, totalCells;
 
     if (this->RequestedLayer < this->cellOffsets->GetNumberOfIds() -1)
@@ -662,7 +661,6 @@ vtkPolyDataOnionPeelFilter::GenerateOutputGrid()
 
     // free memory used locally
     cellPts->Delete();
-    newGridPts->Delete();
 
 } // GenerateOutputGrid
 
