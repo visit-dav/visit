@@ -773,6 +773,9 @@ $0 = shift @ARGV;
 #    Eric Brugger, Mon Jul 30 10:11:10 PDT 2012
 #    I modified the script to run the chaos 4 version if running on gremlin.
 #
+#    Eric Brugger, Thu Aug 30 17:11:17 PDT 2012
+#    I modified the script so that visit would work on glory and redsky.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1980,6 +1983,7 @@ $IsRunningOnRedskySandia = 0;
 if ( $host =~ /^redsky-login\d+$/ )
 {
     $IsRunningOnRedskySandia = 1;
+    $ENV{LD_LIBRARY_PATH} = "/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64:$ENV{LD_LIBRARY_PATH}";
 }
 
 # ----
@@ -3016,7 +3020,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             {
                 print TFILE "source /usr/share/modules/init/bash\n";
                 print TFILE "module purge\n";
-                print TFILE "module load mpi/openmpi-1.4.3_pgi-9.0-4\n";
+                print TFILE "module load mpi/openmpi-1.4.2_gcc-4.3.4\n";
                 print TFILE "module load compilers/gcc-4.3.4\n";
             }
             if ($IsRunningOnRedskySandia)
