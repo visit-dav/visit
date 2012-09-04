@@ -65,22 +65,6 @@ class avtWPPImageFileFormat : public avtSTMDFileFormat
                        avtWPPImageFileFormat(const char *);
     virtual           ~avtWPPImageFileFormat() {;};
 
-    //
-    // This is used to return unconvention data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, int domain,
-    //                                     const char *type, void *args, 
-    //                                     DestructorFunction &);
-    //
-
-    //
-    // If you know the cycle number, overload this function.
-    // Otherwise, VisIt will make up a reasonable one for you.
-    //
-    // virtual int         GetCycle(void);
-    //
-
     virtual const char    *GetType(void)   { return "WPPImage"; };
     virtual void           FreeUpResources(void); 
 

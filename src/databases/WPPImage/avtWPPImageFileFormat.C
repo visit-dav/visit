@@ -44,6 +44,7 @@
 
 #include <string>
 
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -96,8 +97,8 @@ using namespace std;
 avtWPPImageFileFormat::avtWPPImageFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
-   m_filename    = filename;
-   m_initialized = false;
+    m_filename    = filename;
+    m_initialized = false;
 
     // INITIALIZE DATA MEMBERS
 }
@@ -163,7 +164,8 @@ avtWPPImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         debug5 << "Block = " << b << endl;
         debug5 << "grid size = " << m_gridsize[b] << endl;
-        debug5 << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " << m_nk[b] << endl;
+        debug5 << "no of pts = " << m_ni[b] << " " << m_nj[b] << " " 
+               << m_nk[b] << endl;
         char buf[50];
         SNPRINTF(buf,50,"h=%f",m_gridsize[b]);
         string bname= buf;
@@ -175,115 +177,13 @@ avtWPPImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Scalar variable information
     avtScalarMetaData *smd1 = new avtScalarMetaData;
     smd1->name = m_mode;
-// copy the mesh name from above
+    // copy the mesh name from above
     smd1->meshName = mmd->name;
     smd1->centering = AVT_NODECENT;
     smd1->hasUnits = false;
     md->Add(smd1);
     debug5 << "Populatedatabase done " << endl;
 }
-    //
-    // CODE TO ADD A MESH
-    //
-    // string meshname = ...
-    //
-    // AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH,
-    // AVT_POINT_MESH, AVT_SURFACE_MESH, AVT_UNKNOWN_MESH
-    // avtMeshType mt = AVT_RECTILINEAR_MESH;
-    //
-    // int nblocks = YOU_MUST_DECIDE;
-    // int block_origin = 0;
-    // int spatial_dimension = 2;
-    // int topological_dimension = 2;
-    // double *extents = NULL;
-    //
-    // Here's the call that tells the meta-data object that we have a mesh:
-    //
-    // AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-    //                   spatial_dimension, topological_dimension);
-    //
-
-    //
-    // CODE TO ADD A SCALAR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddScalarVarToMetaData(md, varname, mesh_for_this_var, cent);
-    //
-
-    //
-    // CODE TO ADD A VECTOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int vector_dim = 2;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddVectorVarToMetaData(md, varname, mesh_for_this_var, cent,vector_dim);
-    //
-
-    //
-    // CODE TO ADD A TENSOR VARIABLE
-    //
-    // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-    // string varname = ...
-    // int tensor_dim = 9;
-    //
-    // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-    // avtCentering cent = AVT_NODECENT;
-    //
-    //
-    // Here's the call that tells the meta-data object that we have a var:
-    //
-    // AddTensorVarToMetaData(md, varname, mesh_for_this_var, cent,tensor_dim);
-    //
-
-    //
-    // CODE TO ADD A MATERIAL
-    //
-    // string mesh_for_mat = meshname; // ??? -- could be multiple meshes
-    // string matname = ...
-    // int nmats = ...;
-    // vector<string> mnames;
-    // for (int i = 0 ; i < nmats ; i++)
-    // {
-    //     char str[32];
-    //     sprintf(str, "mat%d", i);
-    //     -- or -- 
-    //     strcpy(str, "Aluminum");
-    //     mnames.push_back(str);
-    // }
-    // 
-    // Here's the call that tells the meta-data object that we have a mat:
-    //
-    // AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);
-    //
-    //
-    // Here's the way to add expressions:
-    //Expression momentum_expr;
-    //momentum_expr.SetName("momentum");
-    //momentum_expr.SetDefinition("{u, v}");
-    //momentum_expr.SetType(Expression::VectorMeshVar);
-    //md->AddExpression(&momentum_expr);
-    //Expression KineticEnergy_expr;
-    //KineticEnergy_expr.SetName("KineticEnergy");
-    //KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
-    //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
-    //md->AddExpression(&KineticEnergy_expr);
-    //
-//}
 
 
 // ****************************************************************************
@@ -309,41 +209,42 @@ avtWPPImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtWPPImageFileFormat::GetMesh(int domain, const char *meshname)
 {
-  debug5 << "constructing a Cartesian grid" << endl;
+    debug5 << "constructing a Cartesian grid" << endl;
 
-   if( !m_initialized )
-      Initialize();
+    if( !m_initialized )
+        Initialize();
 
-   vtkFloatArray *coords[3]= {0,0,0};
-   coords[0] = vtkFloatArray::New();
-   coords[0]->SetNumberOfTuples(m_ni[domain]);
-   coords[1] = vtkFloatArray::New();
-   coords[1]->SetNumberOfTuples(m_nj[domain]);
-   coords[2] = vtkFloatArray::New();
-   coords[2]->SetNumberOfTuples(m_nk[domain]);
-   float* x = (float *)coords[0]->GetVoidPointer(0);
-   float* y = (float *)coords[1]->GetVoidPointer(0);
-   float* z = (float *)coords[2]->GetVoidPointer(0);
-   for( int i=0 ; i < m_ni[domain] ; i++ )
-      x[i] = i*m_gridsize[domain]+m_xmin[domain];
-   for( int i=0 ; i < m_nj[domain] ; i++ )
-      y[i] = i*m_gridsize[domain]+m_ymin[domain];
-   for( int i=0 ; i < m_nk[domain] ; i++ )
-      z[i] = i*m_gridsize[domain]+m_zmin[domain];
-   vtkRectilinearGrid *rgrid= vtkRectilinearGrid::New();
-   int dims[3];
-   dims[0] = m_ni[domain];
-   dims[1] = m_nj[domain];
-   dims[2] = m_nk[domain];
-   rgrid->SetDimensions(dims);
-   rgrid->SetXCoordinates(coords[0]);
-   rgrid->SetYCoordinates(coords[1]);
-   rgrid->SetZCoordinates(coords[2]);
-   coords[0]->Delete();
-   coords[1]->Delete();
-   coords[2]->Delete();
-   debug5 << "done get mesh " << endl;
-   return rgrid;
+ 
+    vtkFloatArray *coords[3]= {0,0,0};
+    coords[0] = vtkFloatArray::New();
+    coords[0]->SetNumberOfTuples(m_ni[domain]);
+    coords[1] = vtkFloatArray::New();
+    coords[1]->SetNumberOfTuples(m_nj[domain]);
+    coords[2] = vtkFloatArray::New();
+    coords[2]->SetNumberOfTuples(m_nk[domain]);
+    float* x = (float *)coords[0]->GetVoidPointer(0);
+    float* y = (float *)coords[1]->GetVoidPointer(0);
+    float* z = (float *)coords[2]->GetVoidPointer(0);
+    for( int i=0 ; i < m_ni[domain] ; i++ )
+        x[i] = i*m_gridsize[domain]+m_xmin[domain];
+    for( int i=0 ; i < m_nj[domain] ; i++ )
+        y[i] = i*m_gridsize[domain]+m_ymin[domain];
+    for( int i=0 ; i < m_nk[domain] ; i++ )
+        z[i] = i*m_gridsize[domain]+m_zmin[domain];
+    vtkRectilinearGrid *rgrid= vtkRectilinearGrid::New();
+    int dims[3];
+    dims[0] = m_ni[domain];
+    dims[1] = m_nj[domain];
+    dims[2] = m_nk[domain];
+    rgrid->SetDimensions(dims);
+    rgrid->SetXCoordinates(coords[0]);
+    rgrid->SetYCoordinates(coords[1]);
+    rgrid->SetZCoordinates(coords[2]);
+    coords[0]->Delete();
+    coords[1]->Delete();
+    coords[2]->Delete();
+    debug5 << "done get mesh " << endl;
+    return rgrid;
 }
 
 
@@ -364,61 +265,66 @@ avtWPPImageFileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: bjorn -- generated by xml2avt
 //  Creation:   Fri Jan 13 16:02:12 PST 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Sep 4 10:18:27 MST 2012
+//    Create vtkDoubleArray when m_prec calls for it.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtWPPImageFileFormat::GetVar(int domain, const char *varname)
 {
-   debug5 << "avtWPPImageFileFormat::GetVar" << endl;
-   if( !m_initialized )
-      Initialize();
+    debug5 << "avtWPPImageFileFormat::GetVar" << endl;
+    if( !m_initialized )
+        Initialize();
 
-   vtkFloatArray* arr = vtkFloatArray::New();
-   size_t npts = ((size_t) m_ni[domain])*m_nj[domain]*m_nk[domain];
-   arr->SetNumberOfTuples(npts);
-   float* data = (float *)arr->GetVoidPointer(0);
-   int fd = OPEN(m_filename.c_str(), O_RDONLY | O_BINARY );
-   char errmsg[500];
-   if( fd == -1 )
-   {
-      SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
-      EXCEPTION1( InvalidDBTypeException, errmsg );
-   }
-   off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
-   if( nr != m_offset[domain] )
-   {
-      CLOSE(fd);
-      SNPRINTF(errmsg,500,"Error accessing array in %s",m_filename.c_str());
-      EXCEPTION1( InvalidDBTypeException, errmsg );
-   }
-   if( m_prec == 4 )
-   {
-      nr = READ(fd,data,sizeof(float)*npts);
-      if( nr != sizeof(float)*npts )
-      {
-     CLOSE(fd);
-     SNPRINTF(errmsg,500,"Error reading array in %s" , m_filename.c_str());
-     EXCEPTION1( InvalidDBTypeException, errmsg );
-      }
-   }
-   else
-   {
-      double* tmp=new double[npts];
-      nr = READ(fd,tmp,sizeof(double)*npts);
-      if( nr != sizeof(double)*npts )
-      {
-     CLOSE(fd); 
-     delete [] tmp;
-     SNPRINTF(errmsg,500,"Error reading array in %s" , m_filename.c_str());
-     EXCEPTION1( InvalidDBTypeException, errmsg );
-      }
-      for( size_t i = 0 ; i < npts ; i++ )
-     data[i] = tmp[i];
-      delete[] tmp;
-   }
-   CLOSE(fd);
-   debug5 << "done get var " << endl;
-   return arr;
+    int fd = OPEN(m_filename.c_str(), O_RDONLY | O_BINARY );
+    char errmsg[500];
+    if( fd == -1 )
+    {
+        SNPRINTF(errmsg,500,"Error opening file %s",m_filename.c_str());
+        EXCEPTION1( InvalidDBTypeException, errmsg );
+    }
+    off_t nr = LSEEK(fd,m_offset[domain],SEEK_CUR);
+    if( nr != m_offset[domain] )
+    {
+        CLOSE(fd);
+        SNPRINTF(errmsg,500,"Error accessing array in %s",m_filename.c_str());
+        EXCEPTION1( InvalidDBTypeException, errmsg );
+    }
+    size_t npts = ((size_t) m_ni[domain])*m_nj[domain]*m_nk[domain];
+    vtkDataArray *arr = NULL;
+    if( m_prec == 4 )
+    {
+        arr = vtkFloatArray::New();
+        arr->SetNumberOfTuples(npts);
+        float* data = (float *)arr->GetVoidPointer(0);
+        nr = READ(fd,data,sizeof(float)*npts);
+        if( nr != sizeof(float)*npts )
+        {
+            CLOSE(fd);
+            SNPRINTF(errmsg,500,"Error reading array in %s", 
+                     m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
+    }
+    else
+    {
+        arr = vtkDoubleArray::New();
+        arr->SetNumberOfTuples(npts);
+        double* data = (double *)arr->GetVoidPointer(0);
+        nr = READ(fd,data,sizeof(double)*npts);
+        if( nr != sizeof(double)*npts )
+        {
+            CLOSE(fd); 
+            SNPRINTF(errmsg,500,"Error reading array in %s", 
+                     m_filename.c_str());
+            EXCEPTION1( InvalidDBTypeException, errmsg );
+        }
+    }
+    CLOSE(fd);
+    debug5 << "done get var " << endl;
+    return arr;
 }
 
 
@@ -444,8 +350,8 @@ avtWPPImageFileFormat::GetVar(int domain, const char *varname)
 vtkDataArray *
 avtWPPImageFileFormat::GetVectorVar(int domain, const char *varname)
 {
-   // There are no vector variables 
-   return 0;
+    // There are no vector variables 
+    return 0;
 }
 
 // ****************************************************************************
@@ -468,56 +374,70 @@ void avtWPPImageFileFormat::Initialize()
         m_mode = m_filename.substr(k+1);
     else
         m_mode = "(no dot in filename)";
-    if( !(m_mode == "ux" || m_mode == "uy" || m_mode == "uz" || m_mode == "rho" ||
-          m_mode == "lambda" || m_mode == "mu" || m_mode == "p" || m_mode == "s" ||
-          m_mode == "div" || m_mode == "curl" || m_mode == "veldiv" || m_mode == "velcurl" ||
-          m_mode == "lat" || m_mode == "lon" || m_mode == "hvelmax" || m_mode == "vvelmax" ||
-          m_mode == "topo" || m_mode == "grid" || m_mode == "uxerr" || m_mode == "uyerr" ||
-          m_mode == "uzerr" || m_mode == "fx" || m_mode == "fy" || m_mode == "fz" ||
-          m_mode == "velmag" || m_mode == "qs" || m_mode == "qp" || m_mode == "hvel" ) ) 
+    if( !(m_mode == "ux" || m_mode == "uy" || m_mode == "uz" || 
+          m_mode == "rho" || m_mode == "lambda" || m_mode == "mu" || 
+          m_mode == "p" || m_mode == "s" || m_mode == "div" || 
+          m_mode == "curl" || m_mode == "veldiv" || m_mode == "velcurl" ||
+          m_mode == "lat" || m_mode == "lon" || m_mode == "hvelmax" || 
+          m_mode == "vvelmax" || m_mode == "topo" || m_mode == "grid" || 
+          m_mode == "uxerr" || m_mode == "uyerr" || m_mode == "uzerr" || 
+          m_mode == "fx" || m_mode == "fy" || m_mode == "fz" ||
+          m_mode == "velmag" || m_mode == "qs" || m_mode == "qp" || 
+          m_mode == "hvel" ) ) 
     {
-        SNPRINTF(errmsg,500,"Error: Unknown volimage mode %s" , m_mode.c_str() );
+        SNPRINTF(errmsg,500,"Error: Unknown volimage mode %s" , 
+                 m_mode.c_str() );
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "mode = " << m_mode << endl;
 
     size_t find3D = m_filename.find("3D");
-    if (find3D != string::npos && find3D == k-2)     {
-      // We have a '3D.mode' type file -- this is for volimage
-      snprintf(errmsg,500,"Error: WPPImage reader does not read 3D volimage files -- use the volimage reader instead." , m_mode.c_str() );
-      debug1 << errmsg << endl; 
-      EXCEPTION1( InvalidDBTypeException, errmsg );
-    } else { 
-      debug5 << "Not a volimage file, continuing..." << endl; 
+    if (find3D != string::npos && find3D == k-2)
+    {
+        // We have a '3D.mode' type file -- this is for volimage
+        SNPRINTF(errmsg,500,"Error: WPPImage reader does not read 3D volimage"
+                " files -- use the volimage reader instead.", m_mode.c_str());
+        debug1 << errmsg << endl; 
+        EXCEPTION1( InvalidDBTypeException, errmsg );
+    }
+    else
+    { 
+        debug5 << "Not a volimage file, continuing..." << endl; 
     }
       
-    int fd = open( m_filename.c_str(), O_RDONLY|O_BINARY );
+    int fd = OPEN( m_filename.c_str(), O_RDONLY|O_BINARY );
     if( fd == -1 )
     {
-        snprintf(errmsg,500,"Error in WPPImage opening file %s",m_filename.c_str());
+        SNPRINTF(errmsg,500,"Error in WPPImage opening file %s",
+                 m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "file opened " << endl;
     size_t nr = READ(fd,&m_prec,sizeof(int) );
     if( nr != sizeof(int) )
     {
-        SNPRINTF(errmsg,500,"Error reading precision in %s",m_filename.c_str());
+        CLOSE(fd); // closing the solution file
+        SNPRINTF(errmsg,500,"Error reading precision in %s",
+                 m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     if( (m_prec != 4) && (m_prec != 8 ) )
     {
-       SNPRINTF(errmsg,500,"Error, precision is %i, should be 4 or 8\n",m_prec);
-       EXCEPTION1( InvalidDBTypeException, errmsg );
+        CLOSE(fd); // closing the solution file
+        SNPRINTF(errmsg,500,"Error, precision is %i, should be 4 or 8\n",
+                 m_prec);
+        EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     nr = READ(fd,&m_nblocks,sizeof(int) );
     if( nr != sizeof(int) )
     {
+        CLOSE(fd); // closing the solution file
         SNPRINTF(errmsg,500,"Error reading nblocks in %s",m_filename.c_str());
         EXCEPTION1( InvalidDBTypeException, errmsg );
     }
     debug5 << "prec = " << m_prec << " " << " nblocks = " << m_nblocks << endl;
 
-// was there a grid file?
+    // was there a grid file?
     m_CartGrid = true;
     debug5 << "No grid file, assuming Cartesian grid" << endl;
 
@@ -542,7 +462,8 @@ void avtWPPImageFileFormat::Initialize()
     m_nk.resize(m_nblocks);
     m_offset.resize(m_nblocks);
 
-    size_t header_offset = 2*sizeof(int)+m_nblocks*(sizeof(double)+4*sizeof(int));
+    size_t header_offset = 
+        2*sizeof(int)+m_nblocks*(sizeof(double)+4*sizeof(int));
     int dims[4];
     debug5 << "reading block headers " << endl;
     for( int b=0 ; b < m_nblocks ; b++ )
@@ -551,45 +472,51 @@ void avtWPPImageFileFormat::Initialize()
         nr = READ(fd,&m_gridsize[b],sizeof(double));
         if( nr != sizeof(double) )
         {
-            SNPRINTF(errmsg,500,"Error reading gridsizes in %s",m_filename.c_str());
+            CLOSE(fd); // closing the solution file
+            SNPRINTF(errmsg,500,"Error reading gridsizes in %s",
+                     m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         nr = READ(fd,dims,sizeof(int)*4);
         if( nr != sizeof(int)*4 )
         {
-            SNPRINTF(errmsg,500,"Error reading dimensions in %s",m_filename.c_str());
+            CLOSE(fd); // closing the solution file
+            SNPRINTF(errmsg,500,"Error reading dimensions in %s",
+                     m_filename.c_str());
             EXCEPTION1( InvalidDBTypeException, errmsg );
         }
         if( slice_plane == 0 )
-    {
-       m_ni[b] = 1;
-       m_nj[b] = dims[1]-dims[0]+1;
-       m_nk[b] = dims[3]-dims[2]+1;
-           m_xmin[b] = plane_value;
-       m_ymin[b] = (dims[0]-1)*m_gridsize[b];
-       m_zmin[b] = (dims[2]-1)*m_gridsize[b];
-    }
-    else if( slice_plane == 1 )
-    {
-       m_ni[b] = dims[1]-dims[0]+1;
-       m_nj[b] = 1;
-       m_nk[b] = dims[3]-dims[2]+1;
-           m_xmin[b] = (dims[0]-1)*m_gridsize[b];
-       m_ymin[b] = plane_value;
-       m_zmin[b] = (dims[2]-1)*m_gridsize[b];
-    }
+        {
+            m_ni[b] = 1;
+            m_nj[b] = dims[1]-dims[0]+1;
+            m_nk[b] = dims[3]-dims[2]+1;
+            m_xmin[b] = plane_value;
+            m_ymin[b] = (dims[0]-1)*m_gridsize[b];
+            m_zmin[b] = (dims[2]-1)*m_gridsize[b];
+        }
+        else if( slice_plane == 1 )
+        {
+            m_ni[b] = dims[1]-dims[0]+1;
+            m_nj[b] = 1;
+            m_nk[b] = dims[3]-dims[2]+1;
+            m_xmin[b] = (dims[0]-1)*m_gridsize[b];
+            m_ymin[b] = plane_value;
+            m_zmin[b] = (dims[2]-1)*m_gridsize[b];
+        }
         else
-    {
-       m_ni[b] = dims[1]-dims[0]+1;
-       m_nj[b] = dims[3]-dims[2]+1;
-       m_nk[b] = 1;
-           m_xmin[b] = (dims[0]-1)*m_gridsize[b];
-       m_ymin[b] = (dims[2]-1)*m_gridsize[b];
-       m_zmin[b] = plane_value;
-    }
-        debug5 << "b = " << b << " dims[0] = " << dims[0] << " dims[1] = " << dims[1] << " dims[2] = " 
-       << dims[2] << " dims[3] = " << dims[3] << endl;
-        debug5 << "x_min = " << m_xmin[b] << " y_min = " << m_ymin[b] << " z_min = " << m_zmin[b] << endl;
+        {
+            m_ni[b] = dims[1]-dims[0]+1;
+            m_nj[b] = dims[3]-dims[2]+1;
+            m_nk[b] = 1;
+            m_xmin[b] = (dims[0]-1)*m_gridsize[b];
+            m_ymin[b] = (dims[2]-1)*m_gridsize[b];
+            m_zmin[b] = plane_value;
+        }
+        debug5 << "b = " << b << " dims[0] = " << dims[0] << " dims[1] = " 
+               << dims[1] << " dims[2] = " << dims[2] << " dims[3] = " 
+               << dims[3] << endl;
+        debug5 << "x_min = " << m_xmin[b] << " y_min = " << m_ymin[b] 
+               << " z_min = " << m_zmin[b] << endl;
     }
     m_offset[0] = header_offset;
     int datasize;
@@ -598,14 +525,14 @@ void avtWPPImageFileFormat::Initialize()
     else
         datasize = sizeof(double);
 
-// calculate offsets for accessing data
+    // calculate offsets for accessing data
     for( int b=1 ; b < m_nblocks ; b++ )
         m_offset[b] = m_offset[b-1] + ((size_t) m_ni[b-1])*m_nj[b-1]*m_nk[b-1]*datasize;
 
-// z-offset for x- or y- slices
+    // z-offset for x- or y- slices
     if( slice_plane == 0 || slice_plane == 1 )
        for( int b=m_nblocks-1 ; b > 0 ; b-- )
-      m_zmin[b-1] = m_zmin[b] + (m_nk[b]-1)*m_gridsize[b];
+           m_zmin[b-1] = m_zmin[b] + (m_nk[b]-1)*m_gridsize[b];
 
     CLOSE(fd); // closing the solution file
 
