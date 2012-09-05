@@ -46,6 +46,14 @@
 #include <avtCellLocator.h>
 #include <vector>
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  5 15:41:30 PDT 2012
+//    Add support for coordinate arrays that are monotonically descending.
+//
+// ****************************************************************************
+
 class IVP_API avtCellLocatorRect : public avtCellLocator
 {
 public:
@@ -63,6 +71,7 @@ protected:
     void Free();
 
     std::vector<float> coord[3];
+    bool               ascending[3];
 };
 
 #endif
