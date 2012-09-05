@@ -129,80 +129,80 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *season_names = "WINTER, SPRING, SUMMER, FALL";
-    switch (atts->GetSeason())
+    const char *displaySeason_names = "WINTER, SPRING, SUMMER, FALL";
+    switch (atts->GetDisplaySeason())
     {
       case PeaksOverThresholdAttributes::WINTER:
-          SNPRINTF(tmpStr, 1000, "%sseason = %sWINTER  # %s\n", prefix, prefix, season_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sWINTER  # %s\n", prefix, prefix, displaySeason_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::SPRING:
-          SNPRINTF(tmpStr, 1000, "%sseason = %sSPRING  # %s\n", prefix, prefix, season_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sSPRING  # %s\n", prefix, prefix, displaySeason_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::SUMMER:
-          SNPRINTF(tmpStr, 1000, "%sseason = %sSUMMER  # %s\n", prefix, prefix, season_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sSUMMER  # %s\n", prefix, prefix, displaySeason_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::FALL:
-          SNPRINTF(tmpStr, 1000, "%sseason = %sFALL  # %s\n", prefix, prefix, season_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplaySeason = %sFALL  # %s\n", prefix, prefix, displaySeason_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    const char *month_names = "JAN, FEB, MAR, APR, MAY, "
+    const char *displayMonth_names = "JAN, FEB, MAR, APR, MAY, "
         "JUN, JUL, AUG, SEP, "
         "OCT, NOV, DEC";
-    switch (atts->GetMonth())
+    switch (atts->GetDisplayMonth())
     {
       case PeaksOverThresholdAttributes::JAN:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sJAN  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJAN  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::FEB:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sFEB  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sFEB  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::MAR:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sMAR  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMAR  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::APR:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sAPR  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAPR  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::MAY:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sMAY  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMAY  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::JUN:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sJUN  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJUN  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::JUL:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sJUL  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJUL  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::AUG:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sAUG  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAUG  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::SEP:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sSEP  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sSEP  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::OCT:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sOCT  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sOCT  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::NOV:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sNOV  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sNOV  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       case PeaksOverThresholdAttributes::DEC:
-          SNPRINTF(tmpStr, 1000, "%smonth = %sDEC  # %s\n", prefix, prefix, month_names);
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sDEC  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       default:
@@ -221,25 +221,6 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
     else
         SNPRINTF(tmpStr, 1000, "%scomputeCovariates = 0\n", prefix);
     str += tmpStr;
-    const char *covariateModel_names = "LOCATION, SCALE, SHAPE";
-    switch (atts->GetCovariateModel())
-    {
-      case PeaksOverThresholdAttributes::LOCATION:
-          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sLOCATION  # %s\n", prefix, prefix, covariateModel_names);
-          str += tmpStr;
-          break;
-      case PeaksOverThresholdAttributes::SCALE:
-          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sSCALE  # %s\n", prefix, prefix, covariateModel_names);
-          str += tmpStr;
-          break;
-      case PeaksOverThresholdAttributes::SHAPE:
-          SNPRINTF(tmpStr, 1000, "%scovariateModel = %sSHAPE  # %s\n", prefix, prefix, covariateModel_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     {   const intVector &covariateReturnYears = atts->GetCovariateReturnYears();
         SNPRINTF(tmpStr, 1000, "%scovariateReturnYears = (", prefix);
         str += tmpStr;
@@ -256,6 +237,21 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetCovariateModelLocation())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelLocation = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelLocation = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetCovariateModelShape())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelShape = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelShape = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetCovariateModelScale())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelScale = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelScale = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetComputeRVDifferences())
         SNPRINTF(tmpStr, 1000, "%scomputeRVDifferences = 1\n", prefix);
     else
@@ -277,8 +273,6 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    SNPRINTF(tmpStr, 1000, "%syearOneValue = %d\n", prefix, atts->GetYearOneValue());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
     str += tmpStr;
     if(atts->GetDumpData())
@@ -464,7 +458,7 @@ PeaksOverThresholdAttributes_GetMonthlyPercentile(PyObject *self, PyObject *args
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetSeason(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetDisplaySeason(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -472,12 +466,12 @@ PeaksOverThresholdAttributes_SetSeason(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the season in the object.
+    // Set the displaySeason in the object.
     if(ival >= 0 && ival < 4)
-        obj->data->SetSeason(PeaksOverThresholdAttributes::SeasonType(ival));
+        obj->data->SetDisplaySeason(PeaksOverThresholdAttributes::SeasonType(ival));
     else
     {
-        fprintf(stderr, "An invalid season value was given. "
+        fprintf(stderr, "An invalid displaySeason value was given. "
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "WINTER, SPRING, SUMMER, FALL.");
@@ -489,15 +483,15 @@ PeaksOverThresholdAttributes_SetSeason(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetSeason(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetDisplaySeason(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetSeason()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplaySeason()));
     return retval;
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetMonth(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_SetDisplayMonth(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
 
@@ -505,12 +499,12 @@ PeaksOverThresholdAttributes_SetMonth(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the month in the object.
+    // Set the displayMonth in the object.
     if(ival >= 0 && ival < 12)
-        obj->data->SetMonth(PeaksOverThresholdAttributes::MonthType(ival));
+        obj->data->SetDisplayMonth(PeaksOverThresholdAttributes::MonthType(ival));
     else
     {
-        fprintf(stderr, "An invalid month value was given. "
+        fprintf(stderr, "An invalid displayMonth value was given. "
                         "Valid values are in the range of [0,11]. "
                         "You can also use the following names: "
                         "JAN, FEB, MAR, APR, MAY, "
@@ -524,10 +518,10 @@ PeaksOverThresholdAttributes_SetMonth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_GetMonth(PyObject *self, PyObject *args)
+PeaksOverThresholdAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetMonth()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayMonth()));
     return retval;
 }
 
@@ -604,39 +598,6 @@ PeaksOverThresholdAttributes_GetComputeCovariates(PyObject *self, PyObject *args
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetCovariateModel(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the covariateModel in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCovariateModel(PeaksOverThresholdAttributes::CovariateType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid covariateModel value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "LOCATION, SCALE, SHAPE.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PeaksOverThresholdAttributes_GetCovariateModel(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCovariateModel()));
-    return retval;
-}
-
-/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetCovariateReturnYears(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -696,6 +657,78 @@ PeaksOverThresholdAttributes_GetCovariateReturnYears(PyObject *self, PyObject *a
     PyObject *retval = PyTuple_New(covariateReturnYears.size());
     for(size_t i = 0; i < covariateReturnYears.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(covariateReturnYears[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetCovariateModelLocation(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelLocation in the object.
+    obj->data->SetCovariateModelLocation(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetCovariateModelLocation(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelLocation()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetCovariateModelShape(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelShape in the object.
+    obj->data->SetCovariateModelShape(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetCovariateModelShape(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelShape()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetCovariateModelScale(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelScale in the object.
+    obj->data->SetCovariateModelScale(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetCovariateModelScale(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelScale()?1L:0L);
     return retval;
 }
 
@@ -778,30 +811,6 @@ PeaksOverThresholdAttributes_GetRvDifferences(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetYearOneValue(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the yearOneValue in the object.
-    obj->data->SetYearOneValue((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PeaksOverThresholdAttributes_GetYearOneValue(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetYearOneValue()));
-    return retval;
-}
-
-/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetDataScaling(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -861,26 +870,28 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetSeasonalPercentile", PeaksOverThresholdAttributes_GetSeasonalPercentile, METH_VARARGS},
     {"SetMonthlyPercentile", PeaksOverThresholdAttributes_SetMonthlyPercentile, METH_VARARGS},
     {"GetMonthlyPercentile", PeaksOverThresholdAttributes_GetMonthlyPercentile, METH_VARARGS},
-    {"SetSeason", PeaksOverThresholdAttributes_SetSeason, METH_VARARGS},
-    {"GetSeason", PeaksOverThresholdAttributes_GetSeason, METH_VARARGS},
-    {"SetMonth", PeaksOverThresholdAttributes_SetMonth, METH_VARARGS},
-    {"GetMonth", PeaksOverThresholdAttributes_GetMonth, METH_VARARGS},
+    {"SetDisplaySeason", PeaksOverThresholdAttributes_SetDisplaySeason, METH_VARARGS},
+    {"GetDisplaySeason", PeaksOverThresholdAttributes_GetDisplaySeason, METH_VARARGS},
+    {"SetDisplayMonth", PeaksOverThresholdAttributes_SetDisplayMonth, METH_VARARGS},
+    {"GetDisplayMonth", PeaksOverThresholdAttributes_GetDisplayMonth, METH_VARARGS},
     {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
     {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
     {"SetComputeParamValues", PeaksOverThresholdAttributes_SetComputeParamValues, METH_VARARGS},
     {"GetComputeParamValues", PeaksOverThresholdAttributes_GetComputeParamValues, METH_VARARGS},
     {"SetComputeCovariates", PeaksOverThresholdAttributes_SetComputeCovariates, METH_VARARGS},
     {"GetComputeCovariates", PeaksOverThresholdAttributes_GetComputeCovariates, METH_VARARGS},
-    {"SetCovariateModel", PeaksOverThresholdAttributes_SetCovariateModel, METH_VARARGS},
-    {"GetCovariateModel", PeaksOverThresholdAttributes_GetCovariateModel, METH_VARARGS},
     {"SetCovariateReturnYears", PeaksOverThresholdAttributes_SetCovariateReturnYears, METH_VARARGS},
     {"GetCovariateReturnYears", PeaksOverThresholdAttributes_GetCovariateReturnYears, METH_VARARGS},
+    {"SetCovariateModelLocation", PeaksOverThresholdAttributes_SetCovariateModelLocation, METH_VARARGS},
+    {"GetCovariateModelLocation", PeaksOverThresholdAttributes_GetCovariateModelLocation, METH_VARARGS},
+    {"SetCovariateModelShape", PeaksOverThresholdAttributes_SetCovariateModelShape, METH_VARARGS},
+    {"GetCovariateModelShape", PeaksOverThresholdAttributes_GetCovariateModelShape, METH_VARARGS},
+    {"SetCovariateModelScale", PeaksOverThresholdAttributes_SetCovariateModelScale, METH_VARARGS},
+    {"GetCovariateModelScale", PeaksOverThresholdAttributes_GetCovariateModelScale, METH_VARARGS},
     {"SetComputeRVDifferences", PeaksOverThresholdAttributes_SetComputeRVDifferences, METH_VARARGS},
     {"GetComputeRVDifferences", PeaksOverThresholdAttributes_GetComputeRVDifferences, METH_VARARGS},
     {"SetRvDifferences", PeaksOverThresholdAttributes_SetRvDifferences, METH_VARARGS},
     {"GetRvDifferences", PeaksOverThresholdAttributes_GetRvDifferences, METH_VARARGS},
-    {"SetYearOneValue", PeaksOverThresholdAttributes_SetYearOneValue, METH_VARARGS},
-    {"GetYearOneValue", PeaksOverThresholdAttributes_GetYearOneValue, METH_VARARGS},
     {"SetDataScaling", PeaksOverThresholdAttributes_SetDataScaling, METH_VARARGS},
     {"GetDataScaling", PeaksOverThresholdAttributes_GetDataScaling, METH_VARARGS},
     {"SetDumpData", PeaksOverThresholdAttributes_SetDumpData, METH_VARARGS},
@@ -928,8 +939,8 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
         return PeaksOverThresholdAttributes_GetSeasonalPercentile(self, NULL);
     if(strcmp(name, "monthlyPercentile") == 0)
         return PeaksOverThresholdAttributes_GetMonthlyPercentile(self, NULL);
-    if(strcmp(name, "season") == 0)
-        return PeaksOverThresholdAttributes_GetSeason(self, NULL);
+    if(strcmp(name, "displaySeason") == 0)
+        return PeaksOverThresholdAttributes_GetDisplaySeason(self, NULL);
     if(strcmp(name, "WINTER") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::WINTER));
     if(strcmp(name, "SPRING") == 0)
@@ -939,8 +950,8 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "FALL") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::FALL));
 
-    if(strcmp(name, "month") == 0)
-        return PeaksOverThresholdAttributes_GetMonth(self, NULL);
+    if(strcmp(name, "displayMonth") == 0)
+        return PeaksOverThresholdAttributes_GetDisplayMonth(self, NULL);
     if(strcmp(name, "JAN") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::JAN));
     if(strcmp(name, "FEB") == 0)
@@ -972,23 +983,18 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
         return PeaksOverThresholdAttributes_GetComputeParamValues(self, NULL);
     if(strcmp(name, "computeCovariates") == 0)
         return PeaksOverThresholdAttributes_GetComputeCovariates(self, NULL);
-    if(strcmp(name, "covariateModel") == 0)
-        return PeaksOverThresholdAttributes_GetCovariateModel(self, NULL);
-    if(strcmp(name, "LOCATION") == 0)
-        return PyInt_FromLong(long(PeaksOverThresholdAttributes::LOCATION));
-    if(strcmp(name, "SCALE") == 0)
-        return PyInt_FromLong(long(PeaksOverThresholdAttributes::SCALE));
-    if(strcmp(name, "SHAPE") == 0)
-        return PyInt_FromLong(long(PeaksOverThresholdAttributes::SHAPE));
-
     if(strcmp(name, "covariateReturnYears") == 0)
         return PeaksOverThresholdAttributes_GetCovariateReturnYears(self, NULL);
+    if(strcmp(name, "covariateModelLocation") == 0)
+        return PeaksOverThresholdAttributes_GetCovariateModelLocation(self, NULL);
+    if(strcmp(name, "covariateModelShape") == 0)
+        return PeaksOverThresholdAttributes_GetCovariateModelShape(self, NULL);
+    if(strcmp(name, "covariateModelScale") == 0)
+        return PeaksOverThresholdAttributes_GetCovariateModelScale(self, NULL);
     if(strcmp(name, "computeRVDifferences") == 0)
         return PeaksOverThresholdAttributes_GetComputeRVDifferences(self, NULL);
     if(strcmp(name, "rvDifferences") == 0)
         return PeaksOverThresholdAttributes_GetRvDifferences(self, NULL);
-    if(strcmp(name, "yearOneValue") == 0)
-        return PeaksOverThresholdAttributes_GetYearOneValue(self, NULL);
     if(strcmp(name, "dataScaling") == 0)
         return PeaksOverThresholdAttributes_GetDataScaling(self, NULL);
     if(strcmp(name, "dumpData") == 0)
@@ -1015,26 +1021,28 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetSeasonalPercentile(self, tuple);
     else if(strcmp(name, "monthlyPercentile") == 0)
         obj = PeaksOverThresholdAttributes_SetMonthlyPercentile(self, tuple);
-    else if(strcmp(name, "season") == 0)
-        obj = PeaksOverThresholdAttributes_SetSeason(self, tuple);
-    else if(strcmp(name, "month") == 0)
-        obj = PeaksOverThresholdAttributes_SetMonth(self, tuple);
+    else if(strcmp(name, "displaySeason") == 0)
+        obj = PeaksOverThresholdAttributes_SetDisplaySeason(self, tuple);
+    else if(strcmp(name, "displayMonth") == 0)
+        obj = PeaksOverThresholdAttributes_SetDisplayMonth(self, tuple);
     else if(strcmp(name, "cutoff") == 0)
         obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
     else if(strcmp(name, "computeParamValues") == 0)
         obj = PeaksOverThresholdAttributes_SetComputeParamValues(self, tuple);
     else if(strcmp(name, "computeCovariates") == 0)
         obj = PeaksOverThresholdAttributes_SetComputeCovariates(self, tuple);
-    else if(strcmp(name, "covariateModel") == 0)
-        obj = PeaksOverThresholdAttributes_SetCovariateModel(self, tuple);
     else if(strcmp(name, "covariateReturnYears") == 0)
         obj = PeaksOverThresholdAttributes_SetCovariateReturnYears(self, tuple);
+    else if(strcmp(name, "covariateModelLocation") == 0)
+        obj = PeaksOverThresholdAttributes_SetCovariateModelLocation(self, tuple);
+    else if(strcmp(name, "covariateModelShape") == 0)
+        obj = PeaksOverThresholdAttributes_SetCovariateModelShape(self, tuple);
+    else if(strcmp(name, "covariateModelScale") == 0)
+        obj = PeaksOverThresholdAttributes_SetCovariateModelScale(self, tuple);
     else if(strcmp(name, "computeRVDifferences") == 0)
         obj = PeaksOverThresholdAttributes_SetComputeRVDifferences(self, tuple);
     else if(strcmp(name, "rvDifferences") == 0)
         obj = PeaksOverThresholdAttributes_SetRvDifferences(self, tuple);
-    else if(strcmp(name, "yearOneValue") == 0)
-        obj = PeaksOverThresholdAttributes_SetYearOneValue(self, tuple);
     else if(strcmp(name, "dataScaling") == 0)
         obj = PeaksOverThresholdAttributes_SetDataScaling(self, tuple);
     else if(strcmp(name, "dumpData") == 0)

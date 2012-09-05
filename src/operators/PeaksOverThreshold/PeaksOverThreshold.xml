@@ -26,11 +26,6 @@
         NOV
         DEC
       </Enum>
-      <Enum name="CovariateType">
-        LOCATION
-        SCALE
-        SHAPE
-      </Enum>
       <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
         ANNUAL
       </Field>
@@ -57,10 +52,10 @@
         0.900000
         0.900000
       </Field>
-      <Field name="season" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
+      <Field name="displaySeason" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
         WINTER
       </Field>
-      <Field name="month" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
+      <Field name="displayMonth" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
         JAN
       </Field>
       <Field name="cutoff" label="Cutoff" type="float">
@@ -72,20 +67,24 @@
       <Field name="computeCovariates" label="Compute covariates" type="bool">
         false
       </Field>
-      <Field name="covariateModel" label="Time varying covariate model" type="enum" subtype="CovariateType" enabler="computeCovariates:true">
-        LOCATION
-      </Field>
       <Field name="covariateReturnYears" label="Covariate return years" type="intVector" enabler="computeCovariates:true">
+        1
       </Field>
-      <Field name="computeRVDifferences" label="Compute RV differences" type="bool">
+      <Field name="covariateModelLocation" label="Covariate Location Model" type="bool" enabler="computeCovariates:true">
+        false
+      </Field>
+      <Field name="covariateModelShape" label="Covariate Shape Model" type="bool" enabler="computeCovariates:true">
+        false
+      </Field>
+      <Field name="covariateModelScale" label="Covariate Scale Model" type="bool" enabler="computeCovariates:true">
+        false
+      </Field>
+      <Field name="computeRVDifferences" label="Compute RV differences" type="bool" enabler="computeCovariates:true">
         false
       </Field>
       <Field name="rvDifferences" label="RV Differences" type="intArray" length="2" enabler="computeRVDifferences:true">
         0
         0
-      </Field>
-      <Field name="yearOneValue" label="Year begin" type="int">
-        1900
       </Field>
       <Field name="dataScaling" label="Data Scaling" type="double">
         86500.000000

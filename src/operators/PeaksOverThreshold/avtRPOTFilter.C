@@ -36,23 +36,8 @@ avtRPOTFilter::avtRPOTFilter()
     outDS = NULL;
     numTuples = 0;
     nodeCenteredData = false;
-    aggregation = PeaksOverThresholdAttributes::ANNUAL;
-    
-    displaySeason = PeaksOverThresholdAttributes::WINTER;
-    displayMonth = PeaksOverThresholdAttributes::JAN;
-
     numYears = 0;
-    scalingVal =  86400.0;
-    dumpData = false;
-    cutoff = 0.0f;
     numBins = 0;
-    
-    useLocationModel = false;
-    useScaleModel = false;
-    useShapeModel = false;
-    yearOneValue = 0;
-    computeRVDifferences = false;
-    computeCovariates = false;
 }
 
 // ****************************************************************************
@@ -167,11 +152,11 @@ avtRPOTFilter::GetSeasonFromDay(int t)
 int
 avtRPOTFilter::GetIndexFromDay(int t)
 {
-    if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         return 0;
-    else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         return GetMonthFromDay(t);
-    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
         return GetSeasonFromDay(t);
 }
 
@@ -238,12 +223,12 @@ avtRPOTFilter::CreateQuantileCommand(const char *var, const char *in, int aggreg
 {
     float percentile = 0.0;
     
-    if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-        percentile = monthlyPercentile[aggregationIdx];
-    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
-        percentile = seasonalPercentile[aggregationIdx];
-    else if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
-        percentile = annualPercentile;
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+        percentile = atts.GetMonthlyPercentile()[aggregationIdx];
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
+        percentile = atts.GetSeasonalPercentile()[aggregationIdx];
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+        percentile = atts.GetAnnualPercentile();
 
     char str[128];
     sprintf(str, "%s = quantile(%s, %f)\n", var, in, percentile);
@@ -261,7 +246,7 @@ avtRPOTFilter::CreateQuantileCommand(const char *var, const char *in, int aggreg
 // ****************************************************************************
 
 string
-avtRPOTFilter::GetDumpFileName(int idx, int var)
+avtRPOTFilter::GetDumpFileName(int idx, int yr, int var)
 {
     string nm;
     char str[128];
@@ -272,22 +257,30 @@ avtRPOTFilter::GetDumpFileName(int idx, int var)
     else if (var == 1)
         varNm = "se_returnValue";
       
-    //cout<<"varNm= "<<varNm<<endl;
+    nm = "POT";
+    if (atts.GetComputeCovariates())
+    {
+        if (atts.GetComputeRVDifferences() && yr >= atts.GetCovariateReturnYears().size())
+            sprintf(str, ".RVDiff");
+        else
+            sprintf(str, ".%d", atts.GetCovariateReturnYears()[yr]);
+        nm += str;
+    }
     
-    if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
-        sprintf(str, "POT.annual_%s.txt", varNm);
-    else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+        sprintf(str, ".annual_%s.txt", varNm);
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
     {
         const char *m[12] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-        sprintf(str, "POT.%s_%s.txt", m[idx], varNm);
+        sprintf(str, ".%s_%s.txt", m[idx], varNm);
     }
-    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
     {
         const char *s[4] = {"WINTER", "SPRING", "SUMMER", "FALL"};
-        sprintf(str, "POT.%s_%s.txt", s[idx], varNm);
+        sprintf(str, ".%s_%s.txt", s[idx], varNm);
     }
     
-    nm = str;
+    nm += str;
     return nm;
 }
 
@@ -331,11 +324,11 @@ avtRPOTFilter::Initialize()
 
     //How to compute maxes.
     //Monthly maxes.
-    if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         numBins = 12;
-    else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
         numBins = 4;
-    else if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         numBins = 1;
     
     values.resize(numTuples);
@@ -429,9 +422,10 @@ avtRPOTFilter::Execute()
     int index = GetIndexFromDay(currentTime);
 
     //cout<<"processing "<<currentTime<<" sv = "<<scalingVal<<" index= "<<index<<endl;
+    float scaling = atts.GetDataScaling(), cutoff = atts.GetCutoff();
     for (int i = 0; i < nTuples; i++)
     {
-        float v = vals[i]*scalingVal;
+        float v = vals[i]*scaling;
         if (v > cutoff)
             values[i][index].push_back(sample(v,currentTime));
     }
@@ -520,10 +514,10 @@ avtRPOTFilter::CreateFinalOutput()
     vector<float> thresholds(numBins);
     
     int nValsPerOut = 1;
-    if (computeCovariates)
+    if (atts.GetComputeCovariates())
     {
-        nValsPerOut *= covariateReturnYears.size();
-        if (computeRVDifferences)
+        nValsPerOut *= atts.GetCovariateReturnYears().size();
+        if (atts.GetComputeRVDifferences())
             nValsPerOut++;
     }
     
@@ -579,7 +573,7 @@ avtRPOTFilter::CreateFinalOutput()
                     exceedences->SetValue(idx, values[i][b][t].val);
                     dayIndices->SetValue(idx, values[i][b][t].time+1);
                     monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].time)+1);
-                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].time)+1+yearOneValue);
+                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].time)+1);
                  
                     idx++;
                     if (idx == numExceedences)
@@ -590,14 +584,14 @@ avtRPOTFilter::CreateFinalOutput()
         RI->AssignVTKDataArrayToRVariable(dayIndices, "dayIndices");
         RI->AssignVTKDataArrayToRVariable(monthIndices, "monthIndices");
         string threshStr, aggrStr;
-        if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
+        if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         {
             aggrStr = "'annual'";
             char str[32];
             sprintf(str, "%f", thresholds[0]);
             threshStr = str;
         }
-        else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         {
             aggrStr = "'monthly'";
             threshStr = "thresholds";
@@ -608,7 +602,7 @@ avtRPOTFilter::CreateFinalOutput()
                 thresh->SetValue(t, thresholds[t]);
             RI->AssignVTKDataArrayToRVariable(thresh, "thresholds");
         }
-        else if (aggregation == PeaksOverThresholdAttributes::SEASONAL)
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
         {
             aggrStr = "'seasonal'";
             threshStr = "thresholds";
@@ -625,10 +619,10 @@ avtRPOTFilter::CreateFinalOutput()
         string useLocModelStr = "NULL", useShapeModelStr = "NULL", useScaleModelStr = "NULL";
         string returnParamsStr = "FALSE";
 
-        if (computeParamValues)
+        if (atts.GetComputeParamValues())
             returnParamsStr = "TRUE";
         
-        if (computeCovariates)
+        if (atts.GetComputeCovariates())
         {
             nCovariates = 1;
             covarNm = "cov";
@@ -639,7 +633,7 @@ avtRPOTFilter::CreateFinalOutput()
             covByYearArr->SetNumberOfTuples(numYears);
 
             for (int y = 0; y < numYears; y++)
-                covByYearArr->SetValue(y, y+1 + yearOneValue);
+                covByYearArr->SetValue(y, y+1);
 
             RI->AssignVTKDataArrayToRVariable(yearIndices, covarNm.c_str());
             RI->AssignVTKDataArrayToRVariable(covByYearArr, covByYear.c_str());
@@ -648,30 +642,30 @@ avtRPOTFilter::CreateFinalOutput()
             newDataStr = "newData";
             vtkIntArray *newData = vtkIntArray::New();
             newData->SetNumberOfComponents(1);
-            newData->SetNumberOfTuples(covariateReturnYears.size());
-            for (int y = 0; y < covariateReturnYears.size(); y++)
+            newData->SetNumberOfTuples(atts.GetCovariateReturnYears().size());
+            for (int y = 0; y < atts.GetCovariateReturnYears().size(); y++)
             {
-                newData->SetValue(y, covariateReturnYears[y]);
+                newData->SetValue(y, atts.GetCovariateReturnYears()[y]);
             }
             RI->AssignVTKDataArrayToRVariable(newData, newDataStr.c_str());
             newData->Delete();
 
-            if (computeRVDifferences)
+            if (atts.GetComputeRVDifferences())
             {
                 rvDiffStr = "rvDiff";
                 vtkIntArray *rvDiff = vtkIntArray::New();
                 rvDiff->SetNumberOfComponents(1);
-                rvDiff->SetNumberOfTuples(rvDifferences.size());
-                for (int y = 0; y < rvDifferences.size(); y++)
-                    rvDiff->SetValue(y, rvDifferences[y]);
+                rvDiff->SetNumberOfTuples(2);
+                rvDiff->SetValue(0, atts.GetRvDifferences()[0]);
+                rvDiff->SetValue(1, atts.GetRvDifferences()[1]);
                 RI->AssignVTKDataArrayToRVariable(rvDiff, rvDiffStr.c_str());
                 rvDiff->Delete();
             }
-            if (covariateType == PeaksOverThresholdAttributes::LOCATION)
+            if (atts.GetCovariateModelLocation())
                 useLocModelStr = "1";
-            else if (covariateType == PeaksOverThresholdAttributes::SHAPE)
+            if (atts.GetCovariateModelShape())
                 useShapeModelStr = "1";
-            else if (covariateType == PeaksOverThresholdAttributes::SCALE)
+            if (atts.GetCovariateModelScale())
                 useScaleModelStr = "1";
         }
         string dumpStr = "";
@@ -683,7 +677,7 @@ avtRPOTFilter::CreateFinalOutput()
         }
         string outputStr = "rv = output$returnValue\n";
         outputStr += "se_rv = output$se.returnValue\n";
-        if (computeCovariates && computeRVDifferences)
+        if (atts.GetComputeCovariates() && atts.GetComputeRVDifferences())
         {
             outputStr += "rvDiff = output$returnValueDiff;\n";
             outputStr += "se_rvDiff = output$se.returnValueDiff;\n";
@@ -714,11 +708,12 @@ avtRPOTFilter::CreateFinalOutput()
 
         vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));
         vtkDoubleArray *out_serv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rv"));
+        //cout<<"valsPerLoc: "<<nValsPerOut<<endl;
         //cout<<"out_rv  : "<<out_rv->GetNumberOfComponents()<<" x "<<out_rv->GetNumberOfTuples()<<endl;
         //cout<<"out_serv: "<<out_serv->GetNumberOfComponents()<<" x "<<out_serv->GetNumberOfTuples()<<endl;
 
         int N = nValsPerOut;
-        if (computeRVDifferences)
+        if (atts.GetComputeRVDifferences())
             N--;
         
         for (int b = 0; b < numBins; b++)
@@ -731,7 +726,7 @@ avtRPOTFilter::CreateFinalOutput()
         }
         
         vtkDoubleArray *out_rvDiff = NULL, *out_servDiff = NULL;
-        if (computeCovariates && computeRVDifferences)
+        if (atts.GetComputeCovariates() && atts.GetComputeRVDifferences())
         {
             out_rvDiff = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rvDiff"));
             out_servDiff = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rvDiff"));
@@ -794,12 +789,12 @@ avtRPOTFilter::CreateFinalOutput()
     if (PAR_Rank() == 0)
     {
         int displayIdx = 0;
-        if (aggregation == PeaksOverThresholdAttributes::ANNUAL)
+        if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
             displayIdx = 0;
-        else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-            displayIdx = (int)displayMonth - (int)(PeaksOverThresholdAttributes::JAN);
-        else if (aggregation == PeaksOverThresholdAttributes::MONTHLY)
-            displayIdx = (int)displaySeason - (int)(PeaksOverThresholdAttributes::WINTER);
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+            displayIdx = (int)atts.GetDisplayMonth() - (int)(PeaksOverThresholdAttributes::JAN);
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+            displayIdx = (int)atts.GetDisplaySeason() - (int)(PeaksOverThresholdAttributes::WINTER);
         
         //cout<<"Create output.....("<<numOutputComponents<<" x "<<numTuples<<")"<<endl;
         vtkFloatArray *outVar = vtkFloatArray::New();
@@ -822,25 +817,28 @@ avtRPOTFilter::CreateFinalOutput()
         SetOutputDataTree(outputTree);
         outDS->Delete();
 
-        if (dumpData)
+        //cout<<"outputs: "<<outputs_rv.size()<<" "<<outputs_rv[0].size()<<" "<<outputs_rv[0][0].size()<<endl;
+        if (atts.GetDumpData())
         {
             int N = outputs_rv.size();
             for (int b = 0; b < numBins; b++)
             {
-                string nm0 = GetDumpFileName(b, 0);
-                string nm1 = GetDumpFileName(b, 1);
-                ofstream ofile0(nm0.c_str());
-                ofstream ofile1(nm1.c_str());
-                //cout<<nm0<<": "<<N<<" x "<<numTuples<<endl;
-                //cout<<nm1<<": "<<N<<" x "<<numTuples<<endl;
                 for (int n = 0; n < N; n++)
+                {
+                    string nm0 = GetDumpFileName(b, n, 0);
+                    string nm1 = GetDumpFileName(b, n, 1);
+                    ofstream ofile0(nm0.c_str());
+                    ofstream ofile1(nm1.c_str());
+                    //cout<<nm0<<": "<<N<<" x "<<numTuples<<endl;
+                    //cout<<nm1<<": "<<N<<" x "<<numTuples<<endl;
                     for (int i = 0; i < numTuples; i++)
                     {
                         ofile0<<outputs_rv[n][b][i]<<" ";
                         ofile1<<outputs_serv[n][b][i]<<" ";
                     }
-                ofile0<<endl;
-                ofile1<<endl;
+                    ofile0<<endl;
+                    ofile1<<endl;
+                }
             }
         }
     }

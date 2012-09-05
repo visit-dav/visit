@@ -27,23 +27,8 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     virtual ~avtRPOTFilter();
     virtual const char* GetType() {return "avtRPOTFilter";}
 
-    std::string newVarName;
-
-    PeaksOverThresholdAttributes::AggregationType aggregation;
-    PeaksOverThresholdAttributes::SeasonType displaySeason;
-    PeaksOverThresholdAttributes::MonthType displayMonth;
-    PeaksOverThresholdAttributes::CovariateType covariateType;
-
-    float annualPercentile, monthlyPercentile[12], seasonalPercentile[4];
-    float cutoff;
-    bool useLocationModel, useScaleModel, useShapeModel;
-    bool computeParamValues, computeCovariates, computeRVDifferences;
-    int yearOneValue;
-    std::vector<int> covariateReturnYears, rvDifferences;
-
-    std::string codeDir;
-    bool dumpData;
-    float scalingVal;
+    std::string newVarName, codeDir;
+    PeaksOverThresholdAttributes atts;
     
   protected:
     void                    Initialize();
@@ -62,7 +47,7 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     int                     GetYearFromDay(int t);
     int                     GetSeasonFromDay(int t);
     std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
-    std::string             GetDumpFileName(int idx, int var);
+    std::string             GetDumpFileName(int idx, int yr, int var);
 
     vtkDataSet *outDS;
     int numTuples, numTimes, numYears, numBins;
