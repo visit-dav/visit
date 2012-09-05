@@ -48,6 +48,12 @@
 #include <functional> // for 'less'
 
 // -------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  5 16:07:10 PDT 2012
+//    Add support for monotonically descending coordinate arrays.
+//
+// ---------------------------------------------------------------------------
 
 avtCellLocatorRect::avtCellLocatorRect( vtkDataSet* ds ) :
     avtCellLocator( ds )
@@ -67,9 +73,26 @@ avtCellLocatorRect::avtCellLocatorRect( vtkDataSet* ds ) :
     for( unsigned int d=0; d<3; ++d )
     {
         coord[d].resize( ca[d]->GetNumberOfTuples() );
+        ascending[d] = true;
 
         for( unsigned int i=0; i<coord[d].size(); ++i )
+        {
             coord[d][i] = ca[d]->GetComponent( i, 0 );
+            if (i == 1)
+            {
+               if (coord[d][1] < coord[d][0])
+                   ascending[d] = false;
+            }
+            else if (i > 1)
+            {
+                bool thisPairAscending = (coord[d][i] > coord[d][i-1]);
+                if (thisPairAscending != ascending[d])
+                {
+                    EXCEPTION1( ImproperUseException, "avtCellLocatorRect: Coordinate "
+                       "arrays are not monotonic.");
+                }
+            }
+        }
     }    
 }
 
@@ -93,6 +116,13 @@ void avtCellLocatorRect::Free()
 }
 
 // ---------------------------------------------------------------------------
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  5 16:07:10 PDT 2012
+//    Add support for monotonically descending coordinate arrays.
+//
+// ---------------------------------------------------------------------------
+
 
 vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
                                         avtInterpolationWeights* weights,
@@ -132,22 +162,41 @@ vtkIdType avtCellLocatorRect::FindCell( const double pos[3],
         else
         {
             // binary search
-            std::vector<float>::const_iterator ci = 
-                std::lower_bound( coord[d].begin(), coord[d].end(), 
+            std::vector<float>::const_iterator ci;
+            if (ascending[d])
+            {
+                ci = std::lower_bound( coord[d].begin(), coord[d].end(), 
                                   pos[d], std::less<float>() );
+            }
+            else
+            {
+                ci = std::lower_bound( coord[d].begin(), coord[d].end(), 
+                                  pos[d], std::greater<float>() );
+            }
             
             if( ci == coord[d].end() )
                 return -1;
             
             if( ci == coord[d].begin() )
             {
-                if( pos[d] < *ci )
-                    return -1;
+                if( ascending[d] )
+                {
+                    if (pos[d] < *ci )
+                        return -1;
+                }
+                else
+                {
+                    if (pos[d] > *ci )
+                        return -1;
+                }
             }
             else 
                 --ci;
             
             i[d] = ci - coord[d].begin(); 
+            // This math works whether coord is monotonically increasing or
+            // decreasing, since it just calculating a value in [0, 1] for
+            // the distance between ci[0] and ci[1].
             l[d] = (pos[d] - ci[0])/(ci[1]-ci[0]);
         }
     }
