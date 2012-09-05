@@ -107,6 +107,10 @@
 //    Kathleen Biagas, Tue Mar  1 11:00:37 PST 2011
 //    Added MapNode type.
 //
+//    Dave Pugmire, Wed Sep  5 11:01:33 EDT 2012
+//    Enablers produced bad code for checkboxes. There is no label. Added
+//    a virtual method, HasLabel() to determine if code should be generated.
+//
 // ****************************************************************************
 
 
@@ -243,6 +247,7 @@ class Field
             initcode[currentTarget] = currentInit;
         }
     }
+    virtual bool HasLabel() {return true; };
     virtual QString GetSubtype() { return ""; };
     virtual void SetSubtype(const QString &) {  };
     virtual void SetValue(const QString &s, int ix=0) = 0;
