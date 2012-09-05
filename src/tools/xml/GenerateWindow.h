@@ -149,6 +149,10 @@
 //    Dave Pugmire, Tue Feb 24 15:26:46 EST 2009
 //    tempcolor wasn't declared as a QColor before it was used.
 //
+//    Dave Pugmire, Wed Sep  5 11:01:33 EDT 2012
+//    Enablers produced bad code for checkboxes. There is no label. Added
+//    a virtual method, HasLabel() to determine if code should be generated.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -415,6 +419,7 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
   public:
     WindowGeneratorBool(const QString &n, const QString &l)
         : Field("bool",n,l), Bool(n,l), WindowGeneratorField("bool",n,l) { }
+    virtual bool            HasLabel() {return false;}
     virtual void            writeHeaderCallback(QTextStream &h)
     {
         h << "    void "<<name<<"Changed(bool val);" << endl;
@@ -1574,6 +1579,10 @@ class WindowGeneratorAttribute : public GeneratorBase
     //   Brad Whitlock, Wed Apr  9 12:49:53 PDT 2008
     //   Use QString for caption, shortName.
     //
+    //    Dave Pugmire, Wed Sep  5 11:01:33 EDT 2012
+    //    Enablers produced bad code for checkboxes. There is no label. Added
+    //    a virtual method, HasLabel() to determine if code should be generated.
+    //
     // ************************************************************************
 
     void WriteSource(QTextStream &c)
@@ -1720,14 +1729,20 @@ class WindowGeneratorAttribute : public GeneratorBase
                 c << ")" << endl;
                 c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(true);" << endl;
-                c << "                if("<<enablees[j]->name<<"Label)" << endl;
-                c << "                    "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
+                if (enablees[j]->HasLabel())
+                {
+                    c << "                if("<<enablees[j]->name<<"Label)" << endl;
+                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
+                }
                 c << "            }\n";
                 c << "            else" << endl;
                 c << "            {\n";
                 c << "                "<<enablees[j]->name<<"->setEnabled(false);" << endl;
-                c << "                if("<<enablees[j]->name<<"Label)" << endl;
-                c << "                    "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
+                if (enablees[j]->HasLabel())
+                {
+                    c << "                if("<<enablees[j]->name<<"Label)" << endl;
+                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
+                }
                 c << "            }\n";
             }
             fields[i]->writeSourceUpdateWindow(c);
