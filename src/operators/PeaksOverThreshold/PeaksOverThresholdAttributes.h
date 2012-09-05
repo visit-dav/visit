@@ -88,12 +88,6 @@ public:
         NOV,
         DEC
     };
-    enum CovariateType
-    {
-        LOCATION,
-        SCALE,
-        SHAPE
-    };
 
     // These constructors are for objects of this class
     PeaksOverThresholdAttributes();
@@ -130,16 +124,17 @@ public:
     void SetAnnualPercentile(double annualPercentile_);
     void SetSeasonalPercentile(const double *seasonalPercentile_);
     void SetMonthlyPercentile(const double *monthlyPercentile_);
-    void SetSeason(SeasonType season_);
-    void SetMonth(MonthType month_);
+    void SetDisplaySeason(SeasonType displaySeason_);
+    void SetDisplayMonth(MonthType displayMonth_);
     void SetCutoff(float cutoff_);
     void SetComputeParamValues(bool computeParamValues_);
     void SetComputeCovariates(bool computeCovariates_);
-    void SetCovariateModel(CovariateType covariateModel_);
     void SetCovariateReturnYears(const intVector &covariateReturnYears_);
+    void SetCovariateModelLocation(bool covariateModelLocation_);
+    void SetCovariateModelShape(bool covariateModelShape_);
+    void SetCovariateModelScale(bool covariateModelScale_);
     void SetComputeRVDifferences(bool computeRVDifferences_);
     void SetRvDifferences(const int *rvDifferences_);
-    void SetYearOneValue(int yearOneValue_);
     void SetDataScaling(double dataScaling_);
     void SetDumpData(bool dumpData_);
 
@@ -150,18 +145,19 @@ public:
           double    *GetSeasonalPercentile();
     const double    *GetMonthlyPercentile() const;
           double    *GetMonthlyPercentile();
-    SeasonType      GetSeason() const;
-    MonthType       GetMonth() const;
+    SeasonType      GetDisplaySeason() const;
+    MonthType       GetDisplayMonth() const;
     float           GetCutoff() const;
     bool            GetComputeParamValues() const;
     bool            GetComputeCovariates() const;
-    CovariateType   GetCovariateModel() const;
     const intVector &GetCovariateReturnYears() const;
           intVector &GetCovariateReturnYears();
+    bool            GetCovariateModelLocation() const;
+    bool            GetCovariateModelShape() const;
+    bool            GetCovariateModelScale() const;
     bool            GetComputeRVDifferences() const;
     const int       *GetRvDifferences() const;
           int       *GetRvDifferences();
-    int             GetYearOneValue() const;
     double          GetDataScaling() const;
     bool            GetDumpData() const;
 
@@ -185,11 +181,6 @@ public:
 protected:
     static std::string MonthType_ToString(int);
 public:
-    static std::string CovariateType_ToString(CovariateType);
-    static bool CovariateType_FromString(const std::string &, CovariateType &);
-protected:
-    static std::string CovariateType_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -204,16 +195,17 @@ public:
         ID_annualPercentile,
         ID_seasonalPercentile,
         ID_monthlyPercentile,
-        ID_season,
-        ID_month,
+        ID_displaySeason,
+        ID_displayMonth,
         ID_cutoff,
         ID_computeParamValues,
         ID_computeCovariates,
-        ID_covariateModel,
         ID_covariateReturnYears,
+        ID_covariateModelLocation,
+        ID_covariateModelShape,
+        ID_covariateModelScale,
         ID_computeRVDifferences,
         ID_rvDifferences,
-        ID_yearOneValue,
         ID_dataScaling,
         ID_dumpData,
         ID__LAST
@@ -224,16 +216,17 @@ private:
     double    annualPercentile;
     double    seasonalPercentile[4];
     double    monthlyPercentile[12];
-    int       season;
-    int       month;
+    int       displaySeason;
+    int       displayMonth;
     float     cutoff;
     bool      computeParamValues;
     bool      computeCovariates;
-    int       covariateModel;
     intVector covariateReturnYears;
+    bool      covariateModelLocation;
+    bool      covariateModelShape;
+    bool      covariateModelScale;
     bool      computeRVDifferences;
     int       rvDifferences[2];
-    int       yearOneValue;
     double    dataScaling;
     bool      dumpData;
 
@@ -241,6 +234,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbii*bIidb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbi*bbbbIdb"
 
 #endif
