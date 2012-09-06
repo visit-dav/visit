@@ -132,7 +132,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
         int         *numneighbors;
         int         *connectivity[2];
         int         *cellindex;
-        const float *pts;
+        vtkPoints   *pts;
 
         // traversal variables
         bool  *visited;

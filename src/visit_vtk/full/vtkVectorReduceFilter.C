@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -108,6 +109,9 @@ void vtkVectorReduceFilter::SetLimitToOriginal(bool lto)
 //    Hank Childs, Thu Oct 28 22:14:21 PDT 2010
 //    Don't output 0-magnitude vectors.
 //
+//    Kathleen Biagas, Wed Sep 5 13:24:11 MST 2012 
+//    Preserve coordinate and vector data types.
+//
 // ****************************************************************************
 
 void vtkVectorReduceFilter::Execute(void)
@@ -132,6 +136,9 @@ void vtkVectorReduceFilter::Execute(void)
     return;
     }
 
+  int inctype = (inCvecs ? inCvecs->GetDataType() : VTK_FLOAT);
+  int inptype = (inPvecs ? inPvecs->GetDataType() : VTK_FLOAT);
+
   // Determine what the stride is.
   if (stride <= 0 && numEls <= 0)
     {
@@ -154,8 +161,12 @@ void vtkVectorReduceFilter::Execute(void)
     actingStride = ceil(((float) totalVecs) / ((float) numEls));
     }
 
-  vtkPoints *outpts = vtkPoints::New();
-  vtkFloatArray *outVecs = vtkFloatArray::New();
+  vtkPoints *outpts = vtkVisItUtility::NewPoints(input);
+  vtkDataArray *outVecs;
+  if (inctype == VTK_DOUBLE || inptype == VTK_DOUBLE)
+      outVecs = vtkDoubleArray::New();
+  else 
+      outVecs = vtkFloatArray::New();
   outVecs->SetNumberOfComponents(3);
 
   float nextToTake = 0.;
