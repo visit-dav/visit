@@ -251,6 +251,68 @@ private:
     bool own;
 };
 
+
+// ****************************************************************************
+// Class: vtkDirectAccessor
+//
+// Purpose: 
+//   Access vtkDataArray using direct memory accesses.
+//
+//   *Copied from avtDirectAccessor *
+//
+// Programmer: Kathleen Biagas
+// Creation:   September 4, 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+template <typename T>
+class vtkDirectAccessor
+{
+public:
+    vtkDirectAccessor(vtkDataArray *da) : arr(da)
+    {
+        N = arr->GetNumberOfComponents();
+        ptr = start = (T *)arr->GetVoidPointer(0);
+        end = ptr + (N * arr->GetNumberOfTuples());
+    }
+
+    ~vtkDirectAccessor()                                      { }
+
+    int GetNumberOfTuples() const                             { return arr->GetNumberOfTuples(); }
+    int GetNumberOfComponents() const                         { return N; }
+
+    void SetTuple1(T val)                                     { *ptr = val;                            }
+    void SetTuple1(vtkIdType i, T val)                        { start[i*N] = val;                      }
+    void SetTuple(vtkIdType i, const T *val)                  { memcpy(start + i*N, val, sizeof(T)*N); }
+
+    void SetTuple(const T *val)                               { memcpy(ptr, val, sizeof(T)*N); }
+
+    T GetTuple1() const                                       { return *ptr;        }
+    T GetTuple1(vtkIdType i) const                            { return start[i*N];  }
+    T *GetTuple(vtkIdType i) const                            { return start + i*N; }
+    T *GetTuple() const                                       { return ptr; }
+
+    void SetComponent(vtkIdType tuple, int comp, T val)       { start[tuple * N + comp] = val; }
+    void SetComponent(int comp, T val)                        { ptr[comp] = val; }
+
+    T GetComponent(vtkIdType tuple, int comp) const           { return start[tuple * N + comp]; }
+    T GetComponent(int comp) const                            { return ptr[comp]; }
+
+    void InitTraversal()                                      { ptr = start; }
+    bool Iterating() const                                    { return ptr < end; }
+
+    void operator ++()                                        { ptr += N; }
+    void operator ++(int i)                                   { ptr += N; }
+private:
+    vtkDataArray *arr;
+    T *start;
+    T *ptr;
+    T *end;
+    int N;
+};
+
 // ****************************************************************************
 // Class: vtkGeneralAccessor
 //
@@ -263,7 +325,9 @@ private:
 // Creation:   Thu Mar 29 13:11:41 PDT 2012
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu Sep 6 11:16:12 MST 2012
+//   Added more methods (from avtTupleAccessor).
+//
 // ****************************************************************************
 
 class vtkGeneralAccessor
@@ -271,19 +335,40 @@ class vtkGeneralAccessor
 public:
     vtkGeneralAccessor(vtkDataArray *da) : arr(da)
     {
+        index = 0;
+        size = arr->GetNumberOfTuples();
     }
+    ~vtkGeneralAccessor()                    { }
+    
+    int GetNumberOfTuples() const            { return arr->GetNumberOfTuples(); }
+    int GetNumberOfComponents() const        { return arr->GetNumberOfComponents(); }
 
-    inline double GetTuple1(vtkIdType id) const
-    {
-        return arr->GetTuple1(id);
-    }
+    void SetTuple1(double val)               { arr->SetTuple1(index, val);   }
+    void SetTuple1(vtkIdType i, double val)  { arr->SetTuple1(i, val);       }
+    void SetTuple(vtkIdType i, const double *val) { arr->SetTuple(i, val);   }
+    void SetTuple(const double *val)         { arr->SetTuple(index, val);   }
 
-    inline void SetTuple1(vtkIdType id, double val)
-    {
-        arr->SetTuple1(id, val);
-    }
+    double GetTuple1()                       { return arr->GetTuple1(index); }
+    double GetTuple1(vtkIdType i)            { return arr->GetTuple1(i);     }
+    double *GetTuple(vtkIdType i)            { return arr->GetTuple(i);      }
+    double *GetTuple()                       { return arr->GetTuple(index); }
+
+    void SetComponent(vtkIdType tuple, int comp, double val) { arr->SetComponent(tuple, comp, val); }
+    void SetComponent(int comp, double val)                  { arr->SetComponent(index, comp, val); }
+
+    double GetComponent(vtkIdType tuple, int comp) const     { return arr->GetComponent(tuple, comp); }
+    double GetComponent(int comp) const                      { return arr->GetComponent(index, comp); }
+
+    void InitTraversal()                     { index = 0; }
+    bool Iterating() const                   { return index < size; }
+
+    void operator ++()                       { index ++; }
+    void operator ++(int)                    { index ++; }
+
 private:
     vtkDataArray *arr;
+    vtkIdType     index;
+    vtkIdType     size;
 };
 
 #endif

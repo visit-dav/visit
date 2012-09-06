@@ -199,7 +199,7 @@ bool
 vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
                                                  vtkCellArray *lines)
 {
-    pts             = (float*)(points->GetVoidPointer(0));
+    pts             = points;
     len             = points->GetNumberOfPoints();
     numneighbors    = new int[len];
     connectivity[0] = new int[len];
@@ -322,9 +322,11 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
  
                 // we must skip any sequential identical points:
                 // 1) they are useless, and 2) they mess up calculations
-                if (pts[previous*3+0] != pts[current*3+0] ||
-                    pts[previous*3+1] != pts[current*3+1] ||
-                    pts[previous*3+2] != pts[current*3+2])
+                double *prePt = pts->GetPoint(previous);
+                double *curPt = pts->GetPoint(current);
+                if (prePt[0] != curPt[0] ||
+                    prePt[1] != curPt[1] ||
+                    prePt[2] != curPt[2])
                 {
                     seq.Add(current, cellindex[current]);
                 }
@@ -467,6 +469,9 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays()
 //    degenerate polys between 360 and 0 degrees) by partitioning into
 //    npts-1 sides, instead of npts sides.  Fixed that.
 //
+//    Kathleen Biagas, Thu Sep 6 11:15:29 MST 2012
+//    Preserve coordinate data type.
+//
 // ****************************************************************************
 void vtkConnectedTubeFilter::Execute()
 {
@@ -497,17 +502,15 @@ void vtkConnectedTubeFilter::Execute()
         return;
     }
 
-    float *pts = (float*)(inPts->GetVoidPointer(0));
-
     // Set up the output arrays
     int maxNewCells  = numCells * (NumberOfSides + 2);
     int maxNewPoints = numCells * NumberOfSides * 2;
     vtkPolyData   *output     = this->GetOutput();
-    vtkPoints     *newPts     = vtkPoints::New();
+    vtkPoints     *newPts     = vtkPoints::New(inPts->GetDataType());
     newPts->Allocate(maxNewPoints);
     vtkCellArray  *newCells   = vtkCellArray::New();
     newCells->Allocate(maxNewCells, 4*maxNewCells + 2*NumberOfSides);
-    vtkFloatArray *newNormals = NULL;
+    vtkDataArray *newNormals = NULL;
 
     vtkPointData  *newPD      = NULL;
     newPD = output->GetPointData();
@@ -520,7 +523,7 @@ void vtkConnectedTubeFilter::Execute()
     
     if (CreateNormals)
     {
-        newNormals = vtkFloatArray::New();
+        newNormals = inPts->GetData()->NewInstance();
         newNormals->SetNumberOfComponents(3);
         newNormals->SetName("Normals");
         newPD->SetNormals(newNormals);
@@ -547,22 +550,19 @@ void vtkConnectedTubeFilter::Execute()
             int ix2 = (lastPoint  ?  seq.index[i] : seq.index[i+1]);
 
             // Use a centered difference approximation for direction
-            float dir[3] = {pts[ix2*3+0] - pts[ix1*3+0],
-                            pts[ix2*3+1] - pts[ix1*3+1],
-                            pts[ix2*3+2] - pts[ix1*3+2]};
+            double dir[3];
+            vtkMath::Subtract(inPts->GetPoint(ix2),inPts->GetPoint(ix1), dir);
 
             // If our centered difference was zero, do a forward
             // difference instead.  We ensured no sequential points
             // are identical, so this can't fail.
             if (dir[0]==0 && dir[1]==0 && dir[2]==0)
             {
-                dir[0] = pts[ix2*3+0] - pts[ix*3+0];
-                dir[1] = pts[ix2*3+1] - pts[ix*3+1];
-                dir[2] = pts[ix2*3+2] - pts[ix*3+2];
+               vtkMath::Subtract(inPts->GetPoint(ix2),inPts->GetPoint(ix),dir);
             }
 
             // Get a couple vectors orthogonal to our direction
-            float v1[3], v2[3];
+            double v1[3], v2[3];
             vtkMath::Perpendiculars(dir, v1,v2, 0.0);
             vtkMath::Normalize(v1);
             vtkMath::Normalize(v2);
@@ -570,18 +570,19 @@ void vtkConnectedTubeFilter::Execute()
             // Hang on to the first point index we create; we need it 
             // to create the cells
             vtkIdType firstIndex = newPts->GetNumberOfPoints();
-
+    
+            double *pt = inPts->GetPoint(ix);
             for (int j = 0 ; j < NumberOfSides ; j++)
             {
-                float q = (j * 2. * vtkMath::Pi()) / float(NumberOfSides);
-                float sq = sin(q);
-                float cq = cos(q);
-                float normal[3] = { v1[0]*cq + v2[0]*sq,
+                double q = (j * 2. * vtkMath::Pi()) / double(NumberOfSides);
+                double sq = sin(q);
+                double cq = cos(q);
+                double normal[3] = { v1[0]*cq + v2[0]*sq,
                                     v1[1]*cq + v2[1]*sq,
                                     v1[2]*cq + v2[2]*sq};
-                float x = pts[ix*3+0] + Radius * normal[0];
-                float y = pts[ix*3+1] + Radius * normal[1];
-                float z = pts[ix*3+2] + Radius * normal[2];
+                double x = pt[0] + Radius * normal[0];
+                double y = pt[1] + Radius * normal[1];
+                double z = pt[2] + Radius * normal[2];
                 vtkIdType id = newPts->InsertNextPoint(x,y,z);
                 if (CreateNormals)
                     newNormals->InsertNextTuple(normal);

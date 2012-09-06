@@ -17,6 +17,7 @@
 =========================================================================*/
 #include "vtkVisItCellDataToPointData.h"
 
+#include "vtkAccessors.h"
 #include "vtkCellData.h"
 #include "vtkDataSet.h"
 #include "vtkIdList.h"
@@ -46,7 +47,21 @@ vtkVisItCellDataToPointData::vtkVisItCellDataToPointData()
 //    Avoid using fastTrack code for non-scalar data. The fastTrack code does
 //    not handle it right.
 //
+//    Kathleen Biagas, Thu Sep 6 11:05:01 MST 2012
+//    Added templatized helper method to handle double-precision.
+//
 // **************************************************************************** 
+template <class Accessor> inline void
+vtkVisItCellDataToPointData_Copy(int ptId, double weight, int *ids, int nids,
+   Accessor var_out, Accessor var_in)
+{
+    double val = 0.;
+    for (int m = 0 ; m < nids ; ++m)
+    {
+        val += weight * var_in.GetComponent(ids[m]);
+    }
+    var_out.SetComponent(ptId, val);
+}
 
 void vtkVisItCellDataToPointData::Execute()
 {
@@ -104,7 +119,7 @@ void vtkVisItCellDataToPointData::Execute()
     canFastTrackStructured = false;
   }
 
-  // Only handle floating point and make sure that are assumptions about
+  // Only handle floating point/double and make sure our assumptions about
   // the variable's names are valid.
   int nvals = inPD->GetNumberOfArrays();
   for (i = 0 ; i < nvals ; i++)
@@ -116,7 +131,8 @@ void vtkVisItCellDataToPointData::Execute()
 
     if (outPD->GetArray(inPD->GetArray(i)->GetName()) == NULL)
       canFastTrackStructured = false;
-    if (inPD->GetArray(i)->GetDataType() != VTK_FLOAT)
+    if (!(inPD->GetArray(i)->GetDataType() == VTK_FLOAT ||
+          inPD->GetArray(i)->GetDataType() == VTK_DOUBLE))
       canFastTrackStructured = false;
 
     // fastTrack code doesn't support non-scalar data, so for now, avoid it.
@@ -136,17 +152,16 @@ void vtkVisItCellDataToPointData::Execute()
     int ids[8];
 
     const int maxArrays = 128;
-    float *vars_in[maxArrays];
-    float *vars_out[maxArrays];
+    vtkDataArray *vars_in[maxArrays];
+    vtkDataArray *vars_out[maxArrays];
     for (i = 0 ; i < nvals ; i++)
     {
        // This should be automatic, but some arrays do not seem to correctly
        // know how many tuples they have.
        outPD->GetArray(inPD->GetArray(i)->GetName())
                               ->SetNumberOfTuples(output->GetNumberOfPoints());
-       vars_in[i] = (float *) inPD->GetArray(i)->GetVoidPointer(0);
-       vars_out[i] = (float *) outPD->GetArray(inPD->GetArray(i)->GetName())
-                                                           ->GetVoidPointer(0);
+       vars_in[i] = inPD->GetArray(i);
+       vars_out[i] = outPD->GetArray(inPD->GetArray(i)->GetName());
     }
     for (i = nvals ; i < maxArrays ; i++)
     {
@@ -192,11 +207,19 @@ void vtkVisItCellDataToPointData::Execute()
           int ptId = k*dims[0]*dims[1] + j*dims[0] + i;
           for (l = 0 ; l < nvals ; l++)
           {
-             vars_out[l][ptId] = 0.;
-             for (m = 0 ; m < nids ; m++)
-             {
-               vars_out[l][ptId] += weight*vars_in[l][ids[m]];
-             }
+              // only floats/doubles take the fast-path.
+              if (vars_in[l]->GetDataType() == VTK_FLOAT)
+              {
+                  vtkVisItCellDataToPointData_Copy(ptId, weight, ids, nids,
+                      vtkDirectAccessor<float>(vars_out[l]), 
+                      vtkDirectAccessor<float>(vars_in[l]));
+              }
+              else if (vars_in[l]->GetDataType() == VTK_DOUBLE)
+              {
+                  vtkVisItCellDataToPointData_Copy(ptId, weight, ids, nids,
+                      vtkDirectAccessor<double>(vars_out[l]), 
+                      vtkDirectAccessor<double>(vars_in[l]));
+              }
           }
         }
       }

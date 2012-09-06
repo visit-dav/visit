@@ -45,10 +45,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 
 vtkStandardNewMacro(vtkTensorReduceFilter);
@@ -80,6 +82,9 @@ void vtkTensorReduceFilter::SetNumberOfElements(int n)
 //    Kathleen Bonnell, Tue Aug 30 11:11:56 PDT 2005 
 //    Copy other Point and Cell data. 
 //
+//    Kathleen Biagas, Wed Sep 5 13:10:18 MST 2012 
+//    Preserve coordinate and tensor data types.
+//
 // ****************************************************************************
 
 void vtkTensorReduceFilter::Execute(void)
@@ -104,6 +109,9 @@ void vtkTensorReduceFilter::Execute(void)
     return;
     }
 
+  int inPType = (inPtensors ? inPtensors->GetDataType() : VTK_FLOAT);
+  int inCType = (inCtensors ? inCtensors->GetDataType() : VTK_FLOAT);
+
   // Determine what the stride is.
   if (stride <= 0 && numEls <= 0)
     {
@@ -126,8 +134,12 @@ void vtkTensorReduceFilter::Execute(void)
     actingStride = ceil(((float) totalTensors) / ((float) numEls));
     }
 
-  vtkPoints *outpts = vtkPoints::New();
-  vtkFloatArray *outTensors = vtkFloatArray::New();
+  vtkPoints *outpts = vtkVisItUtility::NewPoints(input);
+  vtkDataArray *outTensors;
+  if (inPType == VTK_DOUBLE || inCType == VTK_DOUBLE)
+      outTensors = vtkDoubleArray::New();
+  else 
+      outTensors = vtkFloatArray::New();
   outTensors->SetNumberOfComponents(9);
 
   float nextToTake = 0.;

@@ -43,8 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkEdgeTable.h>
-#include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
@@ -109,6 +109,9 @@ vtkUniqueFeatureEdges::~vtkUniqueFeatureEdges()
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Rename ghost data array.
 //
+//    Kathleen Biagas, Thu Sep 6 11:07:21 MST 2012
+//    Preserve coordinate data type.
+//
 // ****************************************************************************
 
 void vtkUniqueFeatureEdges::Execute()
@@ -121,11 +124,11 @@ void vtkUniqueFeatureEdges::Execute()
   int i, j, numNei, cellId;
   int numBEdges, numNonManifoldEdges, numFedges, numManifoldEdges;
   double n[3], x1[3], x2[3];
-  float cosAngle = 0;
+  double cosAngle = 0;
   vtkIdType lineIds[2];
   vtkIdType npts, *pts;
   vtkCellArray *inPolys, *inStrips, *newPolys;
-  vtkFloatArray *polyNormals = NULL;
+  vtkDataArray *polyNormals = NULL;
   int numPts, numCells, numPolys, numStrips, nei;
   vtkIdList *neighbors;
   int p1, p2, newId;
@@ -204,7 +207,7 @@ void vtkUniqueFeatureEdges::Execute()
 
   // Allocate storage for lines/points (arbitrary allocation sizes)
   //
-  newPts = vtkPoints::New();
+  newPts = vtkPoints::New(inPts->GetDataType());
   newPts->Allocate(numPts/10,numPts); 
   newLines = vtkCellArray::New();
   newLines->Allocate(numPts/10);
@@ -228,7 +231,7 @@ void vtkUniqueFeatureEdges::Execute()
   //
   if ( this->FeatureEdges ) 
     {    
-    polyNormals = vtkFloatArray::New();
+    polyNormals = inPts->GetData()->NewInstance();
     polyNormals->SetNumberOfComponents(3);
     polyNormals->Allocate(newPolys->GetNumberOfCells());
 

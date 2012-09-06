@@ -38,6 +38,7 @@
 
 #include <vtkRectilinearGridFacelistFilter.h>
 
+#include <vtkAccessors.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkObjectFactory.h>
@@ -45,6 +46,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItUtility.h>
 
 #include <ImproperUseException.h>
 
@@ -168,6 +170,110 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 }
 
 // ****************************************************************************
+//  Kathleen Biagas, Thu Sep 6 11:10:54 MST 2012
+//  Templated method to process faces, preserves coordinate data type.
+//
+// ****************************************************************************
+
+template <class Accessor> inline void
+vtkRectilinearGridFacelistFilter_ProcessFaces(int nX, int nY, int nZ,
+    vtkPointData *outPointData, vtkPointData *inPointData, 
+    Accessor x, Accessor y, Accessor z, Accessor p)
+{
+  int i, j, pointId = 0;
+
+  p.InitTraversal();
+
+  // Front face.
+  for (i = 0 ; i < nX ; ++i)
+  {
+    for (j = 0 ; j < nY ; ++j)
+    {
+      p.SetComponent(0, x.GetComponent(i));
+      p.SetComponent(1, y.GetComponent(j));
+      p.SetComponent(2, z.GetComponent(0));
+      ++p;
+      outPointData->CopyData(inPointData, j*nX + i, pointId++);
+    }
+  }
+
+  // Back face
+  if (nZ > 1)
+  {
+    for (i = 0 ; i < nX ; ++i)
+    {
+      for (j = 0 ; j < nY ; ++j)
+      {
+        p.SetComponent(0, x.GetComponent(i));
+        p.SetComponent(1, y.GetComponent(j));
+        p.SetComponent(2, z.GetComponent(nZ-1));
+        ++p;
+        outPointData->CopyData(inPointData, (nZ-1)*nX*nY + j*nX + i,pointId++);
+      }
+    }
+  }
+
+  // Bottom face
+  for (i = 0 ; i < nX ; ++i)
+  {
+    for (j = 1 ; j < nZ-1 ; ++j)
+    {
+      p.SetComponent(0, x.GetComponent(i));
+      p.SetComponent(1, y.GetComponent(0));
+      p.SetComponent(2, z.GetComponent(j));
+      ++p;
+      outPointData->CopyData(inPointData, j*nX*nY + i, pointId++);
+    }
+  }
+
+  // Top face
+  if (nY > 1)
+  {
+    for (i = 0 ; i < nX ; ++i)
+    {
+      for (j = 1 ; j < nZ-1 ; ++j)
+      {
+        p.SetComponent(0, x.GetComponent(i));
+        p.SetComponent(1, y.GetComponent(nY-1));
+        p.SetComponent(2, z.GetComponent(j));
+        ++p;
+        outPointData->CopyData(inPointData, j*nX*nY + (nY-1)*nX + i,pointId++);
+      }
+    }
+  }
+
+  // Left face
+  for (i = 1 ; i < nY-1 ; ++i)
+  {
+    for (j = 1 ; j < nZ-1 ; ++j)
+    {
+      p.SetComponent(0, x.GetComponent(0));
+      p.SetComponent(1, y.GetComponent(i));
+      p.SetComponent(2, z.GetComponent(j));
+      ++p;
+      outPointData->CopyData(inPointData, j*nX*nY + i*nX, pointId++);
+    }
+  }
+
+  // Right face
+  if (nX > 1)
+  {
+    for (i = 1 ; i < nY-1 ; i++)
+    {
+      for (j = 1 ; j < nZ-1 ; j++)
+      {
+        p.SetComponent(0, x.GetComponent(nX-1));
+        p.SetComponent(1, y.GetComponent(i));
+        p.SetComponent(2, z.GetComponent(j));
+        ++p;
+        outPointData->CopyData(inPointData, j*nX*nY + i*nX + nX-1, pointId++);
+      }
+    }
+  }
+}
+
+
+// ****************************************************************************
 //
 //  Hank Childs, Thu Aug 15 21:13:43 PDT 2002
 //  Fixed bug where cell data was being copied incorrectly.
@@ -207,6 +313,9 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
 //
 //  Brad Whitlock, Tue Apr 25 15:13:20 PST 2006
 //  Pass the field data after the shallow copy or it does not get passed.
+//
+//  Kathleen Biagas, Thu Sep 6 11:12:43 MST 2012
+//  Use new templated method to process faces, to preserve coordinate type.
 //
 // ****************************************************************************
 
@@ -253,32 +362,24 @@ void vtkRectilinearGridFacelistFilter::Execute()
   //
   vtkDataArray *xc = input->GetXCoordinates();
   int nX = xc->GetNumberOfTuples();
-  float *x = new float[nX];
-  for (i = 0 ; i < nX ; i++)
-  {
-    x[i] = xc->GetTuple1(i);
-  }
+  int tX = xc->GetDataType();
   vtkDataArray *yc = input->GetYCoordinates();
   int nY = yc->GetNumberOfTuples();
-  float *y = new float[nY];
-  for (i = 0 ; i < nY ; i++)
-  {
-    y[i] = yc->GetTuple1(i);
-  }
+  int tY = yc->GetDataType();
   vtkDataArray *zc = input->GetZCoordinates();
   int nZ = zc->GetNumberOfTuples();
-  float *z = new float[nZ];
-  for (i = 0 ; i < nZ ; i++)
-  {
-    z[i] = zc->GetTuple1(i);
-  }
+  int tZ = zc->GetDataType();
+ 
+  bool same = (tX == tY && tY == tZ); 
+  int type = (same ? tX : (tX == VTK_DOUBLE ? tX : (tY == VTK_DOUBLE ? tY : 
+             (tZ == VTK_DOUBLE ? tZ : VTK_FLOAT))));
 
   //
   // Now create the points.  Do this so that the total number of points is
   // minimal -- this requires sharing points along edges and corners and leads
   // to a nasty indexing scheme.  Also be wary of 2D issues.
   //
-  vtkPoints *pts = vtkPoints::New();
+  vtkPoints *pts = vtkPoints::New(type);
   int npts = 0;
   if (nX <= 1)
   {
@@ -297,103 +398,40 @@ void vtkRectilinearGridFacelistFilter::Execute()
     npts = 2*nX*nY + 2*(nZ-2)*nX + 2*(nZ-2)*(nY-2);
   }
   pts->SetNumberOfPoints(npts);
-  float *p = (float *) pts->GetVoidPointer(0);
 
   //
   // We will be copying the point data as we go so we need to set this up.
   //
   outPointData->CopyAllocate(input->GetPointData());
-  int pointId = 0;
 
-  // Front face.
-  for (i = 0 ; i < nX ; i++)
+  if (same && type == VTK_FLOAT)
   {
-    for (j = 0 ; j < nY ; j++)
-    {
-      p[0] = x[i];
-      p[1] = y[j];
-      p[2] = z[0];
-      p += 3;
-      outPointData->CopyData(inPointData, j*nX + i, pointId++);
-    }
+      vtkRectilinearGridFacelistFilter_ProcessFaces(nX, nY, nZ,
+          outPointData, inPointData, 
+          vtkDirectAccessor<float>(xc),
+          vtkDirectAccessor<float>(yc),
+          vtkDirectAccessor<float>(zc),
+          vtkDirectAccessor<float>(pts->GetData()));
+  }
+  else  if (same && type == VTK_DOUBLE)
+  {
+      vtkRectilinearGridFacelistFilter_ProcessFaces(nX, nY, nZ,
+          outPointData, inPointData, 
+          vtkDirectAccessor<double>(xc),
+          vtkDirectAccessor<double>(yc),
+          vtkDirectAccessor<double>(zc),
+          vtkDirectAccessor<double>(pts->GetData()));
+  }
+  else
+  {
+      vtkRectilinearGridFacelistFilter_ProcessFaces(nX, nY, nZ,
+          outPointData, inPointData, 
+          vtkGeneralAccessor(xc),
+          vtkGeneralAccessor(yc),
+          vtkGeneralAccessor(zc),
+          vtkGeneralAccessor(pts->GetData()));
   }
 
-  // Back face
-  if (nZ > 1)
-  {
-    for (i = 0 ; i < nX ; i++)
-    {
-      for (j = 0 ; j < nY ; j++)
-      {
-        p[0] = x[i];
-        p[1] = y[j];
-        p[2] = z[nZ-1];
-        p += 3;
-        outPointData->CopyData(inPointData, (nZ-1)*nX*nY + j*nX + i,pointId++);
-      }
-    }
-  }
-
-  // Bottom face
-  for (i = 0 ; i < nX ; i++)
-  {
-    for (j = 1 ; j < nZ-1 ; j++)
-    {
-      p[0] = x[i];
-      p[1] = y[0];
-      p[2] = z[j];
-      p += 3;
-      outPointData->CopyData(inPointData, j*nX*nY + i, pointId++);
-    }
-  }
-
-  // Top face
-  if (nY > 1)
-  {
-    for (i = 0 ; i < nX ; i++)
-    {
-      for (j = 1 ; j < nZ-1 ; j++)
-      {
-        p[0] = x[i];
-        p[1] = y[nY-1];
-        p[2] = z[j];
-        p += 3;
-        outPointData->CopyData(inPointData, j*nX*nY + (nY-1)*nX + i,pointId++);
-      }
-    }
-  }
-
-  // Left face
-  for (i = 1 ; i < nY-1 ; i++)
-  {
-    for (j = 1 ; j < nZ-1 ; j++)
-    {
-      p[0] = x[0];
-      p[1] = y[i];
-      p[2] = z[j];
-      p += 3;
-      outPointData->CopyData(inPointData, j*nX*nY + i*nX, pointId++);
-    }
-  }
-
-  // Right face
-  if (nX > 1)
-  {
-    for (i = 1 ; i < nY-1 ; i++)
-    {
-      for (j = 1 ; j < nZ-1 ; j++)
-      {
-        p[0] = x[nX-1];
-        p[1] = y[i];
-        p[2] = z[j];
-        p += 3;
-        outPointData->CopyData(inPointData, j*nX*nY + i*nX + nX-1, pointId++);
-      }
-    }
-  }
-  delete [] x;
-  delete [] y;
-  delete [] z;
   output->SetPoints(pts);
   pts->Delete();
 
@@ -907,7 +945,7 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
       outCellData->CopyData(inCellData, 0, i);
 
   outPointData->CopyAllocate(inPointData, numOutPoints);
-  vtkPoints *pts = vtkPoints::New();
+  vtkPoints *pts = vtkVisItUtility::NewPoints(input);
   pts->SetNumberOfPoints(numOutPoints);
   for (i = 0 ; i < numOutPoints ; i++)
   {
