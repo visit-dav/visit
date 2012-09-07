@@ -45,7 +45,6 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -781,57 +780,6 @@ avtCoordSystemConvert::PostExecute()
     avtDataset_p ds = GetTypedOutput();
     avtDatasetExaminer::GetSpatialExtents(ds, bounds);
     outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
-}
-
-
-// ****************************************************************************
-//  Method: avtCoordSystemConvert::TransformExtents
-//
-//  Purpose:
-//      Transforms a bounding box to get the new extents.
-//
-//  Programmer: Hank Childs
-//  Creation:   June 30, 2003
-//
-// ****************************************************************************
-
-void
-avtCoordSystemConvert::TransformExtents(double *extents)
-{
-    //
-    // Set up a one cell-ed rectilinear grid based on the bounding box.
-    //
-    vtkFloatArray *x = vtkFloatArray::New();
-    x->SetNumberOfTuples(10);
-    int i;
-    for (i = 0 ; i < 10 ; i++)
-        x->SetTuple1(i, (extents[1]-extents[0]) * ((float)i)/10. + extents[0]);
- 
-    vtkFloatArray *y = vtkFloatArray::New();
-    y->SetNumberOfTuples(10);
-    for (i = 0 ; i < 10 ; i++)
-        y->SetTuple1(i, (extents[3]-extents[2]) * ((float)i)/10. + extents[2]);
- 
-    vtkFloatArray *z = vtkFloatArray::New();
-    z->SetNumberOfTuples(10);
-    for (i = 0 ; i < 10 ; i++)
-        z->SetTuple1(i, (extents[5]-extents[4]) * ((float)i)/10. + extents[4]);
- 
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-    rgrid->SetDimensions(10, 10, 10);
-    rgrid->SetXCoordinates(x);
-    rgrid->SetYCoordinates(y);
-    rgrid->SetZCoordinates(z);
-
-    vtkDataSet *rv = ExecuteData(rgrid, -1, "");
-    rv->GetBounds(extents);
-
-    x->Delete();
-    y->Delete();
-    z->Delete();
-    rgrid->Delete();
-    //rv does not need to be deleted.
-    //rv->Delete();
 }
 
 

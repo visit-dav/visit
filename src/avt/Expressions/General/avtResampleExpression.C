@@ -45,8 +45,8 @@
 #include <math.h>
 
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <avtResampleFilter.h>
 #include <InternalResampleAttributes.h>
@@ -120,7 +120,7 @@ avtResampleExpression::ProcessArguments(ArgsExpr *args,
 {
     // Get the argument list and number of arguments.
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nargs = arguments->size();
+    size_t nargs = arguments->size();
     // Check for a call with no arguments.
     if (nargs != 4)
     {

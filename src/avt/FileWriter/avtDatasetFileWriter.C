@@ -242,7 +242,7 @@ avtDatasetFileWriter::WriteOBJFamily(const char *filename)
         // Re-construct the basename.
         //
         char *basename = new char[strlen(filename)+1];
-        int badExt = strlen(extensions[(int) OBJ]);
+        size_t badExt = strlen(extensions[(int) OBJ]);
         strncpy(basename, filename, strlen(filename)-badExt);
         basename[strlen(filename)-badExt] = '\0';
 
@@ -402,7 +402,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         //
         // Create the actual texture coordinate.
         //
-        vtkFloatArray *tcoords = vtkFloatArray::New();
+        vtkDataArray *tcoords = scalars->NewInstance();
         tcoords->SetNumberOfComponents(2);
         tcoords->SetNumberOfTuples(scalars->GetNumberOfTuples());
         for (int i = 0 ; i < scalars->GetNumberOfTuples() ; i++)
@@ -470,7 +470,7 @@ avtDatasetFileWriter::WriteVTKFamily(const char *filename, bool binary)
         // Re-construct the basename.
         //
         char *basename = new char[strlen(filename)+1];
-        int badExt = strlen(extensions[(int) VTK]);
+        size_t badExt = strlen(extensions[(int) VTK]);
         strncpy(basename, filename, strlen(filename)-badExt);
         basename[strlen(filename)-badExt] = '\0';
 
@@ -807,7 +807,7 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
                                      DatasetFileFormat format)
 {
     char *str = NULL;
-    int len = strlen(base);
+    size_t len = strlen(base);
 
     // Reset the nFilesWritten count if the file base changes.
     if(family)
@@ -830,10 +830,10 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
     //
     // Get memory for the filename.
     //
-    int extlen = strlen(extensions[(int)format]);
-    int maxnums = 10; // 4 is the minimum, not the maximum.
-    int dotlen = 1;
-    int total_len = len + maxnums + dotlen + extlen + 2;
+    size_t extlen = strlen(extensions[(int)format]);
+    size_t maxnums = 10; // 4 is the minimum, not the maximum.
+    size_t dotlen = 1;
+    size_t total_len = len + maxnums + dotlen + extlen + 2;
     str = new char[total_len];
 
     if (family)
@@ -1235,7 +1235,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     // Re-construct the base file name without the extension.
     //
     char *basename = new char[strlen(filename)+1];
-    int badExt = strlen(extensions[(int) POVRAY]);
+    size_t badExt = strlen(extensions[(int) POVRAY]);
     strncpy(basename, filename, strlen(filename)-badExt);
     basename[strlen(filename)-badExt] = '\0';
 
@@ -1285,7 +1285,6 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     int num = colortables->GetNumColorTables();
     for (int i=0; i<num; i++)
     {
-        char num[100];
         ctfile << "#declare "
                << "ct_" << colortables->GetNames()[i]
                << " = color_map {" << endl;

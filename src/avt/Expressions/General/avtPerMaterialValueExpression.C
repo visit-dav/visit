@@ -46,7 +46,6 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkUnsignedIntArray.h>
 
 #include <avtExprNode.h>

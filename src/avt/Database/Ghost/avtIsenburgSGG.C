@@ -43,8 +43,8 @@
 #endif
 
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
@@ -216,6 +216,9 @@ avtIsenburgSGG::GetNextDomain(void)
 //     Hank Childs, Sat Sep 12 11:55:10 PDT 2009
 //     Fix indexing problem with setting up y+ ghost cells.
 //
+//     Kathleen Biagas, Fri Sep 7 14:02:57 MST 20120
+//     Preserve coordinate and scalar data types.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -245,7 +248,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     rgrid->SetDimensions(size_out[0], size_out[1], size_out[2]);
 
     // Set up X
-    vtkFloatArray *X = vtkFloatArray::New();
+    vtkDataArray *X = X_in->NewInstance();
     X->SetNumberOfTuples(size_out[0]);
     int offset = 0;
     if (origin_out[0] < block->origin[0])
@@ -279,7 +282,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     X->Delete();
 
     // Set up Y
-    vtkFloatArray *Y = vtkFloatArray::New();
+    vtkDataArray *Y = Y_in->NewInstance();
     Y->SetNumberOfTuples(size_out[1]);
     offset = 0;
     if (origin_out[1] < block->origin[1])
@@ -313,7 +316,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     Y->Delete();
 
     // Set up Z
-    vtkFloatArray *Z = vtkFloatArray::New();
+    vtkDataArray *Z = Z_in->NewInstance();
     Z->SetNumberOfTuples(size_out[2]);
     offset = 0;
     if (origin_out[2] < block->origin[2])
@@ -349,7 +352,7 @@ avtIsenburgSGG::StreamDataset(vtkDataSet *ds)
     // 
     // Set up the output variable.
     //
-    vtkFloatArray *out_array = vtkFloatArray::New();
+    vtkDataArray *out_array = in_array->NewInstance();
     int npts = rgrid->GetNumberOfPoints();
     out_array->SetNumberOfTuples(npts);
     void *ptr = out_array->GetVoidPointer(0);

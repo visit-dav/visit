@@ -42,8 +42,8 @@
 
 #include <avtCylindricalRadiusExpression.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 
 #include <avtVector.h>
 
