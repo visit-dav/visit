@@ -530,6 +530,12 @@ avtFTLEFilter::CreateIntegralCurve(const avtIVPSolver* model,
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep  7 15:47:12 PDT 2012
+//    Convert calculation to double precision, which prevents a "cliff" from
+//    too large epsilon associated with float.
+//
 // ****************************************************************************
 
 void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
@@ -548,34 +554,34 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         //x,y,z components compute front,back
         avtVector dz(j0[2],j1[2],j2[2]);
 
-        //std::cout << dx << " " << dy << " " << dz << std::endl;
+        std::cout << dx << " " << dy << " " << dz << std::endl;
 
         //J*J^T
         //float a = dx.dot(dx), b = dx.dot(dy), c = dx.dot(dz);
         //float d = dy.dot(dy), e = dy.dot(dz), f = dz.dot(dz);
 
-        float a = dx.x*dx.x + dx.y*dx.y + dx.z*dx.z;
-        float b = dx.x*dy.x + dx.y*dy.y + dx.z*dy.z;
-        float c = dx.x*dz.x + dx.y*dz.y + dx.z*dz.z;
-        float d = dy.x*dy.x + dy.y*dy.y + dy.z*dy.z;
-        float e = dy.x*dz.x + dy.y*dz.y + dy.z*dz.z;
-        float f = dz.x*dz.x + dz.y*dz.y + dz.z*dz.z;
-        float x = ( a + d + f ) / 3.0f;
+        double a = dx.x*dx.x + dx.y*dx.y + dx.z*dx.z;
+        double b = dx.x*dy.x + dx.y*dy.y + dx.z*dy.z;
+        double c = dx.x*dz.x + dx.y*dz.y + dx.z*dz.z;
+        double d = dy.x*dy.x + dy.y*dy.y + dy.z*dy.z;
+        double e = dy.x*dz.x + dy.y*dz.y + dy.z*dz.z;
+        double f = dz.x*dz.x + dz.y*dz.y + dz.z*dz.z;
+        double x = ( a + d + f ) / 3.0f;
 
         a -= x;
         d -= x;
         f -= x;
 
-        float q = (a*d*f + b*e*c + c*b*e - c*d*c - e*e*a - f*b*b) / 2.0f;
-        float r = (a*a + b*b + c*c + b*b + d*d + e*e + c*c + e*e + f*f);
+        double q = (a*d*f + b*e*c + c*b*e - c*d*c - e*e*a - f*b*b) / 2.0f;
+        double r = (a*a + b*b + c*c + b*b + d*d + e*e + c*c + e*e + f*f);
         r /= 6.0f;
 
-        float D = (r*r*r - q*q);
-        float phi = 0.0f;
+        double D = (r*r*r - q*q);
+        double phi = 0.0f;
 
-        //std::cout << a << " " << b << " " << c << " " << d << " "
-        //          << e << " " << f << " " << x << " " << q << " " << r << std::endl;
-        if( D < std::numeric_limits<float>::epsilon())
+        std::cout << a << " " << b << " " << c << " " << d << " "
+                  << e << " " << f << " " << x << " " << q << " " << r << std::endl;
+        if( D < std::numeric_limits<double>::epsilon())
             phi = 0.0f;
         else
         {
@@ -585,14 +591,14 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
                 phi += 3.1415926536f;
         }
 
-        const float sqrt3 = sqrtf(3.0f);
-        const float sqrtr = sqrtf(r);
+        const double sqrt3 = sqrtf(3.0f);
+        const double sqrtr = sqrtf(r);
 
-        float sinphi = 0.0f, cosphi = 0.0f;
+        double sinphi = 0.0f, cosphi = 0.0f;
         sinphi = sinf(phi);
         cosphi = cosf(phi);
 
-        float lambda = 1.0f;
+        double lambda = 1.0f;
         lambda = std::max( lambda, x + 2.0f*sqrtr*cosphi );
         lambda = std::max( lambda, x - sqrtr*(cosphi + sqrt3*sinphi) );
         lambda = std::max( lambda, x - sqrtr*(cosphi - sqrt3*sinphi) );
@@ -600,9 +606,9 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         //lambda = log( sqrtf( lambda ) ) + 0.000000001;
         //                    std::cout << "s: " << lambda << std::endl;
         lambda = log( sqrtf( lambda ) );
-        lambda /= (float) atts.GetIntegrationTime();
+        lambda /= (double) atts.GetIntegrationTime();
 
-        //                    std::cout << "lambda :" << lambda << std::endl;
+                            std::cout << "lambda :" << lambda << std::endl;
         result->SetTuple1(l,lambda);
     }
 }
