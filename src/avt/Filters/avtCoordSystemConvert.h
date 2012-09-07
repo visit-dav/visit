@@ -105,7 +105,6 @@ class AVTFILTERS_API avtCoordSystemConvert : public avtDataTreeIterator
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
     virtual void          PostExecute(void);
 
-    void                  TransformExtents(double *);
     virtual void          UpdateDataObjectInfo(void);
 };
 

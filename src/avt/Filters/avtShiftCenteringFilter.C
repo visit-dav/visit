@@ -48,7 +48,6 @@
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkExecutive.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
@@ -171,6 +170,9 @@ avtShiftCenteringFilter::~avtShiftCenteringFilter()
 //    For ease of reading code, I forced the target to be of type
 //    avtCentering, not integer.
 //
+//    Kathleen Biagas, Thu Sep 6 15:18:27 MST 2012
+//    Preserve data type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -209,10 +211,10 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            for (size_t k = arraysToSwap.size()-1 ; k >= 0 ; k--)
             {
                 vtkDataArray *arr = inDS->GetCellData()->GetArray(arraysToSwap[k].c_str());
-                vtkFloatArray *fa = vtkFloatArray::New();
+                vtkDataArray *fa = arr->NewInstance();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);
@@ -322,10 +324,10 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         {
             dsToShift = (vtkDataSet *) inDS->NewInstance();
             dsToShift->ShallowCopy(inDS);
-            for (k = arraysToSwap.size()-1 ; k >= 0 ; k--)
+            for (size_t k = arraysToSwap.size()-1 ; k >= 0 ; k--)
             {
                 vtkDataArray *arr = inDS->GetPointData()->GetArray(arraysToSwap[k].c_str());
-                vtkFloatArray *fa = vtkFloatArray::New();
+                vtkDataArray *fa = arr->NewInstance();
                 int ntups  = arr->GetNumberOfTuples();
                 int ncomps = arr->GetNumberOfComponents();
                 fa->SetNumberOfComponents(ncomps);

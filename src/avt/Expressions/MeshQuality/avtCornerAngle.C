@@ -46,7 +46,6 @@
 
 #include <vtkCell.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkPoints.h>
 
 #include <avtCallback.h>

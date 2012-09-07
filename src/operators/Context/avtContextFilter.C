@@ -44,7 +44,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkPointData.h>
 
 #include <NoInputException.h>
@@ -156,7 +156,10 @@ avtContextFilter::Equivalent(const AttributeGroup *a)
 //
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002   
 //    Use NewInstance instead of MakeObject in order to match vtk's new api. 
-//    
+//
+//    Kathleen Biagas, Fri Sep 7 12:36:42 MST 2012
+//    Preserve variable data type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -211,19 +214,19 @@ avtContextFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         numVals = in_ds->GetNumberOfCells();
     }
 
-    vtkFloatArray *outVar = vtkFloatArray::New();
+    vtkDataArray *outVar = primaryVar->NewInstance();
     outVar->SetNumberOfTuples(numVals);
     outVar->SetName(primaryVar->GetName());
     for (int i = 0 ; i < numVals ; i++)
     {
-        float val = primaryVar->GetTuple1(i);
+        double val = primaryVar->GetTuple1(i);
         if (val >= atts.GetLow() && val <= atts.GetHi())
         {
             outVar->SetTuple1(i, val + atts.GetOffset());
         }
         else
         {
-            float cVal = contextVar->GetTuple1(i);
+            double cVal = contextVar->GetTuple1(i);
             if (cVal < atts.GetCutoff())
             {
                 outVar->SetTuple1(i, atts.GetBelow());

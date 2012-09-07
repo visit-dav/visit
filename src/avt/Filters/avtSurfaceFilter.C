@@ -287,14 +287,16 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Beef up support for non-regular variables, especially including
 //    the case with the "ZeroFlag".
 //
+//    Kathleen Biagas, Fri Sep 7 13:13:09 MST 2012
+//    Preserve scalars data type when using input scalars.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
     vtkDataArray *inScalars = NULL;
-    vtkFloatArray *outScalars  = vtkFloatArray::New();
-    outScalars->SetNumberOfComponents(1);
+    vtkDataArray *outScalars  = NULL;
     bool zf = atts.GetZeroFlag();
     bool usingDefaultVar = (atts.GetVariable() == "default");
 
@@ -368,7 +370,6 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                                       "variable.");
             haveIssuedWarning = true;
         }
-        outScalars->Delete();
         return NULL;
     }
 
@@ -377,9 +378,15 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     double zVal;
     int numScalars;
     if (zf == true)
+    {
+        outScalars = vtkFloatArray::New();
         numScalars = inDS->GetNumberOfPoints();
+    }
     else
+    {
+        outScalars = inScalars->NewInstance();
         numScalars = inScalars->GetNumberOfTuples();
+    }
     outScalars->SetNumberOfTuples(numScalars);
 
     bool doLog = false;
@@ -417,7 +424,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         }
         zVal = Ms * zVal + Bs;
 
-        outScalars->SetValue(i, zVal);
+        outScalars->SetTuple1(i, zVal);
 
         zValMin = (zVal < zValMin ? zVal : zValMin);
         zValMax = (zVal > zValMax ? zVal : zValMax);
