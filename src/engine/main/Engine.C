@@ -93,7 +93,7 @@
 #include <StackTimer.h>
 #include <Utility.h>
 #include <VisItDisplay.h>
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 # include <XDisplay.h>
 #endif
 
@@ -591,7 +591,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     //
     // Set a different new handler for the engine
     //
-#if !defined(_WIN32)
+#if !defined(_WIN32) 
     std::set_new_handler(Engine::NewHandler);
 #endif
 
@@ -3893,7 +3893,7 @@ Engine::SetupDisplay()
 #endif
     std::string X_Display = RuntimeSetting::lookups("x-display");
     std::string disp = display_format(X_Display, PAR_Rank(), display_num);
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
     // Tell the display whether or not it should start X servers.  This must be
     // done before ::Initialize!
     XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);

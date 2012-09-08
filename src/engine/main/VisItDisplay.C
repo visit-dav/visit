@@ -43,7 +43,7 @@
 #include <MesaDisplay.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
-#ifndef WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <XDisplay.h>
 #endif
 
@@ -153,7 +153,7 @@ VDisplay::Create(VisItDisplay::DisplayType vtype)
             debug3 << "Creating Mesa (SW-based) display." << std::endl;
             return new MesaDisplay();
             break;
-#ifndef WIN32
+#if ! defined(_WIN32) && !defined(__APPLE__)
         case VisItDisplay::D_X:
             debug3 << "Creating X (HW-based) display." << std::endl;
             return new XDisplay();
