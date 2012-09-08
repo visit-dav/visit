@@ -168,7 +168,7 @@ avtBOVWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
 static void
 ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numComponents,
-             float *brick_bounds, int *brick_dims)
+             float *brick_bounds, int *brick_dims, bool outputZonal)
 {
     int  i, j, k;
 
@@ -176,6 +176,15 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
     float y_step = (brick_bounds[3] - brick_bounds[2]) / (brick_dims[1]-1);
     float z_step = (brick_bounds[5] - brick_bounds[4]) / (brick_dims[2]-1);
 
+    if (outputZonal)
+    {
+        brick_bounds[0] += x_step/2.0;
+        brick_dims[0]   -= 1;
+        brick_bounds[2] += y_step/2.0;
+        brick_dims[1]   -= 1;
+        brick_bounds[4] += z_step/2.0;
+        brick_dims[2]   -= 1;
+    }
     int grid_dims[3];
     rgrid->GetDimensions(grid_dims);
 
@@ -461,14 +470,31 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
 
     if (PAR_Rank() == 0)
-        *ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "
-               << brickletsPerY*brickletNJ << " " << brickletsPerZ*brickletNK
-               << endl;
+    {
+        if (shouldOutputZonal)
+        {
+            *ofile << "DATA SIZE: " << brickletsPerX*(brickletNI-1) << " "
+                   << brickletsPerY*(brickletNJ-1) << " " << brickletsPerZ*(brickletNK-1)
+                   << endl;
+        }
+        else
+        {
+            *ofile << "DATA SIZE: " << brickletsPerX*brickletNI << " "
+                   << brickletsPerY*brickletNJ << " " << brickletsPerZ*brickletNK
+                   << endl;
+        }
+    }
 
     if (nBricklets > 1)
         if (PAR_Rank() == 0)
-            *ofile << "DATA_BRICKLETS: " << brickletNI << " " << brickletNJ
-                   << " " << brickletNK << endl;
+        {
+            if (shouldOutputZonal)
+                *ofile << "DATA_BRICKLETS: " << brickletNI-1 << " " << brickletNJ-1
+                       << " " << brickletNK-1 << endl;
+            else
+                *ofile << "DATA_BRICKLETS: " << brickletNI << " " << brickletNJ
+                       << " " << brickletNK << endl;
+        }
 
     if (PAR_Rank() == 0)
         *ofile << "DATA FORMAT: FLOATS" << endl;
@@ -528,7 +554,10 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (PAR_Rank() == 0)
         {
             *ofile << "DATA_ENDIAN: " << endian_str << endl;
-            *ofile << "CENTERING: nodal" << endl;
+            if (shouldOutputZonal)
+                *ofile << "CENTERING: zonal" << endl;
+            else
+                *ofile << "CENTERING: nodal" << endl;
         }
     }
 
@@ -579,7 +608,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                     brick_bounds[4] = bounds[4] + k*z_step;
                     brick_bounds[5] = bounds[4] + (k+1)*z_step;
                     int brick_dims[3] = { brickletNI, brickletNJ, brickletNK };
-                    ResampleGrid(rgrid, ptr, samples, arr->GetNumberOfComponents(),brick_bounds,brick_dims);
+                    ResampleGrid(rgrid, ptr, samples, arr->GetNumberOfComponents(),brick_bounds,brick_dims,shouldOutputZonal);
                     char str[1024];
                     if (nBricklets > 1)
                     {

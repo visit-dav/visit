@@ -88,6 +88,7 @@ avtBOVWriter : public virtual avtDatabaseWriter
 
     virtual bool   SupportsTargetChunks(void) { return true; };
     virtual bool   SupportsTargetZones(void) { return true; };
+    virtual bool   SupportsOutputZonal(void) { return true; };
 
     // Doing material interface reconstruction does nothing for us. 
     // So we may as well report that we can already do it, so the MIR
