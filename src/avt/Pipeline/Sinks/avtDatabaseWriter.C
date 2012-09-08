@@ -73,6 +73,9 @@
 //    Added a saved pipeline spec in case we need to re-execute the
 //    pipeline to get the requested variables.
 //
+//    Hank Childs, Fri Sep  7 17:54:21 PDT 2012
+//    Initialize shouldOutputZonal.
+//
 // ****************************************************************************
 
 avtDatabaseWriter::avtDatabaseWriter()
@@ -85,6 +88,7 @@ avtDatabaseWriter::avtDatabaseWriter()
 
     shouldChangeChunks = false;
     shouldChangeTotalZones = false;
+    shouldOutputZonal = false;
     nTargetChunks = 1;
     targetTotalZones = 1;
     savedContract = NULL;
@@ -146,6 +150,25 @@ avtDatabaseWriter::SetTargetZones(VISIT_LONG_LONG nZones)
     shouldChangeTotalZones = true;
     targetTotalZones = nZones;
     return SupportsTargetZones();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseWriter::SetOutputZonal
+//
+//  Purpose:
+//      Tells the writer to output zonal variables.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 7, 2012
+//
+// ****************************************************************************
+
+bool
+avtDatabaseWriter::SetOutputZonal(bool val)
+{
+    shouldOutputZonal = val;
+    return (shouldOutputZonal ? SupportsOutputZonal() : true);
 }
 
 

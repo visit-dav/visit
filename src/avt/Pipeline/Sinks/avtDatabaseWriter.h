@@ -95,6 +95,9 @@ class     avtDatabaseMetaData;
 //    because we can't trust the meta data.  Also, allow for a saved
 //    pipeline specification in case we need to re-execute the pipeline.
 //
+//    Hank Childs, Fri Sep  7 17:54:21 PDT 2012
+//    Add support for outputZonal.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
@@ -118,6 +121,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
 
     bool               SetTargetChunks(int nChunks);
     bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
+    bool               SetOutputZonal(bool);
     void               SetVariableList(std::vector<std::string> &);
     void               SetContractToUse(avtContract_p ps);
 
@@ -130,6 +134,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
 
     bool               shouldChangeChunks;
     bool               shouldChangeTotalZones;
+    bool               shouldOutputZonal;
     int                nTargetChunks;
     VISIT_LONG_LONG    targetTotalZones;
 
@@ -146,6 +151,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
 
     virtual bool       SupportsTargetChunks(void) { return false; };
     virtual bool       SupportsTargetZones(void) { return false; };
+    virtual bool       SupportsOutputZonal(void) { return false; };
 };
 
 

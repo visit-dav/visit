@@ -390,6 +390,9 @@ HandleReadOptions(bool noOptions, DatabasePluginManager *dbmgr,
 //    for convert as a special case for handling read options, so we simply
 //    track that argument value manually now.
 //
+//    Hank Childs, Fri Sep  7 17:54:21 PDT 2012
+//    Add -output_zonal option.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -424,6 +427,7 @@ int main(int argc, char *argv[])
     bool disableExpressions = false;
     vector<string> vars;
     int target_chunks = -1;
+    bool outputZonal = false;
     long long target_zones = -1;
     EngineDatabasePluginInfo *edpir = NULL;
     if (argc > 4)
@@ -442,6 +446,10 @@ int main(int argc, char *argv[])
                     UsageAndExit(dbmgr, argv[0]);
                 i++;
                 vars.push_back(argv[i]);
+            }
+            else if (strcmp(argv[i], "-output_zonal") == 0)
+            {
+                outputZonal = true;
             }
             else if (strcmp(argv[i], "-target_chunks") == 0)
             {
@@ -581,6 +589,17 @@ int main(int argc, char *argv[])
             UsageAndExit(dbmgr, argv[0]);
         }
     }
+    if (outputZonal)
+    {
+        bool canDoIt = wrtr->SetOutputZonal(outputZonal);
+        if (!canDoIt)
+        {
+            if (PAR_Rank() == 0)
+                cerr << "This writer does not support the \"-output_zonal\" "
+                     << "option" << endl;
+            UsageAndExit(dbmgr, argv[0]);
+        }
+    }
 
     //
     // Figure out which mesh to operate on.
@@ -716,6 +735,9 @@ int main(int argc, char *argv[])
 //    Hank Childs, Fri Sep 11 17:53:31 CDT 2009
 //    Only have proc 0 output error message.  Also call MPI_Finalize.
 //
+//    Hank Childs, Fri Sep  7 17:54:21 PDT 2012
+//    Add -output_zonal.
+//
 // ****************************************************************************
 
 static void
@@ -735,6 +757,7 @@ UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
         cerr << "\t-clean" << endl;
         cerr << "\t-target_chunks   <number>" << endl;
         cerr << "\t-target_zones    <number>" << endl;
+        cerr << "\t-output_zonal" << endl;
         cerr << "\t-variable        <variable>" << endl;
         cerr << "\t-no_options" << endl;
         cerr << "\t-assume_format   <input_format>" << endl;
@@ -749,6 +772,9 @@ UsageAndExit(DatabasePluginManager *dbmgr, const char *argv0)
         cerr << endl;
         cerr << "  -target_chunks should be specified when the chunks should be" << endl;
         cerr << "   repartitioned.  This is often used in conjunction with -target_zones." << endl;
+        cerr << endl;
+        cerr << "  -output_zonal specifies the output should be zonal.  This option" << endl;
+        cerr << "   only works in conjunction with -target_zones." << endl;
         cerr << endl;
         cerr << "  -variable specifies which variable should be processed." << endl;
         cerr << "  There can be multiple -variable options on the command line." << endl;
