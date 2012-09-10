@@ -454,6 +454,8 @@ GetVisItResourcesDirectory(VisItResourceDirectoryType t)
         retval += VISIT_SLASH_STRING;
         if(t == VISIT_RESOURCES_COLORTABLES)
             retval += "colortables";
+        else if(t == VISIT_RESOURCES_HOSTS)
+            retval += "hosts";
         else if(t == VISIT_RESOURCES_TRANSLATIONS)
             retval += "translations";
         else if(t == VISIT_RESOURCES_MOVIETEMPLATES)
@@ -461,6 +463,33 @@ GetVisItResourcesDirectory(VisItResourceDirectoryType t)
     }
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: GetVisItResourcesFile
+//
+// Purpose: 
+//   Gets the name of a file in the resources directory.
+//
+// Arguments:
+//   t        : The resource directory.
+//   filename : the name of the file.
+//
+// Returns:    The name of the file in the resources directory.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep  6 11:08:52 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetVisItResourcesFile(VisItResourceDirectoryType t, const std::string &filename)
+{
+    return (GetVisItResourcesDirectory(t) + VISIT_SLASH_STRING) + filename;
 }
 
 #if defined(_WIN32)

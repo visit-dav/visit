@@ -71,11 +71,14 @@ std::string MISC_API GetSystemVisItHostsDirectory();
 typedef enum {
     VISIT_RESOURCES,
     VISIT_RESOURCES_COLORTABLES,
+    VISIT_RESOURCES_HOSTS,
     VISIT_RESOURCES_TRANSLATIONS,
     VISIT_RESOURCES_MOVIETEMPLATES
 } VisItResourceDirectoryType;
 
 std::string MISC_API GetVisItResourcesDirectory(VisItResourceDirectoryType t);
+std::string MISC_API GetVisItResourcesFile(VisItResourceDirectoryType t, 
+                                           const std::string &filename);
 
 int         MISC_API ConfigStateGetRunCount(ConfigStateEnum &code);
 void        MISC_API ConfigStateIncrementRunCount(ConfigStateEnum &code);

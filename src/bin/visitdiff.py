@@ -738,7 +738,7 @@ def UpdateExpressions(mdl, mdr):
                 mt1 = GetMeshType(mdl, m1Name)
                 nb2 = GetNDomains(mdr, m2Name)
                 mt2 = GetMeshType(mdr, m2Name)
-	        for m in range(vecl.numDims):
+	        for m in range(vecl.varDim):
 
                     # Create the expression to extract a component for this vector 
 		    compName = vecl.name + "%02d"%m 

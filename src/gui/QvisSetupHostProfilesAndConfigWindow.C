@@ -170,17 +170,15 @@ QvisSetupHostProfilesAndConfigWindow::CreateWindowContents()
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
 //
 // Modifications:
+//   Brad Whitlock, Thu Sep  6 11:05:19 PDT 2012
+//   Get the file from resources/hosts.
 //
-//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
-//    Fix leak of result returned from GetSystemConfigFile.
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 {
-    char *scf = GetSystemConfigFile("networks.dat");
-    std::ifstream is(scf);
-    delete [] scf;
+    std::ifstream is(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, "networks.dat").c_str());
 
     std::string line;
     while(std::getline(is, line))
@@ -208,17 +206,15 @@ QvisSetupHostProfilesAndConfigWindow::readNetworkList()
 // Creation:   Thu Aug 11 17:48:10 PDT 2011
 //
 // Modifications:
+//   Brad Whitlock, Thu Sep  6 11:11:40 PDT 2012
+//   Get the file from the resources/hosts directory.
 //
-//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
-//    Fix leak of result returned from GetSystemConfigFile.
 // ****************************************************************************
 
 void
 QvisSetupHostProfilesAndConfigWindow::readDefaultConfigList()
 {
-    char *scf = GetSystemConfigFile("default_configs.dat");
-    std::ifstream is(scf);
-    delete [] scf;
+    std::ifstream is(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, "default_configs.dat").c_str());
 
     std::string line;
     while(std::getline(is, line))
@@ -292,8 +288,11 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   Brad Whitlock, Fri Nov 11 09:52:13 PST 2011
 //   Prevent copying of "closed" profiles when we did not ask for them.
 //
-//    Mark C. Miller, Wed Aug 22 18:42:28 PDT 2012
-//    Fix leak of result returned from GetSystemConfigFile.
+//   Brad Whitlock, Thu Sep  6 11:24:41 PDT 2012
+//   Adapt to hosts being in separate directories. Also we're no longer 
+//   installing all configs to the system config directory so we need to
+//   get the configs from the resources directory.
+//
 // ****************************************************************************
 
 void
@@ -307,26 +306,15 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
     {
         if (it->checkBox->isChecked())
         {
-            char *scf1 = GetSystemConfigFile("");
-            char *scf2 = GetSystemConfigFile("allhosts/");
-            QString srcHostProfileDirName = QString::fromStdString(
-                    GetIsDevelopmentVersion() ?  scf1 : scf2);
-            delete [] scf1;
-            delete [] scf2;
-            QDir srcHostProfileDir(
-                    srcHostProfileDirName,
-                    QString("host_") + it->shortName + QString("_*.xml"));
-            QStringList srcConfigFilenameList = srcHostProfileDir.entryList();
-            bool closed = it->shortName.contains("closed");
-            for (int i = 0; i < srcConfigFilenameList.size(); ++ i)
+            QString srcDir(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, 
+                                                 it->shortName.toStdString()).c_str());
+            QDir srcHostProfileDir(srcDir, "host*.xml");
+            QStringList files = srcHostProfileDir.entryList();
+            for (int i = 0; i < files.size(); ++ i)
             {
-                const QString &thisProfile = srcConfigFilenameList.at(i);
-                if(!closed && thisProfile.contains("closed"))
-                    continue;
-
-                installConfigFile(
-                        srcHostProfileDirName + "/" + thisProfile,
-                        hostsInstallDirectory + "/" + thisProfile);
+                const QString &thisProfile = files.at(i);
+                installConfigFile(srcDir + "/" + thisProfile,
+                                  hostsInstallDirectory + "/" + thisProfile);
             }
         }
     }
@@ -341,19 +329,17 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
             for (int i = 0; configFilename[i] != 0; ++i)
             {
                 std::string srcCfgName =
+                    it->shortName.toStdString() +
+                    "/" + 
                     std::string("visit-") +
                     std::string(configFilename[i]) +
-                    std::string("-") +
-                    it->shortName.toStdString() +
                     std::string(".ini");
-                char *scf = GetSystemConfigFile(srcCfgName.c_str());
-                QString srcCfgPath = QString(scf);
+                QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
                 if (QFile::exists(srcCfgPath))
                 {
                     installConfigFile(
                             srcCfgPath, GetDefaultConfigFile(configFilename[i]));
                 }
-                delete [] scf;
             }
         }
     }

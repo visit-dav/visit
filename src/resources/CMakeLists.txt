@@ -41,14 +41,16 @@
 #   datasets such as globes, etc. 
 #
 # Modifications:
+#   Brad Whitlock, Thu Sep  6 11:50:09 PDT 2012
+#   Add hosts to the directories that get installed to resources.
 #
 #*****************************************************************************
 
-# Treat "hosts" specially.
+# Do a little extra in the hosts directory.
 ADD_SUBDIRECTORY(hosts)
 
 # Directories that we want installed wholesale to the "resources" directory.
-SET(RESOURCE_DIRECTORIES colortables movietemplates translations)
+SET(RESOURCE_DIRECTORIES colortables hosts movietemplates translations usage)
 
 # Copy the resources directory into the out of source build
 FOREACH(ITEM ${RESOURCE_DIRECTORIES})

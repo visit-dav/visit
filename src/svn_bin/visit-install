@@ -319,6 +319,11 @@
 #    Brad Whitlock, Tue Jul 31 17:03:25 PDT 2012
 #    Add cab.
 #
+#    Brad Whitlock, Thu Sep  6 12:37:59 PDT 2012
+#    I changed how host profiles and configs get installed since they
+#    are in separate directories now. I also added installation of
+#    customlauncher.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -512,8 +517,9 @@ while [ "$config" = "prompt" ]; do
    echo "   14) U of Michigan Center for Advanced Computing network"
    echo "   15) NICS at University of Tennessee at Knoxville"
    echo "   16) Lousiana State University network"
+   echo "   17) ETH Zurich"
    echo ""
-   echo "Enter (1-16):"
+   echo "Enter (1-17):"
 
    read config
    case "$config" in
@@ -565,6 +571,9 @@ while [ "$config" = "prompt" ]; do
       16)
          config=lsu
          ;;
+      17)
+         config=eth_zurich
+         ;;
       *)
          config=prompt
          ;;
@@ -604,10 +613,12 @@ case "$config" in
       ;; 
    lsu)
       ;;
+   eth_zurich)
+      ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "llnl_open, llnl_open_cz, llnl_open_rz, llnl_closed, nersc, ornl, "
-      echo "princeton, sandia, sandia_closed, tacc, umich, nics, and lsu."
+      echo "princeton, sandia, sandia_closed, tacc, umich, nics, lsu, eth_zurich."
       exit 4
       ;;
 esac
@@ -709,93 +720,72 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 #
 # Use the appropriate configuration file, setting the bank to the right value.
 #
-rm -f "$dir"/$version+/.visit/config
-rm -rf "$dir"/$version+/.visit/hosts
+rm -f "$dir"/$version+/.visit
+mkdir "$dir"/$version+/.visit
 mkdir "$dir"/$version+/.visit/hosts
 if [ "$config" = "anl" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_anl_cosmea.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_eureka.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_gadzooks.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_mcs_login.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_anl_teragrid.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_closed" ]; then
-   ln -s visit-config-llnl_closed.ini "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_lanl_closed_cielo.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_coastal.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_eos.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_graph.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_inca.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_juno.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_muir.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_tempest.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_closed_zin.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_snl_closed_redrose.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/visit-config.ini    "$dir"/$version+/.visit/config
 elif [ "$config" = "llnl_open" ]; then
-   ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml            "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_cab.xml              "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml             "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml             "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml            "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzalastor.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzmerl.xml      "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzthriller.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzgw_rzzeus.xml      "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml           "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml              "$dir"/$version+/.visit/hosts/
+   # Install both cz hosts and rzgw hosts. We're most likely in a client
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
 elif [ "$config" = "llnl_open_cz" ]; then
-   ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_aztec.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_cab.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_edge.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_hera.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_oslic.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_prism.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_sierra.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_slac_red.xml     "$dir"/$version+/.visit/hosts/
+   # Copy the files explicitly to avoid the rzgw hosts. We're most likely installing on a cz machine.
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_aztec.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_cab.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_edge.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_hera.xml     "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_prism.xml    "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_sierra.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
+
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
 elif [ "$config" = "llnl_open_rz" ]; then
-   ln -s visit-config-llnl_open.ini  "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzalastor.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzmerl.xml      "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzthriller.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_llnl_rzzeus.xml      "$dir"/$version+/.visit/hosts/
+   # We're most likely installing on an rz machine.
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl_rz/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
 elif [ "$config" = "nersc" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_nersc_hopper.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_nersc_euclid.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "ornl" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_sith.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguarpf.xml "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_jaguar.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_lens.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_ornl_photon.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "princeton" ]; then
-   ln -s visit-config-princeton.ini "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/.visit/allhosts/host_princeton_artemis.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_princeton_hecate.xml      "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_princeton_tigressdata.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/visit-config.ini    "$dir"/$version+/.visit/config
 elif [ "$config" = "sandia" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_glory.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_redsky.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "sandia_closed" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_unity.xml     "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_whitney.xml   "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_sandia_closed_redsky-s.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "tacc" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_longhorn.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_ranger.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_tacc_spur.xml      "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_umich_flux.xml  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_umich_nyx.xml   "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "nics" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_nics_kraken.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/.visit/allhosts/host_nics_nautilus.xml  "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "anag" ]; then
-   ln -s visit-config-anag.ini    "$dir"/$version+/.visit/config
-   ln -s visit-guiconfig-anag.ini "$dir"/$version+/.visit/guiconfig
-   ln -s visit-visitrc-anag.ini   "$dir"/$version+/.visit/visitrc
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-config.ini       "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-guiconfig.ini    "$dir"/$version+/.visit/guiconfig
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-visitrc.ini      "$dir"/$version+/.visit/visitrc
 elif [ "$config" = "lsu" ]; then
-   cp "$dir"/$version+/.visit/allhosts/host_lsu_philip.xml "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "eth_zurich" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 fi
 
 # Do the bank fixup
@@ -882,7 +872,7 @@ fi
 # Enable logging if requested.
 #
 if [ "$logging" = "true" ]; then
-    sed -e "s/logging[ \t]*= 0/logging        = 1/" $distributiondir/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
+    sed -e "s/logging_enabled=0/logging_enabled=1/" $distributiondir/$version/bin/internallauncher > "$dir"/$version+/bin/internallauncher
     chmod $dir_permission "$dir"/$version+/bin/internallauncher
     touch "$dir"/$version+/usagelog
     chmod 666 "$dir"/$version+/usagelog

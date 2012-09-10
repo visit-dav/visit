@@ -1,0 +1,186 @@
+###############################################################################
+# Class: JobSubmitter_aprun_ORNL
+#
+# Purpose:    Custom "aprun" job submitter for ORNL.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_aprun_ORNL(JobSubmitter_aprun):
+    def __init__(self, launcher):
+        super(JobSubmitter_aprun_ORNL, self).__init__(launcher)
+
+    #
+    # Override the code to create the command line
+    #
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N", self.parallel.nn]
+
+        # Jaguar-specific customization
+        parcmd = parcmd + [os.path.join(self.launcher.visitbindir, "env")]
+        syslibs = [os.path.join(self.launcher.visitarchdir, "system_libs")]
+        syslibs = self.launcher.joinpaths([self.launcher.visitlibdir] + syslibs)
+        parcmd = parcmd + ["LD_LIBRARY_PATH=%s" % syslibs]
+        parcmd = parcmd + ["MPICH_PTL_UNEX_EVENTS=6200000", "MPICH_MAX_SHORT_MSG_SIZE=12000"]
+
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", self.launcher.visitplugins]
+        parcmd = parcmd + ["-visithome", self.launcher.visithome]
+        parcmd = parcmd + ["-visitarchhome", self.launcher.visitarchdir]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_qsub_ORNL
+#
+# Purpose:    Custom "qsub" job submitter for ORNL.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_ORNL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ORNL, self).__init__(launcher)
+
+    def TFileSetup(self, tfile):
+        if self.launcher.IsRunningOnJaguar():
+            tfile.write("cd /lustre/widow1/scratch/%s\n" % GETENV("USER"))
+            tfile.write("ulimit -c 0\n") 
+        else:
+            super(JobSubmitter_qsub_ORNL, self).TFileSetup(tfile)
+
+    def TFileLoadModules(self, tfile):
+        if self.launcher.IsRunningOnLens():
+            # Lens loads modules that we hate, by default.
+            msg = """
+NOTE: I'm forcing a specific MPI implementation 
+which release versions of VisIt are known to be  
+compiled against.  If you are a *developer*, it's 
+very likely I've chosen the wrong MPI 
+implementation; you might have to hack 
+internallauncher to load the module you need."""
+            print msg
+            f.write("eval $(modulecmd sh swap PE-pgi PE-gnu)\n")
+        elif self.launcher.IsRunningOnJaguar():
+            f.write("eval $(modulecmd sh load PrgEnv-gnu)\n")
+
+    def aprun_args(self):
+        mpicmd = self.aprun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-n", self.parallel.np]
+        if self.parallel.np != None and self.parallel.nn != None:
+            mpicmd = mpicmd + ["-N", self.PPN()]
+
+        # Customized for Jaguar
+        if self.launcher.IsRunningOnJaguar():
+            env = os.path.join(self.launcher.visitbindir, "env")
+            syslibs = os.path.join(self.launcher.visitarchdir, "system_libs")
+            ldpath = self.launcher.joinpaths(self.launcher.visitlibdir, syslibs)
+            mpicmd = mpicmd + ["%s LD_LIBRARY_PATH=%s" % (env, ldpath)]
+
+        mpicmd = mpicmd + self.VisItExecutable() + args
+
+        return mpicmd
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        if self.launcher.IsRunningOnJaguar():
+            args = ["-l", "size=%s" % procs]
+        else:
+            args = super(JobSubmitter_qsub_ORNL, self).SetupPPN(nodes, procs, ppn, use_vis)
+        return args
+
+###############################################################################
+# Class: ORNLLauncher
+#
+# Purpose:    Custom launcher for ORNL
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ORNLLauncher(MainLauncher):
+    def __init__(self):
+        super(ORNLLauncher, self).__init__()
+        self.lens = -1
+        self.jaguar = -1
+
+    def IsRunningOnLens(self):
+        if self.lens == -1:
+            self.lens = 0
+            if self.parallelArgs.parallel and \
+               self.generalArgs.exe_name == "engine" and \
+               self.sectorname() == "lens" and \
+               self.domainname() == "ccs.ornl.gov":
+                self.lens = 1
+        return self.lens
+
+    def IsRunningOnJaguar(self):
+        if self.jaguar == -1:
+            self.jaguar = 0
+            if self.parallelArgs.parallel and \
+               self.generalArgs.exe_name == "engine" and \
+               self.sectorname() in ("jaguarpf", "jaguar") and \
+               self.domainname() == "ccs.ornl.gov":
+                self.jaguar = 1
+        return self.jaguar
+
+    def PrivatePlugins(self):
+        if self.IsRunningOnJaguar():
+            values = (self.username(), self.visitpluginver, self.visitarch)
+            return "/lustre/widow1/scratch/%s/.visit/%s/%s/plugins" % values
+        return super(ORNLLauncher, self).PrivatePlugins()
+
+    def Customize(self):
+        # ----
+        # jaguarpf.ccs.ornl.gov
+        #
+        # ----
+        if self.IsRunningOnJaguar():
+            # Replace the hostname to which the engine will connect back.
+            self.generalArgs.host = self.hostname()
+            if "jaguarpf" in self.generalArgs.host:
+                self.generalArgs.host = string.replace(self.generalArgs.host, "jaguarpf-", "")
+            else:
+                self.generalArgs.host = string.replace(self.generalArgs.host, "jaguar", "login")
+
+            addedpaths = ["/opt/torque/default/bin", "/usr/bin"]
+            if GETENV("PATH") == "":
+                SETENV("PATH", self.joinpaths(addedpaths))
+            else:
+                paths = self.splitpaths(GETENV("PATH"))
+                SETENV("PATH", self.joinpaths(paths + addedpaths))
+
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch == "aprun":
+            return JobSubmitter_aprun_ORNL(self)
+        elif launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_ORNL(self)
+        return super(ORNLLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return ORNLLauncher()

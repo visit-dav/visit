@@ -1,0 +1,83 @@
+###############################################################################
+# Class: JobSubmitter_sbatch_Sandia
+#
+# Purpose:    Custom "sbatch" job submitter for Sandia.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_sbatch_Sandia(JobSubmitter_sbatch):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch_Sandia, self).__init__(launcher)
+
+    def PPNArguments(self, ppn):
+        if self.launcher.IsRunningOnUnity():
+            return ["--np", self.parallel.np, "/apps/contrib/numa_wrapper-16ppn"]
+        return super(JobSubmitter_sbatch_Sandia, self).PPNArguments(ppn)
+
+    def TFileLoadModules(self, tfile):
+        if self.launcher.IsRunningOnUnity():
+            tfile.write("source /usr/share/modules/init/bash\n")
+            tfile.write("module purge\n")
+            tfile.write("module load mpi/openmpi-1.4.2_gcc-4.3.4\n")
+            tfile.write("module load compilers/gcc-4.3.4\n")
+        elif self.launcher.IsRunningOnRedskyS():
+            tfile.write("source /usr/share/Modules/init/bash\n")
+            tfile.write("module purge\n")
+            tfile.write("module load mpi/openmpi-1.4.3_oobpr_intel-11.1-f064-c064\n")
+
+###############################################################################
+# Class: SandiaLauncher
+#
+# Purpose:    Custom launcher for Sandia
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class SandiaLauncher(MainLauncher):
+    def __init__(self):
+        super(SandiaLauncher, self).__init__()
+
+    def IsRunningOnUnity(self):
+        return self.sectorname() in ("unity", "whitney")
+
+    def IsRunningOnRedskyS(self):
+        return self.sectorname() == "redsky-login"
+
+    def Customize(self):
+        # ----
+        # Unity and Whitney @ Sandia
+        # ----
+        if self.IsRunningOnUnity():
+            prefix = ["/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64"]
+            ldpath = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(prefix + ldpath))
+
+        # ----
+        # Redsky-s @ Sandia
+        # ----
+        if self.IsRunningOnRedskyS():
+            prefix = ["/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64"]
+            ldpath = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(prefix + ldpath))
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:6] == "sbatch":
+            return JobSubmitter_sbatch_Sandia(self)
+        return super(SandiaLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return SandiaLauncher()

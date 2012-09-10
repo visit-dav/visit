@@ -4,7 +4,6 @@
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="hostAliases" type="string">sierra#.llnl.gov sierra##.llnl.gov sierra###.llnl.gov sierra####.llnl.gov sierra# sierra## sierra### sierra####</Field>
     <Field name="hostNickname" type="string">LLNL Sierra</Field>
-    <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
     <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">

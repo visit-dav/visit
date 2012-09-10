@@ -1,0 +1,91 @@
+###############################################################################
+# Class: JobSubmitter_qsub_ANL
+#
+# Purpose:    Custom "qsub" job submitter for ANL.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_ANL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ANL, self).__init__(launcher)
+
+    def IsRunningOnEureka(self):
+        return 1
+
+    def CreateFilename(self, root):
+        if self.IsRunningOnEureka():
+            tdate = time.asctime()[11:19]
+            tuser = self.launcher.username()
+            return os.path.join("/home", tuser, "%s.%s.%s" % (root, tuser, tdate))
+        return super(JobSubmitter_qsub_ANL, self).CreateFilename(root)
+
+    def TFileLoadModules(self, tfile):
+        if self.IsRunningOnEureka():
+            tfile.write("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mx/lib\n")
+
+    def AssembleCommandLine(self):
+        if self.IsRunningOnEureka():
+            parcmd = ["qsub"]
+            if self.parallel.bank != None:
+                parcmd = parcmd + ["-A", self.parallel.bank]
+            parcmd = parcmd + ["-n", self.parallel.nn]
+            parcmd = parcmd + ["-t", self.parallel.time]
+            parcmd = parcmd + [self.tfilename]
+        else:
+            parcmd = super(JobSubmitter_qsub_ANL, self).AssembleCommandLine()
+        return parcmd
+
+###############################################################################
+# Class: ANLLauncher
+#
+# Purpose:    Custom launcher for ANL
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ANLLauncher(MainLauncher):
+    def __init__(self):
+        super(ANLLauncher, self).__init__()
+        self.eureka = -1
+
+    def IsRunningOnEureka(self):
+        if self.eureka == -1:
+            self.eureka = 0
+            if self.parallelArgs.parallel and \
+               self.generalArgs.exe_name == "engine" and \
+               self.hostname() in ("eureka", "alcf", "login1"):
+                self.eureka = 1
+        return self.eureka
+
+    def Customize(self):
+        # ----
+        # Eureka @ Argonne
+        # ----
+        if self.IsRunningOnEureka():
+            if self.domainname() == "gadzooks.alcf.anl.gov":
+                 self.generalArgs.host = "login1-mgmt.gadzooks"
+            else:
+                if domain != "mcs.anl.gov":
+                    self.generalArgs.host = "login1-mgmt.eureka"
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_ANL(self)
+        return super(ANLLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return ANLLauncher()
