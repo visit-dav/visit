@@ -1,0 +1,59 @@
+###############################################################################
+# Class: JobSubmitter_qsub_LLNL
+#
+# Purpose:    Custom "qsub" job submitter for LLNL.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
+        self.usettc = self.sectorname() == "inca"
+        self.useppn = self.sectorname() == "graph"
+
+
+###############################################################################
+# Class: LLNLLauncher
+#
+# Purpose:    Custom launcher for LLNL
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class LLNLLauncher(MainLauncher):
+    def __init__(self):
+        super(LLNLLauncher, self).__init__()
+
+    def DetermineArchitecture(self):
+        arches = super(LLNLLauncher, self).DetermineArchitecture()
+        if self.sectorname() == "gremlin":
+            a2 = []
+            for a in arches:
+                if a == "linux-x86_64":
+                    a2 = a2 + ["linux-x86_64-chaos4"]
+                else:
+                    a2 = a2 + [a]
+            arches = a2
+        return arches
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_LLNL(self)
+        return super(LLNLLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return LLNLLauncher()

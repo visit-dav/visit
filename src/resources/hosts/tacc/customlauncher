@@ -1,0 +1,200 @@
+###############################################################################
+# Class: JobSubmitter_ibrun_TACC
+#
+# Purpose:    Custom "ibrun" job submitter for TACC.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_ibrun_TACC(JobSubmitter_ibrun):
+    def __init__(self, launcher):
+        super(JobSubmitter_ibrun_TACC, self).__init__(launcher)
+
+    def Executable(self):
+        if self.launcher.hostname() == "visbig":
+            return ["ibrun"]
+        return ["ibrun", "tacc_affinity"]
+
+###############################################################################
+# Class: JobSubmitter_qsub_TACC
+#
+# Purpose:    Custom "qsub" job submitter for TACC.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_TACC(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_TACC, self).__init__(launcher)
+        self.qsub = ""
+
+    def Executable(self):
+        if self.IsRunningOnRanger():
+            if self.qsub == "":
+                # full path to qsub hack until TACC non-interactive shells work correctly
+                tqsubname = self.CreateFilename("tacc_qsub")
+                try:
+                    tqsub = open(tqsubname, "wt")
+                    tqsub.write("#!/bin/bash -l\n")
+                    tqsub.write("qsub \$@\n")
+                    tqsub.close()
+                    os.chmod(tqsubname, 0755)
+                except OSError as (errno, strerror):
+                    print >> sys.stderr, "Could not create temporary qsub (%s)." % tqsubname
+                    sys.exit(1)
+
+                if plauncher == "qsub":
+                    self.qsub = tqsubname
+                else:
+                    self.qsub = "qsub"
+        else:
+            self.qsub = "qsub"
+        return [self.qsub]
+
+    def CreateFilename(self, root):
+        filename = super(JobSubmitter_qsub_TACC, self).CreateFilename(root)
+        return string.replace(filename, ":", ".")
+
+    def TFileLoadModules(self, tfile):
+        if self.IsRunningOnRanger():
+            # put some SGE opts in the script header, since command-line opts fail
+            tfile.write("#\$ -V\n")  # inherit shell env
+            if self.parallel.time != None:
+                tfile.write("#\$ -l h_rt=%s\n" % self.parallel.time)
+            else:
+                # if no time set, put in something reasonable, since job won't 
+                # launch without it
+                if self.parallel.partition == "development":
+                    tfile.write("#\$ -l h_rt=0:10:0\n")
+                else:
+                    tfile.write("#\$ -l h_rt=1:0:0\n")
+
+            # get correct module environmnet for Ranger/Spur
+            tfile.write("module purge\n")
+            tfile.write("module load TACC\n")
+            tfile.write("module delete pgi mvapich CTSSV4\n")
+            tfile.write("module load intel mvapich\n")
+            if self.IsRunningOnSpur():
+                # Spur has GPUs and a usable GL stack
+                tfile.write("module load vis visit\n")
+            else:
+                # Ranger has no GPUs or GL stack, so load Mesa
+                tfile.write("module load vis mesa visit\n")
+
+            # cache the binary on each node so lustre doesn't get hammered for large jobs
+            pwd = os.path.abspath(os.curdir)
+            tfile.write("cache_binary %s %s/engine_par\n" % (pwd, self.launcher.visitbindir))
+
+    def AddEnvironment(self):
+        args = []
+        if not self.IsRunningOnRanger():
+            args = super(JobSubmitter_qsub_TACC, self).AddEnvironment()
+        return args
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        thread_factor = 16
+        if self.IsRunningOnLonghorn():
+            thread_factor = 8
+        if self.IsRunningOnLonestar():
+            thread_factor = 12
+        if self.parallel.nn != None:
+            tacc_way = ppn
+            tacc_procs = str(thread_factor * int(nnodes))
+        else:
+            # if nodes not set explicitly assume 1way
+            tacc_way = "1"
+            tacc_procs = str(thread_factor * int(procs))
+        args = ["-pe", "%sway" % tacc_way, tacc_procs] 
+        return args
+
+    def AdditionalSetup(self):
+        if self.IsRunningOnLonghorn():
+            return ["-P", "vis"]
+        return []
+
+###############################################################################
+# Class: TACCLauncher
+#
+# Purpose:    Custom launcher for TACC
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class TACCLauncher(MainLauncher):
+    def __init__(self):
+        super(TACCLauncher, self).__init__()
+        self.ranger = 1
+        self.spur = 0
+        self.longhorn = 0
+        self.linestar = 0
+
+    def IsRunningOnRanger(self):
+        return self.ranger
+
+    def IsRunningOnSpur(self):
+        return self.spur
+
+    def IsRunningOnLonghorn(self):
+        return self.longhorn
+
+    def IsRunningOnLonestar(self):
+        return self.lonestar
+
+    def Customize(self):
+        # ----
+        # ranger/spur @ TACC
+        # ----
+        if self.parallelArgs.parallel and  \
+           self.generalArgs.exe_name == "engine" and \
+           "tacc" in self.hostname() or "longhorn" in self.hostname():
+            # determine machine by queue, since all jobs submit from spur
+            if "vis" in self.parallelArgs.partition:
+                self.spur = 1
+            # determine machine by queue, since all jobs submit from spur
+            if "longhorn" in self.hostname():
+                self.longhorn = 1
+            # determine machine by queue, since all jobs submit from spur
+            if "ls4" in self.hostname():
+                self.lonestar = 1
+            msg = """
+
+Attempting to launch parallel engine at TACC.
+
+For more information about TACC resources and configurations, see:";
+\thttp://www.tacc.utexas.edu/user-services/user-guides
+"""
+            self.message(msg)
+
+            # if launching from spur visnode to ranger, prepend 'i' to visnode hostname to get IB interface
+            remotehost = self.generalArgs.host
+            if remotehost[0] != 'i' and \
+               remotehost[:3] == "vis" and ".ranger" in remotehost: # from perl: $remotehost =~ /vis([0-9]|big).ranger/)
+                  remotehost = "i" + remotehost
+            self.generalArgs.host = remotehost
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch == "ibrun":
+            return JobSubmitter_ibrun_TACC(self)
+        elif launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_TACC(self)
+        return super(TACCLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return TACCLauncher()

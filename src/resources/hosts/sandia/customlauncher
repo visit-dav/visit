@@ -1,0 +1,98 @@
+###############################################################################
+# Class: JobSubmitter_sbatch_Sandia
+#
+# Purpose:    Custom "sbatch" job submitter for Sandia.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_sbatch_Sandia(JobSubmitter_sbatch):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch_Sandia, self).__init__(launcher)
+
+    def PPNArguments(self, ppn):
+        if self.launcher.IsRunningOnGlory():
+            return ["--np", self.parallel.np, "/apps/contrib/numa_wrapper-16ppn"]
+        return super(JobSubmitter_sbatch_Sandia, self).PPNArguments(ppn)
+
+    def TFileLoadModules(self, tfile):
+        if self.launcher.IsRunningOnGlory():
+            tfile.write("source /usr/share/modules/init/bash\n")
+            tfile.write("module purge\n")
+            tfile.write("module load mpi/openmpi-1.4.2_gcc-4.3.4\n")
+            tfile.write("module load compilers/gcc-4.3.4\n")
+        elif self.launcher.IsRunningOnRedsky():
+            tfile.write("source /usr/share/Modules/init/bash\n")
+            tfile.write("module purge\n")
+            tfile.write("module load mpi/openmpi-1.4.3_oobpr_intel-11.1-f064-c064\n")
+
+###############################################################################
+# Class: SandiaLauncher
+#
+# Purpose:    Custom launcher for Sandia
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class SandiaLauncher(MainLauncher):
+    def __init__(self):
+        super(SandiaLauncher, self).__init__()
+
+    def IsRunningOnRedrose(self):
+        return self.hostname() in ("redrose1.sandia.gov", "redrose2.sandia.gov")
+
+    def IsRunningOnGlory(self):
+        return self.sectorname() == "glory"
+
+    def IsRunningOnRedsky(self):
+        return self.sectorname() == "redsky-login"
+
+    def Customize(self):
+        # ----
+        #  Sandia's redrose machine:
+        #
+        #  If we're on Sandia's redrose machine, then we need to make sure that 
+        #  the correct the library path is correct.
+        # ----
+        if self.IsRunningOnRedrose():
+            paths = ["/apps/x86_64/mpi/openmpi/intel-9.1/openmpi-1.1.2-ofed/lib",\
+                     "/projects/global/x86_64/compilers/intel/intel-9.1-cce-045/lib",\
+                     "/apps/torque/lib"]
+            SETENV("LD_LIBRARY_PATH", self.launcher.joinpaths(paths))
+
+        # ----
+        # Glory @ Sandia
+        # ----
+        if self.IsRunningOnGlory():
+            prefix = ["/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64"]
+            ldpath = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(prefix + ldpath))
+
+        # ----
+        # Redsky @ Sandia
+        # ----
+        if self.IsRunningOnRedsky():
+            prefix = ["/apps/x86_64/compilers/gcc/gcc-4.3.4/lib64"]
+            ldpath = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(prefix + ldpath))
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:6] == "sbatch":
+            return JobSubmitter_sbatch_Sandia(self)
+        return super(SandiaLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return SandiaLauncher()
