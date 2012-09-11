@@ -495,8 +495,7 @@ QsortiCoordSorter(const void *arg1, const void *arg2)
 //    Paul D. Stewart Mon Jul 16 2012
 //     Added logicalDimension and condensed things a bit.
 //   
-//    Paul D Stesart Jul 26, 2012
-//     Changed group origin to 0
+//    
 // ****************************************************************************
 
 void
@@ -532,7 +531,6 @@ avtBATLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             groupIds[i] = blocks[i].procnum;
             pieceNames[i] = tmpName;
         }
-
     }
     else
     {
@@ -669,6 +667,7 @@ avtBATLFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     groupIds[i] = blocks[i].level;
                     pieceNames[i] = tmpName;
                 }
+
             }
 
             mortMesh->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1999,7 +1998,7 @@ void avtBATLFileFormat::ReadRefinementLevels()
     {
         for (int b=0; b<numBlocks; b++)
         {
-            blocks[b].level = 1;
+            blocks[b].level = 0;
         }
     }
     else
@@ -2685,6 +2684,8 @@ void avtBATLFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 //    Paul D Stewart, Jul 26, 2012
 //     Cleaned up to reduce redundant code
 //
+//   Paul D Stewart, Aug 16, 2012
+//    Removed a -1 that didn't belong
 // ****************************************************************************
 
 void
@@ -2740,7 +2741,7 @@ avtBATLFileFormat::BuildDomainNesting()
             logExts[3] = blocks[i].maxGlobalLogicalExtents[1];
             logExts[4] = blocks[i].minGlobalLogicalExtents[2];
             logExts[5] = blocks[i].maxGlobalLogicalExtents[2];
-            rdb->SetIndicesForAMRPatch(i, blocks[i].level - 1, logExts);
+            rdb->SetIndicesForAMRPatch(i, blocks[i].level, logExts);
         }
  //        this causes the engine to think it is out of memory when it is not on some datasets
  //        rdb->CalculateBoundaries();
