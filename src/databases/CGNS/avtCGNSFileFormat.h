@@ -155,7 +155,7 @@ protected:
     vtkDataSet *           GetCurvilinearMesh(int, int, int, const char *,
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,
-                                               const cgsize_t *, int);
+                                               const cgsize_t *, int, int);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);
