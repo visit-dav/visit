@@ -1,0 +1,60 @@
+================================================================================
+CASE: sbatch 
+
+INPUT: visit -engine -norun engine_par -l sbatch -np 8 -p pbatch -b bdivp -nn 1 -host 127.0.0.1 -port 5600
+
+RESULTS:
+sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+$VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+
+================================================================================
+CASE: sbatch -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l sbatch -np 8 -p pbatch -b bdivp -nn 1 -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+totalview $VISIT_EXE_DIR/engine_par -a -dograb -dv -noloopback -host 127.0.0.1 -port 5600
+
+
+================================================================================
+CASE: sbatch -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l sbatch -np 8 -p pbatch -b bdivp -nn 1 -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+
+================================================================================
+CASE: sbatch -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l sbatch -np 8 -p pbatch -b bdivp -nn 1 -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+

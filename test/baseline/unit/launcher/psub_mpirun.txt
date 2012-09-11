@@ -1,0 +1,32 @@
+================================================================================
+CASE: psub/mpirun 
+
+INPUT: visit -engine -norun engine_par -l psub/mpirun -np 8 -nn 1 -n JOB_NAME -p pbatch -b bdivp -t 30:00 -expedite -slpre "echo 'pre command'" -slpost "echo 'post command'" -host 127.0.0.1 -port 5600
+
+RESULTS:
+psub -x -g 8 -np 8 -ln 1 -r JOB_NAME -c pbatch -b bdivp -tM 30:00 -expedite -i "cd $VISIT_TEST_DIR/_run/_unit_launcher ; limit coredumpsize 0 ; setenv LIBPATH $VISITDIR/lib ; setenv LD_LIBRARY_PATH $VISITDIR/lib ;echo 'pre command' ;mpirun -np 8 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 ; echo 'post command' ;"
+
+================================================================================
+CASE: psub/mpirun -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l psub/mpirun -np 8 -nn 1 -n JOB_NAME -p pbatch -b bdivp -t 30:00 -expedite -slpre "echo 'pre command'" -slpost "echo 'post command'" -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+psub -x -g 8 -np 8 -ln 1 -r JOB_NAME -c pbatch -b bdivp -tM 30:00 -expedite -i "cd $VISIT_TEST_DIR/_run/_unit_launcher ; limit coredumpsize 0 ; setenv LIBPATH $VISITDIR/lib ; setenv LD_LIBRARY_PATH $VISITDIR/lib ;echo 'pre command' ;totalview mpirun -a -dograb -np 8 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 ; echo 'post command' ;"
+
+================================================================================
+CASE: psub/mpirun -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l psub/mpirun -np 8 -nn 1 -n JOB_NAME -p pbatch -b bdivp -t 30:00 -expedite -slpre "echo 'pre command'" -slpost "echo 'post command'" -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+psub -x -g 8 -np 8 -ln 1 -r JOB_NAME -c pbatch -b bdivp -tM 30:00 -expedite -i "cd $VISIT_TEST_DIR/_run/_unit_launcher ; limit coredumpsize 0 ; setenv LIBPATH $VISITDIR/lib ; setenv LD_LIBRARY_PATH $VISITDIR/lib ;echo 'pre command' ;mpirun -np 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 ; echo 'post command' ;"
+
+================================================================================
+CASE: psub/mpirun -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l psub/mpirun -np 8 -nn 1 -n JOB_NAME -p pbatch -b bdivp -t 30:00 -expedite -slpre "echo 'pre command'" -slpost "echo 'post command'" -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+psub -x -g 8 -np 8 -ln 1 -r JOB_NAME -c pbatch -b bdivp -tM 30:00 -expedite -i "cd $VISIT_TEST_DIR/_run/_unit_launcher ; limit coredumpsize 0 ; setenv LIBPATH $VISITDIR/lib ; setenv LD_LIBRARY_PATH $VISITDIR/lib ;echo 'pre command' ;mpirun -np 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 ; echo 'post command' ;"
+

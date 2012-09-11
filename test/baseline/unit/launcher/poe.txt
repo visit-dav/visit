@@ -1,0 +1,32 @@
+================================================================================
+CASE: poe 
+
+INPUT: visit -engine -norun engine_par -l poe -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600
+
+RESULTS:
+$VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 -procs 8 -nodes 1 -rmpool pbatch
+
+================================================================================
+CASE: poe -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l poe -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+totalview $VISIT_EXE_DIR/engine_par -a -dograb -dv -noloopback -host 127.0.0.1 -port 5600 -procs 8 -nodes 1 -rmpool pbatch
+
+================================================================================
+CASE: poe -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l poe -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 -procs 8 -nodes 1 -rmpool pbatch
+
+================================================================================
+CASE: poe -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l poe -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600 -procs 8 -nodes 1 -rmpool pbatch
+

@@ -1,0 +1,32 @@
+================================================================================
+CASE: ibrun 
+
+INPUT: visit -engine -norun engine_par -l ibrun -np 8 -host 127.0.0.1 -port 5600
+
+RESULTS:
+ibrun $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: ibrun -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l ibrun -np 8 -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+totalview ibrun -a -dograb $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: ibrun -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l ibrun -np 8 -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+ibrun valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: ibrun -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l ibrun -np 8 -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+ibrun strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
