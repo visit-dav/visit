@@ -1824,6 +1824,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                 char sectionname[33];
                 ElementType_t et = ElementTypeNull;
                 cgsize_t start = 1, end = 1;
+                cgsize_t elementSizeInterior = 0;
                 int bound = 0, parent_flag = 0;
                 if(cg_section_read(GetFileHandle(), base, zone, sec, sectionname, &et,
                     &start, &end, &bound, &parent_flag) != CG_OK)
@@ -1837,6 +1838,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                     debug4 << mName << "parent_flag = " << parent_flag << endl;
                     continue;
                 }
+                elementSizeInterior = (end-start+1)-bound;
 
                 cgsize_t eDataSize = 0;
                 if(cg_ElementDataSize(GetFileHandle(), base, zone, sec, &eDataSize) != CG_OK)
@@ -1865,6 +1867,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                 debug4 << "section " << sec << ": elementType=";
                 PrintElementType(et);
                 debug4 << " start=" << start << " end=" << end << " bound=" << bound
+                       << " interior elements=" << elementSizeInterior
                        << " parent_flag=" << parent_flag << endl;
 
                 //
@@ -1872,7 +1875,7 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                 //
                 vtkIdType verts[27];
                 const cgsize_t *elem = elements;
-                for(cgsize_t icell = 0; icell < (end-start+1); ++icell)
+                for(cgsize_t icell = 0; icell < elementSizeInterior; ++icell)
                 {
                     // If we're reading mixed elements then the element type 
                     // comes first.
