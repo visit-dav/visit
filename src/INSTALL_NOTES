@@ -98,3 +98,5 @@ Unix and MacOS X (gzipped tar file):
 
 3.  If you are installing VisIt on a Linux system with an NVidia graphics
     card, we recommend using the latest driver.
+
+MCM: Adding a line to test a commit. Will remove momentarily
