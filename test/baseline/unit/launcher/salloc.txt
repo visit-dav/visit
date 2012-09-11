@@ -1,0 +1,32 @@
+================================================================================
+CASE: salloc 
+
+INPUT: visit -engine -norun engine_par -l salloc -np 8 -p pbatch -t 30:00 -nn 1 -host 127.0.0.1 -port 5600
+
+RESULTS:
+salloc -p pbatch -t 30:00 -N 1 -n 8 --ntasks-per-node=8 srun -N1 -n1 --preserve-env --mpi=none mpirun --npernode 8 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: salloc -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l salloc -np 8 -p pbatch -t 30:00 -nn 1 -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+totalview salloc -a -dograb -p pbatch -t 30:00 -N 1 -n 8 --ntasks-per-node=8 srun -N1 -n1 --preserve-env --mpi=none mpirun --npernode 8 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: salloc -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l salloc -np 8 -p pbatch -t 30:00 -nn 1 -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+salloc -p pbatch -t 30:00 -N 1 -n 8 --ntasks-per-node=8 srun -N1 -n1 --preserve-env --mpi=none mpirun --npernode 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: salloc -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l salloc -np 8 -p pbatch -t 30:00 -nn 1 -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+salloc -p pbatch -t 30:00 -N 1 -n 8 --ntasks-per-node=8 srun -N1 -n1 --preserve-env --mpi=none mpirun --npernode 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+

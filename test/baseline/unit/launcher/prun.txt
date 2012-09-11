@@ -1,0 +1,32 @@
+================================================================================
+CASE: prun 
+
+INPUT: visit -engine -norun engine_par -l prun -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600
+
+RESULTS:
+prun -n 8 -N 1 -p pbatch $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: prun -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l prun -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+totalview prun -a -dograb -n 8 -N 1 -p pbatch $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: prun -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l prun -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+prun -n 8 -N 1 -p pbatch valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+
+================================================================================
+CASE: prun -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l prun -np 8 -nn 1 -p pbatch -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+prun -n 8 -N 1 -p pbatch strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+

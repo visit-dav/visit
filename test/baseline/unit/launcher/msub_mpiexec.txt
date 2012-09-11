@@ -1,0 +1,76 @@
+================================================================================
+CASE: msub/mpiexec 
+
+INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600
+
+RESULTS:
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/local/lib:/usr/local/lib,VISITHOME=$VISITDIR/,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+startx
+echo 'slprecommand'
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+echo 'slpostcommand'
+stopx
+
+
+================================================================================
+CASE: msub/mpiexec -totalview engine_par
+
+INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -totalview engine_par
+
+RESULTS:
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/local/lib:/usr/local/lib,VISITHOME=$VISITDIR/,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+startx
+echo 'slprecommand'
+totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+echo 'slpostcommand'
+stopx
+
+
+================================================================================
+CASE: msub/mpiexec -valgrind engine_par
+
+INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -valgrind engine_par
+
+RESULTS:
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/local/lib:/usr/local/lib,VISITHOME=$VISITDIR/,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+startx
+echo 'slprecommand'
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+echo 'slpostcommand'
+stopx
+
+
+================================================================================
+CASE: msub/mpiexec -strace engine_par
+
+INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -strace engine_par
+
+RESULTS:
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/local/lib:/usr/local/lib,VISITHOME=$VISITDIR/,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+
+Contents of $LAUNCHSCRIPT:
+#!/bin/sh
+cd $VISIT_TEST_DIR/_run/_unit_launcher
+ulimit -c 0
+startx
+echo 'slprecommand'
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+echo 'slpostcommand'
+stopx
+
+
