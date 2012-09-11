@@ -3,6 +3,12 @@
 # after the commit is accepted/completed/finalized.  This would be a good place
 # to inform a buildbot to start an automated build, for example.
 #
+# Modifications:
+#   Mark C. Miller, Mon Sep 10 19:04:39 PDT 2012
+#   Commented out ciabot hook due to unreliability of connectivity to ciabot
+#   server as well as comments in this thread,
+#   http://osgeo-org.1560.n6.nabble.com/SVN-Commit-Slowness-td4997449.html
+#   indicating its an svn commit peformance issue.
 
 REPOS="$1"
 REV="$2"
@@ -33,7 +39,7 @@ function run_sh()
    fi
 }
 
-env -i ${REPOS}/hooks/ciabot_svn.py ${REPOS} ${REV} &
+#env -i ${REPOS}/hooks/ciabot_svn.py ${REPOS} ${REV} &
 
 # handle automatic installation of updated/new hooks. Should probably
 # remain first.
