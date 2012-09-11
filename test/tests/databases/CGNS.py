@@ -25,6 +25,9 @@
 #    Cyrus Harrison, Wed Aug 25 14:28:14 PDT 2010
 #    Variable name change due to changes with SIL generation.
 #
+#    Brad Whitlock, Tue Sep 11 14:38:37 PDT 2012
+#    Test file that has boundaries.
+#
 # ----------------------------------------------------------------------------
 
 def test0(datapath):
@@ -296,6 +299,19 @@ def test2(datapath):
     Test("CGNS_2_05")
     DeleteAllPlots()
 
+def test3(datapath):
+    TestSection("File with boundaries")
+
+    OpenDatabase(pjoin(datapath,"with_boundary_faces.cgns"))
+    AddPlot("Pseudocolor", "Density")
+    DrawPlots()
+    ResetView()
+    v = GetView2D()          
+    v.fullFrameActivationMode = v.On
+    SetView2D(v)
+
+    Test("CGNS_3_00")
+    DeleteAllPlots()
 
 def main():
     # Draw antialiased lines
@@ -307,6 +323,7 @@ def main():
     test0(datapath)
     test1(datapath)
     test2(datapath)
+    test3(datapath)
 
 main()
 Exit()
