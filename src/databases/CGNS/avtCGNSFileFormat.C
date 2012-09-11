@@ -1459,7 +1459,7 @@ avtCGNSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
                 retval = GetCurvilinearMesh(timestate, base, zone, meshname, zsize, cell_dim, phys_dim);
                 break;
             case Unstructured:
-                retval = GetUnstructuredMesh(timestate, base, zone, meshname, zsize, phys_dim);
+                retval = GetUnstructuredMesh(timestate, base, zone, meshname, zsize, cell_dim, phys_dim);
                 break;
             }
         }
@@ -1767,7 +1767,7 @@ avtCGNSFileFormat::GetCurvilinearMesh(int timestate, int base, int zone, const c
 
 vtkDataSet *
 avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const char *meshname,
-    const cgsize_t *zsize, int phys_dim)
+    const cgsize_t *zsize, int cell_dim, int phys_dim)
 {
     const char *mName = "avtCGNSFileFormat::GetUnstructuredMesh: ";
     vtkDataSet *retval = 0;
@@ -1838,7 +1838,10 @@ avtCGNSFileFormat::GetUnstructuredMesh(int timestate, int base, int zone, const 
                     debug4 << mName << "parent_flag = " << parent_flag << endl;
                     continue;
                 }
-                elementSizeInterior = (end-start+1)-bound;
+                if(cell_dim == phys_dim)
+                    elementSizeInterior = (end-start+1)-bound;
+                else
+                    elementSizeInterior = (end-start+1);
 
                 cgsize_t eDataSize = 0;
                 if(cg_ElementDataSize(GetFileHandle(), base, zone, sec, &eDataSize) != CG_OK)
