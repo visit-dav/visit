@@ -29,7 +29,7 @@
 \hrule
 \includegraphics[width=4.8in]{images/teaser}\\[0.5cm]
 \hrule
-\textsc{\LARGE Version 2.3.0}\\[0.5cm]
+\textsc{\LARGE Version 2.5.2}\\[0.5cm]
 \hrule
 
 \date{}
@@ -46,132 +46,6 @@
 \input{intro.inc}
 \input{python.inc}
 \input{quickrecipes.inc}
-\chapter{Functions available before Launch()}
-\input{prelaunch_preamble.inc}
-
-\phantomsection
-\addcontentsline{toc}{subsection}{AddArgument}
-\noindent {\bf AddArgument}: add an argument to the viewer's command line argument list.\\[-3mm]
-
-\noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!AddArgument(argument)!\\ [-3mm]
-
-\noindent {\it Arguments:} \\ 
-\hangindent=\parindent 
-\begin{tabular}{lp{9cm}}
-\verb!argument! & A string object that is added to the viewer's command line argument list. \\
-\end{tabular} \\[-2mm]
-
-
-\noindent {\it Returns:} \\ 
-\hangindent=\parindent AddArgument does not return a value. \\[-3mm] 
-
-\noindent {\it Description:} \\ 
-\hangindent=\parindent The AddArgument function is used to add extra command line arguments to VisIt's viewer. This is only useful when VisIt's Python interface is imported into a stand$-$alone Python interpreter because the AddArgument function must be called before the viewer is launched. The AddArgument function has no effect when used in VisIt's cli program because the viewer is automatically launched before any commands are processed. \\[-3mm] 
-
-\noindent {\it Example:}\\[-6mm]
-\begin{verbatim}import visit
-visit.AddArgument("-nowin") # Add the -nowin argument to the viewer.
-\end{verbatim}
-\newpage
-
-
-\phantomsection
-\addcontentsline{toc}{subsection}{GetDebugLevel}
-\noindent {\bf GetDebugLevel}: set or Get the VisIt module's debug level.\\[-3mm]
-
-\noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!GetDebugLevel() -> integer!\\ 
-\verb!SetDebugLevel(level)!\\ [-3mm]
-
-\noindent {\it Arguments:} \\ 
-\hangindent=\parindent 
-\begin{tabular}{lp{9cm}}
-\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
-\end{tabular} \\[-2mm]
-
-
-\noindent {\it Returns:} \\ 
-\hangindent=\parindent The GetDebugLevel function returns the debug level of the VisIt module. \\[-3mm] 
-
-\noindent {\it Description:} \\ 
-\hangindent=\parindent The GetDebugLevel and SetDebugLevel functions are used when debugging VisIt Python scripts. The SetDebugLevel function sets the debug level for VisIt's viewer thus it must be called before a Launch method. The debug level determines how much detail is written to VisIt's execution logs when it executes. The GetDebugLevel function can be used in Python scripts to alter the behavior of the script. For instance, the debug level can be used to selectively print values to the console. \\[-3mm] 
-
-\noindent {\it Example:}\\[-6mm]
-\begin{verbatim}% visit -cli -debug 2
-print "VisIt's debug level is: %d" % GetDebugLevel()
-\end{verbatim}
-\newpage
-
-
-\phantomsection
-\addcontentsline{toc}{subsection}{Launch}
-\noindent {\bf Launch}: launches VisIt's viewer\\[-3mm]
-
-\noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!Launch() -> integer!\\ 
-\verb!Launch(program) -> integer!\\ 
-\verb!LaunchNowin() -> integer!\\ 
-\verb!LaunchNowin(program) -> integer!\\ [-3mm]
-
-\noindent {\it Arguments:} \\ 
-\hangindent=\parindent 
-\begin{tabular}{lp{9cm}}
-\verb!program! & The complete path to the top level 'visit' script. \\
-\end{tabular} \\[-2mm]
-
-
-\noindent {\it Returns:} \\ 
-\hangindent=\parindent The Launch functions return 1 for success and 0 for failure \\[-3mm] 
-
-\noindent {\it Description:} \\ 
-\hangindent=\parindent The Launch function is used to launch VisIt's viewer when the VisIt module is imported into a stand$-$alone Python interpreter. The Launch function has no effect when a viewer already exists. The difference between Launch and LaunchNowin is that LaunchNowin prevents the viewer from ever creating onscreen visualization windows. The LaunchNowin function is primarily used in Python scripts that want to generate visualizations using VisIt without the use of a display such as when generating movies. \\[-3mm] 
-
-\noindent {\it Example 1:}\\[-6mm]
-\begin{verbatim}import visit
-visit.AddArgument("-geometry")
-visit.AddArgument("1024x1024")
-visit.LaunchNowin()
-\end{verbatim}
-\noindent {\it Example 2:}\\[-6mm]
-\begin{verbatim}import visit
-visit.AddArgument("-nowin")
-visit.Launch()
-\end{verbatim}
-\newpage
-
-
-\phantomsection
-\addcontentsline{toc}{subsection}{SetDebugLevel}
-\noindent {\bf SetDebugLevel}: set or Get the VisIt module's debug level.\\[-3mm]
-
-\noindent {\it Synopsis:} \\ 
-\hangindent=\parindent 
-\verb!GetDebugLevel() -> integer!\\ 
-\verb!SetDebugLevel(level)!\\ [-3mm]
-
-\noindent {\it Arguments:} \\ 
-\hangindent=\parindent 
-\begin{tabular}{lp{9cm}}
-\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
-\end{tabular} \\[-2mm]
-
-
-\noindent {\it Returns:} \\ 
-\hangindent=\parindent The GetDebugLevel function returns the debug level of the VisIt module. \\[-3mm] 
-
-\noindent {\it Description:} \\ 
-\hangindent=\parindent The GetDebugLevel and SetDebugLevel functions are used when debugging VisIt Python scripts. The SetDebugLevel function sets the debug level for VisIt's viewer thus it must be called before a Launch method. The debug level determines how much detail is written to VisIt's execution logs when it executes. The GetDebugLevel function can be used in Python scripts to alter the behavior of the script. For instance, the debug level can be used to selectively print values to the console. \\[-3mm] 
-
-\noindent {\it Example:}\\[-6mm]
-\begin{verbatim}% visit -cli -debug 2
-print "VisIt's debug level is: %d" % GetDebugLevel()
-\end{verbatim}
-\newpage
-
 \chapter{Functions}
 \input{functions_preamble.inc}
 
@@ -211,6 +85,55 @@ ActivateDatabase(dbs[0])
 AddPlot("Mesh", "quadmesh")
 DrawPlots()
 \end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{AddArgument}
+\noindent {\bf AddArgument}: add an argument to the viewer's command line argument list.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!AddArgument(argument)!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!argument! & A string object that is added to the viewer's command line argument list. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent AddArgument does not return a value. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The AddArgument function is used to add extra command line arguments to VisIt's viewer. This is only useful when VisIt's Python interface is imported into a stand$-$alone Python interpreter because the AddArgument function must be called before the viewer is launched. The AddArgument function has no effect when used in VisIt's cli program because the viewer is automatically launched before any commands are processed. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}import visit
+visit.AddArgument("-nowin") # Add the -nowin argument to the viewer.
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{AddMachineProfile}
+\noindent {\bf AddMachineProfile}: <description>\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!AddMachineProfile(MachineProfile) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{ll}
+\verb!MachineProfile! &  \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent Sets the input machine profile in the HostProfileList, replaces if one already exists Otherwise adds to the list \\[-3mm] 
+
 \newpage
 
 
@@ -950,6 +873,9 @@ i.numSamples = (25, 25)
 i.reductionOperator = i.Average
 i.varForReductionOperator = "v"
 ConstructDataBinning(i)
+# Example of binning using spatial coordinates
+i.varnames = ("X", "u") # X is added as a placeholder to maintain indexing
+i.binType = (1, 0) # 1 = X, 2 = Y, 3 = Z, 0 = variable
 \end{verbatim}
 \newpage
 
@@ -2537,6 +2463,35 @@ print "Number of time states: %d" % GetDatabaseNStates()
 
 
 \phantomsection
+\addcontentsline{toc}{subsection}{GetDebugLevel}
+\noindent {\bf GetDebugLevel}: set or Get the VisIt module's debug level.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetDebugLevel() -> integer!\\ 
+\verb!SetDebugLevel(level)!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The GetDebugLevel function returns the debug level of the VisIt module. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The GetDebugLevel and SetDebugLevel functions are used when debugging VisIt Python scripts. The SetDebugLevel function sets the debug level for VisIt's viewer thus it must be called before a Launch method. The debug level determines how much detail is written to VisIt's execution logs when it executes. The GetDebugLevel function can be used in Python scripts to alter the behavior of the script. For instance, the debug level can be used to selectively print values to the console. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli -debug 2
+print "VisIt's debug level is: %d" % GetDebugLevel()
+\end{verbatim}
+\newpage
+
+
+\phantomsection
 \addcontentsline{toc}{subsection}{GetDefaultFileOpenOptions}
 \noindent {\bf GetDefaultFileOpenOptions}: returns the current default options used when opening files for a\\[-3mm]
 
@@ -2840,6 +2795,47 @@ print "My username: %s" % GetLocalUserName()
 
 
 \phantomsection
+\addcontentsline{toc}{subsection}{GetMachineProfile}
+\noindent {\bf GetMachineProfile}: <description>\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetMachineProfile(hostname) -> MachineProfile!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{ll}
+\verb!hostname! &  \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent MachineProfile for hostname \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent Gets the MachineProfile for a given hostname \\[-3mm] 
+
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{GetMachineProfileNames}
+\noindent {\bf GetMachineProfileNames}: <description>\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetMachineProfileNames() -> [hostname1, hostname2, ...]!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent List of MachineProfile hostnames \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent Returns a list of hostnames that can be used to get a specific MachineProfile \\[-3mm] 
+
+\newpage
+
+
+\phantomsection
 \addcontentsline{toc}{subsection}{GetMaterialAttributes}
 \noindent {\bf GetMaterialAttributes}: returns a MaterialAttributes object containing VisIt's current material\\[-3mm]
 
@@ -3058,13 +3054,14 @@ SetPickAttributes(p)
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!GetPickOutput() -> string!\\ [-3mm]
+\verb!GetPickOutput() -> string!\\ 
+\verb!GetPickOutputObject() -> dictonary!\\ [-3mm]
 
 \noindent {\it Returns:} \\ 
-\hangindent=\parindent Returns a string containing the output from the last pick. \\[-3mm] 
+\hangindent=\parindent GetPickOutput returns a string containing the output from the last pick. GetPickOutputObject returns a dictionary produced by the last pick. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The GetPickOutput returns a string object that contains the output from the last pick. \\[-3mm] 
+\hangindent=\parindent The GetPickOutput returns a string object that contains the output from the last pick. GetPickOutputObject returns a dictionary object containing output from the  last pick \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -3074,6 +3071,37 @@ DrawPlots()
 ZonePick((0.4, 0.6), ("default", "u", "v"))
 s = GetPickOutput()
 print s
+o = GetPickOutputObject()
+print o
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{GetPickOutputObject}
+\noindent {\bf GetPickOutputObject}: returns a string containing the output from the last pick.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetPickOutput() -> string!\\ 
+\verb!GetPickOutputObject() -> dictonary!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent GetPickOutput returns a string containing the output from the last pick. GetPickOutputObject returns a dictionary produced by the last pick. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The GetPickOutput returns a string object that contains the output from the last pick. GetPickOutputObject returns a dictionary object containing output from the  last pick \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+ZonePick((0.4, 0.6), ("default", "u", "v"))
+s = GetPickOutput()
+print s
+o = GetPickOutputObject()
+print o
 \end{verbatim}
 \newpage
 
@@ -3354,10 +3382,37 @@ qot.createWindow,q.windowId = 0, 4
 SetQueryOverTimeAttributes(qot)
 QueryOverTime("Min")
 # Make queries over time only use half of the number of time states.
-qot.endTimeFlag,qot.endTime = 1, GetDatabaseNStates() / 2
-SetQueryOverTimeAttributes(qot)
-QueryOverTime("Min")
+endTime = GetDatabaseNStates() / 2
+QueryOverTime("Min", end_time=endTime)
 ResetView()
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{GetQueryParameters}
+\noindent {\bf GetQueryParameters}: returns information about the default parameters used by the named query.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetQueryParameters(name) -> python dictonary!\\ [-3mm]
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent A python dictionary. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The GetQueryParameters function returns a Python dictionary containing the default parameters for the named query, or None if the query does not accept additional parameters.  The returned dictionary (if any) can then be modified if necessary and passed back as an argument to the Query function. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli
+minMaxInput = GetQueryParameters("MinMax")
+minMaxInput["use_actual_data"] = 1
+Query("MinMax", minMaxInput)
+xrayInput = GetQueryParameters("XRay Image")
+xrayInput["origin"]=(0.5, 2.5, 0.)
+xrayInput["image_size"]=(300,300)
+xrayInput["vars"]=("p", "d")
+Query("XRay Image", xrayInput)
 \end{verbatim}
 \newpage
 
@@ -3871,6 +3926,44 @@ OpenDatabase("/usr/gapps/visit/data/globe.silo")
 AddPlot("Volume", "u")
 DrawPlots()
 InvertBackgroundColor()
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{Launch}
+\noindent {\bf Launch}: launches VisIt's viewer\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!Launch() -> integer!\\ 
+\verb!Launch(program) -> integer!\\ 
+\verb!LaunchNowin() -> integer!\\ 
+\verb!LaunchNowin(program) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!program! & The complete path to the top level 'visit' script. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The Launch functions return 1 for success and 0 for failure \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The Launch function is used to launch VisIt's viewer when the VisIt module is imported into a stand$-$alone Python interpreter. The Launch function has no effect when a viewer already exists. The difference between Launch and LaunchNowin is that LaunchNowin prevents the viewer from ever creating onscreen visualization windows. The LaunchNowin function is primarily used in Python scripts that want to generate visualizations using VisIt without the use of a display such as when generating movies. \\[-3mm] 
+
+\noindent {\it Example 1:}\\[-6mm]
+\begin{verbatim}import visit
+visit.AddArgument("-geometry")
+visit.AddArgument("1024x1024")
+visit.LaunchNowin()
+\end{verbatim}
+\noindent {\it Example 2:}\\[-6mm]
+\begin{verbatim}import visit
+visit.AddArgument("-nowin")
+visit.Launch()
 \end{verbatim}
 \newpage
 
@@ -4556,13 +4649,15 @@ print "The names of the plugins are: ", PlotPlugins()
 \verb!OpenComputeEngine() -> integer!\\ 
 \verb!OpenComputeEngine(hostName) -> integer!\\ 
 \verb!OpenComputeEngine(hostName, simulation) -> integer!\\ 
-\verb!OpenComputeEngine(hostName, args) -> integer!\\ [-3mm]
+\verb!OpenComputeEngine(hostName, args) -> integer!\\ 
+\verb!OpenComputeEngine(MachineProfile) -> integer!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!hostName! & The name of the computer on which to start the engine. \\
 \verb!args! & Optional tuple of command line arguments for the engine. \\
+\verb!Alternative arguments:! & MachineProfile object to load with OpenComputeEngine call \\
 \end{tabular} \\[-2mm]
 
 
@@ -4628,13 +4723,15 @@ OpenDatabase("mcr:/usr/gapps/visit/data/multi_ucd3d.silo",0,"Silo_1.0")
 \hangindent=\parindent 
 \verb!OpenMDServer() -> integer!\\ 
 \verb!OpenMDServer(host) -> integer!\\ 
-\verb!OpenMDServer(host, args) -> integer!\\ [-3mm]
+\verb!OpenMDServer(host, args) -> integer!\\ 
+\verb!OpenMDServer(MachineProfile) -> integer!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!host! & The optional host argument determines the host on which the metadataserver is to be launched. If this argument is not provided, "localhost"is assumed. \\
 \verb!args! & A tuple of strings containing command line flags for the metadata server. \\
+\verb!Alternative arguments:! & MachineProfile object to load with OpenMDServer call \\
 \end{tabular} \\[-2mm]
 
 
@@ -5118,6 +5215,10 @@ DrawPlots()
 # Execute each of the queries over time on the plots.
 for q in QueriesOverTime():
 QueryOverTime(q)
+You can control timestates used in the query via start_time,
+end_time, and stride as follows:
+QueryOverTime("Volume", start_time=5, end_time=250, stride=5)
+(Defaults used if not specified are 0, nStates, 1)
 \end{verbatim}
 \newpage
 
@@ -5129,26 +5230,15 @@ QueryOverTime(q)
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
 \verb!Query(name) -> integer!\\ 
-\verb!Query(name, variables) -> integer!\\ 
-\verb!Query(name, arg1) -> integer!\\ 
-\verb!Query(name, arg1, variables) -> integer!\\ 
-\verb!Query(name, arg1, arg2) -> integer!\\ 
-\verb!Query(name, arg1, arg2, variables) -> integer!\\ 
-\verb!Query(name, arg1, arg2, arg3, arg4, variables) -> integer!\\
-\verb!Query("Hohlraum Flux", numLines, x, y, z, radius, theta, phi,\ ! \\ 
-\verb!         ("var1", "var2")) -> integer!\\
-\verb!Query("Hohlraum Flux", numLines, divideEmisByAbsorb, x, y, z,\ ! \\ 
-\verb!         radius, theta, phi, ("var1", "var2")) -> integer!\\ [-3mm]
+\verb!Query(name, dict) -> integer!\\ 
+\verb!Query(name, namedarg1=arg1,namedarg2=arg2, ...) -> integer!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!name! & A string containing the name of the query to execute. \\
-\verb!variables! & An optional tuple of strings containing the names of additional queryvariables. \\
-\verb!arg1! & An optional general purpose integer argument. \\
-\verb!arg2! & An optional general purpose integer argument. \\
-\verb!arg3! & An optional general purpose double precision argument. \\
-\verb!arg4! & An optional general purpose double precision argument. \\
+\verb!dict! & An optional dictionary containing additional query arguments. \\
+\verb!namedarg1, namedarg2,...! & An optional list of named arguments supplying additional query parameters. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5156,7 +5246,7 @@ QueryOverTime(q)
 \hangindent=\parindent The Query function returns 1 on success and 0 on failure. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The Query function is used to execute any of VisIt's predefined queries. Since queries can take a wide array of arguments, the Query function has a wide variety of possible arguments. The list of queries can be found in the VisIt User's Manual in the Quantitative Analysis chapter.You can get also get a list of queries that can be executed over time using the Queries function. \\[-3mm] 
+\hangindent=\parindent The Query function is used to execute any of VisIt's predefined queries. The list of queries can be found in theVisIt User's Manual in the Quantitative Analysis chapter. You can get also get a list of queries using 'Queries' function. Since queries can take a wide array of arguments, the Query function takes  either a python dictorary or a list of named arguments specific to the  given query.  To obtain the possible options for a given query, use the  GetQueryParameters(name) function.  If the query accepts additional  arguments beyond its name, this function will return a python dictionary containing the needed variables and their default values.  This can be modified and passed back to the Query method, or named arguments can be used instead. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -5164,6 +5254,12 @@ OpenDatabase("/usr/gapps/visit/data/wave.visit")
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 Query("Volume")
+Query("MinMax")
+Query("MinMax", use_actual_data=1)
+hohlraumArgs = GetQueryParameters("Hohlraum Flux")
+hohlraumArgs["ray_center"]=(0.5,0.5,0)
+hohlraumArgs["vars"]=("a1", "e1")
+Query("Hohlraum Flux", hohlraumArgs)
 \end{verbatim}
 \newpage
 
@@ -5175,19 +5271,16 @@ Query("Volume")
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
 \verb!QueryOverTime(name) -> integer!\\ 
-\verb!QueryOverTime(name, variables) -> integer!\\ 
-\verb!QueryOverTime(name, arg1) -> integer!\\ 
-\verb!QueryOverTime(name, arg1, variables) -> integer!\\ 
-\verb!QueryOverTime(name, arg1, arg2) -> integer!\\ 
-\verb!QueryOverTime(name, arg1, arg2, variables) -> integer!\\ [-3mm]
+\verb!QueryOverTime(name, dict) -> integer!\\
+\verb!QueryOverTime(name, namedarg1=val1,namedarg2=val2,\ ! \\ 
+\verb!     ...) -> integer!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
 \begin{tabular}{lp{9cm}}
 \verb!name! & A string containing the name of the query to execute. \\
-\verb!variables! & An optional tuple of strings containing the names of additional queryvariables. \\
-\verb!arg1! & An optional general purpose integer argument. \\
-\verb!arg2! & An optional general purpose integer argument. \\
+\verb!dict! & An optional dictionary containing additional query arguments. \\
+\verb!namedarg1, namedarg2,...! & An optional list of named arguments supplying additional query parameters. \\
 \end{tabular} \\[-2mm]
 
 
@@ -5195,7 +5288,7 @@ Query("Volume")
 \hangindent=\parindent The QueryOverTime function returns 1 on success and 0 on failure. \\[-3mm] 
 
 \noindent {\it Description:} \\ 
-\hangindent=\parindent The QueryOverTime function is used to execute any of VisIt's predefined queries. Since queries can take a wide array of arguments, the QueryOverTime function has a wide variety of possible arguments. The list of queries can be found in the VisIt User's Manual in the Quantitative Analysis chapter. You can get also get a list of queries that can be executed over time using the QueriesOverTime function. \\[-3mm] 
+\hangindent=\parindent The QueryOverTime function is used to execute any of VisIt's predefined queries. The list of queries can be found in the VisIt User's Manual in the Quantitative Analysis chapter. You can get also get a list of queries that can be executed over time using 'QueriesOverTime' function. Since queries can take a wide array of arguments, the Query function takes  either a python dictorary or a list of named arguments specific to the  given query.  To obtain the possible options for a given query, use the  GetQueryParameters(name) function.  If the query accepts additional  arguments beyond its name, this function will return a python dictionary containing the needed variables and their default values.  This can be modified and passed back to the QueryOverTime method, or named arguments  can be used instead. \\[-3mm] 
 
 \noindent {\it Example:}\\[-6mm]
 \begin{verbatim}% visit -cli
@@ -5203,7 +5296,7 @@ OpenDatabase("/usr/gapps/visit/data/wave.visit")
 AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 for q in QueriesOverTime():
-QueryOverTime(q)
+    QueryOverTime(q)
 ResetView()
 \end{verbatim}
 \newpage
@@ -5475,6 +5568,27 @@ RemoveLastOperator() # Remove SphereSlice
 RemoveOperator(0) # Remove Threshold
 RemoveAllOperators() # Remove the rest of the operators
 \end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{RemoveMachineProfile}
+\noindent {\bf RemoveMachineProfile}: <description>\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!RemoveMachineProfile(hostname) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{ll}
+\verb!hostname! &  \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent Removes machine profile with hostname from HostProfileList \\[-3mm] 
+
 \newpage
 
 
@@ -6141,12 +6255,14 @@ for state in list(range(TimeSliderGetNStates())) + [0]:
 
 \noindent {\it Synopsis:} \\ 
 \hangindent=\parindent 
-\verb!SetActiveWindow(windowIndex) -> integer!\\ [-3mm]
+\verb!SetActiveWindow(windowIndex) -> integer!\\ 
+\verb!SetActiveWindow(windowIndex, raiseWindow) -> integer!\\ [-3mm]
 
 \noindent {\it Arguments:} \\ 
 \hangindent=\parindent 
-\begin{tabular}{ll}
+\begin{tabular}{lp{9cm}}
 \verb!windowIndex! & An integer window index starting at 1. \\
+\verb!raiseWindow! & This is an optional integer argument that raises and activates the window ifset to 1. If omitted, the default behavior is to raise and activate the window. \\
 \end{tabular} \\[-2mm]
 
 
@@ -6444,6 +6560,35 @@ print "Active time slider: " % wi.timeSliders[wi.activeTimeSlider]
 # This will set time for both databases since the database correlation is
 the active time slider.
 SetTimeSliderState(5)
+\end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{SetDebugLevel}
+\noindent {\bf SetDebugLevel}: set or Get the VisIt module's debug level.\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!GetDebugLevel() -> integer!\\ 
+\verb!SetDebugLevel(level)!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{lp{9cm}}
+\verb!level! & A string '1', '2', '3', '4', '5' with an optional 'b' suffix to indicatewhether the output should be buffered. A value of '1' is a low debug level, which should be used to produce little output while a value of 5 should produce a lot of debug output. \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Returns:} \\ 
+\hangindent=\parindent The GetDebugLevel function returns the debug level of the VisIt module. \\[-3mm] 
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent The GetDebugLevel and SetDebugLevel functions are used when debugging VisIt Python scripts. The SetDebugLevel function sets the debug level for VisIt's viewer thus it must be called before a Launch method. The debug level determines how much detail is written to VisIt's execution logs when it executes. The GetDebugLevel function can be used in Python scripts to alter the behavior of the script. For instance, the debug level can be used to selectively print values to the console. \\[-3mm] 
+
+\noindent {\it Example:}\\[-6mm]
+\begin{verbatim}% visit -cli -debug 2
+print "VisIt's debug level is: %d" % GetDebugLevel()
 \end{verbatim}
 \newpage
 
@@ -6878,6 +7023,27 @@ SetLight(0, light)
 light.color,light.direction = (0,255,0,255), (-1,0,0)
 SetLight(1, light)
 \end{verbatim}
+\newpage
+
+
+\phantomsection
+\addcontentsline{toc}{subsection}{SetMachineProfile}
+\noindent {\bf SetMachineProfile}: <description>\\[-3mm]
+
+\noindent {\it Synopsis:} \\ 
+\hangindent=\parindent 
+\verb!SetMachineProfile(MachineProfile) -> integer!\\ [-3mm]
+
+\noindent {\it Arguments:} \\ 
+\hangindent=\parindent 
+\begin{tabular}{ll}
+\verb!MachineProfile! &  \\
+\end{tabular} \\[-2mm]
+
+
+\noindent {\it Description:} \\ 
+\hangindent=\parindent Sets the input machine profile in the HostProfileList, replaces if one already exists Otherwise adds to the list \\[-3mm] 
+
 \newpage
 
 
@@ -9206,6 +9372,7 @@ userInfoFont.color  &  (0, 0, 0, 255) \\
 userInfoFont.bold  &  0 \\
 userInfoFont.italic  &  0 \\
 databaseInfoFlag  &  1 \\
+timeInfoFlag  &  1 \\
 databaseInfoFont.font  &  databaseInfoFont.Arial   \\
  & {\it  Arial} \\
  & {\it  Courier} \\
@@ -9566,6 +9733,7 @@ EnableGhostNeighborsOptimization  &  1 \\
 
 name  &  "" \\
 varnames  &  () \\
+binType  &  () \\
 binBoundaries  &  () \\
 reductionOperator  &  Average   \\
  & {\it  Average} \\
@@ -9672,7 +9840,10 @@ defaultPalette.GetControlPoints(28).colors  &  (0, 130, 255, 255) \\
 defaultPalette.GetControlPoints(28).position  &  0.966 \\
 defaultPalette.GetControlPoints(29).colors  &  (130, 0, 255, 255) \\
 defaultPalette.GetControlPoints(29).position  &  1 \\
-defaultPalette.smoothingFlag  &  0 \\
+defaultPalette.smoothing  &  defaultPalette.None   \\
+ & {\it  None} \\
+ & {\it  Linear} \\
+ & {\it  CubicSpline} \\
 defaultPalette.equalSpacingFlag  &  1 \\
 defaultPalette.discreteFlag  &  1 \\
 defaultPalette.externalFlag  &  0 \\
@@ -9896,16 +10067,31 @@ numDimensions  &  One   \\
  & {\it  One} \\
  & {\it  Two} \\
  & {\it  Three} \\
+dim1BinBasedOn  &  Variable   \\
+ & {\it  X} \\
+ & {\it  Y} \\
+ & {\it  Z} \\
+ & {\it  Variable} \\
 dim1Var  &  "default" \\
 dim1SpecifyRange  &  0 \\
 dim1MinRange  &  0 \\
 dim1MaxRange  &  1 \\
 dim1NumBins  &  50 \\
+dim2BinBasedOn  &  Variable   \\
+ & {\it  X} \\
+ & {\it  Y} \\
+ & {\it  Z} \\
+ & {\it  Variable} \\
 dim2Var  &  "default" \\
 dim2SpecifyRange  &  0 \\
 dim2MinRange  &  0 \\
 dim2MaxRange  &  1 \\
 dim2NumBins  &  50 \\
+dim3BinBasedOn  &  Variable   \\
+ & {\it  X} \\
+ & {\it  Y} \\
+ & {\it  Z} \\
+ & {\it  Variable} \\
 dim3Var  &  "default" \\
 dim3SpecifyRange  &  0 \\
 dim3MinRange  &  0 \\
@@ -10110,6 +10296,92 @@ opts.types  &  () \\
 
 removeGhosts  &  0 \\
 edgesIn2D  &  1 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{Extrude}
+\noindent {\bf Extrude}: {\it ExtrudeAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... Extrude attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+axis  &  (0, 0, 1) \\
+length  &  1 \\
+steps  &  30 \\
+preserveOriginalCellNumbers  &  1 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{FFT}
+\noindent {\bf FFT}: {\it FFTAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... FFT attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+dummy  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{FTLE}
+\noindent {\bf FTLE}: {\it FTLEAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... FTLE attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+integrationTime  &  1 \\
+regionType  &  RegularGrid   \\
+ & {\it  NativeResolutionOfMesh} \\
+ & {\it  RegularGrid} \\
+Resolution  &  (10, 10, 10) \\
+UseDataSetStart  &  1 \\
+StartPosition  &  (0, 0, 0) \\
+UseDataSetEnd  &  1 \\
+EndPosition  &  (1, 1, 1) \\
+direction  &  Forward   \\
+ & {\it  Forward} \\
+ & {\it  Backward} \\
+flowType  &  Unsteady   \\
+ & {\it  Unsteady} \\
+ & {\it  Steady} \\
 \end{longtable}
 
 \newpage
@@ -10473,6 +10745,31 @@ variable  &  "default" \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{Keyframe}
+\noindent {\bf Keyframe}: {\it KeyframeAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... Keyframe attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+enabled  &  0 \\
+nFrames  &  1 \\
+nFramesWasUserSet  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{Label}
 \noindent {\bf Label}: {\it LabelAttributes() }\\[-3mm]
 
@@ -10522,6 +10819,45 @@ depthTestMode  &  LABEL\_DT\_AUTO   \\
  & {\it  LABEL\_DT\_ALWAYS} \\
  & {\it  LABEL\_DT\_NEVER} \\
 formatTemplate  &  "\%g" \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{subsection}{Lagrangian}
+\noindent {\bf Lagrangian}: {\it LagrangianAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... Lagrangian attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+seedPoint  &  (0, 0, 0) \\
+numSteps  &  1000 \\
+XAxisSample  &  Step   \\
+ & {\it  Step} \\
+ & {\it  Time} \\
+ & {\it  ArcLength} \\
+ & {\it  Speed} \\
+ & {\it  Vorticity} \\
+ & {\it  Variable} \\
+YAxisSample  &  Step   \\
+ & {\it  Step} \\
+ & {\it  Time} \\
+ & {\it  ArcLength} \\
+ & {\it  Speed} \\
+ & {\it  Vorticity} \\
+ & {\it  Variable} \\
+variable  &  "default" \\
 \end{longtable}
 
 \newpage
@@ -10861,7 +11197,10 @@ defaultPalette.GetControlPoints(28).colors  &  (0, 130, 255, 255) \\
 defaultPalette.GetControlPoints(28).position  &  0.966 \\
 defaultPalette.GetControlPoints(29).colors  &  (130, 0, 255, 255) \\
 defaultPalette.GetControlPoints(29).position  &  1 \\
-defaultPalette.smoothingFlag  &  0 \\
+defaultPalette.smoothing  &  defaultPalette.None   \\
+ & {\it  None} \\
+ & {\it  Linear} \\
+ & {\it  CubicSpline} \\
 defaultPalette.equalSpacingFlag  &  1 \\
 defaultPalette.discreteFlag  &  1 \\
 defaultPalette.externalFlag  &  0 \\
@@ -11034,6 +11373,7 @@ traceVariableX  &  "default" \\
 traceVariableY  &  "default" \\
 traceVariableZ  &  "default" \\
 connectParticles  &  0 \\
+showPoints  &  0 \\
 indexVariable  &  "default" \\
 \end{longtable}
 
@@ -11061,8 +11401,8 @@ opacityType  &  Explicit   \\
  & {\it  Explicit} \\
  & {\it  ColorTable} \\
 opacity  &  1 \\
-minPunctures  &  10 \\
-maxPunctures  &  100 \\
+minPunctures  &  50 \\
+maxPunctures  &  500 \\
 puncturePlane  &  Poloidal   \\
  & {\it  Poloidal} \\
  & {\it  Toroidal} \\
@@ -11074,18 +11414,33 @@ pointSource  &  (0, 0, 0) \\
 lineStart  &  (0, 0, 0) \\
 lineEnd  &  (1, 0, 0) \\
 pointDensity  &  1 \\
+fieldType  &  Default   \\
+ & {\it  Default} \\
+ & {\it  M3DC12DField} \\
+ & {\it  M3DC13DField} \\
+ & {\it  NIMRODField} \\
+ & {\it  FlashField} \\
+fieldConstant  &  1 \\
+velocitySource  &  (0, 0, 0) \\
 integrationType  &  AdamsBashforth   \\
+ & {\it  Euler} \\
+ & {\it  Leapfrog} \\
  & {\it  DormandPrince} \\
  & {\it  AdamsBashforth} \\
+ & {\it  Reserved\_4} \\
  & {\it  M3DC12DIntegrator} \\
- & {\it  M3DC13DIntegrator} \\
- & {\it  NIMRODIntegrator} \\
 coordinateSystem  &  Cartesian   \\
  & {\it  Cartesian} \\
  & {\it  Cylindrical} \\
 maxStepLength  &  0.1 \\
+limitMaximumTimestep  &  0 \\
+maxTimeStep  &  0.1 \\
 relTol  &  0.0001 \\
-absTol  &  1e$-$05 \\
+absTolSizeType  &  FractionOfBBox   \\
+ & {\it  Absolute} \\
+ & {\it  FractionOfBBox} \\
+absTolAbsolute  &  1e$-$05 \\
+absTolBBox  &  1e$-$06 \\
 analysis  &  Normal   \\
  & {\it  None} \\
  & {\it  Normal} \\
@@ -11093,7 +11448,7 @@ maximumToroidalWinding  &  0 \\
 overrideToroidalWinding  &  0 \\
 overridePoloidalWinding  &  0 \\
 windingPairConfidence  &  0.9 \\
-rationalTemplateSeedParm  &  0.9 \\
+rationalSurfaceFactor  &  0.1 \\
 adjustPlane  &  $-$1 \\
 overlaps  &  Remove   \\
  & {\it  Raw} \\
@@ -11123,16 +11478,19 @@ dataValue  &  SafetyFactorQ   \\
  & {\it  ToroidalWindings} \\
  & {\it  PoloidalWindingsQ} \\
  & {\it  PoloidalWindingsP} \\
- & {\it  FieldlineIndex} \\
- & {\it  PointIndex} \\
- & {\it  PlaneIndex} \\
- & {\it  WindingGroup} \\
+ & {\it  FieldlineOrder} \\
+ & {\it  PointOrder} \\
+ & {\it  PlaneOrder} \\
+ & {\it  WindingGroupOrder} \\
  & {\it  WindingPointOrder} \\
  & {\it  WindingPointOrderModulo} \\
 showOPoints  &  0 \\
 OPointMaxIterations  &  2 \\
 showXPoints  &  0 \\
 XPointMaxIterations  &  2 \\
+performOLineAnalysis  &  0 \\
+OLineToroidalWinding  &  0 \\
+OLineAxisFileName  &  "" \\
 showChaotic  &  0 \\
 showIslands  &  0 \\
 verboseFlag  &  1 \\
@@ -11379,6 +11737,8 @@ reflections  &  (1, 0, 1, 0, 0, 0, 0, 0) \\
 \endlastfoot
 
 antialiasing  &  0 \\
+multiresolutionMode  &  0 \\
+multiresolutionCellSize  &  0.002 \\
 geometryRepresentation  &  Surfaces   \\
  & {\it  Surfaces} \\
  & {\it  Wireframe} \\
@@ -11492,6 +11852,7 @@ tieResolver  &  random   \\
 tieResolverVariable  &  "default" \\
 defaultValue  &  0 \\
 distributedResample  &  1 \\
+cellCenteredOutput  &  0 \\
 \end{longtable}
 
 \newpage
@@ -11584,86 +11945,6 @@ resConstraint  &  ScreenProportions   \\
  & {\it  EqualWidthHeight} \\
  & {\it  ScreenProportions} \\
 advancedMultiWindowSave  &  0 \\
-subWindowAtts.win1.position  &  (0, 0) \\
-subWindowAtts.win1.size  &  (128, 128) \\
-subWindowAtts.win1.layer  &  0 \\
-subWindowAtts.win1.transparency  &  0 \\
-subWindowAtts.win1.omitWindow  &  0 \\
-subWindowAtts.win2.position  &  (0, 0) \\
-subWindowAtts.win2.size  &  (128, 128) \\
-subWindowAtts.win2.layer  &  0 \\
-subWindowAtts.win2.transparency  &  0 \\
-subWindowAtts.win2.omitWindow  &  0 \\
-subWindowAtts.win3.position  &  (0, 0) \\
-subWindowAtts.win3.size  &  (128, 128) \\
-subWindowAtts.win3.layer  &  0 \\
-subWindowAtts.win3.transparency  &  0 \\
-subWindowAtts.win3.omitWindow  &  0 \\
-subWindowAtts.win4.position  &  (0, 0) \\
-subWindowAtts.win4.size  &  (128, 128) \\
-subWindowAtts.win4.layer  &  0 \\
-subWindowAtts.win4.transparency  &  0 \\
-subWindowAtts.win4.omitWindow  &  0 \\
-subWindowAtts.win5.position  &  (0, 0) \\
-subWindowAtts.win5.size  &  (128, 128) \\
-subWindowAtts.win5.layer  &  0 \\
-subWindowAtts.win5.transparency  &  0 \\
-subWindowAtts.win5.omitWindow  &  0 \\
-subWindowAtts.win6.position  &  (0, 0) \\
-subWindowAtts.win6.size  &  (128, 128) \\
-subWindowAtts.win6.layer  &  0 \\
-subWindowAtts.win6.transparency  &  0 \\
-subWindowAtts.win6.omitWindow  &  0 \\
-subWindowAtts.win7.position  &  (0, 0) \\
-subWindowAtts.win7.size  &  (128, 128) \\
-subWindowAtts.win7.layer  &  0 \\
-subWindowAtts.win7.transparency  &  0 \\
-subWindowAtts.win7.omitWindow  &  0 \\
-subWindowAtts.win8.position  &  (0, 0) \\
-subWindowAtts.win8.size  &  (128, 128) \\
-subWindowAtts.win8.layer  &  0 \\
-subWindowAtts.win8.transparency  &  0 \\
-subWindowAtts.win8.omitWindow  &  0 \\
-subWindowAtts.win9.position  &  (0, 0) \\
-subWindowAtts.win9.size  &  (128, 128) \\
-subWindowAtts.win9.layer  &  0 \\
-subWindowAtts.win9.transparency  &  0 \\
-subWindowAtts.win9.omitWindow  &  0 \\
-subWindowAtts.win10.position  &  (0, 0) \\
-subWindowAtts.win10.size  &  (128, 128) \\
-subWindowAtts.win10.layer  &  0 \\
-subWindowAtts.win10.transparency  &  0 \\
-subWindowAtts.win10.omitWindow  &  0 \\
-subWindowAtts.win11.position  &  (0, 0) \\
-subWindowAtts.win11.size  &  (128, 128) \\
-subWindowAtts.win11.layer  &  0 \\
-subWindowAtts.win11.transparency  &  0 \\
-subWindowAtts.win11.omitWindow  &  0 \\
-subWindowAtts.win12.position  &  (0, 0) \\
-subWindowAtts.win12.size  &  (128, 128) \\
-subWindowAtts.win12.layer  &  0 \\
-subWindowAtts.win12.transparency  &  0 \\
-subWindowAtts.win12.omitWindow  &  0 \\
-subWindowAtts.win13.position  &  (0, 0) \\
-subWindowAtts.win13.size  &  (128, 128) \\
-subWindowAtts.win13.layer  &  0 \\
-subWindowAtts.win13.transparency  &  0 \\
-subWindowAtts.win13.omitWindow  &  0 \\
-subWindowAtts.win14.position  &  (0, 0) \\
-subWindowAtts.win14.size  &  (128, 128) \\
-subWindowAtts.win14.layer  &  0 \\
-subWindowAtts.win14.transparency  &  0 \\
-subWindowAtts.win14.omitWindow  &  0 \\
-subWindowAtts.win15.position  &  (0, 0) \\
-subWindowAtts.win15.size  &  (128, 128) \\
-subWindowAtts.win15.layer  &  0 \\
-subWindowAtts.win15.transparency  &  0 \\
-subWindowAtts.win15.omitWindow  &  0 \\
-subWindowAtts.win16.position  &  (0, 0) \\
-subWindowAtts.win16.size  &  (128, 128) \\
-subWindowAtts.win16.layer  &  0 \\
-subWindowAtts.win16.transparency  &  0 \\
-subWindowAtts.win16.omitWindow  &  0 \\
 \end{longtable}
 
 \newpage
@@ -11913,6 +12194,31 @@ pastPickLetters  &  () \\
 \newpage
 
 \phantomsection
+\addcontentsline{toc}{subsection}{Stagger}
+\noindent {\bf Stagger}: {\it StaggerAttributes() }\\[-3mm]
+
+\begin{longtable}{ll}
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endfirsthead
+\multicolumn{2}{l}{{\it ... Stagger attributes continued}} \\
+{\bf Attribute} & {\bf Default/Allowed values} \\
+\hline \hline
+\endhead
+\hline
+\multicolumn{2}{l}{{\it Continued on next page...}} \\
+\endfoot
+\hline
+\endlastfoot
+
+offsetX  &  0 \\
+offsetY  &  0 \\
+offsetZ  &  0 \\
+\end{longtable}
+
+\newpage
+
+\phantomsection
 \addcontentsline{toc}{subsection}{Streamline}
 \noindent {\bf Streamline}: {\it StreamlineAttributes() }\\[-3mm]
 
@@ -11938,6 +12244,7 @@ sourceType  &  SpecifiedPoint   \\
  & {\it  SpecifiedPlane} \\
  & {\it  SpecifiedSphere} \\
  & {\it  SpecifiedBox} \\
+ & {\it  Selection} \\
 pointSource  &  (0, 0, 0) \\
 lineStart  &  (0, 0, 0) \\
 lineEnd  &  (1, 0, 0) \\
@@ -11983,12 +12290,21 @@ absTolSizeType  &  FractionOfBBox   \\
  & {\it  FractionOfBBox} \\
 absTolAbsolute  &  1e$-$06 \\
 absTolBBox  &  1e$-$06 \\
+fieldType  &  Default   \\
+ & {\it  Default} \\
+ & {\it  M3DC12DField} \\
+ & {\it  M3DC13DField} \\
+ & {\it  NIMRODField} \\
+ & {\it  FlashField} \\
+fieldConstant  &  1 \\
+velocitySource  &  (0, 0, 0) \\
 integrationType  &  DormandPrince   \\
+ & {\it  Euler} \\
+ & {\it  Leapfrog} \\
  & {\it  DormandPrince} \\
  & {\it  AdamsBashforth} \\
+ & {\it  RK4} \\
  & {\it  M3DC12DIntegrator} \\
- & {\it  M3DC13DIntegrator} \\
- & {\it  NIMRODIntegrator} \\
 streamlineAlgorithmType  &  VisItSelects   \\
  & {\it  LoadOnDemand} \\
  & {\it  ParallelStaticDomains} \\
@@ -12093,6 +12409,7 @@ correlationDistanceMinDistBBox  &  0.005 \\
 correlationDistanceMinDistType  &  FractionOfBBox   \\
  & {\it  Absolute} \\
  & {\it  FractionOfBBox} \\
+selection  &  "" \\
 \end{longtable}
 
 \newpage
@@ -12554,6 +12871,7 @@ xScale  &  LINEAR   \\
 yScale  &  LINEAR   \\
  & {\it  LINEAR} \\
  & {\it  LOG} \\
+windowValid  &  0 \\
 \end{longtable}
 
 \newpage
@@ -12682,7 +13000,10 @@ colorControlPoints.GetControlPoints(3).colors  &  (255, 255, 0, 255) \\
 colorControlPoints.GetControlPoints(3).position  &  0.75 \\
 colorControlPoints.GetControlPoints(4).colors  &  (255, 0, 0, 255) \\
 colorControlPoints.GetControlPoints(4).position  &  1 \\
-colorControlPoints.smoothingFlag  &  1 \\
+colorControlPoints.smoothing  &  colorControlPoints.Linear   \\
+ & {\it  None} \\
+ & {\it  Linear} \\
+ & {\it  CubicSpline} \\
 colorControlPoints.equalSpacingFlag  &  0 \\
 colorControlPoints.discreteFlag  &  0 \\
 colorControlPoints.externalFlag  &  0 \\
@@ -12692,8 +13013,10 @@ opacityMode  &  FreeformMode   \\
  & {\it  GaussianMode} \\
  & {\it  ColorTableMode} \\
  & {\it controlPoints does not contain any GaussianControlPoint objects.} \\
+resampleFlag  &  1 \\
 resampleTarget  &  50000 \\
 opacityVariable  &  "default" \\
+compactVariable  &  "default" \\
 freeformOpacity  &  (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255) \\
 useColorVarMin  &  0 \\
 colorVarMin  &  0 \\
@@ -12813,7 +13136,6 @@ CurveAttributes & 1 \\
 CylinderAttributes & 1 \\
 DataBinningAttributes & 1 \\
 DatabaseMetaData & 1 \\
-DatabaseQueryRPC & 8 \\
 DeIconifyAllWindowsRPC & 0 \\
 DeferExpressionAttributes & 1 \\
 DeleteActiveAnnotationObjectsRPC & 0 \\
@@ -12840,10 +13162,14 @@ ExportDBRPC & 0 \\
 ExportEntireStateRPC & 1 \\
 ExpressionList & 1 \\
 ExternalSurfaceAttributes & 1 \\
+ExtrudeAttributes & 1 \\
+FFTAttributes & 1 \\
+FTLEAttributes & 1 \\
 FileOpenOptions & 1 \\
 FilledBoundaryAttributes & 1 \\
 FluxAttributes & 1 \\
 GetProcInfoRPC & 3 \\
+GetQueryParametersRPC & 1 \\
 GlobalAttributes & 1 \\
 GlobalLineoutAttributes & 1 \\
 HideActiveAnnotationObjectsRPC & 0 \\
@@ -12864,7 +13190,7 @@ IsosurfaceAttributes & 1 \\
 IsovolumeAttributes & 1 \\
 KeyframeAttributes & 1 \\
 LabelAttributes & 1 \\
-LineQueryRPC & 6 \\
+LagrangianAttributes & 1 \\
 LineoutAttributes & 1 \\
 LoadNamedSelectionRPC & 1 \\
 LowerActiveAnnotationObjectsRPC & 0 \\
@@ -12872,6 +13198,7 @@ MaterialAttributes & 1 \\
 MenuQuitRPC & 1 \\
 MeshAttributes & 1 \\
 MeshManagementAttributes & 1 \\
+ModelFitAtts & 1 \\
 MoleculeAttributes & 1 \\
 MoveAndResizeWindowRPC & 5 \\
 MovePlotDatabaseKeyframeRPC & 3 \\
@@ -12895,7 +13222,6 @@ PersistentParticlesAttributes & 1 \\
 PickAttributes & 1 \\
 PlotList & 1 \\
 PoincareAttributes & 1 \\
-PointQueryRPC & 7 \\
 PrintWindowRPC & 0 \\
 PrinterAttributes & 1 \\
 ProcessAttributes & 1 \\
@@ -12905,6 +13231,7 @@ PromoteOperatorRPC & 1 \\
 PseudocolorAttributes & 1 \\
 QueryAttributes & 1 \\
 QueryOverTimeAttributes & 1 \\
+QueryRPC & 1 \\
 RaiseActiveAnnotationObjectsRPC & 0 \\
 ReOpenDatabaseRPC & 2 \\
 RecenterViewRPC & 0 \\
@@ -13006,6 +13333,7 @@ SliceAttributes & 1 \\
 SmoothOperatorAttributes & 1 \\
 SphereSliceAttributes & 1 \\
 SpreadsheetAttributes & 1 \\
+StaggerAttributes & 1 \\
 StreamlineAttributes & 1 \\
 SubsetAttributes & 1 \\
 SuppressQueryOutputRPC & 1 \\
@@ -13015,6 +13343,7 @@ ThreeSliceAttributes & 1 \\
 ThresholdAttributes & 1 \\
 TimeSliderNextStateRPC & 0 \\
 TimeSliderPreviousStateRPC & 0 \\
+ToggleAllowPopupRPC & 1 \\
 ToggleBoundingBoxModeRPC & 0 \\
 ToggleCameraViewModeRPC & 0 \\
 ToggleFullFrameRPC & 0 \\
