@@ -165,7 +165,16 @@ QvisFileWindowBase::QvisFileWindowBase(const QString &winCaption) :
     folderPixmap = new QPixmap(folder_xpm);
     databasePixmap = new QPixmap(database_xpm);
 
+    hostComboBox = 0;
+    pathComboBox = 0;
+    filterLineEdit = 0;
+    currentDirToggle = 0;
+    showDotFilesToggle = 0;
+    fileGroupingComboBox = 0;
+    recentPathRemovalButton = 0;
     recentPathsRemovalWindow = 0;
+    directoryList = 0;
+    fileList = 0;
 
     // Set the progress callback that we want to use while we
     // connect to the mdserver.
@@ -414,6 +423,9 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
 //   Brad Whitlock, Thu Mar 18 16:26:50 PDT 2010
 //   I added frame separators between crowded controls.
 //
+//   Brad Whitlock, Wed Sep 12 15:03:41 PDT 2012
+//   I added the showDotFiles toggle.
+//
 // ****************************************************************************
 
 void
@@ -476,10 +488,19 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     QHBoxLayout *toggleLayout = new QHBoxLayout();
     topLayout->addLayout(toggleLayout);
     toggleLayout->setSpacing(10);
+    QVBoxLayout *toggleVLayout = new QVBoxLayout(0);
+    toggleVLayout->setMargin(0);
+    toggleLayout->addLayout(toggleVLayout);
     currentDirToggle = new QCheckBox(tr("Use \"current working directory\" by default"), central);
     connect(currentDirToggle, SIGNAL(toggled(bool)),
             this, SLOT(currentDir(bool)));
-    toggleLayout->addWidget(currentDirToggle);
+    toggleVLayout->addWidget(currentDirToggle);
+
+    // Create the show dot files toggle.
+    showDotFilesToggle = new QCheckBox(tr("Show dot files"), central);
+    connect(showDotFilesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(showDotFiles(bool)));
+    toggleVLayout->addWidget(showDotFilesToggle);
 
     QFrame *sep1 = new QFrame(central);
     sep1->setFrameShape(QFrame::VLine);
@@ -568,6 +589,9 @@ QvisFileWindowBase::CreateFileListWidget(QWidget *parent) const
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Brad Whitlock, Wed Sep 12 15:06:10 PDT 2012
+//   Added show dot files toggle.
+//
 // ****************************************************************************
 
 void
@@ -577,6 +601,11 @@ QvisFileWindowBase::UpdateWindowFromFiles(bool doAll)
     currentDirToggle->blockSignals(true);
     currentDirToggle->setChecked(fileServer->GetUseCurrentDirectory());
     currentDirToggle->blockSignals(false);
+
+    // Set the show dot files toggle.
+    showDotFilesToggle->blockSignals(true);
+    showDotFilesToggle->setChecked(fileServer->GetShowDotFiles());
+    showDotFilesToggle->blockSignals(false);
 
     // Set the file grouping combo box.
     if(fileServer->IsSelected(FileServerList::ID_automaticFileGroupingFlag) ||
@@ -633,7 +662,10 @@ QvisFileWindowBase::UpdateWindowFromFiles(bool doAll)
 
     // If the host or the path changed, we must update both the directory
     // list and the file list.
-    if(fileServer->HostChanged() || fileServer->PathChanged() || doAll)
+    if(fileServer->HostChanged() ||
+       fileServer->PathChanged() ||
+       fileServer->IsSelected(FileServerList::ID_showDotFilesFlag) ||
+       doAll)
     {
         UpdateDirectoryList();
         updateTheFileList = true;
@@ -743,6 +775,9 @@ QvisFileWindowBase::UpdateHostComboBox()
 //   Brad Whitlock, Thu Jul 10 15:59:03 PDT 2008
 //   Qt 4.
 //
+//   Brad Whitlock, Wed Sep 12 15:50:30 PDT 2012
+//   Exclude dot file directories from the list.
+//
 // ****************************************************************************
 
 void
@@ -756,20 +791,23 @@ QvisFileWindowBase::UpdateDirectoryList()
 
     // Iterate through the the directory list and add the dirs.
     directoryList->clear();
+    std::string dot("."), dotdot(".."), dotvisit(".visit");
     MDServerMethods::FileEntryVector::const_iterator pos;
     for(pos = f.dirs.begin(); pos != f.dirs.end(); ++pos)
     {
-        QListWidgetItem *item = new QListWidgetItem(directoryList);
-        if(pos->name == std::string("."))
+        QListWidgetItem *item = 0;
+        if(pos->name == dot)
         {
+            item = new QListWidgetItem(directoryList);
             QualifiedFilename dirName(curDirString.toStdString());
             dirName.SetAccess(pos->CanAccess());
 
             item->setText(curDirString);
             item->setData(Qt::UserRole, EncodeQualifiedFilename(dirName));
         }
-        else if(pos->name == std::string(".."))
+        else if(pos->name == dotdot)
         {
+            item = new QListWidgetItem(directoryList);
             QualifiedFilename dirName(upDirString.toStdString());
             dirName.SetAccess(pos->CanAccess());
 
@@ -778,9 +816,18 @@ QvisFileWindowBase::UpdateDirectoryList()
         }
         else
         {
+            // If we're not showing dot files then exclude the directory if
+            // it begins with "." as long as it is not ".visit".
+            if(!fileServer->GetShowDotFiles())
+            {
+                if(pos->name.substr(0,1) == dot && pos->name != dotvisit)
+                    continue;
+            }
+
             QualifiedFilename dirName(pos->name);
             dirName.SetAccess(pos->CanAccess());
 
+            item = new QListWidgetItem(directoryList);
             item->setText(pos->name.c_str());
             item->setIcon(QIcon(*folderPixmap));
             item->setData(Qt::UserRole, EncodeQualifiedFilename(dirName));
@@ -1881,6 +1928,29 @@ void
 QvisFileWindowBase::currentDir(bool val)
 {
     fileServer->SetUseCurrentDirectory(val);
+}
+
+// ****************************************************************************
+// Method: QvisFileWindowBase::showDotFiles
+//
+// Purpose: 
+//   Set the new state for the show dot files check box.
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 12 15:33:59 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFileWindowBase::showDotFiles(bool val)
+{
+    fileServer->SetShowDotFiles(val);
+    fileServer->Notify();
 }
 
 // ****************************************************************************

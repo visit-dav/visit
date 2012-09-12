@@ -250,6 +250,7 @@ public:
     void SetUseCurrentDirectory(bool val);
     void SetAutomaticFileGrouping(bool val);
     void SetSmartFileGrouping(bool val);
+    void SetShowDotFiles(bool val);
     void LoadPlugins();
     void SendKeepAlives();
 
@@ -281,6 +282,7 @@ public:
     bool GetUseCurrentDirectory() const;
     bool GetAutomaticFileGrouping() const;
     bool GetSmartFileGrouping() const;
+    bool GetShowDotFiles() const;
 
     bool GetForceReadAllCyclesTimes() const;
     bool GetTreatAllDBsAsTimeVarying() const;
@@ -343,7 +345,8 @@ public:
         ID_useCurrentDirectoryFlag,
         ID_automaticFileGroupingFlag,
         ID_recentPathsFlag,
-        ID_smartFileGroupingFlag
+        ID_smartFileGroupingFlag,
+        ID_showDotFilesFlag
     };
 
 private:
@@ -378,6 +381,7 @@ private:
     bool automaticFileGroupingFlag; // attribute 7
     bool recentPathsFlag;           // attribute 8
     bool smartFileGroupingFlag;     // attribute 9
+    bool showDotFilesFlag;          // attribute 10
 
     // Information about the open md servers.
 //    ServerMap   servers;
