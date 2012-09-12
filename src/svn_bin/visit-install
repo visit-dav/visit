@@ -324,6 +324,10 @@
 #    are in separate directories now. I also added installation of
 #    customlauncher.
 #
+#    Kathleen Biagas, Wed Sep 12 16:03:22 PDT 2012
+#    visit-config.ini, visit-guiconfig.ini and visit-visitrc.ini have
+#    all been renamed in src, so no need to rename on copy.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -729,12 +733,12 @@ if [ "$config" = "anl" ]; then
 elif [ "$config" = "llnl_closed" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/visit-config.ini    "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open" ]; then
    # Install both cz hosts and rzgw hosts. We're most likely in a client
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_cz" ]; then
    # Copy the files explicitly to avoid the rzgw hosts. We're most likely installing on a cz machine.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_aztec.xml    "$dir"/$version+/.visit/hosts/
@@ -747,12 +751,12 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
 
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_open_rz" ]; then
    # We're most likely installing on an rz machine.
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl_rz/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/visit-config.ini       "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "nersc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
@@ -762,7 +766,7 @@ elif [ "$config" = "ornl" ]; then
 elif [ "$config" = "princeton" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/visit-config.ini    "$dir"/$version+/.visit/config
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/config
 elif [ "$config" = "sandia" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
@@ -778,9 +782,9 @@ elif [ "$config" = "nics" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "anag" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-config.ini       "$dir"/$version+/.visit/config
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-guiconfig.ini    "$dir"/$version+/.visit/guiconfig
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visit-visitrc.ini      "$dir"/$version+/.visit/visitrc
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/config                 "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/guiconfig              "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visitrc                "$dir"/$version+/.visit/
 elif [ "$config" = "lsu" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
