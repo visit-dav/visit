@@ -25,9 +25,6 @@ Python & Describes the basic features of the  \\
        &Python programming language.  \\ \hline
 Quick Recipes & Describes common patterns for scripting  \\
 & using the VisIt Python Interface.  \\ \hline
-Pre-Launch Functions & Describes the functions available \\
-  & before you call Launch \\
-  & (only applies when importing VisIt) \\ \hline
 Functions & Describes functions in the VisIt Python  \\ 
   & Interface.  \\ \hline
 Attributes References & Describes attributes for setting common \\

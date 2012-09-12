@@ -40,6 +40,12 @@
 #
 #
 #  Jakob van Bethlehem, Nov 2010, May 2011
+#
+#  Modifications:
+#
+#   Hank Childs, Wed Sep 12 07:00:44 PDT 2012
+#   Updated for changes since V2.5.  Primary change is that all functions are available before Launch.
+#
 
 # debugging needed?
 #import pdb
@@ -432,7 +438,8 @@ def print_file_list(funclist):
 
   for func in funclist:
     # extract documentation for this function:
-    fulldoc = eval(func).__doc__
+    visitStr="visit."+func
+    fulldoc = eval(visitStr).__doc__
 
     # functions that are not documented, are appended to 'undocumented'
     if not fulldoc:
@@ -723,8 +730,6 @@ def print_file_list(funclist):
 # such that after we import visit, we can tell the difference
 ## @brief Store function names with missing documentation
 missing_documentation = []
-## @brief Store names of functions that are available before @c visit.Launch() is called
-startup_funcs = []
 ## @brief Store functions that deal with Attributes
 attrlist=[]
 ## @brief Store general functions
@@ -753,26 +758,27 @@ system_funcs.extend(['system_funcs', 'func'])
 # We need to take this tricky road to circumvent bug #457: import visit doesn't load
 # the Eval* functions in the visit-namespace
 
-from visit import *
-AddArgument("-nowin")
-AddArgument("-noconfig")
-# Now extract functions that are available before @c Launch() is called and store them in startup_funcs
-for func in dir():
-  if func in system_funcs:
-    continue
-  startup_funcs.append(func)
+###
+### SET UP SCRIPT SO IT CAN RUN ON YOUR MACHINE.  THIS WILL CHANGE FROM PLATFORM TO PLATFORM
+### AND RELEASE TO RELEASE
+###
+sys.path.insert(0, "Applications/VisIt.app/Contents/Resources/2.5.2/darwin-i386/lib/site-packages")
+
+#from visit import *
+import visit
+visit.AddArgument("-nowin")
+visit.AddArgument("-noconfig")
 # next Launch() VisIt in order to extract other functions:
-Launch()
+visit.Launch()
 print >> sys.stderr, "**\n**  Running VisIt", Version(), "\n**"
 
-for func in dir():
-  if func in system_funcs or func in startup_funcs:
-    continue
-
+for func in dir(visit):
   # Deprecated
   if (func == "ConstructDDFAttributes"):
      continue
   if (func == "ConstructDDF"):
+     continue
+  if (func[:2] == "__"):  # __doc__, __file__, etc.
      continue
 
   # all functions that have 'Attributes' in their name and don't start with
@@ -790,7 +796,6 @@ for func in dir():
 #
 
 # sort functions #
-startup_funcs.sort()
 funclist.sort()
 attrlist.sort()
 
@@ -828,9 +833,10 @@ print >> output_fh, \
 \\textsc{\\huge VisIt Python Interface Manual}\\\\[0.5cm]
 \\hrule
 \\includegraphics[width=4.8in]{images/teaser}\\\\[0.5cm]
-\\hrule
-\\textsc{\\LARGE Version 2.3.0}\\\\[0.5cm]
-\\hrule
+\\hrule"""
+print >> output_fh, "\\textsc{\\LARGE Version %s}\\\\[0.5cm]" %(visit.Version())
+print >> output_fh, \
+"""\\hrule
 
 \\date{}
 %\maketitle
@@ -846,12 +852,6 @@ print >> output_fh, \
 \\input{intro.inc}
 \\input{python.inc}
 \\input{quickrecipes.inc}"""
-
-# first chapter of functions available before Launch()
-print >> output_fh, "\\chapter{Functions available before Launch()}"
-print >> output_fh, "\\input{prelaunch_preamble.inc}"
-
-missing_documentation.extend(print_file_list(startup_funcs))
 
 # proceeding to general functions #
 print >> output_fh, "\\chapter{Functions}"
@@ -894,7 +894,8 @@ for attr in sorted(attr_names.keys()):
 
   ltable_collector.create_new(False)
   ## Store the full listing for a attribute set by calling the stored function
-  alist = str(eval(attr_names[attr])()).splitlines()
+  visitString="visit."+attr_names[attr]
+  alist = str(eval(visitString)()).splitlines()
   if not alist:
     print >> sys.stderr, "** Warning: function "+attr_names[attr]+" does not return any attributes"
 
@@ -951,10 +952,10 @@ for attr in sorted(attr_names.keys()):
 print >> output_fh, "\\newpage\n\\chapter{VisIt CLI Events}"
 print >> output_fh, "\\input{events_preamble.inc}"
 ## Store a list of event names in the VisIt CLI
-event_names = GetCallbackNames()
+event_names = visit.GetCallbackNames()
 ltable_collector.create_new(False)
 for ev in sorted(event_names):
-  ltable_collector.add_row([ev, str(GetCallbackArgumentCount(ev))])
+  ltable_collector.add_row([ev, str(visit.GetCallbackArgumentCount(ev))])
 #
 ## Store the (formatted) string used as header for the longtable for the Event listing
 event_table_header = \
