@@ -58,7 +58,9 @@
 // Creation:   Thu Oct 27 16:22:13 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Sep 12 12:14:10 PDT 2012
+//   Fix the find tests so they do not erroneously return true.
+//
 // ****************************************************************************
 
 class CancelledObserver : public Observer
@@ -76,8 +78,10 @@ public:
     virtual void Update(Subject *s)
     {
         MessageAttributes *m = (MessageAttributes *)s;
-        cancelled |= m->GetText().find("cancelled") &&
-                     m->GetText().find("metadata server");
+        std::string msg(m->GetText());
+        bool findCancelled = msg.find("cancelled") != std::string::npos; 
+        bool findMDServer =  msg.find("metadata server") != std::string::npos;
+        cancelled |= (findCancelled && findMDServer);
     }
 
     bool cancelled;
