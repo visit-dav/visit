@@ -3196,7 +3196,7 @@ const char *visit_GetPickOutput_doc =
 "\n"
 "Returns:\n"
 "\n"
-"GetPickOtuput returns a string containing the output from the last pick.\n"
+"GetPickOutput returns a string containing the output from the last pick.\n"
 "GetPickOutputObject returns a dictionary produced by the last pick.\n"
 "\n"
 "\n"
