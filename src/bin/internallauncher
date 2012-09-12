@@ -2605,7 +2605,7 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
     # Print the architectures and exit.
     if launcher.generalArgs.arch:
         self.message(string.join(supportedarches, " "))
-        sys.exit(0)
+        return 0
 
     launcher.ConsistencyCheck()
     launcher.Customize()
@@ -2616,14 +2616,13 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
 
     if "-help" in visitargs:
         launcher.PrintUsage(0)
-        sys.exit(0)
+        return 0
     elif "-fullhelp" in visitargs:
         launcher.PrintUsage(1)
-        sys.exit(0)
+        return 0
 
     if launcher.generalArgs.env:
         launcher.PrintEnvironmentShell(0)
-        sys.exit(0)
+        return 0
 
-    ret = launcher.Launch()
-    return ret
+    return launcher.Launch()
