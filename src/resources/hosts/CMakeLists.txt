@@ -37,48 +37,32 @@
 #
 #
 # Modifications:
+#   Brad Whitlock, Thu Jun 14 15:28:13 PDT 2012
+#   Install customlauncher files. Remove installation of all the other stuff
+#   because it will be handled by wholesale installation of the hosts directory
+#   into resources/hosts.
 #
 #*****************************************************************************
 
-## find all host profiles to install using a glob
-FILE(GLOB HPROF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/host_*.xml")
-## find all ini files to install using a glob
-FILE(GLOB INI_FILES   "${CMAKE_CURRENT_SOURCE_DIR}/visit-*.ini")
-
-IF(APPLE)
-    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/default_configs.dat)
-    LIST(APPEND INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/networks.dat)
-ENDIF (APPLE)
-
 ## provide proper install structure windows vs other:
 IF(WIN32)
-    SET(INI_DEST   ${VISIT_INSTALLED_VERSION_BIN})
-    SET(HPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/allhosts)
     SET(LPROF_DEST ${VISIT_INSTALLED_VERSION_BIN}/hosts)
+    SET(BIN_DEST   ${VISIT_INSTALLED_VERSION_BIN})
 ELSE(WIN32)
-    SET(INI_DEST   ${VISIT_VERSION}/.visit)
-    SET(HPROF_DEST ${VISIT_VERSION}/.visit/allhosts)
     SET(LPROF_DEST ${VISIT_VERSION}/.visit/hosts)
+    SET(BIN_DEST   ${VISIT_VERSION}/bin) # The internal bin directory
 ENDIF(WIN32)
-
-# Install the visit config files
-INSTALL(FILES ${INI_FILES}
-        DESTINATION ${INI_DEST}
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-)
-
-# Install the host profile files
-INSTALL(FILES ${HPROF_FILES}
-        DESTINATION ${HPROF_DEST}
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-)
 
 # Install local host profiles if specified
 IF (VISIT_INSTALL_PROFILES_TO_HOSTS)
     FILE(GLOB LPROF_FILES
-         "${CMAKE_CURRENT_SOURCE_DIR}/host_${VISIT_INSTALL_PROFILES_TO_HOSTS}_*.xml")
+         "${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_INSTALL_PROFILES_TO_HOSTS}/*.xml")
     INSTALL(FILES ${LPROF_FILES}
             DESTINATION ${LPROF_DEST}
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
+    )
+    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_INSTALL_PROFILES_TO_HOSTS}/customlauncher"
+            DESTINATION ${BIN_DEST}
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     ) 
 ENDIF (VISIT_INSTALL_PROFILES_TO_HOSTS)
