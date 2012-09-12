@@ -185,7 +185,6 @@ QvisFileOpenWindow::CreateWindowContents()
     CreateHostPathFilterControls();
 
     // Add a grid layout for the file and directory lists.
-    topLayout->addSpacing(10);
     QSplitter *listSplitter = new QSplitter(central);
     listSplitter->setOrientation(Qt::Horizontal);
     topLayout->addWidget(listSplitter);
@@ -531,7 +530,7 @@ QvisFileOpenWindow::okClicked()
 
         // Try and open the data file. This is the part that retrieves new metadata
         // for the gui and updates the menus, etc.
-        bool retval = SetOpenDataFile(emitFile, 0, 0, false);
+        SetOpenDataFile(emitFile, 0, 0, false);
 
         // Tell the viewer to open the file.
         GetViewerMethods()->OpenDatabase(emitFile.FullName().c_str(),

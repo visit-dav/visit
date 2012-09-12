@@ -121,6 +121,7 @@ protected slots:
     void changeDirectory(QListWidgetItem *);
     void refreshFiles();
     void currentDir(bool val);
+    void showDotFiles(bool val);
     void fileGroupingChanged(int val);
 protected:
     FileServerList              *fs;
@@ -134,6 +135,7 @@ protected:
     QComboBox                   *pathComboBox;
     QLineEdit                   *filterLineEdit;
     QCheckBox                   *currentDirToggle;
+    QCheckBox                   *showDotFilesToggle;
     QComboBox                   *fileGroupingComboBox;
     QPushButton                 *recentPathRemovalButton;
     QvisRecentPathRemovalWindow *recentPathsRemovalWindow;

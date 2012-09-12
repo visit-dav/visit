@@ -153,9 +153,12 @@ MDCacheKeys(const string& stateLessName, int timeState)
 //   Cyrus Harrison, Thu Nov 29 08:12:53 PST 2007
 //   Added flags for creation of vector magnitude expressions.
 //
+//   Brad Whitlock, Wed Sep 12 15:09:17 PDT 2012
+//   I added showDotFilesFlag.
+//
 // ****************************************************************************
 
-FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"),
+FileServerList::FileServerList() : AttributeSubject("bbbbbibbbbb"),
     activeHost("localhost"), fileList(), appliedFileList(), openFile(),
     fileMetaData(), recentPaths()
 {
@@ -167,6 +170,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"),
 #else
     useCurrentDirectoryFlag = true;
 #endif
+    showDotFilesFlag = false;
     automaticFileGroupingFlag = true;
     smartFileGroupingFlag = true;
     recentPathsFlag = false;
@@ -271,6 +275,9 @@ FileServerList::~FileServerList()
 //   Brad Whitlock, Fri Dec 14 17:10:19 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Wed Sep 12 15:10:30 PDT 2012
+//   I added showDotFilesFlag.
+//
 // ****************************************************************************
 
 void
@@ -286,6 +293,7 @@ FileServerList::SelectAll()
     Select(ID_automaticFileGroupingFlag, (void *)&automaticFileGroupingFlag);
     Select(ID_recentPathsFlag,           (void *)&recentPathsFlag);
     Select(ID_smartFileGroupingFlag,     (void *)&smartFileGroupingFlag);
+    Select(ID_showDotFilesFlag,          (void *)&showDotFilesFlag);
 }
 
 // *************************************************************************************
@@ -1137,7 +1145,7 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
     int               oldOpenFileTimeState = openFileTimeState;
 
     // Remove the metadata and SIL for any virtual files.
-    for(int i = 0; i < appliedFileList.size(); ++i)
+    for(size_t i = 0; i < appliedFileList.size(); ++i)
     {
         if(appliedFileList[i].IsVirtual())
         {
@@ -1284,6 +1292,48 @@ FileServerList::SetSmartFileGrouping(bool val)
 {
     smartFileGroupingFlag = val;
     Select(ID_smartFileGroupingFlag, (void *)&smartFileGroupingFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetShowDotFiles
+//
+// Purpose: 
+//   Sets the flag that tells VisIt whether to show dot files.
+//
+// Arguments:
+//   val : The new value of the flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 12 15:11:29 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetShowDotFiles(bool val)
+{
+    showDotFilesFlag = val;
+    Select(ID_showDotFilesFlag, (void *)&showDotFilesFlag);
+}
+
+// ****************************************************************************
+// Method: FileServerList::GetShowDotFiles
+//
+// Purpose: 
+//   Return the state of the showDotfiles flag.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 12 15:12:20 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+FileServerList::GetShowDotFiles() const
+{
+    return showDotFilesFlag;
 }
 
 // ****************************************************************************
@@ -1599,7 +1649,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 const avtDatabaseMetaData *newMetaData =
                     GetMetaDataEx(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
-                const avtSIL *newSIL = 
+                //const avtSIL *newSIL = 
                     GetSILEx(filename, timeState, !ANY_STATE, GET_NEW_MD);
 
                 readFileFailed = false;
@@ -1614,7 +1664,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                     virtualFiles[filename.FullName()] = states;
                     debug4 << "Overwriting virtual file definition for "
                            << filename.FullName().c_str() << " with:" << endl;
-                    for(int i = 0; i < states.size(); ++i)
+                    for(size_t i = 0; i < states.size(); ++i)
                         debug4 << "\t" << states[i].c_str() << endl;
                 }
 
@@ -1698,7 +1748,7 @@ FileServerList::ClearFile(const QualifiedFilename &filename,
     const string& fullName = filename.FullName();
     const int n = fullName.size();
     vector<string> keysToRemove;
-    int i;
+    size_t i;
 
     FileMetaDataMap::iterator mdit;
     for (mdit = fileMetaData.begin(); mdit != fileMetaData.end(); mdit++)
@@ -1884,6 +1934,9 @@ FileServerList::SetProgressCallback(bool (*cb)(void *, int), void *data)
 //   is turned off so the file selection window displays files that can't be
 //   accessed in the right color.
 //
+//   Brad Whitlock, Wed Sep 12 15:49:08 PDT 2012
+//   Remove dot files from the list of filtered files.
+//
 // ****************************************************************************
 
 QualifiedFilenameVector
@@ -1893,19 +1946,38 @@ FileServerList::GetFilteredFileList()
     ServerMap& servers = MDServerManager::Instance()->GetServerMap();
 
     QualifiedFilenameVector retval;
+    std::string dot(".");
 
     if(automaticFileGroupingFlag)
     {
         // Go through each file in the file and virtualFiles list and add them
         // all to the returned list.
-        MDServerMethods::FileEntryVector::const_iterator pos;
-        for(pos = fileList.files.begin();
-            pos != fileList.files.end(); ++pos)
+        if(GetShowDotFiles())
         {
-            // Add the host qualified filename to the applied file list.
-            QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                pos->name, pos->CanAccess(), pos->IsVirtual());
-            retval.push_back(f);
+            MDServerMethods::FileEntryVector::const_iterator pos;
+            for(pos = fileList.files.begin();
+                pos != fileList.files.end(); ++pos)
+            {
+                // Add the host qualified filename to the applied file list.
+                QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                    pos->name, pos->CanAccess(), pos->IsVirtual());
+                retval.push_back(f);
+            }
+        }
+        else
+        {
+            // Not showing dot files (except for .visit)
+            MDServerMethods::FileEntryVector::const_iterator pos;
+            for(pos = fileList.files.begin();
+                pos != fileList.files.end(); ++pos)
+            {
+                if(pos->name.substr(0,1) == dot)
+                    continue;
+                // Add the host qualified filename to the applied file list.
+                QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                    pos->name, pos->CanAccess(), pos->IsVirtual());
+                retval.push_back(f);
+            }
         }
     }
     else
@@ -1920,15 +1992,34 @@ FileServerList::GetFilteredFileList()
 
         // Go through each file in the file list and
         MDServerMethods::FileEntryVector::const_iterator pos;
-        for(pos = fileList.files.begin();
-            pos != fileList.files.end(); ++pos)
+        if(GetShowDotFiles())
         {
-            if(FileMatchesFilterList(pos->name, filterList))
+            for(pos = fileList.files.begin();
+                pos != fileList.files.end(); ++pos)
             {
-                // Add the host qualified filename to the applied file list.
-                QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                    pos->name, pos->CanAccess(), false);
-                retval.push_back(f);
+                if(FileMatchesFilterList(pos->name, filterList))
+                {
+                    // Add the host qualified filename to the applied file list.
+                    QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                        pos->name, pos->CanAccess(), false);
+                    retval.push_back(f);
+                }
+            }
+        }
+        else
+        {
+            for(pos = fileList.files.begin();
+                pos != fileList.files.end(); ++pos)
+            {
+                if(pos->name.substr(0,1) == dot)
+                    continue;
+                if(FileMatchesFilterList(pos->name, filterList))
+                {
+                    // Add the host qualified filename to the applied file list.
+                    QualifiedFilename f(activeHost, servers[activeHost]->path,
+                                        pos->name, pos->CanAccess(), false);
+                    retval.push_back(f);
+                }
             }
         }
     }
@@ -2005,7 +2096,7 @@ FileServerList::FileMatchesFilterList(const string &fileName,
     // Try the filename against all the filters in the list until
     // it matches or we've tested all the filters.
     bool match = false;
-    for(int i = 0; i < filterList.size() && !match; ++i)
+    for(size_t i = 0; i < filterList.size() && !match; ++i)
     {
         match = WildcardStringMatch(filterList[i],fileName);
     }
@@ -2047,7 +2138,7 @@ FileServerList::AddPathToRecentList(const string &host,
     {
         // Search the list to see if it already exists.
         bool exists = false;
-        for(int i = 0; i < pos->second.size(); ++i)
+        for(size_t i = 0; i < pos->second.size(); ++i)
         {
             if(path == pos->second[i])
             {
@@ -2217,6 +2308,9 @@ FileServerList::GetVirtualFileDefinitionSize(const QualifiedFilename &name) cons
 //   Brad Whitlock, Thu Jul 29 13:46:46 PST 2004
 //   I added smartFileGrouping.
 //
+//   Brad Whitlock, Wed Sep 12 15:12:54 PDT 2012
+//   I added showDotFiles.
+//
 // ****************************************************************************
 
 bool
@@ -2253,6 +2347,7 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     fsNode->AddNode(new DataNode("useCurrentDir", useCurrentDirectoryFlag));
     fsNode->AddNode(new DataNode("automaticFileGrouping", automaticFileGroupingFlag));
     fsNode->AddNode(new DataNode("smartFileGrouping", smartFileGroupingFlag));
+    fsNode->AddNode(new DataNode("showDotFiles", showDotFilesFlag));
 
     // Add nodes for the recent paths.
     DataNode *pathNode = new DataNode("recentpaths");
@@ -2262,7 +2357,7 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
     {
         // Encode any spaces that might be in the path names.
         stringVector paths;
-        for(int i = 0; i < pos->second.size(); ++i)
+        for(size_t i = 0; i < pos->second.size(); ++i)
             paths.push_back(EncodePath(pos->second[i]));
 
         // Add a node for the paths from the current host.
@@ -2313,6 +2408,9 @@ FileServerList::CreateNode(DataNode *parentNode, bool, bool)
 //   Brad Whitlock, Thu Jul 29 13:47:20 PST 2004
 //   I added smartFileGrouping.
 //
+//   Brad Whitlock, Wed Sep 12 15:13:27 PDT 2012
+//   I added showDotFiles.
+//
 // ****************************************************************************
 
 void
@@ -2332,6 +2430,9 @@ FileServerList::SetFromNode(DataNode *parentNode)
 
     if((node = fsNode->GetNode("smartFileGrouping")) != 0)
         SetSmartFileGrouping(node->AsBool());
+
+    if((node = fsNode->GetNode("showDotFiles")) != 0)
+        SetShowDotFiles(node->AsBool());
 
     // If we are not using the current directory, read the default host
     // and path from the default settings.
@@ -2355,7 +2456,7 @@ FileServerList::SetFromNode(DataNode *parentNode)
         for(int i = 0; i < node->GetNumChildren(); ++i)
         {
             const stringVector &sv = children[i]->AsStringVector();
-            for(int j = 0; j < sv.size(); ++j)
+            for(size_t j = 0; j < sv.size(); ++j)
                 AddPathToRecentList(children[i]->GetKey(), DecodePath(sv[j]));
         }
     }
