@@ -2494,7 +2494,11 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             args = self.Debug(args)
             args = self.NewConsole(args, 1)
 
-            if self.NoRun():
+            if self.generalArgs.newconsole and args == []:
+                # Running with a new console on Mac can cause this case since 
+                # we rely on OSAScript to run a new console.
+                ret = 0
+            elif self.NoRun():
                 args = args + ["-dir", self.visithome]
                 self.message("# SET ENVIRONMENT VARIABLES:", file=sys.stdout)
                 self.PrintEnvironmentShell("csh" in GETENV("SHELL"))
