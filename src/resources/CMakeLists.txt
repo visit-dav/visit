@@ -44,6 +44,9 @@
 #   Brad Whitlock, Thu Sep  6 11:50:09 PDT 2012
 #   Add hosts to the directories that get installed to resources.
 #
+#   Kathleen Biagas, Wed Sep 12 11:57:06 PDT 2012
+#   Add CMakeLists.txt and cmake-generated files to exclusion lists.
+#
 #*****************************************************************************
 
 # Do a little extra in the hosts directory.
@@ -58,7 +61,8 @@ FOREACH(ITEM ${RESOURCE_DIRECTORIES})
                            REALPATH)
     FILE(COPY ${ITM_RP}
          DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-         PATTERN ".svn" EXCLUDE)
+         PATTERN ".svn" EXCLUDE
+         PATTERN "CMakeLists.txt" EXCLUDE)
 ENDFOREACH(ITEM)
 
 # Install these directories in their entirety to the installed "resources" 
@@ -72,4 +76,8 @@ INSTALL(DIRECTORY ${RESOURCE_DIRECTORIES}
                           GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                           WORLD_READ             WORLD_EXECUTE
     PATTERN ".svn" EXCLUDE
+    PATTERN "CMakeLists.txt" EXCLUDE
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "Makefile" EXCLUDE
+    PATTERN "cmake_install.cmake" EXCLUDE
 )

@@ -305,6 +305,9 @@
 #    Kathleen Biagas, Tue Jun 26 13:38:27 MST 2012
 #    Fixed parallel definitions for windows (removed -D).
 #
+#    Kathleen Biagas, Wed Sep 12 16:02:02 PDT 2012
+#    Added VISIT_INSTALL_PROFILES_TO_HOST as a first-class VisIt option.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -517,6 +520,8 @@ IF(VISIT_MESA_DIR)
   OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt"
 ON)
 ENDIF(VISIT_MESA_DIR)
+
+SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     IF(NOT DEFINED VISIT_${libvar})
