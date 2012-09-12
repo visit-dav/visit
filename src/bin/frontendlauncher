@@ -15,11 +15,12 @@ if (test $? -ne 0) then
     tail --lines=$lines $0 1>> $TMPDIR/visitfelpython$$
 fi
 exec python $TMPDIR/visitfelpython$$ $0 ${1+"$@"}
-unlink $0;
 $0 = shift @ARGV;
+
 
 # Due to the above "magic", we have to alter sys.argv
 import sys
+_visitfelpython = sys.argv[0]
 sys.argv = sys.argv[1:]
 
 ###############################################################################
@@ -67,7 +68,13 @@ def SETENV(var, value):
         pass
 
 def exit(msg, value):
-    print >> sys.stderr, msg
+    if msg != None:
+        print >> sys.stderr, msg
+    # Try removing the visitfelpython file.
+    try:
+        os.unlink(_visitfelpython)
+    except:
+        pass
     sys.exit(value)
 
 def ParseVersion(ver):
@@ -391,7 +398,7 @@ else:
     # object that we created.
     ret = internallauncher(launcher, visitdir, progname, ver, visitpluginver, visitargs)
 
-sys.exit(ret)
+exit(None, ret)
 
 
 
