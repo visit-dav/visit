@@ -53,6 +53,7 @@
 #include <avtArrayComposeExpression.h>
 #include <avtArrayComposeWithBinsExpression.h>
 #include <avtArrayDecomposeExpression.h>
+#include <avtBinExpression.h>
 #include <avtBinaryAddExpression.h>
 #include <avtBinaryAndExpression.h>
 #include <avtBinaryDivideExpression.h>
@@ -485,6 +486,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Eric Brugger, Mon Aug 27 11:34:02 PDT 2012
 //    Added curve_swapxy.
 //
+//    Brad Whitlock, Wed Sep 12 17:15:18 PDT 2012
+//    Added bin expression.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -626,6 +630,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCurveSwapXYExpression();
     if (functionName == "curve")
         return new avtCurveExpression();
+    if (functionName == "bin")
+        return new avtBinExpression();
 
     return NULL;
 }

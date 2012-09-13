@@ -356,6 +356,7 @@ const char *expr_mesh[] = {
 };
 
 const char *expr_misc[] = {
+    "bin",
     "cell_constant",
     "conn_components",
     "curl",
@@ -1606,6 +1607,9 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Eric Brugger, Mon Aug 20 13:21:19 PDT 2012
 //    Added curve_cmfe and curve_domain.
 //
+//    Brad Whitlock, Wed Sep 12 17:21:19 PDT 2012
+//    Add bin expression.
+//
 // ****************************************************************************
 
 QString
@@ -1785,6 +1789,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "curve_domain")
     {
         res += QString("(<range_curve>, <domain_curve>)");
+        doParens = false;
+    }
+    else if (func_name == "bin")
+    {
+        res += QString("(<var>, [0., 1., 2.])");
         doParens = false;
     }
 
