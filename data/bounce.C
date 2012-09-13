@@ -318,10 +318,10 @@ public:
         DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
         DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
 
-        const char *snames[] = {"pointmesh", "vx", "vy", "vz", "restitution", "mass", "ID", "dom", "contact"};
+        const char *snames[] = {"pointmesh", "vx", "vy", "vz", "restitution", "mass", "dom", "contact"};
         const int svartypes[] = {DB_POINTMESH, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR,
-                                               DB_POINTVAR, DB_POINTVAR, DB_POINTVAR, DB_POINTVAR};
-        const bool isMesh[] = {true, false, false, false, false, false, false, false, false};
+                                               DB_POINTVAR, DB_POINTVAR, DB_POINTVAR};
+        const bool isMesh[] = {true, false, false, false, false, false, false, false};
         for(int i = 0; i < (sizeof(snames)/sizeof(const char*)); ++i)
         {
             std::vector<std::string> names;
@@ -346,10 +346,10 @@ public:
                 DBPutMultivar(dbfile, snames[i], nDomains, varnames, vartypes, optlist);
         }
 
-        const char *names[] = {"velocity", "speed"};
-        const char *defs[] = {"{vx,vy,vz}", "magnitude(velocity)"};
-        int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR};
-        DBPutDefvars(dbfile, "defvars", 2, (char**)names, types, (char**)defs, NULL);
+        const char *names[] = {"velocity", "speed", "ID"};
+        const char *defs[] = {"{vx,vy,vz}", "magnitude(velocity)", "global_nodeid(pointmesh)"};
+        int types[] = {DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR, DB_VARTYPE_SCALAR};
+        DBPutDefvars(dbfile, "defvars", 3, (char**)names, types, (char**)defs, NULL);
         DBFreeOptlist(optlist);
 
         DBClose(dbfile);
@@ -449,11 +449,6 @@ public:
             return false;
         }
 
-        // Create an option list for saving cycle and time values.
-        DBoptlist *optlist = DBMakeOptlist(2);
-        DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
-        DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
-
         double *m, *x, *y, *z, *vx, *vy, *vz, *r;
         int *id, *doms, *contact;
         int dims[3];
@@ -495,20 +490,35 @@ public:
             contact[i] = P[i].contact ? 1 : 0;
         }
 
+        // Create an option list for saving cycle and time values.
+        DBoptlist *optlist = DBMakeOptlist(9);
+        DBAddOption(optlist, DBOPT_CYCLE, (void *)&cycle);
+        DBAddOption(optlist, DBOPT_DTIME, (void *)&time);
+        DBAddOption(optlist, DBOPT_NODENUM, (void *)id);
+        DBAddOption(optlist, DBOPT_XUNITS, (void *)"m");
+        DBAddOption(optlist, DBOPT_YUNITS, (void *)"m");
+        DBAddOption(optlist, DBOPT_ZUNITS, (void *)"m");
+        DBAddOption(optlist, DBOPT_XLABEL, (void *)"Width");
+        DBAddOption(optlist, DBOPT_YLABEL, (void *)"Height");
+        DBAddOption(optlist, DBOPT_ZLABEL, (void *)"Depth");
+
+        DBoptlist *voptlist = DBMakeOptlist(3);
+        DBAddOption(voptlist, DBOPT_CYCLE, (void *)&cycle);
+        DBAddOption(voptlist, DBOPT_DTIME, (void *)&time);
+
         // Write a point mesh.
         DBPutPointmesh(dbfile, "pointmesh", ndims, coords, P.size(),
                        DB_DOUBLE, optlist);
 
         // Write variables.
-        DBPutPointvar1(dbfile, "vx", "pointmesh", vx, P.size(), DB_DOUBLE, optlist);
-        DBPutPointvar1(dbfile, "vy", "pointmesh", vy, P.size(), DB_DOUBLE, optlist);
-        DBPutPointvar1(dbfile, "vz", "pointmesh", vz, P.size(), DB_DOUBLE, optlist);
+        DBPutPointvar1(dbfile, "vx", "pointmesh", vx, P.size(), DB_DOUBLE, voptlist);
+        DBPutPointvar1(dbfile, "vy", "pointmesh", vy, P.size(), DB_DOUBLE, voptlist);
+        DBPutPointvar1(dbfile, "vz", "pointmesh", vz, P.size(), DB_DOUBLE, voptlist);
 
-        DBPutPointvar1(dbfile, "mass", "pointmesh", m, P.size(), DB_DOUBLE, optlist);
-        DBPutPointvar1(dbfile, "restitution", "pointmesh", r, P.size(), DB_DOUBLE, optlist);
-        DBPutPointvar1(dbfile, "ID", "pointmesh", id, P.size(), DB_INT, optlist);
-        DBPutPointvar1(dbfile, "dom", "pointmesh", doms, P.size(), DB_INT, optlist);
-        DBPutPointvar1(dbfile, "contact", "pointmesh", contact, P.size(), DB_INT, optlist);
+        DBPutPointvar1(dbfile, "mass", "pointmesh", m, P.size(), DB_DOUBLE, voptlist);
+        DBPutPointvar1(dbfile, "restitution", "pointmesh", r, P.size(), DB_DOUBLE, voptlist);
+        DBPutPointvar1(dbfile, "dom", "pointmesh", doms, P.size(), DB_INT, voptlist);
+        DBPutPointvar1(dbfile, "contact", "pointmesh", contact, P.size(), DB_INT, voptlist);
 
         delete [] x;
         delete [] y;
@@ -523,6 +533,7 @@ public:
         delete [] contact;
 
         DBFreeOptlist(optlist);
+        DBFreeOptlist(voptlist);
         DBClose(dbfile);
 
         return true;
