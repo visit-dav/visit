@@ -415,7 +415,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     vtkDataSet           *CreateCurvilinearMesh(DBquadmesh *);
     vtkDataSet           *CreateRectilinearMesh(DBquadmesh *);
     vtkDataSet           *GetCSGMesh(DBfile *, const char *, int);
-    vtkDataSet           *GetPointMesh(DBfile *, const char *);
+    vtkDataSet           *GetPointMesh(DBfile *, const char *, int);
     vtkDataSet           *GetQuadMesh(DBfile *, const char *, int);
     vtkDataSet           *GetCurve(DBfile *, const char *);
     vtkDataSet           *GetUnstructuredMesh(DBfile *, const char *,
