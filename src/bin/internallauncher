@@ -1852,7 +1852,7 @@ class MainLauncher(object):
                     archdir = arch
                     break
             if archdir == "":
-                msg = "Version %s of %s does not exist for " % (visitver, self.generalArgs.exe_name)
+                msg = "Version %s of %s does not exist for " % (self.visitver, self.generalArgs.exe_name)
                 if len(supportedarches) > 1:
                     msg = msg + "any of the valid architectures (%s).\n" % string.join(supportedarches, " ")
                 else:
