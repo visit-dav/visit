@@ -7787,6 +7787,9 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Brad Whitlock, Thu Sep 13 16:15:43 PDT 2012
+//    Pass domain to GetPointMesh.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -7841,7 +7844,7 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     }
     else if (type == DB_POINTMESH)
     {
-        rv = GetPointMesh(domain_file, directory_mesh.c_str());
+        rv = GetPointMesh(domain_file, directory_mesh.c_str(), domain);
     }
 #ifdef DBCSG_INNER // remove after silo-4.5 is released
     else if (type == DB_CSGMESH)
@@ -12093,10 +12096,13 @@ CopyPointMeshCoordinates(T *pts, const DBpointmesh *pm)
 //    Brad Whitlock, Thu Aug  6 11:50:13 PDT 2009
 //    I added support for double coordinates.
 //
+//    Brad Whitlock, Thu Sep 13 16:13:03 PDT 2012
+//    I added support for global node ids.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
+avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn, int domain)
 {
     //
     // Allow empty data sets
@@ -12154,6 +12160,31 @@ avtSiloFileFormat::GetPointMesh(DBfile *dbfile, const char *mn)
     {
         onevertex[0] = i;
         ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+    }
+
+    //
+    // If we have global node ids, set them up and cache 'em
+    //
+    if (pm->gnodeno != NULL)
+    {
+#ifdef SILO_VERSION_GE
+#if SILO_VERSION_GE(4,7,1)
+        vtkDataArray *arr = CreateDataArray(pm->gnznodtype, pm->gnodeno, pm->nels); 
+#else
+        vtkDataArray *arr = CreateDataArray(DB_INT, pm->gnodeno, pm->nels); 
+#endif
+#else
+        vtkDataArray *arr = CreateDataArray(DB_INT, pm->gnodeno, pm->nels); 
+#endif
+        pm->gnodeno = 0; // vtkDataArray now owns the data.
+
+        //
+        // Cache this VTK object but in the VoidRefCache, not the VTK cache
+        // so that it can be obtained through the GetAuxiliaryData call
+        //
+        void_ref_ptr vr = void_ref_ptr(arr, avtVariableCache::DestructVTKObject);
+        cache->CacheVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS, timestep, 
+                            domain, vr);
     }
 
     points->Delete();
