@@ -63,6 +63,9 @@
 #    Eric Brugger, Mon Aug 27 11:32:43 PDT 2012
 #    Added avtCurveSwapXYExpression.
 #
+#    Brad Whitlock, Wed Sep 12 17:16:29 PDT 2012
+#    I added the bin expression.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -126,6 +129,7 @@ General/avtApplyMapExpression.C
 General/avtArrayComposeExpression.C
 General/avtArrayComposeWithBinsExpression.C
 General/avtArrayDecomposeExpression.C
+General/avtBinExpression.C
 General/avtColorComposeExpression.C
 General/avtConnComponentsExpression.C
 General/avtConstantFunctionExpression.C
