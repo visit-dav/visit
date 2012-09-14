@@ -298,13 +298,8 @@
                              Dump html pages only. 
                              Takes an optional argument that specifies the 
                              directory for -info-dump output files.
-        -gdb                 Run under gdb.
-        -gdb-gui             Run the gui under gdb.
-        -gdb-cli             Run the cli under gdb.
-        -gdb-viewer          Run the viewer under gdb.
-        -gdb-engine          Run the engine under gdb.
-        -gdb-mdserver        Run the mdserver under gdb.
-        -gdb-xmledit         Run xmledit under gdb.
+        -gdb <args> <comp>   Run gdb with <args> on component <comp>.
+                             Default <args> is whitespace.
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               With -gdb-something, run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
