@@ -199,7 +199,8 @@ _nrrdHestIterParse(void *ptr, char *str, char err[AIR_STRLEN_HUGE]) {
       /* it failed because of something besides the fopen(), so complain */
       nerr = biffGetDone(NRRD);
       strncpy(err, nerr, AIR_STRLEN_HUGE-1);
-      airMopError(mop); return 1;
+      airMopError(mop); 
+      free(nerr); return 1;
     } else {
       /* fopen() failed, so it probably wasn't meant to be a filename */
       free(biffGetDone(NRRD));
@@ -221,7 +222,8 @@ _nrrdHestIterParse(void *ptr, char *str, char err[AIR_STRLEN_HUGE]) {
         if (nrrdLoad(nrrd = nrrdNew(), str, NULL)) {
           nerr = biffGetDone(NRRD);
           strncpy(err, nerr, AIR_STRLEN_HUGE-1);
-          airMopError(mop); return 1;
+          airMopError(mop); 
+          free(nerr); return 1;
         } else {
           /* what the hell? */
           fprintf(stderr, "%s: PANIC, is it a nrrd or not?", me);

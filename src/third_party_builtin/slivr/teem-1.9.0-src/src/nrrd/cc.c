@@ -349,7 +349,9 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type,
   if (nrrdConvert(nfpid=nrrdNew(), nin, nrrdTypeUInt)) {
     sprintf(err, "%s: couldn't allocate fpid %s array to match input size",
             me, airEnumStr(nrrdType, nrrdTypeUInt));
-    biffAdd(NRRD, err); return 1;
+    biffAdd(NRRD, err); 
+    nrrdNuke(nfpid);
+    return 1;
   }
 
   mop = airMopNew();

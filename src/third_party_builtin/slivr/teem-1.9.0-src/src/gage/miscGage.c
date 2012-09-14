@@ -162,7 +162,10 @@ _gageStandardPadder(Nrrd *nin, gageKind *kind,
     amax[2 + baseDim] = nin->axis[2 + baseDim].size - 1 + padding;
     if (nrrdPad_va(npad, nin, amin, amax, nrrdBoundaryBleed)) {
       sprintf(err, "%s: trouble padding input volume", me);
-      biffMove(GAGE, err, NRRD); return NULL;
+      biffMove(GAGE, err, NRRD); 
+
+      nrrdNuke(npad);
+      return NULL;
     }
   }
   return npad;

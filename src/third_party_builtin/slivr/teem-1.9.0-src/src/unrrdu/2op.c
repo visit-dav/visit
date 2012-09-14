@@ -104,6 +104,9 @@ unrrdu_2opMain(int argc, char **argv, char *me, hestParm *hparm) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error converting input nrrd(s):\n%s", me, err);
       airMopError(mop);
+
+      nrrdNuke(ntmp);
+      
       return 1;
     }
     /* this will still leave a nrrd in the NrrdIter for nrrdIterNix()
