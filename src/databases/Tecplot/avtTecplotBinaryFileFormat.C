@@ -336,7 +336,7 @@ avtTecplotBinaryFileFormat::Initialize(TecplotFile *f, avtDatabaseMetaData *md,
             mmd->blockTitle = "Zones";
             mmd->blockPieceName = "zone";
             mmd->numBlocks = pos->second.size();
-            for(int i = 0; i < pos->second.size(); ++i)
+            for(size_t i = 0; i < pos->second.size(); ++i)
                 mmd->blockNames.push_back(f->zones[pos->second[i]].zoneName);
             md->Add(mmd);
         }
@@ -459,7 +459,7 @@ avtTecplotBinaryFileFormat::GetTime()
 void
 avtTecplotBinaryFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    const char *mName = "avtTecplotBinaryFileFormat::PopulateDatabaseMetaData: ";
+    // This line must come first.
     TecplotFile *f = File();
 
     // Set the database comment.
@@ -492,6 +492,11 @@ avtTecplotBinaryFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Jun 6 15:32:40 PST 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Sep 14 11:42:25 PDT 2012
+//    Call File() first to avoid problem with maps not being initialized on
+//    later time steps.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -500,11 +505,14 @@ avtTecplotBinaryFileFormat::GetMesh(int domain, const char *meshname)
 #ifdef MDSERVER
     return 0;
 #else
+    // This line must come first.
+    TecplotFile *f = File();
+
     std::map<std::string, std::vector<int> >::const_iterator pos;
     pos = zoneNameToZoneList.find(meshname);
     int zoneId = -1;
-    if(pos == zoneNameToZoneList.end() || domain >= pos->second.size())
-        zoneId = File()->ZoneNameToIndex(meshname);
+    if(pos == zoneNameToZoneList.end() || domain >= int(pos->second.size()))
+        zoneId = f->ZoneNameToIndex(meshname);
     else
         zoneId = pos->second[domain];
 
@@ -513,11 +521,11 @@ avtTecplotBinaryFileFormat::GetMesh(int domain, const char *meshname)
         EXCEPTION1(InvalidVariableException, meshname);
     }
 
-    ZoneType zt = File()->zones[zoneId].zoneType;
+    ZoneType zt = f->zones[zoneId].zoneType;
     vtkDataSet *ds = 0;
     if(zt == ORDERED)
     {
-        if(File()->GetNumTopologicalDimensions(zoneId) == 1)
+        if(f->GetNumTopologicalDimensions(zoneId) == 1)
             ds = GetCurve(zoneId);
         else
             ds = GetCurvilinearMesh(zoneId);
@@ -714,12 +722,10 @@ avtTecplotBinaryFileFormat::GetCurvilinearMesh(int zoneId)
 #else
     TecplotOrderedZone *ordered = (TecplotOrderedZone *)File()->zones[zoneId].zoneData;
     int sdims = File()->GetNumSpatialDimensions(zoneId);
-    int ndims = File()->GetNumSpatialDimensions(zoneId);
     int dims[3];
     dims[0] = ordered->iMax;
     dims[1] = ordered->jMax;
     dims[2] = ordered->kMax;
-    int nnodes = dims[0]*dims[1]*dims[2];
 
     //
     // Create the vtkStructuredGrid and vtkPoints objects.
@@ -932,6 +938,11 @@ avtTecplotBinaryFileFormat::GetPolyMesh(int zoneId)
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Jun 6 15:32:40 PST 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Sep 14 11:42:25 PDT 2012
+//    Call File() first to avoid problem with maps not being initialized on
+//    later time steps.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -940,6 +951,9 @@ avtTecplotBinaryFileFormat::GetVar(int domain, const char *varname)
 #ifdef MDSERVER
     return 0;
 #else
+    // This line must come first.
+    TecplotFile *f = File();
+
     std::string varName(varname);
 
     std::map<std::string, std::string>::const_iterator m;
@@ -953,7 +967,7 @@ avtTecplotBinaryFileFormat::GetVar(int domain, const char *varname)
     // corresponds to the domain. 
     std::map<std::string, std::vector<int> >::const_iterator pos;
     pos = zoneNameToZoneList.find(m->second);
-    if(pos == zoneNameToZoneList.end() || domain >= pos->second.size())
+    if(pos == zoneNameToZoneList.end() || domain >= int(pos->second.size()))
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
@@ -964,8 +978,8 @@ avtTecplotBinaryFileFormat::GetVar(int domain, const char *varname)
         varName = varName.substr(slash+1, varName.size() - slash);
     int zoneId = pos->second[domain];
     vtkFloatArray *arr = vtkFloatArray::New();
-    arr->SetNumberOfTuples(File()->zones[zoneId].GetNumNodes());
-    File()->ReadVariableAsFloat(zoneId, varName, (float*)arr->GetVoidPointer(0));
+    arr->SetNumberOfTuples(f->zones[zoneId].GetNumNodes());
+    f->ReadVariableAsFloat(zoneId, varName, (float*)arr->GetVoidPointer(0));
 
     return arr;
 #endif
