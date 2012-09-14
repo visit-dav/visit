@@ -1373,7 +1373,7 @@ class ParallelArguments(object):
         if self.nn != None:
             args = args + ["-nn", self.nn]
         if self.launchargs != None:
-            args = args + ["-la", '"' + string.join(self.launchargs, " ") + '"']
+            args = args + ["-la", string.join(self.launchargs, " ")]
         if self.name != None:
             args = args + ["-n", self.name]
         if self.partition != None:
@@ -2378,12 +2378,15 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     def NoRun(self):
         if self.generalArgs.norun == None:
             return 0
+        if self.generalArgs.norun == self.generalArgs.exe_name:
+            return 1
         if self.parallelArgs.parallel:
             if self.generalArgs.norun in ("engine", "engine_par"):
                 return 1
         else:
             exe = self.generalArgs.exe_name
-            exe_ser = exe + "_ser"
+            exe_ser = self.generalArgs.norun + "_ser"
+            print self.generalArgs.norun, exe, exe_ser
             if self.generalArgs.norun in (exe, exe_ser):
                 return 1
         return 0
