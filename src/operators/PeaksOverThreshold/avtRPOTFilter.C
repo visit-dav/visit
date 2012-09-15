@@ -737,8 +737,8 @@ avtRPOTFilter::CreateFinalOutput()
             {
                 for (int b = 0; b < numBins; b++)
                 {
-                    outputs_rv[n][b][i] = (float)out_rv->GetComponent(b,0);
-                    outputs_serv[n][b][i] = (float)out_serv->GetComponent(b,0);
+                    outputs_rv[n][b][i] = (float)out_rvDiff->GetComponent(b,0);
+                    outputs_serv[n][b][i] = (float)out_servDiff->GetComponent(b,0);
                 }
             }
         }
