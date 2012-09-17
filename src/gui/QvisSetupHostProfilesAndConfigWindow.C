@@ -293,6 +293,9 @@ QvisSetupHostProfilesAndConfigWindow::installConfigFile(const QString& srcFilena
 //   installing all configs to the system config directory so we need to
 //   get the configs from the resources directory.
 //
+//   Mark C. Miller, Mon Sep 17 08:46:24 PDT 2012
+//   Fixed leak from using GetDefaultConfigFile directly as arg
+//   in installConfigFile.
 // ****************************************************************************
 
 void
@@ -337,8 +340,9 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
                 QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
                 if (QFile::exists(srcCfgPath))
                 {
-                    installConfigFile(
-                            srcCfgPath, GetDefaultConfigFile(configFilename[i]));
+                    char *srcCfgFile = GetDefaultConfigFile(configFilename[i]);
+                    installConfigFile(srcCfgPath, srcCfgFile);
+                    delete [] srcCfgFile;
                 }
             }
         }
