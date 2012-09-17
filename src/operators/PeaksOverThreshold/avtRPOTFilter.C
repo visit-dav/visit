@@ -256,9 +256,13 @@ avtRPOTFilter::GetDumpFileName(int idx, int yr, int var)
         varNm = "returnValue";
     else if (var == 1)
         varNm = "se_returnValue";
+    else if (var == 2)
+        varNm = "paramValues";
+    else if (var == 3)
+        varNm = "se_paramValues";
       
     nm = "POT";
-    if (atts.GetComputeCovariates())
+    if (atts.GetComputeCovariates() && yr != -1)
     {
         if (atts.GetComputeRVDifferences() && yr >= atts.GetCovariateReturnYears().size())
             sprintf(str, ".RVDiff");
@@ -534,6 +538,24 @@ avtRPOTFilter::CreateFinalOutput()
             outputs_serv[n][b].resize(numTuples);
         }
     }
+
+    vector<vector<vector<float> > > outputs_mle, outputs_semle;
+    if (atts.GetComputeParamValues())
+    {
+        outputs_mle.resize(4);
+        outputs_semle.resize(4);
+        for (int n = 0; n < 4; n++)
+        {
+            outputs_mle[n].resize(numBins);
+            outputs_semle[n].resize(numBins);
+            for (int b = 0; b < numBins; b++)
+            {
+                outputs_mle[n][b].resize(numTuples);
+                outputs_semle[n][b].resize(numTuples);
+            }
+        }
+    }
+
     
     for (int i = idx0; i < idxN; i++)
     {
@@ -682,6 +704,11 @@ avtRPOTFilter::CreateFinalOutput()
             outputStr += "rvDiff = output$returnValueDiff;\n";
             outputStr += "se_rvDiff = output$se.returnValueDiff;\n";
         }
+        if (atts.GetComputeParamValues())
+        {
+            outputStr += "mle = output$mle;\n";
+            outputStr += "se_mle = output$se.mle;\n";
+        }
 
         sprintf(potCmd,
                 "require(ismev)\n" \
@@ -742,6 +769,20 @@ avtRPOTFilter::CreateFinalOutput()
                 }
             }
         }
+        if (atts.GetComputeParamValues())
+        {
+            vtkDoubleArray *out_mle, *out_semle;
+            out_mle = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("mle"));
+            out_semle = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_mle"));
+            for (int n = 0; n < 4; n++)
+            {
+                for (int b = 0; b < numBins; b++)
+                {
+                    outputs_mle[n][b][i] = (float)out_mle->GetComponent(b,n);
+                    outputs_semle[n][b][i] = (float)out_semle->GetComponent(b,n);
+                }
+            }
+        }
         
         exceedences->Delete();
         dayIndices->Delete();
@@ -754,6 +795,8 @@ avtRPOTFilter::CreateFinalOutput()
     float *sum0 = new float[numTuples], *sum1 = new float[numTuples];
     int N = outputs_rv.size();
     
+    for (int n = 0; n < N; n++)
+        in0[n] = in1[n] = sum0[n] = sum1[n] = 0.0;
     for (int n = 0; n < N; n++)
     {
         for (int b = 0; b<numBins; b++)
@@ -780,6 +823,39 @@ avtRPOTFilter::CreateFinalOutput()
             }
         }
     }
+    if (atts.GetComputeParamValues())
+    {
+        for (int n = 0; n < N; n++)
+            in0[n] = in1[n] = sum0[n] = sum1[n] = 0.0;
+        N = outputs_mle.size();
+        for (int n = 0; n < N; n++)
+        {
+            for (int b = 0; b<numBins; b++)
+            {
+                for (int i=0; i<numTuples; i++)
+                {
+                    if (i >= idx0 && i < idxN)
+                    {
+                        in0[i] = outputs_mle[n][b][i];
+                        in1[i] = outputs_semle[n][b][i];
+                    }
+                    else
+                        in0[i] = in1[i] = 0.0f;
+                }
+                SumFloatArray(in0, sum0, numTuples);
+                SumFloatArray(in1, sum1, numTuples);
+                if (PAR_Rank() == 0)
+                {
+                    for (int i=0; i<numTuples; i++)
+                    {
+                        outputs_mle[n][b][i] = sum0[i];
+                        outputs_semle[n][b][i] = sum1[i];
+                    }
+                }
+            }
+        }
+    }
+
     delete [] in0;
     delete [] in1;
     delete [] sum0;
@@ -835,6 +911,31 @@ avtRPOTFilter::CreateFinalOutput()
                     {
                         ofile0<<outputs_rv[n][b][i]<<" ";
                         ofile1<<outputs_serv[n][b][i]<<" ";
+                    }
+                    ofile0<<endl;
+                    ofile1<<endl;
+                }
+            }
+            if (atts.GetComputeParamValues())
+            {
+                int N = outputs_mle.size();
+                for (int b = 0; b < numBins; b++)
+                {
+                    string nm0 = GetDumpFileName(b, -1, 2);
+                    string nm1 = GetDumpFileName(b, -1, 3);
+                    ofstream ofile0(nm0.c_str());
+                    ofstream ofile1(nm1.c_str());
+                    //cout<<nm0<<": "<<N<<" x "<<numTuples<<endl;
+                    //cout<<nm1<<": "<<N<<" x "<<numTuples<<endl;
+                    for (int i = 0; i < numTuples; i++)
+                    {
+                        for (int n = 0; n < N; n++)
+                        {
+                            //ofile0<<outputs_mle[n][b][i]<<" ";
+                            //ofile1<<outputs_semle[n][b][i]<<" ";
+                            ofile0<<outputs_mle[n][b][i]<<endl;
+                            ofile1<<outputs_semle[n][b][i]<<endl;
+                        }
                     }
                     ofile0<<endl;
                     ofile1<<endl;
