@@ -121,6 +121,7 @@ static const char usage[] =
 "\n"
 "    Developer arguments:\n"
 "        -xml2cmake           Run the xml2cmake tool.\n"
+"        -xml2atts            Run the xml2atts tool.\n"
 "        -public              xml2cmake: force install plugins publicly\n"
 "        -private             xml2cmake: force install plugins privately\n"
 "        -clobber             Permit xml2... tools to overwrite old files\n"
@@ -446,6 +447,36 @@ VisItLauncherMain(int argc, char *argv[])
         else if(ARG("-xml2cmake"))
         {
             component = "xml2cmake";
+            addVISITARGS = false;
+            addPluginVars = true;
+        }
+        else if(ARG("-xml2atts"))
+        {
+            component = "xml2atts";
+            addVISITARGS = false;
+            addPluginVars = true;
+        }
+        else if(ARG("-xml2java"))
+        {
+            component = "xml2java";
+            addVISITARGS = false;
+            addPluginVars = true;
+        }
+        else if(ARG("-xml2python"))
+        {
+            component = "xml2python";
+            addVISITARGS = false;
+            addPluginVars = true;
+        }
+        else if(ARG("-xml2info"))
+        {
+            component = "xml2info";
+            addVISITARGS = false;
+            addPluginVars = true;
+        }
+        else if(ARG("-xml2plugin"))
+        {
+            component = "xml2plugin";
             addVISITARGS = false;
             addPluginVars = true;
         }
