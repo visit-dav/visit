@@ -192,6 +192,9 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //    Brad Whitlock, Wed Jun 20 11:37:23 PDT 2012
 //    Added -minimized argument to minimize the cli window on Windows.
 //
+//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012  
+//    Ensure runFile has path-separators properly escaped on Windows.
+//
 // ****************************************************************************
 
 int
@@ -510,7 +513,7 @@ main(int argc, char *argv[])
         {
             // add the script file's dir to the cli's sys.path
             std::string pycmd  = "import sys\n";
-            pycmd += "__visit_script_file__ = os.path.abspath('";
+            pycmd += "__visit_script_file__ = os.path.abspath(r'";
             pycmd +=  std::string(runFile) + "')\n";
             pycmd += "__visit_script_path__ = ";
             pycmd += "os.path.split(__visit_script_file__)[0]\n";

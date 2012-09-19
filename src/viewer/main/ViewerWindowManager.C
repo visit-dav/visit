@@ -71,6 +71,7 @@
 #include <SaveWindowAttributes.h>
 #include <SelectionList.h>
 #include <SelectionProperties.h>
+#include <StringHelpers.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -1677,6 +1678,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    When doing screen proportions, get the size of the rendering area, not
 //    the size of the window.
 //
+//    Kathleen Biagas, Tue Sep 18 13:32:27 MST 2012
+//    On Windows, don't append fileBase and filename if filename already 
+//    contains a path.  Occurs with test-suite saves.
+//
 // ****************************************************************************
 
 void
@@ -1723,7 +1728,18 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                            "use the name \"visit\" as the base for the files "
                            "to be saved."));
             }
-
+#ifdef WIN32
+            else
+            {
+                // need to check if our filename contains a path:
+                std::string f_base = std::string(StringHelpers::Basename(f.c_str()));
+                if (f_base != f)
+                {
+                    fileBase = std::string(StringHelpers::Dirname(f.c_str()));
+                    f = f_base;
+                }
+            }
+#endif
             if(fileBase[fileBase.size() - 1] == VISIT_SLASH_CHAR)
             {
                 if(f[0] == VISIT_SLASH_CHAR)
