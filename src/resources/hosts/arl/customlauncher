@@ -1,0 +1,79 @@
+###############################################################################
+# Class: JobSubmitter_qsub_ARL
+#
+# Purpose:    Custom qsub launcher for ARL
+#
+# Programmer: Rick Angelini
+# Date:       Thu Sep 20 14:30:17 EDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_qsub_ARL(JobSubmitter_qsub):
+    def __init__(self, launcher):
+        super(JobSubmitter_qsub_ARL, self).__init__(launcher)
+
+    # mpirun command line that does not have -np #.
+    def mpirun_args(self, args):
+        mpicmd = self.mpirun()
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+        mpicmd = mpicmd + self.VisItExecutable()
+        mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        mpicmd = mpicmd + args
+        return mpicmd
+
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        # We could use nodes, procs, ppn to construct the arguments if a variable number
+        # of nodes or processors would be appropriate.
+        args = ["--l", "select=2:mpiprocs=2:ncpus=2"]
+        return args
+
+###############################################################################
+# Class: ARLLauncher
+#
+# Purpose:    Custom launcher for ARL
+#
+# Programmer: Rick Angelini
+# Date:       Thu Sep 20 14:30:17 EDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class ARLLauncher(MainLauncher):
+    def __init__(self):
+        super(ARLLauncher, self).__init__()
+
+    def Customize(self):
+        # ----
+        # ARL Pitch machine:
+        # ----
+        print "self.sectorname=" + self.sectorname()
+        if self.sectorname() == "pitch":
+            print "Inside of self.sectorname customization"
+            paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/lib:/opt/pbs/default/lib"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(paths + addedpaths))
+
+            paths = self.splitpaths(GETENV("PATH"))
+            addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/bin"]
+            SETENV("PATH", self.joinpaths(paths + addedpaths))
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:4] == "qsub" or launch[:4] == "msub":
+            return JobSubmitter_qsub_ARL(self)
+        return super(ARLLauncher, self).JobSubmitterFactory(launch)
+
+
+# Launcher creation function
+def createlauncher():
+    print "Inside of createLauncher ARLLauncher"
+    return ARLLauncher()
