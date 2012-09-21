@@ -28,11 +28,14 @@
 #    Brad Whitlock, Thu Sep  9 11:03:30 PDT 2010
 #    I added tests for time-varying curves, FVCOM.
 #
+#    Kathleen Biagas, Fri Sep 21 10:12:15 MST 2012 
+#    Removed pjoin so that tests can run on Windows.
+#
 # ----------------------------------------------------------------------------
 
-def test0(datapath):
+def test0():
     TestSection("ADAPT files")
-    OpenDatabase(pjoin(datapath,"narac/adapt_etex_metfld_from_obs_102312.nc"))
+    OpenDatabase(data_path("netcdf_test_data/narac/adapt_etex_metfld_from_obs_102312.nc"))
     AddPlot("Pseudocolor", "u")
     AddPlot("Mesh", "main")
     SetActivePlots((0,1))
@@ -116,10 +119,10 @@ def test0(datapath):
     Test("netcdf_0_03")
     DeleteAllPlots()
 
-def test1(datapath):
+def test1():
     TestSection("LODI particle files")
     # First put in the terrain, though it is not a LODI particle file.
-    OpenDatabase(pjoin(datapath,"narac/adapt_etex_metfld_from_obs_102312.nc"))
+    OpenDatabase(data_path("netcdf_test_data/narac/adapt_etex_metfld_from_obs_102312.nc"))
     AddPlot("Pseudocolor", "u")
     AddOperator("Transform", 1)
     t = TransformAttributes()
@@ -134,7 +137,7 @@ def test1(datapath):
     DrawPlots()
 
     # Now add the LODI particle file.
-    db = pjoin(datapath,"narac/ppart.nc")
+    db = data_path("netcdf_test_data/narac/ppart.nc")
     OpenDatabase(db)
     AddPlot("FilledBoundary", "sourceid")
     AddOperator("Transform")
@@ -199,14 +202,14 @@ def test1(datapath):
     Test("netcdf_1_02")
     DeleteAllPlots()
 
-def test2(datapath):
+def test2():
     TestSection("LODI files")
     # This test is reserved for LODI once it is assured to be right.
     return
 
-def test3(datapath):
+def test3():
     TestSection("Basic NETCDF reader")
-    OpenDatabase(pjoin(datapath,"narac/etex_fill_lambertcc__4000_001.elev"))
+    OpenDatabase(data_path("netcdf_test_data/narac/etex_fill_lambertcc__4000_001.elev"))
     AddPlot("Pseudocolor", "elevations")
     DrawPlots()
     Test("netcdf_3_00")
@@ -262,12 +265,12 @@ def test3(datapath):
     InvertBackgroundColor()
 
     # Try some curves
-    OpenDatabase(pjoin(datapath,"3252ATT-A1H.cdf"))
+    OpenDatabase(data_path("netcdf_test_data/3252ATT-A1H.cdf"))
     AddPlot("Curve", "ATTN_55")
     DrawPlots()
     Test("netcdf_3_02")
     DeleteAllPlots()
-    OpenDatabase(pjoin(datapath,"AAtestCTD.nc"))
+    OpenDatabase(data_path("netcdf_test_data/AAtestCTD.nc"))
     AddPlot("Curve", "ST_70")
     DrawPlots()
     ResetView()
@@ -275,7 +278,7 @@ def test3(datapath):
     DeleteAllPlots()
 
     # Try some files that I found on climate web sites.
-    OpenDatabase(pjoin(datapath,"pressure.cdf"))
+    OpenDatabase(data_path("netcdf_test_data/pressure.cdf"))
     AddPlot("Pseudocolor", "pressure")
     DrawPlots()
     ResetView()
@@ -283,7 +286,7 @@ def test3(datapath):
     Test("netcdf_3_04")
     DeleteAllPlots()
 
-    OpenDatabase(pjoin(datapath,"aou.cdf"))
+    OpenDatabase(data_path("netcdf_test_data/aou.cdf"))
     AddPlot("Pseudocolor", "aou")
     AddOperator("Slice")
     s = SliceAttributes()
@@ -294,7 +297,7 @@ def test3(datapath):
     Test("netcdf_3_05")
     DeleteAllPlots()
 
-    OpenDatabase(pjoin(datapath,"NASA_vegetation_lai.cdf"))
+    OpenDatabase(data_path("netcdf_test_data/NASA_vegetation_lai.cdf"))
     AddPlot("Pseudocolor", "lai")
     DrawPlots()
     v2 = View2DAttributes()
@@ -307,8 +310,8 @@ def test3(datapath):
     DeleteAllPlots()
 
     # Try a file that used to crash on Windows
-    db = "Case5_2D-Q.nc"
-    OpenDatabase(pjoin(datapath,db))
+    db = "netcdf_test_data/Case5_2D-Q.nc"
+    OpenDatabase(data_path(db))
     AddPlot("Pseudocolor", "Q")
     DrawPlots()
     ResetView()
@@ -316,12 +319,12 @@ def test3(datapath):
     SetTimeSliderState(29)
     Test("netcdf_3_08")
     DeleteAllPlots()
-    CloseDatabase(pjoin(datapath,db))
+    CloseDatabase(data_path(db))
 
-def test4(datapath):
+def test4():
     TestSection("CCSM reader")
-    db = "tas_mean_T63.nc"
-    OpenDatabase(pjoin(datapath,db))
+    db = "netcdf_test_data/tas_mean_T63.nc"
+    OpenDatabase(data_path(db))
     AddPlot("Pseudocolor", "tas")
     DrawPlots()
     ResetView()
@@ -336,12 +339,12 @@ def test4(datapath):
     ResetView()
     Test("netcdf_4_02")
     DeleteAllPlots()
-    CloseDatabase(pjoin(datapath,db))
+    CloseDatabase(data_path(db))
 
-def test5(datapath):
+def test5():
     TestSection("Time-varying curves")
-    db = "timecurve.nc"
-    OpenDatabase(pjoin(datapath,db))
+    db = "netcdf_test_data/timecurve.nc"
+    OpenDatabase(data_path(db))
     AddPlot("Curve", "theta_1_1")
     c = CurveAttributes()
     c.showLabels = 0
@@ -360,12 +363,12 @@ def test5(datapath):
     SetTimeSliderState(4)
     Test("netcdf_5_01")
     DeleteAllPlots()
-    CloseDatabase(pjoin(datapath,db))
+    CloseDatabase(data_path(db))
 
-def test6(datapath):
+def test6():
     TestSection("FVCOM reader ")
-    db = "chn_0001.nc"
-    OpenDatabase(pjoin(datapath,db))
+    db = "netcdf_test_data/chn_0001.nc"
+    OpenDatabase(data_path(db))
     AddPlot("Pseudocolor", "Dens3{S,Theta,P}")
     DrawPlots()
     ResetView()
@@ -373,17 +376,16 @@ def test6(datapath):
     SetTimeSliderState(47)
     Test("netcdf_6_01")
     DeleteAllPlots()
-    CloseDatabase(pjoin(datapath,db))
+    CloseDatabase(data_path(db))
 
 def main():
-    datapath = data_path("netcdf_test_data")
-    test0(datapath)
-    test1(datapath)
-    test2(datapath)
-    test3(datapath)
-    test4(datapath)
-    test5(datapath)
-    test6(datapath)
+    test0()
+    test1()
+    test2()
+    test3()
+    test4()
+    test5()
+    test6()
 
 main()
 Exit()
