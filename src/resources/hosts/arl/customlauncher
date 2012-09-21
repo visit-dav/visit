@@ -19,7 +19,7 @@ class JobSubmitter_qsub_ARL(JobSubmitter_qsub):
         mpicmd = self.mpirun()
         if self.parallel.sublaunchargs != None:
             mpicmd = mpicmd + self.parallel.sublaunchargs
-        if self.parallel.np != None:
+        if self.parallel.machinefile != None:
             mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
         mpicmd = mpicmd + self.VisItExecutable()
         mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
