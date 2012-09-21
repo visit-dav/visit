@@ -1091,6 +1091,7 @@ class GeneralArguments(object):
         self.clientserver = 0
         self.quiet = 0
         self.setupenv = 0
+        self.nowin = 0
 
     def ParseArguments(self, i, args):
         if i >= len(args):
@@ -1119,6 +1120,8 @@ class GeneralArguments(object):
             n = 2
         elif args[i] == "-dv":
             self.dv = 1
+        elif args[i] == "-nowin":
+            self.nowin = 1
         elif args[i] == "-arch":
             self.arch = 1
         elif args[i] == "-env":
@@ -1176,6 +1179,11 @@ class GeneralArguments(object):
         if not parallel and self.setupenv:
             args = args + ["-setupenv"]
 
+        nowin_not_added = 1
+        if self.nowin:
+            args = args + ["-nowin"]
+            nowin_not_added = 0
+
         if self.scriptfile != None:
             if self.add_movie_args:
                 args = args + ["-scriptfile", self.scriptfile]
@@ -1187,10 +1195,14 @@ class GeneralArguments(object):
             if self.diffmode == 1:
                 args = args + d + self.diffargs
             else:
-                args = args + ["-nowin"] + d + self.diffargs + ["-summary_only"]
+                if nowin_not_added:
+                    args = args + ["-nowin"]
+                args = args + d + self.diffargs + ["-summary_only"]
 
         if self.add_movie_args:
-            args = args + ["-nowin", "-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
+            if nowin_not_added:
+                args = args + ["-nowin"]
+            args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
 
         args = args + self.arguments
 
