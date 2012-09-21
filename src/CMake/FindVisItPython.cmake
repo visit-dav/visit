@@ -522,13 +522,7 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
                                           GROUP_READ GROUP_WRITE GROUP_EXECUTE 
                                           WORLD_READ             WORLD_EXECUTE
-                    PATTERN "lib-tk" EXCLUDE
-                    PATTERN "visit.*" EXCLUDE
-                    PATTERN "visitmodule.*" EXCLUDE
-                    PATTERN "visit_writer.*" EXCLUDE
-                    PATTERN "PySide" EXCLUDE
                     PATTERN ".svn"   EXCLUDE
-                    PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
                 )
             ENDIF (NOT WIN32)
         ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr")) 
