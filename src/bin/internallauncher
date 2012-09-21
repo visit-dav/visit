@@ -1503,7 +1503,10 @@ class MainLauncher(object):
         self.xterm = ["xterm"]
 
     def username(self):
-        return os.getlogin()
+        try:
+            return os.getlogin()
+        except:
+            return GETENV("USER")
 
     def hostname(self):
         return socket.gethostname()
