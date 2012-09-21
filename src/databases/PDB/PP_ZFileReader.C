@@ -1152,9 +1152,6 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             for (int m = 0; m < 3; m++)
             {
                 if (!s && m) continue; // skip revloved & mesh for generic arrays
-#if defined (_WIN32)
-                if (m == 1) continue; // skip revolved mesh on windows
-#endif
                 std::string theMeshName = meshNames[m];
                 std::string theVarName = theMeshName + "/" + newStr;
 
@@ -3933,11 +3930,7 @@ GetRotationMatrix(double angle, const double axis[3], vtkMatrix4x4 *mat)
     //
     // Now we can do the easy rotation around the z-axis.
     //
-#ifdef _WIN32
-    double angle_rad = (angle / 360. * 2. * 3.14159265358979323846);
-#else
     double angle_rad = (angle / 360. * 2. * M_PI);
-#endif
     vtkMatrix4x4 *rot3 = vtkMatrix4x4::New();
     rot3->Identity();
     double cos_angle = cos(angle_rad);

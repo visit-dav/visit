@@ -152,7 +152,7 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
         string a(fname);
         char b[1024];
         string prefix = "";
-        int last_slash = a.find_last_of('/');
+        int last_slash = a.find_last_of(VISIT_SLASH_CHAR);
         if (last_slash != string::npos)
             prefix = a.substr(0, last_slash + 1);
         inf.getline(b, sizeof(b)); // get end-of-line of 'MKF' line

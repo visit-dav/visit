@@ -999,7 +999,7 @@ avtCHGCARFileFormat::OpenFileAtBeginning()
 {
     if (!in.is_open())
     {
-        in.open(filename.c_str());
+        in.open(filename.c_str(), ios::binary);
         if (!in)
         {
             EXCEPTION1(InvalidFilesException, filename.c_str());
