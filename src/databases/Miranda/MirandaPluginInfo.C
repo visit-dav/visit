@@ -95,7 +95,7 @@ MirandaGeneralPluginInfo::GetName() const
 const char *
 MirandaGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "2.0";
 }
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ MirandaGeneralPluginInfo::GetVersion() const
 const char *
 MirandaGeneralPluginInfo::GetID() const
 {
-    return "Miranda_1.0";
+    return "Miranda_2.0";
 }
 // ****************************************************************************
 //  Method: MirandaGeneralPluginInfo::EnabledByDefault

@@ -110,6 +110,7 @@ void nothing(void) {return; }
 
 static void Fix2DFileOrder(int a, int b, int *fileOrder)
 {
+  debug5 << "Fix2DFileOrder(" << a << ", "<< b << ") " << endl; 
     int posA, posB;
     int ii;
     for (ii = 0; ii < 3; ii++)
@@ -420,8 +421,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
 
     if (sFileVersion == "2.0") {
       iGlobalDim[0] += (iInteriorSize[0] - iBoundarySize[0]); 
-      iGlobalDim[0] += (iInteriorSize[0] - iBoundarySize[0]); 
-      iGlobalDim[0] += (iInteriorSize[0] - iBoundarySize[0]); 
+      iGlobalDim[1] += (iInteriorSize[1] - iBoundarySize[1]); 
+      iGlobalDim[2] += (iInteriorSize[2] - iBoundarySize[2]); 
     }
 
     iNumBlocks[0] = iGlobalDim[0] / iBlockSize[0];
@@ -448,7 +449,9 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         
         double tmpOrigin = fOrigin[1];
         double tmpStride = fStride[1];
-    
+        double tmpInterior = iInteriorSize[1];
+        double tmpBoundary = iBoundarySize[1];
+
         fOrigin[1] = fOrigin[2];
         fStride[1] = fStride[2];
         iNumBlocks[1] = iNumBlocks[2];
@@ -459,11 +462,12 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
 
         fOrigin[2] = tmpOrigin;
         fStride[2] = tmpStride;
+        // version 2.0
+        iInteriorSize[2] = tmpInterior; 
+        iBoundarySize[2] = tmpBoundary;
+
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
-        // version 2.0
-        iInteriorSize[2] = 1;
-        iBoundarySize[2] = 1;
 
         if (iFileOrder[0] != -1)
             Fix2DFileOrder(0, 2, iFileOrder);
@@ -475,6 +479,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     
         double tmpOrigin = fOrigin[0];
         double tmpStride = fStride[0];
+        double tmpInterior = iInteriorSize[0];
+        double tmpBoundary = iBoundarySize[0];
         
         fOrigin[0] = fOrigin[1];
         fStride[0] = fStride[1];
@@ -494,11 +500,11 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
    
         fOrigin[2] = tmpOrigin;
         fStride[2] = tmpStride;
+        iInteriorSize[2] = tmpInterior; 
+        iBoundarySize[2] = tmpBoundary;
+
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
-        // version 2.0
-        iInteriorSize[2] = 1;
-        iBoundarySize[2] = 1;
 
         if (iFileOrder[0] != -1)
             Fix2DFileOrder(1, 2, iFileOrder);
