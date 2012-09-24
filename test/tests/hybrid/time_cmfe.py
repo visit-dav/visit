@@ -23,7 +23,7 @@ OpenDatabase(silo_data_path("wave.visit"))
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "conn_cmfe(<%s[10]i:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe", "conn_cmfe(<%s[10]i:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("time_cmfe_01")
@@ -32,28 +32,28 @@ Test("time_cmfe_01")
 SetTimeSliderState(20)
 Test("time_cmfe_02")
 
-DefineScalarExpression("cmfe2", "conn_cmfe(<%s[-10]id:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe2", "conn_cmfe(<%s[-10]id:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 ChangeActivePlotsVar("cmfe2")
 Test("time_cmfe_03")
 
 SetTimeSliderState(40)
 Test("time_cmfe_04")
 
-DefineScalarExpression("cmfe3", "conn_cmfe(<%s[200]c:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe3", "conn_cmfe(<%s[200]c:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 ChangeActivePlotsVar("cmfe3")
 Test("time_cmfe_05")
 
 SetTimeSliderState(20)
 Test("time_cmfe_06")
 
-DefineScalarExpression("cmfe4", "conn_cmfe(<%s[200]cd:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe4", "conn_cmfe(<%s[200]cd:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 ChangeActivePlotsVar("cmfe4")
 Test("time_cmfe_07")
 
 SetTimeSliderState(40)
 Test("time_cmfe_08")
 
-DefineScalarExpression("cmfe5", "conn_cmfe(<%s[-0.9]t:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe5", "conn_cmfe(<%s[-0.9]t:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 ChangeActivePlotsVar("cmfe5")
 Test("time_cmfe_09")
 
@@ -84,7 +84,7 @@ Test("time_cmfe_11")
 # time is 3.8 and we'll use the cmfe time delta to obtain data from 0.8 time
 # units before, or in other words, time state 25. Then we'll do a plot to see
 # if the data matches the previous test.
-DefineScalarExpression("cmfe6", "conn_cmfe(<%s[-0.8]td:pressure>, quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe6", "conn_cmfe(<%s[-0.8]td:pressure>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 SetTimeSliderState(29)
 ChangeActivePlotsVar("cmfe6")
 Test("time_cmfe_12")

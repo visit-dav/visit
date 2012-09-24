@@ -26,19 +26,19 @@ OpenDatabase(silo_data_path("wave.visit"))
 
 
 # Test that database expressions can still be generated.
-DefineVectorExpression("cmfe", "conn_cmfe(<%s[30]i:direction>, quadmesh)" % silo_data_path("wave.visit"))
+DefineVectorExpression("cmfe", "conn_cmfe(<%s[30]i:direction>, quadmesh)" % cmfe_silo_data_path("wave.visit"))
 AddPlot("Vector", "cmfe")
 DrawPlots()
 Test("expr_cmfe_01")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe2", "conn_cmfe(coord(<%s[40]i:pressure>)[1], quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe2", "conn_cmfe(coord(<%s[40]i:pressure>)[1], quadmesh)" % cmfe_silo_data_path("wave.visit"))
 AddPlot("Pseudocolor", "cmfe2")
 DrawPlots()
 Test("expr_cmfe_02")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe3", "coord(quadmesh)[1] - conn_cmfe(coord(<%s[40]i:pressure>)[1], quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe3", "coord(quadmesh)[1] - conn_cmfe(coord(<%s[40]i:pressure>)[1], quadmesh)" % cmfe_silo_data_path("wave.visit"))
 AddPlot("Pseudocolor", "cmfe3")
 DrawPlots()
 Test("expr_cmfe_03")
@@ -50,7 +50,7 @@ DrawPlots()
 Test("expr_cmfe_04")
 
 DeleteAllPlots()
-DefineScalarExpression("cmfe5", "volume(quadmesh) / conn_cmfe(volume(<%s[40]i:quadmesh>), quadmesh)" % silo_data_path("wave.visit"))
+DefineScalarExpression("cmfe5", "volume(quadmesh) / conn_cmfe(volume(<%s[40]i:quadmesh>), quadmesh)" % cmfe_silo_data_path("wave.visit"))
 AddPlot("Pseudocolor", "cmfe5")
 pc = PseudocolorAttributes()
 pc.min = 0.5
