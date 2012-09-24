@@ -31,7 +31,7 @@ def DoBinaryOp(db1, curve1, db2, curve2, op, index):
 
 def TestBinary():
     binops = ("+", "-", "*", "/")
-    db = data_path("curve_test_data/distribution.ultra")
+    db = cmfe_data_path("curve_test_data/distribution.ultra")
     logNormal = "Log Normal Distribution"
     exponential = "Exponential Distribution"
 

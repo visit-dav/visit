@@ -34,7 +34,7 @@ OpenDatabase(silo_data_path("wave0200.silo"))
 
 
 # Test general capability.
-DefineScalarExpression("cmfe", "conn_cmfe(<%s:pressure>, quadmesh)" % silo_data_path("wave0020.silo"))
+DefineScalarExpression("cmfe", "conn_cmfe(<%s:pressure>, quadmesh)" % cmfe_silo_data_path("wave0020.silo"))
 AddPlot("Pseudocolor", "cmfe")
 DrawPlots()
 Test("conn_cmfe_01")
@@ -81,40 +81,40 @@ DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_06", t)
 
-DefineScalarExpression("cmfe4", "conn_cmfe(<%s:pressure>, quadmesh, pressure)" %  silo_data_path("wave0100.silo"))
+DefineScalarExpression("cmfe4", "conn_cmfe(<%s:pressure>, quadmesh, pressure)" %  cmfe_silo_data_path("wave0100.silo"))
 ChangeActivePlotsVar("cmfe4")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_07", t)
 
-DefineScalarExpression("cmfe5", "conn_cmfe(<%s:pressure>)" % silo_data_path("wave0100.silo"))
+DefineScalarExpression("cmfe5", "conn_cmfe(<%s:pressure>)" % cmfe_silo_data_path("wave0100.silo"))
 ChangeActivePlotsVar("cmfe5")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_08", t)
 
 # And one more cool picture just for grins.
-DefineScalarExpression("cmfe6", "conn_cmfe(<%s:pressure>, quadmesh)" % silo_data_path("wave0570.silo"))
+DefineScalarExpression("cmfe6", "conn_cmfe(<%s:pressure>, quadmesh)" % cmfe_silo_data_path("wave0570.silo"))
 DefineScalarExpression("max", "if(ge(pressure, cmfe6), pressure, cmfe6)")
 ChangeActivePlotsVar("max")
 DrawPlots()
 Test("conn_cmfe_09")
 
 # Invalid variable in new database.
-DefineScalarExpression("cmfe7", "conn_cmfe(<%s:pressure>, quadmesh)" % silo_data_path("globe.silo"))
+DefineScalarExpression("cmfe7", "conn_cmfe(<%s:pressure>, quadmesh)" % cmfe_silo_data_path("globe.silo"))
 ChangeActivePlotsVar("cmfe7")
 t = GetLastError()
 TestText("conn_cmfe_10", t)
 
 # Now a good variable, but connectivity doesn't match.
-DefineScalarExpression("cmfe8", "conn_cmfe(<%s:t>, quadmesh)" % silo_data_path("globe.silo"))
+DefineScalarExpression("cmfe8", "conn_cmfe(<%s:t>, quadmesh)" % cmfe_silo_data_path("globe.silo"))
 ChangeActivePlotsVar("cmfe8")
 DrawPlots()
 t = GetLastError()
 TestText("conn_cmfe_11", t)
 
 # Test multiple CMFEs
-DefineScalarExpression("cmfe9", "conn_cmfe(<%s:pressure>, quadmesh)" % silo_data_path("wave0100.silo"))
+DefineScalarExpression("cmfe9", "conn_cmfe(<%s:pressure>, quadmesh)" % cmfe_silo_data_path("wave0100.silo"))
 DefineScalarExpression("max2", "if(ge(max, cmfe9), max, cmfe9)")
 ChangeActivePlotsVar("max2")
 DrawPlots()

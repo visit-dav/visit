@@ -56,6 +56,7 @@ import subprocess
 import thread
 import json
 import shutil
+import platform
 
 import HtmlDiff
 import HtmlPython
@@ -110,6 +111,25 @@ def data_path(*args):
     rargs.extend(args)
     return abs_path(*rargs)
 
+
+# ----------------------------------------------------------------------------
+#  Method: cmfe_data_path
+#
+#  Programmer: Kathleen Biagas 
+#  Date:       Fri Sep 21 2012
+# ----------------------------------------------------------------------------
+def cmfe_data_path(*args):
+    """
+    Generates proper absolute path relative to the 'data' directory,
+    with extra 'escapes' for cmfe parsing on Windows.
+    """
+
+    if not platform.system() == "Windows":
+        return data_path(*args)
+    else:
+        return data_path(*args).replace("\\", "\\\\\\\\").replace(":", "\:")
+
+
 # ----------------------------------------------------------------------------
 #  Method: silo_data_path
 #
@@ -124,6 +144,24 @@ def silo_data_path(*args):
     rargs = ["silo_%s_test_data" % TestEnv.params["silo_mode"]]
     rargs.extend(args)
     return data_path(*rargs)
+
+
+# ----------------------------------------------------------------------------
+#  Method: cmfe_silo_data_path
+#
+#  Programmer: Kathleen Biagas 
+#  Date:       Fri Sep 21 2012
+# ----------------------------------------------------------------------------
+def cmfe_silo_data_path(*args):
+    """
+    Helper that generates proper silo data absolute file paths.
+    Incorporates SILO_MODE logic.
+    With extra 'escapes' for cmfe parsing on Windows.
+    """
+    if not platform.system() == "Windows":
+        return silo_data_path(*args)
+    else:
+        return silo_data_path(*args).replace("\\", "\\\\\\\\").replace(":", "\:")
 
 
 # ----------------------------------------------------------------------------
