@@ -218,7 +218,8 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     iFileOrder[1] = -1;
     iFileOrder[2] = -1;
     bCurvilinear = false;
-
+    iInteriorSize[0] = iInteriorSize[1] = iInteriorSize[2] = -1; 
+    iBoundarySize[0] = iBoundarySize[1] = iBoundarySize[2] = -1; 
     // Verify that the 'magic' and version number are right
     f >> buf1 >> sFileVersion;
     
@@ -419,12 +420,17 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     }
 #endif
 
+    if  (sFileVersion != "2.0") {
+      for (ii = 0; ii < 3; ii++) {
+        iInteriorSize[ii] = iBlockSize[ii] + 1; 
+        iBoundarySize[ii] = iBlockSize[ii]; 
+      } 
+    }
     if (sFileVersion == "2.0") {
       iGlobalDim[0] += (iInteriorSize[0] - iBoundarySize[0]); 
       iGlobalDim[1] += (iInteriorSize[1] - iBoundarySize[1]); 
       iGlobalDim[2] += (iInteriorSize[2] - iBoundarySize[2]); 
-    }
-
+    } 
     iNumBlocks[0] = iGlobalDim[0] / iBlockSize[0];
     iNumBlocks[1] = iGlobalDim[1] / iBlockSize[1];
     iNumBlocks[2] = iGlobalDim[2] / iBlockSize[2];
@@ -645,6 +651,7 @@ void
 avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, 
                                                int /*timeState*/)
 {
+  debug5 << "PopulateDatabaseMetaData called" << endl; 
     // Add the mesh
     std::string meshname("mesh");
     int nblocks = iNumBlocks[0] * iNumBlocks[1] * iNumBlocks[2];
@@ -661,6 +668,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     if (!bCurvilinear)
     {
+      debug5 << "mesh->meshType = AVT_RECTILINEAR_MESH" << endl; 
         mesh->meshType = AVT_RECTILINEAR_MESH;
         if (dim == 3)
         {
@@ -695,6 +703,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     }
     else
     {
+      debug5 << "mesh->meshType = AVT_CURVILINEAR_MESH" << endl; 
         mesh->meshType = AVT_CURVILINEAR_MESH;
         mesh->hasSpatialExtents = false;
     }
@@ -749,6 +758,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         md->Add(matmd);
     }
 
+    debug5 << "iNumBlocks is ["<<iNumBlocks[0]<<","<<iNumBlocks[1]<<","<<iNumBlocks[2]<<"]"<<endl; 
     // Find domain boundaries
     if (!avtDatabase::OnlyServeUpMetaData() && nblocks > 1)
     {
@@ -765,41 +775,41 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             int iBlockX, iBlockY, iBlockZ;
             DomainToIJK( ii, iBlockX, iBlockY, iBlockZ );
             bbox[0] = iBlockX * iBlockSize[0];
-            bbox[1] = iBlockX * iBlockSize[0] + iBlockSize[0];
             bbox[2] = iBlockY * iBlockSize[1];
-            bbox[3] = iBlockY * iBlockSize[1] + iBlockSize[1];
             bbox[4] = iBlockZ * iBlockSize[2];
-            bbox[5] = iBlockZ * iBlockSize[2] + iBlockSize[2];
 
-            if (sFileVersion == "2.0") {
-                if (iBlockX == iNumBlocks[0]-1)
-                  bbox[1] -= (iInteriorSize[0] - iBoundarySize[0]);
-
-                if (iBlockY == iNumBlocks[1]-1)
-                    bbox[3] -= (iInteriorSize[1] - iBoundarySize[1]);
-
-                if (iBlockZ == iNumBlocks[2]-1)
-                    bbox[5] -= (iInteriorSize[2] - iBoundarySize[2]);          
+            if (!bCurvilinear ) {
+              bbox[1] = bbox[0] + iBlockSize[0]; 
+              bbox[3] = bbox[2] + iBlockSize[1]; 
+              bbox[5] = bbox[4] + iBlockSize[2]; 
+            } else {
+              if (iBlockX == iNumBlocks[0]-1) {
+                bbox[1] = bbox[0] + iBoundarySize[0]; 
+              } else {
+                bbox[1] = bbox[0] + iInteriorSize[0]; 
+              }            
+              if (iBlockY == iNumBlocks[1]-1) {
+                bbox[3] = bbox[2] + iBoundarySize[1]; 
+              } else {
+                bbox[3] = bbox[2] + iInteriorSize[1]; 
+              }            
+              if (iBlockZ == iNumBlocks[2]-1) {
+                bbox[5] = bbox[4] + iBoundarySize[2]; 
+              } else {
+                bbox[5] = bbox[4] + iInteriorSize[2]; 
+              }          
+              bbox[1]--;
+              bbox[3]--; 
+              bbox[5]--; 
             }
-            else if (bCurvilinear)
-            {
-                if (iBlockX == iNumBlocks[0]-1)
-                    bbox[1]--;
-
-                if (iBlockY == iNumBlocks[1]-1)
-                    bbox[3]--;
-
-                if (iBlockZ == iNumBlocks[2]-1)
-                    bbox[5]--;
-            }
-
+ 
             // VisIt expects the 2d case to have flat logical z extent (0,0).
             if(dim == 2)
             {
                 bbox[4] = 0;
                 bbox[5] = 0;
             }
-
+            debug5 << "For domain "<< ii <<" with IJK ["<<iBlockX<< ","<<iBlockY<< ","<<iBlockZ<< "], bounds are ["<<bbox[0] << ", "<<bbox[1] << ", "<<bbox[2] << ", "<<bbox[3] << ", "<<bbox[4] << ", "<<bbox[5] << "] " << endl; 
             rdb->SetIndicesForRectGrid(ii, bbox);
         }
         rdb->CalculateBoundaries();
