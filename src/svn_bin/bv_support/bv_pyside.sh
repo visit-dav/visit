@@ -2,6 +2,8 @@ function bv_pyside_initialize
 {
 export DO_PYSIDE="yes"
 export ON_PYSIDE="on"
+export USE_SYSTEM_PYSIDE="no"
+add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
 }
 
 function bv_pyside_enable
@@ -18,17 +20,29 @@ DO_PYSIDE="no"
 ON_PYSIDE="off"
 }
 
+function bv_pyside_alt_pyside_dir
+{
+    bv_pyside_enable 
+    USE_SYSTEM_PYSIDE="yes"
+    PYSIDE_INSTALL_DIR="$1"
+    info "using alternative pyside directory: $PYSIDE_INSTALL_DIR" 
+}
+
 function bv_pyside_depends_on
 {
-echo "cmake python qt"
+    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
+        echo ""
+    else
+        echo "cmake python qt"
+    fi
 }
 
 function bv_pyside_info
 {
-export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-1.0.7.tar.gz"}
-export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.0.7"}
+export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-combined-1.1.1.tar.gz"}
+export PYSIDE_VERSION=${PYSIDE_VERSION:-"1.1.1"}
 export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_FILE%.tar*}"}
-export PYSIDE_MD5_CHECKSUM="ebc8f4c479d36772e5a34e3be6402972"
+export PYSIDE_MD5_CHECKSUM="b96663b1b361c876ef834d6c338d44c4"
 export PYSIDE_SHA256_CHECKSUM=""
 }
 
@@ -58,14 +72,18 @@ function bv_pyside_host_profile
         echo "##" >> $HOSTCONF
         echo "## PySide" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH}/)" >> $HOSTCONF
+        if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/$PYSIDE_VERSION/\${VISITARCH}/)" >> $HOSTCONF
+        fi
     fi
 }
 
 function bv_pyside_ensure
 {
-    if [[ "$DO_PYSIDE" = "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        ensure_built_or_ready "pyside"     $PYSIDE_VERSION    $PYSIDE_BUILD_DIR    $PYSIDE_FILE
+    if [[ "$DO_PYSIDE" = "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
+        ensure_built_or_ready "pyside"     $PYSIDE_VERSION    $PYSIDE_BUILD_DIR    $PYSIDE_FILE 
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_PYSIDE="no"
@@ -88,15 +106,17 @@ function bv_pyside_dry_run
 function build_pyside_component
 {
     VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
-    
+
     export PATH=${QT_BIN_DIR}:$PATH
     export PATH=$VISIT_PYSIDE_DIR/bin:$VISIT_PYTHON_DIR/bin:$PATH
     export PYTHONPATH=$VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages:$PYTHONPATH
     export PKG_CONFIG_PATH=$VISIT_PYSIDE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
     cd $1
+    mkdir -p build
+    cd build #PySide 1.1.1 fails during in source build..
     info "Configuring pyside/$1 . . ."
-    $CMAKE_COMMAND . \
+    $CMAKE_COMMAND .. \
         -DCMAKE_INSTALL_PREFIX:FILEPATH="$VISIT_PYSIDE_DIR" \
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=FALSE\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=FALSE\
@@ -112,7 +132,7 @@ function build_pyside_component
         -DPYTHON_INCLUDE_PATH:FILEPATH="$PYTHON_INCLUDE_DIR"\
         -DPYTHON_LIBRARY:FILEPATH="$PYTHON_LIBRARY"\
         -DDISABLE_DOCSTRINGS:BOOL=True
-    
+
     if [[ $? != 0 ]] ; then
        warn "Cannot configure pyside/$1, giving up."
        return 1
@@ -129,17 +149,9 @@ function build_pyside_component
     $MAKE install
     touch "${VISIT_PYSIDE_DIR}/$1_success"
     info "Successfully built pyside/$1"
-    cd ../
+    cd ../../
 }
 
-function patch_pyside_qt47_107
-{
-   patch -f -p0 pyside-qt4.7+1.0.7/PySide/QtScript/typesystem_script.xml <<\EOF
-42a43,44
->         <!-- Not supported BUG #957-->
->         <modify-function signature="scriptValueFromQMetaObject()" remove="all" />
-EOF
-}
 
 function build_pyside
 {
@@ -155,27 +167,16 @@ function build_pyside
        warn "Unable to prepare PySide build directory. Giving Up!"
        return 1
     fi
-    
+
     cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
 
-    
-    build_pyside_component apiextractor-0.10.7
+
+    build_pyside_component shiboken-1.1.1
     if [[ $? != 0 ]] ; then
        return 1
     fi
 
-    build_pyside_component generatorrunner-0.6.13       
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-    
-    build_pyside_component shiboken-1.0.7
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-    
-    patch_pyside_qt47_107 #remove if component is updated to latest
-    build_pyside_component pyside-qt4.7+1.0.7
+    build_pyside_component pyside-qt4.8+1.1.1
     if [[ $? != 0 ]] ; then
        return 1
     fi
@@ -186,8 +187,7 @@ function build_pyside
     fi
 
     cd "$START_DIR"
-    info "Linking PySide to Python Installation"
-    ln -s $VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide $VISIT_PYTHON_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide
+
     info "Done with PySide"
 
     return 0
@@ -206,16 +206,18 @@ function bv_pyside_is_enabled
 
 function bv_pyside_is_installed
 {
+    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then 
+        return 1
+    fi
+
     VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
     check_if_installed "pyside" $PYSIDE_VERSION
     if [[ $? != 0 ]] ; then
         return 0
     fi
 
-    if [[ ! -e "${VISIT_PYSIDE_DIR}/apiextractor-0.10.7_success" ||
-          ! -e "${VISIT_PYSIDE_DIR}/generatorrunner-0.6.13_success" ||
-          ! -e "${VISIT_PYSIDE_DIR}/shiboken-1.0.7_success" ||
-          ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.7+1.0.7_success" ]]; then
+    if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken-1.1.1_success" ||
+           ! -e "${VISIT_PYSIDE_DIR}/pyside-qt4.8+1.1.1_success" ]]; then
        info "pyside not installed completely"
        return 0
     fi
@@ -229,7 +231,7 @@ function bv_pyside_build
 # Build PySide
 #
 cd "$START_DIR"
-if [[ "$DO_PYSIDE" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
+if [[ "$DO_PYSIDE" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
     bv_pyside_is_installed #this returns 1 for true, 0 for false
     if [[ $? != 0 ]] ; then
         info "Skipping PySide build.  PySide is already installed."

@@ -104,11 +104,11 @@ echo ""
 
 function bv_qt_info
 {
-export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.7.4.tar.gz"}
-export QT_VERSION=${QT_VERSION:-"4.7.4"}
+export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.3.tar.gz"}
+export QT_VERSION=${QT_VERSION:-"4.8.3"}
 export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
 export QT_BIN_DIR="${QT_BUILD_DIR}/bin"
-export QT_MD5_CHECKSUM="9831cf1dfa8d0689a06c2c54c5c65aaf"
+export QT_MD5_CHECKSUM="a663b6c875f8d7caa8ac9c30e4a4ec3b"
 export QT_SHA256_CHECKSUM=""
 }
 
@@ -211,166 +211,9 @@ fi
 return 0
 }
 
-function apply_qt_461_patch_1
-{
-   patch -f -p0 <<\EOF
-diff -c a/src/gui/itemviews/qlistview.cpp qt-everywhere-opensource-src-4.6.1/src/gui/itemviews/qlistview.cpp
-*** a/src/gui/itemviews/qlistview.cpp
---- qt-everywhere-opensource-src-4.6.1/src/gui/itemviews/qlistview.cpp
-***************
-*** 2814,2820 ****
-      if (moved.count() != items.count())
-          moved.resize(items.count());
-  
-!     QRect rect(QPoint(), topLeft);
-      QListViewItem *item = 0;
-      for (int row = info.first; row <= info.last; ++row) {
-          item = &items[row];
---- 2814,2821 ----
-      if (moved.count() != items.count())
-          moved.resize(items.count());
-  
-!     QPoint zeroPoint;
-!     QRect rect(zeroPoint, topLeft);
-      QListViewItem *item = 0;
-      for (int row = info.first; row <= info.last; ++row) {
-          item = &items[row];
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 1 to Qt 4.6.1"
-        return 1
-   else
-        return 0
-   fi
-}
-
-function apply_qt_461_patch_2
-{
-   patch -f -p0 <<\EOF
-diff -c a/src/corelib/kernel/qmetaobject.cp qt-everywhere-opensource-src-4.6.1/src/corelib/kernel/qmetaobject.cpp
-*** a/src/corelib/kernel/qmetaobject.cpp
---- qt-everywhere-opensource-src-4.6.1/src/corelib/kernel/qmetaobject.cpp
-***************
-*** 943,949 ****
-      if (!type || !*type)
-          return result;
-  
-!     QVarLengthArray<char> stackbuf(int(strlen(type)) + 1);
-      qRemoveWhitespace(type, stackbuf.data());
-      int templdepth = 0;
-      qNormalizeType(stackbuf.data(), templdepth, result);
---- 943,950 ----
-      if (!type || !*type)
-          return result;
-  
-!     int len = int(strlen(type)) + 1;
-!     QVarLengthArray<char> stackbuf(len);
-      qRemoveWhitespace(type, stackbuf.data());
-      int templdepth = 0;
-      qNormalizeType(stackbuf.data(), templdepth, result);
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 2 to Qt 4.6.1"
-        return 1
-   else
-        return 0
-   fi
-}
-
-function apply_qt_461_patch_3
-{
-   patch -f -p0 <<\EOF
-diff -c a/src/corelib/statemachine/qabstractstate_p.h qt-everywhere-opensource-src-4.6.1/src/corelib/statemachine/qabstractstate_p.h
-*** a/src/corelib/statemachine/qabstractstate_p.h
---- qt-everywhere-opensource-src-4.6.1/src/corelib/statemachine/qabstractstate_p.h
-***************
-*** 86,92 ****
-      void emitExited();
-  
-      uint stateType:31;
-!     uint isMachine:1;
-      mutable QState *parentState;
-  };
-  
---- 86,92 ----
-      void emitExited();
-  
-      uint stateType:31;
-!     bool isMachine;
-      mutable QState *parentState;
-  };
-  
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 3 to Qt 4.6.1"
-        return 1
-   else
-        return 0
-   fi
-}
-
-function apply_qt_461_patch_4
-{
-   patch -f -p0 <<\EOF
-diff -c a/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp qt-everywhere-opensource-src-4.6.1/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp
-*** a/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp
---- qt-everywhere-opensource-src-4.6.1/src/plugins/graphicssystems/trace/qgraphicssystem_trace.cpp
-***************
-*** 79,85 ****
-  QTraceWindowSurface::~QTraceWindowSurface()
-  {
-      if (buffer) {
-!         QFile outputFile(QString(QLatin1String("qtgraphics-%0.trace")).arg(winId));
-          if (outputFile.open(QIODevice::WriteOnly)) {
-              QDataStream out(&outputFile);
-              out.writeBytes("qttrace", 7);
---- 79,86 ----
-  QTraceWindowSurface::~QTraceWindowSurface()
-  {
-      if (buffer) {
-!         QString traceFile = QString(QLatin1String("qtgraphics-%0.trace"));
-!         QFile outputFile(traceFile.arg(winId));
-          if (outputFile.open(QIODevice::WriteOnly)) {
-              QDataStream out(&outputFile);
-              out.writeBytes("qttrace", 7);
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 4 to Qt 4.6.1"
-        return 1
-   else
-        return 0
-   fi
-}
-
-function apply_qt_461_patch
-{
-   apply_qt_461_patch_1
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-   apply_qt_461_patch_2
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-   apply_qt_461_patch_3
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-   apply_qt_461_patch_4
-   if [[ $? != 0 ]] ; then
-       return 1
-   fi
-}
 
 function apply_qt_patch
 {
-   if [[ ${QT_VERSION} == 4.6.1 ]] ; then
-       apply_qt_461_patch
-       if [[ $? != 0 ]] ; then
-           return 1
-       fi
-   fi
-
    return 0
 }
 
@@ -426,7 +269,10 @@ function build_qt
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -arch x86_64"
         fi
     elif [[ "$OPSYS" == "Linux" ]] ; then
-         # For OLD versions of linux, disable openssl
+        # w/ Qt 4.8.3, these guys will on fail on linux
+        # if gstreamer isn't installed ...
+        EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
+        # For OLD versions of linux, disable openssl
         VER=$(uname -r)
         if [[ "${VER:0:3}" == "2.4" ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
@@ -450,10 +296,10 @@ function build_qt
     qt_flags="${qt_flags} -no-sql-sqlite2 -no-sql-tds"
     qt_flags="${qt_flags} -no-libtiff"
     qt_flags="${qt_flags} -no-libjpeg"
-    qt_flags="${qt_flags} -nomake docs" 
-    qt_flags="${qt_flags} -nomake examples" 
-    qt_flags="${qt_flags} -nomake demos" 
-    qt_flags="${qt_flags} -opensource" 
+    qt_flags="${qt_flags} -nomake docs"
+    qt_flags="${qt_flags} -nomake examples"
+    qt_flags="${qt_flags} -nomake demos"
+    qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
     info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
          "-platform ${QT_PLATFORM}" \
