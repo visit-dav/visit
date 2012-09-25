@@ -2257,6 +2257,10 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
 //    Removed std:: qualification on some STL classes due to use of using
 //    statements at top 
+//
+//    Kathleen Biagas, Mon Sep 24 18:32:43 MST 2012
+//    Check for ':' when determining if directory should be prepended.
+//
 // ****************************************************************************
 
 void
@@ -2296,8 +2300,8 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
         if (str_auto[0] != '\0' && str_auto[0] != '#')
         {
             ConvertSlashes(str_auto);
-
-            if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!')
+            if (str_auto[0] == VISIT_SLASH_CHAR || str_auto[0] == '!' ||
+                (str_auto_len > 2 && str_auto[1] == ':'))
             {
                 strcpy(str_with_dir, str_auto);
             }
