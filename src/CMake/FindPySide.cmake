@@ -51,35 +51,21 @@ IF(VISIT_PYSIDE_DIR)
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
     set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
-    IF(UNIX)
-        find_package(GeneratorRunner 0.6.11)
-        find_package(Shiboken 1.0.4)
-        find_package(PySide 1.0.4)
-    ELSE(UNIX)
-        find_package(Shiboken 1.1.1)
-        find_package(PySide 1.1.1)
-        IF(Shiboken_FOUND)
-            SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
-        ENDIF(Shiboken_FOUND)
-    ENDIF(UNIX)
+    find_package(Shiboken 1.1.1)
+    find_package(PySide 1.1.1)
+    IF(Shiboken_FOUND)
+        SET(GENERATORRUNNER_BINARY ${SHIBOKEN_BINARY})
+    ENDIF(Shiboken_FOUND)
+
 
 ENDIF(VISIT_PYSIDE_DIR)
 
-IF(UNIX)
-  IF(NOT GeneratorRunner_FOUND OR NOT Shiboken_FOUND)
-    #If we dont have generator runner  & shiboken, force pyside off
+IF(NOT PySide_FOUND OR NOT Shiboken_FOUND)
+    #If we dont have shiboken, force pyside off
     MESSAGE(STATUS "PySide NOT found")
     SET(PySide_FOUND 0)
-  ELSE()
-    SET(PySide_FOUND 1)
-  ENDIF()
-ELSE(UNIX)
-  IF(NOT PySide_FOUND OR NOT Shiboken_FOUND)
-    #If we dont have generator runner  & shiboken, force pyside off
-    MESSAGE(STATUS "PySide NOT found")
-    SET(PySide_FOUND 0)
-  ENDIF()
-ENDIF(UNIX)
+ENDIF (NOT PySide_FOUND OR NOT Shiboken_FOUND)
+
 
 IF(PySide_FOUND)
     SET_UP_THIRD_PARTY(PYSIDE lib include 

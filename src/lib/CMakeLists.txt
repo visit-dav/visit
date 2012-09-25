@@ -124,25 +124,26 @@ ELSE (NOT WIN32)
             )
 ENDIF (NOT WIN32)
 
+# prepare site-packages
+IF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE))
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages
+                    RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
+    #
+    # make sure lib/site-packages exists before we try to
+    # symlink or copy the vtk python wrappers
+    #
+    IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+        MESSAGE(WARNING "Failed to create lib/site-packages/")
+    ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+ENDIF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE))
+
 IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
     IF (NOT WIN32)
-        ## MESSAGE("${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
-                        ${CMAKE_CURRENT_BINARY_DIR}/site-packages
-                        RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
-        #
-        # make sure lib/site-packages exists before we try to
-        # symlink or copy the vtk python wrappers
-        #
-    
-        IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-            MESSAGE(WARNING "Failed to create lib/site-packages/")
-        ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-
         FOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
             GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
             GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
@@ -158,7 +159,6 @@ IF(VISIT_PYTHON_FILTERS)
                 MESSAGE(WARNING "Failed to create VTK Python module symlink in lib/site-packages/ for ${ITM_ABS}")
             ENDIF(NOT "${VTK_MODULE_SYM_CREATE}" STREQUAL "0")
         ENDFOREACH(ITM ${VTK_PYTHON_MODULE_ITEMS})
-
     ELSE (NOT WIN32)
         FILE(GLOB VTK_EGG_FILE "${VISIT_VTK_DIR}/lib/site-packages/*egg*")
         # because you don't need to choose your configuration up-front
@@ -177,9 +177,26 @@ IF(VISIT_PYTHON_FILTERS)
     ENDIF (NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS)
 
-IF(WIN32)
-    IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
-        MESSAGE(STATUS "Adding pyside to lib/site-packages/")
+IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
+    MESSAGE(STATUS "Adding PySide to lib/site-packages/")
+    IF (NOT WIN32)
+        FILE(GLOB PYSIDE_MODULE_ITEMS "${VISIT_PYSIDE_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
+        FOREACH(ITM ${PYSIDE_MODULE_ITEMS})
+            GET_FILENAME_COMPONENT(ITM_ABS ${ITM} ABSOLUTE)
+            GET_FILENAME_COMPONENT(ITM_BASE ${ITM_ABS} NAME)
+            MESSAGE(STATUS "Symlinking ${ITM_ABS} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                                    RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
+            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                    ${ITM_ABS}
+                                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
+                                    RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
+            IF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
+                MESSAGE(WARNING "Failed to create PySide module symlink in lib/site-packages/ for ${ITM_ABS}")
+            ENDIF(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
+        ENDFOREACH(ITM ${PYSIDE_MODULE_ITEMS})
+    ELSE (NOT WIN32)
         ADD_CUSTOM_TARGET(pyside_modules ALL)
         ADD_CUSTOM_COMMAND(TARGET pyside_modules POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory 
@@ -187,5 +204,6 @@ IF(WIN32)
                     ${VISIT_LIBRARY_DIR}/site-packages/PySide
             COMMENT "Copying ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
             )
-    ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
-ENDIF(WIN32)
+    ENDIF (NOT WIN32)
+ENDIF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
+
