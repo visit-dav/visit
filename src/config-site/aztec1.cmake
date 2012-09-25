@@ -76,7 +76,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ##
 ## Mili
 ##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR /usr/gapps/visit/thirdparty_shared_2_6_0/mili/1.11.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR /usr/gapps/visit/thirdparty_shared_2_5_1/mili/1.11.1/${VISITARCH})
 
 ##
 
