@@ -306,11 +306,10 @@ function build_vtk
     vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=OFF"
     vopts="${vopts} -D${VTK_PREFIX}_USE_NETCDF:BOOL=OFF"
     vopts="${vopts} -D${VTK_PREFIX}_USE_EXODUS:BOOL=OFF"
-
     vopts="${vopts} -D${VTK_PREFIX}_USE_TK:BOOL=OFF"
     vopts="${vopts} -D${VTK_PREFIX}_USE_64BIT_IDS:BOOL=ON"
+    vopts="${vopts} -D${VTK_PREFIX}_USE_INFOVIS:BOOL=ON"
     if test "$DO_R" = "yes" ; then
-        vopts="${vopts} -D${VTK_PREFIX}_USE_INFOVIS:BOOL=ON"
         vopts="${vopts} -D${VTK_PREFIX}_USE_GNU_R:BOOL=ON"
         vopts="${vopts} -DR_COMMAND:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/bin/R"
         vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R"
@@ -319,7 +318,7 @@ function build_vtk
         vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRlapack.${SO_EXT}"
         vopts="${vopts} -DR_LIBRARY_BLAS:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRblas.${SO_EXT}"
     else
-        vopts="${vopts} -D${VTK_PREFIX}_USE_INFOVIS:BOOL=OFF"
+        vopts="${vopts} -D${VTK_PREFIX}_USE_CHARTS:BOOL=OFF"
     fi
     vopts="${vopts} -D${VTK_PREFIX}_USE_METAIO:BOOL=OFF"
     vopts="${vopts} -D${VTK_PREFIX}_USE_PARALLEL:BOOL=OFF"

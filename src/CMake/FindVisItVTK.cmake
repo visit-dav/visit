@@ -65,6 +65,9 @@
 #   the case where VTK has been installed normally (with vtk-5.8 subdirs)
 #   and change how Python filters are located on Windows.
 #
+#   Cyrus Harrison, Tue Sep 25 12:09:39 PDT 2012
+#   Added Geoviz libs
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -126,6 +129,8 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
         vtkFilteringPythonD
         vtkGenericFiltering
         vtkGenericFilteringPythonD
+        vtkGeovis
+        vtkGeovisPythonD
         vtkGraphics
         vtkGraphicsPythonD
         vtkHybrid

@@ -57,6 +57,9 @@
 #   Cyrus Harrison, Fri Apr  6 10:03:51 PDT 2012
 #   Renamed Ftle to FTLE.
 #
+#   Cyrus Harrison, Tue Sep 25 12:08:29 PDT 2012
+#   Added CartographicProjection (from Jean Favre)
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -68,6 +71,7 @@ SET(REQUIRED_OPERATOR_PLUGINS
 AMRStitchCell
 BoundaryOp
 Box
+CartographicProjection
 Clip
 Cone
 ConnectedComponents
