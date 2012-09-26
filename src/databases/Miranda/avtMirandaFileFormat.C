@@ -92,6 +92,38 @@ void nothing(void) {return; }
 #define TIMERSTART if (0) nothing
 #define TIMERSTOP(S)  if (0) nothing()
 #endif
+
+
+// ****************************************************************************
+//  Method: PrintVec
+//
+//  Purpose:
+//      Convenience function.  Print a vector. 
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jun 13 15:54:11 PDT 2008
+//
+// ****************************************************************************
+template <class T>
+string Vec2String(string name, T *vec, int numelems) {
+  string s = name + " = [" ;
+  int elem = 0;
+  char buf[32];
+  
+  while (elem < numelems ) {
+    float value = vec[elem];
+    snprintf(buf,31,"%f",value); 
+    s += buf ;
+    if (elem == numelems - 1) {
+      s+= "]"; 
+    } else {
+      s+= ", "; 
+    }
+    elem ++; 
+  }
+  return s;
+} 
+
 // ****************************************************************************
 //  Method: Fix2DFileOrder
 //
@@ -666,72 +698,74 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     mesh->blockPieceName = "p%06d";
     mesh->groupPieceName = "global_index";
 
-    if (!bCurvilinear)
-    {
-      debug5 << "mesh->meshType = AVT_RECTILINEAR_MESH" << endl; 
+    debug5 << Vec2String("fOrigin",fOrigin,3) << endl; 
+    debug5 << Vec2String("iBlockSize",iBlockSize,3) << endl; 
+    debug5 << Vec2String("iBoundarySize",iBoundarySize,3) << endl; 
+    debug5 << Vec2String("iInteriorSize",iInteriorSize,3) << endl; 
+    if (!bCurvilinear)    
+      {
+        debug5 << "mesh->meshType = AVT_RECTILINEAR_MESH" << endl; 
         mesh->meshType = AVT_RECTILINEAR_MESH;
-        if (dim == 3)
-        {
-            double extents[6] = {fOrigin[0] - fStride[0]/2.0,
-                                 fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
-                                 fOrigin[1] - fStride[1]/2.0,
-                                 fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1],
-                                 fOrigin[2] - fStride[2]/2.0,
-                                 fOrigin[2] - fStride[2]/2.0 + (iNumBlocks[2]*iBlockSize[2])*fStride[2]
-                            };
-            if (sFileVersion == "2.0") {
-              extents[1] += (iInteriorSize[0] - iBoundarySize[0])*fStride[0];
-              extents[3] += (iInteriorSize[1] - iBoundarySize[1])*fStride[1];
-              extents[5] += (iInteriorSize[2] - iBoundarySize[2])*fStride[2];
-            }
-              
+        if (dim == 3) 
+          {
+            double extents[6] =  
+              {
+                fOrigin[0] ,
+                fOrigin[0] + ((iNumBlocks[0]-1)*iBlockSize[0] + iBoundarySize[0] - 1)*fStride[0],
+                fOrigin[1],
+                fOrigin[1] + ((iNumBlocks[1]-1)*iBlockSize[1] + iBoundarySize[1] - 1)*fStride[1],
+                fOrigin[2],
+                fOrigin[2] + ((iNumBlocks[2]-1)*iBlockSize[2] + iBoundarySize[1] - 1)*fStride[2]
+              };
+            debug5 << "Set " << Vec2String("extents",extents,6) << endl; 
             mesh->SetExtents(extents);
-        }
-        else
-        {
-            double extents[4] = {fOrigin[0] - fStride[0]/2.0,
-                                 fOrigin[0] - fStride[0]/2.0 + (iNumBlocks[0]*iBlockSize[0])*fStride[0],
-                                 fOrigin[1] - fStride[1]/2.0,
-                                 fOrigin[1] - fStride[1]/2.0 + (iNumBlocks[1]*iBlockSize[1])*fStride[1]};
-            if (sFileVersion == "2.0") {
-              extents[1] += (iInteriorSize[0] - iBoundarySize[0])*fStride[0];
-              extents[3] += (iInteriorSize[1] - iBoundarySize[1])*fStride[1];
-            }
-            mesh->SetExtents(extents);
+          }
+        else  {
+          double extents[4] = 
+            {
+              fOrigin[0] ,
+              fOrigin[0] + ((iNumBlocks[0]-1)*iBlockSize[0] + iBoundarySize[0] - 1)*fStride[0],
+              fOrigin[1],
+              fOrigin[1] + ((iNumBlocks[1]-1)*iBlockSize[1] + iBoundarySize[1] - 1)*fStride[1] 
+            };
+          debug5 << "Set " << Vec2String("extents",extents,4) << endl; 
+          mesh->SetExtents(extents);
         }
         mesh->hasSpatialExtents = true;
-    }
-    else
-    {
-      debug5 << "mesh->meshType = AVT_CURVILINEAR_MESH" << endl; 
+      }
+    else  
+      {
+        debug5 << "mesh->meshType = AVT_CURVILINEAR_MESH" << endl; 
         mesh->meshType = AVT_CURVILINEAR_MESH;
         mesh->hasSpatialExtents = false;
-    }
-
+      }
+    
+    
     if (dim == 2)
-    {
+      {
         if (flatDim == 0)
-        {
+          {
             mesh->xLabel = "Y";
             mesh->yLabel = "Z";
             mesh->zLabel = "";
-        }
+          }
         if (flatDim == 1)
-        {
+          {
             mesh->xLabel = "X";
             mesh->yLabel = "Z";
             mesh->zLabel = "";
-        }
-    }
-
-
+          }
+      }
+    
+    
     md->Add(mesh);
-
+    
     // Add the variables    
-    enum avtCentering centering = (bCurvilinear) ? AVT_NODECENT : AVT_ZONECENT;
+    //  enum avtCentering centering = (bCurvilinear) ? AVT_NODECENT : AVT_ZONECENT;
+    enum avtCentering centering = AVT_NODECENT;
     int ii;
     for (ii = 0 ; ii < aVarNames.size() ; ii++)
-    {
+      {
         if (aVarNumComps[ii] == 1)
         {
             AddScalarVarToMetaData(md, aVarNames[ii], meshname, centering);
@@ -741,24 +775,23 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             AddVectorVarToMetaData(md, aVarNames[ii], meshname, 
                                    centering, aVarNumComps[ii]);
         }
-    }
+      }
 
-    if (aMatNames.size() > 0)
-    {
-        // Add material set components as scalar vars as well as a material set
-        for (ii = 0 ; ii < aMatNames.size() ; ii++)
+    if (aMatNames.size() > 0) {
+      // Add material set components as scalar vars as well as a material set
+      for (ii = 0 ; ii < aMatNames.size() ; ii++)
         {
-            AddScalarVarToMetaData(md, aMatNames[ii], meshname, centering);
+          AddScalarVarToMetaData(md, aMatNames[ii], meshname, centering);
         }
-        avtMaterialMetaData *matmd = new avtMaterialMetaData;
-        matmd->name = "materialset";
-        matmd->meshName = meshname;
-        matmd->numMaterials = aMatNames.size();
-        matmd->materialNames = aMatNames;
-        md->Add(matmd);
+      avtMaterialMetaData *matmd = new avtMaterialMetaData;
+      matmd->name = "materialset";
+      matmd->meshName = meshname;
+      matmd->numMaterials = aMatNames.size();
+      matmd->materialNames = aMatNames;
+      md->Add(matmd);
     }
+    debug5 << Vec2String("iNumBlocks", iNumBlocks, 3) << endl; 
 
-    debug5 << "iNumBlocks is ["<<iNumBlocks[0]<<","<<iNumBlocks[1]<<","<<iNumBlocks[2]<<"]"<<endl; 
     // Find domain boundaries
     if (!avtDatabase::OnlyServeUpMetaData() && nblocks > 1)
     {
@@ -778,30 +811,24 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             bbox[2] = iBlockY * iBlockSize[1];
             bbox[4] = iBlockZ * iBlockSize[2];
 
-            if (!bCurvilinear ) {
-              bbox[1] = bbox[0] + iBlockSize[0]; 
-              bbox[3] = bbox[2] + iBlockSize[1]; 
-              bbox[5] = bbox[4] + iBlockSize[2]; 
+            if (iBlockX == iNumBlocks[0]-1) {
+              bbox[1] = bbox[0] + iBoundarySize[0]; 
             } else {
-              if (iBlockX == iNumBlocks[0]-1) {
-                bbox[1] = bbox[0] + iBoundarySize[0]; 
-              } else {
-                bbox[1] = bbox[0] + iInteriorSize[0]; 
-              }            
-              if (iBlockY == iNumBlocks[1]-1) {
-                bbox[3] = bbox[2] + iBoundarySize[1]; 
-              } else {
-                bbox[3] = bbox[2] + iInteriorSize[1]; 
-              }            
-              if (iBlockZ == iNumBlocks[2]-1) {
-                bbox[5] = bbox[4] + iBoundarySize[2]; 
-              } else {
-                bbox[5] = bbox[4] + iInteriorSize[2]; 
-              }          
-              bbox[1]--;
-              bbox[3]--; 
-              bbox[5]--; 
-            }
+              bbox[1] = bbox[0] + iInteriorSize[0]; 
+            }            
+            if (iBlockY == iNumBlocks[1]-1) {
+              bbox[3] = bbox[2] + iBoundarySize[1]; 
+            } else {
+              bbox[3] = bbox[2] + iInteriorSize[1]; 
+            }            
+            if (iBlockZ == iNumBlocks[2]-1) {
+              bbox[5] = bbox[4] + iBoundarySize[2]; 
+            } else {
+              bbox[5] = bbox[4] + iInteriorSize[2]; 
+            }          
+            bbox[1]--;
+            bbox[3]--; 
+            bbox[5]--; 
  
             // VisIt expects the 2d case to have flat logical z extent (0,0).
             if(dim == 2)
@@ -809,7 +836,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 bbox[4] = 0;
                 bbox[5] = 0;
             }
-            debug5 << "For domain "<< ii <<" with IJK ["<<iBlockX<< ","<<iBlockY<< ","<<iBlockZ<< "], bounds are ["<<bbox[0] << ", "<<bbox[1] << ", "<<bbox[2] << ", "<<bbox[3] << ", "<<bbox[4] << ", "<<bbox[5] << "] " << endl; 
+            debug5 << "For domain "<< ii <<" with IJK ["<<iBlockX<< ","<<iBlockY<< ","<<iBlockZ<< "], "<<Vec2String("bounds",bbox,6) << endl; 
             rdb->SetIndicesForRectGrid(ii, bbox);
         }
         rdb->CalculateBoundaries();
@@ -1215,6 +1242,10 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     
     if (sFileVersion == "2.0") {
       GetBlockDims(domain, gridsize); 
+    } else {
+      if (iBlockX == iNumBlocks[0] - 1) gridsize[0] = iBoundarySize[0]; 
+      if (iBlockY == iNumBlocks[1] - 1) gridsize[1] = iBoundarySize[1]; 
+      if (iBlockZ == iNumBlocks[2] - 1) gridsize[2] = iBoundarySize[2]; 
     }
 
     rgrid->SetDimensions(gridsize);    
@@ -1228,16 +1259,27 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     z->SetNumberOfTuples(gridsize[2]);
 
     for (ii = 0 ; ii < gridsize[0] ; ii++)
-        x->SetTuple1(ii, fOrigin[0] + (iBlockX*iBlockSize[0]+ii-0.5)*fStride[0]);
+      x->SetTuple1(ii, fOrigin[0] + (iBlockX*iBlockSize[0]+ii)*fStride[0]);
 
+    debug5 << "GetRectilinearMesh("<<domain<<"): X limits are "<<fOrigin[0] + (iBlockX*iBlockSize[0])*fStride[0] << " to " << fOrigin[0] + (iBlockX*iBlockSize[0]+ii-1)*fStride[0] << endl; 
+    
     for (ii = 0 ; ii < gridsize[1] ; ii++)
-        y->SetTuple1(ii, fOrigin[1] + (iBlockY*iBlockSize[1]+ii-0.5)*fStride[1]);
+      y->SetTuple1(ii, fOrigin[1] + (iBlockY*iBlockSize[1]+ii)*fStride[1]);
 
-    if (dim == 3)
-        for (ii = 0 ; ii < gridsize[2] ; ii++)
-            z->SetTuple1(ii, fOrigin[2] + (iBlockZ*iBlockSize[2]+ii-0.5)*fStride[2]);
-    else
-        z->SetTuple1(0, 0.);
+    debug5 << "GetRectilinearMesh("<<domain<<"): Y limits are "<<fOrigin[1] + (iBlockY*iBlockSize[1])*fStride[1]  << " to " << fOrigin[1] + (iBlockY*iBlockSize[1]+ii-1)*fStride[1] << endl; 
+    
+    if (dim == 3) {
+      for (ii = 0 ; ii < gridsize[2] ; ii++)
+        z->SetTuple1(ii, fOrigin[2] + (iBlockZ*iBlockSize[2]+ii)*fStride[2]);
+
+      debug5 << "GetRectilinearMesh("<<domain<<"): Z limits are "<<fOrigin[2] + (iBlockZ*iBlockSize[2])*fStride[2] << " to " << fOrigin[2] + (iBlockZ*iBlockSize[2]+ii-1)*fStride[2] << endl; 
+
+    }
+    else {
+      z->SetTuple1(0, 0.);
+
+      debug5 << "GetRectilinearMesh("<<domain<<"): Z limits are 0 to 0" << endl; 
+    }
 
     rgrid->SetXCoordinates(x);
     rgrid->SetYCoordinates(y);
@@ -1252,6 +1294,7 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     arr->SetValue(0, iBlockX*iBlockSize[0]+1);
     arr->SetValue(1, iBlockY*iBlockSize[1]+1);
     arr->SetValue(2, iBlockZ*iBlockSize[2]+1);
+
     arr->SetName("base_index");
     rgrid->GetFieldData()->AddArray(arr);
     arr->Delete();
@@ -1589,7 +1632,7 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
                                        int domain, const char *type, void *args,
                                        DestructorFunction &df)
 {
-  debug4 << "GetAuxiliaryData("<<var<<", "<<timestate<<", "<<domain<<", "<<type<<")"<< endl; 
+  debug4 << "GetAuxiliaryData("<<var<<", timestate="<<timestate<<", domain="<<domain<<", type="<<type<<")"<< endl; 
     void *rv = NULL;
     int   nbricks = iNumBlocks[0] * iNumBlocks[1] * iNumBlocks[2];
     int   ii, jj, kk, mm;
@@ -1604,31 +1647,36 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
         avtIntervalTree *itree = new avtIntervalTree(nbricks, 3);
         for (ii = 0 ; ii < nbricks ; ii++)
         {
-            int iBlockX, iBlockY, iBlockZ;
-            DomainToIJK( ii, iBlockX, iBlockY, iBlockZ );
-
-            //
-            // Establish what the range is of this dataset.
-            //
-            double bounds[6];
-            bounds[0] = fOrigin[0] - fStride[0]/2.0 + fStride[0]*iBlockSize[0]*iBlockX;
-            bounds[1] = fOrigin[0] - fStride[0]/2.0 + fStride[0]*iBlockSize[0]*(iBlockX+1);
-            bounds[2] = fOrigin[1] - fStride[1]/2.0 + fStride[1]*iBlockSize[1]*iBlockY;
-            bounds[3] = fOrigin[1] - fStride[1]/2.0 + fStride[1]*iBlockSize[1]*(iBlockY+1);
-            bounds[4] = fOrigin[2] - fStride[2]/2.0 + fStride[2]*iBlockSize[2]*iBlockZ;
-            bounds[5] = fOrigin[2] - fStride[2]/2.0 + fStride[2]*iBlockSize[2]*(iBlockZ+1);
-            if (sFileVersion == "2.0") {
-              if (iBlockX == iNumBlocks[0]-1) {
-                bounds[1] -= fStride[0]*(iInteriorSize[0]-iBoundarySize[0]);
-              }
-              if (iBlockY == iNumBlocks[1]-1) {
-                bounds[3] -= fStride[1]*(iInteriorSize[1]-iBoundarySize[1]);
-              }
-              if (iBlockZ == iNumBlocks[2]-1) {
-                bounds[5] -= fStride[2]*(iInteriorSize[2]-iBoundarySize[2]);
-              }
-            }
-           itree->AddElement(ii, bounds);
+          int iBlockX, iBlockY, iBlockZ;
+          DomainToIJK( ii, iBlockX, iBlockY, iBlockZ );
+          
+          //
+          // Establish what the range is of this dataset.
+          //
+          double bounds[6];
+          bounds[0] = fOrigin[0] + fStride[0]*iBlockSize[0]*iBlockX;
+          bounds[2] = fOrigin[1] + fStride[1]*iBlockSize[1]*iBlockY;
+          bounds[4] = fOrigin[2] + fStride[2]*iBlockSize[2]*iBlockZ;
+          if (iBlockX != iNumBlocks[0]-1) {
+            bounds[1] = bounds[0] + fStride[0]*iInteriorSize[0];
+          } else {
+            bounds[1] = bounds[0] + fStride[0]*iBoundarySize[0];
+          }
+          bounds[1] -= fStride[0]; 
+          if (iBlockY != iNumBlocks[1]-1) {
+            bounds[3] = bounds[2] + fStride[2]*iInteriorSize[2];
+          } else {
+            bounds[3] = bounds[2] + fStride[2]*iBoundarySize[2];
+          }        
+          bounds[3] -= fStride[1]; 
+          if (iBlockZ != iNumBlocks[2]-1) {
+            bounds[5] = bounds[4] + fStride[4]*iInteriorSize[4];
+          } else {
+            bounds[5] = bounds[4] + fStride[4]*iBoundarySize[4];
+          }        
+          bounds[5] -= fStride[2]; 
+          debug5 << "For domain "<<ii<<", "<<Vec2String("bounds", bounds, 6)<< endl;
+          itree->AddElement(ii, bounds);
         }
         itree->Calculate(true);
 
