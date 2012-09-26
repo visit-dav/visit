@@ -2980,7 +2980,7 @@ TecplotFile::VarNameToIndex(const std::string &varName) const
 // Method: TecplotFile::CoordinateVariable
 //
 // Purpose: 
-//   Return the variable nmae for a coordinate axis.
+//   Return the variable name for a coordinate axis.
 //
 // Arguments:
 //
@@ -2992,6 +2992,9 @@ TecplotFile::VarNameToIndex(const std::string &varName) const
 // Creation:   Fri Jun 13 14:29:44 PDT 2008
 //
 // Modifications:
+//   Eric Brugger,
+//   I added a bug fix provided by Jean Favre for a bug where the coordinate 
+//   name was ignored for the z coordinate.
 //   
 // ****************************************************************************
 
@@ -3022,7 +3025,7 @@ TecplotFile::CoordinateVariable(int axis) const
                return vars[i];
     }
 
-    return (axis < 2) ? vars[axis] : std::string();
+    return (axis <= 2) ? vars[axis] : std::string();
 }
 
 // ****************************************************************************
