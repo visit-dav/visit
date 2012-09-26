@@ -458,18 +458,26 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iBoundarySize[ii] = iBlockSize[ii]; 
       } 
     }
-    if (sFileVersion == "2.0") {
-      iGlobalDim[0] += (iInteriorSize[0] - iBoundarySize[0]); 
-      iGlobalDim[1] += (iInteriorSize[1] - iBoundarySize[1]); 
-      iGlobalDim[2] += (iInteriorSize[2] - iBoundarySize[2]); 
-    } 
+    
     iNumBlocks[0] = iGlobalDim[0] / iBlockSize[0];
     iNumBlocks[1] = iGlobalDim[1] / iBlockSize[1];
     iNumBlocks[2] = iGlobalDim[2] / iBlockSize[2];
     
-    //domainMap is only used if the file order is unspecified
-    if (iFileOrder[0] == -1)
+   //domainMap is only used if the file order is unspecified
+    if (iFileOrder[0] == -1) {
+      /* don't use domainMaps any more 
         domainMap.resize( iNumBlocks[0]*iNumBlocks[1]*iNumBlocks[2]*3, -1 );
+      */ 
+      if (iGlobalDim[2] == 1 ||iGlobalDim[1] == 1||iGlobalDim[0] == 1) {
+        iFileOrder[0] = 1; 
+        iFileOrder[1] = 0; 
+        iFileOrder[2] = -1; 
+      } else { 
+        iFileOrder[0] = 2; 
+        iFileOrder[1] = 1; 
+        iFileOrder[2] = 0; 
+      }
+    }
 
     // Rearrange data if it is flat in one dimension
     if (iGlobalDim[2] == 1)
@@ -478,7 +486,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         flatDim = 2;
 
         if (iFileOrder[0] != -1)
-            Fix2DFileOrder(0, 1, iFileOrder);
+            Fix2DFileOrder(0, 1, iFileOrder);     
     }
     else if (iGlobalDim[1] == 1)
     {
@@ -547,6 +555,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         if (iFileOrder[0] != -1)
             Fix2DFileOrder(1, 2, iFileOrder);
     }
+     debug5 << Vec2String("iGlobalDim",iGlobalDim,3) << endl; 
 
     if (bCurvilinear && iFileOrder[0] == -1)
         EXCEPTION1(InvalidDBTypeException, 
@@ -1229,7 +1238,7 @@ vtkDataSet *
 avtMirandaFileFormat::GetRectilinearMesh(int domain)
 {
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-  debug4 << "GetRectilinearMesh("<<domain<<")"<< endl; 
+    debug4 << "GetRectilinearMesh("<<domain<<")"<< endl; 
 
     int ii;    
     int iBlockX, iBlockY, iBlockZ;
@@ -1243,10 +1252,11 @@ avtMirandaFileFormat::GetRectilinearMesh(int domain)
     if (sFileVersion == "2.0") {
       GetBlockDims(domain, gridsize); 
     } else {
-      if (iBlockX == iNumBlocks[0] - 1) gridsize[0] = iBoundarySize[0]; 
-      if (iBlockY == iNumBlocks[1] - 1) gridsize[1] = iBoundarySize[1]; 
-      if (iBlockZ == iNumBlocks[2] - 1) gridsize[2] = iBoundarySize[2]; 
+      if (gridsize[0]>1 && iBlockX == iNumBlocks[0] - 1) gridsize[0]--; 
+      if (gridsize[1]>1 && iBlockY == iNumBlocks[1] - 1) gridsize[1]--; 
+      if (gridsize[2]>1 && iBlockZ == iNumBlocks[2] - 1) gridsize[2]--; 
     }
+    debug5 << "GetRectilinearMesh: " << Vec2String("gridsize",gridsize,3) << endl;
 
     rgrid->SetDimensions(gridsize);    
 
@@ -1349,7 +1359,7 @@ ByteSwap32(void *val)
 vtkDataArray *
 avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-  debug4 << "GetVar("<<timestate<<", "<<domain<<", "<<varname<<")"<< endl; 
+  debug4 << "GetVar(timestate="<<timestate<<", domain="<<domain<<", var="<<varname<<")"<< endl; 
   TIMERSTART(); 
 
     int ii, iVar = -1, nPrevComp = 0;
@@ -1398,13 +1408,14 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
       
       float *buf = (float *)(var->GetVoidPointer(0));
       ReadRawScalar(fd, nPrevComp, buf, filename, domain); 
+      debug5 << "(2.0): Read "<< nTuples << " elements from " << filename << " for domain " << domain << endl;
       fclose(fd); 
     } else {
       int neighbors[8], realdim[3];
       float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
       
       FindNeighborDomains(domain, neighbors, realdim);
-      
+      debug5 << "GetVar: For domain " << domain<<", "<<Vec2String("neighbors",neighbors,8)<<endl; 
       for (ii = 0; ii < 8; ii++)
         {
           if (neighbors[ii] == -1)
@@ -1413,13 +1424,13 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           char filename[512];
           if (SNPRINTF(filename, 512, fileTemplate.c_str(), aCycles[timestate], neighbors[ii]) < 0)
             EXCEPTION1(InvalidFilesException, "");
-          
           FILE *fd = fopen(filename, "rb");
           if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
-          
-          aRawBlocks[ii] = new float[iBlockSize[0]*iBlockSize[1]*iBlockSize[2]];
+          int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
+          aRawBlocks[ii] = new float[numfloats];
           ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain);
+          debug5 << "Read "<<numfloats<< " elements from " << filename << " for neighbor " << ii << " of domain " << domain << endl;
           
           fclose(fd);
         }
@@ -1889,14 +1900,14 @@ avtMirandaFileFormat::FindNeighborDomains(int domain, int *neighbors,
         realdim[ii] = iBlockSize[ii];
 
 
-    if (!bCurvilinear)
+    /*    if (!bCurvilinear)
     {
-        // don't need to read any neighbors for rectilinear case
+        // don't need to read any neighbors for rectilinear case WHY? 
         neighbors[0] = domain;
         for (ii = 1; ii < 8; ii++)
             neighbors[ii] = -1;
     }
-    else
+    else*/ 
     {
         int di, dj, dk;
         int incr[3];
@@ -1918,7 +1929,6 @@ avtMirandaFileFormat::FindNeighborDomains(int domain, int *neighbors,
         incr[iFileOrder[0]] = 1;
         incr[iFileOrder[1]] = iNumBlocks[iFileOrder[0]];
         incr[iFileOrder[2]] = iNumBlocks[iFileOrder[0]] * iNumBlocks[iFileOrder[1]];
-
         int *curr = neighbors;
         for (kk = 0; kk < 2; kk++)
         {
