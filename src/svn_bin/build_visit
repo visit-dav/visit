@@ -148,6 +148,9 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+#import visit
+. $bv_PREFIX/bv_visit.sh
+
 #handle -h or --help arg early to avoid delays
 for arg in "$@";
 do
@@ -156,9 +159,6 @@ do
         exit 2
     fi
 done
-
-#import visit
-. $bv_PREFIX/bv_visit.sh
 
 #These options can be read from a file..
 . $bv_PREFIX/bv_xml_parser.sh
