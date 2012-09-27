@@ -148,6 +148,15 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+#handle -h or --help arg early to avoid delays
+for arg in "$@";
+do
+    if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+        usage
+        exit 2
+    fi
+done
+
 #import visit
 . $bv_PREFIX/bv_visit.sh
 
