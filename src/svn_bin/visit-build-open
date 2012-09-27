@@ -101,6 +101,9 @@
 #   Eric Brugger, Mon Jul 30 10:13:05 PDT 2012
 #   I replaced atlas with prism.
 #
+#   Eric Brugger, Wed Sep 26 17:09:04 PDT 2012
+#   I deleted prism.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -148,7 +151,6 @@ hoth=true
 kickit=true
 sidious=true
 ubuntu1104_64=false
-prism=true
 aztec=true
 rzthriller=true
 rzzeus=true
@@ -171,7 +173,6 @@ do
          kickit=false
          sidious=false
          ubuntu1104_64=false
-         prism=false
          aztec=false
          rzthriller=false
          rzzeus=false
@@ -210,14 +211,6 @@ do
          ;;
       +ubuntu1104_64)
          ubuntu1104_64=true
-         shift
-         ;;
-      -prism)
-         prism=false
-         shift
-         ;;
-      +prism)
-         prism=true
          shift
          ;;
       -aztec)
@@ -286,7 +279,6 @@ then
    echo "    kickit (B-Div, Linux),"
    echo "    sidious(B-Div, Linux),"
    echo "    Ubunut1104-64(B-Div, Linux),"
-   echo "    prism (LC, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
@@ -509,61 +501,6 @@ then
       cp ubuntu1104_64 ubuntu1104_64_buildit
       cp $dist.tar.gz ubuntu1104_64_$dist.tar.gz
       chmod 750 ubuntu1104_64_buildit;./ubuntu1104_64_buildit &
-   fi
-fi
-
-#
-# Build on prism.
-#
-rm -f prism
-cat <<EOF > prism
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/prism ; then
-   mkdir /usr/tmp/$user/prism
-fi
-rm -rf /usr/tmp/$user/prism/visitbuild
-mkdir /usr/tmp/$user/prism/visitbuild
-mv prism_$dist.tar.gz /usr/tmp/$user/prism/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/prism/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
-#
-# cpack for cmake 2.8.8 crashes on prism so I am using the 2.8.3 version.
-#
-/usr/gapps/visit/cmake/2.8.3/linux-x86_64_gcc-4.1/bin/cpack --config ./CPackConfig.cmake >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on prism"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): prism" $emailName < resultlog
-EOF
-
-if [ $prism = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on prism"
-      scp prism prism:prism_buildit
-      scp $dist.tar.gz prism:prism_$dist.tar.gz
-      ssh prism0 "chmod 750 prism_buildit;./prism_buildit" &
    fi
 fi
 
@@ -891,5 +828,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 prism aztec rzthriller rzzeus euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
 fi
