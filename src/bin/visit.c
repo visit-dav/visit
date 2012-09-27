@@ -1185,22 +1185,6 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
         }
     }
 
-    /*
-     * Set the system config variable.
-     */
-    {
-        char *visitsystemconfig = NULL;
-        int haveVISITSYSTEMCONFIG = 0;
-        haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG",
-                                        &visitsystemconfig);
-        if(haveVISITSYSTEMCONFIG)
-        {
-            sprintf(tmp, "VISITSYSTEMCONFIG=%s", visitsystemconfig);
-            env.push_back(tmp);
-        }
-        free(visitsystemconfig);
-    }
-
     free(tmp);
     if (freeVisItPath)
         free(visitpath);

@@ -979,10 +979,6 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //    Brad Whitlock, Tue Jun 24 15:33:58 PDT 2008
 //    Pass in the database plugin manager since it's no longer a singleton.
 //
-//    Kathleen Biagas, Mon Sep 25 17:53:12 MST 2012 
-//    Remove win32 specific code to prepend directory to filenames, it is
-//    already handled by GetFileListFromTextFile.
-//
 // ****************************************************************************
 
 avtDatabase *
@@ -1004,6 +1000,44 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
     char  **reallist  = NULL;
     int     listcount = 0;
     avtDatabase::GetFileListFromTextFile(visitFile, reallist, listcount);
+
+#if defined(_WIN32)
+    //
+    // Get the path out of the VisIt file and prepend it to all of the
+    // timestep filenames.
+    //
+    string visitPath(visitFile);
+    std::string::size_type sepIndex = visitPath.find_last_of("\\/");
+    if(sepIndex != std::string::npos)
+    {
+        visitPath = visitPath.substr(0, sepIndex + 1);
+
+        int s = visitPath.size();
+        string curDir("./");
+        for(int j = 0; j < listcount; ++j)
+        {
+            string fileName(reallist[j]);
+
+            // If the filename contains a colon, assume that it contains
+            // the whole path to the file. We don't need to prepend a 
+            // path if it already contains one.
+            if((fileName.find(":") != std::string::npos) ||
+               (fileName.size() > 0 && fileName[0] == '!'))
+                continue;
+
+            // If the filename begins with "./", remove it.
+            if(fileName.substr(0,2) == curDir)
+                fileName = fileName.substr(2, fileName.size() - 2);
+
+            // Create a new filename that has the path prepended to it.
+            int len = fileName.size() + s + 2;
+            char *name = new char[len];
+            SNPRINTF(name, len, "%s%s", visitPath.c_str(), fileName.c_str());
+            delete [] reallist[j];
+            reallist[j] = name;
+        }
+    }
+#endif
 
     //
     // Create a database using the list of files.
