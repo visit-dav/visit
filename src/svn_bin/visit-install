@@ -328,6 +328,9 @@
 #    visit-config.ini, visit-guiconfig.ini and visit-visitrc.ini have
 #    all been renamed in src, so no need to rename on copy.
 #
+#    Eric Brugger, Thu Sep 27 08:01:51 PDT 2012
+#    I deleted the host profile for prism.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -746,7 +749,6 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_edge.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_hera.xml     "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_oslic.xml    "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_prism.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_sierra.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
 

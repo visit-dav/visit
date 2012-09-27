@@ -54,6 +54,9 @@
 #   Eric Brugger, Mon Jul 30 10:21:57 PDT 2012
 #   I replaced atlas with prism.
 #
+#   Eric Brugger, Wed Sep 26 17:11:04 PDT 2012
+#   I deleted prism.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -101,7 +104,6 @@ hoth=true
 kickit=true
 sidious=true
 ubuntu1104_64=false
-prism=true
 aztec=true
 rzthriller=true
 rzzeus=true
@@ -124,7 +126,6 @@ do
          kickit=false
          sidious=false
          ubuntu1104_64=false
-         prism=false
          aztec=false
          rzthriller=false
          rzzeus=false
@@ -163,14 +164,6 @@ do
          ;;
       +ubuntu1104_64)
          ubuntu1104_64=true
-         shift
-         ;;
-      -prism)
-         prism=false
-         shift
-         ;;
-      +prism)
-         prism=true
          shift
          ;;
       -aztec)
@@ -385,43 +378,6 @@ then
       cp /home/visit/ubuntu1104_64/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-ubuntu11.tar.gz
       scp ubuntu1104_64 ubuntu1104_64_install
       chmod 750 ubuntu1104_64_install;./ubuntu1104_64_install
-   fi
-fi
-
-#
-# Install on prism.
-#
-rm -f prism
-cat <<EOF > prism
-#!/bin/sh
-./visit-install -private -c llnl_open_cz -g visit -b bdivp -gw -l $ver linux-prism /usr/gapps/visit > installlog 2>&1
-mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-chaos4
-rm -f resultlog
-echo "        install of visit on prism"              > resultlog 2>&1
-echo "       ---------------------------"             >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-df -k /usr/gapps/visit                                >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-x86_64-chaos4/bin  >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                               >> resultlog 2>&1
-echo "The database plugins:"                          >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-x86_64-chaos4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-chaos4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): prism" $emailName < resultlog
-EOF
-
-if [ $prism = true ]
-then
-   if [ $test = no ]
-   then
-      scp prism0:/usr/tmp/$user/prism/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-prism.tar.gz
-      scp visit$ver2.linux-prism.tar.gz prism:
-      scp visit-install prism:
-      scp prism prism:prism_install
-      ssh prism "chmod 750 prism_install;./prism_install"
    fi
 fi
 
@@ -643,5 +599,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 prism aztec rzthriller rzzeus euclid glory redsky
+   rm -f hoth kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
 fi
