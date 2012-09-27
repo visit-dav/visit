@@ -112,7 +112,7 @@ string Vec2String(string name, T *vec, int numelems) {
   
   while (elem < numelems ) {
     float value = vec[elem];
-    snprintf(buf,31,"%f",value); 
+    SNPRINTF(buf,31,"%f",value); 
     s += buf ;
     if (elem == numelems - 1) {
       s+= "]"; 
