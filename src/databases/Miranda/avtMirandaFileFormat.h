@@ -136,6 +136,7 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
                                           // replaces gridTemplate and domainMap
 
     bool                   bCurvilinear;
+    bool                   bZonal;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           DomainToIJK(int domain, int &i, int &j, int &k);
