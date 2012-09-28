@@ -122,6 +122,7 @@ public:
     void SetStereoFlags(const intVector &stereoFlags_);
     void SetTemplateFile(const std::string &templateFile_);
     void SetSendEmailNotification(bool sendEmailNotification_);
+    void SetUseScreenCapture(bool useScreenCapture_);
     void SetEmailAddress(const std::string &emailAddress_);
     void SetFps(int fps_);
     void SetStartIndex(int startIndex_);
@@ -150,6 +151,7 @@ public:
     const std::string        &GetTemplateFile() const;
           std::string        &GetTemplateFile();
     bool                     GetSendEmailNotification() const;
+    bool                     GetUseScreenCapture() const;
     const std::string        &GetEmailAddress() const;
           std::string        &GetEmailAddress();
     int                      GetFps() const;
@@ -196,6 +198,7 @@ public:
         ID_stereoFlags,
         ID_templateFile,
         ID_sendEmailNotification,
+        ID_useScreenCapture,
         ID_emailAddress,
         ID_fps,
         ID_startIndex,
@@ -217,6 +220,7 @@ private:
     intVector          stereoFlags;
     std::string        templateFile;
     bool               sendEmailNotification;
+    bool               useScreenCapture;
     std::string        emailAddress;
     int                fps;
     int                startIndex;
@@ -227,6 +231,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MOVIEATTRIBUTES_TMFS "iisss*u*i*i*d*i*sbsiiii"
+#define MOVIEATTRIBUTES_TMFS "iisss*u*i*i*d*i*sbbsiiii"
 
 #endif

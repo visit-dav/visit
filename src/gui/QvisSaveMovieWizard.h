@@ -176,6 +176,7 @@ private slots:
     void page9_scaleChanged(int);
     void page9_stereoChanged(bool);
     void page9_stereoTypeChanged(int);
+    void page9_screenCaptureChanged(bool);
 
     void page10_fpsChanged(const QString &s);
     void page10_startIndexChanged(const QString &s);
@@ -274,7 +275,7 @@ private:
     void page8_UpdateMovieSettings();
 
     void page9_UpdateOutputs();
-    void page9_UpdateResolution(bool, double, int w, int h, int s);
+    void page9_UpdateResolution(bool, double, int w, int h, int s, bool sc);
     bool page9_UpdateFormat(const QString &format);
 
     void page10_UpdateStartEndIndex();
@@ -394,6 +395,7 @@ private:
     QCheckBox              *page9_aspectLock;
     QCheckBox              *page9_stereoCheckBox;
     QLabel                 *page9_stereoLabel;
+    QCheckBox              *page9_screenCaptureCheckBox;
     QComboBox              *page9_stereoType;
     QPushButton            *page9_addOutputButton;
     QPushButton            *page9_removeOutputButton;
