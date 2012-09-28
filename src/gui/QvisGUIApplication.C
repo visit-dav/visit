@@ -8325,7 +8325,10 @@ QvisGUIApplication::SaveMovieMain()
                 movieBase = "movie";
             movieBase = MakeCodeSlashes(movieBase);
             code += "    movie.movieBase = \"" + movieBase + "\"\n";
-            code += "    movie.screenCaptureImages = 0\n";
+            if (movieAtts->GetUseScreenCapture())
+                code += "    movie.screenCaptureImages = 1\n";
+            else
+                code += "    movie.screenCaptureImages = 0\n";
 
             // If we're using movie templates then give the name of the templates here.
             if(movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)

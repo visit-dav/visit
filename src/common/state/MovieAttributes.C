@@ -136,6 +136,7 @@ void MovieAttributes::Init()
     outputDirectory = ".";
     outputName = "movie";
     sendEmailNotification = false;
+    useScreenCapture = false;
     fps = 10;
     startIndex = 0;
     endIndex = 1000000000;
@@ -173,6 +174,7 @@ void MovieAttributes::Copy(const MovieAttributes &obj)
     stereoFlags = obj.stereoFlags;
     templateFile = obj.templateFile;
     sendEmailNotification = obj.sendEmailNotification;
+    useScreenCapture = obj.useScreenCapture;
     emailAddress = obj.emailAddress;
     fps = obj.fps;
     startIndex = obj.startIndex;
@@ -347,6 +349,7 @@ MovieAttributes::operator == (const MovieAttributes &obj) const
             (stereoFlags == obj.stereoFlags) &&
             (templateFile == obj.templateFile) &&
             (sendEmailNotification == obj.sendEmailNotification) &&
+            (useScreenCapture == obj.useScreenCapture) &&
             (emailAddress == obj.emailAddress) &&
             (fps == obj.fps) &&
             (startIndex == obj.startIndex) &&
@@ -507,6 +510,7 @@ MovieAttributes::SelectAll()
     Select(ID_stereoFlags,           (void *)&stereoFlags);
     Select(ID_templateFile,          (void *)&templateFile);
     Select(ID_sendEmailNotification, (void *)&sendEmailNotification);
+    Select(ID_useScreenCapture,      (void *)&useScreenCapture);
     Select(ID_emailAddress,          (void *)&emailAddress);
     Select(ID_fps,                   (void *)&fps);
     Select(ID_startIndex,            (void *)&startIndex);
@@ -614,6 +618,12 @@ MovieAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
     {
         addToParent = true;
         node->AddNode(new DataNode("sendEmailNotification", sendEmailNotification));
+    }
+
+    if(completeSave || !FieldsEqual(ID_useScreenCapture, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useScreenCapture", useScreenCapture));
     }
 
     if(completeSave || !FieldsEqual(ID_emailAddress, &defaultObject))
@@ -741,6 +751,8 @@ MovieAttributes::SetFromNode(DataNode *parentNode)
         SetTemplateFile(node->AsString());
     if((node = searchNode->GetNode("sendEmailNotification")) != 0)
         SetSendEmailNotification(node->AsBool());
+    if((node = searchNode->GetNode("useScreenCapture")) != 0)
+        SetUseScreenCapture(node->AsBool());
     if((node = searchNode->GetNode("emailAddress")) != 0)
         SetEmailAddress(node->AsString());
     if((node = searchNode->GetNode("fps")) != 0)
@@ -839,6 +851,13 @@ MovieAttributes::SetSendEmailNotification(bool sendEmailNotification_)
 {
     sendEmailNotification = sendEmailNotification_;
     Select(ID_sendEmailNotification, (void *)&sendEmailNotification);
+}
+
+void
+MovieAttributes::SetUseScreenCapture(bool useScreenCapture_)
+{
+    useScreenCapture = useScreenCapture_;
+    Select(ID_useScreenCapture, (void *)&useScreenCapture);
 }
 
 void
@@ -1006,6 +1025,12 @@ MovieAttributes::GetSendEmailNotification() const
     return sendEmailNotification;
 }
 
+bool
+MovieAttributes::GetUseScreenCapture() const
+{
+    return useScreenCapture;
+}
+
 const std::string &
 MovieAttributes::GetEmailAddress() const
 {
@@ -1142,6 +1167,7 @@ MovieAttributes::GetFieldName(int index) const
     case ID_stereoFlags:           return "stereoFlags";
     case ID_templateFile:          return "templateFile";
     case ID_sendEmailNotification: return "sendEmailNotification";
+    case ID_useScreenCapture:      return "useScreenCapture";
     case ID_emailAddress:          return "emailAddress";
     case ID_fps:                   return "fps";
     case ID_startIndex:            return "startIndex";
@@ -1183,6 +1209,7 @@ MovieAttributes::GetFieldType(int index) const
     case ID_stereoFlags:           return FieldType_intVector;
     case ID_templateFile:          return FieldType_string;
     case ID_sendEmailNotification: return FieldType_bool;
+    case ID_useScreenCapture:      return FieldType_bool;
     case ID_emailAddress:          return FieldType_string;
     case ID_fps:                   return FieldType_int;
     case ID_startIndex:            return FieldType_int;
@@ -1224,6 +1251,7 @@ MovieAttributes::GetFieldTypeName(int index) const
     case ID_stereoFlags:           return "intVector";
     case ID_templateFile:          return "string";
     case ID_sendEmailNotification: return "bool";
+    case ID_useScreenCapture:      return "bool";
     case ID_emailAddress:          return "string";
     case ID_fps:                   return "int";
     case ID_startIndex:            return "int";
@@ -1313,6 +1341,11 @@ MovieAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_sendEmailNotification:
         {  // new scope
         retval = (sendEmailNotification == obj.sendEmailNotification);
+        }
+        break;
+    case ID_useScreenCapture:
+        {  // new scope
+        retval = (useScreenCapture == obj.useScreenCapture);
         }
         break;
     case ID_emailAddress:

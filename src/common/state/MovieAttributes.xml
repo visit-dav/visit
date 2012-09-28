@@ -38,6 +38,9 @@
     <Field name="sendEmailNotification" label="Send Email notification" type="bool">
       false
     </Field>
+    <Field name="useScreenCapture" label="Use Screen Capture" type="bool">
+      false
+    </Field>
     <Field name="emailAddress" label="Email address" type="string">
     </Field>
     <Field name="fps" label="fps" type="int">

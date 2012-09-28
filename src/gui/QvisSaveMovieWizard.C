@@ -1334,6 +1334,9 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   on some platforms. If we want to selectively enable img2sm in the future,
 //   we can a config file of some sort to point to img2sm if it exists.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -1457,6 +1460,16 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(page9_stereoLabel,9,0);
     f2layout->addWidget(page9_stereoType, 9, 1, 1, 2);
 
+    QFrame *hline3 = new QFrame(formatAndResolution);
+    hline3->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+    f2layout->addWidget(hline3, 10, 0, 1, 3);
+    f2layout->setRowMinimumHeight(10, 15);
+
+    page9_screenCaptureCheckBox = new QCheckBox(tr("Use Screen Capture"), formatAndResolution);
+    connect(page9_screenCaptureCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(page9_screenCaptureChanged(bool)));
+    f2layout->addWidget(page9_screenCaptureCheckBox, 11, 0, 1, 3);
+
     //
     // Create the ->, <- buttons
     //
@@ -1484,9 +1497,9 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_outputFormats = new QTreeWidget(outputGroup);
     page9_outputFormats->setMinimumWidth(fontMetrics().
         boundingRect("Quicktime movie 2000x2000").width());
-    page9_outputFormats->setColumnCount(3);
+    page9_outputFormats->setColumnCount(4);
     QStringList headers;
-    headers << tr("Format") << tr("Resolution") << tr("Stereo");
+    headers << tr("Format") << tr("Resolution") << tr("Stereo") << tr("Screen Capture");
     page9_outputFormats->setHeaderLabels(headers);
     page9_outputFormats->setAllColumnsShowFocus(true);
     f3layout->addWidget(page9_outputFormats);
@@ -2117,6 +2130,9 @@ QvisSaveMovieWizard::validateCurrentPage()
 //   Brad Whitlock, Mon Dec  6 16:18:03 PST 2010
 //   I added stride.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -2180,13 +2196,14 @@ QvisSaveMovieWizard::initializePage(int pageId)
             const intVector &w = movieAtts->GetWidths();
             const intVector &h = movieAtts->GetHeights();
             const intVector &s = movieAtts->GetStereoFlags();
+            const bool sc = movieAtts->GetUseScreenCapture();
             const unsignedCharVector &useCurrent = movieAtts->GetUseCurrentSize();
             const doubleVector &scales = movieAtts->GetScales();
 
             if(!page9_UpdateFormat(FormatToMenuName(formats[0].c_str())))
                 page9_UpdateFormat(TIFF_FORMAT);
 
-            page9_UpdateResolution(useCurrent[0]>0, scales[0], w[0], h[0], s[0]);
+            page9_UpdateResolution(useCurrent[0]>0, scales[0], w[0], h[0], s[0], sc);
         }
         else
         {
@@ -2195,7 +2212,7 @@ QvisSaveMovieWizard::initializePage(int pageId)
                 page9_UpdateFormat(TIFF_FORMAT);
 
             page9_UpdateResolution(true, 1., (int)(default_movie_size[0]),
-                                   (int)(default_movie_size[1]), 0);
+                                   (int)(default_movie_size[1]), 0, false);
         }
         break;
     case Page_NumFrames:
@@ -2834,6 +2851,9 @@ QvisSaveMovieWizard::page7_Update()
 //   Brad Whitlock, Fri Oct 10 16:29:34 PDT 2008
 //   Qt 4.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -2915,6 +2935,13 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         item->setText(1, movieAtts->GetEmailAddress().c_str());
     else
         item->setText(1, tr("none"));
+
+    item = new QTreeWidgetItem(page8_settings);
+    item->setText(0, tr("Use Screen Capture"));
+    if(movieAtts->GetUseScreenCapture())
+        item->setText(1, tr("yes"));
+    else
+        item->setText(1, tr("no"));
 }
 
 // ****************************************************************************
@@ -2936,6 +2963,9 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
 //   Brad Whitlock, Wed Oct  8 11:23:46 PDT 2008
 //   Qt 4.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -2951,6 +2981,7 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
         const intVector    &w = movieAtts->GetWidths();
         const intVector    &h = movieAtts->GetHeights();
         const intVector    &s = movieAtts->GetStereoFlags();
+        const bool         sc = movieAtts->GetUseScreenCapture();
         const doubleVector &scales = movieAtts->GetScales();
         const unsignedCharVector  &useCurrent = movieAtts->GetUseCurrentSize();
 
@@ -2975,6 +3006,8 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
             else if(s[i] == 3)
                 stereo = tr("Red/Green");
             item->setText(2, stereo);
+            QString screenCapture((sc?tr("yes"):tr("no")));
+            item->setText(3, screenCapture);
             bool isLast = (i == formats.size()-1);
             item->setSelected(isLast);
             if(isLast)
@@ -3035,10 +3068,13 @@ QvisSaveMovieWizard::page9_UpdateFormat(const QString &format)
 //   Brad Whitlock, Wed Oct  8 11:22:57 PDT 2008
 //   Qt 4.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w, int h, int s)
+QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w, int h, int s, bool sc)
 {
     page9_sizeTypeButtonGroup->blockSignals(true);
     int btn = useCurrent?0:1;
@@ -3080,6 +3116,10 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
         page9_aspect = float(w) / float(h);
     else
         page9_aspect = 1.;
+
+    page9_screenCaptureCheckBox->blockSignals(true);
+    page9_screenCaptureCheckBox->setChecked(sc);
+    page9_screenCaptureCheckBox->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -4328,6 +4368,9 @@ QvisSaveMovieWizard::page9_aspectLockChanged(bool val)
 //   Brad Whitlock, Wed Oct  8 10:47:48 PDT 2008
 //   Qt 4.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -4342,6 +4385,7 @@ QvisSaveMovieWizard::page9_addOutput()
     int id = page9_sizeTypeButtonGroup->checkedId();
     bool stereo = page9_stereoCheckBox->isChecked();
     int stereoType = page9_stereoType->currentIndex();
+    bool screenCapture = page9_screenCaptureCheckBox->isChecked();
 
     bool useCurrent = id == 0;
     
@@ -4366,6 +4410,8 @@ QvisSaveMovieWizard::page9_addOutput()
     int mStereo = stereo ? (stereoType+1) : 0;
     movieAtts->GetStereoFlags().push_back(mStereo);
     movieAtts->SelectStereoFlags();
+
+    movieAtts->SetUseScreenCapture(screenCapture);
 
     //qDebug("Adding movie: format = %s, useCurrent=%s, scale=%g, w=%d, h=%d",
     //       format.c_str(), (useCurrent?"true":"false"), scale, w, h);
@@ -4392,6 +4438,9 @@ QvisSaveMovieWizard::page9_addOutput()
 //   Brad Whitlock, Wed Oct  8 10:50:13 PDT 2008
 //   Qt 4.
 //
+//   Cameron Christensen, Friday, September 28, 2012
+//   Added Screen Capture
+//
 // ****************************************************************************
 
 void
@@ -4407,6 +4456,7 @@ QvisSaveMovieWizard::page9_removeOutput()
         intVector &widths = movieAtts->GetWidths();
         intVector &heights = movieAtts->GetHeights();
         intVector &stereoFlags = movieAtts->GetStereoFlags();
+        bool screenCapture = movieAtts->GetUseScreenCapture();
 
         int i, w, h, mStereo;
         bool  useCurrent;
@@ -4468,10 +4518,15 @@ QvisSaveMovieWizard::page9_removeOutput()
         {
             // Populate the format and resolution widgets.
             page9_UpdateFormat(item->text(0));
-            page9_UpdateResolution(useCurrent, scale, w, h, mStereo);
+            page9_UpdateResolution(useCurrent, scale, w, h, mStereo, screenCapture);
             page9_UpdateOutputs();
         }
     }
+}
+
+void
+QvisSaveMovieWizard::page9_screenCaptureChanged(bool val)
+{
 }
 
 void
