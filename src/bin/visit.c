@@ -700,6 +700,7 @@ VisItLauncherMain(int argc, char *argv[])
         cmdLine.append(string(" ") + command[i]);
     cerr << "Running: " << cmdLine << endl;
 
+    int retVal = 0;
 #ifdef VISIT_WINDOWS_APPLICATION
     if(debugLaunch)
         MessageBox(NULL, cmdLine.c_str(), component.c_str(), MB_OK);
@@ -710,15 +711,15 @@ VisItLauncherMain(int argc, char *argv[])
     for(size_t i = 0; i < command.size(); ++i)
         exeArgs[i] = command[i].c_str();
     exeArgs[command.size()] = NULL;
-    _spawnv( _P_WAIT, exeName, exeArgs);
+    retVal =_spawnv( _P_WAIT, exeName, exeArgs);
     delete [] exeArgs;
 #else
     char *cl = const_cast<char*>(cmdLine.c_str());
-    system(cl);
+    retVal = system(cl);
 #endif
 
     componentArgs.clear();
-    return 0;
+    return retVal;
 }
 
 /******************************************************************************
