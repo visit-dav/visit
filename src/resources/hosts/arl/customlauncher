@@ -63,6 +63,44 @@ class ARLLauncher(MainLauncher):
             addedpaths = ["/usr/cta/unsupported/openmpi/gcc/4.4.0/openmpi-1.6/bin"]
             SETENV("PATH", self.joinpaths(paths + addedpaths))
 
+    # Determine when we're doing server side logging.
+    def ServerSideLogging(self):
+        # Maybe we just want to log engine runs...
+        comp = self.generalArgs.exe_name in ["engine", "engine_ser", "engine_par"]
+        # On these hosts.
+        runningOnHosts = self.sectorname() in ["host1", "host2"]
+        return comp and runningOnHosts
+
+    # Override the Logging() method. This method gets called from self.call when 
+    # we launch a program and we're doing logging.
+    def Logging(self, args):
+        if self.logging:
+            logger = []
+            if self.ServerSideLogging():
+                short_host = self.sectorname()
+                nodes = ""
+                if self.parallelArgs.nn != None:
+                    nodes = self.parallelArgs.nn
+                procs = ""
+                if self.parallelArgs.np != None:
+                    nodes = self.parallelArgs.np
+                time = ""
+                if self.parallelArgs.time != None:
+                    nodes = self.parallelArgs.time
+                logger = ["/app/visit/utils/daac_logger", "remote", "visit_server", self.visitver, short_host, nodes, procs, time)
+            elif self.generalArgs.exe_name == "viewer":
+                logger = ["/usr/cta/visit/utils/daac_logger", "local", "LINUX_Visit", self.visitver]
+
+            if len(logging) > 0:
+                # Do not log the logging program :)
+                self.logging = 0
+
+                # Call out to an external program to log the launch.
+                self.call(logger)
+
+                # Restore logging
+                self.logging = 1
+
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
     # be returned.
