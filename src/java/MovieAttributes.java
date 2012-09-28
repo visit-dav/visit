@@ -60,7 +60,7 @@ import java.lang.Double;
 
 public class MovieAttributes extends AttributeSubject
 {
-    private static int MovieAttributes_numAdditionalAtts = 17;
+    private static int MovieAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int MOVIETYPEENUM_SIMPLE = 0;
@@ -87,6 +87,7 @@ public class MovieAttributes extends AttributeSubject
         stereoFlags = new Vector();
         templateFile = new String("");
         sendEmailNotification = false;
+        useScreenCapture = false;
         emailAddress = new String("");
         fps = 10;
         startIndex = 0;
@@ -110,6 +111,7 @@ public class MovieAttributes extends AttributeSubject
         stereoFlags = new Vector();
         templateFile = new String("");
         sendEmailNotification = false;
+        useScreenCapture = false;
         emailAddress = new String("");
         fps = 10;
         startIndex = 0;
@@ -165,6 +167,7 @@ public class MovieAttributes extends AttributeSubject
         }
         templateFile = new String(obj.templateFile);
         sendEmailNotification = obj.sendEmailNotification;
+        useScreenCapture = obj.useScreenCapture;
         emailAddress = new String(obj.emailAddress);
         fps = obj.fps;
         startIndex = obj.startIndex;
@@ -255,6 +258,7 @@ public class MovieAttributes extends AttributeSubject
                 stereoFlags_equal &&
                 (templateFile.equals(obj.templateFile)) &&
                 (sendEmailNotification == obj.sendEmailNotification) &&
+                (useScreenCapture == obj.useScreenCapture) &&
                 (emailAddress.equals(obj.emailAddress)) &&
                 (fps == obj.fps) &&
                 (startIndex == obj.startIndex) &&
@@ -335,34 +339,40 @@ public class MovieAttributes extends AttributeSubject
         Select(11);
     }
 
+    public void SetUseScreenCapture(boolean useScreenCapture_)
+    {
+        useScreenCapture = useScreenCapture_;
+        Select(12);
+    }
+
     public void SetEmailAddress(String emailAddress_)
     {
         emailAddress = emailAddress_;
-        Select(12);
+        Select(13);
     }
 
     public void SetFps(int fps_)
     {
         fps = fps_;
-        Select(13);
+        Select(14);
     }
 
     public void SetStartIndex(int startIndex_)
     {
         startIndex = startIndex_;
-        Select(14);
+        Select(15);
     }
 
     public void SetEndIndex(int endIndex_)
     {
         endIndex = endIndex_;
-        Select(15);
+        Select(16);
     }
 
     public void SetStride(int stride_)
     {
         stride = stride_;
-        Select(16);
+        Select(17);
     }
 
     // Property getting methods
@@ -378,6 +388,7 @@ public class MovieAttributes extends AttributeSubject
     public Vector  GetStereoFlags() { return stereoFlags; }
     public String  GetTemplateFile() { return templateFile; }
     public boolean GetSendEmailNotification() { return sendEmailNotification; }
+    public boolean GetUseScreenCapture() { return useScreenCapture; }
     public String  GetEmailAddress() { return emailAddress; }
     public int     GetFps() { return fps; }
     public int     GetStartIndex() { return startIndex; }
@@ -412,14 +423,16 @@ public class MovieAttributes extends AttributeSubject
         if(WriteSelect(11, buf))
             buf.WriteBool(sendEmailNotification);
         if(WriteSelect(12, buf))
-            buf.WriteString(emailAddress);
+            buf.WriteBool(useScreenCapture);
         if(WriteSelect(13, buf))
-            buf.WriteInt(fps);
+            buf.WriteString(emailAddress);
         if(WriteSelect(14, buf))
-            buf.WriteInt(startIndex);
+            buf.WriteInt(fps);
         if(WriteSelect(15, buf))
-            buf.WriteInt(endIndex);
+            buf.WriteInt(startIndex);
         if(WriteSelect(16, buf))
+            buf.WriteInt(endIndex);
+        if(WriteSelect(17, buf))
             buf.WriteInt(stride);
     }
 
@@ -464,18 +477,21 @@ public class MovieAttributes extends AttributeSubject
             SetSendEmailNotification(buf.ReadBool());
             break;
         case 12:
-            SetEmailAddress(buf.ReadString());
+            SetUseScreenCapture(buf.ReadBool());
             break;
         case 13:
-            SetFps(buf.ReadInt());
+            SetEmailAddress(buf.ReadString());
             break;
         case 14:
-            SetStartIndex(buf.ReadInt());
+            SetFps(buf.ReadInt());
             break;
         case 15:
-            SetEndIndex(buf.ReadInt());
+            SetStartIndex(buf.ReadInt());
             break;
         case 16:
+            SetEndIndex(buf.ReadInt());
+            break;
+        case 17:
             SetStride(buf.ReadInt());
             break;
         }
@@ -508,6 +524,7 @@ public class MovieAttributes extends AttributeSubject
         str = str + intVectorToString("stereoFlags", stereoFlags, indent) + "\n";
         str = str + stringToString("templateFile", templateFile, indent) + "\n";
         str = str + boolToString("sendEmailNotification", sendEmailNotification, indent) + "\n";
+        str = str + boolToString("useScreenCapture", useScreenCapture, indent) + "\n";
         str = str + stringToString("emailAddress", emailAddress, indent) + "\n";
         str = str + intToString("fps", fps, indent) + "\n";
         str = str + intToString("startIndex", startIndex, indent) + "\n";
@@ -530,6 +547,7 @@ public class MovieAttributes extends AttributeSubject
     private Vector  stereoFlags; // vector of Integer objects
     private String  templateFile;
     private boolean sendEmailNotification;
+    private boolean useScreenCapture;
     private String  emailAddress;
     private int     fps;
     private int     startIndex;
