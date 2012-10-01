@@ -486,7 +486,7 @@ class JobSubmitter_sbatch(JobSubmitter):
             if self.parallel.hw_postcmd != None:
                 tfile.write(self.parallel.hw_postcmd + "\n")
             tfile.close()
-        except:
+        except (OSError, IOError):
             exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
 
         # The parallel command is the tfile script we just made.
@@ -796,7 +796,7 @@ output streams.
 
             tfile.close()
             os.chmod(self.tfilename, 0775)
-        except:
+        except (IOError, OSError):
             exit("Can't create the tfile.", 0)
 
         parcmd = self.AssembleCommandLine()
@@ -1253,7 +1253,7 @@ class GeneralArguments(object):
                     remotehost = string.split(os.environ[k], " ")[0]
                     remotehost_set = 1
                     break
-                except:
+                except KeyError:
                     pass
             if remotehost_set == 0:
                 exit("""
@@ -1517,7 +1517,7 @@ class MainLauncher(object):
     def username(self):
         try:
             return os.getlogin()
-        except:
+        except OSError:
             return GETENV("USER")
 
     def hostname(self):
@@ -1665,7 +1665,7 @@ class MainLauncher(object):
             lines = []
             try:
                 lines = open(filename, "rt").readlines() + [info]
-            except:
+            except (OSError, IOError):
                 lines = [info]
 
             # Write out the new data.
@@ -1674,7 +1674,7 @@ class MainLauncher(object):
                 for line in lines:
                     f.write(line)
                 f.close()
-            except:
+            except (OSError, IOError):
                 self.error("Could not write usagelog.")
 
     ############################################################################
@@ -1967,7 +1967,7 @@ class MainLauncher(object):
                 if self.parallelArgs.np != None:
                     try:
                         np = int(self.parallelArgs.np)
-                    except:
+                    except ValueError:
                         np = 1
             if np > 1:
                 self.generalArgs.exe_name = "engine_par"
