@@ -433,9 +433,9 @@ function build_vtk
         # following bourne shell script
         if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
             #remove python since mangle vtk libraries does not support python (yet:TODO:Fix this)
-            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libmtkCommon libmtkDICOMParser libmtkFiltering libmtkGenericFiltering libmtkGraphics libmtkHybrid libmtkIO libmtkImaging libmtkRendering libmtkVolumeRendering libmtkWidgets libmtkalglib libmtkexpat libmtkfreetype libmtkftgl libmtkjpeg libmtklibxml2 libmtkpng libmtkproj4 libmtksqlite libmtksys libmtktiff libmtkverdict libmtkzlib"
+            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libmtkCommon libmtkDICOMParser libmtkFiltering libmtkGenericFiltering libmtkGeovis libmtkGraphics libmtkHybrid libmtkInfovis libmtkIO libmtkImaging libmtkRendering libmtkViews libmtkVolumeRendering libmtkWidgets libmtkalglib libmtkexpat libmtkfreetype libmtkftgl libmtkjpeg libmtklibxml2 libmtkpng libmtkproj4 libmtksqlite libmtksys libmtktiff libmtkverdict libmtkzlib"
         else
-            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkIO libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkPythonCore libvtkRendering libvtkRenderingPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkWidgets libvtkWidgetsPythonD libvtkalglib libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtklibxml2 libvtkpng libvtkproj4 libvtksqlite libvtksys libvtktiff libvtkverdict libvtkzlib"
+            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD libvtkGeovis libGeovisPythonD libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkInfovis libvtkInfovisPythonD libvtkIO libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkPythonCore libvtkRendering libvtkRenderingPythonD libvtkViews libvtkViewsPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkWidgets libvtkWidgetsPythonD libvtkalglib libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtklibxml2 libvtkpng libvtkproj4 libvtksqlite libvtksys libvtktiff libvtkverdict libvtkzlib"
         fi
         for i in $VTK_LIB_NAMES
         do
@@ -477,9 +477,9 @@ function build_vtk
         done
 
         if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-            VTK_PYTHON_MOD_LIB_NAMES="mtkCommonPython.so mtkFilteringPython.so mtkGenericFilteringPython.so mtkGraphicsPython.so mtkHybridPython.so mtkIOPython.so mtkImagingPython.so mtkRenderingPython.so mtkVolumeRenderingPython.so"
+            VTK_PYTHON_MOD_LIB_NAMES="mtkCommonPython.so mtkFilteringPython.so mtkGenericFilteringPython.so mtkGeovisPython.so mtkGraphicsPython.so mtkHybridPython.so mtkInfovisPython.so mtkIOPython.so mtkImagingPython.so mtkRenderingPython.so mtkViewsPython.so mtkVolumeRenderingPython.so"
         else
-            VTK_PYTHON_MOD_LIB_NAMES="vtkCommonPython.so vtkFilteringPython.so vtkGenericFilteringPython.so vtkGraphicsPython.so vtkHybridPython.so vtkIOPython.so vtkImagingPython.so vtkRenderingPython.so vtkVolumeRenderingPython.so"
+            VTK_PYTHON_MOD_LIB_NAMES="vtkCommonPython.so vtkFilteringPython.so vtkGenericFilteringPython.so vtkGeovisPython.so vtkGraphicsPython.so vtkHybridPython.so vtkInfovisPython.so vtkIOPython.so vtkImagingPython.so vtkRenderingPython.so vtkViewsPython.so vtkVolumeRenderingPython.so"
         fi
         #
         # Fix vtk python wrapper module intall names.
