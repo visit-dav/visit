@@ -84,6 +84,7 @@ class CartographicProjectionGUIPluginInfo : public virtual GUIOperatorPluginInfo
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, const QString &caption, const QString &shortName,
         QvisNotepadArea *notepad);
+    virtual const char **XPMIconData() const;
 };
 
 class CartographicProjectionViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual CartographicProjectionCommonPluginInfo
@@ -99,6 +100,7 @@ class CartographicProjectionViewerPluginInfo : public virtual ViewerOperatorPlug
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
     virtual QString *GetMenuName() const;
+    virtual const char **XPMIconData() const;
 
     static void InitializeGlobalObjects();
   private:
