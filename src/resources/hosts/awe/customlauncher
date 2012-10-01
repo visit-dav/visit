@@ -1,0 +1,134 @@
+# Programmer: Brad Whitlock, Satheesh Maheswaran
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+    
+      
+class JobSubmitter_sbatch_AWE(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch, self).__init__(launcher)
+
+    def Executable(self):
+        return ["sbatch"]
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+    
+        if self.parallel.np != None:
+           parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+           parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+        if self.parallel.name != None:
+           parcmd = parcmd + ["-J", self.parallel.name]
+        if self.parallel.partition != None:
+           parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
+        if self.parallel.time != None:
+           parcmd = parcmd + ["--time=%s" % self.parallel.time] 
+
+        ppn = 8
+        if self.parallel.nn != None:
+            ppn = math.ceil(float(self.parallel.np) / float(self.parallel.nn))
+
+        sbatch,sublauncher = self.LauncherAndSubLauncher()
+        if sublauncher == "mpirun":
+            mpicmd = ["mpirun", "--rsh=ssh"]
+            if self.parallel.sublaunchargs != None:
+                mpicmd = mpicmd + self.parallel.sublaunchargs
+            if self.parallel.np != None:
+               mpicmd = mpicmd + ["-np", self.parallel.np]   
+            mpicmd = mpicmd + ["--ppn", str(ppn)]   
+           
+            if self.parallel.machinefile != None:
+                mpicmd = mpicmd + ["-machinefile", self.parallel.machinefile]
+                mpicmd = mpicmd + self.VisItExecutable() + args
+                mpicmd = mpicmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+            else:
+                mpicmd = self.VisItExecutable() + args
+
+        mpicmd = debugger.CreateCommand(mpicmd)
+
+        # Create the tfile
+        tfilename = self.CreateFilename()
+        try:
+            tfile = open(tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            tfile.write("ulimit -l unlimited\n")
+            tfile.write(". %s/init/bash\n" %GETENV("MODULESHOME"))
+            tfile.write("module purgen");
+            #Required to work on Ivy platform
+            tfile.write("export I_MPI_PLATFORM=auto\n")
+            tfile.write("module load slurm intel/11.1\n")
+            tfile.write("module load intelmpi/4.0.3-intel\n")
+        
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(string.join(self.parallel.sublaunchprecmd, " ") + "\n")
+            tfile.write(string.join(mpicmd, " ") + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(string.join(self.parallel.sublaunchpostcmd, " ") + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+            tfile.close()
+        except:
+            exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
+
+        # The parallel command is the tfile script we just made.
+        parcmd = parcmd + [tfilename]
+        return parcmd
+
+###############################################################################
+# Class: AWELauncher
+#
+# Purpose:    Custom launcher for AWE
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 17 14:22:04 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class AWELauncher(MainLauncher):
+    def __init__(self):
+        super(AWELauncher, self).__init__()
+
+    def Customize(self):
+        # ----
+        # Ivy @ AWE
+        # ----
+        if self.sectorname() == "Ivy":
+           
+        paths = self.splitpaths(GETENV("PATH"))
+        paths = paths + ["/awe/slurm/bin"]
+        SETENV("PATH",self.joinpaths(paths))
+    
+    #Set modules home paths if doesn't exists
+    if GETENV("MODULESHOME") == "" :
+        SETENV("MODULESHOME", "/usr/share/modules")
+    
+    if self.parallelArgs.name == None :
+        self.parallelArgs.name = "visit"
+    
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        if launch[:5] == "sbatch" :
+            return JobSubmitter_sbatch_AWE(self)
+        return super(AWELauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return AWELauncher()
