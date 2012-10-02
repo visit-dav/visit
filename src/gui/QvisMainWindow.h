@@ -237,6 +237,9 @@ class WindowInformation;
 //   Gunther H. Weber, Thu Aug 18 18:57:20 PDT 2011
 //   Added signal for initial Mac configuation.
 //
+//   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//   Added an Action and a Qt slot to attempt a connection to DDT
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -377,6 +380,8 @@ private slots:
     void lockTools();
     void lockView();
     void unlockEverything();
+
+    void connectToDDT();
 private:
     void CreateMainContents(QSplitter *parent);
     void CreateMainContents(QvisPostableMainWindow *win);
@@ -444,6 +449,8 @@ private:
 
     QTimer                    *recoveryFileTimer;
     bool                       okayToSaveRecoveryFile;
+
+    QAction                  *connectToDDTAct;
 
     // Subjects that the window observes.
     GlobalAttributes          *globalAtts;

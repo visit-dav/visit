@@ -2152,11 +2152,11 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     LIBSIM_MESSAGE1("guifile=%s", guifile);
     LIBSIM_MESSAGE1("absoluteFilename=%s", absoluteFilename);
 
-    EnsureSimulationDirectoryExists();
     CreateRandomSecurityKey();
     
     if ( !absoluteFilename )
     {
+        EnsureSimulationDirectoryExists();
         SNPRINTF(simulationFileName, 255, 
 #ifdef _WIN32
                  "%s/Simulations/%012d.%s.sim2",

@@ -55,7 +55,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class STATE_API WindowInformation : public AttributeSubject
@@ -121,6 +121,8 @@ public:
     void SetExtents(const double *extents_);
     void SetWindowSize(const int *windowSize_);
     void SetWinMode(int winMode_);
+    void SetDDTSim(bool DDTSim_);
+    void SetDDTConnected(bool DDTConnected_);
 
     // Property getting methods
     const std::string  &GetActiveSource() const;
@@ -156,6 +158,8 @@ public:
     const int          *GetWindowSize() const;
           int          *GetWindowSize();
     int                GetWinMode() const;
+    bool               GetDDTSim() const;
+    bool               GetDDTConnected() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -198,6 +202,8 @@ public:
         ID_extents,
         ID_windowSize,
         ID_winMode,
+        ID_DDTSim,
+        ID_DDTConnected,
         ID__LAST
     };
 
@@ -229,11 +235,13 @@ private:
     double       extents[6];
     int          windowSize[2];
     int          winMode;
+    bool         DDTSim;
+    bool         DDTConnected;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define WINDOWINFORMATION_TMFS "sis*i*iiibbbbbbbbiii*bbfffiDIi"
+#define WINDOWINFORMATION_TMFS "sis*i*iiibbbbbbbbiii*bbfffiDIibb"
 
 #endif

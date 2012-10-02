@@ -54,6 +54,8 @@ ENDIF(VISIT_PARALLEL AND WIN32)
 SET(VIEWERLIB_SOURCES
 ActionGroupDescription.C
 AnimationActions.C
+DDTManager.C
+DDTSession.C
 EngineKey.C
 LineoutListItem.C
 LockActions.C
@@ -113,6 +115,8 @@ IF(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 SET(VIEWERLIB_MOC_SOURCES
+DDTManager.h
+DDTSession.h
 PlotAndOperatorActions.h
 ViewerAction.h
 ViewerActionBase.h
@@ -179,6 +183,7 @@ ${QT_INCLUDE_DIR}
 ${QT_QTCORE_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
 ${QT_QTOPENGL_INCLUDE_DIR}
+${QT_QTNETWORK_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -194,6 +199,7 @@ SET(VIEWER_QT_LIBS
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTCORE_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
 )
 IF(VISIT_STATIC)
     SET(VIEWER_QT_LIBS 
@@ -226,6 +232,10 @@ winutil
 ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
 )
+
+IF(UNIX)
+    TARGET_LINK_LIBRARIES(viewer X11)
+ENDIF(UNIX)
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)

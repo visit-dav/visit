@@ -67,6 +67,9 @@
 //    Jeremy Meredith, Tue Feb  2 13:46:25 EST 2010
 //    Added new tool update mode.
 //
+//    Jonathan Byrd (Allinea Software) Sun 18 Dec 2011
+//    Added DDT_PICK mode
+//
 // ************************************************************************* //
 
 
@@ -96,7 +99,8 @@ typedef enum
     ZONE_PICK,        /* 2 */
     NODE_PICK,        /* 3 */
     SPREADSHEET_PICK, /* 4 */
-    LINEOUT,          /* 5 */
+    DDT_PICK,         /* 5 */
+    LINEOUT,          /* 6 */
 }  INTERACTION_MODE;
 
 typedef enum {

@@ -40,6 +40,7 @@
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(runtime)
+ADD_SUBDIRECTORY(ddtsim)
 # Disable swig bindings on Windows for now. Generated code has some errors.
 IF(UNIX)
     ADD_SUBDIRECTORY(swig)

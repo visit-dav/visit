@@ -497,6 +497,10 @@ class avtDefaultPlotMetaData;
 //    Marc Durant, Thu Jan 12 12:36:00 MST 2012
 //    Added ToggleAllowPopup.
 //
+//    Jonathan Byrd (Allinea Software), Sun Dec 18 2011
+//    Added methods for connecting/disconnecting the viewer with DDT,
+///   and to instruct DDT to focus on a specific domain.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -705,6 +709,9 @@ private:
 
     void SetDefaultFileOpenOptions();
     void SetSuppressMessages();
+
+    void DDTFocus();
+    void DDTConnect();
         
 signals:
     void scheduleHeavyInitialization();

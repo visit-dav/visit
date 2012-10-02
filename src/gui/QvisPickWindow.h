@@ -58,6 +58,30 @@ class PickAttributes;
 class PlotList;
 
 // ****************************************************************************
+// Class: PickRecord
+//
+// Purpose:
+//   This class is a container for information about a Pick. It  can later be
+//   used to focus DDT on the domain contain that Pick.
+//
+// Notes:
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   December 18, 2011
+//
+// Modifications:
+// ****************************************************************************
+class PickRecord {
+public:
+    int domain;
+    std::string simulation;
+
+    PickRecord();
+    PickRecord(int dom, std::string &sim);
+    void reset();
+};
+
+// ****************************************************************************
 // Class: QvisPickWindow
 //
 // Purpose:
@@ -150,6 +174,9 @@ class PlotList;
 //   Kathleen Biagas, Wed Jan 25 15:59:12 MST 2012
 //   Added redoPickButton, timeOptsTabIndex.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18 2011
+//   Added slot for 'Focus DDT on Pick' button clicks. Added pickRecords array
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -214,6 +241,7 @@ private slots:
     void redoPickClicked();
     void redoPickWithSpreadsheetClicked();
     void optionsTabSelected(int);
+    void focusPickInDDTClicked();
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -232,6 +260,7 @@ private:
     QTabWidget         *resultsTabWidget;
     QWidget            *pages[MAX_PICK_TABS];
     QTextEdit          *infoLists[MAX_PICK_TABS];
+    PickRecord         *pickRecords[MAX_PICK_TABS];
 
     QCheckBox          *autoShowCheckBox;
     QCheckBox          *savePicksCheckBox;

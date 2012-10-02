@@ -8,6 +8,7 @@
 #include <ViewerSubject.h>
 #include <ViewerState.h>
 #include <ViewerMethods.h>
+#include <DDTManager.h>
 
 #include <DebugStream.h>
 #include <VisItInit.h>
@@ -50,6 +51,9 @@ static void LogGlxAndXdpyInfo();
 //   Brad Whitlock, Fri Nov 13 13:57:36 PST 2009
 //   I added RuntimeSetting initialization.
 //
+//   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//   Auto-connect to DDT if the DDT_LAUNCHED_VISIT env. var. exists
+//
 // ****************************************************************************
 
 void
@@ -67,6 +71,12 @@ VisItViewer::Initialize(int *argc, char ***argv)
     }
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     LogGlxAndXdpyInfo();
+
+    // If VisIt has been launched by DDT, try to connect to DDT once the event
+    // loop is started (socket communication needs the event loop to be active)
+    if (getenv("DDT_LAUNCHED_VISIT")!=NULL)
+        QMetaObject::invokeMethod(DDTManager::getInstance(),"makeConnection",
+                Qt::QueuedConnection);
 }
 
 // ****************************************************************************

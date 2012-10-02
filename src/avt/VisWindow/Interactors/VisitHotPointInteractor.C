@@ -326,6 +326,9 @@ VisitHotPointInteractor::SetNullInteractor()
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //   Added SPREADSHEET_PICK 
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 void
@@ -349,6 +352,7 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
     case NODE_PICK:
     case ZONE_PICK:
     case SPREADSHEET_PICK:
+    case DDT_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -422,6 +426,9 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //   Added SPREADSHEET_PICK 
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 void
@@ -468,6 +475,7 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
     case ZONE_PICK: // fall-through
     case NODE_PICK:
     case SPREADSHEET_PICK:
+    case DDT_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -533,6 +541,9 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //   Added SPREADSHEET_PICK 
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 void
@@ -564,6 +575,7 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
     case ZONE_PICK:
     case NODE_PICK:
     case SPREADSHEET_PICK:
+    case DDT_PICK:
         if(pick == NULL)
         {
             pick = new Pick(proxy);
@@ -609,6 +621,9 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 //   Eric Brugger, Tue Dec  9 16:32:45 PST 2008
 //   Added code to set the axis orientation for the navigateAxisArray.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 void
 VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
@@ -642,6 +657,7 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
       case ZONE_PICK:
       case NODE_PICK:
       case SPREADSHEET_PICK:
+      case DDT_PICK:
         if (pick == NULL)
         {
             pick = new Pick(proxy);
@@ -678,6 +694,8 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
 //  Creation:    December 9, 2008
 //
 //  Modifications:
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
 //
 // ****************************************************************************
 void
@@ -711,6 +729,7 @@ VisitHotPointInteractor::StartAxisParallelMode(INTERACTION_MODE mode)
         break;
       case ZONE_PICK:
       case NODE_PICK:
+      case DDT_PICK:
         if (pick == NULL)
         {
             pick = new Pick(proxy);

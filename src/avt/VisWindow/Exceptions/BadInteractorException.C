@@ -62,6 +62,9 @@ using namespace std;
 //    Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //    Added SPREADSHEET_PICK 
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
@@ -86,6 +89,9 @@ BadInteractorException::BadInteractorException(INTERACTION_MODE mode)
         break;
       case SPREADSHEET_PICK:
         modeS = "SpreadsheetPick";
+        break;
+      case DDT_PICK:
+        modeS = "DDTPick";
         break;
       default:
         modeS = "Unaccounted For Mode";

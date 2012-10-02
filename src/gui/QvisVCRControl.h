@@ -67,6 +67,10 @@ class QPushButton;
 //   Brad Whitlock, Tue Jun  3 13:44:14 PDT 2008
 //   Qt 4.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Add a method to enable animation controls suitable for controlling
+//   a ddtsim-based simulation
+//
 // *******************************************************************
 
 class GUI_API QvisVCRControl : public QWidget
@@ -76,6 +80,7 @@ public:
     QvisVCRControl(QWidget * parent=0);
     ~QvisVCRControl();
     void SetActiveButton(int btn);
+    void SetDDTSimEnabled(bool enabled);
 signals:
     void prevFrame();
     void reversePlay();

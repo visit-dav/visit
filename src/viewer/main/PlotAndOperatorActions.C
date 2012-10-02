@@ -1735,6 +1735,9 @@ SetActivePlotsAction::~SetActivePlotsAction()
 //   Notify ViewerQueryManger that active plot has changed if in Pick mode.
 //   (So that plot can be reexecuted if necesssary).
 //
+//   Jonathan Byrd (Allinea Software) Sun Dec 18, 2011
+//   Added DDT_PICK mode.
+//
 // ****************************************************************************
 
 void
@@ -1767,7 +1770,8 @@ SetActivePlotsAction::Execute()
     }
 
     if (window->GetInteractionMode() == ZONE_PICK || 
-        window->GetInteractionMode() == NODE_PICK) 
+        window->GetInteractionMode() == NODE_PICK ||
+        window->GetInteractionMode() == DDT_PICK)
        ViewerQueryManager::Instance()->ActivePlotsChanged(); 
 }
 

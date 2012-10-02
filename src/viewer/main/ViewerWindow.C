@@ -765,6 +765,9 @@ ViewerWindow::Realize()
 //    Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
 //    Added SPREADSHEET_PICK 
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 void
@@ -772,8 +775,10 @@ ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
 {
     const INTERACTION_MODE curMode = visWindow->GetInteractionMode();
 
-    bool changingToPickMode  = (ZONE_PICK == mode || NODE_PICK == mode || SPREADSHEET_PICK == mode);
-    bool currentlyInPickMode = (ZONE_PICK == curMode || NODE_PICK == curMode || SPREADSHEET_PICK == mode);
+    bool changingToPickMode  = (ZONE_PICK == mode || NODE_PICK == mode || SPREADSHEET_PICK == mode
+                                || DDT_PICK == mode);
+    bool currentlyInPickMode = (ZONE_PICK == curMode || NODE_PICK == curMode || SPREADSHEET_PICK == mode
+                                || DDT_PICK == curMode);
 
     // Clear the pick function so it will default to pick instead of a
     // user-defined action.
@@ -787,7 +792,7 @@ ViewerWindow::SetInteractionMode(const INTERACTION_MODE mode)
         // Either starting pick mode or changing from one pick mode to another. 
         //
         bool firstEntry = !currentlyInPickMode;
-        bool zonePick = (ZONE_PICK == mode) || (SPREADSHEET_PICK == mode);
+        bool zonePick = (ZONE_PICK == mode) || (SPREADSHEET_PICK == mode) || (DDT_PICK == mode);
         ViewerQueryManager::Instance()->StartPickMode(firstEntry, zonePick);
     }
     else if (!changingToPickMode && currentlyInPickMode)

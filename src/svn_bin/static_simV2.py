@@ -7,6 +7,9 @@
 #
 # Modifications:
 #
+#   Jonathan Byrd (Allinea Software) Sun Dec 18, 2011
+#   Added static libddtsim to parallel archive
+#
 ################################################################################
 import os, sys
 
@@ -76,6 +79,10 @@ avt_par = (
 engine_par = (
 "libsimV2runtime_par.a",
 "libengine_par.a")
+
+ddtsim = (
+"libddtsim_static.a",
+)
 
 def get_plugin_file_list(filename):
     print filename
@@ -157,7 +164,7 @@ build_archive("libsimV2_static_ser.a", "serial_tmp", libpath(), ser_libs)
 plot_par     = get_plot_plugin_archives(get_plugin_file_list(includepath() + "/enabled_plots.h"), "_par")
 operator_par = get_operator_plugin_archives(get_plugin_file_list(includepath() + "/enabled_operators.h"), "_par")
 database_par = get_database_plugin_archives("_par")
-par_libs     = slivr_teem + engine_par + plot_par + operator_par + database_par + avt + avt_par + visit_deps
+par_libs     = slivr_teem + engine_par + plot_par + operator_par + database_par + avt + avt_par + visit_deps + ddtsim
 build_archive("libsimV2_static_par.a", "parallel_tmp", libpath(), par_libs)
 
 def get_linkline(libs):
