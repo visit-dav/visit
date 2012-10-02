@@ -233,9 +233,10 @@ ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
 )
 
-IF(UNIX)
+# DDT people did this. why?
+IF(UNIX AND NOT APPLE)
     TARGET_LINK_LIBRARIES(viewer X11)
-ENDIF(UNIX)
+ENDIF(UNIX AND NOT APPLE)
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
