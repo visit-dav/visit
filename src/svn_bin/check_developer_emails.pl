@@ -17,6 +17,10 @@
 #   to the visit-developers list.
 #
 #   If an address is given, email the result.
+#
+# Modifications:
+#   Jeremy Meredith, Tue Oct  2 12:43:22 EDT 2012
+#   Add -date argument.  Add visit-core-support as unknown email address.
 # ----------------------------------------------------------------------------
 
 # remove the cookie and mapper files
@@ -29,6 +33,8 @@ unlink "tmpcookies";
 $mailto = "";
 $passwd = "";
 $verbose = 0;
+$date = `date +%Y%m%d`;
+chomp($date);
 while ($arg = shift @ARGV)
 {
     if ($arg eq "-v")
@@ -46,6 +52,11 @@ while ($arg = shift @ARGV)
         $passwd = shift @ARGV;
         die "\nError: -passwd requires an argument.\n\n" if (!defined $passwd);
     }
+    elsif ($arg eq "-date")
+    {
+        $date = shift @ARGV;
+        die "\nError: -date requires an argument.\n\n" if (!defined $date);
+    }
     else
     {
         if ($arg eq "-h" or $arg eq "-help" or $arg eq "--help")
@@ -54,7 +65,7 @@ while ($arg = shift @ARGV)
         }
         else
         {
-            die "\nError: unexpected argument: '$arg'\n\nUsage: $0 [-mailto <recipient email>] [-passwd <list admin password>]\n\n";
+            die "\nError: unexpected argument: '$arg'\n\nUsage: $0 [-mailto <recipient email>] [-passwd <list admin password>] [-date <YYYYMMDD>]\n\n";
         }
     }
 }
@@ -68,11 +79,14 @@ if ($passwd eq "")
     print "\n";
 }
 
+if ($verbose)
+{
+    print "DATE=$date\n";
+}
+
 #
 # Get the list of usernames who have made commits today
 #
-$date = `date +%Y%m%d`;
-chomp($date);
 @users = `svn log -r {${date}T0000}:{${date}T2359} http://portal.nersc.gov/svn/visit/ | egrep '^r[0-9]+ ' | cut -d\\\| -f2 | sort | uniq`;
 foreach (@users) { s|^\s*(\S+)\s*\n$|$1|; }
 if ($verbose)
@@ -94,7 +108,8 @@ foreach (@users)
 {
    $email = `sh mapper $_`;
    chomp($email);
-   if ($email eq 'visit-developers@ornl.gov')
+   if ($email eq 'visit-developers@ornl.gov' or
+       $email eq 'visit-core-support@elist.ornl.gov')
    {
        push @missingusers, $_;
    }
@@ -137,7 +152,7 @@ if ($passwd ne "")
     if ($verbose)
     {
         print "ENABLEDEMAILS=@enabled\n";
-        print "DISABLEDEMAILS=@disabled\n";
+        print "DISABLEDEMAILS=@disabled\n";
     }
 
     #
