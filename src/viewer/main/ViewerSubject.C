@@ -164,6 +164,9 @@
 #include <avtDatabaseMetaData.h>
 #include <avtSimulationInformation.h>
 
+#include <DDTManager.h>
+#include <DDTSession.h>
+
 #if !defined(_WIN32)
 #include <strings.h>
 #include <unistd.h>
@@ -8054,6 +8057,9 @@ ViewerSubject::HandleViewerRPC()
 //    Marc Durant, Thu Jan 12 12:35:00 MST 2012
 //    Added ToggleAllowPopup
 //
+//    Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//    Added DDTFocus and DDTConnect
+//
 // ****************************************************************************
 
 void
@@ -8452,6 +8458,11 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::MaxRPC:
         break;
+    case ViewerRPC::DDTFocusRPC:
+        DDTFocus();
+        break;
+    case ViewerRPC::DDTConnectRPC:
+        DDTConnect();
     default:
         // If an RPC is not handled in the above cases, handle it as
         // an action.
@@ -9495,6 +9506,14 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 
         GetViewerState()->GetDatabaseMetaData()->SelectAll();
         GetViewerState()->GetDatabaseMetaData()->Notify();
+
+        // If this is a DDTSim simulation, we may be using the animation controls to control
+        // the sim. Update the animation window information.
+        if (DDTManager::isDatabaseDDTSim(file) && DDTManager::isDDTSim(wM->GetActiveWindow()))
+        {
+            wM->UpdateWindowInformation(WINDOWINFO_ANIMATION, -1);
+            wM->UpdateActions();
+        }
     }
     CATCHALL
     {
@@ -11254,4 +11273,49 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
         dialog->setIgnoreHide(false);
 
     debug1 << mName << "end" << endl;
+}
+
+// ****************************************************************************
+// Method:  DDTConnect
+//
+// Purpose:
+//   Connects/disconnects the viewer with DDT
+//
+// Programmer:  Jonathan Byrd
+// Creation:    December 18, 2011
+//
+// ****************************************************************************
+
+void ViewerSubject::DDTConnect()
+{
+    const bool connect = (bool) GetViewerState()->GetViewerRPC()->GetIntArg1();
+
+    DDTManager* manager = DDTManager::getInstance();
+    DDTSession* ddt = manager->getSessionNC();
+    if (ddt!=NULL && ddt->connected())
+        manager->disconnect();
+    else if (ddt==NULL)
+        ddt = manager->makeConnection();
+}
+
+// ****************************************************************************
+// Method:  DDTFocus
+//
+// Purpose:
+//   Instructs DDT to focus on a specific domain
+//
+// Programmer:  Jonathan Byrd
+// Creation:    December 18, 2011
+//
+// ****************************************************************************
+
+void ViewerSubject::DDTFocus()
+{
+    const int domain = GetViewerState()->GetViewerRPC()->GetIntArg1();
+
+    DDTSession* ddt = DDTManager::getInstance()->getSession();
+    if (ddt!=NULL)
+        ddt->setFocusOnDomain(domain);
+    else
+        Error(tr("Cannot focus DDT on domain %0: failed to connect to DDT").arg(domain));
 }

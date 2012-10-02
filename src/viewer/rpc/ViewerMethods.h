@@ -166,6 +166,10 @@ class ViewerState;
 //   Marc Durant, Thu Jan 12 12:35:00 MST 2012
 //   Added ToggleAllowPopup.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added methods for connecting/disconnecting with DDT and for
+//   instructing DDT to focus on a specific domain
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -431,6 +435,8 @@ public:
                     const std::string &program,
                     const stringVector &args);
 
+    void DDTConnect(bool connect);
+    void DDTFocus(int domain);
 private:
     ViewerState *state;
 };

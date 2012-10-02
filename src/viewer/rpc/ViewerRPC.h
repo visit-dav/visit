@@ -258,6 +258,9 @@ public:
         SetPlotOrderToLastRPC,
         RenamePickLabelRPC,
         GetQueryParametersRPC,
+        DDTConnectRPC,
+        DDTFocusRPC,
+        ReleaseToDDTRPC,
         MaxRPC
     };
 

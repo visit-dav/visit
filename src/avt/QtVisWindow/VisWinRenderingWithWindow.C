@@ -709,6 +709,9 @@ VisWinRenderingWithWindow::SetLargeIcons(bool val)
 //   Brad Whitlock, Fri May  9 14:22:17 PDT 2008
 //   Qt 4.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 void
@@ -720,7 +723,7 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
     // Determine the new cursor index. The arrow cursor is 0 and the pick
     // cursor is 1.
     //
-    if(m == ZONE_PICK || m == NODE_PICK || m == SPREADSHEET_PICK)
+    if(m == ZONE_PICK || m == NODE_PICK || m == SPREADSHEET_PICK || m == DDT_PICK)
         newCursorIndex = 1;
     else
         newCursorIndex = 0;

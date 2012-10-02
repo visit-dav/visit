@@ -739,3 +739,30 @@ QvisVCRControl::b4_clicked()
 #endif
     emit nextFrame();
 }
+
+// ****************************************************************************
+// Method: QvisVCRControl::SetDDTSimEnabled()
+//
+// Purpose: Allows the VCR to enable only those controls suitable for
+//          controlling a ddtsim-based simulation
+//
+// Notes:
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   Sun Dec 18, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVCRControl::SetDDTSimEnabled(bool enabled)
+{
+    // This is a DDT-sourced simulation.
+    // Enable the stop, play, and step operations.
+    buttons[0]->setEnabled(!enabled);
+    buttons[1]->setEnabled(!enabled);
+    buttons[2]->setEnabled(true);
+    buttons[3]->setEnabled(true);
+    buttons[4]->setEnabled(true);
+}

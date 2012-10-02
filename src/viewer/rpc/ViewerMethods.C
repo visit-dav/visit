@@ -5416,4 +5416,37 @@ ViewerMethods::SetSuppressMessages(int flag)
     state->GetViewerRPC()->Notify();
 }
 
+// ****************************************************************************
+//  Method: ViewerMethods::DDTConnect
+//
+//  Purpose: Connects or disconnects the viewer with DDT
+//
+//  Programmer: Jonathan Byrd
+//  Creation:   December 18, 2011
+//
+// ****************************************************************************
 
+void
+ViewerMethods::DDTConnect(bool connect)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::DDTConnectRPC);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerMethods::DDTFocus
+//
+//  Purpose: Instructs DDT to focus on a specific domain
+//
+//  Programmer: Jonathan Byrd
+//  Creation:   December 18, 2011
+//
+// ****************************************************************************
+
+void
+ViewerMethods::DDTFocus(int domain)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::DDTFocusRPC);
+    state->GetViewerRPC()->SetIntArg1(domain);
+    state->GetViewerRPC()->Notify();
+}

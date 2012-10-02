@@ -421,3 +421,28 @@ public:
 };
 
 #endif
+
+// ****************************************************************************
+// Class: ReleaseToDDTAction
+//
+// Purpose:
+//   Handles the 'release to DDT' action.
+//
+// Notes:
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   December 18, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class VIEWER_API ReleaseToDDTAction : public ViewerAction
+{
+public:
+    ReleaseToDDTAction(ViewerWindow *win);
+    virtual ~ReleaseToDDTAction(){}
+
+    virtual void Execute();
+    virtual bool Enabled() const;
+};

@@ -44,6 +44,8 @@
 #include <ViewerWindowManager.h>
 #include <PlotPluginManager.h>
 #include <OperatorPluginManager.h>
+#include <ViewerEngineManager.h>
+#include <DDTManager.h>
 
 #include <QIcon>
 #include <QPixmap>
@@ -69,6 +71,7 @@
 #include <nodepickmode.xpm>
 #include <zonepickmode.xpm>
 #include <spreadsheetpickmode.xpm>
+#include <ddtpickmode.xpm>
 #include <zoommode.xpm>
 #include <lineoutmode.xpm>
 #include <VisWindowTypes.h>
@@ -79,6 +82,7 @@
 #include <spheretool.xpm>
 #include <axisrestrictiontool.xpm>
 #include <invertbackground.xpm>
+#include <releasetoddt.xpm>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -923,6 +927,9 @@ InvertBackgroundAction::Execute()
 //   Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
 //   Reorder icons (put picks together).
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -947,6 +954,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice(tr("Zone Pick"), tr("Zone Pick mode"), QPixmap(zonepickmode_xpm));
         AddChoice(tr("Node Pick"), tr("Node Pick mode"), QPixmap(nodepickmode_xpm));
         AddChoice(tr("Spreadsheet Pick"), tr("Spreadsheet Pick mode"), QPixmap(spreadsheetpickmode_xpm));
+        AddChoice(tr("DDT Pick"), tr("DDT Pick mode"), QPixmap(ddtpickmode_xpm));
         AddChoice(tr("Lineout"), tr("Lineout mode"), QPixmap(lineoutmode_xpm));
     }
     else 
@@ -956,6 +964,7 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice(tr("Zone Pick"));
         AddChoice(tr("Node Pick"));
         AddChoice(tr("Spreadsheet Pick"));
+        AddChoice(tr("DDT Pick"));
         AddChoice(tr("Lineout"));
     }
 }
@@ -1080,6 +1089,9 @@ SetWindowModeAction::Enabled() const
 //   Hank Childs, Mon Mar  8 20:55:13 PST 2010
 //   Update for new ordering.
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 bool
@@ -1107,6 +1119,10 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     {
         retval = (window->GetWindowMode() != WINMODE_AXISARRAY &&
                   GetPlotPluginManager()->PluginAvailable("Spreadsheet_1.0"));
+    }
+    else if(i == DDT_PICK) // ddt pick
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
     }
     else if(i == LINEOUT) // lineout
     {
@@ -1463,3 +1479,70 @@ SetToolUpdateModeAction::ChoiceEnabled(int i) const
     return true;
 }
 
+// ****************************************************************************
+// Method: ReleaseToDDTAction::ReleaseToDDTAction
+//
+// Purpose:
+//   Constructor for the 'release to DDT' Action
+//
+// Arguments:
+//   win : The ViewerWindow this action applies to
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   December 18, 2011
+//
+// ****************************************************************************
+
+ReleaseToDDTAction::ReleaseToDDTAction(ViewerWindow *win) :
+    ViewerAction(win)
+{
+    SetAllText(tr("Release control of this simulation to DDT"));
+    if (!GetViewerProperties()->GetNowin())
+        SetIcon(QIcon(QPixmap(releasetoddt_xpm)));
+}
+
+// ****************************************************************************
+// Method: ReleaseToDDTAction::Execute
+//
+// Purpose:
+//   Performs the 'release to DDT' Action
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   December 18, 2011
+//
+// ****************************************************************************
+
+void
+ReleaseToDDTAction::Execute()
+{
+    if (DDTManager::isDatabaseDDTSim(GetWindow()->GetPlotList()->GetDatabaseName()))
+    {
+        const EngineKey &key = GetWindow()->GetPlotList()->GetEngineKey();
+        if (key.IsSimulation())
+            ViewerEngineManager::Instance()->SendSimulationCommand(
+                    key, "DDT", "");
+    }
+}
+
+// ****************************************************************************
+// Method: ReleaseToDDTAction::Enabled
+//
+// Purpose:
+//   Determines the enabled status for the 'release to DDT' Action
+//
+// Returns:
+//   true if this Action should appear enabled
+//
+// Programmer: Jonathan Byrd (Allinea Software)
+// Creation:   December 18, 2011
+//
+// ****************************************************************************
+
+bool
+ReleaseToDDTAction::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // is displaying a ddtsim-sourced simulation
+    return (window->GetPlotList()->GetEngineKey().IsSimulation()
+            && DDTManager::isDatabaseDDTSim(window->GetPlotList()->GetDatabaseName()));
+}

@@ -54,13 +54,16 @@ static const char *INTERACTION_MODE_strings[] = {"NAVIGATE", "ZONE_PICK",
 //    Gunther H. Weber, Wed Mar 19 16:08:41 PDT 2008
 //    Updadated bounds for new SPREADSHEET_PICK
 //
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   Added the DDT_PICK mode
+//
 // ****************************************************************************
 
 std::string
 INTERACTION_MODE_ToString(INTERACTION_MODE m)
 {
     int index = int(m);
-    if(m < NAVIGATE || m > SPREADSHEET_PICK) index = 0;
+    if(m < NAVIGATE || m > DDT_PICK) index = 0;
     return INTERACTION_MODE_strings[index];
 }
 

@@ -83,6 +83,12 @@
     <Field name="winMode" label="winMode" type="int">
       0
     </Field>
+    <Field name="DDTSim" label="DDTSim" type="bool">
+      false
+    </Field>
+    <Field name="DDTConnected" label="DDTConected" type="bool">
+      false
+    </Field>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">

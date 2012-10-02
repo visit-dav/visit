@@ -81,6 +81,9 @@
 #include <ViewerSubject.h>
 extern ViewerSubject *viewerSubject;
 
+#include <DDTSession.h>
+#include <DDTManager.h>
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -2681,51 +2684,67 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
     PickAttributes::PickType oldPickType = pickAtts->GetPickType();
     if(ComputePick(ppi, dom, el))
     {
-        //
-        // Add a pick point to the window
-        //
-        if (pickAtts->GetShowPickLetter() && 
-            pickAtts->GetPickPoint()[0] != FLT_MAX)
+        // See if we are suppose to make DDT focus on the picked domain,
+        // instead of picking it directly
+        if (win->GetInteractionMode() == DDT_PICK)
         {
-            win->ValidateQuery(pickAtts, NULL);
-        } // else no valid position could be determined, data was transformed
+            const int targetDomain = pickAtts->GetDomain();
 
-        //
-        // Send pick attributes to the client.
-        //
-        string msg;
-        pickAtts->CreateOutputString(msg);
-        if ( pickAtts->GetPickPoint()[0] == FLT_MAX &&
-             pickAtts->GetPickType() != PickAttributes::CurveNode &&
-             pickAtts->GetPickType() != PickAttributes::CurveZone)
-        {
-            string append;
-            if (pickAtts->GetPickType() == PickAttributes::Zone  ||
-                pickAtts->GetPickType() == PickAttributes::DomainZone) 
-            {
-                append = "Mesh was transformed and chosen zone is not " 
-                       "part of transformed mesh.\nNo pick letter will " 
-                       "be displayed.";
-            }
-            else 
-            {
-                append = "Mesh was transformed and chosen node is not " 
-                       "part of transformed mesh.\nNo pick letter will " 
-                       "be displayed.";
-            }
-            msg += append;
+            DDTSession* ddt = DDTManager::getInstance()->getSession();
+            if (ddt!=NULL)
+                ddt->setFocusOnDomain(targetDomain);
+            else
+                Error(tr("Cannot focus on domain %0, unable to connect to DDT").arg(targetDomain));
         }
-        if (!suppressQueryOutput)
-            Message(msg.c_str(), false); 
-        UpdatePickAtts();
+        else
+        {
 
-        //
-        // If we are not reusing a pick letter, make the pick label ready for 
-        // the next pick point.
-        //
-        if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
+            //
+            // Add a pick point to the window
+            //
+            if (pickAtts->GetShowPickLetter() && 
+                pickAtts->GetPickPoint()[0] != FLT_MAX)
+            {
+                win->ValidateQuery(pickAtts, NULL);
+            } // else no valid position could be determined, data was transformed
+            
+            //
+            // Send pick attributes to the client.
+            //
+            string msg;
+            pickAtts->CreateOutputString(msg);
+            if ( pickAtts->GetPickPoint()[0] == FLT_MAX &&
+                 pickAtts->GetPickType() != PickAttributes::CurveNode &&
+                 pickAtts->GetPickType() != PickAttributes::CurveZone)
+            {
+                string append;
+                if (pickAtts->GetPickType() == PickAttributes::Zone  ||
+                    pickAtts->GetPickType() == PickAttributes::DomainZone) 
+                {
+                    append = "Mesh was transformed and chosen zone is not " 
+                        "part of transformed mesh.\nNo pick letter will " 
+                        "be displayed.";
+                }
+                else 
+                {
+                    append = "Mesh was transformed and chosen node is not " 
+                        "part of transformed mesh.\nNo pick letter will " 
+                        "be displayed.";
+                }
+                msg += append;
+            }
+            if (!suppressQueryOutput)
+                Message(msg.c_str(), false); 
+            UpdatePickAtts();
+            
+            //
+            // If we are not reusing a pick letter, make the pick label ready for 
+            // the next pick point.
+            //
+            if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
+        }
     }
-
+    
     //
     // In case it was changed in the process. (Mostly likely by picking
     // on a VectorPlot or a PointMesh.

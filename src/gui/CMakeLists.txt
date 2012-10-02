@@ -438,6 +438,8 @@ ELSEIF(WIN32)
         PROPERTIES
         LINK_FLAGS "/NODEFAULTLIB:libcmt"
     )
+ELSEIF(UNIX)
+    TARGET_LINK_LIBRARIES(gui X11)
 ENDIF(APPLE)
 
 # Install these targets

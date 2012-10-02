@@ -85,6 +85,8 @@ void WindowInformation::Init()
     windowSize[0] = 0;
     windowSize[1] = 0;
     winMode = 0;
+    DDTSim = false;
+    DDTConnected = false;
 
     WindowInformation::SelectAll();
 }
@@ -138,6 +140,8 @@ void WindowInformation::Copy(const WindowInformation &obj)
     windowSize[1] = obj.windowSize[1];
 
     winMode = obj.winMode;
+    DDTSim = obj.DDTSim;
+    DDTConnected = obj.DDTConnected;
 
     WindowInformation::SelectAll();
 }
@@ -331,7 +335,9 @@ WindowInformation::operator == (const WindowInformation &obj) const
             (numPrimitives == obj.numPrimitives) &&
             extents_equal &&
             windowSize_equal &&
-            (winMode == obj.winMode));
+            (winMode == obj.winMode) &&
+            (DDTSim == obj.DDTSim) &&
+            (DDTConnected == obj.DDTConnected));
 }
 
 // ****************************************************************************
@@ -502,6 +508,8 @@ WindowInformation::SelectAll()
     Select(ID_extents,                 (void *)extents, 6);
     Select(ID_windowSize,              (void *)windowSize, 2);
     Select(ID_winMode,                 (void *)&winMode);
+    Select(ID_DDTSim,                  (void *)&DDTSim);
+    Select(ID_DDTConnected,            (void *)&DDTConnected);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -844,6 +852,20 @@ WindowInformation::SetWinMode(int winMode_)
     Select(ID_winMode, (void *)&winMode);
 }
 
+void
+WindowInformation::SetDDTSim(bool DDTSim_)
+{
+    DDTSim = DDTSim_;
+    Select(ID_DDTSim, (void *)&DDTSim);
+}
+
+void
+WindowInformation::SetDDTConnected(bool DDTConnected_)
+{
+    DDTConnected = DDTConnected_;
+    Select(ID_DDTConnected, (void *)&DDTConnected);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1046,6 +1068,18 @@ WindowInformation::GetWinMode() const
     return winMode;
 }
 
+bool
+WindowInformation::GetDDTSim() const
+{
+    return DDTSim;
+}
+
+bool
+WindowInformation::GetDDTConnected() const
+{
+    return DDTConnected;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1137,6 +1171,8 @@ WindowInformation::GetFieldName(int index) const
     case ID_extents:                 return "extents";
     case ID_windowSize:              return "windowSize";
     case ID_winMode:                 return "winMode";
+    case ID_DDTSim:                  return "DDTSim";
+    case ID_DDTConnected:            return "DDTConnected";
     default:  return "invalid index";
     }
 }
@@ -1188,6 +1224,8 @@ WindowInformation::GetFieldType(int index) const
     case ID_extents:                 return FieldType_doubleArray;
     case ID_windowSize:              return FieldType_intArray;
     case ID_winMode:                 return FieldType_int;
+    case ID_DDTSim:                  return FieldType_bool;
+    case ID_DDTConnected:            return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1239,6 +1277,8 @@ WindowInformation::GetFieldTypeName(int index) const
     case ID_extents:                 return "doubleArray";
     case ID_windowSize:              return "intArray";
     case ID_winMode:                 return "int";
+    case ID_DDTSim:                  return "bool";
+    case ID_DDTConnected:            return "bool";
     default:  return "invalid index";
     }
 }
@@ -1408,6 +1448,16 @@ WindowInformation::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_winMode:
         {  // new scope
         retval = (winMode == obj.winMode);
+        }
+        break;
+    case ID_DDTSim:
+        {  // new scope
+        retval = (DDTSim == obj.DDTSim);
+        }
+        break;
+    case ID_DDTConnected:
+        {  // new scope
+        retval = (DDTConnected == obj.DDTConnected);
         }
         break;
     default: retval = false;

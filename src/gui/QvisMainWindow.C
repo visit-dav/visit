@@ -372,6 +372,9 @@
 //    Brad Whitlock, Wed Sep 22 11:13:04 PDT 2010
 //    Only do printWindow.
 //
+//    Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//    Added the 'connect to DDT' action
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -501,6 +504,11 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addAction(tr("Simulations . . ."),
                          this, SIGNAL(activateSimulationWindow()));
+
+    connectToDDTAct = new QAction(tr("Connect to DDT"),
+                         this);
+    connect(connectToDDTAct, SIGNAL(activated()),this, SLOT(connectToDDT()));
+    filePopup->addAction(connectToDDTAct);
 
     filePopup->addSeparator();
 
@@ -1678,6 +1686,10 @@ QvisMainWindow::UpdateWindowList(bool doList)
 //   Brad Whitlock, Mon Sep 20 16:38:00 PDT 2010
 //   I removed the navigate mode action.
 //
+//   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
+//   Sets the text of the 'connect to DDT' action depending on if
+//   the viewer will connect or disconnect to/from DDT.
+//
 // ****************************************************************************
 
 void
@@ -1740,6 +1752,11 @@ QvisMainWindow::UpdateWindowMenu(bool updateNumbers)
     
     spinModeAct->setEnabled(enoughPlots);
     spinModeAct->setChecked(windowInfo->GetSpin());
+
+    if (windowInfo->GetDDTConnected())
+        connectToDDTAct->setText(tr("Disconnect from DDT"));
+    else
+        connectToDDTAct->setText(tr("Connect to DDT"));
 }
 
 // ****************************************************************************
@@ -3271,4 +3288,24 @@ void
 QvisMainWindow::unlockEverything()
 {
     GetViewerMethods()->TurnOffAllLocks();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::connectToDDT
+//
+// Purpose:
+//   This is a Qt slot function that attempts to connect (or disconnect)
+//   the viewer to/from DDT
+//
+// Programmer: Jonathan Byrd
+// Creation:   Sun 18 Dec, 2011
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMainWindow::connectToDDT()
+{
+    GetViewerMethods()->DDTConnect(!windowInfo->GetDDTConnected());
 }

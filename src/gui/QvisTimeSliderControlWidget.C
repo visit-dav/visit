@@ -508,6 +508,9 @@ QvisTimeSliderControlWidget::UpdateAnimationControls(bool doAll)
 // Note: Taken/Refactored from QvisFilePanel.
 //
 // Modifications:
+//   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
+//   If viewing a ddtsim-based simulation, set each of the VCR controls
+//   to a suitable enabled status
 //
 // ****************************************************************************
 
@@ -519,7 +522,9 @@ QvisTimeSliderControlWidget::UpdateAnimationControlsEnabledState()
     // available whenever we have an active time slider.
     //
     bool enabled = (windowInfo->GetActiveTimeSlider() >= 0);
-    vcrControls->setEnabled(enabled);
+    bool ddtsimEnabled = windowInfo->GetDDTSim();
+    vcrControls->SetDDTSimEnabled(ddtsimEnabled);
+    vcrControls->setEnabled(enabled || ddtsimEnabled);
     animationPosition->setEnabled(enabled);
     timeField->setEnabled(enabled);
 }

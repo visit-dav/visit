@@ -42,6 +42,11 @@
 #include <ViewerProperties.h>
 #include <ViewerWindow.h>
 #include <ViewerWindowManager.h>
+#include <ViewerEngineManager.h>
+#include <ViewerActionManager.h>
+#include <DDTManager.h>
+#include <avtSimulationInformation.h>
+#include <avtDatabaseMetaData.h>
 
 #include <DatabaseCorrelationList.h>
 #include <DebugStream.h>
@@ -128,21 +133,41 @@ AnimationStopAction::AnimationStopAction(ViewerWindow *win) :
 void
 AnimationStopAction::Execute()
 {
-     windowMgr->Stop(windowId);
+    if (DDTManager::isDDTSim(window))
+    {
+        const EngineKey &key = window->GetPlotList()->GetEngineKey();
+        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+        ViewerEngineManager::Instance()->SendSimulationCommand(key, DDTSIM_CMD_STOP, "");
+    }
+    else
+        windowMgr->Stop(windowId);
 }
 
 bool 
 AnimationStopAction::Enabled() const
 {
-    return window->GetPlotList()->HasActiveTimeSlider() &&
-           window->GetPlotList()->GetNumPlots() > 0;
+    if (DDTManager::isDDTSim(window))
+        return true;
+    else
+        return window->GetPlotList()->HasActiveTimeSlider() &&
+            window->GetPlotList()->GetNumPlots() > 0;
 }
 
 bool
 AnimationStopAction::Checked() const
 {
-    return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
-            AnimationAttributes::StopMode);
+    if (DDTManager::isDDTSim(window))
+    {
+        const EngineKey &key = window->GetPlotList()->GetEngineKey();
+        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+        if (md && key.IsSimulation()){
+            return md->GetSimInfo().GetMode()==avtSimulationInformation::Stopped;
+        }
+        return false;
+    }
+    else
+        return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
+                AnimationAttributes::StopMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -159,21 +184,43 @@ AnimationPlayAction::AnimationPlayAction(ViewerWindow *win) :
 void
 AnimationPlayAction::Execute()
 {
-     windowMgr->Play(windowId);
+    if (DDTManager::isDDTSim(window))
+    {
+        const EngineKey &key = window->GetPlotList()->GetEngineKey();
+        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+        if (md->GetSimInfo().GetMode()==avtSimulationInformation::Running)
+            ViewerEngineManager::Instance()->SendSimulationCommand(key, DDTSIM_CMD_STOP, "");
+        else
+            ViewerEngineManager::Instance()->SendSimulationCommand(key, DDTSIM_CMD_PLAY, "");
+    }
+    else
+        windowMgr->Play(windowId);
 }
 
 bool
 AnimationPlayAction::Enabled() const
 {
-    return window->GetPlotList()->HasActiveTimeSlider() &&
-           window->GetPlotList()->GetNumPlots() > 0;
+    if (DDTManager::isDDTSim(window))
+        return true;
+    else
+        return window->GetPlotList()->HasActiveTimeSlider() &&
+            window->GetPlotList()->GetNumPlots() > 0;
 }
 
 bool
 AnimationPlayAction::Checked() const
 {
-    return (window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
-            AnimationAttributes::PlayMode);
+    if (DDTManager::isDDTSim(window))
+    {
+        const EngineKey &key = window->GetPlotList()->GetEngineKey();
+        const avtDatabaseMetaData *md = ViewerEngineManager::Instance()->GetSimulationMetaData(key);
+        if (md && key.IsSimulation())
+            return md->GetSimInfo().GetMode()==avtSimulationInformation::Running;
+        return true;
+    }
+    else
+        return window->GetPlotList()->GetAnimationAttributes().GetAnimationMode() ==
+                AnimationAttributes::PlayMode;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -190,14 +237,23 @@ TimeSliderForwardStepAction::TimeSliderForwardStepAction(ViewerWindow *win) :
 void
 TimeSliderForwardStepAction::Execute()
 {
-     windowMgr->NextFrame(windowId);
+     if (DDTManager::isDDTSim(window))
+     {
+         ViewerEngineManager::Instance()->SendSimulationCommand(
+                     window->GetPlotList()->GetEngineKey(), DDTSIM_CMD_STEP, "");
+     }
+     else
+         windowMgr->NextFrame(windowId);
 }
 
 bool
 TimeSliderForwardStepAction::Enabled() const
 {
-    return window->GetPlotList()->HasActiveTimeSlider() &&
-           window->GetPlotList()->GetNumPlots() > 0;
+    if (DDTManager::isDDTSim(window))
+        return true;
+    else
+        return window->GetPlotList()->HasActiveTimeSlider() &&
+            window->GetPlotList()->GetNumPlots() > 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
