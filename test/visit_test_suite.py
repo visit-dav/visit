@@ -387,6 +387,11 @@ def parse_args():
                       default=False,
                       action = "store_true",
                       help="Do not use a skip list file")
+    parser.add_option("--no-data-check",
+                      dest="checkdata",
+                      default=True,
+                      action = "store_false",
+                      help="Skip build sanity check on input data files")
     parser.add_option("--fuzzy",
                       dest="fuzzy",
                       default=False,
@@ -553,7 +558,7 @@ def prepare_data_dir(data_dir):
     Simple check of test data.
     """
     dfile = pjoin(data_dir,"silo_hdf5_test_data","globe.silo")
-    Log("[Checking test data]") 
+    Log("[Checking test data]")
     if not os.path.isfile(dfile):
         Log("[Rebuilding test data based "
             "on the fact that '%s' doesn't exist]" % dfile)
@@ -573,9 +578,9 @@ def prepare_data_dir(data_dir):
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
 def cleanup(res_dir):
-    Log("[Cleanup: Waiting for delayed writes]") 
+    Log("[Cleanup: Waiting for delayed writes]")
     time.sleep(10)
-    Log("[Cleanup: Removing _run directory]") 
+    Log("[Cleanup: Removing _run directory]")
     run_dir = pjoin(res_dir,"_run")
     shutil.rmtree(run_dir)
 
@@ -598,7 +603,7 @@ def launch_tests(opts,tests):
     test_args = [(idx,tests[idx],opts) for idx in range(ntests)]
     # save the input list
     test_list = json.dumps([(idx,tests[idx]) for idx in range(ntests)])
-    open(pjoin(opts.resultdir,"tests.json"),"w").write(test_list)    
+    open(pjoin(opts.resultdir,"tests.json"),"w").write(test_list)
     if len(test_args) < opts.nprocs:
         opts.nprocs = len(test_args)
     if opts.nprocs < 2:
@@ -649,7 +654,8 @@ def main(opts,tests):
     Main entry point for the test suite.
     """
     Log("[[VisIt Test Suite]]")
-    prepare_data_dir(opts.datadir)
+    if opts.checkdata:
+        prepare_data_dir(opts.datadir)
     if opts.index:
         ridx  = opts.index
         tests = load_test_cases_from_index(ridx)
@@ -678,7 +684,7 @@ def main(opts,tests):
         Log("-- %d files due to skip list." % nskip)
     if not error:
         Log("++ Test suite run finished with NO errors.")
-    else: 
+    else:
         nerrors = len([ r.error() for r in results if r.error() == True])
         if nerrors == 1:
             Log("!! Test suite run finished with %d error." % nerrors)
