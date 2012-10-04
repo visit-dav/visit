@@ -1060,6 +1060,12 @@ void avtMirandaFileFormat::GetBlockDims(int domain, int dims[3]) {
 //  Creation:   Wed Jun 17 17:30:41 PDT 2009
 //
 //  Modified for version 2.0 by Rich Cook
+//
+//  Cyrus Harrison, Thu Oct  4 09:30:26 PDT 2012
+//  Init alloced point memory buffer w/ zeros.
+//  In the 2D case we may not touch these values, so we need
+//  to make sure they are zero. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1085,6 +1091,7 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
   // We can just read the entire contents of the domain file in version 2.0
   // This is in fact the point of having a version 2.0 file format.  
   float *bufp = new float[nSrcTuples*3];
+  memset(bufp,0,sizeof(float)*nSrcTuples*3);
   TRY
   {
       int comp = 0, bufcomp = 0; 
