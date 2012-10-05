@@ -211,6 +211,7 @@ M3DC1
 PFLOTRAN
 Pixie
 SAMRAI
+SXRIS
 Tetrad
 UNIC
 Velodyne
