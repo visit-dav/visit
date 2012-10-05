@@ -74,6 +74,7 @@
 #include <snprintf.h>
 
 using std::string;
+using std::vector; 
 
 #ifndef STREQUAL
 #if defined(_WIN32) 
@@ -1090,8 +1091,8 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
 
   // We can just read the entire contents of the domain file in version 2.0
   // This is in fact the point of having a version 2.0 file format.  
-  float *bufp = new float[nSrcTuples*3];
-  memset(bufp,0,sizeof(float)*nSrcTuples*3);
+  vector<float> v(nSrcTuples*3,0); // allocate and set to zero -- no delete needed
+  float *bufp = &v[0];
   TRY
   {
       int comp = 0, bufcomp = 0; 
@@ -1107,7 +1108,6 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
   CATCHALL
   {
       fclose(fd);
-      delete [] bufp;
       RETHROW;
   }
   ENDTRY
@@ -1133,7 +1133,6 @@ avtMirandaFileFormat::GetCurvilinearMesh2(int domain) {
   sgrid->GetFieldData()->AddArray(arr);
   arr->Delete();
 
-  delete [] bufp;
 
   TIMERSTOP(str(format("GetCurvilinearMesh2(%1%)")%domain)); 
   return sgrid;
@@ -1173,6 +1172,8 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
     sgrid->SetDimensions(realdim);
     int nSrcTuples = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
+    // vectors provide auto initialization and scoping for garbage collection
+    vector<vector<float> > floatvectors(8); 
     for (ii = 0; ii < 8; ii++)
     {
         if (neighbors[ii] == -1)
@@ -1185,8 +1186,9 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
         FILE *fd = fopen(filename, "rb");
         if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
-
-        aRawBlocks[ii] = new float[nSrcTuples*3];
+        
+        floatvectors[ii].resize(nSrcTuples*3);
+        aRawBlocks[ii] = &floatvectors[ii][0];
 
         int iDst = 0;
         for (jj = 0; jj < 3; jj++)
@@ -1198,9 +1200,10 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
             iDst++;
         }
 
-        if (dim == 2)
+        // this is redundant -- vector initialized already
+        /* if (dim == 2)
             memset(aRawBlocks[ii] + 2*nSrcTuples, 0, nSrcTuples*sizeof(float));
-
+        */
         fclose(fd);
     }
 
@@ -1215,12 +1218,6 @@ avtMirandaFileFormat::GetCurvilinearMesh(int domain)
     array->Delete();
 
     sgrid->SetPoints(p);
-
-    for (ii = 0; ii < 8; ii++)
-    {
-        if (aRawBlocks[ii])
-            delete[] aRawBlocks[ii];
-    }
 
     int iBlockX, iBlockY, iBlockZ;
     DomainToIJK( domain, iBlockX, iBlockY, iBlockZ );
@@ -1426,7 +1423,8 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
     } else {
       int neighbors[8], realdim[3];
       float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
-      
+      vector<vector<float> > floatvectors(8); 
+
       FindNeighborDomains(domain, neighbors, realdim);
       debug5 << "GetVar: For domain " << domain<<", "<<Vec2String("neighbors",neighbors,8)<<endl; 
       for (ii = 0; ii < 8; ii++)
@@ -1441,7 +1439,8 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
           int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
-          aRawBlocks[ii] = new float[numfloats];
+          floatvectors[ii].resize(numfloats); 
+          aRawBlocks[ii] = &floatvectors[ii][0];
           ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain);
           debug5 << "Read "<<numfloats<< " elements from " << filename << " for neighbor " << ii << " of domain " << domain << endl;
           
@@ -1454,11 +1453,6 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
       
       PackData( (float *)(var->GetVoidPointer(0)), aRawBlocks, realdim, 1, false );
       
-      for (ii = 0; ii < 8; ii++)
-        {
-          if (aRawBlocks[ii])
-            delete[] aRawBlocks[ii];
-        }
     }
     TIMERSTOP(str(format("GetVar(%1%, %2%, %3%)")%timestate%domain%varname));
 
@@ -1548,8 +1542,8 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
       FILE *fd = fopen(filename, "rb");
       if (fd == NULL)
         EXCEPTION1(InvalidFilesException, filename);
-      
-      float *bufp = new float[nTuples*nComps];
+      vector<float> v(nTuples*nComps); // initialized to 0 by std
+      float *bufp = &v[0];
       TRY
       {
           int iCurrComp = 0;
@@ -1566,7 +1560,6 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
       CATCHALL
       {
           fclose(fd);
-          delete [] bufp;
           RETHROW;
       }
       ENDTRY
@@ -1577,11 +1570,11 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
       InterleaveData( (float *)(var->GetVoidPointer(0)), bufp, dims, nComps );      
          
       fclose(fd); 
-      delete [] bufp;
     } else {
       int neighbors[8], realdim[3];
       float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
-      
+      vector<vector<float> > floatvectors(8); 
+
       FindNeighborDomains(domain, neighbors, realdim);
       
       int nDstTuples = realdim[0]*realdim[1]*realdim[2];
@@ -1601,8 +1594,8 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
           FILE *fd = fopen(filename, "rb");
           if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
-          
-          aRawBlocks[ii] = new float[nSrcTuples*nComps];
+          floatvectors[ii].resize(nSrcTuples*nComps); 
+          aRawBlocks[ii] = &floatvectors[ii][0];
           
           int iCurrComp = 0;
           for (jj = 0; jj < nComps; jj++)
@@ -1614,18 +1607,14 @@ avtMirandaFileFormat::GetVectorVar(int timestate, int domain, const char *varnam
               
               iCurrComp++;
             }
+          /* redundant -- do not do this
           if (bFlattenVec)
             memset(aRawBlocks[ii] + 2*nSrcTuples, 0, nSrcTuples*sizeof(float));
-          
+          */ 
           fclose(fd);
         }
       PackData( (float *)(var->GetVoidPointer(0)), aRawBlocks, realdim, nComps, true );
       
-      for (ii = 0; ii < 8; ii++)
-        {
-          if (aRawBlocks[ii])
-            delete[] aRawBlocks[ii];
-        }
     }
     TIMERSTOP(str(format("GetVectorVar(%1%, %2%, %3%)")%timestate%domain%varname));
     return var;    
@@ -1710,8 +1699,9 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
     else if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
         int     nMats    = aMatNames.size();
+        
         int    *matNums  = new int[nMats];
-        char  **matNames = new char*[nMats];
+        char  **matNames = new char*[nMats];  //ewww.  
         float **volFracs = new float*[nMats];
         char    domainName[32];
 
@@ -1725,7 +1715,8 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
         int nDstTuples, nSrcTuples, realdim[3];
         int neighbors[8];
         float *aRawBlocks[8] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
-        
+        vector<vector<float> > floatvectors(8); 
+
         if (sFileVersion == "2.0") {
           GetBlockDims(domain, realdim); 
           nSrcTuples = nDstTuples = realdim[0]*realdim[1]*realdim[2];
@@ -1737,8 +1728,8 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
           nDstTuples = realdim[0]*realdim[1]*realdim[2];
           
         }
-        
-        float *dst = new float[nDstTuples * nMats]; 
+        vector<float> dstv(nDstTuples * nMats); 
+        float *dst = &dstv[0];  
 
         if (sFileVersion == "2.0") {
           
@@ -1774,7 +1765,8 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
               if (fd == NULL)
                 EXCEPTION1(InvalidFilesException, filename);
               
-              aRawBlocks[ii] = new float[nSrcTuples*nMats];
+              floatvectors[ii].resize(nSrcTuples*nMats); 
+              aRawBlocks[ii] = &floatvectors[ii][0];
               
               for (jj = 0; jj < nMats; jj++)
                 {
@@ -1873,12 +1865,6 @@ avtMirandaFileFormat::GetAuxiliaryData(const char *var, int timestate,
         delete[] matNums;
         delete[] matNames;
         delete[] volFracs;
-        delete[] dst;
-        for (ii = 0; ii < 8; ii++)
-          {
-            if (aRawBlocks[ii])
-              delete[] aRawBlocks[ii];
-          }
     }
     TIMERSTOP(str(format("GetAuxiliaryData(%1%, %2%, %3%, %4%)")%var%timestate%domain%type));
     return rv;
