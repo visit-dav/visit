@@ -54,7 +54,6 @@ DeleteAllPlots()
 ReplaceDatabase(data_path("miranda_test_data/jet_2d/plot_mat_t83.raw"))
 
 
-
 SetTimeSliderState(0)
 AddPlot("Pseudocolor","density")
 DrawPlots()
@@ -75,6 +74,25 @@ Test("miranda_raw_reader7")
 
 SetTimeSliderState(2)
 Test("miranda_raw_reader8")
+
+DeleteAllPlots()
+ReplaceDatabase(data_path("miranda_test_data/stem_2d/plot.mir"))
+
+vv = View2DAttributes()
+vv.windowCoords = (0, 2.23563, -0.28, 0.835625)
+vv.viewportCoords = (0.05, 0.95, 0.05, 0.95)
+vv.fullFrameActivationMode = vv.On  # On, Off, Auto
+vv.fullFrameAutoThreshold = 100
+SetView2D(vv)
+
+SetTimeSliderState(0)
+AddPlot("Pseudocolor","density")
+DrawPlots()
+Test("miranda_raw_reader9")
+
+SetTimeSliderState(3)
+DrawPlots()
+Test("miranda_raw_reader10")
 
 
 
