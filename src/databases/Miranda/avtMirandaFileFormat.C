@@ -72,6 +72,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <snprintf.h>
+#include <boost/cstdint.hpp>
 
 using std::string;
 using std::vector; 
@@ -113,7 +114,7 @@ string Vec2String(string name, T *vec, int numelems) {
   
   while (elem < numelems ) {
     float value = vec[elem];
-    snprintf(buf,31,"%f",value); 
+    SNPRINTF(buf,31,"%f",value); 
     s += buf ;
     if (elem == numelems - 1) {
       s+= "]"; 
@@ -1438,7 +1439,7 @@ avtMirandaFileFormat::GetVar(int timestate, int domain, const char *varname)
           FILE *fd = fopen(filename, "rb");
           if (fd == NULL)
             EXCEPTION1(InvalidFilesException, filename);
-          int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
+          boost::int32_t numfloats = iBlockSize[0]*iBlockSize[1]*iBlockSize[2]; 
           floatvectors[ii].resize(numfloats); 
           aRawBlocks[ii] = &floatvectors[ii][0];
           ReadRawScalar(fd, nPrevComp, aRawBlocks[ii], filename, domain);
