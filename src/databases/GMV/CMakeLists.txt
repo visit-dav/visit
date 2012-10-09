@@ -16,7 +16,6 @@ SET(LIBM_SOURCES
 GMVMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtGMVFileFormat.C
-gmvPolyhedralSplit.C
 gmvread.c
 )
 
@@ -25,15 +24,12 @@ GMVEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtGMVFileFormat.C
 gmvMaterialEncoder.C
-gmvPolyhedralSplit.C
 gmvread.c
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_INCLUDE_DIR}/databases/PDB
-${VISIT_INCLUDE_DIR}/databases/SimV2
-${MESA_INCLUDE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -66,19 +62,19 @@ SET(INSTALLTARGETS IGMVDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MGMVDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MGMVDatabase visitcommon avtdbatts avtdatabase_ser ${TESSELLATION_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MGMVDatabase visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MGMVDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MGMVDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EGMVDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EGMVDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${TESSELLATION_LIBRARY} )
+TARGET_LINK_LIBRARIES(EGMVDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
 ADD_TARGET_DEFINITIONS(EGMVDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EGMVDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EGMVDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EGMVDatabase_par visitcommon avtdatabase_par avtpipeline_par ${TESSELLATION_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EGMVDatabase_par visitcommon avtdatabase_par avtpipeline_par )
     ADD_TARGET_DEFINITIONS(EGMVDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EGMVDatabase_par)
 ENDIF(VISIT_PARALLEL)

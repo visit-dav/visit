@@ -2,24 +2,17 @@
   <Plugin name="GMV" type="database" label="GMV" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${VISIT_INCLUDE_DIR}/databases/PDB
-      ${VISIT_INCLUDE_DIR}/databases/SimV2
-      ${MESA_INCLUDE_DIR}
     </CXXFLAGS>
-    <LIBS>
-      ${TESSELLATION_LIBRARY}
-    </LIBS>
     <FilePatterns>
       *.gmv
     </FilePatterns>
     <Files components="M">
       avtGMVFileFormat.C
-      gmvPolyhedralSplit.C
       gmvread.c
     </Files>
     <Files components="E">
       avtGMVFileFormat.C
       gmvMaterialEncoder.C
-      gmvPolyhedralSplit.C
       gmvread.c
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

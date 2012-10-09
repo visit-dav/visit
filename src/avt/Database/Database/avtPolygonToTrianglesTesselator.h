@@ -35,51 +35,91 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#ifndef POLYHEDRAL_SPLIT_H
-#define POLYHEDRAL_SPLIT_H
-#include <vectortypes.h>
 
-class vtkDataArray;
+#ifndef AVT_POLYGON_TO_TRIANGLES_TESSELATOR_H
+#define AVT_POLYGON_TO_TRIANGLES_TESSELATOR_H
+
+#include <vector>
+#include "database_exports.h"
+
 
 // ****************************************************************************
-// Class: PolyhedralSplit
+//  Class:  avtPolygonToTrianglesTesselator
 //
-// Purpose:
-//   This class contains a list of polyhedral cells that were split into zoo
-//   cells and their split count. The class also contains methods for expanding
-//   data arrays to account for the cell splitting.
+//  Purpose: Uses tess2 to create triangles from polygon contours.
 //
-// Notes:      
+//  Programmer:  Cyrus Harrison
+//  Creation:    Tue Oct  9 12:51:23 PDT 2012
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 12 11:29:46 PST 2010
+//  Modifications:
 //
-// Modifications:
-//   Brad Whitlock, Tue Oct 26 16:23:45 PDT 2010
-//   I turned polyhedralSplit into a vector so we could add polyhedral split
-//   information as we discover it.
-//   
 // ****************************************************************************
 
-class PolyhedralSplit
+class VertexManager;
+class vtkPoints;
+class vtkPolyData;
+class TESSalloc;
+class TESStesselator;
+
+//
+// Note on Cyrus' spelling quandry: tesselator vs tessellator
+// tess2 uses "tesselator" - for "Tessellate",  two 'l's
+// is correct, but I not sure about "tesselator" - so I stuck with one 'l'
+// for class names.
+//
+
+
+class DATABASE_API avtPolygonToTrianglesTesselator
 {
-public:
-    PolyhedralSplit();
-    ~PolyhedralSplit();
+  public:
+             avtPolygonToTrianglesTesselator(vtkPoints *);
+    virtual ~avtPolygonToTrianglesTesselator();
 
-    static void Destruct(void *);
+    // set normal use for tessellation
+    void    SetNormal(double x, double y, double z);
+    void    SetNormal(const double *vals);
 
-    void AppendCellSplits(int cellid, int nsplits);
+    // define a contour
+    void    BeginContour();
+    void    AddContourVertex(double *vals);
+    void    AddContourVertex(double x, double y, double z);
+    void    EndContour();
 
-    void AppendPolyhedralNode(int);
+    // access to vertex point ids
+    int     GetVertexId(double *vals);
 
-    vtkDataArray *ExpandDataArray(vtkDataArray *input, bool zoneCent,
-                                  bool averageNodes=true) const;
-    vtkDataArray *CreateOriginalCells(int domain, int normalCellCount) const;
+    // exec tessellation
+    int     Tessellate();
 
-private:
-    intVector polyhedralSplit;
-    intVector nodesForPolyhedralCells;
+    // this variant adds the generated tris to vtkPolyData
+    int     Tessellate(vtkPolyData *pd);
+
+    // these provide access results of last Tessellate call
+    int     GetNumberOfTriangles() const;
+    void    GetTriangleIndices(int i, int &a, int &b, int &c) const;
+
+  private:
+    // normal vector used for tessellation
+    double               tessNorm[3];
+
+    // holds verts for current contour
+    std::vector<double>  verts;
+
+    // bookkeeping for tess2 memory allocator
+    int                  tessMemAllocated;
+
+    // tess2 objs
+    TESSalloc           *tessMemAllocator;
+    TESStesselator      *tessObj;
+
+    // used to take care of dup verts
+    VertexManager       *vertexManager;
+
+    // ref to external vtkPoints object
+    vtkPoints           *xPoints;
 };
 
+
+
 #endif
+

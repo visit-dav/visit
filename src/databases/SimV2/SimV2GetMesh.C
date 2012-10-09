@@ -60,12 +60,13 @@
 #include <VisItInterfaceTypes_V2.h>
 
 #include <avtGhostData.h>
+#include <avtPolygonToTrianglesTesselator.h>
+#include <avtPolyhedralSplit.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
-#include <PolygonToTriangles.C>
-#include <PolyhedralSplit.h>
+
 
 #include <simv2_CSGMesh.h>
 #include <simv2_CurvilinearMesh.h>
@@ -81,11 +82,11 @@ static const char *AVT_GHOST_NODES_ARRAY = "avtGhostNodes";
 //  Function:  GetQuadGhostZones
 //
 //  Purpose:  Add ghost zone information to a dataset.
-//    
+//
 //  Note:  stolen from the Silo file format method of the same name
 //
 // ****************************************************************************
-static void 
+static void
 GetQuadGhostZones(int nnodes, int ndims,
                   int *dims, int *min_index, int *max_index,
                   vtkDataSet *ds)
@@ -104,14 +105,14 @@ GetQuadGhostZones(int nnodes, int ndims,
 
         if (first[i] < 0 || first[i] >= dims[i])
         {
-            debug1 << "bad Index on first[" << i << "] dims is: " 
+            debug1 << "bad Index on first[" << i << "] dims is: "
                    << dims[i] << endl;
             badIndex = true;
         }
 
         if (last[i] < 0 || last[i] >= dims[i])
         {
-            debug1 << "bad Index on last[" << i << "] dims is: " 
+            debug1 << "bad Index on last[" << i << "] dims is: "
                    << dims[i] << endl;
             badIndex = true;
         }
@@ -132,7 +133,7 @@ GetQuadGhostZones(int nnodes, int ndims,
         // Initialize as all ghost levels
         //
         for (int ii = 0; ii < nnodes; ii++)
-            ghostPoints[ii] = true; 
+            ghostPoints[ii] = true;
 
         //
         // Set real values
@@ -142,7 +143,7 @@ GetQuadGhostZones(int nnodes, int ndims,
                 for (int i = first[0]; i <= last[0]; i++)
                 {
                     int index = k*dims[1]*dims[0] + j*dims[0] + i;
-                    ghostPoints[index] = false; 
+                    ghostPoints[index] = false;
                 }
 
         //
@@ -152,14 +153,14 @@ GetQuadGhostZones(int nnodes, int ndims,
         //
         unsigned char realVal = 0;
         unsigned char ghostVal = 0;
-        avtGhostData::AddGhostZoneType(ghostVal, 
+        avtGhostData::AddGhostZoneType(ghostVal,
                                        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         int ncells = ds->GetNumberOfCells();
         vtkIdList *ptIds = vtkIdList::New();
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
         ghostCells->SetName(AVT_GHOST_ZONES_ARRAY);
         ghostCells->Allocate(ncells);
- 
+
         for (int i = 0; i < ncells; i++)
         {
             ds->GetCellPoints(i, ptIds);
@@ -171,8 +172,8 @@ GetQuadGhostZones(int nnodes, int ndims,
                 ghostCells->InsertNextValue(ghostVal);
             else
                 ghostCells->InsertNextValue(realVal);
- 
-        } 
+
+        }
         ds->GetCellData()->AddArray(ghostCells);
         delete [] ghostPoints;
         ghostCells->Delete();
@@ -198,7 +199,7 @@ GetQuadGhostZones(int nnodes, int ndims,
 // ****************************************************************************
 // Function: AddGhostZonesFromArray
 //
-// Purpose: 
+// Purpose:
 //   Converts a mesh-sized array of ghost cell values into an avtGhostZones
 //   array that we add to the dataset.
 //
@@ -208,13 +209,13 @@ GetQuadGhostZones(int nnodes, int ndims,
 //
 // Returns:    True if the avtGhostZones array was added; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 11 14:15:15 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static bool
@@ -258,7 +259,7 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
             }
 
             ds->GetCellData()->AddArray(ghosts);
-            retval = true;         
+            retval = true;
         }
         else if(dataType == VISIT_DATATYPE_INT)
         {
@@ -294,7 +295,7 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
 // ****************************************************************************
 // Function: AddGhostNodesFromArray
 //
-// Purpose: 
+// Purpose:
 //   Converts a mesh-sized array of ghost node values into an avtGhostNodes
 //   array that we add to the dataset.
 //
@@ -304,13 +305,13 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
 //
 // Returns:    True if the avtGhostNodes array was added; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: William T. Jones
 // Creation:   Fri Jan 20 17:45:02 EDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static bool
@@ -353,7 +354,7 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
             }
 
             ds->GetPointData()->AddArray(ghosts);
-            retval = true;         
+            retval = true;
         }
         else if(dataType == VISIT_DATATYPE_INT)
         {
@@ -389,7 +390,7 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 // ****************************************************************************
 // Function: SimV2_CreatePoints
 //
-// Purpose: 
+// Purpose:
 //   Create a vtkPoints object from various VariableData objects.
 //
 // Arguments:
@@ -403,7 +404,7 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 //
 // Returns:    A vtkPoints object that contains the coordinates.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 25 11:14:01 PST 2010
@@ -415,8 +416,8 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 // ****************************************************************************
 
 static vtkPoints *
-SimV2_CreatePoints(int ndims, int coordMode, 
-    visit_handle x, visit_handle y, visit_handle z, visit_handle c, 
+SimV2_CreatePoints(int ndims, int coordMode,
+    visit_handle x, visit_handle y, visit_handle z, visit_handle c,
     int additionalPoints)
 {
     const char *mName  = "SimV2_CreatePoints: ";
@@ -427,7 +428,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
         debug4 << mName << "VISIT_COORD_MODE_SEPARATE" << endl;
 
         // Let's get the VariableData properties. The API guarantees that the
-        // arrays will have the same properties so we only get the data 
+        // arrays will have the same properties so we only get the data
         // pointer as a unique value.
         visit_handle cHandles[3];
         cHandles[0] = x;
@@ -437,7 +438,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
         void *data[3] = {0,0,0};
         for(int i = 0; i < ndims; ++i)
         {
-            if(simv2_VariableData_getData(cHandles[i], owner, dataType, 
+            if(simv2_VariableData_getData(cHandles[i], owner, dataType,
                 nComps, nTuples, data[i]) == VISIT_ERROR)
             {
                 return NULL;
@@ -672,7 +673,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
 // ****************************************************************************
 // Method: SimV2_GetMesh_Curvilinear
 //
-// Purpose: 
+// Purpose:
 //   Builds a VTK curvilinear mesh from the simulation mesh.
 //
 // Arguments:
@@ -680,7 +681,7 @@ SimV2_CreatePoints(int ndims, int coordMode,
 //
 // Returns:    A VTK dataset that represents the simulation mesh.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Feb 24 16:41:39 PST 2010
@@ -705,10 +706,10 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     //
     int ndims = 0, dims[3]={0,0,0}, coordMode = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
-    visit_handle x,y,z,c;   
+    visit_handle x,y,z,c;
     if(simv2_CurvilinearMesh_getCoords(h, &ndims, dims, &coordMode,
                                        &x,&y,&z,&c) == VISIT_ERROR ||
-       simv2_CurvilinearMesh_getRealIndices(h, minRealIndex, 
+       simv2_CurvilinearMesh_getRealIndices(h, minRealIndex,
                                        maxRealIndex) == VISIT_ERROR ||
        simv2_CurvilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
     {
@@ -724,7 +725,7 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
     //
     // Create the VTK objects and connect them up.
     //
-    vtkStructuredGrid *sgrid   = vtkStructuredGrid::New(); 
+    vtkStructuredGrid *sgrid   = vtkStructuredGrid::New();
     sgrid->SetPoints(points);
     points->Delete();
 
@@ -772,7 +773,7 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 // ****************************************************************************
 // Method: SimV2_GetMesh_Rectilinear
 //
-// Purpose: 
+// Purpose:
 //   Builds a VTK rectilinear mesh from the simulation mesh.
 //
 // Arguments:
@@ -780,7 +781,7 @@ SimV2_GetMesh_Curvilinear(visit_handle h)
 //
 // Returns:    A VTK dataset that represents the simulation mesh.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 25 11:57:18 PST 2010
@@ -808,7 +809,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     //
     int ndims = 0;
     int minRealIndex[3]={0,0,0}, maxRealIndex[3]={0,0,0}, baseIndex[3]={0,0,0};
-    visit_handle x,y,z;   
+    visit_handle x,y,z;
     if(simv2_RectilinearMesh_getCoords(h, &ndims, &x, &y, &z) == VISIT_ERROR ||
        simv2_RectilinearMesh_getRealIndices(h, minRealIndex, maxRealIndex) == VISIT_ERROR ||
        simv2_RectilinearMesh_getBaseIndex(h, baseIndex) == VISIT_ERROR)
@@ -828,7 +829,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     void *data[3] = {0,0,0};
     for(int i = 0; i < ndims; ++i)
     {
-        if(simv2_VariableData_getData(cHandles[i], owner[i], 
+        if(simv2_VariableData_getData(cHandles[i], owner[i],
             dataType[i], nComps[i], nTuples[i], data[i]) == VISIT_ERROR)
         {
             EXCEPTION1(ImproperUseException,
@@ -839,7 +840,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
     //
     // Create the VTK objects and connect them up.
     //
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New(); 
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(nTuples);
 
     //
@@ -929,11 +930,11 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
 // ****************************************************************************
 // Method: SimV2_UnstructuredMesh_Count_Cells
 //
-// Purpose: 
-//   Examine the connectivity and count the number of regular cells and the 
+// Purpose:
+//   Examine the connectivity and count the number of regular cells and the
 //   number of polyhedral cells.
 //
-// Arguments: 
+// Arguments:
 //   umesh           : The unstructured mesh
 //   normalCellCount : The count of non-polyhedral cells.
 //   polyCount       : The number of polyhedral cells
@@ -942,7 +943,7 @@ SimV2_GetMesh_Rectilinear(visit_handle h)
 // Creation:   Thu Feb 18 16:57:18 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static void
@@ -993,7 +994,7 @@ SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
 // ****************************************************************************
 // Method: SimV2_Add_PolyhedralCell
 //
-// Purpose: 
+// Purpose:
 //   Append the current polyhedral cell to the mesh as tets and pyramids while
 //   updating the input cellptr to the location of the next polyhedral face.
 //
@@ -1006,18 +1007,21 @@ SimV2_UnstructuredMesh_Count_Cells(const int *connectivity, int connectivityLen,
 // Returns:    Return the number of cells that the polyhedral cell was broken
 //             into.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 18 16:59:12 PST 2010
 //
 // Modifications:
-//   
+//
+//   Cyrus Harrison, Tue Oct  9 13:21:32 PDT 2012
+//   Use tess2 via new avtPolygonToTrianglesTesselator class.
+//
 // ****************************************************************************
 
 static int
-SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr, 
-    int nnodes, int phIndex, PolyhedralSplit *polyhedralSplit)
+SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
+    int nnodes, int phIndex, avtPolyhedralSplit *polyhedralSplit)
 {
     const int *cell = *cellptr;
 
@@ -1048,7 +1052,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
     double m = 1. / double(uniquePointIds.size());
     center[0] *= m;
     center[1] *= m;
-    center[2] *= m; 
+    center[2] *= m;
     vtkIdType phCenter = nnodes + phIndex;
     points->SetPoint(phCenter, center);
 
@@ -1103,26 +1107,25 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
             // a tessellator each time so we can add the face's points to
             // it. This should cause the points to be in the same order as
             // they are in the face.
+
             vtkPoints *localPts = vtkPoints::New();
             localPts->Allocate(nPointsInFace);
             int *local2Global = new int[nPointsInFace];
-            VertexManager           uniqueVerts(localPts);
-            simv2PolygonToTriangles tess(&uniqueVerts);
-            tess.SetNormal(n);
-            tess.BeginPolygon();
+            avtPolygonToTrianglesTesselator tess(localPts);
             tess.BeginContour();
             for(int j = 0; j < nPointsInFace; ++j)
             {
                 local2Global[j] = cell[j];
-                tess.AddVertex(points->GetPoint(local2Global[j]));
+                double *pptr = points->GetPoint(local2Global[j]);
+                tess.AddContourVertex(pptr);
             }
             tess.EndContour();
-            tess.EndPolygon();
 
-            for(int t = 0; t < tess.GetNumTriangles(); ++t)
+            int ntris = tess.Tessellate();
+            for(int t = 0; t < ntris; ++t)
             {
                 int a=0,b=0,c=0;
-                tess.GetTriangle(t, a, b, c);
+                tess.GetTriangleIndices(t, a, b, c);
                 verts[0] = local2Global[a];
                 verts[1] = local2Global[b];
                 verts[2] = local2Global[c];
@@ -1134,7 +1137,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
             localPts->Delete();
             delete [] local2Global;
         }
-        
+
         cell += nPointsInFace;
     }
 
@@ -1146,7 +1149,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 // ****************************************************************************
 // Method: SimV2_GetMesh_Unstructured
 //
-// Purpose: 
+// Purpose:
 //   Builds a VTK unstructured mesh from the simulation mesh.
 //
 // Arguments:
@@ -1156,7 +1159,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //
 // Returns:    A VTK dataset that represents the simulation mesh.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 25 14:01:25 PST 2010
@@ -1166,7 +1169,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 //   I fixed an off by 1 that was pointed out.
 //
 //   Brad Whitlock, Tue Oct 26 16:26:39 PDT 2010
-//   I changed the interface to PolyhedralSplit.
+//   I changed the interface to avtPolyhedralSplit.
 //
 //   Brad Whitlock, Thu Aug 11 13:54:49 PDT 2011
 //   I added support for ghost zones from an array.
@@ -1177,7 +1180,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
 // ****************************************************************************
 
 vtkDataSet *
-SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit)
+SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSplit)
 {
     if (h == VISIT_INVALID_HANDLE)
         return NULL;
@@ -1186,7 +1189,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     // Obtain the mesh data from the opaque object.
     //
     int ndims = 0, nzones = 0, coordMode = 0, firstRealZone=0, lastRealZone=0;
-    visit_handle x,y,z,c,conn;   
+    visit_handle x,y,z,c,conn;
     if(simv2_UnstructuredMesh_getCoords(h, &ndims, &coordMode, &x, &y, &z, &c) == VISIT_ERROR ||
        simv2_UnstructuredMesh_getConnectivity(h, &nzones, &conn) == VISIT_ERROR ||
        simv2_UnstructuredMesh_getRealIndices(h, &firstRealZone, &lastRealZone) == VISIT_ERROR)
@@ -1200,7 +1203,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     //
     int connOwner = 0, connDataType=0, connNComps=0, connectivityLen=0;
     void *connData = 0;
-    if(simv2_VariableData_getData(conn, connOwner, 
+    if(simv2_VariableData_getData(conn, connOwner,
        connDataType, connNComps, connectivityLen, connData) == VISIT_ERROR)
     {
          EXCEPTION1(ImproperUseException,
@@ -1247,10 +1250,10 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
     points->Delete();
 
     *phSplit = 0;
-    PolyhedralSplit *polyhedralSplit = 0;
+    avtPolyhedralSplit *polyhedralSplit = 0;
     if(polyhedralCellCount > 0)
     {
-        polyhedralSplit = new PolyhedralSplit;
+        polyhedralSplit = new avtPolyhedralSplit;
     }
 
     // Iterate over the connectivity and add the appropriate cell types
@@ -1267,7 +1270,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
         if(celltype == VISIT_CELL_POLYHEDRON)
         {
             // Add a polyhedral cell as a collection of smaller normal cells.
-            int nsplits = SimV2_Add_PolyhedralCell(ugrid, &cell, nRealPoints, 
+            int nsplits = SimV2_Add_PolyhedralCell(ugrid, &cell, nRealPoints,
                 phIndex, polyhedralSplit);
             polyhedralSplit->AppendCellSplits(numCells, nsplits);
             phIndex++;
@@ -1329,7 +1332,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
                << "\n\tfirstRealZone: " << firstRealZone
                << "\n\tlastRealZone: " << lastRealZone << endl;
     }
-    else 
+    else
     {
         bool doGhosts = true;
         visit_handle ghostCells;
@@ -1360,7 +1363,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
             ghostZones->SetNumberOfTuples(numCells);
             unsigned char *gvals = ghostZones->GetPointer(0);
             unsigned char val = 0;
-            avtGhostData::AddGhostZoneType(val, 
+            avtGhostData::AddGhostZoneType(val,
                 DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
             for (int i = 0; i < firstRealZone; i++)
                 gvals[i] = val;
@@ -1409,7 +1412,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
 // ****************************************************************************
 // Method: SimV2_GetMesh_Point
 //
-// Purpose: 
+// Purpose:
 //   Builds a VTK point mesh from the simulation mesh.
 //
 // Arguments:
@@ -1417,13 +1420,13 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, PolyhedralSplit **phSplit
 //
 // Returns:    A VTK dataset that represents the simulation mesh.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 25 14:08:14 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1436,7 +1439,7 @@ SimV2_GetMesh_Point(visit_handle h)
     // Obtain the mesh data from the opaque object.
     //
     int ndims = 0, coordMode = 0;
-    visit_handle x,y,z,c;   
+    visit_handle x,y,z,c;
     if(simv2_PointMesh_getCoords(h, &ndims, &coordMode, &x, &y, &z, &c) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1469,7 +1472,7 @@ SimV2_GetMesh_Point(visit_handle h)
 // ****************************************************************************
 // Method: SimV2_GetMesh_CSG
 //
-// Purpose: 
+// Purpose:
 //    Builds a VTK csg mesh from the simulation mesh.
 //
 // Arguments:
@@ -1483,7 +1486,7 @@ SimV2_GetMesh_Point(visit_handle h)
 // Creation:   Thu Feb 25 14:32:06 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1512,7 +1515,7 @@ SimV2_GetMesh_CSG(visit_handle h)
     //
     int typeflags_owner=0, typeflags_dataType=0, typeflags_nComps=0, typeflags_nTuples=0;
     void *typeflags_data = 0;
-    if(simv2_VariableData_getData(typeflags, typeflags_owner, typeflags_dataType, 
+    if(simv2_VariableData_getData(typeflags, typeflags_owner, typeflags_dataType,
        typeflags_nComps, typeflags_nTuples, typeflags_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1521,7 +1524,7 @@ SimV2_GetMesh_CSG(visit_handle h)
 
     int leftids_owner=0, leftids_dataType=0, leftids_nComps=0, leftids_nTuples=0;
     void *leftids_data = 0;
-    if(simv2_VariableData_getData(leftids, leftids_owner, leftids_dataType, 
+    if(simv2_VariableData_getData(leftids, leftids_owner, leftids_dataType,
        leftids_nComps, leftids_nTuples, leftids_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1530,7 +1533,7 @@ SimV2_GetMesh_CSG(visit_handle h)
 
     int rightids_owner=0, rightids_dataType=0, rightids_nComps=0, rightids_nTuples=0;
     void *rightids_data = 0;
-    if(simv2_VariableData_getData(rightids, rightids_owner, rightids_dataType, 
+    if(simv2_VariableData_getData(rightids, rightids_owner, rightids_dataType,
        rightids_nComps, rightids_nTuples, rightids_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1539,7 +1542,7 @@ SimV2_GetMesh_CSG(visit_handle h)
 
     int zonelist_owner=0, zonelist_dataType=0, zonelist_nComps=0, zonelist_nTuples=0;
     void *zonelist_data = 0;
-    if(simv2_VariableData_getData(zonelist, zonelist_owner, zonelist_dataType, 
+    if(simv2_VariableData_getData(zonelist, zonelist_owner, zonelist_dataType,
        zonelist_nComps, zonelist_nTuples, zonelist_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1548,7 +1551,7 @@ SimV2_GetMesh_CSG(visit_handle h)
 
     int bndtypes_owner=0, bndtypes_dataType=0, bndtypes_nComps=0, bndtypes_nTuples=0;
     void *bndtypes_data = 0;
-    if(simv2_VariableData_getData(bndtypes, bndtypes_owner, bndtypes_dataType, 
+    if(simv2_VariableData_getData(bndtypes, bndtypes_owner, bndtypes_dataType,
        bndtypes_nComps, bndtypes_nTuples, bndtypes_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1557,7 +1560,7 @@ SimV2_GetMesh_CSG(visit_handle h)
 
     int bndcoeffs_owner=0, bndcoeffs_dataType=0, bndcoeffs_nComps=0, bndcoeffs_nTuples=0;
     void *bndcoeffs_data = 0;
-    if(simv2_VariableData_getData(bndcoeffs, bndcoeffs_owner, bndcoeffs_dataType, 
+    if(simv2_VariableData_getData(bndcoeffs, bndcoeffs_owner, bndcoeffs_dataType,
        bndcoeffs_nComps, bndcoeffs_nTuples, bndcoeffs_data) == VISIT_ERROR)
     {
         EXCEPTION1(ImproperUseException,
@@ -1567,7 +1570,7 @@ SimV2_GetMesh_CSG(visit_handle h)
     //
     // Create the VTK objects and connect them up.
     //
-    vtkCSGGrid *csggrid = vtkCSGGrid::New(); 
+    vtkCSGGrid *csggrid = vtkCSGGrid::New();
 
     double minX = -10.0, minY = -10.0, minZ = -10.0;
     double maxX =  10.0, maxY =  10.0, maxZ =  10.0;
@@ -1589,10 +1592,10 @@ SimV2_GetMesh_CSG(visit_handle h)
     csggrid->SetBounds(minX, maxX, minY, maxY, minZ, maxZ);
 
     if (bndcoeffs_dataType == VISIT_DATATYPE_DOUBLE)
-        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data, 
+        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data,
                                bndcoeffs_nTuples, (const double*)bndcoeffs_data);
     else
-        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data, 
+        csggrid->AddBoundaries(bndtypes_nTuples, (const int *)bndtypes_data,
                                bndcoeffs_nTuples, (const float*)bndcoeffs_data);
 
     csggrid->AddRegions(leftids_nTuples,

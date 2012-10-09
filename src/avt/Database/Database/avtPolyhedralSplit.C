@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <PolyhedralSplit.h>
+#include <avtPolyhedralSplit.h>
 #include <vtkDataArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <map>
@@ -44,9 +44,9 @@
 #include <DebugStream.h>
 
 // ****************************************************************************
-// Method: PolyhedralSplit::PolyhedralSplit
+// Method: avtPolyhedralSplit::avtPolyhedralSplit
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
@@ -60,54 +60,54 @@
 //
 // ****************************************************************************
 
-PolyhedralSplit::PolyhedralSplit() : polyhedralSplit(), nodesForPolyhedralCells()
+avtPolyhedralSplit::avtPolyhedralSplit() : polyhedralSplit(), nodesForPolyhedralCells()
 {
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::~PolyhedralSplit
+// Method: avtPolyhedralSplit::~avtPolyhedralSplit
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 15:17:13 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-PolyhedralSplit::~PolyhedralSplit()
+avtPolyhedralSplit::~avtPolyhedralSplit()
 {
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::Destruct
+// Method: avtPolyhedralSplit::Destruct
 //
-// Purpose: 
+// Purpose:
 //   Static destructor function
 //
 // Arguments:
-//   ptr : Pointer to the PolyhedralSplit object to delete.
+//   ptr : Pointer to the avtPolyhedralSplit object to delete.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 15:17:27 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-PolyhedralSplit::Destruct(void *ptr)
+avtPolyhedralSplit::Destruct(void *ptr)
 {
-    PolyhedralSplit *This = (PolyhedralSplit *)ptr;
+    avtPolyhedralSplit *This = (avtPolyhedralSplit *)ptr;
     delete This;
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::AppendCellSplits
+// Method: avtPolyhedralSplit::AppendCellSplits
 //
-// Purpose: 
+// Purpose:
 //   Record the cellid and number of splits for the next polyhedral cell.
 //
 // Arguments:
@@ -118,20 +118,20 @@ PolyhedralSplit::Destruct(void *ptr)
 // Creation:   Fri Mar 12 15:17:55 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-PolyhedralSplit::AppendCellSplits(int cellid, int nsplits)
+avtPolyhedralSplit::AppendCellSplits(int cellid, int nsplits)
 {
     polyhedralSplit.push_back(cellid);
     polyhedralSplit.push_back(nsplits);
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::AppendPolyhedralNode
+// Method: avtPolyhedralSplit::AppendPolyhedralNode
 //
-// Purpose: 
+// Purpose:
 //   Store a polyhedral node id.
 //
 // Arguments:
@@ -141,19 +141,19 @@ PolyhedralSplit::AppendCellSplits(int cellid, int nsplits)
 // Creation:   Fri Mar 12 16:50:25 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-PolyhedralSplit::AppendPolyhedralNode(int id)
+avtPolyhedralSplit::AppendPolyhedralNode(int id)
 {
     nodesForPolyhedralCells.push_back(id);
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::ExpandDataArray
+// Method: avtPolyhedralSplit::ExpandDataArray
 //
-// Purpose: 
+// Purpose:
 //   Return a copy of the input data array with polyhedral cells' data
 //   replicated the appropriate number of times.
 //
@@ -183,10 +183,10 @@ PolyhedralSplit::AppendPolyhedralNode(int id)
 // ****************************************************************************
 
 vtkDataArray *
-PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent, 
+avtPolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
     bool averageNodes) const
 {
-    const char *mName = "PolyhedralSplit::ExpandDataArray: ";
+    const char *mName = "avtPolyhedralSplit::ExpandDataArray: ";
     vtkDataArray *output = NULL;
     int polyhedralCellCount = polyhedralSplit.size() / 2;
 
@@ -201,7 +201,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
         debug4 << mName << "Expanding zonal data" << endl;
         output = input->NewInstance();
         int bloat = 0;
-       
+
         for(size_t i = 1; i < polyhedralSplit.size(); i += 2)
            bloat += (polyhedralSplit[i] - 1);
         output->SetNumberOfComponents(input->GetNumberOfComponents());
@@ -306,13 +306,13 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
     debug4 << mName << "Output data has " << output->GetNumberOfTuples()
            << " tuples" << endl;
 
-    return output;  
+    return output;
 }
 
 // ****************************************************************************
-// Method: PolyhedralSplit::CreateOriginalCells
+// Method: avtPolyhedralSplit::CreateOriginalCells
 //
-// Purpose: 
+// Purpose:
 //   Creates an original cells array based on the polyhedral split data.
 //
 // Arguments:
@@ -321,7 +321,7 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
 //
 // Returns:    An original cells array.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 15:20:24 PST 2010
@@ -329,11 +329,11 @@ PolyhedralSplit::ExpandDataArray(vtkDataArray *input, bool zoneCent,
 // Modifications:
 //   Brad Whitlock, Tue Oct 26 16:23:45 PDT 2010
 //   I turned polyhedralSplit into a vector.
-//   
+//
 // ****************************************************************************
 
 vtkDataArray *
-PolyhedralSplit::CreateOriginalCells(int domain, int normalCellCount) const
+avtPolyhedralSplit::CreateOriginalCells(int domain, int normalCellCount) const
 {
     vtkUnsignedIntArray *originalCells = vtkUnsignedIntArray::New();
     originalCells->SetNumberOfComponents(2);
