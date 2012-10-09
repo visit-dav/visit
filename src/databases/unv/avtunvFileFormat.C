@@ -899,193 +899,150 @@ avtunvFileFormat::getfastNeighbour2D (int iel, int l1, int l2, set<UnvNode,
     return(0);
 }
 
-#if 1
-// A 3D neighbour function
-int avtunvFileFormat::getarrayNeighbour3D (int iel, int l1, int l2, int l3, int *itab, int *jtab, int *ctab)
+// Gets the number of free faces, nbfaextv, a fast one with some more memoty requirement:
+int avtunvFileFormat::getfastNbfaextv ()
 {
-    set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg1, itrg2, itrg3; // Global node iterator
-    int nbdav1, nbdav2, nbdav3;
-    nbdav1 = itab[ ctab[l1]+1 ] - itab[ ctab[l1] ]; // itrg1->nod2elts.size();
-    nbdav2 = itab[ ctab[l2]+1 ] - itab[ ctab[l2] ]; // itrg2->nod2elts.size();
-    nbdav3 = itab[ ctab[l3]+1 ] - itab[ ctab[l3] ]; // itrg3->nod2elts.size();
-    for (int i1=0; i1 < nbdav1; i1++ )
+#if INTERACTIVEREAD
+    if (debuglevel >= 3) fprintf(stdout,"getfastNbfaextv: computing\n");
+#else
+    debug3 << "getfastNbfaextv: computing" << endl;
+#endif
+    int t1 = visitTimer->StartTimer();
+    // Sets the nodes to elements list first:
+    freeUnvFaces.clear();
+    nbfaextv = 0;
+    // - loop on elements:
+    set<UnvElement, UnvElement::compare_UnvElement>::iterator itre;
+    set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
+    // There are few nodes to add to make a direct acces list:
+    set<UnvNode, UnvNode::compare_UnvNode>::iterator * tabitr = new set<UnvNode, UnvNode::compare_UnvNode>::iterator[maxnodl+1] ;
+    for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
+        tabitr[itrg->label] = itrg ;
+    for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
     {
-        int jel = jtab[ itab[ ctab[l1] ] + i1 ]; // itrg1->nod2elts[i1];
-        if (jel != iel)
-        {
-            for (int i2=0; i2 < nbdav2; i2++ )
-            {
-                int iel2 = jtab[ itab[ ctab[l2] ] + i2 ]; // itrg2->nod2elts[i2];
-                if (iel2 == jel)
-                {
-                    for (int i3=0; i3 < nbdav3; i3++ )
-                    {
-                        int iel3 = jtab[ itab[ ctab[l3] ] + i3 ]; // itrg3->nod2elts[i3];
-                        if (iel3 == jel)
-                        {
-                            // On verifie la dimension:
-                            UnvElement anUnvElement; // an element
-                            anUnvElement.label = jel;
-                            if (avtunvFileFormat::getEltDim(meshUnvElements.find(anUnvElement)->typelt) == cdim)
-                                return(jel);
-
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return(0);
-}
-
-// Gets the number of free faces, nbfaextv, this is the routine that sets the reverse connectivity
-int avtunvFileFormat::attemptgetNbfaextv ()
-{
-    if (nbfaextv >= 0)
-    {
-        return(nbfaextv);
-    }
-    else
-    {
-        // Build the free faces mesh data structure:
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: computing the free faces for %d-D mesh\n",cdim);
-#else
-        debug3 << "getNbfaextv: computing the free faces for " << cdim << "D mesh" << endl;
-#endif
-        // Sets the nodes to elements list first:
-        freeUnvFaces.clear();
-        nbfaextv = 0;
-        // - loop on elements:
-        set<UnvElement, UnvElement::compare_UnvElement>::iterator itre;
-        set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
-        UnvElement anUnvElement; // an element
-        UnvNode anUnvNode;
-        UnvNode anotherUnvNode;
-        // Gets the max nod number
-        int maxnod = 0;
-        for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
-        {
-            if (itrg->label > maxnod)
-                maxnod = itrg->label;
-
-        }
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: maxnod=%d\n",maxnod);
-#else
-        debug3 << "getNbfaextv: maxnod=" << maxnod << endl;
-#endif
-        // Direct access to nodes
-        int * ctab = new int[maxnod];
-        for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
-            ctab[itrg->label] = itrg->number;
-
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: direct access nodes=%d\n",nbnodes);
-#else
-        debug3 << "getNbfaextv: direct access nodes=" << nbnodes << endl;
-#endif
-        // Pointer array to nodes in jtab
-        //int * itab = new int[nbnodes+1];
-        int * itab = (int *)malloc((nbnodes+1)*sizeof(int));
-        for (int i=0; i <= nbnodes; i++)
-            itab[i] = 0;
-
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: fill itab\n");
-#else
-        debug3 << "getNbfaextv: fill itab" << endl;
-#endif
-        for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
-        {
+        if (avtunvFileFormat::getEltDim(itre->typelt) == cdim) {
+            int ilab = itre->label ;
             int nn = avtunvFileFormat::getNbnodes(itre->typelt);
             for (int i=0; i < nn; i++)
             {
-                anUnvNode.label = itre->nodes[i];
-                itrg = meshUnvNodes.find(anUnvNode);
-                int j = itrg->number;
-                itab[j] = itab[j] + 1;
+                int label = itre->nodes[i];
+                itrg = tabitr[label] ;
+                itrg->nod2elts.push_back(ilab);
+#if INTERACTIVEREAD
+                if (debuglevel >= 5) fprintf(stdout,"getfastNbfaextv: Adding to node %d element %d\n",label,ilab);
+#endif
             }
         }
+    }
+    visitTimer->StopTimer(t1, "getfastNbfaextv: Building reverse connectivity");
 #if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: make pointer\n");
-#else
-        debug3 << "getNbfaextv: make pointer" << endl;
-#endif
-        for (int i=0; i < nbnodes; i++)
-            itab[i+1] += itab[i];
-
-        int kt = itab[nbnodes+1];
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: kt=%d\n",kt);
-#else
-        debug3 << "getNbfaextv: kt=" << kt << endl;
-#endif
-        int * jtab = new int[kt];
-        for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+    if (debuglevel >= 5)
+    {
+        int nnodes[64];
+        for (int i=0; i < 64; i++)
+            nnodes[i] = 0;
+        for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
         {
+            fprintf(stdout,"getNbfaextvNode =%d has #elts=%d :",itrg->label,itrg->nod2elts.size());
+            for (int i=0; i < itrg->nod2elts.size(); i++)
+                fprintf(stdout," %d",itrg->nod2elts[i]);
+            fprintf(stdout,"\n");
+            nnodes[itrg->nod2elts.size()]++;
+        }
+        for (int i=0; i < 64; i++)
+            if (nnodes[i] > 0)
+                fprintf(stdout,"#elts=%d, #nodes=%d\n",i,nnodes[i]);
+    }
+    else if (debuglevel >= 3)
+    {
+        fprintf(stdout,"getfastNbfaextv: reverse mesh has been built\n");
+    }
+#else
+    debug3 << "getfastNbfaextv: reverse mesh has been built" << endl;
+#endif
+    int t2 = visitTimer->StartTimer();
+    for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+    {
+        if (avtunvFileFormat::getEltDim(itre->typelt) == cdim) // Element of the right dimension
+        {
+            set<UnvNode, UnvNode::compare_UnvNode>::iterator itrgs[8]; // Global node iterator
             int nn = avtunvFileFormat::getNbnodes(itre->typelt);
+            int label ;
             for (int i=0; i < nn; i++)
             {
-                anUnvNode.label = itre->nodes[i];
-                itrg = meshUnvNodes.find(anUnvNode);
-                itab[itrg->number]--;
-                int l = itab[itrg->number];
-                jtab[l] = itre->label;
+                label = itre->nodes[i];
+                itrgs[i] = tabitr[label];
             }
-        }
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: build\n");
-#else
-        debug3 << "getNbfaextv: build" << endl;
-#endif
-        int iflo3 = -1, iflo2 = -1, iflo1 = -1;
-        // Now loop on elements and on their faces and look for their neighbours:
-        for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
-        {
-            iflo3 = avtunvFileFormat::is3DKnownElt(itre->typelt);
             int nf = avtunvFileFormat::getNbfaces(itre->typelt);
-            if (iflo3 >= 0) // 3D element
+            int in1, in2, in3;
+            label = itre->label ;
+            if (cdim == 3)
             {
+                int iflo3 = avtunvFileFormat::is3DKnownElt(itre->typelt);
                 for (int facloc=0; facloc < nf; facloc++)
                 {
-                    // Array technique:
-                    int in1, in2, in3;
-                    if (iflo3 >= 0 && 1 == 1)
+                    in1 = nodefac[iflo3][facloc][0];
+                    in2 = nodefac[iflo3][facloc][1];
+                    in3 = nodefac[iflo3][facloc][2];
+                    int jel = getfastNeighbour3D(label, in1-1, in2-1, in3-1, itrgs);
+                    if (jel <= 0)
                     {
-                        in1 = nodefac[iflo3][facloc][0];
-                        in2 = nodefac[iflo3][facloc][1];
-                        in3 = nodefac[iflo3][facloc][2];
-                        int jel=getarrayNeighbour3D(itre->label,itre->nodes[in1-1],itre->nodes[in2-1],itre->nodes[in3-1],itab,jtab,ctab);
-                        if (jel <= 0)
-                        {
-                            UnvFace anUnvFace; // Elementary face
-                            anUnvFace.number = nbfaextv;
-                            anUnvFace.element = itre->label;
-                            anUnvFace.facloc = facloc + 1; // Set local face number to Ideas convention (starting at 1)
-                            freeUnvFaces.push_back(anUnvFace); // Add this face to the list of free faces
-                            nbfaextv++;
+                        UnvFace anUnvFace; // Elementary face
+                        anUnvFace.number = nbfaextv;
+                        anUnvFace.element = label;
+                        anUnvFace.facloc = facloc + 1; // Set local face number to Ideas convention (starting at 1)
+                        freeUnvFaces.push_back(anUnvFace); // Add this face to the list of free faces
+                        nbfaextv++;
 #if INTERACTIVEREAD
-                            if (debuglevel >= 5) fprintf(stdout,"Element %d, face %d has a no neighbour %d\n",itre->label,facloc+1,nbfaextv);
+                        if (debuglevel >= 5) fprintf(stdout,"Element %d, face %d has a no neighbour %d\n",label,facloc+1,nbfaextv);
 #endif
-                        }
+                    }
+                }
+            }
+            else if (cdim == 2)
+            {
+                int iflo2 = avtunvFileFormat::is2DKnownElt(itre->typelt);
+                for (int facloc=0; facloc < nf; facloc++)
+                {
+                    in1 = nodefac2[iflo2][facloc][0];
+                    in2 = nodefac2[iflo2][facloc][1];
+                    int jel = getfastNeighbour2D(label, in1-1, in2-1, itrgs);
+                    if (jel <= 0)
+                    {
+                        UnvFace anUnvFace; // Elementary face
+                        anUnvFace.number = nbfaextv;
+                        anUnvFace.element = label;
+                        anUnvFace.facloc = facloc + 1; // Set local face number to Ideas convention (starting at 1)
+                        freeUnvFaces.push_back(anUnvFace); // Add this face to the list of free faces
+                        nbfaextv++;
+#if INTERACTIVEREAD
+                        if (debuglevel >= 5) fprintf(stdout,"Element %d, face %d has a no neighbour %d\n",label,facloc+1,nbfaextv);
+#endif
                     }
                 }
             }
         }
-#if INTERACTIVEREAD
-        if (debuglevel >= 3) fprintf(stdout,"getNbfaextv: done\n");
-#else
-        debug3 << "getNbfaextv: done" << endl;
-#endif
-        delete [] jtab;
-        free(itab);
-        //delete [] itab;
-        delete [] ctab;
-        return(nbfaextv);
     }
-}
+    visitTimer->StopTimer(t2, "getfastNbfaextv: Building free faces");
+    // Release current memory:
+#if INTERACTIVEREAD
+    if (debuglevel >= 3) fprintf(stdout,"getfastNbfaextv: release memory\n");
+#else
+    debug3 << "getfastNbfaextv: release memory" << endl;
 #endif
+    int t3 = visitTimer->StartTimer();
+    for (itrg = meshUnvNodes.begin(); itrg != meshUnvNodes.end(); itrg++)
+        itrg->nod2elts.clear();
+    delete [] tabitr ;
+#if INTERACTIVEREAD
+    if (debuglevel >= 3) fprintf(stdout,"getfastNbfaextv: nbfaextv=%d\n",nbfaextv);
+#else
+    debug3 << "getfastNbfaextv=" << nbfaextv << endl;
+#endif
+    visitTimer->StopTimer(t3, "getfastNbfaextv: Freeing memory");
+    // Return
+    return(nbfaextv);
+}
 
 // Gets the number of free faces, nbfaextv, this is the routine that sets the reverse connectivity
 int avtunvFileFormat::getNbfaextv ()
@@ -1096,6 +1053,15 @@ int avtunvFileFormat::getNbfaextv ()
     }
     else
     {
+#if INTERACTIVEREAD
+        if (debuglevel >= 3) fprintf(stdout,"maxnodl=%d, nbnodes=%d\n",maxnodl,nbnodes) ;
+#else
+        debug3 << "maxnodl=" << maxnodl << " nbnodes=" << nbnodes << endl;
+#endif
+        if (maxnodl-nbnodes <= nbnodes / 2 || maxnodl < 1000000) {
+            // A faster computation but using more memory (up to 50% more).
+            return(avtunvFileFormat::getfastNbfaextv()) ;
+        }
         // Validate following if you know what you are doing...
         // return(avtunvFileFormat::attemptgetNbfaextv());
         // Build the free faces mesh data structure:
@@ -1741,6 +1707,8 @@ avtunvFileFormat::avtunvFileFormat(const char *fn) : avtSTSDFileFormat(fn)
     handle = NULL;
     gzhandle = Z_NULL;
     // Data contents
+    nbnodes = 0;
+    maxnodl = 0;
     nb3dmats = 0;
     nb2dmats = 0;
     nb1dmats = 0;
@@ -1748,7 +1716,6 @@ avtunvFileFormat::avtunvFileFormat(const char *fn) : avtSTSDFileFormat(fn)
     nb2dcells = 0;
     nb1dcells = 0;
     cdim = 0;
-    nbnodes = 0;
     nbloadsets = 0;
     nbfalsv = 0;
     nbnolsv = 0;
@@ -3177,6 +3144,7 @@ avtunvFileFormat::ReadFile()
                                     range[4] = min(range[4],z);
                                     range[5] = max(range[5],z);
                                     anode.label = label;
+                                    maxnodl = max(maxnodl, label);
                                     anode.x = x;
                                     anode.y = y;
                                     anode.z = z;
@@ -3591,6 +3559,7 @@ avtunvFileFormat::ReadFile()
                                         range[5] = max(range[5],z);
                                         // fprintf(stdout,"x,y,z=%lf,%lf,%lf\n",x,y,z);
                                         anode.label = label;
+                                        maxnodl = max(maxnodl, label);
                                         anode.x = x;
                                         anode.y = y;
                                         anode.z = z;

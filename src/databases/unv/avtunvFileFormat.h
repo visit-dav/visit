@@ -163,11 +163,9 @@ class avtunvFileFormat : public avtSTSDFileFormat
     virtual int getfastNeighbour3D (int iel, int l1, int l2, int l3, std::set<UnvNode, UnvNode::compare_UnvNode>::iterator * itrgs) ; // Provides a neighbour for iel with 3 nodes.
     virtual int getfastNeighbour2D (int iel, int l1, int l2, std::set<UnvNode, UnvNode::compare_UnvNode>::iterator * itrgs) ; // Provides a neighbour for iel with 2 nodes.
 
-    virtual int getarrayNeighbour3D (int iel, int l1, int l2, int l3, int *itab, int *jtab, int *ctab) ; // Provides a neighbour for iel with 3 nodes.
-    virtual int attemptgetNbfaextv( ); // Provides the number of free faces nbfaextv
-
     virtual int getNbnolsv( ); // Provides the number of nodes to build the Face Pressure Load-Set nbnolsv
     virtual int getNbfaextv( ); // Provides the number of free faces nbfaextv
+    virtual int getfastNbfaextv( ); // Provides the number of free faces nbfaextv
     virtual int getNbnodesFreeFaces( ); // Provides the number of nodes to build the Face Faces nbnff
     virtual void getNormal3D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre, int iflo, int facloc); // Provides the normal to a face
     virtual void getNormal2D (float *one_entry, std::set<UnvElement, UnvElement::compare_UnvElement>::iterator itre, int facloc); // Provides the normal to a face
@@ -176,13 +174,14 @@ class avtunvFileFormat : public avtSTSDFileFormat
 
     FILE* handle; // File handle for unv file
     gzFile gzhandle ; // File handle for unv.gz file
+    int nbnodes ; // Total number of nodes in the mesh
+    int maxnodl ; // Maximum node label in the mesh
     int nb3dmats ; // Highest material numbre for 3D elements
     int nb2dmats ; // Highest material numbre for 3D elements
     int nb1dmats ; // Highest material numbre for 3D elements
     int nb3dcells ; // Store the total number of volume cells
     int nb2dcells ; // Store the total number of surface cells
     int nb1dcells ; // Store the total number of surface cells
-    int nbnodes ; // Total number of nodes inthe mesh
     std::string filename; // Mesh file name, including .unv or .unv.gz extension
     bool fileRead; // Says if file has already been read or not
     int debuglevel ; 
