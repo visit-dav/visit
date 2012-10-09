@@ -132,6 +132,8 @@
 #    Eric Brugger, Tue Aug 28 16:33:00 PDT 2012
 #    Add WPPImage reader.
 #
+#    Mark C. Miller, Mon Oct  8 18:07:48 PDT 2012
+#    Added unv file reader from Olivier Cessenat
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -318,6 +320,7 @@ lata
 paraDIS
 paraDIS_tecplot
 volimage
+unv
 )
 
 IF (NOT WIN32)
