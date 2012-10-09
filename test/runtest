@@ -320,9 +320,13 @@
 #    Cyrus Harrison, Mon Aug 13 16:48:14 PDT 2012
 #    Guts are now python, use visit_test_suite.py as main entry point.
 #
+#    Mark C. Miller, Tue Oct  9 10:42:24 PDT 2012
+#    Surround $@ passed to python with double quotes ("). Otherwise,
+#    something like '--vargs "-debug 5"' winds up getting passed as 3 sep.
+#    words: --vargs, "-debug, 5"
 # ----------------------------------------------------------------------------
 
 # Call python test suite:
-python visit_test_suite.py $@
+python visit_test_suite.py "$@"
 
 
