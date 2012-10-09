@@ -60,6 +60,8 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
+#include <avtPolygonToTrianglesTesselator.h>
+#include <avtPolyhedralSplit.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
@@ -68,13 +70,14 @@
 #include <InvalidFilesException.h>
 #include <ImproperUseException.h>
 
-#include <gmvPolyhedralSplit.h>
+
+
 
 #include <DebugStream.h>
 
 extern "C" {
 #include <gmvread.h>
-/*We define this to handle errors from GMV's read routines so they don't 
+/*We define this to handle errors from GMV's read routines so they don't
   call exit(0).*/
 void gmverror(const char *);
 };
@@ -82,7 +85,7 @@ void gmverror(const char *);
 // ****************************************************************************
 // Method: gmverror
 //
-// Purpose: 
+// Purpose:
 //   This function gets called from gmv when it wants to exit due to fatal
 //   errors with the file. We never want VisIt to exit to I made gmv routines
 //   call this function, which will throw an invalid files exception instead
@@ -95,7 +98,7 @@ void gmverror(const char *);
 // Creation:   Mon Oct 25 16:51:11 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -111,26 +114,25 @@ gmverror(const char *msg)
 ///
 ///////////////////////////////////////////////////////////////////////////////
 #include <gmvMaterialEncoder.h>
-#include <gmvPolygonToTriangles.C>
 
 // ****************************************************************************
 // Method: print_gmv_data
 //
-// Purpose: 
+// Purpose:
 //   Print the gmv_data struct.
 //
 // Arguments:
 //   out : The stream to which we want to print.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:14:43 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -158,24 +160,24 @@ print_gmv_data(ostream &out)
     out << "chardata2=" << (void*)gmv_data.chardata2 << endl;
     out << "*******************************************************************" << endl;
 }
-    
+
 // ****************************************************************************
 // Method: gmvCreatePoints
 //
-// Purpose: 
+// Purpose:
 //   Create a vtkPoints object from NODE data in gmv_data.
 //
 // Arguments:
 //
 // Returns:    a vtkPoints containing the nodes.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:15:13 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkPoints *
@@ -199,20 +201,20 @@ gmvCreatePoints()
 // ****************************************************************************
 // Method: gmvCreateStructuredGrid
 //
-// Purpose: 
+// Purpose:
 //   Create a vtkStructuredGrid for the nodes in gmv_data.
 //
 // Arguments:
 //
 // Returns:    a new vtkStructuredGrid
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:15:52 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkStructuredGrid *
@@ -236,20 +238,20 @@ gmvCreateStructuredGrid()
 // ****************************************************************************
 // Method: gmvCreateRectilinearGrid
 //
-// Purpose: 
+// Purpose:
 //   Create a new vtkRectilinearGrid for the nodes in gmv_data.
 //
 // Arguments:
 //
 // Returns:    a new vtkRectilinearGrid.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:16:33 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -284,7 +286,7 @@ gmvCreateRectilinearGrid()
     yc->Delete();
     rgrid->SetZCoordinates(zc);
     zc->Delete();
-    
+
 
     return rgrid;
 }
@@ -292,7 +294,7 @@ gmvCreateRectilinearGrid()
 // ****************************************************************************
 // Method: gmvAddRegularCell
 //
-// Purpose: 
+// Purpose:
 //   Add a new cell to a vtkUnstructuredGrid, using the cell in gmv_data.
 //
 // Arguments:
@@ -307,7 +309,7 @@ gmvCreateRectilinearGrid()
 // Creation:   Wed Oct 27 12:17:13 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 #define GMV_DEBUG_PRINT
 bool
@@ -393,7 +395,7 @@ gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
 // ****************************************************************************
 // Method: gmvAddGeneralCell
 //
-// Purpose: 
+// Purpose:
 //   Add a polyhedral cell to the unstructured mesh using the cell in gmv_data
 //
 // Arguments:
@@ -415,11 +417,14 @@ gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
 //   Brad Whitlock, Tue May  8 13:49:43 PDT 2012
 //   Change local2Global to long from int.
 //
+//   Cyrus Harrison, Tue Oct  9 13:21:32 PDT 2012
+//   Use tess2 via new avtPolygonToTrianglesTesselator class.
+//
 // ****************************************************************************
 
 int
-gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points, 
-    gmvPolyhedralSplit *polyhedralSplit, 
+gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
+    avtPolyhedralSplit *polyhedralSplit,
     floatVector &newnodes, int &phCenter)
 {
     int splitCount = 0;
@@ -450,7 +455,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
     double m = 1. / double(uniquePointIds.size());
     center[0] *= m;
     center[1] *= m;
-    center[2] *= m; 
+    center[2] *= m;
     newnodes.push_back(center[0]);
     newnodes.push_back(center[1]);
     newnodes.push_back(center[2]);
@@ -521,23 +526,23 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
             vtkPoints *localPts = vtkPoints::New();
             localPts->Allocate(nPointsInFace);
             long *local2Global = new long[nPointsInFace];
-            VertexManager           uniqueVerts(localPts);
-            gmvPolygonToTriangles   tess(&uniqueVerts);
+
+            avtPolygonToTrianglesTesselator tess(localPts);
             tess.SetNormal(n);
-            tess.BeginPolygon();
+
             tess.BeginContour();
             for(int j = 0; j < nPointsInFace; ++j)
             {
                 local2Global[j] = nodes[j]-1;
-                tess.AddVertex(points->GetPoint(local2Global[j]));
+                tess.AddContourVertex(points->GetPoint(local2Global[j]));
             }
             tess.EndContour();
-            tess.EndPolygon();
 
-            for(int t = 0; t < tess.GetNumTriangles(); ++t)
+            int ntris = tess.Tessellate();
+            for(int t = 0; t < ntris; ++t)
             {
                 int a = 0, b = 0, c = 0;
-                tess.GetTriangle(t, a, b, c);
+                tess.GetTriangleIndices(t, a, b, c);
                 verts[0] = local2Global[a];
                 verts[1] = local2Global[b];
                 verts[2] = local2Global[c];
@@ -552,7 +557,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
             localPts->Delete();
             delete [] local2Global;
         }
-        
+
         nodes += nPointsInFace;
     }
 
@@ -562,7 +567,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 // ****************************************************************************
 // Method: gmvAddVFace2D
 //
-// Purpose: 
+// Purpose:
 //   Add VFace2D cells to the mesh.
 //
 // Arguments:
@@ -570,13 +575,13 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 //
 // Returns:    Number of splits.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue May 31 14:38:38 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -639,20 +644,20 @@ gmvAddVFace(vtkUnstructuredGrid *ugrid, const std::vector<int> &nodes)
 // ****************************************************************************
 // Method: gmvCreateUnstructuredGrid
 //
-// Purpose: 
-//   Create a new vtkUnstructuredGrid object using the nodes and cells in 
+// Purpose:
+//   Create a new vtkUnstructuredGrid object using the nodes and cells in
 //   gmv_data.
 //
 // Arguments:
 //   polyhedralSplit : The object we use to track splits to polyhedral cells.
 //   topoDim         : Return the topological dimension.
 //
-// Returns:    
+// Returns:
 //
-// Note:      This function calls gmvread_data to get the cells needed to 
-//            construct the mesh. 
+// Note:      This function calls gmvread_data to get the cells needed to
+//            construct the mesh.
 //
-//  This function doesn't take into account the case where the gmv zone 
+//  This function doesn't take into account the case where the gmv zone
 //  can't be mapped into a VTK zone. The mesh will be fine but the mapping
 //  needed to handle gmv->vtk zone variables will be incomplete.
 //
@@ -666,7 +671,7 @@ gmvAddVFace(vtkUnstructuredGrid *ugrid, const std::vector<int> &nodes)
 // ****************************************************************************
 
 vtkUnstructuredGrid *
-gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit, int &topoDim)
+gmvCreateUnstructuredGrid(avtPolyhedralSplit *polyhedralSplit, int &topoDim)
 {
     const char *mName = "gmvCreateUnstructuredGrid: ";
 
@@ -796,9 +801,9 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit, int &topoDim)
         newPoints->SetNumberOfPoints(pts->GetNumberOfPoints() + nNewPoints);
 
         float *fptr = (float *)newPoints->GetVoidPointer(0);
-        memcpy(fptr, pts->GetVoidPointer(0), 
+        memcpy(fptr, pts->GetVoidPointer(0),
                pts->GetNumberOfPoints() * sizeof(float) * 3);
-        memcpy(fptr + 3 * pts->GetNumberOfPoints(), &newNodes[0], 
+        memcpy(fptr + 3 * pts->GetNumberOfPoints(), &newNodes[0],
                newNodes.size() * sizeof(float));
 
         pts->Delete();
@@ -827,20 +832,20 @@ gmvCreateUnstructuredGrid(gmvPolyhedralSplit *polyhedralSplit, int &topoDim)
 // ****************************************************************************
 // Method: gmvCreatePointMesh
 //
-// Purpose: 
+// Purpose:
 //   Create a point mesh from data in gmv_data.
 //
 // Arguments:
 //
 // Returns:    a new vtkUnstructuredGrid
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:27:44 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -866,7 +871,7 @@ gmvCreatePointMesh()
 // ****************************************************************************
 // Method: gmvCreateVariable
 //
-// Purpose: 
+// Purpose:
 //   Create new vtkDataArray using data from gmv_data.
 //
 // Arguments:
@@ -874,13 +879,13 @@ gmvCreatePointMesh()
 //
 // Returns:    A new vtkDataArray containing the data.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:29:25 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -913,7 +918,7 @@ gmvCreateVariable(const char *varname)
 
         vtkDoubleArray *arr = vtkDoubleArray::New();
         arr->SetNumberOfTuples(gmv_data.ndoubledata1);
-        memcpy(arr->GetVoidPointer(0), gmv_data.doubledata1, 
+        memcpy(arr->GetVoidPointer(0), gmv_data.doubledata1,
                sizeof(double) * gmv_data.ndoubledata1);
         retval = arr;
     }
@@ -924,7 +929,7 @@ gmvCreateVariable(const char *varname)
 
         vtkLongArray *arr = vtkLongArray::New();
         arr->SetNumberOfTuples(gmv_data.nlongdata1);
-        memcpy(arr->GetVoidPointer(0), gmv_data.longdata1, 
+        memcpy(arr->GetVoidPointer(0), gmv_data.longdata1,
                sizeof(long) * gmv_data.nlongdata1);
         retval = arr;
     }
@@ -935,7 +940,7 @@ gmvCreateVariable(const char *varname)
 
         vtkCharArray *arr = vtkCharArray::New();
         arr->SetNumberOfTuples(gmv_data.nchardata1);
-        memcpy(arr->GetVoidPointer(0), gmv_data.chardata1, 
+        memcpy(arr->GetVoidPointer(0), gmv_data.chardata1,
                sizeof(char) * gmv_data.nchardata1);
         retval = arr;
     }
@@ -954,12 +959,12 @@ gmvCreateVariable(const char *varname)
 // ****************************************************************************
 // Method: gmvValidVariable
 //
-// Purpose: 
+// Purpose:
 //   Determine whether gmvCreateVariable would return a valid array.
 //
 // Arguments:  None -- but the current gmv structure is used.
 //
-// Returns:    
+// Returns:
 //
 // Note:       Called on engine and mdserver.
 //
@@ -967,10 +972,10 @@ gmvCreateVariable(const char *varname)
 // Creation:   Wed Aug 22 12:23:05 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-bool 
+bool
 gmvValidVariable()
 {
     bool retval = false;
@@ -1029,7 +1034,7 @@ avtGMVFileFormat::avtGMVFileFormat(const char *filename)
 // Creation:   Wed Oct 27 12:33:23 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtGMVFileFormat::~avtGMVFileFormat()
@@ -1079,21 +1084,21 @@ avtGMVFileFormat::FreeUpResources(void)
 // ****************************************************************************
 // Method: avtGMVFileFormat::GetMeshName
 //
-// Purpose: 
+// Purpose:
 //   Create a new mesh name.
 //
 // Arguments:
 //   initial : The initial mesh name.
 //
-// Returns:  The new mesh name.  
+// Returns:  The new mesh name.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:28:21 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -1117,7 +1122,7 @@ avtGMVFileFormat::GetMeshName(const std::string &initial) const
 // ****************************************************************************
 // Method: removets
 //
-// Purpose: 
+// Purpose:
 //   Remove trailing spaces in a string.
 //
 // Arguments:
@@ -1125,13 +1130,13 @@ avtGMVFileFormat::GetMeshName(const std::string &initial) const
 //
 // Returns:    A massaged std::string
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:34:19 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static std::string
@@ -1148,15 +1153,15 @@ removets(const char *s)
 // ****************************************************************************
 // Method: avtGMVFileFormat::ReadData
 //
-// Purpose: 
-//   Read the data from the GMV file, creating VTK objects and metadata for 
+// Purpose:
+//   Read the data from the GMV file, creating VTK objects and metadata for
 //   VisIt.
 //
 // Arguments:
 //
 // Returns:    True if the file can be read.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:35:02 PDT 2010
@@ -1215,7 +1220,7 @@ avtGMVFileFormat::ReadData()
 #ifndef MDSERVER
                         TRY
                         {
-                            meshdata.polyhedralSplit = new gmvPolyhedralSplit;
+                            meshdata.polyhedralSplit = new avtPolyhedralSplit;
                             meshdata.dataset = gmvCreateUnstructuredGrid(meshdata.polyhedralSplit,
                                                                          topological_dimension);
                         }
@@ -1260,8 +1265,8 @@ avtGMVFileFormat::ReadData()
                     int block_origin = 0;
                     int spatial_dimension = 3;
                     double *extents = NULL;
-                    AddMeshToMetaData(&md, meshname, mt, extents, nblocks, 
-                                      block_origin, spatial_dimension, 
+                    AddMeshToMetaData(&md, meshname, mt, extents, nblocks,
+                                      block_origin, spatial_dimension,
                                       topological_dimension);
                     }
                     break;
@@ -1275,7 +1280,7 @@ avtGMVFileFormat::ReadData()
                         EXCEPTION1(InvalidFilesException,"Material without mesh");
                     }
                     // Store the material data with the mesh so we can deal with it later.
-#ifndef MDSERVER  
+#ifndef MDSERVER
                     vtkDataArray *mats = gmvCreateVariable("material");
                     // Expand out the data if we needed to split cells or add nodes.
                     if(mats != NULL && pos->second.polyhedralSplit != NULL)
@@ -1297,7 +1302,7 @@ avtGMVFileFormat::ReadData()
                     for(int i = 0; i < gmv_data.num; ++i)
                         names.push_back(removets(gmv_data.chardata1 + i * 33));
                     std::string matname(GetMeshName("material"));
-                    avtMaterialMetaData *mmd = new avtMaterialMetaData(matname, 
+                    avtMaterialMetaData *mmd = new avtMaterialMetaData(matname,
                         meshname, names.size(), names);
                     md.Add(mmd);
                     }
@@ -1318,7 +1323,7 @@ avtGMVFileFormat::ReadData()
                                 ExpandDataArray(arr, gmv_data.datatype == CELL);
                             arr->Delete();
                             arr = expanded;
-                        } 
+                        }
 #endif
                         if(gmv_data.datatype == NODE)
                         {
@@ -1492,8 +1497,8 @@ avtGMVFileFormat::ReadData()
                     int spatial_dimension = 3;
                     int topological_dimension = 0;
                     double *extents = NULL;
-                    AddMeshToMetaData(&md, meshname, mt, extents, nblocks, 
-                                      block_origin, spatial_dimension, 
+                    AddMeshToMetaData(&md, meshname, mt, extents, nblocks,
+                                      block_origin, spatial_dimension,
                                       topological_dimension);
                     }
                     else if(gmv_data.datatype == TRACERDATA)
@@ -1603,14 +1608,14 @@ avtGMVFileFormat::ReadData()
 // ****************************************************************************
 // Method: avtGMVFileFormat::ActivateTimestep
 //
-// Purpose: 
+// Purpose:
 //   Called on the new timestep to read data if it needs to be read.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:42:19 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1622,14 +1627,14 @@ avtGMVFileFormat::ActivateTimestep()
 // ****************************************************************************
 // Method: avtGMVFileFormat::GetCycle
 //
-// Purpose: 
+// Purpose:
 //   Return the problem cycle.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:39:53 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1641,14 +1646,14 @@ avtGMVFileFormat::GetCycle()
 // ****************************************************************************
 // Method: avtGMVFileFormat::GetTime
 //
-// Purpose: 
+// Purpose:
 //   Return the problem time.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 27 12:40:15 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 double
@@ -1800,20 +1805,20 @@ avtGMVFileFormat::GetVectorVar(int domain, const char *varname)
 // ****************************************************************************
 // Method: avtGMVFileFormat::GetAuxiliaryData
 //
-// Purpose: 
+// Purpose:
 //   Return auxiliary data.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 15:08:52 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void *
@@ -1828,7 +1833,7 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
         const avtMaterialMetaData *mmd = md.GetMaterial(var);
         if(mmd != NULL)
         {
-            std::map<std::string,MeshData>::const_iterator pos = 
+            std::map<std::string,MeshData>::const_iterator pos =
                 meshes.find(mmd->meshName);
             vtkDataArray *material = pos->second.material;
             if(pos != meshes.end() && material != 0)
@@ -1852,12 +1857,12 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
                     debug4 << "Create cell-centered material data from node-"
                               "centered material data." << endl;
 
-                    // We have node-based material data. Let's assume that means 
+                    // We have node-based material data. Let's assume that means
                     // it is potentially mixed. We'll examine the nodes from each
                     // cell and see if the cell is mixed or clean.
                     vtkIdList *idlist = vtkIdList::New();
                     vtkDataSet *ds = pos->second.dataset;
-                    intVector matnos; 
+                    intVector matnos;
                     floatVector matvf;
                     for(vtkIdType cellid = 0; cellid < ds->GetNumberOfCells(); ++cellid)
                     {
@@ -1893,7 +1898,7 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
                                 matvf.push_back(float(it->second) / float(npts));
                             }
                             M.AddMixed(cellid, &matnos[0], &matvf[0], matnos.size());
-                        }                        
+                        }
                     }
                     idlist->Delete();
                 }

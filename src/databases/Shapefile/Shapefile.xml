@@ -1,11 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
-    <CXXFLAGS>
-      ${MESA_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LIBS>
-      ${TESSELLATION_LIBRARY}
-    </LIBS>
+  <Plugin name="Shapefile" type="database" label="ESRI Shapefile" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.shp
       *.shx
@@ -23,6 +17,6 @@
       esriShapefile.C
       dbfFile.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

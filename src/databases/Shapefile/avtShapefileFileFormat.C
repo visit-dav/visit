@@ -50,6 +50,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtPolygonToTrianglesTesselator.h>
 
 #include <DBOptionsAttributes.h>
 #include <InvalidVariableException.h>
@@ -108,14 +109,14 @@ avtShapefileFileFormat::avtShapefileFileFormat(const char *filename,
 // ****************************************************************************
 // Method: avtShapefileFileFormat::~avtShapefileFileFormat
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the avtShapefileFileFormat class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 25 13:52:45 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtShapefileFileFormat::~avtShapefileFileFormat()
@@ -162,14 +163,14 @@ avtShapefileFileFormat::FreeUpResources(void)
 // ****************************************************************************
 // Method: avtShapefileFileFormat::ActivateTimestep
 //
-// Purpose: 
+// Purpose:
 //   Initializes the file format reader.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 25 13:53:23 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -183,7 +184,7 @@ avtShapefileFileFormat::ActivateTimestep(void)
 // ****************************************************************************
 // Method: avtShapefileFileFormat::Initialize
 //
-// Purpose: 
+// Purpose:
 //   Reads the shape file and populates the shapes vector with the records
 //   read from the file.
 //
@@ -393,7 +394,7 @@ avtShapefileFileFormat::Initialize()
 // ****************************************************************************
 // Method: avtShapefileFileFormat::CountMemberPoints
 //
-// Purpose: 
+// Purpose:
 //   Counts the number of points for a specified shape type.
 //
 // Arguments:
@@ -401,13 +402,13 @@ avtShapefileFileFormat::Initialize()
 //
 // Returns:    The number of points.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 25 13:48:18 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -476,7 +477,7 @@ avtShapefileFileFormat::CountMemberPoints(esriShapeType_t shapeType) const
 // ****************************************************************************
 // Method: avtShapefileFileFormat::CountShapeTypes
 //
-// Purpose: 
+// Purpose:
 //   Counts the number of shape types that were read from the file.
 //
 // Returns:    Returns the number of shape types in the file.
@@ -485,7 +486,7 @@ avtShapefileFileFormat::CountMemberPoints(esriShapeType_t shapeType) const
 // Creation:   Tue Feb 27 11:11:07 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -558,7 +559,7 @@ avtShapefileFileFormat::CountShapeTypes() const
 // ****************************************************************************
 // Method: avtShapefileFileFormat::CountShapes
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of shapes of a given type.
 //
 // Arguments:
@@ -566,13 +567,13 @@ avtShapefileFileFormat::CountShapeTypes() const
 //
 // Returns:    The number of shapes of the specified type.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 28 01:38:16 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -593,7 +594,7 @@ avtShapefileFileFormat::CountShapes(esriShapeType_t shapeType) const
 // ****************************************************************************
 // Method: avtShapefileFileFormat::CountCellsForShape
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of cells for a specified shape type. This can differ
 //   from the number of shape records because shapes with multiple parts are
 //   broken up into multiple cells in the VTK dataset that we create later.
@@ -603,7 +604,7 @@ avtShapefileFileFormat::CountShapes(esriShapeType_t shapeType) const
 //
 // Returns:    The number of cells for the specified shape type.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 28 02:59:42 PDT 2005
@@ -884,7 +885,7 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if(meshes[m] == "point" || meshes[m] == "pointZ")
                 centering = AVT_NODECENT;
 
-            dbfFieldDescriptor_t *fieldDescriptor = 
+            dbfFieldDescriptor_t *fieldDescriptor =
                 dbfFile->header.fieldDescriptors;
             for(int i = 0; i < dbfFile->header.numFieldDescriptors; ++i)
             {
@@ -916,13 +917,13 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     smd->hasDataExtents = false;
                     smd->minDataExtents = 0.f;
                     smd->maxDataExtents = 0.f;
-                    smd->validVariable = 
+                    smd->validVariable =
                         fieldDescriptor->fieldType == dbfFieldFloatingPointNumber ||
                         fieldDescriptor->fieldType == dbfFieldFixedPointNumber ||
                         fieldDescriptor->fieldType == dbfFieldShortInt ||
                         fieldDescriptor->fieldType == dbfFieldInt ||
                         fieldDescriptor->fieldType == dbfFieldDouble;
-         
+
                     md->Add(smd);
                     debug4 << mName << "Added scalar metadata for " << varName << endl;
                 }
@@ -989,20 +990,18 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 // ****************************************************************************
 // Method: avtShapefileFileFormat::GetMesh_TessellatedPolygon
 //
-// Purpose: 
+// Purpose:
 //   Takes the input mesh and tessellates the polygon cells and returns a polydata.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 6 18:08:41 PST 2007
 //
 // Modifications:
-//   
+//
+//   Cyrus Harrison, Tue Oct  9 13:21:32 PDT 2012
+//   Use tess2 via new avtPolygonToTrianglesTesselator class.
+//
 // ****************************************************************************
-
-#ifndef MDSERVER
-// We're not in the mdserver so include some helper classes.
-#include <PolygonToTriangles.C>
-#endif
 
 vtkDataSet *
 avtShapefileFileFormat::GetMesh_TessellatedPolygon()
@@ -1013,83 +1012,59 @@ avtShapefileFileFormat::GetMesh_TessellatedPolygon()
     const char *mName = "avtShapefileFileFormat::GetMesh_TessellatedPolygon: ";
     int npts = CountMemberPoints(esriPolygon);
 
-    // Allocate some points.
+    // Allocate points & polydata.
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(npts);
 
-    VertexManager      uniqueVerts(pts);
-    PolygonToTriangles tess(&uniqueVerts);
-
+    vtkPolyData *pd = vtkPolyData::New();
+    pd->SetPoints(pts);
+    pd->Allocate(shapes.size() * 3);
+    int total_tris = 0;
     // Go through each cell and tesselate into triangles.
     debug5 << mName << "Start tessellation." << endl;
     for(int i = 0; i < shapes.size(); ++i)
     {
+        avtPolygonToTrianglesTesselator tess(pts);
+        tess.SetNormal(0.0,0.0,1.0);
         if(shapes[i].shapeType == esriPolygon)
         {
             esriPolygon_t *pg = (esriPolygon_t *)shapes[i].shape;
 
             debug5 << "\tsplitting polygon " << i << "...";
-            tess.BeginPolygon();
             for(int part = 0; part < pg->numParts; ++part)
             {
                 int start = pg->parts[part];
-                int end = (part < pg->numParts-1) ? 
+                int end = (part < pg->numParts-1) ?
                    pg->parts[part+1] : pg->numPoints;
-                int index = 0;
 
+                int part_size = (end -1) - start;
                 tess.BeginContour();
-                for(int j = start; j < end-1; ++j, ++index)
-                {
-                    // Stash the point
-                    double v[3];
-                    v[0] = pg->points[j].x;
-                    v[1] = pg->points[j].y;
-                    v[2] = 0.f;
 
-                    tess.AddVertex(v);
+                for(int j = start; j < end-1; ++j)
+                {
+                    tess.AddContourVertex(pg->points[j].x,
+                                          pg->points[j].y,
+                                          0.0);
+
                 }
                 tess.EndContour();
             }
-            tess.EndPolygon();
-
-            // Store off the number of times this shape's data will need to
-            // be repeated in the data.
-            shapes[i].nRepeats = tess.GetNumTrianglesInLastPolygon();
-
+            int ntris = tess.Tessellate(pd);
+            total_tris += ntris;
+            shapes[i].nRepeats = ntris;
             debug5 << " into " << shapes[i].nRepeats << " triangles." << endl;
         }
     }
 
-    pts->Squeeze();
-
-    vtkDataSet *ret = NULL;
-    if(tess.GetNumTriangles() > 0)
-    {
-        // Allocate polydata. The number of cells probably will be larger than
-        // we allocate so it will grow as we insert.
-        vtkPolyData *pd = vtkPolyData::New();
-        pd->SetPoints(pts);
-        pd->Allocate(shapes.size() * 3);
-
-        // Now that we've tesselated everything, let's create the cells for it.
-        for(int i = 0; i < tess.GetNumTriangles(); ++i)
-        {
-            int a,b,c;
-            vtkIdType verts[3];
-            tess.GetTriangle(i, a, b, c);
-            verts[0] = a;
-            verts[1] = b;
-            verts[2] = c;
-            pd->InsertNextCell(VTK_TRIANGLE, 3, verts);
-        }
-        pd->Squeeze();
-        ret = pd;
-    }
-    else
-    {
+    if(total_tris == 0)
         debug5 << mName << "No cells made from triangulated polygons" << endl;
-    }
+    else
+        debug5 << mName << "Polygons cells converted into "
+               << total_tris << " total triangles" << endl;
+
     pts->Delete();
+    pd->Squeeze();
+    vtkDataSet *ret= pd;
 
     return ret;
 #endif
@@ -1204,7 +1179,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
         case esriPolygonM:
         case esriPolygonZ:
             debug4 << "Creating ugrid for " << meshname << endl;
-            pd = vtkPolyData::New(); 
+            pd = vtkPolyData::New();
             pd->SetPoints(points);
             pd->Allocate(npts);
             ds = pd;
@@ -1267,7 +1242,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pl->numParts; ++part)
                     {
                         int start = pl->parts[part];
-                        int end = (part < pl->numParts-1) ? 
+                        int end = (part < pl->numParts-1) ?
                             pl->parts[part+1] : pl->numPoints;
                         int nverts = end - start;
                         int index = 0;
@@ -1292,7 +1267,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pl->numParts; ++part)
                     {
                         int start = pl->parts[part];
-                        int end = (part < pl->numParts-1) ? 
+                        int end = (part < pl->numParts-1) ?
                             pl->parts[part+1] : pl->numPoints;
                         int nverts = end - start;
                         int index = 0;
@@ -1318,7 +1293,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pl->numParts; ++part)
                     {
                         int start = pl->parts[part];
-                        int end = (part < pl->numParts-1) ? 
+                        int end = (part < pl->numParts-1) ?
                             pl->parts[part+1] : pl->numPoints;
                         int nverts = end - start;
                         int index = 0;
@@ -1351,7 +1326,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pg->numParts; ++part)
                     {
                         int start = pg->parts[part];
-                        int end = (part < pg->numParts-1) ? 
+                        int end = (part < pg->numParts-1) ?
                             pg->parts[part+1] : pg->numPoints;
                         int nverts = end - start;
                         int firstPoint = pointIndex;
@@ -1400,7 +1375,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pg->numParts; ++part)
                     {
                         int start = pg->parts[part];
-                        int end = (part < pg->numParts-1) ? 
+                        int end = (part < pg->numParts-1) ?
                             pg->parts[part+1] : pg->numPoints;
                         int nverts = end - start;
                         int firstPoint = pointIndex;
@@ -1448,7 +1423,7 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                     for(part = 0; part < pg->numParts; ++part)
                     {
                         int start = pg->parts[part];
-                        int end = (part < pg->numParts-1) ? 
+                        int end = (part < pg->numParts-1) ?
                             pg->parts[part+1] : pg->numPoints;
                         int nverts = end - start;
                         int firstPoint = pointIndex;
@@ -1557,25 +1532,25 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
 // ****************************************************************************
 // Method: avtShapefileFileFormat::GetNumRepeats
 //
-// Purpose: 
+// Purpose:
 //   Determines the number of times a data value should be repeated in the
 //   data array.
 //
 // Arguments:
 //   TheShape  : A pointer to an esriShape shape.
-//   tessMesh  : True if we're asking for the number of repeats needed for 
+//   tessMesh  : True if we're asking for the number of repeats needed for
 //               the tessellated mesh; False otherwise.
 //
 // Returns:    The number of times data should be repeated for the shape.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 1 23:38:01 PST 2005
 //
 // Modifications:
 //   Brad Whitlock, Wed Mar 7 08:49:19 PDT 2007
-//   Pass in the shape container instead and added support for tessellated 
+//   Pass in the shape container instead and added support for tessellated
 //   polygons.
 //
 // ****************************************************************************

@@ -57,6 +57,7 @@
 #include <avtStructuredDomainNesting.h>
 #include <avtSpecies.h>
 #include <avtVariableCache.h>
+#include <avtPolyhedralSplit.h>
 
 #include <Expression.h>
 #include <DebugStream.h>
@@ -64,7 +65,7 @@
 #include <InvalidVariableException.h>
 
 #include <visitstream.h>
-                                                    
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
@@ -111,11 +112,11 @@ using std::vector;
 #include <simv2_SpeciesData.h>
 #include <simv2_VariableData.h>
 
-#include <PolyhedralSplit.h>
+
 
 vtkDataSet *SimV2_GetMesh_Curvilinear(visit_handle h);
 vtkDataSet *SimV2_GetMesh_Rectilinear(visit_handle h);
-vtkDataSet *SimV2_GetMesh_Unstructured(int, visit_handle h, PolyhedralSplit **);
+vtkDataSet *SimV2_GetMesh_Unstructured(int, visit_handle h, avtPolyhedralSplit **);
 vtkDataSet *SimV2_GetMesh_Point(visit_handle h);
 vtkDataSet *SimV2_GetMesh_CSG(visit_handle h);
 
@@ -214,14 +215,14 @@ avtSimV2FileFormat::FreeUpResources(void)
 // ****************************************************************************
 // Method: avtSimV2FileFormat::ActivateTimestep
 //
-// Purpose: 
+// Purpose:
 //   Calls ActivateTimestep on all of the simulation processors.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 16 16:51:20 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -236,7 +237,7 @@ avtSimV2FileFormat::ActivateTimestep()
 // ****************************************************************************
 // Method: AddMeshMetaData
 //
-// Purpose: 
+// Purpose:
 //   Populates avtMeshMetaData using a handle to SimV2's MeshMetaData
 //
 // Arguments:
@@ -244,14 +245,14 @@ avtSimV2FileFormat::ActivateTimestep()
 //
 // Returns:    An initialized avtMeshMetaData object.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 11:11:27 PST 2010
 //
 // Modifications:
 //   Brad Whitlock, Tue Jun  8 11:51:09 PDT 2010
-//   I fixed an error where the wrong mesh metadata was used for domain 
+//   I fixed an error where the wrong mesh metadata was used for domain
 //   piece name.
 //
 //   Brad Whitlock, Thu Dec  2 14:41:13 PST 2010
@@ -379,7 +380,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         mesh->groupPieceName = std::string(groupPieceName);
         free(groupPieceName);
     }
- 
+
     int groupLen = mesh->numBlocks;
     mesh->groupIds.resize(groupLen);
     for (int g = 0; g<groupLen; g++)
@@ -458,7 +459,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: RestrictMaterialIndices
 //
-// Purpose: 
+// Purpose:
 //   Check the input variable metadata for its materialName to see if any of
 //   the material names are present in the material for the variable's mesh.
 //   If so, return a vector of the indices of the material names.
@@ -469,13 +470,13 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
 //
 // Returns:    A vector of indices.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 18 14:55:04 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 intVector
@@ -514,14 +515,14 @@ RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
 // ****************************************************************************
 // Method: AddVariableMetaData
 //
-// Purpose: 
+// Purpose:
 //   Adds a variable metadata to the database metadata.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 11:34:15 PST 2010
@@ -537,7 +538,7 @@ RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
 
 void
 AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
-{  
+{
     char *name = NULL, *meshName = NULL;
     if(simv2_VariableMetaData_getName(h, &name) == VISIT_OKAY)
     {
@@ -568,7 +569,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 if(simv2_VariableMetaData_getHideFromGUI(h, &iHideFromGUI) ==  VISIT_OKAY)
                     hideFromGUI = iHideFromGUI > 0;
 
-                // See if the mesh for this variable has a material so we can 
+                // See if the mesh for this variable has a material so we can
                 // potentially restrict this variable to certain material regions.
                 const avtMaterialMetaData *mmd = NULL;
                 TRY
@@ -577,7 +578,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     mmd = md->GetMaterial(matObjectName);
                 }
                 CATCHALL
-                { 
+                {
                 }
                 ENDTRY
 
@@ -667,7 +668,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     arr->centering = centering;
                     arr->nVars = nComponents;
                     for(int c = 0; c < nComponents; ++c)
-                    { 
+                    {
                         char compname[100];
                         sprintf(compname, "%d", c);
                         arr->compNames.push_back(compname);
@@ -689,20 +690,20 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: AddMaterialMetaData
 //
-// Purpose: 
+// Purpose:
 //   Add metadata for a material
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 12:13:56 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -746,20 +747,20 @@ AddMaterialMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: NameListToStringVector
 //
-// Purpose: 
+// Purpose:
 //   Converts a name list to a string vector.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 13:06:44 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -783,20 +784,20 @@ NameListToStringVector(visit_handle h, stringVector &vec)
 // ****************************************************************************
 // Method: AddSpeciesMetaData
 //
-// Purpose: 
+// Purpose:
 //   Adds species metadata.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 13:07:12 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -828,11 +829,11 @@ AddSpeciesMetaData(avtDatabaseMetaData *md, visit_handle h)
                     }
 
                     avtSpeciesMetaData *species = new avtSpeciesMetaData(name,
-                        meshName, matName, static_cast<int>(numSpecies.size()), numSpecies, 
+                        meshName, matName, static_cast<int>(numSpecies.size()), numSpecies,
                         speciesNames);
 
                     md->Add(species);
-                }            
+                }
                 free(matName);
             }
             free(meshName);
@@ -844,20 +845,20 @@ AddSpeciesMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: AddCurveMetaData
 //
-// Purpose: 
+// Purpose:
 //   Adds curve metadata.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 13:22:56 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -904,20 +905,20 @@ AddCurveMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: AddExpressionMetaData
 //
-// Purpose: 
-//   
+// Purpose:
+//
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 13:28:23 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -964,20 +965,20 @@ AddExpressionMetaData(avtDatabaseMetaData *md, visit_handle h)
 // ****************************************************************************
 // Method: CommandMetaDataToCommandSpec
 //
-// Purpose: 
+// Purpose:
 //   Populates avtSimulationCommandSpecification from CommandMetaData.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar  9 13:46:29 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1027,7 +1028,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     int simMode, currentCycle;
     double currentTime;
-    if(simv2_SimulationMetaData_getData(h, simMode, currentCycle, 
+    if(simv2_SimulationMetaData_getData(h, simMode, currentCycle,
         currentTime) == VISIT_ERROR)
     {
         debug4 << mName << "Can't get data from simulation metadata" << endl;
@@ -1065,7 +1066,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     //
     // Add the Curves
-    // 
+    //
     int numCurves = 0;
     simv2_SimulationMetaData_getNumCurves(h, numCurves);
     for (int i=0; i < numCurves; i++)
@@ -1079,7 +1080,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     //
     // Add the materials
-    // 
+    //
     int numMaterials = 0;
     simv2_SimulationMetaData_getNumMaterials(h, numMaterials);
     for (int i=0; i < numMaterials; i++)
@@ -1091,7 +1092,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     //
     // Add the Species
-    // 
+    //
     int numSpecies = 0;
     simv2_SimulationMetaData_getNumSpecies(h, numSpecies);
     for (int i=0; i < numSpecies; i++)
@@ -1100,7 +1101,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if(simv2_SimulationMetaData_getSpecies(h, i, iHandle) == VISIT_OKAY)
             AddSpeciesMetaData(md, iHandle);
     }
-     
+
     //
     // Add the variables
     //
@@ -1115,7 +1116,7 @@ avtSimV2FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     //
     // Add the Expressions
-    // 
+    //
     int numExpressions = 0;
     simv2_SimulationMetaData_getNumExpressions(h, numExpressions);
     for (int i=0; i < numExpressions; i++)
@@ -1295,7 +1296,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         return NULL;
 
     vtkDataSet *ds = 0;
-    PolyhedralSplit *phSplit = 0;
+    avtPolyhedralSplit *phSplit = 0;
     TRY
     {
         int objType = simv2_ObjectType(h);
@@ -1315,7 +1316,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
             // variables later.
             if(phSplit != 0)
             {
-                void_ref_ptr vr = void_ref_ptr(phSplit, PolyhedralSplit::Destruct);
+                void_ref_ptr vr = void_ref_ptr(phSplit, avtPolyhedralSplit::Destruct);
                 debug4 << "Caching polyhedral split for mesh:" << meshname << endl;
                 cache->CacheVoidRef(meshname,
                                     AUXILIARY_DATA_POLYHEDRAL_SPLIT,
@@ -1329,7 +1330,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
         case VISIT_CSG_MESH:
             ds = SimV2_GetMesh_CSG(h);
             break;
-        default:       
+        default:
             EXCEPTION1(ImproperUseException,
                 "The simulation returned a handle that does not correspond "
                 "to a mesh.\n");
@@ -1354,7 +1355,7 @@ avtSimV2FileFormat::GetMesh(int domain, const char *meshname)
 // ****************************************************************************
 // Method: StoreVariableData
 //
-// Purpose: 
+// Purpose:
 //   Store memory into the new vtkDataArray, taking 2-tuple to 3-tuple conversion
 //   into account.
 //
@@ -1405,7 +1406,7 @@ StoreVariableData(ARR *array, T *src, int nComponents, int nTuples, int owner)
 #else
         // Here we copy the data.
         array->SetNumberOfTuples(nTuples);
-        memcpy(array->GetVoidPointer(0), src, 
+        memcpy(array->GetVoidPointer(0), src,
                sizeof(T) * nTuples * nComponents);
 #endif
     }
@@ -1415,7 +1416,7 @@ StoreVariableData(ARR *array, T *src, int nComponents, int nTuples, int owner)
 // ****************************************************************************
 // Method: avtSimV2FileFormat::GetRestrictedMaterialIndices
 //
-// Purpose: 
+// Purpose:
 //   Get the material indices for a variable.
 //
 // Arguments:
@@ -1423,13 +1424,13 @@ StoreVariableData(ARR *array, T *src, int nComponents, int nTuples, int owner)
 //
 // Returns:    An intVector of the material indices.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 18 11:55:38 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 intVector
@@ -1454,7 +1455,7 @@ avtSimV2FileFormat::GetRestrictedMaterialIndices(const std::string &varname) con
 // ****************************************************************************
 // Method: avtSimV2FileFormat::GetCentering
 //
-// Purpose: 
+// Purpose:
 //   Get the centering of the specified variable.
 //
 // Arguments:
@@ -1462,13 +1463,13 @@ avtSimV2FileFormat::GetRestrictedMaterialIndices(const std::string &varname) con
 //
 // Returns:    The variable centering.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 18 11:56:34 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtCentering
@@ -1496,7 +1497,7 @@ avtSimV2FileFormat::GetCentering(const std::string &varname) const
 // ****************************************************************************
 // Method: avtSimV2FileFormat::ExpandVariable
 //
-// Purpose: 
+// Purpose:
 //   Expand a material-restricted variable up to the whole mesh size.
 //
 // Arguments:
@@ -1506,7 +1507,7 @@ avtSimV2FileFormat::GetCentering(const std::string &varname) const
 //   varname        : The name of the variable.
 //   restrictToMats : The vector of material indices.
 //
-// Returns:    
+// Returns:
 //
 // Note:       This code is inspired by TraverseMaterialForSubsettedUcdvar in
 //             avtSiloFileFormat.C
@@ -1524,12 +1525,12 @@ avtSimV2FileFormat::GetCentering(const std::string &varname) const
 // Creation:   Wed Jul 18 11:29:46 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv, 
-    int nMixVarComponents, int domain, const std::string &varname, 
+avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
+    int nMixVarComponents, int domain, const std::string &varname,
     const intVector &restrictToMats)
 {
 #ifdef MDSERVER
@@ -1587,7 +1588,7 @@ avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
         }
     }
 
-    // Create a new mesh-sized data array filled in with values from the 
+    // Create a new mesh-sized data array filled in with values from the
     // first tuple. We initialize it thus because the code to copy the data over
     // from the array that we're expanding pokes values back into this array.
     // This initialization ensures that all values are initialized.
@@ -1598,7 +1599,7 @@ avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
     newvals->SetNumberOfTuples(nTuples);
     for(vtkIdType id = 0; id < nTuples; ++id)
         newvals->SetTuple(id, array->GetTuple(0));
-    debug1 << mName << "New array has " << nTuples << " tuples and we've initialized them all to: " 
+    debug1 << mName << "New array has " << nTuples << " tuples and we've initialized them all to: "
            << array->GetTuple1(0) << endl;
 
     // Create new mixvals array if we have zonal data and a mixed variable.
@@ -1668,14 +1669,14 @@ avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
                 // Copy current source value into the value for this zone.
                 newvals->SetTuple(i, array->GetTuple(nvals));
                 nvals++;
-            
-                // If the cell is mixed then copy the current mixvar value 
+
+                // If the cell is mixed then copy the current mixvar value
                 // into the mixvar for this zone.
                 if(matno < 0 && mixvals != NULL)
                 {
                     int mix_idx = -(matno) - 1;
                     while(mix_idx >= 0)
-                    {      
+                    {
                         int src = nMixVarComponents * nmixvals;
                         int dest = array->GetNumberOfComponents() * mix_idx;
                         for (int j = 0; j < array->GetNumberOfComponents(); j++)
@@ -1727,7 +1728,7 @@ avtSimV2FileFormat::ExpandVariable(vtkDataArray *array, avtMixedVariable **mv,
 //    I added support for sharing the simulation array directly.
 //
 //    Brad Whitlock, Thu Jul 19 12:19:54 PDT 2012
-//    I added support for long. I also added support for various types of 
+//    I added support for long. I also added support for various types of
 //    mixed variables beyond float/double. I also added support for expanding
 //    material restricted variables back up to the whole mesh.
 //
@@ -1747,7 +1748,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     // Get the data from the opaque object.
     int owner, dataType, nComponents, nTuples;
     void *data = NULL;
-    int err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
+    int err = simv2_VariableData_getData(h, owner, dataType, nComponents,
                                          nTuples, data);
     if(err == VISIT_ERROR || nTuples < 1)
         return NULL;
@@ -1787,7 +1788,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 #ifdef USE_SET_ARRAY
-    // We've given the pointer from the variable data object to the VTK data 
+    // We've given the pointer from the variable data object to the VTK data
     // array, which will dispose of it. We must NULL out the object so we
     // don't delete the memory when we free the variable data object.
     simv2_VariableData_nullData(h);
@@ -1800,7 +1801,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     int nMixVarComponents = 1;
     if (h != VISIT_INVALID_HANDLE)
     {
-        err = simv2_VariableData_getData(h, owner, dataType, nComponents, 
+        err = simv2_VariableData_getData(h, owner, dataType, nComponents,
                                          nTuples, data);
         nMixVarComponents = nComponents;
         if(err != VISIT_ERROR &&
@@ -1865,28 +1866,28 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
     intVector matRestricted(GetRestrictedMaterialIndices(varname));
     if(!matRestricted.empty())
     {
-        vtkDataArray *newarr = ExpandVariable(array, &mv, nMixVarComponents, 
+        vtkDataArray *newarr = ExpandVariable(array, &mv, nMixVarComponents,
             domain, varname, matRestricted);
         array->Delete();
         array = newarr;
     }
 
     // See if there is a polyhedral split for this variable's mesh.
-    PolyhedralSplit *phSplit = 0;
+    avtPolyhedralSplit *phSplit = 0;
     TRY
     {
         std::string meshName = metadata->MeshForVar(varname);
-        void_ref_ptr vr = cache->GetVoidRef(meshName.c_str(), 
+        void_ref_ptr vr = cache->GetVoidRef(meshName.c_str(),
             AUXILIARY_DATA_POLYHEDRAL_SPLIT, this->timestep, domain);
         if(*vr != 0)
         {
             debug4 << "Found a cached polyhedral split for "
                    << meshName << " at: " << (*vr) << endl;
-            phSplit = (PolyhedralSplit *)(*vr);
+            phSplit = (avtPolyhedralSplit *)(*vr);
 
             // Get the variable centering
             avtCentering centering = GetCentering(varname);
-            vtkDataArray *splitArray = phSplit->ExpandDataArray(array, 
+            vtkDataArray *splitArray = phSplit->ExpandDataArray(array,
                 centering == AVT_ZONECENT);
             array->Delete();
             array = splitArray;
@@ -1906,7 +1907,7 @@ avtSimV2FileFormat::GetVar(int domain, const char *varname)
         if(phSplit == 0)
         {
             void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
-            cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE, 
+            cache->CacheVoidRef(varname, AUXILIARY_DATA_MIXED_VARIABLE,
                                 this->timestep, domain, vr);
             debug1 << "SimV2 cached mixvar data for " << varname
                    << " domain " << domain << endl;
@@ -2042,7 +2043,7 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     char matName[100];
     for (int m=0; m < nMaterials; m++)
     {
-        if(simv2_MaterialData_getMaterial(h, m, materialNumbers[m], matName, 
+        if(simv2_MaterialData_getMaterial(h, m, materialNumbers[m], matName,
             100) == VISIT_ERROR)
         {
             debug1 << mName << "Could not get material " << m << endl;
@@ -2062,7 +2063,7 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     }
 
     // Get the mixed materials
-    if(simv2_MaterialData_getMixedMaterials(h, mHandles[1], mHandles[2], 
+    if(simv2_MaterialData_getMixedMaterials(h, mHandles[1], mHandles[2],
         mHandles[3], mHandles[4]) == VISIT_ERROR)
     {
         debug1 << "Could not get mixed materials from MaterialData" << endl;
@@ -2074,7 +2075,7 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
     int owner, dataType[5]={0,0,0,0,0}, nComps[5]={0,0,0,0,0};
     int nTuples[5]={0,0,0,0,0};
     void *data[5] = {NULL,NULL,NULL,NULL,NULL};
-    if(simv2_VariableData_getData(mHandles[0], owner, dataType[0], nComps[0], 
+    if(simv2_VariableData_getData(mHandles[0], owner, dataType[0], nComps[0],
         nTuples[0], data[0]) == VISIT_ERROR)
     {
         debug1 << mName << "Could not access variable data for matlist" << endl;
@@ -2134,7 +2135,7 @@ avtSimV2FileFormat::GetMaterial(int domain, const char *varname)
         }
     }
     if(haveMixedMaterials && !reorderRequired)
-    {        
+    {
         for(int i = 0; i < nTuples[1]; ++i)
         {
             if(mix_mat[i] >= 0 && mix_mat[i] < nMaterials)
@@ -2294,16 +2295,16 @@ avtSimV2FileFormat::GetCurve(const char *name)
 // ****************************************************************************
 // Method: avtSimV2FileFormat::GetSpecies
 //
-// Purpose: 
+// Purpose:
 //   Gets the species for the dataset.
 //
 // Arguments:
 //   domain  : The domain for which we're returning species
 //   varname : The name of the species variable.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb  6 16:47:44 PST 2009
@@ -2328,7 +2329,7 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
     // Get data out of the species object.
     std::vector<visit_handle> namelist;
     visit_handle species, speciesMF, mixedSpecies;
-    if(simv2_SpeciesData_getData(h, namelist, species, speciesMF, 
+    if(simv2_SpeciesData_getData(h, namelist, species, speciesMF,
         mixedSpecies) == VISIT_ERROR)
     {
         debug4 << mName << "Can't get data out of SpeciesData object" << endl;
@@ -2348,7 +2349,7 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
 
             vector<string> onelist;
             for(int n = 0; n < nNames && !err; ++n)
-            { 
+            {
                 char *specName = NULL;
                 if(simv2_NameList_getName(namelist[i], n, &specName) == VISIT_OKAY)
                 {
@@ -2402,11 +2403,11 @@ avtSimV2FileFormat::GetSpecies(int domain, const char *varname)
         speciesMF_data = (void *)speciesMF_alloc;
     }
 
-    int mixedSpecies_owner, mixedSpecies_dataType, mixedSpecies_nComps, 
+    int mixedSpecies_owner, mixedSpecies_dataType, mixedSpecies_nComps,
         mixedSpecies_nTuples;
     void *mixedSpecies_data = NULL;
-    if(simv2_VariableData_getData(mixedSpecies, mixedSpecies_owner, 
-        mixedSpecies_dataType, mixedSpecies_nComps, mixedSpecies_nTuples, 
+    if(simv2_VariableData_getData(mixedSpecies, mixedSpecies_owner,
+        mixedSpecies_dataType, mixedSpecies_nComps, mixedSpecies_nTuples,
         mixedSpecies_data) == VISIT_ERROR)
     {
         debug4 << mName << "Can't get mixedSpecies" << endl;
@@ -2491,7 +2492,7 @@ avtSimV2FileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     {
         int dom = ((int *)data)[i];
         if(dom >= 0 && dom < alldoms)
-            hints[rank][i] = dom; 
+            hints[rank][i] = dom;
         else
         {
             debug1 << mName << "An out of range domain number " << dom

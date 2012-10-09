@@ -36,27 +36,23 @@
 #
 # Modifications:
 #
-#  Cyrus Harrison, Tue Oct  9 15:44:53 PDT 2012
-#  Added tess2
-#
 #****************************************************************************/
 
-PROJECT(thirdparty_builtins)
+cmake_minimum_required(VERSION 2.8)
 
-ADD_SUBDIRECTORY(glew)
-ADD_SUBDIRECTORY(verdict)
-ADD_SUBDIRECTORY(bilib)
-ADD_SUBDIRECTORY(tess2)
-IF(VISIT_PARALLEL)
-    ADD_SUBDIRECTORY(cognomen)
-ENDIF(VISIT_PARALLEL)
-ADD_SUBDIRECTORY(bow)
-IF(VISIT_ZLIB)
-    ADD_SUBDIRECTORY(zlib)
-ENDIF(VISIT_ZLIB)
-IF(VISIT_TUVOK)
-    ADD_SUBDIRECTORY(tuvok)
-ENDIF(VISIT_TUVOK)
-IF(VISIT_SLIVR)
-    ADD_SUBDIRECTORY(slivr)
-ENDIF(VISIT_SLIVR)
+SET(TESS2_SOURCES
+    bucketalloc.C
+    dict.C
+    geom.C
+    mesh.C
+    priorityq.C
+    sweep.C
+    tess.C
+)
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+ADD_LIBRARY(tess2 ${TESS2_SOURCES})
+
+VISIT_INSTALL_TARGETS(tess2)
+SET_TARGET_PROPERTIES(tess2 PROPERTIES FOLDER thirdparty_builtin/tess2)

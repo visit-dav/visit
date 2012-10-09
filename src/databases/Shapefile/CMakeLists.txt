@@ -32,7 +32,6 @@ dbfFile.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${MESA_INCLUDE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -65,19 +64,19 @@ SET(INSTALLTARGETS IShapefileDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MShapefileDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MShapefileDatabase visitcommon avtdbatts avtdatabase_ser ${TESSELLATION_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MShapefileDatabase visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MShapefileDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MShapefileDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EShapefileDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EShapefileDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${TESSELLATION_LIBRARY} )
+TARGET_LINK_LIBRARIES(EShapefileDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
 ADD_TARGET_DEFINITIONS(EShapefileDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EShapefileDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EShapefileDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EShapefileDatabase_par visitcommon avtdatabase_par avtpipeline_par ${TESSELLATION_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EShapefileDatabase_par visitcommon avtdatabase_par avtpipeline_par )
     ADD_TARGET_DEFINITIONS(EShapefileDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EShapefileDatabase_par)
 ENDIF(VISIT_PARALLEL)

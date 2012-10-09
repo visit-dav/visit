@@ -24,14 +24,12 @@ ${COMMON_SOURCES}
 avtSimV2FileFormat.C
 avtSimV2Writer.C
 SimV2GetMesh.C
-PolyhedralSplit.C
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_INCLUDE_DIR}/sim/V2/lib
 ${VISIT_INCLUDE_DIR}/sim/V2/runtime
-${MESA_INCLUDE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -64,19 +62,19 @@ SET(INSTALLTARGETS ISimV2Database)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MSimV2Database ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MSimV2Database visitcommon avtdbatts avtdatabase_ser ${TESSELLATION_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MSimV2Database visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MSimV2Database MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MSimV2Database)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ESimV2Database_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtdatabase_ser avtpipeline_ser ${TESSELLATION_LIBRARY} simV2runtime_ser )
+TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtdatabase_ser avtpipeline_ser simV2runtime_ser )
 ADD_TARGET_DEFINITIONS(ESimV2Database_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESimV2Database_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtdatabase_par avtpipeline_par ${TESSELLATION_LIBRARY} simV2runtime_par )
+    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtdatabase_par avtpipeline_par simV2runtime_par )
     ADD_TARGET_DEFINITIONS(ESimV2Database_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_par)
 ENDIF(VISIT_PARALLEL)
