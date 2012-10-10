@@ -67,7 +67,7 @@ class vtkDataArray;
 //
 // ****************************************************************************
 
-DATABASE_API class avtPolyhedralSplit
+class DATABASE_API avtPolyhedralSplit
 {
 public:
             avtPolyhedralSplit();
