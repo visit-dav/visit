@@ -507,7 +507,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     connectToDDTAct = new QAction(tr("Connect to DDT"),
                          this);
-    connect(connectToDDTAct, SIGNAL(activated()),this, SLOT(connectToDDT()));
+    connect(connectToDDTAct, SIGNAL(triggered()),this, SLOT(connectToDDT()));
     filePopup->addAction(connectToDDTAct);
 
     filePopup->addSeparator();
