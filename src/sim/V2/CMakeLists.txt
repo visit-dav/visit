@@ -35,12 +35,16 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Wed Oct 10 10:39:15 PDT 2012
+#   Add ddtsim only if VISIT_DDT is chosen.
 #
 #****************************************************************************/
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(runtime)
-ADD_SUBDIRECTORY(ddtsim)
+IF(VISIT_DDT)
+    ADD_SUBDIRECTORY(ddtsim)
+ENDIF(VISIT_DDT)
 # Disable swig bindings on Windows for now. Generated code has some errors.
 IF(UNIX)
     ADD_SUBDIRECTORY(swig)
