@@ -29,23 +29,17 @@
 ** Author: Mikko Mononen, July 2009.
 */
 
-#ifndef MEMALLOC_H
-#define MEMALLOC_H
+#ifndef BUCKETALLOC_H
+#define BUCKETALLOC_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include "tesselator.h"
 
-struct BucketAlloc *createBucketAlloc( TESSalloc* alloc, const char *name,
-                                      unsigned int itemSize, unsigned int bucketSize );
-void *bucketAlloc( struct BucketAlloc *ba);
-void bucketFree( struct BucketAlloc *ba, void *ptr );
-void deleteBucketAlloc( struct BucketAlloc *ba );
 
-#ifdef __cplusplus
-};
-#endif
+TESS2_API struct BucketAlloc *createBucketAlloc( TESSalloc* alloc, const char *name,
+                                      unsigned int itemSize, unsigned int bucketSize );
+TESS2_API void *bucketAlloc( struct BucketAlloc *ba);
+TESS2_API void bucketFree( struct BucketAlloc *ba, void *ptr );
+TESS2_API void deleteBucketAlloc( struct BucketAlloc *ba );
 
 #endif
