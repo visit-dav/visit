@@ -37,7 +37,9 @@
 *****************************************************************************/
 #ifndef AVT_POLYHEDRAL_SPLIT_H
 #define AVT_POLYHEDRAL_SPLIT_H
+
 #include <vectortypes.h>
+#include "database_exports.h"
 
 class vtkDataArray;
 
@@ -60,12 +62,12 @@ class vtkDataArray;
 //   information as we discover it.
 //
 //   Cyrus Harrison, Tue Oct  9 14:12:12 PDT 2012
-//   Moved here from the SimV2 reader, since other db readers do/may need
+//   Moved here from the SimV2 reader, since other db readers need
 //   to use this functionality.
 //
 // ****************************************************************************
 
-class avtPolyhedralSplit
+DATABASE_API class avtPolyhedralSplit
 {
 public:
             avtPolyhedralSplit();
