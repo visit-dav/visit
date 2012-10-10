@@ -177,8 +177,7 @@ avtPolygonToTrianglesTesselator::avtPolygonToTrianglesTesselator(vtkPoints *pts)
     tessMemAllocator->memfree       = tess_std_free;
     tessMemAllocator->userData      = (void*)&tessMemAllocated;
     tessMemAllocator->extraVertices = 5000;
-    // TODO, support realloc
-
+    // TODO, support realloc ?
 
     vertexManager = new VertexManager(pts);
     xPoints       = pts;
@@ -411,7 +410,7 @@ avtPolygonToTrianglesTesselator::Tessellate()
 {
     // call tess
     if(tessTesselate(tessObj,TESS_WINDING_ODD,TESS_POLYGONS,3,3,tessNorm) != 1)
-    {// TODO check return
+    {
         /*error*/
         return 0;
     }
@@ -446,39 +445,6 @@ avtPolygonToTrianglesTesselator::Tessellate(vtkPolyData *pd)
     const double    *tpts  = tessGetVertices(tessObj);
     const TESSindex *teles = tessGetElements(tessObj);
 
-//         if(pd != NULL)
-//     {
-//     vtkIdType tri_vert_ids[3];
-//     int tri_idx = 0;
-//     for(int j=0; j < ntris; ++j)
-//     {
-//         tri_vert_ids[0] = vertexManager->GetVertexId(&tpts[teles[tri_idx+0]]);
-//         tri_vert_ids[1] = vertexManager->GetVertexId(&tpts[teles[tri_idx+1]]);
-//         tri_vert_ids[2] = vertexManager->GetVertexId(&tpts[teles[tri_idx+2]]);
-//         /*tri_vert_ids[0] = teles[tri_idx+0] + ptIndexOffset;
-//         tri_vert_ids[1] = teles[tri_idx+1] + ptIndexOffset;
-//         tri_vert_ids[2] = teles[tri_idx+2] + ptIndexOffset;
-//         */
-//         pd->InsertNextCell(VTK_TRIANGLE, 3, tri_vert_ids);
-//         tri_idx +=3;
-//     }
-//
-// //     }
-//
-//     return ntris;
-
-    // for now simply add all new points along with new tris
-    // in the future, use vertex manager to avoid dup points
-//     int ptIndexOffset = xPoints->GetNumberOfPoints();
-//     cout << "ptIndexOffset " << ptIndexOffset  << endl;
-//     int pts_idx   = 0;
-//     for(int j=0; j < nverts; ++j)
-//     {
-//         double *vptr = (double*)&tpts[pts_idx];
-//         //vertexManager->GetVertexId(vptr);
-//         xPoints->InsertNextPoint(vptr);
-//         pts_idx = pts_idx + 3;
-//     }
     vtkIdType tri_vert_ids[3];
     int tri_idx = 0;
     for(int j=0; j < ntris; ++j)
@@ -486,25 +452,9 @@ avtPolygonToTrianglesTesselator::Tessellate(vtkPolyData *pd)
         tri_vert_ids[0] = vertexManager->GetVertexId(&tpts[teles[tri_idx+0]*3]);
         tri_vert_ids[1] = vertexManager->GetVertexId(&tpts[teles[tri_idx+1]*3]);
         tri_vert_ids[2] = vertexManager->GetVertexId(&tpts[teles[tri_idx+2]*3]);
-        /*tri_vert_ids[0] = teles[tri_idx+0] + ptIndexOffset;
-        tri_vert_ids[1] = teles[tri_idx+1] + ptIndexOffset;
-        tri_vert_ids[2] = teles[tri_idx+2] + ptIndexOffset;
-        */
         pd->InsertNextCell(VTK_TRIANGLE, 3, tri_vert_ids);
         tri_idx +=3;
     }
-
-/*
-        for now simply add all new points along with new tris
-    in the future, use vertex manager to avoid dup points
-    ptIndexOffset = xPoints->GetNumberOfPoints();
-    int pts_idx   = 0;
-    for(int j=0; j < nverts; ++j)
-    {
-        double *vptr = (double*)&tpts[pts_idx];
-        xPoints->InsertNextPoint(vptr);
-        pts_idx = pts_idx + 3;
-    }*/
 
     return ntris;
 
