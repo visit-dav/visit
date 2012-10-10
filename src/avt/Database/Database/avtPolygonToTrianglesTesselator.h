@@ -58,8 +58,8 @@
 class VertexManager;
 class vtkPoints;
 class vtkPolyData;
-class TESSalloc;
-class TESStesselator;
+struct TESSalloc;
+struct TESStesselator;
 
 //
 // Note on Cyrus' spelling quandry: tesselator vs tessellator
