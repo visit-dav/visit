@@ -126,16 +126,18 @@ ENDIF (NOT WIN32)
 
 # prepare site-packages
 IF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE))
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
-                    ${CMAKE_CURRENT_BINARY_DIR}/site-packages
-                    RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
-    #
-    # make sure lib/site-packages exists before we try to
-    # symlink or copy the vtk python wrappers
-    #
-    IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-        MESSAGE(WARNING "Failed to create lib/site-packages/")
-    ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+    IF(NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${CMAKE_CURRENT_BINARY_DIR}/site-packages
+                        RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
+        #
+        # make sure lib/site-packages exists before we try to
+        # symlink or copy the vtk python wrappers
+        #
+        IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+            MESSAGE(WARNING "Failed to create lib/site-packages/")
+        ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+    ENDIF(NOT WIN32)
 ENDIF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE))
 
 IF(VISIT_PYTHON_FILTERS)
