@@ -28,6 +28,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++)
 
+VISIT_OPTION_DEFAULT(VISIT_DDT OFF)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
