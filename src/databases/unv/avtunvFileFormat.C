@@ -2971,7 +2971,7 @@ avtunvFileFormat::ReadFile()
             debug1 << "On the way to read unv file " << filename << endl;
 #endif
             int len = 2048; // Longest line length
-            char buf[len]; // A line length
+            char buf[2048]; // A line length
             int code;
             int label;
             double fac = 1.;
@@ -3337,7 +3337,7 @@ avtunvFileFormat::ReadFile()
             }
 
             int len = 2048; // Longest line length
-            char buf[len]; // A line length
+            char buf[2048]; // A line length
             int code;
             int label;
             double fac = 1.;
