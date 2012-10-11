@@ -60,6 +60,9 @@
 #   Cyrus Harrison, Tue Sep 25 12:08:29 PDT 2012
 #   Added CartographicProjection (from Jean Favre)
 #
+#   Kathleen Biagas, Thu Oct 11 11:48:27 PDT 2012
+#   Make CartographicProjection dependent upon existence of GEOVIS vtk kit.
+#
 #****************************************************************************/
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
@@ -71,7 +74,6 @@ SET(REQUIRED_OPERATOR_PLUGINS
 AMRStitchCell
 BoundaryOp
 Box
-CartographicProjection
 Clip
 Cone
 ConnectedComponents
@@ -124,6 +126,11 @@ TriangulateRegularPoints
 Tube
 ZoneDump
 )
+
+LIST(FIND VTK_KITS "GEOVIS" ADD_CARTOGRAPHIC)
+IF(ADD_CARTOGRAPHIC GREATER "-1")
+    LIST(APPEND REQUIRED_OPERATOR_PLUGINS CartographicProjection)
+ENDIF()
 
 SET(OPTIONAL_OPERATOR_PLUGINS
 Context
