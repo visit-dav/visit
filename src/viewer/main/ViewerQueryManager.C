@@ -2175,12 +2175,22 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     d += plot->GetBlockOrigin();
                 // 
                 // Due to the nature of the glyphs, the pick type MUST match
-                // the variable centering.
+                // the variable centering.  Also, due to avtPickBy variants
+                // expecting the elementNumber to be what user expects, 
+                // account for cell or node origin.
                 // 
                 if (forCell)
+                {
+                    if (mmd != NULL)
+                        e += mmd->cellOrigin;
                     pickAtts->SetPickType(PickAttributes::DomainZone);
+                }
                 else 
+                {
+                    if (mmd != NULL)
+                        e += mmd->nodeOrigin;
                     pickAtts->SetPickType(PickAttributes::DomainNode);
+                }
             }
             else // PickByNode or PickByZone
             {

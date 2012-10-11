@@ -1299,6 +1299,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Kathleen Bonnell, Wed Dec 15 09:19:39 PST 2004 
 //    Added call to 'SetGlobalIds'. 
 //
+//    Kathleen Biagas, Thu Oct 16 13:18:51 PDT 2012 
+//    Account for cellOrigin.
+//
 // ****************************************************************************
 
 bool
@@ -1355,7 +1358,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
             {
                 ghostZones.push_back(0);
             }
-            zones.push_back(cells[i]);
+            zones.push_back(cells[i] + cellOrigin);
             if ((pickAtts.GetShowZoneBlockLogicalCoords() ||
                  pickAtts.GetShowZoneDomainLogicalCoords()) &&
                 (type == VTK_STRUCTURED_GRID || 
