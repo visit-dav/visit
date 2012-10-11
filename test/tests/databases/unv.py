@@ -1,3 +1,12 @@
+# ----------------------------------------------------------------------------
+#  CLASSES: nightly
+#
+#  Tests:      smoke check of unv file reader.
+#
+#  Programmer: Olivier Cessenat
+#  Date: Thu Oct 11 08:42:44 PDT 2012
+# ----------------------------------------------------------------------------
+
 datapath = data_path("unv_test_data")
 
 OpenDatabase(pjoin(datapath, "small_sur.unv"))
