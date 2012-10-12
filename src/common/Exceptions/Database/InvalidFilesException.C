@@ -79,17 +79,22 @@ InvalidFilesException::InvalidFilesException(int numfiles)
 //    Remove reference to database, since that is just confusing the issue
 //    for users.
 //
+//    Brad Whitlock, Tue Oct  9 10:38:53 PDT 2012
+//    Use std::string.
+//
 // ****************************************************************************
 
 InvalidFilesException::InvalidFilesException(const char *filename)
 {
-    char str[1024];
-    sprintf(str, "There was an error opening %s. It may be an invalid file.", 
-                 filename);
-
-    msg = str;
+    msg = std::string("There was an error opening ") + std::string(filename) + 
+          std::string(". It may be an invalid file.");
 }
 
+InvalidFilesException::InvalidFilesException(const std::string &filename)
+{
+    msg = std::string("There was an error opening ") + filename + 
+          std::string(". It may be an invalid file.");
+}
 
 // ****************************************************************************
 //  Method: InvalidFilesException constructor
