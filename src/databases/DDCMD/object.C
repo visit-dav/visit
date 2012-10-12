@@ -89,9 +89,16 @@ int object_getv(OBJECT*object, char *name, void **pptr, int type)
     FIELD f;
     void *ptr;
     f = object_parse(object, name, type, NULL);
-    ptr = malloc(f.size);
-    memmove(ptr, f.v, f.size);
-    *pptr = (void *)ptr;
+    if (f.n > 0)
+    {
+        ptr = malloc(f.size);
+        memmove(ptr, f.v, f.size);
+        *pptr = (void *)ptr;
+    }
+    else
+    {
+        *pptr = (void *)NULL;
+    }
     return f.n;
 }
 
@@ -333,7 +340,6 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         ptr = strtok(NULL, ";");
         nname++;
     }
-    free(name_save);
     string = object->value;
     lstring = strlen(string) + 1;
     if (lstring > lbuff)    /* Create some temp character  array */
@@ -378,6 +384,9 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
         if (found) break;
         ptr = strtok(NULL, ";");
     }
+
+    free(name_save);
+
     if (found == 0)
     {
         if (dvalue == NULL) error_action("Unable to locate ", name, " in object ", object->name, ERROR_IN("object_parse", ABORT));
@@ -504,6 +513,10 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
             else
                 sep = " ";
             vptr = strtok_r(NULL, sep, &tail);
+        }
+        else
+        {
+            vptr = NULL;
         }
     }
     f.n = nv;

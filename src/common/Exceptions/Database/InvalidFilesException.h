@@ -77,6 +77,7 @@ class AVTEXCEPTION_API InvalidFilesException : public DatabaseException
 {
   public:
                           InvalidFilesException(const char *);
+                          InvalidFilesException(const std::string &);
                           InvalidFilesException(const char *, 
                                                 std::vector<std::string> &);
                           InvalidFilesException(const char *, 
