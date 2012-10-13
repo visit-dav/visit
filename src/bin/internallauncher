@@ -1502,7 +1502,6 @@ class MainLauncher(object):
         self.visitscriptdir = ""
         self.visitlauncher = ""
         self.visitlibdir = ""
-        self.visithelpdir = ""
         self.visitresourcedir = ""
         self.visitultradir = ""
         self.visitplugins = ""
@@ -1857,7 +1856,6 @@ class MainLauncher(object):
             if self.os == "darwin" and self.generalArgs.exe_name in ("gui", "viewer", "xmledit", "silex"):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + "lib"
-            self.visithelpdir = self.visitdir + "help"
             self.visitresourcedir = self.visitdir + "resources"
             self.visitultradir = self.visitdir + "ultrawrapper"
             self.visitplugins = self.visitdir + "plugins"
@@ -1893,7 +1891,6 @@ class MainLauncher(object):
             if self.os == "darwin" and self.generalArgs.exe_name in ("gui", "viewer", "xmledit", "silex"):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + archdir + "/lib"
-            self.visithelpdir = self.visitdir + archdir + "/help"
             self.visitresourcedir = self.visitdir + archdir + "/resources"
             self.visitultradir = self.visitdir + archdir + "/ultrawrapper"
             self.visitplugins = self.visitdir + archdir + "/plugins"
@@ -1904,7 +1901,6 @@ class MainLauncher(object):
             #print "visitscriptdir=", self.visitscriptdir
             #print "visitlauncher =", self.visitlauncher
             #print "visitlibdir   =", self.visitlibdir
-            #print "visithelpdir  =", self.visithelpdir
             #print "visitultradir =", self.visitultradir
             #print "visitplugins  =", self.visitplugins
             #print "publicversion =", self.publicversion
@@ -2079,7 +2075,6 @@ class MainLauncher(object):
         # Set required environment variables
         SETENV("VISITHOME",     self.visithome)
         SETENV("VISITARCHHOME", self.visitarchdir)
-        SETENV("VISITHELPHOME", self.visithelpdir)
         SETENV("VISITULTRAHOME", self.visitultradir)
 
         # Turn off trapping of floating point exceptions.
@@ -2123,7 +2118,7 @@ class MainLauncher(object):
             soext = "dylib"
 
         # The environment variables whose values we're printing.
-        vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", "VISITHELPHOME", 
+        vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", 
                 "VISITULTRAHOME", "VISITPLUGINDIR","TRAP_FPE",
                 "MESA_GLX_FX"]
         # vars = vars + ["PYTHONHOME"] # don't set PYTHONHOME

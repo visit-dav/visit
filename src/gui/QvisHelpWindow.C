@@ -40,6 +40,8 @@
 #include <visit-config.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
+
 #include <QvisHelpWindow.h>
 #include <QAction>
 #include <QDomDocument>
@@ -94,17 +96,16 @@
 //   Jeremy Meredith, Thu Aug  7 15:42:23 EDT 2008
 //   Fixed initializer order to match true order.
 //
+//   Brad Whitlock, Fri Oct 12 16:43:20 PDT 2012
+//   I moved help under resources.
+//
 // ****************************************************************************
 
 QvisHelpWindow::QvisHelpWindow(const QString &captionString) :
     QvisDelayedWindow(captionString), locale(), helpFile(), index(), bookmarks()
 {
     // Set the help path from an environment variable.
-    char *helpHome = getenv("VISITHELPHOME");
-    if(helpHome)
-        helpPath = QString(helpHome);
-    else
-        helpPath = "";
+    helpPath = QString(GetVisItResourcesDirectory(VISIT_RESOURCES_HELP).c_str());
 
     firstShow = true;
     activeTab = 0;

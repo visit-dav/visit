@@ -1098,16 +1098,6 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
         env.push_back(tmp);
     }
 
-
-    /*
-     * Set the help dir.
-     */
-    if (!usingdev)
-    {
-        sprintf(tmp, "VISITHELPHOME=%s\\help", visitpath);
-        env.push_back(tmp);
-    }
-
     /*
      * Set the ultrawrapper dir.
      */
@@ -1915,8 +1905,6 @@ PrintEnvironment()
     }
     if((tmp = getenv("VISITARCHHOME")) != NULL)
         fprintf(stdout, "VISITARCHHOME=%s\n", tmp);
-    if((tmp = getenv("VISITHELPHOME")) != NULL)
-        fprintf(stdout, "VISITHELPHOME=%s\n", tmp);
     if((tmp = getenv("VISITULTRAHOME")) != NULL)
         fprintf(stdout, "VISITULTRAHOME=%s\n", tmp);
     if((tmp = getenv("VISITPLUGINDIR")) != NULL)

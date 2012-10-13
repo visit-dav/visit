@@ -439,7 +439,9 @@ GetSystemVisItHostsDirectory()
 // Creation:   Fri Apr 27 17:31:12 PDT 2012
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Oct 12 16:36:02 PDT 2012
+//   Add help directory.
+//
 // ****************************************************************************
 
 std::string
@@ -454,6 +456,8 @@ GetVisItResourcesDirectory(VisItResourceDirectoryType t)
         retval += VISIT_SLASH_STRING;
         if(t == VISIT_RESOURCES_COLORTABLES)
             retval += "colortables";
+        else if(t == VISIT_RESOURCES_HELP)
+            retval += "help";
         else if(t == VISIT_RESOURCES_HOSTS)
             retval += "hosts";
         else if(t == VISIT_RESOURCES_TRANSLATIONS)

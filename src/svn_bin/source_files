@@ -24,6 +24,11 @@ exec perl -x $0 ${1+"$@"};
 #
 #   Brad Whitlock, Tue May  1 17:23:07 PDT 2012
 #   Add resources directory.
+#
+#   Brad Whitlock, Fri Oct 12 16:50:08 PDT 2012
+#   Remove help directory since it is now under resources.
+#
+# ----------------------------------------------------------------------------
 
 if  (! -d "src")
 {
@@ -137,7 +142,6 @@ else
     push @files, get_svn_recursive    "./src/bin";
     push @files, get_svn_recursive    "./src/exe";
     push @files, get_svn_norecursive  "./src/lib";
-    push @files, get_svn_recursive    "./src/help";
     push @files, get_svn_recursive    "./src/ultrawrapper";
     push @files, get_svn_recursive    "./src/archives";
     push @files, get_svn_recursive    "./src/plugins";

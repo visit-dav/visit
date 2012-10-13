@@ -7457,7 +7457,6 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
             fprintf(f, "unsetenv VISITPLUGININST\n");
             fprintf(f, "unsetenv VISITHOME\n");
             fprintf(f, "unsetenv VISITARCHHOME\n");
-            fprintf(f, "unsetenv VISITHELPHOME\n");
             fprintf(f, "unsetenv LD_LIBRARY32_PATH\n");
             fprintf(f, "unsetenv LD_LIBRARYN32_PATH\n");
             fprintf(f, "unsetenv LD_LIBRARY64_PATH\n");
