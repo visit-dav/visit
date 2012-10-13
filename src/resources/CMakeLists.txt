@@ -47,13 +47,16 @@
 #   Kathleen Biagas, Wed Sep 12 11:57:06 PDT 2012
 #   Add CMakeLists.txt and cmake-generated files to exclusion lists.
 #
+#   Brad Whitlock, Fri Oct 12 16:32:28 PDT 2012
+#   Move the help directory to here.
+#
 #*****************************************************************************
 
 # Do a little extra in the hosts directory.
 ADD_SUBDIRECTORY(hosts)
 
 # Directories that we want installed wholesale to the "resources" directory.
-SET(RESOURCE_DIRECTORIES colortables hosts movietemplates translations usage)
+SET(RESOURCE_DIRECTORIES colortables help hosts movietemplates translations usage)
 
 # Copy the resources directory into the out of source build
 FOREACH(ITEM ${RESOURCE_DIRECTORIES})

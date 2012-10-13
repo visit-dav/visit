@@ -92,10 +92,13 @@ exec perl -x $0 ${1+"$@"};
 #
 #     Mark C. Miller, Thu Mar  5 17:58:08 PST 2009
 #     Added support for dbio-only distribution
-
+# 
+#     Brad Whitlock, Fri Oct 12 16:52:21 PDT 2012
+#     Removed -withhelp option.
+#
 require "newgetopt.pl";
 
-$USAGE = "USAGE: $0 dist_file [-withhelp] [-withtest] [-dbioonly]\n";
+$USAGE = "USAGE: $0 dist_file [-withtest] [-dbioonly]\n";
 
 if (! -d "src")
 {
@@ -107,18 +110,7 @@ if (! -d "src")
 system("cd src; svn info . | grep \"Revision:\" | cut -d' ' -f2 > SVN_REVISION; cd ..");
 
 # Parse the argument list.
-&NGetOpt("withhelp","withtest","dbioonly");
-
-# If we wanted help files then create them now.
-#
-# THIS NEEDS HELP
-#
-if($opt_withhelp)
-{
-    # Temporarily disable until we convert from FrameMaker. In the meantime,
-    # all of the help files have been added to svn.
-    #system("./src/svn_bin/makehelp");
-}
+&NGetOpt("withtest","dbioonly");
 
 $dist = "";
 if($opt_dbioonly)
