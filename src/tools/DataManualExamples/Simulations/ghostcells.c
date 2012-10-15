@@ -70,31 +70,34 @@ visit_handle SimGetDomainList(const char *, void *);
 /* Quad mesh */
 typedef struct
 {
-    int   dims[2];
-    float extents[4];
+    int   dims[3];
+    float extents[6];
     float *x;
     float *y;
+    float *z;
     int   *ghostCells;
     float *data;
-} quadmesh_2d;
+} quadmesh;
 
 void
-quadmesh_2d_ctor(quadmesh_2d *m)
+quadmesh_ctor(quadmesh *m)
 {
-    memset(m, 0, sizeof(quadmesh_2d));
+    memset(m, 0, sizeof(quadmesh));
 }
 
 void
-quadmesh_2d_dtor(quadmesh_2d *m)
+quadmesh_dtor(quadmesh *m)
 {
     FREE(m->x);
     FREE(m->y);
+    FREE(m->z);
     FREE(m->ghostCells);
     FREE(m->data);
 }
 
-typedef quadmesh_2d rectmesh_2d;
-typedef quadmesh_2d curvmesh_2d;
+typedef quadmesh rectmesh_2d;
+typedef quadmesh rectmesh_3d;
+typedef quadmesh curvmesh_2d;
 
 /* Quad mesh with real min/max indices for multidomain index-based ghost cells. */
 typedef struct
@@ -113,7 +116,7 @@ rectmesh_idx_2d_ctor(rectmesh_idx_2d *m)
 void
 rectmesh_idx_2d_dtor(rectmesh_idx_2d *m)
 {
-    quadmesh_2d_dtor(&m->m);
+    quadmesh_dtor(&m->m);
 }
 
 /* Unstructured mesh */
@@ -167,6 +170,7 @@ typedef struct
     curvmesh_2d     blankCurvMesh;
     ucdmesh_2d      blankUcdMesh;
     rectmesh_idx_2d multidomain[9];
+    rectmesh_3d     multipletypes[4];
 } simulation_data;
 
 void
@@ -181,12 +185,15 @@ simulation_data_ctor(simulation_data *sim)
     sim->runMode = SIM_STOPPED;
     sim->done = 0;
 
-    quadmesh_2d_ctor(&sim->blankRectMesh);
-    quadmesh_2d_ctor(&sim->blankCurvMesh);
+    quadmesh_ctor(&sim->blankRectMesh);
+    quadmesh_ctor(&sim->blankCurvMesh);
     ucdmesh_2d_ctor(&sim->blankUcdMesh);
 
     for(i = 0; i < 9; ++i)
         rectmesh_idx_2d_ctor(&sim->multidomain[i]);
+
+    for(i = 0; i < 4; ++i)
+        quadmesh_ctor(&sim->multipletypes[i]);
 }
 
 void
@@ -194,12 +201,15 @@ simulation_data_dtor(simulation_data *sim)
 {
     int i;
 
-    quadmesh_2d_dtor(&sim->blankRectMesh);
-    quadmesh_2d_dtor(&sim->blankCurvMesh);
+    quadmesh_dtor(&sim->blankRectMesh);
+    quadmesh_dtor(&sim->blankCurvMesh);
     ucdmesh_2d_dtor(&sim->blankUcdMesh);
 
     for(i = 0; i < 9; ++i)
         rectmesh_idx_2d_dtor(&sim->multidomain[i]);
+
+    for(i = 0; i < 4; ++i)
+        quadmesh_dtor(&sim->multipletypes[i]);
 }
 
 const char *cmd_names[] = {"halt", "step", "run"};
@@ -361,7 +371,7 @@ ucdmesh_2d_create(ucdmesh_2d *m, int nx, int ny,
  *****************************************************************************/
 
 void
-quadmesh_2d_create_radial_wave(quadmesh_2d *m, double time)
+quadmesh_2d_create_radial_wave(quadmesh *m, double time)
 {
     int i, j;
     /* treat time as an angle */
@@ -585,6 +595,99 @@ create_multidomain_mesh(simulation_data *sim)
 
 /******************************************************************************
  *
+ * Purpose: Create a 3D dataset with 4 domains and ghost cells with multiple
+ *          ghost zone types in certain cells.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct 15 10:39:49 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void
+create_multipletypes_mesh(simulation_data *sim)
+{
+    int NX = 5, NY = 6, NZ = 7;
+    int leftOffset[4][2] = {{0,0}, {NX-2, 0}, {0, NY-2}, {NX-2, NY-2}};
+    int isGhostX[4] = {NX-1, 0, NX-1, 0};
+    int isGhostY[4] = {NY-1, NY-1, 0, 0};
+    int isExtX[4] = {0,  NX-1, 0, NX-1};
+    int isExtY[4] = {0, 0, NY-1, NY-1};
+    int i, j, ii, jj, kk, *iptr = NULL;
+    float *fptr = NULL;
+
+    for(i = 0; i < 4; ++i)
+    {
+        sim->multipletypes[i].dims[0] = NX+1;
+        sim->multipletypes[i].dims[1] = NY+1;
+        sim->multipletypes[i].dims[2] = NZ;
+
+        sim->multipletypes[i].x = (float *)malloc((NX+1) * sizeof(float));
+        sim->multipletypes[i].y = (float *)malloc((NY+1) * sizeof(float));
+        sim->multipletypes[i].z = (float *)malloc(NZ * sizeof(float));
+
+        for(j = 0; j < NX+1; ++j)
+            sim->multipletypes[i].x[j] = j + leftOffset[i][0];
+        for(j = 0; j < NY+1; ++j)
+            sim->multipletypes[i].y[j] = j + leftOffset[i][1];
+        for(j = 0; j < NZ; ++j)
+            sim->multipletypes[i].z[j] = j;
+
+        sim->multipletypes[i].extents[0] = sim->multipletypes[i].x[0];
+        sim->multipletypes[i].extents[1] = sim->multipletypes[i].x[NX];
+        sim->multipletypes[i].extents[2] = sim->multipletypes[i].y[0];
+        sim->multipletypes[i].extents[3] = sim->multipletypes[i].y[NY];
+        sim->multipletypes[i].extents[4] = sim->multipletypes[i].z[0];
+        sim->multipletypes[i].extents[5] = sim->multipletypes[i].z[NZ-1];
+
+        iptr = sim->multipletypes[i].ghostCells = (int *)malloc((NX)*(NY)*(NZ-1) * sizeof(int));
+        for(kk = 0; kk < NZ-1; ++kk)
+        {
+            for(jj = 0; jj < NY; ++jj)
+            {
+                for(ii = 0; ii < NX; ++ii)
+                {
+                    *iptr = VISIT_GHOSTCELL_REAL;
+
+                    /* Mark the interior boundaries. */
+                    if(isGhostX[i] == ii)
+                        *iptr = VISIT_GHOSTCELL_INTERIOR_BOUNDARY;
+                    if(isGhostY[i] == jj)
+                        *iptr = VISIT_GHOSTCELL_INTERIOR_BOUNDARY;
+
+                    /* Mark the ghost cells along the XY perimeter as exterior 
+                       boundaries too. */
+                    if(*iptr > 0)
+                    {
+                        if(isExtX[i] == ii)
+                            *iptr |= VISIT_GHOSTCELL_EXTERIOR_BOUNDARY;
+                        if(isExtY[i] == jj)
+                            *iptr |= VISIT_GHOSTCELL_EXTERIOR_BOUNDARY;
+                    }
+                    iptr++;
+                }
+            }
+        }
+
+        fptr = sim->multipletypes[i].data = (float *)malloc((NX)*(NY)*(NZ-1) * sizeof(float));
+        for(kk = 0; kk < NZ-1; ++kk)
+        {
+            for(jj = 0; jj < NY; ++jj)
+            {
+                for(ii = 0; ii < NX; ++ii)
+                {
+                    *fptr++ = sqrt(sim->multipletypes[i].x[ii]*sim->multipletypes[i].x[ii] +
+                                   sim->multipletypes[i].y[jj]*sim->multipletypes[i].y[jj] +
+                                   sim->multipletypes[i].z[kk]*sim->multipletypes[i].z[kk]);
+                }
+            }
+        }
+    }
+}
+
+/******************************************************************************
+ *
  * Purpose: Create the data that the simulation will use.
  *
  * Programmer: Brad Whitlock
@@ -599,6 +702,7 @@ read_input_deck(simulation_data *sim)
 {
     create_blanked_meshes(sim);
     create_multidomain_mesh(sim);
+    create_multipletypes_mesh(sim);
 }
 
 /******************************************************************************
@@ -1052,6 +1156,17 @@ SimGetMetaData(void *cbdata)
 
             VisIt_SimulationMetaData_addMesh(md, mmd);
         }
+        if(VisIt_MeshMetaData_alloc(&mmd) == VISIT_OKAY)
+        {
+            /* Set the mesh's properties.*/
+            VisIt_MeshMetaData_setName(mmd, "multi_types");
+            VisIt_MeshMetaData_setMeshType(mmd, VISIT_MESHTYPE_RECTILINEAR);
+            VisIt_MeshMetaData_setTopologicalDimension(mmd, 3);
+            VisIt_MeshMetaData_setSpatialDimension(mmd, 3);
+            VisIt_MeshMetaData_setNumDomains(mmd, 4);
+
+            VisIt_SimulationMetaData_addMesh(md, mmd);
+        }
 
         /* Add a variable. */
         if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
@@ -1094,6 +1209,15 @@ SimGetMetaData(void *cbdata)
         {
             VisIt_VariableMetaData_setName(vmd, "multi_var_index");
             VisIt_VariableMetaData_setMeshName(vmd, "multi_domain_index");
+            VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
+            VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
+
+            VisIt_SimulationMetaData_addVariable(md, vmd);
+        }
+        if(VisIt_VariableMetaData_alloc(&vmd) == VISIT_OKAY)
+        {
+            VisIt_VariableMetaData_setName(vmd, "multi_types_var");
+            VisIt_VariableMetaData_setMeshName(vmd, "multi_types");
             VisIt_VariableMetaData_setType(vmd, VISIT_VARTYPE_SCALAR);
             VisIt_VariableMetaData_setCentering(vmd, VISIT_VARCENTERING_ZONE);
 
@@ -1226,6 +1350,30 @@ SimGetMesh(int domain, const char *name, void *cbdata)
             }
         }
     }
+    else if(strcmp(name, "multi_types") == 0)
+    {
+        if(domain < 4 && VisIt_RectilinearMesh_alloc(&h) != VISIT_ERROR)
+        {
+            int ncells;
+            visit_handle hx, hy, hz, gc;
+
+            VisIt_VariableData_alloc(&hx);
+            VisIt_VariableData_alloc(&hy);
+            VisIt_VariableData_alloc(&hz);
+            VisIt_VariableData_setDataF(hx, VISIT_OWNER_SIM, 1, sim->multipletypes[domain].dims[0], sim->multipletypes[domain].x);
+            VisIt_VariableData_setDataF(hy, VISIT_OWNER_SIM, 1, sim->multipletypes[domain].dims[1], sim->multipletypes[domain].y);
+            VisIt_VariableData_setDataF(hz, VISIT_OWNER_SIM, 1, sim->multipletypes[domain].dims[2], sim->multipletypes[domain].z);
+            VisIt_RectilinearMesh_setCoordsXYZ(h, hx, hy, hz);
+
+            /* Do ghost cells using a ghost cells array. */
+            VisIt_VariableData_alloc(&gc);
+            ncells = (sim->multipletypes[domain].dims[0]-1) *
+                     (sim->multipletypes[domain].dims[1]-1) *
+                     (sim->multipletypes[domain].dims[2]-1);
+            VisIt_VariableData_setDataI(gc, VISIT_OWNER_SIM, 1, ncells, sim->multipletypes[domain].ghostCells);
+            VisIt_RectilinearMesh_setGhostCells(h, gc);
+        }
+    }
     return h;
 }
 
@@ -1243,12 +1391,12 @@ SimGetMesh(int domain, const char *name, void *cbdata)
 visit_handle
 SimGetVariable(int domain, const char *name, void *cbdata)
 {
+    int ncells;
     visit_handle h = VISIT_INVALID_HANDLE;
     simulation_data *sim = (simulation_data *)cbdata;
 
     if(strcmp(name, "rect_var") == 0)
     {
-        int ncells;
         ncells = (sim->blankRectMesh.dims[0]-1) * (sim->blankRectMesh.dims[1]-1);
         VisIt_VariableData_alloc(&h);
         VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
@@ -1256,7 +1404,6 @@ SimGetVariable(int domain, const char *name, void *cbdata)
     }
     else if(strcmp(name, "curv_var") == 0)
     {
-        int ncells;
         ncells = (sim->blankCurvMesh.dims[0]-1) * (sim->blankCurvMesh.dims[1]-1);
         VisIt_VariableData_alloc(&h);
         VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
@@ -1270,11 +1417,19 @@ SimGetVariable(int domain, const char *name, void *cbdata)
     }
     else if(strncmp(name, "multi_var", 9) == 0)
     {
-        int ncells;
         ncells = (sim->multidomain[domain].m.dims[0]-1) * (sim->multidomain[domain].m.dims[1]-1);
         VisIt_VariableData_alloc(&h);
         VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
             ncells, sim->multidomain[domain].m.data);
+    }
+    else if(domain < 4 && strcmp(name, "multi_types_var") == 0)
+    {
+        ncells = (sim->multipletypes[domain].dims[0]-1) * 
+                 (sim->multipletypes[domain].dims[1]-1) *
+                 (sim->multipletypes[domain].dims[2]-1);
+        VisIt_VariableData_alloc(&h);
+        VisIt_VariableData_setDataF(h, VISIT_OWNER_SIM, 1,
+            ncells, sim->multipletypes[domain].data);
     }
     return h;
 }
@@ -1298,12 +1453,13 @@ SimGetDomainList(const char *name, void *cbdata)
     {
         visit_handle hdl;
         int i, *iptr = NULL, dcount = 0;
+        int ndoms = 9;
         simulation_data *sim = (simulation_data *)cbdata;
 
-        iptr = (int *)malloc(9 * sizeof(int));
-        memset(iptr, 0, 9 * sizeof(int));
+        iptr = (int *)malloc(ndoms * sizeof(int));
+        memset(iptr, 0, ndoms * sizeof(int));
 
-        for(i = 0; i < 9; i++)
+        for(i = 0; i < ndoms; i++)
         {
             int owner_of_domain = i % sim->par_size;
             if(sim->par_rank == owner_of_domain)

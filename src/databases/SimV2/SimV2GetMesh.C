@@ -215,6 +215,8 @@ GetQuadGhostZones(int nnodes, int ndims,
 // Creation:   Thu Aug 11 14:15:15 PDT 2011
 //
 // Modifications:
+//   Brad Whitlock, Thu Sep 27 17:24:15 PDT 2012
+//   Add ghost zones such that they can have multiple designations.
 //
 // ****************************************************************************
 
@@ -228,13 +230,6 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
     void *data = 0;
     if(simv2_VariableData_getData(ghostCells, owner, dataType, nComps, nTuples, data))
     {
-        unsigned char gzTypes[6] = {0,0,0,0,0,0};
-        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_INTERIOR_BOUNDARY],     DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_EXTERIOR_BOUNDARY],     ZONE_EXTERIOR_TO_PROBLEM);
-        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY], ENHANCED_CONNECTIVITY_ZONE);
-        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_REDUCED_CONNECTIVITY],  REDUCED_CONNECTIVITY_ZONE);
-        avtGhostData::AddGhostZoneType(gzTypes[VISIT_GHOSTCELL_BLANK],                 ZONE_NOT_APPLICABLE_TO_PROBLEM);
-
         vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::New();
         ghosts->SetNumberOfTuples(nTuples);
         ghosts->SetName(AVT_GHOST_ZONES_ARRAY);
@@ -243,19 +238,24 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
         {
             const unsigned char *src = (const unsigned char *)data;
             const unsigned char *end = src + nTuples;
-            while(src < end)
+            for( ; src < end; src++)
             {
-                if(*src <= VISIT_GHOSTCELL_BLANK)
-                {
-                    *dest++ = gzTypes[*src];
-                }
-                else
-                {
-                    ghosts->Delete();
-                    EXCEPTION1(ImproperUseException, "Invalid ghost cell value");
-                }
+                unsigned char gz = 0;
 
-                src++;
+                if(*src & VISIT_GHOSTCELL_INTERIOR_BOUNDARY)
+                    avtGhostData::AddGhostZoneType(gz, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_EXTERIOR_BOUNDARY)
+                    avtGhostData::AddGhostZoneType(gz, ZONE_EXTERIOR_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY)
+                    avtGhostData::AddGhostZoneType(gz, ENHANCED_CONNECTIVITY_ZONE);
+                if(*src & VISIT_GHOSTCELL_REDUCED_CONNECTIVITY)
+                    avtGhostData::AddGhostZoneType(gz, REDUCED_CONNECTIVITY_ZONE);
+                if(*src & VISIT_GHOSTCELL_BLANK)
+                    avtGhostData::AddGhostZoneType(gz, ZONE_NOT_APPLICABLE_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_REFINED_AMR_CELL)
+                    avtGhostData::AddGhostZoneType(gz, REFINED_ZONE_IN_AMR_GRID);
+
+                *dest++ = gz;
             }
 
             ds->GetCellData()->AddArray(ghosts);
@@ -265,19 +265,24 @@ AddGhostZonesFromArray(vtkDataSet *ds, visit_handle ghostCells)
         {
             const int *src = (const int *)data;
             const int *end = src + nTuples;
-            while(src < end)
+            for( ; src < end; src++)
             {
-                if(*src >= 0 && *src <= VISIT_GHOSTCELL_BLANK)
-                {
-                    *dest++ = gzTypes[*src];
-                }
-                else
-                {
-                    ghosts->Delete();
-                    EXCEPTION1(ImproperUseException, "Invalid ghost cell value");
-                }
+                unsigned char gz = 0;
 
-                src++;
+                if(*src & VISIT_GHOSTCELL_INTERIOR_BOUNDARY)
+                    avtGhostData::AddGhostZoneType(gz, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_EXTERIOR_BOUNDARY)
+                    avtGhostData::AddGhostZoneType(gz, ZONE_EXTERIOR_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_ENHANCED_CONNECTIVITY)
+                    avtGhostData::AddGhostZoneType(gz, ENHANCED_CONNECTIVITY_ZONE);
+                if(*src & VISIT_GHOSTCELL_REDUCED_CONNECTIVITY)
+                    avtGhostData::AddGhostZoneType(gz, REDUCED_CONNECTIVITY_ZONE);
+                if(*src & VISIT_GHOSTCELL_BLANK)
+                    avtGhostData::AddGhostZoneType(gz, ZONE_NOT_APPLICABLE_TO_PROBLEM);
+                if(*src & VISIT_GHOSTCELL_REFINED_AMR_CELL)
+                    avtGhostData::AddGhostZoneType(gz, REFINED_ZONE_IN_AMR_GRID);
+
+                *dest++ = gz;
             }
 
             ds->GetCellData()->AddArray(ghosts);
