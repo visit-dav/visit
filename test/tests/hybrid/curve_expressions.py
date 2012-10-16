@@ -31,14 +31,15 @@ def DoBinaryOp(db1, curve1, db2, curve2, op, index):
 
 def TestBinary():
     binops = ("+", "-", "*", "/")
-    db = cmfe_data_path("curve_test_data/distribution.ultra")
+    cdb = cmfe_data_path("curve_test_data/distribution.ultra")
+    db = data_path("curve_test_data/distribution.ultra")
     logNormal = "Log Normal Distribution"
     exponential = "Exponential Distribution"
 
     TestSection("binary operations on curves")
     OpenDatabase(db)
     for i in range(4):
-        DoBinaryOp(db, logNormal, db, exponential, binops[i], i)
+        DoBinaryOp(cdb, logNormal, cdb, exponential, binops[i], i)
 
     CloseDatabase(db)
 
