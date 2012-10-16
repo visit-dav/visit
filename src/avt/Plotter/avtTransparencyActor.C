@@ -43,6 +43,7 @@
 #include <avtTransparencyActor.h>
 
 #include <float.h>
+#include <cstring>
 
 #include <avtParallel.h>
 #include <vtkActor.h>
