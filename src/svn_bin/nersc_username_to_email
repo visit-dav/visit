@@ -161,6 +161,10 @@ case $1 in
     "wheeler")
         emaddr=Matthew.Wheeler@awe.co.uk
         ;;
+    # Satheesh Maheswaran, AWE UK
+    "wheeler")
+        emaddr=Satheesh.Maheswaran@awe.co.uk
+        ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
         ;;
