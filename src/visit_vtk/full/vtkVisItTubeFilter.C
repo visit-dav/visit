@@ -126,7 +126,7 @@ int vtkVisItTubeFilter::RequestData(
 
     // Create the geometry and topology
     numNewPts = numPts * this->NumberOfSides;
-    newPts = vtkPoints::New();
+    newPts = vtkPoints::New(inPts->GetDataType());
     newPts->Allocate(numNewPts);
     newNormals = vtkFloatArray::New();
     newNormals->SetName("TubeNormals");

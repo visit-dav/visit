@@ -38,8 +38,7 @@
 #include <avtSpreadsheetRenderer.h>
 
 #include <vtkFieldData.h>
-#include <vtkDataArray.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkDataSet.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -214,6 +213,9 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //   The distinction between Mesa and OpenGL no longer exists at the plot 
 //   level.
 //
+//   Kathleen Biagas, Tue Oct 16 15:14:42 MST 2012
+//   Create vtkDoubleArray for bounds, that's how avtOriginalBounds is created.
+//
 // ****************************************************************************
 
 void
@@ -224,7 +226,7 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
     vtkDataArray *bounds = ds->GetFieldData()->GetArray("avtOriginalBounds");
     if (!bounds)
     {
-        bounds=vtkFloatArray::New();
+        bounds=vtkDoubleArray::New();
         bounds->SetNumberOfTuples(6);
         for (vtkIdType i=0; i<6; ++i)
             bounds->SetTuple1(i, ds->GetBounds()[i]);

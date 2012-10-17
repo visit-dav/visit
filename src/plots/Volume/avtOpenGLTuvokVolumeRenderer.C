@@ -47,7 +47,6 @@
 
 #include <vtkCamera.h>
 #include <vtkDataArray.h>
-#include <vtkFloatArray.h>
 #include <vtkMatrix4x4.h>
 #include <vtkRectilinearGrid.h>
 
@@ -468,9 +467,8 @@ create_dataset_info(vtkRectilinearGrid *grid)
 static void
 debug_vtk_array(vtkDataArray *arr)
 {
-    vtkFloatArray *fA = vtkFloatArray::SafeDownCast(arr);
     double range[2];
-    fA->GetRange(range);
+    arr->GetRange(range);
     debug3 << "Array: " << arr->GetName() << std::endl
            << "\ttype: " << arr->GetDataType() << "("
               << vtkImageScalarTypeNameMacro(arr->GetDataType()) << ")"

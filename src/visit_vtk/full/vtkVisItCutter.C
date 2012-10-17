@@ -21,7 +21,7 @@
 #include <vtkCellData.h>
 #include <vtkContourValues.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkGenericCell.h>
 #include <vtkImplicitFunction.h>
 #include <vtkMergePoints.h>
@@ -29,6 +29,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <math.h>
 
@@ -143,11 +144,11 @@ void vtkVisItCutter::DataSetCutter()
   vtkIdType cellId, i;
   int iter;
   vtkPoints *cellPts;
-  vtkFloatArray *cellScalars;
+  vtkDoubleArray *cellScalars;
   vtkGenericCell *cell;
   vtkCellArray *newVerts, *newLines, *newPolys;
   vtkPoints *newPoints;
-  vtkFloatArray *cutScalars;
+  vtkDoubleArray *cutScalars;
   double value, s;
   vtkPolyData *output = this->GetOutput();
   vtkDataSet *input=this->GetInput();
@@ -164,7 +165,7 @@ void vtkVisItCutter::DataSetCutter()
   int abortExecute=0;
 
   
-  cellScalars=vtkFloatArray::New();
+  cellScalars=vtkDoubleArray::New();
 
   // Create objects to hold output of contour operation
   //
@@ -175,7 +176,7 @@ void vtkVisItCutter::DataSetCutter()
     estimatedSize = 1024;
     }
 
-  newPoints = vtkPoints::New();
+  newPoints = vtkVisItUtility::NewPoints(input);
   newPoints->Allocate(estimatedSize,estimatedSize/2);
   newVerts = vtkCellArray::New();
   newVerts->Allocate(estimatedSize,estimatedSize/2);
@@ -183,7 +184,7 @@ void vtkVisItCutter::DataSetCutter()
   newLines->Allocate(estimatedSize,estimatedSize/2);
   newPolys = vtkCellArray::New();
   newPolys->Allocate(estimatedSize,estimatedSize/2);
-  cutScalars = vtkFloatArray::New();
+  cutScalars = vtkDoubleArray::New();
   cutScalars->SetNumberOfTuples(numPts);
 
 
@@ -361,10 +362,10 @@ void vtkVisItCutter::UnstructuredGridCutter()
 {
   vtkIdType cellId, i;
   int iter;
-  vtkFloatArray *cellScalars;
+  vtkDataArray *cellScalars;
   vtkCellArray *newVerts, *newLines, *newPolys;
   vtkPoints *newPoints;
-  vtkFloatArray *cutScalars;
+  vtkDoubleArray *cutScalars;
   double value, s;
   vtkPolyData *output = this->GetOutput();
   vtkDataSet *input = this->GetInput();
@@ -393,7 +394,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
       estimatedSize = 1024;
     }
 
-  newPoints = vtkPoints::New();
+  newPoints = vtkVisItUtility::NewPoints(input);
   newPoints->Allocate(estimatedSize,estimatedSize/2);
   newVerts = vtkCellArray::New();
   newVerts->Allocate(estimatedSize,estimatedSize/2);
@@ -401,7 +402,7 @@ void vtkVisItCutter::UnstructuredGridCutter()
   newLines->Allocate(estimatedSize,estimatedSize/2);
   newPolys = vtkCellArray::New();
   newPolys->Allocate(estimatedSize,estimatedSize/2);
-  cutScalars = vtkFloatArray::New();
+  cutScalars = vtkDoubleArray::New();
   cutScalars->SetNumberOfTuples(numPts);
 
   // Interpolate data along edge. If generating cut scalars, do necessary setup
@@ -443,10 +444,10 @@ void vtkVisItCutter::UnstructuredGridCutter()
   vtkIdType progressInterval = numCuts/20 + 1;
   int cut=0;
 
-  vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *)input;
+  vtkUnstructuredGrid *grid = vtkUnstructuredGrid::SafeDownCast(input);
   vtkIdType *cellArrayPtr = grid->GetCells()->GetPointer();
-  float *scalarArrayPtr = cutScalars->GetPointer(0);
-  float tempScalar;
+  double *scalarArrayPtr = cutScalars->GetPointer(0);
+  double tempScalar;
   cellScalars = cutScalars->NewInstance();
   cellScalars->SetNumberOfComponents(cutScalars->GetNumberOfComponents());
   cellScalars->Allocate(VTK_CELL_SIZE*cutScalars->GetNumberOfComponents());
