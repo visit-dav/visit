@@ -74,8 +74,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The WPPImage reader is now built by default and included in all the binary distributions.</li>
   <li>The CGNS reader was improved so it reads data values properly whether or not boundaries are present in the file. Thank you to Mickael Philit for the fix!</li>
   <li>The Silo reader was improved so it will use global node ids that were written for point meshes.</li>
-  <li>The Tecplot binary reader was fixed so that it can read multiple time steps using automatic file grouping and <i>.visit</i> files.</li>
-  <li>The Tecplot reader was fixed so that it properly reads the z axis name when it is specified in the default file open options. The fix was provided by Jean Favre.</li>
+  <li>Several fixes and enhancements were made to the Tecplot binary reader:
+      <ul>
+         <li>Multiple time steps can now be grouped using automatic file grouping and <i>.visit</i> files.</li>
+         <li>The z axis name is read properly when it is specified in the default file open options. The fix was provided by Jean Favre.</li>
+         <li>Support was added for an older flavor of Tecplot binary file, version TDV102.</li>
+      </ul>
+  </li>
   <li>The ddcMD reader has been fixed and support was added for ascii record cgrid files that are decomposed into multiple subnames.</li>
 </ul>
 

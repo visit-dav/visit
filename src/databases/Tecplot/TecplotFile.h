@@ -919,7 +919,7 @@ public:
     bool Write();
 
     void DisableReadingDataInformation();
-    std::string CoordinateVariable(int axis) const;
+    std::string CoordinateVariable(int axis, bool returnEmpty) const;
     int ZoneNameToIndex(const std::string &) const;
     int VarNameToIndex(const std::string &) const;
     int GetNumSpatialDimensions(int zoneId) const;

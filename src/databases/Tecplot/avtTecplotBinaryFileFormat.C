@@ -559,7 +559,10 @@ avtTecplotBinaryFileFormat::GetMesh(int domain, const char *meshname)
 // Modifications:
 //    Jeremy Meredith, Tue Oct 25 12:37:42 EDT 2011
 //    Allow user manual override of coordinate axis variables (via options).
-//   
+//
+//    Brad Whitlock, Wed Oct 17 16:23:02 PDT 2012
+//    Add false argument to CoordinateVariable.
+//
 // ****************************************************************************
 
 vtkPoints *
@@ -572,9 +575,9 @@ avtTecplotBinaryFileFormat::GetPoints(int zoneId, int ndims)
     int nnodes = File()->zones[zoneId].GetNumNodes();
 
     // Get coordinate axis names.
-    std::string coordnameX = File()->CoordinateVariable(0);
-    std::string coordnameY = File()->CoordinateVariable(1);
-    std::string coordnameZ = File()->CoordinateVariable(2);
+    std::string coordnameX = File()->CoordinateVariable(0, false);
+    std::string coordnameY = File()->CoordinateVariable(1, false);
+    std::string coordnameZ = File()->CoordinateVariable(2, false);
     if (userSpecifiedAxisVars)
     {
         int nvars = File()->titleAndVars.varNames.size();
@@ -757,7 +760,10 @@ avtTecplotBinaryFileFormat::GetCurvilinearMesh(int zoneId)
 // Creation:   Fri Jun 13 13:53:50 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 17 16:23:30 PDT 2012
+//   Make file versions 102 and lower be origin 1. The check was previously for
+//   version 100.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -769,7 +775,7 @@ avtTecplotBinaryFileFormat::GetUnstructuredMesh(int zoneId)
     // Read the nnodes, ncells, origin from file.
     int sdims = File()->GetNumSpatialDimensions(zoneId);
     int ncells = File()->zones[zoneId].GetNumElements();
-    int origin = (File()->version <= 100) ? 1 : 0;
+    int origin = (File()->version <= 102) ? 1 : 0;
 
     // Read in the connectivity array. This example assumes that
     // the connectivity will be stored: type, indices, type,
