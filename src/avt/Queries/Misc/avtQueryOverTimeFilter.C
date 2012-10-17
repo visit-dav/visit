@@ -56,7 +56,6 @@
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
@@ -717,7 +716,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
         }
 
         vtkDataArray *xc = rgrid->GetXCoordinates();
-        vtkFloatArray *sc = vtkFloatArray::New();
+        vtkDoubleArray *sc = vtkDoubleArray::New();
 
         sc->SetNumberOfComponents(1);
         sc->SetNumberOfTuples(nPts);
@@ -772,7 +771,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
 
         vtkDataArray *xc = rgrid->GetXCoordinates();
         vtkDataArray *yc = rgrid->GetYCoordinates();
-        vtkFloatArray *sc = vtkFloatArray::New();
+        vtkDoubleArray *sc = vtkDoubleArray::New();
 
         sc->SetNumberOfComponents(1);
         sc->SetNumberOfTuples(nPts*nResultsToStore);
@@ -836,7 +835,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
         {
             grids[i] = vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
             vtkDataArray *xc = ((vtkRectilinearGrid*)grids[i])->GetXCoordinates();
-            vtkFloatArray *sc = vtkFloatArray::New();
+            vtkDoubleArray *sc = vtkDoubleArray::New();
             sc->SetNumberOfComponents(1);
             sc->SetNumberOfTuples(nPts);
             sc->SetName(vars[i].c_str());

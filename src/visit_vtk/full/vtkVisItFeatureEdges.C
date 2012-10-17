@@ -163,7 +163,7 @@ void vtkVisItFeatureEdges::Execute()
 
   // Allocate storage for lines/points (arbitrary allocation sizes)
   //
-  newPts = vtkPoints::New();
+  newPts = vtkPoints::New(input->GetPoints()->GetDataType());
   newPts->Allocate(numPts/10,numPts); 
   newLines = vtkCellArray::New();
   newLines->Allocate(numPts/10);

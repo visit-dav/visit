@@ -76,6 +76,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkDataSetWriter.h>
+#include <vtkVisItUtility.h>
 
 // ****************************************************************************
 //  Method: avtAMRStitchCellFilter constructor
@@ -907,6 +908,10 @@ avtAMRStitchCellFilter::UpdateDataObjectInfo(void)
 //  Programmer: Gunther H. Weber
 //  Creation:   Thu Jul 8 15:14:01 PST 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Oct 16 15:28:09 MST 2012
+//    Preserve Coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -916,7 +921,7 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
         const vtkIdType* refinedInSameLevelDomain)
 {
     // Create unstructured grid for stitch cells
-    vtkPoints *stitchCellPts = vtkPoints::New();
+    vtkPoints *stitchCellPts = vtkVisItUtility::NewPoints(rgrid);
     vtkUnstructuredGrid *stitchCellGrid = vtkUnstructuredGrid::New();
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(stitchCellPts);
@@ -1622,6 +1627,10 @@ avtAMRStitchCellFilter::CreateStitchCells(vtkRectilinearGrid *rgrid,
 //  Programmer: Gunther H. Weber (based on Cyrus Harrison's DualMesh filter)
 //  Creation:   Thu Jul 8 15:14:01 PST 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Oct 16 13:27:01 MST 2012
+//    Preserve coordinate type.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1636,7 +1645,7 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
     // dims[] corresponds to the number of samples of the dual grid.
     result->SetDimensions(dims);
 
-    vtkFloatArray *xCoords = vtkFloatArray::New();
+    vtkDataArray *xCoords = rgrid->GetXCoordinates()->NewInstance();
     for (int i = 0; i<dims[0]; ++i)
         xCoords->InsertNextTuple1(
                 domainOrigin[0] + (i + baseIdx[0] - ghostOffset[0] +  0.5) * cellSize[level][0]
@@ -1644,7 +1653,7 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
     result->SetXCoordinates(xCoords);
     xCoords->Delete();
 
-    vtkFloatArray *yCoords = vtkFloatArray::New();
+    vtkDataArray *yCoords = rgrid->GetYCoordinates()->NewInstance();
     for (int j = 0; j<dims[1]; ++j)
         yCoords->InsertNextTuple1(
                 domainOrigin[1] + (j + baseIdx[1] - ghostOffset[1] +  0.5) * cellSize[level][1]
@@ -1654,7 +1663,7 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
 
     if (topologicalDimension == 3)
     {
-        vtkFloatArray *zCoords = vtkFloatArray::New();
+        vtkDataArray *zCoords = rgrid->GetZCoordinates()->NewInstance();
         for (int k = 0; k<dims[2]; ++k)
             zCoords->InsertNextTuple1(
                     domainOrigin[2] + (k + baseIdx[2] - ghostOffset[2] +  0.5) * cellSize[level][2]
@@ -1855,13 +1864,13 @@ avtAMRStitchCellFilter::CreateDualGrid(vtkRectilinearGrid  *rgrid, int domain,
 vtkDataArray *
 avtAMRStitchCellFilter::ContractDual(vtkDataArray *coords)
 {
-    vtkFloatArray *res_coords = vtkFloatArray::New();
+    vtkDataArray *res_coords = coords->NewInstance();
 
     int npoints = coords->GetNumberOfTuples();
     for(int i=0;i< npoints - 1;i++)
     {
-        float curr = (coords->GetTuple1(i+1) + coords->GetTuple1(i)) / 2.0;
-        res_coords->InsertNextValue(curr);
+        double curr = (coords->GetTuple1(i+1) + coords->GetTuple1(i)) / 2.0;
+        res_coords->InsertNextTuple1(curr);
     }
     return res_coords;
 }
