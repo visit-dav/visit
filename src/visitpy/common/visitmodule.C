@@ -19,7 +19,7 @@
 *    documentation and/or other materials provided with the distribution.
 *  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
 *    be used to endorse or promote products derived from this software without
-*    specific prior written permission.
+*    specific prior written permission
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
@@ -11003,6 +11003,8 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
             params["width"] = darg3[0];
             params["height"] = darg3[1];
             params["image_size"] = ps;
+            // upVector is a new param, don't support in old-style calls.
+            params["useUpVector"] = 0;
         }
     }
 

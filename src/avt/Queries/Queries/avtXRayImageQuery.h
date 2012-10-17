@@ -82,6 +82,10 @@
 //    Kathleen Biagas, Wed Oct 17 12:10:13 PDT 2012
 //    Added upVector.
 //
+//    Kathleen Biagas, Wed Oct 17 14:13:26 PDT 2012
+//    Added useSpecifiedUpVector, to allow support for old-style cli queries,
+//    where the upVector wasn't available.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -120,6 +124,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     int                       nx, ny;
     bool                      divideEmisByAbsorb;
     int                       outputType;
+    bool                      useSpecifiedUpVector;
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
