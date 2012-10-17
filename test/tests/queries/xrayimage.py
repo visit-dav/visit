@@ -16,6 +16,9 @@
 #    GetQueryParameters.  All subsequent calls to Query modify that dictionary 
 #    object as necessary and pass it.
 #
+#    Kathleen Biagas, Wed Oct 17 14:25:05 PDT 2012
+#    Show usage of new 'up_vector' parameter.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -61,7 +64,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 #create our own dictionary
-params = dict(output_type="png", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+params = dict(output_type="png", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
 Query("XRay Image", params)
 
 os.rename("output00.png", out_path(out_base,"xrayimage02.png"))
