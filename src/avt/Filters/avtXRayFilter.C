@@ -370,11 +370,15 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    closely to an avtView3D structure instead of having it match the
 //    parameters to SetImageProperty.
 //
+//    Kathleen Biagas, Wed Oct 17 14:08:40 PDT 2012
+//    Added 'up' argument.  Allow it to be NULL, to preserve old behavior
+//    of avtXRayImageQuery, which did not have an 'up_vector' argument.
+//
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(double *pos, double  theta, double  phi,
-    double  dx, double  dy, int nx, int ny)
+avtXRayFilter::SetImageProperties(double *pos, double *up, double theta, 
+    double phi, double dx, double dy, int nx, int ny)
 {
     double cosT = cos(theta);
     double sinT = sin(theta);
@@ -387,9 +391,18 @@ avtXRayFilter::SetImageProperties(double *pos, double  theta, double  phi,
     focus[0] = pos[0];
     focus[1] = pos[1];
     focus[2] = pos[2];
-    viewUp[0] = -sinP;
-    viewUp[1] = cosP;
-    viewUp[2] = 0;
+    if (up != NULL)
+    {
+        viewUp[0] = up[0];
+        viewUp[1] = up[1];
+        viewUp[2] = up[2];
+    }
+    else
+    {
+        viewUp[0] = -sinP;
+        viewUp[1] = cosP;
+        viewUp[2] = 0;
+    }
     viewAngle = 30;
     parallelScale = dy / 2.;
     // The 10 below is to get the results to match previous results more

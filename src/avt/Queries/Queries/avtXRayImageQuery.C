@@ -91,6 +91,9 @@
 //    Kathleen Biagas, Wed Oct 17 12:10:25 PDT 2012
 //    Added upVector.
 //
+//    Kathleen Biagas, Wed Oct 17 14:39:41 PDT 2012
+//    Added useSpecifiedUpVector.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -112,6 +115,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     numPixels = nx * ny;
     divideEmisByAbsorb = false;
     outputType = 2; // png
+    useSpecifiedUpVector = true;
 }
 
 
@@ -139,6 +143,13 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //  Programmer: Kathleen Biagas 
 //  Creation:   May 17, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Oct 17 12:10:25 PDT 2012
+//    Added upVector.
+//
+//    Kathleen Biagas, Wed Oct 17 14:39:41 PDT 2012
+//    Added useSpecifiedUpVector.
+//
 // ****************************************************************************
 
 void
@@ -156,6 +167,7 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         else if (params.GetEntry("origin")->TypeName() == "intVector")
             SetOrigin(params.GetEntry("origin")->AsIntVector());
     }
+
     if (params.HasEntry("up_vector"))
     {
         if (params.GetEntry("up_vector")->TypeName() == "doubleVector")
@@ -208,6 +220,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
             SetOutputType(params.GetEntry("output_type")->AsInt());
         else if (params.GetEntry("output_type")->TypeName() == "string")
             SetOutputType(params.GetEntry("output_type")->AsString());
+    }
+
+    // this is not a normal parameter, it is set by the cli when the query
+    // is called with the deprecated argument parsing.
+    if (params.HasEntry("useUpVector"))
+    {
+        useSpecifiedUpVector = params.GetEntry("useUpVector")->AsInt();
     }
 }
 
@@ -532,6 +551,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Eric Brugger, Mon May 14 10:35:27 PDT 2012
 //    I added the bov output type.
 //
+//    Kathleen Biagas, Wed Oct 17 14:41:28 PDT 2012
+//    Send upVector to avtXRayFilter.
+//
 // ****************************************************************************
 
 void
@@ -580,7 +602,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     avtDataObject_p dob = termsrc.GetOutput();
 
     avtXRayFilter *filt = new avtXRayFilter;
-    filt->SetImageProperties(origin, theta, phi, width, height, nx, ny);
+    if (useSpecifiedUpVector)
+        filt->SetImageProperties(origin,upVector,theta,phi,width,height,nx,ny);
+    else 
+        filt->SetImageProperties(origin,NULL,theta,phi,width,height,nx,ny);
+
     filt->SetDivideEmisByAbsorb(divideEmisByAbsorb);
     filt->SetVariableNames(absVarName, emisVarName);
     filt->SetInput(dob);

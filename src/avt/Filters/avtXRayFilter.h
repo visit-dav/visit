@@ -84,6 +84,9 @@
 //    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
 //    Templatized some methods, for double-precision support.
 //
+//    Kathleen Biagas, Wed Oct 17 14:36:30 PDT 2012
+//    Added 'up' argument to SetImageProperties.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -104,6 +107,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                          emisVarName = emis; };
 
     void                            SetImageProperties(double *pos,
+                                                       double *up,
                                                        double  theta,
                                                        double  phi,
                                                        double  dx,
