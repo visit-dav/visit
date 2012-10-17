@@ -47,6 +47,7 @@
 
 #include <vector>
 #include <map>
+#include <cstring>
 
 class     vtkActor;
 class     vtkAppendPolyData;
