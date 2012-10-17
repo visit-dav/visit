@@ -938,13 +938,14 @@ TecplotZone::operator = (const TecplotZone &obj)
 //   Brad Whitlock, Mon Jul 19 09:40:13 PDT 2010
 //   I adjusted the read for Tecplot 112 (2009 format)
 //
+//   Brad Whitlock, Wed Oct 17 16:20:49 PDT 2012
+//   Adjust reading the zone header for Tecplot 102 files.
+//
 // ****************************************************************************
 
 bool
 TecplotZone::Read(FILE *f)
 {
-    const char *mName = "TecplotZone::Read: ";
-
     zoneName = FilterName(ReadString(f));
 
     if(version > TECPLOT_106)
@@ -966,12 +967,21 @@ TecplotZone::Read(FILE *f)
     }
     else
     {
-        strandID = ReadInt(f);
-        solutionTime = ReadDouble(f);
-        zoneColor = ReadInt(f);
-        zoneType = (ZoneType)ReadInt(f);
-        if(version < TECPLOT_112)
-            dataPacking = ReadInt(f);
+        if(version <= TECPLOT_102) // When did the format change?
+        {
+            // Read past unused -1
+            ReadInt(f);
+            zoneType = (ZoneType)ReadInt(f);
+        }
+        else
+        {
+            strandID = ReadInt(f);
+            solutionTime = ReadDouble(f);
+            zoneColor = ReadInt(f);
+            zoneType = (ZoneType)ReadInt(f);
+            if(version < TECPLOT_112)
+                dataPacking = ReadInt(f);
+        }
         varLocation = ReadInt(f);
         if(varLocation == 1)
         {
@@ -979,7 +989,7 @@ TecplotZone::Read(FILE *f)
                 centering[i] = ReadInt(f);
         }
         rawLocalFaceNeighbors = ReadInt(f);
-        if(version > TECPLOT_107)
+        if(version >= TECPLOT_102) //> TECPLOT_107)
         {
             numUserDefinedNeighborConnections = ReadInt(f);
             if(numUserDefinedNeighborConnections != 0)
@@ -1899,7 +1909,8 @@ TecplotVariable::~TecplotVariable()
 ostream &
 operator << (ostream &os, const TecplotVariable &obj)
 {
-    os << "dataOffset = 0x" << std::hex << obj.dataOffset << std::dec << endl;
+    os << "dataOffset = " << std::dec << obj.dataOffset
+       << " (0x" << std::hex << obj.dataOffset << ")" << std::dec << endl;
     os << "dataSize = " << obj.dataSize << endl;
     os << "dataType = " << TecplotDataType2String(obj.dataType) << endl;
     os << "isPassive = " << obj.isPassive << endl;
@@ -1956,6 +1967,27 @@ TecplotDataRecord::operator = (const TecplotDataRecord &obj)
     connectivity = obj.connectivity->NewInstance();
 }
 
+// ****************************************************************************
+// Method: TecplotDataRecord::Read
+//
+// Purpose: 
+//   Read TecplotDataRecord object.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   2007-ish
+//
+// Modifications:
+//   Brad Whitlock, Wed Oct 17 16:25:32 PDT 2012
+//   Modify to support version 102 file, which contains less stuff.
+//
+// ****************************************************************************
+
 bool
 TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
 {
@@ -1969,11 +2001,14 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
 
     if(!TECPLOT_VERSION_7X(version))
     {
-        hasPassiveVariables = ReadInt(f);
-        if(hasPassiveVariables != 0)
+        if(version > TECPLOT_102)
         {
-            for(size_t i = 0; i < variables.size(); ++i)
-                variables[i].isPassive = ReadInt(f);
+            hasPassiveVariables = ReadInt(f);
+            if(hasPassiveVariables != 0)
+            {
+                for(size_t i = 0; i < variables.size(); ++i)
+                    variables[i].isPassive = ReadInt(f);
+            }
         }
 
         hasVariableSharing = ReadInt(f);
@@ -1984,12 +2019,16 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
         }
 
         zoneNumberForConnectivity = ReadInt(f);
-        for(size_t i = 0; i < variables.size(); ++i)
+
+        if(version > TECPLOT_102)
         {
-            if(variables[i].zoneShareNumber == -1 && !variables[i].isPassive)
+            for(size_t i = 0; i < variables.size(); ++i)
             {
-                variables[i].minValue = ReadDouble(f);
-                variables[i].maxValue = ReadDouble(f);
+                if(variables[i].zoneShareNumber == -1 && !variables[i].isPassive)
+                {
+                    variables[i].minValue = ReadDouble(f);
+                    variables[i].maxValue = ReadDouble(f);
+                }
             }
         }
     }
@@ -2003,7 +2042,8 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
     debug4 << "num nodes = " << zone.GetNumNodes() << endl;
     CalculateOffsets(zone);
     fseek(f, connectivityOffset, SEEK_SET);
-    debug4 << "start of connectivity: " << std::hex << ftell(f) << endl;
+    debug4 << "start of connectivity: " <<  ftell(f)
+           << " (0x" << std::hex << ftell(f) << ")" << endl;
 
     // Read the connectivity
     if(zone.zoneType == ORDERED)
@@ -2014,7 +2054,9 @@ TecplotDataRecord::Read(FILE *f, const TecplotZone &zone)
     else
         connectivity = new TecplotPolyConnectivity;
     connectivity->Read(f, zone, this);
-    debug4 << "after reading connectivity, offset=" << ftell(f) << std::dec << endl;
+    debug4 << "after reading connectivity, offset=" << std::dec << ftell(f)
+           << " (0x" << std::hex << ftell(f) << ")"
+           << std::dec << endl;
 
     return true;
 }
@@ -2072,8 +2114,10 @@ operator << (ostream &os, const TecplotDataRecord &obj)
     os << "hasPassiveVariables = " << obj.hasPassiveVariables << endl;
     os << "hasVariableSharing = " << obj.hasVariableSharing << endl;
     os << "zoneNumberForConnectivity = " << obj.zoneNumberForConnectivity << endl;
-    os << "***dataOffset = 0x" << std::hex << obj.dataOffset << endl;
-    os << "***connectivityOffset = 0x" << obj.connectivityOffset << std::dec << endl;
+    os << "***dataOffset = " << std::dec << obj.dataOffset
+       << " (0x" << std::hex << obj.dataOffset << ")" << std::dec << endl;
+    os << "***connectivityOffset = " << std::dec << obj.connectivityOffset
+       << " (0x" << std::hex << obj.connectivityOffset << ")" << std::dec << endl;
     os << "}" << endl;
     return os;
 }
@@ -2157,7 +2201,8 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
                 variables[i].dataOffset += dataOffset;
                 variables[i].dataSize = recordSize;
                 debug4 << mName << "Offset to variable " << i
-                   << " data = " << std::hex << variables[i].dataOffset
+                   << " data = " << std::dec << variables[i].dataOffset
+                   << " ( 0x" << std::hex << variables[i].dataOffset << " ) "
                    << ". size = " << std::dec << variables[i].dataSize << endl;
             }
         }
@@ -2199,7 +2244,8 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
             offset += variables[i].dataSize;
 
             debug4 << mName << "Offset to variable " << i
-                   << " data = " << std::hex << variables[i].dataOffset
+                   << " data = " << std::dec << variables[i].dataOffset
+                   << " ( 0x" << std::hex << variables[i].dataOffset << " ) "
                    << ". size = " << std::dec << variables[i].dataSize << endl;
         }
 
@@ -2209,8 +2255,8 @@ TecplotDataRecord::CalculateOffsets(const TecplotZone &zone)
         connectivityOffset = dataOffset + offset;
     }
 
-    debug4 << mName << "Connectivity offset = " << std::hex
-           << connectivityOffset << std::dec << endl;
+    debug4 << mName << "Connectivity offset = " << connectivityOffset
+           << " ( 0x" << std::hex << connectivityOffset << " ) " << std::dec << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2995,11 +3041,16 @@ TecplotFile::VarNameToIndex(const std::string &varName) const
 //   Eric Brugger,
 //   I added a bug fix provided by Jean Favre for a bug where the coordinate 
 //   name was ignored for the z coordinate.
-//   
+//
+//   Brad Whitlock, Wed Oct 17 16:12:29 PDT 2012
+//   We don't always necessarily want to return vars[axis] as the name of the
+//   coordinate axis. For example, we were trying to get the Z coordinate name
+//   as a way to determine whether we're 2d or 3d.
+//
 // ****************************************************************************
 
 std::string
-TecplotFile::CoordinateVariable(int axis) const
+TecplotFile::CoordinateVariable(int axis, bool returnEmpty) const
 {
     std::string possibilities[12];
     possibilities[0] = std::string("X");
@@ -3025,7 +3076,11 @@ TecplotFile::CoordinateVariable(int axis) const
                return vars[i];
     }
 
-    return (axis <= 2) ? vars[axis] : std::string();
+    std::string coordName;
+    if(!returnEmpty && axis <= 2)
+         coordName = vars[axis];
+
+    return coordName;
 }
 
 // ****************************************************************************
@@ -3073,13 +3128,16 @@ TecplotFile::DisableReadingDataInformation()
 // Creation:   Fri Jun 13 14:53:59 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Oct 17 16:15:14 PDT 2012
+//   Call CoordinateVariable in a way that allows it to return an empty axis
+//   name for Z so we can test whether the Z axis exists.
+//
 // ****************************************************************************
 
 int
 TecplotFile::GetNumSpatialDimensions(int zoneId) const
 {
-    return (CoordinateVariable(2).size() > 0) ? 3 : 2;
+    return (CoordinateVariable(2, true).empty()) ? 2 : 3;
 }
 
 // ****************************************************************************
