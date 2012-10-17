@@ -88,6 +88,9 @@
 //    Kathleen Biagas, Tue Jul 26 12:36:11 PDT 2011
 //    Changed default nx,ny to 200 (per Eric).
 //
+//    Kathleen Biagas, Wed Oct 17 12:10:25 PDT 2012
+//    Added upVector.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -97,6 +100,9 @@ avtXRayImageQuery::avtXRayImageQuery():
     origin[0] = 0.0;
     origin[1] = 0.0;
     origin[2] = 0.0;
+    upVector[0] = 0.0;
+    upVector[1] = 1.0;
+    upVector[2] = 0.0;
     theta  = 0.0;
     phi    = 0.0;
     width  = 1.0;
@@ -149,6 +155,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
             SetOrigin(params.GetEntry("origin")->AsDoubleVector());
         else if (params.GetEntry("origin")->TypeName() == "intVector")
             SetOrigin(params.GetEntry("origin")->AsIntVector());
+    }
+    if (params.HasEntry("up_vector"))
+    {
+        if (params.GetEntry("up_vector")->TypeName() == "doubleVector")
+            SetUpVector(params.GetEntry("up_vector")->AsDoubleVector());
+        else if (params.GetEntry("up_vector")->TypeName() == "intVector")
+            SetUpVector(params.GetEntry("up_vector")->AsIntVector());
     }
 
     if (params.HasEntry("theta"))
@@ -253,6 +266,36 @@ avtXRayImageQuery::SetOrigin(const intVector &_origin)
     origin[0] = (double)_origin[0];
     origin[1] = (double)_origin[1];
     origin[2] = (double)_origin[2];
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetUpVector
+//
+//  Purpose:
+//    Set the up-vector of the image plane.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   October 17, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetUpVector(const doubleVector &_upvector)
+{
+    upVector[0] = _upvector[0];
+    upVector[1] = _upvector[1];
+    upVector[2] = _upvector[2];
+}
+
+void
+avtXRayImageQuery::SetUpVector(const intVector &_upvector)
+{
+    upVector[0] = (double)_upvector[0];
+    upVector[1] = (double)_upvector[1];
+    upVector[2] = (double)_upvector[2];
 }
 
 
@@ -839,6 +882,8 @@ avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, char *type)
 //  Creation:   July 15, 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Oct 17 12:10:25 PDT 2012
+//    Added up_vector.
 //
 // ****************************************************************************
 
@@ -852,6 +897,12 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     o.push_back(0.0);
     o.push_back(0.0);
     params["origin"] = o;
+
+    doubleVector uv;
+    uv.push_back(0.0);
+    uv.push_back(1.0);
+    uv.push_back(0.0);
+    params["up_vector"] = uv;
 
     params["theta"] = 0.0;
     params["phi"] = 0.0;
