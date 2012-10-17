@@ -59,6 +59,8 @@ class MapNode;
 // Creation:   June 17, 2011 
 //
 // Modifications:
+//    Kathleen Biagas, Wed Oct 17 12:12:10 PDT 2012
+//    Added upVector.
 //
 // ****************************************************************************
 
@@ -79,6 +81,7 @@ private:
     QComboBox       *imageFormat;
     QCheckBox       *divideFlag;
     QLineEdit       *origin;
+    QLineEdit       *upVector;
     QLineEdit       *theta;
     QLineEdit       *phi;
     QLineEdit       *width;

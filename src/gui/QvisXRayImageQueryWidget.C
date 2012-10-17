@@ -67,6 +67,9 @@
 //   Eric Brugger, Mon May 14 12:31:15 PDT 2012
 //   I added the bov output image format.
 //
+//   Kathleen Biagas, Wed Oct 17 12:12:29 PDT 2012
+//   Added upVector.
+//
 // ****************************************************************************
 
 QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
@@ -106,44 +109,52 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(origin, 2, 1);
 
     // 
+    // upVector
+    // 
+    topLayout->addWidget(new QLabel(tr("Up Vector")), 3, 0);
+    upVector = new QLineEdit();
+    upVector->setText("0 1 0");
+    topLayout->addWidget(upVector, 3, 1);
+
+    // 
     // Theta
     // 
-    topLayout->addWidget(new QLabel(tr("Theta")), 3, 0);
+    topLayout->addWidget(new QLabel(tr("Theta")), 4, 0);
     theta= new QLineEdit();
     theta->setText("0");
-    topLayout->addWidget(theta, 3, 1);
+    topLayout->addWidget(theta, 4, 1);
 
     // 
     // Phi
     // 
-    topLayout->addWidget(new QLabel(tr("Phi")), 4, 0);
+    topLayout->addWidget(new QLabel(tr("Phi")), 5, 0);
     phi = new QLineEdit();
     phi->setText("0");
-    topLayout->addWidget(phi, 4, 1);
+    topLayout->addWidget(phi, 5, 1);
 
     // 
     // Width
     // 
-    topLayout->addWidget(new QLabel(tr("Image Width")), 5, 0);
+    topLayout->addWidget(new QLabel(tr("Image Width")), 6, 0);
     width= new QLineEdit();
     width->setText("1");
-    topLayout->addWidget(width, 5, 1);
+    topLayout->addWidget(width, 6, 1);
 
     // 
     // Height
     // 
-    topLayout->addWidget(new QLabel(tr("Image Height")), 6, 0);
+    topLayout->addWidget(new QLabel(tr("Image Height")), 7, 0);
     height = new QLineEdit();
     height->setText("1");
-    topLayout->addWidget(height, 6, 1);
+    topLayout->addWidget(height, 7, 1);
 
     // 
     // Pixel Size
     // 
-    topLayout->addWidget(new QLabel(tr("Image Pixel Size")), 7, 0);
+    topLayout->addWidget(new QLabel(tr("Image Pixel Size")), 8, 0);
     imageSize = new QLineEdit();
     imageSize->setText("200 200");
-    topLayout->addWidget(imageSize, 7, 1);
+    topLayout->addWidget(imageSize, 8, 1);
 }
 
 // ****************************************************************************
@@ -182,6 +193,8 @@ QvisXRayImageQueryWidget::~QvisXRayImageQueryWidget()
 // Creation:   June 17, 2011
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 17 12:12:29 PDT 2012
+//   Added upVector.
 //
 // ****************************************************************************
 
@@ -194,19 +207,23 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
     {
         temp = origin->displayText().simplified();
     }
-    else if (whichWidget == 1) // Theta
+    else if (whichWidget == 1) // upVector
+    {
+        temp = upVector->displayText().simplified();
+    }
+    else if (whichWidget == 2) // Theta
     {
         temp = theta->displayText().simplified();
     }
-    else if (whichWidget == 2) // Phi
+    else if (whichWidget == 3) // Phi
     {
         temp = phi->displayText().simplified();
     }
-    else if (whichWidget == 3) // Image Width
+    else if (whichWidget == 4) // Image Width
     {
         temp = width->displayText().simplified();
     }
-    else if (whichWidget == 4) // Image Height
+    else if (whichWidget == 5) // Image Height
     {
         temp = height->displayText().simplified();
     }
@@ -293,11 +310,15 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //    Kathleen Biagas, Wed Sep  7 08:40:22 PDT 2011
 //    Return output_type as string instead of int.
 // 
+//   Kathleen Biagas, Wed Oct 17 12:12:29 PDT 2012
+//   Added upVector.
+//
 // ****************************************************************************
 bool
 QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
 {
     doubleVector origin(3);
+    doubleVector upVector(3);
     double       t, p, w, h;
     intVector    is(2);
 
@@ -306,16 +327,19 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
     if (!GetDoubleValues(0, 3, &origin[0]))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(1, 1, &t))
+    if (!GetDoubleValues(1, 3, &upVector[0]))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(2, 1, &p))
+    if (noerrors && !GetDoubleValues(2, 1, &t))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(3, 1, &w))
+    if (noerrors && !GetDoubleValues(3, 1, &p))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(4, 1, &h))
+    if (noerrors && !GetDoubleValues(4, 1, &w))
+        noerrors = false;
+
+    if (noerrors && !GetDoubleValues(5, 1, &h))
         noerrors = false;
 
     if (noerrors && !GetIntValues(3, &is[0]))
@@ -326,6 +350,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["output_type"] = imageFormat->currentText().toStdString();
         params["divide_emis_by_absorb"] = (int)divideFlag->isChecked();
         params["origin"] = origin;
+        params["up_vector"] = upVector;
         params["theta"] = t;
         params["phi"] = p;
         params["width"] = w;
