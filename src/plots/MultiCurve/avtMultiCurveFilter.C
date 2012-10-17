@@ -249,6 +249,11 @@ avtMultiCurveFilter::PostExecute(void)
 //    Allow setting y-axis labels from input DataAtts labels if present, but
 //    only if the number of labels matches the number of y-axes beig creaed.
 //
+//    Kathleen Biagas, Wed Oct 17 11:22:32 PDT 2012
+//    Support double-precision in coordinates and/or data by using 
+//    vtkDataArray GetTuple1 methods instead of VoidPointer. Merged the
+//    separate 'for (int j = 0; j < nx; j++)' loops into one.
+//
 // ****************************************************************************
 
 void
@@ -332,18 +337,14 @@ avtMultiCurveFilter::Execute(void)
         ny = 16;
     }
 
-    float *xpts = vtkFloatArray::SafeDownCast(grid->GetXCoordinates())
-        ->GetPointer(0);
-    float *ypts = vtkFloatArray::SafeDownCast(grid->GetYCoordinates())
-        ->GetPointer(0);
+    vtkDataArray *xpts = grid->GetXCoordinates();
+    vtkDataArray *ypts = grid->GetYCoordinates();
+    int ptype = VTK_FLOAT;
+    if (xpts->GetDataType() == VTK_DOUBLE ||
+        ypts->GetDataType() == VTK_DOUBLE)
+        ptype = VTK_DOUBLE;
 
     vtkDataArray *var = inDS->GetPointData()->GetScalars();
-    vtkDataArray *var2 = NULL;
-    if (atts.GetMarkerVariable() != "default")
-        var2 = inDS->GetPointData()->GetArray(atts.GetMarkerVariable().c_str());
-    vtkDataArray *var3 = NULL;
-    if (atts.GetIdVariable() != "default")
-        var3 = inDS->GetPointData()->GetArray(atts.GetIdVariable().c_str());
     if (var == NULL)
     {
         EXCEPTION1(ImproperUseException, "No point data");
@@ -352,13 +353,13 @@ avtMultiCurveFilter::Execute(void)
     {
         EXCEPTION1(ImproperUseException, "Expecting a scalar variable");
     }
-    float *vals = vtkFloatArray::SafeDownCast(var)->GetPointer(0);
-    float *vals2 = NULL;
-    if (var2 != NULL)
-        vals2 = vtkFloatArray::SafeDownCast(var2)->GetPointer(0);
-    float *vals3 = NULL;
-    if (var3 != NULL)
-        vals3 = vtkFloatArray::SafeDownCast(var3)->GetPointer(0);
+
+    vtkDataArray *var2 = NULL;
+    if (atts.GetMarkerVariable() != "default")
+        var2 = inDS->GetPointData()->GetArray(atts.GetMarkerVariable().c_str());
+    vtkDataArray *var3 = NULL;
+    if (atts.GetIdVariable() != "default")
+        var3 = inDS->GetPointData()->GetArray(atts.GetIdVariable().c_str());
 
     //
     // Create the data sets and labels for each of the curves.
@@ -381,14 +382,15 @@ avtMultiCurveFilter::Execute(void)
     else
     {
         double yMin, yMax;
-        if (vals2 == NULL)
+        if (var2 == NULL)
         {
-            yMin = vals[0];
-            yMax = vals[0];
+            yMin = var->GetTuple1(0);
+            yMax = var->GetTuple1(0);
             for (int i = 1; i < nx * ny; i++)
             {
-                yMin = yMin < vals[i] ? yMin : vals[i];
-                yMax = yMax > vals[i] ? yMax : vals[i];
+                double v = var->GetTuple1(i);
+                yMin = yMin < v ? yMin : v;
+                yMax = yMax > v ? yMax : v;
             }
         }
         else
@@ -396,18 +398,19 @@ avtMultiCurveFilter::Execute(void)
             yMin = 1.;
             yMax = 1.;
             int i;
-            for (i = 0; i < nx * ny && vals2[i] < 0.; i++)
+            for (i = 0; i < nx * ny && var2->GetTuple1(i) < 0.; i++)
                 /* do nothing */;
             if (i < nx * ny)
             {
-                yMin = vals[i];
-                yMax = vals[i];
+                yMin = var->GetTuple1(i);
+                yMax = var->GetTuple1(i);
                 for (i = i; i < nx * ny; i++)
                 {
-                    if (vals2[i] >= 0.)
+                    if (var2->GetTuple1(i) >= 0.)
                     {
-                        yMin = yMin < vals[i] ? yMin : vals[i];
-                        yMax = yMax > vals[i] ? yMax : vals[i];
+                        double v = var->GetTuple1(i);
+                        yMin = yMin < v ? yMin : v;
+                        yMax = yMax > v ? yMax : v;
                     }
                 }
             }
@@ -425,18 +428,49 @@ avtMultiCurveFilter::Execute(void)
         //
         // Create the data set.
         //
-        vtkPoints *points = vtkPoints::New();
+        vtkPoints *points = vtkPoints::New(ptype);
+
+        //
+        // Create the array specifying the curve markers.
+        //
+        vtkIntArray *symbols = vtkIntArray::New();
+        symbols->SetName("CurveSymbols");
+        symbols->SetNumberOfComponents(1);
+        symbols->SetNumberOfTuples(nx);
+        int *sbuf = symbols->GetPointer(0);
+
+        //
+        // Create the array specifying the curve ids.
+        //
+        vtkIntArray *ids = vtkIntArray::New();
+        ids->SetName("CurveIds");
+        ids->SetNumberOfComponents(1);
+        ids->SetNumberOfTuples(nx);
+        int *ibuf = ids->GetPointer(0);
 
         double xLine[3];
         xLine[2] = 0.0;
         int npts = 0;
         for (int j = 0; j < nx; j++)
         {
-            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
+            if (var2 == NULL || var2->GetTuple1(i*nx+j) >= 0.)
             {
-                xLine[0] = xpts[j];
-                xLine[1] = (double)i + 0.5 + vals[i*nx+j] * scale;
+                xLine[0] = xpts->GetTuple1(j);
+                xLine[1] = (double)i + 0.5 + var->GetTuple1(i*nx+j) * scale;
                 points->InsertNextPoint(xLine);
+
+                // curve markers
+                if (var2 == NULL)
+                    sbuf[npts] = 0;
+                else
+                    sbuf[npts] = int(var2->GetTuple1(i*nx+j));
+
+                // curve ids
+                if (var3 == NULL)
+                    ibuf[npts] = i*nx+j;
+                else
+                    ibuf[npts] = int(var3->GetTuple1(i*nx+j));
+
                 npts++;
             }
         }
@@ -457,48 +491,6 @@ avtMultiCurveFilter::Execute(void)
                 vtkPointIDs[0] = j;
                 vtkPointIDs[1] = j + 1;
                 lines->InsertNextCell(2, vtkPointIDs);
-            }
-        }
-
-        //
-        // Create the array specifying the curve markers.
-        //
-        vtkIntArray *symbols = vtkIntArray::New();
-        symbols->SetName("CurveSymbols");
-        symbols->SetNumberOfComponents(1);
-        symbols->SetNumberOfTuples(nx);
-        int *buf = symbols->GetPointer(0);
-        npts = 0;
-        for (int j = 0; j < nx; j++)
-        {
-            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
-            {
-                if (vals2 == NULL)
-                    buf[npts] = 0;
-                else
-                    buf[npts] = int(vals2[i*nx+j]);
-                npts++;
-            }
-        }
-
-        //
-        // Create the array specifying the curve ids.
-        //
-        vtkIntArray *ids = vtkIntArray::New();
-        ids->SetName("CurveIds");
-        ids->SetNumberOfComponents(1);
-        ids->SetNumberOfTuples(nx);
-        buf = ids->GetPointer(0);
-        npts = 0;
-        for (int j = 0; j < nx; j++)
-        {
-            if (vals2 == NULL || vals2[i*nx+j] >= 0.)
-            {
-                if (vals3 == NULL)
-                    buf[npts] = i*nx+j;
-                else
-                    buf[npts] = int(vals3[i*nx+j]);
-                npts++;
             }
         }
 
@@ -527,7 +519,8 @@ avtMultiCurveFilter::Execute(void)
         {
             char label[80];
         
-            SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), ypts[i]);
+            SNPRINTF(label, 80, atts.GetYAxisTitleFormat().c_str(), 
+                     ypts->GetTuple1(i));
             labels.push_back(label);
         }
         else
