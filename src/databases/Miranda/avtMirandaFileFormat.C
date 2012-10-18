@@ -144,7 +144,7 @@ string Vec2String(string name, T *vec, int numelems) {
 
 static void Fix2DFileOrder(int a, int b, int *fileOrder)
 {
-  debug5 << "Fix2DFileOrder(" << a << ", "<< b << ") " << endl; 
+  debug5 << "Fix2DFileOrder(" << a << ", "<< b << ", " << Vec2String("fileOrder",fileOrder,3) << ") " << endl; 
     int posA, posB;
     int ii;
     for (ii = 0; ii < 3; ii++)
@@ -164,6 +164,7 @@ static void Fix2DFileOrder(int a, int b, int *fileOrder)
         fileOrder[0] = 1;
         fileOrder[1] = 0;
     }
+    debug5 << "After Fix2DFileOrder: "<<Vec2String("fileOrder",fileOrder,3) << endl;
 }
 
 // ****************************************************************************
@@ -506,7 +507,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         dim = 2;
         flatDim = 2;
 
-        if (iFileOrder[0] != -1)
+        if (iFileOrder[2] != -1)
             Fix2DFileOrder(0, 1, iFileOrder);     
     }
     else if (iGlobalDim[1] == 1)
@@ -536,7 +537,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        if (iFileOrder[0] != -1)
+        if (iFileOrder[1] != -1)
             Fix2DFileOrder(0, 2, iFileOrder);
     }
     else if (iGlobalDim[0] == 1)
