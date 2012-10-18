@@ -601,7 +601,7 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
                 {
                     glVertexPointer(3, GL_FLOAT, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
 
-                    const float *fptr = (const float *)sgrid->GetPoints()->GetData()->GetVoidPointer(0);
+                    //const float *fptr = (const float *)sgrid->GetPoints()->GetData()->GetVoidPointer(0);
                     //                for(int i = 0; i < 10; ++i)
                     //                {
                     //                    cerr << "pt[" << i << "] = {" << fptr[0] << ", " << fptr[1] << ", " << fptr[2] << "}" << endl;

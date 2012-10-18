@@ -24,6 +24,7 @@
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMath.h>
@@ -258,6 +259,16 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
     pointDataComponents += 3;
     nPointData++;
 
+    int origCoordType = VTK_FLOAT;
+    if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        origCoordType = vtkRectilinearGrid::SafeDownCast(input)->GetXCoordinates()->GetDataType();
+    }
+    else
+    {
+        origCoordType = vtkPointSet::SafeDownCast(input)->GetPoints()->GetDataType();
+    }
+
     vtkYoungsMaterialInterface_Mat* Mats = new vtkYoungsMaterialInterface_Mat[nmat];
     {
         int m=0;
@@ -307,8 +318,8 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
                 Mats[m].outPointArrays[i]->SetNumberOfComponents( inPointArrays[i]->GetNumberOfComponents() );
             }
             // JSM August  3, 2009: this was originally a double array, not float
-            Mats[m].outPointArrays[nPointData-1] = vtkFloatArray::New();
-            //Mats[m].outPointArrays[nPointData-1] = vtkDoubleArray::New();
+            //Mats[m].outPointArrays[nPointData-1] = vtkFloatArray::New();
+            Mats[m].outPointArrays[nPointData-1] = vtkDoubleArray::New();
             Mats[m].outPointArrays[nPointData-1]->SetName("Points");
             Mats[m].outPointArrays[nPointData-1]->SetNumberOfComponents(3);
         }
@@ -366,7 +377,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
 
     // --------------------------- core computation --------------------------
     vtkIdList *ptIds = vtkIdList::New();
-    vtkPoints *pts = vtkPoints::New();
+    vtkPoints *pts = vtkPoints::New(origCoordType);
     vtkConvexPointSet* cpsCell = vtkConvexPointSet::New();
 
     double* interpolatedValues = new double[ MAX_CELL_POINTS * pointDataComponents ];
@@ -1017,7 +1028,7 @@ int vtkYoungsMaterialInterface::Execute(vtkDataSet *input,
 
         // set points
         Mats[m].outPointArrays[nPointData-1]->Squeeze();
-        vtkPoints* points = vtkPoints::New();
+        vtkPoints* points = vtkPoints::New(origCoordType);
         points->SetDataTypeToDouble();
         //points->SetDataTypeToFloat();
         points->SetNumberOfPoints( Mats[m].pointCount );

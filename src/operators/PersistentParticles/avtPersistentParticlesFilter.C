@@ -48,7 +48,7 @@
 #include <vtkCellType.h>
 #include <vtkIdList.h>
 #include <vtkPoints.h>
-#include <vtkFloatArray.h>
+#include <vtkDataArray.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 
@@ -496,6 +496,9 @@ avtPersistentParticlesFilter::IterateMergeData(int ts, avtDataTree_p tree)
 //    Brad Whitlock, Wed Apr  4 16:17:46 PDT 2012
 //    Use original node numbers if we can't find a good index variable.
 //
+//    Kathleen Biagas, Thu Oct 18 10:13:09 PDT 2012
+//    Preserve coordinate data type when creating particlePathData.
+//
 // ****************************************************************************
 
 void
@@ -605,7 +608,7 @@ avtPersistentParticlesFilter::IterateTraceData(int ts, avtDataTree_p tree)
     if( !particlePathData ) {
           //Create and initalize the new dataset
           particlePathData = vtkUnstructuredGrid::New();
-          particlePathData->SetPoints( vtkPoints::New() );
+          particlePathData->SetPoints(vtkPoints::New(currPoints->GetDataType()));
           vtkPointData* allData = uGrid->GetPointData();
           particlePathData->GetPointData()->ShallowCopy(allData);
           particlePathData->GetCellData()->ShallowCopy(uGrid->GetCellData());
