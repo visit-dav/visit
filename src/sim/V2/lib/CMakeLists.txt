@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Dirk Schubert (Allinea Software), Mon Oct 15, 2012
+#   Build symV2dyn only if VISIT_DDT is chosen.
 #
 #****************************************************************************/
 
@@ -75,8 +77,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
 )
 
-# For now.
-IF(NOT WIN32)
+IF(VISIT_DDT)
     # Allinea Software:
     # Create a libsimV2.so shared library for the standard VisIt
     # interface (normally provided by statically linking with libsimV2.a).
@@ -88,7 +89,7 @@ IF(NOT WIN32)
     ADD_LIBRARY(simV2dyn SHARED ${LIBSIM_SOURCES})
 
     SET(LIBSIM_DYN simV2dyn)
-ENDIF(NOT WIN32)
+ENDIF(VISIT_DDT)
 
 ADD_LIBRARY(simV2 ${LIBSIM_SOURCES})
 ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})

@@ -312,6 +312,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added PickRecords array
 //
+//   Dirk Schubert (Allinea Software), Fri Oct 12, 2012
+//   Add "Focus DDT on Pick" button optionally (HAVE_DDT)
+//
 // ****************************************************************************
 
 void
@@ -385,11 +388,13 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(autoShowToggled(bool)));
     gLayout->addWidget(autoShowCheckBox, 3, 0, 1, 4);
 
+#ifdef HAVE_DDT
     QPushButton *focusPickInDDTButton =
         new QPushButton(tr("Focus DDT on Pick"), central);
     connect(focusPickInDDTButton, SIGNAL(clicked()),
             this,SLOT(focusPickInDDTClicked()));
     gLayout->addWidget(focusPickInDDTButton,3,2,1,2);
+#endif
 
     savePicksCheckBox = new QCheckBox(tr("Don't clear this window"), central);
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),

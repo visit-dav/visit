@@ -233,11 +233,6 @@ ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
 )
 
-# DDT people did this. why?
-IF(UNIX AND NOT APPLE)
-    TARGET_LINK_LIBRARIES(viewer X11)
-ENDIF(UNIX AND NOT APPLE)
-
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
     ADD_EXECUTABLE(viewer_exe ${VISIT_APPLICATION_STYLE} viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_VIEWER_RESOURCE_FILE})

@@ -213,6 +213,32 @@ ViewerMultipleAction::ChoiceChecked(int i) const
 }
 
 // ****************************************************************************
+// Method: ViewerMultipleAction::HideChoice
+//
+// Purpose: 
+//   Hides a choice from the action.
+//
+// Arguments:
+//   i : The index of the thing to hide.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Dirk Schubert (Allinea Software)
+// Creation:   Fri Oct 12, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerMultipleAction::HideChoice(int i)
+{
+    children[i]->setVisible(false);
+}
+
+// ****************************************************************************
 // Method: ViewerMultipleAction::Update
 //
 // Purpose: 

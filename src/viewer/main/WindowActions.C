@@ -930,6 +930,9 @@ InvertBackgroundAction::Execute()
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
 //
+//   Dirk Schubert (Allinea Software), Fri Oct 12, 2012
+//   Show DDT_PICK mode only if HAVE_DDT is defined, else hide it.
+//
 // ****************************************************************************
 
 SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
@@ -967,6 +970,10 @@ SetWindowModeAction::SetWindowModeAction(ViewerWindow *win) :
         AddChoice(tr("DDT Pick"));
         AddChoice(tr("Lineout"));
     }
+
+#ifndef HAVE_DDT
+    HideChoice(DDT_PICK);
+#endif
 }
 
 
