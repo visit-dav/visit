@@ -98,6 +98,8 @@ public:
     virtual bool ChoiceEnabled(int i) const;
     virtual bool ChoiceChecked(int i) const;
 
+    virtual void HideChoice(int i); 
+
     // Methods to add the action to the menu and toolbar.
     virtual void ConstructMenu(QMenu *menu);
     virtual void RemoveFromMenu(QMenu *menu);

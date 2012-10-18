@@ -563,6 +563,9 @@ public:
 //   Jonathan Byrd (Allinea Software) Sun 18 Dec 2011
 //   Added 'release to DDT' action
 //
+//   Dirk Schubert (Allinea Software) Fri 12 Oct 2012
+//   Make 'release to DDT' optional (HAVE_DDT)
+//
 // ****************************************************************************
 
 
@@ -605,7 +608,9 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new SetWindowModeAction(win), ViewerRPC::SetWindowModeRPC);
     AddAction(new EnableToolAction(win), ViewerRPC::EnableToolRPC);
     AddAction(new SetToolUpdateModeAction(win), ViewerRPC::SetToolUpdateModeRPC);
+#ifdef HAVE_DDT
     AddAction(new ReleaseToDDTAction(win), ViewerRPC::ReleaseToDDTRPC);
+#endif
 
     AddAction(new ToggleSpinModeAction(win), ViewerRPC::ToggleSpinModeRPC);
     AddAction(new TogglePerspectiveViewAction(win), ViewerRPC::TogglePerspectiveViewRPC);

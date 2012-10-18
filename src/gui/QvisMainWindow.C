@@ -375,6 +375,9 @@
 //    Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
 //    Added the 'connect to DDT' action
 //
+//    Dirk Schubert (Allinea Software), Fri 12 Oct, 2012
+//    Add 'connect to DDT' action optionally (HAVE_DDT)
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -508,7 +511,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     connectToDDTAct = new QAction(tr("Connect to DDT"),
                          this);
     connect(connectToDDTAct, SIGNAL(triggered()),this, SLOT(connectToDDT()));
+
+#ifdef HAVE_DDT
     filePopup->addAction(connectToDDTAct);
+#endif
 
     filePopup->addSeparator();
 
