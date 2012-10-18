@@ -49,6 +49,8 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkIdList.h>
 #include <vtkCellData.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
 #include <vtkIntArray.h>
 
 #include <avtDatabase.h>
@@ -87,6 +89,9 @@ using     std::string;
 //    Jeremy Meredith, Tue Jul 15 15:41:07 EDT 2008
 //    Added support for automatic domain decomposition.
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 
 avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
@@ -96,6 +101,7 @@ avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
     OpenFileAtBeginning();
 
     metadata_read = false;
+    atoms_read = -1;
     values_read = -1;
     values = NULL;
 
@@ -135,6 +141,9 @@ avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
 //    values_read is now an int refering to the timestep whose values
 //    have been read (or -1 if none).
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 
 void
@@ -142,8 +151,13 @@ avtCHGCARFileFormat::FreeUpResources(void)
 {
     if (values)
         values->Delete();
+    ax.clear();
+    ay.clear();
+    az.clear();
+    as.clear();
     values = NULL;
     values_read = -1;
+    atoms_read = -1;
 }
 
 
@@ -172,6 +186,10 @@ avtCHGCARFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Wed Mar 11 10:45:25 EDT 2009
 //    Added cycles.
 //
+//    Jeremy Meredith, Thu Oct 18 10:58:20 EDT 2012
+//    Changed enum names to be origin H=1.
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 
 void
@@ -181,6 +199,31 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     ReadAllMetaData();
 
     md->SetFormatCanDoDomainDecomposition(true);
+
+    // add the atom mesh
+    avtMeshMetaData *atommd = new avtMeshMetaData("atoms", 1, 0,0,0,
+                                               3, 0,
+                                               AVT_POINT_MESH);
+    atommd->nodesAreCritical = true;
+    for (int i=0; i<9; i++)
+    {
+        atommd->unitCellVectors[i] = unitCell[i/3][i%3];
+    }
+    md->Add(atommd);
+
+    // add the atom vars
+    AddScalarVarToMetaData(md, "species", "atoms", AVT_NODECENT);
+    if (element_map.size() > 0)
+    {
+        avtScalarMetaData *el_smd =
+            new avtScalarMetaData("element", "atoms", AVT_NODECENT);
+        el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+        for (int i=0; i<element_map.size(); i++)
+            el_smd->AddEnumNameValue(element_names[element_map[i]],element_map[i]);
+        md->Add(el_smd);
+    }
+
+    // add the charge grid mesh
     // must set num domains to 1 for automatic decomposition
     avtMeshMetaData *mmd = new avtMeshMetaData("mesh", 1, 0,0,0,
                                                3, 3,
@@ -275,11 +318,46 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Tue Jul 15 15:41:07 EDT 2008
 //    Added support for automatic domain decomposition.
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCHGCARFileFormat::GetMesh(int ts, const char *meshname)
 {
+    if (strcmp(meshname, "atoms") == 0)
+    {
+#ifdef PARALLEL
+        if (PAR_Rank() != 0)
+            return NULL;
+#endif
+    
+        ReadAtomsForTimestep(ts);
+        vtkPolyData *pd  = vtkPolyData::New();
+        vtkPoints   *pts = vtkPoints::New();
+
+        pts->SetNumberOfPoints(natoms);
+        pd->SetPoints(pts);
+        pts->Delete();
+        for (int j = 0 ; j < natoms ; j++)
+        {
+            pts->SetPoint(j, ax[j], ay[j], az[j]);
+        }
+ 
+        vtkCellArray *verts = vtkCellArray::New();
+        pd->SetVerts(verts);
+        verts->Delete();
+        for (int k = 0 ; k < natoms ; k++)
+        {
+            verts->InsertNextCell(1);
+            verts->InsertCellPoint(k);
+        }
+
+        return pd;
+    }
+
+    // otherwise, it must be the charge density grid mesh
     if (strcmp(meshname, "mesh") != 0)
     {
         EXCEPTION1(InvalidVariableException, meshname);
@@ -345,12 +423,49 @@ avtCHGCARFileFormat::GetMesh(int ts, const char *meshname)
 //    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
 //    Support multiple concatenated CHGCAR's in a single file; now MTSD.
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtCHGCARFileFormat::GetVar(int ts, const char *varname)
 {
     ReadValues(ts);
+
+    if (string(varname) == "species")
+    {
+#ifdef PARALLEL
+        if (PAR_Rank() != 0)
+            return NULL;
+#endif
+
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(natoms);
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<natoms; i++)
+        {
+            ptr[i] = as[i];
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "element")
+    {
+#ifdef PARALLEL
+        if (PAR_Rank() != 0)
+            return NULL;
+#endif
+
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(natoms);
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<natoms; i++)
+        {
+            ptr[i] = element_map[as[i]];
+        }
+        return scalars;
+    }
 
     if (string(varname) == "charge")
     {
@@ -390,6 +505,66 @@ avtCHGCARFileFormat::GetVectorVar(int ts, const char *varname)
 
 
 // ****************************************************************************
+// Method:  avtCHGCARFileFormat::ReadAtomsForTimestep
+//
+// Purpose:
+//   Read the atoms for a timestep.
+//
+// Arguments:
+//   timestep   the time step index
+//
+// Programmer:  Jeremy Meredith
+// Creation:    October 18, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtCHGCARFileFormat::ReadAtomsForTimestep(int timestep)
+{
+    if (atoms_read == timestep)
+        return;
+
+    atoms_read = timestep;
+
+    ax.resize(natoms);
+    ay.resize(natoms);
+    az.resize(natoms);
+    as.resize(natoms);
+
+    OpenFileAtBeginning();
+    in.seekg(atom_file_positions[timestep]);
+
+    int species_index = 0;
+    int species_count = 0;
+    char line[132];
+    for (int i=0; i<natoms; i++)
+    {
+        in.getline(line,132);
+        string atomline(line);
+        std::istringstream atom_in(atomline);
+
+        double tx, ty, tz;
+        atom_in >> tx >> ty >> tz;
+
+        ax[i] = tx*unitCell[0][0] + ty*unitCell[1][0] + tz*unitCell[2][0];
+        ay[i] = tx*unitCell[0][1] + ty*unitCell[1][1] + tz*unitCell[2][1];
+        az[i] = tx*unitCell[0][2] + ty*unitCell[1][2] + tz*unitCell[2][2];
+
+        as[i] = species_index;
+        species_count++;
+
+        if (species_count >= species_counts[species_index])
+        {
+            species_index++;
+            species_count = 0;
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method:  avtCHGCARFileFormat::ReadValues
 //
 //  Purpose:
@@ -410,6 +585,9 @@ avtCHGCARFileFormat::GetVectorVar(int ts, const char *varname)
 //    Jeremy Meredith, Tue Jul 15 15:41:07 EDT 2008
 //    Added support for automatic domain decomposition.
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadValues(int timestep)
@@ -426,7 +604,7 @@ avtCHGCARFileFormat::ReadValues(int timestep)
     char tmpbuff[4096];
 
     OpenFileAtBeginning();
-    in.seekg(file_positions[timestep]);
+    in.seekg(charge_file_positions[timestep]);
 
     values_read = timestep;
 
@@ -756,6 +934,9 @@ avtCHGCARFileFormat::DoDomainDecomposition()
 //    Account for the possible extra atomic symbol line for
 //    multi-timestep files.
 //
+//    Jeremy Meredith, Thu Oct 18 11:02:04 EDT 2012
+//    Added support for atoms in the CHGCAR file.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -767,6 +948,26 @@ avtCHGCARFileFormat::ReadAllMetaData()
 
     char line[2048];
     in.getline(line, 2048); // title line
+
+    // this line is the comment line; we can scan it for
+    // an equals sign and attempt to populate the element map
+    // with the values following it.
+    int equalspos = -1;
+    for (int p=0; p<strlen(line); p++)
+    {
+        if (line[p] == '=')
+            equalspos = p;
+    }
+    if (equalspos >= 0)
+    {
+        string elem_map_line(&(line[equalspos+1]));
+        std::istringstream elem_map_in(elem_map_line);
+        int tmp;
+        while (elem_map_in >> tmp)
+        {
+            element_map.push_back(tmp);
+        }
+    }
 
     double scale = 0.;
     double lat[3][3];
@@ -812,7 +1013,15 @@ avtCHGCARFileFormat::ReadAllMetaData()
         ElementNameToAtomicNumber(tmp_element.c_str()) > 0)
     {
         // We've got an element types line to parse.
-        // We don't use it, so we can just skip it.
+        // This overrides any earlier "types =" from above:
+        element_map.clear();
+        // Push the one we already read:
+        element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
+        // Read the rest:
+        while (type_in >> tmp_element)
+        {
+            element_map.push_back(ElementNameToAtomicNumber(tmp_element.c_str()));
+        }
 
         // We need to read the next line for the atom counts: we set it up
         // to use this past line in the event we didn't have a species line:
@@ -828,6 +1037,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
     std::istringstream count_in(atomcountline);
     while (count_in >> tmp_count)
     {
+        species_counts.push_back(tmp_count);
         natoms += tmp_count;
     }
 
@@ -837,7 +1047,10 @@ avtCHGCARFileFormat::ReadAllMetaData()
                  "Could not parse atom counts; does not match CHGCAR format.");
 
     in.getline(line,2048); // skip next line
+    // note: we are assuming this line says "Direct"; there is no Cartesian option
 
+    // mark the start of the atoms
+    istream::pos_type start_of_first_atoms = in.tellg();
     for (int i=0; i<natoms; i++)
     {
         in.getline(line,2048); // skip atom lines
@@ -860,7 +1073,6 @@ avtCHGCARFileFormat::ReadAllMetaData()
     in.getline(line,2048); // skip rest of dims line
 
     // count the number of values per line
-    istream::pos_type start_of_data = in.tellg();
     string tmpbuff;
     values_per_line = 0;
     int attempts = 0;
@@ -878,13 +1090,27 @@ avtCHGCARFileFormat::ReadAllMetaData()
         EXCEPTION2(InvalidFilesException, filename.c_str(), "Could not count "
                    "values per line; does not appear to match CHGCAR format.");
 
-    // Mark the start of the volumetric grid data
+    // Guess how many lines per step.
     int values_per_vol = globalZDims[0]*globalZDims[1]*globalZDims[2];
     int lines_per_vol = (values_per_vol+values_per_line-1)/values_per_line;
     int lines_per_step = 7 + natoms + 2 + lines_per_vol +
                          (had_species_line ? 1 : 0);
 
-    in.seekg(start_of_data);
+    // Alas, sometimes there's an extra blank line.   Skip forward to the line
+    // where the second atoms should start, and see if it says 'Direct'.  If it
+    // does, then we're going to be off by one, so add one to the blank line.
+    in.seekg(start_of_first_atoms);
+    for (int i=0; i<lines_per_step; i++)
+        in.getline(line,2048);
+    string teststring;
+    in >> teststring;
+    if (teststring == "Direct")
+        ++lines_per_step;
+
+    // we might have walked past the end of the file if we only had one
+    // time step.  clear it all out before this phase.
+    OpenFileAtBeginning();
+    in.seekg(start_of_first_atoms);
     while (in)
     {
         // Note: we're starting partway through the first timestep, so
@@ -892,8 +1118,11 @@ avtCHGCARFileFormat::ReadAllMetaData()
         // of the next timestep.  I.e. we should feel safe assuming
         // this next timestep is valid.
         ntimesteps++;
-        file_positions.push_back(in.tellg());
-        for (int i=0; i<lines_per_step; i++)
+        atom_file_positions.push_back(in.tellg());
+        for (int i=0; i<natoms + 2; i++)
+            in.getline(line,2048);
+        charge_file_positions.push_back(in.tellg());
+        for (int i=0; i<lines_per_step - (natoms+2); i++)
             in.getline(line,2048);
     }
 
