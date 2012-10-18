@@ -135,6 +135,10 @@ avtPOSCARFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
 //    Changed interface to enum scalars
+//
+//    Jeremy Meredith, Thu Oct 18 10:58:20 EDT 2012
+//    Changed enum names to be origin H=1.
+//
 // ****************************************************************************
 
 void
@@ -168,7 +172,7 @@ avtPOSCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             new avtScalarMetaData("element", "mesh", AVT_NODECENT);
         el_smd->SetEnumerationType(avtScalarMetaData::ByValue);
         for (int i=0; i<element_map.size(); i++)
-            el_smd->AddEnumNameValue(element_names[element_map[i]-1],element_map[i]);
+            el_smd->AddEnumNameValue(element_names[element_map[i]],element_map[i]);
         md->Add(el_smd);
     }
     if (cx.size() > 0)
