@@ -8060,6 +8060,9 @@ ViewerSubject::HandleViewerRPC()
 //    Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //    Added DDTFocus and DDTConnect
 //
+//    Kathleen Biagas, Fri Oct 19 13:55:00 PDT 2012
+//    Reorderd DDT entries, made MaxRPC the last case before default.
+//  
 // ****************************************************************************
 
 void
@@ -8456,13 +8459,14 @@ ViewerSubject::HandleViewerRPCEx()
     case ViewerRPC::GetQueryParametersRPC:
         GetQueryParameters();
         break;
-    case ViewerRPC::MaxRPC:
+    case ViewerRPC::DDTConnectRPC:
+        DDTConnect();
         break;
     case ViewerRPC::DDTFocusRPC:
         DDTFocus();
         break;
-    case ViewerRPC::DDTConnectRPC:
-        DDTConnect();
+    case ViewerRPC::MaxRPC:
+        break;
     default:
         // If an RPC is not handled in the above cases, handle it as
         // an action.
