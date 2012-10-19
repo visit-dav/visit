@@ -69,11 +69,11 @@ ${VTK_LIBRARY_DIRS}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg 
-vtkpng 
-vtkzlib 
-vtkfreetype 
+${VTK_TIFF_LIBRARIES}
+${VTK_JPEG_LIBRARIES}
+${VTK_PNG_LIBRARIES}
+${VTK_ZLIB_LIBRARIES} 
+${VTK_FREETYPE_LIBRARIES}
 vtkftgl
 )
 

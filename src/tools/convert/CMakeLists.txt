@@ -104,10 +104,10 @@ ${ICET_LIBRARY_DIR}
 )
 
 SET(VTK_EXTRA_LIBS
-vtkjpeg 
-vtkpng 
-vtkzlib 
-vtkfreetype 
+${VTK_JPEG_LIBRARIES}
+${VTK_PNG_LIBRARIES}
+${VTK_ZLIB_LIBRARIES} 
+${VTK_FREETYPE_LIBRARIES}
 vtkftgl
 )
 
