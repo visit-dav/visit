@@ -1293,19 +1293,6 @@ if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
 fi
 
 #
-# Save stdout as stream 3, redirect stdout and stderr to the log file.
-# After this maks sure to use the info/warn/error functions to display 
-# messages to the user
-#
-
-if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-    exec 3>&1 >> ${LOG_FILE} 2>&1
-    REDIRECT_ACTIVE="yes"
-else
-    exec 2>&1
-fi
-
-#
 # Log build_visit invocation w/ arguments & the start time.
 # Especially helpful if there are multiple starts dumped into the
 # same log.
@@ -1419,6 +1406,19 @@ if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" && "$DO_SERVER_COMPONENTS_O
             error "Qt4 Open Source Edition License Declined. Bailing out."
         fi
     fi
+fi
+
+#
+# Save stdout as stream 3, redirect stdout and stderr to the log file.
+# After this maks sure to use the info/warn/error functions to display 
+# messages to the user
+#
+
+if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+    exec 3>&1 >> ${LOG_FILE} 2>&1
+    REDIRECT_ACTIVE="yes"
+else
+    exec 2>&1
 fi
 
 #

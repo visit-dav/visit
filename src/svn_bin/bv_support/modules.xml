@@ -155,7 +155,7 @@
     <!-- modules needed by gpl license -->
     <license name="gpl">
         <!--
-        <add-license name="lpgl" />Q
+        <add-license name="lpgl" />
         -->
         <!-- required libraries -->
         <required>
@@ -172,6 +172,7 @@
             <lib name="netcdf"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
+            <lib name="pyqt"/>
         </optional>
 
         <!-- thirdparty flag -->
