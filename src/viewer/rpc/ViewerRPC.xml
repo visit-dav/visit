@@ -196,6 +196,9 @@
       SetPlotOrderToLastRPC
       RenamePickLabelRPC
       GetQueryParametersRPC
+      DDTConnectRPC
+      DDTFocusRPC
+      ReleaseToDDTRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
