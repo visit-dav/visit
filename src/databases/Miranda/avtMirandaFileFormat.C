@@ -132,10 +132,17 @@ string Vec2String(string name, T *vec, int numelems) {
 //  Purpose:
 //      Modifies iFileOrder for 2D datasets.  fileOrder will come in as a 3 
 //      element array holding a permutation of 0,1,2.  a and b each hold 0, 1, 
-//      or 2, where a != b.  This function figures out whether a or b occurs
-//      first, and sets the first two elements of fileOrder to be 0,1  or 1,0
-//      accordingly.  Also, I wrote this on Friday the 13th, so this function
-//      could be cursed...
+//      or 2, where a != b.        
+/*      a and b are the names of the elements of iFileOrder which "matter."  
+        On OUTPUT, iFileOrder[0] and iFileOrder[1] will be ordered 
+        with respect to the relative INPUT order of a and b in iFileOrder. 
+        iFileOrder[2] remains unchanged.  
+        Fix2DFileOrder(0,2) means "fix iFileOrder to respect the order of X and Z"
+        Example:  input iFileOrder = 2,0,1
+        Fix2DFileOrder(0,1) -->  0 comes before 1 in iFileOrder --> iFileOrder[0:1] = 0,1
+        Fix2DFileOrder(0,2) -->  0 comes after 2 in iFileOrder -->  iFileOrder[0:1] = 1,0
+
+*/
 //
 //  Programmer: Dave Bremer
 //  Creation:   Fri Jun 13 15:54:11 PDT 2008
@@ -147,6 +154,9 @@ static void Fix2DFileOrder(int a, int b, int *fileOrder)
   debug5 << "Fix2DFileOrder(" << a << ", "<< b << ", " << Vec2String("fileOrder",fileOrder,3) << ") " << endl; 
     int posA, posB;
     int ii;
+    /* set posA to the position in iFileOrder in which a appears.  
+       set posB to the position in iFileOrder in which b appears.  
+    */
     for (ii = 0; ii < 3; ii++)
     {
         if (fileOrder[ii] == a)
@@ -154,12 +164,13 @@ static void Fix2DFileOrder(int a, int b, int *fileOrder)
         if (fileOrder[ii] == b)
             posB = ii;
     }
-    if (posA < posB)
+
+    if (posA < posB) /* a came before b in iFileOrder */
     {
         fileOrder[0] = 0;
         fileOrder[1] = 1;
     }
-    else
+    else /* b came before a in iFileOrder */
     {
         fileOrder[0] = 1;
         fileOrder[1] = 0;
@@ -490,15 +501,9 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
       /* don't use domainMaps any more 
         domainMap.resize( iNumBlocks[0]*iNumBlocks[1]*iNumBlocks[2]*3, -1 );
       */ 
-      if (iGlobalDim[2] == 1 ||iGlobalDim[1] == 1||iGlobalDim[0] == 1) {
-        iFileOrder[0] = 1; 
-        iFileOrder[1] = 0; 
-        iFileOrder[2] = -1; 
-      } else { 
-        iFileOrder[0] = 2; 
-        iFileOrder[1] = 1; 
-        iFileOrder[2] = 0; 
-      }
+      iFileOrder[0] = 2; 
+      iFileOrder[1] = 1; 
+      iFileOrder[2] = 0;       
     }
 
     // Rearrange data if it is flat in one dimension
@@ -507,8 +512,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         dim = 2;
         flatDim = 2;
 
-        if (iFileOrder[2] != -1)
-            Fix2DFileOrder(0, 1, iFileOrder);     
+        Fix2DFileOrder(0, 1, iFileOrder);  
     }
     else if (iGlobalDim[1] == 1)
     {
@@ -537,14 +541,13 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        if (iFileOrder[1] != -1)
-            Fix2DFileOrder(0, 2, iFileOrder);
+        Fix2DFileOrder(0, 2, iFileOrder);
     }
     else if (iGlobalDim[0] == 1)
-    {
+      {
         dim = 2;
         flatDim = 0;
-    
+        
         double tmpOrigin = fOrigin[0];
         double tmpStride = fStride[0];
         double tmpInterior = iInteriorSize[0];
@@ -574,8 +577,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
         iNumBlocks[2] = 1;
         iBlockSize[2] = 1;
 
-        if (iFileOrder[0] != -1)
-            Fix2DFileOrder(1, 2, iFileOrder);
+        Fix2DFileOrder(1, 2, iFileOrder);
     }
      debug5 << Vec2String("iGlobalDim",iGlobalDim,3) << endl; 
 
