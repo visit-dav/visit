@@ -2,6 +2,8 @@ function bv_netcdf_initialize
 {
 export DO_NETCDF="no"
 export ON_NETCDF="off"
+export USE_SYSTEM_NETCDF="no"
+add_extra_commandline_args "netcdf" "alt-netcdf-dir" 1 "Use alternative directory for netcdf"
 }
 
 function bv_netcdf_enable
@@ -16,16 +18,34 @@ DO_NETCDF="no"
 ON_NETCDF="off"
 }
 
+function bv_netcdf_alt_netcdf_dir
+{
+    bv_netcdf_enable
+    USE_SYSTEM_NETCDF="yes"
+    NETCDF_INSTALL_DIR="$1"
+}
+
 function bv_netcdf_depends_on
 {
-    local depends_on=""
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"        
-        if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends_on="${depends_on} szip"        
+    if [[ "$USE_SYSTEM_NETCDF" == "yes" ]]; then
+        echo ""
+    else
+        local depends_on=""
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            depends_on="hdf5"        
+            if [[ "$DO_SZIP" == "yes" ]] ; then
+                depends_on="${depends_on} szip"        
+            fi
         fi
+        echo ${depends_on}
     fi
-    echo ${depends_on}
+}
+
+function bv_netcdf_initialize_vars
+{
+    if [[ "$USE_SYSTEM_NETCDF" == "no" ]]; then
+            NETCDF_INSTALL_DIR="${VISITDIR}/netcdf/$NETCDF_VERSION/${VISITARCH})"
+    fi
 }
 
 function bv_netcdf_info
@@ -65,20 +85,27 @@ function bv_netcdf_host_profile
         echo "##" >> $HOSTCONF
         echo "## NetCDF" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
-        if [[ "$DO_HDF5" == "yes" ]] ; then
+
+        if [[ "$USE_SYSTEM_NETCDF" == "yes" ]]; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR $NETCDF_INSTALL_DIR)" \
             >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR \${VISITHOME}/netcdf/$NETCDF_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
+            if [[ "$DO_HDF5" == "yes" ]] ; then
+                echo \
+                "VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+                >> $HOSTCONF
+            fi
         fi
     fi
 }
 
 function bv_netcdf_ensure
 {
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
+    if [[ "$DO_NETCDF" == "yes" && "$USE_SYSTEM_NETCDF" == "no" ]] ; then
         ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR \
           $NETCDF_FILE \
           http://www.unidata.ucar.edu/downloads/netcdf/ftp/
@@ -255,7 +282,7 @@ function build_netcdf
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
         H5ARGS="--enable-netcdf4"
-        H5ARGS="$H5ARGS --with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+        H5ARGS="$H5ARGS --with-hdf5=$HDF5_INSTALL_DIR"
         if [[ "$DO_SZIP" == "yes" ]] ; then
             H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
@@ -324,6 +351,10 @@ function bv_netcdf_is_enabled
 
 function bv_netcdf_is_installed
 {
+    if [[ "$USE_SYSTEM_NETCDF" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "netcdf" $NETCDF_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -334,7 +365,7 @@ function bv_netcdf_is_installed
 function bv_netcdf_build
 {
 cd "$START_DIR"
-if [[ "$DO_NETCDF" == "yes" ]] ; then
+if [[ "$DO_NETCDF" == "yes" && "$USE_SYSTEM_NETCDF" == "no" ]] ; then
     check_if_installed "netcdf" $NETCDF_VERSION
    if [[ $? == 0 ]] ; then
         info "Skipping NetCDF build.  NetCDF is already installed."

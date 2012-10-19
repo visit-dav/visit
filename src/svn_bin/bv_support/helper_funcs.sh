@@ -1002,6 +1002,7 @@ function check_parallel
         #
         if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
             export VISIT_MPI_COMPILER=$MPIWRAPPER
+            export PAR_COMPILER=$MPIWRAPPER
             info \
                 "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
             return 0

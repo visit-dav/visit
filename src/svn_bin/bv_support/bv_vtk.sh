@@ -1,8 +1,10 @@
 function bv_vtk_initialize
 {
-export DO_VTK="yes"
-export ON_VTK="on"
-export FORCE_VTK="no"
+    export DO_VTK="yes"
+    export ON_VTK="on"
+    export FORCE_VTK="no"
+    export USE_SYSTEM_VTK="no"
+    add_extra_commandline_args "vtk" "alt-vtk-dir" 1 "Use alternate VTK (exp)"
 }
 
 function bv_vtk_enable
@@ -17,6 +19,14 @@ function bv_vtk_disable
 DO_VTK="no"
 ON_VTK="off"
 FORCE_VTK="no"
+}
+
+function bv_vtk_alt_vtk_dir
+{
+    bv_vtk_enable
+    USE_SYSTEM_VTK="yes"
+    SYSTEM_VTK_DIR="$1"
+    info "Using Alternate VTK: $SYSTEM_VTK_DIR"
 }
 
 function bv_vtk_depends_on
@@ -71,15 +81,25 @@ function bv_vtk_host_profile
     echo "##" >> $HOSTCONF
     echo "## VTK" >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_MTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+
+    if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
-        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+        if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_MTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
+        fi
     fi
 }
 
 function bv_vtk_initialize_vars
 {
+    #if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
+    #    if [[ "$DO_MESA" == "yes" || "$parallel" == "yes" ]]; then
+    #        error "System VTK with Custom MESA is not supported"
+    #    fi
+    #fi
     info "initalizing vtk vars"
     if [[ $DO_R == "yes" ]]; then
         VTK_INSTALL_DIR="vtk-r"
@@ -91,7 +111,7 @@ function bv_vtk_initialize_vars
 
 function bv_vtk_ensure
 {
-    if [[ "$DO_VTK" == "yes" ]] ; then
+    if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
         ensure_built_or_ready $VTK_INSTALL_DIR $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE
         if [[ $? != 0 ]] ; then
             return 1
@@ -311,12 +331,12 @@ function build_vtk
     vopts="${vopts} -D${VTK_PREFIX}_USE_INFOVIS:BOOL=ON"
     if test "$DO_R" = "yes" ; then
         vopts="${vopts} -D${VTK_PREFIX}_USE_GNU_R:BOOL=ON"
-        vopts="${vopts} -DR_COMMAND:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/bin/R"
-        vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R"
-        vopts="${vopts} -DR_INCLUDE_DIR:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/include"
-        vopts="${vopts} -DR_LIBRARY_BASE:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libR.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRlapack.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=$VISITDIR/R/$R_VERSION/$VISITARCH/lib/R/lib/libRblas.${SO_EXT}"
+        vopts="${vopts} -DR_COMMAND:PATH=${R_INSTALL_DIR}/bin/R"
+        vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
+        vopts="${vopts} -DR_INCLUDE_DIR:PATH=${R_INSTALL_DIR}/lib/R/include"
+        vopts="${vopts} -DR_LIBRARY_BASE:PATH=${R_INSTALL_DIR}/lib/R/lib/libR.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=${R_INSTALL_DIR}/lib/R/lib/libRlapack.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=${R_INSTALL_DIR}/lib/R/lib/libRblas.${SO_EXT}"
     else
         vopts="${vopts} -D${VTK_PREFIX}_USE_CHARTS:BOOL=OFF"
     fi
@@ -533,6 +553,10 @@ function bv_vtk_is_enabled
 
 function bv_vtk_is_installed
 {
+    if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "$VTK_INSTALL_DIR" $VTK_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -546,7 +570,7 @@ function bv_vtk_build
     # Build VTK
     #
     cd "$START_DIR"
-    if [[ "$DO_VTK" == "yes" ]] ; then
+    if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
         check_if_installed $VTK_INSTALL_DIR $VTK_VERSION
         if [[ $? == 0 ]] ; then
             info "Skipping VTK build.  VTK is already installed."

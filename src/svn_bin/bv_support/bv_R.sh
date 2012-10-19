@@ -2,6 +2,8 @@ function bv_R_initialize
 {
 export DO_R="no"
 export ON_R="off"
+export USE_SYSTEM_R="no"
+add_extra_commandline_args "R" "alt-R-dir" 1 "Use alternative directory for R" 
 }
 
 function bv_R_enable
@@ -16,9 +18,23 @@ DO_R="no"
 ON_R="off"
 }
 
+function bv_R_alt_R_dir
+{
+    bv_R_enable
+    USE_SYSTEM_R="yes"
+    R_INSTALL_DIR="$1"
+}
+
 function bv_R_depends_on
 {
 echo ""
+}
+
+function bv_R_initialize_vars
+{
+    if [[ "$USE_SYSTEM_R" == "no" ]]; then
+        R_INSTALL_DIR="${VISITDIR}/R/$R_VERSION/${VISITARCH}/"
+    fi
 }
 
 function bv_R_info
@@ -57,15 +73,21 @@ function bv_R_host_profile
         echo "##" >> $HOSTCONF
         echo "## R" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_R_DIR \${VISITHOME}/R/$R_VERSION/\${VISITARCH}/lib/R)" \
-        >> $HOSTCONF
+        if [[ "$USE_SYSTEM_R" == "yes" ]]; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_R_DIR $R_INSTALL_DIR/lib/R)" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_R_DIR \${VISITHOME}/R/$R_VERSION/\${VISITARCH}/lib/R)" \
+            >> $HOSTCONF
+        fi
     fi
 }
 
 function bv_R_ensure
 {
-    if [[ "$DO_R" == "yes" ]] ; then
+    if [[ "$DO_R" == "yes" && "$USE_SYSTEM_R" == "no" ]] ; then
         ensure_built_or_ready "R" $R_VERSION $R_BUILD_DIR $R_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -196,6 +218,10 @@ function bv_R_is_enabled
 
 function bv_R_is_installed
 {
+    if [[ "$USE_SYSTEM_R" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "R" $R_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -206,7 +232,7 @@ function bv_R_is_installed
 function bv_R_build
 {
 cd "$START_DIR"
-if [[ "$DO_R" == "yes" ]] ; then
+if [[ "$DO_R" == "yes" && "$USE_SYSTEM_R" == "no" ]] ; then
     check_if_installed "R" $R_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping R build.  R is already installed."

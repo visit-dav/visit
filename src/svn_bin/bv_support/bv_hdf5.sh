@@ -2,6 +2,8 @@ function bv_hdf5_initialize
 {
 export DO_HDF5="no"
 export ON_HDF5="off"
+export USE_SYSTEM_HDF5="no"
+add_extra_commandline_args "hdf5" "alt-hdf5-dir" 1 "Use alternative directory for hdf5"
 }
 
 function bv_hdf5_enable
@@ -16,9 +18,27 @@ DO_HDF5="no"
 ON_HDF5="off"
 }
 
+function bv_hdf5_alt_hdf5_dir
+{
+    bv_hdf5_enable
+    USE_SYSTEM_HDF5="yes"
+    HDF5_INSTALL_DIR="$1"
+}
+
 function bv_hdf5_depends_on
 {
-echo "szip"
+    if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
+        echo ""
+    else
+        echo "szip"
+    fi
+}
+
+function bv_hdf5_initialize_vars
+{
+    if [[ "$USE_SYSTEM_HDF5" == "no" ]]; then
+        HDF5_INSTALL_DIR="${VISITDIR}/hdf5/$HDF5_VERSION/${VISITARCH}"
+    fi
 }
 
 function bv_hdf5_info
@@ -59,24 +79,31 @@ function bv_hdf5_host_profile
         echo "##" >> $HOSTCONF
         echo "## HDF5" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF 
-        if [[ "$DO_SZIP" == "yes" ]] ; then
+
+        if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z TYPE STRING)" \
-            >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR $HDF5_INSTALL_DIR)" \
+            >> $HOSTCONF 
         else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z TYPE STRING)" \
-            >> $HOSTCONF
+            "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF 
+            if [[ "$DO_SZIP" == "yes" ]] ; then
+                echo \
+                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z TYPE STRING)" \
+                >> $HOSTCONF
+            else
+                echo \
+                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z TYPE STRING)" \
+                >> $HOSTCONF
+            fi
         fi
     fi
 }
 
 function bv_hdf5_ensure
 {
-    if [[ "$DO_HDF5" == "yes" ]] ; then
+    if [[ "$DO_HDF5" == "yes" && "$USE_SYSTEM_HDF5" == "no" ]] ; then
         ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE $HDF5_URL 
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -201,6 +228,11 @@ function bv_hdf5_is_enabled
 
 function bv_hdf5_is_installed
 {
+
+    if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "hdf5" $HDF5_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -212,7 +244,7 @@ function bv_hdf5_build
 {
 cd "$START_DIR"
 
-if [[ "$DO_HDF5" == "yes" ]] ; then
+if [[ "$DO_HDF5" == "yes" && "$USE_SYSTEM_HDF5" == "no" ]] ; then
     check_if_installed "hdf5" $HDF5_VERSION
     if [[ $? == 0 ]] ; then
         info "Skipping HDF5 build.  HDF5 is already installed."
