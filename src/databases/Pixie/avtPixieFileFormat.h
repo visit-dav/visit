@@ -40,10 +40,11 @@
 //                            avtPixieFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_Pixie_FILE_FORMAT_H
-#define AVT_Pixie_FILE_FORMAT_H
+#ifndef AVT_PIXIE_FILE_FORMAT_H
+#define AVT_PIXIE_FILE_FORMAT_H
 
 #include <avtMTSDFileFormat.h>
+class DBOptionsAttributes;
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -94,6 +95,12 @@
 //    Luis Chacon, Tue Mar 2 10:02:00 EST 2010
 //    Added double vector time_val (set up in GetVariableList)
 //
+//    Jean Favre, Wed Dec 21 11:48:20 CET 2011
+//    Added support for parallel reading via hyperslabs
+//    Added a start[3], count[3] to VarInfo for parallel hyperslabs
+//    Added a start_no_ghost[3], count_no_ghost[3]
+//    Added reading options to select hyperslab cutting method
+//
 // ****************************************************************************
 
 class avtPixieFileFormat : public avtMTSDFileFormat
@@ -113,6 +120,10 @@ class avtPixieFileFormat : public avtMTSDFileFormat
     {
         bool        timeVarying;
         hsize_t     dims[3];
+        hsize_t     start[3];
+        hsize_t     count[3];
+        hsize_t     start_no_ghost[3];
+        hsize_t     count_no_ghost[3];
         hid_t       nativeVarType;
         std::string fileVarName;
         bool        hasCoords;
@@ -123,7 +134,7 @@ class avtPixieFileFormat : public avtMTSDFileFormat
 
     typedef std::map<std::string, VarInfo> VarInfoMap;
 public:
-                       avtPixieFileFormat(const char *);
+                       avtPixieFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtPixieFileFormat();
 
     virtual void           GetCycles(std::vector<int> &);
@@ -163,6 +174,8 @@ protected:
                                                 const hsize_t *dims,
                                                 void *dest) const;
 
+    void                   AddGhostCellInfo(const VarInfo &info, vtkDataSet *ds);
+    void                   PartitionDims();
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
@@ -177,6 +190,9 @@ protected:
     std::vector<double>    time_val;
 
     static herr_t GetVariableList(hid_t, const char *, void *);
+
+    enum PartitioningDirection {XSLAB=0, YSLAB, ZSLAB, KDTREE};
+    PartitioningDirection Partitioning;
 };
 
 
