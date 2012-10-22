@@ -39,8 +39,8 @@ DeleteAllPlots()
 # test a 3D pixie database
 OpenDatabase(data_path("pixie_test_data/pixie3d4.h5"))
 
-AddPlot("Contour","Car variables/Vx")
 AddPlot("Mesh","curvemesh_33x33x33")
+AddPlot("Contour","Car variables/Vx")
 v=GetView3D()
 v.viewNormal=(-0.5, 0, 0.866025)
 SetView3D(v)
@@ -49,21 +49,72 @@ Test("pixie_04")
 DeleteAllPlots()
 ResetView()
 
-# test a pixie expression
+# test a pixie expression (plot vector magnitude)
 OpenDatabase(data_path("pixie_test_data/pixie_expressions.h5"))
 
-AddPlot("Vector","V")
+# Test that vector data can be used. We use a Contour plot instead of a Vector
+# plot now because the glyph indices for the Vector plot can change depending
+# on how the mesh was automatically decomposed by the reader.
+AddPlot("Contour","V_magnitude")
+AddOperator("Transform")
+t = TransformAttributes()
+t.doScale = 1
+t.scaleZ = 0.25
+SetOperatorOptions(t)
 DrawPlots()
 v=GetView3D()
-v.imageZoom=3.5
+v.viewNormal = (0.557477, 0.525516, 0.642692)
+v.focus = (0.484375, 0.5, 0.984375)
+v.viewUp = (-0.252277, 0.844773, -0.471926)
+v.viewAngle = 30
+v.parallelScale = 1.22474
+v.nearPlane = -2.44949
+v.farPlane = 2.44949
+v.imagePan = (0.0454993, 0.0670485)
+v.imageZoom = 1
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0.484375, 0.5, 0.984375)
 SetView3D(v)
 Test("pixie_05")
 DeleteAllPlots()
 
-# test a contour plot on double precision data
-AddPlot("Contour","Car_variables/Vx")
+# Test a transparent plot to see how well ghosting works when the
+# mesh gets divided up in parallel.
+DefineScalarExpression("one", "point_constant(curvemesh_33x33x65, 1.)")
+AddPlot("Pseudocolor", "one")
+pc = PseudocolorAttributes()
+pc.opacity = 0.31
+SetPlotOptions(pc)
+AddOperator("Transform")
+t = TransformAttributes()
+t.doScale = 1
+t.scaleZ = 0.25
+SetOperatorOptions(t)
 DrawPlots()
 Test("pixie_06")
+DeleteAllPlots()
+
+# test a contour plot on double precision data
+AddPlot("Contour","Car_variables/Vx")
+v = GetView3D()
+v.viewNormal = (0, 0, 1)
+v.focus = (0.484375, 0.5, 3.9375)
+v.viewUp = (0, 1, 0)
+v.viewAngle = 30
+v.parallelScale = 4.06202
+v.nearPlane = -8.12404
+v.farPlane = 8.12404
+v.imagePan = (0, 0)
+v.imageZoom = 20
+v.perspective = 1
+v.eyeAngle = 2
+v.centerOfRotationSet = 0
+v.centerOfRotation = (0.484375, 0.5, 3.9375)
+SetView3D(v)
+DrawPlots()
+Test("pixie_07")
 DeleteAllPlots()
 
 # test a mesh plot of a non-square, 2D, curvilinear mesh 
@@ -75,6 +126,6 @@ DrawPlots()
 v=GetView2D()
 v.windowCoords=(-0.241119, 0.241119, -0.162714, 0.162714)
 SetView2D(v)
-Test("pixie_07")
+Test("pixie_08")
 
 Exit()
