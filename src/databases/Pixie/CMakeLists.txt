@@ -16,12 +16,14 @@ SET(LIBM_SOURCES
 PixieMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtPixieFileFormat.C
+avtPixieOptions.C
 )
 
 SET(LIBE_SOURCES
 PixieEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtPixieFileFormat.C
+avtPixieOptions.C
 )
 
 INCLUDE_DIRECTORIES(
