@@ -17,6 +17,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Brad Whitlock, Tue Oct 23 11:18:12 PDT 2012
+#    I added tests for NBLOCKS .visit files, cycle & time, and PVTU files.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -193,7 +196,49 @@ def TestHigherOrder():
     Test("vtk_29")
     DeleteAllPlots()
 
+def TestNBLOCKS():
+    TestSection("!NBLOCKS in a .visit file")
+    OpenDatabase(data_path("vtk_test_data/visitfile/dbA.visit"))
+    AddPlot("Pseudocolor", "mesh/ireg")
+    DrawPlots()
+    ResetView()
+    Test("vtk_30")
+
+    # See that there are multiple time steps.
+    SetTimeSliderState(5)
+    Test("vtk_31")
+    DeleteAllPlots()
+
+    # See that there are 2 domains
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("vtk_32")
+
+    # Test that we can get the cycle and time out.
+    txt = ""
+    for i in range(10):
+        SetTimeSliderState(i)
+        Query("Cycle")
+        cycle = GetQueryOutputValue()
+        Query("Time")
+        time = GetQueryOutputValue()
+        txt = txt + "Cycle: %d, Time: %g\n" % (cycle, time)
+    TestText("vtk_33", txt)
+    DeleteAllPlots()
+
+def TestPVTU():
+    TestSection("PVTU files")
+    OpenDatabase(data_path("vtk_pvtu_data/blocks.pvtu"))
+    AddPlot("Pseudocolor", "MatNum")
+    DrawPlots()
+    ResetView()
+    Test("vtk_34")
+    DeleteAllPlots()
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
+TestNBLOCKS()
+TestPVTU()
+
 Exit()
