@@ -36,121 +36,102 @@
 *
 *****************************************************************************/
 
+
 // ************************************************************************* //
-//                             avtVTKFileFormat.h                            //
+//                            avtVTK_STSDFileFormat.h                        //
 // ************************************************************************* //
 
 #ifndef AVT_VTK_FILE_FORMAT_H
 #define AVT_VTK_FILE_FORMAT_H
 
-#include <avtSTMDFileFormat.h>
-#include <map>
-#include <string>
-
-class vtkRectilinearGrid;
-class vtkStructuredPoints;
-class vtkVisItXMLPDataReader;
+#include <avtSTSDFileFormat.h>
+#include <avtVTKFileReader.h>
 
 class DBOptionsAttributes;
 
-
 // ****************************************************************************
-//  Class: avtVTKFileFormat
+//  Class: avtVTK_STSDFileFormat
 //
 //  Purpose:
-//      Handles files of the .vtk file format.
+//      Reads in VTK_STSD files as a plugin to VisIt.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 23, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
-//    use vtkDataArray instead.
-//
-//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
-//    Added ConvertStructuredPointsToRGrid. 
-//
-//    Hank Childs, Tue May 24 12:06:52 PDT 2005
-//    Added argument to constructor for DB options.
-//
-//    Eric Brugger, Fri Aug 12 11:28:43 PDT 2005
-//    Added GetCycleFromFilename.
-//
-//    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
-//    Added GetAuxiliaryData to support materials
-//
-//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
-//    Added 'extension' to store file extension. 
-//
-//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
-//    Added GetTime method.
-//
-//    Hank Childs, Tue Sep 26 14:09:18 PDT 2006
-//    Remove class qualification of method definition, which xlC dislikes.
-//
-//    Kathleen Bonnell, Wed Jul  9 18:13:50 PDT 2008
-//    Added GetCycle method.
-//
-//    Brad Whitlock, Wed Oct 26 11:01:00 PDT 2011
-//    I added vtkCurves.
-//
-//    Eric Brugger, Mon Jun 18 12:26:52 PDT 2012
-//    I enhanced the reader so that it can read parallel VTK files.
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Oct 22 16:11:00 PST 2012
 //
 // ****************************************************************************
 
-class avtVTKFileFormat : public avtSTMDFileFormat
+class avtVTK_STSDFileFormat : public avtSTSDFileFormat
 {
-  public:
-                          avtVTKFileFormat(const char *,DBOptionsAttributes *);
-    virtual              ~avtVTKFileFormat();
+public:
+                       avtVTK_STSDFileFormat(const char *filename, 
+                                             DBOptionsAttributes *);
+                       avtVTK_STSDFileFormat(const char *filename, 
+                                             DBOptionsAttributes *,
+                                             avtVTKFileReader *r);
+    virtual           ~avtVTK_STSDFileFormat();
 
-    virtual vtkDataSet   *GetMesh(int, const char *);
-    virtual vtkDataArray *GetVar(int, const char *);
-    virtual vtkDataArray *GetVectorVar(int, const char *);
-    virtual void         *GetAuxiliaryData(const char *var, int,
+    virtual const char    *GetType(void);
+    virtual void           FreeUpResources(void); 
+
+    int                    GetCycleFromFilename(const char *f) const;
+    virtual int            GetCycle(void);
+    virtual double         GetTime(void);
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    virtual vtkDataSet    *GetMesh(const char *);
+    virtual vtkDataArray  *GetVar(const char *);
+    virtual vtkDataArray  *GetVectorVar(const char *);
+
+    virtual void          *GetAuxiliaryData(const char *var, 
                               const char *type, void *, DestructorFunction &df);
 
-    virtual const char   *GetType(void)  { return "VTK File Format"; };
+protected:
+    avtVTKFileReader *reader;
+};
 
-    virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+#include <avtSTMDFileFormat.h>
 
-    virtual void          FreeUpResources(void);
+// ****************************************************************************
+//  Class: avtVTK_STMDFileFormat
+//
+//  Purpose:
+//      Reads in VTK_STMD files as a plugin to VisIt.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Oct 22 16:11:00 PST 2012
+//
+// ****************************************************************************
 
-    int                   GetCycleFromFilename(const char *f) const;
-    virtual double        GetTime(void);
-    virtual int           GetCycle(void);
+class avtVTK_STMDFileFormat : public avtSTMDFileFormat
+{
+public:
+                       avtVTK_STMDFileFormat(const char *filename,
+                                             DBOptionsAttributes *);
+                       avtVTK_STMDFileFormat(const char *filename, 
+                                             DBOptionsAttributes *,
+                                             avtVTKFileReader *r);
+    virtual           ~avtVTK_STMDFileFormat();
 
-  protected:
-    char                 *filename;
+    virtual const char    *GetType(void);
+    virtual void           FreeUpResources(void); 
 
-    bool                  readInDataset;
+    int                    GetCycleFromFilename(const char *f) const;
+    virtual int            GetCycle(void);
+    virtual double         GetTime(void);
 
-    int                   nblocks;
-    char                **pieceFileNames;
-    vtkDataSet          **pieceDatasets;
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-    static const char    *MESHNAME;
-    static const char    *VARNAME;
-    char                 *matvarname;
-    std::vector<int>      matnos;
-    std::vector<std::string> matnames;
-    double                vtk_time;
-    int                   vtk_cycle;
+    virtual vtkDataSet    *GetMesh(int domain, const char *);
+    virtual vtkDataArray  *GetVar(int domain, const char *);
+    virtual vtkDataArray  *GetVectorVar(int domain, const char *);
 
-    std::string           fileExtension;
-    std::string           pieceExtension;
+    virtual void          *GetAuxiliaryData(const char *var, int domain,
+                              const char *type, void *, DestructorFunction &df);
 
-    std::map<std::string, vtkRectilinearGrid *> vtkCurves;
-
-    void                  ReadInFile(void);
-    void                  ReadInDataset(int);
-    vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);
-    void                  CreateCurves(vtkRectilinearGrid *rgrid);
+protected:
+    avtVTKFileReader *reader;
 };
 
 
 #endif
-
-

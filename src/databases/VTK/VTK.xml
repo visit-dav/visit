@@ -15,11 +15,13 @@
     </FilePatterns>
     <Files components="M">
       avtVTKFileFormat.C
+      avtVTKFileReader.C
       avtVTKOptions.C
       vtkVisItXMLPDataReader.C
     </Files>
     <Files components="E">
       avtVTKFileFormat.C
+      avtVTKFileReader.C
       avtVTKOptions.C
       avtVTKWriter.C
       vtkVisItXMLPDataReader.C
