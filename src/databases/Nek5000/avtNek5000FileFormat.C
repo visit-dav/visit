@@ -2997,6 +2997,9 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 //    Add support for the case where we are streaming data in parallel and
 //    we can't rely on other processors to help out.
 //
+//    Hank Childs, Tue Oct 23 14:53:01 PDT 2012
+//    Mark selections as applied.
+//
 // ****************************************************************************
 
 void
@@ -3032,6 +3035,7 @@ avtNek5000FileFormat::RegisterDataSelections(
             itree->GetElementsListFromRange(mins, maxs, domainsToUse[i]);
             if (domainsToUse[i].size() == 0)
                 noMatches = true;
+            (*selectionsApplied)[i] = true;
         }
         if (string(selList[i]->GetType()) == "Plane Selection")
         {
@@ -3050,6 +3054,7 @@ avtNek5000FileFormat::RegisterDataSelections(
             itree->GetElementsList(normal, D, domainsToUse[i]);
             if (domainsToUse[i].size() == 0)
                 noMatches = true;
+            (*selectionsApplied)[i] = true;
         }
         if (string(selList[i]->GetType()) == "Point Selection")
         {
@@ -3064,6 +3069,7 @@ avtNek5000FileFormat::RegisterDataSelections(
             itree->GetElementsListFromRange(pt, pt, domainsToUse[i]);
             if (domainsToUse[i].size() == 0)
                 noMatches = true;
+            (*selectionsApplied)[i] = true;
         }
         if (string(selList[i]->GetType()) == "Isolevels Selection")
         {
@@ -3087,6 +3093,7 @@ avtNek5000FileFormat::RegisterDataSelections(
             CombineElementLists(elemsForLevelJ, domainsToUse[i], true);
             if (domainsToUse[i].size() == 0)
                 noMatches = true;
+            (*selectionsApplied)[i] = true;
         }
     }
     visitTimer->StopTimer(t1, "Getting element lists for each selection");
