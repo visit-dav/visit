@@ -60,6 +60,8 @@ class avtDatabaseWriter;
 //  Creation:   omitted
 //
 //  Modifications:
+//    Brad Whitlock, Mon Oct 22 17:05:22 PDT 2012
+//    I added a dbType member to VTKCommonPluginInfo.
 //
 // ****************************************************************************
 
@@ -79,11 +81,16 @@ class VTKGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 class VTKCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual VTKGeneralPluginInfo
 {
   public:
+    VTKCommonPluginInfo();
+
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
     virtual DBOptionsAttributes *GetReadOptions() const;
     virtual DBOptionsAttributes *GetWriteOptions() const;
+
+  private:
+    DatabaseType dbType;
 };
 
 class VTKMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual VTKCommonPluginInfo
