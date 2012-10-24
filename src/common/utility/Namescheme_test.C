@@ -37,12 +37,14 @@
 *****************************************************************************/
 #include <Namescheme.h>
 #include <string.h>
+//#include <iostream>
 //#include <stdio.h>
 
 int main()
 {
     int i;
     int P[100], U[4];
+    char *N[3];
 
     // Test a somewhat complex expression 
     Namescheme *ns = new Namescheme("@foo_%+03d@3-((n % 3)*(4+1)+1/2)+1");
@@ -103,12 +105,13 @@ int main()
         return 1;
     delete ns;
 
+
     // Test array-based references in a name scheme
     for (i = 0; i < 100; i++)
         P[i] = i*5;
     for (i = 0; i < 4; i++)
         U[i] = i*i;
-    ns = new Namescheme("#foo_%03dx%03d#$P[n]#$U[n%4]", P, U);
+    ns = new Namescheme("@foo_%03dx%03d@#P[n]@#U[n%4]", P, U);
     if (strcmp(ns->GetName(17), "foo_085x001") != 0)
         return 1;
     if (strcmp(ns->GetName(18), "foo_090x004") != 0)
@@ -119,6 +122,15 @@ int main()
         return 1;
     if (strcmp(ns->GetName(21), "foo_105x001") != 0)
         return 1;
+    delete ns;
+
+    /* Test array-based references to char* valued array */
+    N[0] = "red";
+    N[1] = "green";
+    N[2] = "blue";
+    ns = new Namescheme("Hfoo_%sH$N[n%3]", N);
+    if (strcmp(ns->GetName(17), "foo_blue") != 0) return 1;
+    if (strcmp(ns->GetName(6), "foo_red") != 0) return 1;
     delete ns;
 
     return 0;
