@@ -41,7 +41,9 @@
  distutils setup script for the 'visit_utils' module.
 
 """
-
+import sys
+__system_bytecode_setting = sys.dont_write_bytecode
+sys.dont_write_bytecode = True
 from distutils.core import setup
 import sys
 import setup_tests

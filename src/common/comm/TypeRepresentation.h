@@ -59,6 +59,7 @@
 class COMM_API TypeRepresentation
 {
 public:
+    enum SupportedFormat { ASCIIFORMAT,BINARYFORMAT };
     TypeRepresentation();
     TypeRepresentation(const TypeRepresentation &);
     ~TypeRepresentation();
@@ -70,7 +71,10 @@ public:
     int LongSize();
     int FloatSize();
     int DoubleSize();
+    SupportedFormat GetSupportedFormat();
+    void SetSupportedFormat(SupportedFormat format);
 
+    unsigned char Format; /// toggle between ascii and binary..
     unsigned char IntFormat;
     unsigned char LongFormat;
     unsigned char FloatFormat;

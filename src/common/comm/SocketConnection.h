@@ -64,7 +64,8 @@
 //   Added Fill, DirectRead, DirectWrite, NeedsRead methods.
 //
 // ****************************************************************************
-
+class MapNode;
+class JSONNode;
 class COMM_API SocketConnection : public Connection
 {
 public:
@@ -73,15 +74,32 @@ public:
 
     virtual int  Fill();
     virtual void Flush();
+    virtual void Flush(AttributeSubject*);
     virtual long Size();
     virtual void Write(unsigned char value);
     virtual void Read(unsigned char *address);
     virtual void Append(const unsigned char *buf, int count);
     virtual long DirectRead(unsigned char *buf, long len);
     virtual long DirectWrite(const unsigned char *buf, long len);
+    virtual long ReadHeader(unsigned char *buf, long len);
+    virtual long WriteHeader(const unsigned char *buf, long len);
     virtual bool NeedsRead(bool blocking = false) const;
     virtual int  GetDescriptor() const;
-private:
+protected:
+    //int Write(MapNode* mapnode);
+    //void WriteToBuffer(MapNode* mapnode,bool write,int id, int& totalLen, int& totalSize);
+//    int Write(int id,MapNode *mapnode,JSONNode* data);
+//    void WriteToBuffer(MapNode *mapnode, JSONNode* data,
+//                                       bool write,
+//                                       int id,
+//                                       int& totalLen,
+//                                       int &totalSize);
+    int Write(int id,MapNode *mapnode);
+    void WriteToBuffer(MapNode *mapnode,
+                       bool write,
+                       int id,
+                       int& totalLen,
+                       int &totalSize);
     std::deque<unsigned char> buffer;
     DESCRIPTOR                descriptor;
     int                       zeroesRead;

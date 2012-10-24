@@ -1078,7 +1078,7 @@ QvisGUIApplication::Init(int stage)
 // ****************************************************************************
 // Method: QvisGUIApplication::HeavyInitialization
 //
-// Purpose: 
+// Purpose:
 //   This method performs the heavy initialization for which we want progress
 //   to be displayed in the splashscreen. This includes launching the viewer
 //   and the mdserver.
@@ -1755,7 +1755,7 @@ QvisGUIApplication::FinalInitialization()
         Synchronize(INITIALIZE_SESSIONDIR_TAG);
 
         // If we have a crash recovery file, restore it?
-        if(!embeddedGUI)
+        if(!inheritedGUI)
         {
             if(sessionFile.isEmpty())
                 RestoreCrashRecoveryFile();
@@ -2268,7 +2268,8 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
         {
             showSplash = false;
         }
-        else if(current == std::string("-embedded"))
+        else if(current == std::string("-pyuiembedded") ||
+                current == std::string("-uifile"))
         {
             showSplash = false;
             embeddedGUI = true;

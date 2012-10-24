@@ -66,6 +66,7 @@
 #include <snprintf.h>
 
 #include <cstring>
+#include <cstdlib>
 
 // ****************************************************************************
 // Method: CreateViewerProxy 
@@ -469,6 +470,100 @@ ViewerProxy::Create(int *inputArgc, char ***inputArgv)
     Create("visit", inputArgc, inputArgv);
 }
 
+bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& port, const std::string& password)
+{
+
+    //Step 1: Check and see if connection can be made..
+    int testSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if( testSocket < 0 )
+    {
+        std::cerr << "Socket not created (ERROR)" << std::endl;
+        return false;
+    }
+
+    std::cout << "connecting host: " << host << " port " << port << std::endl;
+    struct sockaddr_in sin;
+    struct hostent *server = gethostbyname(host.c_str());
+    sin.sin_family = AF_INET;
+    bcopy((char*)server->h_addr, (char*)&sin.sin_addr.s_addr, server->h_length);
+    sin.sin_port = htons(port);
+
+    if (connect(testSocket,(struct sockaddr*) &sin,sizeof(sin)) < 0)
+    {
+        std::cerr << "Unable to connect to Viewer" << std::endl;
+        close(testSocket);
+        return false;
+        //exit(1);
+    }
+
+    //Step 2: Send password to verify that you should be added
+    if(write(testSocket,password.c_str(),password.length()) < 0)
+    {
+        std::cerr << "Error writing to Viewer" << std::endl;
+        close(testSocket);
+        return false;
+        //exit(1);
+    }
+
+    //Step 3: receive arguments to establish reverse connection
+
+    char buffer[1024];
+
+    int bytes = read(testSocket,buffer,1024);
+    buffer[bytes] = '\0';
+    //std::cout << "bytes read: " << bytes << " " << buffer << std::endl;
+
+    close(testSocket);
+    //Step 4: reverse connect same as if it was originally intented..
+
+    //parse message and create new reverse connect
+
+    std::string message = buffer;
+
+    int start_index = 0;
+    int end_index = 0;
+    stringVector args;
+    while( (end_index = message.find(",",start_index)) != -1)
+    {
+        std::string arg = message.substr(start_index,(end_index-start_index));
+        args.push_back(arg);
+        start_index = end_index + 1;
+    }
+
+    if(start_index < message.length())
+    {
+        std::string arg = message.substr(start_index);
+        args.push_back(arg);
+    }
+
+    int inputArgc = args.size();
+
+    char** inputArgv = new char* [inputArgc+1];
+
+    for(int i = 0; i < args.size(); ++i)
+    {
+        inputArgv[i] = new char [args[i].length()+1];
+        strcpy(inputArgv[i],args[i].c_str());
+        inputArgv[i][args[i].length()] = '\0';
+    }
+
+    inputArgv[inputArgc] = NULL;
+
+    // Connect to the viewer process. Our command line arguments
+    // should contain  The viewer is executed using
+    // "visit -viewer".
+    //
+
+    viewerP = new ParentProcess;
+    viewerP->Connect(1, 1, &inputArgc, &inputArgv, true);
+
+    // Use viewerP's connections for xfer.
+    xfer->SetInputConnection(viewerP->GetWriteConnection());
+    xfer->SetOutputConnection(viewerP->GetReadConnection());
+    return true;
+}
+
+
 void
 ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
 {
@@ -478,6 +573,20 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
     bool haveRL = false;
     bool haveKey = false;
     bool havePort = false;
+
+    //
+    // check whether client wants to add itself to existing viewer
+    // session
+    //
+    bool haveViewHost = false,
+         haveViewPort = false,
+         haveViewPassword = false;
+
+    std::string add_viewer_host = "";
+    int add_viewer_port = -1;
+    std::string add_viewer_password = "";
+
+
     if(inputArgc != 0 && inputArgv != 0)
     {
         int count = *inputArgc;
@@ -490,33 +599,68 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
                 haveKey = true;
             else if(strcmp(arg[i], "-port") == 0)
                 havePort = true;
+            else if(strcmp(arg[i], "-viewer_host") == 0)
+            {
+                //TODO: handle command line args
+                add_viewer_host = arg[i+1];
+                haveViewHost = true;
+                ++i;
+            }
+            else if(strcmp(arg[i], "-viewer_port") == 0)
+            {
+                add_viewer_port = atoi(arg[i+1]);
+                haveViewPort = true;
+                ++i;
+            }
+            else if(strcmp(arg[i], "-viewer_password") == 0)
+            {
+                add_viewer_password = arg[i+1];
+                haveViewPassword = true;
+                ++i;
+            }
         }
     }
+    bool addNewClientToViewer = haveViewHost &&
+                                haveViewPort &&
+                                haveViewPassword;
     bool reverseLaunch = haveRL && haveKey && havePort;
 
     if(!reverseLaunch)
     {
-        //
-        // Create the viewer process.  The viewer is executed using
-        // "visit -viewer".
-        //
-        viewer = new RemoteProcess(std::string(visitProgram));
-        viewer->AddArgument(std::string("-viewer"));
+        if(!addNewClientToViewer)
+        {
+            //
+            // Create the viewer process.  The viewer is executed using
+            // "visit -viewer".
+            //
+            viewer = new RemoteProcess(std::string(visitProgram));
+            viewer->AddArgument(std::string("-viewer"));
 
-        //
-        // Add any extra arguments to the viewer before opening it.
-        //
-        for (size_t i = 0; i < argv.size(); ++i)
-            viewer->AddArgument(argv[i]);
+            //
+            // Add any extra arguments to the viewer before opening it.
+            //
+            for (size_t i = 0; i < argv.size(); ++i)
+                viewer->AddArgument(argv[i]);
 
-        //
-        // Open the viewer.
-        //
-        viewer->Open(MachineProfile::Default(), 1, 1);
+            //
+            // Open the viewer.
+            //
+            viewer->Open(MachineProfile::Default(), 1, 1);
 
-        // Use viewer's connections for xfer.
-        xfer->SetInputConnection(viewer->GetWriteConnection());
-        xfer->SetOutputConnection(viewer->GetReadConnection());
+            // Use viewer's connections for xfer.
+            xfer->SetInputConnection(viewer->GetWriteConnection());
+            xfer->SetOutputConnection(viewer->GetReadConnection());
+        }
+        else
+        {
+            std::cout << "Adding new client to viewer at :" << add_viewer_host << " "
+                      << add_viewer_port << std::endl;
+            if(!ConnectToExistingViewer(add_viewer_host,add_viewer_port,add_viewer_password))
+            {
+                EXCEPTION1(ImproperUseException, "ViewerProxy::Create called with invalid pre-existing Viewer information");
+
+            }
+        }
     }
     else
     {

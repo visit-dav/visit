@@ -42,6 +42,7 @@
 #include <visitstream.h>
 #include <vectortypes.h>
 #include <XMLNode.h>
+#include <JSONNode.h>
 
 class Connection;
 
@@ -79,8 +80,10 @@ class STATE_API Variant
 
     Variant();
     Variant(const Variant &);
-    Variant(const XMLNode &);
-    Variant(const XMLNode *);
+    Variant(const XMLNode &,bool decodeString = true);
+    Variant(const XMLNode *,bool decodeString = true);
+    Variant(const JSONNode &,const JSONNode &,bool decodeString = true);
+    Variant(const JSONNode *,const JSONNode *,bool decodeString = true);
     Variant(bool);
     Variant(char);
     Variant(unsigned char);
@@ -102,6 +105,7 @@ class STATE_API Variant
     
     Variant                  &operator=(const Variant&);
     Variant                  &operator=(const XMLNode&);
+    //Variant                  &operator=(const JSONNode&,const JSONNode&);
     Variant                  &operator=(bool);
     Variant                  &operator=(char);
     Variant                  &operator=(unsigned char);
@@ -164,8 +168,10 @@ class STATE_API Variant
 
     
     void                      SetValue(const Variant&);
-    void                      SetValue(const XMLNode&);
-    void                      SetValue(const XMLNode*);
+    void                      SetValue(const XMLNode&,bool decodeString = true);
+    void                      SetValue(const XMLNode*,bool decodeString = true);
+    void                      SetValue(const JSONNode&,const JSONNode&, bool decodeString = true);
+    void                      SetValue(const JSONNode*,const JSONNode* meta, bool decodeString = true);
     void                      SetValue(bool);
     void                      SetValue(char);
     void                      SetValue(unsigned char);
@@ -186,15 +192,17 @@ class STATE_API Variant
 
     void                      Reset() {Cleanup();} // set to empty
     
-    virtual std::string       ToXML(const std::string &indent="") const;
-    virtual XMLNode           ToXMLNode() const;
+    virtual std::string       ToXML(const std::string &indent="",bool encodeString = true) const;
+    virtual std::string       ToJSON(const std::string &indent="",bool encodeString = true) const;
+    virtual XMLNode           ToXMLNode(bool encodeString = true) const;
+    virtual JSONNode          ToJSONNode(bool encodeString = true) const;
 
  protected:
     void                      Write(Connection &conn) const;
     void                      Read(Connection &conn);
     int                       CalculateMessageSize(Connection &conn) const;
     void                      Init(int);
-
+    virtual JSONNode          ToJSONNodeMetaData(bool id) const;
  private:
     static std::string        TypeIDToName(int);
     static int                NameToTypeID(const std::string &);

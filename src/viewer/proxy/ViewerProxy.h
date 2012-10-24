@@ -137,6 +137,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     virtual void Update(Subject *subj);
   private:
     void ConnectXfer();
+    bool ConnectToExistingViewer(const std::string& host,
+                                 const int& port,
+                                 const std::string& password);
 
     RemoteProcess              *viewer;
     ParentProcess              *viewerP;

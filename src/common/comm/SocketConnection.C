@@ -52,6 +52,11 @@
 #include <SysCall.h>
 #endif
 #include <LostConnectionException.h>
+#include <AttributeSubject.h>
+#include <MapNode.h>
+#include <JSONNode.h>
+
+#include <cstdlib>
 
 // ****************************************************************************
 // Method: SocketConnection::SocketConnection
@@ -120,6 +125,18 @@ SocketConnection::GetDescriptor() const
     return int(descriptor);
 }
 
+long
+SocketConnection::ReadHeader(unsigned char *buf, long len)
+{
+    return DirectRead(buf,len);
+}
+
+long
+SocketConnection::WriteHeader(const unsigned char *buf, long len)
+{
+    return DirectWrite(buf,len);
+}
+
 // ****************************************************************************
 // Method: SocketConnection::Fill
 //
@@ -135,9 +152,76 @@ SocketConnection::GetDescriptor() const
 //   
 // ****************************************************************************
 
+
 int
 SocketConnection::Fill()
 {
+    if(destFormat.Format == TypeRepresentation::ASCIIFORMAT)
+    {
+        std::string xmlString = "";
+
+        char tmp[1001]; //leave 1 for null termination//
+
+        int amountRead = 0;
+        do
+        {
+
+#if defined(_WIN32)
+            int amountRead = recv(descriptor, (char FAR *)tmp, 1000, 0);
+            if(amountRead == SOCKET_ERROR)
+            {
+                LogWindowsSocketError("SocketConnection", "Fill");
+                if(WSAGetLastError() == WSAEWOULDBLOCK)
+                    return -1;
+            }
+#else
+            amountRead = recv(descriptor, (void *)tmp, 1000, 0);
+#endif
+
+            if(amountRead > 0)
+            {
+                zeroesRead = 0;
+                tmp[amountRead] = 0;
+                xmlString += tmp;
+            }
+
+            ++zeroesRead;
+
+            // If we have had a certain number of zero length reads in a row,
+            // assume the connection died.
+            if(zeroesRead > 100)
+            {
+                 EXCEPTION0(LostConnectionException);
+            }
+        }while(amountRead == 1000); //if it gets entire list..
+        if(xmlString.size() > 0)
+        {
+            JSONNode node;
+            node.Parse(xmlString);
+
+            //std::cout << node.ToString() << std::endl;
+
+            int guido = node["id"].GetInt();
+
+            JSONNode contents = node["contents"];
+//            JSONNode metadata = node["typeinfo"];
+
+            /// With the information I have I could probably
+            /// just use JSONNode to convert completely..
+            /// but that would leave MapNode incomplete..
+
+            MapNode mapnode(contents,false);
+
+            //std::cout << mapnode.ToXML(false) << std::endl;
+            //std::cout << metadata["data"] << std::endl;
+
+            buffer.clear();
+            return Write(guido,&mapnode); //,&metadata["data"]
+        }
+
+        return 0;
+    }
+
     unsigned char tmp[1000];
 #if defined(_WIN32)
     int amountRead = recv(descriptor, (char FAR *)tmp, 1000, 0);
@@ -172,6 +256,303 @@ SocketConnection::Fill()
     return amountRead;
 }
 
+
+int
+SocketConnection::Write(int id,MapNode *mapnode)
+{
+    size_t fillSize = 0;
+
+    //std::cout << key << " " << id << std::endl;
+    int totalSize = 0;
+    int totalLen = 0;
+
+    WriteToBuffer(mapnode,false,id,totalLen,totalSize);
+
+    int attrSize = (totalLen < 256) ?   srcFormat.CharSize():
+                                        srcFormat.IntSize();
+
+    totalSize += attrSize;
+    totalSize += (totalLen*attrSize);
+
+    //std::cout << "TotalSize: " << id << " " << totalLen << " " << totalSize << std::endl;
+
+    /// actual write
+    WriteInt(id);
+    WriteInt(totalSize);
+    totalLen < 256 ? WriteUnsignedChar((unsigned char)totalLen) : WriteInt(totalLen);
+
+    WriteToBuffer(mapnode,true,id,totalLen,totalSize);
+
+    /// fileSize is Size of message + 2 ints
+    fillSize += totalSize + (srcFormat.IntSize()*2);
+
+    return fillSize;
+}
+
+void
+SocketConnection::WriteToBuffer(MapNode *mapnode,
+                                bool write,
+                                int id,
+                                int& totalLen,
+                                int &totalSize)
+{
+    /// loop through mapnode
+    /// don't do anything for pure mapnode structures..
+    if(mapnode->Type() != 0)
+    {
+        if(write)
+            (totalLen < 256)? WriteUnsignedChar((unsigned char)id) : WriteInt(id);
+        else
+             ++totalLen;
+
+        if(mapnode->Type() == MapNode::BOOL_TYPE)
+        {
+            if(write)
+                WriteChar( mapnode->AsBool()? 1 : 0);
+            else
+                totalSize += srcFormat.CharSize();
+        }
+        else if(mapnode->Type() == MapNode::CHAR_TYPE)
+        {
+            if(write)
+                WriteChar( mapnode->AsChar() );
+            else
+                totalSize += srcFormat.CharSize();
+        }
+        else if(mapnode->Type() == MapNode::UNSIGNED_CHAR_TYPE)
+        {
+            if(write)
+                WriteUnsignedChar( mapnode->AsUnsignedChar() );
+            else
+                totalSize += srcFormat.CharSize();
+        }
+        else if(mapnode->Type() == MapNode::INT_TYPE)
+        {
+            if(write)
+                WriteInt( mapnode->AsInt() );
+            else
+                totalSize += srcFormat.IntSize();
+        }
+        else if(mapnode->Type() == MapNode::FLOAT_TYPE)
+        {
+            if(write)
+                WriteFloat( mapnode->AsFloat() );
+            else
+                totalSize += srcFormat.FloatSize();
+        }
+        else if(mapnode->Type() == MapNode::DOUBLE_TYPE)
+        {
+            if(write)
+                WriteDouble( mapnode->AsDouble() );
+            else
+                totalSize += srcFormat.DoubleSize();
+        }
+        else if(mapnode->Type() == MapNode::LONG_TYPE)
+        {
+            if(write)
+                WriteLong( mapnode->AsLong() );
+            else
+                totalSize += srcFormat.LongSize();
+        }
+        else if(mapnode->Type() == MapNode::STRING_TYPE)
+        {
+            if(write)
+                WriteString( mapnode->AsString() );
+            else
+                totalSize += srcFormat.CharSize()*(mapnode->AsString().size() + 1);
+        }
+        else if(mapnode->Type() == MapNode::BOOL_VECTOR_TYPE)
+        {
+            const boolVector& vec = mapnode->AsBoolVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteChar( vec[i]? 1 : 0);
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.CharSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::CHAR_VECTOR_TYPE)
+        {
+            const charVector& vec = mapnode->AsCharVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteChar( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.CharSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::UNSIGNED_CHAR_VECTOR_TYPE)
+        {
+            const unsignedCharVector& vec = mapnode->AsUnsignedCharVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteUnsignedChar( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.CharSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::INT_VECTOR_TYPE)
+        {
+            const intVector& vec = mapnode->AsIntVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteInt( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.IntSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::FLOAT_VECTOR_TYPE)
+        {
+            const floatVector& vec = mapnode->AsFloatVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteFloat( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.FloatSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::DOUBLE_VECTOR_TYPE)
+        {
+            const doubleVector& vec = mapnode->AsDoubleVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteDouble( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.DoubleSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::LONG_VECTOR_TYPE)
+        {
+            const longVector& vec = mapnode->AsLongVector();
+
+//            if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteLong( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    totalSize += (vec.size()*srcFormat.LongSize());
+                }
+            }
+        }
+        else if(mapnode->Type() == MapNode::STRING_VECTOR_TYPE)
+        {
+            const stringVector& vec = mapnode->AsStringVector();
+            //std::cout << "String vector type : " << vec.size() << std::endl;
+            //if(vec.size() > 0)
+            {
+                if(write)
+                {
+                    WriteInt(vec.size());
+                    for(int i = 0; i < vec.size(); ++i)
+                        WriteString( vec[i] );
+                }
+                else
+                {
+                    //std::cout << mapnode->TypeName() << " " << str << std::endl;
+                    totalSize += srcFormat.IntSize();
+                    for(int i = 0; i < vec.size(); ++i)
+                        totalSize += (vec[i].size() + 1)*srcFormat.CharSize();
+                }
+            }
+        }
+        else
+        {
+            std::cout << "not handled: "
+                      << mapnode->TypeName()
+                      << std::endl;
+        }
+    }
+
+    stringVector names;
+    mapnode->GetEntryNames(names);
+    for(int i = 0; i < names.size(); ++i)
+    {
+        //std::cout << "** " << names[i] << std::endl;
+        std::string& name = names[i];
+        MapNode* mc = mapnode->GetEntry(names[i]);
+
+        if(mc->Type() == 0)
+        {
+            //JSONNode& child = data->operator [](name);
+            //WriteToBuffer(mc,&child,write,0,totalLen,totalSize);
+            WriteToBuffer(mc,write,0,totalLen,totalSize);
+        }
+        else
+        {
+            int id = atoi(name.c_str());//data->operator [](name).GetInt();
+            //std::cout << name << " " << id << " " << names[i] << std::endl;
+            WriteToBuffer(mc,write,id,totalLen,totalSize);
+        }
+    }
+}
+
 // ****************************************************************************
 // Method: SocketConnection::Flush
 //
@@ -195,6 +576,43 @@ SocketConnection::Fill()
 //   I made the use of MSG_NOSIGNAL conditional on its definition.
 //
 // ****************************************************************************
+void
+SocketConnection::Flush(AttributeSubject *subject)
+{
+    if(destFormat.Format == TypeRepresentation::BINARYFORMAT)
+        Connection::Flush(subject);
+    else
+    {
+//        std::cout << subject->TypeName() << " "
+//                  << subject->CalculateMessageSize(*this)
+//                  << std::endl;
+
+        MapNode child,meta;
+
+        subject->Write(child);
+        subject->WriteMeta(meta);
+
+        JSONNode node;
+
+        node["id"] = subject->GetGuido();
+        node["typename"] = subject->TypeName();
+        node["contents"] = child.ToJSONNode(false);
+        node["typeinfo"] = meta.ToJSONNode(false);
+
+        const std::string& output = node.ToString();
+
+#if defined(_WIN32)
+            send(descriptor, (const char FAR *)output.c_str(), output.size(), 0);
+#else
+#ifdef MSG_NOSIGNAL
+            send(descriptor, (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
+#else
+            send(descriptor, (const void *)output.c_str(), output.size(), 0);
+#endif
+#endif
+        buffer.clear();
+    }
+}
 
 void
 SocketConnection::Flush()

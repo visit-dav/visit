@@ -47,6 +47,9 @@
 #include <vtkAppendFilter.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkAppendPolyData.h>
+#include <vtkGeometryFilter.h>
 
 #include <avtCommonDataFunctions.h>
 #include <avtDataRepresentation.h>
@@ -706,7 +709,7 @@ avtDataTree::GetNumberOfCells(int topoDim, bool polysOnly) const
 }
 
 // ****************************************************************************
-//  Method: avtDataTree::GetAllLeaves
+//  Method: avtDataTree::G
 //
 //  Purpose:
 //    Returns as vtkDataSet * all leaves of this tree. 
@@ -1573,5 +1576,67 @@ avtDataTree::PruneTree(const string &label)
     vector<string> sv;
     sv.push_back(label);
     return PruneTree(sv);
+}
+
+// ****************************************************************************
+//  Method: avtDataTree::GetDataSetAsString
+//
+//  Purpose:
+//    Returns DataSet As String with VTK Format
+//
+//  Returns:
+//    The pruned tree.
+//
+//  Arguments:
+//
+//  Programmer: Hari Krishnan
+//  Creation:   October 16, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::string
+avtDataTree::GetDatasetAsString()
+{
+    int nLeaves = 0;
+    vtkDataSet **ds = GetAllLeaves(nLeaves);
+
+    if(nLeaves <= 0) return "";
+
+//    vtkDataSetWriter* writer = vtkDataSetWriter::New();
+//    writer->SetFileTypeToASCII();
+//    writer->WriteToOutputStringOn();
+//    writer->SetInput(ds[0]);
+//    writer->Write();
+//    std::string res = writer->GetOutputString();
+//    writer->Delete();
+//    return res;
+
+    vtkAppendFilter* vaf = vtkAppendFilter::New();
+
+    for(int i = 0; i < nLeaves; ++i)
+        vaf->AddInput(ds[i]);
+
+    vtkGeometryFilter* vu = vtkGeometryFilter::New();
+
+    vu->AddInput(vaf->GetOutput());
+    vtkDataSet* dataset = dynamic_cast<vtkDataSet*>(vu->GetOutput());
+
+    vtkDataSetWriter* writer = vtkDataSetWriter::New();
+
+    writer->SetFileTypeToASCII();
+    writer->WriteToOutputStringOn();
+    writer->SetInput(dataset);
+    writer->Write();
+
+    std::string res = writer->GetOutputString();
+
+    delete [] ds;
+    vaf->Delete();
+    vu->Delete();
+    writer->Delete();
+
+    return res;
 }
 

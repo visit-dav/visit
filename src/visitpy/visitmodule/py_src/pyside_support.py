@@ -55,13 +55,14 @@ using_pyside = False
 
 try:
     from PySide.QtGui import QApplication
+    import pyside_hook
     import pyside_gui
     using_pyside = True
 except ImportError:
     pass
 
-__all__ = ["SetupTimer","GetRenderWindow","GetRenderWindowIds","GetUIWindow","GetPlotWindow","GetOperatorWindow", "GetOtherWindow", "GetOtherWindowNames"]
-__pyside_viewer_inst__ = None
+__all__ = ["LaunchPyViewer","SetupTimer","GetRenderWindow","GetRenderWindowIds","GetUIWindow","GetPlotWindow","GetOperatorWindow", "GetOtherWindow", "GetOtherWindowNames"]
+__pyside_viewer_instance__ = None
 
 # this is a function that polls for keyboard input,
 # when it sees one it quits the
@@ -97,16 +98,32 @@ class ProcessCLIInput(Thread):
                 pass
 
 def GetPySideViewerInstance():
-    global __pyside_viewer_inst__
-    if __pyside_viewer_inst__ is None:
-        __pyside_viewer_inst__ = pyside_gui.PySideGUI.instance()
-    return __pyside_viewer_inst__
+    global __pyside_viewer_instance__
+    if __pyside_viewer_instance__ is None:
+        __pyside_viewer_instance__ = pyside_gui.PySideGUI.instance()
+    return __pyside_viewer_instance__
 
 def SetupTimer():
     if using_pyside:
         if ProcessCLIInput.instance is None:
             ProcessCLIInput.instance = ProcessCLIInput(0.001)
             ProcessCLIInput.instance.start()
+
+def LaunchPyViewer(args):
+    global __pyside_viewer_instance__
+
+    SetupTimer()
+    pyside_hook.SetHook()
+
+    if args is None: 
+        args = sys.argv
+        args.append("-pyuiembedded")
+
+    if __pyside_viewer_instance__ is None: 
+        __pyside_viewer_instance__ = pyside_gui.PySideGUI.instance(args)
+
+    return __pyside_viewer_instance__
+
 
 def IsPySideViewerEnabled():
     res = False

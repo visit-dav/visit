@@ -152,10 +152,11 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
 
     // The first 4 bytes of the header are for the type representation.
     TypeRepresentation localRep;
-    buffer[0] = localRep.IntFormat;
-    buffer[1] = localRep.LongFormat;
-    buffer[2] = localRep.FloatFormat;
-    buffer[3] = localRep.DoubleFormat;
+    buffer[0] = localRep.Format;
+    buffer[1] = localRep.IntFormat;
+    buffer[2] = localRep.LongFormat;
+    buffer[3] = localRep.FloatFormat;
+    buffer[4] = localRep.DoubleFormat;
 
     // Set the failure code
     //   0 : no failure
@@ -164,16 +165,16 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
     //   3 : CouldNotConnectException
     //   4 : CancelledConnectException
     //
-    buffer[4] = (failCode >= 0 && failCode < 5) ? ((unsigned char)failCode) : 3;
+    buffer[5] = (failCode >= 0 && failCode < 5) ? ((unsigned char)failCode) : 3;
 
     // The next 10 bytes are for a NULL terminated version string.
-    strncpy((char *)(buffer+5), version.c_str(), 10);
+    strncpy((char *)(buffer+6), version.c_str(), 10);
 
     // The next 21 bytes are for securityKey.
-    strncpy((char *)(buffer+5+10), securityKey.c_str(), 21);
+    strncpy((char *)(buffer+6+10), securityKey.c_str(), 21);
 
     // The next 21 bytes are for socketKey.
-    strncpy((char *)(buffer+5+10+21), socketKey.c_str(), 21);
+    strncpy((char *)(buffer+6+10+21), socketKey.c_str(), 21);
 
 #ifdef DEBUG_COMMUNICATION_HEADER
     debug1 << "CommunicationHeader::WriteHeader: HEADER={";
@@ -192,7 +193,7 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
     // The rest of the bytes are reserved for future use.
 
     // Write the message header to the file descriptor.
-    conn->DirectWrite(buffer, BUFFER_SIZE);
+    conn->WriteHeader(buffer, BUFFER_SIZE);
 }
 
 // ****************************************************************************
@@ -238,13 +239,14 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
     memset(buffer, 0, BUFFER_SIZE);
 
     // Write the message header using the file descriptor.
-    conn->DirectRead(buffer, BUFFER_SIZE);
+    conn->ReadHeader(buffer, BUFFER_SIZE);
 
     // Fill the local type representation "rep".
-    rep.IntFormat = buffer[0];
-    rep.LongFormat = buffer[1];
-    rep.FloatFormat = buffer[2];
-    rep.DoubleFormat = buffer[3];
+    rep.Format = buffer[0];
+    rep.IntFormat = buffer[1];
+    rep.LongFormat = buffer[2];
+    rep.FloatFormat = buffer[3];
+    rep.DoubleFormat = buffer[4];
 
 #ifdef DEBUG_COMMUNICATION_HEADER
     debug1 << "CommunicationHeader::ReadHeader: HEADER={";
@@ -261,27 +263,27 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
 #endif
 
     // Check to see if the version numbers are compatible.
-    if(!VisItVersionsCompatible((const char *)(buffer+5), version.c_str()))
+    if(!VisItVersionsCompatible((const char *)(buffer+6), version.c_str()))
     {
-        debug1 << "Versions are " << buffer << "(" << buffer+5 << ")," 
+        debug1 << "Versions are " << buffer << "(" << buffer+6 << "),"
                << version << endl;
         EXCEPTION0(IncompatibleVersionException);
     }
 
     // Check to see if any failure codes are set.
-    if(buffer[4] == 1)
+    if(buffer[5] == 1)
     {
         EXCEPTION0(IncompatibleVersionException);
     }
-    else if(buffer[4] == 2)
+    else if(buffer[5] == 2)
     {
         EXCEPTION0(IncompatibleSecurityTokenException);
     }
-    else if(buffer[4] == 3)
+    else if(buffer[5] == 3)
     {
         EXCEPTION0(CouldNotConnectException);
     }
-    else if(buffer[4] == 4)
+    else if(buffer[5] == 4)
     {
         EXCEPTION0(CancelledConnectException);
     }
@@ -290,14 +292,14 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
     // the same as the keys that were sent to the client.
     if(checkKeys)
     {
-        if((strcmp((const char *)(buffer+5+10), securityKey.c_str()) != 0) ||
-           (strcmp((const char *)(buffer+5+10+21), socketKey.c_str()) != 0))
+        if((strcmp((const char *)(buffer+6+10), securityKey.c_str()) != 0) ||
+           (strcmp((const char *)(buffer+6+10+21), socketKey.c_str()) != 0))
         {
             EXCEPTION0(IncompatibleSecurityTokenException);
         }
     }
-    securityKey = std::string((const char *)(buffer+5+10));
-    socketKey = std::string((const char *)(buffer+5+10+21));
+    securityKey = std::string((const char *)(buffer+6+10));
+    socketKey = std::string((const char *)(buffer+6+10+21));
 
 #ifdef DEBUG_COMMUNICATION_HEADER
     debug1 << "CommunicationHeader::ReadHeader: securityKey=" << securityKey.c_str() << endl;

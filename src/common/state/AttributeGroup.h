@@ -169,6 +169,12 @@ public:
     void Read(Connection &conn);
     int  CalculateMessageSize(Connection &conn);
 
+    void Write(MapNode& map);
+    void WriteMeta(MapNode& map);
+    void Read(MapNode& map);
+
+    void SetSendMetaInformation(bool send) { sendMetaInformation = send; }
+    bool GetSendMetaInformation() { return sendMetaInformation; }
     int  NumAttributes() const;
     int  NumAttributesSelected() const;
     bool IsSelected(int i) const;
@@ -323,9 +329,15 @@ private:
     void CreateTypeMap(const char *formatString);
     void WriteType(Connection &conn, typeInfo &info);
     void ReadType(Connection &conn, int attrId, typeInfo &info);
+    void WriteType(MapNode &map, int attrId, typeInfo &info);
+    void WriteTypeMeta(MapNode &map, int attrId,typeInfo &info);
+
+    void ReadType(MapNode &map, int attrId, typeInfo &info);
 private:
     typeInfoVector typeMap;  // Holds typemap for the whole class
     int guido;
+    bool sendMetaInformation;   //tells connection whether to send meta information
+                                //as well.
 };
 
 ostream& operator<<(ostream& os, const AttributeGroup&);

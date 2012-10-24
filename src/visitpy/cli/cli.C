@@ -204,12 +204,13 @@ main(int argc, char *argv[])
     int  debugLevel = 0;
     bool bufferDebug = false;
     bool verbose = false, s_found = false;
-    bool pyside_gui = false;
     bool pyside = false;
+    bool pyside_gui = false,pyside_viewer = false;
     char *runFile = 0, *loadFile = 0, tmpArg[512];
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
     int  argc2 = 0, argc_after_s = 0; 
+    char* uifile = 0;
 
 #ifdef IGNORE_HUPS
     signal(SIGHUP, SIG_IGN);
@@ -340,9 +341,21 @@ main(int argc, char *argv[])
         {
             pyside = true;
         }
+        else if(strcmp(argv[i], "-pysideviewer") == 0)
+        {
+            pyside_gui = true;
+            pyside_viewer = true;
+        }
         else if(strcmp(argv[i], "-pysideclient") == 0)
         {
             pyside_gui = true;
+        }
+        else if(strcmp(argv[i], "-uifile") == 0)
+        {
+            pyside_gui = true;
+            uifile = argv[i+1];
+            ++i;
+            argv2[argc2++] = "-uifile"; //pass it along to client
         }
         else if(strcmp(argv[i], "-dv") == 0)
         {
@@ -421,13 +434,19 @@ main(int argc, char *argv[])
 
         PyRun_SimpleString((char*)"import visit");
 
+        // Initialize the VisIt module.
+        cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
+                      argc_after_s, argv_after_s);
+
         if(pyside || pyside_gui)
         {
             PyRun_SimpleString((char*)"from PySide.QtCore import *");
             PyRun_SimpleString((char*)"from PySide.QtGui import *");
             PyRun_SimpleString((char*)"from PySide.QtOpenGL import *");
             PyRun_SimpleString((char*)"from PySide.QtUiTools import *");
-
+            PyRun_SimpleString((char*)"import visit.pyside_support");
+            PyRun_SimpleString((char*)"import visit.pyside_hook");
+            
             PyRun_SimpleString((char*)"visit.pyside_support.SetupTimer()");
             PyRun_SimpleString((char*)"visit.pyside_hook.SetHook()");
         }
@@ -437,7 +456,12 @@ main(int argc, char *argv[])
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
-            PyRun_SimpleString((char*)"visit.pyside_gui.PySideGUI.instance(sys.argv)");
+            PyRun_SimpleString((char*)"import visit.pyside_gui");
+            PyRun_SimpleString((char*)"args = sys.argv");
+            if(uifile) //if external file then start VisIt in embedded mode
+                PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
+            PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
+            PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
@@ -445,11 +469,14 @@ main(int argc, char *argv[])
             PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
             PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
+
+            if(!uifile && pyside_viewer)
+                PyRun_SimpleString((char*)"GetUIWindow().hide()");
         }
 
         // Initialize the VisIt module.
-        cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
-                      argc_after_s, argv_after_s);
+        //cli_initvisit(bufferDebug ? -debugLevel : debugLevel, verbose, argc2, argv2,
+        //              argc_after_s, argv_after_s);
 
         // setup source file and source stack variables
         PyRun_SimpleString((char*)"import os\n"
@@ -478,6 +505,13 @@ main(int argc, char *argv[])
         else if (VisItStat(visitSystemRc.c_str(), &s) == 0)
         {
             visitrc = visitSystemRc;
+        }
+
+        if(uifile)
+        {
+            std::ostringstream pycmd;
+            pycmd << "visit.Source(\"" << uifile << "\")";
+            PyRun_SimpleString(pycmd.str().c_str());
         }
 
         if (visitrc.size())

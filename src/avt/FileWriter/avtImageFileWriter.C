@@ -50,7 +50,8 @@
 #include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
-
+#include <vtkUnsignedCharArray.h>
+#include <vtkBase64Utilities.h>
 #include <DebugStream.h>
 
 
@@ -343,4 +344,60 @@ avtImageFileWriter::CreateFilename(const char *base, bool family,
     ++nFilesWritten;
 
     return str;
+}
+
+// ****************************************************************************
+// Method: avtImageFileWriter::WriteToString
+//
+// Purpose:
+//   Writes image to byte array
+//
+// Arguments:
+//
+// Returns:    string representation of image. Memory needs to be freed by the
+//             calling function.
+//
+//
+// Programmer: Hari Krishnan
+// Creation:   October 13, 2012
+//
+// Modifications:
+// ****************************************************************************
+
+const char*
+avtImageFileWriter::WriteToByteArray(avtImageRepresentation &imagerep,
+                                     int quality,
+                                     bool progressive,
+                                     size_t &len)
+{
+
+    vtkJPEGWriter* writer = vtkJPEGWriter::New();
+
+    writer->SetWriteToMemory(true);
+    writer->SetInput(imagerep.GetImageVTK());
+    writer->SetQuality(quality);
+    writer->SetProgressive(progressive?1:0);
+
+    writer->Write();
+
+    vtkUnsignedCharArray* array = writer->GetResult();
+
+    char * result = NULL;
+    len = 0;
+
+    if(array)
+    {
+
+        vtkIdType size = array->GetSize();
+        if(size > 0)
+        {
+            len = size;
+            result = new char [len];
+            memcpy(result,array->GetVoidPointer(0),sizeof(char)*len);
+        }
+    }
+
+    writer->Delete();
+
+    return result;
 }

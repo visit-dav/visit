@@ -61,6 +61,8 @@ LineoutListItem.C
 LockActions.C
 NoEngineException.C
 PlotAndOperatorActions.C
+#QWsSocket.C
+SharedDaemon.C
 ViewActions.C
 ViewStack.C
 ViewerAction.C
@@ -106,6 +108,7 @@ VisItChangeUsernameWindow.C
 VisItPasswordWindow.C
 VisItViewer.C
 WindowActions.C
+WebSocketConnection.C
 ${VIEWERLIB_WIN32_SOURCES}
 )
 
@@ -118,6 +121,8 @@ SET(VIEWERLIB_MOC_SOURCES
 DDTManager.h
 DDTSession.h
 PlotAndOperatorActions.h
+#QWsSocket.h
+SharedDaemon.h
 ViewerAction.h
 ViewerActionBase.h
 ViewerChangeUsernameWindow.h
@@ -138,6 +143,7 @@ ViewerSubject.h
 ViewerWindowManager.h
 VisItChangeUsernameWindow.h
 VisItPasswordWindow.h
+WebSocketConnection.h
 )
 QT_WRAP_CPP(viewer VIEWERLIB_SOURCES ${VIEWERLIB_MOC_SOURCES})
 
@@ -207,6 +213,7 @@ IF(VISIT_STATIC)
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTOPENGL_LIB_DEPENDENCIES}
         ${QT_QTCORE_LIB_DEPENDENCIES}
+        ${QT_QTNETWORK_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
 
@@ -259,10 +266,10 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
-    vtkzlib
-    vtkfreetype
+    ${VTK_PNG_LIBRARIES}
+    ${VTK_JPEG_LIBRARIES}
+    ${VTK_ZLIB_LIBRARIES}
+    ${VTK_FREETYPE_LIBRARIES}
     vtkftgl
 )
 

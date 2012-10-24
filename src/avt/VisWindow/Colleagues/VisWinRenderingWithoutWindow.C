@@ -46,6 +46,26 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
+#if __APPLE__
+#include <vtkCocoaRenderWindow.h>
+#include "VisWinRenderingCocoaHideWindow.h"
+void UnMapWindow(vtkRenderWindow* v)
+{
+    vtkCocoaRenderWindow* vx=dynamic_cast<vtkCocoaRenderWindow*>(v);
+    if(vx) VisWinRenderingCocoa::HideRenderWindow(vx->GetRootWindow());
+}
+#elif __unix__
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <vtkXOpenGLRenderWindow.h>
+void UnMapWindow(vtkRenderWindow* v)
+{
+    vtkXOpenGLRenderWindow* vx = dynamic_cast<vtkXOpenGLRenderWindow*>(v);
+    if(vx) XUnmapWindow(vx->GetDisplayId(),vx->GetWindowId());
+}
+#else //Windows does not show window OffScreenRenderingMode
+void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
+#endif
 
 // ****************************************************************************
 //  Method: VisWinRenderingWithoutWindow constructor
@@ -73,7 +93,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
-    renWin->OffScreenRenderingOn();
+    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow")
+        renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
 }
 
@@ -140,6 +161,14 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   // shouldn't be as heavy as it looks at first glance.
   renWin->SetSize(300,300);
   renWin->Render();
+
+  /// HKTODO: Verify this solution is robust
+  /// If not Mesa-based Offscreen rendering: the other
+  /// versions seem to popup an empty window, the UnMap logic
+  /// hides this Window, unfortunately without this window
+  /// the software rendering on Linux does not work
+  std::string cname = renWin->GetClassName();
+  if(cname != "vtkOSOpenGLRenderWindow") UnMapWindow(renWin);
 }
 
 // ****************************************************************************

@@ -19,8 +19,13 @@ $0 = shift @ARGV;
 
 
 # Due to the above "magic", we have to alter sys.argv
+import os
 import sys
 _visitfelpython = sys.argv[0]
+try:
+    os.unlink(_visitfelpython)
+except:
+    pass
 sys.argv = sys.argv[1:]
 
 ###############################################################################
