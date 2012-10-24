@@ -119,6 +119,8 @@ struct ThreadCallbackDataStruct
 void (*RemoteProcess::getAuthentication)(const char *, const char *, int) = NULL;
 bool (*RemoteProcess::changeUsername)(const std::string &, std::string&) = NULL;
 bool RemoteProcess::disablePTY = false;
+Connection* (*RemoteProcess::customConnectionCallback)(int,void*) = NULL;
+void* RemoteProcess::customConnectionCallbackData = NULL;
 
 using std::map;
 static map<int, bool> childDied;
@@ -1497,8 +1499,15 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
             readConnections = new Connection*[numRead];
             for(int i = 0; i < numRead; ++i)
             {
-                int descriptor = AcceptSocket();
-                readConnections[nReadConnections] = new SocketConnection(descriptor);
+                //if a customConnection has been registered then use it get a new connection
+                if(customConnectionCallback)
+                    readConnections[nReadConnections] = (*customConnectionCallback)(listenSocketNum,
+                                                                                    customConnectionCallbackData);
+                else
+                {
+                    int descriptor = AcceptSocket();
+                    readConnections[nReadConnections] = new SocketConnection(descriptor);
+                }
                 ++nReadConnections;
             }
         }
@@ -1510,8 +1519,15 @@ RemoteProcess::FinishMakingConnection(int numRead, int numWrite)
             writeConnections = new Connection*[numWrite];
             for(int i = 0; i < numWrite; ++i)
             {
-                int descriptor = AcceptSocket();
-                writeConnections[nWriteConnections] = new SocketConnection(descriptor);
+                //if a customConnection has been registered then use it get a new connection
+                if(customConnectionCallback)
+                    writeConnections[nWriteConnections] = (*customConnectionCallback)(listenSocketNum,
+                                                                                      customConnectionCallbackData);
+                else
+                {
+                    int descriptor = AcceptSocket();
+                    writeConnections[nWriteConnections] = new SocketConnection(descriptor);
+                }
                 ++nWriteConnections;
             }
         }
@@ -1622,6 +1638,12 @@ RemoteProcess::ExchangeTypeRepresentations()
             for(int i = 0; i < nReadConnections; ++i)
             {
                 readConnections[i]->SetDestinationFormat(
+                    header.GetTypeRepresentation());
+            }
+            /// HKTODO: added (maybe require this to change only on ASCII mode)
+            for(int i = 0; i < nWriteConnections; ++i)
+            {
+                writeConnections[i]->SetDestinationFormat(
                     header.GetTypeRepresentation());
             }
         }
@@ -2699,4 +2721,11 @@ void
 RemoteProcess::SetChangeUserNameCallback(bool (*callback)(const std::string &, std::string& ))
 {
     changeUsername = callback;
+}
+
+void
+RemoteProcess::SetCustomConnectionCallback(Connection* (*callback)(int descriptor,void*), void *cbdata)
+{
+    customConnectionCallback = callback;
+    customConnectionCallbackData = cbdata;
 }

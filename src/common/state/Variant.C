@@ -38,7 +38,7 @@
 
 #include <Variant.h>
 #include <Connection.h>
-
+#include <cstdlib>
 using namespace std;
 
 // ****************************************************************************
@@ -196,16 +196,29 @@ Variant::Variant(Variant const &var)
 {SetValue(var);}
 
 // Construct from XML Node Ref
-Variant::Variant(const XMLNode &node)
+Variant::Variant(const XMLNode &node,bool decodeString)
 : dataType(EMPTY_TYPE), 
   dataValue(NULL)
-{SetValue(node);}
+{SetValue(node,decodeString);}
 
 // Construct from XML Node Ptr
-Variant::Variant(const XMLNode *node)
+Variant::Variant(const XMLNode *node,bool decodeString)
 : dataType(EMPTY_TYPE), 
   dataValue(NULL)
-{SetValue(*node);}
+{SetValue(*node,decodeString);}
+
+
+// Construct from JSON Node Ref
+Variant::Variant(const JSONNode &node,const JSONNode& meta,bool decodeString)
+: dataType(EMPTY_TYPE),
+  dataValue(NULL)
+{SetValue(node,meta,decodeString);}
+
+// Construct from JSON Node Ptr
+Variant::Variant(const JSONNode *node,const JSONNode* meta, bool decodeString)
+: dataType(EMPTY_TYPE),
+  dataValue(NULL)
+{SetValue(*node,*meta, decodeString);}
 
 // Construct from Bool
 Variant::Variant(bool val)
@@ -333,6 +346,13 @@ Variant::operator=(const XMLNode &node)
     SetValue(node);
     return *this;
 }
+
+//Variant &
+//Variant::operator=(const JSONNode &node)
+//{
+//    SetValue(node);
+//    return *this;
+//}
 
 Variant &
 Variant::operator=(bool val)
@@ -1145,7 +1165,7 @@ Variant::SetValue(const Variant &var)
 //
 // ****************************************************************************
 void 
-Variant::SetValue(const XMLNode &node)
+Variant::SetValue(const XMLNode &node, bool decodeString)
 {
     // if we dont have a valid xml rep, set to an empty variant
     if( node.Name() !="variant" || 
@@ -1163,7 +1183,7 @@ Variant::SetValue(const XMLNode &node)
     
     // get tokens ready
     stringVector tokens;
-    if(data_type == STRING_VECTOR_TYPE)
+    if(data_type == STRING_VECTOR_TYPE && node.Text()[0] == '\"')
         TokenizeQuotedString(node.Text(),tokens); 
     else
         Tokenize(node.Text(),tokens);
@@ -1200,13 +1220,22 @@ Variant::SetValue(const XMLNode &node)
     else if(data_type == FLOAT_TYPE)
     {
         float val;
-        DecodeFromString(txt_val, val);
+        if(decodeString)
+            DecodeFromString(txt_val, val);
+        else
+            sscanf(txt_val,"%f",&val);
         SetValue(val);
     }
     else if(data_type == DOUBLE_TYPE)
     {
         double val;
-        DecodeFromString(txt_val, val);
+        if(decodeString)
+            DecodeFromString(txt_val, val);
+        else
+        {   float tmp;
+            sscanf(txt_val,"%f",&tmp);
+            val = (double)tmp; //HKTODO: CHANGE THIS
+        }
         SetValue(val);
     }
     else if(data_type == STRING_TYPE)
@@ -1266,7 +1295,10 @@ Variant::SetValue(const XMLNode &node)
         floatVector &vec = AsFloatVector();
         for(i = 0; i < tokens.size(); i++)
         {
-            DecodeFromString(tokens[i].c_str(), val);
+            if(decodeString)
+                DecodeFromString(tokens[i].c_str(), val);
+            else
+                sscanf(tokens[i].c_str(),"%f",&val);
             vec.push_back(val);
         }
     }
@@ -1276,7 +1308,14 @@ Variant::SetValue(const XMLNode &node)
         doubleVector &vec = AsDoubleVector();
         for(i = 0; i < tokens.size(); i++)
         {
-            DecodeFromString(tokens[i].c_str(), val);
+            if(decodeString)
+                DecodeFromString(tokens[i].c_str(), val);
+            else
+            {
+                float tmp;
+                sscanf(tokens[i].c_str(),"%f",&tmp);
+                val = tmp;
+            }
             vec.push_back(val);
         }
     }
@@ -1291,6 +1330,130 @@ Variant::SetValue(const XMLNode &node)
 //  Method:  Variant::SetValue
 //
 //  Purpose:
+//     Sets this variant's value from an json and metadata.
+//
+//  Programmer:  Hari Krishnan
+//  Creation:    October 13, 2012
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
+{
+    /// metadata information tells the Variant how to cast..
+    const std::string name = meta.GetString();
+    int data_type = 0;
+    /// remove quotes..
+
+    if(std::isdigit(name[0])) //if it has digits then id else name
+        data_type = atoi(name.c_str());
+    else
+        NameToTypeID(name);
+    if(data_type == BOOL_TYPE)
+    {
+        SetValue(data.GetBool());
+    }
+    else if(data_type == CHAR_TYPE)
+    {
+        char val;
+        sscanf(data.GetString().c_str(),"%c",&val);
+        SetValue(val);
+    }
+    else if(data_type == UNSIGNED_CHAR_TYPE)
+    {
+        int val = data.GetInt();
+        SetValue((unsigned char)val);
+    }
+    else if(data_type == INT_TYPE)
+    {
+        int val = data.GetInt();
+        SetValue(val);
+    }
+    else if(data_type == LONG_TYPE)
+    {
+        long val = data.GetLong();
+        SetValue(val);
+    }
+    else if(data_type == FLOAT_TYPE)
+    {
+        float val = data.GetFloat();
+        SetValue(val);
+    }
+    else if(data_type == DOUBLE_TYPE)
+    {
+        double val = data.GetDouble();
+        SetValue(val);
+    }
+    else if(data_type == STRING_TYPE)
+    {
+        SetValue(data.GetString());
+    }
+    else if(data_type == BOOL_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+
+        boolVector &vec = AsBoolVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetBool());
+
+    }
+    else if(data_type == CHAR_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        charVector &vec = AsCharVector();
+        for(int i = 0; i < node.size(); ++i)
+            if(node[i].GetString().size() > 0)
+                vec.push_back(node[i].GetString()[0]);
+    }
+    else if(data_type == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        unsignedCharVector &vec = AsUnsignedCharVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back((unsigned char)node[i].GetInt());
+    }
+    else if(data_type == INT_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        intVector &vec = AsIntVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetInt());
+    }
+    else if(data_type == LONG_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        longVector &vec = AsLongVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetLong());
+    }
+    else if(data_type == FLOAT_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        floatVector &vec = AsFloatVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetFloat());
+    }
+    else if(data_type == DOUBLE_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        doubleVector &vec = AsDoubleVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetDouble());
+    }
+    else if(data_type == STRING_VECTOR_TYPE)
+    {
+        const JSONNode::JSONArray& node = data.GetArray();
+        stringVector &vec = AsStringVector();
+        for(int i = 0; i < node.size(); ++i)
+            vec.push_back(node[i].GetString());
+    }
+}
+// ****************************************************************************
+//  Method:  Variant::SetValue
+//
+//  Purpose:
 //     Sets this variant's value from an xml node pointer.
 //
 //  Programmer:  Cyrus Harrison
@@ -1298,9 +1461,26 @@ Variant::SetValue(const XMLNode &node)
 //
 // ****************************************************************************
 void 
-Variant::SetValue(const XMLNode *node)
+Variant::SetValue(const XMLNode *node,bool decodeString)
 {
-    SetValue(*node);
+    SetValue(*node,decodeString);
+}
+
+// ****************************************************************************
+//  Method:  Variant::SetValue
+//
+//  Purpose:
+//     Sets this variant's value from an json node.
+//
+//  Programmer:  Hari Krishnan
+//  Creation:    October 13, 2012
+//
+//  Modifications:
+// ****************************************************************************
+void
+Variant::SetValue(const JSONNode *node,const JSONNode *meta, bool decodeString)
+{
+    SetValue(*node,*meta,decodeString);
 }
 
 // ****************************************************************************
@@ -1621,12 +1801,18 @@ Variant::SetValue(const stringVector &val)
 //
 // ****************************************************************************
 string 
-Variant::ToXML(const string &indent) const
+Variant::ToXML(const string &indent, bool encodeString) const
 {
     XMLNode node;
     node.Name() = "variant";
     node.Attribute("type") = TypeName();
-    return ToXMLNode().ToString(indent);
+    return ToXMLNode(encodeString).ToString(indent);
+}
+
+std::string
+Variant::ToJSON(const string &indent, bool encodeString) const
+{
+    return ToJSONNode(encodeString).ToString(indent);
 }
 
 // ****************************************************************************
@@ -1645,7 +1831,7 @@ Variant::ToXML(const string &indent) const
 // ****************************************************************************
 
 XMLNode 
-Variant::ToXMLNode() const
+Variant::ToXMLNode(bool encodeString) const
 {
     XMLNode node;
     node.Name() = "variant";
@@ -1683,12 +1869,18 @@ Variant::ToXMLNode() const
     }
     else if(dataType == FLOAT_TYPE)
     {
-        EncodeToString(buff, *((float *)dataValue));
+        if(encodeString)
+            EncodeToString(buff, *((float *)dataValue));
+        else
+            sprintf(buff,"%f",*((float *)dataValue));
         res_str = buff;
     }
     else if(dataType == DOUBLE_TYPE)
     {
-        EncodeToString(buff,*((double *)dataValue));
+        if(encodeString)
+            EncodeToString(buff,*((double *)dataValue));
+        else
+            sprintf(buff,"%f",*((double *)dataValue));
         res_str = buff;
     }
     else if(dataType == STRING_TYPE)
@@ -1745,7 +1937,11 @@ Variant::ToXMLNode() const
         const floatVector &vec = AsFloatVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            EncodeToString(buff, vec[i]);
+            if(encodeString)
+                EncodeToString(buff, vec[i]);
+            else
+                sprintf(buff,"%f",vec[i]);
+
             res_str += buff;
             res_str += " ";
         }
@@ -1755,7 +1951,11 @@ Variant::ToXMLNode() const
         const doubleVector &vec = AsDoubleVector();
         for(size_t i=0;i<vec.size();i++)
         {
-            EncodeToString(buff, vec[i]);
+            if(encodeString)
+                EncodeToString(buff, vec[i]);
+            else
+                sprintf(buff,"%f",vec[i]);
+
             res_str += buff;
             res_str += " ";
         }
@@ -1773,6 +1973,96 @@ Variant::ToXMLNode() const
     return node;
 }
 
+JSONNode
+Variant::ToJSONNode(bool encodeString) const
+{
+    JSONNode node;
+
+    if(dataType == BOOL_TYPE)
+        node = *((bool *)dataValue);
+    else if(dataType == CHAR_TYPE)
+        node = *((char *)dataValue);
+    else if(dataType == UNSIGNED_CHAR_TYPE)
+        node = (int)(*((unsigned char *)dataValue));
+    else if(dataType == INT_TYPE)
+        node = *((int *)dataValue);
+    else if(dataType == LONG_TYPE)
+        node = *((long *)dataValue);
+    else if(dataType == FLOAT_TYPE)
+        node = *((float *)dataValue);
+    else if(dataType == DOUBLE_TYPE)
+        node = *((double *)dataValue);
+    else if(dataType == STRING_TYPE)
+        node = *((string *)dataValue);
+    else if(dataType == BOOL_VECTOR_TYPE)
+    {
+        const boolVector &vec = AsBoolVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == CHAR_VECTOR_TYPE)
+    {
+        const charVector &vec = AsCharVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        const unsignedCharVector &vec = AsUnsignedCharVector();
+        for(size_t i=0;i<vec.size();i++)
+            node[i] = (int)vec[i];
+    }
+    else if(dataType == INT_VECTOR_TYPE)
+    {
+        const intVector &vec = AsIntVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == LONG_VECTOR_TYPE)
+    {
+        const longVector &vec = AsLongVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == FLOAT_VECTOR_TYPE)
+    {
+        const floatVector &vec = AsFloatVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == DOUBLE_VECTOR_TYPE)
+    {
+        const doubleVector &vec = AsDoubleVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    else if(dataType == STRING_VECTOR_TYPE)
+    {
+        const stringVector &vec = AsStringVector();
+        for(size_t i=0;i<vec.size();++i)
+            node[i] = vec[i];
+    }
+    return node;
+}
+
+JSONNode
+Variant::ToJSONNodeMetaData(bool id) const
+{
+    JSONNode node;
+
+    /// return type of this object as JSONNode..
+    if(id)
+    {
+        char buf[100];
+        sprintf(buf,"%d",dataType);
+        node = buf;
+    }
+    else
+    {
+        node = TypeIDToName(dataType);
+    }
+    return node;
+}
 // ****************************************************************************
 //  Method:  Variant::TypeIDToName
 //

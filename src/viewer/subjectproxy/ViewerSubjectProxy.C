@@ -377,7 +377,7 @@ ViewerSubjectProxy::ViewerSubjectProxy():ViewerProxy()
         *gstate->GetSILRestrictionAttributes());
     gstate->GetSILRestrictionAttributes()->Attach(this);
     //gstate->GetSyncAttributes()->Attach(this);
-    ViewerProxy::CreateViewerProxy(this);
+    //ViewerProxy::CreateViewerProxy(this);
 }
 
 // This constructor emulates as if it has already been started..
@@ -396,7 +396,7 @@ ViewerSubjectProxy::ViewerSubjectProxy(ViewerSubjectProxy* proxy):ViewerProxy()
         *gstate->GetSILRestrictionAttributes());
     gstate->GetSILRestrictionAttributes()->Attach(this);
     //gstate->GetSyncAttributes()->Attach(this);
-    ViewerProxy::CreateViewerProxy(this);
+    //ViewerProxy::CreateViewerProxy(this);
 }
 
 // Destructor (free allocated memory)

@@ -717,4 +717,8 @@ avtDataset::RenumberDomainIDs(bool acrossAllProcs)
     delete [] leaves;
 }
 
-
+std::string
+avtDataset::GetDatasetAsString()
+{
+    return dataTree->GetDatasetAsString();
+}

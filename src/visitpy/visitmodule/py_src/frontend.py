@@ -62,7 +62,7 @@ import imp
 
 from os.path import join as pjoin
 
-__all__ = ["Launch","LaunchNowin","AddArgument","SetDebugLevel","GetDebugLevel"]
+__all__ = ["Launch","LaunchNowin","LaunchWithProxy","LaunchPySide","LaunchPyQt","AddArgument","SetDebugLevel","GetDebugLevel"]
 
 def Launch(vdir=None):
     return VisItModuleState.launch(vdir)
@@ -70,6 +70,21 @@ def Launch(vdir=None):
 def LaunchNowin(vdir=None):
     VisItModuleState.add_argument("-nowin")
     return VisItModuleState.launch(vdir)
+
+def LaunchWithProxy(vdir=None,proxy=None):
+    return VisItModuleState.launch(vdir,proxy)
+
+def LaunchPySide(vdir=None,args=None):
+    VisItModuleState.add_argument("-pyuiembedded")
+    import pyside_support
+    ret = pyside_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
+
+def LaunchPyQt(vdir=None,args=None):
+    VisItModuleState.add_argument("-pyuiembedded")
+    import pyqt_support
+    ret = pyqt_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
 
 def AddArgument(arg):
     return VisItModuleState.add_argument(arg)
@@ -87,7 +102,7 @@ class VisItModuleState(object):
     debug_lvl   = None
     launch_args = []
     @classmethod
-    def launch(cls,vdir=None):
+    def launch(cls,vdir=None,proxy=None):
         launched = False
         try:
             vcmd = cls.__visit_cmd(vdir,cls.launch_args)
@@ -105,6 +120,8 @@ class VisItModuleState(object):
             vcmd = cls.__visit_cmd(vdir,[])
             # this will add functions to the current
             # 'visit' module
+            if proxy is not None:
+                mod.InitializeViewerProxy(proxy)
             mod.Launch(vcmd)
 
             # if SetDebugLevel exists in __main__, then the user did

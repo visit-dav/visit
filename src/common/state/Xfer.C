@@ -228,18 +228,21 @@ Xfer::Update(Subject *TheChangedSubject)
     AttributeSubject *subject = (AttributeSubject *)TheChangedSubject;
 
     // Write out the subject's guido and message size.
-    output->WriteInt(subject->GetGuido());
-    int sz = subject->CalculateMessageSize(*output);
-    output->WriteInt(sz);
+//    output->WriteGroupStart(subject->TypeName().c_str());
+//    output->WriteInt(subject->GetGuido());
+//    int sz = subject->CalculateMessageSize(*output);
+//    output->WriteInt(sz);
 
     debug5 << "Xfer::Update: Sending: opcode=" << subject->GetGuido()
-           << ", len=" << sz
+//           << ", len=" << sz
            << ", name=" << subject->TypeName().c_str() << endl;
 
-    // Write the things about the subject that have changed onto the
-    // output connection and flush it out to make sure it's sent.
-    subject->Write(*output);
-    output->Flush();
+//    // Write the things about the subject that have changed onto the
+//    // output connection and flush it out to make sure it's sent.
+//    subject->Write(*output);
+//    output->WriteGroupEnd(subject->TypeName().c_str());
+//    output->Flush();
+    output->Flush(subject);
 }
 
 // ****************************************************************************

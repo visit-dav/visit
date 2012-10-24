@@ -65,6 +65,7 @@ FileConnection::FileConnection(const char *filename, bool writeMode_) :
         fileStream = fopen(filename, "wb");
 
         // Write out the type information for this end
+        Write(srcFormat.Format);
         Write(srcFormat.IntFormat);
         Write(srcFormat.LongFormat);
         Write(srcFormat.FloatFormat);
@@ -77,6 +78,7 @@ FileConnection::FileConnection(const char *filename, bool writeMode_) :
         fileStream = fopen(filename, "rb");
 
         // Read the type information for the other end
+        Read(&destFormat.Format);
         Read(&destFormat.IntFormat);
         Read(&destFormat.LongFormat);
         Read(&destFormat.FloatFormat);

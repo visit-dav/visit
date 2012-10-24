@@ -306,6 +306,7 @@ state/WindowAttributes.C
 state/WindowInformation.C
 state/Xfer.C
 state/XMLNode.C
+state/JSONNode.C
 )
 
 SET(UTILITY_SOURCES

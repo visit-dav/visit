@@ -269,7 +269,7 @@ static void PlotPluginAddInterface();
 static void OperatorPluginAddInterface();
 static void InitializeExtensions();
 static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
-
+static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
 //
 // Type definitions
 //
@@ -414,6 +414,7 @@ private:
 // VisIt module state flags and objects.
 //
 ViewerProxy                 *viewer = 0;
+std::vector<std::string>     viewerArguments;
 bool                         localNameSpace = false;
 
 static PyObject             *visitModule = 0;
@@ -1128,10 +1129,11 @@ visit_AddArgument(PyObject *self, PyObject *args)
         if(!PyArg_ParseTuple(args, "s", &arg))
             return NULL;
 
-        if(strcmp(arg,"-embedded") == 0)
+        if(strcmp(arg,"-pyuiembedded") == 0 || strcmp(arg,"-uifile") == 0 )
             viewerEmbedded = true;
 
-        GetViewerProxy()->AddArgument(arg);
+        //GetViewerProxy()->AddArgument(arg);
+        viewerArguments.push_back(arg);
     }
     else
     {
@@ -1322,9 +1324,44 @@ STATIC PyObject *
 visit_LaunchNowin(PyObject *self, PyObject *args)
 {
     if(noViewer)
-        GetViewerProxy()->AddArgument("-nowin");
+        viewerArguments.push_back("-nowin"); //GetViewerProxy()->AddArgument("-nowin");
     return visit_Launch(self, args);
 }
+
+// ****************************************************************************
+// Function: visit_InitializeViewerProxy
+//
+// Purpose:
+//   This is a Python callback that initializes a custom viewer proxy
+//
+// Note:       Only has an effect before the viewer is created.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Sep 18 14:04:06 PST 2001
+//
+// ****************************************************************************
+PyObject *
+visit_InitializeViewerProxy(PyObject *self, PyObject *args)
+{
+    if(noViewer)
+    {
+        long addy;
+        if(!PyArg_ParseTuple(args, "l", &addy))
+            return NULL;
+
+        ViewerProxy* vp = (ViewerProxy*)((void*)addy);
+        InitializeViewerProxy(vp);
+    }
+    else
+    {
+        VisItErrorFunc("VisIt's viewer is already launched!");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 // ****************************************************************************
 // Function: visit_SetDebugLevel
@@ -1370,13 +1407,15 @@ visit_SetDebugLevel(PyObject *self, PyObject *args)
         // Save the debug level.
         moduleDebugLevel = dLevel;
 
-        GetViewerProxy()->AddArgument("-debug");
+        //GetViewerProxy()->AddArgument("-debug");
+        viewerArguments.push_back("-debug");
         char tmp[10];
         if (moduleBufferDebug)
             SNPRINTF(tmp, 10, "%db", moduleDebugLevel);
         else
             SNPRINTF(tmp, 10, "%d", moduleDebugLevel);
-        GetViewerProxy()->AddArgument(tmp);
+        //GetViewerProxy()->AddArgument(tmp);
+        viewerArguments.push_back(tmp);
     }
     else
     {
@@ -16286,7 +16325,12 @@ AddDefaultMethods()
     AddMethod("SetDebugLevel", visit_SetDebugLevel, visit_DebugLevel_doc);
     AddMethod("Version", visit_Version, visit_Version_doc);
     AddMethod("LongFileName", visit_LongFileName, visit_LongFileName_doc);
+    AddMethod("InitializeViewerProxy", visit_InitializeViewerProxy, NULL);
+}
 
+static void
+AddProxyMethods()
+{
     //
     // Viewer proxy methods.
     //
@@ -17413,11 +17457,23 @@ InitializeModule()
         ret = true;
     }
     ENDTRY
+    
+    AddDefaultMethods();
+    AddMethod(NULL, (PyCFunction)NULL);
+    moduleInitialized = true;
+    return 0;
+}
+
+static int 
+InitializeViewerProxy(ViewerProxy* proxy)
+{
+    /// if viewer already initalized do not enter..
+    if(viewer) return 0;
 
     //
     // Create the viewer proxy and add some default arguments.
     //
-    viewer = ViewerProxy::CreateViewerProxy(); //PySide modification, new ViewerProxy;
+    viewer = proxy ? proxy : new ViewerProxy();
 
     //
     // Ensure that the viewer will be run in a mode that does not check for
@@ -17444,7 +17500,7 @@ InitializeModule()
     //
     for(int i = 1; i < cli_argc; ++i)
     {
-        if(strcmp(cli_argv[i],"-embedded") == 0)
+        if(strcmp(cli_argv[i],"-pyuiembedded") == 0 || strcmp(cli_argv[i],"-uifile") == 0)
             viewerEmbedded = true; //do not show window if it is embedded..
         GetViewerProxy()->AddArgument(cli_argv[i]);
     }
@@ -17482,15 +17538,19 @@ InitializeModule()
         if(!LogFile_Open(logName))
             fprintf(stderr, "Could not open %s log file.\n", logName);
     }
+
+    //remove NULL command
+    VisItMethods.pop_back();
     // Add the default methods to the module's method table.
-    AddDefaultMethods();
+    AddProxyMethods();
     // Add extension methods to the module's method table.
     AddExtensions();
     // Mark the end of the method table.
     AddMethod(NULL, (PyCFunction)NULL);
 
     // Set the module initialized flag.
-    moduleInitialized = true;
+    //moduleInitialized = true;
+    initvisit();
 
     return 0;
 }
@@ -17608,11 +17668,15 @@ ReadVisItPluginDir(const char *visitProgram)
 static void
 LaunchViewer(const char *visitProgram)
 {
+    InitializeViewerProxy();
     // If noViewer is false at this stage then we have tried to launch
     // the viewer already and we should not try again.
     if(!noViewer)
         return;
 
+    for(size_t i = 0; i < viewerArguments.size(); ++i)
+        GetViewerProxy()->AddArgument(viewerArguments[i]);
+    viewerArguments.clear();
     //
     // If we've not set up VISITPLUGINDIR then we're probably running
     // from "import visit" in a regular Python shell. Let's do our best

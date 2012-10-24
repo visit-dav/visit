@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>VisIt client</title>
+    </head>
+    <body onunload="vp.stopWebSocket()">
+       <table>
+            <col width="35%"/>
+            <tr>
+                <td valign="top">
+                    <p>
+                        <input type="text" name="host" value="localhost" size=10 />
+                        <input type="text" name="port" value="9002" size=5 />
+                        <input type="text" name="password" value="bob" size=10 /><br>
+                        <button onClick="vp.connect('localhost',9002,'bob');">Connect</button>
+                        <button onClick="vp.stopWebSocket();">Disconnect</button>
+                        <button onClick="vp.clearScreen();">Clear Screen</button>
+                    </p>
+                    <!-- VisIt Methods -->
+                    <p>
+                        Database:
+                        <input type="text" name="database" id="database" size=15 />
+                        <button onClick="vp.OpenDatabase();">Load</button><br>
+                        <button onClick="vp.InvertBackgroundColor();">InvertBGColor</button>
+                        <button onClick="vp.DeleteActivePlots();">DeleteActivePlot</button>
+                    </p>
+                    <p>
+                        Variable:
+                        <input type="text" name="variable" id="variable" size=15 />
+                        <button onClick="vp.DrawPlots();">Draw</button><br>
+                        <button onClick="vp.AddPseudocolorPlot();">Pseudocolor</button>
+                        <button onClick="vp.AddContourPlot();">Contour</button>
+                    </p>
+                    <p>
+                        Inspect:
+                        <input type="text" name="inspect" id="inspect" size=5></input>
+                        <button onClick="vp.inspectClass();">Inspect</button>
+                        <button onClick="vp.showAllClasses();">Show All</button>
+                        <textarea id="debugTextArea" style="width:250;height:100;"></textarea>
+                    </p>
+                </td>
+                <td valign="top">
+                    <img src="" id="visitImage" />
+                </td>
+            </tr>
+        </table>
+
+        <script src="js/visit.js"> </script>
+    
+        <script>
+            vp = new VisItProxy();
+        </script>
+    </body>
+</html>

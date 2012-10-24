@@ -83,9 +83,9 @@ class ViewerClientConnection : public ViewerBase, public SimpleObserver
 {
     Q_OBJECT
 public:
-    ViewerClientConnection(const ViewerState *, QObject *parent, const QString &name);
+    ViewerClientConnection(const ViewerState *, QObject *parent, const QString &name, const bool _allState = false);
     ViewerClientConnection(ParentProcess *, QSocketNotifier *, const ViewerState *,
-                           QObject *parent, const QString &name);
+                           QObject *parent, const QString &name, const bool _allState = false);
     virtual ~ViewerClientConnection();
 
     void LaunchClient(const std::string &program,
@@ -103,6 +103,8 @@ public:
 
     const QString &Name() const;
 
+    void SetAdvancedRendering(bool ar) { advancedRendering = ar; }
+    bool GetAdvancedRendering() { return advancedRendering; }
     static const int FreelyExchangedState;
 signals:
     void DisconnectClient(ViewerClientConnection *);
@@ -119,8 +121,10 @@ private:
     ViewerState       *viewerState;
     bool               emitSignalsOnUpdate;
     bool               ownsNotifier;
-
+    bool               allState; //whether to send all the state during initial connection
+    bool               advancedRendering;
     int                initialStateStage;
+
 };
 
 #endif

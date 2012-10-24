@@ -167,6 +167,7 @@ public:
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));
     static void SetChangeUserNameCallback(bool (*)(const std::string &,std::string&));
     static void DisablePTY();
+    static void SetCustomConnectionCallback(Connection* (*)(int, void *), void* cbData);
 protected:
     bool StartMakingConnection(const std::string &rHost, int numRead,
                                int numWrite);
@@ -213,6 +214,8 @@ private:
     static void            (*getAuthentication)(const char *, const char *, int);
     static bool            (*changeUsername)(const std::string &, std::string&);
     static bool              disablePTY;
+    static Connection*     (*customConnectionCallback)(int,void*);
+    static void             *customConnectionCallbackData;
 };
 
 #endif

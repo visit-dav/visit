@@ -59,6 +59,8 @@
 
 TypeRepresentation::TypeRepresentation()
 {
+    Format = BINARYFORMAT; /// default is binary..
+
     // Set the int format
 #if(SIZEOF_INT == 4)
 #ifdef WORDS_BIGENDIAN
@@ -134,6 +136,7 @@ TypeRepresentation::TypeRepresentation()
 
 TypeRepresentation::TypeRepresentation(const TypeRepresentation &copy)
 {
+    Format = copy.Format;
     IntFormat  = copy.IntFormat;
     LongFormat = copy.LongFormat;
     FloatFormat = copy.FloatFormat;
@@ -176,6 +179,7 @@ TypeRepresentation::~TypeRepresentation()
 void
 TypeRepresentation::operator = (const TypeRepresentation &obj)
 {
+    Format = obj.Format;
     IntFormat  = obj.IntFormat;
     LongFormat = obj.LongFormat;
     FloatFormat = obj.FloatFormat;
@@ -201,6 +205,12 @@ TypeRepresentation::operator = (const TypeRepresentation &obj)
 bool
 TypeRepresentation::operator == (const TypeRepresentation &obj)
 {
+    if(Format != obj.Format) /// if types do not match
+        return false;
+
+    if(static_cast<SupportedFormat>(Format) == ASCIIFORMAT)
+        return true;
+
     return (IntFormat  == obj.IntFormat) &&
            (LongFormat == obj.LongFormat) &&
            (FloatFormat == obj.FloatFormat) &&
@@ -240,3 +250,17 @@ TypeRepresentation::DoubleSize()
 {
     return (DoubleFormat == B32 || DoubleFormat == L32) ? 4 : 8;
 }
+
+
+TypeRepresentation::SupportedFormat
+TypeRepresentation::GetSupportedFormat()
+{
+    return static_cast<SupportedFormat>(Format);
+}
+
+void
+TypeRepresentation::SetSupportedFormat(SupportedFormat _Format)
+{
+    Format = _Format;
+}
+

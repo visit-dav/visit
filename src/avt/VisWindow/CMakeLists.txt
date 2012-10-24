@@ -71,6 +71,10 @@ Colleagues/avtText2DColleague.C
 Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
+IF(APPLE)
+    SET(COLLEAGUES_SOURCES ${COLLEAGUES_SOURCES} Colleagues/VisWinRenderingCocoaHideWindow.mm)
+ENDIF(APPLE)
+
 IF (NOT WIN32)
     IF(MESA_FOUND)
         SET_SOURCE_FILES_PROPERTIES(

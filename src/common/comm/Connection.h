@@ -65,7 +65,7 @@
 //    I added convenience methods for reading/writing string.
 //
 // ****************************************************************************
-
+class AttributeSubject;
 class COMM_API Connection
 {
 public:
@@ -78,7 +78,7 @@ public:
     virtual int  Fill() = 0;
     virtual void Flush() = 0;
     virtual long Size() = 0;
-
+    virtual void Flush(AttributeSubject*);
     // These read or write a byte to whatever we're using
     // as the connection.
     virtual void Write(unsigned char value) = 0;
@@ -86,8 +86,10 @@ public:
     virtual void Append(const unsigned char *buf, int count) = 0;
     virtual long DirectRead(unsigned char *buf, long len) = 0;
     virtual long DirectWrite(const unsigned char *buf, long len) = 0;
-    virtual bool NeedsRead(bool = false) const { return true; };
-    virtual int  GetDescriptor() const { return -1; };
+    virtual long ReadHeader(unsigned char *buf, long len);
+    virtual long WriteHeader(const unsigned char *buf, long len);
+    virtual bool NeedsRead(bool = false) const { return true; }
+    virtual int  GetDescriptor() const { return -1; }
 
     // These methods call the Write method after handling conversion issues.
     void WriteChar(unsigned char c);
@@ -97,7 +99,6 @@ public:
     void WriteFloat(float val);
     void WriteDouble(double val);
     void WriteString(const std::string &);
-
     // We should be able to read into a variable without conversion
     // since conversion takes place on writes to the connection.
     void ReadChar(unsigned char *c);

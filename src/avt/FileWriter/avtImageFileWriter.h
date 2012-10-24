@@ -113,6 +113,10 @@ class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
     char              *CreateFilename(const char *base, bool family,
                                       ImageFileFormat format);
 
+    static const char* WriteToByteArray(avtImageRepresentation &imagerep,
+                                        int quality,
+                                        bool progressive,
+                                        size_t& len);
   protected:
     bool               FileHasExtension(const char *filename, const char *ext)
                              const;
