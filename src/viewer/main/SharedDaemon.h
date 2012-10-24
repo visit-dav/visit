@@ -58,6 +58,11 @@ class ViewerSubject;
 //
 // Programmer: Hari Krishnan
 // Creation:   October 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
 class VIEWER_API SharedDaemon : public QTcpServer
 {
     Q_OBJECT
@@ -65,7 +70,7 @@ public:
     SharedDaemon(ViewerSubject* subject,
                  const int& listen_port,
                  const std::string& password);
-    ~SharedDaemon();
+    virtual ~SharedDaemon();
 
     virtual void incomingConnection (int sd);
 
