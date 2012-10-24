@@ -157,11 +157,14 @@ XDisplay::Initialize(std::string display,
 {
     this->display = display;
 
-    if(gethostname(this->hostname, 512) != 0)
+    if(gethostname(this->hostname, 256) != 0)
     {
         debug1 << "Error " << errno << " while getting hostname.\n";
         this->hostname[0] = 0;
     }
+    //should this not be if not launch return false, 
+    //else if launch and xinit fails return false?
+    //if(!this->launch || (this->xserver = xinit(this->display, user_args)) == -1)
     if(this->launch && (this->xserver = xinit(this->display, user_args)) == -1)
     {
       return false;
