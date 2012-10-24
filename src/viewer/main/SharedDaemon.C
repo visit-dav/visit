@@ -57,6 +57,10 @@
 
 #include <JSONNode.h>
 
+#ifdef _WIN32
+#include <win32commhelpers.h>
+#endif
+
 // ****************************************************************************
 // Method: SharedDaemon::SharedDaemon
 //
@@ -444,6 +448,7 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 int
 SingleThreadedAcceptSocket(int listenSocketNum)
 {
+    const char *mName = "SharedDaemon, SingleThreadedAcceptSocket: ";
     struct sockaddr_in       sin;
     int desc = -1;
 

@@ -39,7 +39,7 @@
 #ifndef GUIWRAPPER_H
 #define GUIWRAPPER_H
 
-#include "pyui_common_exports.h"
+#include "guiwrapper_exports.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -60,7 +60,7 @@
 
 #include <ViewerSubjectProxy.h>
 
-class PYUI_COMMON_API QvisGUIApplicationDerived : public QvisGUIApplication
+class GUIWRAPPER_API QvisGUIApplicationDerived : public QvisGUIApplication
 {
     //QMainWindow* plotManagerWindow;
     QMainWindow* sourceManagerWindow;
@@ -88,7 +88,7 @@ public:
     bool eventFilter(QObject *o, QEvent *e);
 };
 
-class PYUI_COMMON_API GUIWrapper
+class GUIWRAPPER_API GUIWrapper
 {
 protected:
     QvisGUIApplicationDerived* gui;

@@ -95,7 +95,6 @@ IF(MESA_FOUND)
     LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR})
 ENDIF(MESA_FOUND)
 
-add_definitions("-fvisibility=default")
 add_library(guiwrapper SHARED ${guiwrapper_sources})
 target_link_libraries(guiwrapper ${guiwrapper_link_libs})
 
