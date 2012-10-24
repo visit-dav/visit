@@ -1343,11 +1343,11 @@ void
 Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
 {
     /// metadata information tells the Variant how to cast..
-    const std::string name = meta.GetString();
+    const string name = meta.GetString();
     int data_type = 0;
     /// remove quotes..
 
-    if(std::isdigit(name[0])) //if it has digits then id else name
+    if(isdigit(name[0])) //if it has digits then id else name
         data_type = atoi(name.c_str());
     else
         NameToTypeID(name);
@@ -1809,7 +1809,7 @@ Variant::ToXML(const string &indent, bool encodeString) const
     return ToXMLNode(encodeString).ToString(indent);
 }
 
-std::string
+string
 Variant::ToJSON(const string &indent, bool encodeString) const
 {
     return ToJSONNode(encodeString).ToString(indent);
@@ -2592,7 +2592,7 @@ Variant::Write(Connection &conn) const
         conn.WriteDouble(*((double *)dataValue));
     else if(dataType == STRING_TYPE)
     {
-        std::string *sptr = (std::string *)dataValue;
+        string *sptr = (string *)dataValue;
         for(size_t i = 0; i < sptr->size(); ++i)
             conn.WriteChar(sptr->at(i));
         conn.WriteChar(0);

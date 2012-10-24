@@ -36,14 +36,14 @@
 *
 *****************************************************************************/
 
-#ifndef PYUI_COMMON_EXPORTS_H
-#define PYUI_COMMON_EXPORTS_H
+#ifndef GUIWRAPPER_EXPORTS_H
+#define GUIWRAPPER_EXPORTS_H
 
 #if defined(_WIN32)
-#if defined(PYUI_COMMON_EXPORTS) || defined(pyui_common_EXPORTS)
-#define PYUI_COMMON_API __declspec(dllexport)
+#if defined(GUIWRAPPER_EXPORTS) || defined(guiwrapper_EXPORTS)
+#define GUIWRAPPER_API __declspec(dllexport)
 #else
-#define PYUI_COMMON_API __declspec(dllimport)
+#define GUIWRAPPER_API __declspec(dllimport)
 #endif
 #if defined(_MSC_VER)
 // Turn off warning about lack of DLL interface
@@ -54,10 +54,10 @@
 #pragma warning(disable:4786)
 #endif
 #else
-# if __GNUC__ >= 4 && (defined(PYUI_COMMON_EXPORTS) || defined(pyui_common_EXPORTS))
-#   define PYUI_COMMON_API __attribute__ ((visibility("default")))
+# if __GNUC__ >= 4 && (defined(GUIWRAPPER_EXPORTS) || defined(guiwrapper_EXPORTS))
+#   define GUIWRAPPER_API __attribute__ ((visibility("default")))
 # else
-#   define PYUI_COMMON_API /* hidden by default */
+#   define GUIWRAPPER_API /* hidden by default */
 # endif
 #endif
 

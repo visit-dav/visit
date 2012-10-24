@@ -67,6 +67,12 @@
 
 #include <cstring>
 #include <cstdlib>
+#ifdef _WIN32
+#include <io.h>
+#endif
+
+
+static void CloseSocket(int fd);
 
 // ****************************************************************************
 // Method: CreateViewerProxy 
@@ -484,23 +490,29 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
     std::cout << "connecting host: " << host << " port " << port << std::endl;
     struct sockaddr_in sin;
     struct hostent *server = gethostbyname(host.c_str());
+    memset(&sin, 0, sizeof(sin));
+    memcpy(&(sin.sin_addr), server->h_addr, server->h_length);
     sin.sin_family = AF_INET;
-    bcopy((char*)server->h_addr, (char*)&sin.sin_addr.s_addr, server->h_length);
     sin.sin_port = htons(port);
 
     if (connect(testSocket,(struct sockaddr*) &sin,sizeof(sin)) < 0)
     {
         std::cerr << "Unable to connect to Viewer" << std::endl;
-        close(testSocket);
+        CloseSocket(testSocket);
         return false;
         //exit(1);
     }
 
     //Step 2: Send password to verify that you should be added
-    if(write(testSocket,password.c_str(),password.length()) < 0)
+#ifndef _WIN32
+    int nwrite = write(testSocket,password.c_str(),password.length()); 
+#else
+    int nwrite = _write(testSocket,password.c_str(),password.length()); 
+#endif
+    if(nwrite < 0)
     {
         std::cerr << "Error writing to Viewer" << std::endl;
-        close(testSocket);
+        CloseSocket(testSocket);
         return false;
         //exit(1);
     }
@@ -509,11 +521,15 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
 
     char buffer[1024];
 
+#ifndef _WIN32
     int bytes = read(testSocket,buffer,1024);
+#else
+    int bytes = _read(testSocket,buffer,1024);
+#endif
     buffer[bytes] = '\0';
     //std::cout << "bytes read: " << bytes << " " << buffer << std::endl;
 
-    close(testSocket);
+    CloseSocket(testSocket);
     //Step 4: reverse connect same as if it was originally intented..
 
     //parse message and create new reverse connect
@@ -1230,3 +1246,28 @@ ViewerProxy::SetXferUpdate(bool val)
 {
     xfer->SetUpdate(val);
 }
+
+
+// ****************************************************************************
+//  Method:  CloseSocket
+//
+//  Purpose:
+//    Close a socket file descriptor.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 24, 2007
+//
+// ****************************************************************************
+static void
+CloseSocket(int fd)
+{
+    if (fd < 0)
+        return;
+
+#if defined(_WIN32)
+    closesocket(fd);
+#else
+    close(fd);
+#endif
+}
+
