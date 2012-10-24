@@ -228,7 +228,7 @@ def TestNBLOCKS():
 
 def TestPVTU():
     TestSection("PVTU files")
-    OpenDatabase(data_path("vtk_pvtu_data/blocks.pvtu"))
+    OpenDatabase(data_path("vtk_test_data/blocks.pvtu"))
     AddPlot("Pseudocolor", "MatNum")
     DrawPlots()
     ResetView()
