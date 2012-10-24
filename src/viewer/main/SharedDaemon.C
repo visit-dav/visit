@@ -71,8 +71,13 @@
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
-SharedDaemon::SharedDaemon(ViewerSubject* lsubject, const int& lport, const std::string& lpassword): QTcpServer()
+SharedDaemon::SharedDaemon(ViewerSubject *lsubject, const int &lport,
+    const std::string &lpassword): QTcpServer()
 {
     subject = lsubject;
     listen_port = lport;
@@ -95,6 +100,10 @@ SharedDaemon::SharedDaemon(ViewerSubject* lsubject, const int& lport, const std:
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 SharedDaemon::~SharedDaemon()
 {
@@ -115,6 +124,10 @@ SharedDaemon::~SharedDaemon()
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void SharedDaemon::init()
 {
@@ -140,6 +153,10 @@ void SharedDaemon::init()
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void SharedDaemon::incomingConnection( int sd )
 {
@@ -163,6 +180,10 @@ void SharedDaemon::incomingConnection( int sd )
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 /// TODO: remove the external dependency all together..
 QString matched_password = "";
@@ -186,6 +207,10 @@ void SharedDaemon::getPasswordMessage(QString message)
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void SharedDaemon::handleConnection()
 {
@@ -332,6 +357,10 @@ void SharedDaemon::handleConnection()
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void SharedDaemon::AddNewClient(const std::string &host, const stringVector &args, void *cbdata)
 {
@@ -346,7 +375,7 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 
     if(args.size() > 1)
     {
-        for(int i = 0; i < args.size() - 1; ++i)
+        for(size_t i = 0; i < args.size() - 1; ++i)
             message += args[i] + std::string(",");
         message += args.back();
     }
@@ -407,6 +436,10 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 int
 SingleThreadedAcceptSocket(int listenSocketNum)
@@ -449,6 +482,10 @@ SingleThreadedAcceptSocket(int listenSocketNum)
 //
 // Programmer: Hari Krishnan
 // Creation:   Oct 13, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
 
 Connection* SharedDaemon::createCustomConnection(int listenSocketNum, void *data)
 {
