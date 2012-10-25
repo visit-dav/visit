@@ -84,6 +84,100 @@
 #include <string>
 #include <vector>
 
+//
+// These routines detect whether the file looks like a certain flavor of
+// HDF5 file reader. If the flavor is detected, we throw an exception so
+// the proper reader can be used instead of Pixie.
+//
+static void DetectSilo(int fileId)
+{
+    hid_t siloDir = H5Gopen(fileId, ".silo");
+    if (siloDir >= 0)
+    {
+        H5Gclose(siloDir);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like a Silo file.");
+    }
+}
+
+static void DetectTetrad(int fileId)
+{
+    hid_t cell_array = H5Dopen(fileId, "CellArray");
+    if (cell_array >= 0)
+    {
+        H5Dclose(cell_array);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like a Tetrad file.");
+    }
+}
+
+static void DetectPFLOTRAN(int fileId)
+{
+    hid_t coordsGID = H5Gopen(fileId, "Coordinates");
+    if (coordsGID >= 0)
+    {
+        H5Gclose(coordsGID);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like a PFLOTRAN file.");
+    }
+}
+
+static void DetectUNIC(int fileId)
+{
+    hid_t control = H5Dopen(fileId, "CONTROL");
+    if (control >= 0)
+    {
+        H5Dclose(control);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like an UNIC file.");
+    }
+}
+
+static void DetectVisSchema(int fileId)
+{
+    hid_t runInfo = H5Gopen(fileId, "runInfo");
+    if (runInfo >= 0)
+    {
+        hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
+        if (vsVersion >= 0)
+        {
+            H5Aclose(vsVersion);
+            H5Gclose(runInfo);
+            H5Fclose(fileId);
+            EXCEPTION1(InvalidDBTypeException,
+                       "Cannot be a Pixie file because it looks like a VizSchema file.");
+        }
+
+        hid_t vsVsVersion = H5Aopen_name(runInfo, "vsVsVersion");
+        if (vsVsVersion >= 0)
+        {
+            H5Aclose(vsVsVersion);
+            H5Gclose(runInfo);
+            H5Fclose(fileId);
+            EXCEPTION1(InvalidDBTypeException,
+                       "Cannot be a Pixie file because it looks like a VizSchema file.");
+        }
+
+        hid_t software = H5Aopen_name(runInfo, "software");
+        hid_t version = H5Aopen_name(runInfo, "version");
+        H5Gclose(runInfo);
+        if (software >=0 && version >=0)
+        {
+            H5Aclose(software);
+            H5Aclose(version);
+            H5Fclose(fileId);
+            EXCEPTION1(InvalidDBTypeException,
+                       "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
+        }
+        if (software >=0) H5Aclose(software);
+        if (version >=0) H5Aclose(version);
+    }
+}
+
 // ****************************************************************************
 //  Method: avtPixie constructor
 //
@@ -330,6 +424,9 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Add a test to avoid opening PFLOTRAN files (though like the others tests,
 //   it will be skipped if the user does Open As so we're not in strict mode).
 //
+//   Brad Whitlock, Thu Oct 25 10:18:53 PDT 2012
+//   Move detection of other formats to helper functions.
+//
 // ****************************************************************************
 
 void
@@ -368,75 +465,11 @@ avtPixieFileFormat::Initialize()
             // that are really HDF5 files following a convention supported
             // by another format.
             //
-            hid_t siloDir = H5Gopen(fileId, ".silo");
-            if (siloDir >= 0)
-            {
-                H5Gclose(siloDir);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                           "Cannot be a Pixie file because it looks like a Silo file.");
-            }
-            hid_t cell_array = H5Dopen(fileId, "CellArray");
-            if (cell_array >= 0)
-            {
-                H5Dclose(cell_array);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                           "Cannot be a Pixie file because it looks like a Tetrad file.");
-            }
-            hid_t coordsGID = H5Gopen(fileId, "Coordinates");
-            if (coordsGID >= 0)
-            {
-                H5Gclose(coordsGID);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                           "Cannot be a Pixie file because it looks like a PFLOTRAN file.");
-            }
-            hid_t control = H5Dopen(fileId, "CONTROL");
-            if (control >= 0)
-            {
-                H5Dclose(control);
-                H5Fclose(fileId);
-                EXCEPTION1(InvalidDBTypeException,
-                           "Cannot be a Pixie file because it looks like an UNIC file.");
-            }
-            hid_t runInfo = H5Gopen(fileId, "runInfo");
-            if (runInfo >= 0)
-            {
-                hid_t vsVersion = H5Aopen_name(runInfo, "vsVersion");
-                if (vsVersion >= 0)
-                {
-                    H5Aclose(vsVersion);
-                    H5Gclose(runInfo);
-                    H5Fclose(fileId);
-                    EXCEPTION1(InvalidDBTypeException,
-                               "Cannot be a Pixie file because it looks like a VizSchema file.");
-                }
-
-                hid_t vsVsVersion = H5Aopen_name(runInfo, "vsVsVersion");
-                if (vsVsVersion >= 0)
-                {
-                    H5Aclose(vsVsVersion);
-                    H5Gclose(runInfo);
-                    H5Fclose(fileId);
-                    EXCEPTION1(InvalidDBTypeException,
-                               "Cannot be a Pixie file because it looks like a VizSchema file.");
-                }
-
-                hid_t software = H5Aopen_name(runInfo, "software");
-                hid_t version = H5Aopen_name(runInfo, "version");
-                H5Gclose(runInfo);
-                if (software >=0 && version >=0)
-                {
-                    H5Aclose(software);
-                    H5Aclose(version);
-                    H5Fclose(fileId);
-                    EXCEPTION1(InvalidDBTypeException,
-                               "Cannot be a Pixie file because it looks like a legacy VizSchema file.");
-                }
-                if (software >=0) H5Aclose(software);
-                if (version >=0) H5Aclose(version);
-            }
+            DetectSilo(fileId);
+            DetectTetrad(fileId);
+            DetectPFLOTRAN(fileId);
+            DetectUNIC(fileId);
+            DetectVisSchema(fileId);
         }
 
         // Populate the scalar variable list
