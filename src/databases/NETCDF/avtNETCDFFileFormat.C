@@ -53,6 +53,49 @@
 #include <avtCCSMFileFormat.h>
 
 // ****************************************************************************
+// Method: DetectAWENETCDF
+//
+// Purpose: 
+//   Determine whether the file is AWE NETCDF.
+//
+// Returns:    True if the file looks like AWE NETCDF; false otherwise.
+//
+// Programmer: Satheesh Maheswaran
+// Creation:   Thu Oct 25 10:31:04 PDT 2012
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool DetectAWENETCDF(NETCDFFileObject *f)
+{
+    bool retval = false;
+
+    // If format has not been recognised yet, see if it looks like an AWEnetCDF file
+    // Look for a variable called "codevers" (but not concerned what's in it)
+    // (InqVariable() would also work if we really don't want to see codevers contents)
+    TypeEnum vartyp = NO_TYPE;
+    int ndims = 0, *dims = 0;
+    void *values = 0;
+
+    if(f->ReadVariable("codevers", &vartyp, &ndims, &dims, &values))
+    {
+        debug4 << "Database seems to be AWEnetCDF format - found codevers";
+        if(vartyp == CHARARRAY_TYPE && ndims == 1 && *dims > 0)
+        {
+          char *codevers_val = (char *)values;
+          debug4 << " = \"" << codevers_val  << "\"" ;
+        }
+        debug4 << "; Abandoning NETCDF reader." << endl;
+        delete [] dims;
+        free_void_mem(values, vartyp);
+        retval = true;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: NETCDF_CreateFileFormatInterface
 //
 // Purpose:
@@ -82,6 +125,9 @@
 //
 //   Brad Whitlock, Thu Oct 29 16:23:33 PDT 2009
 //   I separated the Basic reader into MT and ST flavors.
+//
+//   Satheesh Maheswaran, Thu Oct 25 10:31:04 PDT 2012
+//   Add DetectAWENETCDF function call.
 //
 // ****************************************************************************
 
@@ -158,7 +204,15 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             }
 
             if(flavor == -1)
+            {
+                if(DetectAWENETCDF(f))
+                {
+                    delete f;
+                    return NULL;
+                }
+
                 debug4 << "Database is avtBasic_STSD_NETCDFFileFormat" << endl;
+            }
         }
         CATCH(VisItException)
         {
