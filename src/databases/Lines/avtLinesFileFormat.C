@@ -288,7 +288,6 @@ avtLinesFileFormat::ReadFile(void)
         string  lineName;
         if (GetPoint(ifile, x, y, z, lineName))
         {
-cerr << "Got point " << x << ", " << y << ", " << z << endl;
             if (headerName.find_first_not_of(" ") != string::npos)
             {
                 lineNames.push_back(headerName);
@@ -325,7 +324,6 @@ cerr << "Got point " << x << ", " << y << ", " << z << endl;
     //
     int start = 0;
     cutoff.push_back(xl.size());  // Make logic easier.
-cerr << "Cutoff = " << cutoff.size() << endl;
     for (int i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])
@@ -351,7 +349,6 @@ cerr << "Cutoff = " << cutoff.size() << endl;
         //
         vtkCellArray *line = vtkCellArray::New();
         pd->SetLines(line);
-cerr << "Inserting lines for " << nPts << " points" << endl;
         for (int k = 1 ; k < nPts ; k++)
         {
             line->InsertNextCell(2);
