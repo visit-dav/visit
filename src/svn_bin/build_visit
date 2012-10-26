@@ -92,7 +92,7 @@ function configure_support_files
                     continue
                 fi
                 if [[ $choice == "curl" ]]; then
-                    tmp_curl=`curl -s ${webaddr}/|grep sh|grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
+                    tmp_curl=`curl -s ${webaddr}/ | grep 'sh\|xml' | grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
 
                     if [ $? != 0 ]; then 
                         continue
