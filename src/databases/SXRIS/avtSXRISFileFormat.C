@@ -261,6 +261,13 @@ avtSXRISFileFormat::LoadFile()
         EXCEPTION1(InvalidFilesException, filename);
 
     hid_t dataId = H5Dopen(fileId, "/frames", H5P_DEFAULT);
+    if (dataId < 0)
+    {
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+            "Cannot be a SXRIS file because it doesn't have frames dataset.");
+    }
+
     hid_t spaceId = H5Dget_space(dataId);
 
     hsize_t dims[3], maxDims[3];
