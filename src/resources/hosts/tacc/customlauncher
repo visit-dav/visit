@@ -29,6 +29,10 @@ class JobSubmitter_ibrun_TACC(JobSubmitter_ibrun):
 #
 # Modifications:
 #
+#   Hank Childs, Fri Oct 26 11:06:18 PDT 2012
+#   Remove the "as" part of the exception, as it isn't compliant with Python
+#   2.6.
+#
 ###############################################################################
 
 class JobSubmitter_qsub_TACC(JobSubmitter_qsub):
@@ -47,7 +51,7 @@ class JobSubmitter_qsub_TACC(JobSubmitter_qsub):
                     tqsub.write("qsub \$@\n")
                     tqsub.close()
                     os.chmod(tqsubname, 0755)
-                except OSError as (errno, strerror):
+                except OSError:
                     print >> sys.stderr, "Could not create temporary qsub (%s)." % tqsubname
                     sys.exit(1)
 
