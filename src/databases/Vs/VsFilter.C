@@ -27,6 +27,36 @@
 #include "VsH5Attribute.h"
 #include "VsRegistry.h"
 
+//
+// These routines detect whether the file looks like a certain flavor of
+// HDF5 file reader. If the flavor is detected, we throw an exception so
+// the proper reader can be used instead of Vs.
+//
+
+static bool IsTyphonIO(int fileId)
+{
+    //
+    //See if file is TyphonIO/TyphonIO[v0] format
+    //
+    hid_t tio_root = H5Gopen(fileId, "/", H5P_DEFAULT);
+    hid_t tio_version = H5Aopen_name(tio_root, "TIO_version_major");
+    if (tio_version >= 0)
+    {
+        H5Aclose(tio_version);
+        H5Gclose(tio_root);
+        VsLog::errorLog() <<"VsH5File::DetectTyphonIO(): Cannot be a Vs file because it looks like a TyphonIO file." << std::endl;
+        return true;
+    }
+    if (tio_root >= 0) H5Gclose(tio_root);
+    hid_t tio_info = H5Gopen(fileId, "/TyphonIO_FileInfo", H5P_DEFAULT);
+    if (tio_info >= 0)
+    {
+        H5Gclose(tio_info);
+        VsLog::errorLog() <<"VsH5File::DetectTyphonIO(): Cannot be a Vs file because it looks like a TyphonIO file." << std::endl;
+        return true;
+    }
+    return false;
+}
 struct RECURSION_DATA {
   VsRegistry* registry;
   VsH5Object* parent;
@@ -44,7 +74,10 @@ VsH5File* VsFilter::readFile(VsRegistry* registry, std::string fileName) {
   }
   
   VsH5File* file = new VsH5File(registry, fileName, fileId);
- 
+  
+  //Check to see if its a TyphonIO fileI
+  if (IsTyphonIO(fileId)) return NULL;
+  
   RECURSION_DATA data;
   data.registry = registry;
   data.parent = NULL;
