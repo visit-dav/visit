@@ -177,7 +177,31 @@ static void DetectVisSchema(int fileId)
         if (version >=0) H5Aclose(version);
     }
 }
-
+static void DetectTyphonIO(int fileId)
+{
+    //
+    //See if file is TyphonIO[v0] format
+    //
+    hid_t tio_root = H5Gopen(fileId, "/");
+    hid_t tio_version = H5Aopen_name(tio_root, "TIO_version_major");
+    if (tio_version >= 0)
+    {
+        H5Aclose(tio_version);
+        H5Gclose(tio_root);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like a TyphonIO file.");
+    }
+    if (tio_root >= 0) H5Gclose(tio_root);
+    hid_t tio_info = H5Gopen(fileId, "/TyphonIO_FileInfo");
+    if (tio_info >= 0)
+    {
+        H5Gclose(tio_info);
+        H5Fclose(fileId);
+        EXCEPTION1(InvalidDBTypeException,
+                   "Cannot be a Pixie file because it looks like a TyphonIOv0 file.");
+    }    
+}
 // ****************************************************************************
 //  Method: avtPixie constructor
 //
@@ -427,6 +451,10 @@ avtPixieFileFormat::FreeUpResources(void)
 //   Brad Whitlock, Thu Oct 25 10:18:53 PDT 2012
 //   Move detection of other formats to helper functions.
 //
+//   Satheesh Maheswaran, Thu Oct 26 14:14:53 PDT 2012
+//   Added static function for detecting TyphonIO function
+//
+//
 // ****************************************************************************
 
 void
@@ -470,6 +498,7 @@ avtPixieFileFormat::Initialize()
             DetectPFLOTRAN(fileId);
             DetectUNIC(fileId);
             DetectVisSchema(fileId);
+            DetectTyphonIO(fileId);
         }
 
         // Populate the scalar variable list
