@@ -112,6 +112,18 @@ function build_pyside_component
     export PYTHONPATH=$VISIT_PYSIDE_DIR/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages:$PYTHONPATH
     export PKG_CONFIG_PATH=$VISIT_PYSIDE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
+    ALTERNATIVE_QT_INCLUDE_DIR="$QT_INCLUDE_DIR"
+    
+    # There is a bug on mac that using system qt
+    # where headers say they are in /usr/include
+    # when in reality most of the headers are in
+    # /Library/Frameworks (except for QtUiTools)
+    if [[ "Darwin" == `uname` && 
+          "$QT_LIB_DIR" == "/Library/Frameworks" &&
+          "$QT_INCLUDE_DIR" == "/usr/include" ]]; then
+        ALTERNATIVE_QT_INCLUDE_DIR="$QT_LIB_DIR"
+    fi
+
     cd $1
     mkdir -p build
     cd build #PySide 1.1.1 fails during in source build..
@@ -124,7 +136,7 @@ function build_pyside_component
         -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=TRUE\
         -DCMAKE_INSTALL_NAME_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib" \
         -DCMAKE_BUILD_TYPE:STRING=Release \
-        -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH="$QT_INCLUDE_DIR" \
+        -DALTERNATIVE_QT_INCLUDE_DIR:FILEPATH="$ALTERNATIVE_QT_INCLUDE_DIR" \
         -DQT_QMAKE_EXECUTABLE:FILEPATH="$QT_QMAKE_COMMAND" \
         -DENABLE_ICECC:BOOL=0 \
         -DShiboken_DIR:FILEPATH="$VISIT_PYSIDE_DIR/lib/"\
