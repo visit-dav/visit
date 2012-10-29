@@ -3237,9 +3237,18 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
     //iterate over list of expressions, insert each one into database
     std::map<std::string, std::string>::const_iterator iv;
     for (iv = expressions->begin(); iv != expressions->end(); ++iv) {
+
+      if (iv->first == "Rho") {
+        VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
+                          << "Ignoring expression " << iv->first << " = "
+                          << iv->second << " because it crashesVisIt." <<std::endl;
+        continue;
+      }
+
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Adding expression " << iv->first << " = "
                         << iv->second << std::endl;
+      
       Expression e;
       e.SetName (iv->first);
 
