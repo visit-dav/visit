@@ -48,6 +48,7 @@
 #include <map>
 #include <vector>
 
+class     DBOptionsAttributes;
 class     avtIntervalTree;
 class     avtIsolevelsSelection;
 class     avtPlaneSelection;
@@ -129,12 +130,15 @@ class KeyCompare {
 //    Eric Brugger, Thu Nov 12 17:18:29 PST 2009
 //    Removed the version data member since it is no longer used.
 //
+//    Hank Childs, Sun Oct 28 17:56:17 PDT 2012
+//    Add attributes for reading all times, cycles.
+//
 // ****************************************************************************
 
 class avtNek5000FileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtNek5000FileFormat(const char *);
+                       avtNek5000FileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtNek5000FileFormat();
 
     virtual void       RegisterDataSelections(
@@ -196,6 +200,8 @@ class avtNek5000FileFormat : public avtMTMDFileFormat
     std::vector<bool>    iTimestepsWithMesh;
     int                  curTimestep;
     int                  timestepToUseForMesh;
+
+    bool                 readOptionToGetAllTimes;
 
     // Cached data describing how to read data out of the file.
     FILE *fdMesh, *fdVar;

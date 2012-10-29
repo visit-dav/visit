@@ -16,12 +16,14 @@ SET(LIBM_SOURCES
 Nek5000MDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtNek5000FileFormat.C
+avtNek5000Options.C
 )
 
 SET(LIBE_SOURCES
 Nek5000EnginePluginInfo.C
 ${COMMON_SOURCES}
 avtNek5000FileFormat.C
+avtNek5000Options.C
 )
 
 INCLUDE_DIRECTORIES(
