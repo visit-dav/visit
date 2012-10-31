@@ -65,9 +65,9 @@
    struct tm *gmtime(), *localtime();
 #endif
 
-#if (defined(BSD4_4) || (defined(SYSV) && defined(MODERN)))
+#if (defined(BSD4_4) || (defined(SYSV) && defined(MODERN))) || defined(__linux__)
 #  include <unistd.h>           /* this includes utime.h on SGIs */
-#  if (defined(BSD4_4) || defined(linux) || defined(__GNU__))
+#  if (defined(BSD4_4) || defined(__linux__) || defined(__GNU__))
 #    include <utime.h>
 #    define GOT_UTIMBUF
 #  endif
