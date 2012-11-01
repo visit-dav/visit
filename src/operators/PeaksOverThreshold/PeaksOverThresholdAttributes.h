@@ -126,9 +126,11 @@ public:
     void SetMonthlyPercentile(const double *monthlyPercentile_);
     void SetDisplaySeason(SeasonType displaySeason_);
     void SetDisplayMonth(MonthType displayMonth_);
+    void SetDataYearBegin(int dataYearBegin_);
     void SetCutoff(float cutoff_);
     void SetComputeParamValues(bool computeParamValues_);
     void SetComputeCovariates(bool computeCovariates_);
+    void SetDataYearBegin(int dataYearBegin_);
     void SetCovariateReturnYears(const intVector &covariateReturnYears_);
     void SetCovariateModelLocation(bool covariateModelLocation_);
     void SetCovariateModelShape(bool covariateModelShape_);
@@ -147,9 +149,11 @@ public:
           double    *GetMonthlyPercentile();
     SeasonType      GetDisplaySeason() const;
     MonthType       GetDisplayMonth() const;
+    int             GetDataYearBegin() const;
     float           GetCutoff() const;
     bool            GetComputeParamValues() const;
     bool            GetComputeCovariates() const;
+    int             GetDataYearBegin() const;
     const intVector &GetCovariateReturnYears() const;
           intVector &GetCovariateReturnYears();
     bool            GetCovariateModelLocation() const;
@@ -197,9 +201,11 @@ public:
         ID_monthlyPercentile,
         ID_displaySeason,
         ID_displayMonth,
+        ID_dataYearBegin,
         ID_cutoff,
         ID_computeParamValues,
         ID_computeCovariates,
+        ID_dataYearBegin,
         ID_covariateReturnYears,
         ID_covariateModelLocation,
         ID_covariateModelShape,
@@ -218,9 +224,11 @@ private:
     double    monthlyPercentile[12];
     int       displaySeason;
     int       displayMonth;
+    int       dataYearBegin;
     float     cutoff;
     bool      computeParamValues;
     bool      computeCovariates;
+    int       dataYearBegin;
     intVector covariateReturnYears;
     bool      covariateModelLocation;
     bool      covariateModelShape;
@@ -234,6 +242,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbi*bbbbIdb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbii*bbbbIdb"
 
 #endif

@@ -209,6 +209,8 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
     str += tmpStr;
     if(atts->GetComputeParamValues())
@@ -220,6 +222,8 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
         SNPRINTF(tmpStr, 1000, "%scomputeCovariates = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%scomputeCovariates = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
     str += tmpStr;
     {   const intVector &covariateReturnYears = atts->GetCovariateReturnYears();
         SNPRINTF(tmpStr, 1000, "%scovariateReturnYears = (", prefix);
@@ -526,6 +530,30 @@ PeaksOverThresholdAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PeaksOverThresholdAttributes_SetDataYearBegin(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataYearBegin in the object.
+    obj->data->SetDataYearBegin((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetDataYearBegin(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataYearBegin()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetCutoff(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -594,6 +622,30 @@ PeaksOverThresholdAttributes_GetComputeCovariates(PyObject *self, PyObject *args
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetComputeCovariates()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetDataYearBegin(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataYearBegin in the object.
+    obj->data->SetDataYearBegin((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetDataYearBegin(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataYearBegin()));
     return retval;
 }
 
@@ -874,12 +926,16 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetDisplaySeason", PeaksOverThresholdAttributes_GetDisplaySeason, METH_VARARGS},
     {"SetDisplayMonth", PeaksOverThresholdAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", PeaksOverThresholdAttributes_GetDisplayMonth, METH_VARARGS},
+    {"SetDataYearBegin", PeaksOverThresholdAttributes_SetDataYearBegin, METH_VARARGS},
+    {"GetDataYearBegin", PeaksOverThresholdAttributes_GetDataYearBegin, METH_VARARGS},
     {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
     {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
     {"SetComputeParamValues", PeaksOverThresholdAttributes_SetComputeParamValues, METH_VARARGS},
     {"GetComputeParamValues", PeaksOverThresholdAttributes_GetComputeParamValues, METH_VARARGS},
     {"SetComputeCovariates", PeaksOverThresholdAttributes_SetComputeCovariates, METH_VARARGS},
     {"GetComputeCovariates", PeaksOverThresholdAttributes_GetComputeCovariates, METH_VARARGS},
+    {"SetDataYearBegin", PeaksOverThresholdAttributes_SetDataYearBegin, METH_VARARGS},
+    {"GetDataYearBegin", PeaksOverThresholdAttributes_GetDataYearBegin, METH_VARARGS},
     {"SetCovariateReturnYears", PeaksOverThresholdAttributes_SetCovariateReturnYears, METH_VARARGS},
     {"GetCovariateReturnYears", PeaksOverThresholdAttributes_GetCovariateReturnYears, METH_VARARGS},
     {"SetCovariateModelLocation", PeaksOverThresholdAttributes_SetCovariateModelLocation, METH_VARARGS},
@@ -977,12 +1033,16 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "DEC") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::DEC));
 
+    if(strcmp(name, "dataYearBegin") == 0)
+        return PeaksOverThresholdAttributes_GetDataYearBegin(self, NULL);
     if(strcmp(name, "cutoff") == 0)
         return PeaksOverThresholdAttributes_GetCutoff(self, NULL);
     if(strcmp(name, "computeParamValues") == 0)
         return PeaksOverThresholdAttributes_GetComputeParamValues(self, NULL);
     if(strcmp(name, "computeCovariates") == 0)
         return PeaksOverThresholdAttributes_GetComputeCovariates(self, NULL);
+    if(strcmp(name, "dataYearBegin") == 0)
+        return PeaksOverThresholdAttributes_GetDataYearBegin(self, NULL);
     if(strcmp(name, "covariateReturnYears") == 0)
         return PeaksOverThresholdAttributes_GetCovariateReturnYears(self, NULL);
     if(strcmp(name, "covariateModelLocation") == 0)
@@ -1025,12 +1085,16 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetDisplaySeason(self, tuple);
     else if(strcmp(name, "displayMonth") == 0)
         obj = PeaksOverThresholdAttributes_SetDisplayMonth(self, tuple);
+    else if(strcmp(name, "dataYearBegin") == 0)
+        obj = PeaksOverThresholdAttributes_SetDataYearBegin(self, tuple);
     else if(strcmp(name, "cutoff") == 0)
         obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
     else if(strcmp(name, "computeParamValues") == 0)
         obj = PeaksOverThresholdAttributes_SetComputeParamValues(self, tuple);
     else if(strcmp(name, "computeCovariates") == 0)
         obj = PeaksOverThresholdAttributes_SetComputeCovariates(self, tuple);
+    else if(strcmp(name, "dataYearBegin") == 0)
+        obj = PeaksOverThresholdAttributes_SetDataYearBegin(self, tuple);
     else if(strcmp(name, "covariateReturnYears") == 0)
         obj = PeaksOverThresholdAttributes_SetCovariateReturnYears(self, tuple);
     else if(strcmp(name, "covariateModelLocation") == 0)
