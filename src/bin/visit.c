@@ -919,6 +919,9 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Biagas, Fri May 4 14:05:27 PDT 2012 
  *   Return usingdev as an arg.
  *
+ *   Kathleen Biagas, Thu Nov  1 11:03:09 PDT 2012
+ *   Set PYTHONHOME so cli still works if Python installed on system.
+ *
  *****************************************************************************/
 
 std::string 
@@ -1119,6 +1122,8 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
     {
         sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\Python\\lib", 
                 visitpath, visitpath);
+        env.push_back(tmp);
+        sprintf(tmp, "PYTHONHOME=%s",visitpath);
         env.push_back(tmp);
     }
     else 
