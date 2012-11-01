@@ -667,7 +667,7 @@ avtRPOTFilter::CreateFinalOutput()
             newData->SetNumberOfTuples(atts.GetCovariateReturnYears().size());
             for (int y = 0; y < atts.GetCovariateReturnYears().size(); y++)
             {
-                newData->SetValue(y, atts.GetCovariateReturnYears()[y]);
+                newData->SetValue(y, atts.GetCovariateReturnYears()[y]-atts.GetDataYearBegin());
             }
             RI->AssignVTKDataArrayToRVariable(newData, newDataStr.c_str());
             newData->Delete();
@@ -678,8 +678,8 @@ avtRPOTFilter::CreateFinalOutput()
                 vtkIntArray *rvDiff = vtkIntArray::New();
                 rvDiff->SetNumberOfComponents(1);
                 rvDiff->SetNumberOfTuples(2);
-                rvDiff->SetValue(0, atts.GetRvDifferences()[0]);
-                rvDiff->SetValue(1, atts.GetRvDifferences()[1]);
+                rvDiff->SetValue(0, atts.GetRvDifferences()[0]-atts.GetDataYearBegin());
+                rvDiff->SetValue(1, atts.GetRvDifferences()[1]-atts.GetDataYearBegin());
                 RI->AssignVTKDataArrayToRVariable(rvDiff, rvDiffStr.c_str());
                 rvDiff->Delete();
             }

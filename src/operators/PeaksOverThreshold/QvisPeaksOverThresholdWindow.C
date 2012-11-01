@@ -238,68 +238,82 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
             this, SLOT(displayMonthChanged(int)));
     mainLayout->addWidget(displayMonth, 5,1);
 
+    dataYearBeginLabel = new QLabel(tr("Data year begin"), central);
+    mainLayout->addWidget(dataYearBeginLabel,6,0);
+    dataYearBegin = new QLineEdit(central);
+    connect(dataYearBegin, SIGNAL(returnPressed()),
+            this, SLOT(dataYearBeginProcessText()));
+    mainLayout->addWidget(dataYearBegin, 6,1);
+
     cutoffLabel = new QLabel(tr("Cutoff"), central);
-    mainLayout->addWidget(cutoffLabel,6,0);
+    mainLayout->addWidget(cutoffLabel,7,0);
     cutoff = new QLineEdit(central);
     connect(cutoff, SIGNAL(returnPressed()),
             this, SLOT(cutoffProcessText()));
-    mainLayout->addWidget(cutoff, 6,1);
+    mainLayout->addWidget(cutoff, 7,1);
 
     computeParamValues = new QCheckBox(tr("Output parameter values"), central);
     connect(computeParamValues, SIGNAL(toggled(bool)),
             this, SLOT(computeParamValuesChanged(bool)));
-    mainLayout->addWidget(computeParamValues, 7,0);
+    mainLayout->addWidget(computeParamValues, 8,0);
 
     computeCovariates = new QCheckBox(tr("Compute covariates"), central);
     connect(computeCovariates, SIGNAL(toggled(bool)),
             this, SLOT(computeCovariatesChanged(bool)));
-    mainLayout->addWidget(computeCovariates, 8,0);
+    mainLayout->addWidget(computeCovariates, 9,0);
+
+    dataYearBeginLabel = new QLabel(tr("Year begin"), central);
+    mainLayout->addWidget(dataYearBeginLabel,9,0);
+    dataYearBegin = new QLineEdit(central);
+    connect(dataYearBegin, SIGNAL(returnPressed()),
+            this, SLOT(dataYearBeginProcessText()));
+    mainLayout->addWidget(dataYearBegin, 9,1);
 
     covariateReturnYearsLabel = new QLabel(tr("Covariate return years"), central);
-    mainLayout->addWidget(covariateReturnYearsLabel,9,0);
+    mainLayout->addWidget(covariateReturnYearsLabel,10,0);
     covariateReturnYears = new QLineEdit(central);
     connect(covariateReturnYears, SIGNAL(returnPressed()),
             this, SLOT(covariateReturnYearsProcessText()));
-    mainLayout->addWidget(covariateReturnYears, 9,1);
+    mainLayout->addWidget(covariateReturnYears, 10,1);
 
     covariateModelLocation = new QCheckBox(tr("Covariate Location Model"), central);
     connect(covariateModelLocation, SIGNAL(toggled(bool)),
             this, SLOT(covariateModelLocationChanged(bool)));
-    mainLayout->addWidget(covariateModelLocation, 10,0);
+    mainLayout->addWidget(covariateModelLocation, 11,0);
 
     covariateModelShape = new QCheckBox(tr("Covariate Shape Model"), central);
     connect(covariateModelShape, SIGNAL(toggled(bool)),
             this, SLOT(covariateModelShapeChanged(bool)));
-    mainLayout->addWidget(covariateModelShape, 11,0);
+    mainLayout->addWidget(covariateModelShape, 12,0);
 
     covariateModelScale = new QCheckBox(tr("Covariate Scale Model"), central);
     connect(covariateModelScale, SIGNAL(toggled(bool)),
             this, SLOT(covariateModelScaleChanged(bool)));
-    mainLayout->addWidget(covariateModelScale, 12,0);
+    mainLayout->addWidget(covariateModelScale, 13,0);
 
     computeRVDifferences = new QCheckBox(tr("Compute RV differences"), central);
     connect(computeRVDifferences, SIGNAL(toggled(bool)),
             this, SLOT(computeRVDifferencesChanged(bool)));
-    mainLayout->addWidget(computeRVDifferences, 13,0);
+    mainLayout->addWidget(computeRVDifferences, 14,0);
 
     rvDifferencesLabel = new QLabel(tr("RV Differences"), central);
-    mainLayout->addWidget(rvDifferencesLabel,14,0);
+    mainLayout->addWidget(rvDifferencesLabel,15,0);
     rvDifferences = new QLineEdit(central);
     connect(rvDifferences, SIGNAL(returnPressed()),
             this, SLOT(rvDifferencesProcessText()));
-    mainLayout->addWidget(rvDifferences, 14,1);
+    mainLayout->addWidget(rvDifferences, 15,1);
 
     dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,15,0);
+    mainLayout->addWidget(dataScalingLabel,16,0);
     dataScaling = new QLineEdit(central);
     connect(dataScaling, SIGNAL(returnPressed()),
             this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 15,1);
+    mainLayout->addWidget(dataScaling, 16,1);
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 16,0);
+    mainLayout->addWidget(dumpData, 17,0);
 
 }
 
@@ -422,6 +436,9 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 displayMonthButtonGroup->button((int)atts->GetDisplayMonth())->setChecked(true);
             displayMonthButtonGroup->blockSignals(false);
             break;
+          case PeaksOverThresholdAttributes::ID_dataYearBegin:
+            dataYearBegin->setText(IntToQString(atts->GetDataYearBegin()));
+            break;
           case PeaksOverThresholdAttributes::ID_cutoff:
             cutoff->setText(FloatToQString(atts->GetCutoff()));
             break;
@@ -431,6 +448,18 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             computeParamValues->blockSignals(false);
             break;
           case PeaksOverThresholdAttributes::ID_computeCovariates:
+            if (atts->GetComputeCovariates() == true)
+            {
+                dataYearBegin->setEnabled(true);
+                if(dataYearBeginLabel)
+                    dataYearBeginLabel->setEnabled(true);
+            }
+            else
+            {
+                dataYearBegin->setEnabled(false);
+                if(dataYearBeginLabel)
+                    dataYearBeginLabel->setEnabled(false);
+            }
             if (atts->GetComputeCovariates() == true)
             {
                 covariateReturnYears->setEnabled(true);
@@ -478,6 +507,9 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             computeCovariates->blockSignals(true);
             computeCovariates->setChecked(atts->GetComputeCovariates());
             computeCovariates->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_dataYearBegin:
+            dataYearBegin->setText(IntToQString(atts->GetDataYearBegin()));
             break;
           case PeaksOverThresholdAttributes::ID_covariateReturnYears:
             covariateReturnYears->setText(IntsToQString(atts->GetCovariateReturnYears()));
@@ -592,6 +624,20 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do dataYearBegin
+    if(which_widget == PeaksOverThresholdAttributes::ID_dataYearBegin || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataYearBegin, val))
+            atts->SetDataYearBegin(val);
+        else
+        {
+            ResettingError(tr("Data year begin"),
+                IntToQString(atts->GetDataYearBegin()));
+            atts->SetDataYearBegin(atts->GetDataYearBegin());
+        }
+    }
+
     // Do cutoff
     if(which_widget == PeaksOverThresholdAttributes::ID_cutoff || doAll)
     {
@@ -603,6 +649,20 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("Cutoff"),
                 FloatToQString(atts->GetCutoff()));
             atts->SetCutoff(atts->GetCutoff());
+        }
+    }
+
+    // Do dataYearBegin
+    if(which_widget == PeaksOverThresholdAttributes::ID_dataYearBegin || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataYearBegin, val))
+            atts->SetDataYearBegin(val);
+        else
+        {
+            ResettingError(tr("Year begin"),
+                IntToQString(atts->GetDataYearBegin()));
+            atts->SetDataYearBegin(atts->GetDataYearBegin());
         }
     }
 
@@ -716,6 +776,14 @@ QvisPeaksOverThresholdWindow::displayMonthChanged(int val)
 
 
 void
+QvisPeaksOverThresholdWindow::dataYearBeginProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataYearBegin);
+    Apply();
+}
+
+
+void
 QvisPeaksOverThresholdWindow::cutoffProcessText()
 {
     GetCurrentValues(PeaksOverThresholdAttributes::ID_cutoff);
@@ -736,6 +804,14 @@ void
 QvisPeaksOverThresholdWindow::computeCovariatesChanged(bool val)
 {
     atts->SetComputeCovariates(val);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::dataYearBeginProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataYearBegin);
     Apply();
 }
 

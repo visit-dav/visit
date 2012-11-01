@@ -196,6 +196,7 @@ void PeaksOverThresholdAttributes::Init()
     cutoff = 0;
     computeParamValues = false;
     computeCovariates = false;
+    dataYearBegin = 1;
     covariateReturnYears.push_back(1);
     covariateModelLocation = false;
     covariateModelShape = false;
@@ -237,9 +238,11 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
 
     displaySeason = obj.displaySeason;
     displayMonth = obj.displayMonth;
+    dataYearBegin = obj.dataYearBegin;
     cutoff = obj.cutoff;
     computeParamValues = obj.computeParamValues;
     computeCovariates = obj.computeCovariates;
+    dataYearBegin = obj.dataYearBegin;
     covariateReturnYears = obj.covariateReturnYears;
     covariateModelLocation = obj.covariateModelLocation;
     covariateModelShape = obj.covariateModelShape;
@@ -428,9 +431,11 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
             monthlyPercentile_equal &&
             (displaySeason == obj.displaySeason) &&
             (displayMonth == obj.displayMonth) &&
+            (dataYearBegin == obj.dataYearBegin) &&
             (cutoff == obj.cutoff) &&
             (computeParamValues == obj.computeParamValues) &&
             (computeCovariates == obj.computeCovariates) &&
+            (dataYearBegin == obj.dataYearBegin) &&
             (covariateReturnYears == obj.covariateReturnYears) &&
             (covariateModelLocation == obj.covariateModelLocation) &&
             (covariateModelShape == obj.covariateModelShape) &&
@@ -588,9 +593,11 @@ PeaksOverThresholdAttributes::SelectAll()
     Select(ID_monthlyPercentile,      (void *)monthlyPercentile, 12);
     Select(ID_displaySeason,          (void *)&displaySeason);
     Select(ID_displayMonth,           (void *)&displayMonth);
+    Select(ID_dataYearBegin,          (void *)&dataYearBegin);
     Select(ID_cutoff,                 (void *)&cutoff);
     Select(ID_computeParamValues,     (void *)&computeParamValues);
     Select(ID_computeCovariates,      (void *)&computeCovariates);
+    Select(ID_dataYearBegin,          (void *)&dataYearBegin);
     Select(ID_covariateReturnYears,   (void *)&covariateReturnYears);
     Select(ID_covariateModelLocation, (void *)&covariateModelLocation);
     Select(ID_covariateModelShape,    (void *)&covariateModelShape);
@@ -667,6 +674,12 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("displayMonth", MonthType_ToString(displayMonth)));
     }
 
+    if(completeSave || !FieldsEqual(ID_dataYearBegin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dataYearBegin", dataYearBegin));
+    }
+
     if(completeSave || !FieldsEqual(ID_cutoff, &defaultObject))
     {
         addToParent = true;
@@ -683,6 +696,12 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("computeCovariates", computeCovariates));
+    }
+
+    if(completeSave || !FieldsEqual(ID_dataYearBegin, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dataYearBegin", dataYearBegin));
     }
 
     if(completeSave || !FieldsEqual(ID_covariateReturnYears, &defaultObject))
@@ -823,12 +842,16 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMonth(value);
         }
     }
+    if((node = searchNode->GetNode("dataYearBegin")) != 0)
+        SetDataYearBegin(node->AsInt());
     if((node = searchNode->GetNode("cutoff")) != 0)
         SetCutoff(node->AsFloat());
     if((node = searchNode->GetNode("computeParamValues")) != 0)
         SetComputeParamValues(node->AsBool());
     if((node = searchNode->GetNode("computeCovariates")) != 0)
         SetComputeCovariates(node->AsBool());
+    if((node = searchNode->GetNode("dataYearBegin")) != 0)
+        SetDataYearBegin(node->AsInt());
     if((node = searchNode->GetNode("covariateReturnYears")) != 0)
         SetCovariateReturnYears(node->AsIntVector());
     if((node = searchNode->GetNode("covariateModelLocation")) != 0)
@@ -898,6 +921,13 @@ PeaksOverThresholdAttributes::SetDisplayMonth(PeaksOverThresholdAttributes::Mont
 }
 
 void
+PeaksOverThresholdAttributes::SetDataYearBegin(int dataYearBegin_)
+{
+    dataYearBegin = dataYearBegin_;
+    Select(ID_dataYearBegin, (void *)&dataYearBegin);
+}
+
+void
 PeaksOverThresholdAttributes::SetCutoff(float cutoff_)
 {
     cutoff = cutoff_;
@@ -916,6 +946,13 @@ PeaksOverThresholdAttributes::SetComputeCovariates(bool computeCovariates_)
 {
     computeCovariates = computeCovariates_;
     Select(ID_computeCovariates, (void *)&computeCovariates);
+}
+
+void
+PeaksOverThresholdAttributes::SetDataYearBegin(int dataYearBegin_)
+{
+    dataYearBegin = dataYearBegin_;
+    Select(ID_dataYearBegin, (void *)&dataYearBegin);
 }
 
 void
@@ -1027,6 +1064,12 @@ PeaksOverThresholdAttributes::GetDisplayMonth() const
     return MonthType(displayMonth);
 }
 
+int
+PeaksOverThresholdAttributes::GetDataYearBegin() const
+{
+    return dataYearBegin;
+}
+
 float
 PeaksOverThresholdAttributes::GetCutoff() const
 {
@@ -1043,6 +1086,12 @@ bool
 PeaksOverThresholdAttributes::GetComputeCovariates() const
 {
     return computeCovariates;
+}
+
+int
+PeaksOverThresholdAttributes::GetDataYearBegin() const
+{
+    return dataYearBegin;
 }
 
 const intVector &
@@ -1163,9 +1212,11 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
     case ID_monthlyPercentile:      return "monthlyPercentile";
     case ID_displaySeason:          return "displaySeason";
     case ID_displayMonth:           return "displayMonth";
+    case ID_dataYearBegin:          return "dataYearBegin";
     case ID_cutoff:                 return "cutoff";
     case ID_computeParamValues:     return "computeParamValues";
     case ID_computeCovariates:      return "computeCovariates";
+    case ID_dataYearBegin:          return "dataYearBegin";
     case ID_covariateReturnYears:   return "covariateReturnYears";
     case ID_covariateModelLocation: return "covariateModelLocation";
     case ID_covariateModelShape:    return "covariateModelShape";
@@ -1204,9 +1255,11 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
     case ID_monthlyPercentile:      return FieldType_doubleArray;
     case ID_displaySeason:          return FieldType_enum;
     case ID_displayMonth:           return FieldType_enum;
+    case ID_dataYearBegin:          return FieldType_int;
     case ID_cutoff:                 return FieldType_float;
     case ID_computeParamValues:     return FieldType_bool;
     case ID_computeCovariates:      return FieldType_bool;
+    case ID_dataYearBegin:          return FieldType_int;
     case ID_covariateReturnYears:   return FieldType_intVector;
     case ID_covariateModelLocation: return FieldType_bool;
     case ID_covariateModelShape:    return FieldType_bool;
@@ -1245,9 +1298,11 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
     case ID_monthlyPercentile:      return "doubleArray";
     case ID_displaySeason:          return "enum";
     case ID_displayMonth:           return "enum";
+    case ID_dataYearBegin:          return "int";
     case ID_cutoff:                 return "float";
     case ID_computeParamValues:     return "bool";
     case ID_computeCovariates:      return "bool";
+    case ID_dataYearBegin:          return "int";
     case ID_covariateReturnYears:   return "intVector";
     case ID_covariateModelLocation: return "bool";
     case ID_covariateModelShape:    return "bool";
@@ -1322,6 +1377,11 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
         retval = (displayMonth == obj.displayMonth);
         }
         break;
+    case ID_dataYearBegin:
+        {  // new scope
+        retval = (dataYearBegin == obj.dataYearBegin);
+        }
+        break;
     case ID_cutoff:
         {  // new scope
         retval = (cutoff == obj.cutoff);
@@ -1335,6 +1395,11 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_computeCovariates:
         {  // new scope
         retval = (computeCovariates == obj.computeCovariates);
+        }
+        break;
+    case ID_dataYearBegin:
+        {  // new scope
+        retval = (dataYearBegin == obj.dataYearBegin);
         }
         break;
     case ID_covariateReturnYears:
