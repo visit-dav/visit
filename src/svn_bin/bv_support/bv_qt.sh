@@ -260,6 +260,10 @@ function build_qt
         if [[ ${VER%%.*} -ge 10 ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -cocoa"
         fi
+
+        # webkit causes the linker on Hank's mac to run out of memory
+        EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
+
         # Figure out whether we need to build 64-bit version of Qt
         echo "int main() {}" >> arch_test.c
         ${C_COMPILER} arch_test.c -o arch_test
