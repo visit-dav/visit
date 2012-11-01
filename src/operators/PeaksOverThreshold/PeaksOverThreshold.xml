@@ -67,6 +67,9 @@
       <Field name="computeCovariates" label="Compute covariates" type="bool">
         false
       </Field>
+      <Field name="dataYearBegin" label="Year begin" type="int" enabler="computeCovariates:true">
+        1
+      </Field>
       <Field name="covariateReturnYears" label="Covariate return years" type="intVector" enabler="computeCovariates:true">
         1
       </Field>

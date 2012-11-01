@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 17;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -116,6 +116,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
+        dataYearBegin = 1;
         covariateReturnYears = new Vector();
         covariateReturnYears.addElement(new Integer(1));
         covariateModelLocation = false;
@@ -158,6 +159,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
+        dataYearBegin = 1;
         covariateReturnYears = new Vector();
         covariateReturnYears.addElement(new Integer(1));
         covariateModelLocation = false;
@@ -192,6 +194,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = obj.cutoff;
         computeParamValues = obj.computeParamValues;
         computeCovariates = obj.computeCovariates;
+        dataYearBegin = obj.dataYearBegin;
         covariateReturnYears = new Vector();
         for(i = 0; i < obj.covariateReturnYears.size(); ++i)
         {
@@ -260,6 +263,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 (cutoff == obj.cutoff) &&
                 (computeParamValues == obj.computeParamValues) &&
                 (computeCovariates == obj.computeCovariates) &&
+                (dataYearBegin == obj.dataYearBegin) &&
                 covariateReturnYears_equal &&
                 (covariateModelLocation == obj.covariateModelLocation) &&
                 (covariateModelShape == obj.covariateModelShape) &&
@@ -341,60 +345,66 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(8);
     }
 
+    public void SetDataYearBegin(int dataYearBegin_)
+    {
+        dataYearBegin = dataYearBegin_;
+        Select(9);
+    }
+
     public void SetCovariateReturnYears(Vector covariateReturnYears_)
     {
         covariateReturnYears = covariateReturnYears_;
-        Select(9);
+        Select(10);
     }
 
     public void SetCovariateModelLocation(boolean covariateModelLocation_)
     {
         covariateModelLocation = covariateModelLocation_;
-        Select(10);
+        Select(11);
     }
 
     public void SetCovariateModelShape(boolean covariateModelShape_)
     {
         covariateModelShape = covariateModelShape_;
-        Select(11);
+        Select(12);
     }
 
     public void SetCovariateModelScale(boolean covariateModelScale_)
     {
         covariateModelScale = covariateModelScale_;
-        Select(12);
+        Select(13);
     }
 
     public void SetComputeRVDifferences(boolean computeRVDifferences_)
     {
         computeRVDifferences = computeRVDifferences_;
-        Select(13);
+        Select(14);
     }
 
     public void SetRvDifferences(int[] rvDifferences_)
     {
         rvDifferences[0] = rvDifferences_[0];
         rvDifferences[1] = rvDifferences_[1];
-        Select(14);
+        Select(15);
     }
 
     public void SetRvDifferences(int e0, int e1)
     {
         rvDifferences[0] = e0;
         rvDifferences[1] = e1;
-        Select(14);
+        Select(15);
     }
 
     public void SetDataScaling(double dataScaling_)
     {
         dataScaling = dataScaling_;
-        Select(15);
+        Select(16);
     }
 
     public void SetDumpData(boolean dumpData_)
     {
         dumpData = dumpData_;
-        Select(16);
+        Select(17);
     }
 
     // Property getting methods
@@ -407,6 +417,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public float    GetCutoff() { return cutoff; }
     public boolean  GetComputeParamValues() { return computeParamValues; }
     public boolean  GetComputeCovariates() { return computeCovariates; }
+    public int      GetDataYearBegin() { return dataYearBegin; }
     public Vector   GetCovariateReturnYears() { return covariateReturnYears; }
     public boolean  GetCovariateModelLocation() { return covariateModelLocation; }
     public boolean  GetCovariateModelShape() { return covariateModelShape; }
@@ -438,20 +449,22 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(WriteSelect(8, buf))
             buf.WriteBool(computeCovariates);
         if(WriteSelect(9, buf))
-            buf.WriteIntVector(covariateReturnYears);
+            buf.WriteInt(dataYearBegin);
         if(WriteSelect(10, buf))
-            buf.WriteBool(covariateModelLocation);
+            buf.WriteIntVector(covariateReturnYears);
         if(WriteSelect(11, buf))
-            buf.WriteBool(covariateModelShape);
+            buf.WriteBool(covariateModelLocation);
         if(WriteSelect(12, buf))
-            buf.WriteBool(covariateModelScale);
+            buf.WriteBool(covariateModelShape);
         if(WriteSelect(13, buf))
-            buf.WriteBool(computeRVDifferences);
+            buf.WriteBool(covariateModelScale);
         if(WriteSelect(14, buf))
-            buf.WriteIntArray(rvDifferences);
+            buf.WriteBool(computeRVDifferences);
         if(WriteSelect(15, buf))
-            buf.WriteDouble(dataScaling);
+            buf.WriteIntArray(rvDifferences);
         if(WriteSelect(16, buf))
+            buf.WriteDouble(dataScaling);
+        if(WriteSelect(17, buf))
             buf.WriteBool(dumpData);
     }
 
@@ -487,27 +500,30 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             SetComputeCovariates(buf.ReadBool());
             break;
         case 9:
-            SetCovariateReturnYears(buf.ReadIntVector());
+            SetDataYearBegin(buf.ReadInt());
             break;
         case 10:
-            SetCovariateModelLocation(buf.ReadBool());
+            SetCovariateReturnYears(buf.ReadIntVector());
             break;
         case 11:
-            SetCovariateModelShape(buf.ReadBool());
+            SetCovariateModelLocation(buf.ReadBool());
             break;
         case 12:
-            SetCovariateModelScale(buf.ReadBool());
+            SetCovariateModelShape(buf.ReadBool());
             break;
         case 13:
-            SetComputeRVDifferences(buf.ReadBool());
+            SetCovariateModelScale(buf.ReadBool());
             break;
         case 14:
-            SetRvDifferences(buf.ReadIntArray());
+            SetComputeRVDifferences(buf.ReadBool());
             break;
         case 15:
-            SetDataScaling(buf.ReadDouble());
+            SetRvDifferences(buf.ReadIntArray());
             break;
         case 16:
+            SetDataScaling(buf.ReadDouble());
+            break;
+        case 17:
             SetDumpData(buf.ReadBool());
             break;
         }
@@ -566,6 +582,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         str = str + floatToString("cutoff", cutoff, indent) + "\n";
         str = str + boolToString("computeParamValues", computeParamValues, indent) + "\n";
         str = str + boolToString("computeCovariates", computeCovariates, indent) + "\n";
+        str = str + intToString("dataYearBegin", dataYearBegin, indent) + "\n";
         str = str + intVectorToString("covariateReturnYears", covariateReturnYears, indent) + "\n";
         str = str + boolToString("covariateModelLocation", covariateModelLocation, indent) + "\n";
         str = str + boolToString("covariateModelShape", covariateModelShape, indent) + "\n";
@@ -588,6 +605,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private float    cutoff;
     private boolean  computeParamValues;
     private boolean  computeCovariates;
+    private int      dataYearBegin;
     private Vector   covariateReturnYears; // vector of Integer objects
     private boolean  covariateModelLocation;
     private boolean  covariateModelShape;

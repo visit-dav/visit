@@ -95,6 +95,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void cutoffProcessText();
     void computeParamValuesChanged(bool val);
     void computeCovariatesChanged(bool val);
+    void dataYearBeginProcessText();
     void covariateReturnYearsProcessText();
     void covariateModelLocationChanged(bool val);
     void covariateModelShapeChanged(bool val);
@@ -116,6 +117,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLineEdit *cutoff;
     QCheckBox *computeParamValues;
     QCheckBox *computeCovariates;
+    QLineEdit *dataYearBegin;
     QLineEdit *covariateReturnYears;
     QCheckBox *covariateModelLocation;
     QCheckBox *covariateModelShape;
@@ -131,6 +133,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLabel *displaySeasonLabel;
     QLabel *displayMonthLabel;
     QLabel *cutoffLabel;
+    QLabel *dataYearBeginLabel;
     QLabel *covariateReturnYearsLabel;
     QLabel *rvDifferencesLabel;
     QLabel *dataScalingLabel;
