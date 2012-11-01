@@ -80,6 +80,9 @@ void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
 //    Tom Fogal, Tue Nov 24 11:25:39 MST 2009
 //    Make sure to set offscreen before other initialization.
 //
+//    Kathleen Biagas, Wed Oct 31 17:29:26 PDT 2012
+//    'vtkWin32OpenGLRenderWindow' needs OffscreenRendering set, too.
+//
 // ****************************************************************************
 
 VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
@@ -93,7 +96,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
-    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow")
+    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow" ||
+       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
         renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
 }
