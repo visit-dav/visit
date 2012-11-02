@@ -26,6 +26,16 @@
         NOV
         DEC
       </Enum>
+      <Field name="dataYearBegin" label="Year begin" type="int">
+        1
+      </Field>
+      <Field name="dataAnalysisYearRangeEnabled" label="Select year range" type="bool">
+        false
+      </Field>
+      <Field name="dataAnalysisYearRange" label="Analysis year range" type="intArray" length="2" enabler="dataAnalysisYearRangeEnabled:true">
+        0
+        0
+      </Field>
       <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
         ANNUAL
       </Field>
@@ -66,9 +76,6 @@
       </Field>
       <Field name="computeCovariates" label="Compute covariates" type="bool">
         false
-      </Field>
-      <Field name="dataYearBegin" label="Year begin" type="int" enabler="computeCovariates:true">
-        1
       </Field>
       <Field name="covariateReturnYears" label="Covariate return years" type="intVector" enabler="computeCovariates:true">
         1

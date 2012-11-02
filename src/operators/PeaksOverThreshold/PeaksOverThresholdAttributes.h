@@ -114,12 +114,16 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectDataAnalysisYearRange();
     void SelectSeasonalPercentile();
     void SelectMonthlyPercentile();
     void SelectCovariateReturnYears();
     void SelectRvDifferences();
 
     // Property setting methods
+    void SetDataYearBegin(int dataYearBegin_);
+    void SetDataAnalysisYearRangeEnabled(bool dataAnalysisYearRangeEnabled_);
+    void SetDataAnalysisYearRange(const int *dataAnalysisYearRange_);
     void SetAggregation(AggregationType aggregation_);
     void SetAnnualPercentile(double annualPercentile_);
     void SetSeasonalPercentile(const double *seasonalPercentile_);
@@ -129,7 +133,6 @@ public:
     void SetCutoff(float cutoff_);
     void SetComputeParamValues(bool computeParamValues_);
     void SetComputeCovariates(bool computeCovariates_);
-    void SetDataYearBegin(int dataYearBegin_);
     void SetCovariateReturnYears(const intVector &covariateReturnYears_);
     void SetCovariateModelLocation(bool covariateModelLocation_);
     void SetCovariateModelShape(bool covariateModelShape_);
@@ -140,6 +143,10 @@ public:
     void SetDumpData(bool dumpData_);
 
     // Property getting methods
+    int             GetDataYearBegin() const;
+    bool            GetDataAnalysisYearRangeEnabled() const;
+    const int       *GetDataAnalysisYearRange() const;
+          int       *GetDataAnalysisYearRange();
     AggregationType GetAggregation() const;
     double          GetAnnualPercentile() const;
     const double    *GetSeasonalPercentile() const;
@@ -151,7 +158,6 @@ public:
     float           GetCutoff() const;
     bool            GetComputeParamValues() const;
     bool            GetComputeCovariates() const;
-    int             GetDataYearBegin() const;
     const intVector &GetCovariateReturnYears() const;
           intVector &GetCovariateReturnYears();
     bool            GetCovariateModelLocation() const;
@@ -193,7 +199,10 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_aggregation = 0,
+        ID_dataYearBegin = 0,
+        ID_dataAnalysisYearRangeEnabled,
+        ID_dataAnalysisYearRange,
+        ID_aggregation,
         ID_annualPercentile,
         ID_seasonalPercentile,
         ID_monthlyPercentile,
@@ -202,7 +211,6 @@ public:
         ID_cutoff,
         ID_computeParamValues,
         ID_computeCovariates,
-        ID_dataYearBegin,
         ID_covariateReturnYears,
         ID_covariateModelLocation,
         ID_covariateModelShape,
@@ -215,6 +223,9 @@ public:
     };
 
 private:
+    int       dataYearBegin;
+    bool      dataAnalysisYearRangeEnabled;
+    int       dataAnalysisYearRange[2];
     int       aggregation;
     double    annualPercentile;
     double    seasonalPercentile[4];
@@ -224,7 +235,6 @@ private:
     float     cutoff;
     bool      computeParamValues;
     bool      computeCovariates;
-    int       dataYearBegin;
     intVector covariateReturnYears;
     bool      covariateModelLocation;
     bool      covariateModelShape;
@@ -238,6 +248,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "idDDiifbbii*bbbbIdb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibIidDDiifbbi*bbbbIdb"
 
 #endif

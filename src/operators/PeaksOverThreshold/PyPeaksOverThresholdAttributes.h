@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PEAKSOVERTHRESHOLDATTRIBUTES_NMETH 38
+#define PEAKSOVERTHRESHOLDATTRIBUTES_NMETH 42
 void           PyPeaksOverThresholdAttributes_StartUp(PeaksOverThresholdAttributes *subj, void *data);
 void           PyPeaksOverThresholdAttributes_CloseDown();
 PyMethodDef *  PyPeaksOverThresholdAttributes_GetMethodTable(int *nMethods);
