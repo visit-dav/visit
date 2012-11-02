@@ -130,14 +130,24 @@ avtPseudocolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //  Creation:   October 29, 2004 
 //
 //  Modifications:
-//
+//    Kathleen Biagas, Fri Nov  2 10:23:11 PDT 2012
+//    Ensure primaryVariable is still the active var, use of expression for
+//    pointVar may have changed the active var.
+//  
 // ****************************************************************************
 
 void
 avtPseudocolorFilter::UpdateDataObjectInfo(void)
 {
-    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
-    GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.SetTopologicalDimension(0);
+    outAtts.SetKeepNodeZoneArrays(keepNodeZone);
+
+    if (!primaryVar.empty() && outAtts.ValidActiveVariable())
+    {
+        if (outAtts.GetVariableName() != primaryVar)
+            outAtts.SetActiveVariable(primaryVar.c_str());
+    }
 }
 
 
@@ -157,6 +167,9 @@ avtPseudocolorFilter::UpdateDataObjectInfo(void)
 //    Kathleen Bonnell, Tue Jul 14 13:42:37 PDT 2009
 //    Added test for MayRequireNodes for turning Node numbers on.
 //
+//    Kathleen Biagas, Fri Nov  2 10:24:21 PDT 2012
+//    Retrieve the active variable.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -170,13 +183,15 @@ avtPseudocolorFilter::ModifyContract(avtContract_p contract)
     avtDataRequest_p dataRequest = new avtDataRequest(
                                        contract->GetDataRequest());
 
+    primaryVar = dataRequest->GetVariable();
+
     //
     // Find out if we need to add a secondary variable.
     //
     if (plotAtts.GetPointSizeVarEnabled() && 
         pointVar != "default" &&
         pointVar != "\0" &&
-        pointVar != dataRequest->GetVariable() &&
+        pointVar != primaryVar &&
         !dataRequest->HasSecondaryVariable(pointVar.c_str()))
     {
         rv->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());

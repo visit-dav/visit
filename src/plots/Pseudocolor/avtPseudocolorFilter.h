@@ -62,6 +62,9 @@
 //    Kathleen Bonnell, Fri Nov 12 11:35:11 PST 2004
 //    Added PlotAtts.
 //
+//    Kathleen Biagas, Fri Nov  2 10:25:25 PDT 2012
+//    Added primaryVar.
+//
 // ****************************************************************************
 
 class avtPseudocolorFilter : public avtDataTreeIterator
@@ -84,6 +87,7 @@ class avtPseudocolorFilter : public avtDataTreeIterator
                               ModifyContract(avtContract_p);
   private:
     PseudocolorAttributes     plotAtts;
+    std::string               primaryVar;
 };
 
 
