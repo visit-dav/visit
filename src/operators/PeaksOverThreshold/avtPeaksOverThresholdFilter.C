@@ -53,6 +53,7 @@
 #include <DebugStream.h>
 #include <InstallationFunctions.h>
 #include <string>
+#include <InvalidFilesException.h>
 
 // ****************************************************************************
 //  Method: avtPeaksOverThresholdFilter constructor
@@ -151,6 +152,19 @@ avtPeaksOverThresholdFilter::Equivalent(const AttributeGroup *a)
 void
 avtPeaksOverThresholdFilter::Execute()
 {
+    if (atts.GetDataAnalysisYearRangeEnabled())
+    {
+        if (atts.GetDataAnalysisYearRange()[0] >= atts.GetDataAnalysisYearRange()[1])
+        {
+            EXCEPTION1(ImproperUseException, "Invalid data analysis year range.");
+        }
+        if (atts.GetDataAnalysisYearRange()[0] < atts.GetDataYearBegin() ||
+            atts.GetDataAnalysisYearRange()[1] < atts.GetDataYearBegin())
+        {
+            EXCEPTION1(ImproperUseException, "Invalid data analysis year range.");
+        }
+            
+    }
     avtRPOTFilter *f = new avtRPOTFilter();
 
     std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
