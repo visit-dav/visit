@@ -325,6 +325,13 @@ avtRPOTFilter::Initialize()
     int t1 = GetEndTime();
     numTimes = t1-t0 + 1;
     numYears = numTimes/365;
+    if (atts.GetDataAnalysisYearRangeEnabled())
+    {
+        numYears = atts.GetDataAnalysisYearRange()[1]-atts.GetDataAnalysisYearRange()[0]+1;
+        numTimes = numYears*365;
+    }
+    //cout<<"numTimes = "<<numTimes<<" : numYears = "<<numYears<<endl;
+
 
     //How to compute maxes.
     //Monthly maxes.
@@ -411,6 +418,18 @@ avtRPOTFilter::Execute()
     debug1<<"avtRPOTFilter::Execute() time= "<<currentTime<<endl;
 
     Initialize();
+    
+    if (atts.GetDataAnalysisYearRangeEnabled())
+    {
+        int currYear = atts.GetDataYearBegin()+(currentTime/365);
+        if (currYear < atts.GetDataAnalysisYearRange()[0] ||
+            currYear > atts.GetDataAnalysisYearRange()[1])
+        {
+            //cout<<"Skipping "<<currentTime<<" : year= "<<currYear<<endl;
+            return;
+        }
+    }
+    
     int nleaves;
     vtkDataSet **leaves = GetInputDataTree()->GetAllLeaves(nleaves);
     vtkDataSet *ds = leaves[0];

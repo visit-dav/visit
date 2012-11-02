@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 18;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 20;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -91,6 +91,11 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     {
         super(PeaksOverThresholdAttributes_numAdditionalAtts);
 
+        dataYearBegin = 1;
+        dataAnalysisYearRangeEnabled = false;
+        dataAnalysisYearRange = new int[2];
+        dataAnalysisYearRange[0] = 0;
+        dataAnalysisYearRange[1] = 0;
         aggregation = AGGREGATIONTYPE_ANNUAL;
         annualPercentile = 0.9;
         seasonalPercentile = new double[4];
@@ -117,7 +122,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
-        dataYearBegin = 1;
         covariateReturnYears = new Vector();
         covariateReturnYears.addElement(new Integer(1));
         covariateModelLocation = false;
@@ -135,6 +139,11 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     {
         super(PeaksOverThresholdAttributes_numAdditionalAtts + nMoreFields);
 
+        dataYearBegin = 1;
+        dataAnalysisYearRangeEnabled = false;
+        dataAnalysisYearRange = new int[2];
+        dataAnalysisYearRange[0] = 0;
+        dataAnalysisYearRange[1] = 0;
         aggregation = AGGREGATIONTYPE_ANNUAL;
         annualPercentile = 0.9;
         seasonalPercentile = new double[4];
@@ -161,7 +170,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
-        dataYearBegin = 1;
         covariateReturnYears = new Vector();
         covariateReturnYears.addElement(new Integer(1));
         covariateModelLocation = false;
@@ -181,6 +189,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
         int i;
 
+        dataYearBegin = obj.dataYearBegin;
+        dataAnalysisYearRangeEnabled = obj.dataAnalysisYearRangeEnabled;
+        dataAnalysisYearRange = new int[2];
+        dataAnalysisYearRange[0] = obj.dataAnalysisYearRange[0];
+        dataAnalysisYearRange[1] = obj.dataAnalysisYearRange[1];
+
         aggregation = obj.aggregation;
         annualPercentile = obj.annualPercentile;
         seasonalPercentile = new double[4];
@@ -197,7 +211,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         cutoff = obj.cutoff;
         computeParamValues = obj.computeParamValues;
         computeCovariates = obj.computeCovariates;
-        dataYearBegin = obj.dataYearBegin;
         covariateReturnYears = new Vector();
         for(i = 0; i < obj.covariateReturnYears.size(); ++i)
         {
@@ -232,6 +245,11 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     {
         int i;
 
+        // Compare the dataAnalysisYearRange arrays.
+        boolean dataAnalysisYearRange_equal = true;
+        for(i = 0; i < 2 && dataAnalysisYearRange_equal; ++i)
+            dataAnalysisYearRange_equal = (dataAnalysisYearRange[i] == obj.dataAnalysisYearRange[i]);
+
         // Compare the seasonalPercentile arrays.
         boolean seasonalPercentile_equal = true;
         for(i = 0; i < 4 && seasonalPercentile_equal; ++i)
@@ -257,7 +275,10 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             rvDifferences_equal = (rvDifferences[i] == obj.rvDifferences[i]);
 
         // Create the return value
-        return ((aggregation == obj.aggregation) &&
+        return ((dataYearBegin == obj.dataYearBegin) &&
+                (dataAnalysisYearRangeEnabled == obj.dataAnalysisYearRangeEnabled) &&
+                dataAnalysisYearRange_equal &&
+                (aggregation == obj.aggregation) &&
                 (annualPercentile == obj.annualPercentile) &&
                 seasonalPercentile_equal &&
                 monthlyPercentile_equal &&
@@ -267,7 +288,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 (cutoff == obj.cutoff) &&
                 (computeParamValues == obj.computeParamValues) &&
                 (computeCovariates == obj.computeCovariates) &&
-                (dataYearBegin == obj.dataYearBegin) &&
                 covariateReturnYears_equal &&
                 (covariateModelLocation == obj.covariateModelLocation) &&
                 (covariateModelShape == obj.covariateModelShape) &&
@@ -282,16 +302,42 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public String GetVersion() { return "1.0"; }
 
     // Property setting methods
+    public void SetDataYearBegin(int dataYearBegin_)
+    {
+        dataYearBegin = dataYearBegin_;
+        Select(0);
+    }
+
+    public void SetDataAnalysisYearRangeEnabled(boolean dataAnalysisYearRangeEnabled_)
+    {
+        dataAnalysisYearRangeEnabled = dataAnalysisYearRangeEnabled_;
+        Select(1);
+    }
+
+    public void SetDataAnalysisYearRange(int[] dataAnalysisYearRange_)
+    {
+        dataAnalysisYearRange[0] = dataAnalysisYearRange_[0];
+        dataAnalysisYearRange[1] = dataAnalysisYearRange_[1];
+        Select(2);
+    }
+
+    public void SetDataAnalysisYearRange(int e0, int e1)
+    {
+        dataAnalysisYearRange[0] = e0;
+        dataAnalysisYearRange[1] = e1;
+        Select(2);
+    }
+
     public void SetAggregation(int aggregation_)
     {
         aggregation = aggregation_;
-        Select(0);
+        Select(3);
     }
 
     public void SetAnnualPercentile(double annualPercentile_)
     {
         annualPercentile = annualPercentile_;
-        Select(1);
+        Select(4);
     }
 
     public void SetSeasonalPercentile(double[] seasonalPercentile_)
@@ -300,7 +346,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         seasonalPercentile[1] = seasonalPercentile_[1];
         seasonalPercentile[2] = seasonalPercentile_[2];
         seasonalPercentile[3] = seasonalPercentile_[3];
-        Select(2);
+        Select(5);
     }
 
     public void SetSeasonalPercentile(double e0, double e1, double e2, double e3)
@@ -309,26 +355,26 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         seasonalPercentile[1] = e1;
         seasonalPercentile[2] = e2;
         seasonalPercentile[3] = e3;
-        Select(2);
+        Select(5);
     }
 
     public void SetMonthlyPercentile(double[] monthlyPercentile_)
     {
         for(int i = 0; i < 12; ++i)
              monthlyPercentile[i] = monthlyPercentile_[i];
-        Select(3);
+        Select(6);
     }
 
     public void SetDisplaySeason(int displaySeason_)
     {
         displaySeason = displaySeason_;
-        Select(4);
+        Select(7);
     }
 
     public void SetDisplayMonth(int displayMonth_)
     {
         displayMonth = displayMonth_;
-        Select(5);
+        Select(8);
     }
 
     public void SetDataYearBegin(int dataYearBegin_)
@@ -340,84 +386,81 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public void SetCutoff(float cutoff_)
     {
         cutoff = cutoff_;
-        Select(7);
+        Select(9);
     }
 
     public void SetComputeParamValues(boolean computeParamValues_)
     {
         computeParamValues = computeParamValues_;
-        Select(8);
+        Select(10);
     }
 
     public void SetComputeCovariates(boolean computeCovariates_)
     {
         computeCovariates = computeCovariates_;
-        Select(9);
-    }
-
-    public void SetDataYearBegin(int dataYearBegin_)
-    {
-        dataYearBegin = dataYearBegin_;
-        Select(9);
+        Select(11);
     }
 
     public void SetCovariateReturnYears(Vector covariateReturnYears_)
     {
         covariateReturnYears = covariateReturnYears_;
-        Select(10);
+        Select(12);
     }
 
     public void SetCovariateModelLocation(boolean covariateModelLocation_)
     {
         covariateModelLocation = covariateModelLocation_;
-        Select(11);
+        Select(13);
     }
 
     public void SetCovariateModelShape(boolean covariateModelShape_)
     {
         covariateModelShape = covariateModelShape_;
-        Select(12);
+        Select(14);
     }
 
     public void SetCovariateModelScale(boolean covariateModelScale_)
     {
         covariateModelScale = covariateModelScale_;
-        Select(13);
+        Select(15);
     }
 
     public void SetComputeRVDifferences(boolean computeRVDifferences_)
     {
         computeRVDifferences = computeRVDifferences_;
-        Select(14);
+        Select(16);
     }
 
     public void SetRvDifferences(int[] rvDifferences_)
     {
         rvDifferences[0] = rvDifferences_[0];
         rvDifferences[1] = rvDifferences_[1];
-        Select(15);
+        Select(17);
     }
 
     public void SetRvDifferences(int e0, int e1)
     {
         rvDifferences[0] = e0;
         rvDifferences[1] = e1;
-        Select(15);
+        Select(17);
     }
 
     public void SetDataScaling(double dataScaling_)
     {
         dataScaling = dataScaling_;
-        Select(16);
+        Select(18);
     }
 
     public void SetDumpData(boolean dumpData_)
     {
         dumpData = dumpData_;
-        Select(17);
+        Select(19);
     }
 
     // Property getting methods
+    public int      GetDataYearBegin() { return dataYearBegin; }
+    public boolean  GetDataAnalysisYearRangeEnabled() { return dataAnalysisYearRangeEnabled; }
+    public int[]    GetDataAnalysisYearRange() { return dataAnalysisYearRange; }
     public int      GetAggregation() { return aggregation; }
     public double   GetAnnualPercentile() { return annualPercentile; }
     public double[] GetSeasonalPercentile() { return seasonalPercentile; }
@@ -428,7 +471,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public float    GetCutoff() { return cutoff; }
     public boolean  GetComputeParamValues() { return computeParamValues; }
     public boolean  GetComputeCovariates() { return computeCovariates; }
-    public int      GetDataYearBegin() { return dataYearBegin; }
     public Vector   GetCovariateReturnYears() { return covariateReturnYears; }
     public boolean  GetCovariateModelLocation() { return covariateModelLocation; }
     public boolean  GetCovariateModelShape() { return covariateModelShape; }
@@ -442,42 +484,44 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteInt(aggregation);
+            buf.WriteInt(dataYearBegin);
         if(WriteSelect(1, buf))
-            buf.WriteDouble(annualPercentile);
+            buf.WriteBool(dataAnalysisYearRangeEnabled);
         if(WriteSelect(2, buf))
-            buf.WriteDoubleArray(seasonalPercentile);
+            buf.WriteIntArray(dataAnalysisYearRange);
         if(WriteSelect(3, buf))
-            buf.WriteDoubleArray(monthlyPercentile);
+            buf.WriteInt(aggregation);
         if(WriteSelect(4, buf))
-            buf.WriteInt(displaySeason);
+            buf.WriteDouble(annualPercentile);
         if(WriteSelect(5, buf))
-            buf.WriteInt(displayMonth);
+            buf.WriteDoubleArray(seasonalPercentile);
         if(WriteSelect(6, buf))
-            buf.WriteInt(dataYearBegin);
-        if(WriteSelect(7, buf))
-            buf.WriteFloat(cutoff);
+            buf.WriteDoubleArray(monthlyPercentile);
         if(WriteSelect(8, buf))
-            buf.WriteBool(computeParamValues);
+            buf.WriteInt(displaySeason);
         if(WriteSelect(9, buf))
-            buf.WriteBool(computeCovariates);
+            buf.WriteInt(displayMonth);
         if(WriteSelect(10, buf))
-            buf.WriteInt(dataYearBegin);
+            buf.WriteFloat(cutoff);
         if(WriteSelect(10, buf))
-            buf.WriteIntVector(covariateReturnYears);
+            buf.WriteBool(computeParamValues);
         if(WriteSelect(11, buf))
-            buf.WriteBool(covariateModelLocation);
+            buf.WriteBool(computeCovariates);
         if(WriteSelect(12, buf))
-            buf.WriteBool(covariateModelShape);
+            buf.WriteIntVector(covariateReturnYears);
         if(WriteSelect(13, buf))
-            buf.WriteBool(covariateModelScale);
+            buf.WriteBool(covariateModelLocation);
         if(WriteSelect(14, buf))
-            buf.WriteBool(computeRVDifferences);
+            buf.WriteBool(covariateModelShape);
         if(WriteSelect(15, buf))
-            buf.WriteIntArray(rvDifferences);
+            buf.WriteBool(covariateModelScale);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(dataScaling);
+            buf.WriteBool(computeRVDifferences);
         if(WriteSelect(17, buf))
+            buf.WriteIntArray(rvDifferences);
+        if(WriteSelect(18, buf))
+            buf.WriteDouble(dataScaling);
+        if(WriteSelect(19, buf))
             buf.WriteBool(dumpData);
     }
 
@@ -486,60 +530,63 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         switch(index)
         {
         case 0:
-            SetAggregation(buf.ReadInt());
+            SetDataYearBegin(buf.ReadInt());
             break;
         case 1:
-            SetAnnualPercentile(buf.ReadDouble());
+            SetDataAnalysisYearRangeEnabled(buf.ReadBool());
             break;
         case 2:
-            SetSeasonalPercentile(buf.ReadDoubleArray());
+            SetDataAnalysisYearRange(buf.ReadIntArray());
             break;
         case 3:
-            SetMonthlyPercentile(buf.ReadDoubleArray());
+            SetAggregation(buf.ReadInt());
             break;
         case 4:
-            SetDisplaySeason(buf.ReadInt());
+            SetAnnualPercentile(buf.ReadDouble());
             break;
         case 5:
-            SetDisplayMonth(buf.ReadInt());
+            SetSeasonalPercentile(buf.ReadDoubleArray());
             break;
         case 6:
-            SetDataYearBegin(buf.ReadInt());
-            break;
-        case 7:
-            SetCutoff(buf.ReadFloat());
+            SetMonthlyPercentile(buf.ReadDoubleArray());
             break;
         case 8:
-            SetComputeParamValues(buf.ReadBool());
+            SetDisplaySeason(buf.ReadInt());
             break;
         case 9:
-            SetComputeCovariates(buf.ReadBool());
+            SetDisplayMonth(buf.ReadInt());
             break;
         case 10:
-            SetDataYearBegin(buf.ReadInt());
+            SetCutoff(buf.ReadFloat());
             break;
         case 10:
-            SetCovariateReturnYears(buf.ReadIntVector());
+            SetComputeParamValues(buf.ReadBool());
             break;
         case 11:
-            SetCovariateModelLocation(buf.ReadBool());
+            SetComputeCovariates(buf.ReadBool());
             break;
         case 12:
-            SetCovariateModelShape(buf.ReadBool());
+            SetCovariateReturnYears(buf.ReadIntVector());
             break;
         case 13:
-            SetCovariateModelScale(buf.ReadBool());
+            SetCovariateModelLocation(buf.ReadBool());
             break;
         case 14:
-            SetComputeRVDifferences(buf.ReadBool());
+            SetCovariateModelShape(buf.ReadBool());
             break;
         case 15:
-            SetRvDifferences(buf.ReadIntArray());
+            SetCovariateModelScale(buf.ReadBool());
             break;
         case 16:
-            SetDataScaling(buf.ReadDouble());
+            SetComputeRVDifferences(buf.ReadBool());
             break;
         case 17:
+            SetRvDifferences(buf.ReadIntArray());
+            break;
+        case 18:
+            SetDataScaling(buf.ReadDouble());
+            break;
+        case 19:
             SetDumpData(buf.ReadBool());
             break;
         }
@@ -548,6 +595,9 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public String toString(String indent)
     {
         String str = new String();
+        str = str + intToString("dataYearBegin", dataYearBegin, indent) + "\n";
+        str = str + boolToString("dataAnalysisYearRangeEnabled", dataAnalysisYearRangeEnabled, indent) + "\n";
+        str = str + intArrayToString("dataAnalysisYearRange", dataAnalysisYearRange, indent) + "\n";
         str = str + indent + "aggregation = ";
         if(aggregation == AGGREGATIONTYPE_ANNUAL)
             str = str + "AGGREGATIONTYPE_ANNUAL";
@@ -599,7 +649,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         str = str + floatToString("cutoff", cutoff, indent) + "\n";
         str = str + boolToString("computeParamValues", computeParamValues, indent) + "\n";
         str = str + boolToString("computeCovariates", computeCovariates, indent) + "\n";
-        str = str + intToString("dataYearBegin", dataYearBegin, indent) + "\n";
         str = str + intVectorToString("covariateReturnYears", covariateReturnYears, indent) + "\n";
         str = str + boolToString("covariateModelLocation", covariateModelLocation, indent) + "\n";
         str = str + boolToString("covariateModelShape", covariateModelShape, indent) + "\n";
@@ -613,6 +662,9 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
 
     // Attributes
+    private int      dataYearBegin;
+    private boolean  dataAnalysisYearRangeEnabled;
+    private int[]    dataAnalysisYearRange;
     private int      aggregation;
     private double   annualPercentile;
     private double[] seasonalPercentile;
@@ -623,7 +675,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private float    cutoff;
     private boolean  computeParamValues;
     private boolean  computeCovariates;
-    private int      dataYearBegin;
     private Vector   covariateReturnYears; // vector of Integer objects
     private boolean  covariateModelLocation;
     private boolean  covariateModelShape;
