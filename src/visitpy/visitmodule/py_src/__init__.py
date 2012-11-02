@@ -66,7 +66,9 @@ try:
     import pyside_hook
     import pyside_gui
     import pyside_support
+    def IsPySideViewerEnabled(): return True
 except ImportError:
+    def IsPySideViewerEnabled(): return False
     pass
 
 sys.dont_write_bytecode = __system_bytecode_setting

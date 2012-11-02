@@ -1611,7 +1611,9 @@ QvisGUIApplication::FinalInitialization()
         allowSocketRead = false;
 
         // Show the main window and the viewer window.
-        if(!embeddedGUI)
+        // If inherited then let the derived class control
+        // how it wants to show all the windows
+        if(!inheritedGUI)
         {
             mainWin->show();
             ShowAllWindows();
