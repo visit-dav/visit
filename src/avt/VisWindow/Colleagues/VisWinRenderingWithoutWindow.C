@@ -83,6 +83,10 @@ void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
 //    Kathleen Biagas, Wed Oct 31 17:29:26 PDT 2012
 //    'vtkWin32OpenGLRenderWindow' needs OffscreenRendering set, too.
 //
+//    Cyrus Harrison, Sat Nov  3 19:37:42 PDT 2012
+//    For osx w/o mesa, 'vtkCocoaRenderWindow' needs OffscreenRendering set, 
+//    as well.
+//
 // ****************************************************************************
 
 VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
@@ -97,7 +101,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     //
     renWin = vtkRenderWindow::New();
     if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow" ||
-       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
+       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow" ||
+       std::string(renWin->GetClassName()) == "vtkCocoaRenderWindow")
         renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
 }
@@ -154,6 +159,11 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //  Programmer: Tom Fogal
 //  Creation:   December 9th, 2009
 //
+//
+//  Modifications:
+//   Cyrus Harrison, Sat Nov  3 23:51:13 PDT 2012
+//   Force large window size for offscreen cocoa.
+//
 // ****************************************************************************
 
 void
@@ -163,7 +173,25 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   // way to *force* VTK to initialize in all cases.  The good news is that this
   // method is typically called before we've got data in the RW, so it
   // shouldn't be as heavy as it looks at first glance.
-  renWin->SetSize(300,300);
+  
+  //
+  // SetSize doesn't work as expected with vtkCocoaRenderWindow in 
+  // an offscreen setting.
+  // B/c of this we are forced to create a large window, the size of 
+  // which bounds our offscreen rendering.
+  //
+  if(std::string(renWin->GetClassName()) == "vtkCocoaRenderWindow")
+  {
+      //TODO: we may want to query to find the largest valid size
+      // OSX limits windows to 10Kx10K, however OpenGL contexts
+      // are limited further.
+      renWin->SetSize(4096,4096);
+      renWin->SetPosition(-10000,-10000);
+  }
+  else
+  {
+      renWin->SetSize(300,300);
+  }
   renWin->Render();
 
   /// HKTODO: Verify this solution is robust
@@ -173,6 +201,10 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   /// the software rendering on Linux does not work
   std::string cname = renWin->GetClassName();
   if(cname != "vtkOSOpenGLRenderWindow") UnMapWindow(renWin);
+  // Cyrus' Note: when using vtk-5.8.0.a, we have a fix to make sure
+  // that offscreen cocoa windows aren't mapped. Since Hari 
+  // needs to work with other versions of vtk, the above is still
+  // necessary.
 }
 
 // ****************************************************************************
