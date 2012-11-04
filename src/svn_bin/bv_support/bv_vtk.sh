@@ -54,11 +54,11 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-export VTK_FILE=${VTK_FILE:-"visit-vtk-5.8.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.8.0"}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"visit-vtk-5.8"}
+export VTK_FILE=${VTK_FILE:-"visit-vtk-5.8.0.a.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"5.8.0.a"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"visit-vtk-5.8.0.a"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-export VTK_MD5_CHECKSUM="ee14ea5a985555004c9a7084d88bea54"
+export VTK_MD5_CHECKSUM="6964a8d1e4e50d3a4a2d4fb39b900b05"
 export VTK_SHA256_CHECKSUM=""
 }
 
@@ -130,68 +130,16 @@ function bv_vtk_dry_run
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
-function apply_vtk_580_patch_2
+function apply_vtk_580a_patch
 {
-#apparently R enables this file to be compiled and causes vtk
-#to fail..
-patch -f -p0 <<\EOF
-*** visit-vtk-5.8/Charts/vtkOpenGLContextDevice2D.cxx   2012-02-29 16:38:47.599905018 -0800
---- visit-vtk-5.8/Charts/vtkOpenGLContextDevice2D_tmp.cxx   2012-02-29 16:33:33.699604797 -0800
-***************
-*** 44,49 ****
---- 44,50 ----
-  #include "vtkOpenGLRenderer.h"
-  #include "vtkOpenGLRenderWindow.h"
-  #include "vtkExtensionManager.h"
-+ #include "vtkOpenGLExtensionManager.h"
-  #include "vtkShaderProgram2.h"
-  #include "vtkgl.h"
-EOF
-}
-
-function apply_vtk_580_patch_1
-{
-    patch -f -p0 <<\EOF
-diff -c a/IO/CMakeLists.txt visit-vtk-5.8/IO/CMakeLists.txt
-*** a/IO/CMakeLists.txt
---- visit-vtk-5.8/IO/CMakeLists.txt
-***************
-*** 92,98 ****
-  vtkMoleculeReaderBase.cxx
-  vtkOBJReader.cxx
-  ${_VTK_OGGTHEORA_SOURCES}
-- vtkOpenFOAMReader.cxx
-  vtkOutputStream.cxx
-  vtkPDBReader.cxx
-  vtkPLOT3DReader.cxx
---- 92,97 ----
-EOF
-   if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 1 to VTK 5.8.0"
-        return 1
-   else
-        return 0
-   fi
-}
-
-
-function apply_vtk_580_patch
-{
-    apply_vtk_580_patch_1
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtk_580_patch_2
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    # As of 11/4/2012 all patches were rolled into 5.8.0.a.
+    return 0
 }
 
 function apply_vtk_patch
 {
-    if [[ ${VTK_VERSION} == 5.8.0 ]] ; then
-        apply_vtk_580_patch
+    if [[ ${VTK_VERSION} == 5.8.0.a ]] ; then
+        apply_vtk_580a_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
