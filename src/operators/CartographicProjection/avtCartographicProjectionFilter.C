@@ -233,6 +233,9 @@ avtCartographicProjectionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
     newPoints->SetPoint(i, x);
     }
 
+  // mark the coordinates as Modified to force a call to vtkPoints::ComputeBounds()
+  // otherwise a ResetView() has trouble resetting.
+  newPoints->Modified();
   ds->SetPoints(newPoints);
   newPoints->Delete();
 
