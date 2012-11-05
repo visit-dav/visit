@@ -1081,6 +1081,9 @@ ViewerQueryManager::GetQueryClientAtts()
 //    Brad Whitlock, Fri Aug 19 10:01:13 PDT 2011
 //    I changed the UpdateExpressions call on the engine manager.
 //
+//    Brad Whitlock, Mon Nov  5 12:04:27 PST 2012
+//    Check for NULL reader from the plot.
+//
 // ****************************************************************************
 
 void
@@ -1140,12 +1143,20 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
             const EngineKey   &engineKey = plot->GetEngineKey();
             int networkId = plot->GetNetworkID();
             avtDataObjectReader_p rdr = plot->GetReader();
-            avtDataObject_p dob = rdr->GetOutput();
-            bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
-            if (isDyn)
+            if(*rdr != NULL)
             {
-                ViewerEngineManager::Instance()->StartQuery(engineKey, true,
-                                                            networkId);
+                avtDataObject_p dob = rdr->GetOutput();
+                bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
+                if (isDyn)
+                {
+                    ViewerEngineManager::Instance()->StartQuery(engineKey, true,
+                                                                networkId);
+                    plot->ClearCurrentActor();
+                    clearedActor = true;
+                }
+            }
+            else
+            {
                 plot->ClearCurrentActor();
                 clearedActor = true;
             }
@@ -1351,12 +1362,15 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
             const EngineKey   &engineKey = plot->GetEngineKey();
             int networkId = plot->GetNetworkID();
             avtDataObjectReader_p rdr = plot->GetReader();
-            avtDataObject_p dob = rdr->GetOutput();
-            bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
-            if (isDyn)
+            if(*rdr != NULL)
             {
-                ViewerEngineManager::Instance()->StartQuery(engineKey, false, 
-                                                            networkId);
+                avtDataObject_p dob = rdr->GetOutput();
+                bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
+                if (isDyn)
+                {
+                    ViewerEngineManager::Instance()->StartQuery(engineKey, false, 
+                                                                networkId);
+                }
             }
         }
     }
