@@ -1111,6 +1111,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    Brad Whitlock, Tue Jun  5 14:46:54 PDT 2012
 //    Pass in MachineProfile so it is easier to bundle launch options.
 //
+//    Brad Whitlock, Mon Nov  5 10:04:45 PST 2012
+//    Use the gateway host as the host when we have a gateway host.
+//
 // ****************************************************************************
 
 bool
@@ -1126,18 +1129,22 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
     debug5 << ") where profile is:" << endl;
     if(DebugStream::Level5())
         profile.Print(DebugStream::Stream5());
+    std::string host(profile.GetHost());
+    if(profile.GetUseGateway())
+        host = profile.GetGatewayHost();
+    debug5 << "Using " << host << " for host" << endl;
 
     // Start making the connections and start listening.
-    if(!StartMakingConnection(profile.GetHost(), numRead, numWrite))
+    if(!StartMakingConnection(host, numRead, numWrite))
     {
-        debug5 << "StartMakingConnection(" << profile.GetHost().c_str() << ", " << numRead
+        debug5 << "StartMakingConnection(" << host << ", " << numRead
                << ", " << numWrite << ") failed. Returning." << endl;
         return false;
     }
 
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
-    if(!HostIsLocal(profile.GetHost()) && !createAsThoughLocal)
+    if(!HostIsLocal(host) && !createAsThoughLocal)
     {
         CreateSSHCommandLine(commandLine, profile);
     }
@@ -1151,7 +1158,7 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
     //
     // Launch the remote process.
     //
-    if (HostIsLocal(profile.GetHost()) || createAsThoughLocal)
+    if (HostIsLocal(host) || createAsThoughLocal)
     {
         debug5 << mName << "Calling LaunchLocal" << endl;
         LaunchLocal(commandLine);
@@ -1159,9 +1166,6 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
     else
     {
         debug5 << mName << "Calling LaunchRemote" << endl;
-        std::string host(profile.GetHost());
-        if(profile.GetUseGateway())
-            host = profile.GetGatewayHost();
         LaunchRemote(host, profile.UserName(), commandLine);
     }
 
