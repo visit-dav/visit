@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            VisWinAxesParallel.h                           //
+//                            VisWinParallelAxes.h                           //
 // ************************************************************************* //
 
-#ifndef VIS_WIN_AXES_PARALLEL_H
-#define VIS_WIN_AXES_PARALLEL_H
+#ifndef VIS_WIN_PARALLEL_AXES_H
+#define VIS_WIN_PARALLEL_AXES_H
 #include <viswindow_exports.h>
 
 
@@ -52,7 +52,7 @@ class vtkVisItAxisActor2D;
 class VisWindowColleagueProxy;
 
 // ****************************************************************************
-//  Class: VisWinAxesParallel
+//  Class: VisWinParallelAxes
 //
 //  Purpose:
 //      This is a concrete colleague for the mediator VisWindow.  It puts
@@ -67,13 +67,17 @@ class VisWindowColleagueProxy;
 //    I implemented autoSetTicks, labelVisibility, titleVisibility,
 //    tickVisibility and setting the major and minor tick locations.
 //
+//    Eric Brugger, Mon Nov  5 15:19:24 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
-class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
+class VISWINDOW_API VisWinParallelAxes : public VisWinColleague
 {
   public:
-                              VisWinAxesParallel(VisWindowColleagueProxy &);
-    virtual                  ~VisWinAxesParallel();
+                              VisWinParallelAxes(VisWindowColleagueProxy &);
+    virtual                  ~VisWinParallelAxes();
 
     virtual void              SetForegroundColor(double, double, double);
     virtual void              UpdateView(void);
@@ -83,8 +87,8 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     virtual void              HasPlots(void);
     virtual void              NoPlots(void);
 
-    virtual void              StartAxesParallelMode(void);
-    virtual void              StopAxesParallelMode(void);
+    virtual void              StartParallelAxesMode(void);
+    virtual void              StopParallelAxesMode(void);
 
     void                      SetTitles();
 
@@ -105,6 +109,12 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
                                   const VisWinTextAttributes &atts);
     void                      SetTitleTextAttributes(
                                   const VisWinTextAttributes &atts);
+
+    enum Orientation {
+        Horizontal,
+        Vertical
+    };
+    void                      SetAxisOrientation(Orientation);
   protected:
     struct AxisInfo {
         vtkVisItAxisActor2D *axis;
@@ -156,6 +166,7 @@ class VISWINDOW_API VisWinAxesParallel : public VisWinColleague
     VisWinTextAttributes      labelTextAttributes;
     int                       axisPow;
     int                       userPow;
+    Orientation               axisOrientation;
 
     void                      SetNumberOfAxes(int);
     bool                      AdjustValues(double, double);

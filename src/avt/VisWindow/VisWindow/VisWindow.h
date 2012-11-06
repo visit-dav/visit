@@ -79,7 +79,7 @@ class VisWinAnnotations;
 class VisWinAxes;
 class VisWinAxes3D;
 class VisWinAxesArray;
-class VisWinAxesParallel;
+class VisWinParallelAxes;
 class VisWinBackground;
 class VisWinColleague;
 class VisWinFrame;
@@ -398,7 +398,7 @@ class VisitInteractor;
 //    Add interface for ScreenRender.
 //
 //    Eric Brugger, Tue Dec  9 14:30:53 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Brad Whitlock, Wed Jan  7 14:46:25 PST 2009
 //    I removed plot info atts since we can get that information elsewhere.
@@ -702,7 +702,7 @@ protected:
     VisWinAxes3D                      *axes3D;
     VisWinFrame                       *frame;
     VisWinAxesArray                   *axesArray;
-    VisWinAxesParallel                *axesParallel;
+    VisWinParallelAxes                *parallelAxes;
     VisWinInteractions                *interactions;
     VisWinLegends                     *legends;
     VisWinLighting                    *lighting;
@@ -771,12 +771,12 @@ protected:
     void                 Start3DMode();
     void                 StartCurveMode();
     void                 StartAxisArrayMode();
-    void                 StartAxisParallelMode();
+    void                 StartParallelAxesMode();
     void                 Stop2DMode();
     void                 Stop3DMode();
     void                 StopCurveMode();
     void                 StopAxisArrayMode();
-    void                 StopAxisParallelMode();
+    void                 StopParallelAxesMode();
     void                 UpdatePlotList(std::vector<avtActor_p> &);
 
     void                 HasPlots(bool);
@@ -804,7 +804,7 @@ protected:
     void                 UpdateAxes2D(void);
     void                 UpdateAxes3D(void);
     void                 UpdateAxesArray(void);
-    void                 UpdateAxesParallel(void);
+    void                 UpdateParallelAxes(void);
     void                 UpdateTextAnnotations(void);
 
     void                 MotionBegin(void);

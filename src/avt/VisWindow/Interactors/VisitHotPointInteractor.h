@@ -102,7 +102,7 @@ class ZoomAxisArray;
 //    Added zoom interactor for AxisArray mode.
 //
 //    Eric Brugger, Tue Dec  9 14:44:12 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 // ****************************************************************************
 
@@ -133,12 +133,12 @@ public:
     void              Start3DMode(INTERACTION_MODE mode);
     void              StartCurveMode(INTERACTION_MODE mode);
     void              StartAxisArrayMode(INTERACTION_MODE mode);
-    void              StartAxisParallelMode(INTERACTION_MODE mode);
+    void              StartParallelAxesMode(INTERACTION_MODE mode);
     void              Stop2DMode();
     void              Stop3DMode();
     void              StopCurveMode();
     void              StopAxisArrayMode();
-    void              StopAxisParallelMode();
+    void              StopParallelAxesMode();
 private:
     VisitInteractor  *currentInteractor;
 

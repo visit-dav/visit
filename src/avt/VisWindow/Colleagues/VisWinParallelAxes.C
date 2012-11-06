@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           VisWinAxesParallel.C                            //
+//                           VisWinParallelAxes.C                            //
 // ************************************************************************* //
 
-#include <VisWinAxesParallel.h>
+#include <VisWinParallelAxes.h>
 
 #include <string>
 #include <vector>
@@ -181,7 +181,7 @@ LabelExponent(double min, double max)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel constructor
+//  Method: VisWinParallelAxes constructor
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -194,9 +194,13 @@ LabelExponent(double min, double max)
 //    Tom Fogal, Mon Mar  9 09:26:31 MST 2009
 //    Initialize axisPow to avoid reading uninitialized memory later.
 //
+//    Eric Brugger, Mon Nov  5 15:21:42 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
-VisWinAxesParallel::VisWinAxesParallel(VisWindowColleagueProxy &p) :
+VisWinParallelAxes::VisWinParallelAxes(VisWindowColleagueProxy &p) :
     VisWinColleague(p),
     axisPow(0)
 {
@@ -216,6 +220,7 @@ VisWinAxesParallel::VisWinAxesParallel(VisWindowColleagueProxy &p) :
     autoSetTicks=1;
     lineWidth=1;
     fg=fr=fb=0;
+    axisOrientation = Horizontal;
 
     // These should really get set to something reasonable before we're
     // asked to draw, but just in case...
@@ -227,14 +232,14 @@ VisWinAxesParallel::VisWinAxesParallel(VisWindowColleagueProxy &p) :
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel destructor
+//  Method: VisWinParallelAxes destructor
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
 // ****************************************************************************
 
-VisWinAxesParallel::~VisWinAxesParallel()
+VisWinParallelAxes::~VisWinParallelAxes()
 {
     for (int i=0; i < axes.size(); i++)
     {
@@ -250,7 +255,7 @@ VisWinAxesParallel::~VisWinAxesParallel()
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetForegroundColor
+//  Method: VisWinParallelAxes::SetForegroundColor
 //
 //  Purpose:
 //      Sets the foreground color of the axes.
@@ -271,7 +276,7 @@ VisWinAxesParallel::~VisWinAxesParallel()
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetForegroundColor(double fr_, double fg_, double fb_)
+VisWinParallelAxes::SetForegroundColor(double fr_, double fg_, double fb_)
 {
     fr = fr_;
     fg = fg_;
@@ -291,7 +296,7 @@ VisWinAxesParallel::SetForegroundColor(double fr_, double fg_, double fb_)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::UpdateView
+//  Method: VisWinParallelAxes::UpdateView
 //
 //  Purpose:
 //      Updates the axes so that they will reflect the current view.
@@ -308,10 +313,14 @@ VisWinAxesParallel::SetForegroundColor(double fr_, double fg_, double fb_)
 //    I modified the axes so that the number of ticks displayed on an
 //    individual curve would increase as the number of axes decreased.
 //
+//    Eric Brugger, Mon Nov  5 15:21:42 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-VisWinAxesParallel::UpdateView(void)
+VisWinParallelAxes::UpdateView(void)
 {
     double  xmin = 0., xmax = 0., ymin = 0., ymax = 0.;
     GetRange(ymin, ymax, xmin, xmax);
@@ -331,8 +340,16 @@ VisWinAxesParallel::UpdateView(void)
         axes[0].axis->SetTitleVisibility(titleVisibility);
         axes[0].axis->SetRange(ymin, ymax);
 
-        axes[0].axis->GetPoint1Coordinate()->SetValue(vymin, vxmin);
-        axes[0].axis->GetPoint2Coordinate()->SetValue(vymax, vxmin);
+        if (axisOrientation == Horizontal)
+        {
+            axes[0].axis->GetPoint1Coordinate()->SetValue(vymin, vxmin);
+            axes[0].axis->GetPoint2Coordinate()->SetValue(vymax, vxmin);
+        }
+        else
+        {
+            axes[0].axis->GetPoint1Coordinate()->SetValue(vymin, vxmin);
+            axes[0].axis->GetPoint2Coordinate()->SetValue(vymin, vxmax);
+        }
         if (axisPow != 0)
             axes[0].axis->SetMajorTickLabelScale(1./pow(10., axisPow));
         else
@@ -342,8 +359,10 @@ VisWinAxesParallel::UpdateView(void)
     for (int i=1; i < axes.size(); i++)
     {
         double dx = (vxmax - vxmin) / (xmax - xmin);
+        double dy = (vymax - vymin) / (xmax - xmin);
 
         double xpos = vxmin + (axes[i].xpos-xmin)*dx;
+        double ypos = vymin + (axes[i].xpos-xmin)*dy;
         if (xpos < vxmin-0.001 || xpos > vxmax+0.001)
         {
             axes[i].axis->SetVisibility(false);
@@ -354,8 +373,16 @@ VisWinAxesParallel::UpdateView(void)
         axes[i].axis->SetVisibility(axisVisibility);
         axes[i].axis->SetTitleVisibility(titleVisibility);
         axes[i].axis->SetRange(ymin, ymax);
-        axes[i].axis->GetPoint1Coordinate()->SetValue(vymin, xpos);
-        axes[i].axis->GetPoint2Coordinate()->SetValue(vymax, xpos);
+        if (axisOrientation == Horizontal)
+        {
+            axes[i].axis->GetPoint1Coordinate()->SetValue(vymin, xpos);
+            axes[i].axis->GetPoint2Coordinate()->SetValue(vymax, xpos);
+        }
+        else
+        {
+            axes[i].axis->GetPoint1Coordinate()->SetValue(ypos, vxmin);
+            axes[i].axis->GetPoint2Coordinate()->SetValue(ypos, vxmax);
+        }
         if (axisPow != 0)
             axes[i].axis->SetMajorTickLabelScale(1./pow(10., axisPow));
         else
@@ -366,18 +393,36 @@ VisWinAxesParallel::UpdateView(void)
 
         double xpos1 = vxmin + (axes[i].xpos - (nTicks * tickSize) - xmin) * dx;
         double xpos2 = vxmin + (axes[i].xpos + (nTicks * tickSize) - xmin) * dx;
+        double ypos1 = vymin + (axes[i].xpos - (nTicks * tickSize) - xmin) * dy;
+        double ypos2 = vymin + (axes[i].xpos + (nTicks * tickSize) - xmin) * dy;
 
         axes[i].axisCap1->SetTitle(axes[i].title);
         axes[i].axisCap1->SetVisibility(axisVisibility);
         axes[i].axisCap1->SetTitleVisibility(titleVisibility);
         axes[i].axisCap1->SetRange(-nTicks, nTicks);
-        axes[i].axisCap1->GetPoint1Coordinate()->SetValue(vymin, xpos1);
-        axes[i].axisCap1->GetPoint2Coordinate()->SetValue(vymin, xpos2);
+        if (axisOrientation == Horizontal)
+        {
+            axes[i].axisCap1->GetPoint1Coordinate()->SetValue(vymin, xpos1);
+            axes[i].axisCap1->GetPoint2Coordinate()->SetValue(vymin, xpos2);
+        }
+        else
+        {
+            axes[i].axisCap1->GetPoint1Coordinate()->SetValue(ypos1, vxmin);
+            axes[i].axisCap1->GetPoint2Coordinate()->SetValue(ypos2, vxmin);
+        }
 
         axes[i].axisCap2->SetVisibility(axisVisibility);
         axes[i].axisCap2->SetRange(-nTicks, nTicks);
-        axes[i].axisCap2->GetPoint1Coordinate()->SetValue(vymax, xpos1);
-        axes[i].axisCap2->GetPoint2Coordinate()->SetValue(vymax, xpos2);
+        if (axisOrientation == Horizontal)
+        {
+            axes[i].axisCap2->GetPoint1Coordinate()->SetValue(vymax, xpos1);
+            axes[i].axisCap2->GetPoint2Coordinate()->SetValue(vymax, xpos2);
+        }
+        else
+        {
+            axes[i].axisCap2->GetPoint1Coordinate()->SetValue(ypos1, vxmax);
+            axes[i].axisCap2->GetPoint2Coordinate()->SetValue(ypos2, vxmax);
+        }
     }
 
     if (titleChange)
@@ -388,7 +433,7 @@ VisWinAxesParallel::UpdateView(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetViewport
+//  Method: VisWinParallelAxes::SetViewport
 //
 //  Purpose:
 //      Changes the xAxis and yAxis to be fit with the new viewport.
@@ -405,7 +450,7 @@ VisWinAxesParallel::UpdateView(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetViewport(double vl_, double vb_, double vr_, double vt_)
+VisWinParallelAxes::SetViewport(double vl_, double vb_, double vr_, double vt_)
 {
     vl = vl_;
     vb = vb_;
@@ -417,7 +462,7 @@ VisWinAxesParallel::SetViewport(double vl_, double vb_, double vr_, double vt_)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::UpdatePlotList
+//  Method: VisWinParallelAxes::UpdatePlotList
 //
 //  Purpose:
 //      Decides what the units are for the X and Y directions.
@@ -436,7 +481,7 @@ VisWinAxesParallel::SetViewport(double vl_, double vb_, double vr_, double vt_)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::UpdatePlotList(vector<avtActor_p> &list)
+VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = list.size();
 
@@ -490,7 +535,7 @@ VisWinAxesParallel::UpdatePlotList(vector<avtActor_p> &list)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::HasPlots
+//  Method: VisWinParallelAxes::HasPlots
 //
 //  Purpose:
 //      Receives the message from the vis window that it has plots.  This means
@@ -502,7 +547,7 @@ VisWinAxesParallel::UpdatePlotList(vector<avtActor_p> &list)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::HasPlots(void)
+VisWinParallelAxes::HasPlots(void)
 {
     if (ShouldAddAxes())
     {
@@ -512,7 +557,7 @@ VisWinAxesParallel::HasPlots(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::NoPlots
+//  Method: VisWinParallelAxes::NoPlots
 //
 //  Purpose:
 //      Receives the message from the vis window that it has no plots.  This
@@ -524,14 +569,14 @@ VisWinAxesParallel::HasPlots(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::NoPlots(void)
+VisWinParallelAxes::NoPlots(void)
 {
     RemoveAxesFromWindow();
 }
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::StartAxesParallelMode
+//  Method: VisWinParallelAxes::StartParallelAxesMode
 //
 //  Purpose:
 //      Adds the axes to the window.  The axes are added to the background
@@ -543,7 +588,7 @@ VisWinAxesParallel::NoPlots(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::StartAxesParallelMode(void)
+VisWinParallelAxes::StartParallelAxesMode(void)
 {
     if (ShouldAddAxes())
     {
@@ -553,7 +598,7 @@ VisWinAxesParallel::StartAxesParallelMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::StopAxesParallelMode
+//  Method: VisWinParallelAxes::StopParallelAxesMode
 //
 //  Purpose:
 //      Removes the axes from the window.  The axes are removed from the
@@ -565,7 +610,7 @@ VisWinAxesParallel::StartAxesParallelMode(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::StopAxesParallelMode(void)
+VisWinParallelAxes::StopParallelAxesMode(void)
 {
     RemoveAxesFromWindow();
 }
@@ -586,7 +631,7 @@ VisWinAxesParallel::StopAxesParallelMode(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetTitles(void)
+VisWinParallelAxes::SetTitles(void)
 {
     if (axes.size() > 0)
     {
@@ -615,7 +660,7 @@ VisWinAxesParallel::SetTitles(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetLabelsVisibility
+//  Method: VisWinParallelAxes::SetLabelsVisibility
 //
 //  Purpose:
 //      Sets the visibility of axis labels. 
@@ -634,7 +679,7 @@ VisWinAxesParallel::SetTitles(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetLabelVisibility(int vis)
+VisWinParallelAxes::SetLabelVisibility(int vis)
 {
     labelVisibility = vis;
     if (axes.size() > 0)
@@ -645,7 +690,7 @@ VisWinAxesParallel::SetLabelVisibility(int vis)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetTitleVisibility
+//  Method: VisWinParallelAxes::SetTitleVisibility
 //
 //  Purpose:
 //      Sets the visibility of axis titles. 
@@ -664,7 +709,7 @@ VisWinAxesParallel::SetLabelVisibility(int vis)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetTitleVisibility(int vis)
+VisWinParallelAxes::SetTitleVisibility(int vis)
 {
     titleVisibility = vis;
     if (axes.size() > 0)
@@ -679,7 +724,7 @@ VisWinAxesParallel::SetTitleVisibility(int vis)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetVisibility
+//  Method: VisWinParallelAxes::SetVisibility
 //
 //  Purpose:
 //      Sets the visibility of this colleague. 
@@ -693,7 +738,7 @@ VisWinAxesParallel::SetTitleVisibility(int vis)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetVisibility(int vis)
+VisWinParallelAxes::SetVisibility(int vis)
 {
     axisVisibility = vis;
     for (int i=0; i < axes.size(); i++)
@@ -709,7 +754,7 @@ VisWinAxesParallel::SetVisibility(int vis)
        
     
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetTickVisibility
+//  Method: VisWinParallelAxes::SetTickVisibility
 //
 //  Purpose:
 //      Sets the visibility of the ticks.
@@ -723,7 +768,7 @@ VisWinAxesParallel::SetVisibility(int vis)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetTickVisibility(bool vis, bool labelvis)
+VisWinParallelAxes::SetTickVisibility(bool vis, bool labelvis)
 {
     tickVisibility = vis;
     tickLabelVisibility = labelvis;
@@ -736,7 +781,7 @@ VisWinAxesParallel::SetTickVisibility(bool vis, bool labelvis)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetAutoSetTicks
+//  Method: VisWinParallelAxes::SetAutoSetTicks
 //
 //  Purpose:
 //      Sets the flag which specifies if the ticks should be automatically
@@ -752,7 +797,7 @@ VisWinAxesParallel::SetTickVisibility(bool vis, bool labelvis)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetAutoSetTicks(int autoset)
+VisWinParallelAxes::SetAutoSetTicks(int autoset)
 {
     autoSetTicks = autoset;
     for (int i=0; i < axes.size(); i++)
@@ -763,7 +808,7 @@ VisWinAxesParallel::SetAutoSetTicks(int autoset)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetMajorTickMinimum
+//  Method: VisWinParallelAxes::SetMajorTickMinimum
 //
 //  Purpose:
 //      Sets the minimum values for the major tick marks.
@@ -777,7 +822,7 @@ VisWinAxesParallel::SetAutoSetTicks(int autoset)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetMajorTickMinimum(double majorMinimum)
+VisWinParallelAxes::SetMajorTickMinimum(double majorMinimum)
 {
     majorTickMinimum = majorMinimum;
     for (int i=0; i < axes.size(); i++)
@@ -789,7 +834,7 @@ VisWinAxesParallel::SetMajorTickMinimum(double majorMinimum)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetMajorTickMaximum
+//  Method: VisWinParallelAxes::SetMajorTickMaximum
 //
 //  Purpose:
 //      Sets the maximum values for the major tick marks.
@@ -803,7 +848,7 @@ VisWinAxesParallel::SetMajorTickMinimum(double majorMinimum)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetMajorTickMaximum(double majorMaximum)
+VisWinParallelAxes::SetMajorTickMaximum(double majorMaximum)
 {
     majorTickMaximum = majorMaximum;
     for (int i=0; i < axes.size(); i++)
@@ -814,7 +859,7 @@ VisWinAxesParallel::SetMajorTickMaximum(double majorMaximum)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetMajorTickSpacing
+//  Method: VisWinParallelAxes::SetMajorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the major tick marks.
@@ -828,7 +873,7 @@ VisWinAxesParallel::SetMajorTickMaximum(double majorMaximum)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetMajorTickSpacing(double majorSpacing)
+VisWinParallelAxes::SetMajorTickSpacing(double majorSpacing)
 {
     majorTickSpacing = majorSpacing;
     for (int i=0; i < axes.size(); i++)
@@ -839,7 +884,7 @@ VisWinAxesParallel::SetMajorTickSpacing(double majorSpacing)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetMinorTickSpacing
+//  Method: VisWinParallelAxes::SetMinorTickSpacing
 //
 //  Purpose:
 //      Sets the spacing for the minor tick marks.
@@ -853,7 +898,7 @@ VisWinAxesParallel::SetMajorTickSpacing(double majorSpacing)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetMinorTickSpacing(double minorSpacing)
+VisWinParallelAxes::SetMinorTickSpacing(double minorSpacing)
 {
     minorTickSpacing = minorSpacing;
     for (int i=0; i < axes.size(); i++)
@@ -864,7 +909,7 @@ VisWinAxesParallel::SetMinorTickSpacing(double minorSpacing)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetLabelFontHeight
+//  Method: VisWinParallelAxes::SetLabelFontHeight
 //
 //  Purpose:
 //      Sets the label font height for the axis.
@@ -883,7 +928,7 @@ VisWinAxesParallel::SetMinorTickSpacing(double minorSpacing)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetLabelFontHeight(double height)
+VisWinParallelAxes::SetLabelFontHeight(double height)
 {
     labelFontHeight = height;
     if (axes.size() > 0)
@@ -894,7 +939,7 @@ VisWinAxesParallel::SetLabelFontHeight(double height)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetTitleFontHeight
+//  Method: VisWinParallelAxes::SetTitleFontHeight
 //
 //  Purpose:
 //      Sets the title font height for the axis.
@@ -913,7 +958,7 @@ VisWinAxesParallel::SetLabelFontHeight(double height)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetTitleFontHeight(double height)
+VisWinParallelAxes::SetTitleFontHeight(double height)
 {
     titleFontHeight = height;
     if (axes.size() > 0)
@@ -928,7 +973,7 @@ VisWinAxesParallel::SetTitleFontHeight(double height)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::SetLineWidth
+//  Method: VisWinParallelAxes::SetLineWidth
 //
 //  Purpose:
 //      Sets the line width for the axes.
@@ -942,7 +987,7 @@ VisWinAxesParallel::SetTitleFontHeight(double height)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetLineWidth(int width)
+VisWinParallelAxes::SetLineWidth(int width)
 {
     lineWidth = width;
     for (int i=0; i < axes.size(); i++)
@@ -958,7 +1003,7 @@ VisWinAxesParallel::SetLineWidth(int width)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::SetLabelScaling
+//  Method:  VisWinParallelAxes::SetLabelScaling
 //
 //  Purpose:
 //    Sets the attributes used to determine scaling for axis labels
@@ -973,7 +1018,7 @@ VisWinAxesParallel::SetLineWidth(int width)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetLabelScaling(bool autoscale, int upow)
+VisWinParallelAxes::SetLabelScaling(bool autoscale, int upow)
 {
     autolabelScaling = autoscale;
     userPow = upow;
@@ -981,7 +1026,7 @@ VisWinAxesParallel::SetLabelScaling(bool autoscale, int upow)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::SetTitleTextAttributes
+//  Method:  VisWinParallelAxes::SetTitleTextAttributes
 //
 //  Purpose:
 //    Update text style for title
@@ -995,7 +1040,7 @@ VisWinAxesParallel::SetLabelScaling(bool autoscale, int upow)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetTitleTextAttributes(const VisWinTextAttributes &att)
+VisWinParallelAxes::SetTitleTextAttributes(const VisWinTextAttributes &att)
 {
     titleTextAttributes = att;
 
@@ -1006,7 +1051,7 @@ VisWinAxesParallel::SetTitleTextAttributes(const VisWinTextAttributes &att)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::SetLabelTextAttributes
+//  Method:  VisWinParallelAxes::SetLabelTextAttributes
 //
 //  Purpose:
 //    Update text style for labels
@@ -1020,7 +1065,7 @@ VisWinAxesParallel::SetTitleTextAttributes(const VisWinTextAttributes &att)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetLabelTextAttributes(const VisWinTextAttributes &att)
+VisWinParallelAxes::SetLabelTextAttributes(const VisWinTextAttributes &att)
 {
     labelTextAttributes = att;
 
@@ -1031,7 +1076,29 @@ VisWinAxesParallel::SetLabelTextAttributes(const VisWinTextAttributes &att)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::SetNumberOfAxes
+//  Method:  VisWinParallelAxes::SetAxisOrientation
+//
+//  Purpose:
+//    Update the axis orientation, which controls if the axes are drawn
+//    horizontally or vertically.
+//
+//  Arguments:
+//    orientation The new axis orientation
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 5, 2012
+//
+// ****************************************************************************
+
+void
+VisWinParallelAxes::SetAxisOrientation(Orientation orientation)
+{
+    axisOrientation = orientation;
+}
+
+
+// ****************************************************************************
+//  Method:  VisWinParallelAxes::SetNumberOfAxes
 //
 //  Purpose:
 //    Creates/destroyes axis actors when the number of axes changes.
@@ -1051,10 +1118,14 @@ VisWinAxesParallel::SetLabelTextAttributes(const VisWinTextAttributes &att)
 //    I modified the axes so that the number of ticks displayed on an
 //    individual curve would increase as the number of axes decreased.
 //
+//    Eric Brugger, Mon Nov  5 15:21:42 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-VisWinAxesParallel::SetNumberOfAxes(int n)
+VisWinParallelAxes::SetNumberOfAxes(int n)
 {
     bool axesCurrentlyInWindow = addedAxes;
     if (axesCurrentlyInWindow)
@@ -1104,7 +1175,10 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
             ax->PickableOff();
             ax->SetUseOrientationAngle(1);
             ax->SetTitleAtEnd(0);
-            ax->SetOrientationAngle(0.);
+            if (axisOrientation == Horizontal)
+                ax->SetOrientationAngle(0.);
+            else
+                ax->SetOrientationAngle(-1.5707963);
 
             AxisInfo a(ax, 0, 3);
             axes.push_back(a);
@@ -1136,7 +1210,10 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
                 ax->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
                 ax->PickableOff();
                 ax->SetUseOrientationAngle(1);
-                ax->SetOrientationAngle(-1.5707963);
+                if (axisOrientation == Horizontal)
+                    ax->SetOrientationAngle(-1.5707963);
+                else
+                    ax->SetOrientationAngle(0);
 
                 ax->SetVisibility(axisVisibility);
 
@@ -1162,7 +1239,10 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
                 ax->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
                 ax->PickableOff();
                 ax->SetUseOrientationAngle(1);
-                ax->SetOrientationAngle(1.5707963);
+                if (axisOrientation == Horizontal)
+                    ax->SetOrientationAngle(1.5707963);
+                else
+                    ax->SetOrientationAngle(3.1415927);
 
                 ax->SetVisibility(axisVisibility);
 
@@ -1194,7 +1274,7 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::AdjustValues
+//  Method:  VisWinParallelAxes::AdjustValues
 //
 //  Purpose:
 //    Determine a good power scaling for the given axis.
@@ -1208,7 +1288,7 @@ VisWinAxesParallel::SetNumberOfAxes(int n)
 // ****************************************************************************
 
 bool
-VisWinAxesParallel::AdjustValues(double minval, double maxval)
+VisWinParallelAxes::AdjustValues(double minval, double maxval)
 {
     int curPow;
     if (autolabelScaling)
@@ -1230,7 +1310,7 @@ VisWinAxesParallel::AdjustValues(double minval, double maxval)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::AdjustRange
+//  Method:  VisWinParallelAxes::AdjustRange
 //
 //  Purpose:
 //    Determine a good format string for the given axis.
@@ -1244,7 +1324,7 @@ VisWinAxesParallel::AdjustValues(double minval, double maxval)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::AdjustRange(double minval, double maxval)
+VisWinParallelAxes::AdjustRange(double minval, double maxval)
 {
     if (axisPow != 0)
     {
@@ -1259,7 +1339,7 @@ VisWinAxesParallel::AdjustRange(double minval, double maxval)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::GetRange
+//  Method: VisWinParallelAxes::GetRange
 //
 //  Purpose:
 //      Gets the range of the viewport.
@@ -1273,17 +1353,23 @@ VisWinAxesParallel::AdjustRange(double minval, double maxval)
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov  5 15:21:42 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-VisWinAxesParallel::GetRange(double &min_x, double &max_x,
+VisWinParallelAxes::GetRange(double &min_x, double &max_x,
                           double &min_y, double &max_y)
 {
     VisWindow *vw = mediator;
 
     switch (vw->GetWindowMode())
     {
-      case WINMODE_AXISPARALLEL:
+      case WINMODE_PARALLELAXES:
+      case WINMODE_VERTPARALLELAXES:
         {
         const avtViewAxisArray viewAxisArray = vw->GetViewAxisArray();
         min_x = viewAxisArray.domain[0];
@@ -1299,7 +1385,7 @@ VisWinAxesParallel::GetRange(double &min_x, double &max_x,
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::AddAxesToWindow
+//  Method: VisWinParallelAxes::AddAxesToWindow
 //
 //  Purpose:
 //      Adds the axes to the vis window.
@@ -1310,7 +1396,7 @@ VisWinAxesParallel::GetRange(double &min_x, double &max_x,
 // ****************************************************************************
 
 void
-VisWinAxesParallel::AddAxesToWindow(void)
+VisWinParallelAxes::AddAxesToWindow(void)
 {
     if (addedAxes)
     {
@@ -1333,7 +1419,7 @@ VisWinAxesParallel::AddAxesToWindow(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::RemoveAxesFromWindow
+//  Method: VisWinParallelAxes::RemoveAxesFromWindow
 //
 //  Purpose:
 //      Removes the axes from the vis window.
@@ -1344,7 +1430,7 @@ VisWinAxesParallel::AddAxesToWindow(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::RemoveAxesFromWindow(void)
+VisWinParallelAxes::RemoveAxesFromWindow(void)
 {
     if (! addedAxes)
     {
@@ -1367,7 +1453,7 @@ VisWinAxesParallel::RemoveAxesFromWindow(void)
 
 
 // ****************************************************************************
-//  Method: VisWinAxesParallel::ShouldAddAxes
+//  Method: VisWinParallelAxes::ShouldAddAxes
 //
 //  Purpose:
 //      Hides from routines that would like to add axes the logic about what
@@ -1380,18 +1466,24 @@ VisWinAxesParallel::RemoveAxesFromWindow(void)
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov  5 15:21:42 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 bool
-VisWinAxesParallel::ShouldAddAxes(void)
+VisWinParallelAxes::ShouldAddAxes(void)
 {
-    return (mediator.GetMode() == WINMODE_AXISPARALLEL &&
+    return ((mediator.GetMode() == WINMODE_PARALLELAXES ||
+             mediator.GetMode() == WINMODE_VERTPARALLELAXES) &&
             mediator.HasPlots());
 }
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::UpdateLabelTextAttributes
+//  Method:  VisWinParallelAxes::UpdateLabelTextAttributes
 //
 //  Purpose:
 //    Update text style for labels
@@ -1405,7 +1497,7 @@ VisWinAxesParallel::ShouldAddAxes(void)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::UpdateLabelTextAttributes(double fr, double fg, double fb)
+VisWinParallelAxes::UpdateLabelTextAttributes(double fr, double fg, double fb)
 {
     if (axes.size() > 0)
     {
@@ -1432,7 +1524,7 @@ VisWinAxesParallel::UpdateLabelTextAttributes(double fr, double fg, double fb)
 
 
 // ****************************************************************************
-//  Method:  VisWinAxesParallel::UpdateTitleTextAttributes
+//  Method:  VisWinParallelAxes::UpdateTitleTextAttributes
 //
 //  Purpose:
 //    Update text style for titles
@@ -1446,7 +1538,7 @@ VisWinAxesParallel::UpdateLabelTextAttributes(double fr, double fg, double fb)
 // ****************************************************************************
 
 void
-VisWinAxesParallel::UpdateTitleTextAttributes(double fr, double fg, double fb)
+VisWinParallelAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
 { 
     if (axes.size() > 0)
     {

@@ -61,14 +61,18 @@
 //    Added an axis orientation, which interchanges the horizontal and
 //    vertical zooming.
 //
+//    Eric Brugger, Mon Nov  5 15:09:21 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInteractor(v)
 {
     shiftKeyDown = controlKeyDown = false;
     VisWindow *win = v;
-    shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
     axisOrientation = Vertical;
+    domainOrientation = Horizontal;
 }
 
 
@@ -90,6 +94,10 @@ NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInterac
 //    Kathleen Bonnell, Wed Jun  8 10:04:38 PDT 2011
 //    Use current EventPosition instead of Last.
 //
+//    Eric Brugger, Mon Nov  5 15:09:21 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
@@ -101,12 +109,15 @@ NavigateAxisArray::OnTimer(void)
     rwi->GetEventPosition(Pos);
 
     VisWindow *win = proxy;
-    shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
+    if (win->GetWindowMode() == WINMODE_AXISARRAY)
+        shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
+    else
+        shouldSnap = false;
 
     switch (State)
     {
       case VTKIS_PAN:
-        PanCamera(Pos[0], Pos[1], shouldSnap);
+        PanCamera(Pos[0], Pos[1]);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
@@ -280,12 +291,34 @@ NavigateAxisArray::OnMouseWheelBackward()
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov  5 15:09:21 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-NavigateAxisArray::SetAxisOrientation(const AxisOrientation orientation)
+NavigateAxisArray::SetAxisOrientation(const Orientation orientation)
 {
     axisOrientation = orientation;
+}
+
+// ****************************************************************************
+//  Method: NavigateAxisArray::SetDomainOrientation
+//
+//  Purpose:
+//    Set the axis orientation.
+//
+//  Programmer: Eric Brugger
+//  Creation:   November 5, 2012
+//
+// ****************************************************************************
+
+void
+NavigateAxisArray::SetDomainOrientation(const Orientation orientation)
+{
+    domainOrientation = orientation;
 }
 
 // ****************************************************************************
@@ -297,10 +330,15 @@ NavigateAxisArray::SetAxisOrientation(const AxisOrientation orientation)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 31, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov  5 15:09:21 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-NavigateAxisArray::PanCamera(const int x, const int y, bool snap_horiz)
+NavigateAxisArray::PanCamera(const int x, const int y)
 {
     vtkRenderWindowInteractor *rwi = Interactor;
 
@@ -318,17 +356,35 @@ NavigateAxisArray::PanCamera(const int x, const int y, bool snap_horiz)
         //
         VisWindow *vw = proxy;
 
+        double    xscale, yscale;
         double    pan[2];
 
         avtViewAxisArray newView = vw->GetViewAxisArray();
         
-        double xscale = (newView.domain[1] - newView.domain[0]) /
-            ((newView.viewport[1] - newView.viewport[0]) * (double)(size[0]));
-        double yscale = (newView.range[1] - newView.range[0]) /
-            ((newView.viewport[3] - newView.viewport[2]) * (double)(size[0]));
+        if (domainOrientation == Horizontal)
+        {
+            xscale = (newView.domain[1] - newView.domain[0]) /
+                     ((newView.viewport[1] - newView.viewport[0]) *
+                      (double)(size[0]));
+            yscale = (newView.range[1] - newView.range[0]) /
+                     ((newView.viewport[3] - newView.viewport[2]) *
+                      (double)(size[1]));
 
-        pan[0] = (double)(x - OldX) * xscale;
-        pan[1] = (double)(y - OldY) * yscale;
+            pan[0] = (double)(x - OldX) * xscale;
+            pan[1] = (double)(y - OldY) * yscale;
+        }
+        else
+        {
+            xscale = (newView.range[1] - newView.range[0]) /
+                     ((newView.viewport[1] - newView.viewport[0]) *
+                      (double)(size[0]));
+            yscale = (newView.domain[1] - newView.domain[0]) /
+                     ((newView.viewport[3] - newView.viewport[2]) *
+                      (double)(size[1]));
+
+            pan[1] = (double)(x - OldX) * xscale;
+            pan[0] = (double)(y - OldY) * yscale;
+        }
 
         newView.domain[0] -= pan[0];
         newView.domain[1] -= pan[0];
@@ -337,7 +393,7 @@ NavigateAxisArray::PanCamera(const int x, const int y, bool snap_horiz)
 
         // perform a horizontal snap
         int newX = x;
-        if (snap_horiz)
+        if (shouldSnap)
         {
             double dx0 = newView.domain[0] - double(int(newView.domain[0]));
             double dx1 = newView.domain[1] - double(int(newView.domain[1]));

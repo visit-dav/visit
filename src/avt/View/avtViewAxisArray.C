@@ -172,23 +172,31 @@ avtViewAxisArray::SetToDefault()
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Eric Brugger, Mon Nov  5 15:14:46 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
 void
-avtViewAxisArray::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
+avtViewAxisArray::SetViewInfoFromView(avtViewInfo &viewInfo,
+    bool swapDomainRange, int *size)
 {
     CheckAndCorrectDomainRange();
 
     //
     // Calculate a new range so that we get a 1 to 1 aspect ration.
     //
-    double    viewScale;
     double    realRange[2];
 
-    viewScale = ((domain[1] - domain[0]) / (range[1] -  range[0])) *
-                ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
-                ((double) size[1] / (double) size[0]) ;
+    if (swapDomainRange)
+        viewScale = ((domain[1] - domain[0]) / (range[1] -  range[0])) *
+            ((viewport[1] - viewport[0]) / (viewport[3] - viewport[2])) *
+            ((double) size[0] / (double) size[1]) ;
+    else
+        viewScale = ((domain[1] - domain[0]) / (range[1] -  range[0])) *
+            ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
+            ((double) size[1] / (double) size[0]) ;
 
     realRange[0] = range[0] * viewScale;
     realRange[1] = range[1] * viewScale;
@@ -199,19 +207,40 @@ avtViewAxisArray::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     //
     double    width;
 
-    width = realRange[1] - realRange[0];
+    if (swapDomainRange)
+        width = domain[1] - domain[0];
+    else
+        width = realRange[1] - realRange[0];
 
-    viewInfo.viewUp[0] = 0.;
-    viewInfo.viewUp[1] = 1.;
-    viewInfo.viewUp[2] = 0.;
+    if (swapDomainRange)
+    {
+        viewInfo.viewUp[0] = 1.;
+        viewInfo.viewUp[1] = 0.;
+        viewInfo.viewUp[2] = 0.;
+    }
+    else
+    {
+        viewInfo.viewUp[0] = 0.;
+        viewInfo.viewUp[1] = 1.;
+        viewInfo.viewUp[2] = 0.;
+    }
 
     viewInfo.focus[0] = (domain[1] + domain[0]) / 2.;
     viewInfo.focus[1] = (realRange[1]  + realRange[0]) / 2.;
     viewInfo.focus[2] = 0.;
 
-    viewInfo.camera[0] = viewInfo.focus[0];
-    viewInfo.camera[1] = viewInfo.focus[1];
-    viewInfo.camera[2] = 1.;
+    if (swapDomainRange)
+    {
+        viewInfo.camera[0] = viewInfo.focus[0];
+        viewInfo.camera[1] = viewInfo.focus[1];
+        viewInfo.camera[2] = -1.;
+    }
+    else
+    {
+        viewInfo.camera[0] = viewInfo.focus[0];
+        viewInfo.camera[1] = viewInfo.focus[1];
+        viewInfo.camera[2] = 1.;
+    }
 
     //
     // Set the projection mode, parallel scale and view angle.  The
@@ -284,21 +313,16 @@ avtViewAxisArray::GetViewport(double *winViewport) const
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Eric Brugger, Mon Nov  5 15:14:46 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
 double
 avtViewAxisArray::GetScaleFactor(int *size)
 {
-    double s;
-
-    CheckAndCorrectDomainRange();
-
-    s = ((domain[1] - domain[0]) / (range[1]  - range[0])) *
-        ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
-        ((double) size[1] / (double) size[0]);
-
-    return s;
+   return viewScale;
 }
 
 // ****************************************************************************

@@ -145,7 +145,11 @@ VisWinInteractions::~VisWinInteractions()
 //    Added axis array mode.
 //
 //    Eric Brugger, Tue Dec  9 14:22:33 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:28:10 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -166,8 +170,9 @@ VisWinInteractions::SetInteractionMode(INTERACTION_MODE m)
       case WINMODE_AXISARRAY:
         StopAxisArrayMode();
         break;
-      case WINMODE_AXISPARALLEL:
-        StopAxisParallelMode();
+      case WINMODE_PARALLELAXES:
+      case WINMODE_VERTPARALLELAXES:
+        StopParallelAxesMode();
         break;
       case WINMODE_NONE:
       default:
@@ -190,8 +195,9 @@ VisWinInteractions::SetInteractionMode(INTERACTION_MODE m)
       case WINMODE_AXISARRAY:
         StartAxisArrayMode();
         break;
-      case WINMODE_AXISPARALLEL:
-        StartAxisParallelMode();
+      case WINMODE_PARALLELAXES:
+      case WINMODE_VERTPARALLELAXES:
+        StartParallelAxesMode();
         break;
       case WINMODE_NONE:
       default:
@@ -317,10 +323,10 @@ VisWinInteractions::StartAxisArrayMode(void)
 }
 
 // ****************************************************************************
-//  Method: VisWinInteractions::StartAxisParallelMode
+//  Method: VisWinInteractions::StartParallelAxesMode
 //
 //  Purpose:
-//      Sets the appropriate interactor for AxisParallel mode.
+//      Sets the appropriate interactor for ParallelAxes mode.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -330,11 +336,11 @@ VisWinInteractions::StartAxisArrayMode(void)
 // ****************************************************************************
 
 void
-VisWinInteractions::StartAxisParallelMode(void)
+VisWinInteractions::StartParallelAxesMode(void)
 {
     if(hotPointInteractor != NULL)
     {
-        hotPointInteractor->StartAxisParallelMode(mode);
+        hotPointInteractor->StartParallelAxesMode(mode);
     }
 }
 
@@ -436,10 +442,10 @@ VisWinInteractions::StopAxisArrayMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWinInteractions::StopAxisParallelMode
+//  Method: VisWinInteractions::StopParallelAxesMode
 //
 //  Purpose:
-//      Stops the AxisParallel interactions.
+//      Stops the ParallelAxes interactions.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -449,11 +455,11 @@ VisWinInteractions::StopAxisArrayMode(void)
 // ****************************************************************************
 
 void
-VisWinInteractions::StopAxisParallelMode(void)
+VisWinInteractions::StopParallelAxesMode(void)
 {
     if(hotPointInteractor != NULL)
     {
-        hotPointInteractor->StopAxisParallelMode();
+        hotPointInteractor->StopParallelAxesMode();
     }
 }
 
@@ -659,11 +665,15 @@ VisWinInteractions::NoPlots(void)
 //    Added new AxisArray window mode; no lineout support for it.
 //
 //    Eric Brugger, Tue Dec  9 14:22:33 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Eric Brugger, Thu Oct 27 13:38:58 PDT 2011
 //    Added the ability to enable/disable interaction mode changes to
 //    support adding a multi resolution dispaly capability for AMR data.
+//
+//    Eric Brugger, Mon Nov  5 15:28:10 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -674,7 +684,8 @@ VisWinInteractions::HasPlots(void)
     {
         if (!((mediator.GetMode() == WINMODE_3D
                || mediator.GetMode() == WINMODE_AXISARRAY
-               || mediator.GetMode() == WINMODE_AXISPARALLEL) &&
+               || mediator.GetMode() == WINMODE_PARALLELAXES
+               || mediator.GetMode() == WINMODE_VERTPARALLELAXES) &&
               mode == LINEOUT))
         {
             SetInteractionMode(mode);

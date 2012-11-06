@@ -76,7 +76,7 @@
 #include <VisWinAxes.h>
 #include <VisWinAxes3D.h>
 #include <VisWinAxesArray.h>
-#include <VisWinAxesParallel.h>
+#include <VisWinParallelAxes.h>
 #include <VisWinBackground.h>
 #include <VisWinFrame.h>
 #include <VisWinInteractions.h>
@@ -240,7 +240,7 @@ VisWindow::VisWindow(bool callInit)
 //    modality supporting the correct style annotations.
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Hank Childs, Fri Aug 27 15:27:25 PDT 2010
 //    Initialize 3D axis scaling options.
@@ -341,8 +341,8 @@ VisWindow::Initialize(VisWinRendering *ren)
     axesArray    = new VisWinAxesArray(colleagueProxy);
     AddColleague(axesArray);
 
-    axesParallel = new VisWinAxesParallel(colleagueProxy);
-    AddColleague(axesParallel);
+    parallelAxes = new VisWinParallelAxes(colleagueProxy);
+    AddColleague(parallelAxes);
 
     windowBackground = new VisWinBackground(colleagueProxy);
     AddColleague(windowBackground);
@@ -470,10 +470,10 @@ VisWindow::~VisWindow()
         delete axesArray;
         axesArray = NULL;
     }
-    if (axesParallel != NULL)
+    if (parallelAxes != NULL)
     {
-        delete axesParallel;
-        axesParallel = NULL;
+        delete parallelAxes;
+        parallelAxes = NULL;
     }
     if (tools != NULL)
     {
@@ -560,7 +560,11 @@ VisWindow::~VisWindow()
 //    Added new AxisArray window mode.
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -621,8 +625,9 @@ VisWindow::AddColleague(VisWinColleague *col)
       case WINMODE_AXISARRAY:
         col->StartAxisArrayMode();
         break;
-      case WINMODE_AXISPARALLEL:
-        col->StartAxisParallelMode();
+      case WINMODE_PARALLELAXES:
+      case WINMODE_VERTPARALLELAXES:
+        col->StartParallelAxesMode();
         break;
       case WINMODE_NONE:
       default:
@@ -995,7 +1000,11 @@ VisWindow::UpdatePlotList(vector<avtActor_p> &lst)
 //    Added new AxisArray window mode.
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -1037,8 +1046,9 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
       case WINMODE_AXISARRAY:
         StopAxisArrayMode();
         break;
-      case WINMODE_AXISPARALLEL:
-        StopAxisParallelMode();
+      case WINMODE_PARALLELAXES:
+      case WINMODE_VERTPARALLELAXES:
+        StopParallelAxesMode();
         break;
       case WINMODE_NONE:
         break;
@@ -1073,8 +1083,9 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
           case WINMODE_AXISARRAY:
             StartAxisArrayMode();
             break;
-          case WINMODE_AXISPARALLEL:
-            StartAxisParallelMode();
+          case WINMODE_PARALLELAXES:
+          case WINMODE_VERTPARALLELAXES:
+            StartParallelAxesMode();
             break;
           default:
             { EXCEPTION1(BadWindowModeException, mode); }
@@ -1227,29 +1238,42 @@ VisWindow::StartAxisArrayMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWindow::StartAxisParallelMode
+//  Method: VisWindow::StartParallelAxesMode
 //
 //  Purpose:
-//      Has all of its modules start AxisParallel mode.
+//      Has all of its modules start ParallelAxes mode.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
 //
+//  Modifications:
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
-VisWindow::StartAxisParallelMode(void)
+VisWindow::StartParallelAxesMode(void)
 {
     //
     // Update the view.  In the future this should probably go into
-    // VisWinView's StartAxisParallelMode, but for now we will do it here.
+    // VisWinView's StartParallelAxesMode, but for now we will do it here.
     //
     UpdateView();
+
+    //
+    // Set the axis orientation based on the window mode.
+    //
+    if (mode == WINMODE_PARALLELAXES)
+        parallelAxes->SetAxisOrientation(VisWinParallelAxes::Horizontal);
+    else
+        parallelAxes->SetAxisOrientation(VisWinParallelAxes::Vertical);
 
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
-        (*it)->StartAxisParallelMode();
+        (*it)->StartParallelAxesMode();
     }
 }
 
@@ -1340,10 +1364,10 @@ VisWindow::StopAxisArrayMode(void)
 }
 
 // ****************************************************************************
-//  Method: VisWindow::StopAxisParallelMode
+//  Method: VisWindow::StopParallelAxesMode
 //
 //  Purpose:
-//      Has all of its modules stop AxisParallel mode.
+//      Has all of its modules stop ParallelAxes mode.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -1351,12 +1375,12 @@ VisWindow::StopAxisArrayMode(void)
 // ****************************************************************************
 
 void
-VisWindow::StopAxisParallelMode(void)
+VisWindow::StopParallelAxesMode(void)
 {
     std::vector< VisWinColleague * >::iterator it;
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
-        (*it)->StopAxisParallelMode();
+        (*it)->StopParallelAxesMode();
     }
 }
 
@@ -3091,7 +3115,7 @@ VisWindow::Render(void)
 //    handles viewports and axes with a new high-dimensional window modality.
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Support 3D axis scaling (3D equivalent of full-frame mode).
@@ -3100,6 +3124,10 @@ VisWindow::Render(void)
 //    Hank Childs, Fri Aug 27 14:37:31 PDT 2010
 //    1e+18 data seems to be too much for OpenGL and Mesa.  Scale it down 
 //    using our axis scales infrastructure before rendering.
+//
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // *****************************************************************************
 
@@ -3188,7 +3216,9 @@ VisWindow::UpdateView()
         FullFrameOn(viewCurve.GetScaleFactor(size), 1);
         Render();
     }
-    else if (mode == WINMODE_AXISARRAY)
+    else if (mode == WINMODE_AXISARRAY ||
+             mode == WINMODE_PARALLELAXES ||
+             mode == WINMODE_VERTPARALLELAXES)
     {
         avtViewInfo viewInfo;
         int *size=rendering->GetFirstRenderer()->GetSize();
@@ -3200,23 +3230,10 @@ VisWindow::UpdateView()
             SetViewport(viewAxisArray.viewport[0], viewAxisArray.viewport[2],
                         viewAxisArray.viewport[1], viewAxisArray.viewport[3]);
         }
-        viewAxisArray.SetViewInfoFromView(viewInfo, size);
-        FullFrameOn(viewAxisArray.GetScaleFactor(size), 1);
-        view->SetViewInfo(viewInfo);
-    }
-    else if (mode == WINMODE_AXISPARALLEL)
-    {
-        avtViewInfo viewInfo;
-        int *size=rendering->GetFirstRenderer()->GetSize();
-        if (viewAxisArray.viewport[0] != viewportLeft ||
-            viewAxisArray.viewport[1] != viewportRight ||
-            viewAxisArray.viewport[2] != viewportBottom ||
-            viewAxisArray.viewport[3] != viewportTop)
-        {
-            SetViewport(viewAxisArray.viewport[0], viewAxisArray.viewport[2],
-                        viewAxisArray.viewport[1], viewAxisArray.viewport[3]);
-        }
-        viewAxisArray.SetViewInfoFromView(viewInfo, size);
+        if (mode == WINMODE_VERTPARALLELAXES)
+            viewAxisArray.SetViewInfoFromView(viewInfo, true, size);
+        else
+            viewAxisArray.SetViewInfoFromView(viewInfo, false, size);
         FullFrameOn(viewAxisArray.GetScaleFactor(size), 1);
         view->SetViewInfo(viewInfo);
     }
@@ -3747,7 +3764,7 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 //   Added new AxisArray window mode.
 //
 //   Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//   Added the AxisParallel window mode.
+//   Added the ParallelAxes window mode.
 //
 //   Brad Whitlock, Thu Aug 26 15:37:10 PDT 2010
 //   I added force so we don't have to have different annotation attributes
@@ -3798,7 +3815,7 @@ VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts, bool force)
         UpdateAxes2D();
         UpdateAxes3D();
         UpdateAxesArray();
-        UpdateAxesParallel();
+        UpdateParallelAxes();
         UpdateTextAnnotations();
 
         // Re-render the window.
@@ -4403,10 +4420,10 @@ VisWindow::UpdateAxesArray()
 
 
 // ****************************************************************************
-//  Method:  VisWindow::UpdateAxesParallel
+//  Method:  VisWindow::UpdateParallelAxes
 //
 //  Purpose:
-//    Update necessary aspects of the VisWinAxesParallel
+//    Update necessary aspects of the VisWinParallelAxes
 //
 //  Arguments:
 //    none
@@ -4420,36 +4437,36 @@ VisWindow::UpdateAxesArray()
 //
 // ****************************************************************************
 void
-VisWindow::UpdateAxesParallel()
+VisWindow::UpdateParallelAxes()
 {
     const AxesArray &atts = annotationAtts.GetAxesArray();
 
     // visibility
-    axesParallel->SetVisibility(atts.GetVisible());
+    parallelAxes->SetVisibility(atts.GetVisible());
 
     // labels
     int label = atts.GetAxes().GetLabel().GetVisible() ? 1 : 0;
-    axesParallel->SetLabelVisibility(label);
-    axesParallel->SetLabelScaling(atts.GetAutoSetScaling(), 
+    parallelAxes->SetLabelVisibility(label);
+    parallelAxes->SetLabelScaling(atts.GetAutoSetScaling(), 
                                   atts.GetAxes().GetLabel().GetScaling());
 
     // title
-    axesParallel->SetTitleVisibility(atts.GetAxes().GetTitle().GetVisible());
+    parallelAxes->SetTitleVisibility(atts.GetAxes().GetTitle().GetVisible());
 
     // ticks
-    axesParallel->SetTickVisibility(atts.GetTicksVisible(), label);
-    axesParallel->SetAutoSetTicks(atts.GetAutoSetTicks());
-    axesParallel->SetMajorTickMinimum(atts.GetAxes().GetTickMarks().GetMajorMinimum());
-    axesParallel->SetMajorTickMaximum(atts.GetAxes().GetTickMarks().GetMajorMaximum());
-    axesParallel->SetMajorTickSpacing(atts.GetAxes().GetTickMarks().GetMajorSpacing());
-    axesParallel->SetMinorTickSpacing(atts.GetAxes().GetTickMarks().GetMinorSpacing());
+    parallelAxes->SetTickVisibility(atts.GetTicksVisible(), label);
+    parallelAxes->SetAutoSetTicks(atts.GetAutoSetTicks());
+    parallelAxes->SetMajorTickMinimum(atts.GetAxes().GetTickMarks().GetMajorMinimum());
+    parallelAxes->SetMajorTickMaximum(atts.GetAxes().GetTickMarks().GetMajorMaximum());
+    parallelAxes->SetMajorTickSpacing(atts.GetAxes().GetTickMarks().GetMajorSpacing());
+    parallelAxes->SetMinorTickSpacing(atts.GetAxes().GetTickMarks().GetMinorSpacing());
 
     // font size
-    axesParallel->SetLabelFontHeight(atts.GetAxes().GetLabel().GetFont().GetScale()*0.02);
-    axesParallel->SetTitleFontHeight(atts.GetAxes().GetTitle().GetFont().GetScale()*0.02);
+    parallelAxes->SetLabelFontHeight(atts.GetAxes().GetLabel().GetFont().GetScale()*0.02);
+    parallelAxes->SetTitleFontHeight(atts.GetAxes().GetTitle().GetFont().GetScale()*0.02);
 
     // line width
-    axesParallel->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
+    parallelAxes->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
 
     // text attributes
     VisWinTextAttributes titleAtts, labelAtts;
@@ -4457,8 +4474,8 @@ VisWindow::UpdateAxesParallel()
                        atts.GetAxes().GetTitle().GetFont());
     labelAtts = FontAttributes_To_VisWinTextAttributes(
                        atts.GetAxes().GetLabel().GetFont());
-    axesParallel->SetTitleTextAttributes(titleAtts);
-    axesParallel->SetLabelTextAttributes(labelAtts);
+    parallelAxes->SetTitleTextAttributes(titleAtts);
+    parallelAxes->SetLabelTextAttributes(labelAtts);
     // SetLabelScaling has 3 args not 2.
 }
 
@@ -5391,7 +5408,11 @@ VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineC
 //    Added new AxisArray window mode.
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -5410,13 +5431,9 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
 
         s = viewCurve.GetScaleFactor(size);
     }
-    else if (mode == WINMODE_AXISARRAY)
-    {
-        int *size=rendering->GetFirstRenderer()->GetSize();
-
-        s = viewAxisArray.GetScaleFactor(size);
-    }
-    else if (mode == WINMODE_AXISPARALLEL)
+    else if (mode == WINMODE_AXISARRAY ||
+             mode == WINMODE_PARALLELAXES ||
+             mode == WINMODE_VERTPARALLELAXES)
     {
         int *size=rendering->GetFirstRenderer()->GetSize();
 
@@ -6572,7 +6589,11 @@ VisWindow::Set3DAxisScalingFactors(bool on, const double s[3])
 //    Added new AxisArray window mode (always fullframe).
 //
 //    Eric Brugger, Tue Dec  9 14:33:57 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:57:15 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -6582,7 +6603,8 @@ VisWindow::GetFullFrameMode() const
     if ((mode == WINMODE_2D && view2D.fullFrame) ||
         (mode == WINMODE_CURVE) ||
         (mode == WINMODE_AXISARRAY) ||
-        (mode == WINMODE_AXISPARALLEL))
+        (mode == WINMODE_PARALLELAXES) ||
+        (mode == WINMODE_VERTPARALLELAXES))
         return true;
     else 
         return false; 

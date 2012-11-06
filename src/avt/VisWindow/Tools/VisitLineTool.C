@@ -282,7 +282,11 @@ VisitLineTool::Disable()
 //    Disabled for AxisArray window mode.
 //
 //    Eric Brugger, Tue Dec  9 14:02:23 PST 2008
-//    Disabled for AxisParallel window mode.
+//    Disabled for ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:54:11 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -290,7 +294,8 @@ bool
 VisitLineTool::IsAvailable() const
 {
     return proxy.GetMode() != WINMODE_AXISARRAY &&
-           proxy.GetMode() != WINMODE_AXISPARALLEL && proxy.HasPlots();
+           proxy.GetMode() != WINMODE_PARALLELAXES &&
+           proxy.GetMode() != WINMODE_VERTPARALLELAXES && proxy.HasPlots();
 }
 
 // ****************************************************************************
