@@ -183,7 +183,7 @@ def encode_wmv(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
-        cmd += "-mbd -rd -flags +4mv+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+        cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
         cmd += "-b 18000000 -r 30 %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         sexe(cmd)
@@ -197,7 +197,7 @@ def encode_swf(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
-        cmd += "-mbd -rd -flags +4mv+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+        cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
         cmd += "-b 18000000 -r 30 -f swf %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         sexe(cmd)
@@ -239,7 +239,7 @@ def encode_mov(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-        cmd += "-mbd -rd -flags +4mv+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+        cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
         cmd += "-an -b 18000000 -f mov -r 30 %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         sexe(cmd)
@@ -253,7 +253,7 @@ def encode_mp4(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-        cmd += "-mbd -rd -flags +4mv+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+        cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
         cmd += "-an -b 18000000 -f mp4 %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         sexe(cmd)
