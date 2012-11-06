@@ -168,7 +168,11 @@ VisWinView::SetViewInfo(const avtViewInfo &vI)
 //    window mode behave the same as the 2D and Curve modes.
 //
 //    Eric Brugger, Tue Dec  9 14:18:24 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
+//
+//    Eric Brugger, Mon Nov  5 15:34:55 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -181,7 +185,8 @@ VisWinView::ResetView(void)
     if (mediator.GetMode() == WINMODE_2D ||
         mediator.GetMode() == WINMODE_CURVE ||
         mediator.GetMode() == WINMODE_AXISARRAY ||
-        mediator.GetMode() == WINMODE_AXISPARALLEL)
+        mediator.GetMode() == WINMODE_PARALLELAXES ||
+        mediator.GetMode() == WINMODE_VERTPARALLELAXES)
     {
         vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
         double x_diff = fabs(bounds[0] - bounds[1]);
@@ -410,11 +415,11 @@ VisWinView::StopAxisArrayMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWinView::StartAxisParallelMode
+//  Method: VisWinView::StartParallelAxesMode
 //
 //  Purpose:
 //    Takes the camera out of perspective projection because it doesn't make
-//    sense for AxisParallel.
+//    sense for ParallelAxes.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -424,7 +429,7 @@ VisWinView::StopAxisArrayMode(void)
 // ****************************************************************************
 
 void
-VisWinView::StartAxisParallelMode(void)
+VisWinView::StartParallelAxesMode(void)
 {
     vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
     if (!viewInfo.orthographic)
@@ -435,11 +440,11 @@ VisWinView::StartAxisParallelMode(void)
 
 
 // ****************************************************************************
-//  Method: VisWinView::StopAxisParallelMode
+//  Method: VisWinView::StopParallelAxesMode
 //
 //  Purpose:
 //    Takes the camera back into perspective projection if it should be, but
-//    we disabled it for AxisParallel mode.
+//    we disabled it for ParallelAxes mode.
 //
 //  Programmer: Eric Brugger
 //  Creation:   December 9, 2008
@@ -449,7 +454,7 @@ VisWinView::StartAxisParallelMode(void)
 // ****************************************************************************
 
 void
-VisWinView::StopAxisParallelMode(void)
+VisWinView::StopParallelAxesMode(void)
 {
     vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
     if (!viewInfo.orthographic)

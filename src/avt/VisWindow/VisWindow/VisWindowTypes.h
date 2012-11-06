@@ -59,7 +59,7 @@
 //    Added SPREADSHEET_PICK to INTERACTION_MODE
 //
 //    Eric Brugger, Tue Dec  9 14:32:10 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Mark C. Miller, Wed Mar  4 17:59:51 PST 2009
 //    Adjusted for dbio-only build.
@@ -70,6 +70,10 @@
 //    Jonathan Byrd (Allinea Software) Sun 18 Dec 2011
 //    Added DDT_PICK mode
 //
+//    Eric Brugger, Mon Nov  5 15:03:55 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ************************************************************************* //
 
 
@@ -78,12 +82,13 @@
 
 typedef enum
 {
-    WINMODE_2D            = 0,
-    WINMODE_3D,           /* 1 */
-    WINMODE_CURVE,        /* 2 */
-    WINMODE_AXISARRAY,    /* 3 */
-    WINMODE_AXISPARALLEL, /* 4 */
-    WINMODE_NONE          /* 5 */
+    WINMODE_2D                = 0,
+    WINMODE_3D,               /* 1 */
+    WINMODE_CURVE,            /* 2 */
+    WINMODE_AXISARRAY,        /* 3 */
+    WINMODE_PARALLELAXES,     /* 4 */
+    WINMODE_VERTPARALLELAXES, /* 5 */
+    WINMODE_NONE              /* 6 */
 }  WINDOW_MODE;
 
 #ifndef DBIO_ONLY
@@ -202,7 +207,7 @@ VISWINDOW_API bool        TOOLUPDATE_MODE_FromString(const std::string &,
 //
 //  Modifications:
 //    Eric Brugger, Tue Dec  9 14:32:10 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 // ****************************************************************************
 
@@ -213,7 +218,8 @@ ValidMode(WINDOW_MODE mode)
         mode == WINMODE_3D ||
         mode == WINMODE_CURVE ||
         mode == WINMODE_AXISARRAY ||
-        mode == WINMODE_AXISPARALLEL)
+        mode == WINMODE_PARALLELAXES ||
+        mode == WINMODE_VERTPARALLELAXES)
     {
         return true;
     }

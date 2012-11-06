@@ -502,7 +502,7 @@ avtDataAttributes::DestructSelf(void)
 //    Added component extents for array variables.
 //
 //    Eric Brugger, Tue Dec  9 16:19:10 PST 2008
-//    Added the AxisParallel window mode.
+//    Added the ParallelAxes window mode.
 //
 //    Hank Childs, Tue Jan 20 12:03:05 CST 2009
 //    Added dynamicDomainDecomposition.
@@ -522,6 +522,10 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Cyrus Harrison, Tue Feb  7 11:15:20 PST 2012
 //    Add print for presentGhostZoneTypes.
+//
+//    Eric Brugger, Mon Nov  5 15:10:17 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
 //
 // ****************************************************************************
 
@@ -625,8 +629,11 @@ avtDataAttributes::Print(ostream &out)
       case WINMODE_AXISARRAY:
         out << "The window mode is axis-array" << endl;
         break;
-      case WINMODE_AXISPARALLEL:
-        out << "The window mode is axis-parallel" << endl;
+      case WINMODE_PARALLELAXES:
+        out << "The window mode is parallel-axes" << endl;
+        break;
+      case WINMODE_VERTPARALLELAXES:
+        out << "The window mode is vertical-parallel-axes" << endl;
         break;
       case WINMODE_NONE:
         out << "The window mode is none" << endl;

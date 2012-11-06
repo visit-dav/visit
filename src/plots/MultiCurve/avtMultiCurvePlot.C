@@ -260,18 +260,36 @@ avtMultiCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    I modified the routine to get the y axis tick spacing from the plot
 //    information.
 //
+//    Eric Brugger, Mon Nov  5 16:31:16 PST 2012
+//    I added the ability to display the parallel axes either horizontally
+//    or vertically.
+//
 // ****************************************************************************
 
 void
 avtMultiCurvePlot::CustomizeBehavior(void)
 {
-    behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_AXISPARALLEL);
+    //
+    // Set the window mode.
+    //
+    const MapNode *mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("AxisOrientation");
+    if (mNode != NULL)
+    {
+        if (mNode->GetEntry("vertical")->AsInt())
+            behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_PARALLELAXES);
+        else
+            behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_VERTPARALLELAXES);
+    }
+    else
+    {
+        behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_PARALLELAXES);
+    }
 
     //
     // Create the legend, which consists of the tick scale and any legend
     // text from the operators.
     //
-    const MapNode *mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("AxisTickSpacing");
+    mNode = behavior->GetInfo().GetAttributes().GetPlotInformation().GetData().GetEntry("AxisTickSpacing");
     if (mNode != NULL)
     {
         char msg[80];

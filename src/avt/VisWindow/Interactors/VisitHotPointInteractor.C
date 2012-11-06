@@ -624,6 +624,10 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
 //
+//   Eric Brugger, Mon Nov  5 15:48:46 PST 2012
+//   I added the ability to display the parallel axes either horizontally
+//   or vertically.
+//
 // ****************************************************************************
 void
 VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
@@ -645,6 +649,7 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
             navigateAxisArray = new NavigateAxisArray(proxy);
         }
         navigateAxisArray->SetAxisOrientation(NavigateAxisArray::Vertical);
+        navigateAxisArray->SetDomainOrientation(NavigateAxisArray::Horizontal);
         newInteractor = navigateAxisArray;
         break;
       case ZOOM:
@@ -682,10 +687,10 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
 }
 
 // ****************************************************************************
-//  Method:  VisitHotPointInteractor::StartAxisParallelMode
+//  Method:  VisitHotPointInteractor::StartParallelAxesMode
 //
 //  Purpose:
-//    Sets up the interactors for AxisParallel window mode.
+//    Sets up the interactors for ParallelAxes window mode.
 //
 //  Arguments:
 //    mode       the interaction mode
@@ -697,15 +702,20 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
 //
+//   Eric Brugger, Mon Nov  5 15:48:46 PST 2012
+//   I added the ability to display the parallel axes either horizontally
+//   or vertically.
+//
 // ****************************************************************************
 void
-VisitHotPointInteractor::StartAxisParallelMode(INTERACTION_MODE mode)
+VisitHotPointInteractor::StartParallelAxesMode(INTERACTION_MODE mode)
 {
     if (!proxy.HasPlots())
     {
         return;
     }
 
+    VisWindow *vw = proxy;
     VisitInteractor  *newInteractor  = NULL;
     switch(mode)
     {
@@ -717,7 +727,16 @@ VisitHotPointInteractor::StartAxisParallelMode(INTERACTION_MODE mode)
         {
             navigateAxisArray = new NavigateAxisArray(proxy);
         }
-        navigateAxisArray->SetAxisOrientation(NavigateAxisArray::Horizontal);
+        if (vw->GetWindowMode() == WINMODE_PARALLELAXES)
+        {
+            navigateAxisArray->SetAxisOrientation(NavigateAxisArray::Horizontal);
+            navigateAxisArray->SetDomainOrientation(NavigateAxisArray::Horizontal);
+        }
+        else
+        {
+            navigateAxisArray->SetAxisOrientation(NavigateAxisArray::Vertical);
+            navigateAxisArray->SetDomainOrientation(NavigateAxisArray::Vertical);
+        }
         newInteractor = navigateAxisArray;
         break;
       case ZOOM:
@@ -825,10 +844,10 @@ VisitHotPointInteractor::StopAxisArrayMode()
 }
 
 // ****************************************************************************
-// Method: VisitHotPointInteractor::StopAxisParallelMode
+// Method: VisitHotPointInteractor::StopParallelAxesMode
 //
 // Purpose: 
-//   Ends AxisParallel interaction mode.
+//   Ends ParallelAxes interaction mode.
 //
 // Programmer: Eric Brugger
 // Creation:   December 9, 2008
@@ -836,7 +855,7 @@ VisitHotPointInteractor::StopAxisArrayMode()
 // ****************************************************************************
 
 void
-VisitHotPointInteractor::StopAxisParallelMode()
+VisitHotPointInteractor::StopParallelAxesMode()
 {
     SetNullInteractor();
 }

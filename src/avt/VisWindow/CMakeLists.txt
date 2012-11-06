@@ -53,7 +53,7 @@ Colleagues/VisWinFrame.C
 Colleagues/VisWinInteractions.C
 Colleagues/VisWinLegends.C
 Colleagues/VisWinLighting.C
-Colleagues/VisWinAxesParallel.C
+Colleagues/VisWinParallelAxes.C
 Colleagues/VisWinPathTracker.C
 Colleagues/VisWinPlots.C
 Colleagues/VisWinQuery.C
