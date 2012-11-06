@@ -77,54 +77,78 @@ class TestEncoding(unittest.TestCase):
             self.assertTrue("wmv" in encoders)
     def test_avi(self):
         if "avi" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.avi"))
+            ofile = pjoin(output_dir,"wave.movie.avi")
+            encoding.encode(iframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_mpg(self):
         if "mpg" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.mpg"))
+            ofile = pjoin(output_dir,"wave.movie.mpg")
+            encoding.encode(iframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_mpg_slow(self):
         if "mpg" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.slow.mpg"),2)
+            ofile = pjoin(output_dir,"wave.movie.slow.mpg")
+            encoding.encode(iframes,ofile,2)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_mov(self):
         if "mov" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.mov"))
+            ofile = pjoin(output_dir,"wave.movie.mov")
+            encoding.encode(iframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_mov_slow(self):
         if "mov" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.slow.mov"),2)
+            ofile = pjoin(output_dir,"wave.movie.slow.mov")
+            encoding.encode(iframes,ofile,2)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_wmv(self):
         if "wmv" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.wmv"))
+            ofile = pjoin(output_dir,"wave.movie.wmv")
+            encoding.encode(iframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_wmv_slow(self):
         if "wmv" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.slow.wmv"),2)
+            ofile = pjoin(output_dir,"wave.movie.slow.wmv")
+            encoding.encode(iframes,ofile,2)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_sm(self):
         if "sm" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.sm"))
+            ofile = pjoin(output_dir,"wave.movie.sm")
+            encoding.encode(iframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_sm_slow(self):
         if "sm" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.slow.sm"),2)
+            ofile = pjoin(output_dir,"wave.movie.slow.sm")
+            encoding.encode(iframes,ofile,2)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_swf(self):
         if "swf" in encoding.encoders():
-            encoding.encode(iframes,pjoin(output_dir,"wave.movie.swf"))
+            ofile = pjoin(output_dir,"wave.movie.swf")
+            encoding.encode(iframes,ofile )
+            self.assertTrue(os.path.isfile(ofile))
     def test_unsupported(self):
             self.assertRaises(VisItException, encoding.encode, iframes,"wave.movie.bad_ext")
     def test_sm_stereo(self):
         if "sm" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes_stereo,pjoin(output_dir,"wave.movie.stereo.sm"),stereo=True)
+            ofile = pjoin(output_dir,"wave.movie.stereo.sm")
+            encoding.encode(iframes_stereo,ofile,stereo=True)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_sm_stereo_slow(self):
         if "sm" in encoding.encoders():
             clean_slnks()
-            encoding.encode(iframes_stereo,pjoin(output_dir,"wave.movie.stereo.slow.sm"),2,stereo=True)
+            ofile = pjoin(output_dir,"wave.movie.stereo.slow.sm")
+            encoding.encode(iframes_stereo,ofile,2,stereo=True)
             self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(os.path.isfile(ofile))
     def test_stereo_uneven_frames_error(self):
             self.assertRaises(VisItException, encoding.encode, iframes,
                                                                 pjoin(output_dir,"wave.movie.stereo.bad.sm"),
@@ -134,11 +158,15 @@ class TestEncoding(unittest.TestCase):
             eframes = pjoin(output_dir,"extract_out_%04d.png")
             encoding.encode(iframes,pjoin(output_dir,"wave.movie.mpg"))
             encoding.extract(pjoin(output_dir,"wave.movie.mpg"),eframes)
-            encoding.encode(eframes,pjoin(output_dir,"wave.movie.extract.and.reencode.mpg"))
+            ofile = pjoin(output_dir,"wave.movie.extract.and.reencode.mpg")
+            encoding.encode(eframes,ofile)
+            self.assertTrue(os.path.isfile(ofile))
     def test_pre_lr_stereo(self):
         if "divx" in encoding.encoders():
             iframes = pjoin(iframes_dir,"noise.stereo.left.right.1080p.%04d.png")
-            encoding.encode(iframes,pjoin(output_dir,"noise.movie.stereo.pre.left.right.avi"),etype="divx")
+            ofile = pjoin(output_dir,"noise.movie.stereo.pre.left.right.avi")
+            encoding.encode(iframes,ofile,etype="divx")
+            self.assertTrue(os.path.isfile(ofile))
 
 if __name__ == '__main__':
     unittest.main()
