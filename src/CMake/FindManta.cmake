@@ -18,6 +18,9 @@
 #   Completely removed Python support. Made the code more like how other third
 #   party libraries are handled in visit.
 #
+#   Kathleen Biagas, Mon Nov  5 17:03:08 PST 2012
+#   Remove attempt to set SCI_NOPERSISTENT with FORCE_ADD_FLAGS, not needed.
+# 
 ###############################################################################
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
@@ -81,8 +84,5 @@ IF (VISIT_MANTA_DIR)
 
   # Check if the build supports SSE
   INCLUDE(${VISIT_MANTA_DIR}/include/CMake/CheckSSE.cmake)  
-
-  # Force compilation options for all code that includes Manta headers.
-  FORCE_ADD_FLAGS("-DSCI_NOPERSISTENT")
 
 ENDIF(VISIT_MANTA_DIR)
