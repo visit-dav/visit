@@ -115,7 +115,7 @@ def data_path(*args):
 # ----------------------------------------------------------------------------
 #  Method: cmfe_data_path
 #
-#  Programmer: Kathleen Biagas 
+#  Programmer: Kathleen Biagas
 #  Date:       Fri Sep 21 2012
 # ----------------------------------------------------------------------------
 def cmfe_data_path(*args):
@@ -149,7 +149,7 @@ def silo_data_path(*args):
 # ----------------------------------------------------------------------------
 #  Method: cmfe_silo_data_path
 #
-#  Programmer: Kathleen Biagas 
+#  Programmer: Kathleen Biagas
 #  Date:       Fri Sep 21 2012
 # ----------------------------------------------------------------------------
 def cmfe_silo_data_path(*args):
@@ -339,7 +339,7 @@ def LogTestExit(excode):
 # ----------------------------------------------------------------------------
 def HTMLTestStart():
     """
-    Begin test html output. 
+    Begin test html output.
     """
     # TODO: use template file
     html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'wt')
@@ -503,7 +503,7 @@ def LogImageTestResult(file,diffState,modeSpecific,tPixs, pPixs, dPixs, dpix, da
 #   Mark C. Miller, Tue Nov 28 23:50:15 PST 2006
 #   Changed maxdiff to meddiff
 #
-#   Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
+#   Mark C. Miller, Wed Nov 29 08:19:52 PST 2006
 #   Changed meddiff to avgdiff
 #
 #   Sean Ahern, Thu Dec 20 14:48:14 EST 2007
@@ -691,7 +691,7 @@ def HTMLImageTestResult(file,
     testcase.close()
 
 # ----------------------------------------------------------------------------
-# Function: GetBackgroundImage 
+# Function: GetBackgroundImage
 #
 # ----------------------------------------------------------------------------
 def GetBackgroundImage(file):
@@ -763,7 +763,7 @@ def GetBackgroundImage(file):
     return bkimage
 
 # ----------------------------------------------------------------------------
-# Function: DiffUsingPIL 
+# Function: DiffUsingPIL
 #
 # Modifications:
 #   Jeremy Meredith, Tue Jun  7 12:14:11 PDT 2005
@@ -840,7 +840,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
         annotAtts = GetAnnotationAttributes()
 
-        if (annotAtts.backgroundMode != 0 or 
+        if (annotAtts.backgroundMode != 0 or
             annotAtts.backgroundColor != (255, 255, 255, 255)):
 
             # we have to be really smart if we don't have a constant color
@@ -921,7 +921,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   from causing a REAL difference when the two strings are diff'd later on.
 #   If the difference is NOT below threshold, we skip this replacement. That
 #   has the effect of causing a REAL difference when the two strings are
-#   diff'd later. When the replacement is performed (e.g. the numerical 
+#   diff'd later. When the replacement is performed (e.g. the numerical
 #   difference is below threshold), we perform the replacement in two steps.
 #   In the first pass over the string, we replace each current value with
 #   a unique replacement 'tag.' The string we use must be unique over all
@@ -950,6 +950,10 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   string replacement to use inWords[w] for search rather than inWordT
 #   which is potentially altered due to translate call and may not be found
 #   in tmpText.
+#
+#   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
+#   Make sure to filter TestEnv.params["run_dir"] as well.
+#
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -960,9 +964,10 @@ def FilterTestText(inText, baseText):
     # We have to filter out the absolute path information we might see in
     # this string. runtest passes the value for visitTopDir here.
     #
-    inText = string.replace(inText, out_path(), "VISIT_TOP_DIR/test")
-    inText = string.replace(inText, test_root_path(), "VISIT_TOP_DIR/test")
-    inText = string.replace(inText, data_path(), "VISIT_TOP_DIR/data")
+    inText = inText.replace(TestEnv.params["run_dir"], "VISIT_TOP_DIR/test")
+    inText = inText.replace(out_path(), "VISIT_TOP_DIR/test")
+    inText = inText.replace(test_root_path(), "VISIT_TOP_DIR/test")
+    inText = inText.replace(data_path(), "VISIT_TOP_DIR/data")
     numdifftol = TestEnv.params["numdiff"]
     #
     # Only consider doing any string substitution if numerical diff threshold
@@ -1009,9 +1014,9 @@ def FilterTestText(inText, baseText):
                 if inVal == baseVal:
                     valDiff = 0
                 elif inVal == 0 and baseVal != 0:
-                    valDiff = numdifftol # treat as above threshold 
+                    valDiff = numdifftol # treat as above threshold
                 elif inVal != 0 and baseVal == 0:
-                    valDiff = numdifftol # treat as above threshold 
+                    valDiff = numdifftol # treat as above threshold
                 else:
                     valDiff = abs(inVal - baseVal) / min(abs(inVal), abs(baseVal))
 
@@ -1095,6 +1100,9 @@ def CheckInteractive():
 #   I enhanced the routine so that the text next to the large baseline image
 #   indicates if it is a mode specific image or not.
 #
+#   Cyrus Harrison, Tue Nov  6 13:08:56 PST 2012
+#   Fix error code propagation logic.
+#
 # ----------------------------------------------------------------------------
 def TestText(case_name, inText):
     """
@@ -1115,7 +1123,7 @@ def TestText(case_name, inText):
     # Filter out unwanted text
     inText = FilterTestText(inText, baseText)
 
-    # save the current text output 
+    # save the current text output
     fout = open(cur, 'w')
     fout.write(inText)
     fout.close()
@@ -1128,7 +1136,7 @@ def TestText(case_name, inText):
     # change to use difflib
     (nchanges, nlines) = d.Difference(out_path("html","%s.html"%case_name), case_name)
 
-    # save the diff output 
+    # save the diff output
     # TODO_WINDOWS THIS WONT WORK ON WINDOWS
     # we can use difflib
     diff_cmd = "diff " + base + " " + cur
@@ -1148,12 +1156,8 @@ def TestText(case_name, inText):
         TestEnv.results["numskip"] += 1
 
     # set error codes
-    # TODO: This doesn't seem correct, these should accumulate?
-    if failed:
-        if skip:
-            TestEnv.results["maxds "]= 0
-        else:
-            TestEnv.results["maxds "]= 2
+    if failed and not skip:
+        TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
