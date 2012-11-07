@@ -2223,7 +2223,13 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUs
     // Start the program on the remote host.
     // 
 #if defined(_WIN32)
-    debug5 << mName << "Starting child process using _spawnvp.\n\tprogram=" << argv[0] << endl;
+
+    // the 'command' arg to _spawnvp should not have quotes.
+    std::string prog(argv[0]);
+    if (prog[0] = '\"')
+       prog = prog.substr( 1, prog.size()-2);
+    const char *program = prog.c_str();
+    debug5 << mName << "Starting child process using _spawnvp.\n\tprogram=" << program<< endl;
     debug5 << " args={";
     for(int i = 0; i < argc; ++i)
     {
@@ -2234,7 +2240,7 @@ RemoteProcess::LaunchRemote(const std::string &host, const std::string &remoteUs
     }
     debug5 << "}" << endl;
     // Start the program using the WIN32 _spawnvp function.
-    remoteProgramPid = _spawnvp(_P_NOWAIT, argv[0], argv);
+    remoteProgramPid = _spawnvp(_P_NOWAIT, program, argv);
 #else
     // Start the program in UNIX
 #ifdef VISIT_USE_PTY
