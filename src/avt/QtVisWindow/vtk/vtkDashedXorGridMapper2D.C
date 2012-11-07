@@ -101,10 +101,12 @@ struct vtkDashedXorGridMapper2DPrivate
         overlay = 0;
     }
 
+    // Delete the overlay with deleteLater so we don't clobber a widget
+    // that Qt assumes is still valid during a mouse event.
     void ReleaseGraphicsResources()
     {
         if(overlay != 0)
-            delete overlay;
+            overlay->deleteLater();
         overlay = 0;
     }
 

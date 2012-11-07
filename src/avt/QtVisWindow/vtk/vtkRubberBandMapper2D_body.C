@@ -10,7 +10,6 @@
     int cellScalars = 0;
     int cellNum = 0;
     int lastX, lastY, X, Y; 
-    int currSize = 1024;
  
     vtkDebugMacro (<< "vtkRubberBandMapper2D::RenderOverlay");
 
