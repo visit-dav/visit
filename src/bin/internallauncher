@@ -1624,6 +1624,8 @@ class MainLauncher(object):
     def Initialize(self, visitdir, visitprogram, visitver, visitpluginver):
         self.visitdir = visitdir
         self.visithome = visitdir
+        if self.visithome[-1] == '/':
+            self.visithome = visitdir[:-1]
         self.visitprogram = visitprogram
         self.visitver = visitver
         self.visitpluginver = visitpluginver
