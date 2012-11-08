@@ -1763,6 +1763,9 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //   which extension is detected to make it easier to add additional
 //   extenstions.
 //
+//    Gunther H. Weber, Thu Aug  9 11:55:06 PDT 2012
+//    Allow files ending in .h5p and .h5block to be grouped.
+//
 // ****************************************************************************
 
 bool
@@ -1776,7 +1779,7 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     std::string searchstring;
     const char *excludedFileTypeExtensions[] =
     {
-        ".h5", ".hdf5", ".vsh5", ".h5part", ".ch5", 0
+        ".h5", ".hdf5", ".vsh5", ".h5part", ".h5p", ".h5block", ".ch5", 0
     };
     int excludedFileTypeExtensionIdx = -1; // -1 -> None
     const char *excludedDimensionExtensions[] =
