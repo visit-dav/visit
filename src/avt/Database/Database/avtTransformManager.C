@@ -245,12 +245,15 @@ IsAdmissibleDataType(const vector<int>& admissibleTypes, const int type)
 //
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
-// 
+//
+//    Gunther H. Weber, Thu Nov  8 10:20:08 PST 2012
+//    Use size_t in loop instead of int
+//
 // ****************************************************************************
 template <class oT, class iT>
-static void ConvertToType(oT *obuf, const iT* ibuf, int n)
+static void ConvertToType(oT *obuf, const iT* ibuf, size_t n)
 {
-    for (int i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++)
         obuf[i] = (oT) ibuf[i];
 }
 
@@ -279,6 +282,10 @@ static void ConvertToType(oT *obuf, const iT* ibuf, int n)
 //
 //    Mark C. Miller, Tue Jul 20 19:21:34 PDT 2010
 //    Added support for LONG LONG types.
+//
+//    Gunther H. Weber, Thu Nov  8 10:20:32 PST 2012
+//    Use size_t instead of int
+//
 // ****************************************************************************
 
 static vtkDataArray * 
@@ -290,8 +297,8 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
     {
         newArr = vtkFloatArray::New();
 
-        int numTuples = oldArr->GetNumberOfTuples();
-        int numComponents = oldArr->GetNumberOfComponents();
+        size_t numTuples = oldArr->GetNumberOfTuples();
+        size_t numComponents = oldArr->GetNumberOfComponents();
 
         newArr->SetNumberOfComponents(numComponents);
         newArr->SetNumberOfTuples(numTuples);
@@ -306,7 +313,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
                << numComponents << " components from type \""
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
 
-        int numValues = numTuples * numComponents;
+        size_t numValues = numTuples * numComponents;
         switch (oldArr->GetDataType())
         {
             case VTK_CHAR:

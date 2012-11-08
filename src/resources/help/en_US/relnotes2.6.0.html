@@ -34,9 +34,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The return value of expression is the bin id into which the scalar was classified. <i>Example: bin(pressure, [1., 10, 100, 1e3])</i>. The bin expression takes 2 arguments: a variable to be classified and a numeric list incating the ranges for the user bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value.</li>
   <li>The location of saved config files, color tables, etc, on Windows has changed.  VisIt's version number will no longer be appended to the path.  This is to prevent the need for copying files each time a new VisIt version is released.  For 2.6.0 only, any saved config files that you would like to continue using will need to be copied over manually.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -94,18 +91,12 @@ enhancements and bug-fixes that were added to this release.</p>
       </i> 
   </ul>
 </li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="GUI_Changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.6</font></b></p>
 <ul>
   <li>The Open Files Dialog does not show files or directories that begin with a period <i>(except for the .visit directory)</i>. Files that begin with a period, or <i>dot</i> files, are often meant to be hidden files so now VisIt hides them. This saves the user from having to scroll past many irrelevant dot files. To show the dot files again, click on the <b>Show dot files</b> check box in the Open Files Dialog. This preference can be saved to your settings.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="File_format"></a>
@@ -129,13 +120,6 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.6</font></b></p>
-<ul>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-</ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.6</font></b></p>
@@ -144,18 +128,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The curve_swapxy function was added. It takes a curve as an argument and swaps the x and y coordinates of the curve generating another curve. It is listed in the <i>Miscellaneous</i> category in the <i>Insert function ...</i> drop down menu in the <i>Standard Editor</i> tab in the <i>Expressions</i> window.</li>
   <li>The curve_domain function was modified to delete points where the coordinates weren't monotonically increasing.</li>
   <li>The curve_cmfe and curve_domain functions have been added to the <i>Expressions</i> window in the graphical user interface. The curve_cmfe function is in the <i>Comparison</i> category and the curve_domain function is in the <i>Miscellaneous</i> category.</li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.6</font></b></p>
 <ul>
   <li>XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -179,20 +157,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to configuration files in version 2.6</font></b></p>
 <ul>
   <li>The host profiles were removed for prism, since that machine was retired.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
   
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.6</font></b></p>
 <ul>
-  <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into a site-specific file called <i>customlauncher</i> that is different for each site.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
+  <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into a separate files. Customizations are put into a file called <i>customlauncher</i> that is different for each site.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

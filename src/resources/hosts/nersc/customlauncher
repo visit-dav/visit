@@ -9,6 +9,8 @@ import math
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#    Gunther H. Weber, Fri Oct  5 16:49:04 PDT 2012
+#    Use fully qualified path name for aprun
 #
 ###############################################################################
 
@@ -17,10 +19,33 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
         super(JobSubmitter_aprun_NERSC, self).__init__(launcher)
 
     #
-    # Override the name of the aprun executable
+    # Override the name of the aprun executable and use fully qualified path
     #
     def Executable(self):
-        return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "aprun"]
+        return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+
+###############################################################################
+# Class: JobSubmitter_mpirun_NERSC
+#
+# Purpose:    Custom "mpirun" job submitter for NERSC.
+#
+# Programmer: Gunther H. Weber
+# Date:       Fri Oct  5 16:48:52 PDT 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_mpirun_NERSC(JobSubmitter_mpirun):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpirun_NERSC, self).__init__(launcher)
+
+    #
+    # Use fully qualified path to mpirun executable
+    #
+    def Executable(self):
+        # Currently, this submitter will only be called on Euclid
+        return ["/usr/common/usg/openmpi/1.4.4/gnu/bin/mpirun"]
 
 ###############################################################################
 # Class: JobSubmitter_qsub_NERSC
@@ -39,44 +64,61 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
 
     def CreateFilename(self, root):
-        if self.launcher.IsRunningOnHopper():
+        if  self.launcher.nersc_host == "hopper":
             tdate = time.asctime()[11:19]
             tuser = self.launcher.username()
             return os.path.join(GETENV("HOME"), "%s.%s.%s" % (root, tuser, tdate))
         return super(JobSubmitter_qsub_NERSC, self).CreateFilename(root)
 
+    def Executable(self):
+        if self.launcher.nersc_host == "carver":
+            return ["/usr/syscom/opt/torque/default/bin/qsub"]
+        elif self.launcher.nersc_host == "hopper":
+            return ["/usr/common/nsg/bin/qsub"]
+        else:
+            print "Error: unknown NERSC host '%s'. Using default qsub executable." % self.launcher.nersc_host
+            print "If this does not work, please contact consult@nersc.gov."
+            return super(JobSubmitter_qsub_NERSC, self).Executable(self)
+
+    def aprun(self):
+        # Currently, this method will only be called on Hopper.
+        return ["env", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+
+    def mpirun(self):
+        # Currently, this method will only be called on Carver.
+        return ["/usr/common/usg/openmpi/1.4.5/gcc/bin/mpirun"]
+   
     def TFileSetup(self, tfile):
         tfile.write("cd %s\n" % os.path.abspath(os.curdir))
         tfile.write("ulimit -c 0\n")
-        if self.launcher.IsRunningOnHopper():
-            tfile.write("MOM_HOST=`hostname`\n")
+        if self.launcher.nersc_host == "hopper":
+            tfile.write("MOM_HOST=$(hostname)\n")
             relay = os.path.join(self.launcher.visitbindir, "visit_socket_relay")
-            cmd = relay + "%s %s > %s.port\n" % (self.launcher.loginnodehost, self.launcher.loginnodeport, self.tfilename)
+            cmd = "%s %s %s > %s.port\n" % (relay, self.launcher.loginnodehost, self.launcher.loginnodeport, self.tfilename)
             tfile.write(cmd)
-            tfile.write("MOM_PORT=`cat %s.port`\n" % self.tfilename)
+            tfile.write("MOM_PORT=$(cat %s.port)\n" % self.tfilename)
             tfile.write("rm %s.port\n" % self.tfilename)
             tfile.write("eval $(modulecmd sh unload xt-shmem)\n")
-            tfile.write("export CRAY_ROOTFS=DSL\n")
 
     def SetupPPN(self, nodes, procs, ppn, use_vis):
-        if self.launcher.IsRunningOnHopper():
+        if self.launcher.nersc_host == "hopper":
             args = []
             if self.parallel.workingdir != None:
                 args = args + ["-d", self.parallel.workingdir]
-                if self.parallel.nn != None:
-                    nprocpernode = 24
-                    nwidth = nprocpernode * int(nodes)
-                    # If the number of nodes is set, we need to modify mppwidth to ensure
-                    # allocation of the proper number of nodes. The number of nodes allocated
-                    # is mppwidth divided by the number of cores per node (compare
-                    # http://www.nersc.gov/users/computational-systems/hopper/running-jobs/batch-jobs/).
-                    args = args + ["-l", "mppwidth=%s" % str(nwidth)]
-                else:
-                    # Number of nodes is not specified. We use all cores on each node and do not
-                    # need to modify mppdith to ensure the allocation of the appropriate number of
-                    # nodes.
-                    args = args + ["-l", "mppwidth=%s" % procs]
-        elif self.launcher.IsRunningOnCarver():
+            if self.parallel.nn != None:
+                nprocpernode = 24
+                nwidth = nprocpernode * int(nodes)
+                # If the number of nodes is set, we need to modify mppwidth to ensure
+                # allocation of the proper number of nodes. The number of nodes allocated
+                # is mppwidth divided by the number of cores per node (compare
+                # http://www.nersc.gov/users/computational-systems/hopper/running-jobs/batch-jobs/).
+                args = args + ["-l", "mppwidth=%s" % str(nwidth)]
+            else:
+                # Number of nodes is not specified. We use all cores on each node and do not
+                # need to modify mppdith to ensure the allocation of the appropriate number of
+                # nodes.
+                args = args + ["-l", "mppwidth=%s" % procs]
+        elif self.launcher.nersc_host == "carver":
             new_nodes = nodes
             new_ppn = ppn
             if self.parallel.partition == "reg_xlmem":
@@ -93,6 +135,8 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
                     new_ppn = 8
             args = super(JobSubmitter_qsub_NERSC, self).SetupPPN(new_nodes, procs, new_ppn, use_vis)
         else:
+            print "Error: unknown NERSC host '%s'. Using default job submission parameters." % self.launcher.nersc_host
+            print "If this does not work, please contact consult@nersc.gov."
             args = super(JobSubmitter_qsub_NERSC, self).SetupPPN(nodes, procs, ppn, use_vis)
         return args
 
@@ -113,59 +157,34 @@ class NERSCLauncher(MainLauncher):
         super(NERSCLauncher, self).__init__()
         self.loginnodeport = None
         self.loginnodehost = None
-        self.euclid = -1
-        self.hopper = -1
-        self.carver = -1
-
-    def IsRunningOnEuclid(self):
-        if self.euclid == -1:
+        self.nersc_host = GETENV("NERSC_HOST")
+        if not self.nersc_host:
             if self.hostname() == "euclid.nersc.gov":
-                self.euclid = 1
-        return self.euclid
-
-    def IsRunningOnHopper(self):
-        if self.hopper == -1:
-            self.hopper = GETENV("NERSC_HOST") == "hopper"
-        return self.hopper
-
-    def IsRunningOnCarver(self):
-        if self.carver == -1:
-            if self.sectorname() == "cvrsvc":
-                self.carver = 1
-        return self.carver
+                self.nersc_host = "euclid"
+            elif self.sectorname() == "cvrsvc":
+                self.nersc_host = "carver"
+            else:
+                exit("Cannot determine NERSC host.", 1)
 
     def Customize(self):
-        # Set additional xterm arguments.
-        if os.path.exists("/usr/local/anag"):
-             self.xterm = ["xterm", "-iconic"]
-
-        # ----
-        # Carver @ NERSC
-        #
-        # ----
-        if self.IsRunningOnCarver():
-            path = self.splitpaths(GETENV("PATH"))
-            addedpaths = ["/usr/syscom/opt/torque/default/bin",
-                          "/usr/common/usg/openmpi/1.4.5/gcc/bin"]
-            SETENV("PATH", self.joinpaths(addedpaths + path))
-
-        # ----
-        # Euclid @ NERSC
-        #
-        # ----
-        if self.IsRunningOnEuclid():
-            path = self.splitpaths(GETENV("PATH"))
-            addedpaths = ["/usr/common/usg/openmpi/1.4.4/gnu/bin"]
-            SETENV("PATH", self.joinpaths(addedpaths + path))
-
+       if self.nersc_host == "hopper":
         # ----
         # Hopper @ NERSC
-        #
         # ----
-        if self.IsRunningOnHopper():
-            SETENV("LD_LIBRARY_PATH", "/opt/gcc/4.6.2/snos/lib64")
+            # Add GCC libraries to LD_LIBRARY_PATH
+            ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            added_ld_library_paths = ["/opt/gcc/4.6.3/snos/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
-            # Are we running on a login node?
+            # Set up VisIt socket relay on MOM node for parallel engine
+            if self.generalArgs.exe_name == "engine" and self.parallelArgs.parallel:
+                 self.loginnodeport = self.generalArgs.port
+                 self.generalArgs.port = "$MOM_PORT"
+                 self.loginnodehost = self.generalArgs.host
+                 self.generalArgs.host = "$MOM_HOST"
+                 self.generalArgs.noloopback = 1
+
+            # Running the gui on Hopper or a serial engine on a login node are "verboten"
             if self.sectorname() == "hopper":
                 if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
                     msg = """
@@ -176,13 +195,12 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
 """
                     exit(msg, 0)
 
-                if self.parallelArgs.parallel:
-                    self.loginnodeport = self.generalArgs.port
-                    self.generalArgs.port = "$MOM_PORT"
-                    self.loginnodehost = self.generalArgs.host
-                    self.generalArgs.host = "$MOM_HOST"
-                else:
+                if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
                     exit("The VisIt install on Hopper does not support running a serial engine!", 1)
+            else:
+                python_path = self.splitpaths(GETENV("PYTHONPATH"))
+                added_python_paths = [self.visitlibdir + "python/lib/python2.6/lib-dynload"]
+                SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
@@ -191,6 +209,8 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
     def JobSubmitterFactory(self, launch):
         if launch == "aprun":
             return JobSubmitter_aprun_NERSC(self)
+        if launch == "mpirun":
+            return JobSubmitter_mpirun_NERSC(self)
         elif launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_NERSC(self)
         return super(NERSCLauncher, self).JobSubmitterFactory(launch)
