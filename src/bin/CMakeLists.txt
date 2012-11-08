@@ -116,7 +116,7 @@ FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_DIRECTORIES})
 ENDFOREACH(VISIT_BIN_ITEM)
 
 IF (NOT WIN32)
-    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher)
+    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
