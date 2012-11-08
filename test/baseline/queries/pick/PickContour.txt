@@ -49,7 +49,7 @@ d:  <zonal>
 
 E:  multi_rect3d.silo
 mesh1 domain 23 
-Point: <0.620081, 0.810155, 0.389998>
+Point: <0.620081, 0.810154, 0.389998>
 Zone:  128
 Incident Nodes:  151  152  162  163  272  273  283  284  
 d:  <zonal> = 0.353381

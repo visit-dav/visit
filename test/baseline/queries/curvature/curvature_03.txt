@@ -1,1 +1,1 @@
-The average mean curvature (manual) is -1.971353
+The average mean curvature (manual) is -1.971365
