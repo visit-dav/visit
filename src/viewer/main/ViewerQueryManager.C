@@ -3282,6 +3282,10 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Biagas, Thu Jan 12 09:42:46 PST 2012
 //    If point query has time options, use them to set PickAtts.TimeOptions.
 //
+//    Kathleen Biagas, Thu Nov  8 12:25:45 PST 2012
+//    Ensure that Zone Center and Node Coords query performed when preserving
+//    coordinates for a time pick do not have 'do_time' set to true.
+//
 // ****************************************************************************
 
 void         
@@ -3433,6 +3437,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                 suppressQueryOutput = true;
                 MapNode dbQueryParams(queryParams);
                 dbQueryParams["query_name"] = "Zone Center";
+                dbQueryParams["do_time"] = 0;
 
                 DatabaseQuery(dbQueryParams);
 
@@ -3457,6 +3462,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
                 MapNode dbQueryParams(queryParams);
                 dbQueryParams["query_name"] = "Node Coords";
+                dbQueryParams["do_time"] = 0;
                 DatabaseQuery(dbQueryParams);
 
                 doubleVector npt = queryClientAtts->GetResultsValue();
