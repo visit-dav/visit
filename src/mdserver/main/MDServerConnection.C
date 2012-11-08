@@ -1766,6 +1766,10 @@ MDServerConnection::FileMatchesFilterList(const std::string &fileName) const
 //    Gunther H. Weber, Thu Aug  9 11:55:06 PDT 2012
 //    Allow files ending in .h5p and .h5block to be grouped.
 //
+//   Gunther H. Weber, Mon Mar  5 13:32:05 PST 2012
+//   Also consider compressed files ".gz",... when exculding file extensions
+//   from pattern matching. 
+//
 // ****************************************************************************
 
 bool
@@ -1777,11 +1781,18 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     for(i = 0; i < 256; ++i) pattern[i] = '\0';
 
     std::string searchstring;
+    const char *excludedCompressionTypeExtensions[] =
+    {
+        ".gz", ".bz2", 0
+    };
+    int excludedCompressionTypeExtensionIdx = -1; // -1 -> None
+
     const char *excludedFileTypeExtensions[] =
     {
         ".h5", ".hdf5", ".vsh5", ".h5part", ".h5p", ".h5block", ".ch5", 0
     };
     int excludedFileTypeExtensionIdx = -1; // -1 -> None
+
     const char *excludedDimensionExtensions[] =
     {
         ".2d", ".2D", ".3d", ".3D", 0
@@ -1792,6 +1803,21 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
     if(extraSmartFileGrouping)
     {
         int currExtIdx = 0;
+        while (excludedCompressionTypeExtensions[currExtIdx])
+        {
+            int extLen = strlen(excludedCompressionTypeExtensions[currExtIdx]);
+            if (searchstring.size() > extLen &&
+                searchstring.substr(
+                    searchstring.size()-extLen, searchstring.size()-1
+                                   ) == excludedCompressionTypeExtensions[currExtIdx])
+            {
+                searchstring = searchstring.substr(0, searchstring.size()-extLen);
+                excludedCompressionTypeExtensionIdx = currExtIdx;
+                break;
+            }
+            ++currExtIdx;
+        }
+        currExtIdx = 0;
         while (excludedFileTypeExtensions[currExtIdx])
         {
             int extLen = strlen(excludedFileTypeExtensions[currExtIdx]);
@@ -1872,6 +1898,9 @@ MDServerConnection::GetPattern(const std::string &file, std::string &p,
 
     if (excludedFileTypeExtensionIdx > 0)
         p += excludedFileTypeExtensions[excludedFileTypeExtensionIdx];
+
+    if (excludedCompressionTypeExtensionIdx > 0)
+        p += excludedCompressionTypeExtensions[excludedCompressionTypeExtensionIdx];
 
     return (ipat > 0);
 }
