@@ -263,6 +263,9 @@ GetSystemConfigFile(const char *filename)
 //   In case VISITUSERHOME not set on Windows, try a few other things to
 //   fill it in.
 //
+//   Kathleen Biagas, Wed Nov 7 09:48:37 PDT 2012
+//   Remove version number from VISITUSERHOME on windows.
+//
 // ****************************************************************************
 
 std::string
@@ -284,7 +287,7 @@ GetUserVisItDirectory()
         if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
                                  SHGFP_TYPE_CURRENT, szPath))) 
         {
-            SNPRINTF(visituserpath, MAX_PATH, "%s\\VisIt %s", szPath, VISIT_VERSION);
+            SNPRINTF(visituserpath, MAX_PATH, "%s\\VisIt", szPath);
             haveVISITUSERHOME = 1;
         }
 

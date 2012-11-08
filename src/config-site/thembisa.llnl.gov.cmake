@@ -1,22 +1,23 @@
-#/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-i686_gcc-4.1/bin/cmake
+#/scratch/kbonnell/BUILDVISIT2/visit/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit2_5_1 generated host.cmake
-## created: Thu Jun 21 15:17:22 PDT 2012
-## system: Linux kickit.llnl.gov 2.6.18-308.4.1.el5PAE #1 SMP Wed Mar 28 02:14:40 EDT 2012 i686 i686 i386 GNU/Linux
-## by: brugger1
+## /home/biagas2/Branches/trunk/src/svn_bin/build_visit generated host.cmake
+## created: Tue Sep 11 11:41:40 PDT 2012
+## system: Linux thembisa.llnl.gov 2.6.32-279.5.1.el6.x86_64 #1 SMP Tue Jul 24 13:57:35 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
+## by: biagas2
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared_2_5_1)
-SET(VISITARCH linux-i686_gcc-4.1)
+SET(VISITHOME /scratch/kbonnell/BUILDVISIT2/visit)
+SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
 ##
+VISIT_OPTION_DEFAULT(VISIT_INSTALL_PROFILES_TO_HOSTS "llnl" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##############################################################
 ##
@@ -34,7 +35,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fvisibility=hidden" TYPE STRING)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/gapps/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-i686_gcc-4.1)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /scratch/kbonnell/BUILDVISIT2/visit/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
 ## VTK
@@ -56,11 +57,6 @@ VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
-
-##
-## Mili
-##
-VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
 
 ##
 ## HDF4
@@ -94,7 +90,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -124,25 +120,6 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
-## ITAPS
-##
-## MOAB implementation
-ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(MOAB *.cub)
-ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf vtkGraphics)
-ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.7/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/4.1.1/${VISITARCH}/lib)
-## FMDB implementation
-ITAPS_INCLUDE_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(FMDB *.sms)
-ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)
-ITAPS_LINK_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/lib)
-## GRUMMP implementation
-ITAPS_INCLUDE_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)
-ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics cgm dl)
-ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/lib)
-
-##
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
@@ -152,6 +129,7 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
+##
 
 ##
 ## PySide
