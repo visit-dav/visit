@@ -247,6 +247,11 @@ avtAMRStitchCellFilter::PreExecute(void)
 
     // Get logical extents of root level
     size_t nLevels = domainNesting->GetNumberOfLevels();
+    if (nLevels == 0)
+         EXCEPTION1(ImproperUseException,
+                 "Data sets does not contain any levels (according to information "
+                 "in structured domain nesting.");
+
     logicalDomainBoundingBox.resize(nLevels);
     logicalDomainBoundingBox[0].resize(6);
     logicalDomainBoundingBox[0][0] = std::numeric_limits<int>::max();
@@ -281,6 +286,11 @@ avtAMRStitchCellFilter::PreExecute(void)
     for (size_t l=1; l<nLevels; ++l)
     {
         const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios(l);
+        if (refRatio.size() != 3)
+            EXCEPTION1(ImproperUseException,
+                    "Refinement ratio provided by database via domain nesting is invalid. "
+                    "Expected a vector of length three.");
+
         logicalDomainBoundingBox[l].resize(6);
         logicalDomainBoundingBox[l][0] = refRatio[0] * logicalDomainBoundingBox[l-1][0];
         logicalDomainBoundingBox[l][1] = refRatio[1] * logicalDomainBoundingBox[l-1][1];
