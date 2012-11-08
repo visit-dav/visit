@@ -95,17 +95,17 @@ order.</p>
   <li> <a href="mailto:visit-help-gnep@ornl.gov">visit-help-gnep@ornl.gov</a> </li>
   <li> <a href="mailto:visit-help-asc@ornl.gov">visit-help-asc@ornl.gov</a> </li>
 </ul>
-<h2><a name="2"></a>2. What platforms does VisIt run on?</h2>
+<h2><a name="2"></a>2. Which platforms does VisIt run on?</h2>
 <p> VisIt can run on a variety of platforms from PCs running Windows or Linux all the way up to supercomputers running AIX.<br>
   The following operating systems are supported:</p>
 <ul>
-  <li> Windows XP, Vista, 7 </li>
-  <li> Linux (x86, x86_64, Itanium, Altix) </li>
-  <li> MacOS X 10.4 through 10.6 (PowerPC and Intel) </li>
-  <li> AIX 5.3</li>
+  <li> Windows (XP, Vista, 7, 8) </li>
+  <li> Linux (PowerPC, x86, x86_64, Itanium, Altix) </li>
+  <li> MacOS X (10.5 through 10.8 Intel) </li>
 </ul>
 <p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
 <ul>
+  <li> AIX 5.3</li>
   <li> SunOS 5.7</li>
   <li> IRIX 6.5, IRIX64 6.5</li>
   <li> Tru64 V5.1</li>
@@ -116,7 +116,7 @@ order.</p>
 <ul>
   <li> You should have at least 1 gigabyte (GB) of memory for your system. The actual amount of memory you will need depends on the size of the dataset you will be visualizing, but having plenty of memory will ensure that you don&#8217;t suffer large performance degradations.</li>
   <li> You should make sure that you install the graphics driver provided by the vendor of your graphics card so that you can get full hardware-accelerated graphics rendering. The standard Linux distributions come with a generic driver that will work on all systems, but this will not give top performance. If you plan to use Linux and have not yet purchased a graphics card, you should check that the card you are considering purchasing has a driver optimized for Linux.</li>
-  <li> If you run VisIt on Windows, you must use Windows XP, Windows Vista, or Windows 7. </li>
+  <li> If you run VisIt on Windows, newer versions of Windows are preferred such as Windows 7 or Windows 8. VisIt may still run on older systems running Windows XP or Windows Vista. </li>
 </ul>
 <h2><a name="4"></a>4. How do I debug problems starting VisIt or opening files?</h2>
 <p> If you are having difficulty either starting VisIt and/or looking at some data files once VisIt is running, try some of the following...</p>
@@ -175,8 +175,8 @@ in the directory that VisIt was launched from.</p>
 <p>VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="https://wci.llnl.gov/codes/visit/1.5/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
 <p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="https://wci.llnl.gov/codes/visit/source.html#build_visit" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
 <p> [<a href="#top">Top</a>]</p>
-<h2><a name="12"></a>12. What data file formats can VisIt read?</h2>
-<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. You can look at the <a href="https://wci.llnl.gov/codes/visit/new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
+<h2><a name="12"></a>12. Which data file formats can VisIt read?</h2>
+<p> VisIt can read over 100 file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. You can look at the <a href="https://wci.llnl.gov/codes/visit/new.html">What's New page</a> for more supported file formats. Finally, the <a href="http://www.visitusers.org/index.php?title=File_formats">File formats table at visitusers.org</a> is another good resource. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -456,17 +456,11 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p> If none of these suggestions allow you to successfully connect to the remote computer then contact <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a> and provide information about how you are trying to connect. Be sure to include the VisIt version and platform on which you are running in your e-mail.</p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="17"></a>17. How do I build VisIt on my Windows computer?</h2>
-<p> You need two things in order to build VisIt on a Windows computer. First of all, you must have  Microsoft Visual Studio .Net 2003 or 2005. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The last thing you need in order to build VisIt on Windows is the <a href="https://wci.llnl.gov/codes/visit/source.html">VisIt source distribution for Windows</a>. The Windows source distribution contains additional pre-compiled libraries that will ease the process of building VisIt on your Windows computer. See <a href="http://www.visitusers.org/index.php?title=Using_CMake_with_VisIt_on_Windows">this guide to building VisIt on Windows</a> for more information.</p>
+<p> You need two things in order to build VisIt on a Windows computer. First of all, you must have  Microsoft Visual Studio 2010. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The last thing you need in order to build VisIt on Windows is the <a href="https://wci.llnl.gov/codes/visit/source.html">VisIt source distribution for Windows</a>. The Windows source distribution contains additional pre-compiled libraries that will ease the process of building VisIt on your Windows computer. See <a href="http://www.visitusers.org/index.php?title=Using_CMake_with_VisIt_on_Windows">this guide to building VisIt on Windows</a> for more information.</p>
 <p> The VisIt source distribution for Windows contains all of VisIt's source code and prebuilt versions of most of VisIt's support libraries so it is not required that you download and build all of those libraries unless you want to customize them. Download and install the source distribution for Windows and read the VisItBuildInstructionsOnWindows.doc file in the VisIt development directoryfor more information on building VisIt for Windows.</p>
 <h2><a name="18"></a>18. I have trouble installing VisIt on my MacOS X computer. Why?</h2>
-<p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="https://wci.llnl.gov/codes/visit/1.7/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
-<ol>
-  <li>cd ~</li>
-  <li>chmod 700 visit-install</li>
-  <li>mkdir visit</li>
-  <li>./visit-install 1.5 darwin ./visit</li>
-  <li>mv ./visit /Applications</li>
-</ol>
+<p>These days you only need to download appropriate 32-bit or 64-bit DMG file for your Mac system. Once you download the DMG file, double-click it, and then drag the VisIt application to your desktop or Applications folder.
+</p>
 <h2><a name="19"></a>19. Why does VisIt only make it 12% into startup on my Windows computer?</h2>
 <p>We believe that this happens if you double-click on the VisIt icon on the Windows desktop due to the VisIt start up directory being set to VisIt's data directory in the desktop shortcut. The VisIt installation program for Windows has been changed as of version 1.5 so that the start up directory is set to the directory in which VisIt was installed. This allows Windows to more easily find VisIt's dynamic-link libraries when trying to launch the viewer component. You can work around the problem by using the VisIt menu option in the start menu, by running VisIt from the Windows command prompt, or by editing the properties for the desktop shortcut so the start up directory for VisIt matches the location where VisIt was installed. If you try these solutions and the problem persists then it is possible that your computer has misconfigured network options or there is another program interfering with VisIt's launch (e.g. firewall, virus checker).</p>
 <h2><a name="20"></a>20. Where can I get the Plugin Developer's Guide referenced in the VisIt User's Manual?</h2>
@@ -474,7 +468,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="21"></a>21. How do I start writing a plugin for VisIt?</h2>
 <p>VisIt customers most commonly want to know how to write a database reader plugin. The process for writing a new database reader plugin is described in the <a href="https://wci.llnl.gov/codes/visit/2.0.0/GettingDataIntoVisIt2.0.0.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. Other plugin types will eventually be documented in the Plugin Developer's Guide. Since that guide has not been completed, the best way to begin writing a new plot or operator plugin is to send e-mail describing the plugin that you plan to write to <a href="mailto:visit-users@ornl.gov">visit-users@ornl.gov</a>. The VisIt developers will be able to tell you the general steps that are involved and also suggest where to look for code that you can copy from existing plugins.</p>
-<p>Plugins are generally meant to be written using the shared libraries and header files that are provided in the binary installations of VisIt. This means that you don't have to build all of VisIt in order to start developing your plugin. However, this assumes that you are going to use compilers that are compatible with the ones used to build VisIt. If you use compilers that generate code that is not compatible with the compilers used to generate a VisIt binary distribution then you will have to build VisIt. Building VisIt on the Windows platform currently requires that you use the Microsoft Visual Studio .Net 2003 compiler if you plan to build only your plugin and not all of VisIt since the import libraries distributed with the Windows version of VisIt are built using that compiler. Building a plugin begins with the step of creating an XML file. All VisIt plugins whether they are plot, operator, or database plugins begin with an XML file that describes the plugin's attributes. Have a look at the source code for other VisIt plot, operator, or database plugins to see how the XML files are used in practice.</p>
+<p>Plugins are generally meant to be written using the shared libraries and header files that are provided in the binary installations of VisIt. This means that you don't have to build all of VisIt in order to start developing your plugin. However, this assumes that you are going to use compilers that are compatible with the ones used to build VisIt. If you use compilers that generate code that is not compatible with the compilers used to generate a VisIt binary distribution then you will have to build VisIt. Building VisIt on the Windows platform currently requires that you use the Microsoft Visual Studio 2010 compiler if you plan to build only your plugin and not all of VisIt since the import libraries distributed with the Windows version of VisIt are built using that compiler. Building a plugin begins with the step of creating an XML file. All VisIt plugins whether they are plot, operator, or database plugins begin with an XML file that describes the plugin's attributes. Have a look at the source code for other VisIt plot, operator, or database plugins to see how the XML files are used in practice.</p>
 <p>There are two popular methods for starting a plugin. You can copy the files from another plugin, rename, and gradually adapt them to your needs or you can begin from scratch. If you begin from scratch, you will want to run VisIt's XMLEdit program, which loads, edits, and saves XML files for VisIt plugins. XMLEdit is used to set up the required attributes of a plugin such as its type and name. XMLEdit is also used to set up more advanced attributes such as the file extensions associated with a database plugin or the plot attributes required for a plot plugin. It can be helpful to look at the XML files from existing VisIt plugins to get an idea of how the XML files are used. </p>
 <p>Once you have created an XML file for your plugin, run <em>xml2plugin -clobber myxmlfile.xml</em> to generate the plugin skeleton, any automatically generated code, and Makefile or project files needed to build your plugin. Once you've generated your plugin for the first time, check the directory in which you're keeping your plugin sources and XML file. There should be several new files. Most are boilerplate but pay special attention to the files that begin with &quot;avt&quot; since those are the files to which you generally must add your plugin code.</p>
 <h2><a name="22"></a>22. How often is a new version of VisIt released?</h2>
@@ -499,11 +493,11 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td bgcolor="#CCCCFF">g++ 4.0 or later</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">Windows XP,Vista,7</td>
-      <td bgcolor="#CCCCFF">Microsoft Visual Studio .Net 2003, or .Net 2005 (Visual Studio 2010 support coming)</td>
+      <td bgcolor="#CCCCFF">Windows</td>
+      <td bgcolor="#CCCCFF">Microsoft Visual Studio 2010</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">MacOS X 10.4-10.6</td>
+      <td bgcolor="#CCCCFF">MacOS X 10.4-10.8</td>
       <td bgcolor="#CCCCFF">g++ 4.0 or later</td>
     </tr>
   </tbody>
