@@ -33,7 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 2.6</font></b></p>
 <ul>
   <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The return value of expression is the bin id into which the scalar was classified. <i>Example: bin(pressure, [1., 10, 100, 1e3])</i>. The bin expression takes 2 arguments: a variable to be classified and a numeric list incating the ranges for the user bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value.</li>
-  <li></li>
+  <li>The location of saved config files, color tables, etc, on Windows has changed.  VisIt's version number will no longer be appended to the path.  This is to prevent the need for copying files each time a new VisIt version is released.  For 2.6.0 only, any saved config files that you would like to continue using will need to be copied over manually.</li>
   <li></li>
   <li></li>
   <li></li>
