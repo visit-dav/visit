@@ -162,10 +162,9 @@ XDisplay::Initialize(std::string display,
         debug1 << "Error " << errno << " while getting hostname.\n";
         this->hostname[0] = 0;
     }
-    //should this not be if not launch return false, 
-    //else if launch and xinit fails return false?
-    //if(!this->launch || (this->xserver = xinit(this->display, user_args)) == -1)
-    if(this->launch && (this->xserver = xinit(this->display, user_args)) == -1)
+    //updated: enabling new logic
+    if(!this->launch || (this->xserver = xinit(this->display, user_args)) == -1)
+    //if(this->launch && (this->xserver = xinit(this->display, user_args)) == -1)
     {
       return false;
     }
