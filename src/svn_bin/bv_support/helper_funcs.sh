@@ -1249,6 +1249,10 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
     fi
 
+    if [[ "${DO_JAVA}" == "yes" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_JAVA ON TYPE BOOL)" >> $HOSTCONF
+    fi
+
     if [[ "$parallel" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF

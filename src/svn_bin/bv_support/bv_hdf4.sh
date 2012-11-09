@@ -34,6 +34,17 @@ export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
 export HDF4_SHA256_CHECKSUM=""
 }
 
+function bv_hdf4_initialize_vars
+{
+    info "testing hdf4 requirements"
+    local lexv=`which lex`
+    local yaccv=`which yacc`
+
+    if [[ "$lexv" == "" || "$yaccv" == "" ]]; then
+        error "HDF4 is enabled, but lex and yacc have not been found in system path."
+    fi 
+}
+
 function bv_hdf4_print
 {
   printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
