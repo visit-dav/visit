@@ -1,2 +1,2 @@
 #!/bin/sh
-exec $(dirname $0)/../Resources/bin/visit $*
+exec $(dirname $0)/../Resources/bin/visit $* &
