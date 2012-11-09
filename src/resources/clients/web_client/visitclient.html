@@ -8,12 +8,11 @@
             <tr>
                 <td valign="top">
                     <p>
-                        <input type="text" name="host" value="localhost" size=10 />
-                        <input type="text" name="port" value="9002" size=5 />
-                        <input type="text" name="password" value="bob" size=10 /><br>
-                        <button onClick="vp.connect('localhost',9002,'bob');">Connect</button>
+                        <input type="text" name="host" id="host" value="localhost" size=10 />
+                        <input type="text" name="port" id="port" value="9002" size=5 />
+                        <input type="password" name="password" id="password" value="bob" size=10 /><br>
+                        <button onClick="connect();">Connect</button>
                         <button onClick="vp.stopWebSocket();">Disconnect</button>
-                        <button onClick="vp.clearScreen();">Clear Screen</button>
                     </p>
                     <!-- VisIt Methods -->
                     <p>
@@ -35,6 +34,7 @@
                         <input type="text" name="inspect" id="inspect" size=5></input>
                         <button onClick="vp.inspectClass();">Inspect</button>
                         <button onClick="vp.showAllClasses();">Show All</button>
+                        <button onClick="vp.clearScreen();">Clear Screen</button>
                         <textarea id="debugTextArea" style="width:250;height:100;"></textarea>
                     </p>
                 </td>
@@ -48,6 +48,14 @@
     
         <script>
             vp = new VisItProxy();
+        function connect()
+        {
+            var hostname = document.getElementById("host").value;
+            var port = document.getElementById("port").value;
+            var password = document.getElementById("password").value;
+    
+            vp.connect(hostname,port,password);
+        }
         </script>
     </body>
 </html>

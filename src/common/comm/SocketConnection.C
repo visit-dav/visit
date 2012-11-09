@@ -587,17 +587,38 @@ SocketConnection::Flush(AttributeSubject *subject)
 //                  << subject->CalculateMessageSize(*this)
 //                  << std::endl;
 
-        MapNode child,meta;
+        if(subject->GetSendMetaInformation())
+        {
+            MapNode meta;
+            JSONNode node;
+
+            subject->WriteMeta(meta);
+
+            node["id"] = subject->GetGuido();
+            node["typename"] = subject->TypeName();
+            node["api"] = meta.ToJSONNode(false,false);
+
+            const std::string& output = node.ToString().c_str();
+
+#if defined(_WIN32)
+            send(descriptor, (const char FAR *)output.c_str(), output.size(), 0);
+#else
+#ifdef MSG_NOSIGNAL
+            send(descriptor, (const void *)output.c_str(), output.size(), MSG_NOSIGNAL);
+#else
+            send(descriptor, (const void *)output.c_str(), output.size(), 0);
+#endif
+#endif
+        }
+
+        MapNode child;
+        JSONNode node;
 
         subject->Write(child);
-        subject->WriteMeta(meta);
-
-        JSONNode node;
 
         node["id"] = subject->GetGuido();
         node["typename"] = subject->TypeName();
         node["contents"] = child.ToJSONNode(false);
-        node["typeinfo"] = meta.ToJSONNode(false);
 
         const std::string& output = node.ToString();
 

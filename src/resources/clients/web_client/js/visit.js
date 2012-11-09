@@ -53,16 +53,17 @@ function VisItProxy()
 
     this.showAllClasses = function ()
     {
-        $.each(viewerState, function(key,value)
+        $.each(viewerApi, function(key,value)
         {
-            debug("key: " + key + " " + viewerState[key].typename);
+            debug("key: " + key + " " + viewerApi[key].typename);
         });
     }
 
     this.inspectClass = function ()
     {
-        var index = document.getElementById("inspect").value;
-        debug("contents: " + JSON.stringify(viewerState[index]));
+        var key = document.getElementById("inspect").value;
+        debug("api: " + JSON.stringify(viewerApi[key]));
+        debug("data: " + JSON.stringify(viewerState[key]));
     }
             
     this.clearScreen = function ()
@@ -166,7 +167,6 @@ function VisItProxy()
 
     this.disconnectClient = function ()
     {
-        //viewerState[0].contents.data.RPCType = 1; //DetachRPC
         setContents(0,"RPCType",1);
         notify(0);
     }
