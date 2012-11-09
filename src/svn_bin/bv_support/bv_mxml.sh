@@ -96,7 +96,7 @@ function build_mxml
     info "Invoking command to configure mxml"
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
        CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-       --prefix="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH"
+       --prefix="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" --disable-threads
     if [[ $? != 0 ]] ; then
        warn "mxml configure failed.  Giving up"
        return 1
