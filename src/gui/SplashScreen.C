@@ -171,6 +171,9 @@
 //    Brad Whitlock, Wed Feb  1 15:28:19 PST 2012
 //    Automate the copyright year.
 //
+//    Eric Brugger, Wed Nov 14 14:06:00 PST 2012
+//    Changed the date on the splash screen to November 2012.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
@@ -295,7 +298,7 @@ SplashScreen::SplashScreen(bool cyclePictures)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 8;
+    int currentMonth = 11;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2012", this));
 

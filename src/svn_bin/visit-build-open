@@ -107,6 +107,10 @@
 #   Eric Brugger, Wed Nov 14 09:15:07 PST 2012
 #   I deleted hoth.
 #
+#   Eric Brugger, Wed Nov 14 14:22:16 PST 2012
+#   I made the sidious build off by default. I modified the kickit build
+#   since it is now a linux-x86_64 system instead of a linux-intel system.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -151,7 +155,7 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 kickit=true
-sidious=true
+sidious=false
 ubuntu1104_64=false
 aztec=true
 rzthriller=true
@@ -268,9 +272,9 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    kickit (B-Div, Linux),"
-   echo "    sidious(B-Div, Linux),"
-   echo "    Ubunut1104-64(B-Div, Linux),"
+   echo "    kickit (B-Div, Linux, x86_64),"
+   echo "    sidious(B-Div, Linux, x86_64),"
+   echo "    Ubunut1104-64(B-Div, Linux, x86_64),"
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
@@ -313,7 +317,7 @@ ver2=\`echo \$ver | tr "." "_"\`
 /usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-intel.tar.gz ../..
+mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
 echo "        build of visit on kickit"       > resultlog 2>&1
