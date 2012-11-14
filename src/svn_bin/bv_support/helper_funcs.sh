@@ -1211,6 +1211,17 @@ function build_hostconf
     # needs about the third party libraries.
 
     export HOSTCONF="$(hostname).cmake"
+
+    if [[ "${VISIT_HOSTNAME}" != "" ]]; then
+        info "VISIT_HOSTNAME env variable found: Using ${VISIT_HOSTNAME}.cmake"
+        HOSTCONF="${VISIT_HOSTNAME}.cmake"
+    fi
+
+    if [[ "${EXTERNAL_HOSTNAME}" != "" ]]; then
+        info "External Hostname variable found: Using ${EXTERNAL_HOSTNAME}"
+        HOSTCONF="${EXTERNAL_HOSTNAME}"
+    fi
+
     info "Creating $HOSTCONF"
 
     # First line of config-site file provides a hint to the location
