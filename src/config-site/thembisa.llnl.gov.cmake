@@ -1,14 +1,14 @@
-#/scratch/kbonnell/BUILDVISIT2/visit/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## /home/biagas2/Branches/trunk/src/svn_bin/build_visit generated host.cmake
-## created: Tue Sep 11 11:41:40 PDT 2012
-## system: Linux thembisa.llnl.gov 2.6.32-279.5.1.el6.x86_64 #1 SMP Tue Jul 24 13:57:35 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
-## by: biagas2
+## ./build_visit2_6_0 generated host.cmake
+## created: Mon Nov 12 15:31:53 PST 2012
+## system: Linux kickit.llnl.gov 2.6.32-279.9.1.el6.x86_64 #1 SMP Fri Aug 31 09:04:24 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
+## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /scratch/kbonnell/BUILDVISIT2/visit)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
@@ -35,17 +35,17 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /scratch/kbonnell/BUILDVISIT2/visit/python/2.6.4/linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/gapps/visit/thirdparty_shared_2_6_0/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk-womesa/5.8.0.a/${VISITARCH})
 
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -59,10 +59,15 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
 
 ##
+## Mili
+##
+VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
+
+##
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk-womesa/5.8.0.a/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -120,6 +125,25 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## ITAPS
+##
+## MOAB implementation
+ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/include)
+ITAPS_FILE_PATTERNS(MOAB *.cub)
+ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf vtkGraphics)
+ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.7/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/4.1.1/${VISITARCH}/lib)
+## FMDB implementation
+ITAPS_INCLUDE_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/include)
+ITAPS_FILE_PATTERNS(FMDB *.sms)
+ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)
+ITAPS_LINK_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/lib)
+## GRUMMP implementation
+ITAPS_INCLUDE_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/include)
+ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)
+ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics cgm dl)
+ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/lib)
+
+##
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
@@ -134,7 +158,7 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS 
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 
 ##
 ## MANTA
