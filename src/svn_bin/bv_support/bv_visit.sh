@@ -230,13 +230,14 @@ EOF
         fi
     fi
     cd $VISIT_DIR
-    cp $START_DIR/$(hostname).cmake config-site
+    #cp $START_DIR/$(hostname).cmake config-site
 
     #
     # Call cmake
     # 
     info "Configuring VisIt . . ."
-    FEATURES="-DVISIT_INSTALL_THIRD_PARTY:BOOL=ON"
+    FEATURES="-DVISIT_CONFIG_SITE:FILEPATH=${START_DIR}/${HOSTCONF}"
+    FEATURES="${FEATURES} -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON"
     if [[ "$parallel" == "yes" ]] ; then
         FEATURES="${FEATURES} -DVISIT_PARALLEL:BOOL=ON"
     fi

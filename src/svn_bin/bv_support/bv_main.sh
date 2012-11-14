@@ -13,6 +13,9 @@ function initialize_build_visit()
 # contain user's env. just prior to running build_visit.
 export BUILD_VISIT_ENV=$(env | cut -d'=' -f1 | sort | uniq)
 
+# allow users to set an external hostname for output filename
+export EXTERNAL_HOSTNAME=""
+
 # Can cause problems in some build systems.
 unset CDPATH
 
@@ -765,6 +768,7 @@ for arg in "${arguments[@]}" ; do
         # Yep.  Which option was it?
         case $next_arg in
             extra_commandline_arg) $EXTRA_COMMANDLINE_ARG_CALL "$arg";;
+            visit-build-hostname) EXTERNAL_HOSTNAME="$arg";;
             installation-build-dir) VISIT_INSTALLATION_BUILD_DIR="$arg";;
             write-unified-file) WRITE_UNIFIED_FILE="$arg";;
             append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
@@ -853,6 +857,7 @@ for arg in "${arguments[@]}" ; do
 
              
     case $arg in
+        --visit-build-hostname) next_arg="visit-build-hostname";;
         --installation-build-dir) next_arg="installation-build-dir";;
         --write-unified-file) next_arg="write-unified-file";;
         --parallel-build) DO_SUPER_BUILD="yes";;
