@@ -57,6 +57,11 @@
 #   Eric Brugger, Wed Sep 26 17:11:04 PDT 2012
 #   I deleted prism.
 #
+#   Eric Brugger, Wed Nov 14 10:45:59 PST 2012
+#   I deleted hoth. I made the sidious install off by default. I modified
+#   the kickit installation since it is now a linux-x86_64 system instead
+#   of a linux-intel system.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -100,9 +105,8 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-hoth=true
 kickit=true
-sidious=true
+sidious=false
 ubuntu1104_64=false
 aztec=true
 rzthriller=true
@@ -122,7 +126,6 @@ for abc
 do
    case $1 in
       -none)
-         hoth=false
          kickit=false
          sidious=false
          ubuntu1104_64=false
@@ -132,14 +135,6 @@ do
          euclid=false
          glory=false
          redsky=false
-         shift
-         ;;
-      -hoth)
-         hoth=false
-         shift
-         ;;
-      +hoth)
-         hoth=true
          shift
          ;;
       -kickit)
@@ -243,70 +238,34 @@ ver2=`echo $ver | tr "." "_"`
 ver=`echo $ver2 | tr "_" "."`
 
 #
-# Install on hoth.
-#
-rm -f hoth
-cat <<EOF > hoth
-#!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-rhel6 /data/$user/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on hoth"            > resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /data/$user/visit                            >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /data/$user/visit/$ver+/linux-x86_64/bin     >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /data/$user/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /data/$user/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /data/$user/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /data/$user/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/data\/$user\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): hoth" $emailName < resultlog
-EOF
-
-if [ $hoth = true ]
-then
-   if [ $test = no ]
-   then
-      scp hoth:/data/$user/hoth/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel6.tar.gz
-      scp visit$ver2.linux-x86_64-rhel6.tar.gz hoth:visit$ver2.linux-x86_64-rhel6.tar.gz
-      scp visit-install hoth:
-      scp hoth hoth:hoth_install
-      ssh hoth "chmod 750 hoth_install;./hoth_install"
-   fi
-fi
-
-#
 # Install on kickit.
 #
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-rhel5 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open -g visit -b bdivp -gw -l $ver linux-x86_64-rhel5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver+/linux-intel/bin       >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin      >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $kickit = true ]
 then
    if [ $test = no ]
    then
-      scp kickit:/scratch/$user/kickit/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rhel5.tar.gz
-      scp visit$ver2.linux-rhel5.tar.gz kickit:visit$ver2.linux-rhel5.tar.gz
+      scp kickit:/scratch/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel5.tar.gz
+      scp visit$ver2.linux-x86_64-rhel5.tar.gz kickit:visit$ver2.linux-x86_64-rhel5.tar.gz
       scp visit-install kickit:
       scp kickit kickit:kickit_install
       ssh kickit "chmod 750 kickit_install;./kickit_install"
@@ -599,5 +558,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
 fi
