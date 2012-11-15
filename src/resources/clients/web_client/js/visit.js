@@ -85,7 +85,10 @@ function VisItProxy()
              {
                 debug("Sending initial password..");
                 /// once connected send password
-                websocket.send( password );
+                var handshake = {};
+                handshake["password"] = password;
+                handshake["canRender"] = true;
+                websocket.send( JSON.stringify(handshake) );
              };
              websocket.onclose = function (evt) 
              {

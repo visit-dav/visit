@@ -84,6 +84,8 @@ private:
                             const stringVector &,
                             void *);
 
+   bool ParseInput(const QString &input, std::string& lpasswd, bool& canRender);
+
    //HKTODO: I need to figure out a good way to have Connections figure out the
    //the type of communication system..
    //I can do this in RemoteProcess/ParentProcess but that will force more changes

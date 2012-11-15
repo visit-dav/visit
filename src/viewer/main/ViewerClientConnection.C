@@ -98,6 +98,7 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
     advancedRendering = false;
+    externalClient = false;
 }
 
 // ****************************************************************************

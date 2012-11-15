@@ -1308,7 +1308,7 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
         bool adminClient = false;
         for(int i = 0; i < clients.size(); ++i)
         {
-            if(!clients[i]->GetAdvancedRendering())
+            if(!clients[i]->GetExternalClient())
             {
                 adminClient = true;
                 break;
