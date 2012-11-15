@@ -1,14 +1,14 @@
-#/project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake
+#/project/projectdirs/visit/visit_3rdparty/euclid_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake
 ##
-## ./build_visit2_5_1 generated host.cmake
-## created: Fri Jun 22 10:47:45 PDT 2012
-## system: Linux euclid.nersc.gov 2.6.18-238.12.1.el5.bsdv3 #1 SMP Wed Jul 13 08:23:11 PDT 2011 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_6_0 generated host.cmake
+## created: Wed Nov 14 15:09:16 PST 2012
+## system: Linux euclid 2.6.18-238.12.1.el5.nersc #1 SMP Mon Jul 11 16:15:58 PDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1)
+SET(VISITHOME /project/projectdirs/visit/visit_3rdparty/euclid_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
 VISIT_OPTION_DEFAULT(VISIT_INSTALL_PROFILES_TO_HOSTS "nersc" TYPE STRING)
@@ -46,7 +46,7 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH /usr/common/usg/openmpi/1.4.4/gnu/lib/
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/python/2.6.4/linux-x86_64_gcc-4.1)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /project/projectdirs/visit/visit_3rdparty/euclid_2_6_0/python/2.6.4/linux-x86_64_gcc-4.1)
 
 ##
 ## Mesa
@@ -56,12 +56,12 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
 
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -88,7 +88,7 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0.a/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -116,7 +116,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -178,5 +178,5 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS 
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 
