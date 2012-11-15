@@ -1,14 +1,14 @@
-#/usr/projects/views/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.6/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.6/bin/cmake
 ##
-## ./build_visit2_5_1 generated host.cmake
-## created: Mon Jun 25 10:48:12 MDT 2012
-## system: Linux ci-fe1 2.6.32.49-0.3-default #1 SMP 2011-12-02 11:28:04 +0100 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_6_0 generated host.cmake
+## created: Thu Nov 15 16:42:25 MST 2012
+## system: Linux ci-fe2 2.6.32.49-0.3-default #1 SMP 2011-12-02 11:28:04 +0100 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared_2_5_1)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.6)
 
 ##
@@ -42,7 +42,7 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/projects/views/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-x86_64_gcc-4.6)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/projects/views/visit/thirdparty_shared_2_6_0/python/2.6.4/linux-x86_64_gcc-4.6)
 
 ##
 ## Mesa
@@ -52,12 +52,12 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
 
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -84,7 +84,7 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0.a/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -112,7 +112,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -155,5 +155,5 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS 
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 

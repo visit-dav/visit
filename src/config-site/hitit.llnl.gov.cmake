@@ -1,14 +1,14 @@
-#/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-i686_gcc-4.1/bin/cmake
+#/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-i686_gcc-4.1/bin/cmake
 ##
-## ./build_visit2_5_1 generated host.cmake
-## created: Thu Jun 22 09:36:31 PDT 2012
+## ./build_visit2_6_0 generated host.cmake
+## created: Thu Nov 15 11:51:56 PST 2012
 ## system: Linux termite.isrd.llnl.gov 2.6.18-308.el5 #1 SMP Fri Jan 27 17:21:15 EST 2012 i686 i686 i386 GNU/Linux
 ## by: brugger1
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /misc/gapps/visit/thirdparty_shared_2_5_1)
+SET(VISITHOME /misc/gapps/visit/thirdparty_shared_2_6_0)
 SET(VISITARCH linux-i686_gcc-4.1)
 
 ## Compiler flags.
@@ -29,22 +29,21 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fvisibility=hidden" TYPE STRING)
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
-##
 
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /misc/gapps/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-i686_gcc-4.1)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /misc/gapps/visit/thirdparty_shared_2_6_0/python/2.6.4/linux-i686_gcc-4.1)
 
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
 
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -66,7 +65,7 @@ VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0.a/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -94,7 +93,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -137,5 +136,5 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS 
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 

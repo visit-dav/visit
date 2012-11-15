@@ -11,12 +11,24 @@
 SET(VISITHOME /usr/gapps/visit/thirdparty_shared_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
+VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE TYPE BOOL)
+
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+
+##
+## Add parallel arguments.
+##
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/shared -L/usr/local/tools/mvapich-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich-gnu/lib/shared" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich-gnu/lib/shared")
 
 ##############################################################
 ##
@@ -29,7 +41,6 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
-##
 
 ##
 ## Python
@@ -162,7 +173,6 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
-##
 
 ##
 ## PySide
