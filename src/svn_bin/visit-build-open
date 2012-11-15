@@ -111,6 +111,9 @@
 #   I made the sidious build off by default. I modified the kickit build
 #   since it is now a linux-x86_64 system instead of a linux-intel system.
 #
+#   Eric Brugger, Wed Nov 14 15:53:56 PST 2012
+#   I modified the euclid build to point to the new cmake.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -624,7 +627,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/project/projectdirs/visit/visit_3rdparty/euclid_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
