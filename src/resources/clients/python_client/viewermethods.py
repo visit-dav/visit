@@ -167,10 +167,12 @@ class ViewerMethods:
             import PIL,cStringIO,base64
             import PIL.Image
 
-            queryAttr = self.state.data(38)
-            data = cStringIO.StringIO(base64.b64decode(queryAttr["12"][0]))
-            im = PIL.Image.open(data)
-            im.show()
+            queryAttr = self.state.data(38)["12"]
+
+            for attr in queryAttr:
+                data = cStringIO.StringIO(base64.b64decode(attr))
+                im = PIL.Image.open(data)
+                im.show()
         except:
             print "Showing Window Failed..."
 
@@ -179,10 +181,12 @@ class ViewerMethods:
             import PIL,cStringIO,base64
             import PIL.Image
 
-            queryAttr = self.state.data(38)
-            data = cStringIO.StringIO(base64.b64decode(queryAttr["12"][0]))
-            im = PIL.Image.open(data)
-            im.save(filename)
+            queryAttr = self.state.data(38)["12"]
+
+            for (i,attr) in enumerate(queryAttr):
+                data = cStringIO.StringIO(base64.b64decode(attr))
+                im = PIL.Image.open(data)
+                im.save(filename + "_" + i + ".jpg")
         except:
-            print "Showing Window Failed..."
+            print "Saving Window Failed..."
 

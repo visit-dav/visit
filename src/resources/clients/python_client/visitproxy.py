@@ -59,7 +59,10 @@ class ViewerProxy:
         s.connect((host,port))
 
         # VisIt expects password to continue
-        s.send(password)
+        header = {}
+        header["password"] = password
+        header["canRender"] = True
+        s.send(json.dumps(header))
 
         data = s.recv(ViewerProxy.BUFSIZE) # read handshake message
 
@@ -69,16 +72,10 @@ class ViewerProxy:
             print "Connection to VisIt failed"
             return False
 
-        # break incoming message up
-        message = data.split(",")
-        # message returned is not correct
-        if len(message) < 10:
-            print "Password failed, invalid message"
-            return False
-
-        self.visit_host = message[5]
-        self.visit_port = int(message[7])
-        self.visit_security_key = message[9]
+        message = json.loads(data)
+        self.visit_host = str(message["host"])
+        self.visit_port = int(message["port"])
+        self.visit_security_key = str(message["securityKey"])
         return True
 
     # Header information contains:
@@ -154,11 +151,11 @@ class ViewerProxy:
 
         #wait until VisIt API has loaded
         #TODO: replace this logic with semaphore wait..
-        while(not LastEvent): time.sleep(.2)
+        print "Loading VisIt API..."
+        while(not LastEvent): time.sleep(.1)
 
         self.state.removeListener(self.updateEvent)
 
-        print "Synching VisIt API..."
         self.sync()
         print "The viewer proxy has loaded..."
 
