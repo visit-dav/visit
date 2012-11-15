@@ -190,11 +190,11 @@ void SharedDaemon::incomingConnection( int sd )
 // ****************************************************************************
 
 /// TODO: remove the external dependency all together..
-QString matched_password = "";
+QString matched_input = "";
 void SharedDaemon::getPasswordMessage(QString message)
 {
     //std::cout << "password " << message.toStdString() << std::endl;
-    matched_password = message;
+    matched_input = message;
 }
 
 // ****************************************************************************
@@ -215,13 +215,37 @@ void SharedDaemon::getPasswordMessage(QString message)
 // Modifications:
 //
 // ****************************************************************************
+bool
+SharedDaemon::ParseInput(const QString& input, std::string& lpasswd, bool& canRender)
+{
+    if(input.startsWith("{"))
+    {
+        JSONNode node;
+        node.Parse(input.toStdString());
+
+        if(node.GetType() != JSONNode::JSONOBJECT ||
+           !node.HasKey("password") ||
+            node.GetObject()["password"].GetString() != password)
+            return false;
+
+        lpasswd = node.GetObject().at("password").GetString();
+
+        if(node.HasKey("canRender") == true &&
+           node.GetObject().at("canRender").GetType() == JSONNode::JSONBOOL)
+            canRender = node.GetObject().at("canRender").GetBool();
+
+        return true;
+    }
+
+    return false;
+}
 
 void SharedDaemon::handleConnection()
 {
     QTcpSocket *socket = nextPendingConnection();
 
-    if ( !socket ) 
-        return;
+    if ( !socket ) return;
+
     //the connecting socket should have sent password..
     //the client should be sending a password..
     socket->waitForReadyRead();
@@ -233,92 +257,87 @@ void SharedDaemon::handleConnection()
         return;
     }
 
-    QByteArray result = socket->readAll();
-
-    QString lpasswd(result);
-
-    //std::cout << "password is: " << lpasswd.toStdString() << std::endl;
-
-    QAbstractSocket* finalSocket = socket;
+    QAbstractSocket* finalSocket = NULL;
     ConnectionType typeOfConnection = TcpConnection;
 
-    if(password != lpasswd.toStdString())
+    QByteArray result = socket->readAll();
+    QString input(result);
+
+    /// initial connection must pass password, but can optionally pass
+    /// whether the client canRender and what the threshold value should be..
+    std::string lpasswd = "";
+    bool canRender = false;
+
+    /// check if this is a WebSocketConnection
+    QString response = "";
+
+    if(input.startsWith("{") && ParseInput(input,lpasswd,canRender))
     {
-        /// check if this is a WebSocketConnection
-        QString response;
-        if(QWsSocket::initializeWebSocket(result,response))
+        finalSocket = socket;
+        typeOfConnection = TcpConnection;
+    } /// check if this is a WebSocketConnection..
+    else if(QWsSocket::initializeWebSocket(result,response))
+    {
+        /// this is a websocket connection, respond and get frame..
+        socket->write(response.toAscii());
+        socket->flush();
+
+        QEventLoop loop;
+
+        matched_input = "";
+
+        QWsSocket* wssocket = new QWsSocket(socket);
+
+        connect(wssocket,SIGNAL(frameReceived(QString)),
+                this,SLOT(getPasswordMessage(QString)));
+
+        connect(wssocket,SIGNAL(frameReceived(QString)),
+                &loop,SLOT(quit()));
+
+        /// wait for password to be sent ..
+        /// std::cout << "waiting for password from websocket" << std::endl;
+        loop.exec();
+
+        disconnect(wssocket,SIGNAL(frameReceived(QString)),
+                this,SLOT(getPasswordMessage(QString)));
+
+        disconnect(wssocket,SIGNAL(frameReceived(QString)),
+                &loop,SLOT(quit()));
+
+        //std::cout << matched_input.toStdString() << std::endl;
+
+        if( !ParseInput(matched_input,lpasswd,canRender) )
         {
-            /// this is a websocket connection, respond and get frame..
-            socket->write(response.toAscii());
-            socket->flush();
-
-            /// do a password check..
-
-            QEventLoop loop;
-
-            matched_password = "";
-
-            QWsSocket* wssocket = new QWsSocket(socket);
-
-            connect(wssocket,SIGNAL(frameReceived(QString)),
-                    this,SLOT(getPasswordMessage(QString)));
-
-            connect(wssocket,SIGNAL(frameReceived(QString)),
-                    &loop,SLOT(quit()));
-
-            /// wait for password to be sent ..
-            /// std::cout << "waiting for password from websocket" << std::endl;
-            loop.exec();
+            //std::cout << "passwords do not match: "
+            //          << matched_password.toStdString()
+            //          << " " << password << std::endl;
 
             disconnect(wssocket,SIGNAL(frameReceived(QString)),
                     this,SLOT(getPasswordMessage(QString)));
-
-            disconnect(wssocket,SIGNAL(frameReceived(QString)),
-                    &loop,SLOT(quit()));
-
-
-            //if( password == matched_password.toStdString())
-            //{
-            //    std::cout << "passwords match: "
-            //              << matched_password.toStdString()
-            //            << " " << password << std::endl;
-            //}
-
-            if( password != matched_password.toStdString())
-            {
-
-                //std::cout << "passwords do not match: "
-                //          << matched_password.toStdString()
-                //          << " " << password << std::endl;
-
-                disconnect(wssocket,SIGNAL(frameReceived(QString)),
-                        this,SLOT(getPasswordMessage(QString)));
-                wssocket->close("passwords do not match or operation timed out");
-                socket->waitForDisconnected();
-
-                wssocket->deleteLater();
-                return;
-            }
-
-            finalSocket = wssocket;
-            typeOfConnection = WSocketConnection;
-
-        }
-        else
-        {
-            //std::cout << "passwords do not match/or unknown connection detected" << std::endl;
-
-            //send rejection notice..
-            std::string errorString = "Passwords do not match";
-            socket->write(errorString.c_str(),errorString.length());
-            socket->disconnectFromHost();
+            wssocket->close("passwords do not match or operation timed out");
             socket->waitForDisconnected();
+
+            wssocket->deleteLater();
             return;
         }
+
+        finalSocket = wssocket;
+        typeOfConnection = WSocketConnection;
+
+    } /// not sure what connection this is, reject it..
+    else
+    {
+        //send rejection notice..
+        std::string errorString = "Unknown connection..";
+        socket->write(errorString.c_str(),errorString.length());
+        socket->disconnectFromHost();
+        socket->waitForDisconnected();
+        return;
     }
 
     //passwords match enable RemoteProcess and get port remote Process is listening to.
     //send host,port,security_key and whatever else so that remote machine can successfully reverse connect
+    std::string program = "remoteApp";
     std::string clientName = "newclient1";
 
     ViewerClientConnection *newClient = new
@@ -327,9 +346,8 @@ void SharedDaemon::handleConnection()
                                    clientName.c_str(),
                                    true);
 
-    newClient->SetAdvancedRendering(true);
-
-    std::string program = "remoteApp";
+    newClient->SetExternalClient(true);
+    newClient->SetAdvancedRendering(canRender);
     stringVector args;
 
     /// assign whether connection is of type WebSocket or TCPConnection
@@ -371,28 +389,20 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     /// Send appropriate message for TCP or WebConnection
     void** data = (void**)cbdata;
     ConnectionType typeOfConnection = *((ConnectionType*)(data[0]));
-    std::string message = "";
-
-    //std::cout << host << " "
-    //          << (typeOfConnection ? "WebSocketConnection" : "TcpSocketConnection")
-    //          << std::endl;
-
-    if(args.size() > 1)
-    {
-        for(size_t i = 0; i < args.size() - 1; ++i)
-            message += args[i] + std::string(",");
-        message += args.back();
-    }
-    message += std::string(",-dv");
-
     QAbstractSocket* socket = static_cast<QAbstractSocket*>(data[1]);
+
+    JSONNode node;
+
+    node["host"] = args[5]; //host
+    node["port"]  = args[7]; //port
+    node["version"] = args[2]; //version
+    node["securityKey"] = args[9]; //key
 
     if(typeOfConnection == TcpConnection)
     {
         QTcpSocket *tsocket = dynamic_cast<QTcpSocket*>(socket);
 
-        //host,port,key
-        //std::cout << "writing message: " << message << std::endl;
+        std::string message = node.ToString();
         tsocket->write(message.c_str(),message.length());
         tsocket->waitForBytesWritten();
         tsocket->disconnectFromHost();
@@ -402,17 +412,6 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
     else
     {
         QWsSocket *wsocket = dynamic_cast<QWsSocket*>(socket);
-
-        //host,port,key
-        //std::cout << "writing WebSocket message: "
-        //          << message << " " << std::endl;
-
-        JSONNode node;
-
-        node["host"] = args[5]; //host
-        node["port"]  = args[7]; //port
-        node["version"] = args[2]; //version
-        node["securityKey"] = args[9]; //key
 
         wsocket->write(QString(node.ToString().c_str()));
         wsocket->flush();
@@ -448,7 +447,6 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 int
 SingleThreadedAcceptSocket(int listenSocketNum)
 {
-    const char *mName = "SharedDaemon, SingleThreadedAcceptSocket: ";
     struct sockaddr_in       sin;
     int desc = -1;
 
@@ -463,6 +461,7 @@ SingleThreadedAcceptSocket(int listenSocketNum)
         len = sizeof(struct sockaddr);
         desc = accept(listenSocketNum, (struct sockaddr *)&sin, &len);
 #if defined(_WIN32)
+        const char *mName = "SharedDaemon, SingleThreadedAcceptSocket: ";
         if(desc == INVALID_SOCKET)
             LogWindowsSocketError(mName, "accept");
 #endif

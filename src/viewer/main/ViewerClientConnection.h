@@ -105,6 +105,8 @@ public:
 
     void SetAdvancedRendering(bool ar) { advancedRendering = ar; }
     bool GetAdvancedRendering() { return advancedRendering; }
+    void SetExternalClient(bool ex) { externalClient = ex; }
+    bool GetExternalClient() { return externalClient; }
     static const int FreelyExchangedState;
 signals:
     void DisconnectClient(ViewerClientConnection *);
@@ -122,7 +124,8 @@ private:
     bool               emitSignalsOnUpdate;
     bool               ownsNotifier;
     bool               allState; //whether to send all the state during initial connection
-    bool               advancedRendering;
+    bool               advancedRendering; //this client request has rendering capabilities
+    bool               externalClient; // this client is non standard
     int                initialStateStage;
 
 };
