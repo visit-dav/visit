@@ -545,16 +545,16 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
     stringVector args;
 
     args.push_back("-v");
-    args.push_back(node.GetObject()["version"].GetString());
+    args.push_back(node.GetJsonObject()["version"].GetString());
 
     args.push_back("-host");
-    args.push_back(node.GetObject()["host"].GetString());
+    args.push_back(node.GetJsonObject()["host"].GetString());
 
     args.push_back("-port");
-    args.push_back(node.GetObject()["port"].GetString());
+    args.push_back(node.GetJsonObject()["port"].GetString());
 
     args.push_back("-key");
-    args.push_back(node.GetObject()["securityKey"].GetString());
+    args.push_back(node.GetJsonObject()["securityKey"].GetString());
 
     args.push_back("-reverse_launch");
 

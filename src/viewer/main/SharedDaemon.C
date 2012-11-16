@@ -225,14 +225,14 @@ SharedDaemon::ParseInput(const QString& input, std::string& lpasswd, bool& canRe
 
         if(node.GetType() != JSONNode::JSONOBJECT ||
            !node.HasKey("password") ||
-            node.GetObject()["password"].GetString() != password)
+            node.GetJsonObject()["password"].GetString() != password)
             return false;
 
-        lpasswd = node.GetObject().at("password").GetString();
+        lpasswd = node.GetJsonObject().at("password").GetString();
 
         if(node.HasKey("canRender") == true &&
-           node.GetObject().at("canRender").GetType() == JSONNode::JSONBOOL)
-            canRender = node.GetObject().at("canRender").GetBool();
+           node.GetJsonObject().at("canRender").GetType() == JSONNode::JSONBOOL)
+            canRender = node.GetJsonObject().at("canRender").GetBool();
 
         return true;
     }

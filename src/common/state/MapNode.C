@@ -540,7 +540,7 @@ MapNode::SetValue(const JSONNode &node,bool decodeString)
 
     if(node.GetType() != JSONNode::JSONOBJECT) return;
 
-    const JSONNode::JSONObject& object = node.GetObject();
+    const JSONNode::JSONObject& object = node.GetJsonObject();
 
     //if( object.find("data") == object.end() ||
     //    object.find("metadata") == object.end()) return;
@@ -581,8 +581,8 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
 {
     if(data.GetType() == JSONNode::JSONOBJECT)
     {
-        const JSONNode::JSONObject& object = data.GetObject();
-        const JSONNode::JSONObject& mobject = metadata.GetObject();
+        const JSONNode::JSONObject& object = data.GetJsonObject();
+        const JSONNode::JSONObject& mobject = metadata.GetJsonObject();
         JSONNode::JSONObject::const_iterator itr  = object.begin();
         JSONNode::JSONObject::const_iterator mitr = mobject.begin();
 
