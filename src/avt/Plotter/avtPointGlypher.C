@@ -691,6 +691,9 @@ avtPointGlypher::DataScalingOff(void)
 //    Added varDim argument so that data scaling can be done by other
 //    than just scalar vars.  
 //
+//    John Schmidt, Thu Nov 15 13:08:21 MST 2012
+//    Added capability to scale by a 3x3 tensor.  
+//
 // ****************************************************************************
 
 
@@ -715,6 +718,11 @@ avtPointGlypher::DataScalingOn(const string &sname, int varDim)
                 {
                     glyphFilter[i]->SetScaleModeToScaleByVector();
                     glyphFilter[i]->SelectVectorsForScaling(scalingVarName.c_str());
+                }
+                else if (scalingVarDim == 9)
+                {
+                    glyphFilter[i]->SetScaleModeToScaleByTensor();
+                    glyphFilter[i]->SelectTensorsForScaling(scalingVarName.c_str());
                 }
                 else 
                 { 
