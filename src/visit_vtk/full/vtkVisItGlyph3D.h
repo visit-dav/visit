@@ -75,8 +75,9 @@
 
 #define VTK_SCALE_BY_SCALAR 0
 #define VTK_SCALE_BY_VECTOR 1
-#define VTK_SCALE_BY_VECTORCOMPONENTS 2
-#define VTK_DATA_SCALING_OFF 3
+#define VTK_SCALE_BY_TENSOR 2
+#define VTK_SCALE_BY_VECTORCOMPONENTS 3
+#define VTK_DATA_SCALING_OFF 4
 
 #define VTK_COLOR_BY_SCALE  0
 #define VTK_COLOR_BY_SCALAR 1
@@ -137,6 +138,8 @@ public:
     {this->SetScaleMode(VTK_SCALE_BY_SCALAR);};
   void SetScaleModeToScaleByVector() 
     {this->SetScaleMode(VTK_SCALE_BY_VECTOR);};
+  void SetScaleModeToScaleByTensor() 
+    {this->SetScaleMode(VTK_SCALE_BY_TENSOR);};
   void SetScaleModeToScaleByVectorComponents()
     {this->SetScaleMode(VTK_SCALE_BY_VECTORCOMPONENTS);};
   void SetScaleModeToDataScalingOff()
@@ -259,6 +262,10 @@ public:
   void SelectVectorsForScaling(const char *fieldName) 
     {this->SetVectorsForScaling(fieldName);}
 
+  vtkGetStringMacro(TensorsForScaling);
+  void SelectTensorsForScaling(const char *fieldName) 
+    {this->SetTensorsForScaling(fieldName);}
+
   int SetFullFrameScaling(int useIt, const double *s);
 
 
@@ -296,11 +303,13 @@ protected:
   char *ScalarsForScaling;
   char *VectorsForColoring;
   char *VectorsForScaling;
+  char *TensorsForScaling;
 
   vtkSetStringMacro(ScalarsForColoring);
   vtkSetStringMacro(ScalarsForScaling);
   vtkSetStringMacro(VectorsForColoring);
   vtkSetStringMacro(VectorsForScaling);
+  vtkSetStringMacro(TensorsForScaling);
 
   int    UseFullFrameScaling;
   double FullFrameScaling[3];
@@ -321,6 +330,10 @@ inline const char *vtkVisItGlyph3D::GetScaleModeAsString(void)
   else if ( this->ScaleMode == VTK_SCALE_BY_VECTOR ) 
     {
     return "ScaleByVector";
+    }
+  else if ( this->ScaleMode == VTK_SCALE_BY_TENSOR ) 
+    {
+    return "ScaleByTensor";
     }
   else 
     {
