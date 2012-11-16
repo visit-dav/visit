@@ -77,6 +77,9 @@
 //    Allen Sanderson, Mon Mar  8 19:57:29 PST 2010
 //    Reorganize layout of widget.
 //
+//    John Schmidt, Thu Nov 15 13:08:21 MST 2012
+//    Added Tensor quantities to the scaling toggle box.  
+//
 // ****************************************************************************
 
 QvisPointControl::QvisPointControl(QWidget *parent,
@@ -122,8 +125,8 @@ QvisPointControl::QvisPointControl(QWidget *parent,
     connect(sizeVarToggle, SIGNAL(toggled(bool)),
             this, SLOT(sizeVarToggled(bool)));
     topLayout->addWidget(sizeVarToggle, 1, 0, 1, 2);
-    sizeVarButton = new QvisVariableButton(true, true, true,
-                                           QvisVariableButton::Scalars, this);
+    int query_types = QvisVariableButton::Scalars | QvisVariableButton::Tensors;
+    sizeVarButton = new QvisVariableButton(true, true, true,query_types, this);
     sizeVarButton->setEnabled(false);
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));

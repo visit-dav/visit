@@ -1,14 +1,14 @@
-#/home/biagas2/visit/thirdparty/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
+#/home/biagas2/visit/thirdparty_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
 ##
-## ./build_visit generated host.cmake
-## created: Tue Jun  5 12:08:38 PDT 2012
-## system: Linux beetlehunter 2.6.32-220.17.1.el6.x86_64 #1 SMP Thu Apr 26 13:37:13 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit2_6_0 generated host.cmake
+## created: Mon Nov 12 15:49:44 PST 2012
+## system: Linux beetlehunter 2.6.32-279.2.1.el6.x86_64 #1 SMP Thu Jul 5 21:08:58 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux
 ## by: biagas2
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/biagas2/visit/thirdparty)
+SET(VISITHOME /home/biagas2/visit/thirdparty_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
@@ -30,16 +30,11 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
-##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
 
 ##
+## Python
 ##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/biagas2/visit/thirdparty/python/2.6.4/linux-x86_64_gcc-4.4)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
 ## Mesa
@@ -49,8 +44,12 @@ VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
 
+##
+## Qt
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -67,7 +66,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0.a/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -95,7 +94,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -154,10 +153,14 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 ##
-##
-## Specify the PySide dir. 
-##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
 
 ##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
+
+##
+## MANTA
+##
+VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR ${VISITHOME}/manta/2540/${VISITARCH})
 

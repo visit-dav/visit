@@ -63,6 +63,7 @@ vtkVisItGlyph3D::vtkVisItGlyph3D()
   this->ScalarsForScaling = NULL;
   this->VectorsForColoring = NULL;
   this->VectorsForScaling = NULL;
+  this->TensorsForScaling = NULL;
 
   this->UseFullFrameScaling = 0;
   this->FullFrameScaling[0] = 1.;
@@ -84,6 +85,7 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
   this->SetScalarsForScaling(NULL);
   this->SetVectorsForColoring(NULL);
   this->SetVectorsForScaling(NULL);
+  this->SetTensorsForScaling(NULL);
 }
 
 //*****************************************************************************
@@ -113,6 +115,10 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Only glyph points that have VTK_VERTEXs.  Also pass edges, quads, etc
 //    through the filter.
 //
+//    John Schmidt, Thu Nov 15 13:08:21 MST 2012
+//    Added capability to scale by a 3x3 tensor.  Use in scaling the Box
+//    glyph.
+//
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
 {
@@ -124,6 +130,7 @@ void vtkVisItGlyph3D::Execute()
   vtkDataArray *inVectors = NULL;
   vtkDataArray *inVectors_forColoring = NULL;
   vtkDataArray *inVectors_forScaling = NULL;
+  vtkDataArray *inTensors_forScaling = NULL;
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
   vtkDataArray *inNormals = NULL, *sourceNormals = NULL;
@@ -137,6 +144,7 @@ void vtkVisItGlyph3D::Execute()
   double x[3], v[3];
   double vNew[3], s = 0.0, vMag = 0.0, value;
   vtkTransform *trans = vtkTransform::New();
+  vtkMatrix4x4 *def_mat = vtkMatrix4x4::New();
   vtkCell *cell;
   vtkIdList *cellPts;
   int npts;
@@ -178,6 +186,7 @@ void vtkVisItGlyph3D::Execute()
   inScalars_forScaling  = pd->GetArray(this->ScalarsForScaling);
   inVectors_forColoring = pd->GetArray(this->VectorsForColoring);
   inVectors_forScaling  = pd->GetArray(this->VectorsForScaling);
+  inTensors_forScaling  = pd->GetArray(this->TensorsForScaling);
 
   inOrigNodes = pd->GetArray("avtOriginalNodeNumbers");
   inOrigCells = pd->GetArray("avtOriginalCellNumbers");
@@ -245,6 +254,7 @@ void vtkVisItGlyph3D::Execute()
       vtkErrorMacro(<<"Indexing on but don't have data to index with");
       pts->Delete();
       trans->Delete();
+      def_mat->Delete();
       return;
       }
     else
@@ -450,7 +460,26 @@ void vtkVisItGlyph3D::Execute()
       }
 
     // Get the scalar and vector data
-    if ( inScalars_forScaling )
+    if ( inTensors_forScaling )
+      {
+        if (this->ScaleMode == VTK_SCALE_BY_TENSOR) 
+          {
+          // def_mat is Identity at its creation, only change needed elements.
+          double* tensor = inScalars_forScaling->GetTuple9(inPtId);
+          def_mat->SetElement(0,0,tensor[0]);
+          def_mat->SetElement(0,1,tensor[1]);
+          def_mat->SetElement(0,2,tensor[2]);
+
+          def_mat->SetElement(1,0,tensor[3]);
+          def_mat->SetElement(1,1,tensor[4]);
+          def_mat->SetElement(1,2,tensor[5]);
+
+          def_mat->SetElement(2,0,tensor[6]);
+          def_mat->SetElement(2,1,tensor[7]);
+          def_mat->SetElement(2,2,tensor[8]);
+          }
+      }
+    else if ( inScalars_forScaling )
       {
       s = inScalars_forScaling->GetComponent(inPtId, 0);
       if ( this->ScaleMode == VTK_SCALE_BY_SCALAR ||
@@ -608,6 +637,9 @@ void vtkVisItGlyph3D::Execute()
     // translate Source to Input point
     input->GetPoint(inPtId, x);
     trans->Translate(x[0], x[1], x[2]);
+
+    // Transform Source by Tensor
+    trans->Concatenate(def_mat);    
     
     if ( haveVectors )
       {
@@ -784,6 +816,7 @@ void vtkVisItGlyph3D::Execute()
 
   output->Squeeze();
   trans->Delete();
+  def_mat->Delete();
   pts->Delete();
 
   if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA || 
