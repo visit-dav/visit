@@ -56,7 +56,7 @@
 ADD_SUBDIRECTORY(hosts)
 
 # Directories that we want installed wholesale to the "resources" directory.
-SET(RESOURCE_DIRECTORIES colortables help hosts movietemplates translations usage)
+SET(RESOURCE_DIRECTORIES colortables help hosts movietemplates translations usage clients)
 
 # Copy the resources directory into the out of source build
 FOREACH(ITEM ${RESOURCE_DIRECTORIES})
