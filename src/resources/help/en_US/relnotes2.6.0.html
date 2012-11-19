@@ -91,6 +91,7 @@ enhancements and bug-fixes that were added to this release.</p>
       </i> 
   </ul>
 </li>
+  <li>The DataBinning operator can now put its output on the original input mesh, instead of on the bins it usually produces.</li>
 </ul>
 
 <a name="GUI_Changes"></a>
@@ -116,13 +117,17 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>The ddcMD reader has been fixed and support was added for ascii record cgrid files that are decomposed into multiple subnames.</li>
   <li>The Pixie reader has been enhanced so it can automatically decompose large arrays among multiple processors in parallel. Thanks Jean Favre!</li>
+  <li>The Nek5000 reader now reports times and cycles by default in the GUI.  (The time slider has this information.)</li>
+  <li>The Nek5000 reader no longer crashes when doing repeated isosurfaces and it has acceleration data structures.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 2.6</font></b></p>
 <ul>
+  <li>The scatter plot no longer ignores x/y/z bounds when normalizing data to a cube and not using skew or log scaling.</li>
   <li>Plots of point variables using a Box, Icoscahedron or Axis glyphs can now be scaled by a Tensor. Thanks John Schmidt! </li>
 </ul>
+
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.6</font></b></p>
@@ -151,6 +156,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Picking was fixed to work in conjuction with the Project operator.</li>
   <li>Transparency of saved images now preserved.</li>
   <li>Launching of CLI on Windows systems with Python installed was fixed.</li>
+  <li>The FTLE operator now uses double precision internally, which prevents a cliff in calculations that created hotspots.</li>
+  <li>The FTLE operator now works correctly with two dimensional grids.</li>
+  <li>Streamline and other particle-advected-based operations now work on rectilinear grids that have monotonically decreasing coordinates.</li>
+  <li>Multiple bugs were fixed with applying data binnings where the data binnings occur over coordinates.</li>
+  <li>The data binning operator now sets labels nad units correctly when using coordinates.</li>
   <li>Ensure the variable use for scaling glyphs in Pseudocolor Plot is not used for coloring.</li>
   <li>Connecting to a remote computer through a gateway did not work unless the remote host was also visible to the client that initiated the connection.</li>
   <li>Performing a database query on a plot in the error state crashes the viewer.</li>
@@ -161,12 +171,18 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to configuration files in version 2.6</font></b></p>
 <ul>
   <li>The host profiles were removed for prism, since that machine was retired.</li>
+  <li>The TACC host profiles no longer reference localhost, which caused mdserver launches to fail locally.</li>
 </ul>
   
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.6</font></b></p>
 <ul>
   <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into a separate files. Customizations are put into a file called <i>customlauncher</i> that is different for each site.</li>
+  <li>The xmledit tools now behave better with operators that create new variables when switching between tabs.</li>
+  <li>The xml code generation tools now produce correct code for operators that create variables.</li>
+  <li>The Python Manual can be automatically generated again.</li>
+  <li>The visitconvert tool has a new -output_zonal option which can be useful when upsampling.</li>
+  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
