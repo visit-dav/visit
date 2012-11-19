@@ -55,6 +55,9 @@ sys.argv = sys.argv[1:]
 # Date      :  Tue May 15 14:00:17 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Nov 19 13:22:18 PST 2012
+#   Correct an error that caused specifying programs on the command line
+#   to fail, such as "visit -mpeg2encode".
 #
 ###############################################################################
 
@@ -200,10 +203,10 @@ while i < len(sys.argv):
     elif arg == "-version":
         want_version = 1
     elif arg in programs:
-        progname = arg[:-1]
+        progname = arg[1:]
         print >> sys.stderr, "NOTE:  Specifying tools as an argument to VisIt is "
         print >> sys.stderr, "no longer necessary.\nIn the future, you should "
-        print >> sys.stderr, "just run '$progname' instead.\n"
+        print >> sys.stderr, "just run '%s' instead.\n" % progname
     elif arg in programsWithOtherNames.keys():
         progname = programsWithOtherNames[arg]
     else:

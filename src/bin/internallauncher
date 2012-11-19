@@ -1955,6 +1955,8 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Eric Brugger, Mon Nov 19 13:24:37 PST 2012
+    #   Correct a bug with running makemili and visitconvert in serial.
     #
     ############################################################################
 
@@ -1980,7 +1982,7 @@ class MainLauncher(object):
                     self.generalArgs.exe_name = self.generalArgs.exe_name + "_par"
             else:
                 ser_lite = os.path.join(self.visitdir, "exe", self.generalArgs.exe_name + "_ser_lite")
-                if os.path.exists(par_lite):
+                if os.path.exists(ser_lite):
                     self.generalArgs.exe_name = self.generalArgs.exe_name + "_ser_lite"
                 else:
                     self.generalArgs.exe_name = self.generalArgs.exe_name + "_ser"
