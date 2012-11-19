@@ -48,6 +48,8 @@
 #include <vectortypes.h>
 #include <visitstream.h>
 
+class vtkPoints;
+
 // ****************************************************************************
 //  Class: avtDDCMDFileFormat
 //
@@ -194,7 +196,7 @@ class avtDDCMDFileFormat : public avtSTMDFileFormat
     int                    nVarsBlock;
     stringVector           varNamesBlock, varUnitsBlock;
     float                **varsBlock;
-    float                 *coordsBlock;
+    vtkPoints             *coordsBlock;
     unsigned              *pinfoBlock;
 
     // Variable information
