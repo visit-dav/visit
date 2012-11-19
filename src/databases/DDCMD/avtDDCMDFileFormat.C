@@ -1170,6 +1170,9 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
 //    Brad Whitlock, Mon Oct  8 15:42:18 PDT 2012
 //    Code cleanup.
 //
+//    Brad Whitlock, Fri Nov 16 15:17:37 PST 2012
+//    Turn coordsBlock into vtkPoints so we don't have to convert to it later.
+//
 // ****************************************************************************
 
 void
@@ -1230,9 +1233,11 @@ avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header,
                             iSpecies * nTypes + iType;
         }
         // moved coords setup out of above conditional
-        coordsBlock[i*3]   = strtof(recOffsets[xOffset], NULL) / coordsScale;
-        coordsBlock[i*3+1] = strtof(recOffsets[yOffset], NULL) / coordsScale;
-        coordsBlock[i*3+2] = strtof(recOffsets[zOffset], NULL) / coordsScale;
+        float pt[3];
+        pt[0] = strtof(recOffsets[xOffset], NULL) / coordsScale;
+        pt[1] = strtof(recOffsets[yOffset], NULL) / coordsScale;
+        pt[2] = strtof(recOffsets[zOffset], NULL) / coordsScale;
+        coordsBlock->SetPoint(i, pt);
 
         //
         // Copy the variable information.
@@ -1274,6 +1279,9 @@ avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header,
 //  Modifications:
 //    Brad Whitlock, Thu Oct 11 13:17:08 PDT 2012
 //    Pass in the data records that we're operating on.
+//
+//    Brad Whitlock, Fri Nov 16 15:17:37 PST 2012
+//    Turn coordsBlock into vtkPoints so we don't have to convert to it later.
 //
 // ****************************************************************************
 
@@ -1322,9 +1330,11 @@ avtDDCMDFileFormat::CopyBinaryDataToBlocks(const DDCMDHeader *header,
                 break;
             }
 
-            coordsBlock[i*3]   = *((float *) (data + xOffset)) / coordsScale;
-            coordsBlock[i*3+1] = *((float *) (data + yOffset)) / coordsScale;
-            coordsBlock[i*3+2] = *((float *) (data + zOffset)) / coordsScale;
+            float pt[3];
+            pt[0] = *((float *) (data + xOffset)) / coordsScale;
+            pt[1] = *((float *) (data + yOffset)) / coordsScale;
+            pt[2] = *((float *) (data + zOffset)) / coordsScale;
+            coordsBlock->SetPoint(i, pt);
         }
 
         //
@@ -1377,6 +1387,9 @@ avtDDCMDFileFormat::CopyBinaryDataToBlocks(const DDCMDHeader *header,
 //    Brad Whitlock, Mon Oct  8 16:03:11 PDT 2012
 //    Use std::string for dataType.
 //
+//    Brad Whitlock, Fri Nov 16 15:17:37 PST 2012
+//    Turn coordsBlock into vtkPoints so we don't have to convert to it later.
+//
 // ****************************************************************************
 
 void
@@ -1409,7 +1422,14 @@ avtDDCMDFileFormat::CopyDataToBlocks(const DDCMDHeader *header,
     }
 
     // moved coordsBlock allocate outside of above conditional
-    coordsBlock = new float[nPoints*3];
+    if(coordsBlock != NULL)
+    {
+        //coordsBlock->Delete();
+        debug5 << "coordsBlock != NULL: Do we need to delete it here?" << endl;
+    }
+    debug5 << "CopyDataToBlocks: Allocating coordinates for " << nPoints << " points" << endl;
+    coordsBlock = vtkPoints::New();
+    coordsBlock->SetNumberOfPoints(nPoints);
 
     varValues = new float*[nVars];
     for (int i = 0; i < nVars; i++)
@@ -2307,23 +2327,23 @@ avtDDCMDFileFormat::ReadData(vector<DDCMDHeader*> &headers)
 //  Programmer: Eric Brugger
 //  Creation:   Thu Nov 20 10:44:45 PST 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Nov 16 15:19:18 PST 2012
+//    We've already built the points in the coordBlocks object. Give the
+//    coordBlocks object to the unstructured grid. Doing this will increase 
+//    the reference count. We don't want the unstructured grid to own the
+//    points since we'll keep a reference here so do not delete the coordBlocks.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtDDCMDFileFormat::GetPointMesh()
 {
-    vtkPoints *points  = vtkPoints::New();
-    points->SetNumberOfPoints(nPoints);
-    float *pts = vtkFloatArray::SafeDownCast(points->GetData())->GetPointer(0);
-
-    for (int i = 0; i < nPoints*3; i++)
-        pts[i] = coordsBlock[i];
-
     //
     // Create the VTK objects and connect them up.
     //
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    ugrid->SetPoints(points);
+    ugrid->SetPoints(this->coordsBlock);
     ugrid->Allocate(nPoints);
     vtkIdType onevertex[1];
     for (int i = 0 ; i < nPoints; i++)
@@ -2331,8 +2351,6 @@ avtDDCMDFileFormat::GetPointMesh()
         onevertex[0] = i;
         ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
     }
-
-    points->Delete();
 
     return ugrid;
 }
@@ -2478,19 +2496,23 @@ avtDDCMDFileFormat::GetRectilinearMesh()
 //  Programmer: Eric Brugger
 //  Creation:   Thu Nov 20 10:44:45 PST 2008
 //
+//  Modifications:
+//    Brad Whitlock, Fri Nov 16 15:39:31 PST 2012
+//    Compute derived values directly in a vtkFloatArray. For variables that
+//    we read from the file, wrap them in a vtkFloatArray instead of copying.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtDDCMDFileFormat::GetPointVar(const char *varname)
 {
-    string var = varname;
+    std::string var(varname);
 
-    float *tmpData = 0;
-    float *data = 0;
+    vtkFloatArray *rv = NULL;
     if (var == "species" || var == "group" || var == "type")
     {
-        tmpData = new float[nPoints];
-        data = tmpData;
+        rv = vtkFloatArray::New();
+        rv->SetNumberOfTuples(nPoints);
         for (int i = 0; i < nPoints; i++)
         {
             unsigned pinfo = pinfoBlock[i];
@@ -2500,11 +2522,11 @@ avtDDCMDFileFormat::GetPointVar(const char *varname)
             pinfo /= nSpecies;
             int it = pinfo;
             if (var == "species")
-                data[i] = float(is);
+                rv->SetValue(i, float(is));
             else if (var == "group")
-                data[i] = float(ig);
+                rv->SetValue(i, float(ig));
             else
-                data[i] = float(it);
+                rv->SetValue(i, float(it));
         }
     }
     else
@@ -2513,30 +2535,17 @@ avtDDCMDFileFormat::GetPointVar(const char *varname)
         // Get the index of the variable name.
         //
         int i;
-
         for (i= 0; i < nVarsBlock && varNamesBlock[i] != varname; i++)
             /* Do nothing. */;
         if (i== nVarsBlock)
             EXCEPTION1(InvalidVariableException, varname);
-        data = varsBlock[i];
+
+        // Wrap the existing data as a VTK array. The 1 in SetArray tells VTK
+        // not to delete the data.
+        rv = vtkFloatArray::New();
+        rv->SetNumberOfComponents(1);
+        rv->SetArray(varsBlock[i], nPoints, 1);
     }
-
-    //
-    // Copy the data array.
-    //
-    vtkFloatArray *rv = vtkFloatArray::New();
-
-    rv->SetNumberOfTuples(nPoints);
-
-    for (int i = 0; i < nPoints; i++)
-    {
-        rv->SetTuple1(i, *(data++));
-    }
-
-    //
-    // Free temporary storage.
-    //
-    if (tmpData != 0)  delete [] tmpData;
 
     return rv;
 }
@@ -2803,6 +2812,9 @@ avtDDCMDFileFormat::~avtDDCMDFileFormat()
 //    I modified the routine to set readData to false so that the data
 //    would be recreated if necessary by ActivateTimestep.
 //
+//    Brad Whitlock, Fri Nov 16 15:25:10 PST 2012
+//    Delete the coordsBlock.
+//
 // ****************************************************************************
 
 void
@@ -2820,6 +2832,12 @@ avtDDCMDFileFormat::FreeUpResources(void)
         }
         delete [] varsBlock;
         varsBlock = NULL;
+    }
+
+    if(coordsBlock != NULL)
+    {
+        coordsBlock->Delete();
+        coordsBlock = NULL;
     }
 
     //
