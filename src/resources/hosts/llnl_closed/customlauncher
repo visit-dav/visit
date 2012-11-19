@@ -26,6 +26,9 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Nov 19 12:04:57 PST 2012
+#   I modified the script to add some paths to the LD_LIBRARY_PATH if running
+#   on cielo.
 #
 ###############################################################################
 
@@ -44,6 +47,12 @@ class LLNLLauncher(MainLauncher):
                     a2 = a2 + [a]
             arches = a2
         return arches
+
+    def Customize(self):
+        if self.sectorname() == "ci-fe":
+            ld_library_paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            added_ld_library_paths = ["/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/lib", "/opt/gcc/mpc/0.8.1/lib", "/opt/gcc/mpfr/2.4.2/lib", "/opt/gcc/gmp/4.3.2/lib", "/opt/gcc/4.6.2/snos/lib64", "/opt/cray/atp/1.4.1/lib"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_paths))
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
