@@ -22,6 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
   <li><a href="#File_format">Changes to file format readers</a></li>
   <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Operator_changes">Changes to operators</a></li>
@@ -142,6 +143,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Plots of point variables using a Box, Icoscahedron or Axis glyphs can now be scaled by a Tensor. Thanks John Schmidt! </li>
 </ul>
 
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators version in 2.6</font></b></p>
+<ul>
+  <li>The Cartographic Projection operator was added to VisIt. This transform operator applies cartographic projections to 2D grids. For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a>. Thanks Jean Favre!</li>
+</ul>
 
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 2.6</font></b></p>
@@ -156,12 +162,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.6</font></b></p>
 <ul>
   <li>The XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
-</ul>
-
-<a name="Operator_changes"></a>
-<p><b><font size="4">Changes to VisIt's operators version in 2.6</font></b></p>
-<ul>
-  <li>The Cartographic Projection operator was added to VisIt. This transform operator applies cartographic projections to 2D grids. For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a>. Thanks Jean Favre!</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
