@@ -154,6 +154,12 @@ avtPeaksOverThresholdFilter::Execute()
 {
     if (atts.GetDataAnalysisYearRangeEnabled())
     {
+        if (atts.GetDataYearBegin() < atts.GetDataAnalysisYearRange()[0] ||
+            atts.GetDataYearBegin() > atts.GetDataAnalysisYearRange()[1])
+        {
+            EXCEPTION1(ImproperUseException, "Invalid data analysis begin year.");
+        }
+            
         if (atts.GetDataAnalysisYearRange()[0] >= atts.GetDataAnalysisYearRange()[1])
         {
             EXCEPTION1(ImproperUseException, "Invalid data analysis year range.");
