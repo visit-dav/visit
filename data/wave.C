@@ -550,7 +550,6 @@ WriteFile(char *filename, double time, double time_minus_1, int cycle,
     if (single_file == 1)
     {
         char tmpDirName[256];
-        char tmpFileName[256];
         if (cycle == 0)
         {
             dbfile = DBCreate(filename, 0, DB_LOCAL, "The Wave", driver);
