@@ -285,13 +285,6 @@ ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
 IF(HDF5_FOUND)
-  IF(WIN32)
-      # Need special defines on Windows
-      SET(HDF5_DEFS "-D_HDF5USEDLL_")
-  ELSE(WIN32)
-      SET(HDF5_DEFS "")
-  ENDIF(WIN32)
-  
 FOREACH(HDF5_TARGET ${HDF5_TARGETS})
     BUILD_DATA_TARGET(${HDF5_TARGET}
                       INCLUDE_DIRS
@@ -301,8 +294,6 @@ FOREACH(HDF5_TARGET ${HDF5_TARGETS})
                         ${HDF5_LIBRARY_DIR}
                       LIBS
                         ${HDF5_LIB}
-                      DEFS
-                        ${HDF5_DEFS}
                      )
 ENDFOREACH(HDF5_TARGET ${HDF5_TARGETS})
 ENDIF(HDF5_FOUND)
