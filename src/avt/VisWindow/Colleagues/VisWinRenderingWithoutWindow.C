@@ -46,6 +46,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
+#ifdef EXTERNAL_VTK_BUILD
 #if __APPLE__
 #include <vtkCocoaRenderWindow.h>
 #include "VisWinRenderingCocoaHideWindow.h"
@@ -63,8 +64,10 @@ void UnMapWindow(vtkRenderWindow* v)
     vtkXOpenGLRenderWindow* vx = dynamic_cast<vtkXOpenGLRenderWindow*>(v);
     if(vx) XUnmapWindow(vx->GetDisplayId(),vx->GetWindowId());
 }
-#else //Windows does not show window OffScreenRenderingMode
+#else //TODO: Hide Window if using External VTK
 void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
+#endif
+
 #endif
 
 // ****************************************************************************
@@ -100,10 +103,13 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
     // Mesa that we are getting, but we don't care.
     //
     renWin = vtkRenderWindow::New();
-    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow" ||
-       std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow" ||
-       std::string(renWin->GetClassName()) == "vtkCocoaRenderWindow")
+#ifdef EXTERNAL_VTK_BUILD
+    if(std::string(renWin->GetClassName()) == "vtkOSOpenGLRenderWindow")
+    if(std::string(renWin->GetClassName()) == "vtkWin32OpenGLRenderWindow")
         renWin->OffScreenRenderingOn();
+#else
+        renWin->OffScreenRenderingOn();
+#endif
     InitializeRenderWindow(renWin);
 }
 
@@ -194,17 +200,10 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   }
   renWin->Render();
 
-  /// HKTODO: Verify this solution is robust
-  /// If not Mesa-based Offscreen rendering: the other
-  /// versions seem to popup an empty window, the UnMap logic
-  /// hides this Window, unfortunately without this window
-  /// the software rendering on Linux does not work
+#ifdef EXTERNAL_VTK_BUILD
   std::string cname = renWin->GetClassName();
   if(cname != "vtkOSOpenGLRenderWindow") UnMapWindow(renWin);
-  // Cyrus' Note: when using vtk-5.8.0.a, we have a fix to make sure
-  // that offscreen cocoa windows aren't mapped. Since Hari 
-  // needs to work with other versions of vtk, the above is still
-  // necessary.
+#endif
 }
 
 // ****************************************************************************
