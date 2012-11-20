@@ -71,7 +71,7 @@ printf "%s%s\n" "VTK_BUILD_DIR=" "${VTK_BUILD_DIR}"
 
 function bv_vtk_print_usage
 {
-printf "\t\t%15s\n" "NOTE: not available for download from web" 
+printf "\t\t%15s\n" "NOTE: not available for download from web"
 printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-thirdparty flag is used"
 }
 
@@ -106,6 +106,10 @@ function bv_vtk_initialize_vars
     fi
     if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
         VTK_INSTALL_DIR="mangled-$VTK_INSTALL_DIR"
+    fi
+
+    if [[ "$DO_MESA" == "no" ]] ; then
+        VTK_VERSION="${VTK_VERSION}.no.mesa"
     fi
 }
 
@@ -213,6 +217,7 @@ function build_vtk
         fi
     fi
 
+    info "Configuring VTK . . ."
     VTK_PREFIX="VTK"
     if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
         mangle_libraries $VTK_BUILD_DIR "mangled_$VTK_BUILD_DIR"
@@ -234,7 +239,7 @@ function build_vtk
         mkdir $VTK_BUILD_DIR
     fi
 
-    # 
+    #
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
     # fields from getting overwritten properly.
     #
@@ -463,9 +468,9 @@ function build_vtk
         # The vtk python module libs depend on the main vtk libs,
         # resolve these install names.
         #
-        
-        # The vtk python libs have install names that point to an abs path 
-        # below VTK_BUILD_DIR. 
+
+        # The vtk python libs have install names that point to an abs path
+        # below VTK_BUILD_DIR.
         # We should be in ${VTK_BUILD_DIR}, we just need its abs path
         VTK_BUILD_DIR_ABS=`pwd`
         info "VTK build directory absolute path: $VTK_BUILD_DIR_ABS"
@@ -494,7 +499,7 @@ function build_vtk
 function bv_vtk_is_enabled
 {
     if [[ $DO_VTK == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
