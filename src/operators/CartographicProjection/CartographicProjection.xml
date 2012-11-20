@@ -21,6 +21,7 @@
         wink2
       </Enum>
       <Field name="projectionID" label="projectionID" type="enum" subtype="ProjectionID">
+        aitoff
       </Field>
     </Attribute>
   </Plugin>

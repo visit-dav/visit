@@ -96,6 +96,7 @@ CartographicProjectionAttributes::ProjectionID_FromString(const std::string &s, 
 
 void CartographicProjectionAttributes::Init()
 {
+    projectionID = aitoff;
 
     CartographicProjectionAttributes::SelectAll();
 }
