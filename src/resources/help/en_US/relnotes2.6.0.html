@@ -24,6 +24,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Plot_changes">Changes to plots</a></li>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
   <li><a href="#Config_changes">Changes to machine configuration files</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
@@ -34,6 +35,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The return value of expression is the bin id into which the scalar was classified. <i>Example: bin(pressure, [1., 10, 100, 1e3])</i>. The bin expression takes 2 arguments: a variable to be classified and a numeric list incating the ranges for the user bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value.</li>
   <li>The location of saved config files, color tables, etc, on Windows has changed.  VisIt's version number will no longer be appended to the path.  This is to prevent the need for copying files each time a new VisIt version is released.  For 2.6.0 only, any saved config files that you would like to continue using will need to be copied over manually.</li>
+  <li> VisIt now supports building on OSX without X11 or Mesa.</li>
+  <li> VisIt 2.6.0 is the first release to support building on OSX 10.8.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
@@ -46,7 +49,7 @@ enhancements and bug-fixes that were added to this release.</p>
       <li>VisIt_DomainBoundaries_add_neighbor()</li>
       <li>VisIt_DomainBoundaries_finish()</li>
   </ul>
-  </i> 
+  </i>
   </li>
   <li>Libsim was modified so the ghost cell type of a specific cell may be the union of multiple ghost cell types. Note that this required some macro definitions in <i>VisItInterfaceTypes_V2.h</i> to change thus simulation codes will need to be recompiled. This type of change is atypical for libsim but usage of the feature being changed was estimated to be low.</li>
   <li>Double-precision support was implemented throughout most of VisIt. Outstanding items:
@@ -58,10 +61,10 @@ enhancements and bug-fixes that were added to this release.</p>
           <li>SamplePointsToSurface</li>
           <li>StreamlinePolyData</li>
       </ul>
-      </i> 
+      </i>
       <li>Plots:</li>
       <i>
-      <ul> 
+      <ul>
           <li>Histogram</li>
           <li>ParallelCoordinates</li>
           <li>Poincare</li>
@@ -70,10 +73,10 @@ enhancements and bug-fixes that were added to this release.</p>
           <li>WellBore</li>
           <li>Volume</li>
       </ul>
-      </i> 
+      </i>
       <li>Operators:</li>
       <i>
-      <ul> 
+      <ul>
           <li>ChannelComm</li>
           <li>Cone</li>
           <li>ExtremeValueAnalysis</li>
@@ -88,7 +91,7 @@ enhancements and bug-fixes that were added to this release.</p>
           <li>PeaksOverthreshold</li>
           <li>SiloDump</li>
       </ul>
-      </i> 
+      </i>
   </ul>
 </li>
   <li>The DataBinning operator can now put its output on the original input mesh, instead of on the bins it usually produces.</li>
@@ -110,6 +113,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes in GUI behavior for version 2.6</font></b></p>
 <ul>
   <li>The Open Files Dialog does not show files or directories that begin with a period <i>(except for the .visit directory)</i>. Files that begin with a period, or <i>dot</i> files, are often meant to be hidden files so now VisIt hides them. This saves the user from having to scroll past many irrelevant dot files. To show the dot files again, click on the <b>Show dot files</b> check box in the Open Files Dialog. This preference can be saved to your settings.</li>
+  <li>Upgraded Qt to version 4.8.3 and PySide to version 1.1.1.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -156,6 +160,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
 </ul>
 
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators version in 2.6</font></b></p>
+<ul>
+  <li>Added a Cartographic Projection operator. This transform operator applies cartographic projections to 2D grids.
+ For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a></li>
+</ul>
+
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.6</font></b></p>
 <ul>
@@ -177,15 +188,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Connecting to a remote computer through a gateway did not work unless the remote host was also visible to the client that initiated the connection.</li>
   <li>Performing a database query on a plot in the error state crashes the viewer.</li>
   <li>Removed bad error message 'Time history query is not available for Zone Center' that sometimes occurred with time-picks.</li>
+  <li><i>visit_utils.encoding.encode</i> now supports newer ffmpeg encoding command line syntax.</li>
+  <li>Removed unnecessary debug print statements from the <i>visitmodule</i> front-end.</li>
 </ul>
-  
+
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.6</font></b></p>
 <ul>
   <li>The host profiles were removed for prism, since that machine was retired.</li>
   <li>The TACC host profiles no longer reference localhost, which caused mdserver launches to fail locally.</li>
 </ul>
-  
+
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.6</font></b></p>
 <ul>
@@ -194,7 +207,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The xml code generation tools now produce correct code for operators that create variables.</li>
   <li>The Python Manual can be automatically generated again.</li>
   <li>The visitconvert tool has a new -output_zonal option which can be useful when upsampling.</li>
-  <li></li>
+  <li>VisIt's test suite infrastructure was migrated to Python. It now supports spawing multiple test case processes, improving suite turnaround time.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
