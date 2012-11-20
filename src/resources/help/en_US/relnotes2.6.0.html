@@ -33,16 +33,14 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_Features"></a>
 <p><b><font size="4">General features added in version 2.6</font></b></p>
 <ul>
-  <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The return value of expression is the bin id into which the scalar was classified. <i>Example: bin(pressure, [1., 10, 100, 1e3])</i>. The bin expression takes 2 arguments: a variable to be classified and a numeric list incating the ranges for the user bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value.</li>
+  <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The expression returns the bin id into which the scalar was classified. The bin expression takes 2 arguments: a variable to be classified and a numeric list indicating the ranges of the bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value. For example: bin(pressure, [1., 10, 100, 1e3]) returns 0 for values less than 1, 1 for values between 1 and 10, 2 for values between 10 and 100, 3 for values between 100 and 1000, and 4 for values greater that 1000.</li>
   <li>The location of saved config files, color tables, etc, on Windows has changed.  VisIt's version number will no longer be appended to the path.  This is to prevent the need for copying files each time a new VisIt version is released.  For 2.6.0 only, any saved config files that you would like to continue using will need to be copied over manually.</li>
-  <li> VisIt now supports building on OSX without X11 or Mesa.</li>
-  <li> VisIt 2.6.0 is the first release to support building on OSX 10.8.</li>
 </ul>
 
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.6</font></b></p>
 <ul>
-  <li>Libsim was enhanced so it is now possible to specify domain boundaries for structured mesh decompositions that feature reduced and enhanced mesh connectivity points. The new functions are:
+  <li>Libsim was enhanced so that it is now possible to specify domain boundaries for structured mesh decompositions that feature reduced and enhanced mesh connectivity points. The new functions are:
   <i>
   <ul>
       <li>VisIt_DomainBoundaries_set_extents()</li>
@@ -51,8 +49,8 @@ enhancements and bug-fixes that were added to this release.</p>
   </ul>
   </i>
   </li>
-  <li>Libsim was modified so the ghost cell type of a specific cell may be the union of multiple ghost cell types. Note that this required some macro definitions in <i>VisItInterfaceTypes_V2.h</i> to change thus simulation codes will need to be recompiled. This type of change is atypical for libsim but usage of the feature being changed was estimated to be low.</li>
-  <li>Double-precision support was implemented throughout most of VisIt. Outstanding items:
+  <li>Libsim was modified so that the ghost cell type of a specific cell may be the union of multiple ghost cell types. Note that this required some macro definitions in <i>VisItInterfaceTypes_V2.h</i> to change. This means that simulation codes will need to be recompiled. This type of change is atypical for libsim but usage of the feature being changed was estimated to be low.</li>
+  <li>Additional double-precision support was implemented in VisIt. Outstanding items:
   <ul>
       <li>Pipeline Filters:</li>
       <i>
@@ -103,8 +101,8 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>Remote Rendering support (experimental):
     <ul>
-       <li>All new third-party client exist within resources/clients folder</li>
-       <li>Currently supporting three clients: (Web, Python, and Java). Wiki on how to execute each client: <a href="http://visitusers.org/index.php?title=Remote_Rendering_Work">Remote Rendering Work</a></li>
+       <li>All new third-party clients exist within the resources/clients folder.</li>
+       <li>Currently three clients are supported: (Web, Python, and Java). Wiki on how to execute each client: <a href="http://visitusers.org/index.php?title=Remote_Rendering_Work">Remote Rendering Work</a></li>
     </ul>
   </li>
 </ul>
@@ -112,29 +110,28 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_Changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.6</font></b></p>
 <ul>
-  <li>The Open Files Dialog does not show files or directories that begin with a period <i>(except for the .visit directory)</i>. Files that begin with a period, or <i>dot</i> files, are often meant to be hidden files so now VisIt hides them. This saves the user from having to scroll past many irrelevant dot files. To show the dot files again, click on the <b>Show dot files</b> check box in the Open Files Dialog. This preference can be saved to your settings.</li>
-  <li>Upgraded Qt to version 4.8.3 and PySide to version 1.1.1.</li>
+  <li>The Open Files Dialog does not show files or directories that begin with a period <i>(except for the .visit directory)</i> since files that begin with a period, or <i>dot</i> files, are usually meant to be hidden. This saves the user from having to scroll past many irrelevant dot files. To show the dot files, click on the <b>Show dot files</b> check box in the Open Files Dialog. This preference can be saved in your settings.</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 2.6</font></b></p>
 <ul>
-  <li>The VTK reader was fixed so it is once again compatible with <i>.visit</i> files that use <i>!NBLOCKS</i>.</li>
-  <li>The GMV reader was fixed so tracer variables with no data values no longer crash the compute engine.</li>
+  <li>The VTK reader was fixed so that it is once again compatible with <i>.visit</i> files that use <i>!NBLOCKS</i>.</li>
+  <li>The GMV reader was fixed so that tracer variables with no data values no longer crash the compute engine.</li>
   <li>The WPPImage reader is now built by default and included in all the binary distributions.</li>
   <li>The CGNS reader was improved so it reads data values properly whether or not boundaries are present in the file. Thank you to Mickael Philit for the fix!</li>
-  <li>The Silo reader was improved so it will use global node ids that were written for point meshes.</li>
+  <li>The Silo reader was improved so that it will use global node ids that were written for point meshes.</li>
   <li>Several fixes and enhancements were made to the Tecplot binary reader:
       <ul>
          <li>Multiple time steps can now be grouped using automatic file grouping and <i>.visit</i> files.</li>
          <li>The z axis name is read properly when it is specified in the default file open options. The fix was provided by Jean Favre.</li>
-         <li>Support was added for an older flavor of Tecplot binary file, version TDV102.</li>
+         <li>Support was added for an older flavor of the Tecplot binary file, version TDV102.</li>
       </ul>
   </li>
   <li>The ddcMD reader has been fixed and support was added for ascii record cgrid files that are decomposed into multiple subnames.</li>
-  <li>The Pixie reader has been enhanced so it can automatically decompose large arrays among multiple processors in parallel. Thanks Jean Favre!</li>
+  <li>The Pixie reader has been enhanced so that it can automatically decompose large arrays among multiple processors in parallel. Thanks Jean Favre!</li>
   <li>The Nek5000 reader now reports times and cycles by default in the GUI.  (The time slider has this information.)</li>
-  <li>The Nek5000 reader no longer crashes when doing repeated isosurfaces and it has acceleration data structures.</li>
+  <li>The Nek5000 reader no longer crashes when doing repeated isosurfaces when it has acceleration data structures.</li>
   <li>LAMMPS reader now can handle options xs and xsu.</li>
 </ul>
 
@@ -158,57 +155,60 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.6</font></b></p>
 <ul>
-  <li>XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
+  <li>The XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators version in 2.6</font></b></p>
 <ul>
-  <li>Added a Cartographic Projection operator. This transform operator applies cartographic projections to 2D grids.
- For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a></li>
+  <li>The Cartographic Projection operator was added to VisIt. This transform operator applies cartographic projections to 2D grids. For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a>. Thanks Jean Favre!</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.6</font></b></p>
 <ul>
+  <li>The visual artifacts present at start-up were eliminated when running on OSX 10.8.</li>
   <li>Libsim's SimV2 reader was fixed so it can properly read the group information for each domain, allowing domains to be grouped into higher level constructs for meshes other than AMR meshes.</li>
   <li>The DualMesh operator now forces VisIt to ignore missing data so rectilinear meshes are not quietly converted to unstructured.</li>
-  <li>The Volume plot lost its ability to color by one variable while setting opacity by another variable when using splatting and 3D texturing renderers.</li>
-  <li>Restoring sessions that use files located on remote hosts does not work and results in an incorrect error message about the metadata server launch being cancelled.</li>
+  <li>The Volume plot is once again able to color by one variable while setting the opacity by another variable when using splatting and 3D texturing renderers.</li>
+  <li>Restoring sessions that use files located on remote hosts does now works and no longer results in an incorrect error message about the metadata server launch being cancelled.</li>
   <li>Pick on point meshes was fixed to account for node_origin and cell_origin so that erroneous results aren't returned.</li>
-  <li>Tube operator's scale-by-variable now works with non-default variable.</li>
+  <li>The Tube operator's scale-by-variable now works with a non-default variable.</li>
   <li>Picking was fixed to work in conjuction with the Project operator.</li>
-  <li>Transparency of saved images now preserved.</li>
+  <li>The transparency of saved images is now preserved.</li>
   <li>Launching of CLI on Windows systems with Python installed was fixed.</li>
   <li>The FTLE operator now uses double precision internally, which prevents a cliff in calculations that created hotspots.</li>
   <li>The FTLE operator now works correctly with two dimensional grids.</li>
-  <li>Streamline and other particle-advected-based operations now work on rectilinear grids that have monotonically decreasing coordinates.</li>
+  <li>The Streamline and other particle-advected-based operations now work on rectilinear grids that have monotonically decreasing coordinates.</li>
   <li>Multiple bugs were fixed with applying data binnings where the data binnings occur over coordinates.</li>
   <li>The data binning operator now sets labels nad units correctly when using coordinates.</li>
-  <li>Ensure the variable use for scaling glyphs in Pseudocolor Plot is not used for coloring.</li>
+  <li>Ensure the variable used for scaling glyphs in the Pseudocolor plot is not used for coloring.</li>
   <li>Connecting to a remote computer through a gateway did not work unless the remote host was also visible to the client that initiated the connection.</li>
-  <li>Performing a database query on a plot in the error state crashes the viewer.</li>
-  <li>Removed bad error message 'Time history query is not available for Zone Center' that sometimes occurred with time-picks.</li>
+  <li>Performing a database query on a plot in the error state no longer crashes the viewer.</li>
+  <li>The bad error message 'Time history query is not available for Zone Center' that sometimes occurred with time-picks was removed.</li>
   <li><i>visit_utils.encoding.encode</i> now supports newer ffmpeg encoding command line syntax.</li>
-  <li>Removed unnecessary debug print statements from the <i>visitmodule</i> front-end.</li>
+  <li>Unnecessary debug print statements were removed from the <i>visitmodule</i> front-end.</li>
 </ul>
 
 <a name="Config_changes"></a>
 <p><b><font size="4">Changes to configuration files in version 2.6</font></b></p>
 <ul>
-  <li>The host profiles were removed for prism, since that machine was retired.</li>
+  <li>The host profiles were removed for prism.</li>
   <li>The TACC host profiles no longer reference localhost, which caused mdserver launches to fail locally.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.6</font></b></p>
 <ul>
-  <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into a separate files. Customizations are put into a file called <i>customlauncher</i> that is different for each site.</li>
+  <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into separate files. Customizations are put into a file called <i>customlauncher</i> that is different for each site.</li>
   <li>The xmledit tools now behave better with operators that create new variables when switching between tabs.</li>
   <li>The xml code generation tools now produce correct code for operators that create variables.</li>
   <li>The Python Manual can be automatically generated again.</li>
   <li>The visitconvert tool has a new -output_zonal option which can be useful when upsampling.</li>
   <li>VisIt's test suite infrastructure was migrated to Python. It now supports spawing multiple test case processes, improving suite turnaround time.</li>
+  <li>Upgraded Qt to version 4.8.3 and PySide to version 1.1.1.</li>
+  <li>VisIt now supports building on OSX without X11 or Mesa.</li>
+  <li>VisIt now builds on OSX 10.8.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

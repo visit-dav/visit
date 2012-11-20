@@ -79,13 +79,15 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
     {
         super(CartographicProjectionAttributes_numAdditionalAtts);
 
-        }
+        projectionID = PROJECTIONID_AITOFF;
+    }
 
     public CartographicProjectionAttributes(int nMoreFields)
     {
         super(CartographicProjectionAttributes_numAdditionalAtts + nMoreFields);
 
-        }
+        projectionID = PROJECTIONID_AITOFF;
+    }
 
     public CartographicProjectionAttributes(CartographicProjectionAttributes obj)
     {
