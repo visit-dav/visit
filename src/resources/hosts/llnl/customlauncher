@@ -32,6 +32,10 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Tue Nov 20 11:25:07 PST 2012
+#   I removed the DetermineArchitecture method, which launched a chaos 4
+#   version on some machines. Those machines are either retired or have been
+#   upgraded to chaos 5.
 #
 ###############################################################################
 
@@ -45,21 +49,6 @@ class LLNLLauncher(MainLauncher):
         # ----
         if self.nodename() == "hoth" and self.domainname() == "llnl.gov":
             SETENV("LIBGL_ALWAYS_INDIRECT", "1")
-
-    #
-    # Return chaos4 architecture for some machines.
-    #
-    def DetermineArchitecture(self):
-        arches = super(LLNLLauncher, self).DetermineArchitecture()
-        if self.sectorname() in ("atlas", "prism", "rzthriller", "rzbeast"):
-            a2 = []
-            for a in arches:
-                if a == "linux-x86_64":
-                    a2 = a2 + ["linux-x86_64-chaos4"]
-                else:
-                    a2 = a2 + [a]
-            arches = a2
-        return arches
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
