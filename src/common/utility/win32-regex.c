@@ -320,9 +320,12 @@ char *alloca ();
 
 /* (Re)Allocate N items of type T using malloc, or fail.  */
 #define TALLOC(n, t) ((t *) malloc ((n) * sizeof (t)))
-#define RETALLOC(addr, n, t) ((addr) = (t *) realloc (addr, (n) * sizeof (t)))
-#define RETALLOC_IF(addr, n, t) \
-  if (addr) RETALLOC((addr), (n), t); else (addr) = TALLOC ((n), t)
+#define RETALLOC(new_addr, addr, n, t)  \
+    ((new_addr) = (t *) realloc (addr, (n) * sizeof (t)))
+#define RETALLOC_IF(new_addr, addr, n, t) \
+  if (addr) RETALLOC((new_addr), (addr), (n), t); \
+  else (new_addr) = TALLOC ((n), t); \
+  (addr) = (new_addr); 
 #define REGEX_TALLOC(n, t) ((t *) REGEX_ALLOCATE ((n) * sizeof (t)))
 
 #define BYTEWIDTH 8 /* In bits.  */
@@ -1580,7 +1583,7 @@ static reg_errcode_t compile_range _RE_ARGS ((const char **p_ptr,
 #define MAX_BUF_SIZE  65500L
 #define REALLOC(p,s) realloc ((p), (size_t) (s))
 #else
-#define MAX_BUF_SIZE (1L << 16)
+#define MAX_BUF_SIZE (1UL << 16)
 #define REALLOC(p,s) realloc ((p), (s))
 #endif
 
@@ -1590,15 +1593,23 @@ static reg_errcode_t compile_range _RE_ARGS ((const char **p_ptr,
    being larger than MAX_BUF_SIZE, then flag memory exhausted.  */
 #define EXTEND_BUFFER()                            \
   do {                                     \
+    unsigned char *tmp_buffer1;             \
     unsigned char *old_buffer = bufp->buffer;                \
     if (bufp->allocated == MAX_BUF_SIZE)                 \
       return REG_ESIZE;                            \
     bufp->allocated <<= 1;                        \
     if (bufp->allocated > MAX_BUF_SIZE)                    \
       bufp->allocated = MAX_BUF_SIZE;                     \
-    bufp->buffer = (unsigned char *) REALLOC (bufp->buffer, bufp->allocated);\
-    if (bufp->buffer == NULL)                        \
-      return REG_ESPACE;                        \
+    tmp_buffer1 = (unsigned char *) REALLOC (bufp->buffer, bufp->allocated);\
+    if (tmp_buffer1 == NULL)                        \
+      { \
+        /* We allocated the memory, it is our responsibility to */ \
+        /* free it.  Otherwise we leave a memory leak. */ \
+        free(bufp->buffer);  \
+        return REG_ESPACE;                        \
+      } \
+    else \
+       bufp->buffer = tmp_buffer1; \
     /* If the buffer moved, move all the pointers into it.  */        \
     if (old_buffer != bufp->buffer)                    \
       {                                    \
@@ -1735,24 +1746,27 @@ static
 regex_grow_registers (num_regs)
      int num_regs;
 {
+  char ** tmp_rptr;
+  register_info_type *tmp_reg_info_ptr;
+
   if (num_regs > regs_allocated_size)
     {
-      RETALLOC_IF (regstart,     num_regs, const char *);
-      RETALLOC_IF (regend,     num_regs, const char *);
-      RETALLOC_IF (old_regstart, num_regs, const char *);
-      RETALLOC_IF (old_regend,     num_regs, const char *);
-      RETALLOC_IF (best_regstart, num_regs, const char *);
-      RETALLOC_IF (best_regend,     num_regs, const char *);
-      RETALLOC_IF (reg_info,     num_regs, register_info_type);
-      RETALLOC_IF (reg_dummy,     num_regs, const char *);
-      RETALLOC_IF (reg_info_dummy, num_regs, register_info_type);
+      RETALLOC_IF (tmp_rptr, regstart,     num_regs, const char *);
+      RETALLOC_IF (tmp_rptr, regend,     num_regs, const char *);
+      RETALLOC_IF (tmp_rptr, old_regstart, num_regs, const char *);
+      RETALLOC_IF (tmp_rptr, old_regend,     num_regs, const char *);
+      RETALLOC_IF (tmp_rptr, best_regstart, num_regs, const char *);
+      RETALLOC_IF (tmp_rptr, best_regend,     num_regs, const char *);
+      RETALLOC_IF (tmp_reg_info_ptr, reg_info, num_regs, register_info_type);
+      RETALLOC_IF (tmp_rptr, reg_dummy,     num_regs, const char *);
+      RETALLOC_IF (tmp_reg_info_ptr, reg_info_dummy, num_regs, register_info_type);
 
       regs_allocated_size = num_regs;
     }
 }
 
 #endif /* not MATCH_MAY_ALLOCATE */
-
+
 static boolean group_in_compile_stack _RE_ARGS ((compile_stack_type
                          compile_stack,
                          regnum_t regnum));
@@ -1796,6 +1810,9 @@ regex_compile (const char *pattern, size_t size, reg_syntax_t syntax, struct re_
   /* Keeps track of unclosed groups.  */
   compile_stack_type compile_stack;
 
+  /* temporary pointer for RETALLOC */
+  compile_stack_elt_t *tmp_stack_ptr;
+
   /* Points to the current (ending) position in the pattern.  */
   const char *p = pattern;
   const char *pend = pattern + size;
@@ -1830,6 +1847,9 @@ regex_compile (const char *pattern, size_t size, reg_syntax_t syntax, struct re_
      matching close-group on the compile stack, so the same register
      number is put in the stop_memory as the start_memory.  */
   regnum_t regnum = 0;
+
+  /* Temporary buffer pointer for RETALLOC */
+  unsigned char *tmp_buffer;
 
 #ifdef DEBUG
   DEBUG_PRINT1 ("\nCompiling pattern: ");
@@ -1872,10 +1892,12 @@ regex_compile (const char *pattern, size_t size, reg_syntax_t syntax, struct re_
   if (bufp->allocated == 0)
     {
       if (bufp->buffer)
-    { /* If zero allocated, but buffer is non-null, try to realloc
+        { /* If zero allocated, but buffer is non-null, try to realloc
              enough space.  This loses if buffer's address is bogus, but
              that is the user's responsibility.  */
-          RETALLOC (bufp->buffer, INIT_BUF_SIZE, unsigned char);
+          RETALLOC (tmp_buffer, bufp->buffer, INIT_BUF_SIZE, unsigned char);
+          if (tmp_buffer != NULL)
+              bufp->buffer = tmp_buffer;
         }
       else
         { /* Caller did not allocate a buffer.  Do it for them.  */
@@ -2335,9 +2357,12 @@ regex_compile (const char *pattern, size_t size, reg_syntax_t syntax, struct re_
 
               if (COMPILE_STACK_FULL)
                 {
-                  RETALLOC (compile_stack.stack, compile_stack.size << 1,
-                            compile_stack_elt_t);
-                  if (compile_stack.stack == NULL) return REG_ESPACE;
+                  RETALLOC (tmp_stack_ptr, compile_stack.stack, 
+                            compile_stack.size << 1, compile_stack_elt_t);
+                  if (compile_stack.stack == NULL) 
+                      return REG_ESPACE;
+                  else 
+                      compile_stack.stack = tmp_stack_ptr;
 
                   compile_stack.size <<= 1;
                 }
@@ -3832,6 +3857,9 @@ re_match_2_internal (
   unsigned num_regs_pushed = 0;
 #endif
 
+  /* temporary variables for RETALLOC */
+  regoff_t *tmp_regs_start, *tmp_regs_end;
+
   DEBUG_PRINT1 ("\n\nEntering re_match_2.\n");
 
   INIT_FAIL_STACK ();
@@ -4048,21 +4076,26 @@ re_match_2_internal (
                   if (regs->num_regs < num_regs + 1)
                     {
                       regs->num_regs = num_regs + 1;
-                      RETALLOC (regs->start, regs->num_regs, regoff_t);
-                      RETALLOC (regs->end, regs->num_regs, regoff_t);
-                      if (regs->start == NULL || regs->end == NULL)
-            {
-              FREE_VARIABLES ();
-              return -2;
-            }
+                      RETALLOC (tmp_regs_start, regs->start, regs->num_regs, regoff_t);
+                      RETALLOC (tmp_regs_end, regs->end, regs->num_regs, regoff_t);
+                      if (tmp_regs_start == NULL || tmp_regs_end == NULL)
+                        {
+                          FREE_VARIABLES ();
+                          return -2;
+                        }
+                      else 
+                        {
+                          regs->start = tmp_regs_start;
+                          regs->end   = tmp_regs_end;
+                        }
                     }
                 }
               else
-        {
-          /* These braces fend off a "empty body in an else-statement"
-             warning under GCC when assert expands to nothing.  */
-          assert (bufp->regs_allocated == REGS_FIXED);
-        }
+                {
+                  /* These braces fend off a "empty body in an else-statement"
+                     warning under GCC when assert expands to nothing.  */
+                  assert (bufp->regs_allocated == REGS_FIXED);
+                }
 
               /* Convert the pointer data in `regstart' and `regend' to
                  indices.  Register zero has to be set differently,
