@@ -41,6 +41,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Advanced_Features"></a>
 <p><b><font size="4">Advanced features added in version 2.6</font></b></p>
 <ul>
+  <li>VisIt has been integrated with the Allinea DDT debugger.
+  <ul>
+      <li>DDT may function as a VisIt data source, providing basic online visualization capabilities during a debugging session without the need for program instrumentation or recompilation.</li>
+      <li>Add DDT Pick Tool: You can change the currently selected process in DDT by picking a zone or node directly from a VisIt plot.</li>
+      <li>This integration is optional and you must build visit from source enabling VISIT_DDT when running cmake.</li>
+  </ul>
+  </li>
   <li>Libsim was enhanced so that it is now possible to specify domain boundaries for structured mesh decompositions that feature reduced and enhanced mesh connectivity points. The new functions are:
   <i>
   <ul>
