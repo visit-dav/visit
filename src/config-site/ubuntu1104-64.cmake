@@ -1,14 +1,14 @@
-#/home/visit/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake
+#/home/visit/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake
 ##
-## ./build_visit2_5_1 generated host.cmake
-## created: Tue Jun 26 14:38:34 PDT 2012
+## ./build_visit2_6_0 generated host.cmake
+## created: Wed Nov 21 11:12:47 PST 2012
 ## system: Linux ubuntu1104-64 2.6.38-8-generic #42-Ubuntu SMP Mon Apr 11 03:31:24 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: visit
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /home/visit/visit/thirdparty_shared_2_5_1)
+SET(VISITHOME /home/visit/visit/thirdparty_shared_2_6_0)
 SET(VISITARCH linux-x86_64_gcc-4.5)
 
 ## Compiler flags.
@@ -34,17 +34,17 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/visit/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-x86_64_gcc-4.5)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/visit/visit/thirdparty_shared_2_6_0/python/2.6.4/linux-x86_64_gcc-4.5)
 
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a.no.mesa/${VISITARCH})
 
 ##
 ## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -61,7 +61,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ## HDF4
 ##
 VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0.a.no.mesa/${VISITARCH}/lib vtkjpeg TYPE STRING)
 
 ##
 ## NetCDF
@@ -89,7 +89,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/0.1.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -135,5 +135,10 @@ VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS 
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
+
+##
+## MANTA
+##
+VISIT_OPTION_DEFAULT(VISIT_MANTA_DIR ${VISITHOME}/manta/2540/${VISITARCH})
 
