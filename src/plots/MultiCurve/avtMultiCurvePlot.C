@@ -276,9 +276,9 @@ avtMultiCurvePlot::CustomizeBehavior(void)
     if (mNode != NULL)
     {
         if (mNode->GetEntry("vertical")->AsInt())
-            behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_PARALLELAXES);
-        else
             behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_VERTPARALLELAXES);
+        else
+            behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_PARALLELAXES);
     }
     else
     {

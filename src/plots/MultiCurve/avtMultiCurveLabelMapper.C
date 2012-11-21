@@ -137,6 +137,11 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
 //    I enhanced the plot so that the identifier would not be displayed for
 //    a given point if the identifier was INT_MIN.
 //
+//    Eric Brugger, Wed Nov 21 08:38:26 PST 2012
+//    I modified the plot to not create the markers and ids if the number of
+//    points is greater than 500. The performance is too slow when the number
+//    of actors gets too large.
+//
 // ****************************************************************************
 
 void
@@ -163,6 +168,14 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
     vtkIntArray *intArray2 = vtkIntArray::SafeDownCast(
         ds->GetPointData()->GetArray("CurveIds"));
     int *buf2 = (intArray2 == NULL) ? NULL : intArray2->GetPointer(0);
+
+    //
+    // If the number of points is greater than 500, then don't create the
+    // markers and ids since the performance is so slow when the number of
+    // actors is too large.
+    //
+    if (ds->GetNumberOfPoints() > 500)
+        return;
 
     double    pos[3];        
     for (vtkIdType i = 0; i < ds->GetNumberOfPoints(); i++)
