@@ -1,69 +1,55 @@
-#/Users/whitlock2/Development/thirdparty_shared/cmake/2.8.3/i386-apple-darwin10_gcc-4.2/bin/cmake
+#/Users/whitlock2/Development/thirdparty_shared/cmake/2.8.8/i386-apple-darwin12_gcc-4.2/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Fri Oct 14 09:33:17 PDT 2011
-## system: Darwin galvatron.llnl.gov 10.8.0 Darwin Kernel Version 10.8.0: Tue Jun  7 16:32:41 PDT 2011; root:xnu-1504.15.3~1/RELEASE_X86_64 x86_64
+## created: Wed Nov 21 14:01:41 PST 2012
+## system: Darwin cyclonus.llnl.gov 12.2.0 Darwin Kernel Version 12.2.0: Sat Aug 25 00:48:52 PDT 2012; root:xnu-2050.18.24~1/RELEASE_X86_64 x86_64
 ## by: whitlock2
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITARCH i386-apple-darwin10_gcc-4.2)
 SET(VISITHOME /Users/whitlock2/Development/thirdparty_shared)
-SET(MesaVer 7.8.2)
+SET(VISITARCH i386-apple-darwin12_gcc-4.2)
 
-##
-## Specify the location of the mesa.
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/${MesaVer}/${VISITARCH})
-
-##
-## Specify the location of the vtk.
-##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
-
-##
-## Specify the Qt4 binary dir. 
-## (qmake us used to locate & setup Qt4 dependencies)
-##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
-
-##
-## Specify the location of the python.
-##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/${VISITARCH})
-
-##
-## Specify the PySide dir. 
-##
-IF(NOT VISIT_STATIC)
-    VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
-ENDIF(NOT VISIT_STATIC)
-
-##
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-Wall -Wno-deprecated -fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
 ##
-#VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
-#VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_COMPILER /usr/bin/mpif77)
-
-#VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
-
-VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER /usr/local/bin/gfortran)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /Users/whitlock2/Mac10.8/bin/mpic++)
 
 ##
-## Enable fortran for example programs.
+## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_FORTRAN ON)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.6.4/i386-apple-darwin12_gcc-4.2)
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
+
+##
+## VTK
+##
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
+
+##
+## Qt
+##
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
+
+##
+## PySide
+##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
+
 
 ##############################################################
 ##
@@ -76,6 +62,11 @@ VISIT_OPTION_DEFAULT(VISIT_FORTRAN ON)
 ## Libraries with LIBDEP settings that depend on other
 ## Library's LIBDEP settings must come after them.
 ##############################################################
+
+##
+## SZIP
+##
+VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
 
 ##
 ## HDF4
@@ -97,7 +88,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
-################################################################################
+##############################################################
 
 ##
 ## ADIOS
@@ -161,14 +152,9 @@ VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBD
 ##
 ## Mili
 ##
-IF(NOT VISIT_STATIC)
-    VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
-ENDIF(NOT VISIT_STATIC)
-
-##
-## SZIP
-##
-VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR ${VISITHOME}/szip/2.1/${VISITARCH})
+#IF(NOT VISIT_STATIC)
+#    VISIT_OPTION_DEFAULT(VISIT_MILI_DIR ${VISITHOME}/mili/1.11.1/${VISITARCH})
+#ENDIF(NOT VISIT_STATIC)
 
 ##
 ## Silo
@@ -180,4 +166,5 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
+
