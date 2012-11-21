@@ -70,6 +70,58 @@ function bv_mxml_dry_run
   fi
 }
 
+function apply_mxml_26_darwin_patch
+{
+   patch -p0 << \EOF
+diff -c mxml-2.6/Makefile.in mxml-2.6.new/Makefile.in
+*** mxml-2.6/Makefile.in	2008-12-05 20:20:38.000000000 -0800
+--- mxml-2.6.new/Makefile.in	2012-11-21 11:14:45.000000000 -0800
+***************
+*** 344,353 ****
+--- 344,355 ----
+  			--header doc/docset.header --intro doc/docset.intro \
+  			--css doc/docset.css --title "Mini-XML API Reference" \
+  			mxml.xml || exit 1; \
++         if test -e /Developer/usr/bin/docsetutil; then \
+  		/Developer/usr/bin/docsetutil package --output org.minixml.xar \
+  			--atom org.minixml.atom \
+  			--download-url http://www.minixml.org/org.minixml.xar \
+  			org.minixml.docset || exit 1; \
++         fi \
+  	fi
+EOF
+   if [[ $? != 0 ]] ; then
+       warn "Unable to patch MXML. Wrong version?"
+       return 1
+   fi
+
+   return 0
+}
+
+function apply_mxml_26_patch
+{
+   if [[ "$OPSYS" == "Darwin" ]]; then
+       apply_mxml_26_darwin_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
+function apply_mxml_patch
+{
+   if [[ ${MXML_VERSION} == 2.6 ]] ; then
+       apply_mxml_26_patch
+       if [[ $? != 0 ]] ; then
+           return 1
+       fi
+   fi
+
+   return 0
+}
+
 # ***************************************************************************
 #                         Function 8.21, build_mxml
 # Required by ADIOS.
@@ -90,6 +142,23 @@ function build_mxml
        return 1
     fi
 
+    #
+    # Apply patches
+    #
+    info "Patching MXML . . ."
+    apply_mxml_patch
+    if [[ $? != 0 ]] ; then
+       if [[ $untarred_mxml == 1 ]] ; then
+          warn "Giving up on MXML build because the patch failed."
+          return 1
+       else
+          warn "Patch failed, but continuing.  I believe that this script" \
+               "tried to apply a patch to an existing directory which had" \
+               "already been patched ... that is, that the patch is" \
+               "failing harmlessly on a second application."
+       fi
+    fi
+    
     #
     info "Configuring mxml . . ."
     cd $MXML_BUILD_DIR || error "Can't cd to mxml build dir."
