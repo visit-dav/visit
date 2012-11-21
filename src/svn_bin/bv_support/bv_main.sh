@@ -202,7 +202,7 @@ export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
 export GROUP=${GROUP:-"visit"}
 #export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 export SVNREVISION=${SVNREVISION:-"HEAD"}
-# Created a temporary value because the user can override most of 
+# Created a temporary value because the user can override most of
 # the components, which for the GUI happens at a later time.
 # the tmp value is useful for user feedback.
 if [[ $VISITARCH == "" ]] ; then
@@ -293,9 +293,16 @@ export VISIT_INSTALL_PREFIX=""
 export VISIT_BUILD_MODE="Release"
 DOWNLOAD_ONLY="no"
 
+##
+## Only turn mesa on by default for OSX versions prior
+## to 10.8 (Mountian Lion)
+##
 if [[ "$OPSYS" == "Darwin" ]]; then
-    export DO_MESA="yes"
-    export ON_MESA="on"
+    VER=$(uname -r)
+    if (( ${VER%%.*} < 12 )) ; then
+        export DO_MESA="yes"
+        export ON_MESA="on"
+    fi
 fi
 
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
@@ -441,7 +448,7 @@ function strip_quotes
     echo "${str}"
 }
 
-function bv_enable_group 
+function bv_enable_group
 {
     local name=${1/--}
     local match=0
@@ -539,8 +546,8 @@ function initialize_module_variables
     info "initializing module variables"
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
-        declare -F "bv_${reqlibs[$bv_i]}_initialize_vars" &>/dev/null 
-        
+        declare -F "bv_${reqlibs[$bv_i]}_initialize_vars" &>/dev/null
+
         if [[ $? == 0 ]]; then
             info "initialize module variables for ${reqlibs[$bv_i]}"
             $"bv_${reqlibs[$bv_i]}_initialize_vars"
@@ -550,7 +557,7 @@ function initialize_module_variables
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
         declare -F "bv_${optlibs[$bv_i]}_initialize_vars" &>/dev/null
-        
+
         if [[ $? == 0 ]]; then
             info "initialize module variables for ${optlibs[$bv_i]}"
             $"bv_${optlibs[$bv_i]}_initialize_vars"
@@ -566,33 +573,33 @@ function build_library
 
     #check if library is already installed..
     $"bv_${build_lib}_is_installed"
-    
+
     if [[ $? == 1 ]]; then
         info "$build_lib is already installed, skipping"
         return
-    fi    
+    fi
 
     #Make sure that the recursive enable feature is working properly
     $"bv_${build_lib}_is_enabled"
-    
+
     if [[ $? == 0 ]]; then
         error "$build_lib was disabled, but seems that another library requires it "
     fi
 
     depends_on=$("bv_${build_lib}_depends_on")
-    
+
     if [[ $depends_on != "" ]]; then
         info "library $build_lib depends on $depends_on"
     fi
 
     #replace commas with spaces if there are any..
     depends_on=${depends_on//,/ }
-    
+
     for depend_lib in `echo $depends_on`;
     do
         build_library $depend_lib
     done
-    
+
     #build ..
     $"bv_${build_lib}_build"
 }
@@ -603,7 +610,7 @@ function build_libraries_serial
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
         $"bv_${reqlibs[$bv_i]}_is_enabled"
-     
+
         if [[ $? == 0 ]]; then
             continue
         fi
@@ -622,7 +629,7 @@ function build_libraries_serial
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
         $"bv_${optlibs[$bv_i]}_is_enabled"
-    
+
         if [[ $? == 0 ]]; then
             continue
         fi
@@ -634,7 +641,7 @@ function build_libraries_serial
             build_library ${optlibs[$bv_i]}
         else
             info "${optlibs[$bv_i]} already installed, skipping"
-        fi  
+        fi
     done
 }
 
@@ -645,14 +652,14 @@ function build_libraries_parallel
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
         $"bv_${reqlibs[$bv_i]}_is_enabled"
-     
+
         if [[ $? == 0 ]]; then
             continue
         fi
 
         $"bv_${reqlibs[$bv_i]}_is_installed"
         if [[ $? == 0 ]]; then
-        
+
             depends_on=$("bv_${reqlibs[$bv_i]}_depends_on")
             if [[ "$depends_on" == "" ]]; then
                 (cd "$START_DIR" && build_library ${reqlibs[$bv_i]}) &
@@ -687,7 +694,7 @@ function build_libraries_parallel
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
         $"bv_${optlibs[$bv_i]}_is_enabled"
-    
+
         if [[ $? == 0 ]]; then
             continue
         fi
@@ -700,7 +707,7 @@ function build_libraries_parallel
             fi
         else
             info "${optlibs[$bv_i]} already installed, skipping"
-        fi  
+        fi
     done
 
     wait
@@ -724,7 +731,7 @@ function build_libraries_parallel
         fi
     done
 
-} 
+}
 
 # *************************************************************************** #
 #                       Section 2, building VisIt                             #
@@ -748,7 +755,7 @@ deprecated=""
 next_action=""
 
 #handle groups first since they affect multiple libraries..
-for arg in "$@" ; 
+for arg in "$@" ;
 do
     bv_enable_group "$arg"
     #not part of a group, add to argument list..
@@ -802,7 +809,7 @@ for arg in "${arguments[@]}" ; do
         resolve_arg=${arg:2} #remove --
         declare -F "bv_${resolve_arg}_enable" &>/dev/null
 
-        if [[ $? == 0 ]] ; then 
+        if [[ $? == 0 ]] ; then
             #echo "enabling ${resolve_arg}"
             initializeFunc="bv_${resolve_arg}_enable"
             $initializeFunc
@@ -823,27 +830,27 @@ for arg in "${arguments[@]}" ; do
                 continue
            fi
         fi
-        
+
         #command line arguments created by modules
         #checking to see if additional command line arguments were requested
         resolve_arg=${arg:2} #remove --
         local match=0
         for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
         do
-            local module_name=${extra_commandline_args[$bv_i]} 
-            local command=${extra_commandline_args[$bv_i+1]} 
-            local args=${extra_commandline_args[$bv_i+2]} 
-            local comment=${extra_commandline_args[$bv_i+3]} 
-            local fp=${extra_commandline_args[$bv_i+4]} 
+            local module_name=${extra_commandline_args[$bv_i]}
+            local command=${extra_commandline_args[$bv_i+1]}
+            local args=${extra_commandline_args[$bv_i+2]}
+            local comment=${extra_commandline_args[$bv_i+3]}
+            local fp=${extra_commandline_args[$bv_i+4]}
             if [[ "$command" == "$resolve_arg" ]]; then
-                if [ $args -eq 0 ] ; then 
+                if [ $args -eq 0 ] ; then
                   #call function immediately
                   $fp
-                else 
+                else
                   #call function with next argument
                   next_arg="extra_commandline_arg"
                   EXTRA_COMMANDLINE_ARG_CALL="$fp"
-                fi 
+                fi
                 match=1
                 break;
             fi
@@ -855,7 +862,7 @@ for arg in "${arguments[@]}" ; do
         fi
     fi
 
-             
+
     case $arg in
         --visit-build-hostname) next_arg="visit-build-hostname";;
         --installation-build-dir) next_arg="installation-build-dir";;
@@ -996,7 +1003,7 @@ fi
 
 if [[ "$GRAPHICAL" == "yes" ]] ; then
     DLG=$(which dialog)
-    
+
     # Guard against bad "which" implementations that return
     # "no <exe> in path1 path2 ..." (these implementations also
     # return 0 as the exit status).
@@ -1118,7 +1125,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     do
         name="${grouplibs_name[$bv_i]}"
         comment="${grouplibs_comment[$bv_i]}"
-        output_str="$name \"$comment\" 0 \"  Customize($name)\" \"Customize selection of $name\" 0"    
+        output_str="$name \"$comment\" 0 \"  Customize($name)\" \"Customize selection of $name\" 0"
         add_checklist_vars="$add_checklist_vars ${output_str}"
     done
 
@@ -1135,12 +1142,12 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     for OPTION in $choice
     do
         #if customize operation
-        if [[ "$OPTION" != Customize* ]]; then 
+        if [[ "$OPTION" != Customize* ]]; then
             #execute the entire group..
             bv_enable_group "$OPTION"
             continue
         fi
-        
+
         #allow modification of predefined groups
         add_checklist_vars=""
 
@@ -1148,7 +1155,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         do
             name="${grouplibs_name[$bv_i]}"
             #dialog and whiptail treat parantheses differently
-            if [[ "Customize($name)" == "$OPTION" || "Customize\\($name\\)" == "$OPTION" ]]; then 
+            if [[ "Customize($name)" == "$OPTION" || "Customize\\($name\\)" == "$OPTION" ]]; then
                 echo "Customizing $name"
                 comment="${grouplibs_comment[$bv_i]}"
 
@@ -1197,11 +1204,11 @@ if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         local add_checklist_vars=""
         for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
         do
-            local module_name=${extra_commandline_args[$bv_i]} 
-            local command=${extra_commandline_args[$bv_i+1]} 
-            #local args=${extra_commandline_args[$bv_i+2]} 
-            local comment=${extra_commandline_args[$bv_i+3]} 
-            output_str="\"$command\" \"$comment ($module_name)\" 0"    
+            local module_name=${extra_commandline_args[$bv_i]}
+            local command=${extra_commandline_args[$bv_i+1]}
+            #local args=${extra_commandline_args[$bv_i+2]}
+            local comment=${extra_commandline_args[$bv_i+3]}
+            output_str="\"$command\" \"$comment ($module_name)\" 0"
             add_checklist_vars="$add_checklist_vars ${output_str}"
         done
 
@@ -1219,11 +1226,11 @@ if [[ "$DO_OPTIONAL2" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
         do
             for (( bv_i=0; bv_i<${#extra_commandline_args[*]}; bv_i += 5 ))
             do
-                local module_name=${extra_commandline_args[$bv_i]} 
-                local command=${extra_commandline_args[$bv_i+1]} 
-                local args=${extra_commandline_args[$bv_i+2]} 
-                local comment=${extra_commandline_args[$bv_i+3]} 
-                local fp=${extra_commandline_args[$bv_i+4]} 
+                local module_name=${extra_commandline_args[$bv_i]}
+                local command=${extra_commandline_args[$bv_i+1]}
+                local args=${extra_commandline_args[$bv_i+2]}
+                local comment=${extra_commandline_args[$bv_i+3]}
+                local fp=${extra_commandline_args[$bv_i+4]}
                 if [[ "$command" == "$OPTION" ]]; then
                     if [[ $args -ne 0 ]]; then
                         result=$($DLG --backtitle "$DLG_BACKTITLE" \
@@ -1302,7 +1309,7 @@ fi
 # Especially helpful if there are multiple starts dumped into the
 # same log.
 #
-LINES="------------------------------------------------------------" 
+LINES="------------------------------------------------------------"
 log $LINES
 log $0 $@
 log "Started:" $(date)
@@ -1415,7 +1422,7 @@ fi
 
 #
 # Save stdout as stream 3, redirect stdout and stderr to the log file.
-# After this maks sure to use the info/warn/error functions to display 
+# After this maks sure to use the info/warn/error functions to display
 # messages to the user
 #
 
