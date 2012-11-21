@@ -164,7 +164,7 @@ function build_cgns
 
         # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
         VER=$(uname -r)
-        if (( ${VER%%.*} > 7 )) ; then
+        if (( ${VER%%.*} > 7 && ${VER%%.*} < 12)) ; then
            USESTUBS="-lSystemStubs"
         else
            USESTUBS=""

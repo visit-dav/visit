@@ -120,7 +120,7 @@ diff -c a/config/config.system libccmio-2.6.1/config/config.system
       ppc64-unknown-linux-gnu)
   	echo ppc64-unknown-linux-gnu ;;
   
-!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10*)
+!     i386-apple-darwin8* | i386-apple-darwin9* | i386-apple-darwin10* | i386-apple-darwin11* | i386-apple-darwin12*)
   	echo i386-apple-darwin8 ;;
   
 +     powerpc-apple-darwin7* | powerpc-apple-darwin8* | powerpc-apple-darwin9* )
