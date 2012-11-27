@@ -1,6 +1,6 @@
 #!/bin/sh
 # Do a little magic to run python from anywhere in your path.
-
+unset PYTHONHOME
 lines=`cat $0 | wc -l`
 lines=`expr $lines - 20`
 if (test -n "$TMPDIR") then
