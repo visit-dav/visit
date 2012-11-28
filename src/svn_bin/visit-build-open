@@ -114,6 +114,9 @@
 #   Eric Brugger, Wed Nov 14 15:53:56 PST 2012
 #   I modified the euclid build to point to the new cmake.
 #
+#   Eric Brugger, Wed Nov 28 08:38:09 PST 2012
+#   I modified the ubuntu1104_64 build to point to the new cmake.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -418,7 +421,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/home/visit/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/home/visit/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.5/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 2 >> ../../buildlog 2>&1
 make -j 2 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
