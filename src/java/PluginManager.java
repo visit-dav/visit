@@ -213,15 +213,16 @@ class PluginManager
             pluginAtts[i] = null;
 
             // Create a list of possible names for the 
-            int nPossibleClassNames = 2;
-            String[] classNames = new String[3];
+            int nPossibleClassNames = 4;
+            String[] classNames = new String[4];
             classNames[0] = new String("llnl.visit."+pluginType+"s."+name+"Attributes");
-            classNames[1] = new String("llnl.visit."+pluginType+"s."+name+"PluginAttributes");
+            classNames[1] = new String("llnl.visit."+pluginType+"s."+name+"Atts");
+            classNames[2] = new String("llnl.visit."+pluginType+"s."+name+"PluginAttributes");
             try
             {
                 String c0 = pluginType.substring(0,1).toUpperCase();
                 String prefix = c0 + pluginType.substring(1, pluginType.length());
-                classNames[2] = new String("llnl.visit."+pluginType+"s."+name+prefix+"Attributes");
+                classNames[3] = new String("llnl.visit."+pluginType+"s."+name+prefix+"Attributes");
                 ++nPossibleClassNames;
             }
             catch(IndexOutOfBoundsException e0)

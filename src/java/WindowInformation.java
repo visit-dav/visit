@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class WindowInformation extends AttributeSubject
 {
-    private static int WindowInformation_numAdditionalAtts = 27;
+    private static int WindowInformation_numAdditionalAtts = 29;
 
     public WindowInformation()
     {
@@ -99,6 +99,8 @@ public class WindowInformation extends AttributeSubject
         windowSize[0] = 0;
         windowSize[1] = 0;
         winMode = 0;
+        DDTSim = false;
+        DDTConnected = false;
     }
 
     public WindowInformation(int nMoreFields)
@@ -140,6 +142,8 @@ public class WindowInformation extends AttributeSubject
         windowSize[0] = 0;
         windowSize[1] = 0;
         winMode = 0;
+        DDTSim = false;
+        DDTConnected = false;
     }
 
     public WindowInformation(WindowInformation obj)
@@ -194,6 +198,8 @@ public class WindowInformation extends AttributeSubject
         windowSize[1] = obj.windowSize[1];
 
         winMode = obj.winMode;
+        DDTSim = obj.DDTSim;
+        DDTConnected = obj.DDTConnected;
 
         SelectAll();
     }
@@ -276,7 +282,9 @@ public class WindowInformation extends AttributeSubject
                 (numPrimitives == obj.numPrimitives) &&
                 extents_equal &&
                 windowSize_equal &&
-                (winMode == obj.winMode));
+                (winMode == obj.winMode) &&
+                (DDTSim == obj.DDTSim) &&
+                (DDTConnected == obj.DDTConnected));
     }
 
     // Property setting methods
@@ -451,6 +459,18 @@ public class WindowInformation extends AttributeSubject
         Select(26);
     }
 
+    public void SetDDTSim(boolean DDTSim_)
+    {
+        DDTSim = DDTSim_;
+        Select(27);
+    }
+
+    public void SetDDTConnected(boolean DDTConnected_)
+    {
+        DDTConnected = DDTConnected_;
+        Select(28);
+    }
+
     // Property getting methods
     public String   GetActiveSource() { return activeSource; }
     public int      GetActiveTimeSlider() { return activeTimeSlider; }
@@ -479,6 +499,8 @@ public class WindowInformation extends AttributeSubject
     public double[] GetExtents() { return extents; }
     public int[]    GetWindowSize() { return windowSize; }
     public int      GetWinMode() { return winMode; }
+    public boolean  GetDDTSim() { return DDTSim; }
+    public boolean  GetDDTConnected() { return DDTConnected; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -537,6 +559,10 @@ public class WindowInformation extends AttributeSubject
             buf.WriteIntArray(windowSize);
         if(WriteSelect(26, buf))
             buf.WriteInt(winMode);
+        if(WriteSelect(27, buf))
+            buf.WriteBool(DDTSim);
+        if(WriteSelect(28, buf))
+            buf.WriteBool(DDTConnected);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -624,6 +650,12 @@ public class WindowInformation extends AttributeSubject
         case 26:
             SetWinMode(buf.ReadInt());
             break;
+        case 27:
+            SetDDTSim(buf.ReadBool());
+            break;
+        case 28:
+            SetDDTConnected(buf.ReadBool());
+            break;
         }
     }
 
@@ -657,6 +689,8 @@ public class WindowInformation extends AttributeSubject
         str = str + doubleArrayToString("extents", extents, indent) + "\n";
         str = str + intArrayToString("windowSize", windowSize, indent) + "\n";
         str = str + intToString("winMode", winMode, indent) + "\n";
+        str = str + boolToString("DDTSim", DDTSim, indent) + "\n";
+        str = str + boolToString("DDTConnected", DDTConnected, indent) + "\n";
         return str;
     }
 
@@ -689,5 +723,7 @@ public class WindowInformation extends AttributeSubject
     private double[] extents;
     private int[]    windowSize;
     private int      winMode;
+    private boolean  DDTSim;
+    private boolean  DDTConnected;
 }
 
