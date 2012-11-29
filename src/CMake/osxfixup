@@ -20,6 +20,10 @@
 #   (changes from Jeremy) Remove search for install names w/ a '/Users/'
 #   prefix & instead just skip change of install names w/ a '/usr/lib' prefix.
 #
+#   Cyrus Harrison, Thu Nov 29 14:27:08 PST 2012
+#   dylib case: use otool to check if we are actually dealing with a lib.
+#   In some cases py files creep in.
+#
 ################################################################################
 
 #
@@ -35,6 +39,12 @@ function fixup_dylib
     rpath_enable="$2"
     if test -h $1 ; then
         echo "Skipping $1 because it is a symlink"
+        return 0
+    fi
+    
+    dy_check=$(otool -D $1 | tail -n 1 | grep "is not an object file")
+    if [[ $dy_check != "" ]] ; then
+        echo "Skipping $1 because it is not a library"
         return 0
     fi
 
