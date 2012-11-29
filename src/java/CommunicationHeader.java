@@ -61,6 +61,9 @@ package llnl.visit;
 //   Brad Whitlock, Fri Jan 28 11:25:36 PST 2011
 //   I loosened the test for version equality to support patch releases.
 //
+//   Brad Whitlock, Wed Nov 28 16:22:51 PST 2012
+//   I changed the communication header to match changes in the C++ version.
+//
 // ****************************************************************************
 
 class CommunicationHeader
@@ -72,6 +75,8 @@ class CommunicationHeader
         // because of the java.nio package.
         bigEndian = (java.nio.ByteOrder.nativeOrder() ==
                      java.nio.ByteOrder.BIG_ENDIAN);
+
+        Format = BINARYFORMAT;
 
         if(bigEndian)
         {
@@ -118,27 +123,28 @@ class CommunicationHeader
         for(i = 0; i < 100; ++i)
             buf[i] = 0;
 
-        // The first 4 bytes of the header are for the type representation.
-        buf[0] = IntFormat;
-        buf[1] = LongFormat;
-        buf[2] = FloatFormat;
-        buf[3] = DoubleFormat;
+        // The first 5 bytes of the header are for the type representation.
+        buf[0] = BINARYFORMAT;
+        buf[1] = IntFormat;
+        buf[2] = LongFormat;
+        buf[3] = FloatFormat;
+        buf[4] = DoubleFormat;
 
         // The failure code
-        buf[4] = 0;
+        buf[5] = 0;
 
         // Set the version string into the next 10 bytes.
         for(i = 0; i < 10; ++i)
-            buf[i+5] = version[i];
+            buf[i+6] = version[i];
 
         // Set the security key into the next 21 bytes.
         byte[] securityKeyBytes = securityKey.getBytes();
         for(i = 0; i <= 20; ++i)
         {
             if(i < 20)
-                buf[i+5+10] = securityKeyBytes[i];
+                buf[i+6+10] = securityKeyBytes[i];
             else
-                buf[i+5+10] = 0; // NULL terminator
+                buf[i+6+10] = 0; // NULL terminator
         }
 
         // Set the socket key into the next 21 bytes.
@@ -146,9 +152,9 @@ class CommunicationHeader
         for(i = 0; i <= 20; ++i)
         {
             if(i < 20)
-                buf[i+5+10+21] = socketKeyBytes[i];
+                buf[i+6+10+21] = socketKeyBytes[i];
             else
-                buf[i+5+10+21] = 0; // NULL terminator
+                buf[i+6+10+21] = 0; // NULL terminator
         }
 
         // The rest of the bytes are reserved for future use.
@@ -159,29 +165,30 @@ class CommunicationHeader
     public void unpackHeader(byte[] buf)
     {
         // Read the representation from the buffer.
-        IntFormat = buf[0];
-        LongFormat = buf[1];
-        FloatFormat = buf[2];
-        DoubleFormat = buf[3];
+        Format = buf[0];
+        IntFormat = buf[1];
+        LongFormat = buf[2];
+        FloatFormat = buf[3];
+        DoubleFormat = buf[4];
 
         // Do the fail code.
-        failCode = (int)buf[4];
+        failCode = (int)buf[5];
 
         // Do the version number.
         int i;
         for(i = 0; i < 10; ++i)
-            version[i] = buf[i+5];
+            version[i] = buf[i+6];
 
         // Do the security key.
         byte[] securityKeyBytes = new byte[20];
         for(i = 0; i < 20; ++i)
-            securityKeyBytes[i] = buf[i+5+10];
+            securityKeyBytes[i] = buf[i+6+10];
         securityKey = new String(securityKeyBytes);
 
         // Do the socket key.
         byte[] socketKeyBytes = new byte[20];
         for(i = 0; i < 20; ++i)
-            socketKeyBytes[i] = buf[i+5+10+21];
+            socketKeyBytes[i] = buf[i+6+10+21];
         socketKey = new String(socketKeyBytes);
     }
 
@@ -251,6 +258,10 @@ class CommunicationHeader
     public static final byte L32 = 2;
     public static final byte L64 = 3;
 
+    public static final byte ASCIIFORMAT = 0;
+    public static final byte BINARYFORMAT = 1;
+
+    public byte Format;
     public byte IntFormat;
     public byte LongFormat;
     public byte FloatFormat;
