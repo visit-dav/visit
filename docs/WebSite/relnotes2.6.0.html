@@ -1,0 +1,770 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML><!-- InstanceBegin template="/Templates/Temp_doc.dwt" codeOutsideHTMLIsLocked="false" -->
+
+<HEAD>
+
+<!-- InstanceBeginEditable name="doctitle" -->
+
+<TITLE>VisIt 2.6 Release Notes</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="LLNLRandR" content="LLNL-WEB-604194">
+<meta name="review" content="November 2012">
+<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract DE-AC52-07NA27344">
+<meta name="language" content="en">
+<meta name="rating" content="general">
+<meta name="distribution" content="global">
+<meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
+<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
+<meta http-equiv="Expires" content="never">
+<meta name="date" content="2012-11-29">
+<meta name="Author" content="Eric Brugger">
+
+<!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+
+<!-- ImageReady Preload Script (template1.psd) -->
+
+<SCRIPT TYPE="text/javascript">
+
+<!--
+
+
+
+
+
+<!--
+
+
+
+function newImage(arg) {
+
+	if (document.images) {
+
+		rslt = new Image();
+
+		rslt.src = arg;
+
+		return rslt;
+
+	}
+
+}
+
+
+
+function changeImages() {
+
+	if (document.images && (preloadFlag == true)) {
+
+		for (var i=0; i<changeImages.arguments.length; i+=2) {
+
+			document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
+
+		}
+
+	}
+
+}
+
+
+
+var preloadFlag = false;
+
+function preloadImages() {
+
+	if (document.images) {
+
+		template1_home_over = newImage("media/template1_home-over.jpg");
+
+		template1_dload_over = newImage("media/template1_dload-over.jpg");
+
+		template1_dload_over006 = newImage("media/template1_dload-over-06.jpg");
+
+		template1_doc_over = newImage("media/template1_doc-over.jpg");
+
+		template1_contact_over = newImage("media/template1_contact-over.jpg");
+
+		preloadFlag = true;
+
+	}
+
+}
+
+
+
+// -->
+
+
+
+function MM_preloadImages() { //v3.0
+
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+
+}
+
+
+
+function MM_findObj(n, d) { //v4.01
+
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+
+}
+
+//-->
+
+</SCRIPT>
+
+<!-- End Preload Script -->
+
+<link href="VisIt.css" rel="stylesheet" type="text/css">
+
+<script language="JavaScript" type="text/JavaScript">
+<!--
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+
+}
+
+MM_reloadPage(true);
+
+
+
+function MM_showHideLayers() { //v6.0
+
+  var i,p,v,obj,args=MM_showHideLayers.arguments;
+
+  for (i=0; i<(args.length-2); i+=3) if ((obj=MM_findObj(args[i]))!=null) { v=args[i+2];
+
+    if (obj.style) { obj=obj.style; v=(v=='show')?'visible':(v=='hide')?'hidden':v; }
+
+    obj.visibility=v; }
+
+}
+
+
+
+function MM_swapImgRestore() { //v3.0
+
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+
+}
+
+
+
+function MM_swapImage() { //v3.0
+
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+
+}
+
+
+
+function MM_timelineGoto(tmLnName, fNew, numGotos) { //v2.0
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,lastKeyFr,propNum,theObj;
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  tmLn = document.MM_Time[tmLnName];
+
+  if (numGotos != null)
+
+    if (tmLn.gotoCount == null) tmLn.gotoCount = 1;
+
+    else if (tmLn.gotoCount++ >= numGotos) {tmLn.gotoCount=0; return}
+
+  jmpFwd = (fNew > tmLn.curFrame);
+
+  for (i = 0; i < tmLn.length; i++) {
+
+    sprite = (jmpFwd)? tmLn[i] : tmLn[(tmLn.length-1)-i]; //count bkwds if jumping back
+
+    if (sprite.charAt(0) == "s") {
+
+      numKeyFr = sprite.keyFrames.length;
+
+      firstKeyFr = sprite.keyFrames[0];
+
+      lastKeyFr = sprite.keyFrames[numKeyFr - 1];
+
+      if ((jmpFwd && fNew<firstKeyFr) || (!jmpFwd && lastKeyFr<fNew)) continue; //skip if untouchd
+
+      for (keyFrm=1; keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]; keyFrm++);
+
+      for (j=0; j<sprite.values.length; j++) {
+
+        props = sprite.values[j];
+
+        if (numKeyFr == props.length) propNum = keyFrm-1 //keyframes only
+
+        else propNum = Math.min(Math.max(0,fNew-firstKeyFr),props.length-1); //or keep in legal range
+
+        if (sprite.obj != null) {
+
+          if (props.prop2 == null) sprite.obj[props.prop] = props[propNum];
+
+          else        sprite.obj[props.prop2][props.prop] = props[propNum];
+
+      } }
+
+    } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+
+  }
+
+  tmLn.curFrame = fNew;
+
+  if (tmLn.ID == 0) eval('MM_timelinePlay(tmLnName)');
+
+}
+
+
+
+function MM_timelinePlay(tmLnName, myID) { //v1.2
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,propNum,theObj,firstTime=false;
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  tmLn = document.MM_Time[tmLnName];
+
+  if (myID == null) { myID = ++tmLn.ID; firstTime=true;}//if new call, incr ID
+
+  if (myID == tmLn.ID) { //if Im newest
+
+    setTimeout('MM_timelinePlay("'+tmLnName+'",'+myID+')',tmLn.delay);
+
+    fNew = ++tmLn.curFrame;
+
+    for (i=0; i<tmLn.length; i++) {
+
+      sprite = tmLn[i];
+
+      if (sprite.charAt(0) == 's') {
+
+        if (sprite.obj) {
+
+          numKeyFr = sprite.keyFrames.length; firstKeyFr = sprite.keyFrames[0];
+
+          if (fNew >= firstKeyFr && fNew <= sprite.keyFrames[numKeyFr-1]) {//in range
+
+            keyFrm=1;
+
+            for (j=0; j<sprite.values.length; j++) {
+
+              props = sprite.values[j]; 
+
+              if (numKeyFr != props.length) {
+
+                if (props.prop2 == null) sprite.obj[props.prop] = props[fNew-firstKeyFr];
+
+                else        sprite.obj[props.prop2][props.prop] = props[fNew-firstKeyFr];
+
+              } else {
+
+                while (keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]) keyFrm++;
+
+                if (firstTime || fNew==sprite.keyFrames[keyFrm-1]) {
+
+                  if (props.prop2 == null) sprite.obj[props.prop] = props[keyFrm-1];
+
+                  else        sprite.obj[props.prop2][props.prop] = props[keyFrm-1];
+
+        } } } } }
+
+      } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+
+      if (fNew > tmLn.lastFrame) tmLn.ID = 0;
+
+  } }
+
+}
+
+
+
+function MM_timelineStop(tmLnName) { //v1.2
+
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+
+  if (tmLnName == null)  //stop all
+
+    for (var i=0; i<document.MM_Time.length; i++) document.MM_Time[i].ID = null;
+
+  else document.MM_Time[tmLnName].ID = null; //stop one
+
+}
+
+function MM_initTimelines() { //v4.0
+    //MM_initTimelines() Copyright 1997 Macromedia, Inc. All rights reserved.
+    var ns = navigator.appName == "Netscape";
+    var ns4 = (ns && parseInt(navigator.appVersion) == 4);
+    var ns5 = (ns && parseInt(navigator.appVersion) > 4);
+    var macIE5 = (navigator.platform ? (navigator.platform == "MacPPC") : false) && (navigator.appName == "Microsoft Internet Explorer") && (parseInt(navigator.appVersion) >= 4);
+    document.MM_Time = new Array(1);
+    document.MM_Time[0] = new Array(1);
+    document.MM_Time["submenu"] = document.MM_Time[0];
+    document.MM_Time[0].MM_Name = "submenu";
+    document.MM_Time[0].fps = 5;
+    document.MM_Time[0][0] = new String("behavior");
+    document.MM_Time[0][0].frame = 15;
+    document.MM_Time[0][0].value = "MM_showHideLayers('doc','','hide','dload','','hide')";
+    document.MM_Time[0].lastFrame = 15;
+    for (i=0; i<document.MM_Time.length; i++) {
+        document.MM_Time[i].ID = null;
+        document.MM_Time[i].curFrame = 0;
+        document.MM_Time[i].delay = 1000/document.MM_Time[i].fps;
+    }
+}
+//-->
+</script>
+
+<!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
+
+</HEAD>
+
+<BODY BGCOLOR=#FFFFFF LEFTMARGIN=0 TOPMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0 ONLOAD="preloadImages();MM_preloadImages('media_template/indexT_o.jpg','media_template/homeT_o.jpg','media_template/newT_o.jpg','media_template/contactT_o.jpg','media_template/dloadT_o.jpg')">
+
+<!-- ImageReady Slices (template1.psd) -->
+
+<TABLE WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=0>
+
+  <TR> 
+
+    <TD ROWSPAN=2> <A HREF="home.html"
+
+				ONMOUSEOVER="MM_swapImage('homeT','','Templates/media_template/homeT_o.jpg',1);MM_showHideLayers('doc','','hide','dload','','hide')"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG SRC="Templates/media_template/homeT.jpg" ALT="Home" NAME="homeT" WIDTH=166 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="download.html"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','show');MM_timelineStop();MM_swapImage('dloadT','','Templates/media_template/dloadT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_timelinePlay('submenu');MM_timelineGoto('submenu','1');MM_swapImgRestore()"> 
+
+      <IMG SRC="Templates/media_template/dloadT.jpg" ALT="Downloads" NAME="dloadT" WIDTH=131 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="#"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','show','dload','','hide');MM_timelineStop()"
+
+				ONMOUSEOUT="MM_timelineGoto('submenu','1');MM_timelinePlay('submenu')"> 
+
+      <IMG SRC="Templates/media_template/docT_here.jpg" ALT="Documentation" NAME="docT" WIDTH=129 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD ROWSPAN=2> <A HREF="new.html"
+
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','hide');MM_swapImage('newT','','Templates/media_template/newT_o.jpg',1)" onMouseOut="MM_swapImgRestore()"> 
+
+      <IMG SRC="Templates/media_template/newT.jpg" ALT="What's New" NAME="newT" WIDTH=320 HEIGHT=92 BORDER=0></A></TD>
+
+    <TD COLSPAN=2> <IMG SRC="Templates/media_template/logoT.jpg" WIDTH=265 HEIGHT=66 ALT=""></TD>
+
+    <TD width="100%" ROWSPAN=2 background="Templates/media_template/sideT.jpg">&nbsp; </TD>
+
+  </TR>
+
+  <TR> 
+
+    <TD> <A HREF="sitemap.html"
+
+				ONMOUSEOVER="MM_swapImage('indexT','','Templates/media_template/indexT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="indexT" SRC="Templates/media_template/indexT.jpg" WIDTH=76 HEIGHT=26 BORDER=0 ALT="Index"></A></TD>
+
+    <TD> <A HREF="mailto:visit-users@ornl.gov"
+
+				ONMOUSEOVER="MM_swapImage('contactT','','Templates/media_template/contactT_o.jpg',1)"
+
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="contactT" SRC="Templates/media_template/contactT.jpg" WIDTH=189 HEIGHT=26 BORDER=0 ALT="Contact"></A></TD>
+
+  </TR>
+
+</TABLE>
+
+<!-- End ImageReady Slices -->
+
+<!-- InstanceBeginEditable name="body" -->
+
+<h1>VisIt 2.6 Release Notes</h1>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#General_Features">Features for all users</a></li>
+  <li><a href="#Advanced_Features">Features for advanced users</a></li>
+  <li><a href="#GUI_Changes">Changes in GUI behavior</a></li>
+  <li><a href="#File_format">Changes to file format readers</a></li>
+  <li><a href="#Plot_changes">Changes to plots</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Expression_changes">Changes to expressions</a></li>
+  <li><a href="#Query_changes">Changes to picks and queries</a></li>
+  <li><a href="#Operator_changes">Changes to operators</a></li>
+  <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Config_changes">Changes to machine configuration files</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="General_Features"></a>
+<p><b><font size="4">General features added in version 2.6</font></b></p>
+<ul>
+  <li>A <i>bin</i> expression was added to classify scalars according to user-defined bin ranges. The expression returns the bin id into which the scalar was classified. The bin expression takes 2 arguments: a variable to be classified and a numeric list indicating the ranges of the bins. Bin 0 results from all values less than the first number in the bin list. Bin 1 results from all of the values in between bin values <i>i</i> and <i>i+1</i> and so on. The last bin is assigned when values are greater than the last bin value. For example: bin(pressure, [1., 10, 100, 1e3]) returns 0 for values less than 1, 1 for values between 1 and 10, 2 for values between 10 and 100, 3 for values between 100 and 1000, and 4 for values greater that 1000.</li>
+  <li>The location of saved config files, color tables, etc, on Windows has changed.  VisIt's version number will no longer be appended to the path.  This is to prevent the need for copying files each time a new VisIt version is released.  For 2.6.0 only, any saved config files that you would like to continue using will need to be copied over manually.</li>
+</ul>
+
+<a name="Advanced_Features"></a>
+<p><b><font size="4">Advanced features added in version 2.6</font></b></p>
+<ul>
+  <li>VisIt has been integrated with the Allinea DDT debugger.
+  <ul>
+      <li>DDT may function as a VisIt data source, providing basic online visualization capabilities during a debugging session without the need for program instrumentation or recompilation.</li>
+      <li>Add DDT Pick Tool: You can change the currently selected process in DDT by picking a zone or node directly from a VisIt plot.</li>
+      <li>This integration is optional and you must build visit from source enabling VISIT_DDT when running cmake.</li>
+  </ul>
+  </li>
+  <li>Libsim was enhanced so that it is now possible to specify domain boundaries for structured mesh decompositions that feature reduced and enhanced mesh connectivity points. The new functions are:
+  <i>
+  <ul>
+      <li>VisIt_DomainBoundaries_set_extents()</li>
+      <li>VisIt_DomainBoundaries_add_neighbor()</li>
+      <li>VisIt_DomainBoundaries_finish()</li>
+  </ul>
+  </i>
+  </li>
+  <li>Libsim was modified so that the ghost cell type of a specific cell may be the union of multiple ghost cell types. Note that this required some macro definitions in <i>VisItInterfaceTypes_V2.h</i> to change. This means that simulation codes will need to be recompiled. This type of change is atypical for libsim but usage of the feature being changed was estimated to be low.</li>
+  <li>Additional double-precision support was implemented in VisIt. Outstanding items:
+  <ul>
+      <li>Pipeline Filters:</li>
+      <i>
+      <ul>
+          <li>DataBinning</li>
+          <li>SamplePointsToSurface</li>
+          <li>StreamlinePolyData</li>
+      </ul>
+      </i>
+      <li>Plots:</li>
+      <i>
+      <ul>
+          <li>Histogram</li>
+          <li>ParallelCoordinates</li>
+          <li>Poincare</li>
+          <li>Scatter</li>
+          <li>Streamline</li>
+          <li>WellBore</li>
+          <li>Volume</li>
+      </ul>
+      </i>
+      <li>Operators:</li>
+      <i>
+      <ul>
+          <li>ChannelComm</li>
+          <li>Cone</li>
+          <li>ExtremeValueAnalysis</li>
+          <li>FFT</li>
+          <li>FTLE</li>
+          <li>FiveFoldTestSubdivision</li>
+          <li>Lagrangian</li>
+          <li>LineSampler</li>
+          <li>ModelBasedClustering</li>
+          <li>ModelFit</li>
+          <li>PDF</li>
+          <li>PeaksOverthreshold</li>
+          <li>SiloDump</li>
+      </ul>
+      </i>
+  </ul>
+</li>
+  <li>The DataBinning operator can now put its output on the original input mesh, instead of on the bins it usually produces.</li>
+  <li>PySide/PyQt support (experimental):
+    <ul>
+        <li>PySide/PyQt support within VisIt allows custom generation of user interfaces and provides helper functions to VisIt's user widgets.</li>
+        <li>Wiki on launching VisIt with PySide support: <a href="http://visitusers.org/index.php?title=PySide">PySide Support</a></li>
+    </ul>
+  </li>
+  <li>Remote Rendering support (experimental):
+    <ul>
+       <li>All new third-party clients exist within the resources/clients folder.</li>
+       <li>Currently three clients are supported: (Web, Python, and Java). Wiki on how to execute each client: <a href="http://visitusers.org/index.php?title=Remote_Rendering_Work">Remote Rendering Work</a></li>
+    </ul>
+  </li>
+</ul>
+
+<a name="GUI_Changes"></a>
+<p><b><font size="4">Changes in GUI behavior for version 2.6</font></b></p>
+<ul>
+  <li>The Open Files Dialog does not show files or directories that begin with a period <i>(except for the .visit directory)</i> since files that begin with a period, or <i>dot</i> files, are usually meant to be hidden. This saves the user from having to scroll past many irrelevant dot files. To show the dot files, click on the <b>Show dot files</b> check box in the Open Files Dialog. This preference can be saved in your settings.</li>
+</ul>
+
+<a name="File_format"></a>
+<p><b><font size="4">File format reader changes in version 2.6</font></b></p>
+<ul>
+  <li>The VTK reader was fixed so that it is once again compatible with <i>.visit</i> files that use <i>!NBLOCKS</i>.</li>
+  <li>The GMV reader was fixed so that tracer variables with no data values no longer crash the compute engine.</li>
+  <li>The WPPImage reader is now built by default and included in all the binary distributions.</li>
+  <li>The CGNS reader was improved so it reads data values properly whether or not boundaries are present in the file. Thank you to Mickael Philit for the fix!</li>
+  <li>The Silo reader was improved so that it will use global node ids that were written for point meshes.</li>
+  <li>Several fixes and enhancements were made to the Tecplot binary reader:
+      <ul>
+         <li>Multiple time steps can now be grouped using automatic file grouping and <i>.visit</i> files.</li>
+         <li>The z axis name is read properly when it is specified in the default file open options. The fix was provided by Jean Favre.</li>
+         <li>Support was added for an older flavor of the Tecplot binary file, version TDV102.</li>
+      </ul>
+  </li>
+  <li>The ddcMD reader has been fixed and support was added for ascii record cgrid files that are decomposed into multiple subnames.</li>
+  <li>The Pixie reader has been enhanced so that it can automatically decompose large arrays among multiple processors in parallel. Thanks Jean Favre!</li>
+  <li>The Nek5000 reader now reports times and cycles by default in the GUI.  (The time slider has this information.)</li>
+  <li>The Nek5000 reader no longer crashes when doing repeated isosurfaces when it has acceleration data structures.</li>
+  <li>LAMMPS reader now can handle options xs and xsu.</li>
+</ul>
+
+<a name="Plot_changes"></a>
+<p><b><font size="4">Changes to VisIt's plots in version 2.6</font></b></p>
+<ul>
+  <li>The scatter plot no longer ignores x/y/z bounds when normalizing data to a cube and not using skew or log scaling.</li>
+  <li>Plots of point variables using a Box, Icoscahedron or Axis glyphs can now be scaled by a Tensor. Thanks John Schmidt! </li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators version in 2.6</font></b></p>
+<ul>
+  <li>The Cartographic Projection operator was added to VisIt. This transform operator applies cartographic projections to 2D grids. For more info see the wiki page for cartographic projection: <a href="http://visitusers.org/index.php?title=Cartographic_projection_in_VisIt">Cartographic projection in VisIt</a>. Thanks Jean Favre!</li>
+</ul>
+
+<a name="Expression_changes"></a>
+<p><b><font size="4">Changes to VisIt's expression language in version 2.6</font></b></p>
+<ul>
+  <li>The curve_integrate function was added. It takes a curve as an argument and integrates the curve generating another curve. It is listed in the <i>Miscellaneous</i> category in the <i>Insert function ...</i> drop down menu in the <i>Standard Editor</i> tab in the <i>Expressions</i> window.</li>
+  <li>The curve_swapxy function was added. It takes a curve as an argument and swaps the x and y coordinates of the curve generating another curve. It is listed in the <i>Miscellaneous</i> category in the <i>Insert function ...</i> drop down menu in the <i>Standard Editor</i> tab in the <i>Expressions</i> window.</li>
+  <li>The curve_domain function was modified to delete points where the coordinates weren't monotonically increasing.</li>
+  <li>The curve_cmfe and curve_domain functions have been added to the <i>Expressions</i> window in the graphical user interface. The curve_cmfe function is in the <i>Comparison</i> category and the curve_domain function is in the <i>Miscellaneous</i> category.</li>
+</ul>
+
+<a name="Query_changes"></a>
+<p><b><font size="4">Changes to VisIt's picks and queries in version 2.6</font></b></p>
+<ul>
+  <li>The XRay Image query now has an 'up vector' argument, settable via the gui or as the named-argument 'up_vector' from the cli. It is only availble from the cli when using the named-argument form of queries.</li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Other bugs fixed in version 2.6</font></b></p>
+<ul>
+  <li>The visual artifacts present at start-up were eliminated when running on OSX 10.8.</li>
+  <li>Libsim's SimV2 reader was fixed so it can properly read the group information for each domain, allowing domains to be grouped into higher level constructs for meshes other than AMR meshes.</li>
+  <li>The DualMesh operator now forces VisIt to ignore missing data so rectilinear meshes are not quietly converted to unstructured.</li>
+  <li>The Volume plot is once again able to color by one variable while setting the opacity by another variable when using splatting and 3D texturing renderers.</li>
+  <li>Restoring sessions that use files located on remote hosts does now works and no longer results in an incorrect error message about the metadata server launch being cancelled.</li>
+  <li>Pick on point meshes was fixed to account for node_origin and cell_origin so that erroneous results aren't returned.</li>
+  <li>The Tube operator's scale-by-variable now works with a non-default variable.</li>
+  <li>Picking was fixed to work in conjuction with the Project operator.</li>
+  <li>The transparency of saved images is now preserved.</li>
+  <li>Launching of CLI on Windows systems with Python installed was fixed.</li>
+  <li>The FTLE operator now uses double precision internally, which prevents a cliff in calculations that created hotspots.</li>
+  <li>The FTLE operator now works correctly with two dimensional grids.</li>
+  <li>The Streamline and other particle-advected-based operations now work on rectilinear grids that have monotonically decreasing coordinates.</li>
+  <li>Multiple bugs were fixed with applying data binnings where the data binnings occur over coordinates.</li>
+  <li>The data binning operator now sets labels nad units correctly when using coordinates.</li>
+  <li>Ensure the variable used for scaling glyphs in the Pseudocolor plot is not used for coloring.</li>
+  <li>Connecting to a remote computer through a gateway did not work unless the remote host was also visible to the client that initiated the connection.</li>
+  <li>Performing a database query on a plot in the error state no longer crashes the viewer.</li>
+  <li>The bad error message 'Time history query is not available for Zone Center' that sometimes occurred with time-picks was removed.</li>
+  <li><i>visit_utils.encoding.encode</i> now supports newer ffmpeg encoding command line syntax.</li>
+  <li>Unnecessary debug print statements were removed from the <i>visitmodule</i> front-end.</li>
+</ul>
+
+<a name="Config_changes"></a>
+<p><b><font size="4">Changes to configuration files in version 2.6</font></b></p>
+<ul>
+  <li>The host profiles were removed for prism.</li>
+  <li>The TACC host profiles no longer reference localhost, which caused mdserver launches to fail locally.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 2.6</font></b></p>
+<ul>
+  <li>VisIt's launch scripts have been rewritten in Python. The new versions of the scripts give more structure to launching and separate site-specific customizations into separate files. Customizations are put into a file called <i>customlauncher</i> that is different for each site.</li>
+  <li>The xmledit tools now behave better with operators that create new variables when switching between tabs.</li>
+  <li>The xml code generation tools now produce correct code for operators that create variables.</li>
+  <li>The Python Manual can be automatically generated again.</li>
+  <li>The visitconvert tool has a new -output_zonal option which can be useful when upsampling.</li>
+  <li>VisIt's test suite infrastructure was migrated to Python. It now supports spawing multiple test case processes, improving suite turnaround time.</li>
+  <li>Upgraded Qt to version 4.8.3 and PySide to version 1.1.1.</li>
+  <li>VisIt now supports building on OSX without X11 or Mesa.</li>
+  <li>VisIt now builds on OSX 10.8.</li>
+</ul>
+
+<!-- InstanceEndEditable -->
+
+<div align="center"> 
+
+  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
+
+  <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
+
+    <span class="body_text">Updated: 
+
+    <!-- #BeginDate format:Am1 -->November 29, 2012<!-- #EndDate -->
+
+    </span></p>
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
+
+    <tr> 
+
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">LLNL-WEB-604194, 
+
+        <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
+
+        and legal notice</a></span></td>
+
+      <td width="5">&nbsp;</td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+<!--Begin layers -->
+
+<div id="doc" style="position:absolute; left:297px; top:68px; width:184px; height:27px; z-index:1; visibility: hidden;"> 
+
+  <table border="0" cellspacing="3">
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="about.html"><font color="#FFFFFF">Overview</font></a></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center"><span class="menu"><a href="screens.html"><font color="#FFFFFF">Screen 
+
+          Shots</font></a></span><strong><a href="#source"><font color="#333366"> 
+
+          </font></a></strong></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+	  <td width="127" height="20"> 
+
+        <div align="center"><span class="menu"><a href="gallery.html"><font color="#FFFFFF">Gallery
+
+		  </font></a></span><strong><a href="#source"><font color="#333366"> 
+
+          </font></a></strong></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="FAQ.html"><font color="#FFFFFF">FAQs</font></a></div>
+
+      </td>
+
+	</tr>
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF"> 
+
+          Manuals</font></a></div>
+
+      </td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+<div id="dload" style="position:absolute; left:167px; top:68px; width:173px; height:27px; z-index:1; visibility: hidden;"> 
+
+  <table border="0" cellspacing="3">
+
+    <tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="executables.html"><font color="#FFFFFF">Executables</font></a></div></td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="source.html"><font color="#FFFFFF">Source 
+
+          Codes</font></a></div>
+
+      </td>
+
+	</tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF">Manuals</font></a></div>
+
+      </td>
+
+    </tr>
+
+	<tr valign="middle" bgcolor="#999999"> 
+
+      <td width="127" height="20"> 
+
+        <div align="center" class="menu"><a href="datafiles.html"><font color="#FFFFFF">Data Files</font></a></div>
+
+      </td>
+
+    </tr>
+
+  </table>
+
+</div>
+
+</BODY>
+
+<!-- InstanceEnd --></HTML>
