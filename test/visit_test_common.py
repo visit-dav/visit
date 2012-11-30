@@ -36,7 +36,7 @@
 #*****************************************************************************
 """
 file: visit_test_common.py
-description: 
+description:
 author: Cyrus Harrison
 date:
 """
@@ -59,7 +59,7 @@ def abs_path(*args):
             toks = arg.split("/")
             rargs.extend(toks)
     res = os.path.abspath(pjoin(*rargs))
-    # for now, avoid unicode b/c it 
+    # for now, avoid unicode b/c it
     # doesn't work w/ RestoreSession w/ diff sources
     res = res.encode('ascii','ignore')
     return res
@@ -74,16 +74,17 @@ def sexe(cmd,ret_output=False,suppress_output=False,echo = False):
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
+                             stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
         return p.returncode,res
     elif suppress_output:
-        null_fp = open(os.devnull, "w")
         p = subprocess.Popen(cmd,
                              shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL)
         res = p.communicate()[0]
         return p.returncode
     else:
