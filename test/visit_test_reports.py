@@ -160,9 +160,9 @@ class HTMLIndex(object):
         elif rcode  == 121:
             mapping["result_color"] = "na"
             mapping["result_text"]  = "Not Applicable"
-        elif rcode  == 1:
+        else:
             mapping["result_color"] = "failed"
-            mapping["result_text"]  = "Failed: exit == 0  unknown"
+            mapping["result_text"]  = "Failed: exit == %s  unknown" % str(rcode)
         f = self.__file()
         if rcode  != 116:
             res = self.tset.use_template("index_entry",mapping)
@@ -174,8 +174,7 @@ class HTMLIndex(object):
         f = self.__file()
         res = res = self.tset.use_template("index_footer",
                                            {"timestamp":etstamp,
-                                            "runtime":rtime,
-                                           })
+                                            "runtime":rtime})
         f.write(res)
         f.close()
     def __file(self,create = False):
