@@ -216,9 +216,12 @@ def run_visit_test(args):
         # change to working dir to our run dir
         curr_dir = os.getcwd()
         os.chdir(run_dir)
-        rcode = sexe(rcmd,
-                     suppress_output=(not (opts.verbose or opts.lessverbose)),
-                     echo=False)
+        rcode = 0      
+        sexe(rcmd,
+             suppress_output=(not (opts.verbose or opts.lessverbose)),
+             echo=False)
+        if os.path.isfile("returncode.txt"):
+            rcode = int(open("returncode.txt").readline())
         # get end timestamp
         etime = time.time()
         dtime = math.ceil(etime - stime)
