@@ -74,17 +74,16 @@ def sexe(cmd,ret_output=False,suppress_output=False,echo = False):
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
-                             stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]
         return p.returncode,res
     elif suppress_output:
+        fh_dev_null = open(os.devnull,"w")
         p = subprocess.Popen(cmd,
                              shell=True,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL)
+                             stdout=fh_dev_null,
+                             stderr=fh_dev_null)
         res = p.communicate()[0]
         return p.returncode
     else:
@@ -102,3 +101,5 @@ def Log(msg,echo=True):
         if msg.count("\n") == 0:
             log.write("\n")
         log.close()
+
+

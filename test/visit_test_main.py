@@ -1236,6 +1236,7 @@ def Exit(excode=0):
     if rcode is None:
         rcode  = 114
     LogTestExit(rcode)
+    open("returncode.txt","w").write("%d\n" % rcode)
     sys.exit(rcode)
 
 # ----------------------------------------------------------------------------
