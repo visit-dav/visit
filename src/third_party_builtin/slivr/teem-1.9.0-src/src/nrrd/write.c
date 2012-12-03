@@ -414,9 +414,14 @@ _nrrdSprintFieldInfo(char **strP, char *prefix,
          && AIR_IN_OP(nrrdField_unknown, field, nrrdField_last) )) {
     return;
   }
+  /* Talked with Kindlmann about the potential memory leak here
+     and he said that this code could be removed and handled in
+     the default case statement below. He fixed the truck of
+     the teem library, but was not going to back port the fix.
   if (!_nrrdFieldInteresting(nrrd, nio, field)) {
     *strP = airStrdup("");
   }
+  */
   
   fs = airEnumStr(nrrdField, field);
   fslen = strlen(prefix) + strlen(fs) + strlen(": ") + 1;
@@ -725,6 +730,7 @@ _nrrdSprintFieldInfo(char **strP, char *prefix,
     break;
   default:
     fprintf(stderr, "%s: CONFUSION: field %d unrecognized\n", me, field);
+    *strP = NULL;
     break;
   }
 

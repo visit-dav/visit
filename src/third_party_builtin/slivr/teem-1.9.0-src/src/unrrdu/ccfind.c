@@ -69,6 +69,7 @@ unrrdu_ccfindMain(int argc, char **argv, char *me, hestParm *hparm) {
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdCCFind(nout, airStrlen(valS) ? &nval : NULL, nin, type, conny)) {
+    if (nval) nrrdNuke(nval); // Delete the memory if allocated.
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error doing connected components:\n%s", me, err);
     airMopError(mop);

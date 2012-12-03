@@ -188,8 +188,9 @@ int
 _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr,
               const Nrrd *nin, unsigned int conny) {
   /* char me[]="_nrrdCCFind_3", err[BIFF_STRLEN] ; */
-  double pvl[14], vl=0;
-  unsigned int id, pid[14], *out, (*lup)(const void *, size_t);
+  double pvl[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0}, vl=0;
+  unsigned int id, pid[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0}, 
+               *out, (*lup)(const void *, size_t);
   unsigned int p, x, y, z, sx, sy, sz;  
 
   id = 0; /* sssh! compiler warnings */
@@ -452,7 +453,7 @@ int
 _nrrdCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin,
              unsigned int conny) {
   unsigned int (*lup)(const void *, size_t), x, y, sx, sy, id=0;
-  double pid[5];
+  double pid[5]={0,0,0,0,0};
   
   lup = nrrdUILookup[nin->type];
   sx = nin->axis[0].size;
@@ -491,7 +492,7 @@ int
 _nrrdCCAdj_3(unsigned char *out, int numid, const Nrrd *nin,
              unsigned int conny) {
   unsigned int (*lup)(const void *, size_t), x, y, z, sx, sy, sz, id=0;
-  double pid[14];
+  double pid[14]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   
   lup = nrrdUILookup[nin->type];
   sx = nin->axis[0].size;
