@@ -60,7 +60,7 @@ _baneGkmsDonNew(int invert) {
 
   if (nrrdMaybeAlloc_va(ret=nrrdNew(), nrrdTypeFloat, 2,
                         AIR_CAST(size_t, 4), AIR_CAST(size_t, 23))) {
-    sprintf("%s: can't create output", me);
+    sprintf(err, "%s: can't create output", me);
     biffAdd(BANE, err); return NULL;
   }
   data = (float *)ret->data;

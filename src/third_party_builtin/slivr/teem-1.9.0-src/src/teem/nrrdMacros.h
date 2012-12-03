@@ -129,14 +129,14 @@ do {                                           \
 ** "I".
 */
 #define NRRD_INDEX_GEN(I, coord, size, dim)   \
-do {                                          \
-  int d;                                      \
-  for (d=(dim)-1, (I)=(coord)[d--];           \
-       d >= 0;                                \
-       d--) {                                 \
-    (I) = (coord)[d] + (size)[d]*(I);         \
-  }                                           \
-} while (0)
+  {                                                     \
+    unsigned int ddd = (dim);                           \
+    (I) = 0;                                            \
+    while (ddd) {                                       \
+      ddd--;                                            \
+      (I) = (coord)[ddd] + (size)[ddd]*(I);             \
+    }                                                   \
+  }
 
 /*
 ******** NRRD_COORD_GEN

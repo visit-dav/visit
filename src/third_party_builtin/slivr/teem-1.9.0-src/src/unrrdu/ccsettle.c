@@ -55,6 +55,7 @@ unrrdu_ccsettleMain(int argc, char **argv, char *me, hestParm *hparm) {
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdCCSettle(nout, airStrlen(valS) ? &nval : NULL, nin)) {
+    if (nval) nrrdNuke(nval); // Delete the memory if allocated.
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error settling connected components:\n%s", me, err);
     airMopError(mop);
