@@ -10,6 +10,9 @@ import os, math, socket, stat, time
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Dec  3 13:25:32 PST 2012
+#   I modified the script so that all the arguments are passed to subsequent
+#   components before the "-s script_file" argument.
 #
 ###############################################################################
 
@@ -1073,6 +1076,7 @@ class GeneralArguments(object):
         self.diffmode = 0        # 0 = none, 1=diff, 2=diffsum
         self.diffargs = []
         self.scriptfile = None
+        self.scriptarguments = []
         self.norun = None
         self.env = 0
         self.arch = 0
@@ -1104,7 +1108,9 @@ class GeneralArguments(object):
             self.add_movie_args = 1
         elif args[i] == "-s":
             self.scriptfile = args[i+1]
-            n = 2
+            for j in range(i+2, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
         elif args[i] == "-diff":
             self.exe_name = "cli"
             self.diffmode = 1
@@ -1204,7 +1210,7 @@ class GeneralArguments(object):
                 args = args + ["-nowin"]
             args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
 
-        args = args + self.arguments
+        args = self.arguments + args + self.scriptarguments
 
         return args
 
