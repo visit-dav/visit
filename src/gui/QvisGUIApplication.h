@@ -405,6 +405,8 @@ protected:
     // Internal callbacks
     static void StartMDServer(const std::string &hostName,
                               const stringVector &args, void *data);
+    static void StartSharedServer(const std::string &hostName,
+        const stringVector &args, void *data);
     static void UpdatePrinterAttributes(Subject *subj, void *data);
     static void SyncCallback(Subject *s, void *data);
     static void UpdateMetaDataAttributes(Subject *subj, void *data);

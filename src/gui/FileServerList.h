@@ -313,6 +313,7 @@ public:
     stringVector GetVirtualFileDefinition(const QualifiedFilename &) const;
     int GetVirtualFileDefinitionSize(const QualifiedFilename &) const;
 
+    void SetStartServerCallback(ConnectCallback *cb, void *data);
     void SetConnectCallback(ConnectCallback *cb, void *data);
     void SetProgressCallback(bool (*cb)(void *, int), void *data);
 
@@ -414,6 +415,8 @@ private:
     StringStringVectorMap virtualFiles;
 
     // Used to tell the viewer to launch an mdserver.
+    ConnectCallback *startServerCallback;
+    void            *startServerCallbackData;
     ConnectCallback *connectCallback;
     void            *connectCallbackData;
     // Used to update the GUI while launching an mdserver.

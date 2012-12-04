@@ -872,6 +872,34 @@ FileServerList::StartServer(const string &host)
     typedef MDServerManager::ServerMap ServerMap;
     ServerMap& servers = MDServerManager::Instance()->GetServerMap();
 
+    if(startServerCallback)
+    {
+        TRY
+        {
+            /// call custom Start Server command to connect to remote MDServerProxy
+            /// this call must populate the global MDServerManager..
+            startServerCallback(host,stringVector(),startServerCallbackData);
+
+            /// if servers has not been populated then fallback to old route..
+            if(servers.find(host) != servers.end())
+            {
+                MDServerManager::ServerInfo *info = servers[host];
+
+                // Get the current directory from the server
+                info->path = info->server->GetMDServerMethods()->GetDirectory();
+
+                // Add the default path to the recent path list.
+                AddPathToRecentList(host, info->path);
+                return;
+            }
+        }
+        CATCHALL
+        {
+            RETHROW;
+        }
+        ENDTRY
+    }
+
     MDServerManager::ServerInfo *info = new MDServerManager::ServerInfo();
     info->server = 0;
 
@@ -889,7 +917,7 @@ FileServerList::StartServer(const string &host)
         // Get the current directory from the server
         info->path = info->server->GetMDServerMethods()->GetDirectory();
 
-        // Add the information about the new server to the 
+        // Add the information about the new server to the
         // server map.
         servers[host] = info;
 
@@ -1862,6 +1890,31 @@ FileServerList::QualifiedName(const string &fileName)
     ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     return QualifiedFilename(activeHost, servers[activeHost]->path,
                              fileName);
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetConnectCallback
+//
+// Purpose:
+//   Sets the callback function used to tell the viewer to launch an
+//   mdserver.
+//
+// Arguments:
+//   cb   : The address of the callback function.
+//   data : Callback data.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Nov 21 13:16:45 PST 2000
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+FileServerList::SetStartServerCallback(ConnectCallback *cb, void *data)
+{
+    startServerCallback = cb;
+    startServerCallbackData = data;
 }
 
 // ****************************************************************************

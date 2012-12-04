@@ -1187,6 +1187,9 @@ QvisGUIApplication::HeavyInitialization()
 
         if(!inheritedGUI)
             fileServer->SetConnectCallback(StartMDServer, (void *)GetViewerProxy());
+        else
+            fileServer->SetStartServerCallback(StartSharedServer, (void *)GetViewerProxy());
+
         fileServer->Initialize();
         visitTimer->StopTimer(timeid, "stage 6 - Launching mdserver");
         break;
@@ -1767,10 +1770,11 @@ QvisGUIApplication::FinalInitialization()
                           "crash recovery file that may be present." << endl;
                 RemoveCrashRecoveryFile(true);
             }
+
+            // Set the timer indicating that it's okay to save the crash
+            // recovery file.
+            mainWin->OkayToSaveRecoveryFile();
         }
-        // Set the timer indicating that it's okay to save the crash 
-        // recovery file.
-        mainWin->OkayToSaveRecoveryFile();
         visitTimer->StopTimer(timeid, "stage 13 - Handling recovery file");
         break;
     case 14:
@@ -5506,6 +5510,30 @@ QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode,
 //   us to have metadata.
 //
 // ****************************************************************************
+
+/// setup a connection that does not require callbacks..
+void
+QvisGUIApplication::StartSharedServer(const std::string &hostName,
+    const stringVector &args, void *data)
+{
+    ViewerProxy *theViewer = (ViewerProxy *)data;
+
+    // Note: This is a VERY important line. We may get to this method when
+    // an mdserver is launched implicitly when are updating a window in
+    // response to data coming back from the viewer. In that situation,
+    // the viewer proxy's xfer's updates are disabled to prevent the update
+    // from the viewer from causing a loop of data going back to the viewer.
+    // In order to connect to mdservers from the GUI, we must send a viewer
+    // RPC. This is prevented since the xfer's updates are off. So, since
+    // danger of sending unwanted data to xfer is past (because xfer is the
+    // first observer for an object), we enable it here so our subsequent
+    // calls to make a connection to the mdserver will succeed.
+    theViewer->SetXferUpdate(true);
+
+    // Have the viewer tells its mdserver running on hostName to connect
+    // to the gui.
+    theViewer->GetViewerMethods()->OpenMDServer(hostName, args);
+}
 
 void
 QvisGUIApplication::StartMDServer(const std::string &hostName, 
