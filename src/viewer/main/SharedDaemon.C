@@ -213,6 +213,8 @@ void SharedDaemon::getPasswordMessage(QString message)
 // Creation:   Oct 13, 2012
 //
 // Modifications:
+//   Kathleen Biagas, Mon Dec 3 12:01:15 PST 2012
+//   Use operator[] instead of 'at' to support older MSVC compiler.
 //
 // ****************************************************************************
 bool
@@ -228,11 +230,11 @@ SharedDaemon::ParseInput(const QString& input, std::string& lpasswd, bool& canRe
             node.GetJsonObject()["password"].GetString() != password)
             return false;
 
-        lpasswd = node.GetJsonObject().at("password").GetString();
+        lpasswd = node.GetJsonObject()["password"].GetString();
 
         if(node.HasKey("canRender") == true &&
-           node.GetJsonObject().at("canRender").GetType() == JSONNode::JSONBOOL)
-            canRender = node.GetJsonObject().at("canRender").GetBool();
+           node.GetJsonObject()["canRender"].GetType() == JSONNode::JSONBOOL)
+            canRender = node.GetJsonObject()["canRender"].GetBool();
 
         return true;
     }
