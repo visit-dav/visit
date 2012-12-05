@@ -490,7 +490,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     rationalSurfaceMaxIterationsLabel =
       new QLabel(tr("Maximum iterations"), rationalSurfaceGroup);
     rationalSurfaceMaxIterations = new QSpinBox(rationalSurfaceGroup);
-    rationalSurfaceMaxIterations->setRange(0, 10);
+    rationalSurfaceMaxIterations->setRange(0, 100);
     connect(rationalSurfaceMaxIterations, SIGNAL(valueChanged(int)), 
             this, SLOT(rationalSurfaceMaxIterationsChanged(int)));
     rationalSurfaceLayout->addWidget( rationalSurfaceMaxIterationsLabel, 0, 2);
