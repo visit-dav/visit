@@ -54,9 +54,14 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /project/projectdirs/visit/visit_3rdparty/
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
+## R
+##
+VISIT_OPTION_DEFAULT(VISIT_R_DIR /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/R/2.13.2/${VISITARCH}/lib/R)
+
+##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR /project/projectdirs/visit/visit_3rdparty/euclid_2_5_1/vtk-r/5.8.0/${VISITARCH})
 
 ##
 ## Qt
