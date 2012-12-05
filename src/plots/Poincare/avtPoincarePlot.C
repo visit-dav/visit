@@ -487,8 +487,12 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     poincareFilter->SetDataValue( atts.GetDataValue() );
 
+    poincareFilter->SetShowRationalSurfaces( atts.GetShowRationalSurfaces() );
+    poincareFilter->SetRationalSurfaceMaxIterations( atts.GetRationalSurfaceMaxIterations() );
+
     poincareFilter->SetShowOPoints( atts.GetShowOPoints() );
     poincareFilter->SetOPointMaxIterations( atts.GetOPointMaxIterations() );
+
     poincareFilter->SetShowXPoints( atts.GetShowXPoints() );
     poincareFilter->SetXPointMaxIterations( atts.GetXPointMaxIterations() );
 

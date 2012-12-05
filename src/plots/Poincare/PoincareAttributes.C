@@ -635,6 +635,8 @@ void PoincareAttributes::Init()
     maxFlag = false;
     colorType = ColorByColorTable;
     dataValue = SafetyFactorQ;
+    showRationalSurfaces = false;
+    RationalSurfaceMaxIterations = 2;
     showOPoints = false;
     OPointMaxIterations = 2;
     showXPoints = false;
@@ -735,6 +737,8 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     singleColor = obj.singleColor;
     colorTableName = obj.colorTableName;
     dataValue = obj.dataValue;
+    showRationalSurfaces = obj.showRationalSurfaces;
+    RationalSurfaceMaxIterations = obj.RationalSurfaceMaxIterations;
     showOPoints = obj.showOPoints;
     OPointMaxIterations = obj.OPointMaxIterations;
     showXPoints = obj.showXPoints;
@@ -981,6 +985,8 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (singleColor == obj.singleColor) &&
             (colorTableName == obj.colorTableName) &&
             (dataValue == obj.dataValue) &&
+            (showRationalSurfaces == obj.showRationalSurfaces) &&
+            (RationalSurfaceMaxIterations == obj.RationalSurfaceMaxIterations) &&
             (showOPoints == obj.showOPoints) &&
             (OPointMaxIterations == obj.OPointMaxIterations) &&
             (showXPoints == obj.showXPoints) &&
@@ -1175,73 +1181,75 @@ PoincareAttributes::NewInstance(bool copy) const
 void
 PoincareAttributes::SelectAll()
 {
-    Select(ID_opacityType,               (void *)&opacityType);
-    Select(ID_opacity,                   (void *)&opacity);
-    Select(ID_minPunctures,              (void *)&minPunctures);
-    Select(ID_maxPunctures,              (void *)&maxPunctures);
-    Select(ID_puncturePlane,             (void *)&puncturePlane);
-    Select(ID_sourceType,                (void *)&sourceType);
-    Select(ID_pointSource,               (void *)pointSource, 3);
-    Select(ID_lineStart,                 (void *)lineStart, 3);
-    Select(ID_lineEnd,                   (void *)lineEnd, 3);
-    Select(ID_pointDensity,              (void *)&pointDensity);
-    Select(ID_fieldType,                 (void *)&fieldType);
-    Select(ID_fieldConstant,             (void *)&fieldConstant);
-    Select(ID_velocitySource,            (void *)velocitySource, 3);
-    Select(ID_integrationType,           (void *)&integrationType);
-    Select(ID_coordinateSystem,          (void *)&coordinateSystem);
-    Select(ID_maxStepLength,             (void *)&maxStepLength);
-    Select(ID_limitMaximumTimestep,      (void *)&limitMaximumTimestep);
-    Select(ID_maxTimeStep,               (void *)&maxTimeStep);
-    Select(ID_relTol,                    (void *)&relTol);
-    Select(ID_absTolSizeType,            (void *)&absTolSizeType);
-    Select(ID_absTolAbsolute,            (void *)&absTolAbsolute);
-    Select(ID_absTolBBox,                (void *)&absTolBBox);
-    Select(ID_analysis,                  (void *)&analysis);
-    Select(ID_maximumToroidalWinding,    (void *)&maximumToroidalWinding);
-    Select(ID_overrideToroidalWinding,   (void *)&overrideToroidalWinding);
-    Select(ID_overridePoloidalWinding,   (void *)&overridePoloidalWinding);
-    Select(ID_windingPairConfidence,     (void *)&windingPairConfidence);
-    Select(ID_rationalSurfaceFactor,     (void *)&rationalSurfaceFactor);
-    Select(ID_adjustPlane,               (void *)&adjustPlane);
-    Select(ID_overlaps,                  (void *)&overlaps);
-    Select(ID_meshType,                  (void *)&meshType);
-    Select(ID_numberPlanes,              (void *)&numberPlanes);
-    Select(ID_singlePlane,               (void *)&singlePlane);
-    Select(ID_min,                       (void *)&min);
-    Select(ID_max,                       (void *)&max);
-    Select(ID_minFlag,                   (void *)&minFlag);
-    Select(ID_maxFlag,                   (void *)&maxFlag);
-    Select(ID_colorType,                 (void *)&colorType);
-    Select(ID_singleColor,               (void *)&singleColor);
-    Select(ID_colorTableName,            (void *)&colorTableName);
-    Select(ID_dataValue,                 (void *)&dataValue);
-    Select(ID_showOPoints,               (void *)&showOPoints);
-    Select(ID_OPointMaxIterations,       (void *)&OPointMaxIterations);
-    Select(ID_showXPoints,               (void *)&showXPoints);
-    Select(ID_XPointMaxIterations,       (void *)&XPointMaxIterations);
-    Select(ID_performOLineAnalysis,      (void *)&performOLineAnalysis);
-    Select(ID_OLineToroidalWinding,      (void *)&OLineToroidalWinding);
-    Select(ID_OLineAxisFileName,         (void *)&OLineAxisFileName);
-    Select(ID_showChaotic,               (void *)&showChaotic);
-    Select(ID_showIslands,               (void *)&showIslands);
-    Select(ID_SummaryFlag,               (void *)&SummaryFlag);
-    Select(ID_verboseFlag,               (void *)&verboseFlag);
-    Select(ID_show1DPlots,               (void *)&show1DPlots);
-    Select(ID_showLines,                 (void *)&showLines);
-    Select(ID_lineWidth,                 (void *)&lineWidth);
-    Select(ID_lineStyle,                 (void *)&lineStyle);
-    Select(ID_showPoints,                (void *)&showPoints);
-    Select(ID_pointSize,                 (void *)&pointSize);
-    Select(ID_pointSizePixels,           (void *)&pointSizePixels);
-    Select(ID_pointType,                 (void *)&pointType);
-    Select(ID_legendFlag,                (void *)&legendFlag);
-    Select(ID_lightingFlag,              (void *)&lightingFlag);
-    Select(ID_streamlineAlgorithmType,   (void *)&streamlineAlgorithmType);
-    Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
-    Select(ID_maxDomainCacheSize,        (void *)&maxDomainCacheSize);
-    Select(ID_workGroupSize,             (void *)&workGroupSize);
-    Select(ID_forceNodeCenteredData,     (void *)&forceNodeCenteredData);
+    Select(ID_opacityType,                  (void *)&opacityType);
+    Select(ID_opacity,                      (void *)&opacity);
+    Select(ID_minPunctures,                 (void *)&minPunctures);
+    Select(ID_maxPunctures,                 (void *)&maxPunctures);
+    Select(ID_puncturePlane,                (void *)&puncturePlane);
+    Select(ID_sourceType,                   (void *)&sourceType);
+    Select(ID_pointSource,                  (void *)pointSource, 3);
+    Select(ID_lineStart,                    (void *)lineStart, 3);
+    Select(ID_lineEnd,                      (void *)lineEnd, 3);
+    Select(ID_pointDensity,                 (void *)&pointDensity);
+    Select(ID_fieldType,                    (void *)&fieldType);
+    Select(ID_fieldConstant,                (void *)&fieldConstant);
+    Select(ID_velocitySource,               (void *)velocitySource, 3);
+    Select(ID_integrationType,              (void *)&integrationType);
+    Select(ID_coordinateSystem,             (void *)&coordinateSystem);
+    Select(ID_maxStepLength,                (void *)&maxStepLength);
+    Select(ID_limitMaximumTimestep,         (void *)&limitMaximumTimestep);
+    Select(ID_maxTimeStep,                  (void *)&maxTimeStep);
+    Select(ID_relTol,                       (void *)&relTol);
+    Select(ID_absTolSizeType,               (void *)&absTolSizeType);
+    Select(ID_absTolAbsolute,               (void *)&absTolAbsolute);
+    Select(ID_absTolBBox,                   (void *)&absTolBBox);
+    Select(ID_analysis,                     (void *)&analysis);
+    Select(ID_maximumToroidalWinding,       (void *)&maximumToroidalWinding);
+    Select(ID_overrideToroidalWinding,      (void *)&overrideToroidalWinding);
+    Select(ID_overridePoloidalWinding,      (void *)&overridePoloidalWinding);
+    Select(ID_windingPairConfidence,        (void *)&windingPairConfidence);
+    Select(ID_rationalSurfaceFactor,        (void *)&rationalSurfaceFactor);
+    Select(ID_adjustPlane,                  (void *)&adjustPlane);
+    Select(ID_overlaps,                     (void *)&overlaps);
+    Select(ID_meshType,                     (void *)&meshType);
+    Select(ID_numberPlanes,                 (void *)&numberPlanes);
+    Select(ID_singlePlane,                  (void *)&singlePlane);
+    Select(ID_min,                          (void *)&min);
+    Select(ID_max,                          (void *)&max);
+    Select(ID_minFlag,                      (void *)&minFlag);
+    Select(ID_maxFlag,                      (void *)&maxFlag);
+    Select(ID_colorType,                    (void *)&colorType);
+    Select(ID_singleColor,                  (void *)&singleColor);
+    Select(ID_colorTableName,               (void *)&colorTableName);
+    Select(ID_dataValue,                    (void *)&dataValue);
+    Select(ID_showRationalSurfaces,         (void *)&showRationalSurfaces);
+    Select(ID_RationalSurfaceMaxIterations, (void *)&RationalSurfaceMaxIterations);
+    Select(ID_showOPoints,                  (void *)&showOPoints);
+    Select(ID_OPointMaxIterations,          (void *)&OPointMaxIterations);
+    Select(ID_showXPoints,                  (void *)&showXPoints);
+    Select(ID_XPointMaxIterations,          (void *)&XPointMaxIterations);
+    Select(ID_performOLineAnalysis,         (void *)&performOLineAnalysis);
+    Select(ID_OLineToroidalWinding,         (void *)&OLineToroidalWinding);
+    Select(ID_OLineAxisFileName,            (void *)&OLineAxisFileName);
+    Select(ID_showChaotic,                  (void *)&showChaotic);
+    Select(ID_showIslands,                  (void *)&showIslands);
+    Select(ID_SummaryFlag,                  (void *)&SummaryFlag);
+    Select(ID_verboseFlag,                  (void *)&verboseFlag);
+    Select(ID_show1DPlots,                  (void *)&show1DPlots);
+    Select(ID_showLines,                    (void *)&showLines);
+    Select(ID_lineWidth,                    (void *)&lineWidth);
+    Select(ID_lineStyle,                    (void *)&lineStyle);
+    Select(ID_showPoints,                   (void *)&showPoints);
+    Select(ID_pointSize,                    (void *)&pointSize);
+    Select(ID_pointSizePixels,              (void *)&pointSizePixels);
+    Select(ID_pointType,                    (void *)&pointType);
+    Select(ID_legendFlag,                   (void *)&legendFlag);
+    Select(ID_lightingFlag,                 (void *)&lightingFlag);
+    Select(ID_streamlineAlgorithmType,      (void *)&streamlineAlgorithmType);
+    Select(ID_maxStreamlineProcessCount,    (void *)&maxStreamlineProcessCount);
+    Select(ID_maxDomainCacheSize,           (void *)&maxDomainCacheSize);
+    Select(ID_workGroupSize,                (void *)&workGroupSize);
+    Select(ID_forceNodeCenteredData,        (void *)&forceNodeCenteredData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1520,6 +1528,18 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("dataValue", DataValue_ToString(dataValue)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showRationalSurfaces, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showRationalSurfaces", showRationalSurfaces));
+    }
+
+    if(completeSave || !FieldsEqual(ID_RationalSurfaceMaxIterations, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("RationalSurfaceMaxIterations", RationalSurfaceMaxIterations));
     }
 
     if(completeSave || !FieldsEqual(ID_showOPoints, &defaultObject))
@@ -1964,6 +1984,10 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
                 SetDataValue(value);
         }
     }
+    if((node = searchNode->GetNode("showRationalSurfaces")) != 0)
+        SetShowRationalSurfaces(node->AsBool());
+    if((node = searchNode->GetNode("RationalSurfaceMaxIterations")) != 0)
+        SetRationalSurfaceMaxIterations(node->AsInt());
     if((node = searchNode->GetNode("showOPoints")) != 0)
         SetShowOPoints(node->AsBool());
     if((node = searchNode->GetNode("OPointMaxIterations")) != 0)
@@ -2343,6 +2367,20 @@ PoincareAttributes::SetDataValue(PoincareAttributes::DataValue dataValue_)
 {
     dataValue = dataValue_;
     Select(ID_dataValue, (void *)&dataValue);
+}
+
+void
+PoincareAttributes::SetShowRationalSurfaces(bool showRationalSurfaces_)
+{
+    showRationalSurfaces = showRationalSurfaces_;
+    Select(ID_showRationalSurfaces, (void *)&showRationalSurfaces);
+}
+
+void
+PoincareAttributes::SetRationalSurfaceMaxIterations(int RationalSurfaceMaxIterations_)
+{
+    RationalSurfaceMaxIterations = RationalSurfaceMaxIterations_;
+    Select(ID_RationalSurfaceMaxIterations, (void *)&RationalSurfaceMaxIterations);
 }
 
 void
@@ -2814,6 +2852,18 @@ PoincareAttributes::GetDataValue() const
 }
 
 bool
+PoincareAttributes::GetShowRationalSurfaces() const
+{
+    return showRationalSurfaces;
+}
+
+int
+PoincareAttributes::GetRationalSurfaceMaxIterations() const
+{
+    return RationalSurfaceMaxIterations;
+}
+
+bool
 PoincareAttributes::GetShowOPoints() const
 {
     return showOPoints;
@@ -3045,73 +3095,75 @@ PoincareAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_opacityType:               return "opacityType";
-    case ID_opacity:                   return "opacity";
-    case ID_minPunctures:              return "minPunctures";
-    case ID_maxPunctures:              return "maxPunctures";
-    case ID_puncturePlane:             return "puncturePlane";
-    case ID_sourceType:                return "sourceType";
-    case ID_pointSource:               return "pointSource";
-    case ID_lineStart:                 return "lineStart";
-    case ID_lineEnd:                   return "lineEnd";
-    case ID_pointDensity:              return "pointDensity";
-    case ID_fieldType:                 return "fieldType";
-    case ID_fieldConstant:             return "fieldConstant";
-    case ID_velocitySource:            return "velocitySource";
-    case ID_integrationType:           return "integrationType";
-    case ID_coordinateSystem:          return "coordinateSystem";
-    case ID_maxStepLength:             return "maxStepLength";
-    case ID_limitMaximumTimestep:      return "limitMaximumTimestep";
-    case ID_maxTimeStep:               return "maxTimeStep";
-    case ID_relTol:                    return "relTol";
-    case ID_absTolSizeType:            return "absTolSizeType";
-    case ID_absTolAbsolute:            return "absTolAbsolute";
-    case ID_absTolBBox:                return "absTolBBox";
-    case ID_analysis:                  return "analysis";
-    case ID_maximumToroidalWinding:    return "maximumToroidalWinding";
-    case ID_overrideToroidalWinding:   return "overrideToroidalWinding";
-    case ID_overridePoloidalWinding:   return "overridePoloidalWinding";
-    case ID_windingPairConfidence:     return "windingPairConfidence";
-    case ID_rationalSurfaceFactor:     return "rationalSurfaceFactor";
-    case ID_adjustPlane:               return "adjustPlane";
-    case ID_overlaps:                  return "overlaps";
-    case ID_meshType:                  return "meshType";
-    case ID_numberPlanes:              return "numberPlanes";
-    case ID_singlePlane:               return "singlePlane";
-    case ID_min:                       return "min";
-    case ID_max:                       return "max";
-    case ID_minFlag:                   return "minFlag";
-    case ID_maxFlag:                   return "maxFlag";
-    case ID_colorType:                 return "colorType";
-    case ID_singleColor:               return "singleColor";
-    case ID_colorTableName:            return "colorTableName";
-    case ID_dataValue:                 return "dataValue";
-    case ID_showOPoints:               return "showOPoints";
-    case ID_OPointMaxIterations:       return "OPointMaxIterations";
-    case ID_showXPoints:               return "showXPoints";
-    case ID_XPointMaxIterations:       return "XPointMaxIterations";
-    case ID_performOLineAnalysis:      return "performOLineAnalysis";
-    case ID_OLineToroidalWinding:      return "OLineToroidalWinding";
-    case ID_OLineAxisFileName:         return "OLineAxisFileName";
-    case ID_showChaotic:               return "showChaotic";
-    case ID_showIslands:               return "showIslands";
-    case ID_SummaryFlag:               return "SummaryFlag";
-    case ID_verboseFlag:               return "verboseFlag";
-    case ID_show1DPlots:               return "show1DPlots";
-    case ID_showLines:                 return "showLines";
-    case ID_lineWidth:                 return "lineWidth";
-    case ID_lineStyle:                 return "lineStyle";
-    case ID_showPoints:                return "showPoints";
-    case ID_pointSize:                 return "pointSize";
-    case ID_pointSizePixels:           return "pointSizePixels";
-    case ID_pointType:                 return "pointType";
-    case ID_legendFlag:                return "legendFlag";
-    case ID_lightingFlag:              return "lightingFlag";
-    case ID_streamlineAlgorithmType:   return "streamlineAlgorithmType";
-    case ID_maxStreamlineProcessCount: return "maxStreamlineProcessCount";
-    case ID_maxDomainCacheSize:        return "maxDomainCacheSize";
-    case ID_workGroupSize:             return "workGroupSize";
-    case ID_forceNodeCenteredData:     return "forceNodeCenteredData";
+    case ID_opacityType:                  return "opacityType";
+    case ID_opacity:                      return "opacity";
+    case ID_minPunctures:                 return "minPunctures";
+    case ID_maxPunctures:                 return "maxPunctures";
+    case ID_puncturePlane:                return "puncturePlane";
+    case ID_sourceType:                   return "sourceType";
+    case ID_pointSource:                  return "pointSource";
+    case ID_lineStart:                    return "lineStart";
+    case ID_lineEnd:                      return "lineEnd";
+    case ID_pointDensity:                 return "pointDensity";
+    case ID_fieldType:                    return "fieldType";
+    case ID_fieldConstant:                return "fieldConstant";
+    case ID_velocitySource:               return "velocitySource";
+    case ID_integrationType:              return "integrationType";
+    case ID_coordinateSystem:             return "coordinateSystem";
+    case ID_maxStepLength:                return "maxStepLength";
+    case ID_limitMaximumTimestep:         return "limitMaximumTimestep";
+    case ID_maxTimeStep:                  return "maxTimeStep";
+    case ID_relTol:                       return "relTol";
+    case ID_absTolSizeType:               return "absTolSizeType";
+    case ID_absTolAbsolute:               return "absTolAbsolute";
+    case ID_absTolBBox:                   return "absTolBBox";
+    case ID_analysis:                     return "analysis";
+    case ID_maximumToroidalWinding:       return "maximumToroidalWinding";
+    case ID_overrideToroidalWinding:      return "overrideToroidalWinding";
+    case ID_overridePoloidalWinding:      return "overridePoloidalWinding";
+    case ID_windingPairConfidence:        return "windingPairConfidence";
+    case ID_rationalSurfaceFactor:        return "rationalSurfaceFactor";
+    case ID_adjustPlane:                  return "adjustPlane";
+    case ID_overlaps:                     return "overlaps";
+    case ID_meshType:                     return "meshType";
+    case ID_numberPlanes:                 return "numberPlanes";
+    case ID_singlePlane:                  return "singlePlane";
+    case ID_min:                          return "min";
+    case ID_max:                          return "max";
+    case ID_minFlag:                      return "minFlag";
+    case ID_maxFlag:                      return "maxFlag";
+    case ID_colorType:                    return "colorType";
+    case ID_singleColor:                  return "singleColor";
+    case ID_colorTableName:               return "colorTableName";
+    case ID_dataValue:                    return "dataValue";
+    case ID_showRationalSurfaces:         return "showRationalSurfaces";
+    case ID_RationalSurfaceMaxIterations: return "RationalSurfaceMaxIterations";
+    case ID_showOPoints:                  return "showOPoints";
+    case ID_OPointMaxIterations:          return "OPointMaxIterations";
+    case ID_showXPoints:                  return "showXPoints";
+    case ID_XPointMaxIterations:          return "XPointMaxIterations";
+    case ID_performOLineAnalysis:         return "performOLineAnalysis";
+    case ID_OLineToroidalWinding:         return "OLineToroidalWinding";
+    case ID_OLineAxisFileName:            return "OLineAxisFileName";
+    case ID_showChaotic:                  return "showChaotic";
+    case ID_showIslands:                  return "showIslands";
+    case ID_SummaryFlag:                  return "SummaryFlag";
+    case ID_verboseFlag:                  return "verboseFlag";
+    case ID_show1DPlots:                  return "show1DPlots";
+    case ID_showLines:                    return "showLines";
+    case ID_lineWidth:                    return "lineWidth";
+    case ID_lineStyle:                    return "lineStyle";
+    case ID_showPoints:                   return "showPoints";
+    case ID_pointSize:                    return "pointSize";
+    case ID_pointSizePixels:              return "pointSizePixels";
+    case ID_pointType:                    return "pointType";
+    case ID_legendFlag:                   return "legendFlag";
+    case ID_lightingFlag:                 return "lightingFlag";
+    case ID_streamlineAlgorithmType:      return "streamlineAlgorithmType";
+    case ID_maxStreamlineProcessCount:    return "maxStreamlineProcessCount";
+    case ID_maxDomainCacheSize:           return "maxDomainCacheSize";
+    case ID_workGroupSize:                return "workGroupSize";
+    case ID_forceNodeCenteredData:        return "forceNodeCenteredData";
     default:  return "invalid index";
     }
 }
@@ -3136,73 +3188,75 @@ PoincareAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_opacityType:               return FieldType_enum;
-    case ID_opacity:                   return FieldType_opacity;
-    case ID_minPunctures:              return FieldType_int;
-    case ID_maxPunctures:              return FieldType_int;
-    case ID_puncturePlane:             return FieldType_enum;
-    case ID_sourceType:                return FieldType_enum;
-    case ID_pointSource:               return FieldType_doubleArray;
-    case ID_lineStart:                 return FieldType_doubleArray;
-    case ID_lineEnd:                   return FieldType_doubleArray;
-    case ID_pointDensity:              return FieldType_int;
-    case ID_fieldType:                 return FieldType_enum;
-    case ID_fieldConstant:             return FieldType_double;
-    case ID_velocitySource:            return FieldType_doubleArray;
-    case ID_integrationType:           return FieldType_enum;
-    case ID_coordinateSystem:          return FieldType_enum;
-    case ID_maxStepLength:             return FieldType_double;
-    case ID_limitMaximumTimestep:      return FieldType_bool;
-    case ID_maxTimeStep:               return FieldType_double;
-    case ID_relTol:                    return FieldType_double;
-    case ID_absTolSizeType:            return FieldType_enum;
-    case ID_absTolAbsolute:            return FieldType_double;
-    case ID_absTolBBox:                return FieldType_double;
-    case ID_analysis:                  return FieldType_enum;
-    case ID_maximumToroidalWinding:    return FieldType_int;
-    case ID_overrideToroidalWinding:   return FieldType_int;
-    case ID_overridePoloidalWinding:   return FieldType_int;
-    case ID_windingPairConfidence:     return FieldType_double;
-    case ID_rationalSurfaceFactor:     return FieldType_double;
-    case ID_adjustPlane:               return FieldType_int;
-    case ID_overlaps:                  return FieldType_enum;
-    case ID_meshType:                  return FieldType_enum;
-    case ID_numberPlanes:              return FieldType_int;
-    case ID_singlePlane:               return FieldType_double;
-    case ID_min:                       return FieldType_double;
-    case ID_max:                       return FieldType_double;
-    case ID_minFlag:                   return FieldType_bool;
-    case ID_maxFlag:                   return FieldType_bool;
-    case ID_colorType:                 return FieldType_enum;
-    case ID_singleColor:               return FieldType_color;
-    case ID_colorTableName:            return FieldType_colortable;
-    case ID_dataValue:                 return FieldType_enum;
-    case ID_showOPoints:               return FieldType_bool;
-    case ID_OPointMaxIterations:       return FieldType_int;
-    case ID_showXPoints:               return FieldType_bool;
-    case ID_XPointMaxIterations:       return FieldType_int;
-    case ID_performOLineAnalysis:      return FieldType_bool;
-    case ID_OLineToroidalWinding:      return FieldType_int;
-    case ID_OLineAxisFileName:         return FieldType_string;
-    case ID_showChaotic:               return FieldType_bool;
-    case ID_showIslands:               return FieldType_bool;
-    case ID_SummaryFlag:               return FieldType_bool;
-    case ID_verboseFlag:               return FieldType_bool;
-    case ID_show1DPlots:               return FieldType_bool;
-    case ID_showLines:                 return FieldType_bool;
-    case ID_lineWidth:                 return FieldType_linewidth;
-    case ID_lineStyle:                 return FieldType_linestyle;
-    case ID_showPoints:                return FieldType_bool;
-    case ID_pointSize:                 return FieldType_double;
-    case ID_pointSizePixels:           return FieldType_int;
-    case ID_pointType:                 return FieldType_enum;
-    case ID_legendFlag:                return FieldType_bool;
-    case ID_lightingFlag:              return FieldType_bool;
-    case ID_streamlineAlgorithmType:   return FieldType_enum;
-    case ID_maxStreamlineProcessCount: return FieldType_int;
-    case ID_maxDomainCacheSize:        return FieldType_int;
-    case ID_workGroupSize:             return FieldType_int;
-    case ID_forceNodeCenteredData:     return FieldType_bool;
+    case ID_opacityType:                  return FieldType_enum;
+    case ID_opacity:                      return FieldType_opacity;
+    case ID_minPunctures:                 return FieldType_int;
+    case ID_maxPunctures:                 return FieldType_int;
+    case ID_puncturePlane:                return FieldType_enum;
+    case ID_sourceType:                   return FieldType_enum;
+    case ID_pointSource:                  return FieldType_doubleArray;
+    case ID_lineStart:                    return FieldType_doubleArray;
+    case ID_lineEnd:                      return FieldType_doubleArray;
+    case ID_pointDensity:                 return FieldType_int;
+    case ID_fieldType:                    return FieldType_enum;
+    case ID_fieldConstant:                return FieldType_double;
+    case ID_velocitySource:               return FieldType_doubleArray;
+    case ID_integrationType:              return FieldType_enum;
+    case ID_coordinateSystem:             return FieldType_enum;
+    case ID_maxStepLength:                return FieldType_double;
+    case ID_limitMaximumTimestep:         return FieldType_bool;
+    case ID_maxTimeStep:                  return FieldType_double;
+    case ID_relTol:                       return FieldType_double;
+    case ID_absTolSizeType:               return FieldType_enum;
+    case ID_absTolAbsolute:               return FieldType_double;
+    case ID_absTolBBox:                   return FieldType_double;
+    case ID_analysis:                     return FieldType_enum;
+    case ID_maximumToroidalWinding:       return FieldType_int;
+    case ID_overrideToroidalWinding:      return FieldType_int;
+    case ID_overridePoloidalWinding:      return FieldType_int;
+    case ID_windingPairConfidence:        return FieldType_double;
+    case ID_rationalSurfaceFactor:        return FieldType_double;
+    case ID_adjustPlane:                  return FieldType_int;
+    case ID_overlaps:                     return FieldType_enum;
+    case ID_meshType:                     return FieldType_enum;
+    case ID_numberPlanes:                 return FieldType_int;
+    case ID_singlePlane:                  return FieldType_double;
+    case ID_min:                          return FieldType_double;
+    case ID_max:                          return FieldType_double;
+    case ID_minFlag:                      return FieldType_bool;
+    case ID_maxFlag:                      return FieldType_bool;
+    case ID_colorType:                    return FieldType_enum;
+    case ID_singleColor:                  return FieldType_color;
+    case ID_colorTableName:               return FieldType_colortable;
+    case ID_dataValue:                    return FieldType_enum;
+    case ID_showRationalSurfaces:         return FieldType_bool;
+    case ID_RationalSurfaceMaxIterations: return FieldType_int;
+    case ID_showOPoints:                  return FieldType_bool;
+    case ID_OPointMaxIterations:          return FieldType_int;
+    case ID_showXPoints:                  return FieldType_bool;
+    case ID_XPointMaxIterations:          return FieldType_int;
+    case ID_performOLineAnalysis:         return FieldType_bool;
+    case ID_OLineToroidalWinding:         return FieldType_int;
+    case ID_OLineAxisFileName:            return FieldType_string;
+    case ID_showChaotic:                  return FieldType_bool;
+    case ID_showIslands:                  return FieldType_bool;
+    case ID_SummaryFlag:                  return FieldType_bool;
+    case ID_verboseFlag:                  return FieldType_bool;
+    case ID_show1DPlots:                  return FieldType_bool;
+    case ID_showLines:                    return FieldType_bool;
+    case ID_lineWidth:                    return FieldType_linewidth;
+    case ID_lineStyle:                    return FieldType_linestyle;
+    case ID_showPoints:                   return FieldType_bool;
+    case ID_pointSize:                    return FieldType_double;
+    case ID_pointSizePixels:              return FieldType_int;
+    case ID_pointType:                    return FieldType_enum;
+    case ID_legendFlag:                   return FieldType_bool;
+    case ID_lightingFlag:                 return FieldType_bool;
+    case ID_streamlineAlgorithmType:      return FieldType_enum;
+    case ID_maxStreamlineProcessCount:    return FieldType_int;
+    case ID_maxDomainCacheSize:           return FieldType_int;
+    case ID_workGroupSize:                return FieldType_int;
+    case ID_forceNodeCenteredData:        return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -3227,73 +3281,75 @@ PoincareAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_opacityType:               return "enum";
-    case ID_opacity:                   return "opacity";
-    case ID_minPunctures:              return "int";
-    case ID_maxPunctures:              return "int";
-    case ID_puncturePlane:             return "enum";
-    case ID_sourceType:                return "enum";
-    case ID_pointSource:               return "doubleArray";
-    case ID_lineStart:                 return "doubleArray";
-    case ID_lineEnd:                   return "doubleArray";
-    case ID_pointDensity:              return "int";
-    case ID_fieldType:                 return "enum";
-    case ID_fieldConstant:             return "double";
-    case ID_velocitySource:            return "doubleArray";
-    case ID_integrationType:           return "enum";
-    case ID_coordinateSystem:          return "enum";
-    case ID_maxStepLength:             return "double";
-    case ID_limitMaximumTimestep:      return "bool";
-    case ID_maxTimeStep:               return "double";
-    case ID_relTol:                    return "double";
-    case ID_absTolSizeType:            return "enum";
-    case ID_absTolAbsolute:            return "double";
-    case ID_absTolBBox:                return "double";
-    case ID_analysis:                  return "enum";
-    case ID_maximumToroidalWinding:    return "int";
-    case ID_overrideToroidalWinding:   return "int";
-    case ID_overridePoloidalWinding:   return "int";
-    case ID_windingPairConfidence:     return "double";
-    case ID_rationalSurfaceFactor:     return "double";
-    case ID_adjustPlane:               return "int";
-    case ID_overlaps:                  return "enum";
-    case ID_meshType:                  return "enum";
-    case ID_numberPlanes:              return "int";
-    case ID_singlePlane:               return "double";
-    case ID_min:                       return "double";
-    case ID_max:                       return "double";
-    case ID_minFlag:                   return "bool";
-    case ID_maxFlag:                   return "bool";
-    case ID_colorType:                 return "enum";
-    case ID_singleColor:               return "color";
-    case ID_colorTableName:            return "colortable";
-    case ID_dataValue:                 return "enum";
-    case ID_showOPoints:               return "bool";
-    case ID_OPointMaxIterations:       return "int";
-    case ID_showXPoints:               return "bool";
-    case ID_XPointMaxIterations:       return "int";
-    case ID_performOLineAnalysis:      return "bool";
-    case ID_OLineToroidalWinding:      return "int";
-    case ID_OLineAxisFileName:         return "string";
-    case ID_showChaotic:               return "bool";
-    case ID_showIslands:               return "bool";
-    case ID_SummaryFlag:               return "bool";
-    case ID_verboseFlag:               return "bool";
-    case ID_show1DPlots:               return "bool";
-    case ID_showLines:                 return "bool";
-    case ID_lineWidth:                 return "linewidth";
-    case ID_lineStyle:                 return "linestyle";
-    case ID_showPoints:                return "bool";
-    case ID_pointSize:                 return "double";
-    case ID_pointSizePixels:           return "int";
-    case ID_pointType:                 return "enum";
-    case ID_legendFlag:                return "bool";
-    case ID_lightingFlag:              return "bool";
-    case ID_streamlineAlgorithmType:   return "enum";
-    case ID_maxStreamlineProcessCount: return "int";
-    case ID_maxDomainCacheSize:        return "int";
-    case ID_workGroupSize:             return "int";
-    case ID_forceNodeCenteredData:     return "bool";
+    case ID_opacityType:                  return "enum";
+    case ID_opacity:                      return "opacity";
+    case ID_minPunctures:                 return "int";
+    case ID_maxPunctures:                 return "int";
+    case ID_puncturePlane:                return "enum";
+    case ID_sourceType:                   return "enum";
+    case ID_pointSource:                  return "doubleArray";
+    case ID_lineStart:                    return "doubleArray";
+    case ID_lineEnd:                      return "doubleArray";
+    case ID_pointDensity:                 return "int";
+    case ID_fieldType:                    return "enum";
+    case ID_fieldConstant:                return "double";
+    case ID_velocitySource:               return "doubleArray";
+    case ID_integrationType:              return "enum";
+    case ID_coordinateSystem:             return "enum";
+    case ID_maxStepLength:                return "double";
+    case ID_limitMaximumTimestep:         return "bool";
+    case ID_maxTimeStep:                  return "double";
+    case ID_relTol:                       return "double";
+    case ID_absTolSizeType:               return "enum";
+    case ID_absTolAbsolute:               return "double";
+    case ID_absTolBBox:                   return "double";
+    case ID_analysis:                     return "enum";
+    case ID_maximumToroidalWinding:       return "int";
+    case ID_overrideToroidalWinding:      return "int";
+    case ID_overridePoloidalWinding:      return "int";
+    case ID_windingPairConfidence:        return "double";
+    case ID_rationalSurfaceFactor:        return "double";
+    case ID_adjustPlane:                  return "int";
+    case ID_overlaps:                     return "enum";
+    case ID_meshType:                     return "enum";
+    case ID_numberPlanes:                 return "int";
+    case ID_singlePlane:                  return "double";
+    case ID_min:                          return "double";
+    case ID_max:                          return "double";
+    case ID_minFlag:                      return "bool";
+    case ID_maxFlag:                      return "bool";
+    case ID_colorType:                    return "enum";
+    case ID_singleColor:                  return "color";
+    case ID_colorTableName:               return "colortable";
+    case ID_dataValue:                    return "enum";
+    case ID_showRationalSurfaces:         return "bool";
+    case ID_RationalSurfaceMaxIterations: return "int";
+    case ID_showOPoints:                  return "bool";
+    case ID_OPointMaxIterations:          return "int";
+    case ID_showXPoints:                  return "bool";
+    case ID_XPointMaxIterations:          return "int";
+    case ID_performOLineAnalysis:         return "bool";
+    case ID_OLineToroidalWinding:         return "int";
+    case ID_OLineAxisFileName:            return "string";
+    case ID_showChaotic:                  return "bool";
+    case ID_showIslands:                  return "bool";
+    case ID_SummaryFlag:                  return "bool";
+    case ID_verboseFlag:                  return "bool";
+    case ID_show1DPlots:                  return "bool";
+    case ID_showLines:                    return "bool";
+    case ID_lineWidth:                    return "linewidth";
+    case ID_lineStyle:                    return "linestyle";
+    case ID_showPoints:                   return "bool";
+    case ID_pointSize:                    return "double";
+    case ID_pointSizePixels:              return "int";
+    case ID_pointType:                    return "enum";
+    case ID_legendFlag:                   return "bool";
+    case ID_lightingFlag:                 return "bool";
+    case ID_streamlineAlgorithmType:      return "enum";
+    case ID_maxStreamlineProcessCount:    return "int";
+    case ID_maxDomainCacheSize:           return "int";
+    case ID_workGroupSize:                return "int";
+    case ID_forceNodeCenteredData:        return "bool";
     default:  return "invalid index";
     }
 }
@@ -3543,6 +3599,16 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_dataValue:
         {  // new scope
         retval = (dataValue == obj.dataValue);
+        }
+        break;
+    case ID_showRationalSurfaces:
+        {  // new scope
+        retval = (showRationalSurfaces == obj.showRationalSurfaces);
+        }
+        break;
+    case ID_RationalSurfaceMaxIterations:
+        {  // new scope
+        retval = (RationalSurfaceMaxIterations == obj.RationalSurfaceMaxIterations);
         }
         break;
     case ID_showOPoints:

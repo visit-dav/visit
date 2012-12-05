@@ -147,6 +147,8 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     void setOpaacityClicked(int on);
     void changedOpacity(int opacity, const void *);
     void dataValueChanged(int val);
+    void showRationalSurfacesChanged(bool val);
+    void rationalSurfaceMaxIterationsChanged(int val);
     void showOPointsChanged(bool val);
     void OPointMaxIterationsChanged(int val);
     void performOLineAnalysisChanged(bool val);
@@ -242,6 +244,9 @@ class QvisPoincarePlotWindow : public QvisPostableWindowObserver
     QvisOpacitySlider    *opacitySlider;
     QWidget      *dataValue;
     QComboBox *dataValueCombo;
+    QCheckBox *showRationalSurfaces;
+    QLabel *rationalSurfaceMaxIterationsLabel;
+    QSpinBox *rationalSurfaceMaxIterations;
     QCheckBox *showOPoints;
     QLabel *OPointMaxIterationsLabel;
     QSpinBox *OPointMaxIterations;

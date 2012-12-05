@@ -82,9 +82,6 @@ public:
     poloidal = p;
   };
 
-//  unsigned int first() { return toroidal; };
-//  unsigned int second() { return poloidal; };
-
   unsigned int toroidal;
   unsigned int poloidal;
 };
@@ -123,6 +120,8 @@ public:
 
     nnodes  = 0;
     
+    rationalSurfaceTolerance = 0;
+
     maxPunctures      = 0;
     nPuncturesNeeded  = 0;
 
@@ -259,12 +258,15 @@ public:
   unsigned int islands;
   unsigned int islandGroups;
 
-  // If a surface it is overlap found geometrically
+  // If a surface it's overlap is found geometrically
   // If an island (primary or secondary) toroidalPeriod / toroidalResonance
   float nnodes;
 
   unsigned int maxPunctures;
   unsigned int nPuncturesNeeded;
+
+  // Rational Surface periodicity measures
+  double rationalSurfaceTolerance;
 
   // Seeds for islands
   avtVector lastSeedPoint;
@@ -273,6 +275,7 @@ public:
   ////// Code for island width search
   bool pastFirstSearchFailure;
   double islandWidth;
+  double searchBaseDelta;
   double searchDelta;
   double searchIncrement;
   double searchMagnitude;

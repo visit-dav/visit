@@ -2440,7 +2440,7 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
                 << "number of rotations " << phiTotal/(2.0*M_PI)
                 << std::endl;
 
-    if( phiTotal/(2.0*M_PI) / toroidalBase < 1.0 )
+    if( fabs( phiTotal/(2.0*M_PI) / toroidalBase ) < 1.0 )
     {
       std::cerr << "Too few points in the axis "
                 << "expected " << toroidalBase << " rotations, "
@@ -2483,7 +2483,8 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
         (phiTest - OLineAxisPhiAngles[OLineAxisIndex-1]) /
         (OLineAxisPhiAngles[OLineAxisIndex]-OLineAxisPhiAngles[OLineAxisIndex-1]);
       
-      axisPt = OLineAxisPts[OLineAxisIndex-1] + (OLineAxisPts[OLineAxisIndex]-OLineAxisPts[OLineAxisIndex-1]) * t;
+      axisPt = OLineAxisPts[OLineAxisIndex-1] +
+        (OLineAxisPts[OLineAxisIndex]-OLineAxisPts[OLineAxisIndex-1]) * t;
 
       return axisPt;
     }
@@ -2493,17 +2494,49 @@ Point FieldlineLib::getAxisPt( Point pt, double phiTest, double toroidalBase )
     if( OLineAxisIndex == OLineAxisPts.size() )
       OLineAxisIndex = 1;
   }
-  
+
   unsigned int i = OLineAxisPhiAngles.size()-1;
+  
+  if( phiTest < OLineAxisPhiAngles[0] && OLineAxisPhiAngles[i] > 0 )
+    phiTest += 2.0 * M_PI;
+  else if( phiTest > OLineAxisPhiAngles[0] && OLineAxisPhiAngles[i] < 0 )
+    phiTest -= 2.0 * M_PI;
+
+  for( unsigned int i=1; i<OLineAxisPts.size(); ++i )
+  {
+    if( (phiTest >= 0 &&
+         OLineAxisPhiAngles[OLineAxisIndex-1] <= phiTest &&
+         phiTest < OLineAxisPhiAngles[OLineAxisIndex]) ||
+        (phiTest <= 0 &&
+         OLineAxisPhiAngles[OLineAxisIndex-1] >= phiTest &&
+         phiTest > OLineAxisPhiAngles[OLineAxisIndex]) )
+    {
+      double t =
+        (phiTest - OLineAxisPhiAngles[OLineAxisIndex-1]) /
+        (OLineAxisPhiAngles[OLineAxisIndex]-OLineAxisPhiAngles[OLineAxisIndex-1]);
+      
+      axisPt = OLineAxisPts[OLineAxisIndex-1] +
+        (OLineAxisPts[OLineAxisIndex]-OLineAxisPts[OLineAxisIndex-1]) * t;
+
+      return axisPt;
+    }
+    
+    ++OLineAxisIndex;
+    
+    if( OLineAxisIndex == OLineAxisPts.size() )
+      OLineAxisIndex = 1;
+  }
+
+  i = OLineAxisPhiAngles.size()-1;
   
   std::cerr << "Can not find axis point for point " << pt
             << " at phi " << phiTest << "    "
             << OLineAxisPhiAngles[0] << "  " << OLineAxisPhiAngles[1] << "  "
-            << OLineAxisPhiAngles[i] << "  " << OLineAxisPhiAngles[i-1] << "  "
+            << OLineAxisPhiAngles[i-1] << "  " << OLineAxisPhiAngles[i] << "  "
             << OLineAxisIndex
             << std::endl;
   
-    return axisPt;
+  return axisPt;
 }
 
 
@@ -2682,7 +2715,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
   // Save the distance between fieldline points to use for finding
   // periodic fieldlines (i.e. rational surfaces and re-connection).
-  float delta = 0.0;
+  float rationalSurfaceTolerance = 0.0;
 
   // Some info for when doing O-Line axis analysis.
   double toroidalBase = OLineToroidalWinding ? OLineToroidalWinding : 1;
@@ -2693,8 +2726,10 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                           ridgeline_points,
                           rotationalSums,
                           poloidalWindingCounts,
-                          delta,
+                          rationalSurfaceTolerance,
                           OLineToroidalWinding );
+
+  rationalSurfaceTolerance *= rationalSurfaceFactor;
 
   if( ptList.empty() ||
       poloidal_puncture_pts.empty() ||
@@ -3274,16 +3309,18 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       if( rationalCheck( poloidal_puncture_pts,
                          toroidalWinding / GCD( toroidalWinding,
                                                 poloidalWinding ),
-                         nnodes, delta*rationalSurfaceFactor ) ) 
+                         nnodes, rationalSurfaceTolerance ) ) 
       {
         type = FieldlineProperties::RATIONAL;
         islands = 0;
         
         analysisState = FieldlineProperties::OVERRIDE;
         
+        fi.rationalSurfaceTolerance = rationalSurfaceTolerance;
+
         if( verboseFlag )
           std::cerr << "Appears to be a rational surface "
-                    << delta*rationalSurfaceFactor << std::endl;
+                    << rationalSurfaceTolerance << std::endl;
       }
       else
       {
@@ -3585,14 +3622,16 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       // surface. Thus divide by the GCD.
       if( rationalCheck( poloidal_puncture_pts,
                          toroidalWinding / GCD(toroidalWinding, poloidalWinding ),
-                         nnodes, delta*rationalSurfaceFactor ) ) 
+                         nnodes, rationalSurfaceTolerance ) ) 
       {
         type = FieldlineProperties::O_POINT;
         analysisState = FieldlineProperties::COMPLETED;
 
         if( verboseFlag )
           std::cerr << "Appears to be an O point "
-                    << delta*rationalSurfaceFactor << std::endl;
+                    << rationalSurfaceTolerance << std::endl;
+
+        fi.rationalSurfaceTolerance = rationalSurfaceTolerance;
 
         if( detectIslandCenters )
         {
@@ -3826,7 +3865,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
   // probably on a rational surface.
   else if( rationalCheck( poloidal_puncture_pts,
                           toroidalWinding / GCD(toroidalWinding, poloidalWinding ),
-                          nnodes, delta*rationalSurfaceFactor ) ) 
+                          nnodes, rationalSurfaceTolerance ) ) 
   {
     if( GCD(toroidalWinding, poloidalWinding ) == 1 )
     {
@@ -3836,9 +3875,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       islands = 0;
       islandGroups = 0;
 
+      fi.rationalSurfaceTolerance = rationalSurfaceTolerance;
+
       if( verboseFlag )
         std::cerr << "Appears to be a rational surface "
-                  << delta*rationalSurfaceFactor << std::endl;
+                  << rationalSurfaceTolerance << std::endl;
     }
     else // if( GCD(toroidalWinding, poloidalWinding ) > 1 )
     {
@@ -3848,9 +3889,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
       islands = toroidalWinding;
       islandGroups = 1;
 
+      fi.rationalSurfaceTolerance = rationalSurfaceTolerance;
+
       if( verboseFlag )
         std::cerr << "Appears to be an O point "
-                  << delta*rationalSurfaceFactor << std::endl;
+                  << rationalSurfaceTolerance << std::endl;
 
       if( detectIslandCenters )
       {

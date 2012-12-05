@@ -176,6 +176,8 @@ avtPoincareFilter::avtPoincareFilter() :
     is_curvemesh(1),
     dataValue(DATA_SafetyFactorQ),
 
+    showRationalSurfaces( false ),
+    rationalSurfaceMaxIterations(2),
     showOPoints( false ),
     OPointMaxIterations(2),
     XPointMaxIterations(2),
@@ -2081,6 +2083,13 @@ bool
 avtPoincareFilter::ClassifyRationals(std::vector<avtIntegralCurve *> &ics)
 {
 #ifdef RATIONAL_SURFACE
+
+  if( !showRationalSurfaces )
+    return true;
+
+  /////////////// JAKE YOU HAVE ACCESS TO THIS MEMBER VARIABLE TO
+  /////////////// LIMIT THE NUMBER OF SEARCH ITERATIONS.
+  /////////////// rationalSurfaceMaxIterations;
 
   bool inRationalSearch = false;
   bool haveNewCompletedRational = false;
