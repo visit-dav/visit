@@ -25,6 +25,7 @@ list of changes in release 2.6.</p>
 <p><b><font size="4">Bugs fixed in version 2.6.1</font></b></p>
 <ul>
 <li>The VisIt launch script was modified to correct a problem where some command line arguments would be passed to subsequent compoents in the wrong order when the "-s script_file" option was used. In particular the internal launcher was modified so that all arguments that are passed on to subsequent components are passed before the "-s script_file" command line option.</li>
+<li>The XRay Image Query has had several bugs corrected that sometimes resulted in artifacts in the output images. The artifacts occured when the cells had faces with small areas (less than approximately 1e-5) or where there were cells with quadrilateral faces that were non-planar.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.6.1</font></b></p>
