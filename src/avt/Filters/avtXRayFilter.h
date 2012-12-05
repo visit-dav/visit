@@ -87,6 +87,10 @@
 //    Kathleen Biagas, Wed Oct 17 14:36:30 PDT 2012
 //    Added 'up' argument to SetImageProperties.
 //
+//    Eric Brugger, Mon Dec  3 13:36:08 PST 2012
+//    I added the ability to output the cells intersected by a specified
+//    ray to a vtk file.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -152,6 +156,9 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                            *imageFragmentSizes;
     vtkDataArray                  **imageFragments;
 
+    int                             iPass;
+    int                             numPasses;
+
     int                             actualPixelsPerIteration;
     int                             pixelsForFirstPass;
     int                             pixelsForLastPass;
@@ -160,6 +167,8 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                             pixelsForLastPassFirstProc;
     int                             pixelsForLastPassLastProc;
 
+    int                             debugRay;
+
     virtual void                    Execute(void);
 
     virtual void                    PreExecute(void);
@@ -167,8 +176,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
 
   private:
     template <typename T>
-    void                            ImageStripExecute(int, vtkDataSet **,
-                                        int, int);
+    void                            ImageStripExecute(int, vtkDataSet **);
     template <typename T>
     void                            CartesianExecute(vtkDataSet *, int &,
                                         std::vector<double>&, std::vector<int>&,
@@ -198,6 +206,9 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            FillImageArray(int iBin,  
                                                    vtkDataArray *&imageArray);
 
+    void                            DumpRayHexIntersections(int, int,
+                                        std::vector<int> &, std::vector<int> &,
+                                        vtkDataSet *, vtkDataArray **);
 
     // how cell data will be stored for use internally
     int                             cellDataType;
