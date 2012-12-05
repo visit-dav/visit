@@ -473,6 +473,13 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           break;
     }
 
+    if(atts->GetShowRationalSurfaces())
+        SNPRINTF(tmpStr, 1000, "%sshowRationalSurfaces = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sshowRationalSurfaces = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sRationalSurfaceMaxIterations = %d\n", prefix, atts->GetRationalSurfaceMaxIterations());
+    str += tmpStr;
     if(atts->GetShowOPoints())
         SNPRINTF(tmpStr, 1000, "%sshowOPoints = 1\n", prefix);
     else
@@ -1890,6 +1897,54 @@ PoincareAttributes_GetDataValue(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PoincareAttributes_SetShowRationalSurfaces(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the showRationalSurfaces in the object.
+    obj->data->SetShowRationalSurfaces(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetShowRationalSurfaces(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowRationalSurfaces()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_SetRationalSurfaceMaxIterations(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the RationalSurfaceMaxIterations in the object.
+    obj->data->SetRationalSurfaceMaxIterations((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PoincareAttributes_GetRationalSurfaceMaxIterations(PyObject *self, PyObject *args)
+{
+    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRationalSurfaceMaxIterations()));
+    return retval;
+}
+
+/*static*/ PyObject *
 PoincareAttributes_SetShowOPoints(PyObject *self, PyObject *args)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
@@ -2627,6 +2682,10 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
     {"GetColorTableName", PoincareAttributes_GetColorTableName, METH_VARARGS},
     {"SetDataValue", PoincareAttributes_SetDataValue, METH_VARARGS},
     {"GetDataValue", PoincareAttributes_GetDataValue, METH_VARARGS},
+    {"SetShowRationalSurfaces", PoincareAttributes_SetShowRationalSurfaces, METH_VARARGS},
+    {"GetShowRationalSurfaces", PoincareAttributes_GetShowRationalSurfaces, METH_VARARGS},
+    {"SetRationalSurfaceMaxIterations", PoincareAttributes_SetRationalSurfaceMaxIterations, METH_VARARGS},
+    {"GetRationalSurfaceMaxIterations", PoincareAttributes_GetRationalSurfaceMaxIterations, METH_VARARGS},
     {"SetShowOPoints", PoincareAttributes_SetShowOPoints, METH_VARARGS},
     {"GetShowOPoints", PoincareAttributes_GetShowOPoints, METH_VARARGS},
     {"SetOPointMaxIterations", PoincareAttributes_SetOPointMaxIterations, METH_VARARGS},
@@ -2893,6 +2952,10 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "WindingPointOrderModulo") == 0)
         return PyInt_FromLong(long(PoincareAttributes::WindingPointOrderModulo));
 
+    if(strcmp(name, "showRationalSurfaces") == 0)
+        return PoincareAttributes_GetShowRationalSurfaces(self, NULL);
+    if(strcmp(name, "RationalSurfaceMaxIterations") == 0)
+        return PoincareAttributes_GetRationalSurfaceMaxIterations(self, NULL);
     if(strcmp(name, "showOPoints") == 0)
         return PoincareAttributes_GetShowOPoints(self, NULL);
     if(strcmp(name, "OPointMaxIterations") == 0)
@@ -3068,6 +3131,10 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PoincareAttributes_SetColorTableName(self, tuple);
     else if(strcmp(name, "dataValue") == 0)
         obj = PoincareAttributes_SetDataValue(self, tuple);
+    else if(strcmp(name, "showRationalSurfaces") == 0)
+        obj = PoincareAttributes_SetShowRationalSurfaces(self, tuple);
+    else if(strcmp(name, "RationalSurfaceMaxIterations") == 0)
+        obj = PoincareAttributes_SetRationalSurfaceMaxIterations(self, tuple);
     else if(strcmp(name, "showOPoints") == 0)
         obj = PoincareAttributes_SetShowOPoints(self, tuple);
     else if(strcmp(name, "OPointMaxIterations") == 0)

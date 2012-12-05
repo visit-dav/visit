@@ -473,10 +473,33 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(rationalSurfaceFactorProcessText()));
     analysisLayout->addWidget(rationalSurfaceFactor, 2, 3);
 
+    // Create the rational surface group box.
+    QGroupBox *rationalSurfaceGroup = new QGroupBox(secondTab);
+    rationalSurfaceGroup->setTitle(tr("Rational Surfaces"));
+    mainLayout->addWidget(rationalSurfaceGroup, 4, 0, 1, 3, Qt::AlignTop);
+
+    QGridLayout *rationalSurfaceLayout = new QGridLayout(rationalSurfaceGroup);
+    rationalSurfaceLayout->setMargin(5);
+    rationalSurfaceLayout->setSpacing(10);
+
+    showRationalSurfaces = new QCheckBox(tr("Detect Rational Surfaces"), rationalSurfaceGroup);
+    connect(showRationalSurfaces, SIGNAL(toggled(bool)),
+            this, SLOT(showRationalSurfacesChanged(bool)));
+    rationalSurfaceLayout->addWidget(showRationalSurfaces, 0, 0);
+
+    rationalSurfaceMaxIterationsLabel =
+      new QLabel(tr("Maximum iterations"), rationalSurfaceGroup);
+    rationalSurfaceMaxIterations = new QSpinBox(rationalSurfaceGroup);
+    rationalSurfaceMaxIterations->setRange(0, 10);
+    connect(rationalSurfaceMaxIterations, SIGNAL(valueChanged(int)), 
+            this, SLOT(rationalSurfaceMaxIterationsChanged(int)));
+    rationalSurfaceLayout->addWidget( rationalSurfaceMaxIterationsLabel, 0, 2);
+    rationalSurfaceLayout->addWidget( rationalSurfaceMaxIterations, 0, 3);
+
     // Create the O/X Point group box.
     QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
     criticalPointGroup->setTitle(tr("Critical Points"));
-    mainLayout->addWidget(criticalPointGroup, 3, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
     criticalPointLayout->setMargin(5);
@@ -500,7 +523,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // Create the O Line analysis group box.
     QGroupBox *OLineAnalysisGroup = new QGroupBox(secondTab);
     OLineAnalysisGroup->setTitle(tr("O-Line Analysis"));
-    mainLayout->addWidget(OLineAnalysisGroup, 4, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(OLineAnalysisGroup, 6, 0, 2, 3, Qt::AlignTop);
 
     QGridLayout *OLineAnalysisLayout = new QGridLayout(OLineAnalysisGroup);
     OLineAnalysisLayout->setMargin(5);
@@ -537,7 +560,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // Create the overlaps group box.
     QGroupBox *overlapsGroup = new QGroupBox(secondTab);
     overlapsGroup->setTitle(tr("Overlaps"));
-    mainLayout->addWidget(overlapsGroup, 6, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(overlapsGroup, 8, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
     overlapsLayout->setMargin(5);
@@ -574,7 +597,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // Create the options group box.
     QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
     analysisOptionsGroup->setTitle(tr("Options"));
-    mainLayout->addWidget(analysisOptionsGroup, 7, 0, 1, 3, Qt::AlignTop);
+    mainLayout->addWidget(analysisOptionsGroup, 9, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
     analysisOptionsLayout->setMargin(5);
@@ -1290,6 +1313,16 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             }
 
             dataValueCombo->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_showRationalSurfaces:
+            showRationalSurfaces->blockSignals(true);
+            showRationalSurfaces->setChecked(atts->GetShowRationalSurfaces());
+            showRationalSurfaces->blockSignals(false);
+            break;
+          case PoincareAttributes::ID_RationalSurfaceMaxIterations:
+            rationalSurfaceMaxIterations->blockSignals(true);
+            rationalSurfaceMaxIterations->setValue(atts->GetRationalSurfaceMaxIterations());
+            rationalSurfaceMaxIterations->blockSignals(false);
             break;
           case PoincareAttributes::ID_showOPoints:
             showOPoints->blockSignals(true);
@@ -2320,6 +2353,22 @@ QvisPoincarePlotWindow::dataValueChanged(int val)
         atts->SetColorType(PoincareAttributes::ColoringMethod(val?1:0));
         Apply();
     }
+}
+
+
+void
+QvisPoincarePlotWindow::showRationalSurfacesChanged(bool val)
+{
+    atts->SetShowRationalSurfaces(val);
+    Apply();
+}
+
+
+void
+QvisPoincarePlotWindow::rationalSurfaceMaxIterationsChanged(int val)
+{
+    atts->SetRationalSurfaceMaxIterations(val);
+    Apply();
 }
 
 

@@ -233,6 +233,8 @@ public:
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetDataValue(DataValue dataValue_);
+    void SetShowRationalSurfaces(bool showRationalSurfaces_);
+    void SetRationalSurfaceMaxIterations(int RationalSurfaceMaxIterations_);
     void SetShowOPoints(bool showOPoints_);
     void SetOPointMaxIterations(int OPointMaxIterations_);
     void SetShowXPoints(bool showXPoints_);
@@ -308,6 +310,8 @@ public:
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
     DataValue            GetDataValue() const;
+    bool                 GetShowRationalSurfaces() const;
+    int                  GetRationalSurfaceMaxIterations() const;
     bool                 GetShowOPoints() const;
     int                  GetOPointMaxIterations() const;
     bool                 GetShowXPoints() const;
@@ -466,6 +470,8 @@ public:
         ID_singleColor,
         ID_colorTableName,
         ID_dataValue,
+        ID_showRationalSurfaces,
+        ID_RationalSurfaceMaxIterations,
         ID_showOPoints,
         ID_OPointMaxIterations,
         ID_showXPoints,
@@ -537,6 +543,8 @@ private:
     ColorAttribute singleColor;
     std::string    colorTableName;
     int            dataValue;
+    bool           showRationalSurfaces;
+    int            RationalSurfaceMaxIterations;
     bool           showOPoints;
     int            OPointMaxIterations;
     bool           showXPoints;
@@ -568,6 +576,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibisbbbbbbiibdiibbiiiib"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiidDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbiibdiibbiiiib"
 
 #endif

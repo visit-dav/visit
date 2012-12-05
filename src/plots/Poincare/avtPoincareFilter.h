@@ -122,8 +122,12 @@ class avtPoincareFilter : public avtStreamlineFilter
 
     void SetDataValue( unsigned int val ) { dataValue = val; }
 
+    void SetShowRationalSurfaces( bool val ) { showRationalSurfaces = val; }
+    void SetRationalSurfaceMaxIterations( int val ) { rationalSurfaceMaxIterations = val; }
+
     void SetShowOPoints( bool val ) { showOPoints = val; }
     void SetOPointMaxIterations( int val ) { OPointMaxIterations = val; }
+
     void SetShowXPoints( bool val ) { showXPoints = val; }
     void SetXPointMaxIterations( int val ) { XPointMaxIterations = val; }
 
@@ -233,10 +237,12 @@ class avtPoincareFilter : public avtStreamlineFilter
     vtkObject *intersectObj; 
     int maxIntersections;
 
-    bool showOPoints, showXPoints, showIslands, showChaotic;
+    bool showRationalSurfaces, showOPoints, showXPoints, showIslands,
+      showChaotic;
     bool showLines, showPoints, summaryFlag, verboseFlag, show1DPlots;
     int  pointScale;
 
+    unsigned int rationalSurfaceMaxIterations;
     unsigned int OPointMaxIterations;
     unsigned int XPointMaxIterations;
 

@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 67;
+    private static int PoincareAttributes_numAdditionalAtts = 69;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -189,6 +189,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTORQ;
+        showRationalSurfaces = false;
+        RationalSurfaceMaxIterations = 2;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -274,6 +276,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(0, 0, 0);
         colorTableName = new String("Default");
         dataValue = DATAVALUE_SAFETYFACTORQ;
+        showRationalSurfaces = false;
+        RationalSurfaceMaxIterations = 2;
         showOPoints = false;
         OPointMaxIterations = 2;
         showXPoints = false;
@@ -365,6 +369,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(obj.singleColor);
         colorTableName = new String(obj.colorTableName);
         dataValue = obj.dataValue;
+        showRationalSurfaces = obj.showRationalSurfaces;
+        RationalSurfaceMaxIterations = obj.RationalSurfaceMaxIterations;
         showOPoints = obj.showOPoints;
         OPointMaxIterations = obj.OPointMaxIterations;
         showXPoints = obj.showXPoints;
@@ -471,6 +477,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (singleColor == obj.singleColor) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (dataValue == obj.dataValue) &&
+                (showRationalSurfaces == obj.showRationalSurfaces) &&
+                (RationalSurfaceMaxIterations == obj.RationalSurfaceMaxIterations) &&
                 (showOPoints == obj.showOPoints) &&
                 (OPointMaxIterations == obj.OPointMaxIterations) &&
                 (showXPoints == obj.showXPoints) &&
@@ -789,160 +797,172 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(40);
     }
 
+    public void SetShowRationalSurfaces(boolean showRationalSurfaces_)
+    {
+        showRationalSurfaces = showRationalSurfaces_;
+        Select(41);
+    }
+
+    public void SetRationalSurfaceMaxIterations(int RationalSurfaceMaxIterations_)
+    {
+        RationalSurfaceMaxIterations = RationalSurfaceMaxIterations_;
+        Select(42);
+    }
+
     public void SetShowOPoints(boolean showOPoints_)
     {
         showOPoints = showOPoints_;
-        Select(41);
+        Select(43);
     }
 
     public void SetOPointMaxIterations(int OPointMaxIterations_)
     {
         OPointMaxIterations = OPointMaxIterations_;
-        Select(42);
+        Select(44);
     }
 
     public void SetShowXPoints(boolean showXPoints_)
     {
         showXPoints = showXPoints_;
-        Select(43);
+        Select(45);
     }
 
     public void SetXPointMaxIterations(int XPointMaxIterations_)
     {
         XPointMaxIterations = XPointMaxIterations_;
-        Select(44);
+        Select(46);
     }
 
     public void SetPerformOLineAnalysis(boolean performOLineAnalysis_)
     {
         performOLineAnalysis = performOLineAnalysis_;
-        Select(45);
+        Select(47);
     }
 
     public void SetOLineToroidalWinding(int OLineToroidalWinding_)
     {
         OLineToroidalWinding = OLineToroidalWinding_;
-        Select(46);
+        Select(48);
     }
 
     public void SetOLineAxisFileName(String OLineAxisFileName_)
     {
         OLineAxisFileName = OLineAxisFileName_;
-        Select(47);
+        Select(49);
     }
 
     public void SetShowChaotic(boolean showChaotic_)
     {
         showChaotic = showChaotic_;
-        Select(48);
+        Select(50);
     }
 
     public void SetShowIslands(boolean showIslands_)
     {
         showIslands = showIslands_;
-        Select(49);
+        Select(51);
     }
 
     public void SetSummaryFlag(boolean SummaryFlag_)
     {
         SummaryFlag = SummaryFlag_;
-        Select(50);
+        Select(52);
     }
 
     public void SetVerboseFlag(boolean verboseFlag_)
     {
         verboseFlag = verboseFlag_;
-        Select(51);
+        Select(53);
     }
 
     public void SetShow1DPlots(boolean show1DPlots_)
     {
         show1DPlots = show1DPlots_;
-        Select(52);
+        Select(54);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(53);
+        Select(55);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(54);
+        Select(56);
     }
 
     public void SetLineStyle(int lineStyle_)
     {
         lineStyle = lineStyle_;
-        Select(55);
+        Select(57);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(56);
+        Select(58);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(57);
+        Select(59);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(58);
+        Select(60);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(59);
+        Select(61);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(60);
+        Select(62);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(61);
+        Select(63);
     }
 
     public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
     {
         streamlineAlgorithmType = streamlineAlgorithmType_;
-        Select(62);
+        Select(64);
     }
 
     public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
     {
         maxStreamlineProcessCount = maxStreamlineProcessCount_;
-        Select(63);
+        Select(65);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(64);
+        Select(66);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(65);
+        Select(67);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(66);
+        Select(68);
     }
 
     // Property getting methods
@@ -987,6 +1007,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public ColorAttribute GetSingleColor() { return singleColor; }
     public String         GetColorTableName() { return colorTableName; }
     public int            GetDataValue() { return dataValue; }
+    public boolean        GetShowRationalSurfaces() { return showRationalSurfaces; }
+    public int            GetRationalSurfaceMaxIterations() { return RationalSurfaceMaxIterations; }
     public boolean        GetShowOPoints() { return showOPoints; }
     public int            GetOPointMaxIterations() { return OPointMaxIterations; }
     public boolean        GetShowXPoints() { return showXPoints; }
@@ -1100,56 +1122,60 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(40, buf))
             buf.WriteInt(dataValue);
         if(WriteSelect(41, buf))
-            buf.WriteBool(showOPoints);
+            buf.WriteBool(showRationalSurfaces);
         if(WriteSelect(42, buf))
-            buf.WriteInt(OPointMaxIterations);
+            buf.WriteInt(RationalSurfaceMaxIterations);
         if(WriteSelect(43, buf))
-            buf.WriteBool(showXPoints);
+            buf.WriteBool(showOPoints);
         if(WriteSelect(44, buf))
-            buf.WriteInt(XPointMaxIterations);
+            buf.WriteInt(OPointMaxIterations);
         if(WriteSelect(45, buf))
-            buf.WriteBool(performOLineAnalysis);
+            buf.WriteBool(showXPoints);
         if(WriteSelect(46, buf))
-            buf.WriteInt(OLineToroidalWinding);
+            buf.WriteInt(XPointMaxIterations);
         if(WriteSelect(47, buf))
-            buf.WriteString(OLineAxisFileName);
+            buf.WriteBool(performOLineAnalysis);
         if(WriteSelect(48, buf))
-            buf.WriteBool(showChaotic);
+            buf.WriteInt(OLineToroidalWinding);
         if(WriteSelect(49, buf))
-            buf.WriteBool(showIslands);
+            buf.WriteString(OLineAxisFileName);
         if(WriteSelect(50, buf))
-            buf.WriteBool(SummaryFlag);
+            buf.WriteBool(showChaotic);
         if(WriteSelect(51, buf))
-            buf.WriteBool(verboseFlag);
+            buf.WriteBool(showIslands);
         if(WriteSelect(52, buf))
-            buf.WriteBool(show1DPlots);
+            buf.WriteBool(SummaryFlag);
         if(WriteSelect(53, buf))
-            buf.WriteBool(showLines);
+            buf.WriteBool(verboseFlag);
         if(WriteSelect(54, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteBool(show1DPlots);
         if(WriteSelect(55, buf))
-            buf.WriteInt(lineStyle);
+            buf.WriteBool(showLines);
         if(WriteSelect(56, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(57, buf))
-            buf.WriteDouble(pointSize);
+            buf.WriteInt(lineStyle);
         if(WriteSelect(58, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteBool(showPoints);
         if(WriteSelect(59, buf))
-            buf.WriteInt(pointType);
+            buf.WriteDouble(pointSize);
         if(WriteSelect(60, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(61, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteInt(pointType);
         if(WriteSelect(62, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteBool(legendFlag);
         if(WriteSelect(63, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteBool(lightingFlag);
         if(WriteSelect(64, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(streamlineAlgorithmType);
         if(WriteSelect(65, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxStreamlineProcessCount);
         if(WriteSelect(66, buf))
+            buf.WriteInt(maxDomainCacheSize);
+        if(WriteSelect(67, buf))
+            buf.WriteInt(workGroupSize);
+        if(WriteSelect(68, buf))
             buf.WriteBool(forceNodeCenteredData);
     }
 
@@ -1282,81 +1308,87 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetDataValue(buf.ReadInt());
             break;
         case 41:
-            SetShowOPoints(buf.ReadBool());
+            SetShowRationalSurfaces(buf.ReadBool());
             break;
         case 42:
-            SetOPointMaxIterations(buf.ReadInt());
+            SetRationalSurfaceMaxIterations(buf.ReadInt());
             break;
         case 43:
-            SetShowXPoints(buf.ReadBool());
+            SetShowOPoints(buf.ReadBool());
             break;
         case 44:
-            SetXPointMaxIterations(buf.ReadInt());
+            SetOPointMaxIterations(buf.ReadInt());
             break;
         case 45:
-            SetPerformOLineAnalysis(buf.ReadBool());
+            SetShowXPoints(buf.ReadBool());
             break;
         case 46:
-            SetOLineToroidalWinding(buf.ReadInt());
+            SetXPointMaxIterations(buf.ReadInt());
             break;
         case 47:
-            SetOLineAxisFileName(buf.ReadString());
+            SetPerformOLineAnalysis(buf.ReadBool());
             break;
         case 48:
-            SetShowChaotic(buf.ReadBool());
+            SetOLineToroidalWinding(buf.ReadInt());
             break;
         case 49:
-            SetShowIslands(buf.ReadBool());
+            SetOLineAxisFileName(buf.ReadString());
             break;
         case 50:
-            SetSummaryFlag(buf.ReadBool());
+            SetShowChaotic(buf.ReadBool());
             break;
         case 51:
-            SetVerboseFlag(buf.ReadBool());
+            SetShowIslands(buf.ReadBool());
             break;
         case 52:
-            SetShow1DPlots(buf.ReadBool());
+            SetSummaryFlag(buf.ReadBool());
             break;
         case 53:
-            SetShowLines(buf.ReadBool());
+            SetVerboseFlag(buf.ReadBool());
             break;
         case 54:
-            SetLineWidth(buf.ReadInt());
+            SetShow1DPlots(buf.ReadBool());
             break;
         case 55:
-            SetLineStyle(buf.ReadInt());
+            SetShowLines(buf.ReadBool());
             break;
         case 56:
-            SetShowPoints(buf.ReadBool());
+            SetLineWidth(buf.ReadInt());
             break;
         case 57:
-            SetPointSize(buf.ReadDouble());
+            SetLineStyle(buf.ReadInt());
             break;
         case 58:
-            SetPointSizePixels(buf.ReadInt());
+            SetShowPoints(buf.ReadBool());
             break;
         case 59:
-            SetPointType(buf.ReadInt());
+            SetPointSize(buf.ReadDouble());
             break;
         case 60:
-            SetLegendFlag(buf.ReadBool());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 61:
-            SetLightingFlag(buf.ReadBool());
+            SetPointType(buf.ReadInt());
             break;
         case 62:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetLegendFlag(buf.ReadBool());
             break;
         case 63:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetLightingFlag(buf.ReadBool());
             break;
         case 64:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetStreamlineAlgorithmType(buf.ReadInt());
             break;
         case 65:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxStreamlineProcessCount(buf.ReadInt());
             break;
         case 66:
+            SetMaxDomainCacheSize(buf.ReadInt());
+            break;
+        case 67:
+            SetWorkGroupSize(buf.ReadInt());
+            break;
+        case 68:
             SetForceNodeCenteredData(buf.ReadBool());
             break;
         }
@@ -1510,6 +1542,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(dataValue == DATAVALUE_WINDINGPOINTORDERMODULO)
             str = str + "DATAVALUE_WINDINGPOINTORDERMODULO";
         str = str + "\n";
+        str = str + boolToString("showRationalSurfaces", showRationalSurfaces, indent) + "\n";
+        str = str + intToString("RationalSurfaceMaxIterations", RationalSurfaceMaxIterations, indent) + "\n";
         str = str + boolToString("showOPoints", showOPoints, indent) + "\n";
         str = str + intToString("OPointMaxIterations", OPointMaxIterations, indent) + "\n";
         str = str + boolToString("showXPoints", showXPoints, indent) + "\n";
@@ -1600,6 +1634,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private ColorAttribute singleColor;
     private String         colorTableName;
     private int            dataValue;
+    private boolean        showRationalSurfaces;
+    private int            RationalSurfaceMaxIterations;
     private boolean        showOPoints;
     private int            OPointMaxIterations;
     private boolean        showXPoints;

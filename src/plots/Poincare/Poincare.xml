@@ -223,6 +223,12 @@
       <Field name="dataValue" label="dataValue" type="enum" subtype="DataValue">
         SafetyFactorQ
       </Field>
+      <Field name="showRationalSurfaces" label="Detect Rational Surfaces" type="bool">
+        false
+      </Field>
+      <Field name="RationalSurfaceMaxIterations" label="Maximum Iterations" type="int">
+        2
+      </Field>
       <Field name="showOPoints" label="Detect O Points" type="bool">
         false
       </Field>
