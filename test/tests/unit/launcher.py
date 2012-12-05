@@ -3,7 +3,7 @@
 #
 #  Test Case:  launcher.py
 #
-#  Tests:      This script tests internallauncher's transformation of visit 
+#  Tests:      This script tests internallauncher's transformation of visit
 #              command line arguments into parallel launch arguments.
 #
 #  Brad Whitlock, Tue Sep 11 12:31:34 PDT 2012
@@ -121,7 +121,21 @@ for k in keys:
         output = FilterLauncherOutput(output, {pjoin(visitdir,"exe") : "$VISIT_EXE_DIR"})
         output = FilterLauncherOutput(output, {visittestdir : "$VISIT_TEST_DIR"})
         output = FilterLauncherOutput(output, {visitdir : "$VISITDIR"})
+        # filter the run dir, since there are multiple variants for nightly tests
+        # (serial, par, etc)
+        output = FilterLauncherOutput(output, {TestEnv.params["run_dir"] : "$VISITDIR/_run"})
+        # special case filter to resolve csh vs bash env differences
+        bash_case   = "ulimit -c 0 ;"
+        bash_case  += " LIBPATH=$VISITDIR/lib ;"
+        bash_case  += " export LIBPATH ;"
+        bash_case  += " LD_LIBRARY_PATH=$VISITDIR/lib ;"
+        bash_case  += " export LD_LIBRARY_PATH"
 
+        csh_case  = "limit coredumpsize 0 ;"
+        csh_case += " setenv LIBPATH $VISITDIR/lib ;"
+        csh_case += " setenv LD_LIBRARY_PATH $VISITDIR/lib"
+        shell_filter = {bash_case : csh_case}
+        output = FilterLauncherOutput(output, shell_filter)
         # Filter out $HOME.
         try:
             output = FilterLauncherOutput(output, {os.environ["HOME"] : "$HOME"})
@@ -131,9 +145,9 @@ for k in keys:
         # Filter out some other stuff.
         replacements = {os.getlogin()   : "$USER",
                         Version()       : "$VERSION",
-                        "linux-intel"   : "$PLATFORM", 
-                        "linux-x86_64"  : "$PLATFORM", 
-                        "darwin-i386"   : "$PLATFORM", 
+                        "linux-intel"   : "$PLATFORM",
+                        "linux-x86_64"  : "$PLATFORM",
+                        "darwin-i386"   : "$PLATFORM",
                         "darwin-x86_64" : "$PLATFORM"}
         output = FilterLauncherOutput(output, replacements)
 
