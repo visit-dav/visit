@@ -814,6 +814,14 @@ avtPoincareFilter::ContinueExecute()
 #endif
 
 #ifdef RATIONAL_SURFACE
+
+        if( showRationalSurfaces )
+        {
+
+  /////////////// JAKE YOU HAVE ACCESS TO THIS MEMBER VARIABLE TO
+  /////////////// LIMIT THE NUMBER OF SEARCH ITERATIONS.
+  /////////////// rationalSurfaceMaxIterations;
+
         /////////////////////////
         // Begin Rational Search
         /////////////////////////
@@ -1804,7 +1812,9 @@ avtPoincareFilter::ContinueExecute()
                       << poincare_ic->id << " case fell through" << std::endl;
           }
         }
+        }
 #endif
+
       }
 
       DeleteIntegralCurves( ids_to_delete );
