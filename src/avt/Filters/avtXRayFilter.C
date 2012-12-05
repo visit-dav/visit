@@ -88,6 +88,53 @@
 
 using std::vector;
 
+#define avtXRayFilter_GetCellPointsTypeMacro(ptype, n) \
+{ \
+    ptype *pts = static_cast<ptype *>(points->GetVoidPointer(0)); \
+    for (int i = 0; i < 3; ++i) \
+    { \
+        p0[i]=pts[ids[0]*3+i]; \
+        p1[i]=pts[ids[1]*3+i]; \
+        p2[i]=pts[ids[2]*3+i]; \
+        p3[i]=pts[ids[3]*3+i]; \
+        if (n > 4) \
+            p4[i]=pts[ids[4]*3+i]; \
+        if (n > 5) \
+            p5[i]=pts[ids[5]*3+i]; \
+        if (n > 6) \
+            p6[i]=pts[ids[6]*3+i]; \
+        if (n > 7) \
+            p7[i]=pts[ids[7]*3+i]; \
+    } \
+}
+
+#define avtXRayFilter_GetCellPointsMacro(n) \
+{ \
+    if (points->GetDataType() == VTK_FLOAT) \
+    { \
+        avtXRayFilter_GetCellPointsTypeMacro(float, n); \
+    } \
+    else  if (points->GetDataType() == VTK_DOUBLE) \
+    { \
+        avtXRayFilter_GetCellPointsTypeMacro(double, n); \
+    } \
+    else \
+    { \
+        points->GetPoint(ids[0], p0); \
+        points->GetPoint(ids[1], p1); \
+        points->GetPoint(ids[2], p2); \
+        points->GetPoint(ids[3], p3); \
+        if (n > 4) \
+            points->GetPoint(ids[4], p4); \
+        if (n > 5) \
+            points->GetPoint(ids[5], p5); \
+        if (n > 6) \
+            points->GetPoint(ids[6], p6); \
+        if (n > 7) \
+            points->GetPoint(ids[7], p7); \
+    } \
+}
+
 static int IntersectLineWithRevolvedSegment(const double *line_pt,
                                             const double *, const double *, 
                                             const double *, double *);
@@ -105,11 +152,27 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
     result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
 }
 
+// ****************************************************************************
+//  Method: IntersectLineWithTri
+//
+//  Purpose:
+//    Intersect a line with a triangle, returning the intersection point.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+//  Modifications:
+//    Eric Brugger, Thu Nov 29 16:44:27 PST 2012
+//    I changed the value of eps so that the test that rejects triangles that
+//    are parallel to the line works better with small triangles.
+//
+// ****************************************************************************
+
 static bool IntersectLineWithTri(const double v0[3], const double v1[3],
     const double v2[3], const double origin[3],
     const double direction[3], double& t)
 {
-    static const double eps = 10e-6;
+    static const double eps = 1e-12;
 
     //
     // Reject rays that are parallel to Q, and rays that intersect the
@@ -179,81 +242,33 @@ static bool IntersectLineWithTri(const double v0[3], const double v1[3],
 }
 
 
+// ****************************************************************************
+//  Method: IntersectLineWithQuad
+//
+//  Purpose:
+//    Intersect a line with a quad, returning the intersection point.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 30, 2010
+//
+//  Modifications:
+//    Eric Brugger, Thu Nov 29 16:44:27 PST 2012
+//    I replaced the code with two calls to the intersect with triangle
+//    function, since the intersect with quad code had problems with lines
+//    being nearly planar with non-planar quads.
+//
+// ****************************************************************************
+
 static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
     const double v_11[3], const double v_01[3], const double origin[3],
     const double direction[3], double& t)
 {
-    static const double eps = 10e-6;
-
-    //
-    // Reject rays that are parallel to Q, and rays that intersect the
-    // plane of Q either on the left of the line V00V01 or on the right
-    // of the line V00V10.
-    //
-
-    double E_01[3], E_03[3];
-    E_01[0] = v_10[0] - v_00[0];
-    E_01[1] = v_10[1] - v_00[1];
-    E_01[2] = v_10[2] - v_00[2];
-    E_03[0] = v_01[0] - v_00[0];
-    E_03[1] = v_01[1] - v_00[1];
-    E_03[2] = v_01[2] - v_00[2];
-    double P[3];
-    Cross(P, direction, E_03);
-    double det = Dot(E_01, P);
-    if (fabs(det) < eps) return false;
-    double inv_det = 1.0 / det;
-    double T[3];
-    T[0] = origin[0] - v_00[0];
-    T[1] = origin[1] - v_00[1];
-    T[2] = origin[2] - v_00[2];
-    double alpha = Dot(T, P) * inv_det;
-    if (alpha < 0.0) return false;
-    double Q[3];
-    Cross(Q, T, E_01);
-    double beta = Dot(direction, Q) * inv_det;
-    if (beta < 0.0) return false; 
-
-    if ((alpha + beta) > 1.0)
-    {
-        //
-        // Rejects rays that intersect the plane of Q either on the
-        // left of the line V11V10 or on the right of the line V11V01.
-        //
-
-        double E_23[3], E_21[3];
-        E_23[0] = v_01[0] - v_11[0];
-        E_23[1] = v_01[1] - v_11[1];
-        E_23[2] = v_01[2] - v_11[2];
-        E_21[0] = v_10[0] - v_11[0];
-        E_21[1] = v_10[1] - v_11[1];
-        E_21[2] = v_10[2] - v_11[2];
-        double P_prime[3];
-        Cross(P_prime, direction, E_21);
-        double det_prime = Dot(E_23, P_prime);
-        if (fabs(det_prime) < eps) return false;
-        double inv_det_prime = double(1.0) / det_prime;
-        double T_prime[3];
-        T_prime[0] = origin[0] - v_11[0];
-        T_prime[1] = origin[1] - v_11[1];
-        T_prime[2] = origin[2] - v_11[2];
-        double alpha_prime = Dot(T_prime, P_prime) * inv_det_prime;
-        if (alpha_prime < double(0.0)) return false;
-        double Q_prime[3];
-        Cross(Q_prime, T_prime, E_23);
-        double beta_prime = Dot(direction, Q_prime) * inv_det_prime;
-        if (beta_prime < double(0.0)) return false;
-    }
-
-    //
-    // Compute the ray parameter of the intersection point, and
-    // reject the ray if it does not hit Q.
-    //
-
-    t = Dot(E_03, Q) * inv_det;
-    if (t < 0.0) return false; 
-
-    return true;
+    if (IntersectLineWithTri(v_00, v_10, v_01, origin, direction, t))
+        return true;
+    else if (IntersectLineWithTri(v_10, v_01, v_11, origin, direction, t))
+        return true;
+    else
+        return false;
 }
 
 
@@ -273,6 +288,10 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    I modified the filter to return a set of images instead of a collection
 //    of line segments representing the intersections of a collection of lines
 //    with the cells in the dataset.
+//
+//    Eric Brugger, Mon Dec  3 13:41:10 PST 2012
+//    I added the ability to output the cells intersected by a specified
+//    ray to a vtk file.
 //
 // ****************************************************************************
 
@@ -307,6 +326,8 @@ avtXRayFilter::avtXRayFilter()
 
     radBins = NULL;
     numBins = 1;
+
+    debugRay = -1;
 }
 
 
@@ -475,7 +496,11 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
 //    Eric Brugger, Wed Jul 18 13:05:27 PDT 2012
 //    I corrected a bug where the filter would crash when running in parallel
 //    for some combinations of processor count and image size.
-// 
+//
+//    Eric Brugger, Mon Dec  3 13:41:10 PST 2012
+//    I added the ability to output the cells intersected by a specified
+//    ray to a vtk file.
+//
 // ****************************************************************************
 
 void
@@ -506,7 +531,7 @@ avtXRayFilter::Execute(void)
         pixelsForLastPassFirstProc :
         pixelsForLastPass - (pixelsForLastPassFirstProc * (PAR_Size() - 1));
 
-    int numPasses = numPixels / actualPixelsPerIteration;
+    numPasses = numPixels / actualPixelsPerIteration;
     if (numPixels % actualPixelsPerIteration != 0)
         numPasses++;
 
@@ -531,7 +556,7 @@ avtXRayFilter::Execute(void)
     CheckDataSets(totalNodes, dataSets);
 
     lineOffset = 0;
-    for (int iPass = 0; iPass < numPasses; iPass++)
+    for (iPass = 0; iPass < numPasses; iPass++)
     {
         int pixelsForThisPass = (iPass == numPasses - 1) ?
             pixelsForLastPass : pixelsForFirstPass;
@@ -560,9 +585,9 @@ avtXRayFilter::Execute(void)
         imageFragmentSizes[iPass] = pixelsForThisProc;
 
         if (cellDataType == VTK_FLOAT)
-            ImageStripExecute<float>(totalNodes, dataSets, iPass, numPasses);
+            ImageStripExecute<float>(totalNodes, dataSets);
         else // if (cellDataType == VTK_DOUBLE)
-            ImageStripExecute<double>(totalNodes, dataSets, iPass, numPasses);
+            ImageStripExecute<double>(totalNodes, dataSets);
 
         int extraMsg = 100;
         int totalProg = numPasses * extraMsg;
@@ -673,12 +698,15 @@ avtXRayFilter::Execute(void)
 //    Templatized this method, moved a bit of code out of Execute to here,
 //    for double-precision support.
 //
+//    Eric Brugger, Mon Dec  3 13:41:10 PST 2012
+//    I added the ability to output the cells intersected by a specified
+//    ray to a vtk file.
+//
 // ****************************************************************************
 
 template <typename T>
 void
-avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets,
-    int iPass, int numPasses)
+avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets)
 {
     //
     // Calculate the lines for this image strip.
@@ -873,54 +901,11 @@ avtXRayFilter::PostExecute(void)
 //    Eric Brugger, Fri May 11 16:33:04 PDT 2012
 //    I added logic to handle rectilinear meshes.
 //
+//    Eric Brugger, Mon Dec  3 13:41:10 PST 2012
+//    I added the ability to output the cells intersected by a specified
+//    ray to a vtk file.
+//
 // ****************************************************************************
-
-#define avtXRayFilter_GetCellPointsTypeMacro(ptype, n) \
-{ \
-    ptype *pts = static_cast<ptype *>(points->GetVoidPointer(0)); \
-    for (int i = 0; i < 3; ++i) \
-    { \
-        p0[i]=pts[ids[0]*3+i]; \
-        p1[i]=pts[ids[1]*3+i]; \
-        p2[i]=pts[ids[2]*3+i]; \
-        p3[i]=pts[ids[3]*3+i]; \
-        if (n > 4) \
-            p4[i]=pts[ids[4]*3+i]; \
-        if (n > 5) \
-            p5[i]=pts[ids[5]*3+i]; \
-        if (n > 6) \
-            p6[i]=pts[ids[6]*3+i]; \
-        if (n > 7) \
-            p7[i]=pts[ids[7]*3+i]; \
-    } \
-}
-
-#define avtXRayFilter_GetCellPointsMacro(n) \
-{ \
-    if (points->GetDataType() == VTK_FLOAT) \
-    { \
-        avtXRayFilter_GetCellPointsTypeMacro(float, n); \
-    } \
-    else  if (points->GetDataType() == VTK_DOUBLE) \
-    { \
-        avtXRayFilter_GetCellPointsTypeMacro(double, n); \
-    } \
-    else \
-    { \
-        points->GetPoint(ids[0], p0); \
-        points->GetPoint(ids[1], p1); \
-        points->GetPoint(ids[2], p2); \
-        points->GetPoint(ids[3], p3); \
-        if (n > 4) \
-            points->GetPoint(ids[4], p4); \
-        if (n > 5) \
-            points->GetPoint(ids[5], p5); \
-        if (n > 6) \
-            points->GetPoint(ids[6], p6); \
-        if (n > 7) \
-            points->GetPoint(ids[7], p7); \
-    } \
-}
 
 template <typename T>
 void
@@ -1568,6 +1553,12 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         cellData[i] = outVals;
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::CopyCellData");
+
+    //
+    // Dump the ray cell intersections into a vtk file.
+    //
+    DumpRayHexIntersections(PAR_Rank(), currentNode, cells_matched,
+                            line_id, ds, dataArrays);
 }
 
 
@@ -2854,4 +2845,163 @@ avtXRayFilter::FillImageArray(int iBin,  vtkDataArray *&imageArray)
         FillImageArray_Impl<avtDirectAccessor<double> >(iBin, numBins,
             nImageFragments, imageFragmentSizes, imageFragments, imageArray);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtXRayFilter::DumpRayHexIntersections
+//
+//  Purpose:
+//    Dump the ray intersections into a vtk file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 3, 2012
+//
+//  Notes:
+//    Assumes that the data set is an unstructured grid that consists of
+//    only hexes.
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
+    vector<int> &cells_matched, vector<int> &line_id,
+    vtkDataSet *ds, vtkDataArray **dataArrays)
+{
+    //
+    // Determine the id within the current strip of the line. Return if
+    // the line is outside of the current strip.
+    //
+    int strip_id = debugRay - (iPass * pixelsForFirstPass);
+
+    if (strip_id < 0 || strip_id >= linesForThisPass)
+        return;
+
+    //
+    // Determine the number of cells where the line ids match. Retrun if
+    // if no cells intersect the line of interest.
+    //
+    int nCells = 0;
+    for (int i = 0; i < line_id.size(); i++)
+        if (line_id[i] == strip_id)
+            nCells++;
+    
+    if (nCells <= 0)
+        return;
+
+    //
+    // Write the vtk file.
+    //
+    char filename[80];
+    SNPRINTF(filename, 80, "proc%02d_ds%02d.vtk", iProc, iDataset);
+    FILE *f = fopen(filename, "w");
+    fprintf(f, "# vtk DataFile Version 3.0\n");
+    fprintf(f, "vtk output\n");
+    fprintf(f, "ASCII\n");
+    fprintf(f, "DATASET UNSTRUCTURED_GRID\n");
+    fprintf(f, "POINTS %d float\n", nCells * 8);
+
+    vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) ds;
+    vtkPoints *points = ugrid->GetPoints();
+
+    vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
+    vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
+    vtkCellArray *cells = ugrid->GetCells();
+
+    vtkIdType *nl = cells->GetPointer();
+    unsigned char *ct = cellTypes->GetPointer(0);
+    vtkIdType *cl = cellLocations->GetPointer(0);
+
+    double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
+    for (int i = 0; i < cells_matched.size(); i++)
+    {
+        if (line_id[i] == strip_id)
+        {
+            int iCell = cells_matched[i];
+            vtkIdType *ids = &(nl[cl[iCell]+1]);
+            avtXRayFilter_GetCellPointsMacro(8);
+            fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
+            fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);
+            fprintf(f, "%g %g %g\n", p2[0], p2[1], p2[2]);
+            fprintf(f, "%g %g %g\n", p3[0], p3[1], p3[2]);
+            fprintf(f, "%g %g %g\n", p4[0], p4[1], p4[2]);
+            fprintf(f, "%g %g %g\n", p5[0], p5[1], p5[2]);
+            fprintf(f, "%g %g %g\n", p6[0], p6[1], p6[2]);
+            fprintf(f, "%g %g %g\n", p7[0], p7[1], p7[2]);
+        }
+    }
+    fprintf(f, "\n");
+    fprintf(f, "CELLS %d %d\n", nCells, nCells*9);
+    int j = 0;
+    for (int i = 0; i < cells_matched.size(); i++)
+        if (line_id[i] == strip_id)
+        {
+            fprintf(f, "8 %d %d %d %d %d %d %d %d\n",
+                    j*8, j*8+1, j*8+2, j*8+3, j*8+4, j*8+5, j*8+6, j*8+7);
+            j++;
+        }
+    fprintf(f, "\n");
+    fprintf(f, "CELL_TYPES %d\n", nCells);
+    for (int i = 0; i < nCells; i++)
+        fprintf(f, "12\n");
+    fprintf(f, "\n");
+    fprintf(f, "CELL_DATA %d\n", nCells);
+
+    //
+    // Output the first component of the opacities.
+    //
+    fprintf(f, "SCALARS opacity float\n");
+    fprintf(f, "LOOKUP_TABLE default\n");
+
+    vtkDataArray *da = dataArrays[0];
+    int nComponents = da->GetNumberOfComponents();
+    if (da->GetDataType() == VTK_FLOAT)
+    {
+        float *vals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
+        for (int i = 0; i < cells_matched.size(); i++)
+            if (line_id[i] == strip_id)
+            {
+                fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
+            }
+    }
+    else // if (da->GetDataType() == VTK_DOUBLE)
+    {
+        double *vals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
+        for (int i = 0; i < cells_matched.size(); i++)
+            if (line_id[i] == strip_id)
+            {
+                fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
+            }
+    }
+
+    //
+    // Output the first component of the emissivities.
+    //
+    fprintf(f, "SCALARS emissivity float\n", nCells);
+    fprintf(f, "LOOKUP_TABLE default\n");
+
+    da = dataArrays[1];
+    nComponents = da->GetNumberOfComponents();
+    if (da->GetDataType() == VTK_FLOAT)
+    {
+        float *vals = vtkFloatArray::SafeDownCast(da)->GetPointer(0);
+        for (int i = 0; i < cells_matched.size(); i++)
+            if (line_id[i] == strip_id)
+            {
+                fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
+            }
+    }
+    else // if (da->GetDataType() == VTK_DOUBLE)
+    {
+        double *vals = vtkDoubleArray::SafeDownCast(da)->GetPointer(0);
+        for (int i = 0; i < cells_matched.size(); i++)
+            if (line_id[i] == strip_id)
+            {
+                fprintf(f, "%g\n", vals[cells_matched[i]*nComponents+0]);
+            }
+    }
+
+    fclose(f);
 }

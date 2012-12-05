@@ -25,7 +25,6 @@ MacOS X (application bundle):
 ==============================
 
 Downloads:
-* VisIt-2.6.0-i386-installer.dmg    : 32-bit Mac
 * VisIt-2.6.0-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
 
 1. Download the appropriate file and copy it to the desktop.
@@ -57,10 +56,10 @@ Unix and MacOS X (gzipped tar file):
 
         "version" will be 2.6.0 for the current distribution.
 
-        "platform" will be one of the following:  linux-rhel5, linux-rhel6,
-        linux-x86_64-ubuntu11, linux-x86_64, linux-x86_64-euclid, darwin-i386
-        or darwin-x86_64 depending on the machine.  The one you use should
-        match the name of the accompanying distribution file.
+        "platform" will be one of the following:  linux-x86_64-rhel5,
+        linux-x86_64-ubuntu11, or darwin-x86_64 depending on the machine.
+        The one you use should match the name of the accompanying
+        distribution file.
 
         "directory" is the directory you wish to install visit into.
         If the directory doesn't exist the script will create it.
@@ -68,18 +67,18 @@ Unix and MacOS X (gzipped tar file):
     For example
 
         chmod 755 visit-install2_6_0
-        ./visit-install2_6_0 2.6.0 linux-rhel5 /usr/local/visit
+        ./visit-install2_6_0 2.6.0 linux-x86_64-rhel5 /usr/local/visit
 
-    will install the linux-rhel5, 2.6.0 version of visit in the directory
-    "/usr/local/visit".  Note that you will need to have the file
-    "visit2_6_0.linux-rhel5.tar.gz" present in the current directory for this
-    to function properly.  You can install multiple binaries into the
-    same directory.  For example, you could then execute
+    will install the linux-x86_64-rhel5, 2.6.0 version of visit in the
+    directory "/usr/local/visit".  Note that you will need to have the file
+    "visit2_6_0.linux-x86_64-rhel5.tar.gz" present in the current directory
+    for this to function properly.  You can install multiple binaries into
+    the same directory.  For example, you could then execute
 
         chmod 755 visit-install2_6_0
-        ./visit-install2_6_0 2.6.0 linux-x86_64 /usr/local/visit
+        ./visit-install2_6_0 2.6.0 darwin-x86_64 /usr/local/visit
 
-    to add a linux x86_64, 2.6.0 version of visit to the same directory.
+    to add a darwin x86_64, 2.6.0 version of visit to the same directory.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
