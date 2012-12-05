@@ -177,7 +177,7 @@ class NERSCLauncher(MainLauncher):
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Set up VisIt socket relay on MOM node for parallel engine
-            if self.generalArgs.exe_name == "engine" and self.parallelArgs.parallel:
+            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel:
                  self.loginnodeport = self.generalArgs.port
                  self.generalArgs.port = "$MOM_PORT"
                  self.loginnodehost = self.generalArgs.host
@@ -199,7 +199,7 @@ For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/r
                     exit("The VisIt install on Hopper does not support running a serial engine!", 1)
             else:
                 python_path = self.splitpaths(GETENV("PYTHONPATH"))
-                added_python_paths = [self.visitlibdir + "python/lib/python2.6/lib-dynload"]
+                added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
                 SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
 
     #

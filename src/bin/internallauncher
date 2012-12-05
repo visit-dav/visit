@@ -2651,9 +2651,9 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
         return 0
 
     launcher.ConsistencyCheck()
-    launcher.Customize()
     launcher.UpdateExecutableNames()
     launcher.SetupDirectoryNames(supportedarches)
+    launcher.Customize()
     launcher.SetupEnvironment()
     launcher.MakeUserDirectories(visitpluginver, supportedarches)
 
