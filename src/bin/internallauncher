@@ -1096,6 +1096,9 @@ class DebugMallocDebugger(Debugger):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Brad Whitlock, Thu Dec  6 10:47:27 PST 2012
+#   I fixed the non -noloopback case for launching of parallel engines on
+#   linux clusters.
 #
 ###############################################################################
 
@@ -1273,8 +1276,10 @@ class GeneralArguments(object):
         else:
             remotehost = "127.0.0.1"
             remotehost_set = 1
-            if parallel and (self.exe_name[:6] == "engine"):
-                args = args + ["-noloopback"]
+            if parallel and (self.exe_name[:6] == "engine") and \
+                self.launcher.os != "darwin":
+                remotehost = self.launcher.hostname()
+                remotehost_set = 1
 
         # Determine remotehost based on whether we're guessing the host or
         # tunneling ssh.

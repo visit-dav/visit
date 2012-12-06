@@ -719,7 +719,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     char *ptr = input.data;
     if (header->GetDataType() == DDCMD_FIXRECORDASCII)
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             unsigned int id = 0;
             sscanf(ptr, "%u", &id);
@@ -733,7 +733,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     }
     else if (labelUnsigned)
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Byte swap the data if necessary.
@@ -750,7 +750,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     }
     else
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Byte swap the data if necessary.
@@ -790,7 +790,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     ptr = input.data;
     if (header->GetDataType() == DDCMD_FIXRECORDASCII)
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             unsigned int id;
             sscanf(ptr, "%u", &id);
@@ -806,7 +806,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     }
     else if (labelUnsigned)
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Byte swap the data if necessary.
@@ -825,7 +825,7 @@ avtDDCMDFileFormat::ExchangeProcessorData(const DDCMDHeader *header,
     }
     else
     {
-        for (int i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Byte swap the data if necessary.
@@ -998,7 +998,7 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
     }
     nZonesBlock = (iMax - iMin) * (jMax - jMin) * (kMax - kMin);
        
-    int nZones = nZonesBlock;
+    unsigned long nZones = nZonesBlock;
 
     varValues = new float*[nVars];
     for (int i = 0; i < nVars; i++)
@@ -1026,9 +1026,9 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
                 iYZone = iY % deltaY;\
                 iZZone = iZ % deltaZ;\
             }\
-            int iZone = iZZone * nXBlock * nYBlock +\
-                        iYZone * nXBlock + iXZone;\
-            int nZones = nZonesBlock;
+            unsigned long iZone = iZZone * nXBlock * nYBlock +\
+                                  iYZone * nXBlock + iXZone;\
+            unsigned long nZones = nZonesBlock;
 
     //
     // Copy the processor data to the blocks.
@@ -1037,13 +1037,13 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
     if(header->GetDataType() == DDCMD_FIXRECORDASCII)
     {
         char **recOffsets = new char*[nFields];
-        for (long i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Determine the start of each field.
             //
             char *rec = data;
-            for (int j = 0; j < nFields; j++)
+            for (unsigned int j = 0; j < nFields; j++)
             {
                 while (isspace(*rec))
                     rec++;
@@ -1084,13 +1084,13 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
     }
     else
     {
-        for (long i = 0; i < input.nRecords; i++)
+        for (unsigned long i = 0; i < input.nRecords; i++)
         {
             //
             // Byte swap the data if necessary.
             //
             char *field = data;
-            for (int j = 0; j < nFields; j++)
+            for (unsigned int j = 0; j < nFields; j++)
             {
                 if (swap && fieldTypes[j][0] != (char)'b') Convert(field, fieldSizes[j]);
                 field += fieldSizes[j];
@@ -1173,6 +1173,9 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks(const DDCMDHeader *header,
 //    Brad Whitlock, Fri Nov 16 15:17:37 PST 2012
 //    Turn coordsBlock into vtkPoints so we don't have to convert to it later.
 //
+//    Brad Whitlock, Wed Dec  5 16:38:49 PST 2012
+//    Use unsigned long instead of int.
+//
 // ****************************************************************************
 
 void
@@ -1193,13 +1196,13 @@ avtDDCMDFileFormat::CopyAsciiDataToBlocks(const DDCMDHeader *header,
     const stringVector &typeNames    = header->GetTypeNames();
 
     char **recOffsets = new char*[nFields];
-    for (int i = 0; i < nPoints; i++)
+    for (unsigned long i = 0; i < nPoints; i++)
     {
         //
         // Determine the start of each field.
         //
         char *rec = data;
-        for (int j = 0; j < nFields; j++)
+        for (unsigned int j = 0; j < nFields; j++)
         {
              while (isspace(*rec))
                  rec++;
@@ -1298,13 +1301,13 @@ avtDDCMDFileFormat::CopyBinaryDataToBlocks(const DDCMDHeader *header,
     nPoints = input.nRecords;
     char *data = input.data;
 
-    for (int i = 0; i < nPoints; i++)
+    for (unsigned long i = 0; i < nPoints; i++)
     {
         //
         // Byte swap the data if necessary.
         //
         char *field = data;
-        for (int j = 0; j < nFields; j++)
+        for (unsigned int j = 0; j < nFields; j++)
         {
             if (swap && fieldTypes[j][0] != (char)'b') Convert(field, fieldSizes[j]);
             field += fieldSizes[j];
@@ -1503,9 +1506,9 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
     unsigned int lRec   = header->GetLRec();
     unsigned int nFiles = header->GetNFiles();
 
-    long   nRecords   = nRecordsList[rank];
-    int    fileNumber = fileNumberList[rank];
-    off_t  fileOffset = fileOffsetList[rank];
+    unsigned long nRecords = nRecordsList[rank];
+    unsigned int  fileNumber = fileNumberList[rank];
+    unsigned long fileOffset = fileOffsetList[rank];
 
     DataRecords retval;
     retval.nRecords = nRecords;
@@ -1516,7 +1519,7 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
     // correct spot.
     //
     char string[1024];
-    SNPRINTF(string, 1024, "%s/%s#%6.6d", fname.c_str(), subname.c_str(), fileNumber);
+    SNPRINTF(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(), fileNumber);
     debug1 << "Opening " << string << endl;
     FILE *file = fopen(string, "rb");
     if (file == NULL)
@@ -1538,7 +1541,7 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
             fileNumber++;
             if (fileNumber < nFiles)
             {
-                SNPRINTF(string, 1024, "%s/%s#%6.6d", fname.c_str(), subname.c_str(),
+                SNPRINTF(string, 1024, "%s/%s#%6.6u", fname.c_str(), subname.c_str(),
                         fileNumber);
                 debug1 << "Opening " << string << endl;
                 file = fopen(string, "rb");
@@ -1548,7 +1551,7 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
                 }
             }
         }
-        int cnt = fread(buffer, lRec, nRecords, file);
+        size_t cnt = fread(buffer, lRec, nRecords, file);
         debug1 << "Reading " << nRecords << " records, read " << cnt << " records" << endl;
         nRecords -= cnt;
         buffer += cnt * lRec;
@@ -1586,6 +1589,10 @@ avtDDCMDFileFormat::ReadProcessorChunk(const DDCMDHeader *header,
 //    of nFiles from the base class, which was 1, instead of from the
 //    header. I changed the code to set nFiles from the header.
 //
+//    Brad Whitlock, Thu Dec  6 10:50:04 PST 2012
+//    Use unsigned long to get the total file size right when the size is
+//    really large.
+//
 // ****************************************************************************
 
 void
@@ -1593,35 +1600,35 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset(const DDCMDHeader *header,
     const std::string &subname)
 {
 #ifdef PARALLEL
-    int nProcs = PAR_Size();
+    unsigned int nProcs = PAR_Size();
 #else
-    int nProcs = 1;
+    unsigned int nProcs = 1;
 #endif
 
-    unsigned int headerLength = header->GetHeaderLength();
-    unsigned int lRec         = header->GetLRec();
-    unsigned int nFiles       = header->GetNFiles();
+    unsigned long headerLength = header->GetHeaderLength();
+    unsigned long lRec         = header->GetLRec();
+    unsigned int nFiles        = header->GetNFiles();
 
     //
     // Determine the size of each file.
     //
-    off_t *fileSizeList = new off_t[nFiles];
-    off_t fileSize = 0;
-    for (int i = 0; i < nFiles; i++)
+    unsigned long *fileSizeList = new unsigned long[nFiles];
+    unsigned long fileSize = 0;
+    for (unsigned int i = 0; i < nFiles; i++)
     {
         char          string[1024];
         VisItStat_t   statbuf;
 
-        sprintf(string, "%s/%s#%6.6d", fname.c_str(), subname.c_str(), i);
+        sprintf(string, "%s/%s#%6.6u", fname.c_str(), subname.c_str(), i);
 
         VisItStat(string, &statbuf);
-        fileSizeList[i] = statbuf.st_size; 
+        fileSizeList[i] = (unsigned long)(statbuf.st_size); 
         fileSize += fileSizeList[i];
     } 
     fileSize -= headerLength;
 
     debug1 << "fileSizes=";
-    for (int i = 0; i < nFiles; i++)
+    for (unsigned int i = 0; i < nFiles; i++)
     {
         debug1 << fileSizeList[i] << ",";
     }
@@ -1630,19 +1637,19 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset(const DDCMDHeader *header,
     //
     // Allocate space for file offset information for each processor.
     //
-    nRecordsList   = new long[nProcs];
-    fileNumberList = new int[nProcs];
-    fileOffsetList = new off_t[nProcs];
+    nRecordsList   = new unsigned long[nProcs];
+    fileNumberList = new unsigned int[nProcs];
+    fileOffsetList = new unsigned long[nProcs];
 
-    off_t nRecordsTotal = fileSize / lRec;
-    off_t nRecordsPerProc = (nRecordsTotal + nProcs - 1) / nProcs;
+    unsigned long nRecordsTotal = fileSize / lRec;
+    unsigned long nRecordsPerProc = (nRecordsTotal + nProcs - 1) / nProcs;
 
-    int iFile = 0;
-    int fileOffset = headerLength;
-    for (int i = 0; i < nProcs; i++)
+    unsigned int iFile = 0;
+    unsigned long fileOffset = headerLength;
+    for (unsigned int i = 0; i < nProcs; i++)
     {
-        int nRec = nRecordsPerProc < nRecordsTotal ?
-                          nRecordsPerProc : nRecordsTotal;
+        unsigned long nRec = nRecordsPerProc < nRecordsTotal ?
+                             nRecordsPerProc : nRecordsTotal;
 
         nRecordsList[i] = nRec;
         fileNumberList[i] = iFile;
@@ -1659,7 +1666,7 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset(const DDCMDHeader *header,
 
     delete [] fileSizeList;
 
-    for (int i = 0; i < nProcs; i++)
+    for (unsigned int i = 0; i < nProcs; i++)
     {
        debug1 << "nRecords=" << nRecordsList[i] << ",fileNumber=" << fileNumberList[i] << ",fileOffset=" << fileOffsetList[i] << endl;
     }
@@ -1705,14 +1712,14 @@ avtDDCMDFileFormat::ReadHeader()
     // Read the headers.
     //
     vector<DDCMDHeader*> headers;
-    for (int i = 0; i < subnames.size(); i++)
+    for (size_t i = 0; i < subnames.size(); i++)
         headers.push_back(new DDCMDHeader(fname, subnames[i]));
 
     //
     // Determine if it is a cgrid file.
     //
     cgridFile = false;
-    for (int i = 0; i < subnames.size(); i++)
+    for (size_t i = 0; i < subnames.size(); i++)
         cgridFile = cgridFile || headers[i]->GetCGridFile();
 
     //
@@ -1720,7 +1727,7 @@ avtDDCMDFileFormat::ReadHeader()
     // then treat none as legacy files.
     //
     isLegacy = true;
-    for (int i = 0; i < subnames.size(); i++)
+    for (size_t i = 0; i < subnames.size(); i++)
         isLegacy &= headers[i]->IsLegacy();
 
     //
@@ -1738,7 +1745,7 @@ avtDDCMDFileFormat::ReadHeader()
         }
     }
 
-    for (int i = 1; i < subnames.size(); i++)
+    for (size_t i = 1; i < subnames.size(); i++)
     {
         if(headers[0]->GetNRecord() != headers[i]->GetNRecord())
         {
@@ -1782,7 +1789,7 @@ avtDDCMDFileFormat::ReadHeader()
     //
     if (error)
     {
-        for (int i = 0; i < headers.size(); i++)
+        for (size_t i = 0; i < headers.size(); i++)
             delete headers[i];
         headers.clear();
         debug5 << mName << "Returning empty headers vector." << endl;
@@ -1804,7 +1811,7 @@ avtDDCMDFileFormat::ReadHeader()
     // Assume that if other files have it, it will be consistent.
     //
     nSpecies = 0;
-    for (int i = 0; i < headers.size(); i++)
+    for (size_t i = 0; i < headers.size(); i++)
     {
         if (headers[i]->GetNSpecies() > 0 && nSpecies == 0)
         {
@@ -1813,7 +1820,7 @@ avtDDCMDFileFormat::ReadHeader()
         }
     }
     nGroups = 0;
-    for (int i = 0; i < headers.size(); i++)
+    for (size_t i = 0; i < headers.size(); i++)
     {
         if (headers[i]->GetNGroups() > 0 && nGroups == 0)
         {
@@ -1822,7 +1829,7 @@ avtDDCMDFileFormat::ReadHeader()
         }
     }
     nTypes = 0;
-    for (int i = 0; i < headers.size(); i++)
+    for (size_t i = 0; i < headers.size(); i++)
     {
         if (headers[i]->GetNTypes() > 0 && nTypes == 0)
         {
@@ -1880,7 +1887,7 @@ avtDDCMDFileFormat::ParseCGridHeader(const DDCMDHeader *header)
     varTypes   = new char[nFields];
     nVars = 0;
 
-    for (int i = 0; i < nFields; i++)
+    for (unsigned int i = 0; i < nFields; i++)
     {
         if (fieldNames[i] != std::string("checksum"))
         {
@@ -2039,7 +2046,7 @@ avtDDCMDFileFormat::ParseAtomHeader(const DDCMDHeader *header)
 
     int offset = 0;
 
-    for (int i = 0; i < header->GetNFields(); i++)
+    for (unsigned int i = 0; i < header->GetNFields(); i++)
     {
         if (fieldNames[i] != std::string("checksum"))
         {
@@ -2255,7 +2262,7 @@ void
 avtDDCMDFileFormat::ReadData(vector<DDCMDHeader*> &headers)
 {
     int nFields = 0;
-    for (int i = 0; i < headers.size(); i++)
+    for (size_t i = 0; i < headers.size(); i++)
         nFields += headers[i]->GetNFields();
 
     nVarsBlock = 0;
@@ -2270,7 +2277,7 @@ avtDDCMDFileFormat::ReadData(vector<DDCMDHeader*> &headers)
 //        for (int i = 0; i < headers.size(); i++)
 //            headers[i]->Print(cout);
 
-        for (int j = 0; j < subnames.size(); j++)
+        for (size_t j = 0; j < subnames.size(); j++)
         {
             ParseCGridHeader(headers[j]);
 
@@ -2292,7 +2299,7 @@ avtDDCMDFileFormat::ReadData(vector<DDCMDHeader*> &headers)
     }
     else
     {
-        for (int j = 0; j < subnames.size(); j++)
+        for (size_t j = 0; j < subnames.size(); j++)
         {
             ParseAtomHeader(headers[j]);
 
@@ -2346,7 +2353,7 @@ avtDDCMDFileFormat::GetPointMesh()
     ugrid->SetPoints(this->coordsBlock);
     ugrid->Allocate(nPoints);
     vtkIdType onevertex[1];
-    for (int i = 0 ; i < nPoints; i++)
+    for (unsigned long i = 0 ; i < nPoints; i++)
     {
         onevertex[0] = i;
         ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
@@ -2513,7 +2520,7 @@ avtDDCMDFileFormat::GetPointVar(const char *varname)
     {
         rv = vtkFloatArray::New();
         rv->SetNumberOfTuples(nPoints);
-        for (int i = 0; i < nPoints; i++)
+        for (unsigned long i = 0; i < nPoints; i++)
         {
             unsigned pinfo = pinfoBlock[i];
             int ig = pinfo % nGroups;
@@ -2534,8 +2541,8 @@ avtDDCMDFileFormat::GetPointVar(const char *varname)
         //
         // Get the index of the variable name.
         //
-        int i;
-        for (i= 0; i < nVarsBlock && varNamesBlock[i] != varname; i++)
+        unsigned int i;
+        for (i = 0; i < nVarsBlock && varNamesBlock[i] != varname; i++)
             /* Do nothing. */;
         if (i== nVarsBlock)
             EXCEPTION1(InvalidVariableException, varname);
@@ -2588,7 +2595,7 @@ avtDDCMDFileFormat::GetRectilinearVar(const char *varname)
     //
     // Get the index of the variable name and the index of the species name.
     //
-    int iVar;
+    unsigned int iVar;
     for (iVar = 0; iVar < nVarsBlock; iVar++)
     {
         if(varNamesBlock[iVar] == varBase)
@@ -2602,7 +2609,7 @@ avtDDCMDFileFormat::GetRectilinearVar(const char *varname)
     if (iVar == nVarsBlock)
         EXCEPTION1(InvalidVariableException, varname);
 
-    int iSpec;
+    unsigned int iSpec;
     for (iSpec = 0; iSpec < nSpecies && speciesNames[iSpec] != varSpec; iSpec++)
         /* Do nothing. */;
     if (nSpecies > 0 && iSpec == nSpecies)
@@ -2613,16 +2620,16 @@ avtDDCMDFileFormat::GetRectilinearVar(const char *varname)
     //
     vtkFloatArray *rv = vtkFloatArray::New();
 
-    int ntuples = nZonesBlock;
+    unsigned long ntuples = nZonesBlock;
     rv->SetNumberOfTuples(ntuples);
 
     float *data = varsBlock[iVar] + iSpec * ntuples;
     vtkIdType i = 0;
-    for (int iZ = 0; iZ < nZBlock; iZ++)
+    for (unsigned int iZ = 0; iZ < nZBlock; iZ++)
     {
-        for (int iY = 0; iY < nYBlock; iY++)
+        for (unsigned int iY = 0; iY < nYBlock; iY++)
         {
-            for (int iX = 0; iX < nXBlock; iX++)
+            for (unsigned int iX = 0; iX < nXBlock; iX++)
             {
                 rv->SetTuple1(i, *(data++));
                 i++;
@@ -2826,7 +2833,7 @@ avtDDCMDFileFormat::FreeUpResources(void)
     //
     if (varsBlock != NULL)
     {
-        for (int i = 0; i < nVarsBlock; i++)
+        for (unsigned int i = 0; i < nVarsBlock; i++)
         {
             delete [] varsBlock[i];
         }
@@ -2922,7 +2929,7 @@ avtDDCMDFileFormat::ActivateTimestep(void)
     //
     // Free the data.
     //
-    for (int i = 0; i < headers.size(); i++)
+    for (size_t i = 0; i < headers.size(); i++)
         delete headers[i];
 
     dataRead = true;
@@ -3052,7 +3059,7 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // Set the variable information.
         //
         Expression expr;
-        for (int i = 0; i < nVarsBlock; i++)
+        for (unsigned int i = 0; i < nVarsBlock; i++)
         {
             // For non-legacy files, add the real variable name too.
             if(!isLegacy)
@@ -3070,7 +3077,7 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             if(nSpecies > 0)
             {
-                for (int j = 0; j < nSpecies; j++)
+                for (unsigned int j = 0; j < nSpecies; j++)
                 {
                     string name = varNamesBlock[i] + "_" + string(speciesNames[j]);
                     AddScalarVarToMetaData(md, name, meshname, AVT_ZONECENT);
@@ -3078,7 +3085,7 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
                 expr.SetName(varNamesBlock[i]);
                 string name = varNamesBlock[i] + "_" + string(speciesNames[0]);
-                for (int j = 1; j < nSpecies; j++)
+                for (unsigned int j = 1; j < nSpecies; j++)
                 {
                     name += " + " + varNamesBlock[i] + "_" + string(speciesNames[j]);
                 }
@@ -3124,7 +3131,7 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // Set the variable information.
         //
-        for (int i = 0; i < nVarsBlock; i++)
+        for (unsigned int i = 0; i < nVarsBlock; i++)
         {
             AddScalarVarToMetaData(md, varNamesBlock[i], meshname, AVT_ZONECENT);
         }
