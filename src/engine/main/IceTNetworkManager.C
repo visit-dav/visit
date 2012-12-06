@@ -397,7 +397,7 @@ IceTNetworkManager::Render(bool, intVector networkIds, bool getZBuffer,
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the
         // threshold)
-        int scalableThreshold = GetScalableThreshold(windowID);
+        long scalableThreshold = GetScalableThreshold(windowID);
         if (GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
             this->RenderCleanup(windowID);
@@ -782,7 +782,7 @@ IceTNetworkManager::StopTimer(int windowID)
     viswin->GetCaptureRegion(width_start, height_start, rows,cols,
                              this->r_mgmt.viewportedMode);
 
-    SNPRINTF(msg, 1023, "IceTNM::Render %d cells %d pixels",
+    SNPRINTF(msg, 1023, "IceTNM::Render %ld cells %d pixels",
              GetTotalGlobalCellCounts(windowID), rows*cols);
     visitTimer->StopTimer(this->r_mgmt.timer, msg);
     this->r_mgmt.timer = -1;

@@ -1693,10 +1693,11 @@ NetworkManager::GetCurrentWindowId(void) const
 //    Modified to compute counts for networks in only the specified window
 //
 // ****************************************************************************
-int
+
+long
 NetworkManager::GetTotalGlobalCellCounts(int winID) const
 {
-    int sum = 0;
+    long sum = 0;
 
     for (size_t i = 0; i < networkCache.size(); i++)
     {
@@ -1725,7 +1726,7 @@ NetworkManager::GetTotalGlobalCellCounts(int winID) const
 //
 // ****************************************************************************
 void
-NetworkManager::SetGlobalCellCount(int netId, int cellCount)
+NetworkManager::SetGlobalCellCount(int netId, long cellCount)
 {
    globalCellCounts[netId] = cellCount;
    debug5 << "Setting cell count for network " << netId << " to " << cellCount << endl;
@@ -2411,7 +2412,7 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
         // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
         // the misfortune of oscillating switching of modes around the
         // threshold)
-        int scalableThreshold = GetScalableThreshold(windowID);
+        long scalableThreshold = GetScalableThreshold(windowID);
         if (checkThreshold && GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
         {
             this->RenderCleanup(windowID);
@@ -5524,6 +5525,9 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    Tom Fogal, Mon Sep  1 14:33:09 EDT 2008
 //    Change an assert to an exception.
 //
+//    Brad Whitlock, Thu Dec  6 10:02:35 PST 2012
+//    Use long instead of int in the SR cell count calculation.
+//
 // ****************************************************************************
 
 void
@@ -5644,10 +5648,10 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
         else
         {
             this->r_mgmt.cellCounts[i] =
-            (int) (anActor->GetDataObject()->GetNumberOfCells(false) *
+            (long) (anActor->GetDataObject()->GetNumberOfCells(false) *
                                              cellCountMultiplier);
             this->r_mgmt.cellCounts[i+plotIds.size()] =
-                     anActor->GetDataObject()->GetNumberOfCells(true);
+                     (long)anActor->GetDataObject()->GetNumberOfCells(true);
         }
 
         TimedCodeBlock("Adding plot to the vis window",
@@ -5703,9 +5707,9 @@ NetworkManager::SetUpWindowContents(int windowID, const intVector &plotIds,
     // plots with no data, too.
     //
 #ifdef PARALLEL
-    int *reducedCounts = new int[2 * plotIds.size()];
+    long *reducedCounts = new long[2 * plotIds.size()];
     MPI_Allreduce(*(this->r_mgmt.cellCounts), reducedCounts, 2 * plotIds.size(),
-                  MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+                  MPI_LONG, MPI_SUM, VISIT_MPI_COMM);
     for (size_t i = 0; i < 2 * plotIds.size(); i++)
     {
         if (this->r_mgmt.cellCounts[i] != INT_MAX) // accounts for overflow
@@ -5831,7 +5835,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
     }
 
     this->r_mgmt.needToSetUpWindowContents = false;
-    this->r_mgmt.cellCounts = new int[2 * plotIds.size()];
+    this->r_mgmt.cellCounts = new long[2 * plotIds.size()];
     this->r_mgmt.handledAnnotations = false;
     this->r_mgmt.handledCues = false;
     this->r_mgmt.stereoType = -1;
@@ -5878,7 +5882,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
 
     // scalable threshold test (the 0.5 is to add some hysteresus to avoid 
     // the misfortune of oscillating switching of modes around the threshold)
-    int scalableThreshold = GetScalableThreshold(windowID);
+    long scalableThreshold = GetScalableThreshold(windowID);
     if (this->r_mgmt.checkThreshold &&
         GetTotalGlobalCellCounts(windowID) < 0.5 * scalableThreshold)
     {
@@ -6468,7 +6472,7 @@ NetworkManager::StopTimer(int windowID)
     int rows,cols;
     viswin->GetSize(rows, cols);
 
-    SNPRINTF(msg, 1023, "NM::Render %d cells %d pixels",
+    SNPRINTF(msg, 1023, "NM::Render %ld cells %d pixels",
              GetTotalGlobalCellCounts(windowID), rows*cols);
     visitTimer->StopTimer(this->r_mgmt.timer, msg);
     this->r_mgmt.timer = -1;
