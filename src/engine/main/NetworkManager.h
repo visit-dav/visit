@@ -430,16 +430,19 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Eric Brugger, Mon Oct 31 09:52:28 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Brad Whitlock, Thu Dec  6 10:52:47 PST 2012
+//    Change global cell count variables from int to long.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager
 {
     typedef std::map<std::string, stringVector> StringVectorMap;
     struct render_state {
-        DataNetwork *origWorkingNet;   /* saves this->workingNet */
-        array_ref_ptr<int> cellCounts; /* # of cells, per network */
-        int stereoType;                /* for push/popping stereo rendering */
-        int timer;                     /* overall render time */
+        DataNetwork *origWorkingNet;    /* saves this->workingNet */
+        array_ref_ptr<long> cellCounts; /* # of cells, per network */
+        int stereoType;                 /* for push/popping stereo rendering */
+        int timer;                      /* overall render time */
         int annotMode;
         int windowID;                  /* window we're rendering. */
         bool getZBuffer;               /* should we readback Z too? */
@@ -491,8 +494,8 @@ class ENGINE_MAIN_API NetworkManager
     avtPlot_p     GetPlot(void);
     int           GetCurrentNetworkId(void) const;
     int           GetCurrentWindowId(void) const;
-    int           GetTotalGlobalCellCounts(int winID) const;
-    void          SetGlobalCellCount(int netId, int cellCount);
+    long          GetTotalGlobalCellCounts(int winID) const;
+    void          SetGlobalCellCount(int netId, long cellCount);
     int           GetScalableThreshold(int winId) const;
     int           GetCompactDomainsThreshold(int winId) const;
     bool          GetShouldUseCompression(int winId) const;
@@ -620,7 +623,7 @@ class ENGINE_MAIN_API NetworkManager
     PlotPluginManager          *plotPlugins;
 
     std::vector<DataNetwork*>   networkCache;
-    std::vector<int>            globalCellCounts;
+    std::vector<long>           globalCellCounts;
     std::deque<DataNetwork*>    networkMRU;
     std::vector<NetnodeDB*>     databaseCache;
     StringVectorMap             virtualDatabases;
