@@ -68,8 +68,6 @@
       <Field name="displayMonth" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
         JAN
       </Field>
-      <Field name="dataYearBegin" label="Data year begin" type="int">
-      </Field>
       <Field name="cutoff" label="Cutoff" type="float">
         0.000000
       </Field>

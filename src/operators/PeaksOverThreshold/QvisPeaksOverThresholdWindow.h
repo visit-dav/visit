@@ -95,7 +95,6 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void monthlyPercentileProcessText();
     void displaySeasonChanged(int val);
     void displayMonthChanged(int val);
-    void dataYearBeginProcessText();
     void cutoffProcessText();
     void computeParamValuesChanged(bool val);
     void computeCovariatesChanged(bool val);
@@ -120,7 +119,6 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QButtonGroup *displaySeasonButtonGroup;
     QWidget      *displayMonth;
     QButtonGroup *displayMonthButtonGroup;
-    QLineEdit *dataYearBegin;
     QLineEdit *cutoff;
     QCheckBox *computeParamValues;
     QCheckBox *computeCovariates;
@@ -140,7 +138,6 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLabel *monthlyPercentileLabel;
     QLabel *displaySeasonLabel;
     QLabel *displayMonthLabel;
-    QLabel *dataYearBeginLabel;
     QLabel *cutoffLabel;
     QLabel *covariateReturnYearsLabel;
     QLabel *rvDifferencesLabel;
