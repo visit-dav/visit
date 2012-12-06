@@ -246,7 +246,6 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
 
     displaySeason = obj.displaySeason;
     displayMonth = obj.displayMonth;
-    dataYearBegin = obj.dataYearBegin;
     cutoff = obj.cutoff;
     computeParamValues = obj.computeParamValues;
     computeCovariates = obj.computeCovariates;
@@ -446,7 +445,6 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
             monthlyPercentile_equal &&
             (displaySeason == obj.displaySeason) &&
             (displayMonth == obj.displayMonth) &&
-            (dataYearBegin == obj.dataYearBegin) &&
             (cutoff == obj.cutoff) &&
             (computeParamValues == obj.computeParamValues) &&
             (computeCovariates == obj.computeCovariates) &&
@@ -707,12 +705,6 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("displayMonth", MonthType_ToString(displayMonth)));
     }
 
-    if(completeSave || !FieldsEqual(ID_dataYearBegin, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("dataYearBegin", dataYearBegin));
-    }
-
     if(completeSave || !FieldsEqual(ID_cutoff, &defaultObject))
     {
         addToParent = true;
@@ -875,8 +867,6 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMonth(value);
         }
     }
-    if((node = searchNode->GetNode("dataYearBegin")) != 0)
-        SetDataYearBegin(node->AsInt());
     if((node = searchNode->GetNode("cutoff")) != 0)
         SetCutoff(node->AsFloat());
     if((node = searchNode->GetNode("computeParamValues")) != 0)
@@ -971,13 +961,6 @@ PeaksOverThresholdAttributes::SetDisplayMonth(PeaksOverThresholdAttributes::Mont
 {
     displayMonth = displayMonth_;
     Select(ID_displayMonth, (void *)&displayMonth);
-}
-
-void
-PeaksOverThresholdAttributes::SetDataYearBegin(int dataYearBegin_)
-{
-    dataYearBegin = dataYearBegin_;
-    Select(ID_dataYearBegin, (void *)&dataYearBegin);
 }
 
 void
@@ -1132,12 +1115,6 @@ PeaksOverThresholdAttributes::MonthType
 PeaksOverThresholdAttributes::GetDisplayMonth() const
 {
     return MonthType(displayMonth);
-}
-
-int
-PeaksOverThresholdAttributes::GetDataYearBegin() const
-{
-    return dataYearBegin;
 }
 
 float
@@ -1468,11 +1445,6 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_displayMonth:
         {  // new scope
         retval = (displayMonth == obj.displayMonth);
-        }
-        break;
-    case ID_dataYearBegin:
-        {  // new scope
-        retval = (dataYearBegin == obj.dataYearBegin);
         }
         break;
     case ID_cutoff:

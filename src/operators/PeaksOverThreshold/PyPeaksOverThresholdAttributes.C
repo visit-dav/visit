@@ -232,8 +232,6 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scutoff = %g\n", prefix, atts->GetCutoff());
     str += tmpStr;
     if(atts->GetComputeParamValues())
@@ -653,30 +651,6 @@ PeaksOverThresholdAttributes_GetDisplayMonth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-PeaksOverThresholdAttributes_SetDataYearBegin(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the dataYearBegin in the object.
-    obj->data->SetDataYearBegin((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PeaksOverThresholdAttributes_GetDataYearBegin(PyObject *self, PyObject *args)
-{
-    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataYearBegin()));
-    return retval;
-}
-
-/*static*/ PyObject *
 PeaksOverThresholdAttributes_SetCutoff(PyObject *self, PyObject *args)
 {
     PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
@@ -1031,8 +1005,6 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetDisplaySeason", PeaksOverThresholdAttributes_GetDisplaySeason, METH_VARARGS},
     {"SetDisplayMonth", PeaksOverThresholdAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", PeaksOverThresholdAttributes_GetDisplayMonth, METH_VARARGS},
-    {"SetDataYearBegin", PeaksOverThresholdAttributes_SetDataYearBegin, METH_VARARGS},
-    {"GetDataYearBegin", PeaksOverThresholdAttributes_GetDataYearBegin, METH_VARARGS},
     {"SetCutoff", PeaksOverThresholdAttributes_SetCutoff, METH_VARARGS},
     {"GetCutoff", PeaksOverThresholdAttributes_GetCutoff, METH_VARARGS},
     {"SetComputeParamValues", PeaksOverThresholdAttributes_SetComputeParamValues, METH_VARARGS},
@@ -1142,8 +1114,6 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "DEC") == 0)
         return PyInt_FromLong(long(PeaksOverThresholdAttributes::DEC));
 
-    if(strcmp(name, "dataYearBegin") == 0)
-        return PeaksOverThresholdAttributes_GetDataYearBegin(self, NULL);
     if(strcmp(name, "cutoff") == 0)
         return PeaksOverThresholdAttributes_GetCutoff(self, NULL);
     if(strcmp(name, "computeParamValues") == 0)
@@ -1198,8 +1168,6 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetDisplaySeason(self, tuple);
     else if(strcmp(name, "displayMonth") == 0)
         obj = PeaksOverThresholdAttributes_SetDisplayMonth(self, tuple);
-    else if(strcmp(name, "dataYearBegin") == 0)
-        obj = PeaksOverThresholdAttributes_SetDataYearBegin(self, tuple);
     else if(strcmp(name, "cutoff") == 0)
         obj = PeaksOverThresholdAttributes_SetCutoff(self, tuple);
     else if(strcmp(name, "computeParamValues") == 0)

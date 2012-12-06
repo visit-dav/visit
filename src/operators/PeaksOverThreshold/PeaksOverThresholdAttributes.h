@@ -130,7 +130,6 @@ public:
     void SetMonthlyPercentile(const double *monthlyPercentile_);
     void SetDisplaySeason(SeasonType displaySeason_);
     void SetDisplayMonth(MonthType displayMonth_);
-    void SetDataYearBegin(int dataYearBegin_);
     void SetCutoff(float cutoff_);
     void SetComputeParamValues(bool computeParamValues_);
     void SetComputeCovariates(bool computeCovariates_);
@@ -156,7 +155,6 @@ public:
           double    *GetMonthlyPercentile();
     SeasonType      GetDisplaySeason() const;
     MonthType       GetDisplayMonth() const;
-    int             GetDataYearBegin() const;
     float           GetCutoff() const;
     bool            GetComputeParamValues() const;
     bool            GetComputeCovariates() const;
@@ -210,7 +208,6 @@ public:
         ID_monthlyPercentile,
         ID_displaySeason,
         ID_displayMonth,
-        ID_dataYearBegin,
         ID_cutoff,
         ID_computeParamValues,
         ID_computeCovariates,
@@ -235,7 +232,6 @@ private:
     double    monthlyPercentile[12];
     int       displaySeason;
     int       displayMonth;
-    int       dataYearBegin;
     float     cutoff;
     bool      computeParamValues;
     bool      computeCovariates;

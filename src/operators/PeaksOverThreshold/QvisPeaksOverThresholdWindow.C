@@ -257,13 +257,6 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
             this, SLOT(displayMonthChanged(int)));
     mainLayout->addWidget(displayMonth, 8,1);
 
-    dataYearBeginLabel = new QLabel(tr("Data year begin"), central);
-    mainLayout->addWidget(dataYearBeginLabel,6,0);
-    dataYearBegin = new QLineEdit(central);
-    connect(dataYearBegin, SIGNAL(returnPressed()),
-            this, SLOT(dataYearBeginProcessText()));
-    mainLayout->addWidget(dataYearBegin, 6,1);
-
     cutoffLabel = new QLabel(tr("Cutoff"), central);
     mainLayout->addWidget(cutoffLabel,9,0);
     cutoff = new QLineEdit(central);
@@ -471,9 +464,6 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
                 displayMonthButtonGroup->button((int)atts->GetDisplayMonth())->setChecked(true);
             displayMonthButtonGroup->blockSignals(false);
             break;
-          case PeaksOverThresholdAttributes::ID_dataYearBegin:
-            dataYearBegin->setText(IntToQString(atts->GetDataYearBegin()));
-            break;
           case PeaksOverThresholdAttributes::ID_cutoff:
             cutoff->setText(FloatToQString(atts->GetCutoff()));
             break;
@@ -672,20 +662,6 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do dataYearBegin
-    if(which_widget == PeaksOverThresholdAttributes::ID_dataYearBegin || doAll)
-    {
-        int val;
-        if(LineEditGetInt(dataYearBegin, val))
-            atts->SetDataYearBegin(val);
-        else
-        {
-            ResettingError(tr("Data year begin"),
-                IntToQString(atts->GetDataYearBegin()));
-            atts->SetDataYearBegin(atts->GetDataYearBegin());
-        }
-    }
-
     // Do cutoff
     if(which_widget == PeaksOverThresholdAttributes::ID_cutoff || doAll)
     {
@@ -830,14 +806,6 @@ QvisPeaksOverThresholdWindow::displayMonthChanged(int val)
         SetUpdate(false);
         Apply();
     }
-}
-
-
-void
-QvisPeaksOverThresholdWindow::dataYearBeginProcessText()
-{
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataYearBegin);
-    Apply();
 }
 
 

@@ -118,7 +118,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         monthlyPercentile[11] = 0.9;
         displaySeason = SEASONTYPE_WINTER;
         displayMonth = MONTHTYPE_JAN;
-        dataYearBegin = 0;
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
@@ -166,7 +165,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         monthlyPercentile[11] = 0.9;
         displaySeason = SEASONTYPE_WINTER;
         displayMonth = MONTHTYPE_JAN;
-        dataYearBegin = 0;
         cutoff = 0f;
         computeParamValues = false;
         computeCovariates = false;
@@ -207,7 +205,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
 
         displaySeason = obj.displaySeason;
         displayMonth = obj.displayMonth;
-        dataYearBegin = obj.dataYearBegin;
         cutoff = obj.cutoff;
         computeParamValues = obj.computeParamValues;
         computeCovariates = obj.computeCovariates;
@@ -284,7 +281,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 monthlyPercentile_equal &&
                 (displaySeason == obj.displaySeason) &&
                 (displayMonth == obj.displayMonth) &&
-                (dataYearBegin == obj.dataYearBegin) &&
                 (cutoff == obj.cutoff) &&
                 (computeParamValues == obj.computeParamValues) &&
                 (computeCovariates == obj.computeCovariates) &&
@@ -377,12 +373,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(8);
     }
 
-    public void SetDataYearBegin(int dataYearBegin_)
-    {
-        dataYearBegin = dataYearBegin_;
-        Select(6);
-    }
-
     public void SetCutoff(float cutoff_)
     {
         cutoff = cutoff_;
@@ -467,7 +457,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public double[] GetMonthlyPercentile() { return monthlyPercentile; }
     public int      GetDisplaySeason() { return displaySeason; }
     public int      GetDisplayMonth() { return displayMonth; }
-    public int      GetDataYearBegin() { return dataYearBegin; }
     public float    GetCutoff() { return cutoff; }
     public boolean  GetComputeParamValues() { return computeParamValues; }
     public boolean  GetComputeCovariates() { return computeCovariates; }
@@ -497,11 +486,11 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             buf.WriteDoubleArray(seasonalPercentile);
         if(WriteSelect(6, buf))
             buf.WriteDoubleArray(monthlyPercentile);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteInt(displaySeason);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteInt(displayMonth);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteFloat(cutoff);
         if(WriteSelect(10, buf))
             buf.WriteBool(computeParamValues);
@@ -550,13 +539,13 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         case 6:
             SetMonthlyPercentile(buf.ReadDoubleArray());
             break;
-        case 8:
+        case 7:
             SetDisplaySeason(buf.ReadInt());
             break;
-        case 9:
+        case 8:
             SetDisplayMonth(buf.ReadInt());
             break;
-        case 10:
+        case 9:
             SetCutoff(buf.ReadFloat());
             break;
         case 10:
@@ -645,7 +634,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         if(displayMonth == MONTHTYPE_DEC)
             str = str + "MONTHTYPE_DEC";
         str = str + "\n";
-        str = str + intToString("dataYearBegin", dataYearBegin, indent) + "\n";
         str = str + floatToString("cutoff", cutoff, indent) + "\n";
         str = str + boolToString("computeParamValues", computeParamValues, indent) + "\n";
         str = str + boolToString("computeCovariates", computeCovariates, indent) + "\n";
@@ -671,7 +659,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private double[] monthlyPercentile;
     private int      displaySeason;
     private int      displayMonth;
-    private int      dataYearBegin;
     private float    cutoff;
     private boolean  computeParamValues;
     private boolean  computeCovariates;
