@@ -103,6 +103,42 @@ class JobSubmitter_mpirun(JobSubmitter):
         return parcmd
 
 ###############################################################################
+# Class: JobSubmitter_mpiexec
+#
+# Purpose:    Launch an MPI job with mpiexec.
+#
+# Programmer: Gunther H. Weber
+# Date:       Wed Dec  5 18:39:03 PST 2012
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_mpiexec(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpiexec,self).__init__(launcher)
+
+    def Executable(self):
+        return ["mpiexec"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-np", self.parallel.np]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-p", self.parallel.partition]
+        if self.parallel.machinefile != None:
+            parcmd = parcmd + ["-machinefile", self.parallel.machinefile]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
 # Class: JobSubmitter_aprun
 #
 # Purpose:    Launch an MPI job with aprun.
@@ -2573,6 +2609,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #    Gunther H. Weber, Wed Dec  5 18:39:31 PST 2012
+    #    Added mpiexec as new job submitter
     #
     ############################################################################
 
@@ -2585,6 +2623,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
         # Instantiate a job submitter
         if launch == "mpirun":
             return JobSubmitter_mpirun(self)
+        elif launch == "mpiexec":
+            return JobSubmitter_mpiexec(self)
         elif launch == "aprun":
             return JobSubmitter_aprun(self)
         elif launch == "dmpirun":
