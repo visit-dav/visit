@@ -524,6 +524,7 @@ IF(VISIT_MESA_DIR)
   OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt"
 ON)
 ENDIF(VISIT_MESA_DIR)
+OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
@@ -688,13 +689,23 @@ ELSE(WIN32)
     # have a bunch of files with paths greater than 100 character so this
     # fails in our case.
     #
-    INSTALL(CODE "
-      MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
-      EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
-        COMMAND \${CMAKE_COMMAND} -E create_symlink
-        \"${VISIT_VERSION}\"
-        \"${CMAKE_INSTALL_PREFIX}/current\")
-    ")
+    IF(VISIT_INSTALL_AS_BETA)
+        INSTALL(CODE "
+          MESSAGE(\"Symlinking beta to ${VISIT_VERSION}\")
+          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+            COMMAND \${CMAKE_COMMAND} -E create_symlink
+            \"${VISIT_VERSION}\"
+            \"${CMAKE_INSTALL_PREFIX}/beta\")
+        ")
+    ELSE(VISIT_INSTALL_AS_BETA)
+        INSTALL(CODE "
+          MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
+          EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
+            COMMAND \${CMAKE_COMMAND} -E create_symlink
+            \"${VISIT_VERSION}\"
+            \"${CMAKE_INSTALL_PREFIX}/current\")
+        ")
+    ENDIF(VISIT_INSTALL_AS_BETA)
 ENDIF(WIN32)
 MARK_AS_ADVANCED(
 VISIT_INSTALLED_VERSION_BIN
