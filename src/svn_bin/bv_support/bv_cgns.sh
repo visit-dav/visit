@@ -18,7 +18,15 @@ ON_CGNS="off"
 
 function bv_cgns_depends_on
 {
-echo ""
+    local depends=""
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends="hdf5"
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            depends="szip hdf5"
+        fi
+    fi
+    
+    echo $depends
 }
 
 function bv_cgns_info
