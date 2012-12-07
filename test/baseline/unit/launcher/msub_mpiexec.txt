@@ -8,11 +8,11 @@ msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/l
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -27,11 +27,11 @@ msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/l
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -46,11 +46,11 @@ msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/l
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -65,11 +65,11 @@ msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib:/usr/l
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
