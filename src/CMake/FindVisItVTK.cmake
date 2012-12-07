@@ -68,6 +68,10 @@
 #   Cyrus Harrison, Tue Sep 25 12:09:39 PDT 2012
 #   Added Geoviz libs
 #
+#   Kathleen Biagas, Thu Dec 6 10:26:54 PST 2012 
+#   Use VTK_LIBRARIES and others in determining what to install, rather than
+#   listing individually, which is prone to omissions.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -124,61 +128,57 @@ ENDIF(APPLE)
 IF(VISIT_VTK_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping installation of VTK libraries")
 ELSE(VISIT_VTK_SKIP_INSTALL)
-    FOREACH(VTKLIB MapReduceMPI
-        mpistubs
-        vtkCommon
-        vtkCommonPythonD
-        vtkDICOMParser
-        vtkFiltering
-        vtkFilteringPythonD
-        vtkGenericFiltering
-        vtkGenericFilteringPythonD
-        vtkGeovis
-        vtkGeovisPythonD
-        vtkGraphics
-        vtkGraphicsPythonD
-        vtkHybrid
-        vtkHybridPythonD
-        vtkIO
-        vtkIOPythonD
-        vtkImaging
-        vtkImagingPythonD
-        vtkPythonCore
-        vtkRendering
-        vtkRenderingPythonD
-        vtkVolumeRendering
-        vtkVolumeRenderingPythonD
-        vtkWidgets
-        vtkWidgetsPythonD
-        vtkalglib
-        vtkexpat
-        vtkfreetype
-        vtkftgl
-        vtkjpeg
-        vtklibxml2
-        vtkpng
-        vtkproj4
-        vtksqlite
-        vtksys
-        vtktiff
-        vtkverdict
-        vtkzlib
-    )
+    IF(NOT WIN32)
+        SET(pathnameandprefix "${VTK_LIBRARY_DIRS}/lib")
+    ELSE()
+        SET(pathnameandprefix "${VTK_RUNTIME_DIRS}/")
+    ENDIF(NOT WIN32)
+
+    MACRO(SETUP_INSTALL vtklib)
+        SET(LIBNAME   ${pathnameandprefix}${vtklib}.${SO_EXT})
+        IF(EXISTS ${LIBNAME})
+            MESSAGE("installing ${LIBNAME}")
+            THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
+        ENDIF(EXISTS ${LIBNAME})
+
         IF(WIN32)
-            SET(LIBNAME ${VTK_RUNTIME_DIRS}/${VTKLIB}.${SO_EXT})
+            # install .lib versions, too
+            SET(LIBNAME   ${pathnameandprefix}${vtklib}.lib)
             IF(EXISTS ${LIBNAME})
-                THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-            ENDIF(EXISTS ${LIBNAME})
-            SET(LIBNAME ${VTK_LIBRARY_DIRS}/${VTKLIB}.lib)
-            IF(EXISTS ${LIBNAME})
-                THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
-            ENDIF(EXISTS ${LIBNAME})
-        ELSE(WIN32)
-            SET(LIBNAME ${VTK_LIBRARY_DIRS}/lib${VTKLIB}.${SO_EXT})
-            IF(EXISTS ${LIBNAME})
+                MESSAGE("installing ${LIBNAME}")
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             ENDIF(EXISTS ${LIBNAME})
         ENDIF(WIN32)
+    ENDMACRO(SETUP_INSTALL vtklib)
+    
+
+    # Base libs and their python wrappings
+    FOREACH(VTKLIB ${VTK_LIBRARIES})
+        SETUP_INSTALL("${VTKLIB}")
+        SETUP_INSTALL("${VTKLIB}PythonD")
+    ENDFOREACH(VTKLIB)  
+
+    # Utility libs, and misc not defined by VTK var
+    FOREACH(VTKLIB 
+        ${VTK_PNG_LIBRARIES}
+        ${VTK_ZLIB_LIBRARIES}
+        ${VTK_JPEG_LIBRARIES}
+        ${VTK_TIFF_LIBRARIES}
+        ${VTK_EXPAT_LIBRARIES}
+        ${VTK_FREETYPE_LIBRARIES}
+        ${VTK_LIBXML2_LIBRARIES}
+        ${VTK_LIBPROJ4_LIBRARIES}
+        MapReduceMPI
+        mpistubs
+        vtkDICOMParser
+        vtkPythonCore
+        vtkalglib
+        vtkftgl
+        vtksqlite
+        vtksys
+        vtkverdict
+        )
+        SETUP_INSTALL("${VTKLIB}")
     ENDFOREACH(VTKLIB)  
 
     # Add install targets for VTK headers too -- but just the vtk-5.0 dir.
@@ -192,8 +192,12 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
                 #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
                 INSTALL(DIRECTORY ${X}
                     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
-                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ 
+                                     GROUP_WRITE GROUP_READ 
+                                     WORLD_READ
+                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
+                                          GROUP_WRITE GROUP_READ GROUP_EXECUTE 
+                                          WORLD_READ WORLD_EXECUTE
                     PATTERN ".svn" EXCLUDE
                 )
             ENDIF(EXISTS ${X}/vtkActor.h)
