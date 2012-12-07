@@ -787,6 +787,7 @@ elif [ "$config" = "anag" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/anag/config                 "$dir"/$version+/.visit/
    cp "$dir"/$version+/$platformDir/resources/hosts/anag/guiconfig              "$dir"/$version+/.visit/
    cp "$dir"/$version+/$platformDir/resources/hosts/anag/visitrc                "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/anag/customlauncher         "$dir"/$version+/bin/
 elif [ "$config" = "lsu" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
