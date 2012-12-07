@@ -8,9 +8,9 @@ sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+aprun -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -23,9 +23,9 @@ sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
-totalview aprun -a -dograb -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+totalview aprun -a -dograb -n 8 -arg1 -arg2 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -38,9 +38,9 @@ sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+aprun -n 8 -arg1 -arg2 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -53,8 +53,8 @@ sbatch --partition=pbatch --account=bdivp --nodes=1 --ntasks=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
-cd $VISIT_TEST_DIR/_run/_unit_launcher
+cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -n 8 -arg1 -arg2 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+aprun -n 8 -arg1 -arg2 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 

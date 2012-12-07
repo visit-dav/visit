@@ -4,7 +4,7 @@ CASE: bsub
 INPUT: visit -engine -norun engine_par -l bsub -np 8 -p pbatch -t 30:00 -la "-arg1 -arg2" -host 127.0.0.1 -port 5600
 
 RESULTS:
-bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: bsub -totalview engine_par
@@ -12,7 +12,7 @@ CASE: bsub -totalview engine_par
 INPUT: visit -engine -norun engine_par -l bsub -np 8 -p pbatch -t 30:00 -la "-arg1 -arg2" -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-totalview bsub -a -dograb -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+totalview bsub -a -dograb -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: bsub -valgrind engine_par
@@ -20,7 +20,7 @@ CASE: bsub -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l bsub -np 8 -p pbatch -t 30:00 -la "-arg1 -arg2" -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: bsub -strace engine_par
@@ -28,5 +28,5 @@ CASE: bsub -strace engine_par
 INPUT: visit -engine -norun engine_par -l bsub -np 8 -p pbatch -t 30:00 -la "-arg1 -arg2" -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+bsub -I -arg1 -arg2 -n 8 -q pbatch -W 30:00  strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 

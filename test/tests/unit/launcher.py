@@ -8,6 +8,12 @@
 #
 #  Brad Whitlock, Tue Sep 11 12:31:34 PDT 2012
 #
+# Modifications:
+#   Brad Whitlock, Fri Dec  7 09:08:22 PST 2012
+#   I added a little more filtering of the launcher output to replace the host
+#   with $HOST now that the noloopback case will always use the real host
+#   name instead of 127.0.0.1 for parallel engine launches.
+#
 # ----------------------------------------------------------------------------
 import os, subprocess, string
 
@@ -58,6 +64,13 @@ def FilterLauncherOutput(text, replacements):
         text = string.replace(text, k, replacements[k])
     return text
 
+def FilterHostName(text):
+    host = string.find(text, "-host")
+    port = string.find(text, "-port")
+    if host != -1 and port != -1:
+        return text[:host + 6] + "$HOST " + text[port:]
+    return text
+        
 def FormatLauncherOutput(cmd):
     tmpvisit = string.find(cmd, "/tmp/visit")
     text = ""
@@ -148,8 +161,11 @@ for k in keys:
                         "linux-intel"   : "$PLATFORM",
                         "linux-x86_64"  : "$PLATFORM",
                         "darwin-i386"   : "$PLATFORM",
-                        "darwin-x86_64" : "$PLATFORM"}
+                        "darwin-x86_64" : "$PLATFORM",
+                        "/_run/_unit_launcher" : ""}
         output = FilterLauncherOutput(output, replacements)
+
+        output = FilterHostName(output)
 
         # Do the test
         text = text + "="*80 + "\n"

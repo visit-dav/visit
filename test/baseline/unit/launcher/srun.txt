@@ -4,7 +4,7 @@ CASE: srun
 INPUT: visit -engine -norun engine_par -l srun -np 8 -nn 1 -p pbatch -b bdivp -n JOB_NAME -t 30:00 -host 127.0.0.1 -port 5600
 
 RESULTS:
-srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: srun -totalview engine_par
@@ -12,7 +12,7 @@ CASE: srun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l srun -np 8 -nn 1 -p pbatch -b bdivp -n JOB_NAME -t 30:00 -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-totalview srun -a -dograb -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+totalview srun -a -dograb -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: srun -valgrind engine_par
@@ -20,7 +20,7 @@ CASE: srun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l srun -np 8 -nn 1 -p pbatch -b bdivp -n JOB_NAME -t 30:00 -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 valgrind --tool=memcheck --error-limit=no --num-callers=50 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: srun -strace engine_par
@@ -28,5 +28,5 @@ CASE: srun -strace engine_par
 INPUT: visit -engine -norun engine_par -l srun -np 8 -nn 1 -p pbatch -b bdivp -n JOB_NAME -t 30:00 -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -noloopback -host 127.0.0.1 -port 5600
+srun -n 8 -N 1 -J JOB_NAME -p pbatch -t 30:00 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
 
