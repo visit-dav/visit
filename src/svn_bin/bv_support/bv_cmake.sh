@@ -47,7 +47,7 @@ function cmake_set_vars_helper
    CMAKE_ROOT=`echo "$CMAKE_ROOT"`
    CMAKE_ROOT=`echo $CMAKE_ROOT`
 
-   echo $CMAKE_VERSION "--> $CMAKE_BUILD_DIR" "--> $CMAKE_INSTALL" "--> $CMAKE_ROOT"
+   echo "version: $CMAKE_VERSION build: $CMAKE_BUILD_DIR bin: $CMAKE_INSTALL root: $CMAKE_ROOT"
 }
 
 function bv_cmake_system_cmake

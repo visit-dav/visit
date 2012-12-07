@@ -171,12 +171,39 @@ if [[ $? == 0 ]] ; then
     exit 1
 fi
 
-defaultLicense=$(xmlp_get_license "$@")
-info "Selected $defaultLicense license."
+defaultLicenses=$(xmlp_get_license "$@")
 
-#read in contents for this license
-parseXmlModuleContents $defaultLicense
+for license in `echo $defaultLicenses`
+do
+    info "Processing $license license."
 
+    #read in contents for this license
+    parseXmlModuleContents $license
+
+    #copy xmlcontents to global variables
+    reqlibs=(`echo "${reqlibs[@]} ${xmlp_reqlibs[@]}" | xargs -n 1 | sort -u | xargs`)
+    optlibs=(`echo "${optlibs[@]} ${xmlp_optlibs[@]}" | xargs -n 1 | sort -u | xargs`)
+
+    for (( bv_i = 0; bv_i < ${#xmlp_grouplibs_name[*]}; ++bv_i ))
+    do
+        match=0
+
+        for (( bv_j = 0; bv_j < ${#grouplibs_name[*]}; ++bv_j ))
+        do
+            if [[ "${grouplibs_name[$bv_j]}" == "${xmlp_grouplibs_name[$bv_i]}" ]]; then
+                match=1
+                grouplibs_deps[$bv_j]=`echo "${grouplibs_deps[$bv_j]} ${xmlp_grouplibs_deps[$bv_i]}" | xargs -n 1 | sort -u | xargs`
+                break #break out of the loop
+            fi
+        done
+
+        if [[ match -eq 0 ]]; then
+            grouplibs_name[${#grouplibs_name[*]}]="${xmlp_grouplibs_name[$bv_i]}"
+            grouplibs_deps[${#grouplibs_deps[*]}]="${xmlp_grouplibs_deps[$bv_i]}"
+            grouplibs_comment[${#grouplibs_comment[*]}]="${xmlp_grouplibs_comment[$bv_i]}"
+        fi
+    done
+done
 
 #import functions that that install required visit libraries
 for (( i = 0; i < ${#reqlibs[*]}; ++i ))
@@ -184,7 +211,6 @@ do
     . "${bv_PREFIX}/bv_${reqlibs[$i]}.sh" 
     verify_required_module_exists ${reqlibs[$i]}
 done
-
 
 #import functions that support optional visit dependencies
 #import functions that that install required visit libraries
@@ -262,14 +288,38 @@ function bv_write_unified_file
 
     for (( i = 0; i < ${#xmlp_licenses[*]}; ++i ))
     do
-        echo "xmlp_licenses[$i]=\"${xmlp_licenses[$i]//\|/\\\|}\"" >> $OUTPUT_bv_FILE
+        #echo "xmlp_licenses[$i]=\"${xmlp_licenses[$i]//\|/\\\|}\"" >> $OUTPUT_bv_FILE
+        echo "xmlp_licenses[$i]=\"${xmlp_licenses[$i]}\"" >> $OUTPUT_bv_FILE
         echo "xmlp_licenses_range[$i]=\"${xmlp_licenses_range[$i]}\"" >> $OUTPUT_bv_FILE
     done
 
-    echo "defaultLicense=\$(xmlp_get_license \"\$@\")"  >> $OUTPUT_bv_FILE
-    echo "info \"Selected \$defaultLicense license.\"" >> $OUTPUT_bv_FILE
+    echo "defaultLicenses=\$(xmlp_get_license \"\$@\")" >> $OUTPUT_bv_FILE
 
-    echo "parseXmlModuleContents \$defaultLicense"  >> $OUTPUT_bv_FILE
+    echo "for license in \`echo \$defaultLicenses\`"  >> $OUTPUT_bv_FILE
+    echo "do" >> $OUTPUT_bv_FILE
+    echo "  info \"Processing \$license license.\"" >> $OUTPUT_bv_FILE
+    echo "  parseXmlModuleContents \$license" >> $OUTPUT_bv_FILE
+    echo "  reqlibs=(\`echo \"\${reqlibs[@]} \${xmlp_reqlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
+    echo "  optlibs=(\`echo \"\${optlibs[@]} \${xmlp_optlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
+
+    echo "for (( bv_i = 0; bv_i < \${#xmlp_grouplibs_name[*]}; ++bv_i ))" >> $OUTPUT_bv_FILE
+    echo "do" >> $OUTPUT_bv_FILE
+    echo "  match=0" >> $OUTPUT_bv_FILE
+    echo "  for (( bv_j = 0; bv_j < \${#grouplibs_name[*]}; ++bv_j ))" >> $OUTPUT_bv_FILE
+    echo "  do" >> $OUTPUT_bv_FILE
+    echo "    if [[ \"\${grouplibs_name[\$bv_j]}\" == \"\${xmlp_grouplibs_name[\$bv_i]}\" ]]; then" >> $OUTPUT_bv_FILE
+    echo "      match=1" >> $OUTPUT_bv_FILE
+    echo "      grouplibs_deps[\$bv_j]=\`echo \"\${grouplibs_deps[\$bv_j]} \${xmlp_grouplibs_deps[\$bv_i]}\" | xargs -n 1 | sort -u | xargs\`" >> $OUTPUT_bv_FILE
+    echo "      break" >> $OUTPUT_bv_FILE
+    echo "    fi" >> $OUTPUT_bv_FILE
+    echo "  done" >> $OUTPUT_bv_FILE
+    echo "  if [[ match -eq 0 ]]; then" >> $OUTPUT_bv_FILE
+    echo "    grouplibs_name[\${#grouplibs_name[*]}]=\"\${xmlp_grouplibs_name[\$bv_i]}\"" >> $OUTPUT_bv_FILE
+    echo "    grouplibs_deps[\${#grouplibs_deps[*]}]=\"\${xmlp_grouplibs_deps[\$bv_i]}\"" >> $OUTPUT_bv_FILE
+    echo "    grouplibs_comment[\${#grouplibs_comment[*]}]=\"\${xmlp_grouplibs_comment[\$bv_i]}\"" >> $OUTPUT_bv_FILE
+    echo "  fi" >> $OUTPUT_bv_FILE
+    echo "  done" >> $OUTPUT_bv_FILE
+    echo "done" >> $OUTPUT_bv_FILE
 
     echo "function bv_write_unified_file" >> $OUTPUT_bv_FILE
     echo "{" >> $OUTPUT_bv_FILE
