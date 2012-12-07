@@ -41,7 +41,7 @@ function qt_set_vars_helper
 }
 function bv_qt_system_qt
 {
-   echo "Using System Qt"
+   echo "using system qt"
 
    QTEXEC="qmake"
    TEST=`which $QTEXEC`
@@ -61,7 +61,7 @@ function bv_qt_system_qt
 
 function bv_qt_alt_qt_dir
 {
-    info "Using qt from alternative directory $1"
+    info "using qt from alternative directory $1"
 
    QTEXEC="qmake"
    if [[ ! -e "$1/bin/$QTEXEC" ]]; then

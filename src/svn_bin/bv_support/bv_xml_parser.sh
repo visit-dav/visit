@@ -5,6 +5,11 @@ declare -a xmlp_licenses
 declare -a xmlp_licenses_range
 declare -a xmlp_alllibs
 declare -a xmlp_tmp_array
+declare -a xmlp_reqlibs
+declare -a xmlp_optlibs
+declare -a xmlp_grouplibs_name
+declare -a xmlp_grouplibs_deps
+declare -a xmlp_grouplibs_comment
 
 function xmlp_removeSingleLineComment
 {
@@ -146,9 +151,9 @@ function parseXmlGroupModules
             startReading=0
             #remove whitespace with echo
             #echo "Title: $title Comment: $comment Deps $deps"
-            grouplibs_name[${#grouplibs_name[*]}]=`echo $title`
-            grouplibs_deps[${#grouplibs_deps[*]}]=`echo $deps`
-            grouplibs_comment[${#grouplibs_comment[*]}]=`echo $comment`
+            xmlp_grouplibs_name[${#xmlp_grouplibs_name[*]}]=`echo $title`
+            xmlp_grouplibs_deps[${#xmlp_grouplibs_deps[*]}]=`echo $deps`
+            xmlp_grouplibs_comment[${#xmlp_grouplibs_comment[*]}]=`echo $comment`
             title=""
             deps=""
         fi
@@ -203,14 +208,18 @@ function xmlp_licenseMatch
 #loop through argument list and extract license
 function xmlp_get_license
 {
-    local defaultLicense=${xmlp_licenses[0]/\|*}
+    local defaultLicense="" 
     for arg in "$@" ; do
         #potential input license..
         xmlp_licenseMatch "${arg/--}"
         if [[ $? == 1 ]]; then
-            defaultLicense="${arg/--}"
+            defaultLicense="$defaultLicense ${arg/--}"
         fi
     done
+
+    if [[ "$defaultLicense" == "" ]]; then
+        defaultLicense="${xmlp_licenses[0]/\|*}"
+    fi
 
     echo "$defaultLicense"
 }
@@ -222,11 +231,11 @@ function parseXmlModuleContents
     local lend=-1
     local i=0
 
-    reqlibs=()
-    optlibs=()
-    grouplibs_name=()
-    grouplibs_deps=()
-    grouplibs_comment=()
+    xmlp_reqlibs=()
+    xmlp_optlibs=()
+    xmlp_grouplibs_name=()
+    xmlp_grouplibs_deps=()
+    xmlp_grouplibs_comment=()
 
     for (( i=0; i < ${#xmlp_licenses[*]}; ++i ))
     do
@@ -262,35 +271,35 @@ function parseXmlModuleContents
 
     #parse required
     parseXmlModules "<required>" "</required>" $lstart $lend
-    reqlibs=( "${xmlp_tmp_array[@]}" )
+    xmlp_reqlibs=( "${xmlp_tmp_array[@]}" )
 
     #parse optional
     parseXmlModules "<optional>" "</optional>" $lstart $lend
-    optlibs=( "${xmlp_tmp_array[@]}" )
+    xmlp_optlibs=( "${xmlp_tmp_array[@]}" )
 
     #parse any groups
     parseXmlGroupModules $lstart $lend
 
-    if [[   ${#reqlibs[*]} == 0 || 
-            ${#optlibs[*]} == 0 ]]; then
+    if [[   ${#xmlp_reqlibs[*]} == 0 || 
+            ${#xmlp_optlibs[*]} == 0 ]]; then
         echo "Required and Optional Modules not present in module files"
         return 0
     fi
 
-    #for (( i = 0; i < ${#reqlibs[*]}; ++i ))
+    #for (( i = 0; i < ${#xmlp_reqlibs[*]}; ++i ))
     #do
-    #    echo "required: ${reqlibs[$i]}"
+    #    echo "required: ${xmlp_reqlibs[$i]}"
     #done
 
-    #for (( i = 0; i < ${#optlibs[*]}; ++i ))
+    #for (( i = 0; i < ${#xml_optlibs[*]}; ++i ))
     #do
-    #    echo "optional: ${optlibs[$i]}"
+    #    echo "optional: ${xmlp_optlibs[$i]}"
     #done
 
-    #for (( i = 0; i < ${#grouplibs_name[*]}; ++i ))
+    #for (( i = 0; i < ${#xmlp_grouplibs_name[*]}; ++i ))
     #do
-    #    echo "group names: ${grouplibs_name[$i]}"
-    #    echo "group deps: ${grouplibs_deps[$i]}"
+    #    echo "group names: ${xmlp_grouplibs_name[$i]}"
+    #    echo "group deps: ${xmlp_grouplibs_deps[$i]}"
     #done
     return 1
 }

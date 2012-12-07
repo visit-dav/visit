@@ -136,7 +136,19 @@ function bv_vtk_dry_run
 
 function apply_vtk_580a_patch
 {
+
     # As of 11/4/2012 all patches were rolled into 5.8.0.a.
+    if [[ ! -e ${VTK_BUILD_DIR}/Wrapping/Python/CMakeLists.txt ]]; then
+        return 0
+    fi
+    patch ${VTK_BUILD_DIR}/Wrapping/Python/CMakeLists.txt <<\EOF
+189a190,193
+> IF (VTK_USE_GNU_R)
+>   SET(VTKPYTHON_LINK_LIBS ${VTKPYTHON_LINK_LIBS}  ${R_LIBRARIES})
+> ENDIF(VTK_USE_GNU_R)
+> 
+EOF
+
     return 0
 }
 

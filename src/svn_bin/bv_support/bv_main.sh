@@ -954,6 +954,11 @@ if [[ $next_arg != "" ]] ; then
     exit 0
 fi
 
+if [[ "$ANY_ERRORS" == "yes" ]] ; then
+    echo "command line arguments are used incorrectly. unrecognized options..."
+    exit 0
+fi
+
 if test -n "${deprecated}" ; then
     summary="You are using some deprecated options to $0.  Please re-run"
     summary="${summary} $0 with a command line similar to:"
