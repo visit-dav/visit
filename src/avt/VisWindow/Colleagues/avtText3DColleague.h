@@ -95,6 +95,9 @@ protected:
     void SetText(const char *text);
     void UpdateActorScale();
 
+    static double initialTime;
+    static int    initialCycle;
+
     // Make a heap-allocated structure to prevent weird errors on MacOS X/gcc 4.0.1
     struct Text3DInformation
     {
