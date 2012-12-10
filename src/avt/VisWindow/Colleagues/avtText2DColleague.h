@@ -93,6 +93,9 @@ protected:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);
 
+    static double initialTime;
+    static int    initialCycle;
+
     vtkVisItTextActor *textActor;
     char           *textFormatString;
     char           *textString;

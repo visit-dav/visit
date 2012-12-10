@@ -104,6 +104,9 @@ private:
     void  GetTextRect(double, double, double, double, double *) const;
     void  GetSliderRect(double, double, double, double, double *) const;
 
+    static double      initialTime;
+    static int         initialCycle;
+
     vtkTimeSliderActor *timeSlider;
     vtkVisItTextActor  *textActor;
     char               *textFormatString;
