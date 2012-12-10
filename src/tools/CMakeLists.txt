@@ -53,6 +53,9 @@
 #   Brad Whitlock, Wed May 23 17:10:05 PDT 2012
 #   Add usedataserver example program.
 #
+#   Eric Brugger, Wed Dec  5 13:17:20 PST 2012
+#   Add xmf_writer.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -87,16 +90,19 @@ ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     IF(WIN32)
        ADD_SUBDIRECTORY(qtssh)
     ENDIF(WIN32)
-
     IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
         ADD_SUBDIRECTORY(dataserver)
         ADD_SUBDIRECTORY(writer)
     ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+    IF(HDF5_FOUND AND NOT WIN32)
+        ADD_SUBDIRECTORY(xdmf_writer)
+    ENDIF(HDF5_FOUND AND NOT WIN32)
     ADD_SUBDIRECTORY(xml)
     ADD_SUBDIRECTORY(xmledit)
 
     ADD_SUBDIRECTORY(DataManualExamples)
 ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+
 
 # Maybe create a separate build system for all of these...
 # ADD_SUBDIRECTORY(DataManualExamples)
