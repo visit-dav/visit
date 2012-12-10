@@ -58,6 +58,9 @@
 #define CYCLE_IDENTIFIER "$cycle"
 #define TEXT_SCALING_CORRECTION 0.666667
 
+double avtTimeSliderColleague::initialTime = 0.;
+int    avtTimeSliderColleague::initialCycle = 0;
+
 // ****************************************************************************
 // Method: avtTimeSliderColleague::avtTimeSliderColleague
 //
@@ -90,6 +93,9 @@
 //    Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
 //    Change the text actor type.
 //
+//    Brad Whitlock, Mon Dec 10 10:26:44 PST 2012
+//    Initialize values from static members.
+//
 // ****************************************************************************
 
 avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
@@ -101,8 +107,8 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     timeFormatString = 0;
     textString = 0;
     timeDisplayMode = 0;
-    currentTime = 0.;
-    currentCycle = 0;
+    currentTime = initialTime;
+    currentCycle = initialCycle;
     timeScale = 1.;
     timeOffset = 0.;
 
@@ -681,6 +687,9 @@ avtTimeSliderColleague::SetFrameAndState(int nFrames,
 //   Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //   Added $cycle support.
 //
+//   Brad Whitlock, Mon Dec 10 10:27:40 PST 2012
+//   Save the current time to the "intial" static members.
+//
 // ****************************************************************************
 
 void
@@ -709,6 +718,10 @@ avtTimeSliderColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
            (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(textFormatString, timeFormatString);
+
+        // Save the current values for new instances of this class.
+        initialTime = currentTime;
+        initialCycle = currentCycle;
     }
 }
 

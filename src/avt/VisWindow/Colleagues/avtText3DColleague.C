@@ -79,6 +79,8 @@
 #define GetFixedHeight   GetDoubleAttribute1
 #define SetFixedHeight   SetDoubleAttribute1
 
+double avtText3DColleague::initialTime = 0.;
+int    avtText3DColleague::initialCycle = 0;
 
 // ****************************************************************************
 // Method: avtText3DColleague::avtText3DColleague
@@ -106,8 +108,8 @@ avtText3DColleague::avtText3DColleague(VisWindowColleagueProxy &m)
     info->scaleInitialized = false;
     info->textFormatString = 0;
     info->textString = 0;
-    info->currentTime = 0.;
-    info->currentCycle = 0;
+    info->currentTime = initialTime;
+    info->currentCycle = initialCycle;
 
     info->useForegroundForTextColor = true;
     info->useRelativeHeight = true;
@@ -618,6 +620,9 @@ avtText3DColleague::NoPlots(void)
 //    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //    Added $cycle support.
 //   
+//    Brad Whitlock, Mon Dec 10 11:41:13 PST 2012
+//    Set initial values from the current values.
+//
 // ****************************************************************************
 
 void
@@ -634,6 +639,10 @@ avtText3DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
            (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(info->textFormatString);
+
+        // Set the initial values from the current values.
+        initialTime = info->currentTime;
+        initialCycle = info->currentCycle;
     }
 
     // Update the actor's scale

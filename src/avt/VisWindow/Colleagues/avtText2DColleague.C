@@ -53,6 +53,9 @@
 #define TIME_IDENTIFIER "$time"
 #define CYCLE_IDENTIFIER "$cycle"
 
+double avtText2DColleague::initialTime = 0.;
+int    avtText2DColleague::initialCycle = 0;
+
 // ****************************************************************************
 // Method: avtText2DColleague::avtText2DColleague
 //
@@ -81,8 +84,8 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     addedToRenderer = false;
     textFormatString = 0;
     textString = 0;
-    currentTime = 0.;
-    currentCycle = 0;
+    currentTime = initialTime;
+    currentCycle = initialCycle;
 
     //
     // Create and position the actor.
@@ -495,7 +498,10 @@ avtText2DColleague::NoPlots(void)
 // Modifications:
 //    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
 //    Added $cycle support.
-//   
+//
+//    Brad Whitlock, Mon Dec 10 11:41:13 PST 2012
+//    Set initial values from the current values.
+//
 // ****************************************************************************
 
 void
@@ -512,6 +518,10 @@ avtText2DColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
         if((pos = formatString.find(TIME_IDENTIFIER)) != std::string::npos ||
            (pos = formatString.find(CYCLE_IDENTIFIER)) != std::string::npos)
             SetText(textFormatString);
+
+        // Set the initial values from the current values.
+        initialTime = currentTime;
+        initialCycle = currentCycle;
     }
 }
 
