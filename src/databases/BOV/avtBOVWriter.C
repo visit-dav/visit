@@ -355,6 +355,9 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Tom Fogal, Tue Jul 27 15:26:54 MDT 2010
 //    Don't crash if we don't have a stem filename.
 //
+//    Hank Childs, Mon Dec 10 11:37:32 PST 2012
+//    Add support for double precision.
+//
 // ****************************************************************************
 
 void
@@ -398,10 +401,24 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                        "and you wanted to write a zonal variable.");
     }
 
-    if (arr->GetDataType() != VTK_FLOAT)
-        EXCEPTION1(InvalidDBTypeException, 
-                       "The BOV writer can only handle floating point data.");
-    float *ptr = (float *) arr->GetVoidPointer(0);
+    float *ptr = NULL;
+    bool deletePtr = false;
+    if (arr->GetDataType() == VTK_FLOAT)
+        ptr = (float *) arr->GetVoidPointer(0);
+    else
+    {
+        int ncomps = arr->GetNumberOfComponents();
+        int ntups  = arr->GetNumberOfTuples();
+        int nvals = ncomps*ntups;
+        ptr = new float[nvals];
+        for (int i = 0 ; i < ntups ; i++)
+            for (int j = 0 ; j < ncomps ; j++)
+            {
+                int index = ncomps*i+j;
+                ptr[index] = (float) arr->GetComponent(i, j);
+            }
+        deletePtr = true;
+    }
 
     char filename[1024];
     sprintf(filename, "%s.bov", stem.c_str());
@@ -632,6 +649,9 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
         delete [] samples;
     }
+
+    if (deletePtr)
+       delete [] ptr;
 }
 
 

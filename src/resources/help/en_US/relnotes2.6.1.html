@@ -35,6 +35,7 @@ list of changes in release 2.6.</p>
 <li>The XRay Image Query has had several bugs corrected that sometimes resulted in artifacts in the output images. The artifacts occured when the cells had faces with small areas (less than approximately 1e-5) or where there were cells with quadrilateral faces that were non-planar.</li>
 <li>The compute engine's cell count variables were changed from integer to long precision. This fixes a problem where having over 1 billion cells in a dataset could cause the engine to think it was scalable rendering mode but never send back an image to the viewer.</li>
 <li>A bug was fixed whereby necessary support libraries were not installed, causing failure with Python Expressions.</li>
+<li>A bug was fixed with exporting BOV files after using the Resample operator.</li>
 <li>Several annotation types were not showing the proper time value in movies containing transparency when the parallel version of VisIt's compute engine was used. The <i>time slider</i>, <i>text</i>, and <i>3D text</i> annotations were afflicted.</li>
 </ul>
 
