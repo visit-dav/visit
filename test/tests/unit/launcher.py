@@ -15,7 +15,7 @@
 #   name instead of 127.0.0.1 for parallel engine launches.
 #
 # ----------------------------------------------------------------------------
-import os, subprocess, string
+import os, socket, subprocess, string
 
 # The launch cases we want to test.
 launch_cases = {
@@ -70,7 +70,19 @@ def FilterHostName(text):
     if host != -1 and port != -1:
         return text[:host + 6] + "$HOST " + text[port:]
     return text
-        
+
+def hostname():
+    return socket.gethostname()
+
+def nodename():
+    return string.split(hostname(), ".")[0]
+
+def sectorname():
+    s = nodename()
+    for d in "0123456789":
+        s = string.replace(s, d, "")
+    return s
+
 def FormatLauncherOutput(cmd):
     tmpvisit = string.find(cmd, "/tmp/visit")
     text = ""
@@ -155,6 +167,8 @@ for k in keys:
         except:
             pass
 
+        cdcmd = "cd $VISIT_TEST_DIR"
+
         # Filter out some other stuff.
         replacements = {os.getlogin()   : "$USER",
                         Version()       : "$VERSION",
@@ -162,7 +176,11 @@ for k in keys:
                         "linux-x86_64"  : "$PLATFORM",
                         "darwin-i386"   : "$PLATFORM",
                         "darwin-x86_64" : "$PLATFORM",
-                        "/_run/_unit_launcher" : ""}
+                        "/_run/_unit_launcher" : "",
+                        cdcmd + "/output/" + sectorname() + "_serial" : cdcmd,
+                        cdcmd + "/output/" + sectorname() + "_parallel" : cdcmd,
+                        cdcmd + "/output/" + sectorname() + "_scalable_parallel_icet" : cdcmd}
+
         output = FilterLauncherOutput(output, replacements)
 
         output = FilterHostName(output)
