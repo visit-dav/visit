@@ -1385,6 +1385,26 @@ void BroadcastInt(int &i)
 }
 
 // ****************************************************************************
+//  Function:  BroadcastLongLong
+//
+//  Purpose:
+//    Broadcast a long long from processor 0 to all other processors
+//
+//  Arguments:
+//    l          the long long
+//
+//  Programmer:  Hank Childs
+//  Creation:    December 10, 2012
+//
+// ****************************************************************************
+void BroadcastLongLong(VISIT_LONG_LONG &l)
+{
+#ifdef PARALLEL
+    MPI_Bcast(&l, 1, MPI_LONG_LONG, 0, VISIT_MPI_COMM);
+#endif
+}
+
+// ****************************************************************************
 // Function: BroadcastIntArray
 //
 // Purpose: 
