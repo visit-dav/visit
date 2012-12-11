@@ -421,6 +421,7 @@ class PIPELINE_API avtDataRequest
     void                         RemoveAllDataSelections();
     const avtDataSelection_p     GetDataSelection(int id) const;
     const std::vector<avtDataSelection_p> GetAllDataSelections() const;
+    std::vector<avtDataSelection_p> GetAllDataSelections();
 
 
     bool                         NeedNativePrecision(void) const

@@ -129,6 +129,9 @@ typedef void                   (*InitializeProgressCallback)(void *, int);
 //    Hank Childs, Fri Nov 26 16:26:55 PST 2010
 //    Add support for caching of arbitrary objects.
 //
+//    Hank Childs, Tue Dec 11 14:39:58 PST 2012
+//    Add method for getting last data selections.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
@@ -182,8 +185,9 @@ class PIPELINE_API avtOriginatingSource : virtual public avtQueryableSource
                                          { numberOfExecutions = numEx;
                                            haveIssuedProgress = false; };
 
-    virtual avtDataRequest_p GetFullDataRequest(void);
-    avtContract_p     GetGeneralContract(void);
+    virtual avtDataRequest_p       GetFullDataRequest(void);
+    avtContract_p                  GetGeneralContract(void);
+    std::vector<avtDataSelection_p>  GetSelectionsForLastExecution(void);
 
     // Define this so derived types don't have to.
     virtual void                   Query(PickAttributes *){;};

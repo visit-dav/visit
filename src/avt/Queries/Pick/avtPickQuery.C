@@ -372,6 +372,11 @@ avtPickQuery::PostExecute(void)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Hank Childs, Tue Dec 11 15:26:30 PST 2012
+//    Add data selections from original executions, which makes index 
+//    calculations be consistent and also reduces amount of data loaded.
+//   
 // ****************************************************************************
 
 avtDataObject_p
@@ -460,16 +465,32 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     {
         requiresUpdate = true;
     }
+
     requiresUpdate = (bool)UnifyMaximumValue((int)requiresUpdate);
-    if (requiresUpdate && !singleDomain && maxDom != -1)
+    if (requiresUpdate)
     {
-        intVector dlist;
-        if (maxDom == pickAtts.GetDomain())
+        if (!singleDomain && maxDom != -1)
         {
-            dlist.push_back(pickAtts.GetDomain());
+            intVector dlist;
+            if (maxDom == pickAtts.GetDomain())
+            {
+                dlist.push_back(pickAtts.GetDomain());
+            }
+            dataRequest->GetRestriction()->RestrictDomains(dlist);
         }
-        dataRequest->GetRestriction()->RestrictDomains(dlist);
-        //requiresUpdate = true;
+        else
+        {
+            // if we don't use the same data selections then:
+            // (1) we may load too much data
+            // (2) the indexing of the new data won't match the 
+            //     original data.
+            std::vector<avtDataSelection_p> selList = 
+                inData->GetOriginatingSource()->GetSelectionsForLastExecution();
+            for (unsigned int i = 0 ; i < selList.size() ; i++)
+            {
+                dataRequest->AddDataSelectionRefPtr(selList[i]);
+            }
+        }
     }
 
     if (!requiresUpdate)
