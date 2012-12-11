@@ -716,6 +716,30 @@ avtOriginatingSource::GetGeneralContract(void)
 
 
 // ****************************************************************************
+//  Method: avtOriginatingSource::GetSelectionsForLastExecution
+//
+//  Purpose:
+//     Gets the selections used in the previous execution.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2012
+//
+// ****************************************************************************
+
+std::vector<avtDataSelection_p> 
+avtOriginatingSource::GetSelectionsForLastExecution(void)
+{
+    if (*lastContract == NULL)
+    {
+        std::vector<avtDataSelection_p> emptySelectionList;
+        return emptySelectionList;
+    }
+
+    return lastContract->GetDataRequest()->GetAllDataSelections();
+}
+
+
+// ****************************************************************************
 //  Method: avtOriginatingSource::CanDoStreaming
 //
 //  Purpose:
