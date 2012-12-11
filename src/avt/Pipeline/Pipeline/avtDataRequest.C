@@ -1480,6 +1480,23 @@ avtDataRequest::GetAllDataSelections() const
 
 
 // ****************************************************************************
+//  Method: avtDataRequest::GetAllDataSelections
+//
+//  Purpose: Gets all data selections in the specification 
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2012
+//
+// ****************************************************************************
+
+std::vector<avtDataSelection_p>
+avtDataRequest::GetAllDataSelections()
+{
+    return selList;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataRequest::InitAdmissibleDataTypes
 //
 //  Purpose: Initialize admissible data types to all true
