@@ -91,6 +91,7 @@ PIPELINE_API void    UnifyMinimumDoubleArrayAcrossAllProcessors(double *, double
 PIPELINE_API void    UnifyMaximumDoubleArrayAcrossAllProcessors(double *, double *, int);
 
 PIPELINE_API void    BroadcastInt(int &i);
+PIPELINE_API void    BroadcastLongLong(VISIT_LONG_LONG &i);
 PIPELINE_API void    BroadcastIntArray(int *array, int nArray);
 PIPELINE_API void    BroadcastIntVector(std::vector<int>&, int myrank);
 PIPELINE_API void    BroadcastBool(bool &b);

@@ -1679,6 +1679,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added a conversion routine to read the numerical values from the input
 //    string, to get better conversion to long long.
 //
+//    Hank Childs, Mon Dec 10 16:06:52 PST 2012
+//    Add support for byte offsets longer than MAX_INT.
+//
 // ****************************************************************************
 
 template <class T>
@@ -2223,7 +2226,7 @@ avtBOVFileFormat::ReadTOC(void)
         // Note that the "Broadcast<Type>" calls serve to both
         // send from processor 0 and receive on other processors
         // simultaneously.
-        std::vector<int> vals(18);
+        std::vector<int> vals(17);
         vals[0]  = cycle;
         vals[1]  = full_size[0];
         vals[2]  = full_size[1];
@@ -2238,10 +2241,9 @@ avtBOVFileFormat::ReadTOC(void)
         vals[11] = (int) declaredEndianess;
         vals[12] = (int) byteToFloatTransform;
         vals[13] = (int) nodalCentering;
-        vals[14] = byteOffset;
-        vals[15] = (int) divideBrick;
-        vals[16] = (int) cycleIsAccurate;
-        vals[17] = (int) timeIsAccurate;
+        vals[14] = (int) divideBrick;
+        vals[15] = (int) cycleIsAccurate;
+        vals[16] = (int) timeIsAccurate;
         BroadcastIntVector(vals, PAR_Rank());
         cycle             = vals[0];
         full_size[0]      = vals[1];
@@ -2257,10 +2259,10 @@ avtBOVFileFormat::ReadTOC(void)
         declaredEndianess = (bool) vals[11];
         byteToFloatTransform = (bool) vals[12];
         nodalCentering    = (bool) vals[13];
-        byteOffset        = vals[14];
-        divideBrick       = (bool) vals[15];
-        cycleIsAccurate   = (bool) vals[16];
-        timeIsAccurate    = (bool) vals[17];
+        divideBrick       = (bool) vals[14];
+        cycleIsAccurate   = (bool) vals[15];
+        timeIsAccurate    = (bool) vals[16];
+        BroadcastLongLong(byteOffset);
 
         bool hasExtents = false;
         if (var_brick_min.size() > 0)
