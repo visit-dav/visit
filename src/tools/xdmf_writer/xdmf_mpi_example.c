@@ -76,7 +76,8 @@ int main(int argc, char *argv[])
     }
 
     //
-    // Create the raw data.
+    // Calculate some values about the assignment of data to processors
+    // and the grid dimensions.
     //
     int id = iProc;
     int iX = id / (nBlocks[1] * nBlocks[2]);
@@ -86,6 +87,10 @@ int main(int argc, char *argv[])
 
     int nzones = zoneDims[0] * zoneDims[1] * zoneDims[2];
     int nnodes = nodeDims[0] * nodeDims[1] * nodeDims[2];
+
+    //
+    // Create the raw data.
+    //
     float *coords = (float *) malloc(nnodes * 3 * sizeof(float));
     float **vars = (float **) malloc(3 * sizeof(float*));
     vars[0] = (float *) malloc(nzones * sizeof(float));
@@ -181,35 +186,36 @@ int main(int argc, char *argv[])
     varCentering[0] = XDMF_ZONE_CENTER;
     varCentering[1] = XDMF_NODE_CENTER;
     varCentering[2] = XDMF_NODE_CENTER;
-    int meshDims[3];
-    meshDims[0] = zoneDims[0];
-    meshDims[1] = zoneDims[1];
-    meshDims[2] = zoneDims[2];
+    int gridDims[3];
+    gridDims[0] = zoneDims[0];
+    gridDims[1] = zoneDims[1];
+    gridDims[2] = zoneDims[2];
 
     //
-    // Write out the meta data to the XML file.
+    // Write the meta data to the XML file.
     //
     XDMFFile *xdmfFile = XdmfParallelCreate("multi_curv3d", nFiles, 1.5);
 
-    int iblocks[3];
-    iblocks[0] = iX;
-    iblocks[1] = iY;
-    iblocks[2] = iZ;
-    XdmfPutCurvMultiVar(xdmfFile, "mesh", XDMF_FLOAT, 3, varNames,
-        varTypes, varCentering, varDataTypes, 3, meshDims, iblocks, nBlocks);
+    int iBlocks[3];
+    iBlocks[0] = iX;
+    iBlocks[1] = iY;
+    iBlocks[2] = iZ;
+    XdmfPutCurvMultiVar(xdmfFile, "multi_curv3d", "grid", XDMF_FLOAT,
+        3, varNames, varTypes, varCentering, varDataTypes, 3, gridDims,
+        iBlocks, nBlocks);
 
     XdmfParallelClose(xdmfFile);
 
     //
-    // Write out the raw data to the HDF5 file.
+    // Write the raw data to the HDF5 file.
     //
     HDFFile *hdfFile = HdfParallelCreate("multi_curv3d", nFiles);
 
-    HdfPutCurvMultiMesh(hdfFile, "mesh", XDMF_FLOAT, coords, 3, meshDims,
-        iblocks, nBlocks);
+    HdfPutCurvMultiMesh(hdfFile, "grid", XDMF_FLOAT, coords, 3, gridDims,
+        iBlocks, nBlocks);
 
     HdfPutCurvMultiVar(hdfFile, 3, varNames, varTypes, varCentering,
-        varDataTypes, vars, 3, meshDims, iblocks, nBlocks);
+        varDataTypes, vars, 3, gridDims, iBlocks, nBlocks);
 
     HdfParallelClose(hdfFile);
 
