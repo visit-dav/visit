@@ -53,7 +53,9 @@
 #include <vtkUnsignedShortArray.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkFieldData.h>
 #include <vtkImageData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -61,6 +63,7 @@
 #include <vtksys/SystemTools.hxx>
 
 #include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
@@ -77,6 +80,7 @@
 #include <XdmfGrid.h>
 #include <XdmfHex64Generator.h>
 #include <XdmfHex125Generator.h>
+#include <XdmfInformation.h>
 #include <XdmfTime.h>
 #include <XdmfTopology.h>
 
@@ -520,7 +524,37 @@ std::vector<std::string> avtXdmfFileFormat::GetComponentNames(std::string attrib
 //  Method: avtXdmfFileFormat::GetDims
 //
 //  Purpose:
-//      Determines dimensions of a structured grids from the extents
+//      Determines the dimensions of a structured grid from an Xdmf grid.
+//
+//  Arguments:
+//      grid    --- the grid to determine the dimensions of.
+//      dims[3] --- the dimensions to fill in.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 12, 2012
+//
+// ****************************************************************************
+
+void avtXdmfFileFormat::GetDims(XdmfGrid *grid, int dims[3])
+{
+    int whole_extents[6];
+    int update_extents[6];
+    this->GetWholeExtent(grid, whole_extents);
+
+    memcpy(update_extents, whole_extents, sizeof(int) * 6);
+
+    // convert to stridden update extents.
+    int scaled_extents[6];
+    this->ScaleExtents(update_extents, scaled_extents, this->Stride);
+
+    this->GetDims(scaled_extents, dims);
+}
+
+// ****************************************************************************
+//  Method: avtXdmfFileFormat::GetDims
+//
+//  Purpose:
+//      Determines the dimensions of a structured grid from the extents.
 //
 //  Arguments:
 //      exts[6] --- the extents of the grid.
@@ -625,6 +659,11 @@ XdmfGrid * avtXdmfFileFormat::GetGrid(int timestate)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//    Eric Brugger, Wed Dec 12 09:35:48 PST 2012
+//    I added support for processing the BaseIndex and GhostOffsets properties
+//    for strucutured grids.
+//
 // ****************************************************************************
 
 vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *meshname)
@@ -655,6 +694,59 @@ vtkDataSet * avtXdmfFileFormat::GetMesh(int timestate, int domain, const char *m
         default:
             EXCEPTION1(InvalidVariableException, meshname);
     }
+
+    //
+    // If we have a structured mesh, process the base index and ghost
+    // zone information.
+    //
+    if (vtk_data_type == VTK_RECTILINEAR_GRID ||
+        vtk_data_type == VTK_STRUCTURED_GRID)
+    {
+        int ndims = this->GetTopologicalDimensions(gridToRead->GetTopology()->GetTopologyType());
+
+        for (int i = 0; i < gridToRead->GetNumberOfInformations(); i++)
+        {
+            XdmfInformation *info = gridToRead->GetInformation(i);
+            if (XDMF_WORD_CMP(info->GetName(), "BaseIndex"))
+            {
+                int baseIndex[3] = {0, 0, 0};
+                if (ndims == 2)
+                    sscanf(info->GetValue(), "%d %d",
+                           &baseIndex[1], &baseIndex[0]);
+                else
+                    sscanf(info->GetValue(), "%d %d %d",
+                           &baseIndex[2], &baseIndex[1], &baseIndex[0]);
+
+                vtkIntArray *arr = vtkIntArray::New();
+                arr->SetNumberOfTuples(3);
+                arr->SetValue(0, baseIndex[0]);
+                arr->SetValue(1, baseIndex[1]);
+                arr->SetValue(2, baseIndex[2]);
+                arr->SetName("base_index");
+                dataSet->GetFieldData()->AddArray(arr);
+                arr->Delete();
+            }
+            else if (XDMF_WORD_CMP(info->GetName(), "GhostOffsets"))
+            {
+                int ghostOffsets[6] = {0, 0, 0, 0, 0, 0};
+                if (ndims == 2)
+                    sscanf(info->GetValue(), "%d %d %d %d",
+                           &ghostOffsets[2], &ghostOffsets[3],
+                           &ghostOffsets[0], &ghostOffsets[1]);
+                else
+                    sscanf(info->GetValue(), "%d %d %d %d %d %d",
+                           &ghostOffsets[4], &ghostOffsets[5],
+                           &ghostOffsets[2], &ghostOffsets[3],
+                           &ghostOffsets[0], &ghostOffsets[1]);
+
+                int dims[3];
+                this->GetDims(gridToRead, dims);
+
+                this->GetStructuredGhostZones(dims, ghostOffsets, dataSet);
+            }
+        }
+    }
+
     gridToRead->Release();
     return dataSet;
 }
@@ -1669,7 +1761,6 @@ vtkRectilinearGrid* avtXdmfFileFormat::ReadRectilinearGrid(XdmfGrid* grid)
     zarray->Delete();
 
     return rg;
-
 }
 
 // ****************************************************************************
@@ -1895,6 +1986,80 @@ vtkUnstructuredGrid* avtXdmfFileFormat::ReadUnstructuredGrid(XdmfGrid* grid)
     grid->GetGeometry()->Release();
 
     return data;
+}
+
+// ****************************************************************************
+//  Method: avtXdmfFileFormat::GetStructuredGhostZones
+//
+//  Purpose:
+//    Retrieves ghost zone information from the structured mesh and adds it
+//    to the dataset.
+//
+//  Arguments:
+//      dims         The dimensions of the mesh.
+//      ghostOffsets The ghost offsets of the mesh.
+//      ds           The vtkDataSet in which to store the ghost level
+//                   information.
+//
+//  Programmer: Eric Brugger
+//  Creation:   December 12, 2012
+//
+// ****************************************************************************
+
+void
+avtXdmfFileFormat::GetStructuredGhostZones(int dims[3], int ghostOffsets[6],
+    vtkDataSet *ds)
+{
+    unsigned char realVal = 0;
+    unsigned char ghostVal = 0;
+    avtGhostData::AddGhostZoneType(ghostVal,
+        DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    int ncells = ds->GetNumberOfCells();
+    vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+    ghostCells->SetName("avtGhostZones");
+    ghostCells->SetNumberOfComponents(1);
+    ghostCells->SetNumberOfTuples(ncells);
+
+    unsigned char *buf = ghostCells->GetPointer(0);
+    for (int i = 0; i < ncells; i++)
+        buf[i] = ghostVal;
+
+    int iMin[3], iMax[3];
+    for (int i = 0; i < 3; i++)
+    {
+        iMin[i] = ghostOffsets[i*2];
+        iMax[i] = dims[i] - 1 - ghostOffsets[i*2+1];
+    }
+    for (int k = iMin[2]; k < iMax[2]; k++)
+    {
+        for (int j = iMin[1]; j < iMax[1]; j++)
+        {
+            for (int i = iMin[0]; i < iMax[0]; i++)
+            {
+                int ndx = k * (dims[1]-1) *
+                              (dims[0]-1) +
+                          j * (dims[0]-1) + i;
+                buf[ndx] = realVal;
+            }
+        }
+    }
+    ds->GetCellData()->AddArray(ghostCells);
+    ghostCells->Delete();
+
+    vtkIntArray *realDims = vtkIntArray::New();
+    realDims->SetName("avtRealDims");
+    realDims->SetNumberOfValues(6);
+    realDims->SetValue(0, iMin[0]);
+    realDims->SetValue(1, iMax[0]);
+    realDims->SetValue(2, iMin[1]);
+    realDims->SetValue(3, iMax[1]);
+    realDims->SetValue(4, iMin[2]);
+    realDims->SetValue(5, iMax[2]);
+    ds->GetFieldData()->AddArray(realDims);
+    ds->GetFieldData()->CopyFieldOn("avtRealDims");
+    realDims->Delete();
+
+    ds->SetUpdateGhostLevel(0);
 }
 
 // ****************************************************************************

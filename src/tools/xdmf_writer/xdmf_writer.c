@@ -1013,7 +1013,6 @@ DetermineGhostInfo(int nDims, int *dims, int *iBlock, int *nBlocks,
         if (iBlock[i] > 0)
         {
             newDims[i]++;
-            baseIndex[i]--;
             ghostOffsets[i*2] = 1;
         }
         if (iBlock[i] < nBlocks[i] - 1)
