@@ -64,17 +64,17 @@ struct timeval hdf5_close_start;
 int timeval_subtract(struct timeval *result, struct timeval *x,
     struct timeval *y);
 
-void XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
+void XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
     const char *varFileName, const char *blockName, const char *coordName,
     int iBlock, int gridDataType, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes, int nDims, int *dims,
     int *baseIndex, int *ghostOffsets);
-void HdfWriteCurveMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
+void HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nDims, int *dims);
-void HdfWriteCurveVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
+void HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims);
-void HdfWriteCurveBlock(HDFFileParallel *hdfFile, const char *gridName,
+void HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims);
@@ -263,7 +263,7 @@ XdmfPutCurvMultiVar(XDMFFile *xdmfFileIn, const char *gridFileName,
                 sprintf(gridFile, "%s_%04d.h5", gridFileName, iFile);
                 sprintf(varFile, "%s_%04d.h5", xdmfFile->fileName, iFile);
             }
-            XDMFWriteCurveBlock(xmf, gridFile, varFile, "block", coordName,
+            XDMFWriteCurvBlock(xmf, gridFile, varFile, "block", coordName,
                                 xdmfFile->iProc+iBlock, gridDataType,
                                 nVars, varNames, varTypes, varCentering,
                                 varDataTypes, nDims,
@@ -326,7 +326,7 @@ XdmfPutCurvMultiVar(XDMFFile *xdmfFileIn, const char *gridFileName,
     char *varFile= (char *) malloc(strlen(xdmfFile->fileName)+3+1);
     sprintf(gridFile, "%s.h5", gridFileName);
     sprintf(varFile, "%s.h5", xdmfFile->fileName);
-    XDMFWriteCurveBlock(xmf, gridFile, varFile, "block", coordName,
+    XDMFWriteCurvBlock(xmf, gridFile, varFile, "block", coordName,
                         xdmfFile->iProc, gridDataType,
                         nVars, varNames, varTypes, varCentering,
                         varDataTypes, nDims,
@@ -418,7 +418,7 @@ timeval_subtract (struct timeval *result, struct timeval *x,
 }
 
 void
-XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
+XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
     const char *varFileName, const char *blockName,
     const char *coordName, int iBlock, int gridDataType, int nVars,
     char **varNames, int *varTypes, int *varCentering, int *varDataTypes,
@@ -427,8 +427,12 @@ XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
     //
     // Write out the grid meta data.
     //
-    fprintf(xmf, "   <Grid Name=\"%s%d\" GridType=\"Uniform\">\n",
-        blockName, iBlock);
+    if (iBlock == XDMF_NULL_BLOCK)
+        fprintf(xmf, "   <Grid Name=\"%s\" GridType=\"Uniform\">\n",
+            blockName);
+    else
+        fprintf(xmf, "   <Grid Name=\"%s%d\" GridType=\"Uniform\">\n",
+            blockName, iBlock);
     fprintf(xmf, "     <Topology TopologyType=\"%dDSMesh\"", nDims);
     if (nDims == 2)
     {
@@ -447,7 +451,10 @@ XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
         fprintf(xmf, "     <Geometry GeometryType=\"XY\">\n");
         fprintf(xmf, "       <DataItem Dimensions=\"%d 2\" %s Format=\"HDF\">\n",
             (dims[1]+1)*(dims[0]+1), dataTypeToString[gridDataType]);
-        fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
+        if (iBlock == XDMF_NULL_BLOCK)
+            fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
+        else
+            fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
     }
     else
     {
@@ -470,7 +477,10 @@ XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
         fprintf(xmf, "       <DataItem Dimensions=\"%d 3\" %s Format=\"HDF\">\n",
             (dims[2]+1)*(dims[1]+1)*(dims[0]+1),
             dataTypeToString[gridDataType]);
-        fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
+        if (iBlock == XDMF_NULL_BLOCK)
+            fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
+        else
+            fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
     }
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Geometry>\n");
@@ -499,8 +509,11 @@ XDMFWriteCurveBlock(FILE *xmf, const char *gridFileName,
             fprintf(xmf, " %d", nDims);
         fprintf(xmf, "\" %s Format=\"HDF\">\n",
             dataTypeToString[varDataTypes[iVar]]);
-        fprintf(xmf, "        %s:/%s%d\n",
-            varFileName, varNames[iVar], iBlock);
+        if (iBlock == XDMF_NULL_BLOCK)
+            fprintf(xmf, "        %s:/%s\n", varFileName, varNames[iVar]);
+        else
+            fprintf(xmf, "        %s:/%s%d\n",
+                varFileName, varNames[iVar], iBlock);
         fprintf(xmf, "       </DataItem>\n");
         fprintf(xmf, "     </Attribute>\n");
     }
@@ -606,7 +619,7 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
     //
     // Write the data.
     //
-    HdfWriteCurveMeshBlock(hdfFile, gridName, gridDataType, newMeshCoords,
+    HdfWriteCurvMeshBlock(hdfFile, gridName, gridDataType, newMeshCoords,
         nDims, newDims);
 
     gettimeofday(&hdf5_put_multi_write_end, NULL);
@@ -681,7 +694,7 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     //
     // Write the data.
     //
-    HdfWriteCurveVarBlock(hdfFile, nVars, varNames, varTypes, varCentering,
+    HdfWriteCurvVarBlock(hdfFile, nVars, varNames, varTypes, varCentering,
         varDataTypes, newVars, nDims, newDims);
 
     gettimeofday(&hdf5_put_multi_write_end, NULL);
@@ -797,7 +810,7 @@ HdfParallelClose(HDFFile *hdfFileIn)
 }
 
 void
-HdfWriteCurveMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
+HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nDims, int *dims)
 {
     int iFile = hdfFile->iProc /
@@ -838,7 +851,7 @@ HdfWriteCurveMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
 }
 
 void
-HdfWriteCurveVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
+HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims)
 {
@@ -904,7 +917,7 @@ HdfWriteCurveVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
 }
 
 void
-HdfWriteCurveBlock(HDFFileParallel *hdfFile, const char *gridName,
+HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims)
@@ -3053,6 +3066,28 @@ XdmfCreate(const char *fileName, double time)
 }
 
 void
+XdmfWriteCurvVar(XDMFFile *xdmfFileIn, const char *gridFileName,
+    const char *varFileName, const char *gridName, const char *coordName,
+    int gridDataType, int nVars, char **varNames, int *varTypes,
+    int *varCentering, int *varDataTypes, int nDims, int *dims)
+{
+    XDMFFileSerial *xdmfFile = (XDMFFileSerial *) xdmfFileIn;
+
+    if (xdmfFile == NULL)
+        return;
+    if (xdmfFile->type != 2)
+        return;
+
+    fprintf(xdmfFile->file, " <Domain>\n");
+
+    XDMFWriteCurvBlock(xdmfFile->file, gridFileName, varFileName, gridName,
+        coordName, XDMF_NULL_BLOCK, gridDataType, nVars, varNames, varTypes,
+        varCentering, varDataTypes, nDims, dims, NULL, NULL);
+
+    fprintf(xdmfFile->file, " </Domain>\n");
+}
+
+void
 XdmfStartMultiBlock(XDMFFile *xdmfFileIn, const char *blockName)
 {
     XDMFFileSerial *xdmfFile = (XDMFFileSerial *) xdmfFileIn;
@@ -3068,7 +3103,7 @@ XdmfStartMultiBlock(XDMFFile *xdmfFileIn, const char *blockName)
 }
 
 void
-XdmfWriteCurveBlock(XDMFFile *xdmfFileIn, const char *fileName,
+XdmfWriteCurvBlock(XDMFFile *xdmfFileIn, const char *fileName,
     const char *blockName, const char *coordName, int iBlock, 
     int gridDataType, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes, int nDims, int *dims,
@@ -3081,7 +3116,7 @@ XdmfWriteCurveBlock(XDMFFile *xdmfFileIn, const char *fileName,
     if (xdmfFile->type != 2)
         return;
 
-    XDMFWriteCurveBlock(xdmfFile->file, fileName, fileName, blockName,
+    XDMFWriteCurvBlock(xdmfFile->file, fileName, fileName, blockName,
         coordName, iBlock, gridDataType, nVars, varNames, varTypes,
         varCentering, varDataTypes, nDims, dims, baseIndex, ghostOffsets);
 }
@@ -3138,8 +3173,8 @@ HdfCreate(const char *fileName)
 }
 
 void
-HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridName, int gridDataType,
-    float *gridCoords, int nDims, int *dims)
+HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridCoordName,
+    int gridDataType, float *gridCoords, int nDims, int *dims)
 {
     HDFFileSerial *hdfFile = (HDFFileSerial *) hdfFileIn;
 
@@ -3147,7 +3182,7 @@ HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridName, int gridDataType,
         return;
     if (hdfFile->type != 2)
         return;
-    if (gridName == NULL)
+    if (gridCoordName == NULL)
         return;
     if (gridCoords == NULL)
         return;
@@ -3167,7 +3202,7 @@ HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridName, int gridDataType,
     vdims[1] = 3;
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, gridName,
+    dataset_id = H5Dcreate(hdfFile->fileId, gridCoordName,
                            dataTypeToHDFType[gridDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);

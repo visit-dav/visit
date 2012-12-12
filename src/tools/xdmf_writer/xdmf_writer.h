@@ -34,6 +34,8 @@
 #define XDMF_INT    2
 #define XDMF_CHAR   3
 
+#define XDMF_NULL_BLOCK -1
+
 typedef struct XDMFFile
 {
     int       type;
@@ -61,21 +63,27 @@ void XDMF_WRITER_API HdfPutCurvMultiVar(HDFFile *hdfFile, int nVars,
     void *vars, int nDims, int *dims, int *iBlock, int *nBlocks);
 void XDMF_WRITER_API HdfParallelClose(HDFFile *hdfFile);
 
-XDMFFile *XdmfCreate(const char *fileName, double time);
-void XdmfStartMultiBlock(XDMFFile *xdmfFile, const char *blockName);
-void XdmfWriteCurveBlock(XDMFFile *file, const char *fileName,
+XDMFFile XDMF_WRITER_API *XdmfCreate(const char *fileName, double time);
+void XDMF_WRITER_API XdmfWriteCurvVar(XDMFFile *file, const char *gridFileName,
+    const char *varFileName, const char *gridName, const char *coordName, 
+    int gridDataType, int nVars, char **varNames, int *varTypes,
+    int *varCentering, int *varDataTypes, int nDims, int *dims);
+void XDMF_WRITER_API XdmfStartMultiBlock(XDMFFile *xdmfFile,
+    const char *blockName);
+void XDMF_WRITER_API XdmfWriteCurvBlock(XDMFFile *file, const char *fileName,
     const char *blockName, const char *coordName, int iBlock,
     int gridDataType, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes, int nDims, int *dims,
     int *baseIndex, int *ghostOffsets);
-void XdmfEndMultiBlock(XDMFFile *xdmfFile);
-void XdmfClose(XDMFFile *xdmfFile);
+void XDMF_WRITER_API XdmfEndMultiBlock(XDMFFile *xdmfFile);
+void XDMF_WRITER_API XdmfClose(XDMFFile *xdmfFile);
 
-HDFFile *HdfCreate(const char *fileName);
-void HdfPutCurvMesh(HDFFile *hdfFile, const char *gridName, int gridDataType,
-    float *gridCoords, int nDims, int *dims);
-void HdfPutCurvVar(HDFFile *hdfFile, const char *varName, int varType,
-    int varCentering, int varDataType, void *var, int nDims, int *dims);
-void HdfClose(HDFFile *hdfFile);
+HDFFile XDMF_WRITER_API *HdfCreate(const char *fileName);
+void XDMF_WRITER_API HdfPutCurvMesh(HDFFile *hdfFile, const char *gridCoordName,
+    int gridDataType, float *gridCoords, int nDims, int *dims);
+void XDMF_WRITER_API HdfPutCurvVar(HDFFile *hdfFile, const char *varName,
+    int varType, int varCentering, int varDataType, void *var,
+    int nDims, int *dims);
+void XDMF_WRITER_API HdfClose(HDFFile *hdfFile);
 
 #endif

@@ -50,6 +50,14 @@ ${HDF5_LIBRARY_DIR}
 
 
 #********************************* SERIAL ************************************
+ADD_EXECUTABLE(xdmf_curv3d xdmf_curv3d.c)
+TARGET_LINK_LIBRARIES(xdmf_curv3d xdmf_writer_ser) 
+
+ADD_EXECUTABLE(xdmf_curv3d_wtime xdmf_curv3d_wtime.c)
+TARGET_LINK_LIBRARIES(xdmf_curv3d_wtime xdmf_writer_ser) 
+
+ADD_EXECUTABLE(xdmf_multi_curv3d xdmf_multi_curv3d.c)
+TARGET_LINK_LIBRARIES(xdmf_multi_curv3d xdmf_writer_ser) 
 
 ADD_LIBRARY(xdmf_writer_ser xdmf_writer.c)
 TARGET_LINK_LIBRARIES(xdmf_writer_ser ${HDF5_LIB} ${ZLIB_LIB})
