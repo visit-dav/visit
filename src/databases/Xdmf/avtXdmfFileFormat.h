@@ -71,9 +71,12 @@ class vtkUnstructuredGrid;
 //  Creation:   Mon Mar 29 15:43:05 PST 2010
 //
 //  Modifications:
-//
 //    Hank Childs, Thu Aug 18 17:22:19 PDT 2011
 //    Change timesteps to double (from int).
+//
+//    Eric Brugger, Wed Dec 12 09:26:59 PST 2012
+//    I added support for processing the BaseIndex and GhostOffsets properties
+//    for strucutured grids.
 //
 // ****************************************************************************
 
@@ -129,6 +132,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         vtkDataArray * CopyXdmfArrayByPointer(XdmfArray *, int);
         XdmfAttribute * GetAttributeFromName(XdmfGrid *, const char *);
         std::vector<std::string> GetComponentNames(std::string, XdmfInt32, int);
+        void GetDims(XdmfGrid *, int[3]);
         void GetDims(int[6], int[3]);
         std::string GetFormattedExpressionName(std::string &);
         XdmfGrid * GetGrid(int);
@@ -147,6 +151,7 @@ class avtXdmfFileFormat: public avtMTMDFileFormat
         vtkRectilinearGrid* ReadRectilinearGrid(XdmfGrid *);
         vtkStructuredGrid* ReadStructuredGrid(XdmfGrid *);
         vtkUnstructuredGrid* ReadUnstructuredGrid(XdmfGrid *);
+        void GetStructuredGhostZones(int[3], int[6], vtkDataSet *);
         void ScaleExtents(int[6], int[6], int[3]);
         void SetCurrentGrid(int, const char *);
 };
