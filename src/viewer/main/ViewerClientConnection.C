@@ -160,6 +160,7 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
     advancedRendering = false;
+    externalClient = false;
 }
 
 // ****************************************************************************
