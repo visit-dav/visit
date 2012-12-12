@@ -1077,9 +1077,8 @@ int avtXdmfFileFormat::GetSpatialDimensions(XdmfInt32 geometryType)
 //  Creation:   March 29, 2010
 //
 //  Modifications:
-//
-//   Hank Childs, Thu Aug 18 17:22:19 PDT 2011
-//   Indicate times are accurate.
+//    Hank Childs, Thu Aug 18 17:22:19 PDT 2011
+//    Indicate times are accurate.
 //
 // ****************************************************************************
 void avtXdmfFileFormat::GetTimes(std::vector<double> & times)
@@ -1151,6 +1150,12 @@ avtXdmfFileFormat::GetVar(int timestate, int domain, const char *varname)
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Dec 11 17:53:55 PST 2012
+//    I corrected an error where the reader would return an error indicating
+//    that the variable was invalid when the variable was defined on a multi
+//    block mesh.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1164,7 +1169,7 @@ avtXdmfFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     }
 
     XdmfGrid * gridToExamine = currentGrid;
-    if(currentGrid->GetGridType() == XDMF_GRID_COLLECTION && currentGrid->GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL)
+    if(currentGrid->GetGridType() == XDMF_GRID_COLLECTION && (currentGrid->GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL || currentGrid->GetCollectionType() == XDMF_GRID_COLLECTION_UNSET))
     {
         gridToExamine = currentGrid->GetChild(domain);
     }
@@ -1398,12 +1403,11 @@ bool avtXdmfFileFormat::GetWholeExtent(XdmfGrid* grid, int extents[6])
 //  Creation:   March 29, 2010
 //
 //  Modifications:
+//    Hank Childs, Thu Aug 18 17:22:19 PDT 2011
+//    Make sure the times are set.
 //
-//   Hank Childs, Thu Aug 18 17:22:19 PDT 2011
-//   Make sure the times are set.
-//
-//   Jean Favre/Hank Childs, Wed Oct 12 05:31:51 PDT 2011
-//   Fix problem with time setting.  (Fix by Jean, commit by Hank)
+//    Jean Favre/Hank Childs, Wed Oct 12 05:31:51 PDT 2011
+//    Fix problem with time setting.  (Fix by Jean, commit by Hank)
 //
 // ****************************************************************************
 
