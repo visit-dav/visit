@@ -26,7 +26,7 @@
 #define XDMF_SCALAR 0
 #define XDMF_VECTOR 1
 
-#define XDMF_ZONE_CENTER 0
+#define XDMF_CELL_CENTER 0
 #define XDMF_NODE_CENTER 1
 
 #define XDMF_FLOAT  0
@@ -34,7 +34,35 @@
 #define XDMF_INT    2
 #define XDMF_CHAR   3
 
-#define XDMF_NULL_BLOCK -1
+#define XDMF_NOTOPOLOGY   0
+#define XDMF_POLYVERTEX   1
+#define XDMF_POLYLINE     2
+#define XDMF_POLYGON      3
+#define XDMF_TRI          4
+#define XDMF_QUAD         5
+#define XDMF_TET          6
+#define XDMF_PYRAMID      7
+#define XDMF_WEDGE        8
+#define XDMF_HEX          9
+#define XDMF_EDGE_3      10
+#define XDMF_TRI_6       11
+#define XDMF_TRI_7       12
+#define XDMF_QUAD_6      13
+#define XDMF_QUAD_8      14
+#define XDMF_QUAD_9      15
+#define XDMF_TET_10      16
+#define XDMF_PYRAMID_13  17
+#define XDMF_WEDGE_12    18
+#define XDMF_WEDGE_15    19
+#define XDMF_WEDGE_18    20
+#define XDMF_HEX_20      21
+#define XDMF_HEX_24      22
+#define XDMF_HEX_27      23
+#define XDMF_HEX_64      24
+#define XDMF_HEX_125     25
+#define XDMF_MIXED       26
+
+#define XDMF_NULL_GRID -1
 
 typedef struct XDMFFile
 {
@@ -68,6 +96,11 @@ void XDMF_WRITER_API XdmfWriteCurvVar(XDMFFile *file, const char *gridFileName,
     const char *varFileName, const char *gridName, const char *coordName, 
     int gridDataType, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes, int nDims, int *dims);
+void XDMF_WRITER_API XdmfPutUcdGrid(XDMFFile *file, const char *gridFileName,
+    const char *varFileName, const char *gridName, const char *coordName, 
+    int coordDataType, int nCoords, int coordDim, const char *connectivityName,
+    int cellType, int nCells, int connectivityLength, int nVars,
+    char **varNames, int *varTypes, int *varCentering, int *varDataTypes);
 void XDMF_WRITER_API XdmfStartMultiBlock(XDMFFile *xdmfFile,
     const char *blockName);
 void XDMF_WRITER_API XdmfWriteCurvBlock(XDMFFile *file, const char *fileName,
@@ -79,11 +112,17 @@ void XDMF_WRITER_API XdmfEndMultiBlock(XDMFFile *xdmfFile);
 void XDMF_WRITER_API XdmfClose(XDMFFile *xdmfFile);
 
 HDFFile XDMF_WRITER_API *HdfCreate(const char *fileName);
-void XDMF_WRITER_API HdfPutCurvMesh(HDFFile *hdfFile, const char *gridCoordName,
-    int gridDataType, float *gridCoords, int nDims, int *dims);
+void XDMF_WRITER_API HdfPutCoords(HDFFile *hdfFile, const char *coordName,
+    int coordDataType, float *coords, int nCoords);
+void XDMF_WRITER_API HdfPutConnectivity(HDFFile *hdfFile,
+    const char *connectivityName, int connectivityDataType,
+    float *connectivity, int connectivityLength);
 void XDMF_WRITER_API HdfPutCurvVar(HDFFile *hdfFile, const char *varName,
     int varType, int varCentering, int varDataType, void *var,
     int nDims, int *dims);
+void XDMF_WRITER_API HdfPutUcdVar(HDFFile *hdfFile, const char *varName,
+    int varType, int varCentering, int varDataType, void *var,
+    int varDim, int nCoords, int nCells);
 void XDMF_WRITER_API HdfClose(HDFFile *hdfFile);
 
 #endif

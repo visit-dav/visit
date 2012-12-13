@@ -49,7 +49,34 @@ const char *centeringToString[2] = {"Center=\"Cell\"",
 const char *dataTypeToString[4] = {"NumberType=\"Float\" Precision=\"4\"",
                                    "NumberType=\"Float\" Precision=\"8\"",
                                    "NumberType=\"Int\" Precision=\"4\"",
-                                   "NumberType=\"Char\",Precision=\"1\""};
+                                   "NumberType=\"Char\" Precision=\"1\""};
+const char *cellTypeToString[27] = {"TopologyType=\"NoTopology\"",
+                                    "TopologyType=\"Polyvertex\"",
+                                    "TopologyType=\"Polyline\"",
+                                    "TopologyType=\"Polygon\"",
+                                    "TopologyType=\"Triangle\"",
+                                    "TopologyType=\"Quadrilateral\"",
+                                    "TopologyType=\"Tetrahedron\"",
+                                    "TopologyType=\"Pyramid\"",
+                                    "TopologyType=\"Wedge\"",
+                                    "TopologyType=\"Hexahedron\"",
+                                    "TopologyType=\"Edge_3\"",
+                                    "TopologyType=\"Triangle_3\"",
+                                    "TopologyType=\"Triangle_6\"",
+                                    "TopologyType=\"Triangle_7\"",
+                                    "TopologyType=\"Quadrilateral_6\"",
+                                    "TopologyType=\"Quadrilateral_8\"",
+                                    "TopologyType=\"Quadrilateral_9\"",
+                                    "TopologyType=\"Tetrahedron_10\"",
+                                    "TopologyType=\"Pyramid_13\"",
+                                    "TopologyType=\"Wedge_12\"",
+                                    "TopologyType=\"Wedge_15\"",
+                                    "TopologyType=\"Hexahedron_20\"",
+                                    "TopologyType=\"Hexahedron_24\"",
+                                    "TopologyType=\"Hexahedron_27\"",
+                                    "TopologyType=\"Hexahedron_64\"",
+                                    "TopologyType=\"Hexahedron_125\"",
+                                    "TopologyType=\"Mixed\""};
 hid_t dataTypeToHDFType[4];
 
 struct timeval hdf5_create_start;
@@ -69,6 +96,12 @@ void XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
     int iBlock, int gridDataType, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes, int nDims, int *dims,
     int *baseIndex, int *ghostOffsets);
+void XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
+    const char *varFileName, const char *gridName, int iBlock,
+    const char *coordName, int coordDataType, int nCoords, int coordDim,
+    const char *connectivityName, int cellType, int nCells,
+    int connectivityLength, int nVars, char **varNames, int *varTypes,
+    int *varCentering, int *varDataTypes);
 void HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nDims, int *dims);
 void HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
@@ -427,7 +460,7 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
     //
     // Write out the grid meta data.
     //
-    if (iBlock == XDMF_NULL_BLOCK)
+    if (iBlock == XDMF_NULL_GRID)
         fprintf(xmf, "   <Grid Name=\"%s\" GridType=\"Uniform\">\n",
             blockName);
     else
@@ -451,7 +484,7 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
         fprintf(xmf, "     <Geometry GeometryType=\"XY\">\n");
         fprintf(xmf, "       <DataItem Dimensions=\"%d 2\" %s Format=\"HDF\">\n",
             (dims[1]+1)*(dims[0]+1), dataTypeToString[gridDataType]);
-        if (iBlock == XDMF_NULL_BLOCK)
+        if (iBlock == XDMF_NULL_GRID)
             fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
         else
             fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
@@ -477,7 +510,7 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
         fprintf(xmf, "       <DataItem Dimensions=\"%d 3\" %s Format=\"HDF\">\n",
             (dims[2]+1)*(dims[1]+1)*(dims[0]+1),
             dataTypeToString[gridDataType]);
-        if (iBlock == XDMF_NULL_BLOCK)
+        if (iBlock == XDMF_NULL_GRID)
             fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
         else
             fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iBlock);
@@ -496,12 +529,12 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
             centeringToString[varCentering[iVar]]);
         fprintf(xmf, "       <DataItem Dimensions=\"");
         if (nDims == 2)
-            if (varCentering[iVar] == XDMF_ZONE_CENTER)
+            if (varCentering[iVar] == XDMF_CELL_CENTER)
                 fprintf(xmf, "%d %d", dims[1], dims[0]);
             else
                 fprintf(xmf, "%d %d", dims[1]+1, dims[0]+1);
         else
-            if (varCentering[iVar] == XDMF_ZONE_CENTER)
+            if (varCentering[iVar] == XDMF_CELL_CENTER)
                 fprintf(xmf, "%d %d %d", dims[2], dims[1], dims[0]);
             else
                 fprintf(xmf, "%d %d %d", dims[2]+1, dims[1]+1, dims[0]+1);
@@ -509,11 +542,91 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
             fprintf(xmf, " %d", nDims);
         fprintf(xmf, "\" %s Format=\"HDF\">\n",
             dataTypeToString[varDataTypes[iVar]]);
-        if (iBlock == XDMF_NULL_BLOCK)
+        if (iBlock == XDMF_NULL_GRID)
             fprintf(xmf, "        %s:/%s\n", varFileName, varNames[iVar]);
         else
             fprintf(xmf, "        %s:/%s%d\n",
                 varFileName, varNames[iVar], iBlock);
+        fprintf(xmf, "       </DataItem>\n");
+        fprintf(xmf, "     </Attribute>\n");
+    }
+
+    fprintf(xmf, "   </Grid>\n");
+}
+
+void
+XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
+    const char *varFileName, const char *gridName, int iGrid,
+    const char *coordName, int coordDataType, int nCoords, int coordDim,
+    const char *connectivityName, int cellType, int nCells,
+    int connectivityLength, int nVars, char **varNames, int *varTypes,
+    int *varCentering, int *varDataTypes)
+{
+    //
+    // Write out the grid meta data.
+    //
+    if (iGrid == XDMF_NULL_GRID)
+        fprintf(xmf, "   <Grid Name=\"%s\" GridType=\"Uniform\">\n",
+            gridName);
+    else
+        fprintf(xmf, "   <Grid Name=\"%s%d\" GridType=\"Uniform\">\n",
+            gridName, iGrid);
+    fprintf(xmf, "     <Topology %s NumberOfElements=\"%d\">\n",
+        cellTypeToString[cellType], nCells);
+    fprintf(xmf, "       <DataItem Dimensions=\"%d\" %s Format=\"HDF\">\n",
+        connectivityLength, dataTypeToString[XDMF_INT]);
+    if (iGrid == XDMF_NULL_GRID)
+        fprintf(xmf, "        %s:/%s\n", gridFileName, connectivityName);
+    else
+        fprintf(xmf, "        %s:/%s%d\n", gridFileName, connectivityName, iGrid);
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Topology>\n");
+    if (coordDim == 2)
+    {
+        fprintf(xmf, "     <Geometry GeometryType=\"XY\">\n");
+        fprintf(xmf, "       <DataItem Dimensions=\"%d 2\" %s Format=\"HDF\">\n",
+            nCoords, dataTypeToString[coordDataType]);
+        if (iGrid == XDMF_NULL_GRID)
+            fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
+        else
+            fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iGrid);
+    }
+    else
+    {
+        fprintf(xmf, "     <Geometry GeometryType=\"XYZ\">\n");
+        fprintf(xmf, "       <DataItem Dimensions=\"%d 3\" %s Format=\"HDF\">\n",
+            nCoords, dataTypeToString[coordDataType]);
+        if (iGrid == XDMF_NULL_GRID)
+            fprintf(xmf, "        %s:/%s\n", gridFileName, coordName);
+        else
+            fprintf(xmf, "        %s:/%s%d\n", gridFileName, coordName, iGrid);
+    }
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Geometry>\n");
+
+    //
+    // Write out the variable meta data.
+    //
+    int iVar;
+    for (iVar = 0; iVar < nVars; iVar++)
+    { 
+        fprintf(xmf, "     <Attribute Name=\"%s\" %s %s>\n",
+            varNames[iVar], varTypeToString[varTypes[iVar]],
+            centeringToString[varCentering[iVar]]);
+        fprintf(xmf, "       <DataItem Dimensions=\"");
+        if (varCentering[iVar] == XDMF_CELL_CENTER)
+            fprintf(xmf, "%d", nCells);
+        else
+            fprintf(xmf, "%d", nCoords);
+        if (varTypes[iVar] == XDMF_VECTOR)
+            fprintf(xmf, " %d", coordDim);
+        fprintf(xmf, "\" %s Format=\"HDF\">\n",
+            dataTypeToString[varDataTypes[iVar]]);
+        if (iGrid == XDMF_NULL_GRID)
+            fprintf(xmf, "        %s:/%s\n", varFileName, varNames[iVar]);
+        else
+            fprintf(xmf, "        %s:/%s%d\n",
+                varFileName, varNames[iVar], iGrid);
         fprintf(xmf, "       </DataItem>\n");
         fprintf(xmf, "     </Attribute>\n");
     }
@@ -662,7 +775,7 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     for (i = 0; i < nVars; i++)
     {
         int nComps = (varTypes[i] == XDMF_SCALAR) ? 1 : nDims;
-        if (varCentering[i] == XDMF_ZONE_CENTER)
+        if (varCentering[i] == XDMF_CELL_CENTER)
         {
             Create3DZonalGhostData(((float **)vars)[i], dims, nComps, iBlock,
                 nBlocks, (float **)&(newVars[i]), newDims);
@@ -879,7 +992,7 @@ HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     int iVar;
     for (iVar = 0; iVar < nVars; iVar++)
     {
-        if (varCentering[iVar] == XDMF_ZONE_CENTER)
+        if (varCentering[iVar] == XDMF_CELL_CENTER)
         {
             vdims[0] = dims[2];
             vdims[1] = dims[1];
@@ -962,7 +1075,7 @@ HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     int iVar;
     for (iVar = 0; iVar < nVars; iVar++)
     {
-        if (varCentering[iVar] == XDMF_ZONE_CENTER)
+        if (varCentering[iVar] == XDMF_CELL_CENTER)
         {
             vdims[0] = dims[2];
             vdims[1] = dims[1];
@@ -3065,6 +3178,30 @@ XdmfCreate(const char *fileName, double time)
 }
 
 void
+XdmfPutUcdGrid(XDMFFile *xdmfFileIn, const char *gridFileName,
+    const char *varFileName, const char *gridName, const char *coordName,
+    int coordDataType, int nCoords, int coordDim, const char *connectivityName,
+    int cellType, int nCells, int connectivityLength, int nVars,
+    char **varNames, int *varTypes, int *varCentering, int *varDataTypes)
+{
+    XDMFFileSerial *xdmfFile = (XDMFFileSerial *) xdmfFileIn;
+
+    if (xdmfFile == NULL)
+        return;
+    if (xdmfFile->type != 2)
+        return;
+
+    fprintf(xdmfFile->file, " <Domain>\n");
+
+    XDMFPutUcdGrid(xdmfFile->file, gridFileName, varFileName, gridName,
+        XDMF_NULL_GRID, coordName, coordDataType, nCoords, coordDim,
+        connectivityName, cellType, nCells, connectivityLength,
+        nVars, varNames, varTypes, varCentering, varDataTypes);
+
+    fprintf(xdmfFile->file, " </Domain>\n");
+}
+
+void
 XdmfWriteCurvVar(XDMFFile *xdmfFileIn, const char *gridFileName,
     const char *varFileName, const char *gridName, const char *coordName,
     int gridDataType, int nVars, char **varNames, int *varTypes,
@@ -3080,7 +3217,7 @@ XdmfWriteCurvVar(XDMFFile *xdmfFileIn, const char *gridFileName,
     fprintf(xdmfFile->file, " <Domain>\n");
 
     XDMFWriteCurvBlock(xdmfFile->file, gridFileName, varFileName, gridName,
-        coordName, XDMF_NULL_BLOCK, gridDataType, nVars, varNames, varTypes,
+        coordName, XDMF_NULL_GRID, gridDataType, nVars, varNames, varTypes,
         varCentering, varDataTypes, nDims, dims, NULL, NULL);
 
     fprintf(xdmfFile->file, " </Domain>\n");
@@ -3172,8 +3309,8 @@ HdfCreate(const char *fileName)
 }
 
 void
-HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridCoordName,
-    int gridDataType, float *gridCoords, int nDims, int *dims)
+HdfPutCoords(HDFFile *hdfFileIn, const char *coordName,
+    int coordDataType, float *coords, int nCoords)
 {
     HDFFileSerial *hdfFile = (HDFFileSerial *) hdfFileIn;
 
@@ -3181,33 +3318,69 @@ HdfPutCurvMesh(HDFFile *hdfFileIn, const char *gridCoordName,
         return;
     if (hdfFile->type != 2)
         return;
-    if (gridCoordName == NULL)
+    if (coordName == NULL)
         return;
-    if (gridCoords == NULL)
+    if (coordDataType < XDMF_FLOAT || coordDataType > XDMF_CHAR)
         return;
-    if (nDims < 1 || nDims > 3)
+    if (coords == NULL)
         return;
-    if (dims == NULL)
+    if (nCoords <= 0)
         return;
 
     hid_t     dataspace_id, dataset_id;
     hsize_t   vdims[4];
     herr_t    status;
 
-    vdims[0] = (dims[0] + 1);
-    int i;
-    for (i = 1; i < nDims; i++)
-        vdims[0] *= (dims[i] + 1);
+    vdims[0] = nCoords;
     vdims[1] = 3;
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
-    dataset_id = H5Dcreate(hdfFile->fileId, gridCoordName,
-                           dataTypeToHDFType[gridDataType],
+    dataset_id = H5Dcreate(hdfFile->fileId, coordName,
+                           dataTypeToHDFType[coordDataType],
                            dataspace_id, H5P_DEFAULT,
                            H5P_DEFAULT, H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, dataTypeToHDFType[gridDataType], H5S_ALL,
-                      H5S_ALL, H5P_DEFAULT, gridCoords);
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[coordDataType], H5S_ALL,
+                      H5S_ALL, H5P_DEFAULT, coords);
+
+    status = H5Dclose(dataset_id);
+
+    status = H5Sclose(dataspace_id);
+}
+
+void
+HdfPutConnectivity(HDFFile *hdfFileIn, const char *connectivityName,
+    int connectivityDataType, float *connectivity, int connectivityLength)
+{
+    HDFFileSerial *hdfFile = (HDFFileSerial *) hdfFileIn;
+
+    if (hdfFile == NULL)
+        return;
+    if (hdfFile->type != 2)
+        return;
+    if (connectivityName == NULL)
+        return;
+    if (connectivityDataType < XDMF_FLOAT || connectivityDataType > XDMF_CHAR)
+        return;
+    if (connectivity == NULL)
+        return;
+    if (connectivityLength <= 0)
+        return;
+
+    hid_t     dataspace_id, dataset_id;
+    hsize_t   vdims[4];
+    herr_t    status;
+
+    vdims[0] = connectivityLength;
+    dataspace_id = H5Screate_simple(1, vdims, NULL);
+
+    dataset_id = H5Dcreate(hdfFile->fileId, connectivityName,
+                           dataTypeToHDFType[connectivityDataType],
+                           dataspace_id, H5P_DEFAULT,
+                           H5P_DEFAULT, H5P_DEFAULT);
+
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[connectivityDataType],
+                      H5S_ALL, H5S_ALL, H5P_DEFAULT, connectivity);
 
     status = H5Dclose(dataset_id);
 
@@ -3226,6 +3399,12 @@ HdfPutCurvVar(HDFFile *hdfFileIn, const char *varName, int varType,
         return;
     if (varName == NULL)
         return;
+    if (varType < XDMF_SCALAR || varType > XDMF_VECTOR)
+        return;
+    if (varCentering < XDMF_CELL_CENTER || varCentering > XDMF_NODE_CENTER)
+        return;
+    if (varDataType < XDMF_FLOAT || varDataType > XDMF_CHAR)
+        return;
     if (var == NULL)
         return;
     if (nDims < 1 || nDims > 3)
@@ -3238,7 +3417,7 @@ HdfPutCurvVar(HDFFile *hdfFileIn, const char *varName, int varType,
     herr_t    status;
 
     nvdims = nDims;
-    if (varCentering == XDMF_ZONE_CENTER)
+    if (varCentering == XDMF_CELL_CENTER)
     {
         int i;
         for (i = 0; i < nDims; i++)
@@ -3253,6 +3432,64 @@ HdfPutCurvVar(HDFFile *hdfFileIn, const char *varName, int varType,
     if (varType == XDMF_VECTOR)
     {
         vdims[nDims] = nDims;
+        nvdims++;
+    }
+
+    dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
+
+    dataset_id = H5Dcreate(hdfFile->fileId, varName,
+                           dataTypeToHDFType[varDataType],
+                           dataspace_id, H5P_DEFAULT,
+                           H5P_DEFAULT, H5P_DEFAULT);
+
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[varDataType],
+                      H5S_ALL, H5S_ALL, H5P_DEFAULT, var);
+
+    status = H5Dclose(dataset_id);
+
+    status = H5Sclose(dataspace_id);
+}
+
+void
+HdfPutUcdVar(HDFFile *hdfFileIn, const char *varName, int varType,
+    int varCentering, int varDataType, void *var, int varDim,
+    int nCoords, int nCells)
+{
+    HDFFileSerial *hdfFile = (HDFFileSerial *) hdfFileIn;
+
+    if (hdfFile == NULL)
+        return;
+    if (hdfFile->type != 2)
+        return;
+    if (varName == NULL)
+        return;
+    if (varType < XDMF_SCALAR || varType > XDMF_VECTOR)
+        return;
+    if (varCentering < XDMF_CELL_CENTER || varCentering > XDMF_NODE_CENTER)
+        return;
+    if (varDataType < XDMF_FLOAT || varDataType > XDMF_CHAR)
+        return;
+    if (var == NULL)
+        return;
+    if (nCoords <= 0 || nCells <= 0)
+        return;
+
+    hid_t     dataspace_id, dataset_id;
+    hsize_t   nvdims, vdims[4];
+    herr_t    status;
+
+    nvdims = 1;
+    if (varCentering == XDMF_CELL_CENTER)
+    {
+        vdims[0] = nCells;
+    }
+    else
+    {
+        vdims[0] = nCoords;
+    }
+    if (varType == XDMF_VECTOR)
+    {
+        vdims[1] = varDim;
         nvdims++;
     }
 

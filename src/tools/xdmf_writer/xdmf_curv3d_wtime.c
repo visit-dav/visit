@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     varDataTypes[1] = XDMF_FLOAT;
     varDataTypes[2] = XDMF_FLOAT;
     int *varCentering = (int *) malloc(sizeof(int)*3);
-    varCentering[0] = XDMF_ZONE_CENTER;
+    varCentering[0] = XDMF_CELL_CENTER;
     varCentering[1] = XDMF_NODE_CENTER;
     varCentering[2] = XDMF_NODE_CENTER;
     int gridDims[3];
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     //
     HDFFile *hdfFile = HdfCreate("curv3d_grid.h5");
 
-    HdfPutCurvMesh(hdfFile, "XYZ", XDMF_FLOAT, coords, 3, gridDims);
+    HdfPutCoords(hdfFile, "XYZ", XDMF_FLOAT, coords, nnodes);
 
     HdfClose(hdfFile);
 
