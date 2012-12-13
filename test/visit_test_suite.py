@@ -178,8 +178,6 @@ def run_visit_test(args):
     tparams["name"]           = test_base
     tparams["file"]           = test_file
     tparams["modes"]          = modes
-    tparams["visit_top_dir"]  = top_dir
-    tparams["visit_data_dir"] = opts.datadir
     tparams["run_dir"]        = run_dir
     tparams["result_dir"]     = opts.resultdir
     tparams["fuzzy_match"]    = fuzzy
@@ -189,6 +187,10 @@ def run_visit_test(args):
     tparams["pixdiff"]        = opts.pixdiff
     tparams["avgdiff"]        = opts.avgdiff
     tparams["numdiff"]        = opts.numdiff
+    tparams["top_dir"]        = top_dir
+    tparams["data_dir"]       = opts.datadir
+    tparams["baseline_dir"]   = opts.baselinedir
+    tparams["tests_dir"]      = opts.testsdir
     if not opts.noskip:
         tparams["skip_file"]  = opts.skipfile
     skip  =  check_skip(opts.skiplist,modes,test_cat,test_file)
@@ -220,8 +222,11 @@ def run_visit_test(args):
         sexe(rcmd,
              suppress_output=(not (opts.verbose or opts.lessverbose)),
              echo=False)
-        if os.path.isfile("returncode.txt"):
-            rcode = int(open("returncode.txt").readline())
+        json_res_file = pjoin(opts.resultdir,"json","%s_%s.json" %(test_cat,test_base))
+        if os.path.isfile(json_res_file ):
+            results = json.load(open(json_res_file))
+            if results.has_key("result_code"):
+                rcode = results["result_code"]
         # get end timestamp
         etime = time.time()
         dtime = math.ceil(etime - stime)
@@ -317,10 +322,12 @@ def parse_args():
     Parses arguments to runtest.
     """
     parser = OptionParser()
-    data_dir_def   = abs_path(visit_root(),"data")
-    visit_exe_def  = abs_path(visit_root(),"src","bin","visit")
-    skip_def       = pjoin(test_path(),"skip.json")
-    nprocs_def     = multiprocessing.cpu_count()
+    data_dir_def    = abs_path(visit_root(),"data")
+    base_dir_def    = abs_path(visit_root(),"test","baseline")
+    tests_dir_def   = abs_path(visit_root(),"test","tests")
+    visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
+    skip_def        = pjoin(test_path(),"skip.json")
+    nprocs_def      = multiprocessing.cpu_count()
     parser.add_option("-r",
                       "--run-only",
                       dest="use_pil",
@@ -332,6 +339,16 @@ def parse_args():
                       dest="datadir",
                       default=data_dir_def,
                       help="path to data directory [default=%s]" % data_dir_def)
+    parser.add_option("-b",
+                      "--baseline-dir",
+                      dest="baselinedir",
+                      default=base_dir_def,
+                      help="path to baseline directory [default=%s]" % base_dir_def)
+    parser.add_option("-t",
+                      "--tests-dir",
+                      dest="testsdir",
+                      default=tests_dir_def,
+                      help="path to tests directory [default=%s]" % tests_dir_def)
     parser.add_option("-o",
                       "--output-dir",
                       dest="resultdir",
@@ -458,12 +475,14 @@ def parse_args():
                       default=nprocs_def,
                       help="number of tests to launch simultaneously [default =%d]" % nprocs_def)
     # parse args
-    opts, args      = parser.parse_args()
-    opts.executable = abs_path(opts.executable)
-    opts.resultdir  = abs_path(opts.resultdir)
-    opts.datadir    = abs_path(opts.datadir)
-    opts.classes    = opts.classes.split(",")
-    opts.skiplist   = None
+    opts, args       = parser.parse_args()
+    opts.executable  = abs_path(opts.executable)
+    opts.resultdir   = abs_path(opts.resultdir)
+    opts.datadir     = abs_path(opts.datadir)
+    opts.testsdir    = abs_path(opts.testsdir)
+    opts.baselinedir = abs_path(opts.baselinedir)
+    opts.classes     = opts.classes.split(",")
+    opts.skiplist    = None
     if os.path.isfile(opts.skipfile):
         try:
             if opts.noskip == False:
@@ -479,14 +498,13 @@ def parse_args():
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def find_test_cases(opts):
+def find_test_cases(tests_dir):
     """
     Finds test suite scripts.
     """
     Log("[Finding test scripts]")
     res    = []
-    tdir   = test_path()
-    tfiles = glob.glob(pjoin(tdir,"tests","*","*.py"))
+    tfiles = glob.glob(pjoin(tests_dir,"*","*.py"))
     tfiles = [ os.path.abspath(tf) for tf in tfiles]
     if len(opts.classes) == 0:
         res = tfiles
@@ -511,19 +529,18 @@ def find_test_cases(opts):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def load_test_cases_from_index(result_idx,only_failures=False):
+def load_test_cases_from_index(tests_dir,result_idx,only_failures=False):
     """
     Finds test suite scripts.
     """
     Log("[Loading test cases from index file = %s)]" % result_idx)
     res = []
-    tdir  = test_path()
     tests = JSONIndex.load_results(result_idx)
     for t in tests:
         if only_failures and t.error():
-            res.append(pjoin(tdir,"tests",t.category,t.file))
+            res.append(pjoin(tests_dir,t.category,t.file))
         else:
-            res.append(pjoin(tdir,"tests",t.category,t.file))
+            res.append(pjoin(tests_dir,t.category,t.file))
     return res
 
 # ----------------------------------------------------------------------------
@@ -544,7 +561,7 @@ def prepare_result_dirs(res_dir=None):
     run_dir = pjoin(res_dir,"_run")
     if not os.path.isdir(run_dir):
         os.mkdir(run_dir)
-    for d in ["html","current","diff"]:
+    for d in ["html","json","current","diff"]:
         full_dir = pjoin(res_dir,d)
         if os.path.isdir(full_dir):
             shutil.rmtree(full_dir)
@@ -661,13 +678,13 @@ def main(opts,tests):
         prepare_data_dir(opts.datadir)
     if opts.index:
         ridx  = opts.index
-        tests = load_test_cases_from_index(ridx)
+        tests = load_test_cases_from_index(opts.testsdir,ridx)
     elif opts.retry:
         Log("[Retrying failures from previous run]")
         ridx  = pjoin(opts.resultdir,"results.json.index")
-        tests = load_test_cases_from_index(ridx,True)
+        tests = load_test_cases_from_index(opts.testsdir,ridx,True)
     elif len(tests) == 0:
-        tests = find_test_cases(opts)
+        tests = find_test_cases(opts.testsdir)
     prepare_result_dirs(opts.resultdir)
     ststamp = timestamp(sep=":")
     stime   = time.time()

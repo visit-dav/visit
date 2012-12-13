@@ -107,7 +107,7 @@ def data_path(*args):
     """
     Generates proper absolute path relative to the 'data' directory.
     """
-    rargs = [TestEnv.params["visit_data_dir"]]
+    rargs = [TestEnv.params["data_dir"]]
     rargs.extend(args)
     return abs_path(*rargs)
 
@@ -174,7 +174,7 @@ def test_root_path(*args):
     """
     Generates proper absolute path relative to the 'test/' directory.
     """
-    rargs = [TestEnv.params["visit_top_dir"],"test"]
+    rargs = [TestEnv.params["top_dir"],"test"]
     rargs.extend(args)
     return abs_path(*rargs)
 
@@ -189,9 +189,78 @@ def tests_path(*args):
     """
     Generates proper absolute path relative to the 'test/tests' directory.
     """
-    rargs = [test_root_path(),"tests"]
+    rargs = [TestEnv.params["tests_dir"]]
     rargs.extend(args)
     return abs_path(*rargs)
+
+# ----------------------------------------------------------------------------
+#  Method: baseline_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def test_baseline_path(*args):
+    """
+    Generates proper absolute path relative to the 'test/baseline' directory.
+    """
+    rargs = [TestEnv.params["baseline_dir"]]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
+
+
+# ----------------------------------------------------------------------------
+#  Method: html_output_file_handle
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec 12 2012
+# ----------------------------------------------------------------------------
+def html_output_file_handle(mode='a'):
+    """
+    Returns a handle to the html output file for the current test.
+    """
+    res = open(out_path("html","%s_%s.html" % (TestEnv.params["category"],
+                                               TestEnv.params["name"])), mode)
+    return res
+
+
+# ----------------------------------------------------------------------------
+#  Method: json_output_file_handle
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec 12 2012
+# ----------------------------------------------------------------------------
+def json_output_file_handle(mode='r'):
+    path = out_path("json","%s_%s.json" % (TestEnv.params["category"],
+                                               TestEnv.params["name"]))
+
+    res = open(path,mode)
+    return res
+
+# ----------------------------------------------------------------------------
+#  Method: load_json_results
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec 12 2012
+# ----------------------------------------------------------------------------
+def json_results_load():
+    """
+    Loads and returns the current set of json results as a dict.
+    """
+    return json.load(json_output_file_handle())
+
+# ----------------------------------------------------------------------------
+#  Method: load_json_results
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec 12 2012
+# ----------------------------------------------------------------------------
+def json_results_save(obj):
+    """
+    Saves the passed dict to the json results file.
+    """
+    json.dump(obj,json_output_file_handle('w'))
+
 
 # ----------------------------------------------------------------------------
 #  Method: TestScriptPath
@@ -244,13 +313,13 @@ def GenFileNames(test_case, ext):
     # create file names
     cur  = pjoin(dcur_base,test_case  + ext)
     diff = pjoin(ddiff_base,test_case + ext)
-    base = test_root_path("baseline",category,pyfilebase,test_case + ext)
+    base = test_baseline_path(category,pyfilebase,test_case + ext)
     altbase = ""
     mode_specific = 0
     if modes != "":
         mode_dir = modes.replace(",","_")
-        altbase  = test_root_path("baseline",category,pyfilebase,mode_dir,test_case + ext)
-        modefile = test_root_path("baseline",category,pyfilebase,"mode_specific.json")
+        altbase  = test_baseline_path(category,pyfilebase,mode_dir,test_case + ext)
+        modefile = test_baseline_path(category,pyfilebase,"mode_specific.json")
         if os.path.isfile(altbase):
             # check for alternate mapping from
             base = altbase
@@ -263,7 +332,7 @@ def GenFileNames(test_case, ext):
                 case_file     = test_case + ext
                 if case_file in selected_mode.keys():
                     ms_dir  = selected_mode[case_file]
-                    altbase = test_root_path("baseline",category,pyfilebase,ms_dir,case_file)
+                    altbase = test_baseline_path(category,pyfilebase,ms_dir,case_file)
                     base = altbase
                     mode_specific = 1
                     Log("Using mode specific baseline: %s (from %s)" % (base,modefile))
@@ -309,6 +378,7 @@ def LogTestStart():
     msg += "  START:  Test script %s\n" % TestEnv.params["file"]
     msg += "\n"
     Log(msg)
+    JSONTestStart()
     HTMLTestStart()
 
 # ----------------------------------------------------------------------------
@@ -327,7 +397,8 @@ def LogTestExit(excode):
     msg += " - - - - - - - - - - - - - - -\n"
     msg += "\n"
     Log(msg)
-    HTMLTestExit()
+    JSONTestExit(excode)
+    HTMLTestExit(excode)
 
 
 
@@ -342,7 +413,7 @@ def HTMLTestStart():
     Begin test html output.
     """
     # TODO: use template file
-    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'wt')
+    html = html_output_file_handle(mode='wt')
     html.write("<SCRIPT TYPE=\"text/javascript\">\n")
     html.write("<!--\n")
     html.write("function popup(mylink, name)\n")
@@ -377,21 +448,50 @@ def HTMLTestStart():
     html.write(" </tr>\n")
     html.write("\n")
 
+
+# ----------------------------------------------------------------------------
+#  Method: JSONTestStart
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec  12 2012
+# ----------------------------------------------------------------------------
+def JSONTestStart():
+    res = {}
+    res["env"] =  dict(TestEnv.params)
+    res["results"] = []
+    json_results_save(res)
+
+
+
 # ----------------------------------------------------------------------------
 #  Method: HTMLTestExit
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def HTMLTestExit():
+def HTMLTestExit(excode):
     """
     Complete test html output.
     """
     # TODO use template file
-    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
+    html = html_output_file_handle()
     html.write("</table>\n")
+    html.write("<p>Final Return Code: %s</p>\n" % str(excode))
     html.write("</body>\n")
     html.write("</html>\n")
+
+# ----------------------------------------------------------------------------
+#  Method: JSONTestExit
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Dec  12 2012
+# ----------------------------------------------------------------------------
+def JSONTestExit(excode):
+    res = json_results_load()
+    res["result_code"] = excode
+    json_results_save(res)
+
+
 
 # ----------------------------------------------------------------------------
 #  Method: LogTextTestResult
@@ -399,23 +499,39 @@ def HTMLTestExit():
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def LogTextTestResult(file,nchanges,nlines,failed,skip):
+def LogTextTestResult(case_name,nchanges,nlines,failed,skip):
     """
     Log the result of a text based test.
     """
     if failed:
         if skip:
-            Log("    Test case '%s' SKIPPED" % file)
+            status = "skipped"
         else:
-            Log("    Test case '%s' FAILED" % file)
+            status = "failed"
     else:
         if nchanges < 0:
-            Log("    Test case '%s' UNKNOWN" % file)
+            status = "unknown"
         else:
-            Log("    Test case '%s' PASSED" % file)
+            status = "passed"
     # write html result
-    # TODO use template file
-    HTMLTextTestResult(file,nchanges,nlines,failed,skip)
+    Log("    Test case '%s' %s" % (case_name,status.upper()))
+    JSONTextTestResult(case_name,status,nchanges,nlines,failed,skip)
+    HTMLTextTestResult(case_name,status,nchanges,nlines,failed,skip)
+
+# ----------------------------------------------------------------------------
+#  Method: JSONTextTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def JSONTextTestResult(case_name,status,nchanges,nlines,failed,skip):
+    res = json_results_load()
+    t_res = {'case':     case_name,
+             'status':   status,
+             'nchanges': nchanges,
+             'nlines':   nlines}
+    res["results"].append(t_res)
+    json_results_save(res)
 
 
 # ----------------------------------------------------------------------------
@@ -424,12 +540,12 @@ def LogTextTestResult(file,nchanges,nlines,failed,skip):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def HTMLTextTestResult(file,nchanges,nlines,failed,skip):
+def HTMLTextTestResult(case_name,stats,nchanges,nlines,failed,skip):
     """
     Creates html entry for the result of a text based test.
     """
     # TODO use template file
-    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
+    html = html_output_file_handle()
     # write to the html file
     color = "#00ff00"
     if failed:
@@ -441,7 +557,7 @@ def HTMLTextTestResult(file,nchanges,nlines,failed,skip):
         if (nchanges < 0):
             color = "#00ffff"
     html.write(" <tr>\n")
-    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
+    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, case_name, case_name))
     html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
     html.write(" </tr>\n")
 
@@ -451,26 +567,60 @@ def HTMLTextTestResult(file,nchanges,nlines,failed,skip):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def LogImageTestResult(file,diffState,modeSpecific,tPixs, pPixs, dPixs, dpix, davg):
+def LogImageTestResult(case_name,
+                       diffState,modeSpecific,
+                       tPixs, pPixs, dPixs, dpix, davg):
     """
     Log the result of an image based test.
     """
     # write data to the log file if there is one
+    details = ""
     if diffState == 'None':
-        Log("    Test case '%s' PASSED" % file)
+        status = "passed"
     elif diffState == 'Acceptable':
-        Log("    Test case '%s' PASSED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
-            (file, tPixs, pPixs, dPixs, dpix, davg))
+        status  = "passed"
+        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
     elif diffState == 'Unacceptable':
-        Log("    Test case '%s' FAILED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" %
-            (file, tPixs, pPixs, dPixs, dpix, davg))
+        status  = "failed"
+        details = "#pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f" % (tPixs, pPixs, dPixs, dpix, davg)
     elif diffState == 'Skipped':
-        Log("    Test case '%s' SKIPPED" % file)
+        status = "skipped"
     else:
-        Log("    Test case '%s' UNKNOWN:#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK")
-    # write html result
-    HTMLImageTestResult(file,diffState,modeSpecific,
+        status = "unknown"
+        details = "#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK"
+    msg = "    Test case '%s' %s" % (case_name,status.upper())
+    if details !="":
+        msg += ": " + details
+    Log(msg)
+    JSONImageTestResult(case_name, status,
+                        diffState,modeSpecific,
                         tPixs, pPixs,dPixs, dpix, davg)
+    # write html result
+    HTMLImageTestResult(case_name, status,
+                        diffState,modeSpecific,
+                        tPixs, pPixs,dPixs, dpix, davg)
+
+# ----------------------------------------------------------------------------
+#  Method: LogImageTestResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def JSONImageTestResult(case_name, status,
+                        diffState, modeSpecific,
+                        dpix, tPixs, pPixs, dPixs, davg):
+    res = json_results_load()
+    t_res = {'case':          case_name,
+             'status':        status,
+             'diff_state':    diffState,
+             'mode_specific': modeSpecific,
+             'total_pixels':  tPixs,
+             'non_bg_pixels': pPixs,
+             'diff_pixels':   dPixs,
+             'diff_percent':  dPixs,
+             'avg_pixels':    davg}
+    res["results"].append(t_res)
+    json_results_save(res)
 
 # ----------------------------------------------------------------------------
 # Function: Test
@@ -526,7 +676,7 @@ def LogImageTestResult(file,diffState,modeSpecific,tPixs, pPixs, dPixs, dpix, da
 #
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0):
-    CheckInteractive()
+    CheckInteractive(case_name)
     # for read only globals, we don't need to use "global"
     # we may need to use global for these guys
     #global maxds
@@ -593,15 +743,14 @@ def Test(case_name, altSWA=0, alreadySaved=0):
 #
 # ----------------------------------------------------------------------------
 
-def HTMLImageTestResult(file,
+def HTMLImageTestResult(case_name,status,
                         diffState, modeSpecific,
                         dpix, tPixs, pPixs, dPixs, davg):
     """
     Writes HTML entry for a single test image.
     """
     # TODO use template file
-    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
-
+    html = html_output_file_handle()
     # write to the html file
     color = "#ffffff"
     if   diffState == 'None':           color = "#00ff00"
@@ -610,25 +759,25 @@ def HTMLImageTestResult(file,
     elif diffState == 'Skipped':        color = "#0000ff"
     else:                               color = "#ff00ff"
     html.write(" <tr>\n")
-    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
+    html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, case_name, case_name))
     html.write("  <td align=center>%.2f</td>\n" % (dpix))
     html.write("  <td align=center>%.2f</td>\n" % (davg))
     if (diffState == 'Unknown'):
         html.write("  <td align=center>Not Available</td>\n")
-        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (case_name,case_name,case_name))
         html.write("  <td align=center>Not Available</td>\n")
     elif (diffState != 'None'):
-        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
-        html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (file,file,file))
-        html.write("  <td align=center><a href=\"d_%s.png\" onclick='return popup(\"d_%s.png\",\"image\");'><img src=\"d_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (case_name,case_name,case_name))
+        html.write("  <td align=center><a href=\"c_%s.png\" onclick='return popup(\"c_%s.png\",\"image\");'><img src=\"c_%s_thumb.png\"></a></td>\n" % (case_name,case_name,case_name))
+        html.write("  <td align=center><a href=\"d_%s.png\" onclick='return popup(\"d_%s.png\",\"image\");'><img src=\"d_%s_thumb.png\"></a></td>\n" % (case_name,case_name,case_name))
     else:
-        html.write("  <td colspan=3 align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (file,file,file))
+        html.write("  <td colspan=3 align=center><a href=\"b_%s.png\" onclick='return popup(\"b_%s.png\",\"image\");'><img src=\"b_%s_thumb.png\"></a></td>\n" % (case_name,case_name,case_name))
     html.write(" </tr>\n")
 
     # write the individual testcase
-    testcase = open(out_path("html","%s.html" % file), 'wt')
-    testcase.write("<html><head><title>Results for test case %s</title></head>\n" % file)
-    testcase.write("<h1>Results for test case <i>%s</i></h1>\n" % file)
+    testcase = open(out_path("html","%s.html" % case_name), 'wt')
+    testcase.write("<html><head><title>Results for test case %s</title></head>\n" % case_name)
+    testcase.write("<h1>Results for test case <i>%s</i></h1>\n" % case_name)
     testcase.write("<body bgcolor=\"#a080f0\">\n")
     testcase.write("<table border=5><tr><td></td></tr>\n")
     testcase.write("  <tr>\n")
@@ -647,13 +796,13 @@ def HTMLImageTestResult(file,
     else:
         testcase.write("    <td align=center>Baseline:</td>\n")
     if (diffState == 'None'):
-        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%file)
+        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%case_name)
     elif (diffState == 'Unknown'):
         testcase.write("    <td>Not Available</td>\n")
     elif (diffState == 'Skipped'):
-        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%file)
+        testcase.write("""    <td><img name="b" border=0 src="b_%s.png"></img></td>\n"""%case_name)
     else:
-        testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.png'" onMouseOut="document.b.src='b_%s.png'"><img name="b" border=0 src="b_%s.png"></img></a></td>\n"""%(file,file,file))
+        testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.png'" onMouseOut="document.b.src='b_%s.png'"><img name="b" border=0 src="b_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
@@ -664,7 +813,7 @@ def HTMLImageTestResult(file,
     elif (diffState == 'Skipped'):
         testcase.write("    <td>Skipped</td>\n")
     else:
-        testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(file,file,file))
+        testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.png'" onMouseOut="document.c.src='c_%s.png'"><img name="c" border=0 src="c_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
@@ -675,7 +824,7 @@ def HTMLImageTestResult(file,
     elif (diffState == 'Skipped'):
         testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:
-        testcase.write("""    <td><a href="" onMouseOver="document.d.src='b_%s.png'" onMouseOut="document.d.src='d_%s.png'"><img name="d" border=0 src="d_%s.png"></img></a></td>\n"""%(file,file,file))
+        testcase.write("""    <td><a href="" onMouseOver="document.d.src='b_%s.png'" onMouseOut="document.d.src='d_%s.png'"><img name="d" border=0 src="d_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
     testcase.write("    <td align=center><i>Error Metric</i></td>\n")
     testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
@@ -780,7 +929,7 @@ def GetBackgroundImage(file):
 #   update to compute max channel difference.
 # ----------------------------------------------------------------------------
 
-def DiffUsingPIL(file, cur, diff, baseline, altbase):
+def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
     """
     Diffs test results using PIL.
     """
@@ -845,7 +994,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
             # we have to be really smart if we don't have a constant color
             # background
-            backimg = GetBackgroundImage(file)
+            backimg = GetBackgroundImage(case_name)
 
             # now, scan over pixels in oldimg counting how many non-background
             # pixels there are and how many diffs there are
@@ -880,15 +1029,15 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     # create thumbnails and save jpegs
     oldthumb = oldimg.resize(   thumbsize, Image.BICUBIC)
-    oldthumb.save(out_path("html","b_%s_thumb.png"%file));
-    oldimg.save(out_path("html","b_%s.png"%file));
+    oldthumb.save(out_path("html","b_%s_thumb.png"%case_name));
+    oldimg.save(out_path("html","b_%s.png"%case_name));
     if (dmax != 0):
         newthumb    = newimg.resize(   thumbsize, Image.BICUBIC)
         diffthumb   = mdiffimg.resize(  thumbsize, Image.BICUBIC)
-        newthumb.save(out_path("html","c_%s_thumb.png"%file));
-        diffthumb.save(out_path("html","d_%s_thumb.png"%file));
-        newimg.save(out_path("html","c_%s.png"%file));
-        mdiffimg.save(out_path("html","d_%s.png"%file));
+        newthumb.save(out_path("html","c_%s_thumb.png"%case_name));
+        diffthumb.save(out_path("html","d_%s_thumb.png"%case_name));
+        newimg.save(out_path("html","c_%s.png"%case_name));
+        mdiffimg.save(out_path("html","d_%s.png"%case_name));
 
     return (totpixels, plotpixels, diffpixels, dmean)
 
@@ -1053,7 +1202,7 @@ def FilterTestText(inText, baseText):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def CheckInteractive():
+def CheckInteractive(case_name):
     """
     Helper which pauses if we are in interactive mode.
     """
@@ -1062,7 +1211,7 @@ def CheckInteractive():
         print "***********************"
         print "***********************"
         print "***********************"
-        print "Saving %s"%file
+        print "Saving %s"% case_name
         print "Hit Any Key To Continue"
         print "***********************"
         print "***********************"
@@ -1108,7 +1257,7 @@ def TestText(case_name, inText):
     """
     Write out text to file, diff it with the baseline, and log the result.
     """
-    CheckInteractive()
+    CheckInteractive(case_name)
 
     # create file names
     (cur, diff, base, altbase, modeSpecific) = GenFileNames(case_name, ".txt")
@@ -1193,7 +1342,7 @@ def HTMLSectionStart(sectionName):
     """
     Create html entry for the start of a test section.
     """
-    html = open(out_path("html","%s_%s.html" % (TestEnv.params["category"], TestEnv.params["name"])), 'a')
+    html = html_output_file_handle()
     html.write(" <tr>\n")
     html.write("  <td colspan=6 align=center bgcolor=\"#0000ff\"><font color=\"#ffffff\"><b>%s</b></font></td>\n" % sectionName)
     html.write(" </tr>\n")
@@ -1236,6 +1385,7 @@ def Exit(excode=0):
     if rcode is None:
         rcode  = 114
     LogTestExit(rcode)
+    # finalize results.
     open("returncode.txt","w").write("%d\n" % rcode)
     sys.exit(rcode)
 
@@ -1430,7 +1580,7 @@ def InitTestEnv():
     if not os.path.isdir(out_path("html")):
         os.mkdir(out_path("html"))
     # colorize the source file, and write to an html file
-    HtmlPython.ColorizePython(test_root_path(),
+    HtmlPython.ColorizePython(tests_path(),
                               out_path(),
                               TestEnv.params["category"],
                               TestEnv.params["file"],
