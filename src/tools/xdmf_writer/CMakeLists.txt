@@ -53,6 +53,9 @@ ${HDF5_LIBRARY_DIR}
 ADD_EXECUTABLE(xdmf_curv3d xdmf_curv3d.c)
 TARGET_LINK_LIBRARIES(xdmf_curv3d xdmf_writer_ser) 
 
+ADD_EXECUTABLE(xdmf_ucd3d xdmf_ucd3d.c)
+TARGET_LINK_LIBRARIES(xdmf_ucd3d xdmf_writer_ser) 
+
 ADD_EXECUTABLE(xdmf_curv3d_wtime xdmf_curv3d_wtime.c)
 TARGET_LINK_LIBRARIES(xdmf_curv3d_wtime xdmf_writer_ser) 
 
