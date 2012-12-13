@@ -128,7 +128,9 @@ class HTMLIndex(object):
                    "result_code": result.returncode,
                    "details": "%s_%s" % (result.category,result.base),
                    "run_time": result.runtime,
-                   "test_idx": str(result.index)}
+                   "test_idx": str(result.index),
+                   "button": "%s_%s_toggle" % (result.category,result.base),
+                   }
         if rcode == 111:
             mapping["result_color"] = "good"
             mapping["result_text"]  = "Succeeded"
@@ -165,7 +167,25 @@ class HTMLIndex(object):
             mapping["result_text"]  = "Failed: exit == %s  unknown" % str(rcode)
         f = self.__file()
         if rcode  != 116:
-            res = self.tset.use_template("index_entry",mapping)
+            json_results = pjoin(self.obase,"json","%s_%s.json" % (result.category,result.base))
+            if False and os.path.isfile(json_results):
+                # future functionality:
+                res = self.tset.use_template("index_entry_start",mapping)
+                jr = json.load(open(json_results))
+                case_status ={"passed":"good",
+                              "failed":"bad",
+                              "unknown":"unknown",
+                              "skipped":"skipped"}
+                for r in jr["results"]:
+                    r_map = dict(r)
+                    if r["status"] in case_status.keys():
+                        r_map["status_color"] = case_status[r["status"]]
+                    else:
+                        r_map["status_color"] = case_status["unknown"]
+                    res += self.tset.use_template("case_entry",r_map)
+                res += self.tset.use_template("index_entry_end",mapping)
+            else:
+                res = self.tset.use_template("index_entry",mapping)
         else:
             res = self.tset.use_template("index_entry_skip",mapping)
         f.write(res)

@@ -114,11 +114,6 @@ def FilesPresent(files):
 
     return retval
 
-#
-# Waits for all files in the list to be present in the current directory.
-#
-def WaitForFilesToBePresent(files):
-    while(FilesPresent(files) == 0): time.sleep(1)
 
 #
 # Removes all files ending in .silo or .visit from the current directory
@@ -163,11 +158,6 @@ def CreateMTFile(prefix, makeVisItFile, percent):
                 os.link(fileFrom, fileTo)
             except OSError:
                 print >>sys.stderr, "Don't need to copy %s" % file
-
-        # Wait for all files in the list to be present so there is no
-        # possibility of continuing until all files are ready.
-        WaitForFilesToBePresent(prefixfiles)
-
         db = prefix + "wave*.silo database"
     else:
         # .visit file.
@@ -499,7 +489,6 @@ def test7(testIndex):
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
     os.link(silo_data_path("globe.silo") , db)
-    WaitForFilesToBePresent(db)
 
     OpenDatabase(db)
     AddPlot("Pseudocolor", "t")
