@@ -15,7 +15,11 @@
 #   name instead of 127.0.0.1 for parallel engine launches.
 #
 # ----------------------------------------------------------------------------
-import os, socket, subprocess, string
+import os
+import socket
+import subprocess
+import string
+import getpass
 
 # The launch cases we want to test.
 launch_cases = {
@@ -136,19 +140,20 @@ for k in keys:
                 cmd = cmd + a + ' '
 
         # Run the launcher and get the output.
-        visitdir = pjoin(TestEnv.params["visit_top_dir"],"src")
-        visittestdir = pjoin(TestEnv.params["visit_top_dir"],"test")
-        visit = pjoin(visitdir,"bin","visit")
+        visitdir = pjoin(TestEnv.params["top_dir"],"src")
+        visittestdir = pjoin(TestEnv.params["top_dir"],"test")
+        visit =  visit_bin_path("visit")
         output = FormatLauncherOutput(GetLauncherCommand([visit] + args))
-
-        # Filter out visitdir and some related directories.
-        output = FilterLauncherOutput(output, {pjoin(visitdir,"bin") : "$VISIT_EXE_DIR"})
-        output = FilterLauncherOutput(output, {pjoin(visitdir,"exe") : "$VISIT_EXE_DIR"})
-        output = FilterLauncherOutput(output, {visittestdir : "$VISIT_TEST_DIR"})
-        output = FilterLauncherOutput(output, {visitdir : "$VISITDIR"})
         # filter the run dir, since there are multiple variants for nightly tests
         # (serial, par, etc)
-        output = FilterLauncherOutput(output, {TestEnv.params["run_dir"] : "$VISITDIR/_run"})
+        output = FilterLauncherOutput(output, {TestEnv.params["run_dir"]: "$VISIT_TEST_DIR"})
+        output = FilterLauncherOutput(output, {TestEnv.params["result_dir"] : "$VISIT_TEST_DIR"})
+        # Filter out visitdir and some related directories.
+        output = FilterLauncherOutput(output, {visit_bin_path() : "$VISIT_EXE_DIR"})
+        output = FilterLauncherOutput(output, {visit_bin_path("..","exe") : "$VISIT_EXE_DIR"})
+        output = FilterLauncherOutput(output, {visittestdir : "$VISIT_TEST_DIR"})
+        output = FilterLauncherOutput(output, {visit_bin_path("..") : "$VISITDIR"})
+        output = FilterLauncherOutput(output, {visitdir : "$VISITDIR"})
         # special case filter to resolve csh vs bash env differences
         bash_case   = "ulimit -c 0 ;"
         bash_case  += " LIBPATH=$VISITDIR/lib ;"
@@ -170,16 +175,12 @@ for k in keys:
         cdcmd = "cd $VISIT_TEST_DIR"
 
         # Filter out some other stuff.
-        replacements = {os.getlogin()   : "$USER",
-                        Version()       : "$VERSION",
-                        "linux-intel"   : "$PLATFORM",
-                        "linux-x86_64"  : "$PLATFORM",
-                        "darwin-i386"   : "$PLATFORM",
-                        "darwin-x86_64" : "$PLATFORM",
-                        "/_run/_unit_launcher" : "",
-                        cdcmd + "/output/" + sectorname() + "_serial" : cdcmd,
-                        cdcmd + "/output/" + sectorname() + "_parallel" : cdcmd,
-                        cdcmd + "/output/" + sectorname() + "_scalable_parallel_icet" : cdcmd}
+        replacements = {getpass.getuser() : "$USER",
+                        Version()         : "$VERSION",
+                        "linux-intel"     : "$PLATFORM",
+                        "linux-x86_64"    : "$PLATFORM",
+                        "darwin-i386"     : "$PLATFORM",
+                        "darwin-x86_64"   : "$PLATFORM"}
 
         output = FilterLauncherOutput(output, replacements)
 
