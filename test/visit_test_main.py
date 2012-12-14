@@ -194,6 +194,21 @@ def tests_path(*args):
     return abs_path(*rargs)
 
 # ----------------------------------------------------------------------------
+#  Method: visit_bin_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def visit_bin_path(*args):
+    """
+    Generates proper absolute path relative to the 'bin/visit/..' directory.
+    """
+    rargs = [abs_path(os.path.split(TestEnv.params["visit_bin"])[0])]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
+
+# ----------------------------------------------------------------------------
 #  Method: baseline_path
 #
 #  Programmer: Cyrus Harrison

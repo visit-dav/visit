@@ -191,6 +191,7 @@ def run_visit_test(args):
     tparams["data_dir"]       = opts.datadir
     tparams["baseline_dir"]   = opts.baselinedir
     tparams["tests_dir"]      = opts.testsdir
+    tparams["visit_bin"]      = opts.executable
     if not opts.noskip:
         tparams["skip_file"]  = opts.skipfile
     skip  =  check_skip(opts.skiplist,modes,test_cat,test_file)
