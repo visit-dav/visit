@@ -358,6 +358,8 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Hank Childs, Mon Dec 10 11:37:32 PST 2012
 //    Add support for double precision.
 //
+//    Mark C. Miller, Sun Dec 16 17:34:17 PST 2012
+//    Fix potential leak of ptr array on early returns.
 // ****************************************************************************
 
 void
@@ -587,12 +589,14 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         //
         if(stem.empty())
         {
+            if (deletePtr) delete [] ptr;
             EXCEPTION1(InvalidFilesException,
                        "Could not figure out stem filename.");
         }
         FILE *file_handle = fopen(stem.c_str(), "w");
         if(file_handle == NULL)
         {
+            if (deletePtr) delete [] ptr;
             EXCEPTION1(InvalidFilesException,
                        "Could not open stem file.  Do you lack write access "
                        "on the destination filesystem?");
