@@ -308,6 +308,9 @@
 #    Kathleen Biagas, Wed Sep 12 16:02:02 PDT 2012
 #    Added VISIT_INSTALL_PROFILES_TO_HOST as a first-class VisIt option.
 #
+#    Kathleen Biagas, Mon Dec 17 16:56:38 MST 2012
+#    Use CMake's FindMPI module for windows.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1237,7 +1240,7 @@ IF(VISIT_PARALLEL)
         ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
             IF(WIN32)
               IF(NOT MPI_FOUND)
-                INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMPI.cmake)
+                INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
                 IF(MPI_FOUND)
                   STRING(REPLACE " " ";" VPFLAGS "${VPFLAGS}")
                   SET(VISIT_PARALLEL_DEFS "${VPFLAGS}"
