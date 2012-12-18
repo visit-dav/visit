@@ -56,6 +56,7 @@
 import os
 import subprocess
 import glob
+import re
 
 from os.path import join as pjoin
 
@@ -183,7 +184,7 @@ def encode_wmv(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
-        cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+        cmd += "-mbd -rd -flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
         cmd += "-b 18000000 -r 30 %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         sexe(cmd)
@@ -264,6 +265,19 @@ def encode_mp4(ipattern,ofile):
 #
 # Symlink gen & cleanup
 #
+def list_input_files(ipattern):
+    match = re.search("%[0-9]*d",ipattern)
+    if match is None:
+        raise  VisItException("Could not determine input sequence pattern (%[0-9]d)")
+    i   = 0
+    ifs = []
+    while os.path.isfile(ipattern % i):
+        ifs.append(ipattern % i)
+        i+=1
+    if len(ifs) == 0:
+        raise  VisItException("Could not find files matching input pattern %s" % ipattern)
+    return ifs
+
 
 def gen_symlinks(ipattern,fdup):
     """
@@ -272,8 +286,7 @@ def gen_symlinks(ipattern,fdup):
     """
     idir, ifile = os.path.split(ipattern)
     pattern = pjoin(idir,"_encode.lnk.%s" % ifile)
-    ifs = glob.glob(ipattern.replace("%04d","*"))
-    ifs.sort()
+    ifs = list_input_files(ipattern)
     lnks = []
     lnk_cnt = 0
     for f in ifs:
@@ -299,8 +312,7 @@ def gen_symlinks_stereo(ipattern,fdup=None):
     rbase, rext = os.path.splitext(pattern_s)
     pattern_l   = rbase + ".left"  + rext
     pattern_r   = rbase + ".right" + rext
-    ifs = glob.glob(ipattern.replace("%04d","*"))
-    ifs.sort()
+    ifs = list_input_files(ipattern)
     ifs_l = [ ifs[i] for i in xrange(len(ifs)) if i == 0 or i % 2 == 0]
     ifs_r = [ ifs[i] for i in xrange(len(ifs)) if i %  2 == 1]
     cnt_l = len(ifs_l)
