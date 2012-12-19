@@ -184,6 +184,9 @@
 //    Eric Brugger, Mon Aug 27 13:16:58 PDT 2012
 //    Added curve_swapxy.
 //
+//    Eric Brugger, Tue Dec 18 16:54:37 PST 2012
+//    Added procid.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -375,6 +378,7 @@ const char *expr_misc[] = {
     "mean_curvature",
     "nodal_constant",
     "point_constant",
+    "procid",
     "recenter",
     "resample",
     "resrad",
