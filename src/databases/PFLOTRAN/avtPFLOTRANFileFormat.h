@@ -82,6 +82,9 @@
 //    Added the virtual GetTimes method; the old way (where we set it in
 //    the metadata directly) isn't supported when grouping MT files.
 //
+//    Jeremy Meredith, Wed Dec 19 13:26:18 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 class avtPFLOTRANFileFormat : public avtMTMDFileFormat
@@ -117,11 +120,23 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
   protected:
+    hid_t fileID;
+    bool unstructured;
     char *filename;
     bool opened;
 
     int nTime;
     std::vector< std::pair<float,std::string> > times;
+
+    // this section of fields only applies to unstructured grids
+    int  ucd_ncells;
+    int  ucd_cellstride;
+    int  ucd_nverts;
+    int  ucd_vertdim;
+    hid_t cellsID;
+    hid_t vertsID;
+
+    // this section only applies to structured grids
     int domainCount[3];
     int domainIndex[3];
     int globalDims[3];
@@ -129,10 +144,8 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     int domainGlobalCount[3];
     int localRealStart[3];
     int localRealCount[3];
-    hid_t fileID;
     hid_t dimID[3];
-
-    bool    oldFileNeedingCoordFixup;
+    bool oldFileNeedingCoordFixup;
 
     void LoadFile(void);
     void AddGhostCellInfo(vtkDataSet *ds);
@@ -144,7 +157,7 @@ class avtPFLOTRANFileFormat : public avtMTMDFileFormat
     hid_t NormalizeH5Type( hid_t type );
 
 
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
 
     // So that the reader can remember what the vector component arrays are
     // when asked for the vector data.
