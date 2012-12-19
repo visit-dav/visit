@@ -52,6 +52,7 @@
 #include <vtkIdList.h>
 #include <vtkCellData.h>
 #include <vtkIntArray.h>
+#include <vtkCellType.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDatabase.h>
@@ -97,15 +98,22 @@ static string vecNames[3] = { "X-", "Y-", "Z-" };
 //    Jeremy Meredith, Wed Mar 30 12:57:00 EDT 2011
 //    Initialize various HDF5 ids to -1.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
     avtMTMDFileFormat(fname)
 {
+    unstructured = false;
+
     fileID = -1;
     dimID[0] = -1;
     dimID[1] = -1;
     dimID[2] = -1;
+    cellsID = -1;
+    vertsID = -1;
 
     filename = strdup(fname);
     opened = false;
@@ -136,6 +144,9 @@ avtPFLOTRANFileFormat::avtPFLOTRANFileFormat(const char *fname):
 //    Also, don't make the check report an error; that's too severe.
 //    Just print to cerr.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 avtPFLOTRANFileFormat::~avtPFLOTRANFileFormat()
@@ -149,9 +160,15 @@ avtPFLOTRANFileFormat::~avtPFLOTRANFileFormat()
         H5Dclose(dimID[1]);
     if (dimID[2] > 0)
         H5Dclose(dimID[2]);
+    if (cellsID > 0)
+        H5Dclose(cellsID);
+    if (vertsID > 0)
+        H5Dclose(vertsID);
     dimID[0] = -1;
     dimID[1] = -1;
     dimID[2] = -1;
+    cellsID = -1;
+    vertsID = -1;
 
     if (fileID > 0)
     {
@@ -216,6 +233,9 @@ avtPFLOTRANFileFormat::GetNTimesteps(void)
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    Missed an ID to close.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 void
@@ -250,47 +270,107 @@ avtPFLOTRANFileFormat::LoadFile(void)
         EXCEPTION1(InvalidDBTypeException, error);
     }
 
-    // Check the coordinates and pull out the mesh dimensions
-    // while we're at it.
+    // Check more mesh structure
     hid_t coordsGID = H5Gopen(fileID, "Coordinates");
-    if (coordsGID < 0)
+    if (coordsGID >= 0)
     {
-        H5Fclose(fileID);
-        debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the Coordinates group in file " << filename << endl;
-        EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have a Coordinates group.");
-    }
-    for (int dim=0;dim<3;dim++)
-    {
-        dimID[dim] = H5Dopen(coordsGID, coordNames[dim].c_str());
-        if (dimID[dim] < 0)
+        // We have coordinates; it's structured.
+        // Pull out the mesh dimensions while we're at it.
+        for (int dim=0;dim<3;dim++)
         {
-            H5Gclose(coordsGID);
-            H5Fclose(fileID);
-            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the " << coordNames[dim] << "dataset in file " << filename << endl;
-            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
-        }
-        hid_t dimSpaceID = H5Dget_space(dimID[dim]);
-        if (dimSpaceID < 0)
-        {
-            H5Gclose(coordsGID);
-            H5Fclose(fileID);
-            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not get the space information for the " << coordNames[dim] << " coordinate in file " << filename << endl;
-            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
-        }
-        int ndims = H5Sget_simple_extent_ndims(dimSpaceID);
-        if (ndims != 1)
-        {
-            H5Gclose(coordsGID);
-            H5Fclose(fileID);
-            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "The " << coordNames[dim] << " coordinate is not one dimensional" << endl;
-            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since some coordinate data is not one dimensional.");
-        }
-        hsize_t dims, maxdims;
-        H5Sget_simple_extent_dims(dimSpaceID, &dims, &maxdims);
+            dimID[dim] = H5Dopen(coordsGID, coordNames[dim].c_str());
+            if (dimID[dim] < 0)
+            {
+                H5Gclose(coordsGID);
+                H5Fclose(fileID);
+                debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the " << coordNames[dim] << "dataset in file " << filename << endl;
+                EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
+            }
+            hid_t dimSpaceID = H5Dget_space(dimID[dim]);
+            if (dimSpaceID < 0)
+            {
+                H5Gclose(coordsGID);
+                H5Fclose(fileID);
+                debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not get the space information for the " << coordNames[dim] << " coordinate in file " << filename << endl;
+                EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have valid coordinates data.");
+            }
+            int ndims = H5Sget_simple_extent_ndims(dimSpaceID);
+            if (ndims != 1)
+            {
+                H5Gclose(coordsGID);
+                H5Fclose(fileID);
+                debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "The " << coordNames[dim] << " coordinate is not one dimensional" << endl;
+                EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since some coordinate data is not one dimensional.");
+            }
+            hsize_t dims, maxdims;
+            H5Sget_simple_extent_dims(dimSpaceID, &dims, &maxdims);
 
-        globalDims[dim] = dims;
+            globalDims[dim] = dims;
+        }
+        H5Gclose(coordsGID);
     }
-    H5Gclose(coordsGID);
+    else
+    {
+        // No coordinates.  could it be an unstructured grid?
+        hid_t domainGID = H5Gopen(fileID, "Domain");
+        if (domainGID < 0)
+        {
+            H5Fclose(fileID);
+            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the Coordinates or Domain group in file " << filename << endl;
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have a top-level Coordinates or Domain group.");
+        }
+
+        cellsID = H5Dopen(domainGID, "Cells");
+        vertsID = H5Dopen(domainGID, "Vertices");
+        if (cellsID < 0 || vertsID < 0)
+        {
+            if (cellsID >= 0)
+                H5Dclose(cellsID);
+            if (vertsID >= 0)
+                H5Dclose(vertsID);
+            H5Gclose(domainGID);
+            H5Fclose(fileID);
+            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Could not open the Cells/Vertices data set in Domain group, file " << filename << endl;
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since it does not have a Vertices and Cells data set in its Domain group.");
+        }
+
+        hid_t cellsSpaceID = H5Dget_space(cellsID);
+        int cellsNdims = H5Sget_simple_extent_ndims(cellsSpaceID);
+        hid_t vertsSpaceID = H5Dget_space(vertsID);
+        int vertsNdims = H5Sget_simple_extent_ndims(vertsSpaceID);
+        if (cellsNdims != 2 || vertsNdims != 2)
+        {
+            H5Dclose(cellsID);
+            H5Dclose(vertsID);
+            H5Gclose(domainGID);
+            H5Fclose(fileID);
+            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Expected 2-dimensional Cells and Vertices arrays in Domain group in file " << filename << endl;
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since Vertices and Cells data sets in its Domain group are not 2-dimensional.");
+        }
+
+        hsize_t dims[2], maxdims[2];
+
+        H5Sget_simple_extent_dims(cellsSpaceID, dims, maxdims);
+        ucd_ncells = dims[0];
+        ucd_cellstride = dims[1];
+
+        H5Sget_simple_extent_dims(vertsSpaceID, dims, maxdims);
+        ucd_nverts = dims[0];
+        ucd_vertdim = dims[1];
+        if (ucd_vertdim != 3)
+        {
+            H5Dclose(cellsID);
+            H5Dclose(vertsID);
+            H5Gclose(domainGID);
+            H5Fclose(fileID);
+            debug4 << "avtPFLOTRANFileFormat::LoadFile: " << "Expected 3-component Vertices in Domain group in file " << filename << endl;
+            EXCEPTION1(InvalidDBTypeException, "Cannot be a PFLOTRAN file since Vertices array is not 3-component.");
+        }
+        
+        H5Gclose(domainGID);
+        unstructured = true;
+    }
+
 
     // Look for groups starting with "Time:".  They're our timesteps.
     hsize_t nObjs;
@@ -302,6 +382,8 @@ avtPFLOTRANFileFormat::LoadFile(void)
         char name[256];
         H5Gget_objname_by_idx(fileID, i, name, 256);
         if (strncmp(name, "Coordinates", 11) == 0)
+            continue;
+        if (strncmp(name, "Domain", 6) == 0)
             continue;
         if (strncmp(name, "Time: ", 6) == 0)
         {
@@ -318,7 +400,8 @@ avtPFLOTRANFileFormat::LoadFile(void)
     }
     std::sort(times.begin(), times.end());
 
-    DoDomainDecomposition();
+    if (!unstructured)
+        DoDomainDecomposition();
 
     opened = true;
 }
@@ -570,6 +653,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    More aggressive about closing ids, including spaces.
 //
+//    Jeremy Meredith, Wed Dec 19 12:54:03 EST 2012
+//    Support unstructured grids (which cannot do their own domain decomp).
+//
 // ****************************************************************************
 
 void
@@ -578,7 +664,8 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 {
     LoadFile();
 
-    md->SetFormatCanDoDomainDecomposition(true);
+    if (!unstructured)
+        md->SetFormatCanDoDomainDecomposition(true);
 
     // Mesh
     avtMeshMetaData *mesh = new avtMeshMetaData;
@@ -592,9 +679,9 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
     mesh->blockTitle = "blocks";
     mesh->blockPieceName = "block";
     mesh->hasSpatialExtents = false;
-    //mesh->xUnits = "mm";
-    //mesh->yUnits = "mm";
-    //mesh->zUnits = "mm";
+    //mesh->xUnits = "m";
+    //mesh->yUnits = "m";
+    //mesh->zUnits = "m";
     md->Add(mesh);
 
     // Look in the timestep for the list of variables.
@@ -628,7 +715,8 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         hid_t ds = H5Dopen(timeGID, name);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
-        if (ndims != 3)
+        if ((unstructured && ndims != 1) ||
+            (!unstructured && ndims != 3))
         {
             H5Sclose(dsSpace);
             H5Dclose(ds);
@@ -639,42 +727,63 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         // set metadata for Materials
         if(strstr(name, "Material_ID"))
         {
-            hid_t slabSpace = H5Scopy(dsSpace);
-            hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
-            hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
-            if (oldFileNeedingCoordFixup)
+            int *matlist;
+            hsize_t nvals;
+            if (unstructured)
             {
-                for (int dim=0; dim<3; dim++)
-                    count[dim]++;
+                hsize_t maxvals;
+                H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
+
+                matlist = new int[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_INT,
+                                     H5S_ALL, H5S_ALL, H5P_DEFAULT, matlist);
             }
-            H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+            else
+            {
+                hid_t slabSpace = H5Scopy(dsSpace);
+                hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+                hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+                if (oldFileNeedingCoordFixup)
+                {
+                    for (int dim=0; dim<3; dim++)
+                        count[dim]++;
+                }
+                H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
 
-            hsize_t beg[3];
-            hsize_t end[3];
-            H5Sget_select_bounds(slabSpace, beg, end);
-            int nx = end[0]-beg[0]+1;
-            int ny = end[1]-beg[1]+1;
-            int nz = end[2]-beg[2]+1;
-            int nvals = nx*ny*nz;
+                hsize_t beg[3];
+                hsize_t end[3];
+                H5Sget_select_bounds(slabSpace, beg, end);
+                int nx = end[0]-beg[0]+1;
+                int ny = end[1]-beg[1]+1;
+                int nz = end[2]-beg[2]+1;
+                nvals = nx*ny*nz;
 
-            int dims[3];
-            dims[0] = nx;
-            dims[1] = ny;
-            dims[2] = nz;
+                int dims[3];
+                dims[0] = nx;
+                dims[1] = ny;
+                dims[2] = nz;
 
-            hid_t memSpace = H5Screate_simple(3,count,NULL);
+                hid_t memSpace = H5Screate_simple(3,count,NULL);
 
-            int *matlist = new int[nvals];
+                matlist = new int[nvals];
 
-            int *in = new int[nvals];
-            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
-                                 H5P_DEFAULT, in);
-            // Input is in a different ordering (Fortran) than VTK wants (C).
-            for (int i=0;i<nx;i++)
-                for (int j=0;j<ny;j++)
-                    for (int k=0;k<nz;k++)
-                        matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+                int *in = new int[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                     H5P_DEFAULT, in);
 
+                H5Sclose(memSpace);
+                H5Sclose(slabSpace);
+
+                // Input is in a different ordering (Fortran) than VTK wants (C).
+                for (int i=0;i<nx;i++)
+                    for (int j=0;j<ny;j++)
+                        for (int k=0;k<nz;k++)
+                            matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+                delete [] in;
+            }
+            
+            H5Sclose(dsSpace);
+            H5Dclose(ds);
 
             // find the different materials
             map<int,bool> matls;
@@ -701,16 +810,11 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
             md->Add(material);
 
      
-            delete [] in;
             delete [] matlist;
             for(int i=0;i<nmats;++i)
                 delete [] names[i];
             delete [] names;
 
-            H5Sclose(memSpace);
-            H5Sclose(dsSpace);
-            H5Sclose(slabSpace);
-            H5Dclose(ds);
             continue; // Don't add materials as a scalar.
         }
 
@@ -718,7 +822,7 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
         // as the variables.  So well save off one of the variable's
         // dimensions and compare it with the mesh coordinate array later
         // to see if we need to recenter the coordinate arrays.
-        if (i == 0)
+        if (!unstructured && i == 0)
         {
             hsize_t varDimsForOldFileTest[3];
             H5Sget_simple_extent_dims(dsSpace, varDimsForOldFileTest, NULL);
@@ -800,6 +904,9 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    More aggressive about closing ids, including spaces.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -808,76 +915,118 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
     // Make sure the file is opened and ready.
     LoadFile();
 
-    // Read the coordinates arrays.
-    vtkDoubleArray *localCoords[3];
-    for (int dim=0;dim<3;dim++)
+    if (unstructured)
     {
-        localCoords[dim] = vtkDoubleArray::New();
-        localCoords[dim]->SetNumberOfTuples(domainGlobalCount[dim]);
-        double *coords = (double*)localCoords[dim]->GetVoidPointer(0);
+        vtkPoints *points  = vtkPoints::New();
+        points->SetDataTypeToDouble();
+        points->SetNumberOfPoints(ucd_nverts);
+        H5Dread(vertsID, H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,
+                (double*)(points->GetVoidPointer(0)));
 
-        hid_t arraySpace = H5Dget_space(dimID[dim]);
-        hid_t slabSpace = H5Scopy(arraySpace);
-        hsize_t start[] = {domainGlobalStart[dim]};
-        hsize_t count[] = {domainGlobalCount[dim]};
-        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start,NULL,count,NULL);
+        vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
+        mesh->SetPoints(points);
+        points->Delete();
 
-        hid_t memSpace = H5Screate_simple(1,count,NULL);
+        int *connectivity = new int[ucd_cellstride * ucd_ncells];
+        H5Dread(cellsID, H5T_NATIVE_INT,H5S_ALL,H5S_ALL,H5P_DEFAULT,
+                connectivity);
 
-        herr_t err = H5Dread(dimID[dim], H5T_NATIVE_DOUBLE,
-                             memSpace, slabSpace, H5P_DEFAULT, coords);
-
-        H5Sclose(memSpace);
-        H5Sclose(slabSpace);
-        H5Sclose(arraySpace);
-    }
-
-    vtkRectilinearGrid *mesh = vtkRectilinearGrid::New();
-
-    if (oldFileNeedingCoordFixup)
-    {
-        int dims[3] = {domainGlobalCount[0],
-                       domainGlobalCount[1],
-                       domainGlobalCount[2]};
-        for (int dim=0; dim<3; dim++)
+        vtkIdType ids[8];
+        for (int i=0; i<ucd_ncells; i++)
         {
-            if (dims[dim] < 2)
-                continue;
-
-            dims[dim]++;
-            int d = dims[dim];
-            vtkDoubleArray *oc = localCoords[dim];
-            vtkDoubleArray *nc = vtkDoubleArray::New();
-
-            nc->SetNumberOfTuples(oc->GetNumberOfTuples()+1);
-            nc->SetTuple1(0, (oc->GetTuple1(0) -
-                              (oc->GetTuple1(1)-oc->GetTuple1(0))/2.));
-            for (int i=1; i<d-1; i++)
-                nc->SetTuple1(i, (oc->GetTuple1(i-1)+oc->GetTuple1(i))/2.);
-            nc->SetTuple1(d-1, (oc->GetTuple1(d-2) +
-                                (oc->GetTuple1(d-2)-oc->GetTuple1(d-3))/2.));
-
-            localCoords[dim] = nc;
-            oc->Delete();
+            int nids = connectivity[ucd_cellstride * i + 0];
+            int celltype = 0;
+            switch (nids)
+            {
+              case 4: celltype = VTK_TETRA;      break;
+              case 5: celltype = VTK_PYRAMID;    break;
+              case 6: celltype = VTK_WEDGE;      break;
+              case 8: celltype = VTK_HEXAHEDRON; break;
+              default: EXCEPTION1(InvalidVariableException, "mesh");
+            }
+            // copy the ids, and switch to 0-origin
+            for (int j=0; j<nids; j++)
+                ids[j] = connectivity[ucd_cellstride * i + 1 + j] - 1;
+            mesh->InsertNextCell(celltype, nids, ids);
         }
 
-        mesh->SetDimensions(dims);
+        delete[] connectivity;
+
+        return mesh;
     }
     else
     {
-        mesh->SetDimensions(domainGlobalCount);
+        // Read the coordinates arrays.
+        vtkDoubleArray *localCoords[3];
+        for (int dim=0;dim<3;dim++)
+        {
+            localCoords[dim] = vtkDoubleArray::New();
+            localCoords[dim]->SetNumberOfTuples(domainGlobalCount[dim]);
+            double *coords = (double*)localCoords[dim]->GetVoidPointer(0);
+
+            hid_t arraySpace = H5Dget_space(dimID[dim]);
+            hid_t slabSpace = H5Scopy(arraySpace);
+            hsize_t start[] = {domainGlobalStart[dim]};
+            hsize_t count[] = {domainGlobalCount[dim]};
+            H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start,NULL,count,NULL);
+
+            hid_t memSpace = H5Screate_simple(1,count,NULL);
+
+            herr_t err = H5Dread(dimID[dim], H5T_NATIVE_DOUBLE,
+                                 memSpace, slabSpace, H5P_DEFAULT, coords);
+
+            H5Sclose(memSpace);
+            H5Sclose(slabSpace);
+            H5Sclose(arraySpace);
+        }
+
+        vtkRectilinearGrid *mesh = vtkRectilinearGrid::New();
+
+        if (oldFileNeedingCoordFixup)
+        {
+            int dims[3] = {domainGlobalCount[0],
+                           domainGlobalCount[1],
+                           domainGlobalCount[2]};
+            for (int dim=0; dim<3; dim++)
+            {
+                if (dims[dim] < 2)
+                    continue;
+
+                dims[dim]++;
+                int d = dims[dim];
+                vtkDoubleArray *oc = localCoords[dim];
+                vtkDoubleArray *nc = vtkDoubleArray::New();
+
+                nc->SetNumberOfTuples(oc->GetNumberOfTuples()+1);
+                nc->SetTuple1(0, (oc->GetTuple1(0) -
+                                  (oc->GetTuple1(1)-oc->GetTuple1(0))/2.));
+                for (int i=1; i<d-1; i++)
+                    nc->SetTuple1(i, (oc->GetTuple1(i-1)+oc->GetTuple1(i))/2.);
+                nc->SetTuple1(d-1, (oc->GetTuple1(d-2) +
+                                    (oc->GetTuple1(d-2)-oc->GetTuple1(d-3))/2.));
+
+                localCoords[dim] = nc;
+                oc->Delete();
+            }
+
+            mesh->SetDimensions(dims);
+        }
+        else
+        {
+            mesh->SetDimensions(domainGlobalCount);
+        }
+
+        mesh->SetXCoordinates(localCoords[0]);
+        mesh->SetYCoordinates(localCoords[1]);
+        mesh->SetZCoordinates(localCoords[2]);
+        localCoords[0]->Delete();
+        localCoords[1]->Delete();
+        localCoords[2]->Delete();
+
+        AddGhostCellInfo(mesh);
+
+        return mesh;
     }
-
-    mesh->SetXCoordinates(localCoords[0]);
-    mesh->SetYCoordinates(localCoords[1]);
-    mesh->SetZCoordinates(localCoords[2]);
-    localCoords[0]->Delete();
-    localCoords[1]->Delete();
-    localCoords[2]->Delete();
-
-    AddGhostCellInfo(mesh);
-
-    return mesh;
 }
 
 // ****************************************************************************
@@ -923,6 +1072,9 @@ avtPFLOTRANFileFormat::GetMesh(int, int domain, const char *)
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    More aggressive about closing ids, including spaces.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -931,86 +1083,140 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
     // Make sure the file is opened and ready.
     LoadFile();
 
-    // Read the dataset from the file.
-    hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-    hid_t ds = H5Dopen(ts, varname);
-    hid_t dsSpace = H5Dget_space(ds);
-    int ndims = H5Sget_simple_extent_ndims(dsSpace);
-    if (ndims != 3)
+    if (unstructured)
     {
+        // it's much simpler; we have no decomposition to worry about
+
+        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        hid_t ds = H5Dopen(ts, varname);
+        hid_t dsSpace = H5Dget_space(ds);
+        int ndims = H5Sget_simple_extent_ndims(dsSpace);
+        if (ndims != 1)
+        {
+            H5Sclose(dsSpace);
+            H5Dclose(ds);
+            H5Gclose(ts);
+            debug1 << "The variable " << varname << " was not 1-dimensional" << endl;
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+        hsize_t nvals, maxvals;
+        H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
+
+        vtkDataArray *arr = NULL;
+
+        hid_t intype = H5Dget_type(ds);
+        if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+            H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+        {        
+            vtkDoubleArray *array = vtkDoubleArray::New();
+            array->SetNumberOfTuples(nvals);
+            double *ptr = (double*)array->GetVoidPointer(0);
+
+            herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE,
+                                 H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
+
+            arr = array;
+        }
+        else
+        {
+            vtkIntArray *array = vtkIntArray::New();
+            array->SetNumberOfTuples(nvals);
+            double *ptr = (double*)array->GetVoidPointer(0);
+
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT,
+                                 H5S_ALL, H5S_ALL, H5P_DEFAULT, ptr);
+        }
+
         H5Sclose(dsSpace);
         H5Dclose(ds);
         H5Gclose(ts);
-        debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
-        EXCEPTION1(InvalidVariableException, varname);
-    }
 
-    hid_t slabSpace = H5Scopy(dsSpace);
-    hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
-    hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
-    if (oldFileNeedingCoordFixup)
-    {
-        for (int dim=0; dim<3; dim++)
-            count[dim]++;
-    }
-    H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
-
-    hsize_t beg[3];
-    hsize_t end[3];
-    H5Sget_select_bounds(slabSpace, beg, end);
-    int nx = end[0]-beg[0]+1;
-    int ny = end[1]-beg[1]+1;
-    int nz = end[2]-beg[2]+1;
-    int nvals = nx*ny*nz;
-
-    hid_t memSpace = H5Screate_simple(3,count,NULL);
-
-    // Set up the VTK object.
-    vtkDoubleArray *array = vtkDoubleArray::New();
-    array->SetNumberOfTuples(nvals);
-    double *out = (double*)array->GetVoidPointer(0);
-
-    // Read the data -- read to ints or doubles directly, as
-    // some versions of HDF5 seem to have problems converting
-    // ints to doubles directly.
-    hid_t intype = H5Dget_type(ds);
-    if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
-        H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-        H5Tequal(intype, H5T_NATIVE_LDOUBLE))
-    {        
-        double *in = new double[nvals];
-        herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
-                             H5P_DEFAULT, in);
-
-        // Input is in a different ordering (Fortran) than VTK wants (C).
-        for (int i=0;i<nx;i++)
-            for (int j=0;j<ny;j++)
-                for (int k=0;k<nz;k++)
-                    out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
-
-        delete [] in;
+        return arr;
     }
     else
     {
-        int *in = new int[nvals];
-        herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
-                             H5P_DEFAULT, in);
-        // Input is in a different ordering (Fortran) than VTK wants (C).
-        for (int i=0;i<nx;i++)
-            for (int j=0;j<ny;j++)
-                for (int k=0;k<nz;k++)
-                    out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+        // Read the dataset from the file.
+        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        hid_t ds = H5Dopen(ts, varname);
+        hid_t dsSpace = H5Dget_space(ds);
+        int ndims = H5Sget_simple_extent_ndims(dsSpace);
+        if (ndims != 3)
+        {
+            H5Sclose(dsSpace);
+            H5Dclose(ds);
+            H5Gclose(ts);
+            debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
+            EXCEPTION1(InvalidVariableException, varname);
+        }
 
-        delete [] in;
+        hid_t slabSpace = H5Scopy(dsSpace);
+        hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+        hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+        if (oldFileNeedingCoordFixup)
+        {
+            for (int dim=0; dim<3; dim++)
+                count[dim]++;
+        }
+        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+        hsize_t beg[3];
+        hsize_t end[3];
+        H5Sget_select_bounds(slabSpace, beg, end);
+        int nx = end[0]-beg[0]+1;
+        int ny = end[1]-beg[1]+1;
+        int nz = end[2]-beg[2]+1;
+        int nvals = nx*ny*nz;
+
+        hid_t memSpace = H5Screate_simple(3,count,NULL);
+
+        // Set up the VTK object.
+        vtkDoubleArray *array = vtkDoubleArray::New();
+        array->SetNumberOfTuples(nvals);
+        double *out = (double*)array->GetVoidPointer(0);
+
+        // Read the data -- read to ints or doubles directly, as
+        // some versions of HDF5 seem to have problems converting
+        // ints to doubles directly.
+        hid_t intype = H5Dget_type(ds);
+        if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+            H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+        {        
+            double *in = new double[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
+
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+            delete [] in;
+        }
+        else
+        {
+            int *in = new int[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        out[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+            delete [] in;
+        }
+
+        H5Sclose(memSpace);
+        H5Sclose(slabSpace);
+        H5Sclose(dsSpace);
+        H5Dclose(ds);
+        H5Gclose(ts);
+
+        return array;
     }
-
-    H5Sclose(memSpace);
-    H5Sclose(slabSpace);
-    H5Sclose(dsSpace);
-    H5Dclose(ds);
-    H5Gclose(ts);
-
-    return array;
 }
 
 // ****************************************************************************
@@ -1040,6 +1246,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    More aggressive about closing ids, including spaces.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1053,95 +1262,162 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
     vector<string> varnames = vectors[string(varname)];
     sort(varnames.begin(), varnames.end());
 
-
-    hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
-    vtkDoubleArray *array;
-    for(int comp=0; comp<3; comp++)
+    if (unstructured)
     {
-        hid_t ds = H5Dopen(ts, varnames[comp].c_str());
-        hid_t dsSpace = H5Dget_space(ds);
-        int ndims = H5Sget_simple_extent_ndims(dsSpace);
-        if (ndims != 3)
+        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        vtkDoubleArray *array;
+        for(int comp=0; comp<3; comp++)
         {
+            hid_t ds = H5Dopen(ts, varnames[comp].c_str());
+            hid_t dsSpace = H5Dget_space(ds);
+            int ndims = H5Sget_simple_extent_ndims(dsSpace);
+            if (ndims != 1)
+            {
+                H5Dclose(ds);
+                H5Gclose(ts);
+                debug1 << "The variable " << varname << " had " << ndims << " dimensions" << endl;
+                EXCEPTION1(InvalidVariableException, varname);
+            }
+            hsize_t nvals, maxvals;
+            H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
+
+            double *out;
+            if (comp == 0)
+            {
+                array = vtkDoubleArray::New();
+                array->SetNumberOfComponents(3);
+                array->SetNumberOfTuples(nvals);
+                out = (double*)array->GetVoidPointer(0);
+            }
+
+            // Read the data -- read to ints or doubles directly, as
+            // some versions of HDF5 seem to have problems converting
+            // ints to doubles directly.
+            hid_t intype = H5Dget_type(ds);
+            if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+                H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+                H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+            {        
+                double *in = new double[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
+                                     H5P_DEFAULT, in);
+
+                for (int i=0;i<nvals;i++)
+                    out[i*3 + comp] = in[i];
+
+                delete [] in;
+            }
+            else
+            {
+                int *in = new int[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
+                                     H5P_DEFAULT, in);
+
+                for (int i=0;i<nvals;i++)
+                    out[i*3 + comp] = in[i];
+
+                delete [] in;
+            }
+            
+            H5Sclose(dsSpace);
             H5Dclose(ds);
-            H5Gclose(ts);
-            debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
-            EXCEPTION1(InvalidVariableException, varname);
         }
 
-        hid_t slabSpace = H5Scopy(dsSpace);
-        hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
-        hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
-        if (oldFileNeedingCoordFixup)
-        {
-            for (int dim=0; dim<3; dim++)
-                count[dim]++;
-        }
-        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+        H5Gclose(ts);
 
-        hsize_t beg[3];
-        hsize_t end[3];
-        H5Sget_select_bounds(slabSpace, beg, end);
-        int nx = end[0]-beg[0]+1;
-        int ny = end[1]-beg[1]+1;
-        int nz = end[2]-beg[2]+1;
-        int nvals = nx*ny*nz;
-
-        hid_t memSpace = H5Screate_simple(3,count,NULL);
-
-        // Set up the VTK object.
-        double *out;
-        if (comp == 0)
-        {
-            array = vtkDoubleArray::New();
-            array->SetNumberOfComponents(3);
-            array->SetNumberOfTuples(nvals);
-            out = (double*)array->GetVoidPointer(0);
-        }
-
-        // Read the data -- read to ints or doubles directly, as
-        // some versions of HDF5 seem to have problems converting
-        // ints to doubles directly.
-        hid_t intype = H5Dget_type(ds);
-        if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
-            H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
-        {        
-            double *in = new double[nvals];
-            herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
-                                 H5P_DEFAULT, in);
-
-            // Input is in a different ordering (Fortran) than VTK wants (C).
-            for (int i=0;i<nx;i++)
-                for (int j=0;j<ny;j++)
-                    for (int k=0;k<nz;k++)
-                        out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
-
-            delete [] in;
-        }
-        else
-        {
-            int *in = new int[nvals];
-            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
-                                 H5P_DEFAULT, in);
-            // Input is in a different ordering (Fortran) than VTK wants (C).
-            for (int i=0;i<nx;i++)
-                for (int j=0;j<ny;j++)
-                    for (int k=0;k<nz;k++)
-                        out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
-
-            delete [] in;
-        }
-
-        H5Sclose(memSpace);
-        H5Sclose(slabSpace);
-        H5Sclose(dsSpace);
-        H5Dclose(ds);
+        return array;
     }
+    else
+    {
+        hid_t ts = H5Gopen(fileID, times[timestate].second.c_str());
+        vtkDoubleArray *array;
+        for(int comp=0; comp<3; comp++)
+        {
+            hid_t ds = H5Dopen(ts, varnames[comp].c_str());
+            hid_t dsSpace = H5Dget_space(ds);
+            int ndims = H5Sget_simple_extent_ndims(dsSpace);
+            if (ndims != 3)
+            {
+                H5Dclose(ds);
+                H5Gclose(ts);
+                debug1 << "The variable " << varname << " had only " << ndims << " dimensions" << endl;
+                EXCEPTION1(InvalidVariableException, varname);
+            }
 
-    H5Gclose(ts);
+            hid_t slabSpace = H5Scopy(dsSpace);
+            hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+            hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+            if (oldFileNeedingCoordFixup)
+            {
+                for (int dim=0; dim<3; dim++)
+                    count[dim]++;
+            }
+            H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
 
-    return array;
+            hsize_t beg[3];
+            hsize_t end[3];
+            H5Sget_select_bounds(slabSpace, beg, end);
+            int nx = end[0]-beg[0]+1;
+            int ny = end[1]-beg[1]+1;
+            int nz = end[2]-beg[2]+1;
+            int nvals = nx*ny*nz;
+
+            hid_t memSpace = H5Screate_simple(3,count,NULL);
+
+            // Set up the VTK object.
+            double *out;
+            if (comp == 0)
+            {
+                array = vtkDoubleArray::New();
+                array->SetNumberOfComponents(3);
+                array->SetNumberOfTuples(nvals);
+                out = (double*)array->GetVoidPointer(0);
+            }
+
+            // Read the data -- read to ints or doubles directly, as
+            // some versions of HDF5 seem to have problems converting
+            // ints to doubles directly.
+            hid_t intype = H5Dget_type(ds);
+            if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
+                H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
+                H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+            {        
+                double *in = new double[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
+                                     H5P_DEFAULT, in);
+
+                // Input is in a different ordering (Fortran) than VTK wants (C).
+                for (int i=0;i<nx;i++)
+                    for (int j=0;j<ny;j++)
+                        for (int k=0;k<nz;k++)
+                            out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
+
+                delete [] in;
+            }
+            else
+            {
+                int *in = new int[nvals];
+                herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                     H5P_DEFAULT, in);
+                // Input is in a different ordering (Fortran) than VTK wants (C).
+                for (int i=0;i<nx;i++)
+                    for (int j=0;j<ny;j++)
+                        for (int k=0;k<nz;k++)
+                            out[k*nx*ny*3 + j*nx*3 + i*3 + comp] = in[k + j*nz + i*nz*ny];
+
+                delete [] in;
+            }
+
+            H5Sclose(memSpace);
+            H5Sclose(slabSpace);
+            H5Sclose(dsSpace);
+            H5Dclose(ds);
+        }
+
+        H5Gclose(ts);
+
+        return array;
+    }
 }
 
 
@@ -1172,6 +1448,9 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
 //    Jeremy Meredith, Wed Mar 30 13:17:54 EDT 2011
 //    Close any HDF5 group/dataset we open.
 //
+//    Jeremy Meredith, Wed Dec 19 13:12:27 EST 2012
+//    Add unstructured grid support.  Also, close spaces, too.
+//
 // ****************************************************************************
 
 void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep, 
@@ -1190,50 +1469,72 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         hid_t ds = H5Dopen(ts, var);
         hid_t dsSpace = H5Dget_space(ds);
         int ndims = H5Sget_simple_extent_ndims(dsSpace);
-        if (ndims != 3)
+        int dims[3];
+        if ((unstructured && ndims != 1) ||
+            (!unstructured && ndims != 3))
         {
+            H5Sclose(dsSpace);
             H5Dclose(ds);
             H5Gclose(ts);
-            debug1 << "The variable " << var << " had only " << ndims << " dimensions" << endl;
+            debug1 << "The variable " << var << " had " << ndims << " dimensions, which was unexpected" << endl;
             EXCEPTION1(InvalidVariableException, var);
         }
 
-        hid_t slabSpace = H5Scopy(dsSpace);
-        hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
-        hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
-        if (oldFileNeedingCoordFixup)
+        int *matlist;
+        hsize_t nvals;
+        if (unstructured)
         {
-            for (int dim=0; dim<3; dim++)
-                count[dim]++;
+            hsize_t maxvals;
+            H5Sget_simple_extent_dims(dsSpace, &nvals, &maxvals);
+            dims[0] = nvals;
+
+            matlist = new int[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT,
+                                 H5S_ALL, H5S_ALL, H5P_DEFAULT, matlist);
         }
-        H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
+        else
+        {
+            hid_t slabSpace = H5Scopy(dsSpace);
+            hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
+            hsize_t count[] = {domainGlobalCount[0]-1,domainGlobalCount[1]-1,domainGlobalCount[2]-1};
+            if (oldFileNeedingCoordFixup)
+            {
+                for (int dim=0; dim<3; dim++)
+                    count[dim]++;
+            }
+            H5Sselect_hyperslab(slabSpace, H5S_SELECT_SET, start, NULL, count, NULL);
 
-        hsize_t beg[3];
-        hsize_t end[3];
-        H5Sget_select_bounds(slabSpace, beg, end);
-        int nx = end[0]-beg[0]+1;
-        int ny = end[1]-beg[1]+1;
-        int nz = end[2]-beg[2]+1;
-        int nvals = nx*ny*nz;
+            hsize_t beg[3];
+            hsize_t end[3];
+            H5Sget_select_bounds(slabSpace, beg, end);
+            int nx = end[0]-beg[0]+1;
+            int ny = end[1]-beg[1]+1;
+            int nz = end[2]-beg[2]+1;
+            nvals = nx*ny*nz;
 
-        int dims[3];
-        dims[0] = nx;
-        dims[1] = ny;
-        dims[2] = nz;
+            dims[0] = nx;
+            dims[1] = ny;
+            dims[2] = nz;
 
-        hid_t memSpace = H5Screate_simple(3,count,NULL);
+            hid_t memSpace = H5Screate_simple(3,count,NULL);
 
-        int *matlist = new int[nvals];
+            matlist = new int[nvals];
 
-        int *in = new int[nvals];
-        herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
-                             H5P_DEFAULT, in);
-        // Input is in a different ordering (Fortran) than VTK wants (C).
-        for (int i=0;i<nx;i++)
-            for (int j=0;j<ny;j++)
-                for (int k=0;k<nz;k++)
-                    matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+            int *in = new int[nvals];
+            herr_t err = H5Dread(ds, H5T_NATIVE_INT, memSpace, slabSpace,
+                                 H5P_DEFAULT, in);
 
+            H5Sclose(memSpace);
+            H5Sclose(slabSpace);
+
+            // Input is in a different ordering (Fortran) than VTK wants (C).
+            for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                    for (int k=0;k<nz;k++)
+                        matlist[k*nx*ny + j*nx + i] = in[k + j*nz + i*nz*ny];
+
+            delete [] in;
+        }
 
         map<int,bool> matls;
         for (int i=0;i<nvals;i++)
@@ -1262,7 +1563,6 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
             0,0,0,0,0);
 
 
-        delete [] in;
         delete [] matlist;
         delete [] matnos;
         for(int i=0;i<nmats;++i)
@@ -1272,6 +1572,7 @@ void      *avtPFLOTRANFileFormat::GetAuxiliaryData(const char *var, int timestep
         retval = (void*)mat;
         df = avtMaterial::Destruct;
 
+        H5Sclose(dsSpace);
         H5Dclose(ds);
         H5Gclose(ts);
 
