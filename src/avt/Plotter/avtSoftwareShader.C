@@ -599,6 +599,10 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
 //    Jeremy Meredith, Fri Apr 30 14:23:19 EDT 2010
 //    Added automatic mode.
 //
+//    Eric Brugger, Tue Dec 18 16:22:42 PST 2012
+//    Applied a fix that corrected an indexing error in the setting of start
+//    and end that was provided by Jean Favre.
+//
 // ****************************************************************************
 void
 avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
@@ -608,8 +612,8 @@ avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
                                   const double end_[3],
                                   unsigned char cuecolor[3])
 {
-    double start[3] = {start_[0],start_[2],start_[2]};
-    double end[3]   = {end_[0],  end_[2],  end_[2]};
+    double start[3] = {start_[0],start_[1],start_[2]};
+    double end[3]   = {end_[0],  end_[1],  end_[2]};
     if (autoExtents)
     {
         double fudge = 0.6;
