@@ -888,6 +888,12 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 #   Disable python filters.
 #-----------------------------------------------------------------------------
 
+# Disable Python filters if we don't have Python.
+IF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
+    SET(VISIT_PYTHON_FILTERS OFF)
+    MESSAGE(STATUS "Python Engine Filters disabled because Python was not found.")
+ENDIF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
+
 # VTK Python's wrappers are not available with a static build of VTK.
 IF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
     SET(VISIT_PYTHON_FILTERS OFF)
@@ -918,16 +924,18 @@ IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS
 ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure PySide Support
-IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_DBIO_ONLY
+IF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
+                          AND NOT VISIT_DBIO_ONLY
                           AND NOT VISIT_ENGINE_ONLY
                           AND NOT VISIT_SERVER_COMPONENTS_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
     IF(PYSIDE_FOUND)
         SET(HAVE_PYSIDE 1)
     ENDIF(PYSIDE_FOUND)
-ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_DBIO_ONLY
-                          AND NOT VISIT_ENGINE_ONLY
-                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
+                             AND NOT VISIT_DBIO_ONLY
+                             AND NOT VISIT_ENGINE_ONLY
+                             AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Treat GLEW as a 3rd party builtin.
 SET(GLEW_FOUND 1)
