@@ -7,22 +7,20 @@ This document contains instructions for installing VisIt on Windows, MacOS X,
 and Unix systems.  The Windows and MacOS X installation instructions are first,
 followed by the Unix installation instructions.
 
-* Note that VisIt can be installed in 2 different ways on MacOS X: as an 
-  application bundle and as a gzipped tar file, as on Unix installations.
-
 
 Windows:
 ========
 
-1.  Copy the visit2.6.0.exe or visit2.6.0_x64.exe installer program to your desktop.
+1.  Copy the visit2.6.0.exe or visit2.6.0_x64.exe installer program to
+    your desktop.
 
 2.  Double click on the installer program icon to run the installer.
 
 3.  Follow the directions provided by the installer.
 
 
-MacOS X (application bundle):
-==============================
+MacOS X:
+========
 
 Downloads:
 * VisIt-2.6.0-x86_64-installer.dmg  : 64-bit Mac and runs on Mac 10.6 or later
@@ -40,8 +38,8 @@ Downloads:
 5. Double click on the VisIt application to run VisIt.
 
 
-Unix and MacOS X (gzipped tar file):
-=====================================
+Unix (gzipped tar file):
+========================
 
 1.  Run the visit-install script to install visit.  If you have built your
     own visit binary distribution, you can find the visit-install script
@@ -56,10 +54,9 @@ Unix and MacOS X (gzipped tar file):
 
         "version" will be 2.6.0 for the current distribution.
 
-        "platform" will be one of the following:  linux-x86_64-rhel5,
-        linux-x86_64-ubuntu11, or darwin-x86_64 depending on the machine.
-        The one you use should match the name of the accompanying
-        distribution file.
+        "platform" will be one of the following:  linux-x86_64-rhel5 or
+        linux-x86_64-ubuntu11 depending on the machine.  The one you
+        use should match the name of the accompanying distribution file.
 
         "directory" is the directory you wish to install visit into.
         If the directory doesn't exist the script will create it.
@@ -72,13 +69,7 @@ Unix and MacOS X (gzipped tar file):
     will install the linux-x86_64-rhel5, 2.6.0 version of visit in the
     directory "/usr/local/visit".  Note that you will need to have the file
     "visit2_6_0.linux-x86_64-rhel5.tar.gz" present in the current directory
-    for this to function properly.  You can install multiple binaries into
-    the same directory.  For example, you could then execute
-
-        chmod 755 visit-install2_6_0
-        ./visit-install2_6_0 2.6.0 darwin-x86_64 /usr/local/visit
-
-    to add a darwin x86_64, 2.6.0 version of visit to the same directory.
+    for this to function properly.
 
 2.  Add the bin directory below the installation directory
     (/usr/local/visit/bin in our example) to each user's search path.
