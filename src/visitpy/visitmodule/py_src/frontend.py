@@ -52,6 +52,12 @@
 #  Brad Whitlock, Thu Jul 26 15:05:16 PDT 2012
 #  Make "from visit import *" add the VisIt functions to the main namespace
 #  as was intended.
+# 
+#  Kathleen Biagas, Wed Dec 19 17:22:44 MST 2012
+#  Explicitly load shared library dependencies on Windows, too (though this
+#  mainly seems to be needed from a dev version, not an installed version.)
+#  Use 'splitlines' instead of split("\n"), use list version of first 
+#  argmument for Popen command, so that it works on Windows.
 #
 ###############################################################################
 
@@ -170,6 +176,18 @@ class VisItModuleState(object):
             for lib in libs:
                 libfile = pjoin(libdir,lib + ext)
                 a = ctypes.cdll.LoadLibrary(libfile)
+        elif sys.platform.startswith("win"):
+            import ctypes
+            site_pkg = os.path.split(mod_path)[0]
+            libdir = os.path.split(site_pkg)[0]
+            libdir = pjoin(libdir, "..\\")
+            libdir = os.path.abspath(libdir)
+            ext = ".dll"
+            libs = ("visitcommon","avtdbatts","viewerrpc","viewerproxy","visitpy")
+            for lib in libs:
+                libfile = pjoin(libdir,lib + ext)
+                a = ctypes.cdll.LoadLibrary(libfile)
+
         res = None
         try:
             res = imp.load_module("visit", mfile, mpath, mdes)
@@ -215,8 +233,8 @@ class VisItModuleState(object):
         raise Exception(msg)
     @classmethod
     def __read_visit_env(cls,vcmd):
-        vcmd += " -env"
-        p = subprocess.Popen(vcmd,
+        pcmd = [vcmd, "-env"]
+        p = subprocess.Popen(pcmd,
                              shell=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
@@ -225,7 +243,7 @@ class VisItModuleState(object):
             msg  = "Could not execute VisIt to determine proper env settings!\n"
             msg += "Is VisIt in your shell's PATH?" 
             raise Exception(msg)
-        pout = pout.split("\n")
+        pout = pout.splitlines()
         # we want to know LIBPATH, and VISITPLUGINDIR
         res = {"LIBPATH":"",
                "VISITPLUGINDIR":"",
