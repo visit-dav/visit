@@ -546,6 +546,13 @@ function initialize_module_variables
     info "initializing module variables"
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
+        $"bv_${reqlibs[$bv_i]}_is_enabled"
+
+        #if not enabled then skip
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
         declare -F "bv_${reqlibs[$bv_i]}_initialize_vars" &>/dev/null
 
         if [[ $? == 0 ]]; then
@@ -556,6 +563,13 @@ function initialize_module_variables
 
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
+        $"bv_${optlibs[$bv_i]}_is_enabled"
+
+        #if not enabled then skip
+        if [[ $? == 0 ]]; then
+            continue
+        fi
+
         declare -F "bv_${optlibs[$bv_i]}_initialize_vars" &>/dev/null
 
         if [[ $? == 0 ]]; then
