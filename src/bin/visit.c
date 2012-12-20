@@ -281,6 +281,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Removed 'TestForConfigFIles' and attendent methods. Remove version # 
  *   from VISITUSERHOME path.
  *
+ *   Kathleen Biagas, Wed Dec 19 17:35:21 MST 2012
+ *   Return '0' instead of '1' when only printing environment.
+ *
  *****************************************************************************/
 
 int
@@ -562,7 +565,7 @@ VisItLauncherMain(int argc, char *argv[])
     {
         PrintEnvironment();
         componentArgs.clear();
-        return 1;
+        return 0;
     }
 
     stringVector command;
