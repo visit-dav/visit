@@ -32,8 +32,7 @@
 * CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
 * LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
+* DAMAGE.*
 *****************************************************************************/
 
 // ************************************************************************* //
@@ -275,6 +274,7 @@ vtkRectilinearGrid* avtFFTFilter::PopulateRGrid(std::vector<double>* freqs, doub
     }
 
     delete []dummy;
+    vals->Delete();
 
     debug5 <<"avtFFTFilter::PopulateRGrid() - Returning" <<std::endl;
     return outGrid;
@@ -369,7 +369,6 @@ vtkRectilinearGrid* avtFFTFilter::ComputeFFT(std::vector<double>* data, long nDa
     
   // 9) Plot fftData[0:nFFThalf-1] vs. freqs.
   vtkRectilinearGrid* outGrid = PopulateRGrid(&freqs, fftData, nFFThalf);
-  ManageMemory(outGrid);
 
   delete []fftData;
 
@@ -471,12 +470,12 @@ avtFFTFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
   // Compute FFT, passing in a pointer to the output data (outrGrid)
   vtkRectilinearGrid* outGrid = ComputeFFT(&yValues, nPts, dt);
 
-  //ManageMemory(rGrid); 
-  //ManageMemory(outrGrid);
-  //ManageMemory(out_ds); 
-
   // Returning output dataset.
   debug5 <<"avtFFTFilter::ExecuteData() - Returning" <<std::endl;
+
+  ManageMemory(outGrid);
+  outGrid->Delete();
+
   return outGrid;
 #endif
 }
