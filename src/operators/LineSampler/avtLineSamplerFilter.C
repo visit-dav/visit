@@ -672,6 +672,8 @@ avtLineSamplerFilter::Execute()
           }
         }
       }
+
+      tmp_ds->Delete();
     }
 }
 
@@ -1215,8 +1217,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               return NULL;
 
             // Do the sampling of the original dataset at r = 0
-            probeFilter->SetInput( out_ds );
-            probeFilter->Update();
+            //            probeFilter->SetInput( out_ds );
+            //            probeFilter->Update();
             
             int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
@@ -1329,7 +1331,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 // Do the sampling of the outer radial locations.
                 probeFilter->SetInput( tmp_ds );
                 probeFilter->Update();
-              
+
+                tmp_ds->Delete();
                 tmp_ds = probeFilter->GetOutput();
 
                 float* out_data =
@@ -1342,7 +1345,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 {
                   *out_data++ += sampleVolume * weight * *tmp_data++;
                 }
-//            tmp_ds->Delete();
+
+                tmp_ds->Delete();
               }
             }
 
@@ -1371,7 +1375,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             // Do the sampling of the original dataset
             probeFilter->SetInput( out_ds );
             probeFilter->Update();
-            
+
+            out_ds->Delete();
             out_ds = probeFilter->GetOutput();
           }
 
@@ -1446,7 +1451,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               points->Delete();
               scalars->Delete();
 
-//            out_ds->Delete();
+              out_ds->Delete();
 
               out_ds = uGrid;
             }
@@ -1467,9 +1472,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                 transformFilter->SetTransform( transform );
                 transformFilter->SetInput( out_ds );
-          
+                transformFilter->Update();
+
+                out_ds->Delete();
                 out_ds = transformFilter->GetOutput();
-                out_ds->Update();
             }
 
             else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
@@ -1482,9 +1488,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 
                 transformFilter->SetTransform( transform );
                 transformFilter->SetInput( out_ds );
-                
+                transformFilter->Update();
+
+                out_ds->Delete();
                 out_ds = transformFilter->GetOutput();
-                out_ds->Update();
             }
           }
 
@@ -1541,9 +1548,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
         
               transformFilter->SetTransform( transform );
               transformFilter->SetInput( out_ds );
+              transformFilter->Update();
 
+              out_ds->Delete();
               out_ds = transformFilter->GetOutput();
-              out_ds->Update();
 
               // At this point the data can now be elevated.
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
@@ -1591,6 +1599,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Merge all of the datasets together
           appendFilter->AddInput( out_ds );
+          out_ds->Delete();
       }
     }
 
