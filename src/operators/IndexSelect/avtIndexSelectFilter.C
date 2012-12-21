@@ -723,9 +723,13 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     if( (wrap[0] || wrap[1] || wrap[2]) &&
         topoDim > 0 &&
         dstype != VTK_POLY_DATA && dstype != VTK_UNSTRUCTURED_GRID )
-      return Replicate( out_ds, wrap );
-    else
-      return out_ds;
+    {
+      out_ds = Replicate( out_ds, wrap );
+      ManageMemory(out_ds);
+      out_ds->Delete();
+    }
+
+    return out_ds;
 }
 
 
@@ -1316,6 +1320,9 @@ avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
        SetCoordinates(out_rg, GetCoordinates(rgrid, d2), d2);
        coor_new->Delete();
 
+       if( out_ds != in_ds )
+         out_ds->Delete();
+
        out_ds = out_rg;
      }
    }
@@ -1358,9 +1365,16 @@ avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
        }
      }
 
+     if( out_ds != in_ds )
+       out_ds->Delete();
+
      out_ds = out_sg;
    }
-   
+
+   // Should never get here but just in case.
+   else
+     return out_ds;
+
    // Copy over the point data.
    vtkPointData *inPD  =  in_ds->GetPointData();
    vtkPointData *outPD = out_ds->GetPointData();
@@ -1417,7 +1431,7 @@ avtIndexSelectFilter::Replicate(vtkDataSet *in_ds, bool wrap[3] )
        }
      }
    }
-   
+
    return out_ds;
 }
 
