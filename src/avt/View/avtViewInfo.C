@@ -339,11 +339,10 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
         vtkTransform *trans = vtkTransform::New();
         trans->SetMatrix(*matrix); 
         vtkcam->SetUserTransform(trans);
+        trans->Delete();
     }
     else
     {
         vtkcam->SetUserTransform(NULL);
     }
 }
-
-
