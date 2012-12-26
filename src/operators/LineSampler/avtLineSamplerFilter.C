@@ -1217,9 +1217,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               return NULL;
 
             // Do the sampling of the original dataset at r = 0
-            //            probeFilter->SetInput( out_ds );
-            //            probeFilter->Update();
+            probeFilter->SetInput( out_ds );
+            probeFilter->Update();
             
+//            std::cerr << __LINE__ << std::endl;
+            out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
+
+            out_ds = probeFilter->GetOutput();
+
             int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
             double sampleDistance = atts.GetSampleDistance();
@@ -1351,7 +1357,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             }
 
 //            std::cerr << "total weight " << total << std::endl;
-
           }
           else
           {
@@ -1376,7 +1381,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             probeFilter->SetInput( out_ds );
             probeFilter->Update();
 
+//            std::cerr << __LINE__ << std::endl;
             out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
+
             out_ds = probeFilter->GetOutput();
           }
 
@@ -1451,7 +1459,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               points->Delete();
               scalars->Delete();
 
+//            std::cerr << __LINE__ << std::endl;
               out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
 
               out_ds = uGrid;
             }
@@ -1474,7 +1484,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transformFilter->SetInput( out_ds );
                 transformFilter->Update();
 
+//            std::cerr << __LINE__ << std::endl;
                 out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
                 out_ds = transformFilter->GetOutput();
             }
 
@@ -1490,7 +1502,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transformFilter->SetInput( out_ds );
                 transformFilter->Update();
 
+//            std::cerr << __LINE__ << std::endl;
                 out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
                 out_ds = transformFilter->GetOutput();
             }
           }
@@ -1550,7 +1564,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               transformFilter->SetInput( out_ds );
               transformFilter->Update();
 
+//            std::cerr << __LINE__ << std::endl;
               out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
               out_ds = transformFilter->GetOutput();
 
               // At this point the data can now be elevated.
@@ -1599,7 +1615,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Merge all of the datasets together
           appendFilter->AddInput( out_ds );
+          appendFilter->Update();
+//            std::cerr << __LINE__ << std::endl;
           out_ds->Delete();
+//            std::cerr << __LINE__ << std::endl;
       }
     }
 
@@ -1609,7 +1628,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     out_ds->Register(NULL);
     out_ds->SetSource(NULL);
 
-    // Nuke all the vtk filters
+   // Nuke all the vtk filters
     appendFilter->Delete();    
     probeFilter->Delete();
 
