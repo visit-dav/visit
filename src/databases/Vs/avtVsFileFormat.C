@@ -551,6 +551,8 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                         << "Trying to load & return curve." << std::endl;
 
+      foundCurve->Delete();
+
       return getCurve(domain, name);
     }
 
@@ -1064,6 +1066,11 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     
     // Cleanup local data
     vpoints->Delete();
+
+    // Cleanup local data
+    for (size_t i = 0; i < vsdim; ++i) {
+      coords[i]->Delete();
+    }
     
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning transformed data." << std::endl;
@@ -2550,15 +2557,19 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
     vals->SetNumberOfTuples(nPtsInOutput);
     vals->SetName(requestedName.c_str());
 
-    vtkRectilinearGrid* rg = vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
+    vtkRectilinearGrid* rg =
+      vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
     rg->GetPointData()->SetScalars(vals);
 
     vtkFloatArray* xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
     
-    vtkRectilinearGrid* meshDataRect = dynamic_cast<vtkRectilinearGrid*>(meshData);
+    vtkRectilinearGrid* meshDataRect =
+      dynamic_cast<vtkRectilinearGrid*>(meshData);
+
     if (meshDataRect) {
       //Handles the incoming mesh as a rectilinear mesh
       vtkDataArray* meshXCoord = meshDataRect->GetXCoordinates();
+
       for (int i = 0; i < nPtsInOutput; i++) {
         double* var_i = varData->GetTuple(i);
         double* mesh_i = meshXCoord->GetTuple(i);
@@ -2567,7 +2578,9 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
       }
     } else {
       //Handles the incoming mesh as a structured mesh
-      vtkStructuredGrid* meshDataStructuredGrid = dynamic_cast<vtkStructuredGrid*>(meshData);
+      vtkStructuredGrid* meshDataStructuredGrid =
+        dynamic_cast<vtkStructuredGrid*>(meshData);
+
       if (!meshDataStructuredGrid) {
         VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                           << "Unable to extract points from mesh to construct curve.  Giving up." << std::endl;
@@ -2586,10 +2599,13 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain, const std::string& requestedNa
     }
     
     // Done, so clean up memory and return
+    meshData->Delete();
+    varData->Delete();
     vals->Delete();
 
     VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Returning data." << std::endl;
+
     return rg;
 }
 
