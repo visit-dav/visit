@@ -98,12 +98,12 @@ void XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
     int *baseIndex, int *ghostOffsets);
 void XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
     const char *varFileName, const char *gridName, int iBlock,
-    const char *coordName, int coordDataType, int nCoords, int coordDim,
+    const char *coordName, int coordDataType, int nCoords, int coordDims,
     const char *connectivityName, int cellType, int nCells,
     int connectivityLength, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes);
-void HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
-    int gridDataType, float *gridCoords, int nDims, int *dims);
+void HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
+    float *coords, int nDims, int *dims);
 void HdfWriteCurvVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims);
@@ -111,6 +111,11 @@ void HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
     int gridDataType, float *gridCoords, int nVars, char **varNames,
     int *varTypes, int *varCentering, int *varDataTypes, void *vars,
     int nDims, int *dims);
+void HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
+    float *coords, int nCoords, int *connectivity, int connectivityLength);
+void HdfWriteUcdVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
+    int *varTypes, int *varCentering, int *varDataTypes, void *vars,
+    int nDims, int nCoords, int nCells);
 
 void DetermineGhostInfo(int nDims, int *dims, int *iBlock, int *nBlocks,
     int *newDims, int *baseIndex, int *ghostOffsets);
@@ -374,6 +379,177 @@ XdmfPutCurvMultiVar(XDMFFile *xdmfFileIn, const char *gridFileName,
 }
 
 void
+XdmfPutUcdMultiVar(XDMFFile *xdmfFileIn, const char *gridFileName,
+    const char *gridName, int coordDataType, int nCoords, int coordDims,
+    int cellType, int nCells, int connectivityLength, int nVars,
+    char **varNames, int *varTypes, int *varCentering, int *varDataTypes,
+    int iBlock, int nBlocks)
+{
+    XDMFFileParallel *xdmfFile = (XDMFFileParallel *) xdmfFileIn;
+
+#ifdef PARALLEL
+    //
+    // Every Nth processor collects the data from other processors and
+    // writes the information.
+    //
+    if (xdmfFile->iProc % NX == 0)
+    {
+        //
+        // Collect the dimension, base index, and ghost zone offset
+        // information from processors iProc through iProc + nCollect - 1.
+        //
+        int nCollect = (xdmfFile->nProcs - xdmfFile->iProc) < NX ?
+                       (xdmfFile->nProcs - xdmfFile->iProc) : NX;
+
+        int *info = (int *) malloc(nCollect * 4 * sizeof(int));
+     
+        info[0] = nCoords;
+        info[1] = nCells;
+        info[2] = cellType;
+        info[3] = connectivityLength;
+       
+        if (nCollect > 1)
+        {
+            MPI_Request *req =
+                (MPI_Request *) malloc((nCollect-1) * sizeof(MPI_Request));
+            MPI_Status *statuses =
+                (MPI_Status *) malloc((nCollect-1) * sizeof(MPI_Status));
+
+            int i;
+            for (i = 1; i < nCollect; i++)
+            {
+                MPI_Irecv(&(info[i*4]), 4, MPI_INT,
+                    xdmfFile->iProc+i, 1, MPI_COMM_WORLD, &(req[i-1]));
+            }
+            MPI_Waitall(nCollect - 1, req, statuses);
+
+            free(req);
+            free(statuses);
+        }
+
+        //
+        // Wait for my turn to write the data.
+        //
+        MPI_Status status;
+
+        int buf[1];
+        buf[0] = 1;
+
+        int iGroup = xdmfFile->iProc / NX;
+        int nGroup = (xdmfFile->nProcs + NX - 1) / NX;
+        int battonProc = ((iGroup - 1 + nGroup) % nGroup) * NX;
+        MPI_Recv(buf, 1, MPI_INT, battonProc, 2, MPI_COMM_WORLD, &status);
+
+        //
+        // Write the data.
+        //
+        char *fName = (char *) malloc(strlen(xdmfFile->fileName)+4+1);
+        sprintf(fName, "%s.xmf", xdmfFile->fileName);
+
+        FILE *xmf = fopen(fName, "a");
+
+        free(fName);
+
+        if (xdmfFile->iProc == 0)
+            fprintf(xmf, "  <Grid Name=\"%s\" GridType=\"Collection\">\n",
+                    gridName);
+
+        char coordName[4];
+        if (coordDims == 2)
+            strcpy(coordName, "XY");
+        else
+            strcpy(coordName, "XYZ");
+        int iBlock;
+        for (iBlock = 0; iBlock < nCollect; iBlock++)
+        {
+            char *gridFile = (char *) malloc(strlen(gridFileName)+5+3+1);
+            char *varFile = (char *) malloc(strlen(xdmfFile->fileName)+5+3+1);
+            int iFile = (xdmfFile->iProc + iBlock) /
+                ((xdmfFile->nProcs + xdmfFile->nFiles - 1) / xdmfFile->nFiles);
+            if (xdmfFile->nProcs == 1)
+            {
+                sprintf(gridFile, "%s.h5", gridFileName);
+                sprintf(varFile, "%s.h5", xdmfFile->fileName);
+            }
+            else
+            {
+                sprintf(gridFile, "%s_%04d.h5", gridFileName, iFile);
+                sprintf(varFile, "%s_%04d.h5", xdmfFile->fileName, iFile);
+            }
+            XDMFPutUcdGrid(xmf, gridFile, varFile, "block", 
+                           xdmfFile->iProc+iBlock, coordName,
+                           coordDataType, info[iBlock*4+0], coordDims,
+                           "connectivity", info[iBlock*4+2], info[iBlock*4+1],
+                           info[iBlock*4+3], nVars, varNames,
+                           varTypes, varCentering, varDataTypes);
+            free(gridFile);
+            free(varFile);
+        }
+
+        if (xdmfFile->iProc + nCollect == xdmfFile->nProcs)
+            fprintf(xmf, "  </Grid>\n");
+
+        fclose(xmf);
+
+        //
+        // Let the next processor write the data.
+        //
+        battonProc = ((iGroup + 1 + nGroup) % nGroup) * NX;
+        MPI_Send(buf, 1, MPI_INT, battonProc, 2, MPI_COMM_WORLD);
+
+        free(info);
+    }
+    else
+    {
+        int *info = (int *) malloc(4 * sizeof(int));
+     
+        info[0] = nCoords;
+        info[1] = nCells;
+        info[2] = cellType;
+        info[3] = connectivityLength;
+       
+        int destProc = xdmfFile->iProc - (xdmfFile->iProc % NX);
+        MPI_Send(info, 4, MPI_INT, destProc, 1, MPI_COMM_WORLD);
+
+        free(info);
+    }
+#else
+    char *fName = (char *) malloc(strlen(xdmfFile->fileName)+4+1);
+    sprintf(fName, "%s.xmf", xdmfFile->fileName);
+
+    FILE *xmf = fopen(fName, "a");
+
+    free(fName);
+
+    fprintf(xmf, "  <Grid Name=\"%s\" GridType=\"Collection\">\n",
+            gridName);
+
+    char coordName[4];
+    if (coordDims == 2)
+        strcpy(coordName, "XY");
+    else
+        strcpy(coordName, "XYZ");
+
+    char *gridFile= (char *) malloc(strlen(gridFileName)+3+1);
+    char *varFile= (char *) malloc(strlen(xdmfFile->fileName)+3+1);
+    sprintf(gridFile, "%s.h5", gridFileName);
+    sprintf(varFile, "%s.h5", xdmfFile->fileName);
+    XDMFPutUcdGrid(xmf, gridFile, varFile, "block", 
+                   xdmfFile->iProc+iBlock, coordName,
+                   coordDataType, nCoords, coordDims,
+                   "connectivity", cellType, nCells, connectivityLength,
+                   nVars, varNames, varTypes, varCentering,
+                   varDataTypes);
+    free(gridFile);
+    free(varFile);
+
+    fprintf(xmf, "  </Grid>\n");
+
+    fclose(xmf);
+#endif
+}
+
+void
 XdmfParallelClose(XDMFFile *xdmfFileIn)
 {
     XDMFFileParallel *xdmfFile = (XDMFFileParallel *) xdmfFileIn;
@@ -557,7 +733,7 @@ XDMFWriteCurvBlock(FILE *xmf, const char *gridFileName,
 void
 XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
     const char *varFileName, const char *gridName, int iGrid,
-    const char *coordName, int coordDataType, int nCoords, int coordDim,
+    const char *coordName, int coordDataType, int nCoords, int coordDims,
     const char *connectivityName, int cellType, int nCells,
     int connectivityLength, int nVars, char **varNames, int *varTypes,
     int *varCentering, int *varDataTypes)
@@ -581,7 +757,7 @@ XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
         fprintf(xmf, "        %s:/%s%d\n", gridFileName, connectivityName, iGrid);
     fprintf(xmf, "       </DataItem>\n");
     fprintf(xmf, "     </Topology>\n");
-    if (coordDim == 2)
+    if (coordDims == 2)
     {
         fprintf(xmf, "     <Geometry GeometryType=\"XY\">\n");
         fprintf(xmf, "       <DataItem Dimensions=\"%d 2\" %s Format=\"HDF\">\n",
@@ -619,7 +795,7 @@ XDMFPutUcdGrid(FILE *xmf, const char *gridFileName,
         else
             fprintf(xmf, "%d", nCoords);
         if (varTypes[iVar] == XDMF_VECTOR)
-            fprintf(xmf, " %d", coordDim);
+            fprintf(xmf, " %d", coordDims);
         fprintf(xmf, "\" %s Format=\"HDF\">\n",
             dataTypeToString[varDataTypes[iVar]]);
         if (iGrid == XDMF_NULL_GRID)
@@ -664,10 +840,11 @@ HdfParallelCreate(const char *fileName, int nFiles)
     //
     // Only some processors create the file.
     //
-    if (hdfFile->iProc % ((hdfFile->nProcs + nFiles - 1) / nFiles) == 0)
-    {
-        int iFile = hdfFile->iProc / ((hdfFile->nProcs + nFiles - 1) / nFiles);
+    int nProcsPerFile = (hdfFile->nProcs + nFiles - 1) / nFiles;
+    int iFile = hdfFile->iProc / nProcsPerFile;
 
+    if (hdfFile->iProc % nProcsPerFile == 0)
+    {
         char *fName = (char *) malloc(strlen(fileName)+5+3+1);
         if (hdfFile->nFiles == 1)
             sprintf(fName, "%s.h5", fileName);
@@ -686,13 +863,28 @@ HdfParallelCreate(const char *fileName, int nFiles)
 
     gettimeofday(&hdf5_create_end, NULL);
 
+#ifdef PARALLEL
+    //
+    // Let the first processor in each group write data.
+    //
+    int buf[1];
+    buf[0] = 1;
+
+    if ((hdfFile->iProc + 1) % nProcsPerFile == 0 ||
+        hdfFile->iProc == hdfFile->nProcs - 1)
+    {
+        int battonProc = iFile * nProcsPerFile;
+        MPI_Send(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD);
+    }
+
+#endif
+
     return (HDFFile *) hdfFile;
 }
 
 void
-HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
-    int gridDataType, float *gridCoords, int nDims, int *dims,
-    int *iBlock, int *nBlocks)
+HdfPutCurvMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
+    int nDims, int *dims, int *iBlock, int *nBlocks)
 {
     gettimeofday(&hdf5_put_multi_start, NULL);
 
@@ -704,13 +896,13 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
     int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
 
     int newDims[3];
-    float *newMeshCoords = NULL;
+    float *newCoords = NULL;
 
     //
     // Create the ghost zone data.
     //
-    Create3DNodalGhostData(gridCoords, dims, 3, iBlock, nBlocks,
-        &newMeshCoords, newDims);
+    Create3DNodalGhostData(coords, dims, 3, iBlock, nBlocks,
+        &newCoords, newDims);
 
     gettimeofday(&hdf5_put_multi_ghost_created, NULL);
 
@@ -723,8 +915,19 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
     int buf[1];
     buf[0] = 1;
 
+    int battonProc;
     if (iProc % nProcPerFile != 0)
-        MPI_Recv(buf, 1, MPI_INT, iProc-1, 3, MPI_COMM_WORLD, &status);
+    {
+        battonProc = iProc - 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = (iFile + 1) * nProcPerFile - 1;
+        if (battonProc > nProcs - 1)
+            battonProc = nProcs - 1;
+    }
+    MPI_Recv(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD, &status);
 #endif
 
     gettimeofday(&hdf5_put_multi_write_start, NULL);
@@ -732,7 +935,7 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
     //
     // Write the data.
     //
-    HdfWriteCurvMeshBlock(hdfFile, gridName, gridDataType, newMeshCoords,
+    HdfWriteCurvMeshBlock(hdfFile, coordDataType, newCoords,
         nDims, newDims);
 
     gettimeofday(&hdf5_put_multi_write_end, NULL);
@@ -741,13 +944,21 @@ HdfPutCurvMultiMesh(HDFFile *hdfFileIn, const char *gridName,
     //
     // Let the next processor write the data.
     //
-    if (((iProc + 1) % nProcPerFile) != 0 && ((iProc + 1) < nProcs))
-        MPI_Send(buf, 1, MPI_INT, iProc+1, 3, MPI_COMM_WORLD);
+    if ((iProc + 1) % nProcPerFile != 0 && (iProc + 1) < nProcs)
+    {
+        battonProc = iProc + 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = iFile * nProcPerFile;
+    }
+    MPI_Send(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD);
 #endif
 
     gettimeofday(&hdf5_put_multi_batton_passed, NULL);
 
-    free(newMeshCoords);
+    free(newCoords);
 }
 
 void
@@ -763,7 +974,6 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     int nProcs = hdfFile->nProcs;
     int nFiles = hdfFile->nFiles;
     int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
-
 
     //
     // Create the ghost zone data.
@@ -798,8 +1008,19 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     int buf[1];
     buf[0] = 1;
 
+    int battonProc;
     if (iProc % nProcPerFile != 0)
-        MPI_Recv(buf, 1, MPI_INT, iProc-1, 3, MPI_COMM_WORLD, &status);
+    {
+        battonProc = iProc - 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = (iFile + 1) * nProcPerFile - 1;
+        if (battonProc > nProcs - 1)
+            battonProc = nProcs - 1;
+    }
+    MPI_Recv(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD, &status);
 #endif
 
     gettimeofday(&hdf5_put_multi_write_start, NULL);
@@ -816,8 +1037,16 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
     //
     // Let the next processor write the data.
     //
-    if (((iProc + 1) % nProcPerFile) != 0 && ((iProc + 1) < nProcs))
-        MPI_Send(buf, 1, MPI_INT, iProc+1, 3, MPI_COMM_WORLD);
+    if ((iProc + 1) % nProcPerFile != 0 && (iProc + 1) < nProcs)
+    {
+        battonProc = iProc + 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = iFile * nProcPerFile;
+    }
+    MPI_Send(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD);
 #endif
 
     gettimeofday(&hdf5_put_multi_batton_passed, NULL);
@@ -828,11 +1057,170 @@ HdfPutCurvMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
 }
 
 void
+HdfPutUcdMultiMesh(HDFFile *hdfFileIn, int coordDataType, float *coords,
+    int nCoords, int *connectivity, int connectivityLength,
+    int iBlock, int nBlocks)
+{
+    gettimeofday(&hdf5_put_multi_start, NULL);
+
+    HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
+
+    int iProc = hdfFile->iProc;
+    int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
+#ifdef PARALLEL
+    //
+    // Wait for my turn to write the data.
+    //
+    MPI_Status status;
+
+    int buf[1];
+    buf[0] = 1;
+
+    int battonProc;
+    if (iProc % nProcPerFile != 0)
+    {
+        battonProc = iProc - 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = (iFile + 1) * nProcPerFile - 1;
+        if (battonProc > nProcs - 1)
+            battonProc = nProcs - 1;
+    }
+    MPI_Recv(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD, &status);
+#endif
+
+    gettimeofday(&hdf5_put_multi_write_start, NULL);
+
+    //
+    // Write the data.
+    //
+    HdfWriteUcdMeshBlock(hdfFile, coordDataType, coords,
+        nCoords, connectivity, connectivityLength);
+
+    gettimeofday(&hdf5_put_multi_write_end, NULL);
+
+#ifdef PARALLEL
+    //
+    // Let the next processor write the data.
+    //
+    if ((iProc + 1) % nProcPerFile != 0 && (iProc + 1) < nProcs)
+    {
+        battonProc = iProc + 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = iFile * nProcPerFile;
+    }
+    MPI_Send(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD);
+#endif
+
+    gettimeofday(&hdf5_put_multi_batton_passed, NULL);
+}
+
+void
+HdfPutUcdMultiVar(HDFFile *hdfFileIn, int nVars, char **varNames,
+    int *varTypes, int *varCentering, int *varDataTypes, void *vars,
+    int nDims, int nCoords, int nCells, int iBlock, int nBlocks)
+{
+    gettimeofday(&hdf5_put_multi_start, NULL);
+
+    HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
+
+    int iProc = hdfFile->iProc;
+    int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
+#ifdef PARALLEL
+    //
+    // Wait for my turn to write the data.
+    //
+    MPI_Status status;
+
+    int buf[1];
+    buf[0] = 1;
+
+    int battonProc;
+    if (iProc % nProcPerFile != 0)
+    {
+        battonProc = iProc - 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = (iFile + 1) * nProcPerFile - 1;
+        if (battonProc > nProcs - 1)
+            battonProc = nProcs - 1;
+    }
+    MPI_Recv(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD, &status);
+#endif
+
+    gettimeofday(&hdf5_put_multi_write_start, NULL);
+
+    //
+    // Write the data.
+    //
+    HdfWriteUcdVarBlock(hdfFile, nVars, varNames, varTypes, varCentering,
+        varDataTypes, vars, nDims, nCoords, nCells);
+
+    gettimeofday(&hdf5_put_multi_write_end, NULL);
+
+#ifdef PARALLEL
+    //
+    // Let the next processor write the data.
+    //
+    if ((iProc + 1) % nProcPerFile != 0 && (iProc + 1) < nProcs)
+    {
+        battonProc = iProc + 1;
+    }
+    else
+    {
+        int iFile = iProc / nProcPerFile;
+        battonProc = iFile * nProcPerFile;
+    }
+    MPI_Send(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD);
+#endif
+
+    gettimeofday(&hdf5_put_multi_batton_passed, NULL);
+}
+
+void
 HdfParallelClose(HDFFile *hdfFileIn)
 {
     gettimeofday(&hdf5_close_start, NULL);
 
     HDFFileParallel *hdfFile = (HDFFileParallel *) hdfFileIn;
+
+    int iProc = hdfFile->iProc;
+    int nProcs = hdfFile->nProcs;
+    int nFiles = hdfFile->nFiles;
+    int nProcPerFile = (nProcs + nFiles - 1) / nFiles;
+
+#ifdef PARALLEL
+    //
+    // Wait for batton from the last processor in the group.
+    //
+    if (iProc % nProcPerFile == 0)
+    {
+        int iFile = iProc / nProcPerFile;
+        int battonProc = (iFile + 1) * nProcPerFile - 1;
+        if (battonProc > nProcs - 1)
+            battonProc = nProcs - 1;
+
+        MPI_Status status;
+
+        int buf[1];
+        buf[0] = 1;
+
+        MPI_Recv(buf, 1, MPI_INT, battonProc, 3, MPI_COMM_WORLD, &status);
+    }
+#endif
 
     //
     // Send the timing information back to processor 0.
@@ -851,8 +1239,8 @@ HdfParallelClose(HDFFile *hdfFileIn)
     int nBytes = 8 * sizeof(struct timeval);
 
     struct timeval *allTimes;
-    if (hdfFile->iProc == 0)
-        allTimes = (struct timeval *) malloc(hdfFile->nProcs * nBytes);
+    if (iProc == 0)
+        allTimes = (struct timeval *) malloc(nProcs * nBytes);
     else
         allTimes = NULL;
 
@@ -865,11 +1253,11 @@ HdfParallelClose(HDFFile *hdfFileIn)
         allTimes[i] = times[i];
 #endif
 
-    if (hdfFile->iProc == 0)
+    if (iProc == 0)
     {
 #ifdef DEBUG
         int i;
-        for (i = 0; i < hdfFile->nProcs; i++)
+        for (i = 0; i < nProcs; i++)
         {
             struct timeval diff;
             double diff2;
@@ -893,7 +1281,7 @@ HdfParallelClose(HDFFile *hdfFileIn)
 
         fprintf(stderr, "\n*********************************************\n\n");
 
-        for (int i = 0; i < hdfFile->nProcs; i++)
+        for (i = 0; i < nProcs; i++)
         {
             fprintf(stderr, "%02d: HdfCreate start: %d, %d\n",
                     i, allTimes[i*8+0].tv_sec, allTimes[i*8+0].tv_usec);
@@ -923,8 +1311,8 @@ HdfParallelClose(HDFFile *hdfFileIn)
 }
 
 void
-HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
-    int gridDataType, float *gridCoords, int nDims, int *dims)
+HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
+    float *coords, int nDims, int *dims)
 {
     int iFile = hdfFile->iProc /
         ((hdfFile->nProcs + hdfFile->nFiles - 1) / hdfFile->nFiles);
@@ -949,12 +1337,12 @@ HdfWriteCurvMeshBlock(HDFFileParallel *hdfFile, const char *gridName,
     dataspace_id = H5Screate_simple(2, vdims, NULL);
 
     sprintf(str, "/XYZ%d", hdfFile->iProc);
-    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[gridDataType],
+    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[coordDataType],
                            dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
                            H5P_DEFAULT);
 
-    status = H5Dwrite(dataset_id, dataTypeToHDFType[gridDataType], H5S_ALL,
-                      H5S_ALL, H5P_DEFAULT, gridCoords);
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[coordDataType], H5S_ALL,
+                      H5S_ALL, H5P_DEFAULT, coords);
 
     status = H5Dclose(dataset_id);
 
@@ -1103,6 +1491,126 @@ HdfWriteCurvBlock(HDFFileParallel *hdfFile, const char *gridName,
         status = H5Dwrite(dataset_id, dataTypeToHDFType[varDataTypes[iVar]],
             H5S_ALL, H5S_ALL, H5P_DEFAULT, ((void **)vars)[iVar]);
 
+
+        status = H5Dclose(dataset_id);
+
+        status = H5Sclose(dataspace_id);
+    }
+
+    status = H5Fclose(file_id);
+}
+
+void
+HdfWriteUcdMeshBlock(HDFFileParallel *hdfFile, int coordDataType,
+    float *coords, int nCoords, int *connectivity, int connectivityLength)
+{
+    int iFile = hdfFile->iProc /
+        ((hdfFile->nProcs + hdfFile->nFiles - 1) / hdfFile->nFiles);
+
+    hid_t     file_id, dataspace_id, dataset_id;
+    hsize_t   nvdims, vdims[4];
+    herr_t    status;
+
+    char str[1024];
+    if (hdfFile->nFiles == 1)
+        sprintf(str, "%s.h5", hdfFile->fileName);
+    else
+        sprintf(str, "%s_%04d.h5", hdfFile->fileName, iFile);
+
+    file_id = H5Fopen(str, H5F_ACC_RDWR, H5P_DEFAULT);
+
+    //
+    // Write the coordinates.
+    //
+    vdims[0] = nCoords;
+    vdims[1] = 3;
+    dataspace_id = H5Screate_simple(2, vdims, NULL);
+
+    sprintf(str, "/XYZ%d", hdfFile->iProc);
+    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[coordDataType],
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
+                           H5P_DEFAULT);
+
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[coordDataType], H5S_ALL,
+                      H5S_ALL, H5P_DEFAULT, coords);
+
+    status = H5Dclose(dataset_id);
+
+    status = H5Sclose(dataspace_id);
+
+    //
+    // Write the connectivity.
+    //
+    vdims[0] = connectivityLength;
+    dataspace_id = H5Screate_simple(1, vdims, NULL);
+
+    sprintf(str, "/connectivity%d", hdfFile->iProc);
+    dataset_id = H5Dcreate(file_id, str, dataTypeToHDFType[XDMF_INT],
+                           dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
+                           H5P_DEFAULT);
+
+    status = H5Dwrite(dataset_id, dataTypeToHDFType[XDMF_INT],
+                      H5S_ALL, H5S_ALL, H5P_DEFAULT, connectivity);
+
+    status = H5Dclose(dataset_id);
+
+    status = H5Sclose(dataspace_id);
+
+    status = H5Fclose(file_id);
+}
+
+void
+HdfWriteUcdVarBlock(HDFFileParallel *hdfFile, int nVars, char **varNames,
+    int *varTypes, int *varCentering, int *varDataTypes, void *vars,
+    int nDims, int nCoords, int nCells)
+{
+    int iFile = hdfFile->iProc /
+        ((hdfFile->nProcs + hdfFile->nFiles - 1) / hdfFile->nFiles);
+
+    hid_t     file_id, dataspace_id, dataset_id;
+    hsize_t   nvdims, vdims[4];
+    herr_t    status;
+
+    //
+    // Open the file.
+    //
+    char str[1024];
+    if (hdfFile->nFiles == 1)
+        sprintf(str, "%s.h5", hdfFile->fileName);
+    else
+        sprintf(str, "%s_%04d.h5", hdfFile->fileName, iFile);
+
+    file_id = H5Fopen(str, H5F_ACC_RDWR, H5P_DEFAULT);
+
+    //
+    // Write the variables.
+    //
+    int iVar;
+    for (iVar = 0; iVar < nVars; iVar++)
+    {
+        if (varCentering[iVar] == XDMF_CELL_CENTER)
+        {
+            vdims[0] = nCells;
+        }
+        else
+        {
+            vdims[0] = nCoords;
+        }
+        nvdims = 1;
+        if (varTypes[iVar] == XDMF_VECTOR)
+        {
+            vdims[1] = nDims;
+            nvdims++;
+        }
+        dataspace_id = H5Screate_simple(nvdims, vdims, NULL);
+
+        sprintf(str, "/%s%d", varNames[iVar], hdfFile->iProc);
+        dataset_id = H5Dcreate(file_id, str,
+            dataTypeToHDFType[varDataTypes[iVar]], dataspace_id,
+            H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        status = H5Dwrite(dataset_id, dataTypeToHDFType[varDataTypes[iVar]],
+            H5S_ALL, H5S_ALL, H5P_DEFAULT, ((void **)vars)[iVar]);
 
         status = H5Dclose(dataset_id);
 
@@ -3180,7 +3688,7 @@ XdmfCreate(const char *fileName, double time)
 void
 XdmfPutUcdGrid(XDMFFile *xdmfFileIn, const char *gridFileName,
     const char *varFileName, const char *gridName, const char *coordName,
-    int coordDataType, int nCoords, int coordDim, const char *connectivityName,
+    int coordDataType, int nCoords, int coordDims, const char *connectivityName,
     int cellType, int nCells, int connectivityLength, int nVars,
     char **varNames, int *varTypes, int *varCentering, int *varDataTypes)
 {
@@ -3194,7 +3702,7 @@ XdmfPutUcdGrid(XDMFFile *xdmfFileIn, const char *gridFileName,
     fprintf(xdmfFile->file, " <Domain>\n");
 
     XDMFPutUcdGrid(xdmfFile->file, gridFileName, varFileName, gridName,
-        XDMF_NULL_GRID, coordName, coordDataType, nCoords, coordDim,
+        XDMF_NULL_GRID, coordName, coordDataType, nCoords, coordDims,
         connectivityName, cellType, nCells, connectivityLength,
         nVars, varNames, varTypes, varCentering, varDataTypes);
 

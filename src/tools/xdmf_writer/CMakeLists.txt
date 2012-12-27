@@ -73,6 +73,9 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_EXECUTABLE(xdmf_mpi_example2 xdmf_mpi_example2.c)
     TARGET_LINK_LIBRARIES(xdmf_mpi_example2 xdmf_writer_par)
 
+    ADD_PARALLEL_EXECUTABLE(xdmf_mpi_example3 xdmf_mpi_example3.c)
+    TARGET_LINK_LIBRARIES(xdmf_mpi_example3 xdmf_writer_par)
+
     ADD_PARALLEL_LIBRARY(xdmf_writer_par xdmf_writer.c)
     TARGET_LINK_LIBRARIES(xdmf_writer_par ${HDF5_LIB} ${ZLIB_LIB})
 ENDIF(VISIT_PARALLEL)
