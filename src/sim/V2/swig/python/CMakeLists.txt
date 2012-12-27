@@ -39,6 +39,9 @@
 #  Remove COMPONENT RUNTIME statement from INSTALL command to avoid
 #  cpack problems.
 #
+#  Eric BRugger, Wed Dec 26 15:33:28 PST 2012
+#  Link against symV2dyn instead of symV2.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -55,7 +58,7 @@ PYTHON_ADD_MODULE(pysimV2
 # wants us to call it.
 SET_TARGET_PROPERTIES(pysimV2 PROPERTIES PREFIX "" OUTPUT_NAME _simV2)
 TARGET_LINK_LIBRARIES(pysimV2 
-    simV2
+    simV2dyn
     ${PYTHON_LIBRARIES}
 )
 IF(NOT APPLE)
