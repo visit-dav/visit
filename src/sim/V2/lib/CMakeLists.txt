@@ -38,6 +38,10 @@
 #   Dirk Schubert (Allinea Software), Mon Oct 15, 2012
 #   Build symV2dyn only if VISIT_DDT is chosen.
 #
+#   Eric Brugger, Wed Dec 26 15:31:11 PST 2012
+#   Always build symV2dyn, so that it can be used in the swig/python
+#   directory.
+#
 #****************************************************************************/
 
 SET(LIBSIM_SOURCES
@@ -70,31 +74,25 @@ VisIt_VariableMetaData.c
 
 SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
 
-SET(BUILD_SHARED_LIBS 0)
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
 )
 
-IF(VISIT_DDT)
-    # Allinea Software:
-    # Create a libsimV2.so shared library for the standard VisIt
-    # interface (normally provided by statically linking with libsimV2.a).
-    # -fvisibility is set to default (it is normally hidden).
-    # Preferred solution would be to tag each function to be exposed in
-    # the shared library individually instead of exposing everything,
-    # but this will do for now. Also provide debug info.
-    ADD_DEFINITIONS(-g -fvisibility=default)
-    ADD_LIBRARY(simV2dyn SHARED ${LIBSIM_SOURCES})
+# Allinea Software:
+# Create a libsimV2.so shared library for the standard VisIt
+# interface (normally provided by statically linking with libsimV2.a).
+# -fvisibility is set to default (it is normally hidden).
+# Preferred solution would be to tag each function to be exposed in
+# the shared library individually instead of exposing everything,
+# but this will do for now. Also provide debug info.
+ADD_DEFINITIONS(-g -fvisibility=default)
+ADD_LIBRARY(simV2dyn SHARED ${LIBSIM_SOURCES})
 
-    SET(LIBSIM_DYN simV2dyn)
-ENDIF(VISIT_DDT)
+ADD_LIBRARY(simV2 STATIC ${LIBSIM_SOURCES})
+ADD_LIBRARY(simV2f STATIC ${FORTRAN_LIBSIM_SOURCES})
 
-ADD_LIBRARY(simV2 ${LIBSIM_SOURCES})
-ADD_LIBRARY(simV2f ${FORTRAN_LIBSIM_SOURCES})
-
-INSTALL(TARGETS simV2 simV2f ${LIBSIM_DYN}
+INSTALL(TARGETS simV2 simV2f simV2dyn
     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib
     LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE

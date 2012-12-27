@@ -42,8 +42,8 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/linux_x86_64_icc_9
 
 ## Turn off warnings for deprecated features.
 ##
-SET(VISIT_C_FLAGS "-fPIC")
-SET(VISIT_CXX_FLAGS "-Wno-deprecated -fPIC")
+SET(VISIT_C_FLAGS "")
+SET(VISIT_CXX_FLAGS "-Wno-deprecated")
 
 ##
 ## Add parallel arguments.
