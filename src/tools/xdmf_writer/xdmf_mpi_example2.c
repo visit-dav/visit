@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     //
     HDFFile *hdfFile = HdfParallelCreate("multi_curv3d_grid", nFiles);
 
-    HdfPutCurvMultiMesh(hdfFile, "grid", XDMF_FLOAT, coords, 3, gridDims,
+    HdfPutCurvMultiMesh(hdfFile, XDMF_FLOAT, coords, 3, gridDims,
         iBlocks, nBlocks);
 
     HdfParallelClose(hdfFile);

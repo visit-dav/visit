@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
     // Create the raw data.
     //
     float *coords = (float *) malloc(nnodes * 3 * sizeof(float));
+    int *connectivity = (int *) malloc(nzones * 8 * sizeof(int));
     float **vars = (float **) malloc(3 * sizeof(float*));
     vars[0] = (float *) malloc(nzones * sizeof(float));
     vars[1] = (float *) malloc(nnodes * sizeof(float));
@@ -110,6 +111,29 @@ int main(int argc, char *argv[])
                 coords[ndx++] = (float) (i + iX * zoneDims[0]);
                 coords[ndx++] = (float) (j + iY * zoneDims[1]);
                 coords[ndx++] = (float) (k + iZ * zoneDims[2]);
+            }
+        }
+    }
+
+    int nx = nodeDims[0];
+    int ny = nodeDims[1];
+    ndx = 0;
+    for (k = 0; k < zoneDims[2]; k++)
+    {
+        int j;
+        for (j = 0; j < zoneDims[1]; j++)
+        {
+            int i;
+            for (i = 0; i < zoneDims[0]; i++)
+            {
+                connectivity[ndx++] = (k + 0)*nx*ny + (j + 0)*nx + (i + 0);
+                connectivity[ndx++] = (k + 0)*nx*ny + (j + 0)*nx + (i + 1);
+                connectivity[ndx++] = (k + 0)*nx*ny + (j + 1)*nx + (i + 1);
+                connectivity[ndx++] = (k + 0)*nx*ny + (j + 1)*nx + (i + 0);
+                connectivity[ndx++] = (k + 1)*nx*ny + (j + 0)*nx + (i + 0);
+                connectivity[ndx++] = (k + 1)*nx*ny + (j + 0)*nx + (i + 1);
+                connectivity[ndx++] = (k + 1)*nx*ny + (j + 1)*nx + (i + 1);
+                connectivity[ndx++] = (k + 1)*nx*ny + (j + 1)*nx + (i + 0);
             }
         }
     }
@@ -194,28 +218,24 @@ int main(int argc, char *argv[])
     //
     // Write the meta data to the XML file.
     //
-    XDMFFile *xdmfFile = XdmfParallelCreate("multi_curv3d", nFiles, 1.5);
+    XDMFFile *xdmfFile = XdmfParallelCreate("multi_ucd3d", nFiles, 1.5);
 
-    int iBlocks[3];
-    iBlocks[0] = iX;
-    iBlocks[1] = iY;
-    iBlocks[2] = iZ;
-    XdmfPutCurvMultiVar(xdmfFile, "multi_curv3d", "grid", XDMF_FLOAT,
-        3, varNames, varTypes, varCentering, varDataTypes, 3, gridDims,
-        iBlocks, nBlocks);
+    XdmfPutUcdMultiVar(xdmfFile, "multi_ucd3d", "grid", XDMF_FLOAT,
+        nnodes, 3, XDMF_HEX, nzones, nzones*8, 3, varNames, varTypes,
+        varCentering, varDataTypes, iProc, nProcs);
 
     XdmfParallelClose(xdmfFile);
 
     //
     // Write the raw data to the HDF5 file.
     //
-    HDFFile *hdfFile = HdfParallelCreate("multi_curv3d", nFiles);
+    HDFFile *hdfFile = HdfParallelCreate("multi_ucd3d", nFiles);
 
-    HdfPutCurvMultiMesh(hdfFile, XDMF_FLOAT, coords, 3, gridDims,
-        iBlocks, nBlocks);
+    HdfPutUcdMultiMesh(hdfFile, XDMF_FLOAT, coords, nnodes,
+        connectivity, nzones*8, iProc, nProcs);
 
-    HdfPutCurvMultiVar(hdfFile, 3, varNames, varTypes, varCentering,
-        varDataTypes, vars, 3, gridDims, iBlocks, nBlocks);
+    HdfPutUcdMultiVar(hdfFile, 3, varNames, varTypes, varCentering,
+        varDataTypes, vars, 3, nnodes, nzones, iProc, nProcs);
 
     HdfParallelClose(hdfFile);
 
@@ -223,6 +243,7 @@ int main(int argc, char *argv[])
     // Free the raw data and meta data.
     //
     free(coords);
+    free(connectivity);
     free(vars[0]);
     free(vars[1]);
     free(vars[2]);

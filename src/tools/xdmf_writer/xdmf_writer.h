@@ -80,15 +80,26 @@ void XDMF_WRITER_API XdmfPutCurvMultiVar(XDMFFile *xdmfFile,
     const char *gridFileName, const char *gridName, int gridDataType,
     int nVars, char **varNames, int *varTypes, int *varCentering,
     int *varDataTypes, int nDims, int *dims, int *iBlock, int *nBlocks);
+void XDMF_WRITER_API XdmfPutUcdMultiVar(XDMFFile *xdmfFile,
+    const char *gridFileName, const char *gridName, int coordDataType,
+    int nCoords, int coordDims, int cellType, int nCells,
+    int connectivityLength, int nVars, char **varNames, int *varTypes,
+    int *varCentering, int *varDataTypes, int iBlock, int nBlocks);
 void XDMF_WRITER_API XdmfParallelClose(XDMFFile *xdmfFile);
 
 HDFFile XDMF_WRITER_API *HdfParallelCreate(const char *fileName, int nFiles);
 void XDMF_WRITER_API HdfPutCurvMultiMesh(HDFFile *hdfFile,
-    const char *gridName, int gridDataType, float *gridCoords,
-    int nDims, int *dims, int *iBlock, int *nBlocks);
+    int coordDataType, float *coords, int nDims, int *dims,
+    int *iBlock, int *nBlocks);
 void XDMF_WRITER_API HdfPutCurvMultiVar(HDFFile *hdfFile, int nVars,
     char **varNames, int *varTypes, int *varCentering, int *varDataTypes,
     void *vars, int nDims, int *dims, int *iBlock, int *nBlocks);
+void XDMF_WRITER_API HdfPutUcdMultiMesh(HDFFile *hdfFile,
+    int coordDataType, float *coords, int nCoords, int *connectivity,
+    int connectivityLength, int iBlock, int nBlocks);
+void XDMF_WRITER_API HdfPutUcdMultiVar(HDFFile *hdfFile, int nVars,
+    char **varNames, int *varTypes, int *varCentering, int *varDataTypes,
+    void *vars, int nDims, int nCoords, int nCells, int iBlock, int nBlocks);
 void XDMF_WRITER_API HdfParallelClose(HDFFile *hdfFile);
 
 XDMFFile XDMF_WRITER_API *XdmfCreate(const char *fileName, double time);
@@ -98,7 +109,7 @@ void XDMF_WRITER_API XdmfWriteCurvVar(XDMFFile *file, const char *gridFileName,
     int *varCentering, int *varDataTypes, int nDims, int *dims);
 void XDMF_WRITER_API XdmfPutUcdGrid(XDMFFile *file, const char *gridFileName,
     const char *varFileName, const char *gridName, const char *coordName, 
-    int coordDataType, int nCoords, int coordDim, const char *connectivityName,
+    int coordDataType, int nCoords, int coordDims, const char *connectivityName,
     int cellType, int nCells, int connectivityLength, int nVars,
     char **varNames, int *varTypes, int *varCentering, int *varDataTypes);
 void XDMF_WRITER_API XdmfStartMultiBlock(XDMFFile *xdmfFile,
