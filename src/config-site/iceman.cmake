@@ -42,9 +42,9 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/${VISITARCH})
 ## Compiler flags.
 ##
 SET(VISIT_C_COMPILER gcc)
-SET(VISIT_C_FLAGS "-m64 -fPIC")
+SET(VISIT_C_FLAGS "-m64")
 SET(VISIT_CXX_COMPILER g++)
-SET(VISIT_CXX_FLAGS "-m64 -fPIC")
+SET(VISIT_CXX_FLAGS "-m64")
 
 ##
 ## Database reader plugin support libraries

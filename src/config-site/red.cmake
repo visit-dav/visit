@@ -50,7 +50,7 @@ SET(VISIT_CXX_FLAGS "-Wno-deprecated")
 ##
 ## Gernerate position independent code.
 ##
-SET(VISIT_CXX_FLAGS "-fPIC")
+SET(VISIT_CXX_FLAGS "")
 SET(VISIT_MPI_CXX_FLAGS "-DMPI_NO_CPPBIND")
 
 ##

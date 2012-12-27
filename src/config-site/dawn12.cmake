@@ -14,10 +14,8 @@ SET(VISIT_C_COMPILER /bgsys/drivers/ppcfloor/gnu-linux/powerpc-bgp-linux/bin/gcc
 SET(VISIT_CXX_COMPILER /bgsys/drivers/ppcfloor/gnu-linux/powerpc-bgp-linux/bin/g++)
     # My current configure line is:
 
-#    CFLAGS="-O2 -fPIC"
-#    CXXFLAGS="-O2 -fPIC"
-SET(VISIT_C_FLAGS "-g -fPIC")
-SET(VISIT_CXX_FLAGS "-g -fPIC")
+SET(VISIT_C_FLAGS "-g")
+SET(VISIT_CXX_FLAGS "-g")
 
 
     # Set the parallel options
@@ -34,9 +32,9 @@ else
 
 # In the meantime, use gcc
 SET(VISIT_C_COMPILER gcc)
-SET(VISIT_C_FLAGS "-O2 -fPIC")
+SET(VISIT_C_FLAGS "-O2")
 SET(VISIT_CXX_COMPILER g++)
-SET(VISIT_CXX_FLAGS "-O2 -fPIC")
+SET(VISIT_CXX_FLAGS "-O2")
 
 #fi
 

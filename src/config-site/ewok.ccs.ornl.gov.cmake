@@ -51,12 +51,12 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/linux-x86_64_gcc-3
 ## Compiler flags.
 ##
 SET(VISIT_C_COMPILER gcc)
-SET(VISIT_C_FLAGS "-m64 -fPIC")
+SET(VISIT_C_FLAGS "-m64")
 SET(VISIT_CXX_COMPILER g++)
-#CXXFLAGS=" -m64 -fPIC $CXXFLAGS"
+#CXXFLAGS=" -m64 $CXXFLAGS"
 
 
-#CXXFLAGS=" -m64 -fPIC -DUSE_STDARG -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DUSE_STDARG=1 -DMALLOC_RET_VOID=1 -Msignextend -B "
+#CXXFLAGS=" -m64 -DUSE_STDARG -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_UNISTD_H=1 -DHAVE_STDARG_H=1 -DUSE_STDARG=1 -DMALLOC_RET_VOID=1 -Msignextend -B "
 #MPI_LIBS="-L//sw/ewok/ompi/1.3a1r19727/sl5_pgi7.2.4/lib -lmpi"
 
 #MPI_LIBS="-Wl,-rpath-link -Wl,///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib/shared -L///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib/shared -L///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib -lpmpich++ -lmpich -L//usr/ofed/lib64 -libverbs -lpthread -Msignextend -B -lpthread -lrt "
@@ -64,7 +64,7 @@ SET(VISIT_CXX_COMPILER g++)
 #MPI_LIBS="-Wl,-rpath-link -Wl,///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib/shared -L///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib/shared -L///usr/ofed/mpi/pgi/mvapich-0.9.7-mlx2.2.0/lib -lpmpich++ -lmpich -L//usr/ofed/lib64 -libverbs -lpthread -Msignextend -B -lpthread -lrt "
 
 
-SET(VISIT_CXX_FLAGS "-m64 -fPIC -fPIC -D_REENTRANT")
+SET(VISIT_CXX_FLAGS "-m64 -D_REENTRANT")
 SET(VISIT_MPI_CXX_FLAGS "-I/sw/ewok/ompi/1.2.8/sl5.2_gnu4.1.2/include/")
 
 ##

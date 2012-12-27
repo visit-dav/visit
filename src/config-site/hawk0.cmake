@@ -29,8 +29,8 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/linux-x86_64)
 ##
 ## Set the flags for compilation
 ##
-SET(VISIT_C_FLAGS "-fPIC")
-SET(VISIT_CXX_FLAGS "-fPIC -Wno-deprecated")
+SET(VISIT_C_FLAGS "")
+SET(VISIT_CXX_FLAGS "-Wno-deprecated")
 
 ##
 ## Add parallel arguments.

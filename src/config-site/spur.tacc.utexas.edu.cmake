@@ -43,9 +43,9 @@ VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.5/${VISITARCH})
 ## Compiler flags.
 ##
 SET(VISIT_C_COMPILER gcc)
-SET(VISIT_C_FLAGS "-m64 -fPIC -I/opt/apps/intel10_1/mvapich/1.0.1/include")
+SET(VISIT_C_FLAGS "-m64 -I/opt/apps/intel10_1/mvapich/1.0.1/include")
 SET(VISIT_CXX_COMPILER g++)
-SET(VISIT_CXX_FLAGS "-m64 -fPIC -I/opt/apps/intel10_1/mvapich/1.0.1/include")
+SET(VISIT_CXX_FLAGS "-m64 -I/opt/apps/intel10_1/mvapich/1.0.1/include")
 
 ##
 ## Database reader plugin support libraries
