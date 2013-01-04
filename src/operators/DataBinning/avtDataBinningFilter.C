@@ -46,6 +46,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 
 #include <avtCallback.h>
 #include <avtDataBinning.h>
@@ -143,6 +144,77 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
+//  Function: RemoveUndefinedPointsFromCurve
+//
+//  Purpose:
+//      Removes all bins from a 1D vtkRectilinearGrid that have the "emptyVal".
+//
+//  Programmer: Hank Childs
+//  Creation:   January 4, 2013
+//
+// ****************************************************************************
+
+void
+RemoveUndefinedPointsFromCurve(vtkDataSet *ds, double emptyVal)
+{
+    int  i;
+
+    // Make sure we have a valid mesh
+    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        return;
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) ds;
+    int dims[3];
+    rg->GetDimensions(dims);
+    if (dims[0] <= 1 || dims[1] != 1 || dims[2] != 1)
+        return;
+
+    // Get the scalars
+    vtkDataArray *v = rg->GetPointData()->GetScalars();
+    if (v == NULL)
+        return;
+
+    // See how many match
+    int nvals = v->GetNumberOfTuples();
+    int numValid = 0;
+    for (i = 0 ; i < nvals ; i++)
+    {
+        if (v->GetTuple1(i) != emptyVal)
+            numValid++;
+    }
+
+    if (numValid == nvals)
+        return;
+
+    dims[0] = numValid;
+    rg->SetDimensions(dims);
+    vtkDataArray *oldX = rg->GetXCoordinates();
+    vtkDataArray *newX = vtkDataArray::CreateDataArray(oldX->GetDataType());
+    newX->SetNumberOfTuples(numValid);
+
+    vtkDataArray *newV = vtkDataArray::CreateDataArray(v->GetDataType());
+    newV->SetNumberOfTuples(numValid);
+
+    int curIdx = 0;
+    for (i = 0 ; i < nvals ; i++)
+    {
+        if (v->GetTuple1(i) != emptyVal)
+        {
+            newV->SetTuple1(curIdx, v->GetTuple1(i));
+            newX->SetTuple1(curIdx, oldX->GetTuple1(i));
+            curIdx++;
+        }
+    }
+
+    v->SetName("nameWeGiveSoWeCanRemoveIt");
+    rg->GetPointData()->RemoveArray("nameWeGiveSoWeCanRemoveIt");
+    rg->GetPointData()->SetScalars(newV);
+    newV->Delete();
+
+    rg->SetXCoordinates(newX);
+    newX->Delete();
+}
+
+// ****************************************************************************
 //  Method: avtDataBinningFilter::Execute
 //
 //  Purpose:
@@ -170,6 +242,9 @@ avtDataBinningFilter::Equivalent(const AttributeGroup *a)
 //
 //    Hank Childs, Mon Jul 16 17:22:00 PDT 2012
 //    Add support for outputing on the input mesh.
+//
+//    Hank Childs, Fri Jan  4 11:49:36 PST 2013
+//    Remove unused bins for curves.
 //
 // ****************************************************************************
 
@@ -253,6 +328,10 @@ avtDataBinningFilter::Execute(void)
         if (PAR_Rank() == 0)
         {
             vtkDataSet *ds = d->CreateGrid();
+            bool isCurve = (atts.GetNumDimensions() == DataBinningAttributes::One);
+            bool removeUndefined = atts.GetRemoveEmptyValFromCurve();
+            if (isCurve && removeUndefined)
+                RemoveUndefinedPointsFromCurve(ds, atts.GetEmptyVal());
             if (atts.GetNumDimensions() == DataBinningAttributes::One)
                 ds->GetPointData()->GetScalars()->SetName(varname.c_str());
             else

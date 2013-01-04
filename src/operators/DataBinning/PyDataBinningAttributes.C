@@ -281,6 +281,11 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
           break;
     }
 
+    if(atts->GetRemoveEmptyValFromCurve())
+        SNPRINTF(tmpStr, 1000, "%sremoveEmptyValFromCurve = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sremoveEmptyValFromCurve = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -934,6 +939,30 @@ DataBinningAttributes_GetOutputType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+DataBinningAttributes_SetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the removeEmptyValFromCurve in the object.
+    obj->data->SetRemoveEmptyValFromCurve(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+DataBinningAttributes_GetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
+{
+    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetRemoveEmptyValFromCurve()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
@@ -986,6 +1015,8 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
     {"GetEmptyVal", DataBinningAttributes_GetEmptyVal, METH_VARARGS},
     {"SetOutputType", DataBinningAttributes_SetOutputType, METH_VARARGS},
     {"GetOutputType", DataBinningAttributes_GetOutputType, METH_VARARGS},
+    {"SetRemoveEmptyValFromCurve", DataBinningAttributes_SetRemoveEmptyValFromCurve, METH_VARARGS},
+    {"GetRemoveEmptyValFromCurve", DataBinningAttributes_GetRemoveEmptyValFromCurve, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1125,6 +1156,8 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "OutputOnInputMesh") == 0)
         return PyInt_FromLong(long(DataBinningAttributes::OutputOnInputMesh));
 
+    if(strcmp(name, "removeEmptyValFromCurve") == 0)
+        return DataBinningAttributes_GetRemoveEmptyValFromCurve(self, NULL);
 
     return Py_FindMethod(PyDataBinningAttributes_methods, self, name);
 }
@@ -1187,6 +1220,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = DataBinningAttributes_SetEmptyVal(self, tuple);
     else if(strcmp(name, "outputType") == 0)
         obj = DataBinningAttributes_SetOutputType(self, tuple);
+    else if(strcmp(name, "removeEmptyValFromCurve") == 0)
+        obj = DataBinningAttributes_SetRemoveEmptyValFromCurve(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -266,6 +266,7 @@ void DataBinningAttributes::Init()
     reductionOperator = Average;
     emptyVal = 0;
     outputType = OutputOnBins;
+    removeEmptyValFromCurve = true;
 
     DataBinningAttributes::SelectAll();
 }
@@ -311,6 +312,7 @@ void DataBinningAttributes::Copy(const DataBinningAttributes &obj)
     varForReduction = obj.varForReduction;
     emptyVal = obj.emptyVal;
     outputType = obj.outputType;
+    removeEmptyValFromCurve = obj.removeEmptyValFromCurve;
 
     DataBinningAttributes::SelectAll();
 }
@@ -495,7 +497,8 @@ DataBinningAttributes::operator == (const DataBinningAttributes &obj) const
             (reductionOperator == obj.reductionOperator) &&
             (varForReduction == obj.varForReduction) &&
             (emptyVal == obj.emptyVal) &&
-            (outputType == obj.outputType));
+            (outputType == obj.outputType) &&
+            (removeEmptyValFromCurve == obj.removeEmptyValFromCurve));
 }
 
 // ****************************************************************************
@@ -639,30 +642,31 @@ DataBinningAttributes::NewInstance(bool copy) const
 void
 DataBinningAttributes::SelectAll()
 {
-    Select(ID_numDimensions,       (void *)&numDimensions);
-    Select(ID_dim1BinBasedOn,      (void *)&dim1BinBasedOn);
-    Select(ID_dim1Var,             (void *)&dim1Var);
-    Select(ID_dim1SpecifyRange,    (void *)&dim1SpecifyRange);
-    Select(ID_dim1MinRange,        (void *)&dim1MinRange);
-    Select(ID_dim1MaxRange,        (void *)&dim1MaxRange);
-    Select(ID_dim1NumBins,         (void *)&dim1NumBins);
-    Select(ID_dim2BinBasedOn,      (void *)&dim2BinBasedOn);
-    Select(ID_dim2Var,             (void *)&dim2Var);
-    Select(ID_dim2SpecifyRange,    (void *)&dim2SpecifyRange);
-    Select(ID_dim2MinRange,        (void *)&dim2MinRange);
-    Select(ID_dim2MaxRange,        (void *)&dim2MaxRange);
-    Select(ID_dim2NumBins,         (void *)&dim2NumBins);
-    Select(ID_dim3BinBasedOn,      (void *)&dim3BinBasedOn);
-    Select(ID_dim3Var,             (void *)&dim3Var);
-    Select(ID_dim3SpecifyRange,    (void *)&dim3SpecifyRange);
-    Select(ID_dim3MinRange,        (void *)&dim3MinRange);
-    Select(ID_dim3MaxRange,        (void *)&dim3MaxRange);
-    Select(ID_dim3NumBins,         (void *)&dim3NumBins);
-    Select(ID_outOfBoundsBehavior, (void *)&outOfBoundsBehavior);
-    Select(ID_reductionOperator,   (void *)&reductionOperator);
-    Select(ID_varForReduction,     (void *)&varForReduction);
-    Select(ID_emptyVal,            (void *)&emptyVal);
-    Select(ID_outputType,          (void *)&outputType);
+    Select(ID_numDimensions,           (void *)&numDimensions);
+    Select(ID_dim1BinBasedOn,          (void *)&dim1BinBasedOn);
+    Select(ID_dim1Var,                 (void *)&dim1Var);
+    Select(ID_dim1SpecifyRange,        (void *)&dim1SpecifyRange);
+    Select(ID_dim1MinRange,            (void *)&dim1MinRange);
+    Select(ID_dim1MaxRange,            (void *)&dim1MaxRange);
+    Select(ID_dim1NumBins,             (void *)&dim1NumBins);
+    Select(ID_dim2BinBasedOn,          (void *)&dim2BinBasedOn);
+    Select(ID_dim2Var,                 (void *)&dim2Var);
+    Select(ID_dim2SpecifyRange,        (void *)&dim2SpecifyRange);
+    Select(ID_dim2MinRange,            (void *)&dim2MinRange);
+    Select(ID_dim2MaxRange,            (void *)&dim2MaxRange);
+    Select(ID_dim2NumBins,             (void *)&dim2NumBins);
+    Select(ID_dim3BinBasedOn,          (void *)&dim3BinBasedOn);
+    Select(ID_dim3Var,                 (void *)&dim3Var);
+    Select(ID_dim3SpecifyRange,        (void *)&dim3SpecifyRange);
+    Select(ID_dim3MinRange,            (void *)&dim3MinRange);
+    Select(ID_dim3MaxRange,            (void *)&dim3MaxRange);
+    Select(ID_dim3NumBins,             (void *)&dim3NumBins);
+    Select(ID_outOfBoundsBehavior,     (void *)&outOfBoundsBehavior);
+    Select(ID_reductionOperator,       (void *)&reductionOperator);
+    Select(ID_varForReduction,         (void *)&varForReduction);
+    Select(ID_emptyVal,                (void *)&emptyVal);
+    Select(ID_outputType,              (void *)&outputType);
+    Select(ID_removeEmptyValFromCurve, (void *)&removeEmptyValFromCurve);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -837,6 +841,12 @@ DataBinningAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("outputType", OutputType_ToString(outputType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_removeEmptyValFromCurve, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removeEmptyValFromCurve", removeEmptyValFromCurve));
     }
 
 
@@ -1021,6 +1031,8 @@ DataBinningAttributes::SetFromNode(DataNode *parentNode)
                 SetOutputType(value);
         }
     }
+    if((node = searchNode->GetNode("removeEmptyValFromCurve")) != 0)
+        SetRemoveEmptyValFromCurve(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1195,6 +1207,13 @@ DataBinningAttributes::SetOutputType(DataBinningAttributes::OutputType outputTyp
     Select(ID_outputType, (void *)&outputType);
 }
 
+void
+DataBinningAttributes::SetRemoveEmptyValFromCurve(bool removeEmptyValFromCurve_)
+{
+    removeEmptyValFromCurve = removeEmptyValFromCurve_;
+    Select(ID_removeEmptyValFromCurve, (void *)&removeEmptyValFromCurve);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1367,6 +1386,12 @@ DataBinningAttributes::GetOutputType() const
     return OutputType(outputType);
 }
 
+bool
+DataBinningAttributes::GetRemoveEmptyValFromCurve() const
+{
+    return removeEmptyValFromCurve;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1419,30 +1444,31 @@ DataBinningAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_numDimensions:       return "numDimensions";
-    case ID_dim1BinBasedOn:      return "dim1BinBasedOn";
-    case ID_dim1Var:             return "dim1Var";
-    case ID_dim1SpecifyRange:    return "dim1SpecifyRange";
-    case ID_dim1MinRange:        return "dim1MinRange";
-    case ID_dim1MaxRange:        return "dim1MaxRange";
-    case ID_dim1NumBins:         return "dim1NumBins";
-    case ID_dim2BinBasedOn:      return "dim2BinBasedOn";
-    case ID_dim2Var:             return "dim2Var";
-    case ID_dim2SpecifyRange:    return "dim2SpecifyRange";
-    case ID_dim2MinRange:        return "dim2MinRange";
-    case ID_dim2MaxRange:        return "dim2MaxRange";
-    case ID_dim2NumBins:         return "dim2NumBins";
-    case ID_dim3BinBasedOn:      return "dim3BinBasedOn";
-    case ID_dim3Var:             return "dim3Var";
-    case ID_dim3SpecifyRange:    return "dim3SpecifyRange";
-    case ID_dim3MinRange:        return "dim3MinRange";
-    case ID_dim3MaxRange:        return "dim3MaxRange";
-    case ID_dim3NumBins:         return "dim3NumBins";
-    case ID_outOfBoundsBehavior: return "outOfBoundsBehavior";
-    case ID_reductionOperator:   return "reductionOperator";
-    case ID_varForReduction:     return "varForReduction";
-    case ID_emptyVal:            return "emptyVal";
-    case ID_outputType:          return "outputType";
+    case ID_numDimensions:           return "numDimensions";
+    case ID_dim1BinBasedOn:          return "dim1BinBasedOn";
+    case ID_dim1Var:                 return "dim1Var";
+    case ID_dim1SpecifyRange:        return "dim1SpecifyRange";
+    case ID_dim1MinRange:            return "dim1MinRange";
+    case ID_dim1MaxRange:            return "dim1MaxRange";
+    case ID_dim1NumBins:             return "dim1NumBins";
+    case ID_dim2BinBasedOn:          return "dim2BinBasedOn";
+    case ID_dim2Var:                 return "dim2Var";
+    case ID_dim2SpecifyRange:        return "dim2SpecifyRange";
+    case ID_dim2MinRange:            return "dim2MinRange";
+    case ID_dim2MaxRange:            return "dim2MaxRange";
+    case ID_dim2NumBins:             return "dim2NumBins";
+    case ID_dim3BinBasedOn:          return "dim3BinBasedOn";
+    case ID_dim3Var:                 return "dim3Var";
+    case ID_dim3SpecifyRange:        return "dim3SpecifyRange";
+    case ID_dim3MinRange:            return "dim3MinRange";
+    case ID_dim3MaxRange:            return "dim3MaxRange";
+    case ID_dim3NumBins:             return "dim3NumBins";
+    case ID_outOfBoundsBehavior:     return "outOfBoundsBehavior";
+    case ID_reductionOperator:       return "reductionOperator";
+    case ID_varForReduction:         return "varForReduction";
+    case ID_emptyVal:                return "emptyVal";
+    case ID_outputType:              return "outputType";
+    case ID_removeEmptyValFromCurve: return "removeEmptyValFromCurve";
     default:  return "invalid index";
     }
 }
@@ -1467,30 +1493,31 @@ DataBinningAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_numDimensions:       return FieldType_enum;
-    case ID_dim1BinBasedOn:      return FieldType_enum;
-    case ID_dim1Var:             return FieldType_variablename;
-    case ID_dim1SpecifyRange:    return FieldType_bool;
-    case ID_dim1MinRange:        return FieldType_double;
-    case ID_dim1MaxRange:        return FieldType_double;
-    case ID_dim1NumBins:         return FieldType_int;
-    case ID_dim2BinBasedOn:      return FieldType_enum;
-    case ID_dim2Var:             return FieldType_variablename;
-    case ID_dim2SpecifyRange:    return FieldType_bool;
-    case ID_dim2MinRange:        return FieldType_double;
-    case ID_dim2MaxRange:        return FieldType_double;
-    case ID_dim2NumBins:         return FieldType_int;
-    case ID_dim3BinBasedOn:      return FieldType_enum;
-    case ID_dim3Var:             return FieldType_variablename;
-    case ID_dim3SpecifyRange:    return FieldType_bool;
-    case ID_dim3MinRange:        return FieldType_double;
-    case ID_dim3MaxRange:        return FieldType_double;
-    case ID_dim3NumBins:         return FieldType_int;
-    case ID_outOfBoundsBehavior: return FieldType_enum;
-    case ID_reductionOperator:   return FieldType_enum;
-    case ID_varForReduction:     return FieldType_variablename;
-    case ID_emptyVal:            return FieldType_double;
-    case ID_outputType:          return FieldType_enum;
+    case ID_numDimensions:           return FieldType_enum;
+    case ID_dim1BinBasedOn:          return FieldType_enum;
+    case ID_dim1Var:                 return FieldType_variablename;
+    case ID_dim1SpecifyRange:        return FieldType_bool;
+    case ID_dim1MinRange:            return FieldType_double;
+    case ID_dim1MaxRange:            return FieldType_double;
+    case ID_dim1NumBins:             return FieldType_int;
+    case ID_dim2BinBasedOn:          return FieldType_enum;
+    case ID_dim2Var:                 return FieldType_variablename;
+    case ID_dim2SpecifyRange:        return FieldType_bool;
+    case ID_dim2MinRange:            return FieldType_double;
+    case ID_dim2MaxRange:            return FieldType_double;
+    case ID_dim2NumBins:             return FieldType_int;
+    case ID_dim3BinBasedOn:          return FieldType_enum;
+    case ID_dim3Var:                 return FieldType_variablename;
+    case ID_dim3SpecifyRange:        return FieldType_bool;
+    case ID_dim3MinRange:            return FieldType_double;
+    case ID_dim3MaxRange:            return FieldType_double;
+    case ID_dim3NumBins:             return FieldType_int;
+    case ID_outOfBoundsBehavior:     return FieldType_enum;
+    case ID_reductionOperator:       return FieldType_enum;
+    case ID_varForReduction:         return FieldType_variablename;
+    case ID_emptyVal:                return FieldType_double;
+    case ID_outputType:              return FieldType_enum;
+    case ID_removeEmptyValFromCurve: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1515,30 +1542,31 @@ DataBinningAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_numDimensions:       return "enum";
-    case ID_dim1BinBasedOn:      return "enum";
-    case ID_dim1Var:             return "variablename";
-    case ID_dim1SpecifyRange:    return "bool";
-    case ID_dim1MinRange:        return "double";
-    case ID_dim1MaxRange:        return "double";
-    case ID_dim1NumBins:         return "int";
-    case ID_dim2BinBasedOn:      return "enum";
-    case ID_dim2Var:             return "variablename";
-    case ID_dim2SpecifyRange:    return "bool";
-    case ID_dim2MinRange:        return "double";
-    case ID_dim2MaxRange:        return "double";
-    case ID_dim2NumBins:         return "int";
-    case ID_dim3BinBasedOn:      return "enum";
-    case ID_dim3Var:             return "variablename";
-    case ID_dim3SpecifyRange:    return "bool";
-    case ID_dim3MinRange:        return "double";
-    case ID_dim3MaxRange:        return "double";
-    case ID_dim3NumBins:         return "int";
-    case ID_outOfBoundsBehavior: return "enum";
-    case ID_reductionOperator:   return "enum";
-    case ID_varForReduction:     return "variablename";
-    case ID_emptyVal:            return "double";
-    case ID_outputType:          return "enum";
+    case ID_numDimensions:           return "enum";
+    case ID_dim1BinBasedOn:          return "enum";
+    case ID_dim1Var:                 return "variablename";
+    case ID_dim1SpecifyRange:        return "bool";
+    case ID_dim1MinRange:            return "double";
+    case ID_dim1MaxRange:            return "double";
+    case ID_dim1NumBins:             return "int";
+    case ID_dim2BinBasedOn:          return "enum";
+    case ID_dim2Var:                 return "variablename";
+    case ID_dim2SpecifyRange:        return "bool";
+    case ID_dim2MinRange:            return "double";
+    case ID_dim2MaxRange:            return "double";
+    case ID_dim2NumBins:             return "int";
+    case ID_dim3BinBasedOn:          return "enum";
+    case ID_dim3Var:                 return "variablename";
+    case ID_dim3SpecifyRange:        return "bool";
+    case ID_dim3MinRange:            return "double";
+    case ID_dim3MaxRange:            return "double";
+    case ID_dim3NumBins:             return "int";
+    case ID_outOfBoundsBehavior:     return "enum";
+    case ID_reductionOperator:       return "enum";
+    case ID_varForReduction:         return "variablename";
+    case ID_emptyVal:                return "double";
+    case ID_outputType:              return "enum";
+    case ID_removeEmptyValFromCurve: return "bool";
     default:  return "invalid index";
     }
 }
@@ -1683,6 +1711,11 @@ DataBinningAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_outputType:
         {  // new scope
         retval = (outputType == obj.outputType);
+        }
+        break;
+    case ID_removeEmptyValFromCurve:
+        {  // new scope
+        retval = (removeEmptyValFromCurve == obj.removeEmptyValFromCurve);
         }
         break;
     default: retval = false;

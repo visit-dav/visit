@@ -127,6 +127,9 @@ QvisDataBinningWindow::~QvisDataBinningWindow()
 //   Hank Childs, Mon Jul 16 17:13:53 PDT 2012
 //   Add support for outputs on the mesh or the bins.
 //
+//   Hank Childs, Fri Jan  4 11:49:36 PST 2013
+//   Remove unused bins for curves.
+//
 // ****************************************************************************
 
 void
@@ -372,6 +375,11 @@ QvisDataBinningWindow::CreateWindowContents()
             this, SLOT(emptyValProcessText()));
     rtLayout->addWidget(emptyVal, 2,1);
 
+    removeEmptyBins = new QCheckBox(tr("Remove bins with no data (curves only)"), central);
+    rtLayout->addWidget(removeEmptyBins, 3, 0);
+    connect(removeEmptyBins, SIGNAL(toggled(bool)),
+            this, SLOT(removeEmptyBinsToggled(bool)));
+
     QGroupBox *outputGroup = new QGroupBox(central);
     outputGroup->setTitle(tr("Output"));
     mainLayout->addWidget(outputGroup);
@@ -415,6 +423,9 @@ QvisDataBinningWindow::CreateWindowContents()
 //
 //   Hank Childs, Mon Jul 16 17:13:53 PDT 2012
 //   Add support for outputs on the mesh or the bins.
+//
+//   Hank Childs, Fri Jan  4 11:49:36 PST 2013
+//   Remove unused bins for curves.
 //
 // ****************************************************************************
 
@@ -690,6 +701,9 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
             break;
           case DataBinningAttributes::ID_emptyVal:
             emptyVal->setText(DoubleToQString(atts->GetEmptyVal()));
+            break;
+          case DataBinningAttributes::ID_removeEmptyValFromCurve:
+            removeEmptyBins->setChecked(atts->GetRemoveEmptyValFromCurve());
             break;
           case DataBinningAttributes::ID_dim1BinBasedOn:
             if (atts->GetDim1BinBasedOn() == DataBinningAttributes::Variable)
@@ -1155,3 +1169,9 @@ QvisDataBinningWindow::dim3SpecifyRangeToggled(bool v)
 }
 
 
+void
+QvisDataBinningWindow::removeEmptyBinsToggled(bool v)
+{
+    atts->SetRemoveEmptyValFromCurve(v);
+    Apply();
+}
