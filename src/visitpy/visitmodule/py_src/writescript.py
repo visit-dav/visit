@@ -44,6 +44,9 @@
 # Creation:   Wed Mar  7 16:46:53 PST 2012
 #
 # Modifications:
+#   Eric Brugger, Fri Jan  4 10:17:07 PST 2013
+#   I replaced a call to GetCurveView with GetViewCurve, since the former
+#   was incorrect. This fix was provided by Jean Favre.
 #
 ###############################################################################
 
@@ -394,7 +397,7 @@ Example:
         # Set the view
         f.write('# Set the view\n')
         if visit.GetWindowInformation().viewDimension == 1:
-            view = visit.GetCurveView()
+            view = visit.GetViewCurve()
         elif visit.GetWindowInformation().viewDimension == 2:
             view = visit.GetView2D()
         else:
