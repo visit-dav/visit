@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class DataBinningAttributes extends AttributeSubject implements Plugin
 {
-    private static int DataBinningAttributes_numAdditionalAtts = 24;
+    private static int DataBinningAttributes_numAdditionalAtts = 25;
 
     // Enum values
     public final static int REDUCTIONOPERATOR_AVERAGE = 0;
@@ -116,6 +116,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         varForReduction = new String("");
         emptyVal = 0;
         outputType = OUTPUTTYPE_OUTPUTONBINS;
+        removeEmptyValFromCurve = true;
     }
 
     public DataBinningAttributes(int nMoreFields)
@@ -146,6 +147,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         varForReduction = new String("");
         emptyVal = 0;
         outputType = OUTPUTTYPE_OUTPUTONBINS;
+        removeEmptyValFromCurve = true;
     }
 
     public DataBinningAttributes(DataBinningAttributes obj)
@@ -176,6 +178,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         varForReduction = new String(obj.varForReduction);
         emptyVal = obj.emptyVal;
         outputType = obj.outputType;
+        removeEmptyValFromCurve = obj.removeEmptyValFromCurve;
 
         SelectAll();
     }
@@ -216,7 +219,8 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
                 (reductionOperator == obj.reductionOperator) &&
                 (varForReduction.equals(obj.varForReduction)) &&
                 (emptyVal == obj.emptyVal) &&
-                (outputType == obj.outputType));
+                (outputType == obj.outputType) &&
+                (removeEmptyValFromCurve == obj.removeEmptyValFromCurve));
     }
 
     public String GetName() { return "DataBinning"; }
@@ -367,6 +371,12 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         Select(23);
     }
 
+    public void SetRemoveEmptyValFromCurve(boolean removeEmptyValFromCurve_)
+    {
+        removeEmptyValFromCurve = removeEmptyValFromCurve_;
+        Select(24);
+    }
+
     // Property getting methods
     public int     GetNumDimensions() { return numDimensions; }
     public int     GetDim1BinBasedOn() { return dim1BinBasedOn; }
@@ -392,6 +402,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
     public String  GetVarForReduction() { return varForReduction; }
     public double  GetEmptyVal() { return emptyVal; }
     public int     GetOutputType() { return outputType; }
+    public boolean GetRemoveEmptyValFromCurve() { return removeEmptyValFromCurve; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -444,6 +455,8 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(emptyVal);
         if(WriteSelect(23, buf))
             buf.WriteInt(outputType);
+        if(WriteSelect(24, buf))
+            buf.WriteBool(removeEmptyValFromCurve);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -521,6 +534,9 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
             break;
         case 23:
             SetOutputType(buf.ReadInt());
+            break;
+        case 24:
+            SetRemoveEmptyValFromCurve(buf.ReadBool());
             break;
         }
     }
@@ -615,6 +631,7 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
         if(outputType == OUTPUTTYPE_OUTPUTONINPUTMESH)
             str = str + "OUTPUTTYPE_OUTPUTONINPUTMESH";
         str = str + "\n";
+        str = str + boolToString("removeEmptyValFromCurve", removeEmptyValFromCurve, indent) + "\n";
         return str;
     }
 
@@ -644,5 +661,6 @@ public class DataBinningAttributes extends AttributeSubject implements Plugin
     private String  varForReduction;
     private double  emptyVal;
     private int     outputType;
+    private boolean removeEmptyValFromCurve;
 }
 

@@ -199,3 +199,4 @@ DataBinningViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     else if (strstr(varname, "operators/DataBinning/3D") != NULL)
         binning->SetNumDimensions(DataBinningAttributes::Three);
 }
+

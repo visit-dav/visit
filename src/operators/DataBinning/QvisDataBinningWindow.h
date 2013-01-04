@@ -74,6 +74,9 @@ class QvisVariableButton;
 //   Hank Childs, Sun Jul 31 16:01:41 PDT 2011
 //   Add support for binning based on spatial dimensions.
 //
+//   Hank Childs, Fri Jan  4 11:49:36 PST 2013
+//   Remove unused bins for curves.
+//
 // ****************************************************************************
 
 class QvisDataBinningWindow : public QvisOperatorWindow
@@ -115,6 +118,7 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     void reductionOperatorClicked(int val);
     void varForReductionChanged(const QString &varName);
     void emptyValProcessText();
+    void removeEmptyBinsToggled(bool);
   private:
     QWidget      *numDimensions;
     QComboBox    *numDimensionsCombo;
@@ -171,6 +175,7 @@ class QvisDataBinningWindow : public QvisOperatorWindow
     QLabel *reductionOperatorLabel;
     QLabel *varForReductionLabel;
     QLabel *emptyValLabel;
+    QCheckBox *removeEmptyBins;
     QButtonGroup *outputButtonGroup;
 
     DataBinningAttributes *atts;

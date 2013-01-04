@@ -102,6 +102,9 @@
       <Field name="outputType" label="Output Type" type="enum" subtype="OutputType">
         OutputOnBins
       </Field>
+      <Field name="removeEmptyValFromCurve" label="Remove bins with emptyVal from curves?" type="bool">
+        true
+      </Field>
       <Function name="CreateConstructionAtts" user="true" member="true">
       </Function>
       <Function name="DataBinningCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
