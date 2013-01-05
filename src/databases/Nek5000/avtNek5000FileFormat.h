@@ -133,6 +133,9 @@ class KeyCompare {
 //    Hank Childs, Sun Oct 28 17:56:17 PDT 2012
 //    Add attributes for reading all times, cycles.
 //
+//    Hank Childs, Fri Jan  4 14:33:11 PST 2013
+//    Add support for time periodicity.
+//
 // ****************************************************************************
 
 class avtNek5000FileFormat : public avtMTMDFileFormat
@@ -177,6 +180,9 @@ class avtNek5000FileFormat : public avtMTMDFileFormat
     bool                 bBinary;         //binary or ascii
     int                  iNumOutputDirs;  //used in parallel format
     bool                 bParFormat;
+
+    int                  numberOfTimePeriods;
+    double               gapBetweenTimePeriods;
 
     // This info is embedded in, or derived from, the file header
     bool                 bSwapEndian;
