@@ -391,6 +391,13 @@ avtLineoutFilter::PostExecute(void)
 //    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
 //    Removed unused variable.
 //
+//    Brad Whitlock, Mon Jan  7 14:15:45 PST 2013
+//    Use VTK_FLOAT as the minimum precision for the rgrid and then adjust
+//    upward to VTK_DOUBLE if the input coordinates or scalar use that type.
+//    This fixes a bug that could cause the rgrid to be created using int
+//    coordinates if the field was int. That becomes a problem with small
+//    coordinates!
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -413,7 +420,9 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
     int npts = pts->GetNumberOfPoints();
     int ptsType = pts->GetDataType();
     int sType = scalars->GetDataType();
-    int dType = (sType < ptsType ? sType : ptsType);
+    int dType = VTK_FLOAT;
+    if(ptsType == VTK_DOUBLE || sType == VTK_DOUBLE)
+        dType == VTK_DOUBLE;
     vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
     vtkDataArray *outXC = rgrid->GetXCoordinates();
     vtkDataArray *outVal = outXC->NewInstance(); 
@@ -864,6 +873,13 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Renamed Point struct to IntersectionPoint to avoid namespace conflict
 //    with a file in common/state.
 //
+//    Brad Whitlock, Mon Jan  7 14:15:45 PST 2013
+//    Use VTK_FLOAT as the minimum precision for the rgrid and then adjust
+//    upward to VTK_DOUBLE if the input coordinates or scalar use that type.
+//    This fixes a bug that could cause the rgrid to be created using int
+//    coordinates if the field was int. That becomes a problem with small
+//    coordinates!
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -938,7 +954,9 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
 
     int ptsType = pts->GetDataType();
     int sType = scalars->GetDataType();
-    int dType = (sType < ptsType ? sType : ptsType);
+    int dType = VTK_FLOAT;
+    if(ptsType == VTK_DOUBLE || sType == VTK_DOUBLE)
+        dType == VTK_DOUBLE;
     vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
 
     vtkDataArray *outXC = rgrid->GetXCoordinates();
