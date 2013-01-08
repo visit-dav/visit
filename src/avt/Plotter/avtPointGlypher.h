@@ -67,6 +67,9 @@ class     vtkVisItPolyDataNormals;
 //    avtVariableMapper, modified some method names so that they don't collide
 //    with avtMapper method names.
 //
+//    Brad Whitlock, Mon Jan  7 16:53:56 PST 2013
+//    Adding new glyph types.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtPointGlypher  
@@ -76,7 +79,10 @@ class PLOTTER_API  avtPointGlypher
                   Axis,
                   Icosahedron,
                   Point,
-                  Sphere
+                  Sphere,
+                  Octahedron,
+                  Tetrahedron,
+                  SphereGeometry
                  } PointGlyphType;
 
                                avtPointGlypher();

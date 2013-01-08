@@ -44,6 +44,7 @@
 
 #include <vtkVisItGlyph3D.h>
 #include <vtkPolyData.h>
+#include <vtkSphereSource.h>
 #include <vtkVisItPolyDataNormals.h>
 #include <BadIndexException.h>
 
@@ -394,6 +395,9 @@ avtPointGlypher::SetGlyphType(PointGlyphType type)
 //    Brad Whitlock, Thu Aug 25 10:23:23 PDT 2005
 //    Added support for sphere glyphs.
 //
+//    Brad Whitlock, Tue Jan  8 13:54:01 PST 2013
+//    Add some new glyphs.
+//
 // ****************************************************************************
 
 void
@@ -586,6 +590,116 @@ avtPointGlypher::SetUpGlyph(void)
 
         glyph2D->Allocate(48);
         for (i = 0 ; i < 12 ; i++)
+        {
+            int pt2 = (i+2 >= 13 ? 1 : i+2);
+            vtkIdType tri[3] = { 0, i+1, pt2 };
+            glyph2D->InsertNextCell(VTK_TRIANGLE, 3, tri);
+        }
+    }
+    else if (glyphType == Octahedron)
+    {
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(6);
+        pts->SetPoint(0,  0.5,  0.0,  0.0);
+        pts->SetPoint(1,  0.0,  0.0, -0.5);
+        pts->SetPoint(2, -0.5,  0.0,  0.0);
+        pts->SetPoint(3,  0.0,  0.0,  0.5);
+        pts->SetPoint(4,  0.0,  0.5,  0.0);
+        pts->SetPoint(5,  0.0, -0.5,  0.0);
+
+        glyph3D = vtkPolyData::New();
+        glyph3D->SetPoints(pts);
+        pts->Delete();
+
+        glyph3D->Allocate(24);
+        vtkIdType ids[8][3] = { {0,1,4}, {1,2,4}, {2,3,4}, {3,0,4},
+                                {5,0,3}, {5,1,0}, {5,1,2}, {5,2,3} };
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[0]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[1]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[2]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[3]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[4]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[5]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[6]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[7]);
+
+        vtkPoints *pts2D = vtkPoints::New();
+        pts2D->SetNumberOfPoints(4);
+        pts2D->SetPoint(0,  0.5, 0.0, 0.);
+        pts2D->SetPoint(1,  0.0, 0.5, 0.);
+        pts2D->SetPoint(2, -0.5, 0.0, 0.);
+        pts2D->SetPoint(3,  0.0, -0.5, 0.);
+
+        glyph2D = vtkPolyData::New();
+        glyph2D->SetPoints(pts2D);
+        pts2D->Delete();
+
+        glyph2D->Allocate(4);
+        vtkIdType ids2D[4] = { 0, 1, 2, 3};
+        glyph2D->InsertNextCell(VTK_QUAD, 4, ids2D);
+    }
+    else if (glyphType == Tetrahedron)
+    {
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetNumberOfPoints(4);
+        pts->SetPoint(0,  0.5, -0.42983,  -0.377355);
+        pts->SetPoint(1,  0,    0.43479,  -0.42667);
+        pts->SetPoint(2, -0.5, -0.42983,  -0.377355);
+        pts->SetPoint(3,  0,   -0.0951297, 0.421379);
+
+        glyph3D = vtkPolyData::New();
+        glyph3D->SetPoints(pts);
+        pts->Delete();
+
+        glyph3D->Allocate(12);
+        vtkIdType ids[4][3] = { {0,1,3}, {1,2,3}, {2,0,3}, {1,0,2}};
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[0]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[1]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[2]);
+        glyph3D->InsertNextCell(VTK_TRIANGLE, 3, ids[3]);
+
+        vtkPoints *pts2D = vtkPoints::New();
+        pts2D->SetNumberOfPoints(3);
+        pts2D->SetPoint(0,  0.0,    0.5,  0.);
+        pts2D->SetPoint(1, -0.433, -0.25, 0.);
+        pts2D->SetPoint(2,  0.433, -0.25, 0.);
+
+        glyph2D = vtkPolyData::New();
+        glyph2D->SetPoints(pts2D);
+        pts2D->Delete();
+
+        glyph2D->Allocate(3);
+        vtkIdType ids2D[3] = { 0, 1, 2};
+        glyph2D->InsertNextCell(VTK_TRIANGLE, 3, ids2D);
+    }
+    else if (glyphType == SphereGeometry)
+    {
+        vtkSphereSource *sphere = vtkSphereSource::New();
+        sphere->SetRadius(0.5);
+        sphere->SetCenter(0.,0.,0.);
+        sphere->SetThetaResolution(16);
+        sphere->SetPhiResolution(16);
+        sphere->Update();
+
+        glyph3D = sphere->GetOutput();
+        glyph3D->Register(NULL);
+        sphere->Delete();
+
+        vtkPoints *pts2D = vtkPoints::New();
+        pts2D->SetNumberOfPoints(13);
+        pts2D->SetPoint(0, 0., 0., 0.);
+        for (int i = 0 ; i < 12 ; i++)
+        {
+             double rad = ((double) i) / 12. * 2. * M_PI;
+             pts2D->SetPoint(i+1, cos(rad)/2., sin(rad)/2., 0.);
+        }
+
+        glyph2D = vtkPolyData::New();
+        glyph2D->SetPoints(pts2D);
+        pts2D->Delete();
+
+        glyph2D->Allocate(48);
+        for (int i = 0 ; i < 12 ; i++)
         {
             int pt2 = (i+2 >= 13 ? 1 : i+2);
             vtkIdType tri[3] = { 0, i+1, pt2 };

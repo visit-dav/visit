@@ -121,20 +121,21 @@ BoundaryAttributes::ColoringMethod_FromString(const std::string &s, BoundaryAttr
 
 static const char *PointType_strings[] = {
 "Box", "Axis", "Icosahedron", 
+"Octahedron", "Tetrahedron", "SphereGeometry", 
 "Point", "Sphere"};
 
 std::string
 BoundaryAttributes::PointType_ToString(BoundaryAttributes::PointType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return PointType_strings[index];
 }
 
 std::string
 BoundaryAttributes::PointType_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return PointType_strings[index];
 }
 
@@ -142,7 +143,7 @@ bool
 BoundaryAttributes::PointType_FromString(const std::string &s, BoundaryAttributes::PointType &val)
 {
     val = BoundaryAttributes::Box;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == PointType_strings[i])
         {
@@ -820,7 +821,7 @@ BoundaryAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 8)
                 SetPointType(PointType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

@@ -227,6 +227,9 @@ avtFilledBoundaryPlot::Create()
 //    I made the pointSize in the atts be used for to set the point size for
 //    points, which is not the same as what's used for Box, Axis, Icosahedra.
 //
+//    Brad Whitlock, Tue Jan  8 11:44:18 PST 2013
+//    I added some new glyph types.
+//
 // ****************************************************************************
 
 void
@@ -271,6 +274,12 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
         levelsMapper->SetGlyphType(avtPointGlypher::Axis);
     else if (atts.GetPointType() == FilledBoundaryAttributes::Icosahedron)
         levelsMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Octahedron)
+        levelsMapper->SetGlyphType(avtPointGlypher::Octahedron);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::Tetrahedron)
+        levelsMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
+    else if (atts.GetPointType() == FilledBoundaryAttributes::SphereGeometry)
+        levelsMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
     else if (atts.GetPointType() == FilledBoundaryAttributes::Point)
         levelsMapper->SetGlyphType(avtPointGlypher::Point);
     else if (atts.GetPointType() == FilledBoundaryAttributes::Sphere)

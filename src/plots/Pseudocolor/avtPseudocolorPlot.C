@@ -546,6 +546,9 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Kathleen Bonnell, Mon Jan 17 18:00:41 MST 2011
 //    Consider InvertColorTable toggle when setting updateColors.
 //
+//    Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
+//    I added some new glyph types.
+//
 // ****************************************************************************
 
 void
@@ -603,10 +606,17 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         glyphMapper->SetGlyphType(avtPointGlypher::Axis);
     else if (atts.GetPointType() == PseudocolorAttributes::Icosahedron)
         glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == PseudocolorAttributes::Octahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
+    else if (atts.GetPointType() == PseudocolorAttributes::Tetrahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
+    else if (atts.GetPointType() == PseudocolorAttributes::SphereGeometry)
+        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
     else if (atts.GetPointType() == PseudocolorAttributes::Point)
         glyphMapper->SetGlyphType(avtPointGlypher::Point);
     else if (atts.GetPointType() == PseudocolorAttributes::Sphere)
         glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
+
     SetPointGlyphSize();
 
     if (varname != NULL)

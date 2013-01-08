@@ -154,6 +154,9 @@ public:
         Box,
         Axis,
         Icosahedron,
+        Octahedron,
+        Tetrahedron,
+        SphereGeometry,
         Point,
         Sphere
     };

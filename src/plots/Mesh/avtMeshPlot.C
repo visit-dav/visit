@@ -358,6 +358,9 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Jeremy Meredith, Fri Feb 20 17:25:49 EST 2009
 //    Added per-plot alpha support.
 //
+//    Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
+//    I added some new glyph types.
+//
 // ****************************************************************************
 
 void
@@ -419,6 +422,12 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
         glyphMapper->SetGlyphType(avtPointGlypher::Axis);
     else if (atts.GetPointType() == MeshAttributes::Icosahedron)
         glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == MeshAttributes::Octahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
+    else if (atts.GetPointType() == MeshAttributes::Tetrahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
+    else if (atts.GetPointType() == MeshAttributes::SphereGeometry)
+        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
     else if (atts.GetPointType() == MeshAttributes::Point)
         glyphMapper->SetGlyphType(avtPointGlypher::Point);
     else if (atts.GetPointType() == MeshAttributes::Sphere)
