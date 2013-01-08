@@ -178,7 +178,8 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
     str += tmpStr;
-    const char *pointType_names = "Box, Axis, Icosahedron, Point, Sphere";
+    const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+        "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case MeshAttributes::Box:
@@ -191,6 +192,18 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
           break;
       case MeshAttributes::Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case MeshAttributes::Octahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case MeshAttributes::Tetrahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case MeshAttributes::SphereGeometry:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case MeshAttributes::Point:
@@ -723,15 +736,15 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the pointType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 8)
         obj->data->SetPointType(MeshAttributes::PointType(ival));
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
-                        "Box, Axis, Icosahedron, Point, Sphere"
-                        ".");
+                        "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+                        "SphereGeometry, Point, Sphere.");
         return NULL;
     }
 
@@ -956,6 +969,12 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(MeshAttributes::Axis));
     if(strcmp(name, "Icosahedron") == 0)
         return PyInt_FromLong(long(MeshAttributes::Icosahedron));
+    if(strcmp(name, "Octahedron") == 0)
+        return PyInt_FromLong(long(MeshAttributes::Octahedron));
+    if(strcmp(name, "Tetrahedron") == 0)
+        return PyInt_FromLong(long(MeshAttributes::Tetrahedron));
+    if(strcmp(name, "SphereGeometry") == 0)
+        return PyInt_FromLong(long(MeshAttributes::SphereGeometry));
     if(strcmp(name, "Point") == 0)
         return PyInt_FromLong(long(MeshAttributes::Point));
     if(strcmp(name, "Sphere") == 0)

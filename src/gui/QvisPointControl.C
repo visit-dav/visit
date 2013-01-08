@@ -47,8 +47,8 @@
 #include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
 
-#define POINT_TYPE_POINTS 3
-#define POINT_TYPE_SPHERE 4
+#define POINT_TYPE_POINTS 6
+#define POINT_TYPE_SPHERE 7
 
 // ****************************************************************************
 // Method: QvisPointControl::QvisPointControl
@@ -105,6 +105,9 @@ QvisPointControl::QvisPointControl(QWidget *parent,
     typeComboBox->addItem(tr("Box"));
     typeComboBox->addItem(tr("Axis"));
     typeComboBox->addItem(tr("Icosahedron"));
+    typeComboBox->addItem(tr("Octahedron"));
+    typeComboBox->addItem(tr("Tetrahedron"));
+    typeComboBox->addItem(tr("Sphere Geometry"));
     typeComboBox->addItem(tr("Point"));
     typeComboBox->addItem(tr("Sphere"));
     connect(typeComboBox, SIGNAL(activated(int)),
@@ -604,11 +607,14 @@ void QvisPointControl::SetPointSizeVar(QString &var)
 //   Hank Childs, Tue Dec 23 17:34:19 PST 2008
 //   Change limit from >3 to >4, since 4 now corresponds to Sphere.
 //
+//   Brad Whitlock, Mon Jan  7 17:02:49 PST 2013
+//   Changed 4 to 7 since I added 3 new point types.
+// 
 // ****************************************************************************
 
 void QvisPointControl::SetPointType(int type)
 {
-    if (type < 0 || type > 4)
+    if (type < 0 || type > 7)
         return;
 
     typeComboBox->blockSignals(true);

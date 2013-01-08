@@ -182,7 +182,8 @@ PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
-    const char *pointType_names = "Box, Axis, Icosahedron, Point, Sphere";
+    const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+        "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case BoundaryAttributes::Box:
@@ -195,6 +196,18 @@ PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix
           break;
       case BoundaryAttributes::Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case BoundaryAttributes::Octahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case BoundaryAttributes::Tetrahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case BoundaryAttributes::SphereGeometry:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case BoundaryAttributes::Point:
@@ -893,15 +906,15 @@ BoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the pointType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 8)
         obj->data->SetPointType(BoundaryAttributes::PointType(ival));
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
-                        "Box, Axis, Icosahedron, Point, Sphere"
-                        ".");
+                        "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+                        "SphereGeometry, Point, Sphere.");
         return NULL;
     }
 
@@ -1122,6 +1135,12 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(BoundaryAttributes::Axis));
     if(strcmp(name, "Icosahedron") == 0)
         return PyInt_FromLong(long(BoundaryAttributes::Icosahedron));
+    if(strcmp(name, "Octahedron") == 0)
+        return PyInt_FromLong(long(BoundaryAttributes::Octahedron));
+    if(strcmp(name, "Tetrahedron") == 0)
+        return PyInt_FromLong(long(BoundaryAttributes::Tetrahedron));
+    if(strcmp(name, "SphereGeometry") == 0)
+        return PyInt_FromLong(long(BoundaryAttributes::SphereGeometry));
     if(strcmp(name, "Point") == 0)
         return PyInt_FromLong(long(BoundaryAttributes::Point));
     if(strcmp(name, "Sphere") == 0)

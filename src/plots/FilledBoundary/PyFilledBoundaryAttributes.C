@@ -196,7 +196,8 @@ PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const 
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
     str += tmpStr;
-    const char *pointType_names = "Box, Axis, Icosahedron, Point, Sphere";
+    const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+        "SphereGeometry, Point, Sphere";
     switch (atts->GetPointType())
     {
       case FilledBoundaryAttributes::Box:
@@ -209,6 +210,18 @@ PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const 
           break;
       case FilledBoundaryAttributes::Icosahedron:
           SNPRINTF(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case FilledBoundaryAttributes::Octahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case FilledBoundaryAttributes::Tetrahedron:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
+          str += tmpStr;
+          break;
+      case FilledBoundaryAttributes::SphereGeometry:
+          SNPRINTF(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
           str += tmpStr;
           break;
       case FilledBoundaryAttributes::Point:
@@ -1032,15 +1045,15 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the pointType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 8)
         obj->data->SetPointType(FilledBoundaryAttributes::PointType(ival));
     else
     {
         fprintf(stderr, "An invalid pointType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
-                        "Box, Axis, Icosahedron, Point, Sphere"
-                        ".");
+                        "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
+                        "SphereGeometry, Point, Sphere.");
         return NULL;
     }
 
@@ -1273,6 +1286,12 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(FilledBoundaryAttributes::Axis));
     if(strcmp(name, "Icosahedron") == 0)
         return PyInt_FromLong(long(FilledBoundaryAttributes::Icosahedron));
+    if(strcmp(name, "Octahedron") == 0)
+        return PyInt_FromLong(long(FilledBoundaryAttributes::Octahedron));
+    if(strcmp(name, "Tetrahedron") == 0)
+        return PyInt_FromLong(long(FilledBoundaryAttributes::Tetrahedron));
+    if(strcmp(name, "SphereGeometry") == 0)
+        return PyInt_FromLong(long(FilledBoundaryAttributes::SphereGeometry));
     if(strcmp(name, "Point") == 0)
         return PyInt_FromLong(long(FilledBoundaryAttributes::Point));
     if(strcmp(name, "Sphere") == 0)

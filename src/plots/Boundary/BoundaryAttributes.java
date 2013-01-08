@@ -77,8 +77,11 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
     public final static int POINTTYPE_BOX = 0;
     public final static int POINTTYPE_AXIS = 1;
     public final static int POINTTYPE_ICOSAHEDRON = 2;
-    public final static int POINTTYPE_POINT = 3;
-    public final static int POINTTYPE_SPHERE = 4;
+    public final static int POINTTYPE_OCTAHEDRON = 3;
+    public final static int POINTTYPE_TETRAHEDRON = 4;
+    public final static int POINTTYPE_SPHEREGEOMETRY = 5;
+    public final static int POINTTYPE_POINT = 6;
+    public final static int POINTTYPE_SPHERE = 7;
 
 
     public BoundaryAttributes()
@@ -497,6 +500,12 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
             str = str + "POINTTYPE_AXIS";
         if(pointType == POINTTYPE_ICOSAHEDRON)
             str = str + "POINTTYPE_ICOSAHEDRON";
+        if(pointType == POINTTYPE_OCTAHEDRON)
+            str = str + "POINTTYPE_OCTAHEDRON";
+        if(pointType == POINTTYPE_TETRAHEDRON)
+            str = str + "POINTTYPE_TETRAHEDRON";
+        if(pointType == POINTTYPE_SPHEREGEOMETRY)
+            str = str + "POINTTYPE_SPHEREGEOMETRY";
         if(pointType == POINTTYPE_POINT)
             str = str + "POINTTYPE_POINT";
         if(pointType == POINTTYPE_SPHERE)

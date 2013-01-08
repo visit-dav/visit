@@ -744,6 +744,9 @@ QvisScatterPlotWindow::CreateWindowContents()
     pointType->addItem(tr("Box"));
     pointType->addItem(tr("Axis"));
     pointType->addItem(tr("Icosahedron"));
+    pointType->addItem(tr("Octahedron"));
+    pointType->addItem(tr("Tetrahedron"));
+    pointType->addItem(tr("Sphere Geometry"));
     pointType->addItem(tr("Point"));
     pointType->addItem(tr("Sphere"));
     connect(pointType, SIGNAL(activated(int)),

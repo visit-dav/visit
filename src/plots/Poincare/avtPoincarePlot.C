@@ -357,6 +357,9 @@ avtPoincarePlot::CustomizeBehavior()
 //   Reflect new interface for terminations, due to refactoring of integral
 //   curves.
 //
+//   Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
+//   I added some new glyph types.
+//
 // ****************************************************************************
 
 void
@@ -532,6 +535,12 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         glyphMapper->SetGlyphType(avtPointGlypher::Axis);
     else if (atts.GetPointType() == PoincareAttributes::Icosahedron)
         glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
+    else if (atts.GetPointType() == PoincareAttributes::Octahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
+    else if (atts.GetPointType() == PoincareAttributes::Tetrahedron)
+        glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
+    else if (atts.GetPointType() == PoincareAttributes::SphereGeometry)
+        glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
     else if (atts.GetPointType() == PoincareAttributes::Point)
         glyphMapper->SetGlyphType(avtPointGlypher::Point);
     else if (atts.GetPointType() == PoincareAttributes::Sphere)

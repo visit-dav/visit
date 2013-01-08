@@ -539,20 +539,21 @@ PoincareAttributes::StreamlineAlgorithmType_FromString(const std::string &s, Poi
 
 static const char *PointType_strings[] = {
 "Box", "Axis", "Icosahedron", 
+"Octahedron", "Tetrahedron", "SphereGeometry", 
 "Point", "Sphere"};
 
 std::string
 PoincareAttributes::PointType_ToString(PoincareAttributes::PointType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return PointType_strings[index];
 }
 
 std::string
 PoincareAttributes::PointType_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return PointType_strings[index];
 }
 
@@ -560,7 +561,7 @@ bool
 PoincareAttributes::PointType_FromString(const std::string &s, PoincareAttributes::PointType &val)
 {
     val = PoincareAttributes::Box;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == PointType_strings[i])
         {
@@ -2030,7 +2031,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 8)
                 SetPointType(PointType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
