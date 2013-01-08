@@ -52,7 +52,7 @@ class vtkMFIXReader : public vtkUnstructuredGridAlgorithm
 {
 public:
   static vtkMFIXReader *New();
-  vtkTypeRevisionMacro(vtkMFIXReader,vtkUnstructuredGridAlgorithm);
+  vtkTypeMacro(vtkMFIXReader,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

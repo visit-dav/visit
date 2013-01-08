@@ -25,7 +25,6 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <DebugStream.h>
 
-vtkCxxRevisionMacro(vtkVisItProbeFilter, "$Revision: 1.82 $");
 vtkStandardNewMacro(vtkVisItProbeFilter);
 
 //----------------------------------------------------------------------------

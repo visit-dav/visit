@@ -50,7 +50,7 @@ class vtkDataSetGradient : public vtkDataSetAlgorithm
   public:
 
     static vtkDataSetGradient* New();
-    vtkTypeRevisionMacro(vtkDataSetGradient,vtkDataSetAlgorithm);
+    vtkTypeMacro(vtkDataSetGradient,vtkDataSetAlgorithm);
     ~vtkDataSetGradient();
 
     // Description:

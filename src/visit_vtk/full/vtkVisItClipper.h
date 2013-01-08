@@ -93,7 +93,7 @@ class VISIT_VTK_API vtkVisItClipper
     : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItClipper,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeMacro(vtkVisItClipper,vtkDataSetToUnstructuredGridFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkVisItClipper *New();

@@ -52,7 +52,6 @@
 #include <vtkTriangle.h>
 
 
-vtkCxxRevisionMacro(vtkVisItStructuredGridNormals, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItStructuredGridNormals);
 
 // ****************************************************************************

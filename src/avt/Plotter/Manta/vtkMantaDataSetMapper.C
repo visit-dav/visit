@@ -24,7 +24,6 @@
 #include "vtkPolyDataMapper.h"
 #include "vtkMantaPolyDataMapper.h"
 
-//vtkCxxRevisionMacro(vtkDataSetMapper, "$Revision: 1.70 $");
 //vtkStandardNewMacro(vtkDataSetMapper);
 
 

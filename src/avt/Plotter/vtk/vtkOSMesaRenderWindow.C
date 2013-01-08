@@ -48,7 +48,6 @@ private:
 };
 
 
-vtkCxxRevisionMacro(vtkOSMesaRenderWindow, "$Revision: 1.48 $");
 vtkStandardNewMacro(vtkOSMesaRenderWindow);
 
 #define MAX_LIGHTS 8

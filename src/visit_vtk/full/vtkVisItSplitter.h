@@ -71,7 +71,7 @@ class VISIT_VTK_API vtkVisItSplitter
     : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItSplitter,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeMacro(vtkVisItSplitter,vtkDataSetToUnstructuredGridFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkVisItSplitter *New();

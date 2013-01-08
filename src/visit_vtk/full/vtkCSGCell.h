@@ -58,7 +58,7 @@ class VISIT_VTK_API vtkCSGCell : public vtkCell
 {
 public:
   static vtkCSGCell *New();
-  vtkTypeRevisionMacro(vtkCSGCell,vtkCell);
+  vtkTypeMacro(vtkCSGCell,vtkCell);
 
   // Description:
   // See the vtkCell API for descriptions of these methods.

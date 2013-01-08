@@ -24,7 +24,6 @@
 #include "vtkObjectFactory.h"
 #include "vtkPolyData.h"
 
-vtkCxxRevisionMacro(vtkVisItPointLocator, "$Revision: 1.62 $");
 vtkStandardNewMacro(vtkVisItPointLocator);
 
 static const int VTK_INITIAL_SIZE=1000;

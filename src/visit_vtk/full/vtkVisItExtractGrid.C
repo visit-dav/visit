@@ -22,7 +22,6 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 
-vtkCxxRevisionMacro(vtkVisItExtractGrid, "$Revision: 1.44 $");
 vtkStandardNewMacro(vtkVisItExtractGrid);
 
 // Construct object to extract all of the input data.

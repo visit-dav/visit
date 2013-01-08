@@ -44,7 +44,7 @@ class PLOTTER_API vtkVisItDataSetMapper : public vtkDataSetMapper
 {
 public:
   static vtkVisItDataSetMapper *New();
-  vtkTypeRevisionMacro(vtkVisItDataSetMapper, vtkDataSetMapper);
+  vtkTypeMacro(vtkVisItDataSetMapper, vtkDataSetMapper);
   void PrintSelf(ostream& os, vtkIndent indent);
   void Render(vtkRenderer *ren, vtkActor *act);
 

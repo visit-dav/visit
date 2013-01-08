@@ -43,7 +43,6 @@
 #include <vtkPoints.h>
 #include <vtkObjectFactory.h>
 
-vtkCxxRevisionMacro(vtkCSGCell, "$Revision: 1.17 $");
 vtkStandardNewMacro(vtkCSGCell);
 
 int vtkCSGCell::EvaluatePosition(double  vtkNotUsed(x)[3], 

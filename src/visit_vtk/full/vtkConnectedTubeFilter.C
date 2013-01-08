@@ -374,7 +374,6 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
 // ----------------------------------------------------------------------------
 
 
-vtkCxxRevisionMacro(vtkConnectedTubeFilter, "$Revision: 2.00 $");
 vtkStandardNewMacro(vtkConnectedTubeFilter);
 
 // ****************************************************************************

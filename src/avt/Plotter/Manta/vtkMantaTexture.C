@@ -109,7 +109,6 @@ private:
 
 //==============================================================================
 
-vtkCxxRevisionMacro(vtkMantaTexture, "$Revision: 1.8 $");
 vtkStandardNewMacro(vtkMantaTexture);
 
 //----------------------------------------------------------------------------

@@ -39,7 +39,6 @@
 #include <vtkPolyLine.h>
 
 
-vtkCxxRevisionMacro(vtkVisItStreamLine, "$Revision: 1.50 $");
 vtkStandardNewMacro(vtkVisItStreamLine);
 
 #define VTK_STREAMLINE_EPSILON 1e-6

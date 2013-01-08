@@ -74,7 +74,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Core/Math/MiscMath.h>
 #include <Core/Math/Trig.h>
 
-vtkCxxRevisionMacro(vtkMantaCamera, "$Revision: 1.7 $");
 vtkStandardNewMacro(vtkMantaCamera);
 
 //----------------------------------------------------------------------------

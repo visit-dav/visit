@@ -23,7 +23,7 @@ class vtkCQS : public vtkDataSetAlgorithm
   public:
 
     static vtkCQS* New();
-    vtkTypeRevisionMacro(vtkCQS,vtkDataSetAlgorithm);
+    vtkTypeMacro(vtkCQS,vtkDataSetAlgorithm);
     ~vtkCQS ();
 
   protected:

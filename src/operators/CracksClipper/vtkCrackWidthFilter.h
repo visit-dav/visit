@@ -73,7 +73,7 @@ class vtkSlicer;
 class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkCrackWidthFilter,vtkDataSetToDataSetFilter);
+    vtkTypeMacro(vtkCrackWidthFilter,vtkDataSetToDataSetFilter);
 
     static vtkCrackWidthFilter *New();
 

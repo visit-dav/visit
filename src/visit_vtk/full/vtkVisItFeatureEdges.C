@@ -29,7 +29,6 @@
 #include <vtkTriangleStrip.h>
 #include <vtkUnsignedCharArray.h>
 
-vtkCxxRevisionMacro(vtkVisItFeatureEdges, "$Revision: 1.61 $");
 vtkStandardNewMacro(vtkVisItFeatureEdges);
 
 // Construct object with feature angle = 30; all types of edges, except 

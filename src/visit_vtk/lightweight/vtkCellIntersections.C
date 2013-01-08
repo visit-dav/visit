@@ -66,7 +66,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkCellIntersections, "$Revision: 1.0 $");
 vtkStandardNewMacro(vtkCellIntersections);
 
 

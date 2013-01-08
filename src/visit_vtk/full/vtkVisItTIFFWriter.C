@@ -20,7 +20,6 @@
 #include <vtkPointData.h>
 #include <vtk_tiff.h>
 
-vtkCxxRevisionMacro(vtkVisItTIFFWriter, "$Revision: 1.30 $");
 vtkStandardNewMacro(vtkVisItTIFFWriter);
 
 //----------------------------------------------------------------------------

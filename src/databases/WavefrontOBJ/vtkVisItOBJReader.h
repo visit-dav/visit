@@ -28,7 +28,7 @@ class vtkVisItOBJReader : public vtkPolyDataAlgorithm
 {
 public:
   static vtkVisItOBJReader *New();
-  vtkTypeRevisionMacro(vtkVisItOBJReader,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItOBJReader,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

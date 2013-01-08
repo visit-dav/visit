@@ -23,7 +23,6 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 
-vtkCxxRevisionMacro(vtkVisItOBJReader, "$Revision: 1.27 $");
 vtkStandardNewMacro(vtkVisItOBJReader);
 
 // Description:

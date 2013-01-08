@@ -42,7 +42,6 @@ PURPOSE.  See the above copyright notice for more information.
 
 #include <list>
 
-vtkCxxRevisionMacro(vtkCEAucdReader, "$Revision: 1.26 $");
 vtkStandardNewMacro(vtkCEAucdReader);
 
 #ifdef VERBOSE_DEBUG

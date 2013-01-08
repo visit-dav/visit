@@ -53,7 +53,7 @@ class VISIT_VTK_API vtkVisItSTLWriter : public vtkPolyDataWriter
 {
 public:
   static vtkVisItSTLWriter *New();
-  vtkTypeRevisionMacro(vtkVisItSTLWriter,vtkPolyDataWriter);
+  vtkTypeMacro(vtkVisItSTLWriter,vtkPolyDataWriter);
 
 protected:
   vtkVisItSTLWriter();

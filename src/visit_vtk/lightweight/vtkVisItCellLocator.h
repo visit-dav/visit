@@ -61,7 +61,7 @@ class vtkPoints;
 class VISIT_VTK_LIGHT_API vtkVisItCellLocator : public vtkLocator
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItCellLocator,vtkLocator);
+  vtkTypeMacro(vtkVisItCellLocator,vtkLocator);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

@@ -49,7 +49,6 @@
 
 static const int dlSize = 8192;
 
-vtkCxxRevisionMacro(vtkOpenGLRectilinearGridMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkOpenGLRectilinearGridMapper);
 
 vtkOpenGLRectilinearGridMapper::vtkOpenGLRectilinearGridMapper()

@@ -28,7 +28,6 @@
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 
-vtkCxxRevisionMacro(vtkVisItTensorGlyph, "$Revision: 1.50 $");
 vtkStandardNewMacro(vtkVisItTensorGlyph);
 
 // Construct object with scaling on and scale factor 1.0. Eigenvalues are 

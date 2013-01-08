@@ -68,7 +68,7 @@ class VISIT_VTK_API vtkMultiSplitter
     : public vtkDataSetToUnstructuredGridFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkMultiSplitter,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeMacro(vtkMultiSplitter,vtkDataSetToUnstructuredGridFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkMultiSplitter *New();

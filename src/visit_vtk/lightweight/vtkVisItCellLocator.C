@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkVisItCellLocator, "$Revision: 1.72 $");
 vtkStandardNewMacro(vtkVisItCellLocator);
 
 #define VTK_CELL_OUTSIDE 0

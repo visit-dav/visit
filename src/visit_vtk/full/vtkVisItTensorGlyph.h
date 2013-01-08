@@ -82,7 +82,7 @@
 class VISIT_VTK_API vtkVisItTensorGlyph : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItTensorGlyph,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItTensorGlyph,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description

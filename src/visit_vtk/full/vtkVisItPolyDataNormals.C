@@ -52,7 +52,6 @@
 #include <vtkTriangle.h>
 
 
-vtkCxxRevisionMacro(vtkVisItPolyDataNormals, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItPolyDataNormals);
 
 // ****************************************************************************

@@ -31,7 +31,6 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkAppendPolyData.h>
 
-vtkCxxRevisionMacro(vtkVisItGlyph3D, "$Revision: 1.107 $");
 vtkStandardNewMacro(vtkVisItGlyph3D);
 
 // Construct object with scaling on, scaling mode is by scalar value,

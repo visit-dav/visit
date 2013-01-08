@@ -115,7 +115,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <IceTGL.h>
 //#include <IceTDevGLImage.h>
 
-vtkCxxRevisionMacro(vtkMantaRenderer, "$Revision: 1.18 $");
 vtkStandardNewMacro(vtkMantaRenderer);
 
 typedef float BUFFERT;

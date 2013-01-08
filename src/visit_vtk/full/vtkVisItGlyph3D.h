@@ -96,7 +96,7 @@
 class VISIT_VTK_API vtkVisItGlyph3D : public vtkDataSetToPolyDataFilter
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItGlyph3D,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkVisItGlyph3D,vtkDataSetToPolyDataFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description

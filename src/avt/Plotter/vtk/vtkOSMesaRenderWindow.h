@@ -37,7 +37,7 @@ class PLOTTER_API vtkOSMesaRenderWindow : public vtkMesaRenderWindow
 {
 public:
   static vtkOSMesaRenderWindow *New();
-  vtkTypeRevisionMacro(vtkOSMesaRenderWindow,vtkMesaRenderWindow);
+  vtkTypeMacro(vtkOSMesaRenderWindow,vtkMesaRenderWindow);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   virtual void SetSize(int,int);

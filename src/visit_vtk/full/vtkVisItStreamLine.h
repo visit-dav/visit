@@ -44,7 +44,7 @@
 class VISIT_VTK_API vtkVisItStreamLine : public vtkStreamer
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItStreamLine,vtkStreamer);
+  vtkTypeMacro(vtkVisItStreamLine,vtkStreamer);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

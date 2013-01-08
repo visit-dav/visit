@@ -48,7 +48,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
-vtkCxxRevisionMacro(vtkOBJWriter, "$Revision: 1.42 $");
 vtkStandardNewMacro(vtkOBJWriter);
 
 vtkOBJWriter::vtkOBJWriter()

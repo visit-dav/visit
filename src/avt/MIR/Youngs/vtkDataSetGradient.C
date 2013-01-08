@@ -35,7 +35,6 @@ using namespace std;
 #endif
 
 // standard constructors and factory
-vtkCxxRevisionMacro(vtkDataSetGradient, "$Revision: 1.0 $");
 vtkStandardNewMacro(vtkDataSetGradient);
 
 /*!

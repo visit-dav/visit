@@ -36,8 +36,8 @@ class vtkMantaDataSetMapper : public vtkVisItDataSetMapper
 {
 public:
   static vtkMantaDataSetMapper *New() { return new vtkMantaDataSetMapper(); }
-  //  vtkTypeRevisionMacro(vtkDataSetMapper,vtkMapper) {}
-  //  vtkTypeRevisionMacro(vtkDataSetMapper,vtkMapper);
+  //  vtkTypeMacro(vtkDataSetMapper,vtkMapper) {}
+  //  vtkTypeMacro(vtkDataSetMapper,vtkMapper);
 
   // Description:
   // Get the internal poly data mapper used to map data set to graphics system.

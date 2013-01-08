@@ -93,7 +93,7 @@ private:
 class vtkCracksClipper : public vtkVisItClipper
 {
   public:
-    vtkTypeRevisionMacro(vtkCracksClipper,vtkVisItClipper);
+    vtkTypeMacro(vtkCracksClipper,vtkVisItClipper);
     void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkCracksClipper *New();
