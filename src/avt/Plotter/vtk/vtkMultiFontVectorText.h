@@ -10,7 +10,7 @@ public:
 #if 0
   // Leave out for now. They cause unresolved __ZTV22vtkMultiFontVectorText
   // with g++ for reasons I don't understand. That's the vtable for the object.
-  vtkTypeRevisionMacro(vtkMultiFontVectorText,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkMultiFontVectorText,vtkPolyDataAlgorithm);
 #endif
   void PrintSelf(ostream& os, vtkIndent indent);
 

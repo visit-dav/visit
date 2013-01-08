@@ -45,7 +45,7 @@ class VISIT_VTK_API vtkVisItExtractGrid : public vtkStructuredGridAlgorithm
 {
 public:
   static vtkVisItExtractGrid *New();
-  vtkTypeRevisionMacro(vtkVisItExtractGrid,vtkStructuredGridAlgorithm);
+  vtkTypeMacro(vtkVisItExtractGrid,vtkStructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

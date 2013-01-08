@@ -32,7 +32,7 @@
 class VISIT_VTK_API vtkVisItScalarTree : public vtkObject
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItScalarTree,vtkObject);
+  vtkTypeMacro(vtkVisItScalarTree,vtkObject);
 
   // Description:
   // Instantiate scalar tree with maximum level of 20 and branching

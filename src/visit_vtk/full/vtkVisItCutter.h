@@ -54,7 +54,7 @@ class vtkPointLocator;
 class VISIT_VTK_API vtkVisItCutter : public vtkDataSetToPolyDataFilter
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItCutter,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkVisItCutter,vtkDataSetToPolyDataFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

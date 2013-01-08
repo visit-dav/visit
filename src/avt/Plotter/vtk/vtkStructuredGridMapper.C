@@ -24,8 +24,6 @@
 
 #include "vtkOpenGLStructuredGridMapper.h"
 
-vtkCxxRevisionMacro(vtkStructuredGridMapper, "$Revision: 1.38 $");
-
 //----------------------------------------------------------------------------
 // Needed when we don't use the vtkStandardNewMacro.
 vtkInstantiatorNewMacro(vtkStructuredGridMapper);

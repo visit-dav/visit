@@ -54,7 +54,6 @@
 #include <vtkPolyData.h>
 #include <vtkTriangle.h>
 
-vtkCxxRevisionMacro(vtkVisItSTLWriter, "$Revision: 1.45 $");
 vtkStandardNewMacro(vtkVisItSTLWriter);
 
 vtkVisItSTLWriter::vtkVisItSTLWriter()

@@ -57,7 +57,6 @@
 #endif
 
 
-vtkCxxRevisionMacro(vtkCrackWidthFilter, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkCrackWidthFilter);
 
 // ***************************************************************************

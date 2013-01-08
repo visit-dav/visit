@@ -66,7 +66,7 @@ class vtkStimulateReader : public vtkImageReader2
 {
 public:
   static vtkStimulateReader *New();
-  vtkTypeRevisionMacro(vtkStimulateReader,vtkImageReader2);
+  vtkTypeMacro(vtkStimulateReader,vtkImageReader2);
 
   int CanReadFile(const char* fname); 
   virtual const char* GetFileExtensions()

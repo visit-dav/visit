@@ -39,7 +39,6 @@
 #include <vector>
 
 
-vtkCxxRevisionMacro(vtkVisItContourFilter, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItContourFilter);
 
 vtkVisItContourFilter::vtkVisItContourFilter()

@@ -43,7 +43,7 @@ class VISIT_VTK_API vtkVisItCellDataToPointData : public vtkDataSetToDataSetFilt
 {
 public:
   static vtkVisItCellDataToPointData *New();
-  vtkTypeRevisionMacro(vtkVisItCellDataToPointData,vtkDataSetToDataSetFilter);
+  vtkTypeMacro(vtkVisItCellDataToPointData,vtkDataSetToDataSetFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

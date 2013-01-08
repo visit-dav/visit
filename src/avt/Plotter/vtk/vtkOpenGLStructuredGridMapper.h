@@ -35,7 +35,7 @@ class PLOTTER_API vtkOpenGLStructuredGridMapper : public vtkStructuredGridMapper
 {
 public:
   static vtkOpenGLStructuredGridMapper *New();
-  vtkTypeRevisionMacro(vtkOpenGLStructuredGridMapper,vtkStructuredGridMapper);
+  vtkTypeMacro(vtkOpenGLStructuredGridMapper,vtkStructuredGridMapper);
   virtual void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

@@ -66,7 +66,6 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-vtkCxxRevisionMacro(vtkVisItClipper, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItClipper);
 
 //

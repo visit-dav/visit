@@ -42,7 +42,6 @@
 
 #include <InvalidFilesException.h>
 
-vtkCxxRevisionMacro(vtkMFIXReader, "$Revision: 1.6 $");
 vtkStandardNewMacro(vtkMFIXReader);
 
 //----------------------------------------------------------------------------

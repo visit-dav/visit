@@ -30,7 +30,6 @@
 
 using std::vector;
 
-vtkCxxRevisionMacro(vtkVisItScalarTree, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItScalarTree);
 
 vtkVisItScalarTree::vtkVisItScalarTree()

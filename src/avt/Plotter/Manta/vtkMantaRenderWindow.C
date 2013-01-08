@@ -77,7 +77,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //#include <QtCore>
 
-vtkCxxRevisionMacro(vtkMantaRenderWindow, "$Revision: 1.13 $");
 vtkStandardNewMacro(vtkMantaRenderWindow);
 
 //----------------------------------------------------------------------------

@@ -29,7 +29,6 @@
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 
-vtkCxxRevisionMacro(vtkVisItPointDataToCellData, "$Revision: 1.30 $");
 vtkStandardNewMacro(vtkVisItPointDataToCellData);
 
 //----------------------------------------------------------------------------

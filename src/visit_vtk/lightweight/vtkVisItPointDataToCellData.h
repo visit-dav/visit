@@ -46,7 +46,7 @@ class VISIT_VTK_LIGHT_API vtkVisItPointDataToCellData : public vtkDataSetAlgorit
 {
 public:
   static vtkVisItPointDataToCellData *New();
-  vtkTypeRevisionMacro(vtkVisItPointDataToCellData,vtkDataSetAlgorithm);
+  vtkTypeMacro(vtkVisItPointDataToCellData,vtkDataSetAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

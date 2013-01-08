@@ -28,7 +28,7 @@
 class VISIT_VTK_API vtkSlicer : public vtkDataSetToPolyDataFilter
 {
 public:
-  vtkTypeRevisionMacro(vtkSlicer,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkSlicer,vtkDataSetToPolyDataFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

@@ -132,7 +132,7 @@ class vtkVisItPLOT3DReader : public vtkStructuredGridSource
 {
 public:
   static vtkVisItPLOT3DReader *New();
-  vtkTypeRevisionMacro(vtkVisItPLOT3DReader,vtkStructuredGridSource);
+  vtkTypeMacro(vtkVisItPLOT3DReader,vtkStructuredGridSource);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -428,7 +428,6 @@ private:
 #include <ctype.h>
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkVisItPLOT3DReader, "$Revision: 1.64 $");
 vtkStandardNewMacro(vtkVisItPLOT3DReader);
 
 #define VTK_BINARY 0

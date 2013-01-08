@@ -25,7 +25,6 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkPolyData.h"
 #include "vtkPolyLine.h"
 
-vtkCxxRevisionMacro(vtkVisItTubeFilter, "$Revision: 1.87 $");
 vtkStandardNewMacro(vtkVisItTubeFilter);
 
 // Construct object with radius 0.5, radius variation turned off, the number 

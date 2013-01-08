@@ -28,7 +28,7 @@
 class VISIT_VTK_API vtkVisItContourFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeRevisionMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

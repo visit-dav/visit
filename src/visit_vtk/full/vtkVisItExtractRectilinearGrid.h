@@ -33,7 +33,7 @@ class VISIT_VTK_API vtkVisItExtractRectilinearGrid : public vtkRectilinearGridAl
 {
 public:
   static vtkVisItExtractRectilinearGrid *New();
-  vtkTypeRevisionMacro(vtkVisItExtractRectilinearGrid,vtkRectilinearGridAlgorithm);
+  vtkTypeMacro(vtkVisItExtractRectilinearGrid,vtkRectilinearGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

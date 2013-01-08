@@ -59,7 +59,7 @@ class vtkInformationVector;
 class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeRevisionMacro(vtkVisItPolyDataNormals,vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkVisItPolyDataNormals,vtkPolyDataAlgorithm);
 
     static vtkVisItPolyDataNormals *New();
 

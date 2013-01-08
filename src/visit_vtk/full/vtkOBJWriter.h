@@ -53,7 +53,7 @@ class VISIT_VTK_API vtkOBJWriter : public vtkPolyDataWriter
 {
 public:
   static vtkOBJWriter *New();
-  vtkTypeRevisionMacro(vtkOBJWriter,vtkPolyDataWriter);
+  vtkTypeMacro(vtkOBJWriter,vtkPolyDataWriter);
 
   // Description:
   // Give a label indicating what is in the file.

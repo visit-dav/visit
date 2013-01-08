@@ -142,7 +142,6 @@ int vtkMantaActorThreadCache::GlobalCntr = 0;
 
 //===========================================================================
 
-vtkCxxRevisionMacro(vtkMantaActor, "$Revision: 1.15 $");
 vtkStandardNewMacro(vtkMantaActor);
 
 //----------------------------------------------------------------------------

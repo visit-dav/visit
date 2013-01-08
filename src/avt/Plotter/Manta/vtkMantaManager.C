@@ -48,7 +48,6 @@ PURPOSE.  See the above copyright notice for more information.
 #include <sstream>
 #include <string>
 
-vtkCxxRevisionMacro(vtkMantaManager, "$Revision: 1.5 $");
 vtkStandardNewMacro(vtkMantaManager);
 
 

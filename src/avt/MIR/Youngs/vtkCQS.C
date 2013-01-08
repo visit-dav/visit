@@ -16,7 +16,6 @@ const static char * VTK_C_Q_S__C_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%
 #include <vtkCell3D.h>
 #include <vtkFieldData.h>
 
-vtkCxxRevisionMacro(vtkCQS, "$Revision: 1.0 $");
 vtkStandardNewMacro(vtkCQS);
 
 vtkCQS::vtkCQS()

@@ -101,7 +101,7 @@ class PLOTTER_API vtkMantaPolyDataMapper : public vtkPolyDataMapper
 {
   public:
     static vtkMantaPolyDataMapper *New(){ return new vtkMantaPolyDataMapper; }
-    //vtkTypeRevisionMacro(vtkMantaPolyDataMapper,vtkPolyDataMapper);
+    //vtkTypeMacro(vtkMantaPolyDataMapper,vtkPolyDataMapper);
     //virtual void PrintSelf(ostream& os, vtkIndent indent);
 
     // Description:

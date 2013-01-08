@@ -76,7 +76,6 @@ AlwaysNegative::~AlwaysNegative()
 } 
 
 
-vtkCxxRevisionMacro(vtkCracksClipper, "$Revision: 2.00 $");
 vtkStandardNewMacro(vtkCracksClipper);
 
 

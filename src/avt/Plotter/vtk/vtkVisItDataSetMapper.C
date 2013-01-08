@@ -32,7 +32,6 @@
 #include "vtkOpenGLRectilinearGridMapper.h"
 #include "vtkOpenGLStructuredGridMapper.h"
 
-vtkCxxRevisionMacro(vtkVisItDataSetMapper, "$Revision: 1.70 $");
 vtkStandardNewMacro(vtkVisItDataSetMapper);
 
 // ****************************************************************************

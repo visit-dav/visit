@@ -155,7 +155,6 @@ class vtkMantaPolyDataMapper::Helper {
     vtkstd::vector<Manta::Vector> texCoords;
 };
 
-//vtkCxxRevisionMacro(vtkMantaPolyDataMapper, "$Revision: 1.14 $");
 //vtkStandardNewMacro(vtkMantaPolyDataMapper);
 
 //----------------------------------------------------------------------------

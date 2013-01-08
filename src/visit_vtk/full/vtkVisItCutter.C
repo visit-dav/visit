@@ -33,7 +33,6 @@
 
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkVisItCutter, "$Revision: 1.73 $");
 vtkStandardNewMacro(vtkVisItCutter);
 vtkCxxSetObjectMacro(vtkVisItCutter,CutFunction,vtkImplicitFunction);
 

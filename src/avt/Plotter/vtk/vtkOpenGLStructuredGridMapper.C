@@ -51,7 +51,6 @@ static const int dlSize = 8192;
 
 #include <math.h>
 
-vtkCxxRevisionMacro(vtkOpenGLStructuredGridMapper, "$Revision: 1.78 $");
 vtkStandardNewMacro(vtkOpenGLStructuredGridMapper);
 
 vtkOpenGLStructuredGridMapper::vtkOpenGLStructuredGridMapper()

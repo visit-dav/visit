@@ -40,7 +40,7 @@ class VISIT_VTK_API vtkVisItProbeFilter : public vtkDataSetAlgorithm
 {
 public:
   static vtkVisItProbeFilter *New();
-  vtkTypeRevisionMacro(vtkVisItProbeFilter,vtkDataSetAlgorithm);
+  vtkTypeMacro(vtkVisItProbeFilter,vtkDataSetAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:

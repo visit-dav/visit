@@ -48,7 +48,7 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
 {
    public:
       static vtkCEAucdReader *New();
-      vtkTypeRevisionMacro(vtkCEAucdReader,vtkUnstructuredGridAlgorithm);
+      vtkTypeMacro(vtkCEAucdReader,vtkUnstructuredGridAlgorithm);
       void PrintSelf(ostream& os, vtkIndent indent);
       
      // Description:

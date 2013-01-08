@@ -60,7 +60,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
     public vtkPolyDataToPolyDataFilter
 {
   public:
-    vtkTypeRevisionMacro(vtkConnectedTubeFilter,vtkPolyDataToPolyDataFilter);
+    vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataToPolyDataFilter);
     void PrintSelf(ostream& os, vtkIndent indent);
     bool BuildConnectivityArrays();
 

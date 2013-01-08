@@ -154,7 +154,6 @@ int vtkMantaPropertyThreadCache::GlobalCntr = 0;
 
 //===========================================================================
 
-vtkCxxRevisionMacro(vtkMantaProperty, "$Revision: 1.12 $");
 vtkStandardNewMacro(vtkMantaProperty);
 
 //----------------------------------------------------------------------------
