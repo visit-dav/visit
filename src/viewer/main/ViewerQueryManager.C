@@ -1399,6 +1399,9 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 //    Changed arg to MapNode, changes within to reflect this change.
 //    Removed modifications notes older than 2009.
 //
+//    Kathleen Biagas, Tue Jan  8 10:40:08 PST 2013
+//    Added error checking of queryParams.
+//
 // ****************************************************************************
 
 void
@@ -1407,8 +1410,62 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
     string qName = queryParams.GetEntry("query_name")->AsString();
     if (qName ==  "Lineout")
     {
-        doubleVector pt1 = queryParams.GetEntry("start_point")->AsDoubleVector();
-        doubleVector pt2 = queryParams.GetEntry("end_point")->AsDoubleVector();
+        doubleVector pt1, pt2;
+        if (queryParams.HasEntry("start_point"))
+        {
+            if (queryParams.GetEntry("start_point")->TypeName() == "doubleVector")
+            {
+                pt1 = queryParams.GetEntry("start_point")->AsDoubleVector();
+            }
+            else if (queryParams.GetEntry("start_point")->TypeName() == "intVector")
+            {
+                intVector ipt1 = queryParams.GetEntry("start_point")->AsIntVector();
+                for (size_t i = 0; i < ipt1.size(); ++i)
+                    pt1.push_back(double(ipt1[i]));
+            }
+            else
+            {
+                Error(tr("Lineout error processing start_point argument."));
+                return;
+            }
+        }
+        else
+        {
+            Error(tr("Lineout requires start_point argument."));
+            return;
+        }
+        if (queryParams.HasEntry("end_point"))
+        {
+            if (queryParams.GetEntry("end_point")->TypeName() == "doubleVector")
+            {
+                pt2 = queryParams.GetEntry("end_point")->AsDoubleVector();
+            }
+            else if (queryParams.GetEntry("end_point")->TypeName() == "intVector")
+            {
+                intVector ipt2 = queryParams.GetEntry("start_point")->AsIntVector();
+                for (size_t i = 0; i < ipt2.size(); ++i)
+                    pt2.push_back(double(ipt2[i]));
+            }
+            else
+            {
+                Error(tr("Lineout error processing end_point argument."));
+                return;
+            }
+        }
+        else
+        {
+            Error(tr("Lineout requires end_point argument."));
+            return;
+        }
+        // from this point on, code assumes 3 coordinates, so ensure there are
+        for (size_t i = pt1.size(); i < 3; ++i)
+        {
+            pt1.push_back(0.);
+        }
+        for (size_t i = pt2.size(); i < 3; ++i)
+        {
+            pt2.push_back(0.);
+        }
         viewerSubject->BlockSocketSignals(true);
         //
         // Can we get a lineout window? 
@@ -1456,9 +1513,11 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
         line.SetPoint1(&pt1[0]);
         line.SetPoint2(&pt2[0]);
 
-        if (queryParams.HasEntry("num_samples"))
+        if (queryParams.HasEntry("use_sampling") && 
+            queryParams.GetEntry("use_sampling")->AsInt() == 1)
         {
-            line.SetNumSamples(queryParams.GetEntry("num_samples")->AsInt());
+            if (queryParams.HasEntry("num_samples"))
+               line.SetNumSamples(queryParams.GetEntry("num_samples")->AsInt());
             lineoutCache.forceSampling = true;
         }
         else
@@ -5659,6 +5718,8 @@ ViewerQueryManager::Query(const MapNode &queryParams)
 //  Creation:   July 15, 2011 
 //
 //  Modifications:
+//    Kathleen Biagas, Wed Jan  9 12:56:32 PST 2013
+//    Handle Lineout. 
 //
 // ****************************************************************************
 void
@@ -5671,6 +5732,27 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
         // this query does not exist on engine
         MapNode params;
         params["use_actual_data"] = 0;
+        string sparams = params.ToXML();
+        queryClientAtts->SetXmlResult(sparams);
+        queryClientAtts->Notify();
+    }
+    else if (qName == "Lineout")
+    {
+        MapNode params;
+        doubleVector p1, p2;
+        stringVector v;
+        p1.push_back(0.);
+        p1.push_back(0.);
+        p1.push_back(0.);
+        p2.push_back(1.);
+        p2.push_back(0.);
+        p2.push_back(0.);
+        v.push_back("default");
+        params["start_point"] = p1;
+        params["end_point"] = p2;
+        params["vars"] = v;
+        params["use_sampling"] = 0;
+        params["num_samples"] = 50;
         string sparams = params.ToXML();
         queryClientAtts->SetXmlResult(sparams);
         queryClientAtts->Notify();

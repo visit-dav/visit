@@ -11667,6 +11667,30 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: ToggleSuppressQueryOutput_NoLogging
+//
+// Purpose:
+//   Helper method for toggling SuppressQueryOutput without it being logged.
+//   Used when query ouput suppression is a consequence of another action,
+//   like with Pick functions.
+//
+// Programmer: Kathleen Bigagas
+// Creation:   January 9, 2012
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ToggleSuppressQueryOutput_NoLogging(bool onoff)
+{
+    LogFile_IncreaseLevel();
+    GetViewerMethods()->SuppressQueryOutput(onoff);
+    Synchronize();
+    LogFile_DecreaseLevel();
+}
+
+// ****************************************************************************
 // Function: visit_SetQueryFloatFormat()
 //
 // Purpose:
@@ -11733,6 +11757,9 @@ visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
 //   Create MapNode from parsed args to pass to viewer. Make this method
 //   deprecated in favor of one that accepts python dictionary/named args.
 // 
+//   Kathleen Biagas, Wed Jan  9 11:27:59 PST 2013
+//   Remove LogFile_Write, it is handled by logging of RPC's.
+//
 // ****************************************************************************
 
 
@@ -11800,12 +11827,6 @@ visit_QueryOverTime_deprecated(PyObject *self, PyObject *args)
     params["do_time"] = 1;
     MUTEX_LOCK();
         GetViewerMethods()->Query(params);
-
-        char tmp[1024];
-        SNPRINTF(tmp, 1024, "QueryOverTime(\"%s\", %d, %d, %s)\n", queryName,
-                 arg1, arg2,
-                 StringVectorToTupleString(vars).c_str());
-        LogFile_Write(tmp);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -11936,8 +11957,11 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -11977,42 +12001,34 @@ visit_ZonePick_deprecated(PyObject *self, PyObject *args)
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
 
+    MapNode params;
+    if (!vars.empty())
+        params["vars"] = vars; 
+    if (!wp)
+    {
+        params["query_name"] = std::string("Pick");
+        params["pick_type"] = std::string("ScreenZone");
+        params["x"] = x;
+        params["y"] = y;
+    }
+    else
+    {
+        params["query_name"] = std::string("Pick");
+        params["pick_type"] = std::string("Zone");
+        params["coord"] = pt;
+    }
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
     MUTEX_LOCK();
-        MapNode params;
-        if (!vars.empty())
-            params["vars"] = vars; 
-        if (!wp)
-        {
-            params["query_name"] = std::string("Pick");
-            params["pick_type"] = std::string("ScreenZone");
-            params["x"] = x;
-            params["y"] = y;
-            char tmp[1024];
-            SNPRINTF(tmp, 1024, "ZonePick(%d, %d, %s)\n", x, y,
-                     StringVectorToTupleString(vars).c_str());
-            LogFile_Write(tmp);
-        }
-        else
-        {
-            params["query_name"] = std::string("Pick");
-            params["pick_type"] = std::string("Zone");
-            params["coord"] = pt;
-            char tmp[1024];
-            SNPRINTF(tmp, 1024, "ZonePick((%g, %g, %g), %s)\n",
-                     pt[0], pt[1], pt[2], 
-                     StringVectorToTupleString(vars).c_str());
-            LogFile_Write(tmp);
-        }
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
         GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-
     MUTEX_UNLOCK();
-
-    // Return the success value.
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -12029,8 +12045,11 @@ visit_ZonePick_deprecated(PyObject *self, PyObject *args)
 // Creation:   September 7, 2011
 //
 // Modifications:
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -12083,16 +12102,18 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     pickParams["query_name"] = std::string("Pick");
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -12132,8 +12153,11 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -12172,41 +12196,35 @@ visit_NodePick_deprecated(PyObject *self, PyObject *args)
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
 
+    MapNode params;
+    if (!vars.empty())
+        params["vars"] = vars;
+
+    if (!wp)
+    {
+        params["query_name"] = std::string("Pick");
+        params["pick_type"] = std::string("ScreenNode");
+        params["x"] = x;
+        params["y"] = y;
+    }
+    else
+    {
+        params["query_name"] = std::string("Pick");
+        params["pick_type"] = std::string("Node");
+        params["coord"] = pt;
+    }
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
     MUTEX_LOCK();
-        MapNode params;
-        if (!vars.empty())
-            params["vars"] = vars;
-
-        if (!wp)
-        {
-            params["query_name"] = std::string("Pick");
-            params["pick_type"] = std::string("ScreenNode");
-            params["x"] = x;
-            params["y"] = y;
-            char tmp[1024];
-            SNPRINTF(tmp, 1024, "NodePick(%d, %d, %s)\n", x, y,
-                     StringVectorToTupleString(vars).c_str());
-            LogFile_Write(tmp);
-        }
-        else
-        {
-            params["query_name"] = std::string("Pick");
-            params["pick_type"] = std::string("Node");
-            params["coord"] = pt;
-            char tmp[1024];
-            SNPRINTF(tmp, 1024, "NodePick((%g, %g, %g) %s)\n", pt[0], pt[1], 
-                     pt[2], StringVectorToTupleString(vars).c_str());
-            LogFile_Write(tmp);
-        }
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
         GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
     MUTEX_UNLOCK();
-
-    // Return the success value.
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -12223,8 +12241,11 @@ visit_NodePick_deprecated(PyObject *self, PyObject *args)
 // Creation:   September 7, 2011
 //
 // Modifications:
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -12277,16 +12298,18 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     pickParams["query_name"] = std::string("Pick");
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -12986,8 +13009,11 @@ ParseTimePickOptions(MapNode &pickParams)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13019,16 +13045,17 @@ visit_PickByZone_deprecated(PyObject *self, PyObject *args)
     if (!vars.empty())
         params["vars"] = vars;
 
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-       GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
+   if (!suppressQueryOutputState)
+       ToggleSuppressQueryOutput_NoLogging(true);
 
-    // Return the success value.
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+       ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13048,8 +13075,11 @@ visit_PickByZone_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
 //   Added call to ParseTimePickOptions.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13096,16 +13126,18 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainZone");
     ParseTimePickOptions(pickParams);
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13132,8 +13164,11 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13160,16 +13195,17 @@ visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
     if (!vars.empty())
         params["vars"] = vars;
 
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-       GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
 
-    // Return the success value.
+    MUTEX_LOCK();
+       GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13189,8 +13225,11 @@ visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
 //   Added call to ParseTimePickOptions.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13238,16 +13277,18 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["pick_type"] = std::string("DomainZone");
     pickParams["use_global_id"] = 1;
     ParseTimePickOptions(pickParams);
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13280,8 +13321,11 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13313,16 +13357,17 @@ visit_PickByNode_deprecated(PyObject *self, PyObject *args)
     if (!vars.empty())
         params["vars"] = vars;
 
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-       GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
 
-    // Return the success value.
+    MUTEX_LOCK();
+       GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13342,8 +13387,11 @@ visit_PickByNode_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
 //   Added call to ParseTimePickOptions.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13391,16 +13439,18 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["pick_type"] = std::string("DomainNode");
 
     ParseTimePickOptions(pickParams);
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13428,8 +13478,11 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13457,16 +13510,17 @@ visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
     if (!vars.empty())
         params["vars"] = vars;
 
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-       GetViewerMethods()->Query(params);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
 
-    // Return the success value.
+    MUTEX_LOCK();
+       GetViewerMethods()->Query(params);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+       ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
@@ -13486,8 +13540,11 @@ visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Jan 12 09:51:02 PST 2012
 //   Added call to ParseTimePickOptions.
 //
-//    Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
-//    Suppress query output and return the MapNode object instead of int.
+//   Kathleen Biagas, Thu Jun 14 16:08:45 PDT 2012
+//   Suppress query output and return the MapNode object instead of int.
+//
+//   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
+//   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 // ****************************************************************************
 
@@ -13535,23 +13592,25 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
     pickParams["pick_type"] = std::string("DomainNode");
     pickParams["use_global_id"] = 1;
     ParseTimePickOptions(pickParams);
-    MUTEX_LOCK();
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(true);
-        GetViewerMethods()->Query(pickParams);
-        if (!suppressQueryOutputState)
-            GetViewerMethods()->SuppressQueryOutput(false);
-    MUTEX_UNLOCK();
 
-    // Return the success value.
+    if (!suppressQueryOutputState)
+       ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
     Synchronize();
+
+    if (!suppressQueryOutputState)
+       ToggleSuppressQueryOutput_NoLogging(false);
+
     return visit_GetPickOutputObject(self, args);
 }
 
 
 
 // ****************************************************************************
-// Function: visit_Lineout
+// Function: visit_Lineout_deprecated
 //
 // Purpose:
 //   Tells the viewer to perform a lineout.
@@ -13589,10 +13648,15 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
 //   Send args as MapNode to new ViewerMethod 'Query'.
 //
+//   Kathleen Biagas, Wed Jan  9 11:24:11 PST 2013
+//   Made this a deprecated method, in favor of one that uses
+//   python dictionary and/or named arguments.  Remove LogFile_Write, handled
+//   by logging of RPC methods.
+//
 // ****************************************************************************
 
 STATIC PyObject *
-visit_Lineout(PyObject *self, PyObject *args)
+visit_Lineout_deprecated(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -13668,15 +13732,90 @@ visit_Lineout(PyObject *self, PyObject *args)
         if (!vars.empty())
             params["vars"] = vars;
         if (haveSamples)
+        {
             params["num_samples"] = samples;
+            params["use_sampling"] = 1;
+        }
         GetViewerMethods()->Query(params);
 
-        // Write the output to the log
-        char tmp[1024];
-        SNPRINTF(tmp, 1024, "Lineout((%g, %g, %g), (%g, %g, %g), %s)\n",
-                 p0[0], p0[1], p0[2], p1[0], p1[1], p1[2],
-                 StringVectorToTupleString(vars).c_str());
-        LogFile_Write(tmp);
+        // Restore toggle
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);
+        GetViewerState()->GetGlobalAttributes()->Notify();
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_Lineout
+//
+// Purpose:
+//   Tells the viewer to perform a lineout.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas 
+// Creation:   January 8, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode queryParams;
+    PyObject *repr = NULL; 
+
+
+    if (args == NULL)
+    {
+        VisItErrorFunc("Lineout requires at least two arguments: start_point and end_point");
+        return NULL;
+    }
+  
+    // parse other arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If no 'args', check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        if (!(PyDict_Check(PyTuple_GetItem(args, 0))))
+        {
+            debug3 << "Lineout arguments not a Python dictionary." << endl;
+            debug3 << "  attempting old parsing methodology." << endl;
+            return visit_Lineout_deprecated(self, args);
+        }
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), queryParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("Lineout:  could not parse dictionary argument.");
+           return NULL;
+        }
+        repr = PyObject_Repr(args);
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, queryParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc(" Lineout:  could not parse keyword args.");
+            return NULL;
+        }
+        repr = PyObject_Repr(kwargs);
+    }
+    queryParams["query_name"] = std::string("Lineout");
+    MUTEX_LOCK();
+        // Lineout should not be applied to more than one plot at a time.
+        bool applyOperatorSave = 
+            GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
+        GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+        GetViewerState()->GetGlobalAttributes()->Notify();
+
+        GetViewerMethods()->Query(queryParams);
 
         // Restore toggle
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyOperatorSave);

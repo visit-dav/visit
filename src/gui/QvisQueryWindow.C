@@ -109,12 +109,17 @@ using std::string;
 //   Kathleen Bonnell, Tue Jun 24 11:18:13 PDT 2008
 //   Added queryVarTypes, the default types of vars for queries.
 //
+//   Kathleen Biagas, Wed Jan  9 13:45:16 PST 2013
+//   Store currentFloatFormat so that the floatFormat will only be sent to
+//   viewer when it has changed. (Reduces log messages).
+//
 // ****************************************************************************
 
 QvisQueryWindow::QvisQueryWindow(const QString &caption, 
     const QString &shortName, QvisNotepadArea *n) : 
     QvisPostableWindowSimpleObserver(caption, shortName, n, NoExtraButtons, 
-                                     false)
+                                     false),
+    currentFloatFormat()
 {
     queries = 0;
     queryAtts = 0;
@@ -1313,6 +1318,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Moved majority of query execution logic to ExecuteStandardQuery().
 //   Added path for executing python queries via ExecutePythonQuery().
 //
+//   Kathleen Biagas, Wed Jan  9 13:45:16 PST 2013
+//   Only send float format if it has changed.  (Reduces log messages).
+//
 // ****************************************************************************
 
 void
@@ -1328,7 +1336,11 @@ QvisQueryWindow::Apply(bool ignore)
         return;
     }
 
-    GetViewerMethods()->SetQueryFloatFormat(format);
+    if (format != currentFloatFormat)
+    {
+        GetViewerMethods()->SetQueryFloatFormat(format);
+        currentFloatFormat = format;
+    }
 
     if(AutoUpdate() || ignore)
     {
