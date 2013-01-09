@@ -554,7 +554,7 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         //x,y,z components compute front,back
         avtVector dz(j0[2],j1[2],j2[2]);
 
-        std::cout << dx << " " << dy << " " << dz << std::endl;
+        //std::cout << dx << " " << dy << " " << dz << std::endl;
 
         //J*J^T
         //float a = dx.dot(dx), b = dx.dot(dy), c = dx.dot(dz);
@@ -579,8 +579,8 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         double D = (r*r*r - q*q);
         double phi = 0.0f;
 
-        std::cout << a << " " << b << " " << c << " " << d << " "
-                  << e << " " << f << " " << x << " " << q << " " << r << std::endl;
+        //std::cout << a << " " << b << " " << c << " " << d << " "
+                  //<< e << " " << f << " " << x << " " << q << " " << r << std::endl;
         if( D < std::numeric_limits<double>::epsilon())
             phi = 0.0f;
         else
@@ -608,7 +608,7 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3],vtkDataArray *result)
         lambda = log( sqrtf( lambda ) );
         lambda /= (double) atts.GetIntegrationTime();
 
-                            std::cout << "lambda :" << lambda << std::endl;
+                            //std::cout << "lambda :" << lambda << std::endl;
         result->SetTuple1(l,lambda);
     }
 }

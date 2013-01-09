@@ -366,6 +366,9 @@ avtSerialICAlgorithm::RunAlgorithm()
 //   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
 //   Change IC status when ic to not-terminated.
 //
+//   Hank Childs, Tue Jan  8 17:53:46 PST 2013
+//   Continue to set particles to "OK", making pathlines work again.
+//
 // ****************************************************************************
 
 void
@@ -381,6 +384,7 @@ avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
         if( curTimeSlice == -1 || s->domain.timeStep == curTimeSlice )
         {
             activeICs.push_back(s);
+            s->status = avtIntegralCurve::STATUS_OK;
         }
         else
         {
