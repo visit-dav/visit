@@ -60,8 +60,11 @@ class Connection;
 //    I added methods that let it read/write itself using Connection.
 //
 //    Kathleen Biagas, Wed Jul 13 10:15:33 PDT 2011
-//    Added ConvertToString, takes a basic type and returns a string 
+//    Added ConvertToString, takes a basic type and returns a string
 //    respresentation (useful for logging).
+//
+//    Cyrus Harrison, Wed Jan  9 14:16:38 PST 2013
+//    Added conversion helpers for numeric types (ToFloat,ToFloatVector,...etc)
 //
 // ****************************************************************************
 
@@ -71,9 +74,9 @@ class STATE_API Variant
     typedef enum
     {
         EMPTY_TYPE = 0,
-        BOOL_TYPE, CHAR_TYPE, UNSIGNED_CHAR_TYPE, INT_TYPE, LONG_TYPE, 
-        FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, 
-        BOOL_VECTOR_TYPE, CHAR_VECTOR_TYPE, UNSIGNED_CHAR_VECTOR_TYPE, 
+        BOOL_TYPE, CHAR_TYPE, UNSIGNED_CHAR_TYPE, INT_TYPE, LONG_TYPE,
+        FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE,
+        BOOL_VECTOR_TYPE, CHAR_VECTOR_TYPE, UNSIGNED_CHAR_VECTOR_TYPE,
         INT_VECTOR_TYPE, LONG_VECTOR_TYPE, FLOAT_VECTOR_TYPE,
         DOUBLE_VECTOR_TYPE, STRING_VECTOR_TYPE
     } VariantTypeEnum;
@@ -87,7 +90,7 @@ class STATE_API Variant
     Variant(bool);
     Variant(char);
     Variant(unsigned char);
-    Variant(const char*); // interp as string 
+    Variant(const char*); // interp as string
     Variant(int);
     Variant(long);
     Variant(float);
@@ -98,11 +101,11 @@ class STATE_API Variant
     Variant(const intVector&);
     Variant(const longVector&);
     Variant(const floatVector&);
-    Variant(const doubleVector&);    
+    Variant(const doubleVector&);
     Variant(const boolVector&);
     Variant(const stringVector&);
     virtual ~Variant();
-    
+
     Variant                  &operator=(const Variant&);
     Variant                  &operator=(const XMLNode&);
     //Variant                  &operator=(const JSONNode&,const JSONNode&);
@@ -122,14 +125,14 @@ class STATE_API Variant
     Variant                  &operator=(const longVector &);
     Variant                  &operator=(const floatVector &);
     Variant                  &operator=(const doubleVector &);
-    
+
     Variant                  &operator=(const stringVector &);
 
     bool                      operator ==(const Variant &obj) const;
 
     int                       Type()     const { return dataType;}
     std::string               TypeName() const;
-    
+
     bool                     &AsBool();
     char                     &AsChar();
     unsigned char            &AsUnsignedChar();
@@ -164,9 +167,29 @@ class STATE_API Variant
     const doubleVector       &AsDoubleVector()       const;
     const stringVector       &AsStringVector()       const;
 
+
+    bool                      ToBool()         const;
+    char                      ToChar()         const;
+    unsigned char             ToUnsignedChar() const;
+    int                       ToInt()          const;
+    long                      ToLong()         const;
+    float                     ToFloat()        const;
+    double                    ToDouble()       const;
+
+    void                      ToBoolVector(boolVector &)                 const;
+    void                      ToCharVector(charVector &)                 const;
+    void                      ToUnsignedCharVector(unsignedCharVector &) const;
+    void                      ToIntVector(intVector &)                   const;
+    void                      ToLongVector(longVector &)                 const;
+    void                      ToFloatVector(floatVector &)               const;
+    void                      ToDoubleVector(doubleVector &)             const;
+
+    bool                      IsNumeric()       const;
+    bool                      IsNumericVector() const;
+
     std::string              &ConvertToString();
 
-    
+
     void                      SetValue(const Variant&);
     void                      SetValue(const XMLNode&,bool decodeString = true);
     void                      SetValue(const XMLNode*,bool decodeString = true);
@@ -175,7 +198,7 @@ class STATE_API Variant
     void                      SetValue(bool);
     void                      SetValue(char);
     void                      SetValue(unsigned char);
-    void                      SetValue(const char*); // interp as string 
+    void                      SetValue(const char*); // interp as string
     void                      SetValue(int);
     void                      SetValue(long);
     void                      SetValue(float);
@@ -191,7 +214,7 @@ class STATE_API Variant
     void                      SetValue(const stringVector&);
 
     void                      Reset() {Cleanup();} // set to empty
-    
+
     virtual std::string       ToXML(const std::string &indent="",bool encodeString = true) const;
     virtual std::string       ToJSON(const std::string &indent="",bool encodeString = true) const;
     virtual XMLNode           ToXMLNode(bool encodeString = true) const;
@@ -205,13 +228,13 @@ class STATE_API Variant
     virtual JSONNode          ToJSONNodeMetaData(bool id) const;
  private:
     static std::string        TypeIDToName(int);
-    static int                NameToTypeID(const std::string &);
+    static int                 NameToTypeID(const std::string &);
     static void               Tokenize(const std::string&,
                                        stringVector &tokens);
-    static void               TokenizeQuotedString(const std::string&, 
+    static void               TokenizeQuotedString(const std::string&,
                                                    stringVector &tokens);
     static std::string        EscapeQuotedString(const std::string &);
-    
+
     static bool               unsetBool;
     static char               unsetChar;
     static unsigned char      unsetUnsignedChar;
@@ -228,7 +251,7 @@ class STATE_API Variant
     static floatVector        unsetFloatVector;
     static doubleVector       unsetDoubleVector;
     static stringVector       unsetStringVector;
-    
+
     void                      Cleanup();
 
     int                       dataType;

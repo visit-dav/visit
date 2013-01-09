@@ -107,7 +107,7 @@ using std::vector;
 //  Modifications:
 //
 //    Hank Childs, Mon Jul 25 08:23:55 PDT 2005
-//    I added QUERY_ARRAY_VAR.  Note the ordering of the defines here must 
+//    I added QUERY_ARRAY_VAR.  Note the ordering of the defines here must
 //    exactly match that in avtTypes.h.
 //
 // ****************************************************************************
@@ -130,7 +130,7 @@ using std::vector;
 // Storage for static data elements.
 //
 
-ViewerQueryManager *ViewerQueryManager::instance = 0;   
+ViewerQueryManager *ViewerQueryManager::instance = 0;
 
 QueryAttributes *ViewerQueryManager::queryClientAtts=0;
 PickAttributes *ViewerQueryManager::pickAtts=0;
@@ -143,11 +143,11 @@ QueryOverTimeAttributes *ViewerQueryManager::timeQueryDefaultAtts=0;
 QueryOverTimeAttributes *ViewerQueryManager::timeQueryClientAtts=0;
 
 void
-GetUniqueVars(const stringVector &vars, const string &activeVar, 
+GetUniqueVars(const stringVector &vars, const string &activeVar,
               stringVector &uniqueVars,
               const avtDatabaseMetaData *md = NULL);
 string
-CreateExtentsString(const double * extents, 
+CreateExtentsString(const double * extents,
                     const int dim,
                     const char *type,
                     const string &float_format);
@@ -155,21 +155,21 @@ CreateExtentsString(const double * extents,
 // ****************************************************************************
 //  Method: ViewerQueryManager constructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 10, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 10, 2002
 //
 //  Modifications:
 //    Brad Whitlock, Fri Sep 6 14:06:57 PST 2002
 //    I added the queryTypes member.
 //
-//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
+//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //    Add Revolved volume to query list, comment out currently unsupported
-//    queries WorldPick, WorldLineout and MinMax. 
+//    queries WorldPick, WorldLineout and MinMax.
 //
-//    Kathleen Bonnell, Fri Nov 15 17:44:44 PST 2002  
-//    Add Eulerian to query list. 
+//    Kathleen Bonnell, Fri Nov 15 17:44:44 PST 2002
+//    Add Eulerian to query list.
 //
-//    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002  
+//    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002
 //    Enable WorldLineout in the query list.  Initialize new members
 //    baseDesignator, cycleDesignator, designator.
 //
@@ -179,13 +179,13 @@ CreateExtentsString(const double * extents,
 //
 //    Kathleen Bonnell, Tue Feb 25 17:11:18 PST 2003
 //    Check for loaded Curve and Lineout plugins before adding Lineout to the
-//    query list. 
+//    query list.
 //
 //    Jeremy Meredith, Fri Feb 28 12:36:21 PST 2003
 //    Made it use PluginAvailable instead of PluginLoaded so that it could
 //    attempt to load the plugins on demand.
 //
-//    Kathleen Bonnell, Thu Mar  6 15:21:45 PST 2003  
+//    Kathleen Bonnell, Thu Mar  6 15:21:45 PST 2003
 //    Store Lineout queries (ViewerQuery) in LineoutListItem.
 //
 //    Brad Whitlock, Wed Mar 12 14:41:24 PST 2003
@@ -194,31 +194,31 @@ CreateExtentsString(const double * extents,
 //    Hank Childs, Tue Mar 18 21:33:09 PST 2003
 //    Added revolved surface area.
 //
-//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003 
-//    Initialize preparingPick, handlingCache, initialPick. 
+//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003
+//    Initialize preparingPick, handlingCache, initialPick.
 //
 //    Jeremy Meredith, Sat Apr 12 11:31:53 PDT 2003
 //    Added compactness queries.
 //
 //    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
-//    Renamed Pick query to ZonePick, added NodePick query. 
-//    Initialize pickAtts. 
+//    Renamed Pick query to ZonePick, added NodePick query.
+//    Initialize pickAtts.
 //
-//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
-//    Added 'Variable by Zone', 'WorldPick' and 'WorldNodePick'. 
+//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003
+//    Added 'Variable by Zone', 'WorldPick' and 'WorldNodePick'.
 //
-//    Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003 
+//    Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003
 //    Moved initialization of queryTypes to its own method, so that it can
-//    be called after plugins are loaded (lineout dependent upon plugins). 
+//    be called after plugins are loaded (lineout dependent upon plugins).
 //
-//    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
+//    Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004
 //    Initialize globalLineoutAtts, initialize resWinId in lineoutCache.
 //
-//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005 
-//    Added suppressQueryOutput. 
+//    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005
+//    Added suppressQueryOutput.
 //
-//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
-//    Added activePlotsChanged. 
+//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005
+//    Added activePlotsChanged.
 //
 //    Brad Whitlock, Mon Feb 12 17:45:24 PST 2007
 //    Added ViewerBase base class.
@@ -411,8 +411,8 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    for Lineout should already exist at this point, and its ID is stored
 //    in lineoutCache.
 //
-//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
-//    Added optional bool arg forceSampling. 
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007
+//    Added optional bool arg forceSampling.
 //
 //    Brad Whitlock, Tue Apr 29 16:29:13 PDT 2008
 //    Support for internationalization.
@@ -473,7 +473,7 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     lineAtts->SetDesignator(designator);
 
 
-    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts, 
+    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts,
         fromDefault, forceSampling);
     if(*newQuery == NULL)
     {
@@ -750,7 +750,7 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
     }
 
     //
-    // Delete the query whose resultsWindow == vw; 
+    // Delete the query whose resultsWindow == vw;
     //
     int nLineoutsNew = 0;
     for (i = 0;  i < nLineouts; i++)
@@ -767,7 +767,7 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
         lineoutList[i] = NULL;
     }
     nLineouts = nLineoutsNew;
-} 
+}
 
 
 // ****************************************************************************
@@ -777,33 +777,33 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
 //    Handles a request by a tool to change plot attributes.
 //
 //  Arguments:
-//    ow : The window where the tool is active. 
+//    ow : The window where the tool is active.
 //    ti : A reference to a tool interface object.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   July 13, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003  
+//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003
 //    Have lineout lists handle the tool.
 //
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //    Account for multiple active plots.
 //
 // ****************************************************************************
- 
+
 void
 ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 {
     intVector plotIDs;
     oWin->GetPlotList()->GetActivePlotIDs(plotIDs);
-    if ((nLineouts == 0) || (plotIDs.size() == 0)) 
+    if ((nLineouts == 0) || (plotIDs.size() == 0))
     {
         return;
     }
     // Use the first plot.
     int plotId = plotIDs[0];
-    
+
     ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
     for (int i = 0; i < nLineouts; i++)
     {
@@ -822,23 +822,23 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 //   Initializes a tool as it is being turned on.
 //
 // Arguments:
-//   ow : The window where the tool is being turned on. 
+//   ow : The window where the tool is being turned on.
 //   ti : The tool interface that we're going to use for initialization.
 //
 // Returns: Whether or not the tool was initialized.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 20, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   June 20, 2002
 //
 // Modifications:
-//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003  
+//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003
 //    Have lineout lists handle the tool.
 //
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 200
 //    Account for multiple plots.
 //
 // ****************************************************************************
- 
+
 bool
 ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
 {
@@ -860,7 +860,7 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
     ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
     for (int i = 0; i < nLineouts; i++)
     {
-        if (lineoutList[i]->MatchOriginatingPlot(oPlot)) 
+        if (lineoutList[i]->MatchOriginatingPlot(oPlot))
         {
             retval = lineoutList[i]->InitializeTool(ti);
             break;
@@ -878,18 +878,18 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
 //   Tell the queries that the tool has been turned off.
 //
 // Arguments:
-//   ow : The window where the tool was active. 
-//   ti : The tool interface from the tool that is being turned off, 
+//   ow : The window where the tool was active.
+//   ti : The tool interface from the tool that is being turned off,
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 13, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   July 13, 2002
 //
 // Modifications:
-//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003  
+//    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003
 //    Have lineout lists handle the tool.
 //
 // ****************************************************************************
- 
+
 void
 ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
 {
@@ -900,14 +900,14 @@ ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
 
     for (int i = 0; i < nLineouts; i++)
     {
-        if (lineoutList[i]->MatchOriginatingWindow(oWin)) 
+        if (lineoutList[i]->MatchOriginatingWindow(oWin))
         {
             lineoutList[i]->DisableTool();
         }
     }
 }
 
- 
+
 // ****************************************************************************
 //  Method: ViewerQueryManager::GetQueryClientAtts
 //
@@ -920,7 +920,7 @@ ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
 //  Creation:   September 16, 2002
 //
 // ****************************************************************************
- 
+
 QueryAttributes *
 ViewerQueryManager::GetQueryClientAtts()
 {
@@ -931,7 +931,7 @@ ViewerQueryManager::GetQueryClientAtts()
     {
         queryClientAtts = new QueryAttributes;
     }
- 
+
     return queryClientAtts;
 }
 
@@ -944,76 +944,76 @@ ViewerQueryManager::GetQueryClientAtts()
 //    query list.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   September 16, 2002 
+//  Creation:   September 16, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Oct 23 18:10:26 PDT 2002     
+//    Kathleen Bonnell, Wed Oct 23 18:10:26 PDT 2002
 //    Add specific handling of certain exceptions.
-// 
-//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003 
+//
+//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003
 //    Catch NoEngine and LostConnection Exceptions, and retry the query
-//    after the queried plot re-executes. 
-//    
-//    Kathleen Bonnell, Fri Jul 11 10:16:34 PDT 2003 
-//    Verify query exists before sending request to engine. 
-// 
-//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003 
+//    after the queried plot re-executes.
+//
+//    Kathleen Bonnell, Fri Jul 11 10:16:34 PDT 2003
+//    Verify query exists before sending request to engine.
+//
+//    Kathleen Bonnell, Wed Jul 23 16:26:34 PDT 2003
 //    Added call to GetUniqueVars, so that 'default' will get set to
 //    the active var, and no duplicates will be in the list when passed
 //    to queryAtts.
-// 
+//
 //    Hank Childs, Thu Oct  2 13:51:31 PDT 2003
 //    Add support for queries with multiple inputs.
 //
-//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003
 //    Rework code around GetUniqueVars to ensure the vars are truly
-//    unique and the "default" gets translated to the active variable. 
+//    unique and the "default" gets translated to the active variable.
 //
 //    Kathleen Bonnell, Wed Nov 19 15:41:11 PST 2003
 //    Added logic to verify that all variables the named query will process
-//    are allowed by the query. 
+//    are allowed by the query.
 //
-//    Kathleen Bonnell, Wed Nov 26 16:08:29 PST 2003 
+//    Kathleen Bonnell, Wed Nov 26 16:08:29 PST 2003
 //    Added logic to handle SpatialExtents query.
 //
-//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
-//    Use arg1 to set queryAtts.CurrentPlotOnly var. 
-// 
-//    Kathleen Bonnell, Fri Mar  5 15:48:44 PST 2004 
-//    Only DetermineVarTypes if necessary, and added more TRY-CATCH blocks. 
-// 
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004
+//    Use arg1 to set queryAtts.CurrentPlotOnly var.
+//
+//    Kathleen Bonnell, Fri Mar  5 15:48:44 PST 2004
+//    Only DetermineVarTypes if necessary, and added more TRY-CATCH blocks.
+//
 //    Brad Whitlock, Wed Mar 10 10:06:36 PDT 2004
 //    Changed to match other viewer changes related to plots and time.
 //
-//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004 
+//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004
 //    Restructured try-catch block around actual query execution, to catch
 //    ImproperUseException which can occur if engine has been closed prior
-//    to initiation of query.  
+//    to initiation of query.
 //
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
-//    Added bool arg to support queries-over-time. 
+//    Added bool arg to support queries-over-time.
 //
 //    Jeremy Meredith, Mon Apr  5 14:15:56 PDT 2004
 //    Added a line to clear out status in case of an exception occuring
 //    during a query.
 //
-//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
+//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004
 //    Made arg1 be Element and arg2 Domain, to be consistent with Pick'
-//    default ordering (domain can be left out, so should be second arg). 
-//  
-//    Kathleen Bonnell, Thu Jun  3 14:40:47 PDT 2004 
+//    default ordering (domain can be left out, so should be second arg).
+//
+//    Kathleen Bonnell, Thu Jun  3 14:40:47 PDT 2004
 //    Split verification of query info into SingleInput and MultipleInput,
 //    added calls to DoSpatialExtentsQuery, VerifySingleInputQuery,
 //    and VerifyMultipleInputQuery.
-//   
-//    Kathleen Bonnell, Fri Sep  3 09:59:25 PDT 2004 
-//    Modified handling of 'NonQueryableInputException'. 
 //
-//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
-//    Added 'elmentIsGlobal' arg, use it to set new QueryAttriubte 
+//    Kathleen Bonnell, Fri Sep  3 09:59:25 PDT 2004
+//    Modified handling of 'NonQueryableInputException'.
+//
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004
+//    Added 'elmentIsGlobal' arg, use it to set new QueryAttriubte
 //    'useGlobalId'.
 //
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
@@ -1026,23 +1026,23 @@ ViewerQueryManager::GetQueryClientAtts()
 //    If we have plots that were generated dynamically, regenerate them before
 //    performing our query.
 //
-//    Kathleen Bonnell, Tue Mar 15 17:39:33 PST 2005 
+//    Kathleen Bonnell, Tue Mar 15 17:39:33 PST 2005
 //    Only set 'DataType' from arg1 if the named query is an 'actual/original'
 //    type of query, otherwise set DataType to 'Actual'.
 //
-//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
-//    Test for existence of engine before proceeding. 
-//    
+//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005
+//    Test for existence of engine before proceeding.
+//
 //    Kathleen Bonnell, Wed Jul 27 15:47:34 PDT 2005
-//    Don't send message if QueryOutput is suppressed. 
+//    Don't send message if QueryOutput is suppressed.
 //
 //    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
 //    Moved warning/error condition detection code to beginning of method.
-//    Check for non-hidden active plot before checking if EngineExists. 
+//    Check for non-hidden active plot before checking if EngineExists.
 //
 //    Kathleen Bonnell, Tue Jan 31 15:45:23 PST 2006
 //    If points were transformed, perform OrignalData SpatialExtents query
-//    like other queries. 
+//    like other queries.
 //
 //    Hank Childs, Wed May 10 09:52:54 PDT 2006
 //    Don't crash if we can't get the query to complete ('7092).
@@ -1213,12 +1213,12 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         // input query.  BY CONVENTION, THIS IS NOT AN ERROR.
         //
         int firstPlot = plotIds[0];
-        plotIds.clear();  
+        plotIds.clear();
         plotIds.push_back(firstPlot);
         if (!VerifySingleInputQuery(plist, firstPlot, qName, vars, qa))
             return;
     }
-    else 
+    else
     {
         if (!VerifyMultipleInputQuery(plist, numInputs, qName, vars, qa))
             return;
@@ -1231,7 +1231,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
     //
     EngineKey engineKey = plist->GetPlot(plotIds[0])->GetEngineKey();
 
-    bool retry; 
+    bool retry;
     int numAttempts = 0;
     bool success = false;
 
@@ -1268,13 +1268,13 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
                 CATCH_RETURN(1);
             }
 
-            if (ViewerEngineManager::Instance()->Query(engineKey, networkIds, 
+            if (ViewerEngineManager::Instance()->Query(engineKey, networkIds,
                    &qa, qa))
             {
                 qa.SetVariables(vars);
                *queryClientAtts = qa;
                 queryClientAtts->Notify();
-                if (!suppressQueryOutput) 
+                if (!suppressQueryOutput)
                     Message(qa.GetResultsMessage().c_str());
             }
             else
@@ -1296,13 +1296,13 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
                 //
                 // Queries access the cached network used by the queried plot.
                 // Simply relaunching the engine does not work, as no network
-                // is created. This situation requires re-execution of the 
+                // is created. This situation requires re-execution of the
                 // plot that is being queried.
                 //
                 for (int i = 0 ; i < plotIds.size() ; i++)
                     plist->GetPlot(plotIds[i])->ClearCurrentActor();
-                win->GetPlotList()->UpdateFrame(); 
-                numAttempts++; 
+                win->GetPlotList()->UpdateFrame();
+                numAttempts++;
                 retry = true;
             }
             else if ((e.GetExceptionType() == "InvalidDimensionsException") ||
@@ -1344,7 +1344,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
                  "contact a VisIt developer."));
         return;
     }
-    
+
     if (canBeDLBPlots)
     {
         //
@@ -1368,7 +1368,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
                 bool isDyn = dob->GetInfo().GetValidity().AreWeStreaming();
                 if (isDyn)
                 {
-                    ViewerEngineManager::Instance()->StartQuery(engineKey, false, 
+                    ViewerEngineManager::Instance()->StartQuery(engineKey, false,
                                                                 networkId);
                 }
             }
@@ -1385,22 +1385,25 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 //
 //  Arguments:
 //    qName     The name of this query.
-//    pt1       The first endpoint of the line. 
-//    pt2       The second endpoint of the line. 
+//    pt1       The first endpoint of the line.
+//    pt2       The second endpoint of the line.
 //    vars      The variables to be used for this query.
-//    
+//
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 20, 2002
 //
 //  Modifications:
 //    <snip>
-//  
+//
 //    Kathleen Bonnell, Tue Jun 21 11:14:41 PDT 2011
 //    Changed arg to MapNode, changes within to reflect this change.
 //    Removed modifications notes older than 2009.
 //
 //    Kathleen Biagas, Tue Jan  8 10:40:08 PST 2013
 //    Added error checking of queryParams.
+//
+//    Cyrus Harrison, Wed Jan  9 14:42:26 PST 2013
+//    Use new ToDoubleVector and IsNumeric helpers from the Variant class.
 //
 // ****************************************************************************
 
@@ -1411,52 +1414,28 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
     if (qName ==  "Lineout")
     {
         doubleVector pt1, pt2;
-        if (queryParams.HasEntry("start_point"))
+        if (queryParams.HasEntry("start_point") &&
+            queryParams.GetEntry("start_point")->IsNumericVector())
         {
-            if (queryParams.GetEntry("start_point")->TypeName() == "doubleVector")
-            {
-                pt1 = queryParams.GetEntry("start_point")->AsDoubleVector();
-            }
-            else if (queryParams.GetEntry("start_point")->TypeName() == "intVector")
-            {
-                intVector ipt1 = queryParams.GetEntry("start_point")->AsIntVector();
-                for (size_t i = 0; i < ipt1.size(); ++i)
-                    pt1.push_back(double(ipt1[i]));
-            }
-            else
-            {
-                Error(tr("Lineout error processing start_point argument."));
-                return;
-            }
+            queryParams.GetEntry("start_point")->ToDoubleVector(pt1);
         }
         else
         {
             Error(tr("Lineout requires start_point argument."));
             return;
         }
-        if (queryParams.HasEntry("end_point"))
+
+        if (queryParams.HasEntry("end_point") &&
+            queryParams.GetEntry("end_point")->IsNumericVector())
         {
-            if (queryParams.GetEntry("end_point")->TypeName() == "doubleVector")
-            {
-                pt2 = queryParams.GetEntry("end_point")->AsDoubleVector();
-            }
-            else if (queryParams.GetEntry("end_point")->TypeName() == "intVector")
-            {
-                intVector ipt2 = queryParams.GetEntry("start_point")->AsIntVector();
-                for (size_t i = 0; i < ipt2.size(); ++i)
-                    pt2.push_back(double(ipt2[i]));
-            }
-            else
-            {
-                Error(tr("Lineout error processing end_point argument."));
-                return;
-            }
+            queryParams.GetEntry("end_point")->ToDoubleVector(pt2);
         }
         else
         {
             Error(tr("Lineout requires end_point argument."));
             return;
         }
+
         // from this point on, code assumes 3 coordinates, so ensure there are
         for (size_t i = pt1.size(); i < 3; ++i)
         {
@@ -1468,11 +1447,11 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
         }
         viewerSubject->BlockSocketSignals(true);
         //
-        // Can we get a lineout window? 
+        // Can we get a lineout window?
         //
         int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
                          globalLineoutAtts->GetWindowId()-1);
-        ViewerWindow *resWin = 
+        ViewerWindow *resWin =
             ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
         if (resWin == NULL)
         {
@@ -1502,7 +1481,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
         stringVector vars;
         if (queryParams.HasEntry("vars"))
             vars = queryParams.GetEntry("vars")->AsStringVector();
-        stringVector uniqueVars; 
+        stringVector uniqueVars;
         // GetUniqueVars sets 'default' to the passed 'activeVar'.
         // Since we don't want to go through the trouble of figuring what
         // that is right now, send 'default' as the active var.
@@ -1513,7 +1492,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
         line.SetPoint1(&pt1[0]);
         line.SetPoint2(&pt2[0]);
 
-        if (queryParams.HasEntry("use_sampling") && 
+        if (queryParams.HasEntry("use_sampling") &&
             queryParams.GetEntry("use_sampling")->AsInt() == 1)
         {
             if (queryParams.HasEntry("num_samples"))
@@ -1543,7 +1522,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
 //  Returns:    A pointer to the default pick attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 15, 2002 
+//  Creation:   November 15, 2002
 //
 // ****************************************************************************
 
@@ -1570,7 +1549,7 @@ ViewerQueryManager::GetPickDefaultAtts()
 //  Returns:    A pointer to the pick client attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 30, 2003 
+//  Creation:   June 30, 2003
 //
 // ****************************************************************************
 
@@ -1590,7 +1569,7 @@ ViewerQueryManager::GetPickClientAtts()
 // ****************************************************************************
 // Method: ViewerQueryManager::GetPickAtts
 //
-// Purpose: 
+// Purpose:
 //   Returns the pick attributes.
 //
 // Returns:    A pointer to the pick attributes.
@@ -1599,7 +1578,7 @@ ViewerQueryManager::GetPickClientAtts()
 // Creation:   Tue Jan 6 12:29:38 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 PickAttributes *
@@ -1615,10 +1594,10 @@ ViewerQueryManager::GetPickAtts()
 //  Method: ViewerQueryManager::ResetPickLetter
 //
 //  Purpose:
-//    Resets pickAtts to the default state. 
+//    Resets pickAtts to the default state.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 26 , 2003 
+//  Creation:   November 26 , 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Dec 17 14:45:22 PST 2003
@@ -1636,7 +1615,7 @@ ViewerQueryManager::ResetPickLetter()
 //  Method: ViewerQueryManager::SetClientPickAttsFromDefault
 //
 //  Purpose:
-//    Copies the default pick attributes into the client pick attributes. 
+//    Copies the default pick attributes into the client pick attributes.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 9, 2003
@@ -1658,7 +1637,7 @@ ViewerQueryManager::SetClientPickAttsFromDefault()
 //  Method: ViewerQueryManager::SetDefaultPickAttsFromClient
 //
 //  Purpose:
-//    Sets the default pickAtts using the client pick attributes. 
+//    Sets the default pickAtts using the client pick attributes.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   December 9, 2003
@@ -1678,10 +1657,10 @@ ViewerQueryManager::SetDefaultPickAttsFromClient()
 //  Method: ViewerQueryManager::SetPickAttsFromClient
 //
 //  Purpose:
-//    Sets the pickAtts using the client pick attributes. 
+//    Sets the pickAtts using the client pick attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 30, 2003 
+//  Creation:   June 30, 2003
 //
 // ****************************************************************************
 
@@ -1700,10 +1679,10 @@ ViewerQueryManager::SetPickAttsFromClient()
 //  Method: ViewerQueryManager::SetPickAttsFromDefault
 //
 //  Purpose:
-//    Sets the pickAtts using the default pick attributes. 
+//    Sets the pickAtts using the default pick attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   December 9, 2003 
+//  Creation:   December 9, 2003
 //
 // ****************************************************************************
 
@@ -1724,10 +1703,10 @@ ViewerQueryManager::SetPickAttsFromDefault()
 //  Method: ViewerQueryManager::UpdatePickAtts
 //
 //  Purpose:
-//    Causes the pickAtts to be sent to the client. 
+//    Causes the pickAtts to be sent to the client.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 30, 2003 
+//  Creation:   June 30, 2003
 //
 // ****************************************************************************
 
@@ -1747,11 +1726,11 @@ ViewerQueryManager::UpdatePickAtts()
 //  Method: ViewerQueryManager::ClearPickPoints
 //
 //  Purpose:
-//    Notifies any observers of PickAttributes that pick points should be 
+//    Notifies any observers of PickAttributes that pick points should be
 //    cleared.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 15, 2002 
+//  Creation:   November 15, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Jul  1 09:21:57 PDT 2003
@@ -1780,61 +1759,61 @@ ViewerQueryManager::ClearPickPoints()
 //  Arguments:
 //    pd        The struct containing picked point and window information.
 //
-//  Notes:      Created from old ViewerWindow::PerformPickCallback and 
+//  Notes:      Created from old ViewerWindow::PerformPickCallback and
 //              ViewerPlot::Pick.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 15, 2002 
+//  Creation:   November 15, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Dec  6 16:25:20 PST 2002
 //    Set pickAtts active variable, and set nodes to an empty int vector.
 //
-//    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002    
+//    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002
 //    Set pickAtts pickLetter from new member designator.  Added call to
 //    UpdateDesignator.  Added argument to ValidateQuery call.
 //
-//    Kathleen Bonnell, Mon Dec 30 09:50:28 PST 2002  
-//    Moved call to UpdateDesignator to after the query is validated, 
-//    so that VisWin gets the correct designator with which to label the pick. 
-//    
-//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003   
+//    Kathleen Bonnell, Mon Dec 30 09:50:28 PST 2002
+//    Moved call to UpdateDesignator to after the query is validated,
+//    so that VisWin gets the correct designator with which to label the pick.
+//
+//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
 //    Pick now uses ray endpoints (instead of computed pick point). Add
-//    pickAtts to ValidateQuery call. 
-//    
-//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003 
+//    pickAtts to ValidateQuery call.
+//
+//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003
 //    Catch NoEngine and LostConnection Exceptions, and retry the pick
-//    after the queried plot re-executes. 
-//    
-//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003 
+//    after the queried plot re-executes.
+//
+//    Kathleen Bonnell, Wed Feb 26 12:47:55 PST 2003
 //    If this is the first pick, re-execute pipeline if necessary (via
-//    ViewerPlotList::StartPick).  Cache incoming pick information if 
+//    ViewerPlotList::StartPick).  Cache incoming pick information if
 //    the pipeline is re-executing, and handle when re-execution completed.
 //
-//    Kathleen Bonnell, Thu Apr 17 08:54:59 PDT 2003 
-//    This is the wrong place to set pick's dimension var. 
-//    
-//    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003 
-//    Added support for full-frame mode. 
-//    
-//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003 
-//    Moved clean-up of pickAtts ivars to PickAttributes::PrepareForNewPick. 
-//    Added call to UpdatePickAtts.
-//    
-//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
-//    I replaced the use of GetViewDimension with GetWindowMode. 
-//   
-//    Kathleen Bonnell, Thu Sep 18 16:29:43 PDT 2003 
-//    Don't scale the ray points if in world-pick mode.
-//   
-//    Kathleen Bonnell, Wed Nov  5 17:09:00 PST 2003 
-//    Retrieve plot's actual extents and store them in pickAtts. 
+//    Kathleen Bonnell, Thu Apr 17 08:54:59 PDT 2003
+//    This is the wrong place to set pick's dimension var.
 //
-//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
-//    Added 'dom' and 'el' args, to accommodate PickByNode, PickByZone. 
-//   
-//    Kathleen Bonnell, Tue Dec  2 17:31:17 PST 2003 
-//    Code changes to allow picking curve plots. 
+//    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003
+//    Added support for full-frame mode.
+//
+//    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
+//    Moved clean-up of pickAtts ivars to PickAttributes::PrepareForNewPick.
+//    Added call to UpdatePickAtts.
+//
+//    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
+//    I replaced the use of GetViewDimension with GetWindowMode.
+//
+//    Kathleen Bonnell, Thu Sep 18 16:29:43 PDT 2003
+//    Don't scale the ray points if in world-pick mode.
+//
+//    Kathleen Bonnell, Wed Nov  5 17:09:00 PST 2003
+//    Retrieve plot's actual extents and store them in pickAtts.
+//
+//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003
+//    Added 'dom' and 'el' args, to accommodate PickByNode, PickByZone.
+//
+//    Kathleen Bonnell, Tue Dec  2 17:31:17 PST 2003
+//    Code changes to allow picking curve plots.
 //
 //    Brad Whitlock, Tue Jan 6 09:54:12 PDT 2004
 //    I renamed the routine to ComputePick, made it return a bool, and moved
@@ -1843,14 +1822,14 @@ ViewerQueryManager::ClearPickPoints()
 //    Brad Whitlock, Sat Jan 31 22:51:24 PST 2004
 //    I made it so we don't have to pass the frame to StartPick.
 //
-//    Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004 
+//    Kathleen Bonnell, Tue Mar 16 16:02:05 PST 2004
 //    Determine VarTypes, and only pass along to Pick the valid ones.
-//    Set invalidVars in PickAtts so that user will get a message. 
+//    Set invalidVars in PickAtts so that user will get a message.
 //
-//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004 
+//    Kathleen Bonnell, Tue Mar 23 15:31:32 PST 2004
 //    Restructured try-catch block around actual pick execution, to catch
 //    ImproperUseException which can occur if engine has been closed prior
-//    to initiation of pick.  
+//    to initiation of pick.
 //
 //    Brad Whitlock, Fri Mar 26 09:35:15 PDT 2004
 //    I made it use ViewerPlot::GetVarType because it knows the right time
@@ -1859,11 +1838,11 @@ ViewerQueryManager::ClearPickPoints()
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
-//    Kathleen Bonnell, Tue May  4 14:41:50 PDT 2004 
-//    Changed Message to Warning for pick failure, utilize new pic atts 
-//    error message. 
+//    Kathleen Bonnell, Tue May  4 14:41:50 PDT 2004
+//    Changed Message to Warning for pick failure, utilize new pic atts
+//    error message.
 //
-//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
+//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004
 //    Determine whether this pick needs Original Zones or Nodes, and
 //    InverseTransform or Transform.   Determine if all materials are used
 //    by plot being picked.
@@ -1871,21 +1850,21 @@ ViewerQueryManager::ClearPickPoints()
 //    Mark C. Miller, Tue Aug 24 20:11:52 PDT 2004
 //    Added code to set pick attributes' block/group piece names
 //
-//    Kathleen Bonnell, Tue Aug 24 14:59:16 PDT 2004 
+//    Kathleen Bonnell, Tue Aug 24 14:59:16 PDT 2004
 //    Send MetaData to GetUniqueVars, so that all vars defined on mesh
-//    can be retrieved if requested. 
+//    can be retrieved if requested.
 //
-//    Kathleen Bonnell, Wed Aug 25 18:13:21 PDT 2004 
-//    Ensure that MeshMetaData is not null before attempting to dereference. 
+//    Kathleen Bonnell, Wed Aug 25 18:13:21 PDT 2004
+//    Ensure that MeshMetaData is not null before attempting to dereference.
 //
-//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004 
+//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004
 //    Added support for picking on Vector plots -- calls a new ViewerWindow
-//    method 'GlyphPick' to get the intersected domain & zone/node.  The 
+//    method 'GlyphPick' to get the intersected domain & zone/node.  The
 //    intersection test is performed on data from the Renderer, where the
 //    glyphs live.
 //
-//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004 
-//    Expand 'GlyphPick' to include non-LabelPlot point meshes. 
+//    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004
+//    Expand 'GlyphPick' to include non-LabelPlot point meshes.
 //
 //    Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004
 //    Moved full-frame test to before 'GlyphPick' test.
@@ -1893,22 +1872,22 @@ ViewerQueryManager::ClearPickPoints()
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id to Pick RPC
 //
-//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005 
+//    Kathleen Bonnell, Tue Mar  1 11:20:15 PST 2005
 //    Ensure that the engine has the correct expression list from the plot
-//    that we are picking, so that pick will not fail. 
+//    that we are picking, so that pick will not fail.
 //
-//    Kathleen Bonnell, Tue Jul  5 15:38:58 PDT 2005 
+//    Kathleen Bonnell, Tue Jul  5 15:38:58 PDT 2005
 //    When setting pickAtts 'MatSelected' state, use the plot's 'real' var,
-//    in case there is an expression involved whose 'real' var is material. 
+//    in case there is an expression involved whose 'real' var is material.
 //
-//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
+//    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005
 //    For StartPick, added test for changed active plots.
 //
-//    Kathleen Bonnell, Tue Aug 30 15:20:40 PDT 2005 
+//    Kathleen Bonnell, Tue Aug 30 15:20:40 PDT 2005
 //    For StartPick, don't set needZone to 'true' if a nodal-var Tensor or
 //    Vector is plotted.   Do GlyphPickf or Tensor plots.
 //
-//    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005 
+//    Kathleen Bonnell, Thu Nov 17 13:39:42 PST 2005
 //    Retrieve topodim from plot and store in pickatts.  It is more reliable
 //    than attempting retrieval from pipeline.  For the same reason,
 //    determine if the input is 'LinesData' from the plot (spatdim = 2,
@@ -1917,16 +1896,16 @@ ViewerQueryManager::ClearPickPoints()
 //    Hank Childs, Thu May 25 11:29:49 PDT 2006
 //    If we are picking on an array variable, make a histogram plot.
 //
-//    Kathleen Bonnell, Mon Oct 23 08:45:18 PDT 2006 
-//    Ensure error message gets passed to clients. 
+//    Kathleen Bonnell, Mon Oct 23 08:45:18 PDT 2006
+//    Ensure error message gets passed to clients.
 //
 //    Hank Childs, Fri Jan  5 12:51:07 PST 2007
 //    When we pick on an array variable (to make a histogram plot), make sure
 //    the time state is correct.
 //
-//    Kathleen Bonnell, Wed Mar 28 09:56:11 PDT 2007 
+//    Kathleen Bonnell, Wed Mar 28 09:56:11 PDT 2007
 //    Due to changes in NoWin rendering, certain glyphPicks must alwasy be
-//    performed on the engine, add test for this. 
+//    performed on the engine, add test for this.
 //
 //    Hank Childs, Mon Aug 27 13:52:56 PDT 2007
 //    Add support for picking creating a spreadsheet.
@@ -1938,7 +1917,7 @@ ViewerQueryManager::ClearPickPoints()
 //    Hank Childs, Mon Oct  8 19:51:21 PDT 2007
 //    If the pick is of a mesh plot, make a spreadsheet anyway.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
 //    Return early if time curve and preserving picked coordinates.
 //
 //    Brad Whitlock, Thu Jan 24 11:57:14 PDT 2008
@@ -1955,7 +1934,7 @@ ViewerQueryManager::ClearPickPoints()
 //    do not update pick letter if it is.
 //
 //    Kathleen Bonnell, Thu May  6 18:44:08 PDT 2010
-//    Add topodim of 1 to test for 'linesData'.  (Allows picking on meshes 
+//    Add topodim of 1 to test for 'linesData'.  (Allows picking on meshes
 //    consisting of vtk lines.)
 //
 //    Kathleen Bonnell, Fri May  7 10:35:51 PDT 2010
@@ -1988,7 +1967,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
     //
     //  Keep local copy, due to caching issues.
-    // 
+    //
     PICK_POINT_INFO pd = *ppi;
     if (preparingPick)
     {
@@ -2004,22 +1983,22 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         intVector plotIds;
         plist->GetActivePlotIDs(plotIds);
         ViewerPlot *plot = plist->GetPlot(plotIds[0]);
- 
+
         int pickType = pickAtts->GetPickType();
-    
+
         bool needZones = (pickType == PickAttributes::Zone ||
                           pickType == PickAttributes::DomainZone);
         bool needInvTrans = (pickType == PickAttributes::Node ||
                              pickType == PickAttributes::Zone);
 
-        // May need to override this 
+        // May need to override this
         if (needZones && plot->GetVariableCentering() == AVT_NODECENT)
         {
             MapNode fromPlot;
             plot->GetExtraInfoForPick(fromPlot);
             if (fromPlot.HasEntry("nodeCenteredNeedZonesForPick"))
                 needZones &= fromPlot.GetEntry("nodeCenteredNeedZonesForPick")->AsBool();
-        } 
+        }
 
         plist->StartPick(needZones, needInvTrans);
         initialPick = false;
@@ -2068,7 +2047,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         avtSILRestrictionTraverser trav(plot->GetSILRestriction());
         bool usesAllMaterials = trav.UsesAllMaterials();
         //
-        // Retrieve plot's actual extents. 
+        // Retrieve plot's actual extents.
         //
         double *dext = plot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
         if (dext)
@@ -2099,7 +2078,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         plot->GetExtraInfoForPick(fromPlot);
         if (fromPlot.HasEntry("additionalVars"))
         {
-            stringVector avars = 
+            stringVector avars =
                 fromPlot.GetEntry("additionalVars")->AsStringVector();
             stringVector::iterator it = useTheseVars.end();
             useTheseVars.insert(it-1, avars.begin(), avars.end());
@@ -2108,7 +2087,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         //
         // Remove duplicate vars, so that query doesn't report them twice.
         //
-        stringVector uniqueVars; 
+        stringVector uniqueVars;
         GetUniqueVars(useTheseVars, activeVar, uniqueVars, plot->GetMetaData());
         stringVector validVars;
         stringVector invalidVars;
@@ -2116,7 +2095,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {
             if (plot->GetVarType(uniqueVars[i]) != AVT_UNKNOWN_TYPE)
                 validVars.push_back(uniqueVars[i]);
-            else 
+            else
                 invalidVars.push_back(uniqueVars[i]);
         }
         pickAtts->SetVariables(validVars);
@@ -2125,7 +2104,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         // Use the 'real' var from the plot -- the plot's var may be
         // an expression whose base is a material var.
         //
-        pickAtts->SetMatSelected(!usesAllMaterials || 
+        pickAtts->SetMatSelected(!usesAllMaterials ||
                                  plot->GetRealVarType() == AVT_MATERIAL);
         if (!pickAtts->GetReusePickLetter()) pickAtts->SetPickLetter(designator);
         pickAtts->SetTimeStep(plot->GetState());
@@ -2137,7 +2116,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 // doing a PickByNode or PickByZone
                 if (pickAtts->GetPickType() == PickAttributes::DomainZone)
                     pickAtts->SetPickType(PickAttributes::CurveZone);
-                else 
+                else
                     pickAtts->SetPickType(PickAttributes::CurveNode);
             }
             else
@@ -2147,15 +2126,15 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         double *rp2 = pd.rayPt2;
         //
         // If in full-frame mode on a 2d plot, the ray points were computed
-        // in the scaled full-frame space.  Reverse the scaling to get the 
+        // in the scaled full-frame space.  Reverse the scaling to get the
         // correct ray points.  -- But only if our ray points aren't equal
         // (they are set equivalent for WorldPick).
         //
-        bool ptsEqual  = 
+        bool ptsEqual  =
            (rp1[0] == rp2[0] && rp1[1] == rp2[1] && rp1[2] == rp2[2]);
 
         if ((win->GetFullFrameMode() && win->GetWindowMode() == WINMODE_2D &&
-            !ptsEqual) || 
+            !ptsEqual) ||
             (win->GetWindowMode() == WINMODE_CURVE))
         {
             double scale;
@@ -2166,7 +2145,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 rp1[0] /= scale;
                 rp2[0] /= scale;
             }
-            else if (type == 1 && scale != 0.) // y_axis 
+            else if (type == 1 && scale != 0.) // y_axis
             {
                 rp1[1] /= scale;
                 rp2[1] /= scale;
@@ -2196,22 +2175,22 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
         // Point meshes may need to be glyph picked
         if (!doGlyphPick && plot->GetMeshType() == AVT_POINT_MESH)
-        { 
+        {
             if (fromPlot.HasEntry("glyphPickIfPointMesh"))
                 doGlyphPick = fromPlot.GetEntry("glyphPickIfPointMesh")->AsBool();
         }
 
- 
+
         // Certain glyph picks should be done on the engine
         bool mustGlyphPickOnEngine = false;
-        if (doGlyphPick && 
+        if (doGlyphPick &&
             GetViewerProperties()->GetNowin() &&
             plot->GetMeshType() == AVT_POINT_MESH)
         {
             if (fromPlot.HasEntry("canGlyphPickOnEngine"))
-                mustGlyphPickOnEngine = 
+                mustGlyphPickOnEngine =
                     fromPlot.GetEntry("canGlyphPickOnEngine")->AsBool();
-        } 
+        }
 
         bool isLinesData = false;
         if (plot->GetSpatialDimension() == 2)
@@ -2222,14 +2201,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
         pickAtts->SetLinesData(isLinesData);
         pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
-                  
-        if (mustGlyphPickOnEngine || 
-            (doGlyphPick && win->GetScalableRendering() && 
+
+        if (mustGlyphPickOnEngine ||
+            (doGlyphPick && win->GetScalableRendering() &&
             (dom ==-1 || el == -1)))
         {
             pickAtts->SetRequiresGlyphPick(true);
         }
-        else if (doGlyphPick && !(win->GetScalableRendering())) 
+        else if (doGlyphPick && !(win->GetScalableRendering()))
         {
             int d = -1, e = -1;
             bool forCell = false;
@@ -2237,7 +2216,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             {
                 //
                 // We only want to find an intersection  with the currently
-                // active plot, so make it the only pickable actor in the 
+                // active plot, so make it the only pickable actor in the
                 // renderer. Perform the intersection test, then make it
                 // unpickable again.
                 //
@@ -2246,19 +2225,19 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 plot->GetActor()->MakeUnPickable();
                 if (d != -1)
                     d += plot->GetBlockOrigin();
-                // 
+                //
                 // Due to the nature of the glyphs, the pick type MUST match
                 // the variable centering.  Also, due to avtPickBy variants
-                // expecting the elementNumber to be what user expects, 
+                // expecting the elementNumber to be what user expects,
                 // account for cell or node origin.
-                // 
+                //
                 if (forCell)
                 {
                     if (mmd != NULL)
                         e += mmd->cellOrigin;
                     pickAtts->SetPickType(PickAttributes::DomainZone);
                 }
-                else 
+                else
                 {
                     if (mmd != NULL)
                         e += mmd->nodeOrigin;
@@ -2302,10 +2281,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             return true;
 
         bool retry;
-        int numAttempts = 0; 
+        int numAttempts = 0;
 
         do
-        {   
+        {
             retry = false;
             int networkId = plot->GetNetworkID();
             int windowId = plot->GetWindowId();
@@ -2342,12 +2321,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                    pickAtts->SetPlotRequested(fromPlot);
 
                    //
-                   // At this point, pickAtts contains information for a 
+                   // At this point, pickAtts contains information for a
                    // valid pick point. We can return true.
                    //
                    retval = true;
                 }
-                else 
+                else
                 {
                    //
                    // Reset vars to what the user actually typed.
@@ -2359,12 +2338,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                        pickAtts->SetErrorMessage(pa.GetErrorMessage());
                    }
                    UpdatePickAtts();
-               
+
                    //SEND ERROR MESSAGE TO GUI WINDOW FOR DISPLAY
                    if (!pa.GetError())
                        Warning(tr("Pick failed with an internal error. "
                                   "Please contact a VisIt developer."));
-                   else 
+                   else
                        Warning(pa.GetErrorMessage().c_str(), false);
                 }
             }
@@ -2374,17 +2353,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     e.GetExceptionType() == "LostConnectionException" ||
                     e.GetExceptionType() == "ImproperUseException")
                 {
-   
-                    // Queries access the cached network used by the queried 
+
+                    // Queries access the cached network used by the queried
                     // plot.  Simply relaunching the engine does not work,
-                    // as no network is created. This situation requires 
+                    // as no network is created. This situation requires
                     // re-execution of the plot that is being queried.
                     plot->ClearCurrentActor();
-                    win->GetPlotList()->UpdateFrame(); 
+                    win->GetPlotList()->UpdateFrame();
                     retry = true;
-                    numAttempts++; 
+                    numAttempts++;
                 }
-                else 
+                else
                 {
                     //
                     // Reset the vars to what the user actually typed.
@@ -2395,7 +2374,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     // Add as much information to the message as we can,
                     // including exception type and exception message.
                     //
-                    SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s", 
+                    SNPRINTF(message, sizeof(message), "Pick:  (%s)\n%s",
                              e.GetExceptionType().c_str(),
                              e.Message().c_str());
 
@@ -2407,7 +2386,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         if (numAttempts == 2 && !pickCache.empty())
         {
             // If Exceptions were encountered too many times, don't attempt
-            // to process any more picks. 
+            // to process any more picks.
             pickCache.clear();
             handlingCache = false;
         }
@@ -2417,9 +2396,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             if (pickAtts->GetError())
                 return retval;
 
-            // 
+            //
             // See if we are supposed to make a spreadsheet when we pick.
-            // If so, detect to see if there is a spreadsheet plot in the 
+            // If so, detect to see if there is a spreadsheet plot in the
             // current window.  If so, use it.  If not, create it.
             //
             bool doSpreadsheet = (pickAtts->GetCreateSpreadsheet()) ||
@@ -2437,7 +2416,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     issuedWarning = true;
                     return retval;
                 }
-    
+
                 // Get a reference to the plot we picked on.
                 intVector plotIds;
                 plist->GetActivePlotIDs(plotIds);
@@ -2461,14 +2440,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                          continue;
                      if (plot->GetHostName() != plotWePicked->GetHostName())
                          continue;
-                     if (plot->GetDatabaseName() != 
+                     if (plot->GetDatabaseName() !=
                                                plotWePicked->GetDatabaseName())
                          continue;
-            
+
                      // If we have a mesh or label plot, then accept any
                      // variable.  Otherwise require that the variables match.
                      if (!useAnyVar)
-                         if (plot->GetVariableName() != 
+                         if (plot->GetVariableName() !=
                                                plotWePicked->GetVariableName())
                          continue;
 
@@ -2500,15 +2479,15 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
                 if (spreadsheet == NULL && useAnyVar)
                 {
-                    // If we have a mesh plot or label plot, then find a 
-                    // suitable variable to plot.  Choose the variable of 
+                    // If we have a mesh plot or label plot, then find a
+                    // suitable variable to plot.  Choose the variable of
                     // any PC or contour plot.
                     for (i = 0 ; i < plist->GetNumPlots() ; i++)
                     {
                          ViewerPlot *plot = plist->GetPlot(i);
                          if (plot->GetHostName() !=plotWePicked->GetHostName())
                              continue;
-                         if (plot->GetDatabaseName() != 
+                         if (plot->GetDatabaseName() !=
                                                plotWePicked->GetDatabaseName())
                              continue;
                          if (strcmp(plot->GetPlotTypeName(), "Pseudocolor")==0)
@@ -2561,7 +2540,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 {
                      ViewerOperator *op = plotWePicked->GetOperator(i);
                      const AttributeSubject *atts = op->GetOperatorAtts();
-                     AttributeSubject *s = 
+                     AttributeSubject *s =
                                      atts->CreateCompatible("PlaneAttributes");
                      if (s != NULL)
                          spreadsheet->SetPlotAtts(s);
@@ -2615,7 +2594,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                              "histogram of the array variable into."));
                     return retval;
                 }
-        
+
                 if (!GetPlotPluginManager()->PluginAvailable(
                                                               "Histogram_1.0"))
                 {
@@ -2626,11 +2605,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     issuedWarning = true;
                     return retval;
                 }
-    
+
                 int plotType = GetPlotPluginManager()
                                             ->GetEnabledIndex("Histogram_1.0");
                 ViewerPlotList *plotList =  resWin->GetPlotList();
-        
+
                 string hdbName = plot->GetSource();
                 plotList->SetHostDatabaseName(hdbName);
                 plotList->SetEngineKey(engineKey);
@@ -2645,17 +2624,17 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 int pid = plotList->AddPlot(plotType,arrayname,
                                             replacePlots,false, true);
                 ViewerPlot *resultsPlot = plotList->GetPlot(pid);
-    
+
                 // This is a bit subtle.  We are sending the pick attributes in
                 // as the plot attributes.  Normally, plot plugins blindly copy
                 // the attributes from this method.  But the histogram plot is
                 // smart enough to check to see if the atts are histogram atts.
-                // If they are not histogram atts, and they *are* pick atts, 
-                // then it will pull out the zone and domain.  Note that this 
-                // is a very similar game plan to what lineout does for the 
+                // If they are not histogram atts, and they *are* pick atts,
+                // then it will pull out the zone and domain.  Note that this
+                // is a very similar game plan to what lineout does for the
                 // curve plot.
                 resultsPlot->SetPlotAtts(pickAtts);
-    
+
                 if (resultsPlot == NULL)
                 {
                     // There was an error somewhere else...arrayname not valid?
@@ -2665,7 +2644,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 {
                     plotList->RealizePlots();
                     //
-                    // If there was an error, the bad curve plot should not be 
+                    // If there was an error, the bad curve plot should not be
                     // left around muddying up the waters.
                     //
                     if (resultsPlot->GetErrorFlag())
@@ -2690,7 +2669,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 // ****************************************************************************
 // Method: ViewerQueryManager::Pick
 //
-// Purpose: 
+// Purpose:
 //   Performs a pick, which if it is successful adds a pick letter to the
 //   vis window.
 //
@@ -2708,31 +2687,31 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 // Modifications:
 //   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
 //   Call PickThroughTime when necessary.
-//   
-//   Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
-//   Only add a pick letter if a valid position could be determined. 
-//   
-//   Kathleen Bonnell, Tue Oct 12 16:01:49 PDT 2004 
+//
+//   Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004
+//   Only add a pick letter if a valid position could be determined.
+//
+//   Kathleen Bonnell, Tue Oct 12 16:01:49 PDT 2004
 //   Save and restore the current pick type (certain types of pick may
-//   change it during execution). 
-//   
+//   change it during execution).
+//
 //   Kathleen Bonnell, Tue Dec 28 14:36:44 PST 2004
-//   Allow pick letter to NOT be displayed. 
+//   Allow pick letter to NOT be displayed.
 //
-//   Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
-//   Test for existence of engine before proceeding. 
-//    
+//   Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005
+//   Test for existence of engine before proceeding.
+//
 //   Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
-//   Check for non-hidden active plot before checking if EngineExists. 
+//   Check for non-hidden active plot before checking if EngineExists.
 //
-//   Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007 
-//   Don't send message if QueryOutput is suppressed. 
+//   Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007
+//   Don't send message if QueryOutput is suppressed.
 //
 //   Brad Whitlock, Tue Apr 29 16:40:45 PDT 2008
 //   Support for internationalization.
 //
 //   Gunther H. Weber, Fri Aug 15 10:17:05 PDT 2008
-//   Check whether reusePickLetter flag in PickAttributes is set and  
+//   Check whether reusePickLetter flag in PickAttributes is set and
 //   do not advance pick designtor if it is.
 //
 // ****************************************************************************
@@ -2758,7 +2737,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
                  "Please select a plot and try again.\n"));
         return ;
     }
- 
+
     if (pickAtts->GetDoTimeCurve())
     {
         PickThroughTime(ppi, pickAtts->GetTimeCurveType(), dom, el);
@@ -2785,12 +2764,12 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             //
             // Add a pick point to the window
             //
-            if (pickAtts->GetShowPickLetter() && 
+            if (pickAtts->GetShowPickLetter() &&
                 pickAtts->GetPickPoint()[0] != FLT_MAX)
             {
                 win->ValidateQuery(pickAtts, NULL);
             } // else no valid position could be determined, data was transformed
-            
+
             //
             // Send pick attributes to the client.
             //
@@ -2802,32 +2781,32 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             {
                 string append;
                 if (pickAtts->GetPickType() == PickAttributes::Zone  ||
-                    pickAtts->GetPickType() == PickAttributes::DomainZone) 
+                    pickAtts->GetPickType() == PickAttributes::DomainZone)
                 {
-                    append = "Mesh was transformed and chosen zone is not " 
-                        "part of transformed mesh.\nNo pick letter will " 
+                    append = "Mesh was transformed and chosen zone is not "
+                        "part of transformed mesh.\nNo pick letter will "
                         "be displayed.";
                 }
-                else 
+                else
                 {
-                    append = "Mesh was transformed and chosen node is not " 
-                        "part of transformed mesh.\nNo pick letter will " 
+                    append = "Mesh was transformed and chosen node is not "
+                        "part of transformed mesh.\nNo pick letter will "
                         "be displayed.";
                 }
                 msg += append;
             }
             if (!suppressQueryOutput)
-                Message(msg.c_str(), false); 
+                Message(msg.c_str(), false);
             UpdatePickAtts();
-            
+
             //
-            // If we are not reusing a pick letter, make the pick label ready for 
+            // If we are not reusing a pick letter, make the pick label ready for
             // the next pick point.
             //
             if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
         }
     }
-    
+
     //
     // In case it was changed in the process. (Mostly likely by picking
     // on a VectorPlot or a PointMesh.
@@ -2844,7 +2823,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 // ****************************************************************************
 // Method: ViewerQueryManager::NoGraphicsPick
 //
-// Purpose: 
+// Purpose:
 //   Computes the pick attributes for a pick point but does not add a pick
 //   label to the vis window.
 //
@@ -2855,7 +2834,7 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
 // Creation:   Tue Jan 6 10:03:03 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2867,14 +2846,14 @@ ViewerQueryManager::NoGraphicsPick(PICK_POINT_INFO *ppi)
 // ****************************************************************************
 // Method: ViewerQueryManager::GetColor
 //
-// Purpose: 
+// Purpose:
 //   Gets the color to use for the refline.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Nov 20 13:20:28 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ColorAttribute
@@ -2907,15 +2886,15 @@ ViewerQueryManager::GetColor()
 // ****************************************************************************
 // Method: ViewerQueryManager::Lineout
 //
-// Purpose: 
+// Purpose:
 //   Performs a lineout on the currently active plot using the
-//   default Lineout attributes stored in ViewerOperatorFactory. 
+//   default Lineout attributes stored in ViewerOperatorFactory.
 //
 // Arguments:
 //   win : The window in which we're doing the lineout.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 20, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   December 20, 2002
 //
 // Modifications:
 //   Kathleen Bonnell, Mon Dec 23 08:23:26 PST 2002
@@ -2927,9 +2906,9 @@ ViewerQueryManager::GetColor()
 //   Jeremy Meredith, Tue Jun 17 19:29:00 PDT 2003
 //   Changed GetAllIndex to GetEnabledIndex.
 //
-//   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003 
+//   Kathleen Bonnell, Wed Jul 23 16:51:18 PDT 2003
 //   Removed calls to win->SetInteractionMode.
-//   
+//
 //   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //   Replaced references to GetTypeIsCurve and GetViewDimension with
 //   GetWindowMode.
@@ -2937,14 +2916,14 @@ ViewerQueryManager::GetColor()
 //   Kathleen Bonnell, Thu Sep 11 12:04:26 PDT 2003
 //   Added optional bool arg that indicates if lineout should be initialized
 //   from its default or its client atts.
-//   
-//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004 
+//
+//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004
 //   Renamed to 'StartLineout'.   Attempt to get Lineout window.  Save off
 //   information to lineoutCache for use during FinishLineout.
-// 
+//
 //    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
-//    Suspend socket signals in the viewer so that Lineout does not cause 
-//    synchronization events to be processed before we are ready for them. 
+//    Suspend socket signals in the viewer so that Lineout does not cause
+//    synchronization events to be processed before we are ready for them.
 //
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
@@ -2973,11 +2952,11 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
     }
 
     //
-    // Can we get a lineout window? 
+    // Can we get a lineout window?
     //
     int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
                      globalLineoutAtts->GetWindowId() -1);
-    ViewerWindow *resWin = 
+    ViewerWindow *resWin =
         ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
     if (resWin == NULL)
     {
@@ -2985,11 +2964,11 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
         return;
     }
 
-    int type = GetOperatorPluginManager()->GetEnabledIndex("Lineout_1.0"); 
+    int type = GetOperatorPluginManager()->GetEnabledIndex("Lineout_1.0");
     AttributeSubject *atts;
     if (fromDefault)
         atts = operatorFactory->GetDefaultAtts(type);
-    else 
+    else
         atts = operatorFactory->GetClientAtts(type);
     Line *line = (Line*)atts->CreateCompatible("Line");
     double *pt1 = line->GetPoint1();
@@ -3015,35 +2994,35 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
 // ****************************************************************************
 // Method: ViewerQueryManager::ResetDesignator
 //
-// Purpose: 
-//   Resets the baseDesignator to the default starting value. 
+// Purpose:
+//   Resets the baseDesignator to the default starting value.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 26, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   November 26, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 ViewerQueryManager::ResetDesignator()
 {
-    baseDesignator = 'A'; 
+    baseDesignator = 'A';
     cycleDesignator = false;
-    SNPRINTF(designator, 4, "%c", baseDesignator); 
+    SNPRINTF(designator, 4, "%c", baseDesignator);
 }
 
 
 // ****************************************************************************
 // Method: ViewerQueryManager::UpdateDesignator
 //
-// Purpose: 
+// Purpose:
 //   Increments the baseDesignator.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 19, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   December 19, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3065,11 +3044,11 @@ ViewerQueryManager::UpdateDesignator()
 
     if (cycleDesignator)
     {
-        SNPRINTF(designator, 4, "%c%c", baseDesignator, baseDesignator); 
+        SNPRINTF(designator, 4, "%c%c", baseDesignator, baseDesignator);
     }
-    else 
+    else
     {
-        SNPRINTF(designator, 4, "%c", baseDesignator); 
+        SNPRINTF(designator, 4, "%c", baseDesignator);
     }
 }
 
@@ -3083,7 +3062,7 @@ ViewerQueryManager::UpdateDesignator()
 //  Returns:    A pointer to the global lineout attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   January 13, 2003 
+//  Creation:   January 13, 2003
 //
 // ****************************************************************************
 
@@ -3097,7 +3076,7 @@ ViewerQueryManager::GetGlobalLineoutAtts()
     {
         globalLineoutAtts = new GlobalLineoutAttributes;
     }
- 
+
     return globalLineoutAtts;
 }
 
@@ -3111,7 +3090,7 @@ ViewerQueryManager::GetGlobalLineoutAtts()
 //  Returns:    A pointer to the global lineout client attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   January 13, 2003 
+//  Creation:   January 13, 2003
 //
 // ****************************************************************************
 
@@ -3210,23 +3189,23 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 //
 //  Purpose:
 //    Notify this class that pick mode has begun, or has changed from one
-//    pickmode type to another. 
-//  
+//    pickmode type to another.
+//
 //  Progammer:  Kathleen S. Bonnell
 //  Creation:   March 26, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Jun 27 15:54:30 PDT 2003
 //    Handle changes from one pick mode to another.
-// 
+//
 //    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004
 //    Allow 'initialPick' to be true when pick mode changes from a zone-type
 //    to a node-type or vice-versa, as each type has different requirements
 //    for re-execution of picked plot.
 //
-//    Kathleen Bonnell, Wed Nov 28 09:58:23 PST 2007 
+//    Kathleen Bonnell, Wed Nov 28 09:58:23 PST 2007
 //    Set pick type in client atts, too, in case pick atts change while
-//    still in pick mode, so we don't lose the pick type. 
+//    still in pick mode, so we don't lose the pick type.
 //
 // ****************************************************************************
 
@@ -3252,7 +3231,7 @@ ViewerQueryManager::StartPickMode(const bool firstEntry, const bool zonePick)
         pickAtts->SetPickType(PickAttributes::Zone);
         pickClientAtts->SetPickType(PickAttributes::Zone);
     }
-    else 
+    else
     {
         pickAtts->SetPickType(PickAttributes::Node);
         pickClientAtts->SetPickType(PickAttributes::Node);
@@ -3264,13 +3243,13 @@ ViewerQueryManager::StartPickMode(const bool firstEntry, const bool zonePick)
 //  Method:  ViewerQueryManager::StopPickMode
 //
 //  Purpose:
-//    Notify this class the pick mode has ended. 
-//  
+//    Notify this class the pick mode has ended.
+//
 //  Progammer:  Kathleen S. Bonnell
 //  Creation:   March 26, 2003
 //
 //  Modifications:
-// 
+//
 // ****************************************************************************
 
 void
@@ -3286,12 +3265,12 @@ ViewerQueryManager::StopPickMode()
 //  Purpose:
 //    Calls Pick on all items in the pick cache, and empties the cache on
 //    completion.
-//  
+//
 //  Progammer:  Kathleen S. Bonnell
 //  Creation:   March 26, 2003
 //
 //  Modifications:
-// 
+//
 // ****************************************************************************
 
 void
@@ -3315,11 +3294,11 @@ ViewerQueryManager::HandlePickCache()
 //
 //  Arguments:
 //    qName     The name of this query.
-//    pt1       The point to use for query. 
+//    pt1       The point to use for query.
 //    vars      The variables to be used for this query.
-//    
+//
 //  Programmer: Kathleen Bonnell
-//  Creation:   May 14, 2003 
+//  Creation:   May 14, 2003
 //
 //  Modifications:
 //    <snip>
@@ -3347,7 +3326,7 @@ ViewerQueryManager::HandlePickCache()
 //
 // ****************************************************************************
 
-void         
+void
 ViewerQueryManager::PointQuery(const MapNode &queryParams)
 {
     string qName = queryParams.GetEntry("query_name")->AsString();
@@ -3358,7 +3337,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
     stringVector vars;
     if (queryParams.HasEntry("vars"))
-        vars = queryParams.GetEntry("vars")->AsStringVector(); 
+        vars = queryParams.GetEntry("vars")->AsStringVector();
 
     if (!vars.empty())
         pickAtts->SetVariables(vars);
@@ -3367,7 +3346,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     int timeCurve = 0;
     if (queryParams.HasEntry("do_time"))
         timeCurve = queryParams.GetEntry("do_time")->AsInt();
-    timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0); 
+    timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
     // A query with time options should override what is set from PickWindow,
     // but then PickAtts should be reset, so save what PickAtts currently has
@@ -3379,12 +3358,12 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     int curvePlotType = 0;
     if (queryParams.HasEntry("curve_plot_type"))
         curvePlotType = queryParams.GetEntry("curve_plot_type")->AsInt();
-    else 
+    else
         curvePlotType = pickAtts->GetTimeCurveType();
 
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
-    INTERACTION_MODE imode = win->GetInteractionMode();  
-    
+    INTERACTION_MODE imode = win->GetInteractionMode();
+
     if (pType == "ScreenZone" || pType == "ScreenNode")
     {
         if (!vars.empty())
@@ -3399,7 +3378,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                       pType == "ScreenZone" ? ZONE_PICK : NODE_PICK);
         }
         else
-            EXCEPTION1(VisItException, 
+            EXCEPTION1(VisItException,
                        "Screen pick requires x and y screen coordinates.");
     }
 
@@ -3410,7 +3389,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         {
             win->SetInteractionMode(NODE_PICK);
         }
-        else 
+        else
         {
             win->SetInteractionMode(ZONE_PICK);
         }
@@ -3447,7 +3426,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             bool preserveCoord = true; // is this really the default we want?
             if (queryParams.HasEntry("preserve_coord"))
                preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
-            else 
+            else
                preserveCoord = pickAtts->GetTimePreserveCoord();
 
             bool tpc = pickAtts->GetTimePreserveCoord();
@@ -3457,11 +3436,11 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             PickThroughTime(&ppi, curvePlotType);
             pickAtts->SetDoTimeCurve(tc);
             pickAtts->SetTimePreserveCoord(tpc);
-                
+
         }
         win->SetInteractionMode(imode);
     }
-    else if (pType == "DomainZone"  || pType == "DomainNode") 
+    else if (pType == "DomainZone"  || pType == "DomainNode")
     {
         int domain = 0, element = -1;
         if (queryParams.HasEntry("use_global_id"))
@@ -3483,7 +3462,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         bool preserveCoord = false; // is this really the default we want?
         if (queryParams.HasEntry("preserve_coord"))
           preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
-        else 
+        else
           preserveCoord = pickAtts->GetTimePreserveCoord();
 
         if (timeCurve && preserveCoord)
@@ -3511,10 +3490,10 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                 pointQueryParams["do_time"] = 1;
                 pointQueryParams["preserve_coord"] = true;
                 pointQueryParams["curve_plot_type"] = curvePlotType;
-               
+
                 PointQuery(pointQueryParams);
             }
-            else 
+            else
             {
                 bool sqo_orig = suppressQueryOutput;
                 suppressQueryOutput = true;
@@ -3546,7 +3525,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         }
 
         INTERACTION_MODE imode  = win->GetInteractionMode();
-        if (pType == "DomainZone") 
+        if (pType == "DomainZone")
         {
             win->SetInteractionMode(ZONE_PICK);
             pickAtts->SetPickType(PickAttributes::DomainZone);
@@ -3590,36 +3569,36 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 // ****************************************************************************
 // Method: ViewerQueryManager::Lineout
 //
-// Purpose: 
+// Purpose:
 //   Performs a lineout on the currently active plot using the
 //   passed line attributes.
 //
 // Arguments:
 //   win       The window that originated the lineout.
-//   lineAtts  The attributes necessary for performing lineout. 
+//   lineAtts  The attributes necessary for performing lineout.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   June 6, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   June 6, 2003
 //
 // Modifications:
 //   Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
-//   I replaced the use of GetViewDimension with GetWindowMode. 
-//   
-//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004 
-//   Renamed to 'StartLineout'.   Save off information to lineoutCache 
+//   I replaced the use of GetViewDimension with GetWindowMode.
+//
+//   Kathleen Bonnell, Fri Jul  9 16:55:32 PDT 2004
+//   Renamed to 'StartLineout'.   Save off information to lineoutCache
 //   for use during FinishLineout.
 //
 //   Mark C. Miller, Mon Jul 12 19:46:32 PDT 2004
 //   Added call to create (get) the lineout window
 //
-//   Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004 
+//   Kathleen Bonnell, Thu Jul 22 15:43:56 PDT 2004
 //   Added useThisId arg to GetLineoutWindow call, so that a user-specified
 //   window can be retrieved/created. Save resWin's id in lineoutCache for
 //   use later by Finish routine.
 //
 //    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
-//    Suspend socket signals in the viewer so that Lineout does not cause 
-//    synchronization events to be processed before we are ready for them. 
+//    Suspend socket signals in the viewer so that Lineout does not cause
+//    synchronization events to be processed before we are ready for them.
 //
 // ****************************************************************************
 
@@ -3628,12 +3607,12 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 {
     viewerSubject->BlockSocketSignals(true);
     //
-    // Can we get a lineout window? 
+    // Can we get a lineout window?
     //
     int useThisId = (globalLineoutAtts->GetCreateWindow() ? -1 :
                      globalLineoutAtts->GetWindowId()-1);
 
-    ViewerWindow *resWin = 
+    ViewerWindow *resWin =
         ViewerWindowManager::Instance()->GetLineoutWindow(useThisId);
     if (resWin == NULL)
     {
@@ -3643,8 +3622,8 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 
     //
     // If in full-frame mode on a 2d plot, the end points were computed
-    // in the scaled full-frame space.  Reverse the scaling to get the 
-    // correct end points. 
+    // in the scaled full-frame space.  Reverse the scaling to get the
+    // correct end points.
     //
     if (origWin->GetFullFrameMode() && origWin->GetWindowMode() == WINMODE_2D)
     {
@@ -3658,7 +3637,7 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
             pt1[0] /= scale;
             pt2[0] /= scale;
         }
-        else if (type == 1 && scale != 0.) // y_axis 
+        else if (type == 1 && scale != 0.) // y_axis
         {
             pt1[1] /= scale;
             pt2[1] /= scale;
@@ -3674,17 +3653,17 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 // ****************************************************************************
 // Method: ViewerQueryManager::ViewDimChanged
 //
-// Purpose: 
-//   Notifies lineouts that the view dim has changed. 
+// Purpose:
+//   Notifies lineouts that the view dim has changed.
 //
 // Arguments:
 //   modWin    The window whose view dimension is changing.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   July 9, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3693,7 +3672,7 @@ ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
     //
     // No work to do if there are no lineouts, or if lineouts
     // are in dynamic mode.
-    // 
+    //
     if (nLineouts == 0 || GetGlobalLineoutAtts()->GetDynamic())
     {
         return;
@@ -3706,12 +3685,12 @@ ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
             lineoutList[i]->ViewDimChanged();
         }
     }
-} 
+}
 
 // ****************************************************************************
 // Method: ViewerQueryManager::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the query manager add its data to the tree that gets written to
 //   the config file.
 //
@@ -3722,7 +3701,7 @@ ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
 // Creation:   Tue Jul 22 10:15:14 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3745,7 +3724,7 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: ViewerQueryManager::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the query manager initialize itself from data read in from the
 //   config file.
 //
@@ -3757,11 +3736,11 @@ ViewerQueryManager::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 22 10:16:07 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::SetFromNode(DataNode *parentNode, 
+ViewerQueryManager::SetFromNode(DataNode *parentNode,
     const string &configVersion)
 {
     if(parentNode == 0)
@@ -3790,21 +3769,21 @@ ViewerQueryManager::SetFromNode(DataNode *parentNode,
 //  Method: GetUniqueVars
 //
 //  Purpose:
-//    Return a list of the unique vars in the passed argument. 
+//    Return a list of the unique vars in the passed argument.
 //
 //  Arguments:
 //    vars       The original list.
 //    activeVar  The varname to use to replace 'default'.
-//    uniqueVars The new list of unique vars. 
-//    
+//    uniqueVars The new list of unique vars.
+//
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 23, 2003. 
+//  Creation:   July 23, 2003.
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 24 14:59:16 PDT 2004
 //    If one of the vars is 'all', reteive all variables defined on Mesh,
 //    and all expression vars, too, and add them to the list.
-// 
+//
 // ****************************************************************************
 
 void
@@ -3832,25 +3811,25 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
             stringVector exprVars = exprList->GetAllVarNames(md->GetDatabaseName());
             for (j = 0; j < dbVars.size(); j++)
             {
-                if (uniqueVarsSet.count(dbVars[j]) == 0) 
+                if (uniqueVarsSet.count(dbVars[j]) == 0)
                 {
                     uniqueVars.push_back(dbVars[j]);
-                    uniqueVarsSet.insert(dbVars[j]); 
+                    uniqueVarsSet.insert(dbVars[j]);
                 }
             }
             for (j = 0; j < exprVars.size(); j++)
             {
-                if (uniqueVarsSet.count(exprVars[j]) == 0) 
+                if (uniqueVarsSet.count(exprVars[j]) == 0)
                 {
                     uniqueVars.push_back(exprVars[j]);
-                    uniqueVarsSet.insert(exprVars[j]); 
+                    uniqueVarsSet.insert(exprVars[j]);
                 }
             }
         }
         else if (uniqueVarsSet.count(v) == 0)
         {
             uniqueVars.push_back(v);
-            uniqueVarsSet.insert(v); 
+            uniqueVarsSet.insert(v);
         }
     }
 }
@@ -3863,52 +3842,52 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Initializes queryTypes with the types of queries available.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   September 15, 2003 
+//  Creation:   September 15, 2003
 //
 //  Modifications:
 //
 //    Hank Childs, Thu Oct  2 09:46:27 PDT 2003
 //    Add L2Norm, Area Between Curves, more.
 //
-//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003 
+//    Kathleen Bonnell, Wed Oct 29 16:06:23 PST 2003
 //    Uncomment MinMax, changed its AddQuery arguments.
 //
-//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003 
+//    Kathleen Bonnell, Mon Dec  1 18:04:41 PST 2003
 //    Added PickByNode, PickByZone. Allow certain queries to set their
-//    window type. 
+//    window type.
 //
 //    Hank Childs, Tue Feb  3 17:09:41 PST 2004
 //    Added variable summation query.
 //
-//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004 
-//    Rename 'Plot MinMax' to 'MinMax' , and set its window type to 
+//    Kathleen Bonnell, Tue Feb  3 17:43:12 PST 2004
+//    Rename 'Plot MinMax' to 'MinMax' , and set its window type to
 //    "CurrentPlot".
 //
-//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004 
-//    Added NumNodes, NumZones. 
+//    Kathleen Bonnell, Fri Feb 20 08:48:50 PST 2004
+//    Added NumNodes, NumZones.
 //
 //    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
-//    Made some queries 'time' queries (can perform queries-over-time). 
+//    Made some queries 'time' queries (can perform queries-over-time).
 //
 //    Hank Childs, Tue Apr 13 12:45:33 PDT 2004
 //    Do a better job distinguishing between 2D and 3D area.
 //
-//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
+//    Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004
 //    Added Zone center.
 //
-//    Kathleen Bonnell, Sat Sep  4 11:44:00 PDT 2004 
-//    Parameters required for AddQuery have changed. 
+//    Kathleen Bonnell, Sat Sep  4 11:44:00 PDT 2004
+//    Parameters required for AddQuery have changed.
 //
-//    Kathleen Bonnell, Wed Sep  8 10:33:24 PDT 2004 
-//    Removed references to QueryList::CoordinateRepresentation, no longer 
+//    Kathleen Bonnell, Wed Sep  8 10:33:24 PDT 2004
+//    Removed references to QueryList::CoordinateRepresentation, no longer
 //    exists.   Removed screen-coords pick 'Pick' and 'NodePick', changed
 //    world-space picks 'WorldPick'  and 'WorldNodePick' to 'Pick' and
 //    'NodePick' respectively.
 //
-//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004
 //    Added two new window states, to distinguish between Domain-zone/node
 //    queries that take vars and those that do not.  Removed 'Variable by
-//    Zone' and 'Variable by Node' queries, as those are covered by 
+//    Zone' and 'Variable by Node' queries, as those are covered by
 //    PickByNode and PickByZone.
 //
 //    Hank Childs, Thu May 19 14:26:48 PDT 2005
@@ -3920,9 +3899,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Fri Sep 23 16:16:28 PDT 2005
 //    Added watertight query.
 //
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Reflect changes to QueryList, timeQuery is now QueryMode,
-//    Queries can specify the number of vars required. 
+//    Queries can specify the number of vars required.
 //    Added TrajectoryByNode/Zone.
 //
 //    Brad Whitlock, Thu Nov 17 10:20:06 PDT 2005
@@ -3931,8 +3910,8 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
 //    Added localized and elliptical compactness factor queries.
 //
-//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
-//    Added a couple of Pick aliases. 
+//    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006
+//    Added a couple of Pick aliases.
 //
 //    Hank Childs, Thu May 11 13:24:34 PDT 2006
 //    Added average mean curvature query.
@@ -3950,7 +3929,7 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Add expected value query.
 //
 //    Hank Childs, Mon Aug 28 16:56:43 PDT 2006
-//    Added the "ShapeRelated" group of queries and added some new chord 
+//    Added the "ShapeRelated" group of queries and added some new chord
 //    and ray length distribution queries.
 //
 //    Dave Bremer, Fri Sep  8 11:32:33 PDT 2006
@@ -3972,10 +3951,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison,  Thu Mar  1 16:16:58 PST 2007
 //    Added connected components summary query
 //
-//    Kathleen Bonnell, Thu Aug  9 08:40:56 PDT 2007 
-//    Made 'Revolved surface area' and 'Revolved volume' be time-enabled. 
+//    Kathleen Bonnell, Thu Aug  9 08:40:56 PDT 2007
+//    Made 'Revolved surface area' and 'Revolved volume' be time-enabled.
 //
-//    Kathleen Bonnell, Fri Sep 28 14:52:09 PDT 2007 
+//    Kathleen Bonnell, Fri Sep 28 14:52:09 PDT 2007
 //    Made 'Volume2' be a non-public query (won't be available in window).
 //
 //    Cyrus Harrison, Tue Dec 18 14:18:07 PST 2007
@@ -4173,7 +4152,7 @@ ViewerQueryManager::InitializeQueryList()
 //    varTypes  A list of var types that the named query will be operating on.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 18, 2003 
+//  Creation:   November 18, 2003
 //
 //  Modifications:
 //    Eric Brugger, Tue Jul 27 09:31:29 PDT 2004
@@ -4182,7 +4161,7 @@ ViewerQueryManager::InitializeQueryList()
 // ****************************************************************************
 
 int
-ViewerQueryManager::VerifyQueryVariables(const string &qName, 
+ViewerQueryManager::VerifyQueryVariables(const string &qName,
      const intVector &varTypes)
 {
     int i, badIndex = -1;
@@ -4198,7 +4177,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
            }
         }
     }
-   return badIndex; 
+   return badIndex;
 }
 
 
@@ -4206,7 +4185,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 //  Method: CreateExtentsString
 //
 //  Purpose:
-//    A helper method that takes in extents and creates a string. 
+//    A helper method that takes in extents and creates a string.
 //
 //  Returns:
 //    A string listing the extents.
@@ -4218,7 +4197,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 //    float_format  Floating point format string.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   November 26, 2003 
+//  Creation:   November 26, 2003
 //
 //  Modifications:
 //
@@ -4229,7 +4208,7 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 
 string
 CreateExtentsString(const double * extents,
-                    const int dim, 
+                    const int dim,
                     const char *type,
                     const string &float_format)
 {
@@ -4239,7 +4218,7 @@ CreateExtentsString(const double * extents,
     {
         format = "The %s extents are (" + float_format + ", "
                                         + float_format  +")";
-        
+
         SNPRINTF(msg, 1024, format.c_str(), type,
                 extents[0], extents[1]);
     }
@@ -4276,7 +4255,7 @@ CreateExtentsString(const double * extents,
 //  Returns:    A pointer to the default query over timeattributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4303,7 +4282,7 @@ ViewerQueryManager::GetQueryOverTimeDefaultAtts()
 //  Returns:    A pointer to the queryovertime client attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4324,16 +4303,16 @@ ViewerQueryManager::GetQueryOverTimeClientAtts()
 // ****************************************************************************
 // Method: ViewerQueryManager::GetQueryOverTimeAtts
 //
-// Purpose: 
+// Purpose:
 //   Returns the time query attributes.
 //
 // Returns:    A pointer to the time query attributes.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   March 24, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   March 24, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QueryOverTimeAttributes *
@@ -4351,10 +4330,10 @@ ViewerQueryManager::GetQueryOverTimeAtts()
 //
 //  Purpose:
 //    Copies the default time query attributes into the client time query
-//     attributes. 
+//     attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4374,10 +4353,10 @@ ViewerQueryManager::SetClientQueryOverTimeAttsFromDefault()
 //  Method: ViewerQueryManager::SetDefaultQueryOverTimeAttsFromClient
 //
 //  Purpose:
-//    Sets the default timeQueryAtts using the client time query attributes. 
+//    Sets the default timeQueryAtts using the client time query attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4394,10 +4373,10 @@ ViewerQueryManager::SetDefaultQueryOverTimeAttsFromClient()
 //  Method: ViewerQueryManager::SetQueryOverTimeAttsFromClient
 //
 //  Purpose:
-//    Sets the timeQueryAtts using the client time query attributes. 
+//    Sets the timeQueryAtts using the client time query attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4416,10 +4395,10 @@ ViewerQueryManager::SetQueryOverTimeAttsFromClient()
 //  Method: ViewerQueryManager::SetQueryOverTimeAttsFromDefault
 //
 //  Purpose:
-//    Sets the timeQueryAtts using the default time query attributes. 
+//    Sets the timeQueryAtts using the default time query attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4440,10 +4419,10 @@ ViewerQueryManager::SetQueryOverTimeAttsFromDefault()
 //  Method: ViewerQueryManager::UpdateQueryOverTimeAtts
 //
 //  Purpose:
-//    Causes the timeQueryAtts to be sent to the client. 
+//    Causes the timeQueryAtts to be sent to the client.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 24, 2004 
+//  Creation:   March 24, 2004
 //
 // ****************************************************************************
 
@@ -4459,14 +4438,14 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 
 
 // ***********************************************************************
-//  Method: ViewerQueryManager::DoTimeQuery 
+//  Method: ViewerQueryManager::DoTimeQuery
 //
 //  Arguments:
 //    origWin   A pointer to the window that originated the query.
 //    queryAtts The query attributes to be used for the TimeQuery.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 22, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 22, 2004
 //
 //  Modifications:
 //    Brad Whitlock, Fri Apr 2 08:49:03 PDT 2004
@@ -4484,41 +4463,41 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //
 //    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
 //    Modify the way centering-consistency-checks are performed, so
-//    that expressions will get evaluated correctly.  
-//    
-//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004 
-//    Modify the way centering-consistency-checks are performed, so
-//    that Material vars will get evaluated correctly.  
+//    that expressions will get evaluated correctly.
 //
-//    Kathleen Bonnell, Wed Apr 28 11:11:28 PDT 2004 
-//    Added retry capability if engine is dead. 
-//    
+//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004
+//    Modify the way centering-consistency-checks are performed, so
+//    that Material vars will get evaluated correctly.
+//
+//    Kathleen Bonnell, Wed Apr 28 11:11:28 PDT 2004
+//    Added retry capability if engine is dead.
+//
 //    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
-//    Modified retrieval of TimeQueryWindow. 
-//    
+//    Modified retrieval of TimeQueryWindow.
+//
 //    Eric Brugger, Tue Jul 27 09:31:29 PDT 2004
 //    Add a cast to fix a compile error.
-//    
-//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004 
+//
+//    Kathleen Bonnell, Thu Dec 16 17:32:49 PST 2004
 //    Allow 'Variable by Zone' and 'Variable by Node', even though they
 //    are no longer part of the QueryList, because Pick uses these
 //    queries to do a pick-through-time.
-//    
+//
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN macro.
 //
-//    Kathleen Bonnell, Tue Oct 24 18:54:56 PDT 2006 
-//    Send pick atts to the Time Query for Variable by Zone/Node. 
+//    Kathleen Bonnell, Tue Oct 24 18:54:56 PDT 2006
+//    Send pick atts to the Time Query for Variable by Zone/Node.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
-//    Add "Locate and Pick Zone/Node" options. 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
+//    Add "Locate and Pick Zone/Node" options.
 //
 //    Brad Whitlock, Tue Apr 29 16:47:37 PDT 2008
 //    Support for internationalization.
 //
-//    Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008 
-//    Use the query var name when creating the results plot, not the 
-//    originating plot's var name. 
+//    Kathleen Bonnell, Tue Jun 24 09:04:23 PDT 2008
+//    Use the query var name when creating the results plot, not the
+//    originating plot's var name.
 //
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
@@ -4536,7 +4515,7 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 // ***********************************************************************
 
 void
-ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, 
+ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                                 QueryAttributes *qA)
 {
     MapNode qParams = qA->GetQueryInputParams();
@@ -4544,10 +4523,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 
     if (!queryTypes->TimeQueryAvailable(qName))
     {
-        if (qName != "Variable by Zone" && 
+        if (qName != "Variable by Zone" &&
             qName != "Variable by Node" &&
             qName != "Locate and Pick Zone" &&
-            qName != "Locate and Pick Node") 
+            qName != "Locate and Pick Node")
         {
             Error(tr("Time history query is not available for %1.").arg(qName.c_str()));
             return;
@@ -4566,7 +4545,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     int nStates = md->GetNumStates();
     if (nStates <= 1)
     {
-        Error(tr("Cannot create a time query curve with 1 time state.")); 
+        Error(tr("Cannot create a time query curve with 1 time state."));
         return;
     }
     string vName  = origPlot->GetVariableName();
@@ -4581,13 +4560,13 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
             qvarName = vars[0];
     }
     //
-    // For certain queries, if we are querying the plot's current variable, 
+    // For certain queries, if we are querying the plot's current variable,
     // check for centering consistency.
     //
-    if (qName == "Variable by Zone" || 
+    if (qName == "Variable by Zone" ||
         qName == "Variable by Node" ||
         qName == "Locate and Pick Zone" ||
-        qName == "Locate and Pick Node") 
+        qName == "Locate and Pick Node")
     {
         bool issueWarning = false;
         bool zoneQuery = (qName == "Variable by Zone" ||
@@ -4595,7 +4574,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 
         avtVarType varType = origPlot->GetVarType();
         if (varType == AVT_MATERIAL )
-        { 
+        {
             if (!zoneQuery)
                 issueWarning = true;
         }
@@ -4619,7 +4598,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
             ENDTRY
         }
         if (issueWarning)
-        {        
+        {
             if (zoneQuery)
             {
                 Warning(tr("The centering of the query (zone) does not match "
@@ -4627,7 +4606,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                         "(node).  Please try again with the appropriately "
                         "centered query: 'Variable By Node'"));
             }
-            else 
+            else
             {
                 Warning(tr("The centering of the query (node) does not match "
                         "the centering of the plot's current variable "
@@ -4638,9 +4617,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
         }
     }
 
-    // 
-    // Create a list of timesteps for the query. 
-    // 
+    //
+    // Create a list of timesteps for the query.
+    //
 
     int startT = 0;
     int endT = nStates-1;
@@ -4673,27 +4652,27 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     if (startT >= endT)
     {
         Error(tr("Query over time: start time must be smaller than end time"
-              " please correct and try again.")); 
+              " please correct and try again."));
         return;
     }
     int nUserFrames = (int) ceil(double((endT - startT)/stride))+1;
     if (nUserFrames <= 1)
     {
         Error(tr("Query over time requires more than 1 frame, "
-              "please correct start and end times try again.")); 
+              "please correct start and end times try again."));
         return;
     }
 
-    timeQueryAtts->SetStartTime(startT); 
-    timeQueryAtts->SetEndTime(endT); 
-    timeQueryAtts->SetStride(stride); 
+    timeQueryAtts->SetStartTime(startT);
+    timeQueryAtts->SetEndTime(endT);
+    timeQueryAtts->SetStride(stride);
 
     //
     //  See if we can get a window in which to place the resulting curve.
     //
     ViewerWindow *resWin = NULL;
 
-    int winId = (timeQueryAtts->GetCreateWindow() ? -1 : 
+    int winId = (timeQueryAtts->GetCreateWindow() ? -1 :
                  timeQueryAtts->GetWindowId() -1);
     resWin = ViewerWindowManager::Instance()->GetTimeQueryWindow(winId);
 
@@ -4727,7 +4706,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
     timeQueryAtts->SetQueryAtts(*qA);
     if (qName == "Variable by Zone"     || qName == "Variable by Node" ||
-        qName == "Locate and Pick Zone" || qName == "Locate and Pick Node") 
+        qName == "Locate and Pick Zone" || qName == "Locate and Pick Node")
     {
         timeQueryAtts->SetPickAtts(*pickAtts);
     }
@@ -4735,7 +4714,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     int numAttempts = 0;
 
     // turn off time in the legend, as it means nothing for a TimeQuery curve
-    AnnotationAttributes *annot = 
+    AnnotationAttributes *annot =
         ViewerWindowManager::Instance()->GetAnnotationClientAtts();
     annot->SetTimeInfoFlag(false);
     resWin->SetAnnotationAttributes(annot, true);
@@ -4748,16 +4727,16 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 
         // Make sure we will be using a cloned network
         resultsPlot->SetCloneId(origPlot->GetNetworkID());
-        resultsPlot->SetSILRestriction(origPlot->GetSILRestriction()); 
+        resultsPlot->SetSILRestriction(origPlot->GetSILRestriction());
         TRY
         {
             ViewerEngineManager::Instance()->CloneNetwork(engineKey,
                 origPlot->GetNetworkID(), timeQueryAtts);
             plotList->RealizePlots();
-            // 
+            //
             // If there was an error, the bad curve plot should not be left
             // around muddying up the waters.
-            // 
+            //
             if (resultsPlot->GetErrorFlag())
                 plotList->DeletePlot(resultsPlot, false);
         }
@@ -4771,13 +4750,13 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
                 //
                 // Queries access the cached network used by the queried plot.
                 // Simply relaunching the engine does not work, as no network
-                // is created. This situation requires re-execution of the 
+                // is created. This situation requires re-execution of the
                 // plot that is being queried.
                 //
                 origPlot->ClearCurrentActor();
-                origList->UpdateFrame(); 
+                origList->UpdateFrame();
                 retry = true;
-                numAttempts++; 
+                numAttempts++;
             }
             else if (e.GetExceptionType() == "InvalidDimensionsException")
             {
@@ -4812,10 +4791,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
             ClearStatus(engineKey.ID().c_str());
             if (!retry)
             {
-                // 
+                //
                 // If there was an error, the bad curve plot should not be left
                 // around muddying up the waters.
-                // 
+                //
                 plotList->DeletePlot(resultsPlot, false);
                 CATCH_RETURN(1);
             }
@@ -4840,29 +4819,29 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 
 
 // ****************************************************************************
-//  Method: ViewerQueryManager::PickThroughTime 
+//  Method: ViewerQueryManager::PickThroughTime
 //
 //  Arguments:
 //    ppi       The struct containing picked point and window information.
-//    dom       The domain (optional). 
-//    el        The element number (optional). 
+//    dom       The domain (optional).
+//    el        The element number (optional).
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 31, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 31, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Apr  2 17:03:50 PST 2004
 //    Modify the way centering-consistency-checks are performed, so
-//    that expressions will get evaluated correctly.  
+//    that expressions will get evaluated correctly.
 //
-//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004 
+//    Kathleen Bonnell, Wed Apr 14 15:38:56 PDT 2004
 //    Modify the way centering-consistency-checks are performed, so
-//    that Material vars will get evaluated correctly.  
+//    that Material vars will get evaluated correctly.
 //
-//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
-//    Support new pick types. 
+//    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004
+//    Support new pick types.
 //
-//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007
 //    Support new pick-through-time options which perserve picked coordinates
 //    instead of picked element.
 //
@@ -4882,8 +4861,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
 // ****************************************************************************
 
 void
-ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, 
-                                    const int curvePlotType, 
+ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
+                                    const int curvePlotType,
                                     const int dom, const int el)
 {
     ViewerWindow *origWin = (ViewerWindow *)ppi->callbackData;
@@ -4895,10 +4874,10 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
     ViewerPlot *origPlot = origList->GetPlot(origPlotID);
     string vName = origPlot->GetVariableName();
 
-    // 
+    //
     //  We can only do one variable (for now) for a time query,
     //  so make sure we have the right one.
-    // 
+    //
     stringVector userVars = pickAtts->GetVariables();
     string pvarName = userVars[0];
     if (pvarName == "default")
@@ -4912,7 +4891,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
     avtVarType varType = origPlot->GetVarType();
 
     bool issueWarning = false;
-    if (varType == AVT_MATERIAL) 
+    if (varType == AVT_MATERIAL)
     {
         if (type != PickAttributes::Zone && type != PickAttributes::DomainZone)
             issueWarning = true;
@@ -4925,14 +4904,14 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
             avtCentering centering = origPlot->GetVariableCentering();
             if (centering == AVT_ZONECENT || centering == AVT_NODECENT)
             {
-                if ((type == PickAttributes::Zone || 
-                     type == PickAttributes::DomainZone) && 
+                if ((type == PickAttributes::Zone ||
+                     type == PickAttributes::DomainZone) &&
                     centering != AVT_ZONECENT)
                 {
                     issueWarning = true;
                 }
-                else if ((type == PickAttributes::Node || 
-                          type == PickAttributes::DomainNode) && 
+                else if ((type == PickAttributes::Node ||
+                          type == PickAttributes::DomainNode) &&
                          centering != AVT_NODECENT)
                 {
                     issueWarning = true;
@@ -4949,7 +4928,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
     if (issueWarning)
     {
         pickAtts->SetVariables(userVars);
-        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
+        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone)
         {
             Warning(tr("The centering of the pick-through-time (zone) does "
                     "not match the centering of the plot's current "
@@ -4957,7 +4936,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
                     "appropriately centered Pick"));
             return;
         }
-        else 
+        else
         if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             Warning(tr("The centering of the pick-through-time (node) does "
@@ -4986,7 +4965,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
             d2[2] = ppi->rayPt2[2];
             params["ray_end_point"] = d2;
         }
-        params["domain"] = pickAtts->GetDomain() >= 0 ? 
+        params["domain"] = pickAtts->GetDomain() >= 0 ?
                            pickAtts->GetDomain() : 0;
         params["element"] = pickAtts->GetElementNumber();
         params["data_type"] = QueryAttributes::OriginalData;
@@ -5006,7 +4985,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
            Warning(tr("Multiple-Y-Axes time query availble only with multiple variable selected.  Using Single-Y-Axis instead."));
         }
         params["curve_plot_type"] = cpt;
-        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
+        if (type == PickAttributes::Zone || type == PickAttributes::DomainZone)
         {
             if (pickAtts->GetTimePreserveCoord())
             {
@@ -5017,7 +4996,7 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
                 params["query_name"] = string("Variable by Zone");
             }
         }
-        else 
+        else
         if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             if (pickAtts->GetTimePreserveCoord())
@@ -5043,34 +5022,34 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
 //
 //  Purpose:
 //    Verify that all necessary information for a single-input query is
-//    available. 
+//    available.
 //
 //  Arguments:
 //    plist      The plot list containing plots to be queried.
-//    plotId     The plot Id of the plot to be queried. 
-//    qName      The name of the query. 
-//    vars       The variable names on which the query will operate. 
+//    plotId     The plot Id of the plot to be queried.
+//    qName      The name of the query.
+//    vars       The variable names on which the query will operate.
 //    qa         The (modifiable) query attributes controlling the query.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 3, 2004 
+//  Creation:   June 3, 2004
 //
 //  Modifications:
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN2 macro.
-//  
+//
 //    Hank Childs, Fri Jan 28 11:55:12 PST 2005
 //    Make sure returns inside 'try' are wrapped.
 //
-//    Kathleen Bonnell, Tue Nov  8 11:48:24 PST 2005 
-//    Ensure that number of vars required by query are present. 
+//    Kathleen Bonnell, Tue Nov  8 11:48:24 PST 2005
+//    Ensure that number of vars required by query are present.
 //
 // ****************************************************************************
 
-bool         
+bool
 ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plotId,
-                            const string &qName, const stringVector &vars, 
-                            QueryAttributes &qa) 
+                            const string &qName, const stringVector &vars,
+                            QueryAttributes &qa)
 {
     ViewerFileServer *fs = ViewerFileServer::Instance();
     string host, dbname;
@@ -5083,7 +5062,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
     TRY
     {
         //
-        // Determine the host, database, and list of variables that will be 
+        // Determine the host, database, and list of variables that will be
         // used for the query.
         //
         ViewerPlot *oplot = plist->GetPlot(plotId);
@@ -5147,8 +5126,8 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
                 varTypes.push_back((int)
                     fs->DetermineVarType(host, dbname, uniqueVars[j], state));
             }
- 
-            int badVarType =  VerifyQueryVariables(qName, varTypes); 
+
+            int badVarType =  VerifyQueryVariables(qName, varTypes);
             if (badVarType != -1)
             {
                 queryClientAtts->Notify();
@@ -5183,7 +5162,7 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
         // including query name, exception type and exception
         // message.
         //
-        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
+        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" +
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
@@ -5199,13 +5178,13 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 //
 //  Purpose:
 //    Verify that all necessary information for a multiple-input query is
-//    available. 
+//    available.
 //
 //  Arguments:
 //    plist      The plot list containing plots to be queried.
-//    numInputs  The number of inputs for the query. 
-//    qName      The name of the query. 
-//    <unused>   The variable names on which the query will operate. 
+//    numInputs  The number of inputs for the query.
+//    qName      The name of the query.
+//    <unused>   The variable names on which the query will operate.
 //    <unused>   The (modifiable) query attributes controlling the query.
 //
 //  Returns:    True if no error condition, false otherwise.
@@ -5215,12 +5194,12 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 //          variable types, and/or plot state.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 3, 2004 
+//  Creation:   June 3, 2004
 //
 //  Modifications:
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
 //    Corrected a misuse of the CATCH_RETURN2 macro.
-//  
+//
 //    Hank Childs, Fri Jan 28 11:55:12 PST 2005
 //    Make sure returns inside 'try' are wrapped.
 //
@@ -5230,9 +5209,9 @@ ViewerQueryManager::VerifySingleInputQuery(ViewerPlotList *plist, const int plot
 // ****************************************************************************
 
 
-bool         
-ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist, 
-                            const int numInputs, const string &qName, 
+bool
+ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
+                            const int numInputs, const string &qName,
                             const stringVector &, QueryAttributes &)
 {
     intVector plotIds;
@@ -5260,7 +5239,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         }
 
         //
-        // Determine if the engineKeys for all inputs match. 
+        // Determine if the engineKeys for all inputs match.
         //
         for (int i = 0 ; i < plotIds.size() ; i++)
         {
@@ -5276,7 +5255,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
             engineKey = oplot->GetEngineKey();
         }
         //
-        //  In future, use the passed queryAtts object to set 
+        //  In future, use the passed queryAtts object to set
         //  anything specific to mulitple-input queries: vars,
         //  state, etc.
         //
@@ -5289,7 +5268,7 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         // including query name, exception type and exception
         // message.
         //
-        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" + 
+        string msg = qName + ":  (" + e.GetExceptionType() + ")\n" +
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
@@ -5307,13 +5286,13 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //    Perform a spatial extents query on the specified plot.
 //
 //  Arguments:
-//    oplot      The plot to be queried. 
+//    oplot      The plot to be queried.
 //    actualData The type of extents to retrieve.
 //
 //  Notes:  code moved from DatabaseQuery method.
 
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 3, 2004 
+//  Creation:   June 3, 2004
 //
 //  Modifications:
 //    Eric Brugger, Thu Jan  6 08:58:28 PST 2005
@@ -5325,8 +5304,8 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //    Cyrus Harrison, Wed Sep 19 08:40:27 PDT 2007
 //    Added support for user settable floating point format string
 //
-//    Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007 
-//    Don't send message if QueryOutput is suppressed. 
+//    Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007
+//    Don't send message if QueryOutput is suppressed.
 //
 // ****************************************************************************
 
@@ -5367,7 +5346,7 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         // including query name, exception type and exception
         // message.
         //
-        string msg = "SpatialExtents:  (" + e.GetExceptionType() + ")\n" + 
+        string msg = "SpatialExtents:  (" + e.GetExceptionType() + ")\n" +
             e.Message() + "\nThis is probably an internal Query error," +
             " please contact a VisIt developer.\n";
         queryClientAtts->Notify();
@@ -5382,10 +5361,10 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
 //  Method: ViewerQueryManager::ResetLineoutCache
 //
 //  Purpose:
-//    Resets lineoutCache information to default values. 
+//    Resets lineoutCache information to default values.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 9, 2004 
+//  Creation:   July 9, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jul 22 15:38:39 PDT 2004
@@ -5400,7 +5379,7 @@ ViewerQueryManager::ResetLineoutCache()
     lineoutCache.fromDefault = true;
     lineoutCache.resWinId = -1;
     if (!lineoutCache.vars.empty())
-        lineoutCache.vars.clear(); 
+        lineoutCache.vars.clear();
 }
 
 
@@ -5408,15 +5387,15 @@ ViewerQueryManager::ResetLineoutCache()
 //  Method: ViewerQueryManager::FinishLineout
 //
 //  Purpose:
-//    Completes the Lineout by calling AddQuery with the cached info. 
+//    Completes the Lineout by calling AddQuery with the cached info.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 9, 2004 
+//  Creation:   July 9, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
-//    Resume socket signals in the viewer so that synchronization events 
-//    can be processed. 
+//    Resume socket signals in the viewer so that synchronization events
+//    can be processed.
 //
 // ****************************************************************************
 
@@ -5426,7 +5405,7 @@ ViewerQueryManager::FinishLineout()
     if (lineoutCache.origWin != NULL)
     {
         AddQuery(lineoutCache.origWin, &lineoutCache.line, lineoutCache.fromDefault);
-        ResetLineoutCache();  
+        ResetLineoutCache();
     }
     viewerSubject->BlockSocketSignals(false);
 }
@@ -5437,18 +5416,18 @@ ViewerQueryManager::FinishLineout()
 //
 //  Purpose:
 //    Completes the LineQuery.
-//    For Lineout, this is done by calling AddQuery with the cached info. 
+//    For Lineout, this is done by calling AddQuery with the cached info.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 9, 2004 
+//  Creation:   July 9, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jul 26 17:45:12 PDT 2004
-//    Resume socket signals in the viewer so that synchronization events 
-//    can be processed. 
+//    Resume socket signals in the viewer so that synchronization events
+//    can be processed.
 //
-//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
-//    Send lineoutCache.forceSampling to AddQuery. 
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007
+//    Send lineoutCache.forceSampling to AddQuery.
 //
 // ****************************************************************************
 
@@ -5463,7 +5442,7 @@ ViewerQueryManager::FinishLineQuery()
             AddQuery(lineoutCache.origWin, &lineoutCache.line,
                      lineoutCache.fromDefault, lineoutCache.forceSampling);
         }
-        ResetLineoutCache();  
+        ResetLineoutCache();
     }
     viewerSubject->BlockSocketSignals(false);
 }
@@ -5473,10 +5452,10 @@ ViewerQueryManager::FinishLineQuery()
 //  Method: ViewerQueryManager::ResetLineoutColor
 //
 //  Purpose:
-//    Resets colorIndex to the default state. 
+//    Resets colorIndex to the default state.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 5, 2004 
+//  Creation:   August 5, 2004
 //
 //  Modifications:
 //
@@ -5494,13 +5473,13 @@ ViewerQueryManager::ResetLineoutColor()
 //
 //  Purpose:
 //    Tells the lineout lists to follow/not follow time.
-//    based on the passed value. 
+//    based on the passed value.
 //
 //  Arguments:
-//    followTime   True if lineout's resplot should follow time. 
+//    followTime   True if lineout's resplot should follow time.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   February 3, 2005 
+//  Creation:   February 3, 2005
 //
 // ****************************************************************************
 
@@ -5519,13 +5498,13 @@ ViewerQueryManager::SetLineoutsFollowTime(bool followTime)
 //
 //  Purpose:
 //    Tells the lineout lists to stop observing plots, because the reflines
-//    have been cleared. 
+//    have been cleared.
 //
 //  Arguments:
-//    origWin   The window from which reflines have been cleared. 
+//    origWin   The window from which reflines have been cleared.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 23, 2005 
+//  Creation:   March 23, 2005
 //
 // ****************************************************************************
 
@@ -5547,7 +5526,7 @@ ViewerQueryManager::ClearRefLines(ViewerWindow *origWin)
 //
 //  Purpose:
 //    Tests for a running engine associated with the active plot.
-//    Issues warning if the engine does not exist. 
+//    Issues warning if the engine does not exist.
 //
 //  Arguments:
 //    plot     The active plot that will be queried.
@@ -5556,7 +5535,7 @@ ViewerQueryManager::ClearRefLines(ViewerWindow *origWin)
 //    true if an engine exists for the active plot, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 14, 2005 
+//  Creation:   July 14, 2005
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
@@ -5579,7 +5558,7 @@ ViewerQueryManager::EngineExistsForQuery(ViewerPlot *plot)
     return engineExists;
 }
 
- 
+
 // ****************************************************************************
 //  Method: ViewerQueryManager::CloneQuery
 //
@@ -5591,7 +5570,7 @@ ViewerQueryManager::EngineExistsForQuery(ViewerPlot *plot)
 //    ts           The time step for the cloned query.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 22, 2006 
+//  Creation:   June 22, 2006
 //
 //  Modifications:
 //
@@ -5633,7 +5612,7 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
 //    queryParams  The parameters for the query.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   June 13, 2011 
+//  Creation:   June 13, 2011
 //
 //  Modifications:
 //
@@ -5643,7 +5622,7 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
 // ****************************************************************************
 
 
-void         
+void
 ViewerQueryManager::Query(const MapNode &queryParams)
 {
     if (!queryParams.HasEntry("query_name"))
@@ -5695,7 +5674,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
         StartLineQuery(queryParams);
         viewerSubject->MessageRendererThread("finishLineQuery;");
     }
-    else 
+    else
     {
         Error(tr("ViewerQueryManager could not determine query type."));
     }
@@ -5715,11 +5694,11 @@ ViewerQueryManager::Query(const MapNode &queryParams)
 //    qName     The name of the query.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   July 15, 2011 
+//  Creation:   July 15, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Wed Jan  9 12:56:32 PST 2013
-//    Handle Lineout. 
+//    Handle Lineout.
 //
 // ****************************************************************************
 void
@@ -5759,7 +5738,7 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
     }
     else
     {
-        // need an engine key, but don't necessarily need a plot, so 
+        // need an engine key, but don't necessarily need a plot, so
         // see if we can find an engine key another way.
         ViewerEngineManager *em = ViewerEngineManager::Instance();
         EngineList *engines = em->GetEngineList();
@@ -5770,8 +5749,8 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
             Error(tr("Need a running engine to retrieve query parameters."));
             return;
         }
-  
-        EngineKey ek(hosts[0], sims[0]); 
+
+        EngineKey ek(hosts[0], sims[0]);
         string params;
         ViewerEngineManager::Instance()->GetQueryParameters(ek, qName, &params);
         queryClientAtts->SetXmlResult(params);
