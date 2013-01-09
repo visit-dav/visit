@@ -40,7 +40,7 @@
 #define __vtkConnectedTubeFilter_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
 
 class vtkCellArray;
 class vtkPoints;
@@ -55,14 +55,17 @@ class vtkPoints;
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 11:29:49 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
-class VISIT_VTK_API vtkConnectedTubeFilter :
-    public vtkPolyDataToPolyDataFilter
+class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataToPolyDataFilter);
+    vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent);
-    bool BuildConnectivityArrays();
+    bool BuildConnectivityArrays(vtkPolyData *);
 
     // Description:
     // Construct object with radius 0.5, radius variation turned off, the number 
@@ -119,7 +122,6 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
     //    Encapsulates a list of separate point sequences.
     //
     //  Modifications:
-    //
     //    Rich Cook and Hank Childs, Thu Oct  2 16:31:45 PDT 2008
     //    Added data member to support tubing over loops.
     //
@@ -150,8 +152,9 @@ class VISIT_VTK_API vtkConnectedTubeFilter :
     vtkConnectedTubeFilter();
     ~vtkConnectedTubeFilter();
 
-    // Usual data generation method
-    void Execute();
+    virtual int RequestData(vtkInformation *,
+                            vtkInformationVector **,
+                            vtkInformationVector *);
 
     float Radius;      // minimum radius of tube
     int NumberOfSides; // number of sides to create tube

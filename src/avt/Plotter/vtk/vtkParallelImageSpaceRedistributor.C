@@ -54,6 +54,9 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 #include <vtkDataSetWriter.h>
+#include <vtkExecutive.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -94,8 +97,10 @@ vtkStandardNewMacro(vtkParallelImageSpaceRedistributor);
 //  Creation:    September  1, 2004
 //
 // ****************************************************************************
-static void AreaOwned(int rank, int size, int w, int h,
-                      int &x1,int &y1, int &x2,int &y2)
+
+static void
+AreaOwned(int rank, int size, int w, int h,
+          int &x1,int &y1, int &x2,int &y2)
 {
     x1 = 0;
     x2 = w-1;
@@ -116,10 +121,14 @@ static void AreaOwned(int rank, int size, int w, int h,
 //    Brad Whitlock, Fri Jan 23 15:09:07 PST 2009
 //    Initialize the communicator.
 //
+//    Eric Brugger, Wed Jan  9 10:37:37 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
+
 vtkParallelImageSpaceRedistributor::vtkParallelImageSpaceRedistributor()
 {
-    SetNumberOfOutputs(1);
+    SetNumberOfOutputPorts(1);
     rank = 0;
     size = 1;
     x1 = x2 = y1 = y2 = 0;
@@ -135,6 +144,7 @@ vtkParallelImageSpaceRedistributor::vtkParallelImageSpaceRedistributor()
 //  Creation:   October 21, 2004
 //
 // ****************************************************************************
+
 vtkParallelImageSpaceRedistributor::~vtkParallelImageSpaceRedistributor()
 {
     delete[] x1;
@@ -200,16 +210,22 @@ vtkParallelImageSpaceRedistributor::SetRankAndSize(int r, int s)
 //  Method: vtkParallelImageSpaceRedistributor::GetOutput()
 //
 //  Purpose:
-//      retrieves output from this filter
+//    retrieves output from this filter
 //
 //  Programmer: Chris Wojtan
 //  Creation:   July 7, 2004
 //
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 10:37:37 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
+
 vtkPolyData *
 vtkParallelImageSpaceRedistributor::GetOutput()
 {
-    return (vtkPolyData *) vtkSource::GetOutput(0);
+    return vtkPolyData::SafeDownCast(
+        this->GetExecutive()->GetOutputData(0));
 }
 
 
@@ -217,7 +233,7 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //  Method: vtkParallelImageSpaceRedistributor::GetOutput()
 //
 //  Purpose:
-//      executes the actual filtering of the polydata
+//    Executes the actual filtering of the polydata
 //
 //  Programmer: Chris Wojtan
 //  Creation:   July 7, 2004
@@ -246,11 +262,30 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    Kathleen Biagas, Wed Aug 29 09:15:07 MST 2012
 //    Preserve input coordinate type.
 //
+//    Eric Brugger, Wed Jan  9 10:37:37 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
-void
-vtkParallelImageSpaceRedistributor::Execute(void)
+
+int
+vtkParallelImageSpaceRedistributor::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
 #ifdef PARALLEL
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkPolyData  *input = vtkPolyData::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     //
     // Do some basic setup -- collect some important data
     //
@@ -271,7 +306,6 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 
     int   i, j;
 
-    vtkPolyData  *input      = GetInput();
     vtkPoints    *inPts      = input->GetPoints();
     vtkPointData *inPD       = input->GetPointData();
     vtkCellData  *inCD       = input->GetCellData();
@@ -623,7 +657,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     delete[] big_recv_buffer;
     
     appender->Update();
-    GetOutput()->ShallowCopy(appender->GetOutput());
+    output->ShallowCopy(appender->GetOutput());
     visitTimer->StopTimer(TH_appending, "appending");
 
     //
@@ -639,6 +673,8 @@ vtkParallelImageSpaceRedistributor::Execute(void)
     visitTimer->StopTimer(TH_total, "vtkParallelImageSpaceRedistributor");
     visitTimer->DumpTimings();
 #endif
+
+    return 1;
 }
 
 
@@ -646,9 +682,9 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 //  Method: vtkParallelImageSpaceRedistributor::GetDataVTK()
 //
 //  Purpose:
-//      Takes a string as input, and converts it to vtkPolyData so we
-//      can retreive data from other processors and convert it into a
-//      usable form.  This was copied from avtDataRepresentation.C.
+//    Takes a string as input, and converts it to vtkPolyData so we
+//    can retreive data from other processors and convert it into a
+//    usable form.  This was copied from avtDataRepresentation.C.
 //
 //  Programmer: Chris Wojtan
 //  Creation:   Mon Jul 12 11:24:32 PDT 2004
@@ -665,7 +701,7 @@ vtkParallelImageSpaceRedistributor::Execute(void)
 
 vtkPolyData *
 vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
-                                          unsigned int asCharLength)
+    unsigned int asCharLength)
 {
     vtkPolyDataReader *reader = vtkPolyDataReader::New();
 
@@ -686,13 +722,14 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
     return asVTK;
 }
 
+
 // ***************************************************************************
 //  Method: vtkParallelImageSpaceRedistributor::GetDataString()
 //
 //  Purpose:
-//      Takes vtkPolyData as input, and converts it to a string so we
-//      can send it to other processors.  This was copied from
-//      avtDataRepresentation.C
+//    Takes vtkPolyData as input, and converts it to a string so we
+//    can send it to other processors.  This was copied from
+//    avtDataRepresentation.C
 //
 //  Programmer: Chris Wojtan
 //  Creation:   Mon Jul 12 11:23:23 PDT 2004
@@ -749,11 +786,11 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
 //  Method: vtkParallelImageSpaceRedistributor::WhichProcessorsForCell()
 //
 //  Purpose:
-//      Given a piece of vtkPolyData, the processor that we should use
-//      to draw it will depend on where the data lies in image-space.
-//      This function analyzes the data and returns a vector of
-//      integers.  Each returned integer will represent a processor
-//      that should draw this data.
+//    Given a piece of vtkPolyData, the processor that we should use
+//    to draw it will depend on where the data lies in image-space.
+//    This function analyzes the data and returns a vector of
+//    integers. Each returned integer will represent a processor
+//    that should draw this data.
 //
 // Note:  Currently assumes a horizontal banding!
 //        See below for comments on the return values.
@@ -778,9 +815,7 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
 
 int
 vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
-                                               vtkIdType npts,
-                                               vtkIdType *cellPts,
-                                               vector<int> &procs)
+    vtkIdType npts, vtkIdType *cellPts, vector<int> &procs)
 {
     // dest has some special values: If it is -2, then no processor
     // contained this cell.  If it is -1, then the client should walk
@@ -835,12 +870,13 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
     return dest;
 }
 
+
 // ****************************************************************************
 //  Method: vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts()
 //
 //  Purpose:
-//      Almost identical to WhichProcessorsForCell, except that instead of
-//      returning a list of outgoing processors, it
+//    Almost identical to WhichProcessorsForCell, except that instead of
+//    returning a list of outgoing processors, it
 //
 // Note:  Currently assumes a horizontal banding!
 //
@@ -854,7 +890,6 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
 //  Creation:   October 26, 2004
 //
 //  Modifications:
-//
 //    Hank Childs, Sun May 23 16:12:11 CDT 2010
 //    Calculate the number of VTK points in the cells as well.
 //
@@ -862,10 +897,8 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
 
 void
 vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
-                                               vtkIdType npts,
-                                               vtkIdType *cellPts,
-                                               vector<int> &outgoingCellCount,
-                                               vector<int> &outgoingPointCount)
+    vtkIdType npts, vtkIdType *cellPts, vector<int> &outgoingCellCount,
+    vector<int> &outgoingPointCount)
 {
     //
     // See WhichProcessorsForCell for more notes
@@ -900,6 +933,7 @@ vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
         }
     }
 }
+
 
 // ****************************************************************************
 //  Method:  vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
@@ -945,4 +979,3 @@ vtkParallelImageSpaceRedistributor::CreateWorldToDisplayMatrix()
 
     return M3;
 }
-

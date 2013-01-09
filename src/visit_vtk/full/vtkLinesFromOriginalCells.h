@@ -51,27 +51,25 @@
 #define __vtkLinesFromOriginalCells_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
 
-class VISIT_VTK_API vtkLinesFromOriginalCells : public vtkPolyDataToPolyDataFilter
+class VISIT_VTK_API vtkLinesFromOriginalCells : public vtkPolyDataAlgorithm
 {
 public:
   static vtkLinesFromOriginalCells *New();
-  vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataToPolyDataFilter);
+  vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataAlgorithm);
 
 protected:
   vtkLinesFromOriginalCells();
   ~vtkLinesFromOriginalCells();
 
-  // Usual data generation method
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
 
 private:
   vtkLinesFromOriginalCells(const vtkLinesFromOriginalCells&);
   void operator=(const vtkLinesFromOriginalCells&);
-
 };
 
 #endif
-
-

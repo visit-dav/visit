@@ -42,13 +42,14 @@
 #include <vtkCellData.h>
 #include <vtkEdgeTable.h>
 #include <vtkExtractEdges.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkVisItUtility.h>
 #include <vtkPolyData.h>
 #include <vtkUnsignedIntArray.h>
-
 
 //------------------------------------------------------------------------------
 // Modifications:
@@ -76,7 +77,6 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 // Generate feature edges for mesh
 //
 //  Modifications:
-//
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make pts of type vtkIdType to match VTK 4.0 API.
 //
@@ -104,13 +104,28 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Hank Childs, Thu Mar 10 09:48:47 PST 2005
 //    Fix memory leak.
 //
+//    Eric Brugger, Wed Jan  9 11:44:42 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
-
-void vtkLinesFromOriginalCells::Execute()
+int vtkLinesFromOriginalCells::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkPolyData  *input  = this->GetInput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkPolyData  *input = vtkPolyData::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   vtkCellData  *inCD   = input->GetCellData();
-  vtkPolyData  *output = this->GetOutput();
   vtkCellData  *outCD  = output->GetCellData();
 
   vtkPoints *pts2 = vtkVisItUtility::GetPoints(input);
@@ -139,7 +154,7 @@ void vtkLinesFromOriginalCells::Execute()
       extractor->GetOutput()->Update();
       output->ShallowCopy(extractor->GetOutput());
       extractor->Delete();
-      return;
+      return 1;
   }
   unsigned int* origCellNums =
       ((vtkUnsignedIntArray*)origCellsArr)->GetPointer(0);
@@ -159,7 +174,7 @@ void vtkLinesFromOriginalCells::Execute()
   if ( numCells < 1 || numPts < 1 )
     {
     vtkErrorMacro(<<"No input data!");
-    return;
+    return 1;
     }
 
   // Set up processing
@@ -248,5 +263,6 @@ void vtkLinesFromOriginalCells::Execute()
   newLines->Delete();
 
   output->Squeeze();
-}
 
+  return 1;
+}

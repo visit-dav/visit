@@ -43,10 +43,13 @@
 #ifndef __vtkParallelImageSpaceRedistributor_h
 #define __vtkParallelImageSpaceRedistributor_h
 #include <plotter_exports.h>
-#include <vtkRenderer.h>
+
 #include <vector>
-#include <vtkPolyDataToPolyDataFilter.h>
+
 #include <vtkCell.h>
+#include <vtkPolyDataAlgorithm.h>
+#include <vtkRenderer.h>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -55,10 +58,10 @@
 //  Class: vtkParallelImageSpaceRedistributor
 //
 //  Purpose:
-//      This will redistribute data into spatially disparate regions
-//      by processor.  The idea is to sort the data front to back for
-//      transparency calculations in image space, not in the data's
-//      coordinate space, in order to avoid transparency errors.
+//    This will redistribute data into spatially disparate regions
+//    by processor. The idea is to sort the data front to back for
+//    transparency calculations in image space, not in the data's
+//    coordinate space, in order to avoid transparency errors.
 //
 //  Programmer: Chris Wojtan
 //  Creation:   July 6, 2004
@@ -82,15 +85,18 @@
 //    Hank Childs, Sun May 23 16:12:11 CDT 2010
 //    Add argument to IncrementOutgoingCellTypes.
 //
+//    Eric Brugger, Wed Jan  9 10:32:26 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkParallelImageSpaceRedistributor :
-                                            public vtkPolyDataToPolyDataFilter
+    public vtkPolyDataAlgorithm
 {
   public:
     static vtkParallelImageSpaceRedistributor      *New();
 
-    vtkPolyData      *GetOutput();
+    vtkPolyData     *GetOutput();
     void             SetRenderer(vtkRenderer *renderer) {ren = renderer;};
     void             SetRankAndSize(int r, int s);
 #ifdef PARALLEL
@@ -100,11 +106,13 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
                      vtkParallelImageSpaceRedistributor();
     virtual         ~vtkParallelImageSpaceRedistributor();
 
-    virtual void     Execute(void);
+
+    virtual int      RequestData(vtkInformation *, vtkInformationVector **,
+                         vtkInformationVector *);
 
   private:
                      vtkParallelImageSpaceRedistributor(
-                                   const vtkParallelImageSpaceRedistributor &);
+                         const vtkParallelImageSpaceRedistributor &);
     void             operator=(const vtkParallelImageSpaceRedistributor &);
     
     vtkRenderer     *ren;
