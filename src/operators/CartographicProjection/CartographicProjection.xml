@@ -23,5 +23,8 @@
       <Field name="projectionID" label="projectionID" type="enum" subtype="ProjectionID">
         aitoff
       </Field>
+      <Field name="centralMeridian" label="Central Meridian" type="double">
+        0.000000
+      </Field>
     </Attribute>
   </Plugin>

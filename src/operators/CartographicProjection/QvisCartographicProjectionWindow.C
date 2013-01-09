@@ -150,6 +150,13 @@ QvisCartographicProjectionWindow::CreateWindowContents()
             this, SLOT(projectionIDChanged(int)));
     mainLayout->addWidget(projectionIDCombo, 0,1);
     projectionIDCombo->setCurrentIndex(atts->GetProjectionID());
+
+    centralMeridianLabel = new QLabel(tr("Central Meridian"), central);
+    mainLayout->addWidget(centralMeridianLabel,1,0);
+    centralMeridian = new QLineEdit(central);
+    connect(centralMeridian, SIGNAL(returnPressed()),
+            this, SLOT(centralMeridianProcessText()));
+    mainLayout->addWidget(centralMeridian, 1,1);
 }
 
 
@@ -189,6 +196,9 @@ QvisCartographicProjectionWindow::UpdateWindow(bool doAll)
             projectionIDCombo->setCurrentIndex(atts->GetProjectionID());
             projectionIDCombo->blockSignals(false);
             break;
+          case CartographicProjectionAttributes::ID_centralMeridian:
+            centralMeridian->setText(DoubleToQString(atts->GetCentralMeridian()));
+            break;
         }
     }
 }
@@ -212,6 +222,22 @@ QvisCartographicProjectionWindow::UpdateWindow(bool doAll)
 void
 QvisCartographicProjectionWindow::GetCurrentValues(int which_widget)
 {
+    bool doAll = (which_widget == -1);
+
+    // Do centralMeridian
+    if(which_widget == CartographicProjectionAttributes::ID_centralMeridian || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(centralMeridian, val))
+            atts->SetCentralMeridian(val);
+        else
+        {
+            ResettingError(tr("Central Meridian"),
+                DoubleToQString(atts->GetCentralMeridian()));
+            atts->SetCentralMeridian(atts->GetCentralMeridian());
+        }
+    }
+
 }
 
 
@@ -231,4 +257,9 @@ QvisCartographicProjectionWindow::projectionIDChanged(int val)
     }
 }
 
-
+void
+QvisCartographicProjectionWindow::centralMeridianProcessText()
+{
+    GetCurrentValues(CartographicProjectionAttributes::ID_centralMeridian);
+    Apply();
+}
