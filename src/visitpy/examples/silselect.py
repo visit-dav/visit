@@ -23,6 +23,7 @@ if(Version() != ScriptVersion):
 
 # Define a function to print out the categories and the sets in them.
 def PrintCategories(silr):
+    print "Categories and sets in current SIL Restriction..."
     for cats in silr.Categories():
         print "Category \"%s\"" % cats
         for sets in silr.SetsInCategory(cats):
@@ -30,7 +31,7 @@ def PrintCategories(silr):
 
 # Define a function that adds a subset plot and turns off the sets one by one.
 def AddSubsetPlotAndTurnOff(subset, category):
-    OpenDatabase("../../data/multi_ucd3d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_ucd3d.silo")
     AddPlot("Subset", subset)
     DisableRedraw()
     DrawPlots()
@@ -66,7 +67,7 @@ def silselect():
     v.viewportCoords = (0.1, 0.9, 0.2, 0.9)
     
     # Create a domain subset plot.
-    OpenDatabase("../../data/multi_curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_curv3d.silo")
     AddPlot("Subset", "domains(mesh1)")
     
     # Create a SIL restriction based on the selected plot.
@@ -87,7 +88,7 @@ def silselect():
     
     # Do a material subset plot in window 2.
     SetActiveWindow(2)
-    OpenDatabase("../../data/multi_curv2d.silo")
+    OpenDatabase("../data/silo_hdf5_test_data/multi_curv3d.silo")
     AddPlot("Subset", "mat1(mesh1)")
     silr.TurnOnAll()
     silr.TurnOffSet(silr.SetsInCategory('mat1')[1])
@@ -104,9 +105,9 @@ def silselect():
     AddSubsetPlotAndTurnOff('mat1(mesh1)', 'mat1')
 
 
-if(not os.path.isfile("../../data/multi_curv2d.silo")):
-    print "This script requires the file multi_curv2d.silo to be built in the data directory"
-elif(not os.path.isfile("../../data/multi_ucd3d.silo")):
+if(not os.path.isfile("../data/silo_hdf5_test_data/multi_curv3d.silo")):
+    print "This script requires the file multi_curv3d.silo to be built in the data directory"
+elif(not os.path.isfile("../data/silo_hdf5_test_data/multi_ucd3d.silo")):
     print "This script requires the file multi_ucd3d.silo to be built in the data directory"
 else:
     silselect()
