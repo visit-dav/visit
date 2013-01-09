@@ -192,6 +192,9 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Tue Aug  7 10:52:13 PDT 2012
 //    Send the scale variable to the vtk tube filter when needed.
 // 
+//     Eric Brugger, Wed Jan  9 13:17:11 PST 2013
+//     Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -245,7 +248,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     // Note -- if we're scaling by a variable, our vtkConnectedTubeFilter
     // doesn't yet support this, so fall back to the old VTK one.
     if (atts.GetScaleByVarFlag()==false &&
-        tube->BuildConnectivityArrays())
+        tube->BuildConnectivityArrays((vtkPolyData*)in_ds))
     {
         tube->SetRadius(scaleFactor);
         tube->CreateNormalsOn();

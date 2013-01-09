@@ -20,6 +20,8 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMath.h>
 #include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
@@ -54,7 +56,10 @@ vtkVisItFeatureEdges::~vtkVisItFeatureEdges()
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItFeatureEdges::Execute
+//  Method:  vtkVisItFeatureEdges::RequestData
+//
+//  Purpose:
+//    Generate feature edges for mesh.
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Apr 11 15:35:02 PDT 2003
@@ -64,12 +69,25 @@ vtkVisItFeatureEdges::~vtkVisItFeatureEdges()
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Renamed ghost data array.  Also remove vestiges of "levels" concept.
 //
+//    Eric Brugger, Wed Jan  9 13:07:36 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
-// Generate feature edges for mesh
-void vtkVisItFeatureEdges::Execute()
+int vtkVisItFeatureEdges::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkPolyData *input= this->GetInput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  vtkPolyData  *input = vtkPolyData::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   vtkPoints *inPts;
   vtkPoints *newPts;
   vtkFloatArray *newScalars = NULL;
@@ -89,7 +107,6 @@ void vtkVisItFeatureEdges::Execute()
   vtkIdType numPts, numCells, numPolys, numStrips, nei;
   vtkIdList *neighbors;
   vtkIdType p1, p2, newId;
-  vtkPolyData *output = this->GetOutput();
   vtkPointData *pd=input->GetPointData(), *outPD=output->GetPointData();
   vtkCellData *cd=input->GetCellData(), *outCD=output->GetCellData();
   unsigned char* ghostLevels=0;
@@ -121,7 +138,7 @@ void vtkVisItFeatureEdges::Execute()
        (numPolys < 1 && numStrips < 1) )
     {
     //vtkErrorMacro(<<"No input data!");
-    return;
+    return 1;
     }
 
   if ( !this->BoundaryEdges && !this->NonManifoldEdges && 
@@ -357,6 +374,8 @@ void vtkVisItFeatureEdges::Execute()
     outCD->SetScalars(newScalars);
     newScalars->Delete();
     }
+
+  return 1;
 }
 
 void vtkVisItFeatureEdges::CreateDefaultLocator()
@@ -388,9 +407,16 @@ void vtkVisItFeatureEdges::SetLocator(vtkPointLocator *locator)
   this->Modified();
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 13:07:36 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
+
 unsigned long int vtkVisItFeatureEdges::GetMTime()
 {
-  unsigned long mTime=this-> vtkPolyDataToPolyDataFilter::GetMTime();
+  unsigned long mTime=this->vtkPolyDataAlgorithm::GetMTime();
   unsigned long time;
 
   if ( this->Locator != NULL )
@@ -401,17 +427,34 @@ unsigned long int vtkVisItFeatureEdges::GetMTime()
   return mTime;
 }
 
-void vtkVisItFeatureEdges::ComputeInputUpdateExtents(vtkDataObject *output)
-{
-  int numPieces, ghostLevel;
-  
-  this->vtkPolyDataSource::ComputeInputUpdateExtents(output);
+// ****************************************************************************
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 13:07:36 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
 
-  numPieces = output->GetUpdateNumberOfPieces();
-  ghostLevel = output->GetUpdateGhostLevel();
+int vtkVisItFeatureEdges::RequestUpdateExtent(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
+{
+  this->vtkPolyDataAlgorithm::RequestUpdateExtent(request, inputVector, outputVector);
+
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  vtkPolyData  *input  = vtkPolyData::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  int numPieces = output->GetUpdateNumberOfPieces();
+  int ghostLevel = output->GetUpdateGhostLevel();
   if (numPieces > 1)
     {
-    this->GetInput()->SetUpdateGhostLevel(ghostLevel + 1);
+    input->SetUpdateGhostLevel(ghostLevel + 1);
     }
 }
 

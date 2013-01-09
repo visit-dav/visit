@@ -40,8 +40,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "vtkPolyDataRelevantPointsFilter.h"
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -54,10 +57,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 
-
 // ***************************************************************************
 //  Modifications:
-//
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make cells of type vtkIdType to match VTK 4.0 API.
 //
@@ -77,15 +78,28 @@ vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 //    Brad Whitlock, Wed Mar 21 12:29:53 PDT 2012
 //    Support for double coordinates.
 //
+//    Eric Brugger, Wed Jan  9 13:15:08 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
-void vtkPolyDataRelevantPointsFilter::Execute()
+int vtkPolyDataRelevantPointsFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
   //
   // Initialize some frequently used values.
   //
-  vtkPolyData  *input  = this->GetInput();
-  vtkPolyData  *output = this->GetOutput();
+  vtkPolyData  *input = vtkPolyData::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   vtkPoints *inPts     = input->GetPoints();
   vtkIdType numPts     = input->GetNumberOfPoints();
   vtkIdType numCells   = input->GetNumberOfCells();
@@ -96,11 +110,11 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   vtkDebugMacro(<<"Beginning PolyData Relevant Points Filter ");
   if (input == NULL) {
       vtkErrorMacro(<<"Input is NULL");
-      return;
+      return 1;
   }
   if ( (numPts<1) || (inPts == NULL ) ) {
       vtkErrorMacro(<<"No data to Operate On!");
-      return;
+      return 1;
   }
  
   //
@@ -235,6 +249,8 @@ void vtkPolyDataRelevantPointsFilter::Execute()
   delete [] pts;
   delete [] oldToNew;
   delete [] newToOld;
+
+  return 1;
 }
 
 //-----------------------------------------------------------------------------

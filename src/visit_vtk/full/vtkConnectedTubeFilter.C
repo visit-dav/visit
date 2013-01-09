@@ -42,6 +42,8 @@
 #include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMath.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -95,7 +97,6 @@ vtkConnectedTubeFilter::PointSequence::~PointSequence()
 //  Creation:    November  1, 2002
 //
 //  Modifications:
-//
 //    Hank Childs (for Jeremy Meredith), Mon Apr  7 11:46:51 PDT 2003
 //    Increased size of cellindex.
 //
@@ -144,7 +145,6 @@ vtkConnectedTubeFilter::PointSequence::Add(int i, int ci)
 //  Creation:    November  1, 2002
 //
 //  Modifications:
-//
 //    Rich Cook and Hank Childs, Thu Oct  2 16:32:55 PDT 2008
 //    Initialized data member used for supporting loops.
 //
@@ -255,7 +255,6 @@ vtkConnectedTubeFilter::PointSequenceList::Build(vtkPoints *points,
 //  Creation:    November  1, 2002
 //
 //  Modifications:
-//
 //    Rich Cook and Hank Childs, Thu Oct  2 16:32:55 PDT 2008
 //    Initialized data member used for supporting loops.
 //
@@ -416,10 +415,13 @@ vtkConnectedTubeFilter::~vtkConnectedTubeFilter()
 //  Programmer:  Jeremy Meredith
 //  Creation:    November  1, 2002
 //
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 11:31:17 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
-bool vtkConnectedTubeFilter::BuildConnectivityArrays()
+bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
 {
-    vtkPolyData  *input   = this->GetInput();
     vtkPoints    *inPts   = NULL;
     vtkCellArray *inLines = NULL;
     int numPts;
@@ -450,7 +452,7 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays()
 }
 
 // ****************************************************************************
-//  Method:  vtkConnectedTubeFilter::Execute
+//  Method:  vtkConnectedTubeFilter::RequestData
 //
 //  Purpose:
 //    Normal vtk filter execution.
@@ -459,7 +461,6 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays()
 //  Creation:    November  1, 2002
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Apr  7 10:02:31 PDT 2003
 //    Allocate memory for points, because VTK does not do that for you.
 //
@@ -471,11 +472,28 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays()
 //    Kathleen Biagas, Thu Sep 6 11:15:29 MST 2012
 //    Preserve coordinate data type.
 //
+//    Eric Brugger, Wed Jan  9 11:31:17 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
-void vtkConnectedTubeFilter::Execute()
+int vtkConnectedTubeFilter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkPolyData  *input = vtkPolyData::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     // Get all the appropriate input arrays
-    vtkPolyData  *input   = this->GetInput();
     vtkPoints    *inPts   = NULL;
     vtkCellArray *inLines = NULL;
     vtkCellData  *inCD    = input->GetCellData();
@@ -489,7 +507,7 @@ void vtkConnectedTubeFilter::Execute()
     {
         vtkErrorMacro(<< ": Connectivity was not built yet; need to call "
                          "vtkConnectedTubeFilter::BuildConnectivityArrays()\n");
-        return;
+        return 1;
     }
 
     if (!(inPts=input->GetPoints())               || 
@@ -498,13 +516,12 @@ void vtkConnectedTubeFilter::Execute()
         (numCells = inLines->GetNumberOfCells()) < 1)
     {
         vtkDebugMacro(<< ": No input data!\n");
-        return;
+        return 1;
     }
 
     // Set up the output arrays
     int maxNewCells  = numCells * (NumberOfSides + 2);
     int maxNewPoints = numCells * NumberOfSides * 2;
-    vtkPolyData   *output     = this->GetOutput();
     vtkPoints     *newPts     = vtkPoints::New(inPts->GetDataType());
     newPts->Allocate(maxNewPoints);
     vtkCellArray  *newCells   = vtkCellArray::New();
@@ -638,6 +655,8 @@ void vtkConnectedTubeFilter::Execute()
     // don't forget the sequence list; we're done with it
     delete pseqlist;
     pseqlist = NULL;
+
+    return 1;
 }
 
 // ****************************************************************************

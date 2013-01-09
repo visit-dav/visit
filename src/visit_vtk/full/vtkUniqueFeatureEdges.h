@@ -61,14 +61,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __vtkUniqueFeatureEdges_h
 #define __vtkUniqueFeatureEdges_h
 #include <visit_vtk_exports.h>
-#include "vtkPolyDataToPolyDataFilter.h"
+
+#include "vtkPolyDataAlgorithm.h"
 
 #include <vtkPointLocator.h>
 
-class VISIT_VTK_API vtkUniqueFeatureEdges : public vtkPolyDataToPolyDataFilter
+// ****************************************************************************
+//  Class: vtkUniqueFeatureEdges
+//
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 12:28:48 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
+
+class VISIT_VTK_API vtkUniqueFeatureEdges : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkUniqueFeatureEdges,vtkPolyDataToPolyDataFilter);
+  vtkTypeMacro(vtkUniqueFeatureEdges,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -123,9 +133,12 @@ protected:
   vtkUniqueFeatureEdges();
   ~vtkUniqueFeatureEdges();
 
-  // Usual data generation method
-  void Execute();
-  void ComputeInputUpdateExtents(vtkDataObject *output);
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *,
+                                  vtkInformationVector **,
+                                  vtkInformationVector *);
   
   float FeatureAngle;
   int BoundaryEdges;
@@ -140,5 +153,3 @@ private:
 };
 
 #endif
-
-

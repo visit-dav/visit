@@ -37,16 +37,25 @@
 
 #ifndef __vtkVisItFeatureEdges_h
 #define __vtkVisItFeatureEdges_h
-
-#include "vtkPolyDataToPolyDataFilter.h"
 #include <visit_vtk_exports.h>
+
+#include "vtkPolyDataAlgorithm.h"
 
 class vtkPointLocator;
 
-class VISIT_VTK_API vtkVisItFeatureEdges : public vtkPolyDataToPolyDataFilter
+// ****************************************************************************
+//  Class: vtkVisItFeatureEdges
+//
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 13:02:13 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
+
+class VISIT_VTK_API vtkVisItFeatureEdges : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItFeatureEdges,vtkPolyDataToPolyDataFilter);
+  vtkTypeMacro(vtkVisItFeatureEdges,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -107,9 +116,12 @@ protected:
   vtkVisItFeatureEdges();
   ~vtkVisItFeatureEdges();
 
-  // Usual data generation method
-  void Execute();
-  void ComputeInputUpdateExtents(vtkDataObject *output);
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *,
+                                  vtkInformationVector **,
+                                  vtkInformationVector *);
   
   double FeatureAngle;
   int BoundaryEdges;
@@ -118,6 +130,7 @@ protected:
   int ManifoldEdges;
   int Coloring;
   vtkPointLocator *Locator;
+
 private:
   vtkVisItFeatureEdges(const vtkVisItFeatureEdges&);  // Not implemented.
   void operator=(const vtkVisItFeatureEdges&);  // Not implemented.

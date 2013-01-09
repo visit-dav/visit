@@ -43,14 +43,14 @@
 #ifndef __vtkAxisDepthSort_h
 #define __vtkAxisDepthSort_h
 #include <visit_vtk_exports.h>
-#include <vtkPolyDataToPolyDataFilter.h>
 
+#include <vtkPolyDataAlgorithm.h>
 
 // ****************************************************************************
 //  Class: vtkAxisDepthSort
 //
 //  Purpose:
-//      This will sort poly data along all six axes (+x, -x, +y, -y, +z, -z).
+//    This will sort poly data along all six axes (+x, -x, +y, -y, +z, -z).
 //
 //  Programmer: Hank Childs
 //  Creation:   July 13, 2002
@@ -59,9 +59,12 @@
 //    Brad Whitlock, Mon Jul 15 15:43:22 PST 2002
 //    Added API.
 //
+//    Eric Brugger, Wed Jan  9 10:54:24 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
-class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataToPolyDataFilter
+class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataAlgorithm
 {
   public:
     static vtkAxisDepthSort      *New();
@@ -77,7 +80,9 @@ class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataToPolyDataFilter
                                   vtkAxisDepthSort();
     virtual                      ~vtkAxisDepthSort() {;};
 
-    virtual void                  Execute(void);
+    virtual int                   RequestData(vtkInformation *,
+                                      vtkInformationVector **,
+                                      vtkInformationVector *);
 
   private:
                                   vtkAxisDepthSort(const vtkAxisDepthSort &);
@@ -86,5 +91,3 @@ class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataToPolyDataFilter
 
 
 #endif
-
-
