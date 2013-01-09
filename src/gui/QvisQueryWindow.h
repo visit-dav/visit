@@ -139,6 +139,10 @@ class QvisXRayImageQueryWidget;
 //   QvisXRayImageQueryWidget, QvisLineoutWidget, QvisTimeQueryOptionsWidget, 
 //   which provide controls for specific queries.
 //
+//   Kathleen Biagas, Wed Jan  9 13:45:16 PST 2013
+//   Store currentFloatFormat so that the floatFormat will only be sent to
+//   viewer when it has changed. (Reduces log messages).
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -220,6 +224,7 @@ private:
 
     int                 saveCount;
     int                 queryVarTypes;
+    std::string         currentFloatFormat;
 
     QWidget                *pyQueryWidget;
     QLabel                 *pyFilterEditLabel;

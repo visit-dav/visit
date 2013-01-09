@@ -1417,6 +1417,11 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
     return visitmodule() + s;
 }
 
+static std::string log_GetQueryParametersRPC(ViewerRPC *rpc)
+{
+    return visitmodule() + std::string("GetQueryParameters(\"") + rpc->GetQueryName() + "\")\n";
+}
+
 
 static std::string log_CloneWindowRPC(ViewerRPC *rpc)
 {
@@ -1958,6 +1963,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Brad Whitlock, Tue May 31 17:14:27 PDT 2011
 //   Do not return early when the log file is not open because that breaks
 //   command recording.
+//
+//   Kathleen Biagas, Wed Jan  9 11:32:39 PST 2013
+//   Added GetQueryParameters.
 //
 // ****************************************************************************
 
@@ -2505,6 +2513,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::RenamePickLabelRPC:
         str = log_RenamePickLabelRPC(rpc);
+        break;
+    case ViewerRPC::GetQueryParametersRPC:
+        str = log_GetQueryParametersRPC(rpc);
         break;
 
     // RPCs that we don't want to log:
