@@ -87,9 +87,11 @@ class QvisCartographicProjectionWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void projectionIDChanged(int val);
+    void centralMeridianProcessText();
   private:
     QComboBox *projectionIDCombo;
-    QLabel    *projectionIDLabel;
+    QLineEdit *centralMeridian;
+    QLabel    *projectionIDLabel, *centralMeridianLabel;
 
     CartographicProjectionAttributes *atts;
 };
