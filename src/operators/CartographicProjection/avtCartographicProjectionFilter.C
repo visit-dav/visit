@@ -38,6 +38,8 @@
 #include <vtkSphericalTransform.h>
 #include <vtkGeoProjection.h>
 #include <vtkGeoTransform.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkVisItUtility.h>
@@ -154,25 +156,15 @@ avtCartographicProjectionFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Biagas, Thu Oct 18 10:09:56 PDT 2012
 //    Preserve coordinate data type.
 //
+//    Jean Favre, Mon Jan  7 17:02:19 CET 2013
+//    Added a Central Meridian
+//    Added support for PolyData (typically, they are shapefiles for continent lines)
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtCartographicProjectionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-  int do_type = in_ds->GetDataObjectType();
-  int dims[3], numPts = in_ds->GetNumberOfPoints();
-
-  switch(do_type) {
-    case VTK_STRUCTURED_GRID:
-      static_cast<vtkStructuredGrid *>(in_ds)->GetDimensions(dims);
-    break;
-    case VTK_RECTILINEAR_GRID:
-      static_cast<vtkRectilinearGrid *>(in_ds)->GetDimensions(dims);
-    break;
-    default:
-      debug4 << "not supported for this grid type"  <<endl;
-      return in_ds;
-  }
 /* The projection mappings in VTK, based on the libproj4 library, expect data with coordinates
 *  in the range [-180, 180] for longitude, and [-90, 90] for latitude.
 *  Further, mapped grids cannot sit on Rectilinear Grids. So, we start by converting rectilinear grids
@@ -180,35 +172,35 @@ avtCartographicProjectionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
 *  A new grid is created based on the input, coordinates are projected, then remapped to the classic range
 *  of [-180, 180] for longitude, and [-90, 90] for latitude
 */
-  double bounds[6], x[3];
-  vtkStructuredGrid *ds = vtkStructuredGrid::New();
+  int do_type = in_ds->GetDataObjectType();
+  int dims[3], numPts = in_ds->GetNumberOfPoints();
+  vtkPointSet *ds;
+  vtkCellArray *ca;
+  double in_bounds[6], out_bounds[6], tol = 10., p_pt[3], c_pt[3];
+
   vtkPoints *inPts = vtkVisItUtility::NewPoints(in_ds);
   inPts->Allocate(numPts);
   inPts->SetNumberOfPoints(numPts);
+
   for(int i=0; i < numPts; i++)
     {
-    in_ds->GetPoint(i, x);
+    in_ds->GetPoint(i, c_pt);
 // the next two lines used for our Geo-physics grid
-    //x[0] = (x[2] - M_PI)*179.999/M_PI;
-    //x[1] = (x[1] - M_PI_2)*89.999/M_PI_2;
+    //c_pt[0] = (c_pt[2] - M_PI)*179.999/M_PI;
+    //c_pt[1] = (c_pt[1] - M_PI_2)*89.999/M_PI_2;
 // this is used for our Geo-physics grid
-    x[2] = 0.0;
-    inPts->SetPoint(i, x);
+    c_pt[2] = 0.0;
+    inPts->SetPoint(i, c_pt);
     }
-  ds->ShallowCopy(in_ds);
 
-// make sure 3rd dimension is set in case we were given 2D datasets (e.g pressure.cdf)
-  dims[2] = 1;
-  ds->SetDimensions(dims);
-
-  debug4 << "dims = " << dims[0] << " x "  << dims[1] << " x " << dims[2] <<  endl;
-  inPts->GetBounds(bounds);
-  debug4 << "Input Bounds[6] = " << bounds[0] << " "  << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] <<  endl;
+  inPts->GetBounds(in_bounds);
+  debug4 << "Input Bounds[6] = " << in_bounds[0] << " "  << in_bounds[1] << " " << in_bounds[2] << " " << in_bounds[3] << " " << in_bounds[4] << " " << in_bounds[5] <<  endl;
 
   vtkGeoProjection *proj = vtkGeoProjection::New();
+  proj->SetCentralMeridian(atts.GetCentralMeridian());
+  debug4 << "Central Meridian = " << proj->GetCentralMeridian() <<   endl;
   vtkGeoTransform *geoXform = vtkGeoTransform::New();
 
- 
 // Here we could have as many of the 100+ projections available.
 // I'm not sure people want to see a pull-down list with 100+ items
   
@@ -219,31 +211,108 @@ avtCartographicProjectionFilter::ExecuteData(vtkDataSet *in_ds, int, std::string
   vtkPoints *newPoints = vtkPoints::New(inPts->GetDataType());
   geoXform->TransformPoints(inPts, newPoints);
 
-  newPoints->GetBounds(bounds);
-  debug4 << "Output Bounds[6] = " << bounds[0] << " "  << bounds[1] << " " << bounds[2] << " " << bounds[3] << " " << bounds[4] << " " << bounds[5] <<  endl;
+  newPoints->GetBounds(out_bounds);
+  debug4 << "Output Bounds[6] = " << out_bounds[0] << " "  << out_bounds[1] << " " << out_bounds[2] << " " << out_bounds[3] << " " << out_bounds[4] << " " << out_bounds[5] <<  endl;
 
-// rescale coordinates to the classic view of -180,180 degrees of longitude and -90,90 degrees of latitude
-
+// rescale coordinates to the original set of longitude and latitude ranges.
+// this is motivated by the fact that the continents shapefile provided by Brad for the SC'12 tutorial
+// does not range fully to the North Pole. It was wrong to stretch its projection to +90 degrees.
+  double alpha;
   for(int i=0; i < numPts; i++)
     {
-    newPoints->GetPoint(i, x);
-    x[0] = ((2.0*(x[0] - bounds[0]) / (bounds[1]-bounds[0])) - 1.0 ) * 180.0;
-    x[1] = ((2.0*(x[1] - bounds[2]) / (bounds[3]-bounds[2])) - 1.0 ) * 90.0;
+    newPoints->GetPoint(i, c_pt);
+    alpha = (c_pt[0] - out_bounds[0]) / (out_bounds[1]-out_bounds[0]);
+    c_pt[0] = alpha * in_bounds[1] + (1.0 - alpha) * in_bounds[0];
+    alpha = (c_pt[1] - out_bounds[2]) / (out_bounds[3]-out_bounds[2]);
+    c_pt[1] = alpha * in_bounds[3] + (1.0 - alpha) * in_bounds[2];
     // only touch the X and Y coordinates. Ignore Z
-    newPoints->SetPoint(i, x);
+    newPoints->SetPoint(i, c_pt);
     }
-
   // mark the coordinates as Modified to force a call to vtkPoints::ComputeBounds()
   // otherwise a ResetView() has trouble resetting.
   newPoints->Modified();
+  newPoints->GetBounds(out_bounds);
+  debug4 << "Output Bounds[6] = " << out_bounds[0] << " "  << out_bounds[1] << " " << out_bounds[2] << " " << out_bounds[3] << " " << out_bounds[4] << " " << out_bounds[5] <<  endl;
+
+  vtkCellArray *ca_n;
+  int changeOfSigns = 0, k;
+
+  switch(do_type) {
+    case VTK_STRUCTURED_GRID:
+      ds = vtkStructuredGrid::New();
+      static_cast<vtkStructuredGrid *>(in_ds)->GetDimensions(dims);
+// make sure 3rd dimension is set in case we were given 2D datasets (e.g pressure.cdf)
+      dims[2] = 1;
+      static_cast<vtkStructuredGrid *>(ds)->SetDimensions(dims);
+      ds->ShallowCopy(in_ds);
+    break;
+    case VTK_RECTILINEAR_GRID:
+      ds = vtkStructuredGrid::New();
+      static_cast<vtkRectilinearGrid *>(in_ds)->GetDimensions(dims);
+// make sure 3rd dimension is set in case we were given 2D datasets (e.g pressure.cdf)
+      dims[2] = 1;
+      static_cast<vtkStructuredGrid *>(ds)->SetDimensions(dims);
+      ds->ShallowCopy(in_ds);
+    break;
+    case VTK_POLY_DATA:
+// some special treatment is done here for polylines which - when projected -
+// "fall on the other side of the Earth".
+// Detect an line segment within the polyline which has a very long length and split.
+      ds = vtkPolyData::New();
+      ca_n = vtkCellArray::New();
+      static_cast<vtkPolyData *>(ds)->SetPolys(ca_n);
+      ca_n->Delete();
+
+      ca = static_cast<vtkPolyData *>(in_ds)->GetPolys();
+      vtkIdType npts, *pts;
+
+      ca->InitTraversal();
+// for each polygon, change for big changes in coordinates and split lines
+      for(int i =0; i < ca->GetNumberOfCells (); i++)
+         {
+         changeOfSigns = 0;
+         ca->GetNextCell(npts, pts);
+         k = npts-1;
+// start from end and split if necessary
+         for(int j =npts-1; j >0; j--)
+           {
+           newPoints->GetPoint(pts[j-1], p_pt); // previous pt
+           newPoints->GetPoint(pts[j], c_pt);    // current pt
+//           if(((p_pt[0] > 0) && (c_pt[0] < 0) || (p_pt[0] < 0) && (c_pt[0] > 0)))
+// compute a 2d distance 
+           if(sqrt((p_pt[0] - c_pt[0])*(p_pt[0] - c_pt[0]) + (p_pt[1] - c_pt[1])*(p_pt[1] - c_pt[1])) > tol )
+             {
+             changeOfSigns++;
+             ca_n->InsertNextCell(k-j+1, &pts[j]); k = j-1;
+             }
+//           cerr << "pts["<< pts[j] << "] = " << x[0] << " "  << x[1] << " " << x[2] << endl;
+           }
+        if(changeOfSigns == 0)
+          {
+          ca_n->InsertNextCell(npts, pts);
+          } // full polygon (original)
+        else
+          {
+          ca_n->InsertNextCell(k+1, pts); // what is left-over after all the splits
+          }
+         }
+    break;
+    default:
+      debug4 << "not supported for this grid type"  <<endl;
+      return in_ds;
+  }
+
   ds->SetPoints(newPoints);
-  newPoints->Delete();
+
+  if(do_type != VTK_POLY_DATA)
+    debug4 << "dims = " << dims[0] << " x "  << dims[1] << " x " << dims[2] <<  endl;
 
   if(do_type == VTK_RECTILINEAR_GRID)
     inPts->Delete();
 
   ManageMemory(ds);
   ds->Delete();
+  newPoints->Delete();
   proj->Delete();
   geoXform->Delete();
   return ds;

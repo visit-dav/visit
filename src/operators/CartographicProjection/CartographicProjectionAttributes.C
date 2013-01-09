@@ -97,6 +97,7 @@ CartographicProjectionAttributes::ProjectionID_FromString(const std::string &s, 
 void CartographicProjectionAttributes::Init()
 {
     projectionID = aitoff;
+    centralMeridian = 0;
 
     CartographicProjectionAttributes::SelectAll();
 }
@@ -119,6 +120,7 @@ void CartographicProjectionAttributes::Init()
 void CartographicProjectionAttributes::Copy(const CartographicProjectionAttributes &obj)
 {
     projectionID = obj.projectionID;
+    centralMeridian = obj.centralMeridian;
 
     CartographicProjectionAttributes::SelectAll();
 }
@@ -276,7 +278,8 @@ bool
 CartographicProjectionAttributes::operator == (const CartographicProjectionAttributes &obj) const
 {
     // Create the return value
-    return ((projectionID == obj.projectionID));
+    return ((projectionID == obj.projectionID) &&
+            (centralMeridian == obj.centralMeridian));
 }
 
 // ****************************************************************************
@@ -420,7 +423,8 @@ CartographicProjectionAttributes::NewInstance(bool copy) const
 void
 CartographicProjectionAttributes::SelectAll()
 {
-    Select(ID_projectionID, (void *)&projectionID);
+    Select(ID_projectionID,    (void *)&projectionID);
+    Select(ID_centralMeridian, (void *)&centralMeridian);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -457,6 +461,12 @@ CartographicProjectionAttributes::CreateNode(DataNode *parentNode, bool complete
     {
         addToParent = true;
         node->AddNode(new DataNode("projectionID", ProjectionID_ToString(projectionID)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_centralMeridian, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("centralMeridian", centralMeridian));
     }
 
 
@@ -511,6 +521,8 @@ CartographicProjectionAttributes::SetFromNode(DataNode *parentNode)
                 SetProjectionID(value);
         }
     }
+    if((node = searchNode->GetNode("centralMeridian")) != 0)
+        SetCentralMeridian(node->AsDouble());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -524,6 +536,13 @@ CartographicProjectionAttributes::SetProjectionID(CartographicProjectionAttribut
     Select(ID_projectionID, (void *)&projectionID);
 }
 
+void
+CartographicProjectionAttributes::SetCentralMeridian(double centralMeridian_)
+{
+    centralMeridian = centralMeridian_;
+    Select(ID_centralMeridian, (void *)&centralMeridian);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -532,6 +551,12 @@ CartographicProjectionAttributes::ProjectionID
 CartographicProjectionAttributes::GetProjectionID() const
 {
     return ProjectionID(projectionID);
+}
+
+double
+CartographicProjectionAttributes::GetCentralMeridian() const
+{
+    return centralMeridian;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

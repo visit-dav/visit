@@ -103,9 +103,11 @@ public:
 
     // Property setting methods
     void SetProjectionID(ProjectionID projectionID_);
+    void SetCentralMeridian(double centralMeridian_);
 
     // Property getting methods
     ProjectionID GetProjectionID() const;
+    double GetCentralMeridian() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -121,16 +123,18 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_projectionID = 0,
+        ID_centralMeridian,
         ID__LAST
     };
 
 private:
-    int projectionID;
+    int    projectionID;
+    double centralMeridian;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CARTOGRAPHICPROJECTIONATTRIBUTES_TMFS "i"
+#define CARTOGRAPHICPROJECTIONATTRIBUTES_TMFS "id"
 
 #endif
