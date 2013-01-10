@@ -42,7 +42,6 @@
 class QVTKInteractorAdapter;
 
 class vtkRenderWindow;
-#include <vtkCommand.h>
 #include <vtkConfigure.h>
 #include <vtkToolkits.h>
 class vtkImageData;
@@ -106,11 +105,11 @@ public:
   // These events can be picked up by command observers on the interactor
   enum vtkCustomEvents
   {
-    ContextMenuEvent = vtkCommand::UserEvent + 100,
-    DragEnterEvent,
-    DragMoveEvent,
-    DragLeaveEvent,
-    DropEvent
+    ContextMenuEvent = QVTKInteractor::ContextMenuEvent,
+    DragEnterEvent = QVTKInteractor::DragEnterEvent,
+    DragMoveEvent = QVTKInteractor::DragMoveEvent,
+    DragLeaveEvent = QVTKInteractor::DragLeaveEvent,
+    DropEvent = QVTKInteractor::DropEvent
   };
 
   // Description:
@@ -232,6 +231,11 @@ protected:
   // overload drop event
   virtual void dropEvent(QDropEvent*);
 
+  // method called in paintEvent() to render the image cache on to the device.
+  // return false, if cache couldn;t be used for painting. In that case, the
+  // paintEvent() method will continue with the default painting code.
+  virtual bool paintCachedImage();
+
   // the vtk render window
   vtkRenderWindow* mRenWin;
   bool UseTDx;
@@ -242,6 +246,10 @@ protected:
   // set up an X11 window based on a visual and colormap
   // that VTK chooses
   void x11_setup_window();
+
+#if defined(Q_WS_WIN)
+  bool winEvent(MSG* msg, long* result);
+#endif
 
 #if defined(QVTK_USE_CARBON)
   EventHandlerUPP DirtyRegionHandlerUPP;

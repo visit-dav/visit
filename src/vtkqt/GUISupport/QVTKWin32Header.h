@@ -20,16 +20,6 @@
 #ifndef __QVTKWin32Header_h
 #define __QVTKWin32Header_h
 
-#if 1
-// Added by LLNL. We don't care about exposing these classes outside of
-# if __GNUC__ >= 4
-#   define QVTK_EXPORT __attribute__ ((visibility("hidden")))
-# else
-#   define QVTK_EXPORT /* hidden by default */
-# endif
-
-#else
-
 #include "vtkSystemIncludes.h"
 #include "vtkABI.h"
 
@@ -41,8 +31,6 @@
 # endif
 #else
 # define QVTK_EXPORT
-#endif
-
 #endif
 
 #endif /*__QVTKWin32Header_h*/
