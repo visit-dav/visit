@@ -37,10 +37,15 @@
 *****************************************************************************/
 
 #include "vtkCrackWidthFilter.h"
+
+#include <math.h>
+
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMassProperties.h>
 #include <vtkObjectFactory.h>
 #include <vtkSlicer.h>
@@ -49,21 +54,13 @@
 #include <ImproperUseException.h>
 #include <vtkVisItUtility.h>
 
-#include <math.h>
-
-
-#ifdef SUNOS
-#include <ieeefp.h> // for 'finite'
-#endif
-
-
 vtkStandardNewMacro(vtkCrackWidthFilter);
 
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter constructor
+//  Method: vtkCrackWidthFilter constructor
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    August 22, 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 22, 2005
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 13 07:45:06 PDT 2006
@@ -90,12 +87,11 @@ vtkCrackWidthFilter::vtkCrackWidthFilter()
   this->MassProp = vtkMassProperties::New();
 }
 
-
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter destructor
+//  Method: vtkCrackWidthFilter destructor
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    August 22, 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 22, 2005
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 13 07:45:06 PDT 2006
@@ -111,10 +107,10 @@ vtkCrackWidthFilter::vtkCrackWidthFilter()
 
 vtkCrackWidthFilter::~vtkCrackWidthFilter()
 {
-   this->SetCrack1Var(NULL);
-   this->SetCrack2Var(NULL);
-   this->SetCrack3Var(NULL);
-   this->SetStrainVar(NULL);
+  this->SetCrack1Var(NULL);
+  this->SetCrack2Var(NULL);
+  this->SetCrack3Var(NULL);
+  this->SetStrainVar(NULL);
   if (this->Slicer)
     {
     this->Slicer->Delete();
@@ -128,12 +124,12 @@ vtkCrackWidthFilter::~vtkCrackWidthFilter()
 }
 
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter_OrderThem 
+//  Method: vtkCrackWidthFilter_OrderThem 
 //
-//  Purpose:  Creates a max-to-min ordering based on the passed deltas. 
+//  Purpose: Creates a max-to-min ordering based on the passed deltas. 
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    October 13, 2006 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 13, 2006 
 //
 //  Modifications:
 //
@@ -171,12 +167,12 @@ vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3,
 }
 
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter::Execute
+//  Method: vtkCrackWidthFilter::RequestData
 //
-//  Purpose:  Executes this filter.
+//  Purpose: Executes this filter.
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    August 22, 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 22, 2005
 //
 //  Modifications:
 //    Modified to determine crack width in max-to-min order based on
@@ -185,11 +181,29 @@ vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3,
 //    Kathleen Biagas, Tue Aug 14 1:07:23 MST 2012
 //    Support double-precision.
 //
+//    Eric Brugger, Wed Jan  9 16:25:38 PST 2013
+//    Modified to inherit from vtkDataSetAlgorithm.
+//
 // ***************************************************************************
 
-void
-vtkCrackWidthFilter::Execute()
+int
+vtkCrackWidthFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkDataSet  *input = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkDataSet *output = vtkDataSet::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   if (this->StrainVar == NULL)
     EXCEPTION0(ImproperUseException); 
 
@@ -198,8 +212,6 @@ vtkCrackWidthFilter::Execute()
       this->Crack3Var == NULL)
     EXCEPTION0(ImproperUseException); 
 
-  
-  vtkDataSet *input = GetInput();
   vtkCellData *inCD = input->GetCellData();
   this->Slicer->SetInput(input);
 
@@ -219,7 +231,6 @@ vtkCrackWidthFilter::Execute()
   if (cd1 == NULL || cd2 == NULL || cd3 == NULL)
     EXCEPTION0(ImproperUseException); 
 
-  vtkDataSet *output = GetOutput();
   output->DeepCopy(input);
 
   vtkIdType numCells = input->GetNumberOfCells();
@@ -259,7 +270,6 @@ vtkCrackWidthFilter::Execute()
   //              T22 for crack dir2 = component 4 of strain_tensor
   //              T33 for crack dir3 = component 8 of strain_tensor
   //
-
 
   // 
   // step through cells, calculating cell centers and crack widths for 
@@ -338,7 +348,6 @@ vtkCrackWidthFilter::Execute()
       }
     }
 
-
   output->GetCellData()->AddArray(cellCenters);
   output->GetCellData()->CopyFieldOn("avtCellCenters");
   cellCenters->Delete();
@@ -354,26 +363,27 @@ vtkCrackWidthFilter::Execute()
   output->GetCellData()->AddArray(crack3Width);
   output->GetCellData()->CopyFieldOn("avtCrack3Width");
   crack3Width->Delete();
+
+  return 1;
 }
 
-
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter::CrackWidthForCell
+//  Method: vtkCrackWidthFilter::CrackWidthForCell
 //
-//  Purpose:  Determines the crack width for a given cell
+//  Purpose: Determines the crack width for a given cell
 //  
 //  Arguments:
-//    cell       The cell.
-//    cellId     The id of the cell.
-//    center     The coordinates of the cell center.
-//    delta      A component of strain_tensor 
-//    dir        A vector representing the diretion of the crack. 
-//    zoneVol    A volume of this cell.
+//    cell      The cell.
+//    cellId    The id of the cell.
+//    center    The coordinates of the cell center.
+//    delta     A component of strain_tensor 
+//    dir       A vector representing the diretion of the crack. 
+//    zoneVol   A volume of this cell.
 //
-//  Returns:     The width of the crack.
+//  Returns:    The width of the crack.
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    August 22, 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 22, 2005
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 13 07:52:03 PDT 2006
@@ -399,24 +409,23 @@ vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, vtkIdType cellId,
     this->MassProp->SetInput(this->Slicer->GetOutput());
     this->MassProp->Update();
     L =  zVol / this->MassProp->GetSurfaceArea();
-  }
+    }
   return L*(1.0-exp(-delta));
 }
 
-
 // ***************************************************************************
-//  Method:  vtkCrackWidthFilter::GetMaxCrackWidth
+//  Method: vtkCrackWidthFilter::GetMaxCrackWidth
 //
-//  Purpose:  Returns the maximum calculated crack width for a specified
-//            crack direction.
+//  Purpose: Returns the maximum calculated crack width for a specified
+//           crack direction.
 //  
 //  Arguments:
 //    whichCrack The specified crack direction.
 //
-//  Returns:     The maximum crack width.
+//  Returns:    The maximum crack width.
 //
-//  Programmer:  Kathleen Bonnell
-//  Creation:    August 22, 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 22, 2005
 //
 //  Modifications:
 //
@@ -433,4 +442,3 @@ vtkCrackWidthFilter::GetMaxCrackWidth(int whichCrack)
         default: return this->MaxCrack1Width;
     }
 }
-
