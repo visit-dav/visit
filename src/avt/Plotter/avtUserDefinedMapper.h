@@ -152,7 +152,7 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
 
   protected:
                              vtkUserDefinedMapperBridge();
-                            ~vtkUserDefinedMapperBridge() {};
+    virtual                 ~vtkUserDefinedMapperBridge();
 
                              vtkUserDefinedMapperBridge(const
                                                vtkUserDefinedMapperBridge&) {};
