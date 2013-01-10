@@ -312,6 +312,11 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    Kathleen Biagas, Fri Mar  9 13:33:47 PST 2012 
 //    Delete the geometry filter when we are done with it.
 //
+//    Brad Whitlock, Thu Jan 10 14:19:14 PST 2013
+//    Make a shallow copy of the input rather than just increasing the reference
+//    count because doing that is not letting the input dataset get deleted.
+//    That is, for whatever reason, the reference count remains high.
+//
 // ****************************************************************************
 
 void
@@ -354,15 +359,15 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     {
         vtkGeometryFilter *gf = vtkGeometryFilter::New();
         gf->SetInput(ds);
-        input = vtkPolyData::New();
-        gf->SetOutput(input);
         gf->Update();
+        input = gf->GetOutput();
+        input->Register(NULL);
         gf->Delete();
     }
     else 
     {
-        input = (vtkPolyData *)ds;
-        input->Register(NULL);
+        input = vtkPolyData::New();
+        input->ShallowCopy((vtkPolyData *)ds);
     }
 
     int *curSize = VTKRen->GetRenderWindow()->GetSize();

@@ -264,8 +264,8 @@ avtLabelRenderer::Render(vtkDataSet *ds)
         }
         else 
         {
-            input = (vtkPolyData *)ds;
-            input->Register(NULL);
+            input = vtkPolyData::New();
+            input->ShallowCopy((vtkPolyData *)ds);
         }
 
         inputMap[ds] = input;

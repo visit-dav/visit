@@ -441,6 +441,17 @@ vtkUserDefinedMapperBridge::vtkUserDefinedMapperBridge()
     ren = NULL;
 }
 
+// ****************************************************************************
+//  Method: vtkUserDefinedMapperBridge destructor
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Jan 10 14:21:45 PST 2013
+//
+// ****************************************************************************
+
+vtkUserDefinedMapperBridge::~vtkUserDefinedMapperBridge()
+{
+}
 
 // ****************************************************************************
 //  Method: vtkUserDefinedMapperBridge::SetRenderer
