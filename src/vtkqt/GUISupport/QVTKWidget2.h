@@ -35,7 +35,7 @@ class vtkTDxDevice;
 #endif
 
 //! QVTKWidget2 displays a VTK window in a Qt window.
-class QVTK_EXPORT QVTKWidget2 : public QGLWidget
+class QVTKWidget2 : public QGLWidget
 {
   Q_OBJECT
 public:

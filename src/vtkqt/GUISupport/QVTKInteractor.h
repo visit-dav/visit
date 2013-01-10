@@ -60,7 +60,7 @@ class QVTKInteractorInternal;
 // .SECTION Description
 // QVTKInteractor is an interactor for a QVTKWiget.
 
-class QVTK_EXPORT QVTKInteractor : public vtkRenderWindowInteractor
+class QVTKInteractor : public vtkRenderWindowInteractor
 {
 public:
   static QVTKInteractor* New();

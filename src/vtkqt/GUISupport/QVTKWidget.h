@@ -71,7 +71,7 @@ class vtkTDxDevice;
 #include "QVTKWin32Header.h"
 
 //! QVTKWidget displays a VTK window in a Qt window.
-class QVTK_EXPORT QVTKWidget : public QWidget
+class QVTKWidget : public QWidget
 {
   Q_OBJECT
 
