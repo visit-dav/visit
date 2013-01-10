@@ -39,22 +39,22 @@
 #ifndef VTK_CRACK_WIDTH_FILTER_H
 #define VTK_CRACK_WIDTH_FILTER_H
 
-#include <vtkDataSetToDataSetFilter.h>
+#include <vtkDataSetAlgorithm.h>
 
 class vtkCell;
 class vtkMassProperties;
 class vtkSlicer;
 
 // ****************************************************************************
-//  Class:  vtkCrackWidthFilter
+//  Class: vtkCrackWidthFilter
 //
 //  Purpose:
 //    Calculates the width of cracks along given crack directions for
 //    each cell, and stores each width in a cell array.  Also calculates
 //    the cell centers.  
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    August 22, 2005 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 22, 2005 
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 13 07:42:59 PDT 2006
@@ -68,12 +68,15 @@ class vtkSlicer;
 //    Kathleen Biagas, Tue Aug 14 15:55:27 MST 2012
 //    Removed unused vtkQuad and vtkTriangle.
 //
+//    Eric Brugger, Wed Jan  9 16:20:40 PST 2013
+//    Modified to inherit from vtkDataSetAlgorithm.
+//
 // ****************************************************************************
 
-class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
+class vtkCrackWidthFilter : public vtkDataSetAlgorithm
 {
   public:
-    vtkTypeMacro(vtkCrackWidthFilter,vtkDataSetToDataSetFilter);
+    vtkTypeMacro(vtkCrackWidthFilter,vtkDataSetAlgorithm);
 
     static vtkCrackWidthFilter *New();
 
@@ -92,7 +95,9 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
     vtkCrackWidthFilter();
     ~vtkCrackWidthFilter();
 
-    void Execute();
+    virtual int RequestData(vtkInformation *,
+                            vtkInformationVector **,
+                            vtkInformationVector *);
 
   private:
     double MaxCrack1Width;
@@ -107,17 +112,14 @@ class vtkCrackWidthFilter : public vtkDataSetToDataSetFilter
     vtkSlicer *Slicer;
     vtkMassProperties *MassProp;
 
-    double  CrackWidthForCell(vtkCell *cell, vtkIdType cellId, const double *center,
-           const double delta, const double *dir,
-           const double zvol, const double L1L2);
+    double CrackWidthForCell(vtkCell *cell, vtkIdType cellId,
+                             const double *center,
+                             const double delta, const double *dir,
+                             const double zvol, const double L1L2);
 
     vtkCrackWidthFilter(const vtkCrackWidthFilter&);  // Not implemented.
     void operator=(const vtkCrackWidthFilter&);  // Not implemented.
-
 };
 
 
-
 #endif
-
-

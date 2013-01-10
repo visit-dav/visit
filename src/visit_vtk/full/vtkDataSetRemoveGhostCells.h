@@ -46,9 +46,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkDataSetRemoveGhostCells_h
 #include <visit_vtk_exports.h>
 
-#include "vtkDataSetToDataSetFilter.h"
+#include "vtkDataSetAlgorithm.h"
 
-
+// ****************************************************************************
+//  Class: vtkDataSetRemoveGhostCells
+//
 //  Modifications: 
 //    Kathleen Bonnell, Wed Jul 10 16:02:56 PDT 2002
 //    Removed FindCellMins and FindCellMax methods.
@@ -62,11 +64,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Hank Childs, Sun Oct 28 10:48:50 PST 2007
 //    Added GhostZoneTypesToRemove
 //
-class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetToDataSetFilter
+//    Eric Brugger, Wed Jan  9 14:56:34 PST 2013
+//    Modified to inherit from vtkDataSetAlgorithm.
+//
+// ****************************************************************************
+class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetAlgorithm
 {
 public:
   static vtkDataSetRemoveGhostCells *New();
-  vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetToDataSetFilter);
+  vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
   
   vtkSetMacro(GhostNodeTypesToRemove,unsigned char);
@@ -79,17 +85,22 @@ protected:
   vtkDataSetRemoveGhostCells();
   ~vtkDataSetRemoveGhostCells() {};
 
-  unsigned char GhostNodeTypesToRemove;
-  unsigned char GhostZoneTypesToRemove;
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
 
-  // Usual data generation method
-  void Execute();
   // Specific data generation methods
   void StructuredGridExecute();
   void UnstructuredGridExecute();
   void RectilinearGridExecute();
   void PolyDataExecute();
   void GenericExecute();
+
+  vtkDataSet *input;
+  vtkDataSet *output;
+
+  unsigned char GhostNodeTypesToRemove;
+  unsigned char GhostZoneTypesToRemove;
 
 private:
   vtkDataSetRemoveGhostCells(const vtkDataSetRemoveGhostCells&);

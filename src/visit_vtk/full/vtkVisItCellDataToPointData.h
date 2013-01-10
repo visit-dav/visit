@@ -30,20 +30,29 @@
 // of output you want.
 
 // .SECTION See Also
-// vtkDataSetToDataSetFilter vtkPointData vtkCellData vtkPointDataToCellData
+// vtkDataSetAlgorithm vtkPointData vtkCellData vtkPointDataToCellData
 
 
 #ifndef __vtkVisItCellDataToPointData_h
 #define __vtkVisItCellDataToPointData_h
-
-#include "vtkDataSetToDataSetFilter.h"
 #include <visit_vtk_exports.h>
 
-class VISIT_VTK_API vtkVisItCellDataToPointData : public vtkDataSetToDataSetFilter
+#include "vtkDataSetAlgorithm.h"
+
+// ****************************************************************************
+//  Class: vtkVisItCellDataToPointData
+//
+//  Modifications:
+//    Eric Brugger, Wed Jan  9 14:42:30 PST 2013
+//    Modified to inherit from vtkDataSetAlgorithm.
+//
+// ****************************************************************************
+
+class VISIT_VTK_API vtkVisItCellDataToPointData : public vtkDataSetAlgorithm
 {
 public:
   static vtkVisItCellDataToPointData *New();
-  vtkTypeMacro(vtkVisItCellDataToPointData,vtkDataSetToDataSetFilter);
+  vtkTypeMacro(vtkVisItCellDataToPointData,vtkDataSetAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -58,14 +67,15 @@ protected:
   vtkVisItCellDataToPointData();
   ~vtkVisItCellDataToPointData() {};
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
 
   int PassCellData;
+
 private:
   vtkVisItCellDataToPointData(const vtkVisItCellDataToPointData&);  // Not implemented.
   void operator=(const vtkVisItCellDataToPointData&);  // Not implemented.
 };
 
 #endif
-
-
