@@ -1581,7 +1581,7 @@ class MainLauncher(object):
     def domainname(self):
         fullhost = socket.gethostbyname_ex(self.hostname())[0]
         pos = string.find(fullhost, ".")
-        if pos != -1:
+        if pos == -1:
             return fullhost
         else:
             return fullhost[pos+1:]
