@@ -68,6 +68,15 @@ public:
   void SetUseTDx(bool useTDx);
   bool GetUseTDx() const;
 
+  // Description:
+  // Make the swap buffers functions public
+  void setAutoBufferSwap(bool);
+  bool autoBufferSwap() const;
+
+  // Description:
+  // Initialize OpenGL for this window.
+  void OpenGLInitState();
+
 public Q_SLOTS:
 
   // Description:
@@ -79,13 +88,23 @@ public Q_SLOTS:
 
 protected Q_SLOTS:
   // slot to make this vtk render window current
-  void MakeCurrent();
+  virtual void MakeCurrent();
   // slot called when vtk wants to know if the context is current
-  void IsCurrent(vtkObject* caller, unsigned long vtk_event, void* client_data, void* call_data);
+  virtual void IsCurrent(vtkObject* caller, unsigned long vtk_event, void* client_data, void* call_data);
   // slot called when vtk wants to frame the window
-  void Frame();
+  virtual void Frame();
+  // slot called when vtk wants to start the render
+  virtual void Start();
+  // slot called when vtk wants to end the render
+  virtual void End();
+  // slot called when vtk wants to know if a window is direct
+  virtual void IsDirect(vtkObject* caller, unsigned long vtk_event, void* client_data, void* call_data);
+  // slot called when vtk wants to know if a window supports OpenGL
+  virtual void SupportsOpenGL(vtkObject* caller, unsigned long vtk_event, void* client_data, void* call_data);
 
 protected:
+  // overloaded initialize handler
+  virtual void initializeGL();
   // overloaded resize handler
   virtual void resizeGL(int, int);
   // overloaded paint handler
@@ -120,6 +139,9 @@ protected:
   virtual void dragLeaveEvent(QDragLeaveEvent*);
   // overload drop event
   virtual void dropEvent(QDropEvent*);
+
+  // overload focus handling so tab key is passed to VTK
+  virtual bool focusNextPrevChild(bool);
 
   // the vtk render window
   vtkSmartPointer<vtkGenericOpenGLRenderWindow> mRenWin;
