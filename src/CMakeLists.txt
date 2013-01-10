@@ -311,6 +311,11 @@
 #    Kathleen Biagas, Mon Dec 17 16:56:38 MST 2012
 #    Use CMake's FindMPI module for windows.
 #
+#    Cyrus Harrison, Thu Jan 10 10:03:50 PST 2013
+#    Try to capture the full cmake invocation command line.
+#    On non windows systems, generate a script that allows re-config
+#    from scratch using the captured invocation command line.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -318,6 +323,40 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 ENDIF (COMMAND cmake_policy)
+
+#
+# Try to capture the initial set of cmake command line args passed by
+# the user for configuration.
+# Recipe taken from http://stackoverflow.com/questions/10205986/how-to-capture-cmake-command-line-arguments
+#
+# Note: The entrires will live on CMakeCache.txt, so re-configuring with
+# a command line that doesn't include an option won't remove it. You need
+# to remove the CMakeCache.txt file, or override the value via the command line.
+#
+#
+GET_CMAKE_PROPERTY(CACHE_VARS CACHE_VARIABLES)
+FOREACH(CACHE_VAR ${CACHE_VARS})
+  GET_PROPERTY(CACHE_VAR_HELPSTRING CACHE ${CACHE_VAR} PROPERTY HELPSTRING)
+  IF(CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line.")
+    GET_PROPERTY(CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE)
+    IF(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
+      SET(CACHE_VAR_TYPE)
+    ELSE(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
+      SET(CACHE_VAR_TYPE :${CACHE_VAR_TYPE})
+    ENDIF()
+    SET(CMAKE_INVOKE_ARGS "${CMAKE_INVOKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
+  ENDIF()
+ENDFOREACH(CACHE_VAR ${CACHE_VARS})
+# Record the full command line invocation.
+SET(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}")
+# show the captured command line
+MESSAGE("CMAKE_INVOKE: ${CMAKE_INVOKE}")
+# Create a simple shell script that allows us to reinvoke cmake with the captured command line.
+IF (NOT WIN32)
+    FILE(WRITE ${CMAKE_BINARY_DIR}/reconfig_visit.sh "!/bin/sh\n"
+                                                     "rm -f CMakeCache.txt\n"
+                                                     "${CMAKE_INVOKE}\n")
+ENDIF (NOT WIN32)
 
 
 # Tell the CMake makefile generator to not have rules depend on
@@ -2208,3 +2247,11 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
+
+#
+# Echo the full cmake invocation again.
+# (make it easy to see by showing near the end of cmake output)
+#
+MESSAGE("CMAKE_INVOCATION: ${CMAKE_INVOKE}")
+
+
