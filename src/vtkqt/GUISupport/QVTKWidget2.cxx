@@ -13,8 +13,6 @@
 
 =========================================================================*/
 
-#include "vtkOpenGL.h"
-
 #ifdef _MSC_VER
 // Disable warnings that Qt headers give.
 #pragma warning(disable:4127)
@@ -37,12 +35,16 @@
 # include "vtkTDxUnixDevice.h"
 #endif
 
+#include "vtkgl.h"
+
 QVTKWidget2::QVTKWidget2(QWidget* p, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(p, shareWidget, f), mRenWin(NULL)
 {
   this->UseTDx=false;
   mIrenAdapter = new QVTKInteractorAdapter(this);
   mConnect = vtkSmartPointer<vtkEventQtSlotConnect>::New();
+  this->setMouseTracking(true);       
+  this->setAutoBufferSwap(false);
 }
 
 QVTKWidget2::QVTKWidget2(QGLContext* ctx, QWidget* p, const QGLWidget* shareWidget, Qt::WindowFlags f)
@@ -51,6 +53,8 @@ QVTKWidget2::QVTKWidget2(QGLContext* ctx, QWidget* p, const QGLWidget* shareWidg
   this->UseTDx=false;
   mIrenAdapter = new QVTKInteractorAdapter(this);
   mConnect = vtkSmartPointer<vtkEventQtSlotConnect>::New();
+  this->setMouseTracking(true);       
+  this->setAutoBufferSwap(false);
 }
 
 QVTKWidget2::QVTKWidget2(const QGLFormat& fmt, QWidget* p, const QGLWidget* shareWidget, Qt::WindowFlags f)
@@ -59,6 +63,8 @@ QVTKWidget2::QVTKWidget2(const QGLFormat& fmt, QWidget* p, const QGLWidget* shar
   this->UseTDx=false;
   mIrenAdapter = new QVTKInteractorAdapter(this);
   mConnect = vtkSmartPointer<vtkEventQtSlotConnect>::New();
+  this->setMouseTracking(true);       
+  this->setAutoBufferSwap(false);
 }
 
 /*! destructor */
@@ -133,9 +139,14 @@ void QVTKWidget2::SetRenderWindow(vtkGenericOpenGLRenderWindow* w)
   if(this->mRenWin)
     {
     this->mRenWin->Finalize();
+    this->mRenWin->SetMapped(0);
     mConnect->Disconnect(mRenWin, vtkCommand::WindowMakeCurrentEvent, this, SLOT(MakeCurrent()));
     mConnect->Disconnect(mRenWin, vtkCommand::WindowIsCurrentEvent, this, SLOT(IsCurrent(vtkObject*, unsigned long, void*, void*)));
     mConnect->Disconnect(mRenWin, vtkCommand::WindowFrameEvent, this, SLOT(Frame()));
+    mConnect->Disconnect(mRenWin, vtkCommand::StartEvent, this, SLOT(Start()));
+    mConnect->Disconnect(mRenWin, vtkCommand::EndEvent, this, SLOT(End()));
+    mConnect->Disconnect(mRenWin, vtkCommand::WindowIsDirectEvent, this, SLOT(IsDirect(vtkObject*, unsigned long, void*, void*)));
+    mConnect->Disconnect(mRenWin, vtkCommand::WindowSupportsOpenGLEvent, this, SLOT(SupportsOpenGL(vtkObject*, unsigned long, void*, void*)));
     }
 
   // now set the window
@@ -145,14 +156,11 @@ void QVTKWidget2::SetRenderWindow(vtkGenericOpenGLRenderWindow* w)
     {
     // if it is mapped somewhere else, unmap it
     this->mRenWin->Finalize();
+    this->mRenWin->SetMapped(1);
 
     // tell the vtk window what the size of this window is
     this->mRenWin->SetSize(this->width(), this->height());
     this->mRenWin->SetPosition(this->x(), this->y());
-
-    // have VTK start this window and create the necessary graphics resources
-    makeCurrent();
-    this->mRenWin->OpenGLInit();
 
     // if an interactor wasn't provided, we'll make one by default
     if(!this->mRenWin->GetInteractor())
@@ -177,10 +185,73 @@ void QVTKWidget2::SetRenderWindow(vtkGenericOpenGLRenderWindow* w)
     mConnect->Connect(mRenWin, vtkCommand::WindowMakeCurrentEvent, this, SLOT(MakeCurrent()));
     mConnect->Connect(mRenWin, vtkCommand::WindowIsCurrentEvent, this, SLOT(IsCurrent(vtkObject*, unsigned long, void*, void*)));
     mConnect->Connect(mRenWin, vtkCommand::WindowFrameEvent, this, SLOT(Frame()));
+    mConnect->Connect(mRenWin, vtkCommand::StartEvent, this, SLOT(Start()));
+    mConnect->Connect(mRenWin, vtkCommand::EndEvent, this, SLOT(End()));
+    mConnect->Connect(mRenWin, vtkCommand::WindowIsDirectEvent, this, SLOT(IsDirect(vtkObject*, unsigned long, void*, void*)));
+    mConnect->Connect(mRenWin, vtkCommand::WindowSupportsOpenGLEvent, this, SLOT(SupportsOpenGL(vtkObject*, unsigned long, void*, void*)));
     }
 }
 
+void QVTKWidget2::OpenGLInitState()
+{
+  glMatrixMode( GL_MODELVIEW );
+  glDepthFunc( GL_LEQUAL );
+  glEnable( GL_DEPTH_TEST );
+  glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
+  // initialize blending for transparency
+  if(vtkgl::BlendFuncSeparate!=0)
+    {
+    vtkgl::BlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                             GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+    }
+  else
+    {
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    }
+  glEnable(GL_BLEND);
+
+  if (this->mRenWin->GetPointSmoothing())
+    {
+    glEnable(GL_POINT_SMOOTH);
+    }
+  else
+    {
+    glDisable(GL_POINT_SMOOTH);
+    }
+
+  if (this->mRenWin->GetLineSmoothing())
+    {
+    glEnable(GL_LINE_SMOOTH);
+    }
+  else
+    {
+    glDisable(GL_LINE_SMOOTH);
+    }
+
+  if (this->mRenWin->GetPolygonSmoothing())
+    {
+    glEnable(GL_POLYGON_SMOOTH);
+    }
+  else
+    {
+    glDisable(GL_POLYGON_SMOOTH);
+    }
+
+  glEnable(GL_NORMALIZE);
+  glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+  glAlphaFunc(GL_GREATER,0);
+  
+  // Default OpenGL is 4 bytes but it is only safe with RGBA format.
+  // If format is RGB, row alignment is 4 bytes only if the width is divisible
+  // by 4. Let's do it the safe way: 1-byte alignment.
+  // If an algorithm really need 4 bytes alignment, it should set it itself,
+  // this is the recommended way in "Avoiding 16 Common OpenGL Pitfalls",
+  // section 7:
+  // http://www.opengl.org/resources/features/KilgardTechniques/oglpitfall/
+  glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+  glPixelStorei(GL_PACK_ALIGNMENT,1);
+}
 
 /*! get the Qt/VTK interactor
  */
@@ -188,6 +259,27 @@ QVTKInteractor* QVTKWidget2::GetInteractor()
 {
   return QVTKInteractor
     ::SafeDownCast(this->GetRenderWindow()->GetInteractor());
+}
+
+void QVTKWidget2::Start()
+{
+  makeCurrent();
+  mRenWin->PushState();
+  this->OpenGLInitState(); // Does the same as mRenWin->OpenGLInitState
+}
+
+void QVTKWidget2::End()
+{
+  mRenWin->PopState();
+}
+
+void QVTKWidget2::initializeGL()
+{
+  if(!this->mRenWin)
+    {
+    return;
+    }
+  this->mRenWin->OpenGLInit(); // Does OpenGLInitContext + OpenGLInitState
 }
 
 /*! handle resize event
@@ -204,7 +296,7 @@ void QVTKWidget2::resizeGL(int w, int h)
   // and update the interactor
   if(this->mRenWin->GetInteractor())
     {
-    QResizeEvent e(QSize(w,h), QSize(w,h));
+    QResizeEvent e(QSize(w,h), QSize());
     mIrenAdapter->ProcessEvent(&e, this->mRenWin->GetInteractor());
     }
 }
@@ -236,20 +328,7 @@ void QVTKWidget2::paintGL()
     return;
     }
 
-  // A callback from VTK will call swapBuffers() for us
-  // this is because sometimes VTK does a render without coming through this paintGL()
-
-  // if you want paintGL to always be called for each time VTK renders
-  // 1. turn off EnableRender on the interactor,
-  // 2. turn off SwapBuffers on the render window,
-  // 3. add an observer for the RenderEvent coming from the interactor
-  // 4. implement the callback on the observer to call updateGL() on this widget
-  // 5. implement this function to call mRenWin->Render() instead of going through interactor
-
-  bool autoswap = this->autoBufferSwap();
-  this->setAutoBufferSwap(false);
   iren->Render();
-  this->setAutoBufferSwap(autoswap);
 }
 
 /*! handle mouse press event
@@ -371,6 +450,11 @@ void QVTKWidget2::dropEvent(QDropEvent* e)
     mIrenAdapter->ProcessEvent(e, this->mRenWin->GetInteractor());
     }
 }
+  
+bool QVTKWidget2::focusNextPrevChild(bool)
+{
+  return false;
+}
 
 #ifdef VTK_USE_TDX
 // Description:
@@ -399,8 +483,41 @@ void QVTKWidget2::IsCurrent(vtkObject*, unsigned long, void*, void* call_data)
   *ptr = QGLContext::currentContext() == this->context();
 }
 
+void QVTKWidget2::IsDirect(vtkObject*, unsigned long, void*, void* call_data)
+{
+  int* ptr = reinterpret_cast<int*>(call_data);
+  *ptr = this->context()->format().directRendering();
+}
+
+void QVTKWidget2::SupportsOpenGL(vtkObject*, unsigned long, void*, void* call_data)
+{
+  int* ptr = reinterpret_cast<int*>(call_data);
+  *ptr = QGLFormat::hasOpenGL();
+}
+
 void QVTKWidget2::Frame()
 {
   if(mRenWin->GetSwapBuffers())
     this->swapBuffers();
+  
+  // This callback will call swapBuffers() for us
+  // because sometimes VTK does a render without coming through this paintGL()
+
+  // if you want paintGL to always be called for each time VTK renders
+  // 1. turn off EnableRender on the interactor,
+  // 2. turn off SwapBuffers on the render window,
+  // 3. add an observer for the RenderEvent coming from the interactor
+  // 4. implement the callback on the observer to call updateGL() on this widget
+  // 5. overload QVTKWidget2::paintGL() to call mRenWin->Render() instead iren->Render()
+
+}
+
+void QVTKWidget2::setAutoBufferSwap(bool f)
+{
+  QGLWidget::setAutoBufferSwap(f);
+}
+  
+bool QVTKWidget2::autoBufferSwap() const
+{
+  return QGLWidget::autoBufferSwap();
 }
