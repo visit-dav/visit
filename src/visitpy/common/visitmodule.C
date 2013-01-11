@@ -12950,30 +12950,32 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 // Creation:   January 12, 2012
 //
 // Modifications:
+//    Kathleen Biagas, Thu Jan 10 09:00:14 PST 2013
+//    Verify numeric entries.
 //
 // ****************************************************************************
 
 void
 ParseTimePickOptions(MapNode &pickParams)
 {
-    if (pickParams.HasEntry("do_time") && 
-        pickParams.GetEntry("do_time")->AsInt() == 1 &&
+    if (pickParams.HasNumericEntry("do_time") && 
+        pickParams.GetEntry("do_time")->ToBool() &&
         !pickParams.HasEntry("time_options"))
     {
         MapNode timeOptions;
-        if (pickParams.HasEntry("stride"))
+        if (pickParams.HasNumericEntry("stride"))
         {
-            timeOptions["stride"] = pickParams.GetEntry("stride")->AsInt();
+            timeOptions["stride"] = pickParams.GetEntry("stride")->ToInt();
             pickParams.RemoveEntry("stride");
         }
-        if (pickParams.HasEntry("start_time"))
+        if (pickParams.HasNumericEntry("start_time"))
         {
-            timeOptions["start_time"] = pickParams.GetEntry("start_time")->AsInt();
+            timeOptions["start_time"] = pickParams.GetEntry("start_time")->ToInt();
             pickParams.RemoveEntry("start_time");
         }
-        if (pickParams.HasEntry("end_time"))
+        if (pickParams.HasNumericEntry("end_time"))
         {
-            timeOptions["end_time"] = pickParams.GetEntry("end_time")->AsInt();
+            timeOptions["end_time"] = pickParams.GetEntry("end_time")->ToInt();
             pickParams.RemoveEntry("end_time");
         }
         if (timeOptions.GetNumEntries() > 0)

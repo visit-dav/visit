@@ -93,13 +93,18 @@ avtStreamlineInfoQuery::~avtStreamlineInfoQuery()
 // Programmer:  Kathleen Biagas 
 // Creation:    June 17, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
+//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    to specific type.
+//
 // ****************************************************************************
 
 void
 avtStreamlineInfoQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasEntry("dump_steps"))
-        SetDumpSteps(params.GetEntry("dump_steps")->AsInt());
+    if (params.HasNumericEntry("dump_steps"))
+        SetDumpSteps(params.GetEntry("dump_steps")->ToBool());
 }
 
 // ****************************************************************************

@@ -104,6 +104,11 @@ avtVariableByZoneQuery::~avtVariableByZoneQuery()
 //  Programmer:   Kathleen Biagas 
 //  Creation:     June 20, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
+//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    to specific type. Add error checking for size of passed vectors.
+//
 // ****************************************************************************
 
 void 
@@ -112,17 +117,19 @@ avtVariableByZoneQuery::SetInputParams(const MapNode &params)
     if (params.HasEntry("vars"))
     {
         stringVector v = params.GetEntry("vars")->AsStringVector();
+        if (v.empty())
+            EXCEPTION2(QueryArgumentException, "vars", 1);
         timeCurveSpecs["nResultsToStore"] = (int) v.size();
         pickAtts.SetVariables(v);
     }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("domain"))
-        domain = params.GetEntry("domain")->AsInt();
+    if (params.HasNumericEntry("domain"))
+        domain = params.GetEntry("domain")->ToInt();
 
-    if (params.HasEntry("element"))
-        zone = params.GetEntry("element")->AsInt();
+    if (params.HasNumericEntry("element"))
+        zone = params.GetEntry("element")->ToInt();
     else
         EXCEPTION1(QueryArgumentException, "element");
 }

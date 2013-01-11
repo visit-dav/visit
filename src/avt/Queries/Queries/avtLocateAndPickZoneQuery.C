@@ -116,6 +116,9 @@ avtLocateAndPickZoneQuery::~avtLocateAndPickZoneQuery()
 //  Creation:    June 20, 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:44:46 PST 2013
+//    Add error checking on size of passed vectors. Use new MapNode methods 
+//    for testing existence of numeric entries.
 //
 // ****************************************************************************
 
@@ -125,29 +128,42 @@ avtLocateAndPickZoneQuery::SetInputParams(const MapNode &params)
     if (params.HasEntry("vars"))
     {
         const stringVector &v = params.GetEntry("vars")->AsStringVector();
+        if (v.empty())
+            EXCEPTION2(QueryArgumentException, "vars", 1);
         timeCurveSpecs["nResultsToStore"] = (int)v.size();
         pickAtts.SetVariables(v);
     }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("ray_start_point"))
-        pickAtts.SetRayPoint1(params.GetEntry("ray_start_point")->AsDoubleVector());
+    doubleVector rp1, rp2;
+    if (params.HasNumericVectorEntry("ray_start_point"))
+    {
+        params.GetEntry("ray_start_point")->ToDoubleVector(rp1); 
+        if (rp1.size() != 3)
+            EXCEPTION2(QueryArgumentException, "ray_start_point", 3);
+        pickAtts.SetRayPoint1(rp1);
+    }
     else
         EXCEPTION1(QueryArgumentException, "ray_start_point");
 
     if (params.HasEntry("ray_end_point"))
-        pickAtts.SetRayPoint2(params.GetEntry("ray_end_point")->AsDoubleVector());
+    {
+        params.GetEntry("ray_end_point")->ToDoubleVector(rp2); 
+        if (rp2.size() != 3)
+            EXCEPTION2(QueryArgumentException, "ray_end_point", 3);
+        pickAtts.SetRayPoint2(rp2);
+    }
     else
         EXCEPTION1(QueryArgumentException, "ray_end_point");
 
-    if (params.HasEntry("domain"))
-        domain = (params.GetEntry("domain")->AsInt());
+    if (params.HasNumericEntry("domain"))
+        domain = (params.GetEntry("domain")->ToInt());
     else
         EXCEPTION1(QueryArgumentException, "domain");
 
-    if (params.HasEntry("element"))
-        zone = (params.GetEntry("element")->AsInt());
+    if (params.HasNumericEntry("element"))
+        zone = (params.GetEntry("element")->ToInt());
     else
         EXCEPTION1(QueryArgumentException, "element");
 }
