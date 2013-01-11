@@ -150,69 +150,73 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Kathleen Biagas, Wed Oct 17 14:39:41 PDT 2012
 //    Added useSpecifiedUpVector.
 //
+//    Kathleen Biagas, Thu Jan 10 08:11:20 PST 2013
+//    Added error checking.
+//
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetInputParams(const MapNode &params)
 {
     if (params.HasEntry("vars"))
-        SetVariableNames(params.GetEntry("vars")->AsStringVector());
+    {
+        stringVector v = params.GetEntry("vars")->AsStringVector();
+        if (v.size() != 1 && v.size() != 2)
+            EXCEPTION2(QueryArgumentException, "vars", 2);
+        SetVariableNames(v);
+    }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("origin"))
+    if (params.HasNumericVectorEntry("origin"))
     {
-        if (params.GetEntry("origin")->TypeName() == "doubleVector")
-            SetOrigin(params.GetEntry("origin")->AsDoubleVector());
-        else if (params.GetEntry("origin")->TypeName() == "intVector")
-            SetOrigin(params.GetEntry("origin")->AsIntVector());
+        doubleVector v;
+        params.GetEntry("origin")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "origin", 3);
+        SetOrigin(v);
     }
 
-    if (params.HasEntry("up_vector"))
+    if (params.HasNumericVectorEntry("up_vector"))
     {
-        if (params.GetEntry("up_vector")->TypeName() == "doubleVector")
-            SetUpVector(params.GetEntry("up_vector")->AsDoubleVector());
-        else if (params.GetEntry("up_vector")->TypeName() == "intVector")
-            SetUpVector(params.GetEntry("up_vector")->AsIntVector());
+        doubleVector v;
+        params.GetEntry("up_vector")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "up_vector", 3);
+        SetUpVector(v);
     }
 
-    if (params.HasEntry("theta"))
+    if (params.HasNumericEntry("theta"))
     {
-        if (params.GetEntry("theta")->TypeName() == "double")
-            SetTheta(params.GetEntry("theta")->AsDouble());
-        else if (params.GetEntry("theta")->TypeName() == "int")
-            SetTheta(params.GetEntry("theta")->AsInt());
+        SetTheta(params.GetEntry("theta")->ToDouble());
     }
 
-    if (params.HasEntry("phi"))
+    if (params.HasNumericEntry("phi"))
     {
-        if (params.GetEntry("phi")->TypeName() == "double")
-            SetPhi(params.GetEntry("phi")->AsDouble());
-        else if (params.GetEntry("phi")->TypeName() == "int")
-            SetPhi(params.GetEntry("phi")->AsInt());
+        SetPhi(params.GetEntry("phi")->ToDouble());
     }
 
-    if (params.HasEntry("width"))
+    if (params.HasNumericEntry("width"))
     {
-        if (params.GetEntry("width")->TypeName() == "double")
-            SetWidth(params.GetEntry("width")->AsDouble());
-        else if (params.GetEntry("width")->TypeName() == "int")
-            SetWidth(params.GetEntry("width")->AsInt());
+        SetWidth(params.GetEntry("width")->ToDouble());
     }
 
-    if (params.HasEntry("height"))
+    if (params.HasNumericEntry("height"))
     {
-        if (params.GetEntry("height")->TypeName() == "double")
-            SetHeight(params.GetEntry("height")->AsDouble());
-        else if (params.GetEntry("height")->TypeName() == "int")
-            SetHeight(params.GetEntry("height")->AsInt());
+        SetHeight(params.GetEntry("height")->ToDouble());
     }
 
-    if (params.HasEntry("image_size"))
-        SetImageSize(params.GetEntry("image_size")->AsIntVector());
+    if (params.HasNumericVectorEntry("image_size"))
+    {
+        intVector v;
+        params.GetEntry("image_size")->ToIntVector(v);
+        if (v.size() != 2)
+            EXCEPTION2(QueryArgumentException, "image_size", 2);
+        SetImageSize(v);
+    }
 
-    if (params.HasEntry("divide_emis_by_absorb"))
-        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->AsInt());
+    if (params.HasNumericEntry("divide_emis_by_absorb"))
+        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->ToBool());
 
     if (params.HasEntry("output_type"))
     {
@@ -224,9 +228,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     // this is not a normal parameter, it is set by the cli when the query
     // is called with the deprecated argument parsing.
-    if (params.HasEntry("useUpVector"))
+    if (params.HasNumericEntry("useUpVector"))
     {
-        useSpecifiedUpVector = params.GetEntry("useUpVector")->AsInt();
+        useSpecifiedUpVector = params.GetEntry("useUpVector")->ToBool();
     }
 }
 
@@ -274,6 +278,8 @@ avtXRayImageQuery::SetVariableNames(const stringVector &names)
 void
 avtXRayImageQuery::SetOrigin(const doubleVector &_origin)
 {
+    if (_origin.size() != 3)
+        EXCEPTION1(VisItException, "origin should have 3 elements.");
     origin[0] = _origin[0];
     origin[1] = _origin[1];
     origin[2] = _origin[2];
@@ -282,6 +288,8 @@ avtXRayImageQuery::SetOrigin(const doubleVector &_origin)
 void
 avtXRayImageQuery::SetOrigin(const intVector &_origin)
 {
+    if (_origin.size() != 3)
+        EXCEPTION1(VisItException, "origin should have 3 elements.");
     origin[0] = (double)_origin[0];
     origin[1] = (double)_origin[1];
     origin[2] = (double)_origin[2];
@@ -304,6 +312,8 @@ avtXRayImageQuery::SetOrigin(const intVector &_origin)
 void
 avtXRayImageQuery::SetUpVector(const doubleVector &_upvector)
 {
+    if (_upvector.size() != 3)
+        EXCEPTION1(VisItException, "up_vector should have 3 elements.");
     upVector[0] = _upvector[0];
     upVector[1] = _upvector[1];
     upVector[2] = _upvector[2];
@@ -312,6 +322,8 @@ avtXRayImageQuery::SetUpVector(const doubleVector &_upvector)
 void
 avtXRayImageQuery::SetUpVector(const intVector &_upvector)
 {
+    if (_upvector.size() != 3)
+        EXCEPTION1(VisItException, "up_vector should have 3 elements.");
     upVector[0] = (double)_upvector[0];
     upVector[1] = (double)_upvector[1];
     upVector[2] = (double)_upvector[2];
@@ -406,6 +418,8 @@ avtXRayImageQuery::SetHeight(const double &size)
 void
 avtXRayImageQuery::SetImageSize(const intVector &size)
 {
+    if (size.size() != 2)
+        EXCEPTION1(VisItException, "image_size should have 2 elements.");
     nx = size[0];
     ny = size[1];
     numPixels = nx * ny;

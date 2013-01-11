@@ -1228,8 +1228,8 @@ QueryAttributes::GetVariables()
 QueryAttributes::DataType
 QueryAttributes::GetDataType() const
 {
-    if (queryInputParams.HasEntry("data_type"))
-        return (QueryAttributes::DataType)queryInputParams.GetEntry("data_type")->AsInt();
+    if (queryInputParams.HasNumericEntry("data_type"))
+        return (QueryAttributes::DataType)queryInputParams.GetEntry("data_type")->ToInt();
     else
         return QueryAttributes::ActualData;
 }

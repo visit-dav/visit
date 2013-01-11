@@ -121,52 +121,58 @@ avtHohlraumFluxQuery::~avtHohlraumFluxQuery()
 //  Programmer: Kathleen Biagas 
 //  Creation:   June 20, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:30:20 PST 2013
+//    Add error checkin for size of passed vectors. Use new MapNode methods
+//    to test for numeric entries.
+//
 // ****************************************************************************
 
 void
 avtHohlraumFluxQuery::SetInputParams(const MapNode &params)
 {
     if (params.HasEntry("vars"))
-        SetVariableNames(params.GetEntry("vars")->AsStringVector());
+    {
+        stringVector v = params.GetEntry("vars")->AsStringVector();
+        if (v.size() != 1 && v.size() != 2)
+        {
+            EXCEPTION2(QueryArgumentException, "vars", 2);
+        }
+        SetVariableNames(v);
+    }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("num_lines"))
-        SetNumberOfLines(params.GetEntry("num_lines")->AsInt());
+    if (params.HasNumericEntry("num_lines"))
+        SetNumberOfLines(params.GetEntry("num_lines")->ToInt());
 
-    if (params.HasEntry("divide_emis_by_absorb"))
-        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->AsInt());
+    if (params.HasNumericEntry("divide_emis_by_absorb"))
+        SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->ToBool());
 
-    if (params.HasEntry("ray_center"))
+    if (params.HasNumericVectorEntry("ray_center"))
     {
-        if (params.GetEntry("ray_center")->TypeName() == "doubleVector")
-            SetRayCenter(params.GetEntry("ray_center")->AsDoubleVector());
-        else if (params.GetEntry("ray_center")->TypeName() == "intVector")
-            SetRayCenter(params.GetEntry("ray_center")->AsIntVector());
+        doubleVector v;
+        params.GetEntry("ray_center")->ToDoubleVector(v);
+        if (v.size() != 3)
+        {
+            EXCEPTION2(QueryArgumentException, "ray_center", 3);
+        }
+        SetRayCenter(v);
     }
 
-    if (params.HasEntry("radius"))
+    if (params.HasNumericEntry("radius"))
     {
-        if (params.GetEntry("radius")->TypeName() == "double")
-            SetRadius(params.GetEntry("radius")->AsDouble());
-        else if (params.GetEntry("radius")->TypeName() == "int")
-            SetRadius(params.GetEntry("radius")->AsInt());
+        SetRadius(params.GetEntry("radius")->ToDouble());
     }
 
-    if (params.HasEntry("theta"))
+    if (params.HasNumericEntry("theta"))
     {
-        if (params.GetEntry("theta")->TypeName() == "double")
-            SetTheta(params.GetEntry("theta")->AsDouble());
-        else if (params.GetEntry("theta")->TypeName() == "int")
-            SetTheta(params.GetEntry("theta")->AsInt());
+        SetTheta(params.GetEntry("theta")->ToDouble());
     }
 
-    if (params.HasEntry("phi"))
+    if (params.HasNumericEntry("phi"))
     {
-        if (params.GetEntry("phi")->TypeName() == "double")
-            SetPhi(params.GetEntry("phi")->AsDouble());
-        else if (params.GetEntry("phi")->TypeName() == "int")
-            SetPhi(params.GetEntry("phi")->AsInt());
+        SetPhi(params.GetEntry("phi")->ToDouble());
     }
 }
 

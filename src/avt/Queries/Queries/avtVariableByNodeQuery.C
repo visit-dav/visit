@@ -105,6 +105,11 @@ avtVariableByNodeQuery::~avtVariableByNodeQuery()
 //  Programmer:   Kathleen Biagas 
 //  Creation:     June 20, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
+//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    to specific type.  Add error checking for size of passed vectors.
+//
 // ****************************************************************************
 
 void 
@@ -113,22 +118,24 @@ avtVariableByNodeQuery::SetInputParams(const MapNode &params)
     if (params.HasEntry("vars"))
     {
         stringVector v = params.GetEntry("vars")->AsStringVector();
+        if (v.empty())
+            EXCEPTION2(QueryArgumentException, "vars", 1);
         timeCurveSpecs["nResultsToStore"] = (int) v.size();
         pickAtts.SetVariables(v);
     }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("domain"))
-        domain = params.GetEntry("domain")->AsInt();
+    if (params.HasNumericEntry("domain"))
+        domain = params.GetEntry("domain")->ToInt();
 
-    if (params.HasEntry("element"))
-        node = params.GetEntry("element")->AsInt();
+    if (params.HasNumericEntry("element"))
+        node = params.GetEntry("element")->ToInt();
     else
         EXCEPTION1(QueryArgumentException, "element");
 
-    if (params.HasEntry("use_global_id"))
-        useGlobalId = params.GetEntry("use_global_id")->AsInt();
+    if (params.HasNumericEntry("use_global_id"))
+        useGlobalId = params.GetEntry("use_global_id")->ToBool();
 }
 
  

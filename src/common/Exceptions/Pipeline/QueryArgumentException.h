@@ -68,6 +68,8 @@ class AVTEXCEPTION_API QueryArgumentException : public PipelineException
                           QueryArgumentException(const std::string &);
                           QueryArgumentException(const std::string &,
                                                  const std::string &);
+                          QueryArgumentException(const std::string &,
+                                                 const int);
     virtual              ~QueryArgumentException() VISIT_THROW_NOTHING {;};
 };
 

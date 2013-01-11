@@ -83,3 +83,29 @@ QueryArgumentException::QueryArgumentException(const std::string &qArg,
     msg += ".";
 }
 
+// ****************************************************************************
+//  Method: QueryArgumentException constructor
+//  
+//  Input:
+//    qArg : name of argument with invalid type. 
+//    argTypes : acceptable types for the argument.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   January 10, 2013 
+//
+// ****************************************************************************
+
+QueryArgumentException::QueryArgumentException(const std::string &qArg, 
+                                               const int num)
+{
+    msg =  "There was an error parsing query arguments.  Argument `";
+    msg += qArg;
+    msg += "`";
+    msg += " should have ";
+    msg += num;
+    if (num == 1)
+        msg += "at least 1 element.";
+    else
+        msg += " elements.";
+}
+

@@ -637,9 +637,9 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 
     stringVector vars = atts.GetQueryAtts().GetVariables();
     bool multiCurve = false;
-    if (atts.GetQueryAtts().GetQueryInputParams().HasEntry("curve_plot_type"))
+    if (atts.GetQueryAtts().GetQueryInputParams().HasNumericEntry("curve_plot_type"))
     {
-        multiCurve = (atts.GetQueryAtts().GetQueryInputParams().GetEntry("curve_plot_type")->AsInt() == 1);
+        multiCurve = (atts.GetQueryAtts().GetQueryInputParams().GetEntry("curve_plot_type")->ToInt() == 1);
     }
     avtDataTree_p tree = CreateTree(times, qRes, vars, multiCurve);
     SetOutputDataTree(tree);

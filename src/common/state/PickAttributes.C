@@ -3705,8 +3705,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     if (timeStep != -1)
     {
         bool showTS = showTimeStep;
-        if (plotRequested.HasEntry("showTimeStep"))
-            showTS = plotRequested.GetEntry("showTimeStep")->AsBool();
+        if (plotRequested.HasNumericEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->ToBool();
       
         if (showTS)
         {
@@ -3737,8 +3737,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     else
     {
         bool showMN = showMeshName;
-        if (plotRequested.HasEntry("showMeshName"))
-            showMN = plotRequested.GetEntry("showMeshName")->AsBool();
+        if (plotRequested.HasNumericEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->ToBool();
 
         if (showMN)
         {
@@ -3822,34 +3822,34 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 
     bool showZDLC = showZoneDomainLogicalCoords;
-    if (plotRequested.HasEntry("showZoneDomainLogicalCoords"))
-        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->AsBool(); 
+    if (plotRequested.HasNumericEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->ToBool(); 
     bool showZBLC = showZoneBlockLogicalCoords;
-    if (plotRequested.HasEntry("showZoneBlockLogicalCoords"))
-        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->AsBool(); 
+    if (plotRequested.HasNumericEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->ToBool(); 
     bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
                           (showZBLC && !bzoneCoords.empty());
 
     bool showNPC = showNodePhysicalCoords;
-    if (plotRequested.HasEntry("showNodePhysicalCoords"))
-        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->ToBool();
     bool showNDLC = showNodeDomainLogicalCoords;
-    if (plotRequested.HasEntry("showNodeDomainLogicalCoords"))
-        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->ToBool();
     bool showNBLC = showNodeBlockLogicalCoords;
-    if (plotRequested.HasEntry("showNodeBlockLogicalCoords"))
-        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->ToBool();
     bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
                           (showNDLC && !dnodeCoords.empty()) || 
                           (showNBLC && !bnodeCoords.empty());
 
     bool showZId = showZoneId;
-    if (plotRequested.HasEntry("showZoneId"))
-        showZId = plotRequested.GetEntry("showZoneId")->AsBool();
+    if (plotRequested.HasNumericEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->ToBool();
 
     bool showNId = showNodeId;
-    if (plotRequested.HasEntry("showNodeId"))
-        showNId = plotRequested.GetEntry("showNodeId")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->ToBool();
 
     if (pickType == Zone || pickType == DomainZone)
     {
@@ -3918,8 +3918,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 
     bool showIE = showIncidentElements;
-    if (plotRequested.HasEntry("showIncidentElements"))
-        showIE = plotRequested.GetEntry("showIncidentElements")->AsBool();
+    if (plotRequested.HasNumericEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->ToBool();
 
     if (showIE)
     {
@@ -3936,8 +3936,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 os += "\n    "; 
             }
             showId = showNodeId;
-            if (plotRequested.HasEntry("showNodeId"))
-                showId = plotRequested.GetEntry("showNodeId")->AsBool();
+            if (plotRequested.HasNumericEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->ToBool();
         }
         else if (pickType == Node || pickType == DomainNode)
         {
@@ -3950,8 +3950,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                 os += "\n    "; 
             }
             showId = showZoneId;
-            if (plotRequested.HasEntry("showZoneId"))
-                showId = plotRequested.GetEntry("showZoneId")->AsBool();
+            if (plotRequested.HasNumericEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->ToBool();
         }
         for (size_t i = 0; i < incidentElements.size(); i++)
         {
@@ -4211,8 +4211,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     if (timeStep != -1)
     {
         bool showTS = showTimeStep;
-        if (plotRequested.HasEntry("showTimeStep"))
-            showTS = plotRequested.GetEntry("showTimeStep")->AsBool();
+        if (plotRequested.HasNumericEntry("showTimeStep"))
+            showTS = plotRequested.GetEntry("showTimeStep")->ToBool();
       
         if (showTS)
         {
@@ -4242,8 +4242,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     else
     {
         bool showMN = showMeshName;
-        if (plotRequested.HasEntry("showMeshName"))
-            showMN = plotRequested.GetEntry("showMeshName")->AsBool();
+        if (plotRequested.HasNumericEntry("showMeshName"))
+            showMN = plotRequested.GetEntry("showMeshName")->ToBool();
 
         if (showMN)
         {
@@ -4298,34 +4298,34 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
 
 
     bool showZDLC = showZoneDomainLogicalCoords;
-    if (plotRequested.HasEntry("showZoneDomainLogicalCoords"))
-        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->AsBool(); 
+    if (plotRequested.HasNumericEntry("showZoneDomainLogicalCoords"))
+        showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->ToBool(); 
     bool showZBLC = showZoneBlockLogicalCoords;
-    if (plotRequested.HasEntry("showZoneBlockLogicalCoords"))
-        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->AsBool(); 
+    if (plotRequested.HasNumericEntry("showZoneBlockLogicalCoords"))
+        showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->ToBool(); 
     bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
                           (showZBLC && !bzoneCoords.empty());
 
     bool showNPC = showNodePhysicalCoords;
-    if (plotRequested.HasEntry("showNodePhysicalCoords"))
-        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodePhysicalCoords"))
+        showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->ToBool();
     bool showNDLC = showNodeDomainLogicalCoords;
-    if (plotRequested.HasEntry("showNodeDomainLogicalCoords"))
-        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeDomainLogicalCoords"))
+        showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->ToBool();
     bool showNBLC = showNodeBlockLogicalCoords;
-    if (plotRequested.HasEntry("showNodeBlockLogicalCoords"))
-        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeBlockLogicalCoords"))
+        showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->ToBool();
     bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
                           (showNDLC && !dnodeCoords.empty()) || 
                           (showNBLC && !bnodeCoords.empty());
 
     bool showZId = showZoneId;
-    if (plotRequested.HasEntry("showZoneId"))
-        showZId = plotRequested.GetEntry("showZoneId")->AsBool();
+    if (plotRequested.HasNumericEntry("showZoneId"))
+        showZId = plotRequested.GetEntry("showZoneId")->ToBool();
 
     bool showNId = showNodeId;
-    if (plotRequested.HasEntry("showNodeId"))
-        showNId = plotRequested.GetEntry("showNodeId")->AsBool();
+    if (plotRequested.HasNumericEntry("showNodeId"))
+        showNId = plotRequested.GetEntry("showNodeId")->ToBool();
 
     if (pickType == Zone || pickType == DomainZone)
     {
@@ -4390,8 +4390,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
 
     bool showIE = showIncidentElements;
-    if (plotRequested.HasEntry("showIncidentElements"))
-        showIE = plotRequested.GetEntry("showIncidentElements")->AsBool();
+    if (plotRequested.HasNumericEntry("showIncidentElements"))
+        showIE = plotRequested.GetEntry("showIncidentElements")->ToBool();
 
     if (showIE)
     {
@@ -4401,16 +4401,16 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         {
             os += "  Nodes: " ; 
             showId = showNodeId;
-            if (plotRequested.HasEntry("showNodeId"))
-                showId = plotRequested.GetEntry("showNodeId")->AsBool();
+            if (plotRequested.HasNumericEntry("showNodeId"))
+                showId = plotRequested.GetEntry("showNodeId")->ToBool();
            
         }
         else if (pickType == Node || pickType == DomainNode)
         {
             os += "  Zones: " ; 
             showId = showZoneId;
-            if (plotRequested.HasEntry("showZoneId"))
-                showId = plotRequested.GetEntry("showZoneId")->AsBool();
+            if (plotRequested.HasNumericEntry("showZoneId"))
+                showId = plotRequested.GetEntry("showZoneId")->ToBool();
         }
         if (showId && showGlobal)
             os += " (global) ";

@@ -103,6 +103,8 @@ class STATE_API MapNode : public Variant
     
     void                 RemoveEntry(const std::string &);
     bool                 HasEntry(const std::string &) const;
+    bool                 HasNumericEntry(const std::string &) const;
+    bool                 HasNumericVectorEntry(const std::string &) const;
     void                 GetEntryNames(stringVector &) const;
     int                  GetNumEntries() const {return (int)entries.size();}
     void                 Reset();

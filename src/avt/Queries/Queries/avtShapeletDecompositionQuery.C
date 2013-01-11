@@ -57,6 +57,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidDimensionsException.h>
+#include <QueryArgumentException.h>
 #include <snprintf.h>
 
 #include <MapNode.h>
@@ -108,14 +109,18 @@ avtShapeletDecompositionQuery::~avtShapeletDecompositionQuery()
 //  Programmer: Kathleen Biagas 
 //  Creation:   June 20, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:30:20 PST 2013
+//    Use new MapNode methods to test for numeric entries.
+//
 // ****************************************************************************
 
 void 
 avtShapeletDecompositionQuery::SetInputParams(const MapNode & params)
 {
-    if (params.HasEntry("beta"))
+    if (params.HasNumericEntry("beta"))
     {
-        double b = params.GetEntry("beta")->AsDouble();
+        double b = params.GetEntry("beta")->ToDouble();
         if (b < 1.0)
         {
             EXCEPTION1(VisItException, "Shapelet Decomposition requires "
@@ -128,9 +133,9 @@ avtShapeletDecompositionQuery::SetInputParams(const MapNode & params)
         SetBeta(1.0);
     }
 
-    if (params.HasEntry("nmax"))
+    if (params.HasNumericEntry("nmax"))
     {
-        int m = params.GetEntry("nmax")->AsInt();
+        int m = params.GetEntry("nmax")->ToInt();
         SetNMax(m < 1 ? 1 : m);
     }
  
@@ -138,7 +143,12 @@ avtShapeletDecompositionQuery::SetInputParams(const MapNode & params)
 
     if (params.HasEntry("recomp_file"))
     {
-        SetRecompOutputFileName(params.GetEntry("recomp_file")->AsString());
+        std::string rf(params.GetEntry("recomp_file")->AsString());
+        if (rf.empty())
+        {
+            EXCEPTION1(QueryArgumentException, "recomp_file");
+        }
+        SetRecompOutputFileName(rf);
     }
     else 
     {
