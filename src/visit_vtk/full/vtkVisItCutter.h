@@ -39,11 +39,11 @@
 
 #ifndef __vtkVisItCutter_h
 #define __vtkVisItCutter_h
+#include <visit_vtk_exports.h>
 
-#include "vtkDataSetToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
 
 #include "vtkContourValues.h" // Needed for inline methods
-#include <visit_vtk_exports.h>
 
 #define VTK_SORT_BY_VALUE 0
 #define VTK_SORT_BY_CELL 1
@@ -51,10 +51,19 @@
 class vtkImplicitFunction;
 class vtkPointLocator;
 
-class VISIT_VTK_API vtkVisItCutter : public vtkDataSetToPolyDataFilter
+// ***************************************************************************
+//  Class: vtkVisItCutter
+//
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 11:42:08 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ***************************************************************************
+
+class VISIT_VTK_API vtkVisItCutter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItCutter,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkVisItCutter,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -161,15 +170,23 @@ protected:
   vtkVisItCutter(vtkImplicitFunction *cf=NULL);
   ~vtkVisItCutter();
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
+
   void UnstructuredGridCutter();
   void DataSetCutter();
   vtkImplicitFunction *CutFunction;
   
+  vtkDataSet *input;
+  vtkPolyData *output;
+
   vtkPointLocator *Locator;
   int SortBy;
   vtkContourValues *ContourValues;
   int GenerateCutScalars;
+
 private:
   vtkVisItCutter(const vtkVisItCutter&);  // Not implemented.
   void operator=(const vtkVisItCutter&);  // Not implemented.
@@ -189,7 +206,4 @@ inline const char *vtkVisItCutter::GetSortByAsString(void)
     }
 }
 
-
 #endif
-
-

@@ -42,6 +42,8 @@
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkLineSource.h>
 #include <vtkMath.h>
 #include <vtkObjectFactory.h>
@@ -54,16 +56,18 @@
 vtkStandardNewMacro(vtkLineoutFilter);
 
 
-//======================================================================
-// Constructor
+// ****************************************************************************
+//  Constructor:
 //
-// Modifications:
-//   Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
-//   Removed YScale, no longer needed.
-//  
-//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
-//   Removed cd2pd, use VisIt version of vtkProbeFilter.
-//======================================================================
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
+//    Removed YScale, no longer needed.
+//
+//    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//    Removed cd2pd, use VisIt version of vtkProbeFilter.
+//
+// ****************************************************************************
+
 vtkLineoutFilter::vtkLineoutFilter()
 {
   this->Point1[0] = this->Point1[1] = this->Point1[2] = 0.; 
@@ -73,13 +77,15 @@ vtkLineoutFilter::vtkLineoutFilter()
   this->Probe = vtkVisItProbeFilter::New();
 }
 
-//======================================================================
-// Destructor
-//  
-// Modifications:
-//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
-//   Removed cd2pd.
-//======================================================================
+// ****************************************************************************
+//  Destructor:
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//    Removed cd2pd.
+//
+// ****************************************************************************
+
 vtkLineoutFilter::~vtkLineoutFilter()
 {
   if (this->LineSource != NULL)
@@ -94,35 +100,53 @@ vtkLineoutFilter::~vtkLineoutFilter()
     }
 }
 
-//======================================================================
-// Standard Execute method.
+// ****************************************************************************
+//  Method: vtkLineoutFilter::RequestData.
 //
-// Modifications:
-//   Kathleen Bonnell, Tue Jun  4 09:17:56 PDT 2002
-//   Copy point data is happening from wrong source. Use
-//   probe->GetOutput->GetPointData().
+//  Modifications:
+//    Kathleen Bonnell, Tue Jun  4 09:17:56 PDT 2002
+//    Copy point data is happening from wrong source. Use
+//    probe->GetOutput->GetPointData().
 //
-//   Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
-//   Removed YScale, no longer needed.
-//  
-//   Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
-//   Slight rework to consider ghost levels. 
-//  
-//   Hank Childs, Fri Aug 27 15:15:20 PDT 2004
-//   Rename ghost data array.
+//    Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
+//    Removed YScale, no longer needed.
 //
-//   Hank Childs, Sun Mar 13 09:19:30 PST 2005
-//   Fix memory leak.
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
+//    Slight rework to consider ghost levels. 
 //
-//   Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
-//   Removed cd2pd.
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
 //
-//======================================================================
-void
-vtkLineoutFilter::Execute()
+//    Hank Childs, Sun Mar 13 09:19:30 PST 2005
+//    Fix memory leak.
+//
+//    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
+//    Removed cd2pd.
+//
+//    Eric Brugger, Thu Jan 10 09:51:08 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
+
+int
+vtkLineoutFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
   vtkDebugMacro(<<"Executing vtkLineoutFilter");
-  vtkDataSet *inDS  = this->GetInput();
+
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkDataSet      *inDS = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *outPolys = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   this->LineSource->SetPoint1(this->Point1);
   this->LineSource->SetPoint2(this->Point2);
@@ -133,7 +157,7 @@ vtkLineoutFilter::Execute()
     if (inDS->GetCellData()->GetScalars() == NULL)
       {
        vtkErrorMacro(<<"No Scalars to probe!");
-       return;
+       return 1;
       }
     this->Probe->SetCellData(1);
     }
@@ -153,10 +177,9 @@ vtkLineoutFilter::Execute()
     {
         probeOut->Delete();
         vtkDebugMacro(<<"Probe did not find any valid points");
-        return;
+        return 1;
     }
 
-  vtkPolyData *outPolys = this->GetOutput(); 
   vtkPoints *inPts = probeOut->GetPoints();
 
   vtkIdType i, index, numPoints = validPoints->GetNumberOfTuples();
@@ -176,7 +199,7 @@ vtkLineoutFilter::Execute()
   {
       probeOut->Delete();
       vtkErrorMacro(<<"Probe did not return point data scalars");
-      return;
+      return 1;
   }
 
   unsigned char* ghosts = 0;
@@ -236,13 +259,31 @@ vtkLineoutFilter::Execute()
   //
   probeOut->Delete();
   nonGhostValidPoints->Delete();
+
+  return 1;
 } 
 
-//======================================================================
-// Modifications:
-//   Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
-//   Removed YScale, no longer needed.
-//======================================================================
+// ****************************************************************************
+//  Method: vtkLineoutFilter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkLineoutFilter::FillInputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
+}
+
+// ****************************************************************************
+//  Method: vtkLineoutFilter::PrintSelf
+//
+//  Modifications:
+//    Kathleen Bonnell, Fri Jul 12 17:19:40 PDT 2002
+//    Removed YScale, no longer needed.
+//
+// ****************************************************************************
+
 void 
 vtkLineoutFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -256,8 +297,3 @@ vtkLineoutFilter::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Number of Sample points: " 
                << this->NumberOfSamplePoints << "\n"; 
 }
-
-
-
-      
-

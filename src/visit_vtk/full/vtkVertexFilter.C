@@ -44,6 +44,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -64,10 +66,10 @@ vtkVertexFilter::vtkVertexFilter()
     VertexAtPoints = 1;
 }
 
-
 // ***************************************************************************
-//  Modifications:
+//  Method: vtkVertexFilter::RequestData
 //
+//  Modifications:
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make onevertex of type vtkIdType to match VTK 4.0 API.
 //
@@ -86,14 +88,32 @@ vtkVertexFilter::vtkVertexFilter()
 //    Kathleen Biagas, Thu Aug 30 16:55:32 MST 2012
 //    Preserve coordinate type.
 //
+//    Eric Brugger, Thu Jan 10 12:18:23 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
-void vtkVertexFilter::Execute(void)
+int
+vtkVertexFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  int   i, j;
+  vtkDebugMacro(<<"Executing vtkVertexFilter");
 
-  vtkDataSet  *input  = this->GetInput();
-  vtkPolyData *output = this->GetOutput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkDataSet   *input = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+  int   i, j;
 
   vtkCellData  *inCd = input->GetCellData();
   vtkPointData *inPd = input->GetPointData();
@@ -206,11 +226,27 @@ void vtkVertexFilter::Execute(void)
   output->SetPoints(outPts);
   outPts->Delete();
 }
-
   
-void vtkVertexFilter::PrintSelf(ostream &os, vtkIndent indent)
+// ****************************************************************************
+//  Method: vtkVertexFilter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkVertexFilter::FillInputPortInformation(int, vtkInformation *info)
 {
-   this->Superclass::PrintSelf(os, indent);
-   os << indent << "VertexAtPoints: " << this->VertexAtPoints << "\n";
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
 }
 
+// ****************************************************************************
+//  Method: vtkVertexFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkVertexFilter::PrintSelf(ostream &os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os, indent);
+  os << indent << "VertexAtPoints: " << this->VertexAtPoints << "\n";
+}

@@ -69,9 +69,9 @@
 
 #ifndef __vtkVisItGlyph3D_h
 #define __vtkVisItGlyph3D_h
-
-#include <vtkDataSetToPolyDataFilter.h>
 #include <visit_vtk_exports.h>
+
+#include <vtkPolyDataAlgorithm.h>
 
 #define VTK_SCALE_BY_SCALAR 0
 #define VTK_SCALE_BY_VECTOR 1
@@ -92,11 +92,19 @@
 #define VTK_INDEXING_BY_SCALAR 1
 #define VTK_INDEXING_BY_VECTOR 2
 
+// ***************************************************************************
+//  Class: vtkVisItGlyph3D
+//
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 13:00:03 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ***************************************************************************
 
-class VISIT_VTK_API vtkVisItGlyph3D : public vtkDataSetToPolyDataFilter
+class VISIT_VTK_API vtkVisItGlyph3D : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItGlyph3D,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkVisItGlyph3D,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description
@@ -107,18 +115,23 @@ public:
   static vtkVisItGlyph3D *New();
 
   // Description:
-  // Get the number of source objects used to define the glyph
-  // table. Specify the number of sources before defining a table of glyphs.
-  void SetNumberOfSources(int num);
-  int GetNumberOfSources();
-
-  // Description:
-  // Set the source to use for he glyph.
+  // Set the source to use for the glyph. Old style. See SetSourceConnection.
   void SetSource(vtkPolyData *pd) {this->SetSource(0,pd);};
 
   // Description:
   // Specify a source object at a specified table location.
+  // Old style. See SetSourceConnection.
   void SetSource(int id, vtkPolyData *pd);
+
+  // Description:
+  // Specify a source object at a specified table location. New style.
+  // Source connection is stored in port 1. This method is equivalent
+  // to SetInputConnection(1, id, outputPort).
+  void SetSourceConnection(int id, vtkAlgorithmOutput* algOutput);
+  void SetSourceConnection(vtkAlgorithmOutput* algOutput)
+    {
+      this->SetSourceConnection(0, algOutput);
+    }
 
   // Description:
   // Get a pointer to a source object at a specified table location.
@@ -268,16 +281,18 @@ public:
 
   int SetFullFrameScaling(int useIt, const double *s);
 
-
 protected:
   vtkVisItGlyph3D();
   ~vtkVisItGlyph3D();
 
-  void Execute();
-  void ExecuteInformation();
-  void ComputeInputUpdateExtents(vtkDataObject *output);
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *,
+                                  vtkInformationVector **,
+                                  vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 
-  int NumberOfSources; // Number of source objects
   vtkPolyData **Source; // Geometry to copy to each point
   int Scaling; // Determine whether scaling of geometry is performed
   int ScaleMode; // Scale by scalar value or vector magnitude

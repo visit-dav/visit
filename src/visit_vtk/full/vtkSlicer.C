@@ -17,11 +17,16 @@
 =========================================================================*/
 #include "vtkSlicer.h"
 
+#include <math.h>
+#include <vector>
+
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
 #include <vtkCutter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPointData.h>
@@ -34,10 +39,6 @@
 
 #include <vtkCreateTriangleHelpers.h>
 #include <vtkVisItCutter.h>
-
-#include <math.h>
-#include <vector>
-
 
 vtkStandardNewMacro(vtkSlicer);
 
@@ -53,15 +54,41 @@ vtkSlicer::~vtkSlicer()
 {
 }
 
-void vtkSlicer::SetCellList(vtkIdType *cl, vtkIdType size)
+void
+vtkSlicer::SetCellList(vtkIdType *cl, vtkIdType size)
 {
     this->CellList = cl;
     this->CellListSize = size;
 }
 
-void vtkSlicer::Execute()
+// ****************************************************************************
+//  Method: vtkSlicer::RequestData.
+//
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
+
+int
+vtkSlicer::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
-    vtkDataSet *input  = GetInput();
+    vtkDebugMacro(<<"Executing vtkSlicer");
+
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    input  = vtkDataSet::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     int do_type = input->GetDataObjectType();
     if (do_type == VTK_RECTILINEAR_GRID)
@@ -80,21 +107,35 @@ void vtkSlicer::Execute()
     {
         GeneralExecute();
     }
+
+    return 1;
 }
 
 // ****************************************************************************
-// Class: SliceFunction
+//  Method: vtkSlicer::FillInputPortInformation
 //
-// Purpose:
-//   Slice functor that accesses points directly as array.
+// ****************************************************************************
+
+int
+vtkSlicer::FillInputPortInformation(int, vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+}
+
+// ****************************************************************************
+//  Class: SliceFunction
 //
-// Notes:      
+//  Purpose:
+//    Slice functor that accesses points directly as array.
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 13 10:53:27 PDT 2012
+//  Notes:      
 //
-// Modifications:
-//   
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 13 10:53:27 PDT 2012
+//
+//  Modifications:
+//
 // ****************************************************************************
 
 template <typename T>
@@ -134,18 +175,18 @@ private:
 };
 
 // ****************************************************************************
-// Class: GeneralSliceFunction
+//  Class: GeneralSliceFunction
 //
-// Purpose:
-//   Slice functor that uses GetPoint to access points.
+//  Purpose:
+//    Slice functor that uses GetPoint to access points.
 //
-// Notes:      
+//  Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 13 10:53:27 PDT 2012
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 13 10:53:27 PDT 2012
 //
-// Modifications:
-//   
+//  Modifications:
+//
 // ****************************************************************************
 
 class GeneralSliceFunction
@@ -183,23 +224,29 @@ private:
     double     D;
 };
 
-// Modifications:
-//   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
-//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+// ****************************************************************************
+//  Method: vtkSlicer::StructuredGridExecute
 //
-//   Hank Childs, Sat Jan 27 12:45:03 PST 2007
-//   Add check for 1xJxK and Ix1xK meshes (instead of crashing).
+//  Modifications:
+//    Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
-//   Brad Whitlock, Tue Mar 13 10:52:52 PDT 2012
-//   I moved the implementation into vtkStructuredCreateTriangles and I added
-//   different implementations.
+//    Hank Childs, Sat Jan 27 12:45:03 PST 2007
+//    Add check for 1xJxK and Ix1xK meshes (instead of crashing).
 //
-///////////////////////////////////////////////////////////////////////////////
+//    Brad Whitlock, Tue Mar 13 10:52:52 PDT 2012
+//    I moved the implementation into vtkStructuredCreateTriangles and I added
+//    different implementations.
+//
+//    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
 
 void
 vtkSlicer::StructuredGridExecute(void)
 {
-    vtkStructuredGrid *sg = (vtkStructuredGrid *) GetInput();
+    vtkStructuredGrid *sg = (vtkStructuredGrid *)input;
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -212,7 +259,6 @@ vtkSlicer::StructuredGridExecute(void)
     vtkPoints         *inPts  = sg->GetPoints();
     vtkCellData       *inCD   = sg->GetCellData();
     vtkPointData      *inPD   = sg->GetPointData();
-    vtkPolyData       *output = GetOutput();
 
     vtkIdType ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -246,18 +292,18 @@ vtkSlicer::StructuredGridExecute(void)
 }
 
 // ****************************************************************************
-// Class: RectSliceFunction
+//  Class: RectSliceFunction
 //
-// Purpose:
-//   Rectilinear slice function that accesses the coordinate arrays directly.
+//  Purpose:
+//    Rectilinear slice function that accesses the coordinate arrays directly.
 //
-// Notes:      
+//  Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 13 10:50:45 PDT 2012
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 13 10:50:45 PDT 2012
 //
-// Modifications:
-//   
+//  Modifications:
+//
 // ****************************************************************************
 
 template <typename T>
@@ -301,18 +347,19 @@ private:
 };
 
 // ****************************************************************************
-// Class: GeneralRectSliceFunction
+//  Class: GeneralRectSliceFunction
 //
-// Purpose:
-//   Rectilinear slice function that uses GetTuple to access the coordinate arrays.
+//  Purpose:
+//    Rectilinear slice function that uses GetTuple to access the coordinate
+//     arrays.
 //
-// Notes:      
+//  Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 13 10:50:19 PDT 2012
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 13 10:50:19 PDT 2012
 //
-// Modifications:
-//   
+//  Modifications:
+//
 // ****************************************************************************
 
 class GeneralRectSliceFunction
@@ -347,23 +394,30 @@ private:
     double        D;
 };
 
-// Modifications:
-//   Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
-//   Added float casts to the pow() arguments so it builds on MSVC7.Net.
+// ****************************************************************************
+//  Method: vtkSlicer::RectilinearGridExecute
 //
-//   Hank Childs, Sat Jan 27 12:45:03 PST 2007
-//   Add check for 1xJxK and Ix1xK meshes (instead of crashing).
+//  Modifications:
+//    Brad Whitlock, Thu Aug 12 14:51:27 PST 2004
+//    Added float casts to the pow() arguments so it builds on MSVC7.Net.
 //
-//   Brad Whitlock, Tue Mar 13 10:48:45 PDT 2012
-//   Moved the implementation into vtkStructuredCreateTriangles and added
-//   different implementations for float/double and a general method that
-//   uses GetTuple to get the values.
+//    Hank Childs, Sat Jan 27 12:45:03 PST 2007
+//    Add check for 1xJxK and Ix1xK meshes (instead of crashing).
 //
-///////////////////////////////////////////////////////////////////////////////
+//    Brad Whitlock, Tue Mar 13 10:48:45 PDT 2012
+//    Moved the implementation into vtkStructuredCreateTriangles and added
+//    different implementations for float/double and a general method that
+//    uses GetTuple to get the values.
+//
+//    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
 
-void vtkSlicer::RectilinearGridExecute(void)
+void
+vtkSlicer::RectilinearGridExecute(void)
 {
-    vtkRectilinearGrid *rg = (vtkRectilinearGrid *) GetInput();
+    vtkRectilinearGrid *rg = (vtkRectilinearGrid *)input;
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -375,7 +429,6 @@ void vtkSlicer::RectilinearGridExecute(void)
     vtkIdType     nCells = rg->GetNumberOfCells();
     vtkCellData  *inCD   = rg->GetCellData();
     vtkPointData *inPD   = rg->GetPointData();
-    vtkPolyData  *output = GetOutput();
 
     vtkIdType ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -421,8 +474,9 @@ void vtkSlicer::RectilinearGridExecute(void)
 }
 
 // ****************************************************************************
-//  Modifications:
+//  Method: vtkSlicer::UnstructuredGridExecute
 //
+//  Modifications:
 //    Hank Childs, Tue Mar 30 07:07:42 PST 2004
 //    Add support for slicing vertices.
 //
@@ -435,9 +489,13 @@ void vtkSlicer::RectilinearGridExecute(void)
 //    Brad Whitlock, Wed Apr 11 11:37:18 PDT 2012
 //    When we can't slice a cell, insert faces too for polyhedral cells.
 //
+//    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
 // ****************************************************************************
 
-void vtkSlicer::UnstructuredGridExecute(void)
+void
+vtkSlicer::UnstructuredGridExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
     // Structured grids.  We want to slice an unstructured grid -- but that
@@ -449,13 +507,12 @@ void vtkSlicer::UnstructuredGridExecute(void)
     // non-zoo elements.  If all the elements are from the zoo, then just
     // slice them with no appending.
 
-    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) GetInput();
+    vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)input;
 
     vtkIdType          nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();
     vtkCellData       *inCD   = ug->GetCellData();
     vtkPointData      *inPD   = ug->GetPointData();
-    vtkPolyData       *output = GetOutput();
 
     vtkIdType ptSizeGuess = (this->CellList == NULL
                          ? (int) pow(float(nCells), 0.6667f) * 5 + 100
@@ -638,10 +695,17 @@ void vtkSlicer::UnstructuredGridExecute(void)
     vertices_on_slice->Delete();
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ****************************************************************************
 
-void vtkSlicer::GeneralExecute(void)
+void
+vtkSlicer::GeneralExecute(void)
 {
-    SliceDataset(GetInput(), GetOutput(), false);
+    SliceDataset(input, output, false);
 }
 
 // ****************************************************************************
@@ -655,7 +719,8 @@ void vtkSlicer::GeneralExecute(void)
 //
 // ****************************************************************************
 
-void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
+void
+vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     bool useVTKFilter)
 {
     vtkPlane  *plane  = vtkPlane::New();
@@ -686,7 +751,13 @@ void vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     plane->Delete();
 }
 
-void vtkSlicer::PrintSelf(ostream& os, vtkIndent indent)
+// ****************************************************************************
+//  Method: vtkSlicer::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkSlicer::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
