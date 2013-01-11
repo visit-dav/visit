@@ -330,15 +330,18 @@ avtQueryFactory::Instance()
 //    Cyrus Harrison, Fri Mar 30 13:51:24 PDT 2012
 //    Convert python query filter to use new query params infrastructure.
 //
+//    Kathleen Biagas, Thu Jan 10 08:43:14 PST 2013
+//    Use new MapNode method for testing existence of numeric entry.
+//
 // ****************************************************************************
 
 avtDataObjectQuery *
 avtQueryFactory::CreateQuery(const QueryAttributes *qa)
 {
     string qname = qa->GetName();
-    int actualData = 0;
-    if (qa->GetQueryInputParams().HasEntry("use_actual_data"))
-        actualData = qa->GetQueryInputParams().GetEntry("use_actual_data")->AsInt();
+    bool actualData = false;
+    if (qa->GetQueryInputParams().HasNumericEntry("use_actual_data"))
+        actualData = qa->GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
 
     avtDataObjectQuery *query = NULL;
     bool foundAQuery = false;

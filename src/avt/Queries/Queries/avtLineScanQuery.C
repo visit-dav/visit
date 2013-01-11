@@ -116,32 +116,31 @@ avtLineScanQuery::~avtLineScanQuery()
 //  Programmer: Kathleen Biagas 
 //  Creation:   June 20, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
+//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    to specific type.
+//
 // ****************************************************************************
 
 void
 avtLineScanQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasEntry("num_lines"))
-        SetNumberOfLines(params.GetEntry("num_lines")->AsInt());
+    if (params.HasNumericEntry("num_lines"))
+        SetNumberOfLines(params.GetEntry("num_lines")->ToInt());
 
-    if (params.HasEntry("num_bins"))
-        SetNumberOfBins(params.GetEntry("num_bins")->AsInt());
+    if (params.HasNumericEntry("num_bins"))
+        SetNumberOfBins(params.GetEntry("num_bins")->ToInt());
 
     double min = 0., max = 1.0;
-    if (params.HasEntry("min"))
+    if (params.HasNumericEntry("min"))
     {
-        if (params.GetEntry("min")->TypeName() == "double")
-            min = params.GetEntry("min")->AsDouble();
-        else if (params.GetEntry("min")->TypeName() == "int")
-            min = params.GetEntry("min")->AsInt();
+        min = params.GetEntry("min")->ToDouble();
     }
 
-    if (params.HasEntry("max"))
+    if (params.HasNumericEntry("max"))
     {
-        if (params.GetEntry("max")->TypeName() == "double")
-            max = params.GetEntry("max")->AsDouble();
-        else if (params.GetEntry("max")->TypeName() == "int")
-            max = params.GetEntry("max")->AsInt();
+        max = params.GetEntry("max")->ToDouble();
     }
 
     SetRange(min, max);

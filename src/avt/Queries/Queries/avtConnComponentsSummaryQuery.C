@@ -142,14 +142,20 @@ avtConnComponentsSummaryQuery::
 //  Creation:   June 17, 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:27:55 PST 2013
+//    Add error checking for size of passed string.
 //
 // ****************************************************************************
 
 void
 avtConnComponentsSummaryQuery::SetInputParams(const MapNode &params)
 {
-   if (params.HasEntry("output_file"))
-        SetOutputFileName(params.GetEntry("output_file")->AsString());
+    if (params.HasEntry("output_file"))
+    {
+        std::string s = params.GetEntry("output_file")->AsString();
+        if (!s.empty())
+           SetOutputFileName(s);
+    }
 }
 
 

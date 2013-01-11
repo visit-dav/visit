@@ -1091,8 +1091,8 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 {
     string qName = queryParams.GetEntry("query_name")->AsString();
     int doTimeQuery = 0;
-    if (queryParams.HasEntry("do_time"))
-        doTimeQuery = queryParams.GetEntry("do_time")->AsInt();
+    if (queryParams.HasNumericEntry("do_time"))
+        doTimeQuery = queryParams.GetEntry("do_time")->ToInt();
 
     queryClientAtts->SetResultsMessage("");
     queryClientAtts->SetResultsValue(0.);
@@ -1169,8 +1169,8 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
     }
 
     int useActualData = 0;
-    if (queryParams.HasEntry("use_actual_data"))
-        useActualData = queryParams.GetEntry("use_actual_data")->AsInt();
+    if (queryParams.HasNumericEntry("use_actual_data"))
+        useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
 
     if (qName == "SpatialExtents")
     {
@@ -1198,7 +1198,14 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
 
     stringVector vars;
     if (queryParams.HasEntry("vars"))
+    {
         vars = queryParams.GetEntry("vars")->AsStringVector();
+        if (vars.empty())
+        {
+            debug3 << "'vars' parameter for " << qName << " Query was "
+                   << "specified, but could not be parsed correctly." << endl;
+        }
+    }
 
     QueryAttributes qa;
     qa.SetFloatFormat(floatFormat);
@@ -1414,8 +1421,8 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
     if (qName ==  "Lineout")
     {
         doubleVector pt1, pt2;
-        if (queryParams.HasEntry("start_point") &&
-            queryParams.GetEntry("start_point")->IsNumericVector())
+cerr << "  queryParamas has numberic vector entry for start_point? " << queryParams.HasNumericVectorEntry("start_point");
+        if (queryParams.HasNumericVectorEntry("start_point")) 
         {
             queryParams.GetEntry("start_point")->ToDoubleVector(pt1);
         }
@@ -1425,8 +1432,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
             return;
         }
 
-        if (queryParams.HasEntry("end_point") &&
-            queryParams.GetEntry("end_point")->IsNumericVector())
+        if (queryParams.HasNumericVectorEntry("end_point")) 
         {
             queryParams.GetEntry("end_point")->ToDoubleVector(pt2);
         }
@@ -1480,7 +1486,14 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
 
         stringVector vars;
         if (queryParams.HasEntry("vars"))
+        {
             vars = queryParams.GetEntry("vars")->AsStringVector();
+            if (vars.empty())
+            {
+                debug3 << "'vars' parameter for Lineout was specified, "
+                       << "but could not be parsed correctly." << endl;
+            }
+        }
         stringVector uniqueVars;
         // GetUniqueVars sets 'default' to the passed 'activeVar'.
         // Since we don't want to go through the trouble of figuring what
@@ -1491,12 +1504,11 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
         Line line;
         line.SetPoint1(&pt1[0]);
         line.SetPoint2(&pt2[0]);
-
-        if (queryParams.HasEntry("use_sampling") &&
-            queryParams.GetEntry("use_sampling")->AsInt() == 1)
+        if (queryParams.HasNumericEntry("use_sampling") &&
+            queryParams.GetEntry("use_sampling")->ToInt() == 1)
         {
-            if (queryParams.HasEntry("num_samples"))
-               line.SetNumSamples(queryParams.GetEntry("num_samples")->AsInt());
+            if (queryParams.HasNumericEntry("num_samples"))
+               line.SetNumSamples(queryParams.GetEntry("num_samples")->ToInt());
             lineoutCache.forceSampling = true;
         }
         else
@@ -1996,8 +2008,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         {
             MapNode fromPlot;
             plot->GetExtraInfoForPick(fromPlot);
-            if (fromPlot.HasEntry("nodeCenteredNeedZonesForPick"))
-                needZones &= fromPlot.GetEntry("nodeCenteredNeedZonesForPick")->AsBool();
+            if (fromPlot.HasNumericEntry("nodeCenteredNeedZonesForPick"))
+                needZones &= fromPlot.GetEntry("nodeCenteredNeedZonesForPick")->ToBool();
         }
 
         plist->StartPick(needZones, needInvTrans);
@@ -2170,14 +2182,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickAtts->SetRayPoint2(rp2);
 
         bool doGlyphPick = false;
-        if (fromPlot.HasEntry("glyphPickAlways"))
-            doGlyphPick = fromPlot.GetEntry("glyphPickAlways")->AsBool();
+        if (fromPlot.HasNumericEntry("glyphPickAlways"))
+            doGlyphPick = fromPlot.GetEntry("glyphPickAlways")->ToBool();
 
         // Point meshes may need to be glyph picked
         if (!doGlyphPick && plot->GetMeshType() == AVT_POINT_MESH)
         {
-            if (fromPlot.HasEntry("glyphPickIfPointMesh"))
-                doGlyphPick = fromPlot.GetEntry("glyphPickIfPointMesh")->AsBool();
+            if (fromPlot.HasNumericEntry("glyphPickIfPointMesh"))
+                doGlyphPick = fromPlot.GetEntry("glyphPickIfPointMesh")->ToBool();
         }
 
 
@@ -2187,16 +2199,16 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             GetViewerProperties()->GetNowin() &&
             plot->GetMeshType() == AVT_POINT_MESH)
         {
-            if (fromPlot.HasEntry("canGlyphPickOnEngine"))
+            if (fromPlot.HasNumericEntry("canGlyphPickOnEngine"))
                 mustGlyphPickOnEngine =
-                    fromPlot.GetEntry("canGlyphPickOnEngine")->AsBool();
+                    fromPlot.GetEntry("canGlyphPickOnEngine")->ToBool();
         }
 
         bool isLinesData = false;
         if (plot->GetSpatialDimension() == 2)
         {
-            if (fromPlot.HasEntry("2DCreatesLines"))
-                isLinesData = fromPlot.GetEntry("2DCreatesLines")->AsBool();
+            if (fromPlot.HasNumericEntry("2DCreatesLines"))
+                isLinesData = fromPlot.GetEntry("2DCreatesLines")->ToBool();
         }
 
         pickAtts->SetLinesData(isLinesData);
@@ -3337,15 +3349,22 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
     stringVector vars;
     if (queryParams.HasEntry("vars"))
+    {
         vars = queryParams.GetEntry("vars")->AsStringVector();
+        if (queryParams.HasEntry("vars"))
+        {
+            debug3 << "'vars' parameter for Pick was specified, "
+                   << " but could not be parsed correctly." << endl;
+        }
+    }
 
     if (!vars.empty())
         pickAtts->SetVariables(vars);
 
     // some parameters common to all Picks.
     int timeCurve = 0;
-    if (queryParams.HasEntry("do_time"))
-        timeCurve = queryParams.GetEntry("do_time")->AsInt();
+    if (queryParams.HasNumericEntry("do_time"))
+        timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
 
     // A query with time options should override what is set from PickWindow,
@@ -3356,8 +3375,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         pickAtts->SetTimeOptions(*queryParams.GetEntry("time_options"));
 
     int curvePlotType = 0;
-    if (queryParams.HasEntry("curve_plot_type"))
-        curvePlotType = queryParams.GetEntry("curve_plot_type")->AsInt();
+    if (queryParams.HasNumericEntry("curve_plot_type"))
+        curvePlotType = queryParams.GetEntry("curve_plot_type")->ToInt();
     else
         curvePlotType = pickAtts->GetTimeCurveType();
 
@@ -3370,11 +3389,11 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         {
             pickAtts->SetVariables(vars);
         }
-        if (queryParams.HasEntry("x")  &&
-            queryParams.HasEntry("y"))
+        if (queryParams.HasNumericEntry("x")  &&
+            queryParams.HasNumericEntry("y"))
         {
-            win->Pick(queryParams.GetEntry("x")->AsInt(),
-                      queryParams.GetEntry("y")->AsInt(),
+            win->Pick(queryParams.GetEntry("x")->ToInt(),
+                      queryParams.GetEntry("y")->ToInt(),
                       pType == "ScreenZone" ? ZONE_PICK : NODE_PICK);
         }
         else
@@ -3393,30 +3412,21 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         {
             win->SetInteractionMode(ZONE_PICK);
         }
-        if (!queryParams.HasEntry("coord"))
+        if (!queryParams.HasNumericVectorEntry("coord"))
         {
-            Error(tr("%1 requires a 'coord' parameter.\n").arg(qName.c_str()));
+            Error(tr("%1 requires a 'coord' parameter (numeric tuple).\n").arg(qName.c_str()));
             return;
         }
         PICK_POINT_INFO ppi;
         ppi.callbackData = win;
 
-        if (queryParams.GetEntry("coord")->TypeName() == "doubleVector")
-        {
-            doubleVector pt = queryParams.GetEntry("coord")->AsDoubleVector();
-            ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
-            ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
-            ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
-            ppi.validPick = true;
-        }
-        else if (queryParams.GetEntry("coord")->TypeName() == "intVector")
-        {
-            intVector pt = queryParams.GetEntry("coord")->AsIntVector();
-            ppi.rayPt1[0] = ppi.rayPt2[0] = (double)pt[0];
-            ppi.rayPt1[1] = ppi.rayPt2[1] = (double)pt[1];
-            ppi.rayPt1[2] = ppi.rayPt2[2] = (double)pt[2];
-            ppi.validPick = true;
-        }
+        doubleVector pt;
+        queryParams.GetEntry("coord")->ToDoubleVector(pt);
+        ppi.rayPt1[0] = ppi.rayPt2[0] = pt[0];
+        ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
+        ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
+        ppi.validPick = true;
+        
         if (!timeCurve)
         {
             Pick(&ppi);
@@ -3424,8 +3434,8 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         else
         {
             bool preserveCoord = true; // is this really the default we want?
-            if (queryParams.HasEntry("preserve_coord"))
-               preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
+            if (queryParams.HasNumericEntry("preserve_coord"))
+               preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
             else
                preserveCoord = pickAtts->GetTimePreserveCoord();
 
@@ -3443,25 +3453,25 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     else if (pType == "DomainZone"  || pType == "DomainNode")
     {
         int domain = 0, element = -1;
-        if (queryParams.HasEntry("use_global_id"))
+        if (queryParams.HasNumericEntry("use_global_id"))
         {
             pickAtts->SetElementIsGlobal(
-                queryParams.GetEntry("use_global_id")->AsInt());
+                queryParams.GetEntry("use_global_id")->ToInt());
         }
         else
         {
             pickAtts->SetElementIsGlobal(false);
         }
 
-        if (queryParams.HasEntry("domain"))
-            domain = queryParams.GetEntry("domain")->AsInt();
+        if (queryParams.HasNumericEntry("domain"))
+            domain = queryParams.GetEntry("domain")->ToInt();
 
-        if (queryParams.HasEntry("element"))
-            element = queryParams.GetEntry("element")->AsInt();
+        if (queryParams.HasNumericEntry("element"))
+            element = queryParams.GetEntry("element")->ToInt();
 
         bool preserveCoord = false; // is this really the default we want?
-        if (queryParams.HasEntry("preserve_coord"))
-          preserveCoord = (bool)queryParams.GetEntry("preserve_coord")->AsInt();
+        if (queryParams.HasNumericEntry("preserve_coord"))
+          preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
         else
           preserveCoord = pickAtts->GetTimePreserveCoord();
 
@@ -4624,18 +4634,18 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     int startT = 0;
     int endT = nStates-1;
     int stride = 1;
-    if (qParams.HasEntry("start_time"))
-        startT = qParams.GetEntry("start_time")->AsInt();
+    if (qParams.HasNumericEntry("start_time"))
+        startT = qParams.GetEntry("start_time")->ToInt();
     else if (timeQueryAtts->GetStartTimeFlag())
         startT =  timeQueryAtts->GetStartTime();
 
-    if (qParams.HasEntry("end_time"))
-        endT = qParams.GetEntry("end_time")->AsInt();
+    if (qParams.HasNumericEntry("end_time"))
+        endT = qParams.GetEntry("end_time")->ToInt();
     else if (timeQueryAtts->GetEndTimeFlag())
         endT =  timeQueryAtts->GetEndTime();
 
-    if (qParams.HasEntry("stride"))
-        stride = qParams.GetEntry("stride")->AsInt();
+    if (qParams.HasNumericEntry("stride"))
+        stride = qParams.GetEntry("stride")->ToInt();
     else if (timeQueryAtts->GetStrideFlag())
         stride = timeQueryAtts->GetStride();
     if (startT < 0)
@@ -4683,9 +4693,9 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     }
 
     int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
-    if (qParams.HasEntry("curve_plot_type"))
+    if (qParams.HasNumericEntry("curve_plot_type"))
     {
-      if (qParams.GetEntry("curve_plot_type")->AsInt() == 1)
+      if (qParams.GetEntry("curve_plot_type")->ToInt() == 1)
         plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
     }
     else
@@ -5632,6 +5642,11 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     }
 
     string qName = queryParams.GetEntry("query_name")->AsString();
+    if (qName.empty())
+    {
+        debug3 << "VQM::Query, query_name should be a string." << endl;
+        return;
+    }
 
     ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
     // test for non-hidden active plot and running engine
@@ -5660,8 +5675,8 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     Status(msg);
 
     int qtype;
-    if (queryParams.HasEntry("query_type"))
-        qtype = queryParams.GetEntry("query_type")->AsInt();
+    if (queryParams.HasNumericEntry("query_type"))
+        qtype = queryParams.GetEntry("query_type")->ToInt();
     else
         qtype  = queryTypes->GetQueryType(qName);
 

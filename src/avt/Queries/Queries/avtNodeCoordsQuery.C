@@ -103,19 +103,23 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //    Remove 'domain' requirement.  Single-domain problems shouldn't need to 
 //    have a domain specified.
 //
+//    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
+//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    to specific type.
+//
 // ****************************************************************************
 
 void
 avtNodeCoordsQuery::SetInputParams(const MapNode &params)
 {
-    if (params.HasEntry("use_global_id"))
-        useGlobalId = params.GetEntry("use_global_id")->AsInt();
+    if (params.HasNumericEntry("use_global_id"))
+        useGlobalId = params.GetEntry("use_global_id")->ToBool();
 
-    if (params.HasEntry("domain"))
-        domain = params.GetEntry("domain")->AsInt();
+    if (params.HasNumericEntry("domain"))
+        domain = params.GetEntry("domain")->ToInt();
 
-    if (params.HasEntry("element"))
-        element = params.GetEntry("element")->AsInt();
+    if (params.HasNumericEntry("element"))
+        element = params.GetEntry("element")->ToInt();
     else
         EXCEPTION1(QueryArgumentException, "element");
 }

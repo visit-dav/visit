@@ -117,6 +117,9 @@ avtLocateAndPickNodeQuery::~avtLocateAndPickNodeQuery()
 //  Creation:    June 20, 2011 
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Jan 10 08:37:48 PST 2013
+//    Add error checking on size of passed vectors. Use new MapNode methods
+//    for testing of numeric entries.
 //
 // ****************************************************************************
 
@@ -126,29 +129,43 @@ avtLocateAndPickNodeQuery::SetInputParams(const MapNode &params)
     if (params.HasEntry("vars"))
     {
         const stringVector &v = params.GetEntry("vars")->AsStringVector();
+        if (v.empty())
+            EXCEPTION2(QueryArgumentException, "vars", 1);
         timeCurveSpecs["nResultsToStore"] = (int)v.size();
         pickAtts.SetVariables(v);
     }
     else
         EXCEPTION1(QueryArgumentException, "vars");
 
-    if (params.HasEntry("ray_start_point"))
-        pickAtts.SetRayPoint1(params.GetEntry("ray_start_point")->AsDoubleVector());
+    if (params.HasNumericVectorEntry("ray_start_point"))
+    {
+        doubleVector v;
+        params.GetEntry("ray_start_point")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "ray_start_point", 3);
+        pickAtts.SetRayPoint1(v);
+    }
     else
         EXCEPTION1(QueryArgumentException, "ray_start_point");
 
-    if (params.HasEntry("ray_end_point"))
-        pickAtts.SetRayPoint2(params.GetEntry("ray_end_point")->AsDoubleVector());
+    if (params.HasNumericVectorEntry("ray_end_point"))
+    {
+        doubleVector v;
+        params.GetEntry("ray_end_point")->ToDoubleVector(v);
+        if (v.size() != 3)
+            EXCEPTION2(QueryArgumentException, "ray_end_point", 3);
+        pickAtts.SetRayPoint2(v);
+    }
     else
         EXCEPTION1(QueryArgumentException, "ray_end_point");
 
-    if (params.HasEntry("domain"))
-        domain = params.GetEntry("domain")->AsInt();
+    if (params.HasNumericEntry("domain"))
+        domain = params.GetEntry("domain")->ToInt();
     else
         EXCEPTION1(QueryArgumentException, "domain");
 
-    if (params.HasEntry("element"))
-        node = params.GetEntry("element")->AsInt();
+    if (params.HasNumericEntry("element"))
+        node = params.GetEntry("element")->ToInt();
     else
         EXCEPTION1(QueryArgumentException, "element");
 }

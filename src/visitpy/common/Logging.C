@@ -1287,6 +1287,9 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 //    Kathleen Biagas, Wed Sep  7 12:53:16 PDT 2011
 //    Fix pick logging, vars logging. 
 // 
+//    Kathleen Biagas, Thu Jan 10 09:06:08 PST 2013
+//    Added some type checking.
+//
 //*****************************************************************************
 
 static std::string log_QueryRPC(ViewerRPC *rpc)
@@ -1299,7 +1302,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
     std::string s, qName;
     if (queryParams.HasEntry("query_name"))
        qName = queryParams.GetEntry("query_name")->AsString();
-    else
+    if (qName.empty())
       return MESSAGE_COMMENT("Query with no name", MSG_UNSUPPORTED);
 
     if (qName == "Pick")
@@ -1307,8 +1310,8 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         std::string pt;
         std::string qn;
         bool timePick = false;
-        if (queryParams.HasEntry("do_time"))
-            timePick = (bool)queryParams.GetEntry("do_time")->AsInt();
+        if (queryParams.HasNumericEntry("do_time"))
+            timePick = (bool)queryParams.GetEntry("do_time")->ToBool();
         if (queryParams.HasEntry("pick_type"))
            pt = queryParams.GetEntry("pick_type")->AsString();
         if (pt == "ScreenZone"  || pt == "Zone")
@@ -1317,9 +1320,9 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
             qn = "NodePick";
         else if (pt == "DomainZone")
         {
-            int global = 0;
-            if (queryParams.HasEntry("use_global_id"))
-                global = queryParams.GetEntry("use_global_id")->AsInt();
+            bool global = false;
+            if (queryParams.HasNumericEntry("use_global_id"))
+                global = queryParams.GetEntry("use_global_id")->ToBool();
             if (global)
                 qn = "PickByGlobalZone";
             else 
@@ -1327,9 +1330,9 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         }
         else if (pt == "DomainNode")
         {
-            int global = 0;
-            if (queryParams.HasEntry("use_global_id"))
-                global = queryParams.GetEntry("use_global_id")->AsInt();
+            bool global = false;
+            if (queryParams.HasNumericEntry("use_global_id"))
+                global = queryParams.GetEntry("use_global_id")->AsBool();
             if (global)
                 qn = "PickByGlobalNode";
             else 
@@ -1374,8 +1377,8 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
     }
     else
     {
-        if (queryParams.HasEntry("do_time") && 
-            queryParams.GetEntry("do_time")->AsInt())
+        if (queryParams.HasNumericEntry("do_time") && 
+            queryParams.GetEntry("do_time")->ToBool())
             s = "QueryOverTime(\"" + qName + "\"";
         else
             s = "Query(\"" + qName + "\"";
@@ -1384,7 +1387,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         {
             if (paramNames[i] == "use_actual_data") 
             {
-                if (queryParams.GetEntry(paramNames[i])->AsInt())
+                if (queryParams.GetEntry(paramNames[i])->ToBool())
                 {
                     s += ", ";
                     s += paramNames[i];
