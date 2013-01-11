@@ -51,24 +51,31 @@
 
 #ifndef __vtkLineoutFilter_h
 #define __vtkLineoutFilter_h
-
-#include <vtkDataSetToPolyDataFilter.h>
 #include <visit_vtk_exports.h>
+
+#include <vtkPolyDataAlgorithm.h>
 
 class vtkCellDataToPointData;
 class vtkLineSource;
 class vtkVisItProbeFilter;
 
-//----------------------------------------------------------------------------
+// ***************************************************************************
+//  Class: vtkLineoutFilter
+//
 //  Modifications:
 //    Kathleen Bonnell, Fri Mar 28 12:09:01 PDT 2008
 //    Removed cd2pd, use VisIt version of vtkProbeFilter.
-//----------------------------------------------------------------------------
-class VISIT_VTK_API vtkLineoutFilter : public vtkDataSetToPolyDataFilter
+//
+//    Eric Brugger, Thu Jan 10 09:45:55 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ***************************************************************************
+
+class VISIT_VTK_API vtkLineoutFilter : public vtkPolyDataAlgorithm
 {
 public:
   static vtkLineoutFilter *New();
-  vtkTypeMacro(vtkLineoutFilter,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkLineoutFilter,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -82,15 +89,17 @@ public:
   vtkSetMacro(NumberOfSamplePoints, int);
   vtkGetMacro(NumberOfSamplePoints, int);
 
-
 protected:
   vtkLineoutFilter();
-  ~vtkLineoutFilter() ;
+  ~vtkLineoutFilter();
 
   vtkLineSource          *LineSource;
   vtkVisItProbeFilter    *Probe;
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 
 private:
   double          Point1[3];
@@ -102,5 +111,3 @@ private:
 };
 
 #endif
-
-

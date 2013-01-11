@@ -52,29 +52,39 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkVertexFilter_h
 #include <visit_vtk_exports.h>
 
-#include "vtkDataSetToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
 
-class VISIT_VTK_API vtkVertexFilter : public vtkDataSetToPolyDataFilter
+// ***************************************************************************
+//  Class: vtkVertexFilter
+//
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 12:15:52 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ***************************************************************************
+
+class VISIT_VTK_API vtkVertexFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVertexFilter, vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkVertexFilter, vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   vtkSetMacro(VertexAtPoints,int);
   vtkGetMacro(VertexAtPoints,int);
   vtkBooleanMacro(VertexAtPoints,int);
 
-  // Description:
-  // Instantiate a stride filter that throws away nine of every ten elements.
   static vtkVertexFilter *New();
 
 protected:
-  int VertexAtPoints;
-
   vtkVertexFilter();
   ~vtkVertexFilter() {};
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
+
+  int VertexAtPoints;
 
 private:
   vtkVertexFilter(const vtkVertexFilter&);
@@ -82,5 +92,3 @@ private:
 };
 
 #endif
-
-

@@ -20,15 +20,23 @@
 
 #ifndef __vtkSlicer_h
 #define __vtkSlicer_h
-
 #include <visit_vtk_exports.h>
-#include "vtkDataSetToPolyDataFilter.h"
 
+#include "vtkPolyDataAlgorithm.h"
 
-class VISIT_VTK_API vtkSlicer : public vtkDataSetToPolyDataFilter
+// ***************************************************************************
+//  Class: vtkSlicer
+//
+//  Modifications:
+//    Eric Brugger, Thu Jan 10 10:19:26 PST 2013
+//    Modified to inherit from vtkPolyDataAlgorithm.
+//
+// ***************************************************************************
+
+class VISIT_VTK_API vtkSlicer : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkSlicer,vtkDataSetToPolyDataFilter);
+  vtkTypeMacro(vtkSlicer,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -50,23 +58,28 @@ protected:
   vtkSlicer();
   ~vtkSlicer();
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
+
   void RectilinearGridExecute();
   void StructuredGridExecute();
   void UnstructuredGridExecute();
   void GeneralExecute();
   void SliceDataset(vtkDataSet *, vtkPolyData *, bool);
   
+  vtkDataSet *input;
+  vtkPolyData *output;
+
   vtkIdType *CellList;
   vtkIdType  CellListSize;
   double Normal[3];
   double Origin[3];
+
 private:
   vtkSlicer(const vtkSlicer&);  // Not implemented.
   void operator=(const vtkSlicer&);  // Not implemented.
 };
 
-
 #endif
-
-
