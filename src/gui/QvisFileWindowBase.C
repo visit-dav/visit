@@ -393,8 +393,8 @@ QvisFileWindowBase::UpdateComboBox(QComboBox *cb, const stringVector &s,
     }
 
     cb->setCurrentIndex(index);
-    cb->setEditText(activeItem);
-
+//    cb->setEditText(activeItem);
+cb->setEditable(true);
     // Note: in Qt4 combo boxes expand out to max possible size, we
     // don't need to set a min size as we did before.
     // (we may want to set a max size some time in the future, but
@@ -1629,40 +1629,6 @@ QvisFileWindowBase::CheckForNewStates()
 //
 // Qt slot functions
 //
-
-// ****************************************************************************
-// Method: QvisFileWindowBase::setEnabled
-//
-// Purpose: 
-//   This Qt slot function sets the enabled state for the window's widgets.
-//
-// Arguments:
-//   val : The new enabled state.
-//
-// Programmer: Jeremy Meredith
-// Creation:   August 29, 2006
-//
-// Note: Taken largely from QvisFileSelectWindow
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFileWindowBase::setEnabled(bool val)
-{
-    QvisDelayedWindowSimpleObserver::setEnabled(val);
-
-    if(isCreated)
-    {
-        hostComboBox->setEnabled(val);
-        pathComboBox->setEnabled(val);
-        filterLineEdit->setEnabled(val);
-        directoryList->setEnabled(val);
-        fileList->setEnabled(val);
-        currentDirToggle->setEnabled(val);
-    }
-}
 
 // ****************************************************************************
 // Method: QvisFileWindowBase::filterChanged
