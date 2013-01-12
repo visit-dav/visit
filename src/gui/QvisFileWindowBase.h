@@ -68,7 +68,9 @@ class QvisRecentPathRemovalWindow;
 // Creation:   Thu Jul 10 16:08:54 PDT 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 11 15:50:56 PST 2013
+//   Remove setEnabled method.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileWindowBase : public QvisDelayedWindowSimpleObserver
@@ -111,7 +113,6 @@ protected:
 
     void CheckForNewStates();
 public slots:
-    virtual void setEnabled(bool);
     virtual void showMinimized();
     virtual void showNormal();
 protected slots:

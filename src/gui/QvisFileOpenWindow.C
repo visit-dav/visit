@@ -177,6 +177,9 @@ QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
 //   Brad Whitlock, Thu Jul 10 16:26:43 PDT 2008
 //   Moved code to the base class.
 //
+//   Brad Whitlock, Fri Jan 11 15:56:08 PST 2013
+//   Pass central to the progress callback on newer Qt's.
+//
 // ****************************************************************************
 
 void
@@ -271,6 +274,15 @@ QvisFileOpenWindow::CreateWindowContents()
     // Get the applied file list from the file server and store it in
     // the intermediateFile list.
     intermediateFileList = fileServer->GetAppliedFileList();
+
+#if defined(Q_WS_MACX) && QT_VERSION >= 0x040800
+    // On Mac with Qt 4.8, we run into problems with the window not
+    // coming back fully after calling setEnabled(true) on the window.
+    // As a workaround, we disable the central widget instead of the
+    // window itself. This lets the host, path, and filter widgets work
+    // after we connected to a remote computer.
+    fileServer->SetProgressCallback(ProgressCallback, (void *)central);
+#endif
 }
 
 // ****************************************************************************
