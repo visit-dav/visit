@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">"TACC Stampede"</Field>
-    <Field name="host" type="string">"stampede.tacc.utexas.edu"</Field>
-    <Field name="hostAliases" type="string">"c*.stampede.tacc.utexas.edu"</Field>
+    <Field name="hostNickname" type="string">"TACC Lonestar"</Field>
+    <Field name="host" type="string">"lonestar.tacc.utexas.edu"</Field>
+    <Field name="hostAliases" type="string">"c*.ls4.tacc.utexas.edu"</Field>
     <Field name="directory" type="string">"/opt/apps/intel11_1/mvapich2_1_6/visit"</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
@@ -38,7 +38,7 @@
         <Field name="sublaunchPostCmd" type="string">""</Field>
         <Field name="machinefileSet" type="bool">false</Field>
         <Field name="machinefile" type="string">""</Field>
-        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="visitSetsUpEnv" type="bool">true</Field>
         <Field name="canDoHWAccel" type="bool">false</Field>
         <Field name="havePreCommand" type="bool">false</Field>
         <Field name="hwAccelPreCommand" type="string">""</Field>
@@ -48,7 +48,7 @@
     </Object>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numProcessors" type="int">12</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">false</Field>
