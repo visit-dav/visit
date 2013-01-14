@@ -359,14 +359,18 @@ public:
     void CreateSelection(const SelectionProperties &props,
                          std::vector<avtDataTree_p> &, 
                          CQSelection &outSel,
-                         doubleVector &hist);
+                         doubleVector &hist,
+                         double &min,
+                         double &max);
 
     // Calculate the selection but use cellFrequency data we already calculated.
     void CreateSelection(const SelectionProperties &props,
                          const CQSelection &cellFrequency,
                          const intVector &cellsPerTimestep,
                          CQSelection &narrowedSelection,
-                         doubleVector &hist);
+                         doubleVector &hist,
+                         double &min,
+                         double &max);
 
     const CQSelection &GetCellFrequency() const { return cellFrequency; }
     const intVector   &GetCellsPerTimestep() const { return cellsPerTimestep; }
@@ -392,7 +396,9 @@ private:
                             int totalCells,
                             const CQSelection &selection,
                             CQSelection &narrowedSelection,
-                            doubleVector &histogram) const;
+                            doubleVector &histogram,
+                            double &min,
+                            double &max) const;
 
     void ComputeGlobalSizeAndOffset(const CQSelection &selection,
                                     int &globalSize, int &myOffset) const;
@@ -440,11 +446,13 @@ private:
 
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(
+CumulativeQuery<CQCellIdentifier, CQSelection>::CreateSelection(
     const SelectionProperties &props,
     std::vector<avtDataTree_p> &timesteps, 
     CQSelection &narrowedSelection,
-    doubleVector &hist)
+    doubleVector &hist,
+    double &min,
+    double &max)
 {
     StackTimer t0("CreateSelection: phase 1");
     cellFrequency.clear();
@@ -463,7 +471,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(
     // Now that we know the cell frequency and the cells per time step, we
     // can pass them into the next phase of the selection creation.
     CreateSelection(props, cellFrequency, cellsPerTimestep, 
-                    narrowedSelection, hist);
+                    narrowedSelection, hist, min, max);
 }
 
 // ****************************************************************************
@@ -498,11 +506,14 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(
 
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(const SelectionProperties &props,
-    const CQSelection &cellFrequency,
-    const intVector &cellsPerTimestep,
-    CQSelection &narrowedSelection,
-    doubleVector &hist)
+CumulativeQuery<CQCellIdentifier,
+                CQSelection>::CreateSelection(const SelectionProperties &props,
+                                              const CQSelection &cellFrequency,
+                                              const intVector &cellsPerTimestep,
+                                              CQSelection &narrowedSelection,
+                                              doubleVector &hist,
+                                              double &min,
+                                              double &max)
 {
     StackTimer t0("CreateSelection: phase 2");
 
@@ -563,8 +574,9 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(const SelectionPr
         SelectAndHistogram(props,
                            allIds, allFrequencies, allVariables, 
                            totalCells,
-                           selection, narrowedSelection, hist);
+                           selection, narrowedSelection, hist, min, max);
     }
+
     selection.clear();    
 
     delete [] allIds;
@@ -604,7 +616,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::CreateSelection(const SelectionPr
 
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::CalculateFrequency(
+CumulativeQuery<CQCellIdentifier, CQSelection>::CalculateFrequency(
     const SelectionProperties &props,
     std::vector<avtDataTree_p> &timesteps,
     CQSelection &cellFrequency, 
@@ -779,7 +791,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::CalculateFrequency(
 
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::Summation(
+CumulativeQuery<CQCellIdentifier, CQSelection>::Summation(
     const SelectionProperties &props,
     unsigned int nts, 
     const CQSelection &cellFrequency,
@@ -825,7 +837,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::Summation(
 // ****************************************************************************
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::ComputeGlobalSizeAndOffset(
+CumulativeQuery<CQCellIdentifier, CQSelection>::ComputeGlobalSizeAndOffset(
     const CQSelection &selection, int &globalSize, int &myOffset) const
 {
 #ifdef PARALLEL
@@ -877,7 +889,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::ComputeGlobalSizeAndOffset(
 // ****************************************************************************
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::GlobalizeData(
+CumulativeQuery<CQCellIdentifier, CQSelection>::GlobalizeData(
     const CQSelection &selection,
     int globalSize, int myOffset, int *&allFrequencies, double *&allVariables) const
 {
@@ -944,7 +956,7 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::GlobalizeData(
 // ****************************************************************************
 template <class CQCellIdentifier, class CQSelection>
 bool
-CumulativeQuery<CQCellIdentifier,CQSelection>::GlobalizeSelection(
+CumulativeQuery<CQCellIdentifier, CQSelection>::GlobalizeSelection(
     const CQSelection &selection,
     CQCellIdentifier *&allIds, int *&allFrequencies, double *&allVariables,
     int &globalSize) const
@@ -1044,13 +1056,15 @@ private:
 
 template <class CQCellIdentifier, class CQSelection>
 void
-CumulativeQuery<CQCellIdentifier,CQSelection>::SelectAndHistogram(
+CumulativeQuery<CQCellIdentifier, CQSelection>::SelectAndHistogram(
     const SelectionProperties &props,
     const CQCellIdentifier *allIds, 
     const int *allFrequencies, const double *allVariables, int totalCells,
     const CQSelection &selection,
     CQSelection &narrowedSelection,
-    doubleVector &histogram) const
+    doubleVector &histogram,
+    double &min,
+    double &max) const
 {
     const char *mName = "CQFilter::SelectAndHistogram: ";
     StackTimer t0("SelectAndHistogram");
@@ -1074,6 +1088,9 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::SelectAndHistogram(
         std::sort(index, index + totalCells,
                   cq_sort_by_value<CQCellIdentifier>(allIds));
 
+        min = 0;
+        max = 0;
+
         // For IDs the number of bins is based on the user defined
         // number of bins.
         numBins = props.GetHistogramNumBins();
@@ -1084,6 +1101,14 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::SelectAndHistogram(
             float t = float(i) / float(numBins);
             binPoints[i] = int(t * float(totalCells));
         }
+
+    // Capture the ID of the first cell in the start bin.
+//    narrowedSelection.startBinID = allIds[binPoints[props.GetHistogramStartBin()]];
+    // Capture the ID of the last cell in the end bin.
+//    narrowedSelection.endBinID = allIds[binPoints[props.GetHistogramEndBin()+1]-1];
+
+        narrowedSelection.startBinID = allIds[index[0]];
+        narrowedSelection.endBinID = allIds[index[totalCells-1]];
     }
 
     // Variable Histogram
@@ -1096,8 +1121,8 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::SelectAndHistogram(
 
         // For variables the number of bins is based on user defined
         // the number of bins.
-        double min = allVariables[index[0]];
-        double max = allVariables[index[totalCells-1]];
+        min = allVariables[index[0]];
+        max = allVariables[index[totalCells-1]];
 
         numBins = props.GetHistogramNumBins();
         binPoints = new int[numBins + 1];
@@ -1130,8 +1155,8 @@ CumulativeQuery<CQCellIdentifier,CQSelection>::SelectAndHistogram(
                   cq_sort_by_value<int>(allFrequencies));
 
         // For matches the number of bins is based on the number of matches
-        double min = allFrequencies[index[0]];
-        double max = allFrequencies[index[totalCells-1]];
+        min = allFrequencies[index[0]];
+        max = allFrequencies[index[totalCells-1]];
 
         numBins = max-min+1;
         binPoints = new int[numBins + 1];
@@ -1235,7 +1260,7 @@ typedef std::pair<unsigned int, unsigned int> CQDomainZoneId;
 class CQDomainZoneIdSelection : public std::map<CQDomainZoneId, CQCellData>
 {
 public:
-    CQDomainZoneIdSelection() : std::map<CQDomainZoneId, CQCellData>()
+    CQDomainZoneIdSelection() : std::map<CQDomainZoneId, CQCellData>(), startBinID(0,0), endBinID(0,0)
     {
     }
 
@@ -1243,6 +1268,7 @@ public:
     vtkDataSet        *CreateSelectedDataset(const std::string &idVariable) const;
     CQDomainZoneId     CellIdentifierFromTuple(vtkDataArray *arr, vtkIdType cellid) const;
     void               GlobalizeIds(int globalSize, int myOffset, CQDomainZoneId*&allIds) const;
+    CQDomainZoneId     startBinID, endBinID;
 };
 
 // ****************************************************************************
@@ -1447,7 +1473,7 @@ typedef double CQVariableId;
 class CQVariableIdSelection : public std::map<CQVariableId, CQCellData>
 {
 public:
-    CQVariableIdSelection() : std::map<CQVariableId, CQCellData>()
+    CQVariableIdSelection() : std::map<CQVariableId, CQCellData>(), startBinID(0.), endBinID(0.)
     {
     }
 
@@ -1455,6 +1481,7 @@ public:
     vtkDataSet        *CreateSelectedDataset(const std::string &idVariable) const;
     CQVariableId       CellIdentifierFromTuple(vtkDataArray *arr, vtkIdType cellid) const;
     void               GlobalizeIds(int globalSize, int myOffset, CQVariableId*&allIds) const;
+    CQVariableId       startBinID, endBinID;
 };
 
 // ****************************************************************************
@@ -1732,10 +1759,29 @@ CQFilter<CQImpl,CQSelection>::ExecuteAllTimesteps(std::vector<avtDataTree_p> &ti
     summary = SelectionSummary();
 
     doubleVector hist;
-    CQ.CreateSelection(this->props, timesteps, selection, hist);
+    double min, max;
+
+    CQ.CreateSelection(this->props, timesteps, selection, hist, min, max);
 
     // Save the histogram values in the summary.
     summary.SetHistogramValues(hist);
+
+//     if(this->props.GetHistogramType() == SelectionProperties::HistogramTime)
+//     {
+//       outSummary.SetHistogramMinBin( props.GetMinTimeState() );
+
+//       if(this->props.GetMaxTimeState() < 0)
+//      summary.SetHistogramMaxBin( this->dob->GetInfo().GetAttributes().GetNumStates() - 1 );
+//       else
+//      summary.SetHistogramMaxBin( this->props.GetMaxTimeState() );
+//     }
+//    else
+      if(this->props.GetHistogramType() == SelectionProperties::HistogramMatches ||
+         this->props.GetHistogramType() == SelectionProperties::HistogramVariable )
+    {
+      summary.SetHistogramMinBin(min);
+      summary.SetHistogramMaxBin(max);
+    }
 
     //
     // Now that we have the final set of local cells derived from the selection,
@@ -2115,9 +2161,11 @@ GetSelectionEx(avtDataObject_p dob, avtContract_p contract, const SelectionPrope
         // Intermediate data exists. Let's just redo the histogramming part 
         // of CQ so we don't have to do time iteration again.
         doubleVector hist;
+        double min, max;
+
         cqFilter.GetCumulativeQuery().CreateSelection(props, 
             intermediateResults->cellFrequency,
-            intermediateResults->cellsPerTimestep, selection, hist);
+            intermediateResults->cellsPerTimestep, selection, hist, min, max);
 
         // Now that we have a selection, convert it into a named selection object.
         ns = selection.CreateNamedSelection(props.GetName());
@@ -2125,6 +2173,22 @@ GetSelectionEx(avtDataObject_p dob, avtContract_p contract, const SelectionPrope
         // Save the histogram values in the summary.
         outSummary = intermediateResults->summary;
         outSummary.SetHistogramValues(hist);
+
+        if(props.GetHistogramType() == SelectionProperties::HistogramTime)
+        {
+          outSummary.SetHistogramMinBin( props.GetMinTimeState() );
+
+          if(props.GetMaxTimeState() < 0)
+            outSummary.SetHistogramMaxBin( dob->GetInfo().GetAttributes().GetNumStates() - 1 );
+          else
+            outSummary.SetHistogramMaxBin( props.GetMaxTimeState() );
+        }
+        else if(props.GetHistogramType() == SelectionProperties::HistogramMatches ||
+                props.GetHistogramType() == SelectionProperties::HistogramVariable )
+        {
+          outSummary.SetHistogramMinBin(min);
+          outSummary.SetHistogramMaxBin(max);
+        }
     }
     else
     {
@@ -2172,8 +2236,9 @@ GetSelectionEx(avtDataObject_p dob, avtContract_p contract, const SelectionPrope
             // Add our time iteration CQ filter.
             //
             cqFilter.SetInput(newdob);
-            cqFilter.SetTimeLoop(prop2.GetMinTimeState(), prop2.GetMaxTimeState(),
-                prop2.GetTimeStateStride());
+            cqFilter.SetTimeLoop(prop2.GetMinTimeState(),
+                                 prop2.GetMaxTimeState(),
+                                 prop2.GetTimeStateStride());
             cqFilter.SetSelectionProperties(prop2);
             newdob = cqFilter.GetOutput();
         }
@@ -2193,6 +2258,22 @@ GetSelectionEx(avtDataObject_p dob, avtContract_p contract, const SelectionPrope
         // Extract data from the filters and stick it in the summary. 
         outSummary = BuildSummary(hist);
         outSummary.SetHistogramValues(cqFilter.GetSummary().GetHistogramValues());
+
+        if(props.GetHistogramType() == SelectionProperties::HistogramTime)
+        {
+          outSummary.SetHistogramMinBin( props.GetMinTimeState() );
+
+          if(props.GetMaxTimeState() < 0)
+            outSummary.SetHistogramMaxBin( dob->GetInfo().GetAttributes().GetNumStates() - 1 );
+          else
+            outSummary.SetHistogramMaxBin( props.GetMaxTimeState() );
+        }
+        else if(props.GetHistogramType() == SelectionProperties::HistogramMatches ||
+                props.GetHistogramType() == SelectionProperties::HistogramVariable )
+        {
+          outSummary.SetHistogramMinBin(cqFilter.GetSummary().GetHistogramMinBin());
+          outSummary.SetHistogramMaxBin(cqFilter.GetSummary().GetHistogramMaxBin());
+        }
 
         // Cache the intermediate selection & summary.
         debug1 << mName << "Caching intermediate results for selection" << endl;
@@ -2250,8 +2331,13 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
                 > cqFilter;
         cqFilter.GetCumulativeQuery().SetIdVariable(GetIdVariable(props));
         CQDomainZoneIdSelection selection;
-
         ns = GetSelectionEx(dob, contract, props, cache, cqFilter, selection, summary);
+
+        if(props.GetHistogramType() == SelectionProperties::HistogramID)
+        {
+          summary.SetHistogramMinBin(selection.startBinID.second);
+          summary.SetHistogramMaxBin(selection.endBinID.second);
+        }
     }
     else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
     {
@@ -2262,6 +2348,12 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
         cqFilter.GetCumulativeQuery().SetIdVariable(GetIdVariable(props));
         CQVariableIdSelection selection;
         ns = GetSelectionEx(dob, contract, props, cache, cqFilter, selection, summary);
+
+        if(props.GetHistogramType() == SelectionProperties::HistogramID)
+        {
+          summary.SetHistogramMinBin(selection.startBinID);
+          summary.SetHistogramMaxBin(selection.endBinID);
+        }
     }
     else if(props.GetIdVariableType() == SelectionProperties::UseVariableForID)
     {
@@ -2271,6 +2363,12 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
         cqFilter.GetCumulativeQuery().SetIdVariable(GetIdVariable(props));
         CQVariableIdSelection selection;
         ns = GetSelectionEx(dob, contract, props, cache, cqFilter, selection, summary);
+
+        if(props.GetHistogramType() == SelectionProperties::HistogramID)
+        {
+          summary.SetHistogramMinBin(selection.startBinID);
+          summary.SetHistogramMaxBin(selection.endBinID);
+        }
     }
 
     if(ns != NULL)
@@ -2278,6 +2376,7 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
 
     return ns;
 }
+
 
 // ****************************************************************************
 // Method: CumulativeQueryNamedSelectionExtension::GetSelectionSummary
