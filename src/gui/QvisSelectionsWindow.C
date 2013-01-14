@@ -73,6 +73,8 @@
 #include <QvisVariableButton.h>
 #include <QvisVariableListLimiter.h>
 
+#include <iostream>
+
 #define DEFAULT_FORCE_UPDATE false
 #define DEFAULT_UPDATE_PLOTS true
 
@@ -520,6 +522,22 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     cqHistogram->setMinimumHeight(150);
     vLayout->addWidget(cqHistogram);
 
+    QWidget *axisParent = new QWidget(central);
+    vLayout->addWidget(axisParent);
+
+    QHBoxLayout *thAxisLayout = new QHBoxLayout(axisParent);
+    thAxisLayout->setMargin(0);
+
+    cqHistogramMinAxisLabel = new QLabel(tr("Bin 0 (0)"), titleParent);
+    thAxisLayout->addWidget(cqHistogramMinAxisLabel);
+
+    cqHistogramAxisLabel = new QLabel(titleParent);
+    cqHistogramAxisLabel->setText("");
+    thAxisLayout->addWidget(cqHistogramAxisLabel, Qt::AlignLeft);
+
+    cqHistogramMaxAxisLabel = new QLabel(tr("Bin 9 (0)"), titleParent);
+    thAxisLayout->addWidget(cqHistogramMaxAxisLabel);
+
     //
     // Axis controls
     //
@@ -887,10 +905,17 @@ QvisSelectionsWindow::GetLoadHost() const
 
 void
 QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues, 
-    int minBin, int maxBin, bool useBins)
+                                      int minBin, int maxBin, bool useBins,
+                                      double minAxisValue, double maxAxisValue )
 {
     if(values == 0 || nvalues == 0)
+    {
         cqHistogram->setHistogramTexture(0,0);
+
+        cqHistogramMinAxisLabel->setText(tr(""));
+        cqHistogramMaxAxisLabel->setText(tr(""));
+        cqHistogramAxisLabel->setText(tr(""));
+    }
     else
     {
         if( nvalues != selectionProps.GetHistogramNumBins() )
@@ -909,9 +934,13 @@ QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues,
 
         float *normalized = new float[nvalues];
         bool  *mask = new bool[nvalues];
+        double minVal = values[0];
         double maxVal = values[0];
         for(int i = 1; i < nvalues; ++i)
         {
+          if( minVal > values[i] )
+            minVal = values[i];
+
           if( maxVal < values[i] )
             maxVal = values[i];
         }
@@ -931,6 +960,30 @@ QvisSelectionsWindow::UpdateHistogram(const double *values, int nvalues,
 
         delete [] normalized;
         delete [] mask;
+
+        std::stringstream minstr;
+        minstr << std::string("Bin 0 (min = ") << minAxisValue << ")";
+        cqHistogramMinAxisLabel->setText(tr(minstr.str().c_str()));
+
+        
+        std::stringstream maxstr;
+        maxstr << std::string("Bin ")
+                              << (selectionProps.GetHistogramNumBins() - 1)
+                              << " (max = " << maxAxisValue << ")";
+        cqHistogramMaxAxisLabel->setText(tr(maxstr.str().c_str()));
+        
+        std::stringstream labelstr;
+
+        if(selectionProps.GetHistogramType() ==
+           SelectionProperties::HistogramID)
+          labelstr << std::string( "         Bin average;  min : " );
+        else
+          labelstr << std::string( "         Bin totals;  min : " );
+
+        labelstr << minVal
+                 << std::string( "    max : " ) << maxVal;
+                                 
+        cqHistogramAxisLabel->setText(tr(labelstr.str().c_str()));
     }
 }
 
@@ -951,25 +1004,31 @@ void
 QvisSelectionsWindow::UpdateHistogram()
 { 
     int sumIndex = selectionList->GetSelectionSummary(selectionProps.GetName());
+
     // Histogram controls
     if(sumIndex >= 0)
     {
-        const SelectionSummary &summary = selectionList->
-            GetSelectionSummary(sumIndex);
+        const SelectionSummary &summary =
+          selectionList->GetSelectionSummary(sumIndex);
+
         const doubleVector &hist = summary.GetHistogramValues();
+
         if(hist.empty())
-            UpdateHistogram(0,0,0,0,false);
+          UpdateHistogram(0,0,0,0,false,0,0);
         else
         {
             UpdateHistogram(&hist[0], hist.size(), 
                             selectionProps.GetHistogramStartBin(),
-                            selectionProps.GetHistogramEndBin(), true );
-//                selectionProps.GetHistogramType() != SelectionProperties::HistogramTime);
+                            selectionProps.GetHistogramEndBin(),
+                            true,
+//                          selectionProps.GetHistogramType() != SelectionProperties::HistogramTime,
+                            summary.GetHistogramMinBin(),
+                            summary.GetHistogramMaxBin() );
         }
     }
     else
     {
-        UpdateHistogram(0,0,0,0,false);
+      UpdateHistogram(0,0,0,0,false,0,0);
     }
 }
 
@@ -991,15 +1050,13 @@ QvisSelectionsWindow::UpdateHistogramTitle()
 {
     if(selectionProps.GetSelectionType() != 
         SelectionProperties::CumulativeQuerySelection)
-    {
         cqHistogramTitle->setText("");
-    }
     else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramTime)
         cqHistogramTitle->setText(tr("Number of Cells vs. Time"));
     else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramMatches)
         cqHistogramTitle->setText(tr("Frequency vs. Matches"));
     else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramID)
-        cqHistogramTitle->setText(tr("Frequency vs. ID"));
+        cqHistogramTitle->setText(tr("Average frequency vs. ID"));
     else if(selectionProps.GetHistogramType() == SelectionProperties::HistogramVariable)
         cqHistogramTitle->setText(tr("Frequency vs. Variable"));
 }
@@ -1120,7 +1177,7 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqTimeStride->setText("");
 
         // Histogram controls
-        UpdateHistogram(0,0,0,0,false);
+        UpdateHistogram(0,0,0,0,false,0,0);
 
         cqHistogramType->blockSignals(true);
         cqHistogramType->button(0)->setChecked(true);
@@ -1128,6 +1185,12 @@ QvisSelectionsWindow::UpdateSelectionProperties()
         cqHistogramVariableButton->setEnabled(true);
 
         SelectionProperties defaults;
+
+        std::stringstream nbins;
+        nbins << (defaults.GetHistogramNumBins() - 1);
+        std::string tmpstr = std::string("Bin ") + nbins.str() + " (0)";
+        cqHistogramMaxAxisLabel->setText(tr(tmpstr.c_str()));
+ 
         cqHistogramNumBins->blockSignals(true);
         cqHistogramNumBins->setValue(defaults.GetHistogramNumBins());
         cqHistogramNumBins->blockSignals(false);
@@ -1980,7 +2043,7 @@ QvisSelectionsWindow::histogramTypeChanged(int value)
     }
 
     Apply(DEFAULT_FORCE_UPDATE, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
-    UpdateHistogram(0,0,0,0,false); // invalidate the histogram
+    UpdateHistogram(0,0,0,0,false,0,0); // invalidate the histogram
     UpdateHistogramTitle();
 
     cqHistogramVariableButton->setEnabled(!selectionProps.GetVariables().empty());
