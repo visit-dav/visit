@@ -75,12 +75,12 @@ elif [[ "$OPSYS" == "Linux" ]]; then
 ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET:-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
-      CFLAGS="$CFLAGS -m64"
-      FCFLAGS="$FCFLAGS -m64"
+      CFLAGS="$CFLAGS -m64 -fPIC"
+      FCFLAGS="$FCFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXXFLAGS="$CXXFLAGS -m64"
+      CXXFLAGS="$CXXFLAGS -m64 -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
@@ -96,9 +96,12 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-xlc" #aix-xlc"
       else
+          CFLAGS="$CFLAGS -fPIC"
+          FCFLAGS="$FCFLAGS -fPIC"
           if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
               C_OPT_FLAGS="$C_OPT_FLAGS -O2"
           fi
+          CXXFLAGS="$CXXFLAGS -fPIC"
           if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
               CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
           fi
@@ -106,9 +109,12 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           QT_PLATFORM="linux-g++"
       fi
    elif [[ "$(uname -m)" == "ia64" ]] ; then
+      CFLAGS="$CFLAGS -fPIC"
+      FCFLAGS="$FCFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
+      CXXFLAGS="$CXXFLAGS -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
@@ -161,21 +167,24 @@ else
    export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
-      CFLAGS="$CFLAGS -m64"
-      FCFLAGS="$FCFLAGS -m64"
+      CFLAGS="$CFLAGS -m64 -fPIC"
+      FCFLAGS="$FCFLAGS -m64 -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
-      CXXFLAGS="$CXXFLAGS -m64"
+      CXXFLAGS="$CXXFLAGS -m64 -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
       QT_PLATFORM="linux-g++-64"
    fi
    if [[ "$(uname -m)" == "ia64" ]] ; then
+      CFLAGS="$CFLAGS -fPIC"
+      FCFLAGS="$FCFLAGS -fPIC"
       if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
           C_OPT_FLAGS="$C_OPT_FLAGS -O2"
       fi
+      CXXFLAGS="$CXXFLAGS -fPIC"
       if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
       fi
