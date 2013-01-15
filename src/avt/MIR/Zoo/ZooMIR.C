@@ -312,7 +312,6 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
     return true;
 }
 
-
 // ****************************************************************************
 //  Method:  ZooMIR::GetDataset
 //
@@ -360,6 +359,9 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    or return nothing (if the material wasn't seelcted).  This allows
 //    the output to be a rectilinear, or other non-unstructured, data set.
 //
+//    Mark C. Miller, Tue Jan 15 13:22:29 PST 2013
+//    Adjusted logic to overwrite mix values to use SetTuple instead of 
+//    assuming a float* array.
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -691,7 +693,6 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
             continue;
         }
         const float *buffer = mv->GetBuffer();
-        float *outBuff = (float *) arr->GetVoidPointer(0);
         debug4 << "Overwriting mixed values for " << arr->GetName() << endl;
         int nvals = 0;
         for (int j=0; j<ncells; j++)
@@ -699,7 +700,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
             int mix_index = zonesList[cellList[j]].mix_index;
             if (mix_index >= 0)
             {
-                outBuff[j] = buffer[mix_index];
+                arr->SetTuple(j, &buffer[mix_index]);
                 nvals++;
             }
         }
