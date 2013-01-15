@@ -1195,6 +1195,32 @@ function check_variables
 # Kathleen Biagas, Mon Aug 8 08:12:37 MST 2011                                #
 # Use FILEPATH type for compilers, STRING type for libdep.                    # 
 # *************************************************************************** #
+hostconf_library_success=""
+function hostconf_library
+ {
+    local build_lib=$1
+    local depends_on=""
+
+    # if already in success list then ignore..
+    if [[ "$hostconf_library_success" == *$build_lib* ]]; then
+        return
+    fi
+
+    depends_on=$("bv_${build_lib}_depends_on")
+
+    #replace commas with spaces if there are any..
+    depends_on=${depends_on//,/ }
+
+    for depend_lib in `echo $depends_on`;
+    do
+        hostconf_library $depend_lib
+    done
+
+    #build ..
+    $"bv_${build_lib}_host_profile"
+    hostconf_library_success="${hostconf_library_success} ${build_lib}"
+}
+
 
 function build_hostconf
 {
@@ -1310,14 +1336,12 @@ function build_hostconf
 
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
-        initialize="bv_${reqlibs[$bv_i]}_host_profile"
-        $initialize
+        hostconf_library ${reqlibs[$bv_i]}
     done
 
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
-        initialize="bv_${optlibs[$bv_i]}_host_profile"
-        $initialize
+        hostconf_library ${optlibs[$bv_i]}
     done
     echo >> $HOSTCONF
 
