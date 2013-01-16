@@ -268,6 +268,11 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             // the connection progress dialog.
             timeout = 0;
         }
+        else if (strstr(buffer, "Connection refused"))
+        {
+            std::string msg(std::string("The connection to ") + host + std::string(" was refused."));
+            EXCEPTION1(CouldNotConnectException, msg);
+        }
         else if (strstr(buffer, "Running: "))
         {
             // Check for failed port forwards; this will be

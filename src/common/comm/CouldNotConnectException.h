@@ -58,6 +58,7 @@ class COMM_API2 CouldNotConnectException : public VisItException
 {
 public:
     CouldNotConnectException() {;};
+    CouldNotConnectException(const std::string &s) : VisItException(s) {;}
     virtual ~CouldNotConnectException() VISIT_THROW_NOTHING {;};
 };
 
