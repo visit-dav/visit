@@ -316,6 +316,10 @@
 #    On non windows systems, generate a script that allows re-config
 #    from scratch using the captured invocation command line.
 #
+#    Mark C. Miller, Tue Jan 15 17:15:43 PST 2013
+#    Modified cmake invokation logic to ensure the CMAKE_INVOKE variable
+#    is indeed (forced) cached so it winds up in CMakeCache.txt and
+#    adjusted name of the shell script to recmake_visit.sh.
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -348,12 +352,10 @@ FOREACH(CACHE_VAR ${CACHE_VARS})
   ENDIF()
 ENDFOREACH(CACHE_VAR ${CACHE_VARS})
 # Record the full command line invocation.
-SET(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}")
-# show the captured command line
-MESSAGE("CMAKE_INVOKE: ${CMAKE_INVOKE}")
+SET(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Command used to invoke cmake" FORCE)
 # Create a simple shell script that allows us to reinvoke cmake with the captured command line.
 IF (NOT WIN32)
-    FILE(WRITE ${CMAKE_BINARY_DIR}/reconfig_visit.sh "!/bin/sh\n"
+    FILE(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "!/bin/sh\n"
                                                      "rm -f CMakeCache.txt\n"
                                                      "${CMAKE_INVOKE}\n")
 ENDIF (NOT WIN32)
@@ -2248,10 +2250,8 @@ ELSE (NOT WIN32)
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
 
-#
-# Echo the full cmake invocation again.
-# (make it easy to see by showing near the end of cmake output)
-#
-MESSAGE("CMAKE_INVOCATION: ${CMAKE_INVOKE}")
-
-
+IF (NOT WIN32)
+    MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
+ELSE (NOT WIN32)
+    MESSAGE(STATUS "\n\nSearch for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
+ENDIF (NOT WIN32)
