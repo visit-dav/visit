@@ -63,6 +63,7 @@
 #include <MDServerProxy.h>
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
+#include <RemoteProcess.h>
 #include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerWindowManager.h>
@@ -1414,6 +1415,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Brad Whitlock, Tue Jun  5 17:16:31 PDT 2012
 //    Pass a MachineProfile down into the proxy's Create.
 //
+//    Brad Whitlock, Tue Jan 15 14:11:07 PST 2013
+//    Check the host for validity.
+//
 // ****************************************************************************
 
 void
@@ -1438,6 +1442,17 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         AddArguments(newServer, args);
 
         MachineProfile profile = GetMachineProfile(host);
+
+        // Determine which host we'll be connecting to and see if that host is
+        // valid. We might be connecting via a gateway.
+        std::string connectionHost(host);
+        if(profile.GetUseGateway() && !profile.GetGatewayHost().empty())
+            connectionHost = profile.GetGatewayHost();
+        if(!RemoteProcess::CheckHostValidity(connectionHost))
+        {
+            EXCEPTION1(BadHostException, connectionHost);
+        }
+
         // We don't set up tunnels when launching an MD server, just the VCL
         profile.SetTunnelSSH(false);
 
@@ -1515,12 +1530,20 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // Re-throw the exception.
         RETHROW;
     }
-    CATCH(CouldNotConnectException)
+    CATCH2(CouldNotConnectException, e)
     {
+        QString err; 
+        if(!e.Message().empty())
+        {
+            err = QString("The specific error was: \"") + 
+                  QString(e.Message().c_str()) + 
+                  QString("\"\n\n");
+        }
+
         QString msg = tr(
             "The metadata server on host %1 could not be launched or it "
             "could not connect back to your local computer. This can "
-            "happen for a variety of reasons.\n\n"
+            "happen for a variety of reasons.\n\n%2"
 
             "It is possible that SSH was unable to launch VisIt on %1. "
             "If you want to verify this, run "
@@ -1585,7 +1608,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
             "connect to %1 then contact visit-users@ornl.gov and provide "
             "information about how you are trying to connect. Be sure to "
             "include the VisIt version and platform on which you are "
-            "running.").arg(host.c_str());
+            "running.").arg(host.c_str()).arg(err);
         Error(msg);
 
         delete newServer;

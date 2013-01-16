@@ -619,6 +619,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Tue May  1 10:06:12 PDT 2012
 //   Call GetVisItResourcesDirectory to get the translations directory.
 //
+//   Brad Whitlock, Tue Jan 15 10:30:20 PST 2013
+//   Give the file server list a pointer to the host profiles.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -706,6 +709,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     SetViewerProxy( proxy ? proxy : new ViewerProxy());
     statusSubject = new StatusSubject;
     fileServer = new FileServerList;
+    fileServer->SetProfiles(GetViewerState()->GetHostProfileList());
     embeddedGUI = false;
 
     // Process any GUI arguments that should not be passed on to other programs.

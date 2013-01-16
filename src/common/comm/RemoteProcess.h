@@ -168,9 +168,10 @@ public:
     static void SetChangeUserNameCallback(bool (*)(const std::string &,std::string&));
     static void DisablePTY();
     static void SetCustomConnectionCallback(Connection* (*)(int, void *), void* cbData);
+
+    static bool CheckHostValidity(const std::string &rHost);
 protected:
-    bool StartMakingConnection(const std::string &rHost, int numRead,
-                               int numWrite);
+    bool StartMakingConnection(int numRead, int numWrite);
     void FinishMakingConnection(int numRead, int numWrite);
     const char *SecureShell() const;
     const char *SecureShellArgs() const;

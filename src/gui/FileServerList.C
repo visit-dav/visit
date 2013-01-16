@@ -43,10 +43,12 @@
 #include <CouldNotConnectException.h>
 #include <GetFileListException.h>
 #include <GetMetaDataException.h>
-#include <LostConnectionException.h>
+#include <HostProfileList.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
+#include <LostConnectionException.h>
 #include <MessageAttributes.h>
+#include <RemoteProcess.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <DataNode.h>
@@ -194,6 +196,8 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbbb"),
 
     // Create the message attributes.
     messageAtts = new MessageAttributes;
+
+    profiles = NULL;
 }
 
 // ****************************************************************************
@@ -248,6 +252,28 @@ FileServerList::~FileServerList()
 
     // delete the message attributes.
     delete messageAtts;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetProfiles
+//
+// Purpose: 
+//   Give the file server list a pointer to the host profile list.
+//
+// Arguments:
+//   p : The host profile list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 15 10:26:48 PST 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetProfiles(const HostProfileList *p)
+{
+    profiles = p;
 }
 
 // ****************************************************************************
@@ -864,6 +890,10 @@ FileServerList::SetHost(const string &host)
 //   Brad Whitlock, Tue Jun  5 16:31:21 PDT 2012
 //   Pass in default machine profile.
 //
+//   Brad Whitlock, Tue Jan 15 10:23:40 PST 2013
+//   If there is a real host profile and it uses a gateway, check the gateway
+//   for validity instead of the remote host.
+//
 // ****************************************************************************
 
 void
@@ -910,8 +940,30 @@ FileServerList::StartServer(const string &host)
         info->server = new MDServerProxy();
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
-        info->server->Create(MachineProfile::Default(host),
-                             connectCallback, connectCallbackData);
+
+        // We want a basically default machine profile for host. We'll handle the
+        // complexities of the real profile in the viewer.
+        MachineProfile profile(MachineProfile::Default(host));
+
+        // Determine which host we'll be connecting to and see if that host is
+        // valid. We might be connecting via a gateway.
+        std::string connectionHost(host);
+        MachineProfile *actualProfile = NULL;
+        if(profiles != NULL)
+            actualProfile = profiles->GetMachineProfileForHost(host);
+        if(actualProfile != NULL)
+        {
+            if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
+            {
+                connectionHost = actualProfile->GetGatewayHost();
+            }
+        }
+        if(!RemoteProcess::CheckHostValidity(connectionHost))
+        {
+            EXCEPTION1(BadHostException, connectionHost);
+        }
+
+        info->server->Create(profile, connectCallback, connectCallbackData);
         connectingServer = false;
 
         // Get the current directory from the server

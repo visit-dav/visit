@@ -1114,6 +1114,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    Brad Whitlock, Mon Nov  5 10:04:45 PST 2012
 //    Use the gateway host as the host when we have a gateway host.
 //
+//    Brad Whitlock, Tue Jan 15 11:34:24 PST 2013
+//    Check the host for validity here.
+//
 // ****************************************************************************
 
 bool
@@ -1134,11 +1137,17 @@ RemoteProcess::Open(const MachineProfile &profile, int numRead, int numWrite,
         host = profile.GetGatewayHost();
     debug5 << "Using " << host << " for host" << endl;
 
-    // Start making the connections and start listening.
-    if(!StartMakingConnection(host, numRead, numWrite))
+    // If the host is not valid then throw an exception.
+    if(!CheckHostValidity(host))
     {
-        debug5 << "StartMakingConnection(" << host << ", " << numRead
-               << ", " << numWrite << ") failed. Returning." << endl;
+        EXCEPTION1(BadHostException, host);
+    }
+
+    // Start making the connections and start listening.
+    if(!StartMakingConnection(numRead, numWrite))
+    {
+        debug5 << "StartMakingConnection(" << numRead << ", " << numWrite
+               << ") failed. Returning." << endl;
         return false;
     }
 
@@ -1216,6 +1225,55 @@ RemoteProcess::WaitForTermination()
 }
 
 // ****************************************************************************
+// Method: RemoteProcess::CheckHostValidity
+//
+// Purpose: 
+//   Check whether a host is valid using gethostbyname.
+//
+// Arguments:
+//   remoteHost : The remote host to check for validity.
+//
+// Returns:    true on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 15 11:32:14 PST 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+RemoteProcess::CheckHostValidity(const std::string &remoteHost)
+{
+    bool retval = true;
+    const char *mName = "RemoteProcess::CheckHostValidity: ";
+
+    //
+    // Set the remote host name and make sure that it is valid. If it
+    // is not valid, throw a BadHostException. Do not bother checking
+    // whether or not remoteHost is valid if it equals "localhost" since
+    // in that case we'll be spawning a local process.
+    //
+    if(remoteHost != std::string("localhost"))
+    {
+        debug5 << mName << "Calling gethostbyname(\"" << remoteHost.c_str()
+               << "\") to look up the name of the remote host" << endl;
+
+        if(gethostbyname(remoteHost.c_str()) == NULL)
+        {
+#if defined(_WIN32)
+            LogWindowsSocketError(mName, "gethostbyname,1");
+#endif
+            retval = false;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: RemoteProcess::StartMakingConnection
 //
 // Purpose: 
@@ -1223,7 +1281,6 @@ RemoteProcess::WaitForTermination()
 //   go on this end before the remote process is launched.
 //
 // Arguments:
-//   rHost    : The remote host to run on.
 //   numRead  : The number of read sockets to create to the remote process.
 //   numWrite : The number of write sockets to create to the remote process.
 //
@@ -1272,16 +1329,17 @@ RemoteProcess::WaitForTermination()
 //   a specific port successfully; it was only the listen() call that
 //   gave any indication this happened, via an EADDRINUSE.
 //
+//   Brad Whitlock, Tue Jan 15 11:28:18 PST 2013
+//   Move host check into a different method.
+//
 // ****************************************************************************
 
 bool
-RemoteProcess::StartMakingConnection(const std::string &remoteHost, int numRead,
-    int numWrite)
+RemoteProcess::StartMakingConnection(int numRead, int numWrite)
 {
     const char *mName = "RemoteProcess::StartMakingConnection: ";
     debug5 << mName << "Called with args (";
-    debug5 << "remoteHost=" << remoteHost.c_str();
-    debug5 << ", numRead=" << numRead;
+    debug5 << "numRead=" << numRead;
     debug5 << ", numWrite=" << numWrite << ")" << endl;
 
     //
@@ -1290,23 +1348,6 @@ RemoteProcess::StartMakingConnection(const std::string &remoteHost, int numRead,
     //
     if(numRead + numWrite == 0)
         return false;
-
-    //
-    // Set the remote host name and make sure that it is valid. If it
-    // is not valid, throw a BadHostException. Do not bother checking
-    // whether or not remoteHost is valid if it equals "localhost" since
-    // in that case we'll be spawning a local process.
-    //
-    debug5 << mName << "Calling gethostbyname(\"" << remoteHost.c_str()
-           << "\") to look up the name of the remote host" << endl;
-    bool remote = (remoteHost != std::string("localhost"));
-    if(remote && (gethostbyname(remoteHost.c_str()) == NULL))
-    {
-#if defined(_WIN32)
-        LogWindowsSocketError(mName, "gethostbyname,1");
-#endif
-        EXCEPTION1(BadHostException, remoteHost);
-    }
 
     //
     // Get the local host name since it will be a command line option
@@ -2521,7 +2562,7 @@ RemoteProcess::LaunchLocal(const stringVector &args)
     char **argv = CreateSplitCommandLine(args, argc);
 
     //
-    // Start the program on the remote host.
+    // Start the program on localhost.
     //
 #if defined(_WIN32)
     // Do it the WIN32 way where we use the _spawnvp system call.

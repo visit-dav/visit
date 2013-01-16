@@ -136,6 +136,11 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   Brad Whitlock, Tue Jun  5 15:54:12 PDT 2012
 //   Pass in MachineProfile.
 //
+//   Brad Whitlock, Mon Nov  5 10:04:45 PST 2012
+//   Add printing of arguments. Don't pass host to StartMakingConnection since
+//   it's no longer needed. ExistingRemoteProcess will not check for a host's
+//   validity anymore.
+//
 // ****************************************************************************
 
 bool
@@ -143,8 +148,18 @@ ExistingRemoteProcess::Open(const MachineProfile &profile,
                             int numRead, int numWrite,
                             bool createAsThoughLocal)
 {
+    // Write the arguments to the debug log.
+    const char *mName = "ExistingRemoteProcess::Open: ";
+    debug5 << mName << "Called with (profile";
+    debug5 << ", numRead=" << numRead;
+    debug5 << ", numWrite=" << numWrite;
+    debug5 << ", createAsThoughLocal=" << (createAsThoughLocal?"true":"false");
+    debug5 << ") where profile is:" << endl;
+    if(DebugStream::Level5())
+        profile.Print(DebugStream::Stream5());
+
     // Start making the connections and start listening.
-    if(!StartMakingConnection(profile.GetHost(), numRead, numWrite))
+    if(!StartMakingConnection(numRead, numWrite))
         return false;
 
     // Add all of the relevant command line arguments to a vector of strings.
