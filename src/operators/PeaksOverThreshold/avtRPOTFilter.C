@@ -441,6 +441,8 @@ avtRPOTFilter::Execute()
         scalars = (vtkFloatArray *)ds->GetCellData()->GetScalars();
     float *vals = (float *) scalars->GetVoidPointer(0);
 
+    float dsTime = (float)GetInput()->GetInfo().GetAttributes().GetTime();
+
     int nTuples = scalars->GetNumberOfTuples();
     int index = GetIndexFromDay(currentTime);
 
@@ -450,7 +452,7 @@ avtRPOTFilter::Execute()
     {
         float v = vals[i]*scaling;
         if (v > cutoff)
-            values[i][index].push_back(sample(v,currentTime));
+            values[i][index].push_back(sample(v,currentTime, dsTime));
     }
 }
 
@@ -478,6 +480,8 @@ avtRPOTFilter::CreateFinalOutput()
     float *res = new float[numTimes];
     int *flags = new int[numTimes];
     int *flagsRes = new int[numTimes];
+    float *times = new float[numTimes];
+    float *timesRes = new float[numTimes];
     
     for (int i=0; i<numTuples; i++)
     {
@@ -485,6 +489,7 @@ avtRPOTFilter::CreateFinalOutput()
         {
             tmp[t] = 0.0;//-numeric_limits<float>::min();
             flags[t] = 0;
+            times[t] = 0.0;
         }
         for (int b = 0; b < numBins; b++)
         {
@@ -492,11 +497,13 @@ avtRPOTFilter::CreateFinalOutput()
             for (int t=0; t<nt; t++)
             {
                 //if(PAR_Rank()== 0 ) cout<<values[i][b][t].time<<endl;
-                tmp[values[i][b][t].time] = values[i][b][t].val;
-                flags[values[i][b][t].time] = 1;
+                tmp[values[i][b][t].Cycle] = values[i][b][t].val;
+                flags[values[i][b][t].Cycle] = 1;
+                times[values[i][b][t].Cycle] = values[i][b][t].Time;
             }
         }
         MPI_Allreduce(tmp, res, numTimes, MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
+        MPI_Allreduce(times, timesRes, numTimes, MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
         MPI_Allreduce(flags, flagsRes, numTimes, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
 
         for (int b = 0; b < numBins; b++)
@@ -510,7 +517,7 @@ avtRPOTFilter::CreateFinalOutput()
                 if (flagsRes[t])
                 {
                     int b = GetIndexFromDay(t);
-                    values[i][b].push_back(sample(res[t], t));
+                    values[i][b].push_back(sample(res[t], t, timesRes[t]));
                 }
             }
         }
@@ -612,9 +619,9 @@ avtRPOTFilter::CreateFinalOutput()
                 if (values[i][b][t].val > thresholds[b])
                 {
                     exceedences->SetValue(idx, values[i][b][t].val);
-                    dayIndices->SetValue(idx, values[i][b][t].time+1);
-                    monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].time)+1);
-                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].time)+1);
+                    dayIndices->SetValue(idx, values[i][b][t].Time+1);
+                    monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].Time)+1);
+                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].Time)+1);
                  
                     idx++;
                     if (idx == numExceedences)
