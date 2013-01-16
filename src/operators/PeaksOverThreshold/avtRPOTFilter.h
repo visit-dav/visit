@@ -57,10 +57,10 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     class sample
     {
     public:
-        sample() {val=-1; time=-1;}
-        sample(float v, int t) {val=v; time=t;}
-        float val;
-        int time;
+        sample() {val=-1; Cycle=-1; Time=-1;}
+        sample(float v, int c, float t) {val=v; Cycle=c; Time=t;}
+        float val, Time;
+        int Cycle;
     };
     //values[location][aggregation][time_i]    
     std::vector<std::vector<std::vector<sample> > > values;
