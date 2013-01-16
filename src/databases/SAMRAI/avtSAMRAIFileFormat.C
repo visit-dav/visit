@@ -1055,123 +1055,126 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     var_data->SetNumberOfTuples(num_data_samples);
     float *fbuf = (float*) var_data->GetVoidPointer(0);
 
-    for (i = 0 ; i < num_components ; i++)
+    for (i = 0 ; i < num_alloc_comps ; i++)
     {
-        // determine name of the HDF5 dataset and open it 
-        char variable[256];
-        char mixvar[512];
-        if (var_type == AVT_SCALAR_VAR)
+        int dim0(i/3), dim1(i%3);
+        const int offset(dim1 + num_dim_problem*dim0);
+
+        if (dim0 >= num_dim_problem || dim1 >= num_dim_problem)
         {
-            sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
-                    patch_map[patch].processor_number,
-                    patch_map[patch].level_number,
-                    patch_map[patch].patch_number, 
-                    var_name.c_str());
-            sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s",
-                    patch_map[patch].processor_number,
-                    patch_map[patch].level_number,
-                    patch_map[patch].patch_number, 
-                    var_name.c_str());
+            // fill in 0's when reading 2D data
+            int k;
+            for (k=0; k < num_data_samples; k++)
+            {
+                fbuf[k * num_alloc_comps + i] = 0.0;
+            }
         }
         else
         {
-            sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
-                    patch_map[patch].processor_number,
-                    patch_map[patch].level_number,
-                    patch_map[patch].patch_number, 
-                    var_name.c_str(), i);
-            sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s.%02d",
-                    patch_map[patch].processor_number,
-                    patch_map[patch].level_number,
-                    patch_map[patch].patch_number, 
-                    var_name.c_str(), i);
-        }
-        hid_t h5d_variable = H5Dopen(h5f_file, variable);
-        if (h5d_variable < 0)
-        {
-            EXCEPTION1(InvalidFilesException, file);
-        }
+            // determine name of the HDF5 dataset and open it 
+            char variable[256];
+            char mixvar[512];
+            if (var_type == AVT_SCALAR_VAR)
+            {
+                sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
+                        patch_map[patch].processor_number,
+                        patch_map[patch].level_number,
+                        patch_map[patch].patch_number, 
+                        var_name.c_str());
+                sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s",
+                        patch_map[patch].processor_number,
+                        patch_map[patch].level_number,
+                        patch_map[patch].patch_number, 
+                        var_name.c_str());
+            }
+            else
+            {
+                sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
+                        patch_map[patch].processor_number,
+                        patch_map[patch].level_number,
+                        patch_map[patch].patch_number, 
+                        var_name.c_str(), offset);
+                sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s.%02d",
+                        patch_map[patch].processor_number,
+                        patch_map[patch].level_number,
+                        patch_map[patch].patch_number, 
+                        var_name.c_str(), offset);
+            }
+            hid_t h5d_variable = H5Dopen(h5f_file, variable);
+            if (h5d_variable < 0)
+            {
+                EXCEPTION1(InvalidFilesException, file);
+            }
 
-        // check dataset size agrees with what we computed for num_data_samples
-        hid_t h5d_space = H5Dget_space(h5d_variable);
-        int hndims = H5Sget_simple_extent_ndims(h5d_space);
-        hsize_t *hdims = new hsize_t[hndims];
-        hsize_t *max_hdims = new hsize_t[hndims];
-        H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
-        hsize_t hsum = 1;
-        for (int j = 0; j < hndims; j++)
-            hsum *= hdims[j];
-        if ((hsize_t) num_data_samples != hsum)
-        {
-            EXCEPTION2(UnexpectedValueException, num_data_samples, hsum);
-        }
-        H5Sclose(h5d_space);
-        delete [] hdims;
-        delete [] max_hdims;
+            // check dataset size agrees with what we computed for num_data_samples
+            hid_t h5d_space = H5Dget_space(h5d_variable);
+            int hndims = H5Sget_simple_extent_ndims(h5d_space);
+            hsize_t *hdims = new hsize_t[hndims];
+            hsize_t *max_hdims = new hsize_t[hndims];
+            H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
+            hsize_t hsum = 1;
+            for (int j = 0; j < hndims; j++)
+              hsum *= hdims[j];
+            if ((hsize_t) num_data_samples != hsum)
+            {
+                EXCEPTION2(UnexpectedValueException, num_data_samples, hsum);
+            }
+            H5Sclose(h5d_space);
+            delete [] hdims;
+            delete [] max_hdims;
 
-        // create dataspace and selection to read directly into fbuf
-        hsize_t nvals = num_alloc_comps * num_data_samples;
-        hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
+            // create dataspace and selection to read directly into fbuf
+            hsize_t nvals = num_alloc_comps * num_data_samples;
+            hid_t memspace = H5Screate_simple(1, &nvals, &nvals);
 #if HDF5_VERSION_GE(1,6,4)
-        hsize_t start = i;
+            hsize_t start = i;
 #else
-        hssize_t start = i;
+            hssize_t start = i;
 #endif
-        hsize_t stride = num_alloc_comps;
-        hsize_t count = num_data_samples;
-        H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);
+            hsize_t stride = num_alloc_comps;
+            hsize_t count = num_data_samples;
+            H5Sselect_hyperslab(memspace, H5S_SELECT_SET, &start, &stride, &count, NULL);
 
-        H5Dread(h5d_variable, H5T_NATIVE_FLOAT, memspace, H5S_ALL, H5P_DEFAULT, fbuf);
+            H5Dread(h5d_variable, H5T_NATIVE_FLOAT, memspace, H5S_ALL, H5P_DEFAULT, fbuf);
 
-        H5Dclose(h5d_variable);      
-        H5Sclose(memspace);
+            H5Dclose(h5d_variable);      
+            H5Sclose(memspace);
 
-        //
-        // Ok, now read any material-specific fractional values for this component
-        //
-        hid_t h5d_mixvar = H5Dopen(h5f_file, mixvar);
-        if (h5d_mixvar < 0)
-            continue;
+            //
+            // Ok, now read any material-specific fractional values for this component
+            //
+            hid_t h5d_mixvar = H5Dopen(h5f_file, mixvar);
+            if (h5d_mixvar < 0)
+              continue;
 
-        // allocate a float buffer for the mixed values
-        h5d_space = H5Dget_space(h5d_mixvar);
-        hndims = H5Sget_simple_extent_ndims(h5d_space);
-        hdims = new hsize_t[hndims];
-        max_hdims = new hsize_t[hndims];
-        H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
-        hsum = 1;
-        for (int j = 0; j < hndims; j++)
-            hsum *= hdims[j];
-        float *mbuf = new float[(int)hsum];
+            // allocate a float buffer for the mixed values
+            h5d_space = H5Dget_space(h5d_mixvar);
+            hndims = H5Sget_simple_extent_ndims(h5d_space);
+            hdims = new hsize_t[hndims];
+            max_hdims = new hsize_t[hndims];
+            H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
+            hsum = 1;
+            for (int j = 0; j < hndims; j++)
+              hsum *= hdims[j];
+            float *mbuf = new float[(int)hsum];
 
-        // do the actual read
-        H5Dread(h5d_mixvar, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, mbuf);
+            // do the actual read
+            H5Dread(h5d_mixvar, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, mbuf);
 
-        //
-        // Create VisIt's mixed variable structure and stuff it into the cache
-        //
-        avtMixedVariable *mv = new avtMixedVariable(mbuf, (int) hsum, 
-                                                    visit_var_name);
-        void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
-        cache->CacheVoidRef(visit_var_name, AUXILIARY_DATA_MIXED_VARIABLE, timestep,
-                            patch, vr);
+            //
+            // Create VisIt's mixed variable structure and stuff it into the cache
+            //
+            avtMixedVariable *mv = new avtMixedVariable(mbuf, (int) hsum, 
+                                                        visit_var_name);
+            void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+            cache->CacheVoidRef(visit_var_name, AUXILIARY_DATA_MIXED_VARIABLE, timestep,
+                                patch, vr);
 
-        // Clean everything for the mixed var case up
-        H5Sclose(h5d_space);
-        delete [] hdims;
-        delete [] max_hdims;
-        H5Dclose(h5d_mixvar);
-    }
-
-    // fill in 0's when necessary
-    if (num_alloc_comps != num_components)
-    {
-        int i;
-        for (i=0; i < num_data_samples; i++)
-        {
-            int j;
-            for (j = num_components; j < num_alloc_comps; j++)
-                fbuf[i * num_alloc_comps + j] = 0.0;
+            // Clean everything for the mixed var case up
+            H5Sclose(h5d_space);
+            delete [] hdims;
+            delete [] max_hdims;
+            H5Dclose(h5d_mixvar);
         }
     }
 
