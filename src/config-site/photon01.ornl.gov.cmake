@@ -53,7 +53,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64" TYPE STRING)
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL OFF)
 ## (configured w/ mpi compiler wrapper)
-#VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/local/ofed/mpi/gcc/mvapich-0.9.5-mlx2.0.1/bin/mpicxx)
+#VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/local/ofed/mpi/gcc/mvapich-0.9.5-mlx2.0.1/bin/mpicc)
 
 ##############################################################
 ##

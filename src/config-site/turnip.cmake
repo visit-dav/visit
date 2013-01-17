@@ -23,7 +23,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpicc)
 
 ##############################################################
 ##

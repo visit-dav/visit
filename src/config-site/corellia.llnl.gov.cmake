@@ -51,7 +51,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-fno-common -fexceptions -fvisibility=hidd
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpic++)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpicc)
 
 ##############################################################
 ##
