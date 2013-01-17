@@ -1757,6 +1757,7 @@ class MainLauncher(object):
             print "\nUSAGE: visit [options]\n"
             print helpnote
             print filecontents(usagefile)
+            print helpnote
 
     ############################################################################
     # Method: ParseArguments
@@ -2702,10 +2703,10 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
     launcher.SetupEnvironment()
     launcher.MakeUserDirectories(visitpluginver, supportedarches)
 
-    if "-help" in visitargs:
+    if "-help" in visitargs or "--help" in visitargs:
         launcher.PrintUsage(0)
         return 0
-    elif "-fullhelp" in visitargs:
+    elif "-fullhelp" in visitargs or "--fullhelp" in visitargs:
         launcher.PrintUsage(1)
         return 0
 
