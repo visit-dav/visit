@@ -449,6 +449,8 @@ class JobSubmitter_salloc(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
+#   I added job name option to Slurm scheduler and mpirun launcher argument support 
 #
 ###############################################################################
 
@@ -485,7 +487,8 @@ class JobSubmitter_sbatch(JobSubmitter):
            parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
         if self.parallel.np != None:
            parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
-
+        if self.parallel.name != None:
+            parcmd = parcmd + ["--job-name=%s" % self.parallel.name]
         ppn = "8"
         if self.parallel.nn != None:
             ppn = self.PPN()
@@ -501,6 +504,14 @@ class JobSubmitter_sbatch(JobSubmitter):
             mpicmd = ["aprun", "-n", self.parallel.np]
             if self.parallel.sublaunchargs != None:
                 mpicmd = mpicmd + self.parallel.sublaunchargs
+            mpicmd = mpicmd + self.VisItExecutable() + args
+        elif sublauncher == "mpirun":
+            mpicmd = ["mpirun"]
+            if self.parallel.sublaunchargs != None:
+                mpicmd = mpicmd + self.parallel.sublaunchargs
+            if self.parallel.np != None:
+                mpicmd = mpicmd + ["-np", self.parallel.np]
+            mpicmd = mpicmd + ["--ppn", str(ppn)] 
             mpicmd = mpicmd + self.VisItExecutable() + args
         else:
             mpicmd = self.VisItExecutable() + args
@@ -2498,13 +2509,16 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
+    #   Permit serial engines to use job submitter.
     #
     ############################################################################
 
     def Launch(self):
         ret = 0
         if self.parallelArgs.parallel and \
-           string.find(self.generalArgs.exe_name, "_par") != -1:
+           (string.find(self.generalArgs.exe_name, "_par") != -1 or \
+            string.find(self.generalArgs.exe_name, "_ser") != -1):
             # Create the appropriate job submitter.
             submitter = self.JobSubmitterFactory(self.parallelArgs.launch)
             if submitter == None:
