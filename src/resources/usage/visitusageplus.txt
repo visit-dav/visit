@@ -153,7 +153,7 @@
                              execution.
         -dir <directory>     Run a version of VisIt in the specified directory.
                              The directory argument should specify the 
-                             path to a visit installation directory.
+                             path to a VisIt installation directory.
                              /bin is automatically appended to this path.
         -forceversion <ver>  Force the given version.  Overrides all
                              intelligent version selection logic.
@@ -315,7 +315,7 @@
                              Default <args> is -ttt -T.
 
                              In the above, all arguments between the tool name
-                             and the visit component name are treated as args
+                             and the VisIt component name are treated as args
                              to the tool.
 
         -debug-malloc <args> <comp>

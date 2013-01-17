@@ -74,6 +74,6 @@
 
     Other resources for help
     ---------------------------------------------------------------------------
-        run-time:            While running VisIt, look under the \"Help\" menu.
+        run-time:            While running VisIt, look under the "Help" menu.
         on-line:             https://visit.llnl.gov
-        email:               visit-users\@ornl.gov
+        email:               visit-users@ornl.gov
