@@ -234,7 +234,7 @@ ViewerServerManager::SetLocalHost(const std::string &hostName)
 bool
 ViewerServerManager::HostIsLocalHost(const std::string &hostName)
 {
-    return hostName == localHost || hostName == "localhost";
+    return hostName == localHost || hostName == "localhost" || hostName == "127.0.0.1";
 }
 
 // ****************************************************************************

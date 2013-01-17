@@ -440,7 +440,7 @@ RemoteProcess::GetLocalUserName() const
 bool
 RemoteProcess::HostIsLocal(const std::string &rHost) const
 {
-    return (rHost == localHost || rHost == "localhost");
+    return (rHost == localHost || rHost == "localhost" || rHost == "127.0.0.1");
 }
 
 // ****************************************************************************
@@ -1256,7 +1256,8 @@ RemoteProcess::CheckHostValidity(const std::string &remoteHost)
     // whether or not remoteHost is valid if it equals "localhost" since
     // in that case we'll be spawning a local process.
     //
-    if(remoteHost != std::string("localhost"))
+    if(remoteHost != std::string("localhost") &&
+       remoteHost != std::string("127.0.0.1"))
     {
         debug5 << mName << "Calling gethostbyname(\"" << remoteHost.c_str()
                << "\") to look up the name of the remote host" << endl;
