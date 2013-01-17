@@ -60,6 +60,8 @@ using std::vector;
 #include <dirent.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #endif
 
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
@@ -767,6 +769,23 @@ GetSSHClient(std::string &sshClient)
         {
             retval = true;
             sshClient = sv[0];
+        }
+    }
+
+    return retval;
+}
+
+bool
+CheckHostValidity(const std::string &remoteHost)
+{
+    bool retval = true;
+
+    if(remoteHost != std::string("localhost") && 
+       remoteHost != std::string("127.0.0.1"))
+    {
+        if(gethostbyname(remoteHost.c_str()) == NULL)
+        {
+            retval = false;
         }
     }
 

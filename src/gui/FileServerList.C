@@ -48,7 +48,6 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <LostConnectionException.h>
 #include <MessageAttributes.h>
-#include <RemoteProcess.h>
 #include <avtDatabaseMetaData.h>
 #include <avtSIL.h>
 #include <DataNode.h>
@@ -812,214 +811,6 @@ FileServerList::SetHost(const string &host)
         // Do nothing.
     }
     ENDTRY
-}
-
-// ****************************************************************************
-// Method: FileServerList::StartServer
-//
-// Purpose: 
-//   Starts a MetaData server on the specified host.
-//
-// Arguments:
-//   host : The name of the host where the server will be started.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 22 09:50:46 PDT 2000
-//
-// Modifications:
-//   Brad Whitlock, Fri Aug 25 14:34:30 PST 2000
-//   I added a clean-up handler that deletes the new server when
-//   an exception is thrown.
-//
-//   Eric Brugger, Wed Oct 25 15:35:34 PDT 2000
-//   I modified the routine to match a change to the MDServerProxy Create
-//   method.
-//
-//   Brad Whitlock, Tue Nov 21 13:20:18 PST 2000
-//   I passed a callback to the MDServerProxy::Create method.
-//
-//   Brad Whitlock, Thu Apr 26 11:46:26 PDT 2001
-//   Added handler for IncompatibleVersionException.
-//
-//   Jeremy Meredith, Fri Apr 27 15:40:39 PDT 2001
-//   Added catch for CouldNotConnectException.
-//
-//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
-//   Changed the exception keywords to macros.
-//
-//   Brad Whitlock, Thu Feb 7 09:56:33 PDT 2002
-//   Fixed the hostname used in the error messages.
-//
-//   Brad Whitlock, Wed Feb 13 13:51:45 PST 2002
-//   Added code that appends the start directory to the recent paths.
-//
-//   Brad Whitlock, Fri Feb 15 16:59:24 PST 2002
-//   Added code to delete the mdserver proxy when an exception is thrown.
-//
-//   Brad Whitlock, Mon Sep 30 08:12:51 PDT 2002
-//   Added code to set the mdserver's progress callback.
-//
-//   Brad Whitlock, Mon Dec 16 16:36:47 PST 2002
-//   I added support for IncompatibleSecurityTokenException.
-//
-//   Jeremy Meredith, Thu Oct  9 15:46:23 PDT 2003
-//   Added ability to manually specify a client host name or to have it
-//   parsed from the SSH_CLIENT (or related) environment variables.  Added
-//   ability to specify an SSH port.
-//
-//   Brad Whitlock, Fri Mar 12 14:26:41 PST 2004
-//   Added connectingServer member.
-//
-//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
-//   I made the filter be global to all hosts.
-//
-//   Jeremy Meredith, Thu May 24 10:35:14 EDT 2007
-//   Added SSH tunneling option to MDServerProxy::Create, and set it to false.
-//   If we need to tunnel, the VCL will do the host/port translation for us.
-//
-//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
-//   Replaced CATCHALL(...) with CATCHALL.
-//
-//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
-//   Split HostProfile int MachineProfile and LaunchProfile.
-//
-//   Eric Brugger, Mon May  2 17:03:39 PDT 2011
-//   I added the ability to use a gateway machine when connecting to a
-//   remote host.
-//
-//   Brad Whitlock, Tue Jun  5 16:31:21 PDT 2012
-//   Pass in default machine profile.
-//
-//   Brad Whitlock, Tue Jan 15 10:23:40 PST 2013
-//   If there is a real host profile and it uses a gateway, check the gateway
-//   for validity instead of the remote host.
-//
-// ****************************************************************************
-
-void
-FileServerList::StartServer(const string &host)
-{
-    typedef MDServerManager::ServerMap ServerMap;
-    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
-
-    if(startServerCallback)
-    {
-        TRY
-        {
-            /// call custom Start Server command to connect to remote MDServerProxy
-            /// this call must populate the global MDServerManager..
-            startServerCallback(host,stringVector(),startServerCallbackData);
-
-            /// if servers has not been populated then fallback to old route..
-            if(servers.find(host) != servers.end())
-            {
-                MDServerManager::ServerInfo *info = servers[host];
-
-                // Get the current directory from the server
-                info->path = info->server->GetMDServerMethods()->GetDirectory();
-
-                // Add the default path to the recent path list.
-                AddPathToRecentList(host, info->path);
-                return;
-            }
-        }
-        CATCHALL
-        {
-            RETHROW;
-        }
-        ENDTRY
-    }
-
-    MDServerManager::ServerInfo *info = new MDServerManager::ServerInfo();
-    info->server = 0;
-
-    // Create a new MD server on the remote machine.
-    TRY
-    {
-        connectingServer = true;
-        info->server = new MDServerProxy();
-        info->server->SetProgressCallback(progressCallback,
-            progressCallbackData);
-
-        // We want a basically default machine profile for host. We'll handle the
-        // complexities of the real profile in the viewer.
-        MachineProfile profile(MachineProfile::Default(host));
-
-        // Determine which host we'll be connecting to and see if that host is
-        // valid. We might be connecting via a gateway.
-        std::string connectionHost(host);
-        MachineProfile *actualProfile = NULL;
-        if(profiles != NULL)
-            actualProfile = profiles->GetMachineProfileForHost(host);
-        if(actualProfile != NULL)
-        {
-            if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
-            {
-                connectionHost = actualProfile->GetGatewayHost();
-            }
-        }
-        if(!RemoteProcess::CheckHostValidity(connectionHost))
-        {
-            EXCEPTION1(BadHostException, connectionHost);
-        }
-
-        info->server->Create(profile, connectCallback, connectCallbackData);
-        connectingServer = false;
-
-        // Get the current directory from the server
-        info->path = info->server->GetMDServerMethods()->GetDirectory();
-
-        // Add the information about the new server to the
-        // server map.
-        servers[host] = info;
-
-        // Add the default path to the recent path list.
-        AddPathToRecentList(host, info->path);
-    }
-    CATCHALL
-    {
-        connectingServer = false;
-        delete info->server;
-        delete info;
-        // re-throw the exception
-        RETHROW;
-    }
-    ENDTRY
-}
-
-// ****************************************************************************
-// Method: FileServerList::CloseServer
-//
-// Purpose: 
-//   Closes the mdserver associated with the specified host.
-//
-// Arguments:
-//   host : The hostname for the mdserver we want to close.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 24 16:50:58 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-FileServerList::CloseServer(const string &host)
-{
-    typedef MDServerManager::ServerMap ServerMap;
-    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
-    ServerMap::iterator pos;
-    if((pos = servers.find(host)) != servers.end()) 
-    {
-        // Delete the server
-        delete pos->second->server;
-
-        // Delete the ServerInfo item.
-        delete pos->second;
-
-        // Remove the entry from the server map.
-        servers.erase(pos);
-    }
 }
 
 // ****************************************************************************
@@ -1942,6 +1733,216 @@ FileServerList::QualifiedName(const string &fileName)
     ServerMap& servers = MDServerManager::Instance()->GetServerMap();
     return QualifiedFilename(activeHost, servers[activeHost]->path,
                              fileName);
+}
+
+// ****************************************************************************
+// Method: FileServerList::StartServer
+//
+// Purpose: 
+//   Starts a MetaData server on the specified host.
+//
+// Arguments:
+//   host : The name of the host where the server will be started.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 22 09:50:46 PDT 2000
+//
+// Modifications:
+//   Brad Whitlock, Fri Aug 25 14:34:30 PST 2000
+//   I added a clean-up handler that deletes the new server when
+//   an exception is thrown.
+//
+//   Eric Brugger, Wed Oct 25 15:35:34 PDT 2000
+//   I modified the routine to match a change to the MDServerProxy Create
+//   method.
+//
+//   Brad Whitlock, Tue Nov 21 13:20:18 PST 2000
+//   I passed a callback to the MDServerProxy::Create method.
+//
+//   Brad Whitlock, Thu Apr 26 11:46:26 PDT 2001
+//   Added handler for IncompatibleVersionException.
+//
+//   Jeremy Meredith, Fri Apr 27 15:40:39 PDT 2001
+//   Added catch for CouldNotConnectException.
+//
+//   Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
+//   Changed the exception keywords to macros.
+//
+//   Brad Whitlock, Thu Feb 7 09:56:33 PDT 2002
+//   Fixed the hostname used in the error messages.
+//
+//   Brad Whitlock, Wed Feb 13 13:51:45 PST 2002
+//   Added code that appends the start directory to the recent paths.
+//
+//   Brad Whitlock, Fri Feb 15 16:59:24 PST 2002
+//   Added code to delete the mdserver proxy when an exception is thrown.
+//
+//   Brad Whitlock, Mon Sep 30 08:12:51 PDT 2002
+//   Added code to set the mdserver's progress callback.
+//
+//   Brad Whitlock, Mon Dec 16 16:36:47 PST 2002
+//   I added support for IncompatibleSecurityTokenException.
+//
+//   Jeremy Meredith, Thu Oct  9 15:46:23 PDT 2003
+//   Added ability to manually specify a client host name or to have it
+//   parsed from the SSH_CLIENT (or related) environment variables.  Added
+//   ability to specify an SSH port.
+//
+//   Brad Whitlock, Fri Mar 12 14:26:41 PST 2004
+//   Added connectingServer member.
+//
+//   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
+//   I made the filter be global to all hosts.
+//
+//   Jeremy Meredith, Thu May 24 10:35:14 EDT 2007
+//   Added SSH tunneling option to MDServerProxy::Create, and set it to false.
+//   If we need to tunnel, the VCL will do the host/port translation for us.
+//
+//   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
+//   Replaced CATCHALL(...) with CATCHALL.
+//
+//   Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
+//   Split HostProfile int MachineProfile and LaunchProfile.
+//
+//   Eric Brugger, Mon May  2 17:03:39 PDT 2011
+//   I added the ability to use a gateway machine when connecting to a
+//   remote host.
+//
+//   Brad Whitlock, Tue Jun  5 16:31:21 PDT 2012
+//   Pass in default machine profile.
+//
+//   Brad Whitlock, Tue Jan 15 10:23:40 PST 2013
+//   If there is a real host profile and it uses a gateway, check the gateway
+//   for validity instead of the remote host.
+//
+// ****************************************************************************
+
+#include <RemoteProcess.h>
+
+void
+FileServerList::StartServer(const string &host)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+
+    if(startServerCallback)
+    {
+        TRY
+        {
+            /// call custom Start Server command to connect to remote MDServerProxy
+            /// this call must populate the global MDServerManager..
+            startServerCallback(host,stringVector(),startServerCallbackData);
+
+            /// if servers has not been populated then fallback to old route..
+            if(servers.find(host) != servers.end())
+            {
+                MDServerManager::ServerInfo *info = servers[host];
+
+                // Get the current directory from the server
+                info->path = info->server->GetMDServerMethods()->GetDirectory();
+
+                // Add the default path to the recent path list.
+                AddPathToRecentList(host, info->path);
+                return;
+            }
+        }
+        CATCHALL
+        {
+            RETHROW;
+        }
+        ENDTRY
+    }
+
+    MDServerManager::ServerInfo *info = new MDServerManager::ServerInfo();
+    info->server = 0;
+
+    // Create a new MD server on the remote machine.
+    TRY
+    {
+        connectingServer = true;
+        info->server = new MDServerProxy();
+        info->server->SetProgressCallback(progressCallback,
+            progressCallbackData);
+
+        // We want a basically default machine profile for host. We'll handle the
+        // complexities of the real profile in the viewer.
+        MachineProfile profile(MachineProfile::Default(host));
+
+        // Determine which host we'll be connecting to and see if that host is
+        // valid. We might be connecting via a gateway.
+        std::string connectionHost(host);
+        MachineProfile *actualProfile = NULL;
+        if(profiles != NULL)
+            actualProfile = profiles->GetMachineProfileForHost(host);
+        if(actualProfile != NULL)
+        {
+            if(actualProfile->GetUseGateway() && !actualProfile->GetGatewayHost().empty())
+            {
+                connectionHost = actualProfile->GetGatewayHost();
+            }
+        }
+        if(!CheckHostValidity(connectionHost))
+        {
+            EXCEPTION1(BadHostException, connectionHost);
+        }
+
+        info->server->Create(profile, connectCallback, connectCallbackData);
+        connectingServer = false;
+
+        // Get the current directory from the server
+        info->path = info->server->GetMDServerMethods()->GetDirectory();
+
+        // Add the information about the new server to the
+        // server map.
+        servers[host] = info;
+
+        // Add the default path to the recent path list.
+        AddPathToRecentList(host, info->path);
+    }
+    CATCHALL
+    {
+        connectingServer = false;
+        delete info->server;
+        delete info;
+        // re-throw the exception
+        RETHROW;
+    }
+    ENDTRY
+}
+
+// ****************************************************************************
+// Method: FileServerList::CloseServer
+//
+// Purpose: 
+//   Closes the mdserver associated with the specified host.
+//
+// Arguments:
+//   host : The hostname for the mdserver we want to close.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 24 16:50:58 PST 2001
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+FileServerList::CloseServer(const string &host)
+{
+    typedef MDServerManager::ServerMap ServerMap;
+    ServerMap& servers = MDServerManager::Instance()->GetServerMap();
+    ServerMap::iterator pos;
+    if((pos = servers.find(host)) != servers.end()) 
+    {
+        // Delete the server
+        delete pos->second->server;
+
+        // Delete the ServerInfo item.
+        delete pos->second;
+
+        // Remove the entry from the server map.
+        servers.erase(pos);
+    }
 }
 
 // ****************************************************************************
