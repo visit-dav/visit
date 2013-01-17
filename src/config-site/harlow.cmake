@@ -26,7 +26,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fvisibility=hidden" TYPE STRING)
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpic++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER mpicc TYPE FILEPATH)
 
 ##############################################################
 ##

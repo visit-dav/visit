@@ -23,7 +23,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/openmpi/1.4.5/linux-x86_64_gcc-4.4/bin/mpic++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/gapps/visit/thirdparty_shared/openmpi/1.4.5/linux-x86_64_gcc-4.4/bin/mpicc TYPE FILEPATH)
 
 ##############################################################
 ##

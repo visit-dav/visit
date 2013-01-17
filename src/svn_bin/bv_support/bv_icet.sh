@@ -162,7 +162,7 @@ function build_icet
     fi
     
     if [[ "$PAR_COMPILER" != "" ]] ; then
-        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpic++" ]]; then
+        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpicc" ]]; then
             PAR_INCLUDE_STRING="-I/usr/include/"
         else
             if [[ -z "$PAR_INCLUDE_STRING" ]]; then
@@ -173,7 +173,7 @@ function build_icet
     
     if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
        warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to be Ice-T."
-       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpic++\""
+       warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
        warn "Giving Up!"
        return 1
@@ -206,7 +206,7 @@ function build_icet
             error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
         else
             error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
-                  " systems, the output of \"mpicxx -showme\" is good enough."
+                  " systems, the output of \"mpicc -showme\" is good enough."
             error ""
         fi
     fi
