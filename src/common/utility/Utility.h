@@ -82,7 +82,7 @@ void UTILITY_API PutOnSameXIntervals(int on1, const float *ox1,
 void UTILITY_API AverageYValsForDuplicateX(int n, const float *x, 
         const float *y, floatVector &X, floatVector &Y);
 
-
+bool UTILITY_API CheckHostValidity(const std::string &host);
 bool UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
                                              std::vector<std::string>&);
 bool UTILITY_API GetSSHClient(std::string &sshClient);

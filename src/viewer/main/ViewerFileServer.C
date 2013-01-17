@@ -63,7 +63,6 @@
 #include <MDServerProxy.h>
 #include <ParentProcess.h>
 #include <ParsingExprList.h>
-#include <RemoteProcess.h>
 #include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerWindowManager.h>
@@ -1448,7 +1447,7 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         std::string connectionHost(host);
         if(profile.GetUseGateway() && !profile.GetGatewayHost().empty())
             connectionHost = profile.GetGatewayHost();
-        if(!RemoteProcess::CheckHostValidity(connectionHost))
+        if(!CheckHostValidity(connectionHost))
         {
             EXCEPTION1(BadHostException, connectionHost);
         }

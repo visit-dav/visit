@@ -159,7 +159,7 @@ ExistingRemoteProcess::Open(const MachineProfile &profile,
         profile.Print(DebugStream::Stream5());
 
     // Start making the connections and start listening.
-    if(!StartMakingConnection(numRead, numWrite))
+    if(!StartMakingConnection(profile.GetHost(), numRead, numWrite))
         return false;
 
     // Add all of the relevant command line arguments to a vector of strings.
