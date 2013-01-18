@@ -33,9 +33,9 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-export SILO_VERSION=${SILO_VERSION:-"4.8"}
+export SILO_VERSION=${SILO_VERSION:-"4.9-pre1"}
 export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.8"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.9-pre1"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
 export SILO_MD5_CHECKSUM="9831cf1dfa8d0689a06c2c54c5c65aaf"
@@ -109,6 +109,10 @@ function bv_silo_dry_run
 #   Mark C. Miller, Wed Feb 18 22:57:25 PST 2009
 #   Added logic to build silex and copy bins on Mac. Removed disablement of
 #   browser.
+#
+#   Mark C. Miller Mon Jan  7 10:31:46 PST 2013
+#   PDB/SCORE lite headers are now handled in Silo and require additional
+#   configure option to ensure they are installed.
 # *************************************************************************** #
 
 function build_silo
@@ -150,7 +154,7 @@ function build_silo
        WITHSILOQTARG="--disable-silex"
     else
        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-       WITHSILOQTARG="--with-qt=$SILOQTDIR"
+       WITHSILOQTARG="--with-Qt-dir=$SILOQTDIR --with-Qt-lib=QtGui"
     fi
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
@@ -164,7 +168,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
-        --without-readline"
+        --enable-install-lite-headers --without-readline"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
@@ -173,7 +177,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
-        --without-readline"
+        --enable-install-lite-headers --without-readline"
 
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"
