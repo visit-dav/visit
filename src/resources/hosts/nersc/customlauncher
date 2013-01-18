@@ -20,6 +20,7 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
 
     #
     # Override the name of the aprun executable and use fully qualified path
+    # (Currently the path is identical on Edison and Hopper.)
     #
     def Executable(self):
         return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
@@ -64,7 +65,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
 
     def CreateFilename(self, root):
-        if  self.launcher.nersc_host == "hopper":
+        if  self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "hopper":
             tdate = time.asctime()[11:19]
             tuser = self.launcher.username()
             return os.path.join(GETENV("HOME"), "%s.%s.%s" % (root, tuser, tdate))
@@ -73,6 +74,8 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def Executable(self):
         if self.launcher.nersc_host == "carver":
             return ["/usr/syscom/opt/torque/default/bin/qsub"]
+        elif self.launcher.nersc_host == "edison":
+            return ["/opt/torque/4.1.4/bin/qsub"] # FIXME?
         elif self.launcher.nersc_host == "hopper":
             return ["/usr/common/nsg/bin/qsub"]
         else:
@@ -81,7 +84,8 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             return super(JobSubmitter_qsub_NERSC, self).Executable(self)
 
     def aprun(self):
-        # Currently, this method will only be called on Hopper.
+        # Currently, this method will only be called on Edison or Hopper.
+        # (Currently the path to aprun is the same on Edison and Hopper.)
         return ["env", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
 
     def mpirun(self):
@@ -101,12 +105,15 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             tfile.write("eval $(modulecmd sh unload xt-shmem)\n")
 
     def SetupPPN(self, nodes, procs, ppn, use_vis):
-        if self.launcher.nersc_host == "hopper":
+        if self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "hopper":
             args = []
             if self.parallel.workingdir != None:
                 args = args + ["-d", self.parallel.workingdir]
             if self.parallel.nn != None:
-                nprocpernode = 24
+                if self.launcher.nersc_host == "edison":
+                    nprocpernode = 16
+                else:
+                    nprocpernode = 24
                 nwidth = nprocpernode * int(nodes)
                 # If the number of nodes is set, we need to modify mppwidth to ensure
                 # allocation of the proper number of nodes. The number of nodes allocated
@@ -167,7 +174,42 @@ class NERSCLauncher(MainLauncher):
                 exit("Cannot determine NERSC host.", 1)
 
     def Customize(self):
-       if self.nersc_host == "hopper":
+       if self.nersc_host == "edison":
+        # ----
+        # Edison @ NERSC
+        # ----
+            # Add GCC libraries to LD_LIBRARY_PATH
+            ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
+            added_ld_library_paths = ["/opt/gcc/4.7.2/snos/lib64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
+
+            # Set Python path
+            python_path = self.splitpaths(GETENV("PYTHONPATH"))
+            added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
+            SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
+
+            # Set up VisIt socket relay on MOM node for parallel engine
+            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel:
+                 self.loginnodeport = self.generalArgs.port
+                 self.generalArgs.port = "$MOM_PORT"
+                 self.loginnodehost = self.generalArgs.host
+                 self.generalArgs.host = "$MOM_HOST"
+                 self.generalArgs.noloopback = 1
+
+            # Running the gui on Hopper or a serial engine on a login node are "verboten"
+#            if self.sectorname() == "edison":
+#                if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+#                    msg = """
+#Do not run the VisIt GUI on Hopper. Run it on you local workstation (preferred/best performance) or Euclid!
+#
+#For more information about running VisIt at NERSC: http://www.nersc.gov/nusers/resources/software/apps/visualization/visit/
+#
+#"""
+#                    exit(msg, 0)
+#
+#                if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
+#                    exit("The VisIt install on Hopper does not support running a serial engine!", 1)
+       elif self.nersc_host == "hopper":
         # ----
         # Hopper @ NERSC
         # ----
