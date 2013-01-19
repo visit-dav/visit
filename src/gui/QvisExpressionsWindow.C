@@ -373,6 +373,7 @@ const char *expr_misc[] = {
     "gradient",
     "ij_gradient",
     "ijk_gradient",
+    "isnan",
     "Laplacian",
     "map",
     "mean_curvature",
