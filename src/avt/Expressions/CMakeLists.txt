@@ -149,6 +149,7 @@ General/avtFindExternalExpression.C
 General/avtGeodesicVectorQuantizeExpression.C
 General/avtGradientExpression.C
 General/avtHSVColorComposeExpression.C
+General/avtIsNaNExpression.C
 General/avtKeyAggregatorExpression.C
 General/avtLaplacianExpression.C
 General/avtMIRvfExpression.C

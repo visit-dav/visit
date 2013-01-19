@@ -76,6 +76,7 @@
 #include <avtGeodesicVectorQuantizeExpression.h>
 #include <avtGradientExpression.h>
 #include <avtHSVColorComposeExpression.h>
+#include <avtIsNaNExpression.h>
 #include <avtKeyAggregatorExpression.h>
 #include <avtLaplacianExpression.h>
 #include <avtLocalizedCompactnessExpression.h>
@@ -632,6 +633,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCurveExpression();
     if (functionName == "bin")
         return new avtBinExpression();
+    if (functionName =="isnan")
+        return new avtIsNaNExpression();
 
     return NULL;
 }
