@@ -186,7 +186,7 @@ class NERSCLauncher(MainLauncher):
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
             if self.sectorname() == "hopper":
-                if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
+                if not self.generalArgs.env and self.generalArgs.exe_name == "gui" and not self.visitver[-1] =="b":
                     msg = """
 Do not run the VisIt GUI on Hopper. Run it on you local workstation (preferred/best performance) or Euclid!
 
