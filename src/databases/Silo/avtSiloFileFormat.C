@@ -14163,6 +14163,8 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller Sat Jan 19 22:24:36 PST 2013
+//    Swap silospec->mixlen for silospec->nspecis_mf in call to ConverToFloat.
 // ****************************************************************************
 
 avtSpecies *
@@ -14189,7 +14191,7 @@ avtSiloFileFormat::CalcSpecies(DBfile *dbfile, const char *specname)
                << specname << " to single precision." << endl;
     }
     float *species_mf = ConvertToFloat(silospec->datatype, silospec->species_mf,
-                                       silospec->mixlen);
+                                       silospec->nspecies_mf);
 
     avtSpecies *spec = 0;
     if (silospec->speclist && silospec->nmat && silospec->ndims)
