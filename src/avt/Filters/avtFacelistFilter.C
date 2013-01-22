@@ -502,6 +502,9 @@ avtFacelistFilter::FindFaces(vtkDataSet *in_ds, int domain, std::string label,
 //    Hank Childs, Fri Feb  4 13:46:18 PST 2011
 //    Add additional arguments so this could be a static function.
 //
+//    Brad Whitlock, Tue Jan 22 13:55:12 PST 2013
+//    Also use extents for VOI when processing structured grids.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -634,52 +637,56 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
         else
         {
             // 6 faces
-            int voi[6];
+            int extents[6], voi[6];
+            sgrid->GetExtent(extents);
 
             vtkVisItExtractGrid *imin = vtkVisItExtractGrid::New();
-            voi[0] = voi[1] = 0;
-            voi[2] = 0; 
-            voi[3] = dims[1];
-            voi[4] = 0; 
-            voi[5] = dims[2];
+            voi[0] = extents[0] + 0;
+            voi[1] = extents[0] + 0;
+            voi[2] = extents[2] + 0; 
+            voi[3] = extents[2] + dims[1];
+            voi[4] = extents[4] + 0; 
+            voi[5] = extents[4] + dims[2];
             imin->SetVOI(voi);
             imin->SetInput(sgrid);
             imin->Update();
+
             vtkVisItExtractGrid *imax = vtkVisItExtractGrid::New();
-            voi[0] = voi[1] = dims[0]-1;
+            voi[0] = voi[1] = extents[0] + dims[0]-1;
             imax->SetVOI(voi);
             imax->SetInput(sgrid);
             imax->Update();
 
             vtkVisItExtractGrid *jmin = vtkVisItExtractGrid::New();
-            voi[0] = 0;
-            voi[1] = dims[0];
-            voi[2] = 0; 
-            voi[3] = 0;
-            voi[4] = 0; 
-            voi[5] = dims[2];
+            voi[0] = extents[0] + 0;
+            voi[1] = extents[0] + dims[0];
+            voi[2] = extents[2] + 0; 
+            voi[3] = extents[2] + 0;
+            voi[4] = extents[4] + 0; 
+            voi[5] = extents[4] + dims[2];
             jmin->SetVOI(voi);
             jmin->SetInput(sgrid);
             jmin->Update();
 
             vtkVisItExtractGrid *jmax = vtkVisItExtractGrid::New();
-            voi[2] = voi[3] = dims[1]-1;
+            voi[2] = voi[3] = extents[2] + dims[1]-1;
             jmax->SetVOI(voi);
             jmax->SetInput(sgrid);
             jmax->Update();
 
             vtkVisItExtractGrid *kmin = vtkVisItExtractGrid::New();
-            voi[0] = 0;
-            voi[1] = dims[0];
-            voi[2] = 0; 
-            voi[3] = dims[1];
-            voi[4] = 0; 
-            voi[5] = 0;
+            voi[0] = extents[0] + 0;
+            voi[1] = extents[0] + dims[0];
+            voi[2] = extents[2] + 0; 
+            voi[3] = extents[2] + dims[1];
+            voi[4] = extents[4] + 0; 
+            voi[5] = extents[4] + 0;
             kmin->SetVOI(voi);
             kmin->SetInput(sgrid);
             kmin->Update();
+
             vtkVisItExtractGrid *kmax = vtkVisItExtractGrid::New();
-            voi[4] = voi[5] = dims[2]-1;
+            voi[4] = voi[5] = extents[4] + dims[2]-1;
             kmax->SetVOI(voi);
             kmax->SetInput(sgrid);
             kmax->Update();
