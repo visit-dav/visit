@@ -118,7 +118,7 @@ try:
     if linkname == "visit":
         if linkdir == "":
             linkdir = "."
-        progdir += (os.path.sep + linkdir)
+        progdir += (os.path.sep, linkdir)
 except:
     # We'll get here if sys.argv[0] was not a link. That can happen in
     # out of source builds.
