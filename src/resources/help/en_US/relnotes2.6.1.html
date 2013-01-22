@@ -29,6 +29,7 @@ list of changes in release 2.6.</p>
     <ul>
     <li>A correction was made to fix a problem where some command line arguments would be passed to subsequent components in the wrong order when the "-s script_file" option was used. In particular the internal launcher was modified so that all arguments that are passed on to subsequent components are passed before the "-s script_file" command line option.</li>
     <li>The launch script was too aggressive about using the loopback interface when launching parallel compute engines on a local node. This interfered with the compute engine's ability to connect back to the viewer when run on a different node in a cluster from where the viewer was running. This problem was limited to running a parallel job on a login node or in an mxterm.</li>
+    <li>Running the <i>visit</i> command through a symlink caused it to fail and print <i>There is no current version of VisIt.</i>.</li>
     </ul>
 </li>
 <li>A leak in the VTK library was corrected, preventing the viewer from leaking memory as the user interacted with plots. This leak was most likely responsible for instances of VisIt crashing when animating movies on-screen.</li>
