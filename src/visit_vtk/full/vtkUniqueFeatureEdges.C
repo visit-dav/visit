@@ -485,6 +485,7 @@ int vtkUniqueFeatureEdges::RequestUpdateExtent(
     {
     input->SetUpdateGhostLevel(ghostLevel + 1);
     }
+  return 1;
 }
 
 void vtkUniqueFeatureEdges::PrintSelf(ostream& os, vtkIndent indent)

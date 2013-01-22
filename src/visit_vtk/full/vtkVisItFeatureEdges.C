@@ -456,6 +456,7 @@ int vtkVisItFeatureEdges::RequestUpdateExtent(
     {
     input->SetUpdateGhostLevel(ghostLevel + 1);
     }
+  return 1;
 }
 
 void vtkVisItFeatureEdges::PrintSelf(ostream& os, vtkIndent indent)
