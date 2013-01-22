@@ -225,6 +225,7 @@ vtkVertexFilter::RequestData(
     }
   output->SetPoints(outPts);
   outPts->Delete();
+  return 1;
 }
   
 // ****************************************************************************
