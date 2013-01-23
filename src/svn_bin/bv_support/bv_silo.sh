@@ -211,15 +211,19 @@ function build_silo
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         cp src/silo/pmpio.h \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-        cp tools/silex/silex \
+        test -e src/pdb/lite_pdb.h && cp src/pdb/lite_pdb.h \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        test -e src/score/lite_score.h && cp src/score/lite_score.h \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        test -e tools/silex/silex && cp tools/silex/silex \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp tools/browser/browser \
+        test -e tools/browser/browser && cp tools/browser/browser \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
         cp tools/browser/silodiff \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
         cp tools/browser/silofile \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
-        cp tools/silock/silock \
+        test -e tools/silock/silock && cp tools/silock/silock \
 "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/bin"
         #
         # Make dynamic executable
