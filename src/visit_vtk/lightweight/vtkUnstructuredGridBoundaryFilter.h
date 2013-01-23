@@ -38,23 +38,27 @@
 
 #ifndef VTK_UNSTRUCTURED_GRID_BOUNDARY_FILTER_H
 #define VTK_UNSTRUCTURED_GRID_BOUNDARY_FILTER_H
-#include <vtkUnstructuredGridToPolyDataFilter.h>
 #include <visit_vtk_light_exports.h>
 
-class VISIT_VTK_LIGHT_API vtkUnstructuredGridBoundaryFilter 
-    : public vtkUnstructuredGridToPolyDataFilter
+#include <vtkPolyDataAlgorithm.h>
+
+class VISIT_VTK_LIGHT_API vtkUnstructuredGridBoundaryFilter :
+    public vtkPolyDataAlgorithm
 {
   public:
-    static vtkUnstructuredGridBoundaryFilter *New();
-    vtkTypeMacro(vtkUnstructuredGridBoundaryFilter,
-                 vtkUnstructuredGridToPolyDataFilter);
+    vtkTypeMacro(vtkUnstructuredGridBoundaryFilter, vtkPolyDataAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent);
+
+    static vtkUnstructuredGridBoundaryFilter *New();
 
   protected:
     vtkUnstructuredGridBoundaryFilter() {;};
     ~vtkUnstructuredGridBoundaryFilter() {;};
  
-    void Execute();
+    virtual int RequestData(vtkInformation *,
+                            vtkInformationVector **,
+                            vtkInformationVector *);
+    virtual int FillInputPortInformation(int port, vtkInformation *info);
 };
 
 #endif

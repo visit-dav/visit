@@ -43,6 +43,8 @@
 #include "vtkUnstructuredGridFacelistFilter.h"
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolygon.h>
@@ -1769,14 +1771,9 @@ HashEntry::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 
 vtkStandardNewMacro(vtkUnstructuredGridFacelistFilter); 
 
-void
-vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
-{
-    this->Superclass::PrintSelf(os,indent);
-}
 
 // ****************************************************************************
-//  Method: vtkUnstructuredGridFacelistFilter::Execute
+//  Method: vtkUnstructuredGridFacelistFilter::RequestData
 //
 //  Purpose:
 //      Finds the faces that are external to the unstructured grid input.
@@ -1805,14 +1802,27 @@ vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
 //
 // ****************************************************************************
 
-void
-vtkUnstructuredGridFacelistFilter::Execute()
+int
+vtkUnstructuredGridFacelistFilter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
     vtkDebugMacro(<<"Executing geometry filter for unstructured grid input");
 
-    vtkUnstructuredGrid *input= (vtkUnstructuredGrid *)this->GetInput();
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkUnstructuredGrid *input = vtkUnstructuredGrid::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     vtkCellData *cd = input->GetCellData();
-    vtkPolyData *output = this->GetOutput();
     vtkCellData *outputCD = output->GetCellData();
  
     //
@@ -1867,6 +1877,34 @@ vtkUnstructuredGridFacelistFilter::Execute()
     {
         LoopOverStripCells(input, output, cd, outputCD);
     }
+
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUnstructuredGridFacelistFilter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkUnstructuredGridFacelistFilter::FillInputPortInformation(int,
+    vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUnstructuredGridFacelistFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkUnstructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+    this->Superclass::PrintSelf(os,indent);
 }
 
 
@@ -3045,5 +3083,3 @@ AddUnknownCell(vtkCell *cell, int cellId, HashEntryList &list)
         }
     }
 }
-
-

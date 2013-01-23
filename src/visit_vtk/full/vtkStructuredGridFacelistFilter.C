@@ -40,6 +40,8 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -96,8 +98,9 @@ CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 }
 
 // ***************************************************************************
-//  Modifications:
+//  Method: vtkStructuredGridFacelistFilter::RequestData
 //
+//  Modifications:
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make quad of type vtkIdType to match VTK 4.0 API.
 //
@@ -122,12 +125,26 @@ CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 //
 // ****************************************************************************
 
-void vtkStructuredGridFacelistFilter::Execute()
+int
+vtkStructuredGridFacelistFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkStructuredGrid *input = vtkStructuredGrid::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   int   i, j;
 
-  vtkStructuredGrid *input       = GetInput();
-  vtkPolyData       *output      = GetOutput();
   vtkCellData       *inCellData  = input->GetCellData();
   vtkCellData       *outCellData = output->GetCellData();
 
@@ -165,7 +182,6 @@ void vtkStructuredGridFacelistFilter::Execute()
   vtkIdTypeArray *list = vtkIdTypeArray::New();
   list->SetNumberOfValues(numOutCells*(4+1));
   vtkIdType *nl = list->GetPointer(0);
-  
   
   //
   // Left face
@@ -291,10 +307,30 @@ void vtkStructuredGridFacelistFilter::Execute()
   outCellData->Squeeze();
   output->SetPolys(polys);
   polys->Delete();
+
+  return 1;
 }
 
+// ****************************************************************************
+//  Method: vtkStructuredGridFacelistFilter::FillInputPortInformation
+//
+// ****************************************************************************
 
-void vtkStructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
+int
+vtkStructuredGridFacelistFilter::FillInputPortInformation(int,
+  vtkInformation *info)
 {
-  vtkStructuredGridToPolyDataFilter::PrintSelf(os,indent);
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkStructuredGrid");
+  return 1;
+}
+
+// ****************************************************************************
+//  Method: vtkStructuredGridFacelistFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkStructuredGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+  vtkPolyDataAlgorithm::PrintSelf(os,indent);
 }

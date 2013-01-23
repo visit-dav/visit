@@ -41,6 +41,8 @@
 #include <vtkAccessors.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -50,9 +52,7 @@
 
 #include <ImproperUseException.h>
 
-
 using  std::vector;
-
 
 //------------------------------------------------------------------------------
 vtkRectilinearGridFacelistFilter* vtkRectilinearGridFacelistFilter::New()
@@ -66,6 +66,7 @@ vtkRectilinearGridFacelistFilter* vtkRectilinearGridFacelistFilter::New()
   // If the factory was unable to create the object, then create it here.
   return new vtkRectilinearGridFacelistFilter;
 }
+
 
 vtkRectilinearGridFacelistFilter::vtkRectilinearGridFacelistFilter()
 {
@@ -133,9 +134,9 @@ class SpecializedIndexer
    int                cellYBase;
 };
 
+
 // ****************************************************************************
 //  Modifications:
-//
 //    Hank Childs, Wed Aug 25 16:28:52 PDT 2004
 //    Account for degenerate meshes.
 //
@@ -169,9 +170,11 @@ SpecializedIndexer::SpecializedIndexer(int x, int y, int z)
        cellZBase = 1;
 }
 
+
 // ****************************************************************************
-//  Kathleen Biagas, Thu Sep 6 11:10:54 MST 2012
-//  Templated method to process faces, preserves coordinate data type.
+//  Modifications:
+//    Kathleen Biagas, Thu Sep 6 11:10:54 MST 2012
+//    Templated method to process faces, preserves coordinate data type.
 //
 // ****************************************************************************
 
@@ -274,64 +277,81 @@ vtkRectilinearGridFacelistFilter_ProcessFaces(int nX, int nY, int nZ,
 
 
 // ****************************************************************************
+//  Method: vtkRectilinearGridFacelistFilter::RequestData
 //
-//  Hank Childs, Thu Aug 15 21:13:43 PDT 2002
-//  Fixed bug where cell data was being copied incorrectly.
+//  Modifications:
+//    Hank Childs, Thu Aug 15 21:13:43 PDT 2002
+//    Fixed bug where cell data was being copied incorrectly.
 //
-//  Hank Childs, Wed Oct 15 19:24:56 PDT 2003
-//  Added logic for consolidating faces.
+//    Hank Childs, Wed Oct 15 19:24:56 PDT 2003
+//    Added logic for consolidating faces.
 //
-//  Hank Childs, Sun Nov  9 09:44:04 PST 2003
-//  Made logic for consolidating faces when ghost zones are involved a little
-//  more sophisticated.  Also re-ordered how some of the quads in the normal
-//  execution were stored, to make the consolidation logic easier.  The new
-//  ordering is also more consistent.
+//    Hank Childs, Sun Nov  9 09:44:04 PST 2003
+//    Made logic for consolidating faces when ghost zones are involved a little
+//    more sophisticated.  Also re-ordered how some of the quads in the normal
+//    execution were stored, to make the consolidation logic easier.  The new
+//    ordering is also more consistent.
 //
-//  Hank Childs, Fri Jan 30 08:31:44 PST 2004
-//  Use pointer arithmetic to construct poly data output.
+//    Hank Childs, Fri Jan 30 08:31:44 PST 2004
+//    Use pointer arithmetic to construct poly data output.
 //
-//  Hank Childs, Sun Feb  1 22:02:51 PST 2004
-//  Do a better job of estimating the number of cells in the 2D case.
+//    Hank Childs, Sun Feb  1 22:02:51 PST 2004
+//    Do a better job of estimating the number of cells in the 2D case.
 //
-//  Hank Childs, Wed Aug 25 16:30:30 PDT 2004
-//  Do a better job of handling degenerate meshes.
+//    Hank Childs, Wed Aug 25 16:30:30 PDT 2004
+//    Do a better job of handling degenerate meshes.
 //
-//  Hank Childs, Fri Aug 27 15:15:20 PDT 2004
-//  Rename ghost data array.
+//    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
+//    Rename ghost data array.
 //
-//  Brad Whitlock, Fri Oct 1 17:03:53 PST 2004
-//  Pass field data through to the output.
+//    Brad Whitlock, Fri Oct 1 17:03:53 PST 2004
+//    Pass field data through to the output.
 //
-//  Hank Childs, Wed Nov 10 11:30:03 PST 2004
-//  Correct problem where we are over-allocating number of points for 2D case.
+//    Hank Childs, Wed Nov 10 11:30:03 PST 2004
+//    Correct problem where we are over-allocating number of points for 2D case.
 //
-//  Hank Childs, Sun Mar 13 11:09:16 PST 2005
-//  Fix memory leak.
+//    Hank Childs, Sun Mar 13 11:09:16 PST 2005
+//    Fix memory leak.
 //
-//  Hank Childs, Tue Jan 24 09:53:16 PST 2006
-//  Add support for ghost nodes.
+//    Hank Childs, Tue Jan 24 09:53:16 PST 2006
+//    Add support for ghost nodes.
 //
-//  Brad Whitlock, Tue Apr 25 15:13:20 PST 2006
-//  Pass the field data after the shallow copy or it does not get passed.
+//    Brad Whitlock, Tue Apr 25 15:13:20 PST 2006
+//    Pass the field data after the shallow copy or it does not get passed.
 //
-//  Kathleen Biagas, Thu Sep 6 11:12:43 MST 2012
-//  Use new templated method to process faces, to preserve coordinate type.
+//    Kathleen Biagas, Thu Sep 6 11:12:43 MST 2012
+//    Use new templated method to process faces, to preserve coordinate type.
 //
 // ****************************************************************************
 
-void vtkRectilinearGridFacelistFilter::Execute()
+int
+vtkRectilinearGridFacelistFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkRectilinearGrid *input = vtkRectilinearGrid::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkPolyData *output = vtkPolyData::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   int   i, j;
 
   //
   // Set up some objects that we will be using throughout the process.
   //
-  vtkRectilinearGrid *input        = GetInput();
-  vtkPolyData        *output       = vtkPolyData::New();
+  vtkPolyData        *outPD        = vtkPolyData::New();
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
-  vtkCellData        *outCellData  = output->GetCellData();
-  vtkPointData       *outPointData = output->GetPointData();
+  vtkCellData        *outCellData  = outPD->GetCellData();
+  vtkPointData       *outPointData = outPD->GetPointData();
 
   //
   // If there are no ghost zones and we want to consolidate faces, this is a
@@ -342,9 +362,9 @@ void vtkRectilinearGridFacelistFilter::Execute()
      if (inCellData->GetArray("avtGhostZones") == NULL &&
          inPointData->GetArray("avtGhostNodes") == NULL)
      {
-        ConsolidateFacesWithoutGhostZones();
-        output->Delete();
-        return;
+        ConsolidateFacesWithoutGhostZones(input, output);
+        outPD->Delete();
+        return 1;
      }
   }  
 
@@ -432,7 +452,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
           vtkGeneralAccessor(pts->GetData()));
   }
 
-  output->SetPoints(pts);
+  outPD->SetPoints(pts);
   pts->Delete();
 
   //
@@ -603,7 +623,7 @@ void vtkRectilinearGridFacelistFilter::Execute()
   polys->SetCells(numOutCells, list);
   list->Delete();
   outCellData->Squeeze();
-  output->SetPolys(polys);
+  outPD->SetPolys(polys);
   polys->Delete();
 
   if (ForceFaceConsolidation)
@@ -612,22 +632,51 @@ void vtkRectilinearGridFacelistFilter::Execute()
      // We only get to this spot if we have ghost zones -- which makes 
      // consolidating faces a harder problem.  Use a sub-routine to do that.
      //
-     vtkPolyData *new_output = ConsolidateFacesWithGhostZones(output, list,
+     vtkPolyData *new_outPD = ConsolidateFacesWithGhostZones(outPD, list,
                                                faceStart, rowSize, columnSize);
-     output->Delete();
-     output = new_output;
+     outPD->Delete();
+     outPD = new_outPD;
   }
 
-  GetOutput()->ShallowCopy(output);
-  GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
+  output->ShallowCopy(outPD);
+  output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
-  output->Delete();
+  outPD->Delete();
+
+  return 1;
 }
 
 
 // ****************************************************************************
-//  Modifications:
+//  Method: vtkRectilinearGridFacelistFilter::FillInputPortInformation
 //
+// ****************************************************************************
+
+int
+vtkRectilinearGridFacelistFilter::FillInputPortInformation(int,
+  vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkRectilinearGrid");
+  return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkRectilinearGridFacelistFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkRectilinearGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+}
+
+
+// ****************************************************************************
+//  Method: vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones
+//
+//  Modifications:
 //    Hank Childs, Fri Aug 27 15:15:20 PDT 2004
 //    Rename ghost data array.
 //
@@ -638,8 +687,8 @@ void vtkRectilinearGridFacelistFilter::Execute()
 
 vtkPolyData *
 vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
-                 vtkPolyData *pd, vtkIdTypeArray *list, vector<int> &sideStart,
-                 vector<int> &rowSize, vector<int> &columnSize)
+  vtkPolyData *pd, vtkIdTypeArray *list, vector<int> &sideStart,
+  vector<int> &rowSize, vector<int> &columnSize)
 {
   //
   // The output will have identical point information to our input.  So copy
@@ -839,8 +888,9 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
 
 
 // ****************************************************************************
-//  Modifications:
+//  Method: vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones
 //
+//  Modifications:
 //    Hank Childs, Sun Nov  9 12:37:15 PST 2003
 //    Modified this routine to not handle ghost zones at all (since it wasn't
 //    doing a very good job in the first place).  Also renamed the routine
@@ -852,12 +902,12 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
 //
 // ****************************************************************************
 
-void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
+void
+vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
+  vtkRectilinearGrid *input, vtkPolyData *output)
 {
   int  i;
 
-  vtkRectilinearGrid *input        = GetInput();
-  vtkPolyData        *output       = GetOutput();
   vtkCellData        *inCellData   = input->GetCellData();
   vtkPointData       *inPointData  = input->GetPointData();
   vtkCellData        *outCellData  = output->GetCellData();
@@ -959,9 +1009,4 @@ void vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(void)
   polys->Delete();
   output->SetPoints(pts);
   pts->Delete();
-}
-
-void vtkRectilinearGridFacelistFilter::PrintSelf(ostream& os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os,indent);
 }

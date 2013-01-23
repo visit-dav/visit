@@ -41,6 +41,8 @@
 #include <vtkAccessors.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -49,28 +51,7 @@
 
 #include <ImproperUseException.h>
 
-
 using  std::vector;
-
-
-//------------------------------------------------------------------------------
-vtkRectilinearLinesNoDataFilter* vtkRectilinearLinesNoDataFilter::New()
-{
-    // First try to create the object from the vtkObjectFactory
-    vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearLinesNoDataFilter");
-    if(ret)
-    {
-        return (vtkRectilinearLinesNoDataFilter*)ret;
-    }
-    // If the factory was unable to create the object, then create it here.
-    return new vtkRectilinearLinesNoDataFilter;
-}
-
-vtkRectilinearLinesNoDataFilter::vtkRectilinearLinesNoDataFilter()
-{
-}
-
-
 
 #define AddLineToPolyData(ai,aj,ak, bi,bj,bk)                                 \
 {                                                                             \
@@ -186,23 +167,58 @@ vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
     }
 }
 
+#undef AddLineToPolyData
 
-// ****************************************************************************
-//
-//
-// ****************************************************************************
-
-void vtkRectilinearLinesNoDataFilter::Execute()
+//------------------------------------------------------------------------------
+vtkRectilinearLinesNoDataFilter* vtkRectilinearLinesNoDataFilter::New()
 {
+    // First try to create the object from the vtkObjectFactory
+    vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearLinesNoDataFilter");
+    if(ret)
+    {
+        return (vtkRectilinearLinesNoDataFilter*)ret;
+    }
+    // If the factory was unable to create the object, then create it here.
+    return new vtkRectilinearLinesNoDataFilter;
+}
+
+
+vtkRectilinearLinesNoDataFilter::vtkRectilinearLinesNoDataFilter()
+{
+}
+
+
+// ****************************************************************************
+//  Method: vtkRectilinearLinesNoDataFilter::RequestData
+//
+// ****************************************************************************
+
+int
+vtkRectilinearLinesNoDataFilter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
+{
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkRectilinearGrid *input = vtkRectilinearGrid::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     //
     // Set up some objects that we will be using throughout the process.
     //
-    vtkRectilinearGrid *input        = GetInput();
-    vtkPolyData        *output       = vtkPolyData::New();
+    vtkPolyData        *outPD        = vtkPolyData::New();
     vtkCellData        *inCellData   = input->GetCellData();
     vtkPointData       *inPointData  = input->GetPointData();
-    vtkCellData        *outCellData  = output->GetCellData();
-    vtkPointData       *outPointData = output->GetPointData();
+    vtkCellData        *outCellData  = outPD->GetCellData();
+    vtkPointData       *outPointData = outPD->GetPointData();
 
     //
     // Get the information about X, Y, and Z from the rectilinear grid.
@@ -273,7 +289,6 @@ void vtkRectilinearLinesNoDataFilter::Execute()
         numOutCells = nX*2 + nY*2 + nZ*2;
     }
 
-
     //
     // We will be copying the point data as we go so we need to set this up.
     //
@@ -320,27 +335,43 @@ void vtkRectilinearLinesNoDataFilter::Execute()
     //
     // Clean up.....
     //
-    output->SetPoints(pts);
+    outPD->SetPoints(pts);
     pts->Delete();
-
   
     polys->SetCells(numOutCells, list);
     list->Delete();
     outCellData->Squeeze();
-    output->SetLines(polys);
+    outPD->SetLines(polys);
     polys->Delete();
 
-    GetOutput()->ShallowCopy(output);
-    GetOutput()->GetFieldData()->ShallowCopy(GetInput()->GetFieldData());
+    output->ShallowCopy(outPD);
+    output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
-    output->Delete();
+    outPD->Delete();
 }
 
-#undef AddLineToPolyData
+
+// ****************************************************************************
+//  Method: vtkRectilinearLinesNoDataFilter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkRectilinearLinesNoDataFilter::FillInputPortInformation(int,
+    vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkRectilinearGrid");
+    return 1;
+}
 
 
+// ****************************************************************************
+//  Method: vtkRectilinearLinesNoDataFilter::PrintSelf
+//
+// ****************************************************************************
 
-void vtkRectilinearLinesNoDataFilter::PrintSelf(ostream& os, vtkIndent indent)
+void
+vtkRectilinearLinesNoDataFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os,indent);
 }
