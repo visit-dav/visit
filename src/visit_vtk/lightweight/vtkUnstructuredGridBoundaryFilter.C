@@ -44,6 +44,8 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -2612,14 +2614,9 @@ BHashEntry2D::CreateOutputCells(vtkPolyData *output, vtkCellData *in_cd,
 
 vtkStandardNewMacro(vtkUnstructuredGridBoundaryFilter); 
 
-void
-vtkUnstructuredGridBoundaryFilter::PrintSelf(ostream& os, vtkIndent indent)
-{
-    this->Superclass::PrintSelf(os,indent);
-}
 
 // ****************************************************************************
-//  Method: vtkUnstructuredGridBoundaryFilter::Execute
+//  Method: vtkUnstructuredGridBoundaryFilter::RequestData
 //
 //  Purpose:
 //      Finds the faces that are external to the unstructured grid input.
@@ -2637,14 +2634,27 @@ vtkUnstructuredGridBoundaryFilter::PrintSelf(ostream& os, vtkIndent indent)
 //
 // ****************************************************************************
 
-void
-vtkUnstructuredGridBoundaryFilter::Execute()
+int
+vtkUnstructuredGridBoundaryFilter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
     vtkDebugMacro(<<"Executing geometry filter for unstructured grid input");
 
-    vtkUnstructuredGrid *input= (vtkUnstructuredGrid *)this->GetInput();
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkUnstructuredGrid *input = vtkUnstructuredGrid::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     vtkCellData *cd = input->GetCellData();
-    vtkPolyData *output = this->GetOutput();
     vtkCellData *outputCD = output->GetCellData();
  
     //
@@ -2688,6 +2698,34 @@ vtkUnstructuredGridBoundaryFilter::Execute()
     {
         LoopOverUnhashedCells(input, output, cd, outputCD);
     }
+
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUnstructuredGridBoundaryFilter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkUnstructuredGridBoundaryFilter::FillInputPortInformation(int,
+    vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkUnstructuredGridBoundaryFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkUnstructuredGridBoundaryFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+    this->Superclass::PrintSelf(os,indent);
 }
 
 
@@ -3143,5 +3181,3 @@ AddPyramid(vtkIdType *pts, int cellId, int cellVal, BHashEntryList &list)
     nodes[3] = pts[1];
     list.AddQuad(nodes, cellId, cellVal);
 }
-
-

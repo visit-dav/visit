@@ -252,7 +252,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         if (revisedInput->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
             rectFacesFilter->SetForceFaceConsolidation(true);
-            rectFacesFilter->SetInput((vtkRectilinearGrid*)revisedInput);
+            rectFacesFilter->SetInput(revisedInput);
             rectFacesFilter->Update();
             opaquePolys = rectFacesFilter->GetOutput();
         }
@@ -310,7 +310,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         // or polygonal data, so we should be safe ignoring it.
         //
         rlines = vtkRectilinearLinesNoDataFilter::New();
-        rlines->SetInput((vtkRectilinearGrid*)revisedInput3);
+        rlines->SetInput(revisedInput3);
         rlines->Update();
         outDS = rlines->GetOutput();
     }

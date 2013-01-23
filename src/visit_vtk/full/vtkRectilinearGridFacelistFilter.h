@@ -48,8 +48,11 @@
 #define __vtkRectilinearGridFacelistFilter_h
 #include <visit_vtk_exports.h>
 
-#include "vtkRectilinearGridToPolyDataFilter.h"
+#include "vtkPolyDataAlgorithm.h"
+
 class     vtkIdTypeArray;
+class     vtkRectilinearGrid;
+
 #include <vector>
 
 // ****************************************************************************
@@ -64,10 +67,11 @@ class     vtkIdTypeArray;
 //
 // ****************************************************************************
 
-class VISIT_VTK_API vtkRectilinearGridFacelistFilter : public vtkRectilinearGridToPolyDataFilter
+class VISIT_VTK_API vtkRectilinearGridFacelistFilter :
+  public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkRectilinearGridFacelistFilter,vtkRectilinearGridToPolyDataFilter);
+  vtkTypeMacro(vtkRectilinearGridFacelistFilter,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -83,7 +87,10 @@ protected:
   vtkRectilinearGridFacelistFilter();
   ~vtkRectilinearGridFacelistFilter() {};
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 
   int  ForceFaceConsolidation;
 
@@ -91,11 +98,9 @@ private:
   vtkRectilinearGridFacelistFilter(const vtkRectilinearGridFacelistFilter&);
   void operator=(const vtkRectilinearGridFacelistFilter&);
 
-  void ConsolidateFacesWithoutGhostZones(void);
+  void ConsolidateFacesWithoutGhostZones(vtkRectilinearGrid *, vtkPolyData *);
   vtkPolyData *ConsolidateFacesWithGhostZones(vtkPolyData *, vtkIdTypeArray *,
                        std::vector<int>&, std::vector<int>&,std::vector<int>&);
 };
 
 #endif
-
-
