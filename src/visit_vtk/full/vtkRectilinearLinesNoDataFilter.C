@@ -348,6 +348,7 @@ vtkRectilinearLinesNoDataFilter::RequestData(
     output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
     outPD->Delete();
+    return 1;
 }
 
 
