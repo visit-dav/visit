@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" media="print" />
+    <script type="text/javascript" src="js/jquery-latest.js"></script>
+    <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
+    <script type="text/javascript" src="js/purl.js"></script>
+    <script type="text/javascript" id="js">
+
+    function popup(mylink, name)
+    {
+        if (! window.focus)return true;
+        var href;
+        if (typeof(mylink) == 'string')
+            href=mylink;
+        else
+            href=mylink.href;
+        window.open(href,name,'width=500,height=500,scrollbars=no');
+        return false;
+    }
+
+    var rmap = {"passed":{"color":"good"},
+                "skipped":{"color":"skipped"},
+                "failed":{"color":"bad"}}
+
+    function set_header(sdetails)
+    {
+        ttl ='VisIt Regression Results for ' + sdetails.env.category  + '/' + sdetails.env.name + '.py'
+        $("title").append(ttl)
+
+        hdr  = '<h2>Results of VisIt Regression Test <a href="' + sdetails.env.category  + '_' + sdetails.env.name  + '_py.html">'
+        hdr +=  sdetails.env.category + '/' + sdetails.env.name  + '.py</a></h2>'
+        $("#header").append(hdr)
+    }
+
+    function set_footer(sdetails)
+    {
+        if("result_code" in sdetails)
+            ftr =  'Final result code: ' + sdetails.result_code
+        else
+            ftr =  '<p class="bad">ERROR MISSING FINAL RETURN CODE</p>'
+        $("#footer").append(ftr)
+    }
+
+    function section_entry(sval)
+    {
+        ehtml = ""
+        if(sval.name != "<default>")
+        {
+            ehtml += '<tr>\n'
+            ehtml += '<td colspan="6" align="center">' + sval.name + '</td>\n'
+            ehtml += '</tr>\n'
+        }
+        return ehtml
+    }
+
+    function case_entry(cval)
+    {
+        var ehtml  = '<tr id="' + cval.case + '">\n';
+        ehtml += '<td class="' + rmap[cval.status].color + ' "><a href="' + cval.case + '.html">' + cval.case + '</a></td>'
+        if ("diff_percent" in cval)
+        {
+        ehtml += '<td align="center">' + cval.diff_percent + '</td>'
+        ehtml += '<td align="center">' + cval.diff_pixels + '</td>'
+        if(cval.status == "passed")
+        {
+            ehtml += '<td colspan="3" align="center"><img src="html/b_' + cval.case + '_thumb.png"></td>'
+        }
+        else
+        {
+            ehtml += '<td align="center"><img src="html/b_' + cval.case + '_thumb.png"></td>'
+            ehtml += '<td align="center"><img src="html/c_' + cval.case + '_thumb.png"></td>'
+            ehtml += '<td align="center"><img src="html/d_' + cval.case + '_thumb.png"></td>'
+        }
+        }
+        else
+        {
+            ehtml += '<td colspan="5" align="center">' + cval.nchanges +' modifications totalling ' + cval.nlines + ' lines</td>'
+        }
+        ehtml += '</tr>\n'
+        return ehtml
+    }
+
+
+    $(document).ready(function()
+    {
+        var opts =$.url().param();
+        var rjson = opts.db;
+        $.getJSON(rjson,function(data)
+        {
+            console.log("SAPDSADSA")
+            if("category" in opts)
+            {
+                matches = $.grep(data.results, function(v){ return (v.category == opts.category ) && (v.base == opts.name);});
+                console.log(matches)
+                if(matches.length == 1)
+                {
+                    script_details = matches[0].details
+                }
+            }
+            else
+            {
+                script_details  = data
+            }
+
+            set_header(script_details)
+            set_footer(script_details)
+
+            var entries  = [];
+
+            $.each(script_details.sections, function(key, sval)
+            {
+                entries.push(section_entry(sval))
+                $.each(sval.cases, function(key, cval)
+                {
+                    entries.push(case_entry(cval))
+                });
+            });
+            $("#cases tbody").append(entries.join(''))
+        });
+    });
+    </script>
+</head>
+<div id="header"><!-- jquery will fill this in --></div>
+<table border="0" id="cases">
+    <thead>
+    <tr>
+        <th rowspan="2">Test Case</th>
+        <th colspan="2" align="center">Errors</th>
+        <th colspan="3" align="center">Images</th>
+    </tr>
+    <tr>
+        <th>% Diffs</th>
+        <th>Maximum</th>
+        <th>Baseline</th>
+        <th>Current</th>
+        <th>Diff Map</th>
+    </tr>
+    </thead>
+    <tbody>
+        <!-- jquery will fill this in -->
+    </tbody>
+</table>
+<div id="footer"><!-- jquery will fill this in --></div>
+</html>
