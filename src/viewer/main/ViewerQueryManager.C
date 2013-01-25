@@ -1421,7 +1421,6 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
     if (qName ==  "Lineout")
     {
         doubleVector pt1, pt2;
-cerr << "  queryParamas has numberic vector entry for start_point? " << queryParams.HasNumericVectorEntry("start_point");
         if (queryParams.HasNumericVectorEntry("start_point")) 
         {
             queryParams.GetEntry("start_point")->ToDoubleVector(pt1);
