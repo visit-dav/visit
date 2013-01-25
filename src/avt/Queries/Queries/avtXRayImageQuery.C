@@ -94,6 +94,9 @@
 //    Kathleen Biagas, Wed Oct 17 14:39:41 PDT 2012
 //    Added useSpecifiedUpVector.
 //
+//    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
+//    Added support for specifying background intensity entering volume.
+//
 // ****************************************************************************
 
 avtXRayImageQuery::avtXRayImageQuery():
@@ -114,6 +117,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     ny     = 200;
     numPixels = nx * ny;
     divideEmisByAbsorb = false;
+    backgroundIntensity = 0.0;
     outputType = 2; // png
     useSpecifiedUpVector = true;
 }
@@ -152,6 +156,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //
 //    Kathleen Biagas, Thu Jan 10 08:11:20 PST 2013
 //    Added error checking.
+//
+//    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
+//    Added support for specifying background intensity entering volume.
 //
 // ****************************************************************************
 
@@ -217,6 +224,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasNumericEntry("divide_emis_by_absorb"))
         SetDivideEmisByAbsorb(params.GetEntry("divide_emis_by_absorb")->ToBool());
+
+    if (params.HasNumericEntry("background_intensity"))
+        SetBackgroundIntensity(params.GetEntry("background_intensity")->ToDouble());
 
     if (params.HasEntry("output_type"))
     {
@@ -446,6 +456,24 @@ avtXRayImageQuery::SetDivideEmisByAbsorb(bool flag)
 
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetBackgroundIntensity
+//
+//  Purpose:
+//    Set the background intensity entering the volume
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   January 23, 2013
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetBackgroundIntensity(double intensity)
+{
+    backgroundIntensity = intensity;
+}
+
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetOutputType
 //
 //  Purpose:
@@ -568,6 +596,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Kathleen Biagas, Wed Oct 17 14:41:28 PDT 2012
 //    Send upVector to avtXRayFilter.
 //
+//    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
+//    Added support for specifying background intensity entering volume.
+//
 // ****************************************************************************
 
 void
@@ -622,6 +653,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         filt->SetImageProperties(origin,NULL,theta,phi,width,height,nx,ny);
 
     filt->SetDivideEmisByAbsorb(divideEmisByAbsorb);
+    filt->SetBackgroundIntensity(backgroundIntensity);
     filt->SetVariableNames(absVarName, emisVarName);
     filt->SetInput(dob);
 
@@ -927,11 +959,12 @@ avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, char *type)
 //
 // ****************************************************************************
 
-void               
+void
 avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 {
     params["output_type"] = std::string("png");
     params["divide_emis_by_absorb"] = 0;
+    params["background_intensity"] = 0.0;
     doubleVector o;
     o.push_back(0.0);
     o.push_back(0.0);

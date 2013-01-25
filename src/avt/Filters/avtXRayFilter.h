@@ -91,6 +91,9 @@
 //    I added the ability to output the cells intersected by a specified
 //    ray to a vtk file.
 //
+//    Gunther H. Weber, Wed Jan 23 15:23:55 PST 2013
+//    Added support for specifying background intensity entering the volume 
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
@@ -119,6 +122,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                                        int    nx,
                                                        int    ny);
     void                            SetDivideEmisByAbsorb(bool);
+    void                            SetBackgroundIntensity(double);
 
   protected:
     std::string                     absVarName;
@@ -141,6 +145,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     int                             imageSize[2];
 
     bool                            divideEmisByAbsorb;
+    double                          backgroundIntensity;
 
     int                             numPixels;
     int                             numPixelsPerIteration;
