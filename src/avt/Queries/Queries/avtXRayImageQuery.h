@@ -86,6 +86,9 @@
 //    Added useSpecifiedUpVector, to allow support for old-style cli queries,
 //    where the upVector wasn't available.
 //
+//    Gunther H. Weber, Wed Jan 23 15:27:53 PST 2013
+//    Added support for specifying background intensity entering volume.
+//
 // ****************************************************************************
 
 class QUERY_API avtXRayImageQuery : public avtDatasetQuery
@@ -113,6 +116,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetHeight(const double &size);
     void                      SetImageSize(const intVector &size);
     void                      SetDivideEmisByAbsorb(bool flag);
+    void                      SetBackgroundIntensity(double);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
 
@@ -123,6 +127,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    width, height;
     int                       nx, ny;
     bool                      divideEmisByAbsorb;
+    double                    backgroundIntensity;
     int                       outputType;
     bool                      useSpecifiedUpVector;
 

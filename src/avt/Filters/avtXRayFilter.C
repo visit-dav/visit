@@ -293,6 +293,9 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //    I added the ability to output the cells intersected by a specified
 //    ray to a vtk file.
 //
+//    Gunther H. Weber, Wed Jan 23 15:23:14 PST 2013
+//    Add support for specifying background intensity.
+//
 // ****************************************************************************
 
 avtXRayFilter::avtXRayFilter()
@@ -324,6 +327,7 @@ avtXRayFilter::avtXRayFilter()
     numPixels = imageSize[0] * imageSize[1];
     numPixelsPerIteration = 4000;
 
+    backgroundIntensity = 0.0;
     radBins = NULL;
     numBins = 1;
 
@@ -460,6 +464,22 @@ avtXRayFilter::SetDivideEmisByAbsorb(bool flag)
     divideEmisByAbsorb = flag;
 }
 
+// ****************************************************************************
+//  Method: avtXRayFilter::SetBackgroundIntensity
+//
+//  Purpose:
+//    Set the background intensity entering the volume
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   January 23, 2013
+//
+// ****************************************************************************
+
+void
+avtXRayFilter::SetBackgroundIntensity(double intensity)
+{
+    backgroundIntensity = intensity;
+}
 
 // ****************************************************************************
 //  Method: avtXRayFilter::Execute
@@ -905,6 +925,9 @@ avtXRayFilter::PostExecute(void)
 //    I added the ability to output the cells intersected by a specified
 //    ray to a vtk file.
 //
+//    Gunther H. Weber, Wed Jan 23 15:18:27 PST 2013
+//    Add skipping ghost cells for rectilinear and structured grids.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -1009,6 +1032,8 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 // Determine the index into the look up table.
                 //
                 int iCell = list[j];
+                if (hasGhost && ghosts->GetTuple1(iCell) != 0.)
+                    continue;
 
                 int iZ = iCell / nxy;
                 int iXY = iCell % nxy;
@@ -1184,6 +1209,8 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 // Determine the index into the look up table.
                 //
                 int iCell = list[j];
+                if (hasGhost && ghosts->GetTuple1(iCell) != 0.)
+                    continue;
 
                 int iZ = iCell / nxy2;
                 int iXY = iCell % nxy2;
@@ -1201,7 +1228,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 ids[5] = idx + 1;
                 ids[6] = idx + 1 + nx;
                 ids[7] = idx + nx;
-       
+
                 avtXRayFilter_GetCellPointsMacro(8); 
 
                 double t;
@@ -2362,6 +2389,9 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    Kathleen Biagas, Thu Mar 29 07:48:13 PDT 2012
 //    Templatized this method, for double-precision support.
 //
+//    Gunther H. Weber, Wed Jan 23 15:23:14 PST 2013
+//    Add support for specifying background intensity.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -2383,7 +2413,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     }
     for (int i = 0 ; i < numBins ; i++)
     {
-        radBins[i] = 0.;
+        radBins[i] = backgroundIntensity;
     }
 
     int prevLineId = -1;
@@ -2399,7 +2429,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     //float *currentImageFragment = imageFragments[iFragment];
     while (currentImageFragment.Iterating())
     {
-        currentImageFragment.SetTuple1( 0.);
+        currentImageFragment.SetTuple1(backgroundIntensity);
         currentImageFragment++;
     }
 
@@ -2421,7 +2451,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
             for (int j = 0; j < numBins; j++)
             {
-                radBins[j] = 0.;
+                radBins[j] = backgroundIntensity;
             }
             prevLineId = lineId[iPt];
         }
