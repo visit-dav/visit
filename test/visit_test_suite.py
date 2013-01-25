@@ -52,6 +52,7 @@ import math
 import datetime
 import pickle
 import json
+import traceback
 
 
 
@@ -80,23 +81,13 @@ def visit_root():
 def test_path():
     return os.path.abspath(os.path.split(__file__)[0])
 
+
 # ----------------------------------------------------------------------------
-#  Method: timestamp
+#  Method: check_skip
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def timestamp(t=None,sep="_"):
-    """
-    Creates a timestamp that can easily be included in a filename.
-    """
-    if t is None:
-        t = datetime.datetime.now()
-    sargs = (t.year,t.month,t.day,t.hour,t.minute,t.second)
-    sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
-    return  sbase % sargs
-
-
 def check_skip(skiplist,test_modes,test_cat,test_file):
     if skiplist is None:
         return False
@@ -211,7 +202,7 @@ def run_visit_test(args):
             shutil.rmtree(run_dir)
         os.mkdir(run_dir)
         pfile = open(pjoin(run_dir,"params.json"),"w")
-        pfile.write("%s" % json.dumps(tparams))
+        pfile.write("%s" % json_dumps(tparams))
         pfile.close()
         rcmd += " --params=%s" % os.path.abspath(pjoin(run_dir,"params.json"))
         # get start timestamp
@@ -225,7 +216,7 @@ def run_visit_test(args):
              echo=False)
         json_res_file = pjoin(opts.resultdir,"json","%s_%s.json" %(test_cat,test_base))
         if os.path.isfile(json_res_file ):
-            results = json.load(open(json_res_file))
+            results = json_load(json_res_file)
             if results.has_key("result_code"):
                 rcode = results["result_code"]
         # get end timestamp
@@ -281,7 +272,7 @@ def process_cores(run_dir,res_dir,test_cat,test_name):
 
 
 # ----------------------------------------------------------------------------
-#  Method: process_cores
+#  Method: process_runtime_logs
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Thu Aug  9 2012
@@ -487,7 +478,7 @@ def parse_args():
     if os.path.isfile(opts.skipfile):
         try:
             if opts.noskip == False:
-                opts.skiplist = json.loads(open(opts.skipfile).read())
+                opts.skiplist = json_load(opts.skipfile)
         except:
             opts.skiplist = None
     tests           = [ abs_path(t) for t in args]
@@ -538,10 +529,11 @@ def load_test_cases_from_index(tests_dir,result_idx,only_failures=False):
     res = []
     tests = JSONIndex.load_results(result_idx)
     for t in tests:
-        if only_failures and t.error():
-            res.append(pjoin(tests_dir,t.category,t.file))
+        tsr = TestSuiteResult(**t)
+        if only_failures and tsr.error():
+            res.append(pjoin(tests_dir,tsr.category,tsr.file))
         else:
-            res.append(pjoin(tests_dir,t.category,t.file))
+            res.append(pjoin(tests_dir,tsr.category,tsr.file))
     return res
 
 # ----------------------------------------------------------------------------
@@ -623,7 +615,7 @@ def launch_tests(opts,tests):
         Log("[Using skip list file: '%s']" % opts.skipfile)
     test_args = [(idx,tests[idx],opts) for idx in range(ntests)]
     # save the input list
-    test_list = json.dumps([(idx,tests[idx]) for idx in range(ntests)])
+    test_list = json_dumps([(idx,tests[idx]) for idx in range(ntests)])
     open(pjoin(opts.resultdir,"tests.json"),"w").write(test_list)
     if len(test_args) < opts.nprocs:
         opts.nprocs = len(test_args)
@@ -643,6 +635,7 @@ def launch_tests(opts,tests):
             pool.terminate()
             error = True
         except Exception as e:
+            traceback.print_exc()
             Log("<Unknown Exception>:%s" % str(e))
             pool.terminate()
             error = True
@@ -682,7 +675,7 @@ def main(opts,tests):
         tests = load_test_cases_from_index(opts.testsdir,ridx)
     elif opts.retry:
         Log("[Retrying failures from previous run]")
-        ridx  = pjoin(opts.resultdir,"results.json.index")
+        ridx  = pjoin(opts.resultdir,"results.json")
         tests = load_test_cases_from_index(opts.testsdir,ridx,True)
     elif len(tests) == 0:
         tests = find_test_cases(opts.testsdir)
@@ -692,13 +685,14 @@ def main(opts,tests):
     Log("[Starting test suite run @ %s]" % ststamp)
     html_index = HTMLIndex(opts.resultdir)
     html_index.write_header(opts.modes,ststamp)
-    json_index = JSONIndex(pjoin(opts.resultdir,"results.json"),clear=True)
+    json_index = JSONIndex(pjoin(opts.resultdir,"results.json"))
+    json_index.write_header(opts,ststamp)
     error, results = launch_tests(opts,tests)
     etstamp = timestamp(sep=":")
     etime   = time.time()
     rtime   = str(math.ceil(etime - stime))
     html_index.write_footer(etstamp,rtime)
-    json_index.finalize()
+    json_index.finalize(etstamp,rtime)
     nskip   = len([ r.skip()  for r in results if r.skip() == True])
     Log("[Test suite run complete @ %s (wall time = %s)]" % (etstamp,rtime))
     if nskip > 0:

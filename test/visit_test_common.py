@@ -43,10 +43,128 @@ date:
 
 import subprocess
 import os
+import json
+import datetime
+import socket
+import re
+import sys
 
 from os.path import join as pjoin
 
+# ----------------------------------------------------------------------------
+#  Method: _decode_list
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+#
+#  Helper which decodes json unicode values (in lists) to standard strings.
+#
+# Recipe from:
+#  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
+# ----------------------------------------------------------------------------
+def _decode_list(data):
+    rv = []
+    for item in data:
+        if isinstance(item, unicode):
+            item = item.encode('utf-8')
+        elif isinstance(item, list):
+            item = _decode_list(item)
+        elif isinstance(item, dict):
+            item = _decode_dict(item)
+        rv.append(item)
+    return rv
 
+# ----------------------------------------------------------------------------
+#  Method: _decode_dict
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+#
+#  Helper which decodes json unicode values (in dictonaries) to standard strings.
+#
+# Recipe from:
+#  http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
+# ----------------------------------------------------------------------------
+def _decode_dict(data):
+    rv = {}
+    for key, value in data.iteritems():
+        if isinstance(key, unicode):
+           key = key.encode('utf-8')
+        if isinstance(value, unicode):
+           value = value.encode('utf-8')
+        elif isinstance(value, list):
+           value = _decode_list(value)
+        elif isinstance(value, dict):
+           value = _decode_dict(value)
+        rv[key] = value
+    return rv
+
+# ----------------------------------------------------------------------------
+#  Method: ExtendedJSONEncoder
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+#
+#  Custom json encoding for namedtuple subclasses.
+#
+# Recipe from:
+#  http://stackoverflow.com/questions/5906831/serializing-a-python-namedtuple-to-json
+# ----------------------------------------------------------------------------
+class ExtendedJSONEncoder(json.JSONEncoder):
+    def _iterencode(self, obj, markers=None):
+        if isinstance(obj, tuple) and hasattr(obj, '_asdict'):
+            gen = self._iterencode_dict(obj._asdict(), markers)
+        else:
+            gen = json.JSONEncoder._iterencode(self, obj, markers)
+        for chunk in gen:
+            yield chunk
+
+# ----------------------------------------------------------------------------
+# Method: json_load
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+# ----------------------------------------------------------------------------
+def json_load(f):
+    ifile = open(f,"r")
+    return json.load(ifile,object_hook=_decode_dict)
+
+# ----------------------------------------------------------------------------
+# Method: json_loads
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+# ----------------------------------------------------------------------------
+def json_loads(val):
+    return json.loads(val,object_hook=_decode_dict)
+
+
+
+# ----------------------------------------------------------------------------
+# Method: json_dump
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+# ----------------------------------------------------------------------------
+def json_dump(val,f):
+    ofile = open(f,"w")
+    return json.dump(val,ofile,cls=ExtendedJSONEncoder,indent=2) 
+
+# ----------------------------------------------------------------------------
+# Method: json_dumps
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Fri Jan 11 2013
+# ----------------------------------------------------------------------------
+def json_dumps(val):
+    return json.dumps(val,cls=ExtendedJSONEncoder,indent=2)
+
+# ----------------------------------------------------------------------------
+#  Method: abs_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def abs_path(*args):
     """
     Helper for constructing absolute paths from a string, or lists of strings.
@@ -64,7 +182,29 @@ def abs_path(*args):
     res = res.encode('ascii','ignore')
     return res
 
+# ----------------------------------------------------------------------------
+#  Method: timestamp
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def timestamp(t=None,sep="_"):
+    """
+    Creates a timestamp that can easily be included in a filename.
+    """
+    if t is None:
+        t = datetime.datetime.now()
+    sargs = (t.year,t.month,t.day,t.hour,t.minute,t.second)
+    sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
+    return  sbase % sargs
 
+
+# ----------------------------------------------------------------------------
+#  Method: sexe
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def sexe(cmd,ret_output=False,suppress_output=False,echo = False):
     """
     Helper for executing shell commands.
@@ -89,6 +229,26 @@ def sexe(cmd,ret_output=False,suppress_output=False,echo = False):
     else:
         return subprocess.call(cmd,shell=True)
 
+# ----------------------------------------------------------------------------
+#  Method: hostname
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def hostname(full=True):
+    """ Returns the base hostname of the current machine. """
+    host_name = socket.gethostname()
+    if full:
+        return host_name
+    else:
+        return re.compile("[a-zA-z]*").match(host_name).group()
+
+# ----------------------------------------------------------------------------
+#  Method: Log
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
 def Log(msg,echo=True):
     """
     Prints message to screen and also records to a log file.

@@ -50,10 +50,14 @@ import sys
 import string
 import os
 import shutil
-import json
+import smtplib
+import multiprocessing
+import glob
 
 from os.path import join as pjoin
 from collections import namedtuple
+
+from visit_test_common import *
 
 # ----------------------------------------------------------------------------
 #  Method: test_root_dir
@@ -63,6 +67,21 @@ from collections import namedtuple
 # ----------------------------------------------------------------------------
 def test_root_dir():
     return os.path.split(os.path.abspath(__file__))[0]
+
+# ----------------------------------------------------------------------------
+#  Class: OutputLock
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed Jan 16 15:46:34 PST 2013
+# ----------------------------------------------------------------------------
+class OutputLock(object):
+    lock = multiprocessing.Lock()
+    @classmethod
+    def acquire(cls):
+        cls.lock.acquire()
+    @classmethod
+    def release(cls):
+        cls.lock.release()
 
 
 # ----------------------------------------------------------------------------
@@ -106,10 +125,8 @@ class HtmlTemplateSet(object):
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
 class HTMLIndex(object):
-    def __init__(self,obase=None):
+    def __init__(self,obase):
         self.obase = obase
-        if self.obase is None:
-            self.obase = test_root_dir()
         tfile = pjoin(test_root_dir(),"report_templates","index.html")
         self.tset = HtmlTemplateSet(tfile)
     def write_header(self,rmode,rtstamp):
@@ -120,6 +137,9 @@ class HTMLIndex(object):
         f.write(res)
         f.close()
     def add_result(self,result):
+        # in the mp case, this is called by multiple test
+        # processes, make sure to lock access to avoid
+        # corruption
         lsec = 20
         rcode = result.returncode
         mapping = {"category":result.category,
@@ -165,31 +185,15 @@ class HTMLIndex(object):
         else:
             mapping["result_color"] = "failed"
             mapping["result_text"]  = "Failed: exit == %s  unknown" % str(rcode)
-        f = self.__file()
         if rcode  != 116:
-            json_results = pjoin(self.obase,"json","%s_%s.json" % (result.category,result.base))
-            if False and os.path.isfile(json_results):
-                # future functionality:
-                res = self.tset.use_template("index_entry_start",mapping)
-                jr = json.load(open(json_results))
-                case_status ={"passed":"good",
-                              "failed":"bad",
-                              "unknown":"unknown",
-                              "skipped":"skipped"}
-                for r in jr["results"]:
-                    r_map = dict(r)
-                    if r["status"] in case_status.keys():
-                        r_map["status_color"] = case_status[r["status"]]
-                    else:
-                        r_map["status_color"] = case_status["unknown"]
-                    res += self.tset.use_template("case_entry",r_map)
-                res += self.tset.use_template("index_entry_end",mapping)
-            else:
-                res = self.tset.use_template("index_entry",mapping)
+            res = self.tset.use_template("index_entry",mapping)
         else:
             res = self.tset.use_template("index_entry_skip",mapping)
+        OutputLock.acquire()
+        f = self.__file()
         f.write(res)
         f.close()
+        OutputLock.release()
     def write_footer(self,etstamp,rtime):
         f = self.__file()
         res = res = self.tset.use_template("index_footer",
@@ -211,9 +215,12 @@ class HTMLIndex(object):
         for path in [pjoin(self.obase,"html"),des_css,des_js]:
             if not os.path.isdir(path):
                 os.mkdir(path)
-        shutil.copy(pjoin(tp_base,"css","styles.css"),des_css)
-        shutil.copy(pjoin(tp_base,"js","jquery-latest.js"),des_js)
-        shutil.copy(pjoin(tp_base,"js","jquery.tablesorter.js"),des_js)
+        css_files = glob.glob(pjoin(tp_base,"css","*.css"))
+        js_files  = glob.glob(pjoin(tp_base,"js","*.js"))
+        for css_file in css_files:
+            shutil.copy(css_file,des_css)
+        for js_file  in js_files:
+            shutil.copy(js_file,des_js)
 
 # ----------------------------------------------------------------------------
 #  Class: TestScriptResult
@@ -229,6 +236,12 @@ class TestScriptResult(namedtuple('TestScriptResult',
                                    'returncode',
                                    'numcores',
                                    'runtime'])):
+    @classmethod
+    def from_dict(cls,vals):
+        v = dict(vals)
+        if v.has_key("details"):
+            del v["details"]
+        return TestScriptResult(**v)
     def error(self):
         return not self.returncode in [111,112,116,119,120,121]
     def skip(self):
@@ -250,65 +263,211 @@ class TestScriptResult(namedtuple('TestScriptResult',
         return codes[rcode] + " %s/%s" % (self.category,self.file)
 
 # ----------------------------------------------------------------------------
+#  Class: TestCaseResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+class TestCaseResult:
+    @classmethod
+    def from_dict(cls,vals):
+        if vals.has_key("diff_pixels"):
+            return TestCaseImageResult.from_dict(vals)
+        else:
+            return TestCaseTextResult.from_dict(vals)
+
+# ----------------------------------------------------------------------------
+#  Class: TestCaseImageResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+TestCaseImageResultKeys =['case',
+                          'status',
+                          'diff_state',
+                          'mode_specific',
+                          'total_pixels',
+                          'non_bg_pixels',
+                          'diff_pixels',
+                          'diff_percent',
+                          'avg_pixels']
+
+class TestCaseImageResult(namedtuple('TestCaseImageResult',
+                                     TestCaseImageResultKeys)):
+    @classmethod
+    def from_dict(cls,vals):
+        return TestCaseImageResult(**vals)
+    def error(self):
+        return not self.status in ["passed","skipped"]
+    def skip(self):
+        return self.status == "skipped"
+    def message(self):
+        res = ""
+        for i in range(len(TestCaseImageResultKeys)):
+            key = TestCaseImageResultKeys[i]
+            res += "%s: %s " % (key,self[i])
+        return res
+
+# ----------------------------------------------------------------------------
+#  Class: TestCaseTextResult
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+TestCaseTextResultKeys =['case',
+                         'status',
+                         'nchanges',
+                         'nlines']
+
+class TestCaseTextResult(namedtuple('TestCaseTextResult',
+                                     TestCaseTextResultKeys)):
+    @classmethod
+    def from_dict(cls,vals):
+        return TestCaseTextResult(**vals)
+    def error(self):
+        return not self.status in ["passed","skipped"]
+    def skip(self):
+        return self.status == "skipped"
+    def message(self):
+        res = ""
+        for i in range(len(TestCaseTextResultKeys)):
+            key = TestCaseTextResultKeys[i]
+            res += "%s: %s " % (key,self[i])
+        return res
+
+
+
+# ----------------------------------------------------------------------------
 #  Class: JSONIndex
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
 class JSONIndex(object):
-    def __init__(self,ofile=None,clear=False):
+    def __init__(self,ofile=None):
         self.ofile = ofile
-        if self.ofile is None:
-            self.ofile = pjoin(test_root_dir(),"results.json")
-        if clear:
-            self.__working_file(create=True)
+    def write_header(self,opts,ststamp):
+        res = {}
+        res["info"]    = {"start_timestamp":ststamp,
+                          "host": hostname(False)}
+        res["options"] = vars(opts)
+        res["results"] = []
+        json_dump(res,self.ofile)
     def add_result(self,result):
-        fo = self.__working_file()
-        res = json.dumps(result)
-        fo.write(res + "\n")
-    def finalize(self):
-        fo  = open(self.ofile,"w")
-        res = JSONIndex.load_results(self.ofile + ".index")
-        fo .write(json.dumps(res))
+        # in the mp case, this is called by multiple test
+        # processes, make sure to lock access to avoid
+        # corruption
+        OutputLock.acquire()
+        res = JSONIndex.load_results(self.ofile)
+        res["results"].append(result)
+        json_dump(res,self.ofile)
+        OutputLock.release()
+    def finalize(self,etstamp,rtime):
+        res = JSONIndex.load_results(self.ofile)
+        res["info"]["end_timestamp"] =  etstamp
+        res["info"]["runtime"]       =  rtime
+        json_dump(res,self.ofile)
+        full = JSONIndex.load_results(self.ofile,True)
+        json_dump(full,self.ofile)
     @classmethod
-    def load_results(self,fname):
-        if fname.endswith(".json"):
-            return json.loads(open(fname))
-        else:
-            # load working file
-            res = []
-            if not os.path.isfile(fname):
-                return res
-            lines = [l.strip() for l in open(fname).readlines() if l.strip() != ""]
-            for l in lines:
-                test = TestScriptResult(*json.loads(l))
-                res.append(test)
+    def load_results(cls,fname,load_cases=False):
+        res = {}
+        if not os.path.isfile(fname):
             return res
-    def __working_file(self,create = False):
-        if create:
-            return open(self.ofile + ".index","w")
-        else:
-            return open(self.ofile + ".index","a")
+        res = json_load(fname)
+        if load_cases:
+            cls.load_cases(fname,res)
+        return res
+    @classmethod
+    def load_cases(cls,fname,res):
+        index_base     = os.path.split(os.path.abspath(fname))[0]
+        for script_res in res["results"]:
+            if not "details" in script_res.keys():
+                tsr = TestScriptResult(**script_res )
+                cases_results =  pjoin(index_base,
+                                       "json","%s_%s.json" % (tsr.category,tsr.base))
+                if os.path.isfile(cases_results):
+                    case_vals = json_load(cases_results)
+                    script_res["details"] = case_vals
+                else:
+                    script_res["details"] = {}
+
+def text_summary(json_res,errors_only=False):
+    rtxt  = ""
+    for r in json_res["results"]:
+        tscript_res = TestScriptResult.from_dict(r)
+        if not errors_only or tscript_res.error():
+            rtxt += "[%s/%s]\n" %( tscript_res.category, tscript_res.base)
+            rtxt += " %s\n" % tscript_res.message()
+            if "sections" in r["details"].keys():
+                for sect in r["details"]["sections"]:
+                    if not errors_only and sect['name'] != "<default>":
+                        rtxt += "[[%s]]\n" % sect['name']
+                    for c_res in sect["cases"]:
+                        cr =TestCaseResult.from_dict(c_res)
+                        if not errors_only or cr.error():
+                            rtxt += "  %s\n" % cr.message()
+    return rtxt
+
+def email_summary(json_res,email_from,email_to,smtp_server,errors_only=False):
+    errors  = [TestScriptResult.from_dict(v).error() for v in json_res["results"]]
+    nerrors = len([ v for v in errors if v == True])
+    error   = True in errors
+    ntests  = len(errors)
+    subject  = "[visit_test_suite] Test Suite Run "
+    if error:
+        subject+= "*Failed* "
+    else:
+        subject+= "Succeeded "
+    subject += "(%d of %d scripts passed)" % (ntests - nerrors,ntests)
+    msg = "\n"
+    if error:
+        msg += "=====================================\n"
+        msg += "Failures:\n"
+        msg += "=====================================\n"
+        msg +=  text_summary(json_res,True)
+    if not errors_only:
+        msg += "\n"
+        msg += "=====================================\n"
+        msg += "All Cases:\n"
+        msg += "=====================================\n"
+        msg +=  text_summary(json_res)
+    body = "\r\n".join([
+                        "From: %s" % email_from,
+                        "To: %s" % email_to,
+                        "Subject: %s" % subject,
+                         msg])
+    server = smtplib.SMTP(smtp_server)
+    server.sendmail(email_from, [email_to], body)
+    server.quit()
 
 
-# ----------------------------------------------------------------------------
-#  Method: main
-#
-#  Programmer: Cyrus Harrison
-#  Date:       Wed May 30 2012
-# ----------------------------------------------------------------------------
 def main():
-    args = sys.argv
-    if args[1] == "index":
-        idx = HTMLIndex()
-        icmd  = args[2]
-        iargs =args[3:]
-        if icmd == "open":
-            idx.header(iargs)
-        elif icmd == "add":
-            idx.add_entry(iargs)
-        elif icmd == "close":
-            idx.footer(iargs)
+    """
+    Main entry point for commandline text + email summary from json results.
+    """
+    if len(sys.argv) < 3:
+        print "usage:"
+        print " Text Report:  visit_test_reports.py [results.json] --text  <errors_only=False>"
+        print " Email Report: visit_test_reports.py [results.json] --email [user1@email.com;user2@email.com;...] [smtp server] <errors_only=False>"
+        sys.exit(-1)
+    errors_only = False
+    res = JSONIndex.load_results(sys.argv[1],True)
+    if sys.argv[2] == "--text":
+        if len(sys.argv)  == 4:
+            errors_only = bool(sys.argv[3])
+        print text_summary(res,errors_only)
+    else:
+        recp_list = sys.argv[3]
+        if recp_list.count(";"):
+            recp_list = recp_list.split(';')
+        smtp_svr  = sys.argv[4]
+        if len(sys.argv)  == 6:
+            errors_only = bool(sys.argv[5])
+        email_summary(res,"visit-developers@ornl.gov",
+                      recp_list,
+                      smtp_svr,
+                      errors_only)
 
 if __name__ == "__main__":
     main()

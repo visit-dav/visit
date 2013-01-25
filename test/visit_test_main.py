@@ -240,17 +240,15 @@ def html_output_file_handle(mode='a'):
 
 
 # ----------------------------------------------------------------------------
-#  Method: json_output_file_handle
+#  Method: json_output_file_path
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed Dec 12 2012
 # ----------------------------------------------------------------------------
-def json_output_file_handle(mode='r'):
+def json_output_file_path():
     path = out_path("json","%s_%s.json" % (TestEnv.params["category"],
-                                               TestEnv.params["name"]))
-
-    res = open(path,mode)
-    return res
+                                           TestEnv.params["name"]))
+    return path
 
 # ----------------------------------------------------------------------------
 #  Method: load_json_results
@@ -262,7 +260,7 @@ def json_results_load():
     """
     Loads and returns the current set of json results as a dict.
     """
-    return json.load(json_output_file_handle())
+    return json_load(json_output_file_path())
 
 # ----------------------------------------------------------------------------
 #  Method: load_json_results
@@ -274,7 +272,7 @@ def json_results_save(obj):
     """
     Saves the passed dict to the json results file.
     """
-    json.dump(obj,json_output_file_handle('w'))
+    json_dump(obj,json_output_file_path())
 
 
 # ----------------------------------------------------------------------------
@@ -341,7 +339,7 @@ def GenFileNames(test_case, ext):
             mode_specific = 0
             Log("Using mode specific baseline: %s" % base)
         elif os.path.isfile(modefile):
-            modemap = json.loads(open(modefile).read())
+            modemap = json_load(modefile)
             if modes in modemap["modes"]:
                 selected_mode = modemap["modes"][modes]
                 case_file     = test_case + ext
@@ -447,7 +445,6 @@ def HTMLTestStart():
     html.write("<html><head><title>Results for %s/%s</title></head>\n" % (TestEnv.params["category"],TestEnv.params["file"]))
     html.write("<body bgcolor=\"#a0a0f0\">\n")
     html.write("<H1>Results of VisIt Regression Test - <a href=%s_%s_py.html>%s/%s</a></H1>\n" % (TestEnv.params["category"],TestEnv.params["name"],TestEnv.params["category"],TestEnv.params["name"]))
-    html.write("<H2><a href=%s_%s_timings.html>(Full Timings)</a></H2>\n" % (TestEnv.params["category"],TestEnv.params["name"]))
     html.write("<table border>\n")
     html.write(" <tr>\n")
     html.write("  <td rowspan=2><b><i>Test Case</b></i></td>\n")
@@ -473,7 +470,7 @@ def HTMLTestStart():
 def JSONTestStart():
     res = {}
     res["env"] =  dict(TestEnv.params)
-    res["results"] = []
+    res["sections"] = [{"name":"<default>","cases":[]}]
     json_results_save(res)
 
 
@@ -545,7 +542,7 @@ def JSONTextTestResult(case_name,status,nchanges,nlines,failed,skip):
              'status':   status,
              'nchanges': nchanges,
              'nlines':   nlines}
-    res["results"].append(t_res)
+    res["sections"][-1]["cases"].append(t_res)
     json_results_save(res)
 
 
@@ -632,9 +629,9 @@ def JSONImageTestResult(case_name, status,
              'total_pixels':  tPixs,
              'non_bg_pixels': pPixs,
              'diff_pixels':   dPixs,
-             'diff_percent':  dPixs,
+             'diff_percent':  dpix,
              'avg_pixels':    davg}
-    res["results"].append(t_res)
+    res["sections"][-1]["cases"].append(t_res)
     json_results_save(res)
 
 # ----------------------------------------------------------------------------
@@ -1346,9 +1343,10 @@ def LogSectionStart(sectionName):
     """
     Log("    BEGIN SECTION: %s" % sectionName)
     HTMLSectionStart(sectionName)
+    JSONSectionStart(sectionName)
 
 # ----------------------------------------------------------------------------
-# Function: LogSection
+# Function: HTMLSectionStart
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
@@ -1361,6 +1359,22 @@ def HTMLSectionStart(sectionName):
     html.write(" <tr>\n")
     html.write("  <td colspan=6 align=center bgcolor=\"#0000ff\"><font color=\"#ffffff\"><b>%s</b></font></td>\n" % sectionName)
     html.write(" </tr>\n")
+
+# ----------------------------------------------------------------------------
+# Function: JSONSectionStart
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 30 2012
+# ----------------------------------------------------------------------------
+def JSONSectionStart(section_name):
+    """
+    Create a new section in the json results.
+    """
+    res = json_results_load()
+    s_res = {'name':   section_name,
+             'cases':  []}
+    res["sections"].append(s_res)
+    json_results_save(res)
 
 
 # ----------------------------------------------------------------------------
@@ -1503,10 +1517,10 @@ class TestEnv(object):
                "numskip": 0}
     @classmethod
     def setup(cls,params_file):
-        tparams = json.loads(open(params_file).read())
+        tparams = json_load(params_file)
         cls.params.update(tparams)
         if not cls.params["skip_file"] is None and os.path.isfile(cls.params["skip_file"]):
-            cls.skiplist = json.loads(open(cls.params["skip_file"]).read())
+            cls.skiplist = json_load(cls.params["skip_file"])
         else:
             cls.skiplist = None
         # parse modes for various possible modes
