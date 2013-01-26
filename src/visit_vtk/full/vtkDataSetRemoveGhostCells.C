@@ -507,6 +507,9 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
 //    Eric Brugger, Wed Jan  9 14:56:57 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ***************************************************************************
 
 void
@@ -570,7 +573,7 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
   vtkVisItExtractRectilinearGrid *extractor = vtkVisItExtractRectilinearGrid::New();
   extractor->SetInput(inGrid);
   extractor->SetVOI(voi);
-  extractor->GetOutput()->Update();
+  extractor->Update();
  
   outGrid->ShallowCopy(extractor->GetOutput());
   extractor->Delete();
@@ -610,6 +613,9 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 //
 //    Eric Brugger, Wed Jan  9 14:56:57 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
+//
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
 //
 // ***************************************************************************
 
@@ -652,7 +658,7 @@ vtkDataSetRemoveGhostCells::StructuredGridExecute()
   vtkVisItExtractGrid *extractor = vtkVisItExtractGrid::New();
   extractor->SetInput(inGrid);
   extractor->SetVOI(voi);
-  extractor->GetOutput()->Update();
+  extractor->Update();
  
   outGrid->ShallowCopy(extractor->GetOutput());
   extractor->Delete();

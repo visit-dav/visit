@@ -792,6 +792,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //    the data set remove ghost cells filter doesn't know what it's real
 //    output is until it updates.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -808,8 +811,8 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     filter->SetPoint2(point2);
     filter->SetNumberOfSamplePoints(numberOfSamplePoints);
     filter->GetOutput()->SetUpdateGhostLevel(0);
+    filter->Update();
     vtkPolyData *outPolys = filter->GetOutput();
-    outPolys->Update();
 
     vtkDataSet *rv = outPolys;
     if (outPolys->GetNumberOfCells() == 0 ||

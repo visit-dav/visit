@@ -737,6 +737,9 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
 //     Removed call to SetSource(NULL) as it now removes information necessary
 //     for the dataset.
 //
+//    Kathleen Biagas, Fri Jan 25 16:40:41 PST 2013
+//    Call update on reader, not data object.
+//
 // ****************************************************************************
 
 void avtImageRepresentation::GetImageFromString(unsigned char *str,
@@ -765,8 +768,8 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
     charArray->SetArray((char *) str, strLength, iOwnIt);
     reader->SetReadFromInputString(1);
     reader->SetInputArray(charArray);
+    reader->Update();
     img = reader->GetOutput();
-    img->Update();
     img->SetScalarType(VTK_UNSIGNED_CHAR);
     img->Register(NULL);
     //  calling SetSource sets' PipelineInformation to NULL, and then

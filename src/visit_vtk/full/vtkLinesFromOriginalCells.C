@@ -107,6 +107,9 @@ vtkLinesFromOriginalCells::~vtkLinesFromOriginalCells()
 //    Eric Brugger, Wed Jan  9 11:44:42 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 int vtkLinesFromOriginalCells::RequestData(
   vtkInformation *vtkNotUsed(request),
@@ -151,7 +154,7 @@ int vtkLinesFromOriginalCells::RequestData(
                     "field data. Using vtkExtractEdges.");
       vtkExtractEdges *extractor = vtkExtractEdges::New();
       extractor->SetInput(input);
-      extractor->GetOutput()->Update();
+      extractor->Update();
       output->ShallowCopy(extractor->GetOutput());
       extractor->Delete();
       return 1;

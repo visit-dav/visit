@@ -149,6 +149,10 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //
 //    Mark C. Miller, Wed Aug 22 09:43:01 PDT 2012
 //    Fixed leaks of VTK objects from early return.
+//
+//    Kathleen Biagas, Fri Jan 25 16:30:50 PST 2013
+//    Call Update on filter not data object.
+//   
 // ****************************************************************************
 
 vtkDataArray *
@@ -188,7 +192,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     
         boundaryFilter->SetInput(geomFilter->GetOutput());
         boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
-        boundaryFilter->GetOutput()->Update();
+        boundaryFilter->Update();
 
         allLines = boundaryFilter->GetOutput();
         // using SetSource(NULL) for vtkDataSets no longer a good idea.
@@ -211,8 +215,8 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     //
     vtkDataSetRemoveGhostCells *gzFilter = vtkDataSetRemoveGhostCells::New();
     gzFilter->SetInput(allLines);
+    gzFilter->Update();
     vtkDataSet *ds_1d_nogz = gzFilter->GetOutput();
-    ds_1d_nogz->Update();
 
     // We need line segment polydata, and should have it by now.
     if (ds_1d_nogz->GetDataObjectType() != VTK_POLY_DATA)

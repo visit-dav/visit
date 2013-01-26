@@ -334,7 +334,7 @@ avtCompactTreeFilter::Execute(void)
             }
             else
             {
-                ds->Update();
+                pmap->polyFilter->Update();
                 outTree = new avtDataTree(ds, -1);
             }
             ds->Delete();

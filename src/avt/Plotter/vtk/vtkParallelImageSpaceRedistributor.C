@@ -697,6 +697,9 @@ vtkParallelImageSpaceRedistributor::RequestData(
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the reader, not the data object.
+//
 // **************************************************************************
 
 vtkPolyData *
@@ -710,9 +713,8 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
     charArray->SetArray((char *) asChar, (int) asCharLength, iOwnIt);
     reader->SetReadFromInputString(1);
     reader->SetInputArray(charArray);
-    
+    reader->Update();
     vtkPolyData *asVTK = reader->GetOutput();
-    asVTK->Update();
     
     asVTK->Register(NULL);
     //asVTK->SetSource(NULL);

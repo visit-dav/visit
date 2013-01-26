@@ -150,6 +150,9 @@ void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 //   Brad Whitlock, Wed Sep 14 15:30:14 PDT 2011
 //   Remove setting the painting delegate to make textured points work in SR.
 //
+//   Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//   Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
@@ -222,8 +225,8 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
   else
     {
     this->GeometryExtractor->SetInput(this->GetInput());
+    this->GeometryExtractor->Update();
     vtkPolyData *pd = this->GeometryExtractor->GetOutput();
-    pd->Update();
     haveVertices = (pd->GetNumberOfVerts() > 0);
     this->PolyDataMapper->SetInput(pd);
     }
