@@ -358,6 +358,9 @@ avtHohlraumFluxQuery::SetDivideEmisByAbsorb(bool flag)
 //    Hank Childs, Fri May  2 09:02:39 PDT 2008
 //    Add a warning for no intersections.
 //
+//    Kathleen Biagas, Fri Jan 25 16:36:38 PST 2013
+//    Call update on filter, not data object.
+//
 // ****************************************************************************
 
 void
@@ -380,8 +383,8 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
     cpd->SetToleranceIsAbsolute(0);
     cpd->SetTolerance(1e-7);
     cpd->SetInput(pd);
+    cpd->Update();
     vtkPolyData *output = cpd->GetOutput();
-    output->Update();
     
     UpdateProgress(extraMsg*currentNode+extraMsg/3, totalProg);
 

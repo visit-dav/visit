@@ -290,6 +290,9 @@ avtTransform::~avtTransform()
 //    Dave Pugmire, Fri May 14 08:04:43 EDT 2010
 //    Flag for vector transformations.
 //
+//    Kathleen Biagas, Fri Jan 25 16:39:17 PST 2013
+//    Call Update on filter, not data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -331,8 +334,8 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
         break;
     }
 
+    transform->Update();
     vtkPointSet *out_ds = transform->GetOutput();
-    out_ds->Update();
 
     ManageMemory(out_ds);
     transform->Delete();

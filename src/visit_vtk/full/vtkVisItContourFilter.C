@@ -345,6 +345,9 @@ vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
 //   Brad Whitlock, Wed Apr 11 11:37:18 PDT 2012
 //   When we can't contour a cell, insert faces too for polyhedral cells.
 //
+//   Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//   Call Update on the filter, not the data object.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 int 
@@ -491,7 +494,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         vtkAppendPolyData *appender = vtkAppendPolyData::New();
         appender->AddInput(not_from_zoo);
         appender->AddInput(just_from_zoo);
-        appender->GetOutput()->Update();
+        appender->Update();
 
         output->ShallowCopy(appender->GetOutput());
         appender->Delete();

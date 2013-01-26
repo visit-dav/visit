@@ -473,6 +473,9 @@ avtCompactnessQuery::PostExecute(void)
 //    Hank Childs, Fri Feb 15 15:30:32 PST 2008
 //    Fix memory leak.
 //
+//    Kathleen Biagas, Fri Jan 25 16:32:38 PST 2013
+//    Call Update on filter, not data object.
+//
 // ****************************************************************************
 
 void
@@ -487,9 +490,9 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
 
     gzFilter2->SetInput(ds);
-    vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
+    gzFilter2->Update();
 
-    ds_2d_nogz->Update();
+    vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
 
     //
     // Create the area, volume and centroid arrays
@@ -557,14 +560,14 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     geomFilter->SetInput(ds);
     boundaryFilter->SetInput(geomFilter->GetOutput());
     boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
-    boundaryFilter->GetOutput()->Update();
+    boundaryFilter->Update();
 
     vtkPolyData *allLines = boundaryFilter->GetOutput();
     //allLines->SetSource(NULL);
 
     gzFilter1->SetInput(allLines);
+    gzFilter1->Update();
     vtkDataSet *ds_1d_nogz = gzFilter1->GetOutput();
-    ds_1d_nogz->Update();
 
     // We need polydata, and should have it by now.
     if (ds_1d_nogz->GetDataObjectType() != VTK_POLY_DATA)
@@ -648,6 +651,9 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
 //    Hank Childs, Mon Aug 30 17:15:30 PDT 2004
 //    Remove call to SetGhostLevel.
 //
+//    Kathleen Biagas, Fri Jan 25 16:32:38 PST 2013
+//    Call Update on filter, not data object.
+//
 // ****************************************************************************
 
 void
@@ -661,9 +667,8 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
 
     gzFilter2->SetInput(ds);
+    gzFilter2->Update();
     vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
-
-    ds_2d_nogz->Update();
 
     //
     // Create the area, volume and centroid arrays

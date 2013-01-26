@@ -113,6 +113,10 @@ avtSurfaceNormalExpression::~avtSurfaceNormalExpression()
 //    Mark C. Miller, Sat Aug 25 22:06:48 PDT 2012
 //    Changed leak fix and put n->Delete() both in exception block at at end
 //    of routine rather than ahead of arr->Register().
+//
+//    Kathleen Biagas, Fri Jan 25 16:28:49 PST 2013
+//    Call 'Update' on filter instead of data object.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -145,8 +149,8 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
     else
         n->SetNormalTypeToCell();
     n->SetInput(pd);
+    n->Update();
     vtkPolyData *out = n->GetOutput();
-    out->Update();
 
     vtkDataArray *arr = NULL;
     if (isPoint)

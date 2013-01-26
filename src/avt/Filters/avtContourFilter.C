@@ -604,6 +604,9 @@ avtContourFilter::PreExecute(void)
 //    Hank Childs, Mon Oct 10 11:17:27 PDT 2011
 //    Add a connectivity dependence when it comes to caching.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -736,7 +739,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
             cf->SetCellList(list2, list.size());
          }
 
-        output->Update();
+        cf->Update();
         if (output->GetNumberOfCells() == 0)
             out_ds[i] = NULL;
         else

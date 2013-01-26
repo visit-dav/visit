@@ -446,6 +446,10 @@ AssignToProc(int val, int nlines)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 void
@@ -609,8 +613,8 @@ avtLineScanFilter::PostExecute(void)
     }
     if (appender->GetTotalNumberOfInputConnections() >= 1)
     {
+        appender->Update();
         vtkPolyData *output = appender->GetOutput();
-        output->Update();
         avtDataTree_p newtree = new avtDataTree(output, -1);
         SetOutputDataTree(newtree);
     }
@@ -642,8 +646,8 @@ avtLineScanFilter::PostExecute(void)
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
     for (int i = 0 ; i < nLeaves ; i++)
         appender->AddInput((vtkPolyData *) leaves[i]);
+    appender->Update();
     vtkPolyData *output = appender->GetOutput();
-    output->Update();
     avtDataTree_p newtree = new avtDataTree(output, -1);
     SetOutputDataTree(newtree);
     appender->Delete();

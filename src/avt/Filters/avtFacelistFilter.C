@@ -505,6 +505,9 @@ avtFacelistFilter::FindFaces(vtkDataSet *in_ds, int domain, std::string label,
 //    Brad Whitlock, Tue Jan 22 13:55:12 PST 2013
 //    Also use extents for VOI when processing structured grids.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -906,7 +909,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
         rf->SetForceFaceConsolidation(forceFaceConsolidation ? 1 : 0);
         rf->SetInput((vtkRectilinearGrid *) in_ds);
         rf->SetOutput(out_ds);
-        out_ds->Update();
+        rf->Update();
         rf->SetOutput(NULL);
         //out_ds->SetSource(NULL);
         rf->Delete();

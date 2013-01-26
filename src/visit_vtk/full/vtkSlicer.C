@@ -492,6 +492,9 @@ vtkSlicer::RectilinearGridExecute(void)
 //    Eric Brugger, Thu Jan 10 10:24:20 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
+//    Call Update on the filter, not the data object.
+//
 // ****************************************************************************
 
 void
@@ -681,7 +684,7 @@ vtkSlicer::UnstructuredGridExecute(void)
         appender->AddInput(just_from_zoo);
         just_from_zoo->Delete();
 
-        appender->GetOutput()->Update();
+        appender->Update();
 
         output->ShallowCopy(appender->GetOutput());
         appender->Delete();
