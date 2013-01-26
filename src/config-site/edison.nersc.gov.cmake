@@ -30,8 +30,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-m64 -fvisibility=hidden -DVIZSCHEMA_DECOM
 #SET(VISIT_EXE_LINKER_FLAGS "-Wl,--rpath,/opt/gcc/4.3.3/snos/lib64")
 # Get these via CC -v
 VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/default/gni/mpich2-gnu/47/include" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/default/gni/mpich2-gnu/47/lib -L/opt/cray/pmi/default/lib64 -L/opt/cray/alps/5.0.1-2.0500.7663.1.1.ari/lib64" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/default/gni/mpich2-gnu/47/lib;/opt/cray/pmi/default/lib64;/opt/cray/alps/5.0.1-2.0500.7663.1.1.ari/lib64" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/default/gni/mpich2-gnu/47/lib -L/opt/cray/pmi/default/lib64 -L/opt/cray/alps/default/lib64" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/opt/cray/mpt/default/gni/mpich2-gnu/47/lib;/opt/cray/pmi/default/lib64;/opt/cray/alps/default/lib64" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich pmi alpslli alpsutil pthread rt)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)
@@ -143,7 +143,7 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 ##
 ## Silo
 ##
-VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.9/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
