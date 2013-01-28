@@ -276,6 +276,9 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    the Threshold filter inherits from the structured mesh chunker, which
 //    assumes the return value has an extra reference.
 //
+//    Kathleen Biagas, Mon Jan 28 11:09:02 PST 2013
+//    Call Update on the fitler not the data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -389,8 +392,8 @@ avtThresholdFilter::ProcessOneChunk(
                 EXCEPTION1(VisItException, errMsg);
             }
 
+            threshold->Update();
             curOutDataSet = threshold->GetOutput();
-            curOutDataSet->Update();
         }
 
         if (curOutDataSet->GetNumberOfCells() <= 0)

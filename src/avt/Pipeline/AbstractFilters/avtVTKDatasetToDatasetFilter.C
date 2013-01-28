@@ -118,58 +118,6 @@ avtVTKDatasetToDatasetFilter::SetInput(vtkDataSet **list, int listN)
 
 
 // ****************************************************************************
-//  Method: avtVTKDatasetToDatasetFilter::UpdateInput
-//
-//  Purpose:
-//      Overrides the avtDatasetToDatasetFilter UpdateInput method.  Since this
-//      will end the avt pipeline, it updates the vtk input.
-//
-//  Arguments:
-//      dl      A list of the domains of interest to the filters below this
-//              one in the pipeline.
-//
-//  Returns:    true if the input was modified.
-//
-//  Programmer: Hank Childs
-//  Creation:   July 24, 2000
-//
-//  Modifications:
-//
-//    Jeremy Meredith, Tue Sep 26 09:42:26 PDT 2000
-//    Added call to GetDomainVTK since FetchDomain returns an avtDomain.
-//
-//    Hank Childs, Tue Jan 30 18:52:48 PST 2001
-//    Load balance in parallel.
-//
-//    Kathleen Bonnell, Fri Feb  9 16:57:06 PST 2001 
-//    Added call to GetDomain() since FetchDomain returns an avtDomainTree.
-//
-//    Hank Childs, Thu Mar  1 14:45:20 PST 2001
-//    Switched FetchDomain to FetchDomains (with s).
-//
-//    Kathleen Bonnell, Mon Apr  9 13:02:51 PDT 2001 
-//    Reflect change from avtDomainTree to avtDataTree. Added call
-//    to Traverse to perform the actual update.
-//
-// ****************************************************************************
-
-bool
-avtVTKDatasetToDatasetFilter::UpdateInput(avtDomainList *dl)
-{
-    //
-    // Make this work well when we are testing in parallel.
-    //
-    avtLoadBalancer lb;
-    lb.Calculate(dl);
-
-    avtDataTree_p tree = source->FetchDomains(dl);
-    tree->Traverse(CUpdateData, NULL, modified); 
-
-    return modified;
-}
-
-
-// ****************************************************************************
 //  Method: avtVTKDatasetToDatasetFilter::Execute
 //
 //  Purpose:

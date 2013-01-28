@@ -137,6 +137,9 @@ avtFeatureEdgesFilter::~avtFeatureEdgesFilter()
 //    Kathleen Biagas, Tue Aug 21 16:50:07 MST 2012
 //    Preserve coordinate type.
 //
+//    Kathleen Biagas, Mon Jan 28 10:52:35 PST 2013
+//    Call Update on filter not data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -239,9 +242,9 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         featureEdgesFilter->NonManifoldEdgesOff();
         featureEdgesFilter->ManifoldEdgesOff();
         featureEdgesFilter->ColoringOff();
+        featureEdgesFilter->Update();
 
         vtkDataSet *output = featureEdgesFilter->GetOutput();
-        output->Update();
 
         if (output->GetNumberOfCells() > 0)
         {

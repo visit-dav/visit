@@ -101,6 +101,9 @@ YoungsMIR::~YoungsMIR()
 //    Jeremy Meredith, Mon Jan  4 15:09:23 EST 2010
 //    Added some timings.
 //
+//    Kathleen Biagas, Mon Jan 28 10:35:29 PST 2013
+//    Call update on the filter not the data object.
+//
 // ****************************************************************************
 bool
 YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
@@ -149,8 +152,8 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     int th_grad = visitTimer->StartTimer();
     vtkCQS *cqs = vtkCQS::New();
     cqs->SetInput(ds);
+    cqs->Update();
     ds = cqs->GetOutput();
-    ds->Update();
     ds->Register(NULL);
     cqs->Delete();
 
@@ -167,8 +170,8 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         sprintf(str2, "grad%05d", mapUsedMatToMat[m]);
         grad->SetGradientArrayName(str2);
 
+        grad->Update();
         ds = grad->GetOutput();
-        ds->Update();
         ds->Register(NULL);
         grad->Delete();
     }
@@ -178,8 +181,8 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     int th_recenter = visitTimer->StartTimer();
     vtkVisItPointDataToCellData *pd2cd = vtkVisItPointDataToCellData::New();
     pd2cd->SetInput(ds);
+    pd2cd->Update();
     ds = pd2cd->GetOutput();
-    ds->Update();
     ds->Register(NULL);
     pd2cd->Delete();
     visitTimer->StopTimer(th_recenter, "MIR: Recenter gradients");

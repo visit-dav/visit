@@ -634,41 +634,6 @@ CGetVariableList(avtDataRepresentation &data, void *nv, bool &success)
 
 
 // ****************************************************************************
-//  Method: CUpdateData
-//
-//  Purpose:
-//    Updates the vtk input.  
-//
-//  Arguments:
-//    data      The data to be updated.
-//    <unused>
-//    modified  True if the data was modified.
-//
-//  Notes:
-//      This method is designed to be used as the function parameter of
-//      avtDataTree::Iterate.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 18, 2001
-//
-// ****************************************************************************
-
-void
-CUpdateData(avtDataRepresentation &data, void *, bool &modified)
-{
-    if (!data.Valid())
-    {
-        EXCEPTION0(NoInputException);
-    }
-    vtkDataSet *ds = data.GetDataVTK();
-    unsigned long mtime = ds->GetMTime();
-    ds->Update();
-    if (mtime != ds->GetMTime())
-        modified = true;
-}
-
-
-// ****************************************************************************
 //  Method: CAddInputToAppendFilter
 //
 //  Purpose:

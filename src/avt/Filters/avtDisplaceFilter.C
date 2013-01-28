@@ -164,6 +164,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //    Kathleen Biagas, Tue Aug 21 16:52:12 MST 2012
 //    Preserve coordinate type.
 //
+//    Kathleen Biagas, Mon Jan 28 10:51:32 PST 2013
+//    Call Update on filter, not data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -196,7 +199,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(one_var_ds);
-        cd2pd->GetOutput()->Update();
+        cd2pd->Update();
         vtkDataSet *pt_one_var_ds = cd2pd->GetOutput();
 
         tmp_ds = (vtkDataSet *) in_ds->NewInstance();
@@ -218,8 +221,8 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vtkWarpVector *warp = vtkWarpVector::New();
         warp->SetInput((vtkPointSet *)in_ds);
         warp->SetScaleFactor(factor);
+        warp->Update();
         rv = warp->GetOutput();
-        rv->Update();
 
         //
         // Make this a dataset we can return even after we have freed memory.

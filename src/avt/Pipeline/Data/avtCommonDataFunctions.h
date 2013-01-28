@@ -135,6 +135,9 @@ class     vtkDataArray;
 //    Hank Childs, Sat Jan  1 17:35:23 PST 2011
 //    Moved visitIsFinite to header, so other classes can use it.
 //
+//    Kathleen Biagas, Mon Jan 28 10:06:01 PST 2013
+//    Remove no longer used method CUpdateData.
+//
 // ****************************************************************************
 
 //
@@ -143,7 +146,6 @@ class     vtkDataArray;
 
 PIPELINE_API void CGetSpatialExtents(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetDataExtents(avtDataRepresentation &, void *, bool &);
-PIPELINE_API void CUpdateData(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CAddInputToAppendFilter(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CBreakVTKPipelineConnections(avtDataRepresentation &, 
                                                void *, bool &);

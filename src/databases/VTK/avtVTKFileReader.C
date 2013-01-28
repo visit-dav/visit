@@ -349,6 +349,9 @@ avtVTKFileReader::ReadInFile(void)
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
 //    I enhanced the reader so that it can read parallel VTK files.
 //
+//    Kathleen Biagas, Mon Jan 28 11:06:32 PST 2013
+//    Remove calls to ds->Update.
+//
 // ****************************************************************************
 
 void
@@ -390,13 +393,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-
-        //
-        // Force the read and make sure that the reader is really gone, 
-        // so we don't eat up too many file descriptors.
-        //
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     }
     else if (pieceExtension == "vti")
@@ -410,8 +406,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (pieceExtension == "vtr") 
@@ -426,8 +420,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (pieceExtension == "vts")
@@ -442,8 +434,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (pieceExtension == "vtp") 
@@ -457,8 +447,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else if (pieceExtension == "vtu") 
@@ -473,8 +461,6 @@ avtVTKFileReader::ReadInDataset(int domain)
             EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
         }
         dataset->Register(NULL);
-        dataset->Update();
-        //dataset->SetSource(NULL);
         reader->Delete();
     } 
     else

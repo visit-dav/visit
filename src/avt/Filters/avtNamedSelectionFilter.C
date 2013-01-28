@@ -156,6 +156,9 @@ avtNamedSelectionFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    Brad Whitlock, Mon Jun 20 17:06:33 PST 2011
 //    I moved this code out from another function to make it more general.
 //
+//    Kathleen Biagas, Mon Jan 28 10:56:30 PST 2013
+//    Call upate on filter not data object.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -183,8 +186,8 @@ avtNamedSelectionFilter::SelectedData(vtkDataSet *in_ds,
         thres->ThresholdBetween(0.5, 1.5);
         thres->SetInputArrayToProcess(0, 0, 0, 
               vtkDataObject::FIELD_ASSOCIATION_CELLS, "_avt_thresh_var");
+        thres->Update();
         rv = thres->GetOutput();
-        rv->Update();
         ManageMemory(rv);
         thres->Delete();
         ds->Delete();

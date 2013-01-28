@@ -618,6 +618,9 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
 //    Removed call to SetSource(NULL) as it now removes information necessary
 //    to the dataset.
 //
+//    Kathleen Biagas, Mon Jan 28 10:29:06 PST 2013
+//    Call Update on the reader, not the dataset.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -718,11 +721,10 @@ avtDataRepresentation::GetDataVTK(void)
             }
             else
             {
-                asVTK->Update();
+                reader->Update();
             }
 
             asVTK->Register(NULL);
-            //asVTK->SetSource(NULL);
             reader->Delete();
             charArray->Delete();
             originalString = NULL;
