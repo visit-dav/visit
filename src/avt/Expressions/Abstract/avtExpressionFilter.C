@@ -697,6 +697,9 @@ avtExpressionFilter::GetVariableDimension(void)
 //      Added code to delete the copy of the ds vtkDataSet. We where leaking
 //      memory in a few places below because we exited the function early.
 //
+//      Kathleen Biagas, Mon Jan 28 11:10:37 PST 2013
+//      Call Update on filter, not data object.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -749,8 +752,8 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
         pd2cd->SetInput(ds2);
+        pd2cd->Update();
         vtkDataSet *ds3 = pd2cd->GetOutput();
-        ds3->Update();
         outv = ds3->GetCellData()->GetScalars();
         outv->Register(NULL);
         pd2cd->Delete();
@@ -781,8 +784,8 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
         cd2pd->SetInput(ds2);
+        cd2pd->Update();
         vtkDataSet *ds3 = cd2pd->GetOutput();
-        ds3->Update();
         outv = ds3->GetPointData()->GetScalars();
         outv->Register(NULL);
         cd2pd->Delete();

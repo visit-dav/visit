@@ -21,7 +21,6 @@
     }
     else
     {
-        input->Update();
         numPts = input->GetNumberOfPoints();
     } 
 

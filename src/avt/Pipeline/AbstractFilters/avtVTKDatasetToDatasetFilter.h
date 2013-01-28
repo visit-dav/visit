@@ -65,6 +65,9 @@
 //    Jeremy Meredith, Thu Sep 28 12:50:55 PDT 2000
 //    Removed CreateOutputDatasets.
 //
+//    Kathleen Biagas, Mon Jan 28 11:24:36 PST 2013
+//    Remove no longer used method 'UpdateInput'.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtVTKDatasetToDatasetFilter : public avtDatasetToDatasetFilter
@@ -83,7 +86,6 @@ class PIPELINE_API avtVTKDatasetToDatasetFilter : public avtDatasetToDatasetFilt
 
     virtual void               CalcDomainList(void);
     virtual void               Execute(avtDomainList *);
-    virtual bool               UpdateInput(avtDomainList *);
 };
 
 
