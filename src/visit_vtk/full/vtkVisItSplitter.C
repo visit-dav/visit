@@ -42,6 +42,8 @@
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkImplicitFunction.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPointData.h>
@@ -263,7 +265,7 @@ vtkVisItSplitter::FilterState::SetClipScalars(vtkDataArray *array, double cutoff
 //
 // ****************************************************************************
 
-vtkVisItSplitter::vtkVisItSplitter() : vtkDataSetToUnstructuredGridFilter(),
+vtkVisItSplitter::vtkVisItSplitter() : vtkUnstructuredGridAlgorithm(),
     state()
 {
 }
@@ -1127,7 +1129,7 @@ vtkVisItSplitter_Execute(Bridge bridge,
 }
 
 // ****************************************************************************
-//  Method:  vtkVisItSplitter::Execute
+//  Method:  vtkVisItSplitter::RequestData
 //
 //  Purpose:
 //    Main execution method.  
@@ -1156,15 +1158,29 @@ vtkVisItSplitter_Execute(Bridge bridge,
 //
 // ****************************************************************************
 
-void
-vtkVisItSplitter::Execute()
+int
+vtkVisItSplitter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
-    vtkDataSet *ds = GetInput();
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkDataSet *input = vtkDataSet::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    vtkDataSet *ds = input;
 
     int do_type = ds->GetDataObjectType();
 
     // Set general input/output data
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
     int t0 = visitTimer->StartTimer();
     if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
     {
@@ -1281,9 +1297,29 @@ vtkVisItSplitter::Execute()
         debug1 << "vtkVisItSplitter: Can't operate on this dataset.\n";
     }
     visitTimer->StopTimer(t0, "Splitter");
+
+    return 1;
 }
 
-void vtkVisItSplitter::PrintSelf(ostream& os, vtkIndent indent)
+// ****************************************************************************
+//  Method: vtkVisItSplitter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkVisItSplitter::FillInputPortInformation(int, vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+}
+
+// ****************************************************************************
+//  Method: vtkVisItSplitter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkVisItSplitter::PrintSelf(ostream& os, vtkIndent indent)
 {
     Superclass::PrintSelf(os,indent);
 }

@@ -103,7 +103,7 @@ class vtkCracksClipper : public vtkVisItClipper
     vtkSetStringMacro(CrackWidth);
     vtkSetStringMacro(CellCenters);
 
-    virtual void ModifyClip(vtkIdType);
+    virtual void ModifyClip(vtkDataSet *, vtkIdType);
 
   protected:
     vtkCracksClipper();

@@ -169,9 +169,8 @@ vtkCracksClipper::~vtkCracksClipper()
 // ---------------------------------------------------------------------------
 
 void 
-vtkCracksClipper::ModifyClip(vtkIdType cellId)
+vtkCracksClipper::ModifyClip(vtkDataSet *input, vtkIdType cellId)
 {
-  vtkDataSet *input = GetInput();
   vtkCellData *inCD = input->GetCellData();
 
   if (this->CrackDir == NULL || 

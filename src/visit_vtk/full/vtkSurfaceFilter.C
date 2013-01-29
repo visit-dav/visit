@@ -36,8 +36,7 @@
 *
 *****************************************************************************/
 
-//========================================================================
-//
+// ****************************************************************************
 //  Class:   vtkSurfaceFilter
 //
 //  Purpose:
@@ -51,7 +50,7 @@
 //
 //  Modifications:
 //
-//========================================================================
+// ****************************************************************************
 
 #include "vtkSurfaceFilter.h"
 
@@ -59,6 +58,8 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
@@ -68,97 +69,157 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
 
-
-// ======================================================================
+// ****************************************************************************
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
 //    Replace 'New' method with Macro to match VTK 4.0 API. 
-// ======================================================================
+// ****************************************************************************
 
 vtkStandardNewMacro(vtkSurfaceFilter);
 vtkCxxSetObjectMacro(vtkSurfaceFilter, inScalars, vtkDataArray); 
 
 
-//======================================================================
+// ****************************************************************************
 // Construct with 
 vtkSurfaceFilter::vtkSurfaceFilter()
 {
   this->inScalars = NULL;
 }
 
-//======================================================================
+
+// ****************************************************************************
 // Destructor
 vtkSurfaceFilter::~vtkSurfaceFilter()
 {
   this->SetinScalars(NULL);
 }
 
-//======================================================================
+
+// ****************************************************************************
+//  Method: vtkSurfaceFilter::RequestData
 //
-// Method:   vtkSurfaceFilter::Execute
+//  Purpose:  
+//    vtk Required method. Updates state of the filter by 
 //
-// Purpose:  
-//   vtk Required method. Updates state of the filter by 
-// 
-// Arguments:  None
-// 
-// Returns:    None 
-// 
-// Assumptions and Comments:
+//  Arguments:  None
 //
-// Programmer: Kathleen S. Bonnell
-// Creation:   12 March 2001
+//  Returns:    None 
 //
-// Modifications:
-//  
-//======================================================================
-void 
-vtkSurfaceFilter::Execute()
+//  Assumptions and Comments:
+//
+//  Programmer: Kathleen S. Bonnell
+//  Creation:   12 March 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+vtkSurfaceFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
-  vtkDataSet *input= this->GetInput();
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkDataSet *input = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   if (inScalars == NULL)
   {
       vtkErrorMacro(<<"Cannot execute, scalars not set");
-      return;
+      return 1;
   }
 
   if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-      this->ExecuteRectilinearGrid( (vtkRectilinearGrid *) input);
+      this->ExecuteRectilinearGrid( (vtkRectilinearGrid *) input, output);
   else
-      this->ExecutePointSet( (vtkPointSet*) input);
+      this->ExecutePointSet( (vtkPointSet*) input, output);
 
-} // Execute
+  return 1;
+} // RequestData
 
-//======================================================================
+
+// ****************************************************************************
+//  Method: vtkSurfaceFilter::FillInputPortInformation
 //
-// Method:   vtkSurfaceFilter::ExecuteRectilinearGrid
+// ****************************************************************************
+
+int
+vtkSurfaceFilter::FillInputPortInformation(int, vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  return 1;
+} // FillInputPortInformation
+
+
+// ****************************************************************************
+//  Method: vtkSurfaceFilter::PrintSelf
 //
-// Purpose:  
-//   Execution method for rectilinear grid input types. 
-// 
-// Arguments:  rg   the rectilinear grid input
-// 
-// Returns:    None 
-// 
-// Assumptions and Comments:
+//  Purpose:  Prints pertinent information regarding the state of this class 
+//            to the given output stream.
 //
-// Programmer: Kathleen S. Bonnell
-// Creation:   5 October 2000
+//  Arguments:
+//    os      The output stream to which the information is printed
+//    indent  The amount of spaces to indent.
 //
-// Modifications:
+//  Returns:  None 
+//
+//  Assumptions and Comments:
+//    Calls the superclass method first. 
+//
+//  Programmer: Kathleen S. Bonnell
+//  Creation:   5 October 2000
+//
+//  Modifications:
+//
+// ****************************************************************************
+void 
+vtkSurfaceFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+  this->Superclass::PrintSelf(os,indent);
+
+  os << indent << "zVals :    ";
+  inScalars->PrintSelf(os, indent); 
+  os << indent << "\n";
+}
+
+
+// ****************************************************************************
+//  Method: vtkSurfaceFilter::ExecuteRectilinearGrid
+//
+//  Purpose:  
+//    Execution method for rectilinear grid input types. 
+//
+//  Arguments: rg   the rectilinear grid input
+//
+//  Returns:   None 
+//
+//  Assumptions and Comments:
+//
+//  Programmer: Kathleen S. Bonnell
+//  Creation:   5 October 2000
+//
+//  Modifications:
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
 //    Kathleen Biagas, Thu Aug 30 16:26:44 MST 2012
 //    Preserve coordinate type.
 //
-//=======================================================================
+// ****************************************************************************
 void 
-vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
+vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg,
+  vtkUnstructuredGrid *output)
 {
   vtkDebugMacro(<<"ExecuteRectilinearGrid::");
-  vtkUnstructuredGrid *output = this->GetOutput(); 
+
   int numPoints = rg->GetNumberOfPoints();
   int numCells = rg->GetNumberOfCells();
   int *cellTypes = new int [numCells];
@@ -209,40 +270,37 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg)
 
 } // ExecuteRectilinearGrid
 
-
       
-//======================================================================
+// ****************************************************************************
+//  Method: vtkSurfaceFilter::ExecutePointSet
 //
-// Method:   vtkSurfaceFilter::ExecutePointSet
+//  Purpose:  
+//    Execution method for rectilinear grid input types. 
 //
-// Purpose:  
-//   Execution method for rectilinear grid input types. 
-// 
-// Arguments:  rg   the rectilinear grid input
-// 
-// Returns:    None 
-// 
-// Assumptions and Comments:
+//  Arguments: rg   the rectilinear grid input
 //
-// Programmer: Kathleen S. Bonnell
-// Creation:   5 October 2000
+//  Returns:   None 
 //
-// Modifications:
+//  Assumptions and Comments:
+//
+//  Programmer: Kathleen S. Bonnell
+//  Creation:   5 October 2000
+//
+//  Modifications:
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
-//  
+//
 //    Hank Childs, Thu Sep 12 19:12:35 PDT 2002
 //    Fix memory leak.
 //
 //    Kathleen Biagas, Thu Aug 30 16:26:44 MST 2012
 //    Preserve coordinate type.
 //
-//=======================================================================
+// ****************************************************************************
 void 
-vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps)
+vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps, vtkUnstructuredGrid *output)
 {
   vtkDebugMacro(<<"ExecutePointSet::");
-  vtkUnstructuredGrid *output = this->GetOutput(); 
 
   vtkPoints *inPoints = ps->GetPoints();
 
@@ -286,45 +344,9 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps)
   output->GetPointData()->PassData(ps->GetPointData());
   output->GetCellData()->PassData(ps->GetCellData());
 
-
   // free memory used locally
   delete [] cellTypes;
   outPoints->Delete();
   cells->Delete();
 
 } // ExecutePointSet
-
-
-//======================================================================
-//
-// Method:   vtkSurfaceFilter::PrintSelf
-//
-// Purpose:  Prints pertinent information regarding the state of this class 
-//           to the given output stream.
-// 
-// Arguments:
-//   os      The output stream to which the information is printed
-//   indent  The amount of spaces to indent.
-// 
-// Returns:  None 
-// 
-// Assumptions and Comments:
-//   Calls the superclass method first. 
-// 
-// Programmer: Kathleen S. Bonnell
-// Creation:   5 October 2000
-//
-// Modifications:
-//  
-//=======================================================================
-void 
-vtkSurfaceFilter::PrintSelf(ostream& os, vtkIndent indent)
-{
-  this->Superclass::PrintSelf(os,indent);
-
-  os << indent << "zVals :    ";
-  inScalars->PrintSelf(os, indent); 
-  os << indent << "\n";
-}
-
-
