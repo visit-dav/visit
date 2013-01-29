@@ -75,13 +75,12 @@
 #define __vtkOnionPeelFilter_h
 #include <visit_vtk_exports.h>
 
-#include <vtkDataSetToUnstructuredGridFilter.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 #define VTK_NODE_ADJACENCY 0
 #define VTK_FACE_ADJACENCY 1
 
 class vtkIdList;
-
 
 
 //*****************************************************************************
@@ -104,17 +103,16 @@ class vtkIdList;
 //
 //*****************************************************************************
 
-
-
 typedef void (*BadSeedCallback)(void *, int, int, bool);
 
 class VISIT_VTK_API  
-vtkOnionPeelFilter : public vtkDataSetToUnstructuredGridFilter
+vtkOnionPeelFilter : public vtkUnstructuredGridAlgorithm
 {
 public:
-  static vtkOnionPeelFilter *New();
-  vtkTypeMacro(vtkOnionPeelFilter,vtkDataSetToUnstructuredGridFilter);
+  vtkTypeMacro(vtkOnionPeelFilter,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  static vtkOnionPeelFilter *New();
 
   // Description:
   // Set the current Seed value.
@@ -143,8 +141,6 @@ public:
   vtkBooleanMacro(ReconstructOriginalCells,int);
   vtkGetMacro(ReconstructOriginalCells,int);
 
- 
-
   // Description:
   // Specify which type of adjacency to use when determining neighbor cells.
   // There are two choices:  Face Adjacency and Node Adjacency.
@@ -156,7 +152,7 @@ public:
        { this->SetAdjacencyType(VTK_NODE_ADJACENCY); };
   const char *GetAdjacencyTypeAsString();
 
-  bool Initialize(const int = VTK_LARGE_INTEGER);
+  bool Initialize();
 
   void SetBadSeedCallback(BadSeedCallback, void *);
  
@@ -166,7 +162,11 @@ protected:
   vtkOnionPeelFilter();
   ~vtkOnionPeelFilter();
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
+
   void Grow();
   void GenerateOutputGrid();
 
@@ -180,6 +180,9 @@ protected:
 
   vtkIdList *layerCellIds;
   vtkIdList *cellOffsets;
+
+  vtkDataSet *input;
+  vtkUnstructuredGrid *output;
 
   int maxLayersReached;
   int maxLayerNum;
@@ -213,5 +216,3 @@ inline const char *vtkOnionPeelFilter::GetAdjacencyTypeAsString(void)
 }
 
 #endif
-
-

@@ -38,11 +38,13 @@
 
 #ifndef VTK_MULTI_SPLITTER_H
 #define VTK_MULTI_SPLITTER_H
-
 #include <visit_vtk_exports.h>
+
+#include "vtkUnstructuredGridAlgorithm.h"
+
 #include <FixedLengthBitField.h>
+
 #include <vector>
-#include "vtkDataSetToUnstructuredGridFilter.h"
 
 class vtkImplicitFunction;
 class vtkUnstructuredGrid;
@@ -64,11 +66,11 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class VISIT_VTK_API vtkMultiSplitter
-    : public vtkDataSetToUnstructuredGridFilter
+class VISIT_VTK_API vtkMultiSplitter :
+  public vtkUnstructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkMultiSplitter,vtkDataSetToUnstructuredGridFilter);
+    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm);
     void PrintSelf(ostream& os, vtkIndent indent);
 
     static vtkMultiSplitter *New();
@@ -80,7 +82,10 @@ class VISIT_VTK_API vtkMultiSplitter
     vtkMultiSplitter();
     ~vtkMultiSplitter();
 
-    void Execute();
+    virtual int RequestData(vtkInformation *,
+                            vtkInformationVector **,
+                            vtkInformationVector *);
+    virtual int FillInputPortInformation(int port, vtkInformation *info);
 
   private:
     double *bounds;

@@ -41,6 +41,8 @@
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkImplicitFunction.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPointData.h>
@@ -136,7 +138,7 @@ vtkMultiSplitter::SetTagBitField(std::vector<FixedLengthBitField<64> > *tags)
 }
 
 // ****************************************************************************
-//  Method:  vtkMultiSplitter::Execute
+//  Method:  vtkMultiSplitter::RequestData
 //
 //  Purpose:
 //    Main execution method.  
@@ -148,22 +150,36 @@ vtkMultiSplitter::SetTagBitField(std::vector<FixedLengthBitField<64> > *tags)
 //
 // ****************************************************************************
 
-void
-vtkMultiSplitter::Execute()
+int
+vtkMultiSplitter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
-    vtkDataSet *ds = GetInput();
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkDataSet *input = vtkDataSet::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    vtkDataSet *ds = input;
 
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         debug1 << "vtkMutliSplitter: Can't operate on this dataset.\n";
-        return;
+        return 1;
     }
 
     //
     // Set general input/output data
     //
-    vtkCellData         *inCD   = ds->GetCellData();
-    vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)GetOutput();
+    vtkCellData *inCD = ds->GetCellData();
 
     //
     // Populate the vfv with all the hexes.
@@ -514,7 +530,26 @@ vtkMultiSplitter::Execute()
     }
 
     vfv.ConstructDataSet(inCD, output, &pts[0], pts.size()/3, newTags);
+
+    return 1;
 }
+
+// ****************************************************************************
+//  Method: vtkMultiSplitter::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkMultiSplitter::FillInputPortInformation(int, vtkInformation *info)
+{
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+}
+
+// ****************************************************************************
+//  Method: vtkMultiSplitter::PrintSelf
+//
+// ****************************************************************************
 
 void vtkMultiSplitter::PrintSelf(ostream& os, vtkIndent indent)
 {
