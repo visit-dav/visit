@@ -43,43 +43,60 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMergePoints.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
-//------------------------------------------------------------------------------
-// Modifications:
-//   Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
-//   Replace 'New' method with Macro to match VTK 4.0 API.
-//------------------------------------------------------------------------------
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
+//    Replace 'New' method with Macro to match VTK 4.0 API.
+//
+// ****************************************************************************
 
 vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter);
 
 
-//------------------------------------------------------------------------------
-// Modifications:
+// ****************************************************************************
+//  Method: vtkUnstructuredGridRelevantPointsFilter::RequestData
 //
-//   Hank Childs, Sun Mar 13 14:12:38 PST 2005
-//   Fix memory leak.
+//  Modifications:
+//    Hank Childs, Sun Mar 13 14:12:38 PST 2005
+//    Fix memory leak.
 //
-//   Hank Childs, Sun Mar 29 16:26:27 CDT 2009
-//   Remove call to BuildLinks.
+//    Hank Childs, Sun Mar 29 16:26:27 CDT 2009
+//    Remove call to BuildLinks.
 //
-//------------------------------------------------------------------------------
-void vtkUnstructuredGridRelevantPointsFilter::Execute()
+// ****************************************************************************
+int
+vtkUnstructuredGridRelevantPointsFilter::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  //
+  // Initialize some frequently used values.
+  //
+  vtkUnstructuredGrid  *input = vtkUnstructuredGrid::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   int  i, j;
 
-  vtkUnstructuredGrid  *input  = this->GetInput();
-  vtkUnstructuredGrid  *output = this->GetOutput();
-  
   vtkDebugMacro(<<"Beginning UnstructuredGrid Relevant Points Filter ");
 
   if (input == NULL) 
     {
     vtkErrorMacro(<<"Input is NULL");
-    return;
+    return 1;
     }
 
   vtkPoints    *inPts  = input->GetPoints();
@@ -90,7 +107,7 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
   if ( (numInPts<1) || (inPts == NULL ) ) 
     {
     vtkErrorMacro(<<"No data to Operate On!");
-    return;
+    return 1;
     }
   
   int *pointMap = new int[numInPts];
@@ -163,11 +180,29 @@ void vtkUnstructuredGridRelevantPointsFilter::Execute()
   newIds->Delete();
   cellIds->Delete();
   delete [] pointMap;
+
+  return 1;
 }
 
-//------------------------------------------------------------------------------
-void vtkUnstructuredGridRelevantPointsFilter::
-PrintSelf(ostream& os, vtkIndent indent) 
+// ****************************************************************************
+//  Method: vtkUnstructuredGridRelevantPointsFilter::FillInputPortInformation
+//
+// ****************************************************************************
+int
+vtkUnstructuredGridRelevantPointsFilter::FillInputPortInformation(int,
+  vtkInformation *info)
+{
+  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+  return 1;
+}
+
+// ****************************************************************************
+//  Method: vtkUnstructuredGridRelevantPointsFilter::PrintSelf
+//
+// ****************************************************************************
+void
+vtkUnstructuredGridRelevantPointsFilter::PrintSelf(ostream& os,
+  vtkIndent indent) 
 {
   this->Superclass::PrintSelf(os,indent);
 }

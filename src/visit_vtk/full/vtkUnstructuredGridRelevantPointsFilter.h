@@ -57,23 +57,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkUnstructuredGridRelevantPointsFilter_h
 #include <visit_vtk_exports.h>
 
-#include "vtkUnstructuredGridToUnstructuredGridFilter.h"
+#include "vtkUnstructuredGridAlgorithm.h"
 
 class VISIT_VTK_API vtkUnstructuredGridRelevantPointsFilter : 
-public vtkUnstructuredGridToUnstructuredGridFilter
+  public vtkUnstructuredGridAlgorithm
 {
 public:
-  static vtkUnstructuredGridRelevantPointsFilter *New();
   vtkTypeMacro(vtkUnstructuredGridRelevantPointsFilter, 
-               vtkUnstructuredGridToUnstructuredGridFilter);
+               vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  static vtkUnstructuredGridRelevantPointsFilter *New();
 
 protected:
   vtkUnstructuredGridRelevantPointsFilter(){};
  ~vtkUnstructuredGridRelevantPointsFilter(){};
 
   // Usual data generation method
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 
 private:
   vtkUnstructuredGridRelevantPointsFilter
@@ -82,5 +86,3 @@ private:
 };
 
 #endif
-
-
