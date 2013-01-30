@@ -24,6 +24,10 @@
 #   dylib case: use otool to check if we are actually dealing with a lib.
 #   In some cases py files creep in.
 #
+#   Brad Whitlock, Tue Jan 29 12:12:26 PST 2013
+#   I reordered the function arguments and added support for filtering MPI library
+#   paths, which is what you want when using MPI that we package in VisIt.
+#
 ################################################################################
 
 #
@@ -31,26 +35,29 @@
 # /User/*/lib/lib*.dylib with @executable_path/../lib/lib*.dylib to make the dylib
 # execute relative.
 #
-# $1 : The whole path and name of the dylib file
+#
+# $1 : ON|OFF : Whether we're making MPI libraries executable relative.
+# $2 : ON|OFF : The value for rpath_enable.
+# $3 : The whole path and name of the dylib file
 #
 function fixup_dylib
 {
-    # if $1 is a symlink, return
+    # if $3 is a symlink, return
     rpath_enable="$2"
-    if test -h $1 ; then
-        echo "Skipping $1 because it is a symlink"
+    if test -h $3 ; then
+        echo "Skipping $3 because it is a symlink"
         return 0
     fi
     
-    dy_check=$(otool -D $1 | tail -n 1 | grep "is not an object file")
+    dy_check=$(otool -D $3 | tail -n 1 | grep "is not an object file")
     if [[ $dy_check != "" ]] ; then
-        echo "Skipping $1 because it is not a library"
+        echo "Skipping $3 because it is not a library"
         return 0
     fi
 
     # Get the name of this library from otool since it might not match quite 
-    # what's in $1 because of version number differences.
-    thisLibrary=$(otool -D $1 | tail -n 1)
+    # what's in $3 because of version number differences.
+    thisLibrary=$(otool -D $3 | tail -n 1)
     s=$(echo $thisLibrary | grep ".framework")
     if [[ $s != "" ]] ; then
         framework_prefix=${s/\.framework*/} #remove everything from framework and forward..
@@ -63,7 +70,7 @@ function fixup_dylib
         else
             thisLibraryFixed="@executable_path/../lib/${framework_path}" #$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib/g")
         fi
-        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\.framework//g")  #$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
+        thisLibraryName1=$(echo "$3" | sed "s/^\/[A-Za-z0-9_. \/-]*\.framework//g")  #$(echo "$3" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
         thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\.framework//g") #$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib//g")
     else
         # Library
@@ -72,7 +79,7 @@ function fixup_dylib
         else
             thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/@executable_path\/..\/lib\/lib/g")
         fi
-        thisLibraryName1=$(echo "$1" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
+        thisLibraryName1=$(echo "$3" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
         thisLibraryName2=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/lib/lib/g")
     fi
 #    echo "thisLibrary = $thisLibrary"
@@ -80,7 +87,10 @@ function fixup_dylib
 #    echo "thisLibraryName1 = $thisLibraryName1"
 #    echo "thisLibraryName2 = $thisLibraryName2"
 
-    sharedLibs=$(otool -L $1 | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    sharedLibs=$(otool -L $3 | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2")
+    if [[ $1 == "OFF" ]] ; then
+        sharedLibs = $(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    fi
 #    echo "sharedLibs = $sharedLibs"
     command=""
     for library in $sharedLibs ; do
@@ -109,16 +119,16 @@ function fixup_dylib
         fi
     done
 
-    echo "Making dylib execute relative: $1"
+    echo "Making dylib execute relative: $3"
     if [[ "$command" != "" ]] ; then
-        install_name_tool $command $1
+        install_name_tool $command $3
         if [[ "$rpath_enable" == "ON" ]]; then
-            install_name_tool -add_rpath "@executable_path/../lib/" "$1"
-            install_name_tool -add_rpath "/usr/local/lib/" "$1"
-            install_name_tool -add_rpath "/usr/lib/" "$1"
+            install_name_tool -add_rpath "@executable_path/../lib/" "$3"
+            install_name_tool -add_rpath "/usr/local/lib/" "$3"
+            install_name_tool -add_rpath "/usr/lib/" "$3"
         fi
     fi
-    install_name_tool -id $thisLibraryFixed $1
+    install_name_tool -id $thisLibraryFixed $3
     
     return 1
 }
@@ -127,20 +137,23 @@ function fixup_dylib
 # Fix up an executable program so that its shared libraries are referenced 
 # relative to @executable_path/../lib.
 #
-# $1 : The whole path and name of the application
+# $1 : ON|OFF : Whether we're making MPI libraries executable relative.
+# $2 : ON|OFF : The value for rpath_enable.
+# $3 : The whole path and name of the application
 #
 function fixup_exe
 {
     rpath_enable="$2"
-    # if $1 is a symlink, return
-    if test -h $1 ; then
-        echo "Skipping $1 because it is a symlink"
+    # if $3 is a symlink, return
+    if test -h $3 ; then
+        echo "Skipping $3 because it is a symlink"
         return 0
     fi
 
+    rpath_enable="$2"
     # Get the name of this library from otool since it might not match quite 
-    # what's in $1 because of version number differences.
-    thisLibrary=$(otool -D $1 | tail -n 1 | sed "s/\://g")
+    # what's in $3 because of version number differences.
+    thisLibrary=$(otool -D $3 | tail -n 1 | sed "s/\://g")
     if [[ "$rpath_enable" == "ON" ]]; then
         thisLibraryFixed=$(echo "$thisLibrary" | sed "s/^\/[A-Za-z0-9_. \/-]*\/bin/@rpath\/bin/g")
     else
@@ -149,7 +162,10 @@ function fixup_exe
 #    echo "thisLibrary = $thisLibrary"
 #    echo "thisLibraryFixed = $thisLibraryFixed"
 
-    sharedLibs=$(otool -L $1 | grep -v ":" | grep "/" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    sharedLibs=$(otool -L $3 | grep -v ":" | grep "/")
+    if [[ $1 == "OFF" ]] ; then
+        sharedLibs = $(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+    fi
     command=""
     for library in $sharedLibs ; do
         s=$(echo $library | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/usr/X11R6" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library"  | grep -v "/Library/Frameworks/" | grep -v "/Network/Library/Frameworks/" | grep -v "/System/Library/Frameworks/")
@@ -178,15 +194,15 @@ function fixup_exe
     done
 
     if [[ "$command" != "" ]] ; then
-        echo "Making executable execute relative $1"
-        install_name_tool $command $1
+        echo "Making executable execute relative $3"
+        install_name_tool $command $3
         if [[ "$rpath_enable" == "ON" ]]; then
-            install_name_tool -add_rpath "@executable_path/../lib/" "$1"
-            install_name_tool -add_rpath "/usr/local/lib/" "$1"
-            install_name_tool -add_rpath "/usr/lib/" "$1"
+            install_name_tool -add_rpath "@executable_path/../lib/" "$3"
+            install_name_tool -add_rpath "/usr/local/lib/" "$3"
+            install_name_tool -add_rpath "/usr/lib/" "$3"
         fi
     else
-        echo "Skipping $1"
+        echo "Skipping $3"
     fi
     return 1
 }
@@ -194,25 +210,27 @@ function fixup_exe
 #
 # Fixes up the application and makes some symlinks that make the bundle work.
 #
-# $1 : The path to the architecture bin directory
-# $2 : The undecorated name of the application (e.g. "gui")
+# $1 : ON|OFF : Whether we're making MPI libraries executable relative.
+# $2 : ON|OFF : The value for rpath_enable.
+# $3 : The path to the architecture bin directory
+# $4 : The undecorated name of the application (e.g. "gui")
 #
 function fixup_bundle
 {
     # First, fixup the program
-    fixup_exe "$1/$2.app/Contents/MacOS/$2" "$3"
+    fixup_exe $1 $2 "$3/$4.app/Contents/MacOS/$4"
 
     # Also, add some symlinks that we need
  
     # cd into the destination bin directory.
     pushd . > /dev/null
-    cd "$1"
+    cd "$3"
 
     # Make a link to the actual app down in the bundle.
-    ln -s $2.app/Contents/MacOS/$2 .
+    ln -s $4.app/Contents/MacOS/$4 .
     
     # cd into the .app bundle
-    cd $2.app/Contents
+    cd $4.app/Contents
     ln -s ../../../lib .
 
     # Make a link up to visit
@@ -230,9 +248,9 @@ function fixup_bundle
 
 # main
 if [[ $1 == "-exe" ]] ; then
-    fixup_exe "$3" "$2"
+    fixup_exe "$2" "$3" "$4"
 elif [[ $1 == "-bundle" ]] ; then
-    fixup_bundle "$3" "$4" "$2"
+    fixup_bundle "$2" "$3" "$4" "$5"
 else
-    fixup_dylib "$3" "$2"
+    fixup_dylib "$2" "$3" "$4"
 fi

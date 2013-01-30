@@ -36,6 +36,7 @@
             <lib name="visus"/>
             <lib name="pyside"/>
             <lib name="manta"/>
+            <lib name="mpich"/>
         </optional>
 
 
@@ -67,6 +68,7 @@
             <lib name="adios"/>
             <lib name="pyside"/>
             <lib name="manta"/>
+            <lib name="mpich"/>
         </group>
 
 
