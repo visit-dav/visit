@@ -124,8 +124,8 @@ function build_mpich
         mpich_opts="${mpich_opts} --enable-two-level-namespace"
     fi
 
-#    issue_command env CXX="$CXX_COMPILER" CC="$C_COMPILER" CFLAGS="" CXXFLAGS=""\
-#                      ./configure ${mpich_opts} --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
+    issue_command env CXX="$CXX_COMPILER" CC="$C_COMPILER" CFLAGS="" CXXFLAGS=""\
+                      ./configure ${mpich_opts} --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
        warn "MPICH configure failed.  Giving up"
@@ -136,7 +136,7 @@ function build_mpich
     # Build MPICH
     #
     info "Building MPICH . . . (~5 minutes)"
-#    $MAKE $MAKE_OPT_FLAGS
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        warn "MPICH build failed.  Giving up"
        return 1
