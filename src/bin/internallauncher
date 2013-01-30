@@ -111,6 +111,9 @@ class JobSubmitter_mpirun(JobSubmitter):
 # Date:       Wed Dec  5 18:39:03 PST 2012
 #
 # Modifications:
+#   Brad Whitlock, Tue Jan 29 12:22:39 PST 2013
+#   If we're on a newer Mac and we're not running a dev version then get 
+#   mpiexec from the VisIt architecture/bin directory, if it exists.
 #
 ###############################################################################
 
@@ -119,6 +122,14 @@ class JobSubmitter_mpiexec(JobSubmitter):
         super(JobSubmitter_mpiexec,self).__init__(launcher)
 
     def Executable(self):
+        # If we're running on MacOS X 10.7 or later, use our own mpich
+        # that we bundle with VisIt when we're running an installed version
+        # of the code.
+        if self.launcher.os == "darwin" and self.launcher.osver >= 11 and \
+           self.launcher.generalArgs.dv == 0:
+            mpiexec = os.path.join(GETENV("VISITARCHHOME"),"bin","mpiexec")
+            if os.path.exists(mpiexec):
+                return [mpiexec]
         return ["mpiexec"]
 
     def CreateCommand(self, args, debugger):
@@ -126,7 +137,7 @@ class JobSubmitter_mpiexec(JobSubmitter):
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
-            parcmd = parcmd + ["-np", self.parallel.np]
+            parcmd = parcmd + ["-n", self.parallel.np]
         if self.parallel.partition != None:
             parcmd = parcmd + ["-p", self.parallel.partition]
         if self.parallel.machinefile != None:
@@ -1554,6 +1565,7 @@ class MainLauncher(object):
         self.parallelArgs = None
         self.debugArgs = None
         self.os = ""
+        self.osver = 0
         self.visitarch = ""
         self.visitarchdir = ""
         self.visitbindir = ""
@@ -1844,6 +1856,7 @@ class MainLauncher(object):
         elif self.os == "darwin":
             all_uname = string.split(self.uname("-a"))
             version = [int(x) for x in string.split(all_uname[2], ".")]
+            self.osver = version[0]
             if version[0] >= 11:
                 if all_uname[-1] == "x86_64":
                     supportedarches.append("darwin-x86_64")
@@ -1976,6 +1989,8 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Brad Whitlock, Tue Jan 29 12:18:57 PST 2013
+    #   Change default launcher to mpiexec on Mac 10.7 and later.
     #
     ############################################################################
 
@@ -1988,7 +2003,10 @@ class MainLauncher(object):
 
         # If no launcher was specified then give a default.
         if self.parallelArgs.parallel and self.parallelArgs.launch == None:
-            self.parallelArgs.launch = "mpirun"
+            if self.os == "darwin" and self.osver >= 11:
+                self.parallelArgs.launch = "mpiexec"
+            else:
+                self.parallelArgs.launch = "mpirun"
 
     ############################################################################
     # Method: Customize

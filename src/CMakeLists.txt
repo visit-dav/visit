@@ -1,6 +1,6 @@
 #*****************************************************************************
 #
-# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+# Copyright (c) 2000 - 2013, Lawrence Livermore National Security, LLC
 # Produced at the Lawrence Livermore National Laboratory
 # LLNL-CODE-442911
 # All rights reserved.
@@ -569,6 +569,7 @@ IF(VISIT_MESA_DIR)
 ON)
 ENDIF(VISIT_MESA_DIR)
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
+OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
@@ -798,7 +799,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
                     INSTALL(CODE
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
+                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
                              OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
@@ -809,7 +810,7 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                     GET_FILENAME_COMPONENT(filename ${filename} NAME)
                     INSTALL(CODE
                         "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
+                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
                              OUTPUT_VARIABLE OSXOUT)
                          MESSAGE(STATUS \"\${OSXOUT}\")
                         ")
@@ -822,14 +823,14 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                     IF(${bundle} STREQUAL "ON")
                         INSTALL(CODE
                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}\" ${filename}
+                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}\" ${filename}
                                 OUTPUT_VARIABLE OSXOUT)
                              MESSAGE(STATUS \"\${OSXOUT}\")
                             ")
                     ELSE(${bundle} STREQUAL "ON")
                         INSTALL(CODE
                             "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}//${dest_dir}${filename}\"
+                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}//${dest_dir}${filename}\"
                                 OUTPUT_VARIABLE OSXOUT)
                              MESSAGE(STATUS \"\${OSXOUT}\")
                             ")
@@ -1937,6 +1938,50 @@ ELSE(UNIX)
    SET(vtk_include_relative_path "/vtk/vtk-5.8")
 ENDIF(UNIX)
 
+# If we're installing MPICH as our MPI then filter the parallel flags so
+# libraries and includes will come from our internal MPICH installation.
+IF(VISIT_MPICH_INSTALL)
+    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
+                    f0_VISIT_PARALLEL_CXXFLAGS
+                    "${VISIT_PARALLEL_CXXFLAGS}")
+    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+                    filtered_VISIT_PARALLEL_CXXFLAGS
+                    "${f0_VISIT_PARALLEL_CXXFLAGS}")
+
+    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
+                    f0_VISIT_PARALLEL_LINKER_FLAGS
+                    "${VISIT_PARALLEL_LINKER_FLAGS}")
+    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+                    filtered_VISIT_PARALLEL_LINKER_FLAGS
+                    "${f0_VISIT_PARALLEL_LINKER_FLAGS}")
+
+    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
+                    f0_VISIT_PARALLEL_LIBS
+                    "${VISIT_PARALLEL_LIBS}")
+    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+                    filtered_VISIT_PARALLEL_LIBS
+                    "${f0_VISIT_PARALLEL_LIBS}")
+
+    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
+                    f0_VISIT_PARALLEL_INCLUDE
+                    "${VISIT_PARALLEL_INCLUDE}")
+    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+                    filtered_VISIT_PARALLEL_INCLUDE
+                    "${f0_VISIT_PARALLEL_INCLUDE}")
+
+    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
+                    f0_VISIT_PARALLEL_DEFS
+                    "${VISIT_PARALLEL_DEFS}")
+    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+                    filtered_VISIT_PARALLEL_DEFS
+                    "${f0_VISIT_PARALLEL_DEFS}")
+ELSE(VISIT_MPICH_INSTALL)
+    SET(filtered_VISIT_PARALLEL_CXXFLAGS     "${VISIT_PARALLEL_CXXFLAGS}")
+    SET(filtered_VISIT_PARALLEL_LINKER_FLAGS "${VISIT_PARALLEL_LINKER_FLAGS}")
+    SET(filtered_VISIT_PARALLEL_LIBS         "${VISIT_PARALLEL_LIBS}")
+    SET(filtered_VISIT_PARALLEL_INCLUDE      "${VISIT_PARALLEL_INCLUDE}")
+    SET(filtered_VISIT_PARALLEL_DEFS         "${VISIT_PARALLEL_DEFS}")
+ENDIF(VISIT_MPICH_INSTALL)
 
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/CMake/PluginVsInstall.cmake.in
                ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake @ONLY IMMEDIATE)
@@ -1949,6 +1994,53 @@ INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake
 UNSET(python_include_relative_path)
 UNSET(exodusii_include_relative_path)
 UNSET(vtk_include_relative_path)
+
+#-----------------------------------------------------------------------------
+# If we're installing MPICH into our VisIt distribution then let's do that by
+# adding some install commands.
+#-----------------------------------------------------------------------------
+IF(VISIT_MPICH_INSTALL)
+    INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/include
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/mpich
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                         GROUP_READ GROUP_WRITE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+    )
+    INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/bin
+        DESTINATION ${VISIT_INSTALLED_VERSION}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+    )
+    INSTALL(DIRECTORY ${VISIT_MPICH_DIR}/lib
+        DESTINATION ${VISIT_INSTALLED_VERSION}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                              WORLD_READ             WORLD_EXECUTE
+        CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+    )
+    IF(APPLE)
+        FOREACH(filename libmpich.dylib libopa.dylib libmpl.dylib libpmpich.dylib)
+            INSTALL(CODE
+                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
+                        OUTPUT_VARIABLE OSXOUT)
+                     MESSAGE(STATUS \"\${OSXOUT}\")
+                    ")
+        ENDFOREACH(filename)
+    ENDIF(APPLE)
+ENDIF(VISIT_MPICH_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Set flags & options from config-site files after everything is set up since
@@ -2126,26 +2218,36 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                    \"/../archives/libQtUiTools.a\"
                    filteredline3
                    \"\${filteredline2}\")
+
+            IF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
+                SET(filteredline4 \"\${filteredline3}\")
+            ELSE(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
+                STRING(REPLACE \"${VISIT_MPICH_DIR}/lib/\"
+                       \"\\\${VISIT_LIBRARY_DIR}/\"
+                       filteredline4
+                       \"\${filteredline3}\")
+            ENDIF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
+
             IF(NOT WIN32)
-                FILE(APPEND \${filename} \"\${filteredline3}\\n\")
+                FILE(APPEND \${filename} \"\${filteredline4}\\n\")
             ELSE(NOT WIN32)
                 # extra replacements that need to be made on Windows.
                 STRING(REPLACE \"${PD}\"
                        \"\\\${VISIT_LIBRARY_DIR}\"
-                       filteredline4
-                       \"\${filteredline3}\")
-                STRING(REPLACE \"${ZLIB_LIBRARY_DIR}\"
-                       \"\\\${VISIT_LIBRARY_DIR}\"
                        filteredline5
                        \"\${filteredline4}\")
-                STRING(REPLACE \"viewer_LIB_DEPENDS\"
-                       \"viewerlib_LIB_DEPENDS\"
+                STRING(REPLACE \"${ZLIB_LIBRARY_DIR}\"
+                       \"\\\${VISIT_LIBRARY_DIR}\"
                        filteredline6
                        \"\${filteredline5}\")
+                STRING(REPLACE \"viewer_LIB_DEPENDS\"
+                       \"viewerlib_LIB_DEPENDS\"
+                       filteredline7
+                       \"\${filteredline6}\")
                 STRING(REPLACE \"gui_LIB_DEPENDS\"
                        \"guilib_LIB_DEPENDS\"
-                       filteredline7 \"\${filteredline6}\")
-                FILE(APPEND \${filename} \"\${filteredline7}\\n\")
+                       filteredline8 \"\${filteredline7}\")
+                FILE(APPEND \${filename} \"\${filteredline8}\\n\")
             ENDIF(NOT WIN32)
         ENDIF(\${outputLine} STREQUAL \"TRUE\")
     ENDFOREACH(line)

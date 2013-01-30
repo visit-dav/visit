@@ -98,7 +98,7 @@ IF(PySide_FOUND)
             GET_FILENAME_COMPONENT(libname ${pysidelib} NAME)
             INSTALL(CODE
                     "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                    COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_OSX_USE_RPATH}
+                    COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH}
                     \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${PYSIDE_MODULE_INSTALLED_DIR}/${libname}\"
                     OUTPUT_VARIABLE OSXOUT)
                     MESSAGE(STATUS \"\${OSXOUT}\")
