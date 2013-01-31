@@ -503,7 +503,11 @@ vtkVisItTensorGlyph::RequestData(
 
 void vtkVisItTensorGlyph::SetSource(vtkPolyData *source)
 {
+#if (VTK_MAJOR_VERSION == 5)
   this->SetInput(1, source);
+#else
+  this->SetInputData(1, source);
+#endif
 }
 
 vtkPolyData *vtkVisItTensorGlyph::GetSource()
