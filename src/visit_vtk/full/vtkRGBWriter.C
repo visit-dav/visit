@@ -107,7 +107,11 @@ vtkRGBWriter::vtkRGBWriter()
   this->FileLowerLeft = 1;
 }
 
+#if (VTK_MAJOR_VERSION == 5)
 void vtkRGBWriter::WriteFileHeader(ofstream *, vtkImageData *)
+#else
+void vtkRGBWriter::WriteFileHeader(ofstream *, vtkImageData *, int wExt[6])
+#endif
 {
     // Do nothing since we need to actually compress the data BEFORE
     // writing the file. It does not look possible to rewind the file
@@ -115,8 +119,13 @@ void vtkRGBWriter::WriteFileHeader(ofstream *, vtkImageData *)
 }
 
 
+#if (VTK_MAJOR_VERSION == 5)
 void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
                  int extent[6])
+#else
+void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
+                 int extent[6], int wExtent[6])
+#endif
 {
     int i, bpp = data->GetNumberOfScalarComponents();
   
@@ -197,8 +206,9 @@ void vtkRGBWriter::WriteFile(ofstream *file, vtkImageData *data,
     unsigned long target;
     float progress = this->Progress;
     float area;
-    int *wExtent;
-    wExtent = this->GetInput()->GetWholeExtent();
+#if (VTK_MAJOR_VERSION == 5)
+    int *wExtent = this->GetInput()->GetWholeExtent();
+#endif
     area = ((extent[5] - extent[4] + 1)*(extent[3] - extent[2] + 1)*
             (extent[1] - extent[0] + 1)) / 
            ((wExtent[5] -wExtent[4] + 1)*(wExtent[3] -wExtent[2] + 1)*

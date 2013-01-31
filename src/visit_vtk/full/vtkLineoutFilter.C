@@ -49,8 +49,9 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkVisItProbeFilter.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkVisItProbeFilter.h>
 
 
 vtkStandardNewMacro(vtkLineoutFilter);
@@ -162,7 +163,7 @@ vtkLineoutFilter::RequestData(
     this->Probe->SetCellData(1);
     }
   this->Probe->SetSource(inDS);
-  this->Probe->SetInput(this->LineSource->GetOutput());
+  this->Probe->SetInputConnection(this->LineSource->GetOutputPort());
   this->Probe->Update();
   
   //
@@ -206,7 +207,8 @@ vtkLineoutFilter::RequestData(
   vtkDataArray *gl = 
       this->Probe->GetOutput()->GetPointData()->GetArray("avtGhostZones");
 
-  int updateLevel = GetOutput()->GetUpdateGhostLevel();
+  int updateLevel = outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
   if (gl && gl->GetDataType() == VTK_UNSIGNED_CHAR && 
       gl->GetNumberOfComponents() == 1)
     {
