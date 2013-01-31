@@ -45,9 +45,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 
 #include <vtkCellArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
-
 #include <vtkSphereSource.h>
 #include <vtkTransformFilter.h>
 #include <vtkTransform.h>
@@ -92,7 +93,6 @@ vtkVectorGlyph::vtkVectorGlyph()
 
 // ***************************************************************************
 //  Modifications:
-//
 //    Kathleen Bonnell, Mon Oct 29 13:22:36 PST 2001
 //    Make pt of type vtkIdType to match VTK 4.0 API.
 //
@@ -113,9 +113,22 @@ vtkVectorGlyph::vtkVectorGlyph()
 //
 // ****************************************************************************
 
-void vtkVectorGlyph::Execute(void)
+int
+vtkVectorGlyph::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
-    vtkPolyData *output = this->GetOutput();
+    vtkDebugMacro(<<"Executing vtkVectorGlyph");
+
+    // get the info objects
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     vtkPoints *pts = vtkPoints::New();
     output->SetPoints(pts);
@@ -273,7 +286,7 @@ void vtkVectorGlyph::Execute(void)
         trn->Scale(1.0, 0.3333, 0.3333);
         xform->SetTransform(trn);
         
-        xform->SetInput(sphere->GetOutput());
+        xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
         vtkPolyData *spoly = (vtkPolyData *)xform->GetOutput();
         int np = spoly->GetPoints()->GetNumberOfPoints();
@@ -295,28 +308,45 @@ void vtkVectorGlyph::Execute(void)
         xform->Delete();
         trn->Delete();
     }
+    return 1;
 }
 
 // ****************************************************************************
+//  Method: vtkVectorGlyph::FillInputPortInformation
+//
+// ****************************************************************************
+
+int
+vtkVectorGlyph::FillInputPortInformation(int port, vtkInformation *info)
+{
+    info->Remove(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE());
+    info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+}
+
+// ****************************************************************************
+//  Method: vtkVectorGlyph::PrintSelf
+//
 //  Modifications:
 //    Jeremy Meredith, Mon Mar 19 14:33:15 EDT 2007
 //    Added settings to draw the stem as a cylinder (vs a line), and its
 //    width, to increase the number of polygons, and to cap the ends of
 //    the cone/cylinder.
-//    
+//
 //    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
 //    Add ellipsoid glyphing.        
+//
 // ****************************************************************************
-void vtkVectorGlyph::PrintSelf(ostream &os, vtkIndent indent)
-{
-   this->Superclass::PrintSelf(os, indent);
-   os << indent << "Arrow:    " << this->Arrow << "\n";
-   os << indent << "MakeHead: " << this->MakeHead << "\n";
-   os << indent << "ConeHead: " << this->ConeHead << "\n";
-   os << indent << "LineStem: " << this->LineStem << "\n";
-   os << indent << "StemWidth: " << this->StemWidth << "\n";
-   os << indent << "CapEnds:  " << this->CapEnds << "\n";
-   os << indent << "HighQuality: " << this->HighQuality << "\n";
-   os << indent << "Relative Size of Heads: " << this->HeadSize << "\n";
-}
 
+void
+vtkVectorGlyph::PrintSelf(ostream &os, vtkIndent indent)
+{
+    this->Superclass::PrintSelf(os, indent);
+    os << indent << "Arrow:    " << this->Arrow << "\n";
+    os << indent << "MakeHead: " << this->MakeHead << "\n";
+    os << indent << "ConeHead: " << this->ConeHead << "\n";
+    os << indent << "LineStem: " << this->LineStem << "\n";
+    os << indent << "StemWidth: " << this->StemWidth << "\n";
+    os << indent << "CapEnds:  " << this->CapEnds << "\n";
+    os << indent << "HighQuality: " << this->HighQuality << "\n";
+    os << indent << "Relative Size of Heads: " << this->HeadSize << "\n";
+}
