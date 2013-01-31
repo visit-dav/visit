@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkVectorGlyph_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataSource.h"
+#include <vtkPolyDataAlgorithm.h>
 
 //  Modifications:
 //    Jeremy Meredith, Fri Nov 21 11:25:27 PST 2003
@@ -69,11 +69,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Dave Pugmire, Mon Jul 19 09:38:17 EDT 2010
 //    Add ellipsoid glyphing.        
 
-class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataSource
+class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVectorGlyph, vtkPolyDataSource);
+  vtkTypeMacro(vtkVectorGlyph, vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
+
+  // Description:
+  // Instantiate a stride filter that throws away nine of every ten elements.
+  static vtkVectorGlyph *New();
 
   vtkSetMacro(HighQuality,int);
   vtkBooleanMacro(HighQuality,int);
@@ -107,15 +111,14 @@ public:
   vtkSetMacro(ConeHead,int);
   vtkGetMacro(ConeHead,int);
 
-  // Description:
-  // Instantiate a stride filter that throws away nine of every ten elements.
-  static vtkVectorGlyph *New();
-
 protected:
   vtkVectorGlyph();
   ~vtkVectorGlyph() {};
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+  virtual int FillInputPortInformation(int port, vtkInformation *info);
 
   int HighQuality;
   int CapEnds;
@@ -133,5 +136,3 @@ private:
 };
 
 #endif
-
-

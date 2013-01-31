@@ -236,7 +236,7 @@ avtVectorGlyphMapper::CustomizeMappers(void)
         {
             if (glyphFilter[i] != NULL)
             {
-                glyphFilter[i]->SetSource(glyph);
+                glyphFilter[i]->SetSourceData(glyph);
                 if (scaleByMagnitude)
                     glyphFilter[i]->SetScaleModeToScaleByVector();
                 else

@@ -154,7 +154,7 @@ avtPointGlypher::CustomizeGlyphs(int spatDim)
         {
             if (glyphFilter[i] != NULL)
             {
-                glyphFilter[i]->SetSource(glyph);
+                glyphFilter[i]->SetSourceData(glyph);
             }
             if (normalsFilter[i] != NULL)
             {
@@ -371,7 +371,7 @@ avtPointGlypher::SetGlyphType(PointGlyphType type)
             {
                 if (glyphFilter[i] != NULL)
                 {
-                    glyphFilter[i]->SetSource(glyph);
+                    glyphFilter[i]->SetSourceData(glyph);
                 }
             }
         }

@@ -31,8 +31,9 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include "vtkStreamingDemandDrivenPipeline.h"
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTransform.h>
+#include <vtkTrivialProducer.h>
 #include <vtkUnsignedCharArray.h>
 
 vtkStandardNewMacro(vtkVisItGlyph3D);
@@ -229,12 +230,12 @@ vtkVisItGlyph3D::RequestData(
     }
   else
     {
-    inGhostLevels = ((vtkUnsignedCharArray*)temp)->GetPointer(0);
+    inGhostLevels =static_cast<vtkUnsignedCharArray *>(temp)->GetPointer(0);
     }
 
-  requestedGhostLevel = outPD->GetUpdateGhostLevel();
-  
-  
+  requestedGhostLevel =
+    outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
+
   numPts = input->GetNumberOfPoints();
   if (numPts < 1)
     {
@@ -309,8 +310,7 @@ vtkVisItGlyph3D::RequestData(
     defaultPointIds[1] = 1;
     defaultSource->SetPoints(defaultPoints);
     defaultSource->InsertNextCell(VTK_LINE, 2, defaultPointIds);
-    defaultSource->SetUpdateExtent(0, 1, 0);
-    this->SetSource(defaultSource);
+    this->SetSourceData(defaultSource);
     defaultSource->Delete();
     defaultSource = NULL;
     defaultPoints->Delete();
@@ -478,7 +478,7 @@ vtkVisItGlyph3D::RequestData(
     scalex = scaley = scalez = 1.0;
     if ( (cellIdx % 10000) == 0 )
       {
-      this->UpdateProgress ((double)inPtId/numPts);
+      this->UpdateProgress(static_cast<double>(inPtId)/numPts);
       if (this->GetAbortExecute())
         {
         break;
@@ -554,7 +554,7 @@ vtkVisItGlyph3D::RequestData(
         scalex = scaley = scalez = vMag;
         }
       }
-    
+
     // Clamp data scale if enabled
     if ( this->Clamping )
       {
@@ -665,12 +665,12 @@ vtkVisItGlyph3D::RequestData(
     trans->Translate(x[0], x[1], x[2]);
 
     // Transform Source by Tensor
-    trans->Concatenate(def_mat);    
+    trans->Concatenate(def_mat);
     
     if ( haveVectors )
       {
       // Copy Input vector
-      for (i=0; i < numSourcePts; i++) 
+      for (i=0; i < numSourcePts; i++)
         {
         newVectors->InsertTuple(i+ptIncr, v);
         }
@@ -689,11 +689,11 @@ vtkVisItGlyph3D::RequestData(
           vNew[0] = (v[0]+vMag) / 2.0;
           vNew[1] = v[1] / 2.0;
           vNew[2] = v[2] / 2.0;
-          trans->RotateWXYZ((double)180.0,vNew[0],vNew[1],vNew[2]);
+          trans->RotateWXYZ(180.0,vNew[0],vNew[1],vNew[2]);
           }
         }
       }
-    
+
     // determine scale factor from scalars if appropriate
     if ( inScalars_forColoring || inScalars )
       {
@@ -725,19 +725,19 @@ vtkVisItGlyph3D::RequestData(
       {
       inVectors_forColoring->GetTuple(inPtId, v);
       vMag = vtkMath::Norm(v);
-      for (i=0; i < numSourcePts; i++) 
+      for (i=0; i < numSourcePts; i++)
         {
         newScalars->InsertTuple(i+ptIncr, &vMag);
         }
       }
     else if (haveVectors && this->ColorMode == VTK_COLOR_BY_VECTOR)
       {
-      for (i=0; i < numSourcePts; i++) 
+      for (i=0; i < numSourcePts; i++)
         {
         newScalars->InsertTuple(i+ptIncr, &vMag);
         }
       }
-    
+
     // scale data if appropriate
     if ( this->Scaling )
       {
@@ -751,7 +751,7 @@ vtkVisItGlyph3D::RequestData(
         scaley *= this->ScaleFactor;
         scalez *= this->ScaleFactor;
         }
-      
+
       if ( scalex == 0.0 )
         {
         scalex = 1.0e-10;
@@ -804,9 +804,9 @@ vtkVisItGlyph3D::RequestData(
       }
 
     ptIncr += numSourcePts;
-    } 
+    }
   }
-  
+
   // Update ourselves and release memory
   //
   outPD->SetPoints(newPts);
@@ -845,7 +845,7 @@ vtkVisItGlyph3D::RequestData(
   def_mat->Delete();
   pts->Delete();
 
-  if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA || 
+  if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA ||
                        input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID))
   {
      vtkPolyData *in_polydata = (vtkPolyData *) input;
@@ -866,8 +866,13 @@ vtkVisItGlyph3D::RequestData(
        outPD2->InsertNextCell(c, ptIds);
      }
      vtkAppendPolyData *appender = vtkAppendPolyData::New();
+#if (VTK_MAJOR_VERSION == 5)
      appender->AddInput(outPD2);
      appender->AddInput(outPD);
+#else
+     appender->AddInputData(outPD2);
+     appender->AddInputData(outPD);
+#endif
      appender->Update();
      output->ShallowCopy(appender->GetOutput());
      outPD2->Delete();
@@ -919,7 +924,7 @@ void vtkVisItGlyph3D::SetSourceConnection(int id, vtkAlgorithmOutput* algOutput)
 
 int
 vtkVisItGlyph3D::RequestUpdateExtent(
-  vtkInformation *request,
+  vtkInformation *vtkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector)
 {
@@ -973,8 +978,9 @@ vtkVisItGlyph3D::FillInputPortInformation(int port, vtkInformation *info)
 
 // Specify a source object at a specified table location.
 void
-vtkVisItGlyph3D::SetSource(int id, vtkPolyData *pd)
+vtkVisItGlyph3D::SetSourceData(int id, vtkPolyData *pd)
 {
+#if (VTK_MAJOR_VERSION == 5)
   if (id < 0)
     {
     vtkErrorMacro("Bad index " << id << " for source.");
@@ -1004,6 +1010,43 @@ vtkVisItGlyph3D::SetSource(int id, vtkPolyData *pd)
     {
     this->AddInputConnection(1, algOutput);
     }
+#else
+  int numConnections = this->GetNumberOfInputConnections(1);
+
+  if (id < 0 || id > numConnections)
+    {
+    vtkErrorMacro("Bad index " << id << " for source.");
+    return;
+    }
+
+  vtkTrivialProducer* tp = 0;
+  if (pd)
+    {
+    tp = vtkTrivialProducer::New();
+    tp->SetOutput(pd);
+    }
+
+  if (id < numConnections)
+    {
+    if (tp)
+      {
+      this->SetNthInputConnection(1, id, tp->GetOutputPort());
+      }
+    else
+      {
+      this->SetNthInputConnection(1, id, 0);
+      }
+    }
+  else if (id == numConnections && tp)
+    {
+    this->AddInputConnection(1, tp->GetOutputPort());
+    }
+
+  if (tp)
+    {
+    tp->Delete();
+    }
+#endif
 }
 
 // Get a pointer to a source object at a specified table location.
@@ -1056,7 +1099,7 @@ vtkVisItGlyph3D::PrintSelf(ostream& os, vtkIndent indent)
     }
 
   os << indent << "Scaling: " << (this->Scaling ? "On\n" : "Off\n");
-  
+
   os << indent << "Scale Mode: ";
   if ( this->ScaleMode == VTK_SCALE_BY_SCALAR )
     {
