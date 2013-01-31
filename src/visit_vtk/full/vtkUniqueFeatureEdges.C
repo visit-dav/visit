@@ -53,6 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolygon.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTriangleStrip.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -154,7 +155,8 @@ int vtkUniqueFeatureEdges::RequestData(
   vtkCellData *cd=input->GetCellData(), *outCD=output->GetCellData();
   unsigned char* ghostLevels=0;
   vtkEdgeTable *edgeTable;
-  unsigned char updateLevel = (unsigned char) output->GetUpdateGhostLevel();
+  unsigned char updateLevel = (unsigned char) outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
   
   vtkDebugMacro(<<"Executing feature edges");
 
@@ -479,11 +481,14 @@ int vtkUniqueFeatureEdges::RequestUpdateExtent(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  int numPieces = output->GetUpdateNumberOfPieces();
-  int ghostLevel = output->GetUpdateGhostLevel();
+  int numPieces = (int) outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES());
+  int ghostLevel = (int) outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
   if (numPieces > 1)
     {
-    input->SetUpdateGhostLevel(ghostLevel + 1);
+    inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
+      ghostLevel + 1);
     }
   return 1;
 }

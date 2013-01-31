@@ -28,6 +28,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolygon.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTriangleStrip.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -450,11 +451,15 @@ int vtkVisItFeatureEdges::RequestUpdateExtent(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  int numPieces = output->GetUpdateNumberOfPieces();
-  int ghostLevel = output->GetUpdateGhostLevel();
+  int numPieces = outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES());
+  int ghostLevel = outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
   if (numPieces > 1)
     {
-    input->SetUpdateGhostLevel(ghostLevel + 1);
+    inInfo->Set(
+      vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),
+      ghostLevel + 1);
     }
   return 1;
 }
