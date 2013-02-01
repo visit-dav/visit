@@ -54,6 +54,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
@@ -801,16 +802,25 @@ vtkDataSet *
 avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 {
     vtkDataSetRemoveGhostCells *ghosts = vtkDataSetRemoveGhostCells::New();
+#if (VTK_MAJOR_VERSION == 5)
     ghosts->SetInput(in_ds);
+#else
+    ghosts->SetInputData(in_ds);
+#endif
     ghosts->Update();
 
     vtkLineoutFilter *filter = vtkLineoutFilter::New();
 
-    filter->SetInput(ghosts->GetOutput());
+    filter->SetInputConnection(ghosts->GetOutputPort());
     filter->SetPoint1(point1);
     filter->SetPoint2(point2);
     filter->SetNumberOfSamplePoints(numberOfSamplePoints);
+#if (VTK_MAJOR_VERSION == 5)
     filter->GetOutput()->SetUpdateGhostLevel(0);
+#else
+    // FIX_ME_VTK6.0, ESB, is this correct?
+    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(filter->GetInformation(), 0);
+#endif
     filter->Update();
     vtkPolyData *outPolys = filter->GetOutput();
 

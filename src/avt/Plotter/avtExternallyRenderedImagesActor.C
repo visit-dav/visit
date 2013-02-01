@@ -125,7 +125,11 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     visualQueueActor->SetMapper(visualQueueMapper);
 
     lastNonDummyImage     = NULL;
+#if (VTK_MAJOR_VERSION == 5)
     myMapper->SetInput(dummyImage);
+#else
+    myMapper->SetInputData(dummyImage);
+#endif
     myMapper->SetColorWindow(255);
     myMapper->SetColorLevel(127);
     myActor               = vtkActor2D::New();
@@ -340,7 +344,11 @@ avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
       avtImage_p img;
       CopyTo(img, dob);
       avtImageRepresentation& imgRep = img->GetImage();
+#if (VTK_MAJOR_VERSION == 5)
       myMapper->SetInput(imgRep.GetImageVTK());
+#else
+      myMapper->SetInputData(imgRep.GetImageVTK());
+#endif
 
       // update the last non dummy image
       if (lastNonDummyImage != NULL)
@@ -355,11 +363,19 @@ avtExternallyRenderedImagesActor::PrepareForRender(vtkCamera *cam)
    {
       // if we got back nothing, put up the dummy (blank) image
       if (*dob == NULL)
+#if (VTK_MAJOR_VERSION == 5)
          myMapper->SetInput(dummyImage);
+#else
+         myMapper->SetInputData(dummyImage);
+#endif
 
       // if we got 'no-change' put up the last non dummy image
       if (*dob == *dummyDob)
+#if (VTK_MAJOR_VERSION == 5)
          myMapper->SetInput(lastNonDummyImage);
+#else
+         myMapper->SetInputData(lastNonDummyImage);
+#endif
    }
 }
 
@@ -502,7 +518,11 @@ avtExternallyRenderedImagesActor::DisableExternalRenderRequests(bool bClearImage
    makeExternalRenderRequests = false;
    
    if (bClearImage)
+#if (VTK_MAJOR_VERSION == 5)
        myMapper->SetInput(dummyImage);
+#else
+       myMapper->SetInputData(dummyImage);
+#endif
    
    return oldMode; 
 }
@@ -654,11 +674,9 @@ avtExternallyRenderedImagesActor::RemoveFromRenderer(vtkRenderer *ren)
 void
 avtExternallyRenderedImagesActor::UseBlankImage()
 {
+#if (VTK_MAJOR_VERSION == 5)
     myMapper->SetInput(dummyImage);
+#else
+    myMapper->SetInputData(dummyImage);
+#endif
 }
-
-
-
-
-
-

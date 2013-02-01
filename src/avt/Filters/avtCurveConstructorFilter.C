@@ -251,7 +251,11 @@ void avtCurveConstructorFilter::Execute()
 
         for (i = 0; i < nleaves; i++)
         {
+#if (VTK_MAJOR_VERSION == 5)
             writer->SetInput(ds[i]);
+#else
+            writer->SetInputData(ds[i]);
+#endif
             writer->Write();
             size =  writer->GetOutputStringLength();
             str  =  writer->RegisterAndGetOutputString();
