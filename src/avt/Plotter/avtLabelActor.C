@@ -214,7 +214,7 @@ void avtLabelActor::SetDesignator(const char *l)
     vecText->SetText(l);
 
     vtkPolyDataMapper *labelMapper = vtkPolyDataMapper::New();
-    labelMapper->SetInput(vecText->GetOutput());
+    labelMapper->SetInputConnection(vecText->GetOutputPort());
 
     labelActor->SetMapper(labelMapper);
 
@@ -312,7 +312,11 @@ void avtLabelActor::SetMarker(const int index)
     // Create the actor.
     //
     vtkPolyDataMapper *labelMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
     labelMapper->SetInput(polyData);
+#else
+    labelMapper->SetInputData(polyData);
+#endif
 
     labelActor->SetMapper(labelMapper);
 

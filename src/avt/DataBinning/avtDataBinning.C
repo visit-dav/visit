@@ -338,7 +338,11 @@ avtDataBinning::OutputDataBinning(const std::string &ddfname)
         char str[1024];
         sprintf(str, "%s.vtk", ddfname.c_str());
         wrtr->SetFileName(str);
+#if (VTK_MAJOR_VERSION == 5)
         wrtr->SetInput(g);
+#else
+        wrtr->SetInputData(g);
+#endif
         wrtr->Write();
         wrtr->Delete();
     }

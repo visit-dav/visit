@@ -106,7 +106,11 @@ void
 avtImageMapper::ChangedInput(void)
 {
     vtkImageData *img = GetImageRep().GetImageVTK();
+#if (VTK_MAJOR_VERSION == 5)
     mapper->SetInput(img);
+#else
+    mapper->SetInputData(img);
+#endif
 }
 
 

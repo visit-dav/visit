@@ -50,6 +50,7 @@
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItUtility.h>
@@ -531,7 +532,12 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
         }
         outm->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete();
+#if (VTK_MAJOR_VERSION == 5)
         outm->SetUpdateGhostLevel(0);
+#else
+        // FIX_ME_VTK6.0, ESB, is this correct?
+        vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(outm->GetInformation(), 0);
+#endif
 
         // This call is in lieu of "BuildLinks", which has a memory leak.
         // This should be the non-leaking equivalent.

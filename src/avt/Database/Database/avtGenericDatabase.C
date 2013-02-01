@@ -3008,7 +3008,12 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         // Force an Update.  This needs to be done and if we do it when we
         // read it in, then it guarantees it only happens once.
         //
-        mesh->Update();
+#if (VTK_MAJOR_VERSION == 5)
+        // FIX_ME_VTK6.0, ESB, I assume this needs to be done for VTK based
+        // readers. Can we eliminate this or do we need to move it somewhere
+        // else. All the tests pass with this commented out.
+        // mesh->Update();
+#endif
 
         //
         // VTK creates a trivial producer for each data set.  It later does
@@ -3821,7 +3826,11 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
 
                 vtkDataSet *in_ds = out_ds[d];
 
+#if (VTK_MAJOR_VERSION == 5)
                 bf->SetInput((vtkUnstructuredGrid*)in_ds);
+#else
+                bf->SetInputData((vtkUnstructuredGrid*)in_ds);
+#endif
                 in_ds->Delete();
                 out_ds[d] = bf->GetOutput();
                 bf->Update();
@@ -4326,7 +4335,11 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
         enumThreshold->SetEnumerationSelection(selection);
 
         // do the operation
+#if (VTK_MAJOR_VERSION == 5)
         enumThreshold->SetInput(ds);
+#else
+        enumThreshold->SetInputData(ds);
+#endif
         vtkDataSet *outds = enumThreshold->GetOutput();
         enumThreshold->Update();
 
@@ -6654,10 +6667,14 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
         ln->Delete();
         vtkUnstructuredGridFacelistFilter *ff =
                                       vtkUnstructuredGridFacelistFilter::New();
+#if (VTK_MAJOR_VERSION == 5)
         ff->SetInput(copy);
+#else
+        ff->SetInputData(copy);
+#endif
         vtkPolyDataRelevantPointsFilter *rpf =
                                         vtkPolyDataRelevantPointsFilter::New();
-        rpf->SetInput(ff->GetOutput());
+        rpf->SetInputConnection(ff->GetOutputPort());
         rpf->Update();
         vtkIntArray *g = (vtkIntArray *)
             rpf->GetOutput()->GetPointData()->GetArray("avtGlobalNodeNumbers");
