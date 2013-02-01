@@ -311,11 +311,15 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         normalsFilter[dom] = vtkVisItPolyDataNormals::New();
     }
 
+#if (VTK_MAJOR_VERSION == 5)
     tensorFilter[dom]->SetInput(ds);
+#else
+    tensorFilter[dom]->SetInputData(ds);
+#endif
 
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
     {
-        normalsFilter[dom]->SetInput(tensorFilter[dom]->GetOutput());
+        normalsFilter[dom]->SetInputConnection(tensorFilter[dom]->GetOutputPort());
         return normalsFilter[dom]->GetOutput();
     }
     else

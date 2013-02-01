@@ -37,7 +37,11 @@ public:
 
   // Description:
   // Specify the input data to map.
+#if (VTK_MAJOR_VERSION == 5)
   void SetInput(vtkStructuredGrid *in);
+#else
+  void SetInputData(vtkStructuredGrid *in);
+#endif
   vtkStructuredGrid *GetInput();
   
   // Description:

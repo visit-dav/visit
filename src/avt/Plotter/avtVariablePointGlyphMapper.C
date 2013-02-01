@@ -407,7 +407,11 @@ avtVariablePointGlyphMapper::SetGlyphType(PointGlyphType type)
                 {
                     if (mappers[i] != NULL)
                     {
+#if (VTK_MAJOR_VERSION == 5)
                         mappers[i]->SetInput(InsertFilters(children[i], i));
+#else
+                        mappers[i]->SetInputData(InsertFilters(children[i], i));
+#endif
                     }
                 }
                 // this was allocated in GetAllLeaves, need to free it now

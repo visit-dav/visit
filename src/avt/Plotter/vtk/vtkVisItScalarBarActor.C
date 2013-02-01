@@ -165,7 +165,11 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->ColorBar = vtkPolyData::New();
   this->ColorBarMapper = vtkPolyDataMapper2D::New();
+#if (VTK_MAJOR_VERSION == 5)
   this->ColorBarMapper->SetInput(this->ColorBar);
+#else
+  this->ColorBarMapper->SetInputData(this->ColorBar);
+#endif
   this->ColorBarActor = vtkActor2D::New();
   this->ColorBarActor->SetMapper(this->ColorBarMapper);
   this->ColorBarActor->GetPositionCoordinate()->
@@ -173,7 +177,11 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->Tics = vtkPolyData::New();
   this->TicsMapper = vtkPolyDataMapper2D::New();
+#if (VTK_MAJOR_VERSION == 5)
   this->TicsMapper->SetInput(this->Tics);
+#else
+  this->TicsMapper->SetInputData(this->Tics);
+#endif
   this->TicsActor = vtkActor2D::New();
   this->TicsActor->SetMapper(this->TicsMapper);
   this->TicsActor->GetPositionCoordinate()->
@@ -181,7 +189,11 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->BoundingBox = vtkPolyData::New();
   this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
+#if (VTK_MAJOR_VERSION == 5)
   this->BoundingBoxMapper->SetInput(this->BoundingBox);
+#else
+  this->BoundingBoxMapper->SetInputData(this->BoundingBox);
+#endif
   this->BoundingBoxActor = vtkActor2D::New();
   this->BoundingBoxActor->SetMapper(this->BoundingBoxMapper);
   this->BoundingBoxActor->GetPositionCoordinate()->

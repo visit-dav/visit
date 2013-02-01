@@ -293,12 +293,16 @@ avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
         normalsFilter[whichGlyph] = vtkVisItPolyDataNormals::New();
     }
 
+#if (VTK_MAJOR_VERSION == 5)
     glyphFilter[whichGlyph]->SetInput(ds);
+#else
+    glyphFilter[whichGlyph]->SetInputData(ds);
+#endif
     glyphFilter[whichGlyph]->SetVectorModeToVectorRotationOff();
 
     if (spatialDim == 3)
     {
-        normalsFilter[whichGlyph]->SetInput(glyphFilter[whichGlyph]->GetOutput());
+        normalsFilter[whichGlyph]->SetInputConnection(glyphFilter[whichGlyph]->GetOutputPort());
         return normalsFilter[whichGlyph]->GetOutput();
     }
     else

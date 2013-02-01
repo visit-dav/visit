@@ -47,7 +47,10 @@
 #include <vtkVersion.h>
 #if !defined(_WIN32)
 #include <vtkGraphicsFactory.h>
+#if (VTK_MAJOR_VERSION == 5)
+// FIX_ME_VTK6.0, ESB, This is used for mesa, we can probably drop it.
 #include <vtkImagingFactory.h>
+#endif
 #endif
 
 
@@ -219,7 +222,10 @@ InitVTKRendering::ForceMesa(void)
                          defined(VTK_OPENGL_HAS_OSMESA))
     vtkGraphicsFactory::SetUseMesaClasses(1);
     vtkGraphicsFactory::SetOffScreenOnlyMode(1);
+#if (VTK_MAJOR_VERSION == 5)
+// FIX_ME_VTK6.0, ESB, This is used for mesa, we can probably drop it.
     vtkImagingFactory::SetUseMesaClasses(1);
+#endif
 #endif
 }
 
@@ -229,6 +235,9 @@ InitVTKRendering::UnforceMesa(void)
 #if !defined(_WIN32) && defined(VTK_USE_MANGLED_MESA)
     vtkGraphicsFactory::SetUseMesaClasses(0);
     vtkGraphicsFactory::SetOffScreenOnlyMode(0);
+#if (VTK_MAJOR_VERSION == 5)
+// FIX_ME_VTK6.0, ESB, This is used for mesa, we can probably drop it.
     vtkImagingFactory::SetUseMesaClasses(0);
+#endif
 #endif
 }
