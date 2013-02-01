@@ -11,8 +11,6 @@
 #include <cstdlib>
 #include <iterator>
 
-using namespace std;
-
 class CubeReader
 {
  public:
@@ -33,7 +31,7 @@ class CubeReader
   
   void GetGridValues(float* vals);
   
-  void GetAtomLocations(vector<float> &locations);
+  void GetAtomLocations(std::vector<float> &locations);
   
   void GetAtomTypes(float* types);
 
@@ -41,7 +39,7 @@ class CubeReader
   
   bool isFileValid() const;
   
-  string getErrorString() const;
+  std::string getErrorString() const;
 
   // default units are in angstorm
   void SetAtomUnitsToBohr();
@@ -51,11 +49,12 @@ class CubeReader
   int  GetOrbitalNumber(int i);
   void GetOrbitalValues(float* ptr, const char* varname);
 
+  void GetUnitCell(float *UCO, float *UCV); // unit cell origin and unit cell vector
  private:
   //The name of the input file
-  string filename;
+  std::string filename;
   //ifstream of the file
-  ifstream file;
+  std::ifstream file;
 
   long int data_pos;
   int x_size, y_size, z_size;
@@ -69,13 +68,13 @@ class CubeReader
   
   bool isSheared;
   //String indicating whether an error occured while parsing the header
-  string errorString;
+  std::string errorString;
   
   int natoms;
-  vector<float> atom_locations;
-  vector<int>   atom_types;
+  std::vector<float> atom_locations;
+  std::vector<int>   atom_types;
 
-  vector<int> orbitals;
+  std::vector<int> orbitals;
 
 };
 
