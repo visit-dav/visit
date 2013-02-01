@@ -102,7 +102,7 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 
   this->TitleVector = vtkMultiFontVectorText::New();
   this->TitleMapper = vtkPolyDataMapper::New();
-  this->TitleMapper->SetInput(this->TitleVector->GetOutput());
+  this->TitleMapper->SetInputConnection(this->TitleVector->GetOutputPort());
   this->TitleActor = vtkFollower::New();
   this->TitleActor->SetMapper(this->TitleMapper);
 
@@ -122,7 +122,11 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 
   this->Axis = vtkPolyData::New();
   this->AxisMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
   this->AxisMapper->SetInput(this->Axis);
+#else
+  this->AxisMapper->SetInputData(this->Axis);
+#endif
   this->AxisActor = vtkActor::New();
   this->AxisActor->SetMapper(this->AxisMapper);
   
@@ -878,7 +882,7 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
       this->LabelVectors[i] = vtkMultiFontVectorText::New();
 
       this->LabelMappers[i] = vtkPolyDataMapper::New();
-      this->LabelMappers[i]->SetInput(this->LabelVectors[i]->GetOutput());
+      this->LabelMappers[i]->SetInputConnection(this->LabelVectors[i]->GetOutputPort());
       this->LabelActors[i] = vtkFollower::New();
       this->LabelActors[i]->SetMapper(this->LabelMappers[i]);
       }

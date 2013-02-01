@@ -432,7 +432,11 @@ avtMapper::SetUpMappers(void)
 
         mappers[i] = CreateMapper();
         vtkDataSet *ds = InsertFilters(children[i], i);
+#if (VTK_MAJOR_VERSION == 5)
         mappers[i]->SetInput(ds);
+#else
+        mappers[i]->SetInputData(ds);
+#endif
         if (immediateMode)
         {
             mappers[i]->ImmediateModeRenderingOn();

@@ -396,11 +396,15 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         normalsFilter[dom] = vtkVisItPolyDataNormals::New();
     }
 
+#if (VTK_MAJOR_VERSION == 5)
     glyphFilter[dom]->SetInput(ds);
+#else
+    glyphFilter[dom]->SetInputData(ds);
+#endif
 
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
     {
-        normalsFilter[dom]->SetInput(glyphFilter[dom]->GetOutput());
+        normalsFilter[dom]->SetInputConnection(glyphFilter[dom]->GetOutputPort());
         return normalsFilter[dom]->GetOutput();
     }
     else

@@ -43,6 +43,7 @@ vtkStructuredGridMapper::vtkStructuredGridMapper()
 }
 
 //----------------------------------------------------------------------------
+#if (VTK_MAJOR_VERSION == 5)
 void vtkStructuredGridMapper::SetInput(vtkStructuredGrid *input)
 {
   if(input)
@@ -55,6 +56,12 @@ void vtkStructuredGridMapper::SetInput(vtkStructuredGrid *input)
     this->SetInputConnection(0, 0);
     }
 }
+#else
+void vtkStructuredGridMapper::SetInputData(vtkStructuredGrid *input)
+{
+    this->SetInputDataInternal(0, input);
+}
+#endif
 
 //----------------------------------------------------------------------------
 // Specify the input data or filter.
@@ -70,7 +77,7 @@ void vtkStructuredGridMapper::ShallowCopy(vtkAbstractMapper *mapper)
   vtkStructuredGridMapper *m = vtkStructuredGridMapper::SafeDownCast(mapper);
   if ( m != NULL )
     {
-    this->SetInput(m->GetInput());
+    this->SetInputConnection(m->GetInputConnection(0, 0));
     }
 
   // Now do superclass

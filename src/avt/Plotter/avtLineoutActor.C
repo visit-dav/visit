@@ -83,7 +83,7 @@ avtLineoutActor:: avtLineoutActor()
     lineSource  = vtkLineSource::New();
         lineSource->SetResolution(1);   // only need one line segment here
     lineMapper  = vtkPolyDataMapper::New();
-        lineMapper->SetInput(lineSource->GetOutput());
+        lineMapper->SetInputConnection(lineSource->GetOutputPort());
     lineActor   = vtkActor::New();
         lineActor->SetMapper(lineMapper); 
         lineActor->PickableOff(); 
@@ -338,7 +338,7 @@ void avtLineoutActor::SetDesignator(const std::string &designator_)
     vecText->SetText(designator.c_str());
 
     vtkPolyDataMapper *pdmapper = vtkPolyDataMapper::New();
-    pdmapper->SetInput(vecText->GetOutput());
+    pdmapper->SetInputConnection(vecText->GetOutputPort());
 
     labelActor1->SetMapper(pdmapper);
     labelActor2->SetMapper(pdmapper);

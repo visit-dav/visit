@@ -43,6 +43,7 @@ vtkRectilinearGridMapper::vtkRectilinearGridMapper()
 }
 
 //----------------------------------------------------------------------------
+#if (VTK_MAJOR_VERSION == 5)
 void vtkRectilinearGridMapper::SetInput(vtkRectilinearGrid *input)
 {
   if(input)
@@ -55,6 +56,12 @@ void vtkRectilinearGridMapper::SetInput(vtkRectilinearGrid *input)
     this->SetInputConnection(0, 0);
     }
 }
+#else
+void vtkRectilinearGridMapper::SetInputData(vtkRectilinearGrid *input)
+{
+    this->SetInputDataInternal(0, input);
+}
+#endif
 
 //----------------------------------------------------------------------------
 // Specify the input data or filter.
@@ -70,7 +77,7 @@ void vtkRectilinearGridMapper::ShallowCopy(vtkAbstractMapper *mapper)
   vtkRectilinearGridMapper *m = vtkRectilinearGridMapper::SafeDownCast(mapper);
   if ( m != NULL )
     {
-    this->SetInput(m->GetInput());
+    this->SetInputConnection(m->GetInputConnection(0, 0));
     }
 
   // Now do superclass
@@ -100,8 +107,11 @@ double *vtkRectilinearGridMapper::GetBounds()
   if (this->GetNumberOfInputConnections(0))
     {
     this->Update();
-    this->GetInput()->GetBounds(this->Bounds);
-    return this->Bounds;
+    if(this->GetInput() != NULL)
+      {
+      this->GetInput()->GetBounds(this->Bounds);
+      return this->Bounds;
+      }
     }
 
   return bounds;
