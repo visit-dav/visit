@@ -2,6 +2,7 @@
 
 #include <InvalidFilesException.h>
 
+using namespace std;
 
 CubeReader::CubeReader(const char* fname) {
 
@@ -469,3 +470,18 @@ void CubeReader::GetGridValues(float* vals) {
   cout<<"        done with reading data, closing file"<<endl;
   fclose(file);
 }
+
+void CubeReader::GetUnitCell(float *UCO, float *UCV)
+{
+  UCO[0] = x_origin;
+  UCO[1] = y_origin;
+  UCO[2] = z_origin;
+  for(int i=0; i<3; i++)
+    {
+    UCV[i] =   (x_size - 1) * dx[i];
+    UCV[3+i] = (y_size - 1) * dy[i];
+    UCV[6+i] = (z_size - 1) * dz[i];
+    }
+}
+
+
