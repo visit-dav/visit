@@ -1,7 +1,7 @@
-#/sw/sources/visit/analysis-x64/thirdparty/visit/cmake/2.8.3/linux-x86_64_gcc-4.4/bin/cmake
+#/sw/sources/visit/analysis-x64/thirdparty/visit/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
-## created: Tue Nov 29 16:44:44 EST 2011
+## created: Wed Jan  9 17:25:55 EST 2013
 ## system: Linux lens-login5 2.6.18-194.32.1.el5.perfctr #1 SMP Wed Apr 27 14:12:03 EDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: pugmire
 
@@ -10,23 +10,24 @@
 ##
 SET(VISITHOME /sw/sources/visit/analysis-x64/thirdparty/visit)
 SET(VISITARCH linux-x86_64_gcc-4.4)
-SET(VISIT_VERBOSE_MAKEFILE TRUE) 
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON) 
-VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /sw/analysis-x64/visit) 
+SET(VISIT_VERBOSE_MAKEFILE TRUE)
+VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX /sw/analysis-x64/visit)
 
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /ccs/compilers/gcc/centos5.5-x86_64/4.4.4/bin/g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
-## 
-## Parallel Build Setup. 
-## 
-## (configured w/ mpi compiler wrapper) 
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /sw/analysis-x64/ompi/1.4.2/centos5.5_gnu4.4.4/bin/mpicc TYPE STRING) 
-
+##
+## Parallel Build Setup.
+##
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /sw/analysis-x64/ompi/1.4.2/centos5.5_gnu4.4.4/bin/mpic++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/sw/analysis-x64/ompi/1.4.2/centos5.5_gnu4.4.4/lib -Wl,-rpath=/ccs/compilers/gcc/centos5.5-x86_64/4.7.1/lib64")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpi_cxx mpi)
 
 ##############################################################
 ##
@@ -40,27 +41,26 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /sw/analysis-x64/ompi/1.4.2/centos5.5_gn
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
 ##
-## Specify the location of the python.
+## Python
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /sw/sources/visit/analysis-x64/thirdparty/visit/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
-## Specify the location of the mesa.
+## Mesa
 ##
 VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
 
 ##
-## Specify the location of the vtk.
+## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
 
 ##
-## Specify the Qt4 binary dir. 
-## (qmake is used to locate & setup Qt4 dependencies)
+## Qt
 ##
-VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.7.4/${VISITARCH}/bin)
-
+VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 
 ##
 ## SZIP
@@ -74,10 +74,9 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR ${VISITHOME}/hdf5/1.8.7/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz /usr/lib z TYPE STRING)
 
 ##
-## HDF4
+## Ice-T
 ##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/5.8.0/${VISITARCH}/lib vtkjpeg TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
 
 ##
 ## NetCDF
@@ -105,7 +104,7 @@ VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NET
 ##
 ## Boxlib
 ##
-VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/2011.04.28/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_BOXLIB_DIR ${VISITHOME}/boxlib/1.0.7/${VISITARCH})
 
 ##
 ## CFITSIO
@@ -115,7 +114,7 @@ VISIT_OPTION_DEFAULT(VISIT_CFITSIO_DIR ${VISITHOME}/cfitsio/3006/${VISITARCH})
 ##
 ## H5Part
 ##
-VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.4/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR ${VISITHOME}/h5part/1.6.6/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
@@ -135,25 +134,6 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
-## ITAPS
-##
-## MOAB implementation
-ITAPS_INCLUDE_DIRECTORIES(MOAB ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(MOAB *.cub)
-ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf vtkGraphics)
-ITAPS_LINK_DIRECTORIES(MOAB  ${VISITHOME}/itaps/1.2/MOAB/4.0.1RC2/${VISITARCH}/lib  ${VISITHOME}/hdf5/1.8.7/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/4.1.1/${VISITARCH}/lib)
-## FMDB implementation
-ITAPS_INCLUDE_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(FMDB *.sms)
-ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)
-ITAPS_LINK_DIRECTORIES(FMDB ${VISITHOME}/itaps/1.2/FMDB/1.2/${VISITARCH}/lib)
-## GRUMMP implementation
-ITAPS_INCLUDE_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/include)
-ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)
-ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics cgm dl)
-ITAPS_LINK_DIRECTORIES(GRUMMP ${VISITHOME}/itaps/1.2/GRUMMP/0.6.3/${VISITARCH}/lib)
-
-##
 ## AdvIO
 ##
 VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
@@ -162,12 +142,11 @@ VISIT_OPTION_DEFAULT(VISIT_ADVIO_DIR ${VISITHOME}/AdvIO/1.2/${VISITARCH}/)
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
 ##
 
 ##
-## ADIOS
+## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/ADIOS/1.3/${VISITARCH})
-##
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
 
