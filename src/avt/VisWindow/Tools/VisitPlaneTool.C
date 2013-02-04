@@ -663,7 +663,11 @@ VisitPlaneTool::CreatePlaneActor()
     }
 
     planeMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
     planeMapper->SetInput(planeData);
+#else
+    planeMapper->SetInputData(planeData);
+#endif
 
     planeActor = vtkActor::New();
     planeActor->GetProperty()->SetLineWidth(2.);
@@ -832,7 +836,11 @@ VisitPlaneTool::CreateVectorActor()
     // This will make it look shaded as was intended.
     //
     vtkPolyDataNormals *pdn = vtkPolyDataNormals::New();
+#if (VTK_MAJOR_VERSION == 5)
     pdn->SetInput(vectorData);
+#else
+    pdn->SetInputData(vectorData);
+#endif
     pdn->Update();
     vtkPolyData *pd = pdn->GetOutput();
     pd->Register(NULL);
@@ -841,7 +849,11 @@ VisitPlaneTool::CreateVectorActor()
     vectorData = pd;
 
     vectorMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
     vectorMapper->SetInput(vectorData);
+#else
+    vectorMapper->SetInputData(vectorData);
+#endif
 
     vectorActor = vtkActor::New();
     vtkMatrix4x4 *m = vtkMatrix4x4::New(); m->Identity();
@@ -1357,7 +1369,11 @@ VisitPlaneTool::UpdateOutline()
     }
 
     // Set the mapper's input to be the new dataset.
+#if (VTK_MAJOR_VERSION == 5)
     outlineMapper->SetInput(outlineData);
+#else
+    outlineMapper->SetInputData(outlineData);
+#endif
 }
 
 // ****************************************************************************

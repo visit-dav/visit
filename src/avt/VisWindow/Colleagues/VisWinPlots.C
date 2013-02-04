@@ -108,7 +108,7 @@ VisWinPlots::VisWinPlots(VisWindowColleagueProxy &p) : VisWinColleague(p)
 {
     bboxGrid = vtkOutlineSource::New();
     bboxMapper = vtkPolyDataMapper::New();
-    bboxMapper->SetInput(bboxGrid->GetOutput());
+    bboxMapper->SetInputConnection(bboxGrid->GetOutputPort());
 
     bbox = vtkActor::New();
     bbox->SetMapper(bboxMapper);
