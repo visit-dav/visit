@@ -1711,9 +1711,17 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
             {
                 vtkUnstructuredGridRelevantPointsFilter *ugrpf = 
                                 vtkUnstructuredGridRelevantPointsFilter::New();
+#if (VTK_MAJOR_VERSION == 5)
                 ugrpf->SetInput(meshForProcP[j]);
+#else
+                ugrpf->SetInputData(meshForProcP[j]);
+#endif
                 ugrpf->Update();
+#if (VTK_MAJOR_VERSION == 5)
                 appenders[j]->AddInput(ugrpf->GetOutput());
+#else
+                appenders[j]->AddInputData(ugrpf->GetOutput());
+#endif
                 ugrpf->Delete();
                 meshForProcP[j]->Delete();
             }
@@ -1742,7 +1750,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         }
         appenders[j]->Update();
         vtkUnstructuredGridWriter *wrtr = vtkUnstructuredGridWriter::New();
-        wrtr->SetInput(appenders[j]->GetOutput());
+        wrtr->SetInputConnection(appenders[j]->GetOutputPort());
         wrtr->SetWriteToOutputString(1);
         wrtr->SetFileTypeToBinary();
         wrtr->Write();
@@ -1805,8 +1813,8 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
         vtkUnstructuredGridReader *reader = vtkUnstructuredGridReader::New();
         reader->SetReadFromInputString(1);
         reader->SetInputArray(charArray);
+        reader->Update();
         vtkUnstructuredGrid *ugrid = reader->GetOutput();
-        ugrid->Update();
         AddMesh(ugrid);
         // using SetSource(NULL) on vtkDataSets is no longer a good idea.
         //ugrid->SetSource(NULL);

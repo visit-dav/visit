@@ -187,7 +187,11 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
     if(writer)
     {
         writer->SetFileName(filename);
+#if (VTK_MAJOR_VERSION == 5)
         writer->SetInput(GetImageRep().GetImageVTK());
+#else
+        writer->SetInputData(GetImageRep().GetImageVTK());
+#endif
         writer->Write();
         writer->Delete();
     }
@@ -230,7 +234,11 @@ avtImageFileWriter::Write(vtkImageWriter *writer, const char *filename)
     if(writer)
     {
         writer->SetFileName(filename);
+#if (VTK_MAJOR_VERSION == 5)
         writer->SetInput(GetImageRep().GetImageVTK());
+#else
+        writer->SetInputData(GetImageRep().GetImageVTK());
+#endif
         writer->Write();
     }
 }
@@ -374,7 +382,11 @@ avtImageFileWriter::WriteToByteArray(avtImageRepresentation &imagerep,
     vtkJPEGWriter* writer = vtkJPEGWriter::New();
 
     writer->SetWriteToMemory(true);
+#if (VTK_MAJOR_VERSION == 5)
     writer->SetInput(imagerep.GetImageVTK());
+#else
+    writer->SetInputData(imagerep.GetImageVTK());
+#endif
     writer->SetQuality(quality);
     writer->SetProgressive(progressive?1:0);
 
