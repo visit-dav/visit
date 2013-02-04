@@ -478,6 +478,9 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    Jeremy Meredith, Wed Jan  6 13:26:52 EST 2010
 //    Check for an ASCII file or empty data.
 //
+//    Hank Childs, Mon Feb  4 10:52:01 PST 2013
+//    Improve logic for files with variable names.
+//
 // ****************************************************************************
 
 void
@@ -620,7 +623,7 @@ avtPlainTextFileFormat::ReadFile()
     }
     delete [] buff;
 
-    if (ncolumns == 0 || nrows == 0)
+    if (ncolumns == 0 || (!firstRowIsHeader && nrows == 0))
     {
         EXCEPTION2(InvalidFilesException, filename.c_str(),
                    "Couldn't parse anything meaningful from the file.");
