@@ -396,7 +396,11 @@ VisitSphereTool::CreateSphereActor()
     sphereData->Register(NULL);
 
     sphereMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
     sphereMapper->SetInput(sphereData);
+#else
+    sphereMapper->SetInputData(sphereData);
+#endif
 
     sphereActor = vtkActor::New();
     sphereActor->GetProperty()->SetRepresentationToWireframe();

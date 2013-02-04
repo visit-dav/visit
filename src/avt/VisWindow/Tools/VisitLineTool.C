@@ -536,7 +536,11 @@ VisitLineTool::UpdateLine()
     lineData = lineSource->GetOutput();
     lineData->Register(NULL);
 
+#if (VTK_MAJOR_VERSION == 5)
     lineMapper->SetInput(lineData);
+#else
+    lineMapper->SetInputData(lineData);
+#endif
 }
 
 // ****************************************************************************
@@ -907,7 +911,11 @@ VisitLineTool::UpdateGuide(int pointIndex)
     CREATEQUAD(4,7,6,3);
 
     // Set the mapper's input to be the new dataset.
+#if (VTK_MAJOR_VERSION == 5)
     guideMapper->SetInput(guideData);
+#else
+    guideMapper->SetInputData(guideData);
+#endif
 }
 
 // ****************************************************************************

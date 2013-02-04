@@ -107,7 +107,7 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
 
     axesBoxSource = vtkOutlineSource::New();
     axesBoxMapper = vtkPolyDataMapper::New();
-    axesBoxMapper->SetInput(axesBoxSource->GetOutput());
+    axesBoxMapper->SetInputConnection(axesBoxSource->GetOutputPort());
     axesBox = vtkActor::New();
     axesBox->SetMapper(axesBoxMapper);
     axesBox->PickableOff();

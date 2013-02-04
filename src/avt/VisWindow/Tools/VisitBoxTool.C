@@ -502,7 +502,11 @@ VisitBoxTool::CreateBoxActor()
     boxData->Register(NULL);
 
     boxMapper = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION == 5)
     boxMapper->SetInput(boxData);
+#else
+    boxMapper->SetInputData(boxData);
+#endif
 
     boxActor = vtkActor::New();
     boxActor->GetProperty()->SetRepresentationToWireframe();
@@ -1051,7 +1055,11 @@ VisitBoxTool::UpdateOutline()
              outlineData[i]->Register(NULL);
              source->Delete();
              // Set the mapper's input to be the new dataset.
+#if (VTK_MAJOR_VERSION == 5)
              outlineMapper[i]->SetInput(outlineData[i]);
+#else
+             outlineMapper[i]->SetInputData(outlineData[i]);
+#endif
              double color[3];
              color[0] = (i == 0) ? 1. : 0.;
              color[1] = (i == 1) ? 1. : 0.;
@@ -1131,7 +1139,11 @@ VisitBoxTool::UpdateOutline()
             }
 
             // Set the mapper's input to be the new dataset.
+#if (VTK_MAJOR_VERSION == 5)
             outlineMapper[j]->SetInput(outlineData[j]);
+#else
+            outlineMapper[j]->SetInputData(outlineData[j]);
+#endif
         }
 
         //
