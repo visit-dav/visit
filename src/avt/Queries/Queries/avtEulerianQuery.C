@@ -182,10 +182,14 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
     nds->ShallowCopy(in_ds);
     //nds->SetSource(NULL);
 
+#if (VTK_MAJOR_VERSION == 5)
     gFilter->SetInput(nds);
+#else
+    gFilter->SetInputData(nds);
+#endif
     vtkDataSetRemoveGhostCells *ghost_remover =
                                              vtkDataSetRemoveGhostCells::New();
-    ghost_remover->SetInput(gFilter->GetOutput());
+    ghost_remover->SetInputConnection(gFilter->GetOutputPort());
     ghost_remover->Update();
     vtkDataSet *out = ghost_remover->GetOutput();
     if (out->GetDataObjectType() != VTK_POLY_DATA)

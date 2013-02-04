@@ -368,15 +368,23 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
     if (activeDS->GetCellData()->GetScalars() != NULL)
     {
         cd2pd = vtkCellDataToPointData::New();
+#if (VTK_MAJOR_VERSION == 5)
         cd2pd->SetInput(activeDS);
+#else
+        cd2pd->SetInputData(activeDS);
+#endif
         activeDS = cd2pd->GetOutput();
     }
 
     // Make sure that we have polydata.
     vtkGeometryFilter *geom = vtkGeometryFilter::New();
+#if (VTK_MAJOR_VERSION == 5)
     geom->SetInput(activeDS);
+#else
+    geom->SetInputData(activeDS);
+#endif
+    geom->Update();
     activeDS = geom->GetOutput();
-    activeDS->Update();
 
     vtkDataSet *toBeWritten = (vtkDataSet *) activeDS->NewInstance();
     toBeWritten->ShallowCopy(activeDS);
@@ -422,7 +430,11 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
     {
         writer->SetLabel(label);
     }
+#if (VTK_MAJOR_VERSION == 5)
     writer->SetInput((vtkPolyData *) toBeWritten);
+#else
+    writer->SetInputData((vtkPolyData *) toBeWritten);
+#endif
     writer->SetFileName(fname);
     writer->Write();
     writer->Delete();
@@ -518,7 +530,11 @@ void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
+#if (VTK_MAJOR_VERSION == 5)
     writer->SetInput(ds);
+#else
+    writer->SetInputData(ds);
+#endif
     if (bin)
     {
         writer->SetFileTypeToBinary();
@@ -628,7 +644,11 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
     vtkTriangleFilter *tris = vtkTriangleFilter::New();
     tris->SetPassLines(false);
     tris->SetPassVerts(false);
+#if (VTK_MAJOR_VERSION == 5)
     tris->SetInput((vtkPolyData *) ds);
+#else
+    tris->SetInputData((vtkPolyData *) ds);
+#endif
 
     vtkVisItSTLWriter *writer = vtkVisItSTLWriter::New();
     if (binary)
@@ -640,7 +660,7 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
         writer->SetFileTypeToASCII();
     }
     writer->SetFileName(filename);
-    writer->SetInput(tris->GetOutput());
+    writer->SetInputConnection(tris->GetOutputPort());
     writer->Write();
     writer->Delete();
     ds->Delete();
@@ -685,7 +705,11 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
     if (arr)
         writer->SetArrayName(arr->GetName());
     
+#if (VTK_MAJOR_VERSION == 5)
     writer->SetInput(ds);
+#else
+    writer->SetInputData(ds);
+#endif
     writer->SetFileName(filename);
     
     vtkScalarsToColors *lut = (arr ? GetColorTableFromEnv() : NULL);
@@ -907,7 +931,11 @@ avtDatasetFileWriter::GetSingleDataset(void)
         for (int i = 0 ; i < numInputs ; i++)
         {
             inInfo = pmap.pf->GetInputPortInformation(i);
+#if (VTK_MAJOR_VERSION == 5)
             pmap.af->AddInput(vtkPolyData::SafeDownCast(
+#else
+            pmap.af->AddInputData(vtkPolyData::SafeDownCast(
+#endif
                               inInfo->Get(vtkDataObject::DATA_OBJECT()))); 
         }
         pmap.pf->RemoveAllInputs();
@@ -941,7 +969,11 @@ avtDatasetFileWriter::GetSingleDataset(void)
         }
     }
     rv->Register(NULL);
-    rv->Update();
+#if (VTK_MAJOR_VERSION == 5)
+    // rv->Update();
+#else
+    // FIX_ME_VTK6.0, ESB, can we remove the update safely?
+#endif
     pmap.af->Delete();
     pmap.pf->Delete();
     return rv;
@@ -1610,19 +1642,27 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     //
     if (ds->GetDataObjectType() != VTK_POLY_DATA)
     {
+#if (VTK_MAJOR_VERSION == 5)
         geom->SetInput(ds);
-        tris->SetInput(geom->GetOutput());
+#else
+        geom->SetInputData(ds);
+#endif
+        tris->SetInputConnection(geom->GetOutputPort());
     }
     else
     {
+#if (VTK_MAJOR_VERSION == 5)
         tris->SetInput((vtkPolyData*)ds);
+#else
+        tris->SetInputData((vtkPolyData*)ds);
+#endif
     }
 
     //
     // Get a bunch of info from the dataset
     //
+    tris->Update();
     vtkPolyData *pd = (vtkPolyData *) tris->GetOutput();
-    pd->Update();
 
     vtkDataArray *ptscalars = pd->GetPointData()->GetScalars();
     vtkDataArray *ptvectors = pd->GetPointData()->GetVectors();
