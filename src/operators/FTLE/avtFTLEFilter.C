@@ -694,6 +694,11 @@ avtFTLEFilter::MultiBlockComputeFTLE(avtDataTree_p inDT, std::vector<avtIntegral
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  5 08:12:33 PST 2013
+//    Fix parallelization bug and memory leak.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -708,13 +713,47 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds, std::vector<avtIntegral
     out_grid->ShallowCopy(in_ds);
     int ntuples = in_ds->GetNumberOfPoints();
 
-    //copy the initial locations
+    //an array for the initial locations
     std::vector<avtVector> remapVector;
     remapVector.resize(ntuples);
 
-    //copy the original seed points
-    for(size_t i = 0; i < remapVector.size(); ++i)
-        remapVector[i] = seedPoints.at(offset + i);
+    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+    {
+        // The parallel synchronization for when data is replicated involves
+        // a sum across all processors.  So we want remapVector to have the
+        // location of the particle on one processor, and zero on the rest.
+        // Do that here.
+        // Special care is needed for the case where the particle never
+        // advected.  Then we need to put the initial location on just one
+        // processor.  We do this on rank 0.
+        std::vector<int> iHavePoint(ntuples, 0);
+        std::vector<int> anyoneHasPoint;
+
+        for (size_t idx = 0 ; idx < ics.size() ; idx++)
+        {
+            size_t index = ics[idx]->id;
+            int l = (index-offset);
+            if(l >= 0 && l < remapVector.size())
+            {
+                iHavePoint[l] = 1;
+            }
+        }
+
+        UnifyMaximumValue(iHavePoint, anyoneHasPoint);
+        avtVector zero;
+        zero.x = zero.y = zero.z = 0.;
+        for (size_t i = 0 ; i < ntuples ; i++)
+            if (PAR_Rank() == 0 && !anyoneHasPoint[i])
+                remapVector[i] = seedPoints.at(offset + i);
+            else
+                remapVector[i] = zero;
+    }
+    else
+    {
+        //copy the original seed points
+        for(size_t i = 0; i < remapVector.size(); ++i)
+            remapVector[i] = seedPoints.at(offset + i);
+    }
 
 #if 1
     for(int i = 0; i < ics.size(); ++i)
@@ -756,6 +795,7 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds, std::vector<avtIntegral
             float *origvals = (float *) component->GetVoidPointer(0);
             SumFloatArrayAcrossAllProcessors(origvals, newvals, ntuples);
             memcpy(origvals, newvals, ntuples*sizeof(float));  // copy newvals back into origvals
+            delete [] newvals;
         }
 
         jacobian[i] = avtGradientExpression::CalculateGradient(out_grid,var.c_str());
