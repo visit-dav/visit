@@ -2643,6 +2643,12 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Brad Whitlock, Fri May  7 15:14:17 PDT 2010
 //   I added some code to make some room for the file panel.
 //
+//   Jeremy Meredith, Tue Feb  5 16:02:54 EST 2013
+//   Force the file panel to update itself when we show it again. We disabled
+//   the most common update (updating the selection) in the file panel while
+//   it is hidden, as it was a performance problem with many time steps, so we
+//   need to force it to update as it gets shown to make sure it's up to date.
+//
 // ****************************************************************************
 
 void
@@ -2718,6 +2724,7 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
                 splitter->setSizes(sizes);
             }
         }
+        filePanel->UpdateFileList(true);
     }
     else
     {

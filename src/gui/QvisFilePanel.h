@@ -166,6 +166,11 @@ class ViewerProxy;
 //   Cyrus Harrison, Mon Mar 15 11:57:22 PDT 2010
 //   Moved timeslider controls into a QvisTimeSliderControlWidget.
 //
+//   Jeremy Meredith, Tue Feb  5 16:04:36 EST 2013
+//   Made UpdateFileList public so the main window can, e.g., force the
+//   panel to update the first time we show it after it's been hidden.
+//   (I made UpdateFileSelection not update this widget if it's hidden.)
+//
 // ****************************************************************************
 
 class GUI_API QvisFilePanel : public QGroupBox, public SimpleObserver, 
@@ -218,8 +223,9 @@ public:
 
     void UpdateOpenButtonState();
 
-private:
     void UpdateFileList(bool doAll);
+
+private:
     void RepopulateFileList();
     void UpdateWindowInfo(bool doAll);
     void UpdateFileSelection();
