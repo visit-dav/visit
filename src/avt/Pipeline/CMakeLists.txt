@@ -243,12 +243,20 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 
+IF (VTK_MAJOR_VERSION STREQUAL "6")
+TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+ELSE (VTK_MAJOR_VERSION STREQUAL "6")
 TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkGraphics ${ZLIB_LIB})
+ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
+IF (VTK_MAJOR_VERSION STREQUAL "6")
+    TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+ELSE (VTK_MAJOR_VERSION STREQUAL "6")
     TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkGraphics ${ZLIB_LIB})
+ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

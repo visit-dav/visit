@@ -35,9 +35,17 @@
 # DAMAGE.
 #
 # Modifications:
+#    Kathleen Biagas, Tue Feb 5 15:15:27 PST 2013
+#    Removed GUISupport, we use VTK's version now.
 #
 #****************************************************************************/
 
+IF (VTK_MAJOR_VERSION STREQUAL "6")
+SET(VTKQT_SOURCES
+vtkQtRenderWindow.C
+vtkQtImagePrinter.C
+)
+ELSE (VTK_MAJOR_VERSION STREQUAL "6")
 SET(VTKQT_SOURCES
 vtkQtRenderWindow.C
 vtkQtImagePrinter.C
@@ -49,7 +57,10 @@ GUISupport/QVTKWidget2.cxx
 GUISupport/vtkEventQtSlotConnect.cxx
 GUISupport/vtkQtConnection.cxx
 )
+ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
 
+IF (VTK_MAJOR_VERSION STREQUAL "6")
+ELSE (VTK_MAJOR_VERSION STREQUAL "6")
 # List the files that we'll run moc on
 SET(VTKQT_MOC_SOURCES
 GUISupport/QVTKInteractorAdapter.h
@@ -59,6 +70,7 @@ GUISupport/QVTKWidget2.h
 GUISupport/vtkQtConnection.h
 )
 QT_WRAP_CPP(VTKQT VTKQT_SOURCES ${VTKQT_MOC_SOURCES} )
+ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
 
 INCLUDE_DIRECTORIES(
 ${VISIT_BINARY_DIR}/include
@@ -79,7 +91,11 @@ LINK_DIRECTORIES(${QT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
 ADD_LIBRARY(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
+IF (VTK_MAJOR_VERSION STREQUAL "6")
+TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkFiltersCore vtkIOCore vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY})
+ELSE (VTK_MAJOR_VERSION STREQUAL "6")
 TARGET_LINK_LIBRARIES(vtkqt vtkCommon vtkFiltering vtkIO vtkRendering ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY})
+ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
 
 VISIT_INSTALL_TARGETS(vtkqt)
 
