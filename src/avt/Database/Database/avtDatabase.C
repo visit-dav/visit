@@ -481,6 +481,7 @@ avtDatabase::avtDatabase()
     invariantSIL      = NULL;
     fileFormat        = "<unknown>";
     ignoreExtents     = false;
+    isEnsemble        = false;
 }
 
 
@@ -2773,4 +2774,19 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataRequest_p spec,
         extents[i] = tree_extents[i];
 
     return true;
+}
+
+
+void
+avtDatabase::SetIsEnsemble(bool v)
+{
+    cout<<"avtDatabase::SetIsEnsemble("<<v<<")"<<endl;
+    isEnsemble = v;
+}
+
+bool
+avtDatabase::GetIsEnsemble()
+{
+    cout<<"avtDatabase::GetIsEnsemble()= "<<isEnsemble<<endl;
+    return isEnsemble;
 }

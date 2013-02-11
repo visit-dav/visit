@@ -219,11 +219,15 @@ class    avtVariableCache;
 //    Hank Childs, Wed Dec 22 15:11:13 PST 2010
 //    Added method for telling file format that the pipeline is streaming.
 //
+//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//   Added support for ensemble databases. (multiple time values)
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
 {
   public:
+    avtFileFormatInterface();
     virtual                ~avtFileFormatInterface();
 
     virtual vtkDataSet     *GetMesh(int, int, const char *) = 0;
@@ -269,9 +273,13 @@ class DATABASE_API avtFileFormatInterface
                                 const std::vector<avtDataSelection_p>& selList,
                                 std::vector<bool> *wasApplied);
 
+    virtual void                SetIsEnsemble(bool v) {isEnsemble = v;}
+
   protected:
     virtual int             GetNumberOfFileFormats(void) = 0;
     virtual avtFileFormat  *GetFormat(int) const = 0;
+
+    bool isEnsemble;
 };
 
 

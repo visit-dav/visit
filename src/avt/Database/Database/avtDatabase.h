@@ -300,6 +300,9 @@ typedef struct {
 //    Make cache available externally so filters from the pipeline can cache
 //    their data structures.
 //
+//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//   Added support for ensemble databases. (multiple time values)
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -374,6 +377,8 @@ class DATABASE_API avtDatabase
                                     { return ignoreExtents; };
 
     virtual void                SetStrictMode(bool) { }
+    virtual void                SetIsEnsemble(bool v);
+    virtual bool                GetIsEnsemble();
 
     // methods useful for decomposing rectlinear data on the fly during read
     static double               RectilinearDecompCost(int i, int j, int k,
@@ -409,6 +414,7 @@ class DATABASE_API avtDatabase
     bool                                  *invariantSIL;
 
     bool                                   ignoreExtents;
+    bool                                   isEnsemble;
 
     void                        GetNewMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false);
