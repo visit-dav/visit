@@ -124,6 +124,9 @@ class DatabasePluginManager;
 //    Hank Childs, Sun Sep 19 09:07:09 PDT 2010
 //    Add argument to SetupDatabase for setting times explicitly.
 //
+//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//   Added support for ensemble databases. (multiple time values)
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -163,7 +166,8 @@ class DATABASE_API avtDatabaseFactory
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
                                                const char * const *, int,
                                                int, int, int, bool, bool,bool,
-                                               const std::vector<double> &);
+                                               const std::vector<double> &,
+                                               bool isEnsemble);
 
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;

@@ -343,6 +343,9 @@ class     vtkUnstructuredGrid;
 //    Make cache available externally so filters from the pipeline can cache
 //    their data structures.
 //
+//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//   Added support for ensemble databases. (multiple time values)
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -376,6 +379,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual void               SetStrictMode(bool);
 
     virtual avtVariableCache  *GetCache(void) { return &cache; };
+
+    virtual void                SetIsEnsemble(bool v);
 
   protected:
     avtFileFormatInterface    *Interface;

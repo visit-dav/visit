@@ -11424,3 +11424,20 @@ avtGenericDatabase::SetStrictMode(bool strictMode)
     if (Interface)
         Interface->SetStrictMode(strictMode);
 }
+
+//****************************************************************************
+// Method:  avtGenericDatabase::SetIsEnsemble
+//
+// Programmer:  Dave Pugmire
+// Creation:    February 11, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtGenericDatabase::SetIsEnsemble(bool v)
+{
+    if (Interface)
+        Interface->SetIsEnsemble(v);
+}

@@ -332,6 +332,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     int fileIndex = 0;
 
     int nBlocks = 1;
+    bool filesAreEnsemble = true;
     vector<double> times;
     for (int f = 0 ; f < filelistN ; f++)
     {
@@ -351,6 +352,11 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
          else if (strstr(filelist[fileIndex], "!TIME ") != NULL)
          {
              times.push_back(atof(filelist[fileIndex] + strlen("!TIME ")));
+             fileIndex++;
+         }
+         else if (strstr(filelist[fileIndex], "!ENSEMBLE") != NULL)
+         {
+             filesAreEnsemble = true;
              fileIndex++;
          }
          else
@@ -424,8 +430,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
         plugins.push_back(info ? info->GetName(): "");
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
-                           treatAllDBsAsTimeVarying, false, times);
-
+                           treatAllDBsAsTimeVarying, false, times, filesAreEnsemble);
+        
         if (rv == NULL)
         {
             char msg[1000];
@@ -511,7 +517,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = SetupDatabase(info, filelist, filelistN,
                                timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying, true, times);
+                               treatAllDBsAsTimeVarying, true, times, filesAreEnsemble);
             // If some file reader claimed this file, but couldn't open it,
             // but another one could, then report a warning.
             if (rv != NULL && noncompliantPlugins.size() > 0)
@@ -602,8 +608,8 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 plugins.push_back(info ? info->GetName() : "");
                 avtDatabase *dbtmp =
                     SetupDatabase(info, filelist, filelistN, timestep,
-                               fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying, true, times);
+                                  fileIndex, nBlocks, forceReadAllCyclesAndTimes,
+                                  treatAllDBsAsTimeVarying, true, times, filesAreEnsemble);
                 if (dbtmp)
                 {
                     succeeded.push_back(info->GetName());
@@ -739,7 +745,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
             rv = SetupDatabase(info, filelist, filelistN,
                                timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
-                               treatAllDBsAsTimeVarying, true, times);
+                               treatAllDBsAsTimeVarying, true, times, filesAreEnsemble);
             // If some file reader claimed this file, but couldn't open it,
             // but another one could, then report a warning.
             if (rv != NULL && noncompliantPlugins.size() > 0)
@@ -862,7 +868,8 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   bool forceReadAllCyclesAndTimes,
                                   bool treatAllDBsAsTimeVarying, 
                                   bool strictMode,
-                                  const std::vector<double> &times)
+                                  const std::vector<double> &times,
+                                  bool isEnsemble)
 {
     if (info == 0)
     {
@@ -878,6 +885,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     int t0 = visitTimer->StartTimer();
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
+    rv->SetIsEnsemble(isEnsemble);
     visitTimer->StopTimer(t0, "Calling file format's SetupDatabase");
 
     //
@@ -918,7 +926,6 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     }
     else
         debug4 << "File open resulted in NULL database" << endl;
-
     return rv;
 }
 

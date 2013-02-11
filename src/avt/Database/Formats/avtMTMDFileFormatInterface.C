@@ -340,6 +340,9 @@ avtMTMDFileFormatInterface::GetFilename(int ts)
 //    Make use of argument for whether we should force reading of all
 //    cycles and times.
 //
+//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//   Added support for ensemble databases. (multiple time values)
+//
 // ****************************************************************************
 
 void
@@ -453,12 +456,15 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             times.insert(times.end(),tmp.begin(),tmp.end());
         }
         bool timesLookGood = true;
-        for (i = 0; i < times.size(); i++)
+        if (!isEnsemble)
         {
-            if ((i != 0) && (times[i] <= times[i-1]))
+            for (i = 0; i < times.size(); i++)
             {
-                timesLookGood = false;
-                break;
+                if ((i != 0) && (times[i] <= times[i-1]))
+                {
+                    timesLookGood = false;
+                    break;
+                }
             }
         }
         if (times.size() != nTotalTimesteps)

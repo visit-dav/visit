@@ -49,6 +49,12 @@
 using     std::vector;
 
 
+avtFileFormatInterface::avtFileFormatInterface()
+{
+    isEnsemble = false;
+}
+
+
 // ****************************************************************************
 //  Method: avtFileFormatInterface destructor
 //
