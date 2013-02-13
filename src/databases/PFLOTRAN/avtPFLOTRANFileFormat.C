@@ -570,6 +570,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Jeremy Meredith, Wed Jun 15 15:56:44 EDT 2011
 //    More aggressive about closing ids, including spaces.
 //
+//    Jeremy Meredith, Wed Feb 13 15:34:24 EST 2013
+//    Allow "Material ID" as an alternative to "Material_ID".
+//
 // ****************************************************************************
 
 void
@@ -637,7 +640,8 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 
 
         // set metadata for Materials
-        if(strstr(name, "Material_ID"))
+        if(strstr(name, "Material_ID") ||
+           strstr(name, "Material ID"))
         {
             hid_t slabSpace = H5Scopy(dsSpace);
             hsize_t start[] = {domainGlobalStart[0],domainGlobalStart[1],domainGlobalStart[2]};
