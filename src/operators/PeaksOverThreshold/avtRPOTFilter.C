@@ -325,11 +325,18 @@ avtRPOTFilter::Initialize()
     int t1 = GetEndTime();
     numTimes = t1-t0 + 1;
     numYears = numTimes/365;
+
     if (atts.GetDataAnalysisYearRangeEnabled())
     {
         numYears = atts.GetDataAnalysisYearRange()[1]-atts.GetDataAnalysisYearRange()[0]+1;
         numTimes = numYears*365;
     }
+
+    if (atts.GetEnsemble())
+    {
+        numTimes *= atts.GetNumEnsembles();
+    }
+
     //cout<<"numTimes = "<<numTimes<<" : numYears = "<<numYears<<endl;
 
 
@@ -419,7 +426,7 @@ avtRPOTFilter::Execute()
 
     Initialize();
     
-    if (atts.GetDataAnalysisYearRangeEnabled())
+    if (!atts.GetEnsemble() && atts.GetDataAnalysisYearRangeEnabled())
     {
         int currYear = atts.GetDataYearBegin()+(currentTime/365);
         if (currYear < atts.GetDataAnalysisYearRange()[0] ||
@@ -475,6 +482,10 @@ avtRPOTFilter::CreateFinalOutput()
     avtCallback::ResetTimeout(0);
 
     //Exchange data....
+    if (atts.GetEnsemble())
+    {
+        numTimes *= atts.GetNumEnsembles();
+    }
 #ifdef PARALLEL
     float *tmp = new float[numTimes];
     float *res = new float[numTimes];
@@ -582,7 +593,6 @@ avtRPOTFilter::CreateFinalOutput()
         }
     }
 
-    
     for (int i = idx0; i < idxN; i++)
     {
         //DebugData(i, "./dumps/x0");
@@ -621,7 +631,7 @@ avtRPOTFilter::CreateFinalOutput()
                     exceedences->SetValue(idx, values[i][b][t].val);
                     dayIndices->SetValue(idx, values[i][b][t].Time+1);
                     monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].Time)+1);
-                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].Time)+1);
+                    yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].Time));//+1);
                  
                     idx++;
                     if (idx == numExceedences)
@@ -678,11 +688,26 @@ avtRPOTFilter::CreateFinalOutput()
 
             vtkIntArray *covByYearArr = vtkIntArray::New();
             covByYearArr->SetNumberOfComponents(1);
-            covByYearArr->SetNumberOfTuples(numYears);
-
-            for (int y = 0; y < numYears; y++)
-                covByYearArr->SetValue(y, y+1);
-
+            
+            if (atts.GetEnsemble())
+            {
+                int N = numYears * atts.GetNumEnsembles();
+                covByYearArr->SetNumberOfTuples(N);
+                int idx = 0;
+                for (int e = 0; e < atts.GetNumEnsembles(); e++)
+                {
+                    for (int y = 0; y < numYears; y++, idx++)
+                    {
+                        covByYearArr->SetValue(idx, y + atts.GetDataYearBegin());
+                    }
+                }
+            }
+            else
+            {
+                covByYearArr->SetNumberOfTuples(numYears);
+                for (int y = 0; y < numYears; y++)
+                    covByYearArr->SetValue(y, y + atts.GetDataYearBegin());
+            }
             RI->AssignVTKDataArrayToRVariable(yearIndices, covarNm.c_str());
             RI->AssignVTKDataArrayToRVariable(covByYearArr, covByYear.c_str());
             covByYearArr->Delete();
@@ -693,7 +718,7 @@ avtRPOTFilter::CreateFinalOutput()
             newData->SetNumberOfTuples(atts.GetCovariateReturnYears().size());
             for (int y = 0; y < atts.GetCovariateReturnYears().size(); y++)
             {
-                newData->SetValue(y, atts.GetCovariateReturnYears()[y]-atts.GetDataYearBegin() +1);
+                newData->SetValue(y, atts.GetCovariateReturnYears()[y]);//-atts.GetDataYearBegin() +1);
             }
             RI->AssignVTKDataArrayToRVariable(newData, newDataStr.c_str());
             newData->Delete();
@@ -704,8 +729,8 @@ avtRPOTFilter::CreateFinalOutput()
                 vtkIntArray *rvDiff = vtkIntArray::New();
                 rvDiff->SetNumberOfComponents(1);
                 rvDiff->SetNumberOfTuples(2);
-                rvDiff->SetValue(0, atts.GetRvDifferences()[0]-atts.GetDataYearBegin() +1);
-                rvDiff->SetValue(1, atts.GetRvDifferences()[1]-atts.GetDataYearBegin() +1);
+                rvDiff->SetValue(0, atts.GetRvDifferences()[0]);//-atts.GetDataYearBegin() +1);
+                rvDiff->SetValue(1, atts.GetRvDifferences()[1]);//-atts.GetDataYearBegin() +1);
                 RI->AssignVTKDataArrayToRVariable(rvDiff, rvDiffStr.c_str());
                 rvDiff->Delete();
             }
@@ -736,6 +761,10 @@ avtRPOTFilter::CreateFinalOutput()
             outputStr += "se_mle = output$se.mle;\n";
         }
 
+        int nYears = numYears;
+        if (atts.GetEnsemble())
+            nYears *= atts.GetNumEnsembles();
+        
         sprintf(potCmd,
                 "require(ismev)\n" \
                 "output = potFit(data = exceedences, day = dayIndices, month = monthIndices, "\
@@ -746,7 +775,7 @@ avtRPOTFilter::CreateFinalOutput()
                 ")\n"\
                 "%s" \
                 "%s",
-                numYears, threshStr.c_str(), aggrStr.c_str(),
+                nYears, threshStr.c_str(), aggrStr.c_str(),
                 nCovariates, covarNm.c_str(), covByYear.c_str(),
                 useLocModelStr.c_str(), useShapeModelStr.c_str(), useScaleModelStr.c_str(),
                 newDataStr.c_str(), rvDiffStr.c_str(),
