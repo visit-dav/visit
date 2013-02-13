@@ -89,6 +89,8 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void dataYearBeginProcessText();
     void dataAnalysisYearRangeEnabledChanged(bool val);
     void dataAnalysisYearRangeProcessText();
+    void ensembleChanged(bool val);
+    void numEnsemblesProcessText();
     void aggregationChanged(int val);
     void annualPercentileProcessText();
     void seasonalPercentileProcessText();
@@ -110,6 +112,8 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLineEdit *dataYearBegin;
     QCheckBox *dataAnalysisYearRangeEnabled;
     QLineEdit *dataAnalysisYearRange;
+    QCheckBox *ensemble;
+    QLineEdit *numEnsembles;
     QWidget      *aggregation;
     QButtonGroup *aggregationButtonGroup;
     QLineEdit *annualPercentile;
@@ -132,6 +136,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QCheckBox *dumpData;
     QLabel *dataYearBeginLabel;
     QLabel *dataAnalysisYearRangeLabel;
+    QLabel *numEnsemblesLabel;
     QLabel *aggregationLabel;
     QLabel *annualPercentileLabel;
     QLabel *seasonalPercentileLabel;

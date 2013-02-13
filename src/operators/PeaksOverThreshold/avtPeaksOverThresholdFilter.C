@@ -169,8 +169,15 @@ avtPeaksOverThresholdFilter::Execute()
         {
             EXCEPTION1(ImproperUseException, "Invalid data analysis year range.");
         }
-            
     }
+    if (atts.GetEnsemble())
+    {
+        if (!atts.GetDataAnalysisYearRangeEnabled())
+        {
+            EXCEPTION1(ImproperUseException, "Ensemble usage requires year range to be set.");
+        }
+    }
+    
     avtRPOTFilter *f = new avtRPOTFilter();
 
     std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";

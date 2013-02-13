@@ -124,6 +124,8 @@ public:
     void SetDataYearBegin(int dataYearBegin_);
     void SetDataAnalysisYearRangeEnabled(bool dataAnalysisYearRangeEnabled_);
     void SetDataAnalysisYearRange(const int *dataAnalysisYearRange_);
+    void SetEnsemble(bool ensemble_);
+    void SetNumEnsembles(int numEnsembles_);
     void SetAggregation(AggregationType aggregation_);
     void SetAnnualPercentile(double annualPercentile_);
     void SetSeasonalPercentile(const double *seasonalPercentile_);
@@ -147,6 +149,8 @@ public:
     bool            GetDataAnalysisYearRangeEnabled() const;
     const int       *GetDataAnalysisYearRange() const;
           int       *GetDataAnalysisYearRange();
+    bool            GetEnsemble() const;
+    int             GetNumEnsembles() const;
     AggregationType GetAggregation() const;
     double          GetAnnualPercentile() const;
     const double    *GetSeasonalPercentile() const;
@@ -202,6 +206,8 @@ public:
         ID_dataYearBegin = 0,
         ID_dataAnalysisYearRangeEnabled,
         ID_dataAnalysisYearRange,
+        ID_ensemble,
+        ID_numEnsembles,
         ID_aggregation,
         ID_annualPercentile,
         ID_seasonalPercentile,
@@ -226,6 +232,8 @@ private:
     int       dataYearBegin;
     bool      dataAnalysisYearRangeEnabled;
     int       dataAnalysisYearRange[2];
+    bool      ensemble;
+    int       numEnsembles;
     int       aggregation;
     double    annualPercentile;
     double    seasonalPercentile[4];
@@ -248,6 +256,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibIidDDiifbbi*bbbbIdb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibIbiidDDiifbbi*bbbbIdb"
 
 #endif

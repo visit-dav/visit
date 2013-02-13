@@ -177,6 +177,8 @@ void PeaksOverThresholdAttributes::Init()
     dataAnalysisYearRangeEnabled = false;
     dataAnalysisYearRange[0] = 0;
     dataAnalysisYearRange[1] = 0;
+    ensemble = false;
+    numEnsembles = 1;
     aggregation = ANNUAL;
     annualPercentile = 0.9;
     seasonalPercentile[0] = 0.9;
@@ -236,6 +238,8 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
     dataAnalysisYearRange[0] = obj.dataAnalysisYearRange[0];
     dataAnalysisYearRange[1] = obj.dataAnalysisYearRange[1];
 
+    ensemble = obj.ensemble;
+    numEnsembles = obj.numEnsembles;
     aggregation = obj.aggregation;
     annualPercentile = obj.annualPercentile;
     for(int i = 0; i < 4; ++i)
@@ -439,6 +443,8 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
     return ((dataYearBegin == obj.dataYearBegin) &&
             (dataAnalysisYearRangeEnabled == obj.dataAnalysisYearRangeEnabled) &&
             dataAnalysisYearRange_equal &&
+            (ensemble == obj.ensemble) &&
+            (numEnsembles == obj.numEnsembles) &&
             (aggregation == obj.aggregation) &&
             (annualPercentile == obj.annualPercentile) &&
             seasonalPercentile_equal &&
@@ -602,6 +608,8 @@ PeaksOverThresholdAttributes::SelectAll()
     Select(ID_dataYearBegin,                (void *)&dataYearBegin);
     Select(ID_dataAnalysisYearRangeEnabled, (void *)&dataAnalysisYearRangeEnabled);
     Select(ID_dataAnalysisYearRange,        (void *)dataAnalysisYearRange, 2);
+    Select(ID_ensemble,                     (void *)&ensemble);
+    Select(ID_numEnsembles,                 (void *)&numEnsembles);
     Select(ID_aggregation,                  (void *)&aggregation);
     Select(ID_annualPercentile,             (void *)&annualPercentile);
     Select(ID_seasonalPercentile,           (void *)seasonalPercentile, 4);
@@ -667,6 +675,18 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("dataAnalysisYearRange", dataAnalysisYearRange, 2));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ensemble, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ensemble", ensemble));
+    }
+
+    if(completeSave || !FieldsEqual(ID_numEnsembles, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("numEnsembles", numEnsembles));
     }
 
     if(completeSave || !FieldsEqual(ID_aggregation, &defaultObject))
@@ -813,6 +833,10 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
         SetDataAnalysisYearRangeEnabled(node->AsBool());
     if((node = searchNode->GetNode("dataAnalysisYearRange")) != 0)
         SetDataAnalysisYearRange(node->AsIntArray());
+    if((node = searchNode->GetNode("ensemble")) != 0)
+        SetEnsemble(node->AsBool());
+    if((node = searchNode->GetNode("numEnsembles")) != 0)
+        SetNumEnsembles(node->AsInt());
     if((node = searchNode->GetNode("aggregation")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -915,6 +939,20 @@ PeaksOverThresholdAttributes::SetDataAnalysisYearRange(const int *dataAnalysisYe
     dataAnalysisYearRange[0] = dataAnalysisYearRange_[0];
     dataAnalysisYearRange[1] = dataAnalysisYearRange_[1];
     Select(ID_dataAnalysisYearRange, (void *)dataAnalysisYearRange, 2);
+}
+
+void
+PeaksOverThresholdAttributes::SetEnsemble(bool ensemble_)
+{
+    ensemble = ensemble_;
+    Select(ID_ensemble, (void *)&ensemble);
+}
+
+void
+PeaksOverThresholdAttributes::SetNumEnsembles(int numEnsembles_)
+{
+    numEnsembles = numEnsembles_;
+    Select(ID_numEnsembles, (void *)&numEnsembles);
 }
 
 void
@@ -1067,6 +1105,18 @@ int *
 PeaksOverThresholdAttributes::GetDataAnalysisYearRange()
 {
     return dataAnalysisYearRange;
+}
+
+bool
+PeaksOverThresholdAttributes::GetEnsemble() const
+{
+    return ensemble;
+}
+
+int
+PeaksOverThresholdAttributes::GetNumEnsembles() const
+{
+    return numEnsembles;
 }
 
 PeaksOverThresholdAttributes::AggregationType
@@ -1256,6 +1306,8 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
     case ID_dataYearBegin:                return "dataYearBegin";
     case ID_dataAnalysisYearRangeEnabled: return "dataAnalysisYearRangeEnabled";
     case ID_dataAnalysisYearRange:        return "dataAnalysisYearRange";
+    case ID_ensemble:                     return "ensemble";
+    case ID_numEnsembles:                 return "numEnsembles";
     case ID_aggregation:                  return "aggregation";
     case ID_annualPercentile:             return "annualPercentile";
     case ID_seasonalPercentile:           return "seasonalPercentile";
@@ -1300,6 +1352,8 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
     case ID_dataYearBegin:                return FieldType_int;
     case ID_dataAnalysisYearRangeEnabled: return FieldType_bool;
     case ID_dataAnalysisYearRange:        return FieldType_intArray;
+    case ID_ensemble:                     return FieldType_bool;
+    case ID_numEnsembles:                 return FieldType_int;
     case ID_aggregation:                  return FieldType_enum;
     case ID_annualPercentile:             return FieldType_double;
     case ID_seasonalPercentile:           return FieldType_doubleArray;
@@ -1344,6 +1398,8 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
     case ID_dataYearBegin:                return "int";
     case ID_dataAnalysisYearRangeEnabled: return "bool";
     case ID_dataAnalysisYearRange:        return "intArray";
+    case ID_ensemble:                     return "bool";
+    case ID_numEnsembles:                 return "int";
     case ID_aggregation:                  return "enum";
     case ID_annualPercentile:             return "double";
     case ID_seasonalPercentile:           return "doubleArray";
@@ -1405,6 +1461,16 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
             dataAnalysisYearRange_equal = (dataAnalysisYearRange[i] == obj.dataAnalysisYearRange[i]);
 
         retval = dataAnalysisYearRange_equal;
+        }
+        break;
+    case ID_ensemble:
+        {  // new scope
+        retval = (ensemble == obj.ensemble);
+        }
+        break;
+    case ID_numEnsembles:
+        {  // new scope
+        retval = (numEnsembles == obj.numEnsembles);
         }
         break;
     case ID_aggregation:

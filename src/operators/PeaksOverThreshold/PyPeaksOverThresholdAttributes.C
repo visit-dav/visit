@@ -99,6 +99,13 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetEnsemble())
+        SNPRINTF(tmpStr, 1000, "%sensemble = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sensemble = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%snumEnsembles = %d\n", prefix, atts->GetNumEnsembles());
+    str += tmpStr;
     const char *aggregation_names = "ANNUAL, SEASONAL, MONTHLY";
     switch (atts->GetAggregation())
     {
@@ -414,6 +421,54 @@ PeaksOverThresholdAttributes_GetDataAnalysisYearRange(PyObject *self, PyObject *
     const int *dataAnalysisYearRange = obj->data->GetDataAnalysisYearRange();
     for(int i = 0; i < 2; ++i)
         PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(dataAnalysisYearRange[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetEnsemble(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the ensemble in the object.
+    obj->data->SetEnsemble(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetEnsemble(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetEnsemble()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetNumEnsembles(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the numEnsembles in the object.
+    obj->data->SetNumEnsembles((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetNumEnsembles(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumEnsembles()));
     return retval;
 }
 
@@ -993,6 +1048,10 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetDataAnalysisYearRangeEnabled", PeaksOverThresholdAttributes_GetDataAnalysisYearRangeEnabled, METH_VARARGS},
     {"SetDataAnalysisYearRange", PeaksOverThresholdAttributes_SetDataAnalysisYearRange, METH_VARARGS},
     {"GetDataAnalysisYearRange", PeaksOverThresholdAttributes_GetDataAnalysisYearRange, METH_VARARGS},
+    {"SetEnsemble", PeaksOverThresholdAttributes_SetEnsemble, METH_VARARGS},
+    {"GetEnsemble", PeaksOverThresholdAttributes_GetEnsemble, METH_VARARGS},
+    {"SetNumEnsembles", PeaksOverThresholdAttributes_SetNumEnsembles, METH_VARARGS},
+    {"GetNumEnsembles", PeaksOverThresholdAttributes_GetNumEnsembles, METH_VARARGS},
     {"SetAggregation", PeaksOverThresholdAttributes_SetAggregation, METH_VARARGS},
     {"GetAggregation", PeaksOverThresholdAttributes_GetAggregation, METH_VARARGS},
     {"SetAnnualPercentile", PeaksOverThresholdAttributes_SetAnnualPercentile, METH_VARARGS},
@@ -1061,6 +1120,10 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
         return PeaksOverThresholdAttributes_GetDataAnalysisYearRangeEnabled(self, NULL);
     if(strcmp(name, "dataAnalysisYearRange") == 0)
         return PeaksOverThresholdAttributes_GetDataAnalysisYearRange(self, NULL);
+    if(strcmp(name, "ensemble") == 0)
+        return PeaksOverThresholdAttributes_GetEnsemble(self, NULL);
+    if(strcmp(name, "numEnsembles") == 0)
+        return PeaksOverThresholdAttributes_GetNumEnsembles(self, NULL);
     if(strcmp(name, "aggregation") == 0)
         return PeaksOverThresholdAttributes_GetAggregation(self, NULL);
     if(strcmp(name, "ANNUAL") == 0)
@@ -1156,6 +1219,10 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetDataAnalysisYearRangeEnabled(self, tuple);
     else if(strcmp(name, "dataAnalysisYearRange") == 0)
         obj = PeaksOverThresholdAttributes_SetDataAnalysisYearRange(self, tuple);
+    else if(strcmp(name, "ensemble") == 0)
+        obj = PeaksOverThresholdAttributes_SetEnsemble(self, tuple);
+    else if(strcmp(name, "numEnsembles") == 0)
+        obj = PeaksOverThresholdAttributes_SetNumEnsembles(self, tuple);
     else if(strcmp(name, "aggregation") == 0)
         obj = PeaksOverThresholdAttributes_SetAggregation(self, tuple);
     else if(strcmp(name, "annualPercentile") == 0)
