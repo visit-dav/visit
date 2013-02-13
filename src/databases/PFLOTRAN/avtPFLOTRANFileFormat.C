@@ -656,6 +656,9 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
 //    Jeremy Meredith, Wed Dec 19 12:54:03 EST 2012
 //    Support unstructured grids (which cannot do their own domain decomp).
 //
+//    Jeremy Meredith, Wed Feb 13 15:34:24 EST 2013
+//    Allow "Material ID" as an alternative to "Material_ID".
+//
 // ****************************************************************************
 
 void
@@ -725,7 +728,8 @@ avtPFLOTRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData * md,
 
 
         // set metadata for Materials
-        if(strstr(name, "Material_ID"))
+        if(strstr(name, "Material_ID") ||
+           strstr(name, "Material ID"))
         {
             int *matlist;
             hsize_t nvals;
