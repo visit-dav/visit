@@ -111,7 +111,7 @@ serial="false"
 testHost="edge"
 testDir="/nfs/tmp2/"
 post="true"
-nerscHost="euclid.nersc.gov"
+nerscHost="hopper.nersc.gov"
 
 for abc
 do
