@@ -859,6 +859,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
 //    Hank Childs, Sun Sep 19 09:02:05 PDT 2010
 //    Add argument for explicit setting of times by user.
 //
+//    Kathleen Biagas, Thu Feb 14 10:36:09 PST 2013
+//    Only set isEnsemble if rv not null.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -885,7 +888,6 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     int t0 = visitTimer->StartTimer();
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
-    rv->SetIsEnsemble(isEnsemble);
     visitTimer->StopTimer(t0, "Calling file format's SetupDatabase");
 
     //
@@ -899,6 +901,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     //
     if (rv != NULL)
     {
+        rv->SetIsEnsemble(isEnsemble);
         int t0 = visitTimer->StartTimer();
         rv->SetStrictMode(strictMode);
         if (timestep != -2)
