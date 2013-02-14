@@ -310,6 +310,9 @@ avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 //    occurrences of them and report them prominently, even if a different
 //    file format was able to successfully open the file.
 //
+//    Dave Pugmire, Thu Feb 14 13:56:46 EST 2013
+//    Support for ensemble .visit files (files with identical time states)
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -332,7 +335,7 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
     int fileIndex = 0;
 
     int nBlocks = 1;
-    bool filesAreEnsemble = true;
+    bool filesAreEnsemble = false;
     vector<double> times;
     for (int f = 0 ; f < filelistN ; f++)
     {
