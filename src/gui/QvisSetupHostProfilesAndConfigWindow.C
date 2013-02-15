@@ -333,10 +333,7 @@ QvisSetupHostProfilesAndConfigWindow::performSetup()
             {
                 std::string srcCfgName =
                     it->shortName.toStdString() +
-                    "/" + 
-                    std::string("visit-") +
-                    std::string(configFilename[i]) +
-                    std::string(".ini");
+                    "/" + std::string(configFilename[i]);
                 QString srcCfgPath(GetVisItResourcesFile(VISIT_RESOURCES_HOSTS, srcCfgName).c_str());
                 if (QFile::exists(srcCfgPath))
                 {
