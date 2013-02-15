@@ -10,7 +10,7 @@
             </Object>
             <Object name="SaveWindowAttributes">
                 <Field name="fileName" type="string">AMR</Field>
-                <Field name="format" type="string">PPM</Field>
+                <Field name="format" type="string">PNG</Field>
             </Object>
             <Object name="WindowInformation">
                 <Field name="boundingBoxNavigate" type="bool">false</Field>
