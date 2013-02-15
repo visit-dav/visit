@@ -13961,6 +13961,10 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Eric Brugger, Fri Feb 15 09:39:52 PST 2013
+//    I corrected a memory error where a buffer used to hold material names
+//    was underallocated. This resulted in crashes in some instances.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -14024,7 +14028,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
         }
         
         matnames = new char*[nmat];
-        buffer = new char[nmat*256 + max_dlen];
+        buffer = new char[nmat*(256+max_dlen)];
         
         for (int i = 0 ; i < nmat ; i++)
         {
