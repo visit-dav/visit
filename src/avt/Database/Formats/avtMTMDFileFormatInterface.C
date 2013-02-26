@@ -402,12 +402,15 @@ avtMTMDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
             cycles.insert(cycles.end(),tmp.begin(),tmp.end());
         }
         bool cyclesLookGood = true;
-        for (i = 0; i < cycles.size(); i++)
+        if (!isEnsemble)
         {
-            if ((i != 0) && (cycles[i] <= cycles[i-1]))
+            for (i = 0; i < cycles.size(); i++)
             {
-                cyclesLookGood = false;
-                break;
+                if ((i != 0) && (cycles[i] <= cycles[i-1]))
+                {
+                    cyclesLookGood = false;
+                    break;
+                }
             }
         }
         if (cycles.size() != nTotalTimesteps)
@@ -543,12 +546,15 @@ avtMTMDFileFormatInterface::SetCycleTimeInDatabaseMetaData(
         cycles.insert(cycles.end(),tmp.begin(),tmp.end());
     }
     bool cyclesLookGood = true;
-    for (int i = 0; i < cycles.size(); i++)
+    if (!isEnsemble)
     {
-        if ((i != 0) && (cycles[i] <= cycles[i-1]))
+        for (int i = 0; i < cycles.size(); i++)
         {
-            cyclesLookGood = false;
-            break;
+            if ((i != 0) && (cycles[i] <= cycles[i-1]))
+            {
+                cyclesLookGood = false;
+                break;
+            }
         }
     }
     if (cycles.size() != nTotalTimesteps)
