@@ -281,6 +281,9 @@ ADD_FORTRAN_SIMV2_SIMULATION(fsim12 fsim12.f)
 
 ADD_SIMV2_SIMULATION(species species.c)
 
+ADD_SIMV2_SIMULATION(ucdcurve ucdcurve.c)
+ADD_PARALLEL_SIMV2_SIMULATION(ucdcurve_par ucdcurve.c)
+
 ADD_SIMV2_SIMULATION(unstructured unstructured.c)
 ADD_FORTRAN_SIMV2_SIMULATION(funstructured funstructured.f)
 
