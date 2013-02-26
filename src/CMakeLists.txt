@@ -320,6 +320,14 @@
 #    Modified cmake invokation logic to ensure the CMAKE_INVOKE variable
 #    is indeed (forced) cached so it winds up in CMakeCache.txt and
 #    adjusted name of the shell script to recmake_visit.sh.
+#
+#    Kathleen Biagas, Tue Feb 26 13:58:12 MST 2013
+#    Added VISIT_XXX_DEFAULT internal cache vars that store values set in
+#    config-site cmake files via VISIT_OPTION_DEFAULT.  This allows for
+#    VISIT_XXX vars to be overridden by changes to CMakeCache.txt.  If values
+#    in the config-site cmake files change, they will still take precedence
+#    over changes made to CMakeCache.txt (ie preserves old behavior).
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -407,8 +415,15 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
     ENDIF(${opt_ARG_PREV} STREQUAL "TYPE")
     SET(opt_ARG_PREV ${opt_ARG})
   ENDFOREACH(opt_ARG in ${ARGN})
-  SET(${var} "${opt_ARGS}" CACHE ${opt_TYPE} "${var} default value" FORCE)
+  ## 
+  SET(default_base "${var}_DEFAULT")
+  SET(default_base_val  "${${default_base}}")
+  IF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
+      SET("${default_base}" "${opt_ARGS}" CACHE INTERNAL "${var} default value" FORCE)
+      SET(${var} "${opt_ARGS}" CACHE ${opt_TYPE} "${var} value" FORCE)
+  ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
+
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetupITAPS.cmake)
 
 #-----------------------------------------------------------------------------
