@@ -158,6 +158,9 @@ avtVectorComposeExpression::GetVariableDimension(void)
 //    Hank Childs, Sun Jan 13 20:11:35 PST 2008
 //    Add support for singleton constants.
 //
+//    Mark C. Miller, Wed Feb 27 10:14:01 PST 2013
+//    Enhanced error message about not knowing how to compose 3 Vector for 2D
+//    domain to address confusion in creating color vectors.
 // ****************************************************************************
 vtkDataArray *
 avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
@@ -316,7 +319,11 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
         {
             EXCEPTION2(ExpressionException, outputVariableName, 
                        "I don't know how to compose "
-                       "3 variables to make a field for a 2D dataset.");
+                       "3 variables to make a field for a 2D dataset. If you are by chance "
+                       "attempting to constuct an rgb color vector, try using the special "
+                       "expressions designed for this purpose, 'color' or 'color4', under "
+                       "Vector expressions submenu.");
+ 
         }
     }
     else
