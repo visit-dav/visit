@@ -80,11 +80,10 @@ class avtGadgetFileFormat : public avtSTSDFileFormat
     }
   protected:
     // DATA MEMBERS
-    FILE *fd;
     int4bytes blksize,swap;
     unsigned long ntot;
     double masstab[6],redshift,time;
-    const char *fname;
+    std::string fname;
 
     size_t my_fread(void *ptr, size_t size, size_t nmemb, FILE * stream);
     void swap_Nbyte(char *data,int n,int m);
