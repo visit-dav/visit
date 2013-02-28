@@ -52,14 +52,20 @@
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    July 12, 2002 
 //
+//  Modifications:
+//    Eric Brugger, Thu Feb 19 13:25:56 PST 2013
+//    I added the ability to set a scale factor and the line width.
+//
 // ****************************************************************************
 
 avtLabelActor:: avtLabelActor()
 {
     attach[0] = attach[1] = attach[2] = 0.;
+    scaleFactor = 1.;
 
     labelActor = vtkFollower::New(); 
         labelActor->GetProperty()->SetColor(0., 0., 0.);
+        labelActor->GetProperty()->SetLineWidth(1);
         labelActor->SetScale(0.5);
         labelActor->PickableOff();
 
@@ -178,12 +184,14 @@ avtLabelActor::SetAttachmentPoint(const double pos[3])
 // ****************************************************************************
 //  Method:  avtLabelActor::SetScale
 //
-//  Purpose:  Set the scale for labelActor.
+//  Purpose:  Set the scale for labelActor. This is used internally and is
+//            called by avtDecorationsDrawable. It is not used by an
+//            application to set the scale factor, use SetScaleFactor instead.
 //
 //  Arguments:
 //    s       The scale factor to use.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    July 12, 2002 
 //
 // ****************************************************************************
@@ -192,6 +200,46 @@ void
 avtLabelActor::SetScale(double s)
 {
     labelActor->SetScale(s);
+}
+
+
+// ****************************************************************************
+//  Method:  avtLabelActor::SetScaleFactor
+//
+//  Purpose:  Set the scale factor for labelActor.
+//
+//  Arguments:
+//    s       The scale factor to use.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    February 19, 2013
+//
+// ****************************************************************************
+
+void
+avtLabelActor::SetScaleFactor(double s)
+{
+    scaleFactor = s;
+}
+
+
+// ****************************************************************************
+//  Method:  avtLabelActor::SetLineWidth
+//
+//  Purpose:  Set the line width for labelActor.
+//
+//  Arguments:
+//    lw      The line width to use.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    February 19, 2013 
+//
+// ****************************************************************************
+
+void
+avtLabelActor::SetLineWidth(int lw)
+{
+    labelActor->GetProperty()->SetLineWidth(lw);
 }
 
 
@@ -434,6 +482,10 @@ void avtLabelActor::UnHide()
 //  Programmer:  Kathleen Bonnell 
 //  Creation:    July 19, 2002 
 //
+//  Modifications:
+//    Eric Brugger, Thu Feb 19 13:25:56 PST 2013
+//    I added the ability to set a scale factor and the line width.
+//
 // ****************************************************************************
 
 double 
@@ -443,6 +495,11 @@ avtLabelActor::ComputeScaleFactor()
     {
         return -1.;
     }
+
+    //
+    // The scale factor computed below is independent of the position of the
+    // actor, cleary this code should be simplified (ESB).
+    //
     double pos[3];
     labelActor->GetPosition(pos);
  
@@ -508,7 +565,7 @@ avtLabelActor::ComputeScaleFactor()
     double dzsqr = (newZ - pos[2]) * (newZ - pos[2]);
     double worldTarget = sqrt(dxsqr + dysqr + dzsqr); 
 
-    double scale = worldTarget / avgTextDiag;
+    double scale = scaleFactor * worldTarget / avgTextDiag;
     SetScale(scale);
     return scale;
 }

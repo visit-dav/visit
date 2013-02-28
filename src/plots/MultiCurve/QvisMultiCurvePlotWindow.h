@@ -84,6 +84,9 @@ class QvisVariableButton;
 //   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
 //   yAxisTickSpacing.
 //
+//   Eric Brugger, Fri Feb 15 16:27:14 PST 2013
+//   I added markerScale and markerLineWidth.
+//
 // ****************************************************************************
 
 class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
@@ -119,6 +122,8 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void useYAxisTickSpacingChanged(bool val);
     void yAxisTickSpacingProcessText();
     void displayMarkersChanged(bool val);
+    void markerScaleProcessText();
+    void markerLineWidthChanged(int style);
     void markerVariableProcessText();
     void displayIdsChanged(bool val);
     void idVariableProcessText();
@@ -137,12 +142,16 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QLineEdit              *yAxisTickSpacing;
     QCheckBox              *displayMarkers;
     QLineEdit              *markerVariable;
+    QLineEdit              *markerScale;
+    QvisLineWidthWidget    *markerLineWidth;
     QCheckBox              *displayIds;
     QLineEdit              *idVariable;
     QCheckBox              *displayLegend;
     QLabel                 *lineStyleLabel;
     QLabel                 *lineWidthLabel;
     QLabel                 *yAxisTitleFormatLabel;
+    QLabel                 *markerScaleLabel;
+    QLabel                 *markerLineWidthLabel;
     QLabel                 *markerVariableLabel;
     QLabel                 *idVariableLabel;
 

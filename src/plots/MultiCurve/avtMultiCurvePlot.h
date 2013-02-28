@@ -68,6 +68,10 @@ class     avtMultiCurveLabelMapper;
 //    Eric Brugger, Fri Feb 20 16:20:09 PST 2009
 //    I added a legend to the plot.
 //
+//    Eric Brugger, Thu Feb 28 13:46:03 PST 2013
+//    I added the ability to set a scale factor and the line width for the
+//    markers.
+//
 // ****************************************************************************
 
 class avtMultiCurvePlot : public avtSurfaceDataPlot
@@ -83,6 +87,8 @@ class avtMultiCurvePlot : public avtSurfaceDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLineWidth(int);
     void                        SetLineStyle(int);
+    void                        SetMarkerScale(double);
+    void                        SetMarkerLineWidth(int);
     void                        SetLegend(bool);
 
   protected:

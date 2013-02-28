@@ -101,6 +101,8 @@ void MultiCurveAttributes::Init()
     useYAxisTickSpacing = false;
     yAxisTickSpacing = 1;
     displayMarkers = true;
+    markerScale = 1;
+    markerLineWidth = 0;
     markerVariable = "default";
     displayIds = false;
     idVariable = "default";
@@ -137,6 +139,8 @@ void MultiCurveAttributes::Copy(const MultiCurveAttributes &obj)
     useYAxisTickSpacing = obj.useYAxisTickSpacing;
     yAxisTickSpacing = obj.yAxisTickSpacing;
     displayMarkers = obj.displayMarkers;
+    markerScale = obj.markerScale;
+    markerLineWidth = obj.markerLineWidth;
     markerVariable = obj.markerVariable;
     displayIds = obj.displayIds;
     idVariable = obj.idVariable;
@@ -311,6 +315,8 @@ MultiCurveAttributes::operator == (const MultiCurveAttributes &obj) const
             (useYAxisTickSpacing == obj.useYAxisTickSpacing) &&
             (yAxisTickSpacing == obj.yAxisTickSpacing) &&
             (displayMarkers == obj.displayMarkers) &&
+            (markerScale == obj.markerScale) &&
+            (markerLineWidth == obj.markerLineWidth) &&
             (markerVariable == obj.markerVariable) &&
             (displayIds == obj.displayIds) &&
             (idVariable == obj.idVariable) &&
@@ -469,6 +475,8 @@ MultiCurveAttributes::SelectAll()
     Select(ID_useYAxisTickSpacing, (void *)&useYAxisTickSpacing);
     Select(ID_yAxisTickSpacing,    (void *)&yAxisTickSpacing);
     Select(ID_displayMarkers,      (void *)&displayMarkers);
+    Select(ID_markerScale,         (void *)&markerScale);
+    Select(ID_markerLineWidth,     (void *)&markerLineWidth);
     Select(ID_markerVariable,      (void *)&markerVariable);
     Select(ID_displayIds,          (void *)&displayIds);
     Select(ID_idVariable,          (void *)&idVariable);
@@ -585,6 +593,18 @@ MultiCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("displayMarkers", displayMarkers));
     }
 
+    if(completeSave || !FieldsEqual(ID_markerScale, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("markerScale", markerScale));
+    }
+
+    if(completeSave || !FieldsEqual(ID_markerLineWidth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("markerLineWidth", markerLineWidth));
+    }
+
     if(completeSave || !FieldsEqual(ID_markerVariable, &defaultObject))
     {
         addToParent = true;
@@ -681,6 +701,10 @@ MultiCurveAttributes::SetFromNode(DataNode *parentNode)
         SetYAxisTickSpacing(node->AsDouble());
     if((node = searchNode->GetNode("displayMarkers")) != 0)
         SetDisplayMarkers(node->AsBool());
+    if((node = searchNode->GetNode("markerScale")) != 0)
+        SetMarkerScale(node->AsDouble());
+    if((node = searchNode->GetNode("markerLineWidth")) != 0)
+        SetMarkerLineWidth(node->AsInt());
     if((node = searchNode->GetNode("markerVariable")) != 0)
         SetMarkerVariable(node->AsString());
     if((node = searchNode->GetNode("displayIds")) != 0)
@@ -770,6 +794,20 @@ MultiCurveAttributes::SetDisplayMarkers(bool displayMarkers_)
 {
     displayMarkers = displayMarkers_;
     Select(ID_displayMarkers, (void *)&displayMarkers);
+}
+
+void
+MultiCurveAttributes::SetMarkerScale(double markerScale_)
+{
+    markerScale = markerScale_;
+    Select(ID_markerScale, (void *)&markerScale);
+}
+
+void
+MultiCurveAttributes::SetMarkerLineWidth(int markerLineWidth_)
+{
+    markerLineWidth = markerLineWidth_;
+    Select(ID_markerLineWidth, (void *)&markerLineWidth);
 }
 
 void
@@ -900,6 +938,18 @@ MultiCurveAttributes::GetDisplayMarkers() const
     return displayMarkers;
 }
 
+double
+MultiCurveAttributes::GetMarkerScale() const
+{
+    return markerScale;
+}
+
+int
+MultiCurveAttributes::GetMarkerLineWidth() const
+{
+    return markerLineWidth;
+}
+
 const std::string &
 MultiCurveAttributes::GetMarkerVariable() const
 {
@@ -1017,6 +1067,8 @@ MultiCurveAttributes::GetFieldName(int index) const
     case ID_useYAxisTickSpacing: return "useYAxisTickSpacing";
     case ID_yAxisTickSpacing:    return "yAxisTickSpacing";
     case ID_displayMarkers:      return "displayMarkers";
+    case ID_markerScale:         return "markerScale";
+    case ID_markerLineWidth:     return "markerLineWidth";
     case ID_markerVariable:      return "markerVariable";
     case ID_displayIds:          return "displayIds";
     case ID_idVariable:          return "idVariable";
@@ -1056,6 +1108,8 @@ MultiCurveAttributes::GetFieldType(int index) const
     case ID_useYAxisTickSpacing: return FieldType_bool;
     case ID_yAxisTickSpacing:    return FieldType_double;
     case ID_displayMarkers:      return FieldType_bool;
+    case ID_markerScale:         return FieldType_double;
+    case ID_markerLineWidth:     return FieldType_linewidth;
     case ID_markerVariable:      return FieldType_string;
     case ID_displayIds:          return FieldType_bool;
     case ID_idVariable:          return FieldType_string;
@@ -1095,6 +1149,8 @@ MultiCurveAttributes::GetFieldTypeName(int index) const
     case ID_useYAxisTickSpacing: return "bool";
     case ID_yAxisTickSpacing:    return "double";
     case ID_displayMarkers:      return "bool";
+    case ID_markerScale:         return "double";
+    case ID_markerLineWidth:     return "linewidth";
     case ID_markerVariable:      return "string";
     case ID_displayIds:          return "bool";
     case ID_idVariable:          return "string";
@@ -1178,6 +1234,16 @@ MultiCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_displayMarkers:
         {  // new scope
         retval = (displayMarkers == obj.displayMarkers);
+        }
+        break;
+    case ID_markerScale:
+        {  // new scope
+        retval = (markerScale == obj.markerScale);
+        }
+        break;
+    case ID_markerLineWidth:
+        {  // new scope
+        retval = (markerLineWidth == obj.markerLineWidth);
         }
         break;
     case ID_markerVariable:

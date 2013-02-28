@@ -46,6 +46,12 @@
       <Field name="displayMarkers" label="Display markers" type="bool">
         true
       </Field>
+      <Field name="markerScale" label="Marker scale" type="double">
+        1.
+      </Field>
+      <Field name="markerLineWidth" label="Marker line width" type="linewidth">
+        0
+      </Field>
       <Field name="markerVariable" label="Marker variable" type="string">
         default
       </Field>

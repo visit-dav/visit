@@ -136,6 +136,9 @@ QvisMultiCurvePlotWindow::~QvisMultiCurvePlotWindow()
 //   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
 //   yAxisTickSpacing.
 //
+//   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
+//   I added markerScale and markerLineWidth.
+//
 // ****************************************************************************
 
 void
@@ -222,29 +225,43 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
             this, SLOT(displayMarkersChanged(bool)));
     mainLayout->addWidget(displayMarkers, 4,0);
 
+    markerLineWidthLabel = new QLabel(tr("Marker line width"), central);
+    mainLayout->addWidget(markerLineWidthLabel,5,0);
+    markerLineWidth = new QvisLineWidthWidget(0, central);
+    connect(markerLineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(markerLineWidthChanged(int)));
+    mainLayout->addWidget(markerLineWidth, 5,1);
+
+    markerScaleLabel = new QLabel(tr("Marker scale"), central);
+    mainLayout->addWidget(markerScaleLabel,6,0);
+    markerScale = new QLineEdit(central);
+    connect(markerScale, SIGNAL(returnPressed()),
+            this, SLOT(markerScaleProcessText()));
+    mainLayout->addWidget(markerScale, 6,1);
+
     markerVariableLabel = new QLabel(tr("Marker variable"), central);
-    mainLayout->addWidget(markerVariableLabel,5,0);
+    mainLayout->addWidget(markerVariableLabel,7,0);
     markerVariable = new QLineEdit(central);
     connect(markerVariable, SIGNAL(returnPressed()),
             this, SLOT(markerVariableProcessText()));
-    mainLayout->addWidget(markerVariable, 5,1);
+    mainLayout->addWidget(markerVariable, 7,1);
 
     displayIds = new QCheckBox(tr("Display ids"), central);
     connect(displayIds, SIGNAL(toggled(bool)),
             this, SLOT(displayIdsChanged(bool)));
-    mainLayout->addWidget(displayIds, 6,0);
+    mainLayout->addWidget(displayIds, 8,0);
 
     idVariableLabel = new QLabel(tr("Id variable"), central);
-    mainLayout->addWidget(idVariableLabel,7,0);
+    mainLayout->addWidget(idVariableLabel,9,0);
     idVariable = new QLineEdit(central);
     connect(idVariable, SIGNAL(returnPressed()),
             this, SLOT(idVariableProcessText()));
-    mainLayout->addWidget(idVariable, 7,1);
+    mainLayout->addWidget(idVariable, 9,1);
 
     displayLegend = new QCheckBox(tr("Legend"), central);
     connect(displayLegend, SIGNAL(toggled(bool)),
             this, SLOT(displayLegendChanged(bool)));
-    topLayout->addWidget(displayLegend, 8,0);
+    topLayout->addWidget(displayLegend, 10,0);
 }
 
 
@@ -274,12 +291,16 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
 //   yAxisTickSpacing.
 //
+//   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
+//   I added markerScale and markerLineWidth.
+//
 // ****************************************************************************
 
 void
 QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
 {
     int    index;
+    QString temp;
 
     bool updateColors = false;
 
@@ -352,6 +373,15 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             displayMarkers->blockSignals(true);
             displayMarkers->setChecked(atts->GetDisplayMarkers());
             displayMarkers->blockSignals(false);
+            break;
+          case MultiCurveAttributes::ID_markerScale:
+            temp.setNum(atts->GetMarkerScale());
+            markerScale->setText(temp);
+            break;
+          case MultiCurveAttributes::ID_markerLineWidth:
+            markerLineWidth->blockSignals(true);
+            markerLineWidth->SetLineWidth(atts->GetMarkerLineWidth());
+            markerLineWidth->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_markerVariable:
             markerVariable->setText(QString(atts->GetMarkerVariable().c_str()));
@@ -498,6 +528,9 @@ QvisMultiCurvePlotWindow::UpdateMultipleAreaColors()
 //   I replaced useYAxisRange and yAxisRange with useYAxisTickSpacing and
 //   yAxisTickSpacing.
 //
+//   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
+//   I added markerScale and markerLineWidth.
+//
 // ****************************************************************************
 
 void
@@ -527,9 +560,22 @@ QvisMultiCurvePlotWindow::GetCurrentValues(int which_widget)
             atts->SetYAxisTickSpacing(val);
         else
         {
-            ResettingError(tr("yAxisTickSpacing"),
+            ResettingError(tr("Y-Axis tick spacing"),
                 DoubleToQString(atts->GetYAxisTickSpacing()));
             atts->SetYAxisTickSpacing(atts->GetYAxisTickSpacing());
+        }
+    }
+
+    // Do markerScale
+    if(which_widget == MultiCurveAttributes::ID_markerScale || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(markerScale, val))
+            atts->SetMarkerScale(val);
+        else
+        {
+            ResettingError(tr("Marker scale"), DoubleToQString(atts->GetMarkerScale()));
+            atts->SetMarkerScale(atts->GetMarkerScale());
         }
     }
 
@@ -773,6 +819,23 @@ void
 QvisMultiCurvePlotWindow::displayMarkersChanged(bool val)
 {
     atts->SetDisplayMarkers(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisMultiCurvePlotWindow::markerScaleProcessText()
+{
+    GetCurrentValues(MultiCurveAttributes::ID_markerScale);
+    Apply();
+}
+
+
+void
+QvisMultiCurvePlotWindow::markerLineWidthChanged(int style)
+{
+    atts->SetMarkerLineWidth(style);
     SetUpdate(false);
     Apply();
 }

@@ -71,6 +71,9 @@ class vtkRenderer;
 //    Added an overloaded version of SetForegroundColor that allows setting
 //    rgba instead of just rgb.
 //
+//    Eric Brugger, Thu Feb 19 13:24:04 PST 2013
+//    Added the ability to set a scale factor and the line width. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtLabelActor
@@ -87,6 +90,8 @@ class PLOTTER_API avtLabelActor
     void               SetAttachmentPoint(const double newPos[3]);
     const double *     GetAttachmentPoint() { return attach; };
     void               SetScale(double);
+    void               SetScaleFactor(double);
+    void               SetLineWidth(int);
     void               SetDesignator(const char *l);
     void               SetMarker(const int index);
     void               SetForegroundColor(double fgr, double fgg, double fgb);
@@ -98,6 +103,7 @@ class PLOTTER_API avtLabelActor
 
   protected:
     double             attach[3];
+    double             scaleFactor;
     vtkFollower       *labelActor;
 
     vtkRenderer       *renderer; 
