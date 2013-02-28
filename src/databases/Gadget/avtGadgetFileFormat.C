@@ -73,18 +73,19 @@
 #define SKIP  {if(my_fread(&blksize,sizeof(int),1,fd)==0)return -1; swap_Nbyte((char*)&blksize,1,4);}
 
 /*---------------------- Basic routine to read data from a file ---------------*/
-size_t avtGadgetFileFormat::my_fread(void *ptr, size_t size, size_t nmemb, FILE * stream)
+size_t 
+avtGadgetFileFormat::my_fread(void *ptr, size_t size, size_t nmemb, 
+    FILE * stream)
 {
-  size_t nread;
+    size_t nread;
 
-  if((nread = fread(ptr, size, nmemb, stream)) != nmemb)
+    if((nread = fread(ptr, size, nmemb, stream)) != nmemb)
     {
-      if(!feof(stream))
-        fprintf(stderr,"I/O error (fread) !\n");
-      return 0;
-      //      exit(3);
+        if(!feof(stream))
+            fprintf(stderr,"I/O error (fread) !\n");
+        return 0;
     }
-  return nread;
+    return nread;
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -95,19 +96,20 @@ size_t avtGadgetFileFormat::my_fread(void *ptr, size_t size, size_t nmemb, FILE 
 /*--------                int,float = 4 ---------------------------------------*/
 /*--------                double    = 8 ---------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-void avtGadgetFileFormat::swap_Nbyte(char *data,int n,int m)
+void 
+avtGadgetFileFormat::swap_Nbyte(char *data,int n,int m)
 {
-  int i,j;
-  char old_data[16];
+    int i,j;
+    char old_data[16];
 
-  if(swap>0)
+    if(swap>0)
     {
-      for(j=0;j<n;j++)
+        for(j=0;j<n;j++)
         {
-          memcpy(&old_data[0],&data[j*m],m);
-          for(i=0;i<m;i++)
+            memcpy(&old_data[0],&data[j*m],m);
+            for(i=0;i<m;i++)
             {
-              data[j*m+i]=old_data[m-i-1];
+                data[j*m+i]=old_data[m-i-1];
             }
         }
     }
@@ -120,54 +122,58 @@ using     std::string;
 //   Jeremy Meredith, Thu Jan  7 12:08:10 EST 2010
 //   Throw exception with obviously incorrect format.
 //
-int avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, int *numblocks)
+int 
+avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, 
+    int *numblocks)
 {
-  rewind(fd);
-  *numblocks=0;
-  int4bytes blocksize=0;
-  while(blocksize == 0)
+    rewind(fd);
+    *numblocks=0;
+    int4bytes blocksize=0;
+    while(blocksize == 0)
     {
-       SKIP;
-       if(blksize == 134217728)
-         {
+        SKIP;
+        if(blksize == 134217728)
+        {
 #ifdef MY_DEBUG
            printf("Enable ENDIAN swapping !\n");
 #endif
            swap=1-swap;
            swap_Nbyte((char*)&blksize,1,4);
-         }
-       if(blksize != 8)
-         {
+        }
+        if(blksize != 8)
+        {
 
            printf("incorrect format (blksize=%d)!\n",blksize);
            EXCEPTION1(InvalidFilesException, "unknown");
-           //exit(1);
-         }
-       else
-         {
-           labels[*numblocks]=new char[5];
-           if( my_fread(labels[*numblocks], 4*sizeof(char), 1, fd)==0 ) return(-1);
-           labels[*numblocks][4]='\0';
-           if( my_fread(&blocksize, sizeof(int4bytes), 1, fd)==0 ) return(-1);
-           swap_Nbyte((char*)&blocksize,1,4);
+        }
+        else
+        {
+            labels[*numblocks]=new char[5];
+            if( my_fread(labels[*numblocks], 4*sizeof(char), 1, fd)==0 )
+                return(-1);
+            labels[*numblocks][4]='\0';
+            if( my_fread(&blocksize, sizeof(int4bytes), 1, fd)==0 )
+                return(-1);
+            swap_Nbyte((char*)&blocksize,1,4);
 #ifdef MY_DEBUG
-           printf("get names: Found Block <%s> with %d bytes\n",labels[*numblocks],blocksize);
+            printf("get names: Found Block <%s> with %d bytes\n",
+                   labels[*numblocks],blocksize);
 #endif
-           SKIP;
-           if(blocksize/(sizeof(float)*ntot)==3)
-             vflag[*numblocks]=1;
-           else
-             vflag[*numblocks]=0;
+            SKIP;
+            if(blocksize/(sizeof(float)*ntot)==3)
+                vflag[*numblocks]=1;
+            else
+                vflag[*numblocks]=0;
 #ifdef MY_DEBUG
-           fprintf(stderr,"vector %d   %d   %d   %d\n",vflag[*numblocks],blocksize,ntot,blocksize/(sizeof(float)*ntot));
+            fprintf(stderr,"vector %d   %d   %d   %d\n", vflag[*numblocks],
+                    blocksize,ntot,blocksize/(sizeof(float)*ntot));
 #endif
-           fseek(fd,blocksize,SEEK_CUR);
-           (*numblocks)++;
-           blocksize=0;
-
-         }
+            fseek(fd,blocksize,SEEK_CUR);
+            (*numblocks)++;
+            blocksize=0;
+        }
     }
-  return(blocksize-8);
+    return(blocksize-8);
 }
 
 
@@ -182,50 +188,50 @@ int avtGadgetFileFormat::get_block_names(FILE *fd, char **labels, int *vflag, in
 //   Jeremy Meredith, Thu Jan  7 12:08:10 EST 2010
 //   Throw exception with obviously incorrect format.
 //
-int avtGadgetFileFormat::find_block(FILE *fd,const char *label)
+int 
+avtGadgetFileFormat::find_block(FILE *fd,const char *label)
 {
-  int4bytes blocksize=0;
-  char blocklabel[5]={"    "};
+    int4bytes blocksize=0;
+    char blocklabel[5]={"    "};
 #ifdef MY_DEBUG
-           printf("Searching <%s>\n",label);
+    printf("Searching <%s>\n",label);
 #endif
  
-  rewind(fd);
+    rewind(fd);
 
-  while(!feof(fd) && blocksize == 0)
+    while(!feof(fd) && blocksize == 0)
     {
-       SKIP;
-       if(blksize == 134217728)
-         {
+        SKIP;
+        if(blksize == 134217728)
+        {
 #ifdef MY_DEBUG
-           printf("Enable ENDIAN swapping !\n");
+            printf("Enable ENDIAN swapping !\n");
 #endif
-           swap=1-swap;
-           swap_Nbyte((char*)&blksize,1,4);
-         }
-       if(blksize != 8)
-         {
-           printf("incorrect format (blksize=%d)!\n",blksize);
-           EXCEPTION1(InvalidFilesException, "unknown");
-           //exit(1);
-         }
-       else
-         {
-           my_fread(blocklabel, 4*sizeof(char), 1, fd);
-           my_fread(&blocksize, sizeof(int4bytes), 1, fd);
-           swap_Nbyte((char*)&blocksize,1,4);
+            swap=1-swap;
+            swap_Nbyte((char*)&blksize,1,4);
+        }
+        if(blksize != 8)
+        {
+            printf("incorrect format (blksize=%d)!\n",blksize);
+            EXCEPTION1(InvalidFilesException, "unknown");
+        }
+        else
+        {
+            my_fread(blocklabel, 4*sizeof(char), 1, fd);
+            my_fread(&blocksize, sizeof(int4bytes), 1, fd);
+            swap_Nbyte((char*)&blocksize,1,4);
 #ifdef MY_DEBUG
-           printf("Found Block <%s> with %d bytes\n",blocklabel,blocksize);
+            printf("Found Block <%s> with %d bytes\n",blocklabel,blocksize);
 #endif
-           SKIP;
-           if(strcmp(label,blocklabel)!=0)
-             { 
+            SKIP;
+            if(strcmp(label,blocklabel)!=0)
+            { 
                 fseek(fd,blocksize,1);
                 blocksize=0;
-             }
-         }
+            }
+        }
     }
-  return(blocksize-8);
+    return(blocksize-8);
 }
 
 
@@ -236,25 +242,25 @@ int avtGadgetFileFormat::find_block(FILE *fd,const char *label)
 /*-------- FILE *fd:      File handle -----------------------------------------*/
 /*-------- returns length of dataarray ----------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int avtGadgetFileFormat::read_gadget_float3(float *data,const char *label,FILE *fd)
+int 
+avtGadgetFileFormat::read_gadget_float3(float *data,const char *label,FILE *fd)
 {
-  int blocksize = find_block(fd,label);
-  if(blocksize <= 0)
+    int blocksize = find_block(fd,label);
+    if(blocksize <= 0)
     {
-      printf("Block <%s> not fond !\n",label);
-      //exit(5);
+        printf("Block <%s> not fond !\n",label);
     }
-  else
+    else
     {
 #ifdef MY_DEBUG
-       printf("Reding %d bytes of data from <%s>...\n",blocksize,label);
+        printf("Reding %d bytes of data from <%s>...\n",blocksize,label);
 #endif
-       SKIP;
-       my_fread(data,blocksize, 1, fd);
-       swap_Nbyte((char*)data,blocksize/sizeof(float),4);
-       SKIP;
+        SKIP;
+        my_fread(data,blocksize, 1, fd);
+        swap_Nbyte((char*)data,blocksize/sizeof(float),4);
+        SKIP;
     }
-  return(blocksize/sizeof(float)/3);
+    return(blocksize/sizeof(float)/3);
 }
 
 /*-----------------------------------------------------------------------------*/
@@ -264,27 +270,27 @@ int avtGadgetFileFormat::read_gadget_float3(float *data,const char *label,FILE *
 /*-------- FILE *fd:      File handle -----------------------------------------*/
 /*-------- returns length of dataarray ----------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int avtGadgetFileFormat::read_gadget_float(float *data,const char *label,FILE *fd)
+int 
+avtGadgetFileFormat::read_gadget_float(float *data,const char *label,FILE *fd)
 {
-  int blocksize;
+    int blocksize;
 
-  blocksize = find_block(fd,label);
-  if(blocksize <= 0)
+    blocksize = find_block(fd,label);
+    if(blocksize <= 0)
     {
-      printf("Block <%s> not fond !\n",label);
-      //      exit(5);
+        printf("Block <%s> not fond !\n",label);
     }
-  else
+    else
     {
 #ifdef MY_DEBUG
-       printf("Reading %d bytes of data from <%s>...\n",blocksize,label);
+        printf("Reading %d bytes of data from <%s>...\n",blocksize,label);
 #endif
-       SKIP;
-       my_fread(data,blocksize, 1, fd);
-       swap_Nbyte((char*)data,blocksize/sizeof(float),4);
-       SKIP;
+        SKIP;
+        my_fread(data,blocksize, 1, fd);
+        swap_Nbyte((char*)data,blocksize/sizeof(float),4);
+        SKIP;
     }
-  return(blocksize/sizeof(float));
+    return(blocksize/sizeof(float));
 }
 
 
@@ -299,24 +305,29 @@ int avtGadgetFileFormat::read_gadget_float(float *data,const char *label,FILE *f
 /*-------- FILE *fd:      File handle -----------------------------------------*/
 /*-------- returns number of read bytes ---------------------------------------*/
 /*-----------------------------------------------------------------------------*/
-int avtGadgetFileFormat::read_gadget_head(int *npart,double *massarr,double *time,double *redshift,FILE *fd)
+int 
+avtGadgetFileFormat::read_gadget_head(int *npart,double *massarr,double *time,
+    double *redshift,FILE *fd)
 {
-  int blocksize = find_block(fd,"HEAD");
-  if(blocksize <= 0)
+    int blocksize = find_block(fd,"HEAD");
+    if(blocksize <= 0)
     {
-      printf("Block <%s> not fond !\n","HEAD");
-      //exit(5);
+        printf("Block <%s> not fond !\n","HEAD");
     }
-  else
+    else
     {
-       int dummysize=blocksize - 6 * sizeof(int) - 8 * sizeof(double);
-       SKIP;
-       my_fread(npart,6*sizeof(int), 1, fd);        swap_Nbyte((char*)npart,6,4);
-       my_fread(massarr,6*sizeof(double), 1, fd);   swap_Nbyte((char*)massarr,6,8);
-       my_fread(time,sizeof(double), 1, fd);        swap_Nbyte((char*)time,1,8);
-       my_fread(redshift,sizeof(double), 1, fd);    swap_Nbyte((char*)redshift,1,8);
-       fseek(fd,dummysize,1);
-       SKIP;
+         int dummysize=blocksize - 6 * sizeof(int) - 8 * sizeof(double);
+         SKIP;
+         my_fread(npart,6*sizeof(int), 1, fd);
+         swap_Nbyte((char*)npart,6,4);
+         my_fread(massarr,6*sizeof(double), 1, fd);
+         swap_Nbyte((char*)massarr,6,8);
+         my_fread(time,sizeof(double), 1, fd);
+         swap_Nbyte((char*)time,1,8);
+         my_fread(redshift,sizeof(double), 1, fd);
+         swap_Nbyte((char*)redshift,1,8);
+         fseek(fd,dummysize,1);
+         SKIP;
     }
 #ifdef MY_DEBUG
   fprintf(stderr,"done reading so far\n");
@@ -336,42 +347,45 @@ int avtGadgetFileFormat::read_gadget_head(int *npart,double *massarr,double *tim
 //    Kathleen Bonnell, Tue Jun 14 13:17:28 MST 2011
 //    Open file as 'binary'.
 //
+//    Kathleen Biagas, Wed Feb 27 16:40:26 MST 2013
+//    Use local file handle, and close it at end.
+//
 // ****************************************************************************
 
 avtGadgetFileFormat::avtGadgetFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
-  int i,n;
-  int npart[6];
-  fname=filename;
-  swap=0;
-  ntot=0;
+    int i,n;
+    int npart[6];
+    fname=filename;
+    swap=0;
+    ntot=0;
 #ifdef MY_DEBUG
-  fprintf(stderr,"loading %s\n",filename);
+    fprintf(stderr,"loading %s\n",filename);
 #endif
-  if(!(fd = fopen(filename,"rb")))
+    FILE *fd = fopen(filename, "rb");
+    if(!fd)
     {
-      EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
+        EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
     }  
-  else
+    else
     {
-      /*----------- RED HEADER TO GET GLOBAL PROPERTIES -------------*/
-      n = read_gadget_head(npart,masstab,&time,&redshift,fd);
+        /*----------- RED HEADER TO GET GLOBAL PROPERTIES -------------*/
+        n = read_gadget_head(npart,masstab,&time,&redshift,fd);
       
-      ntot=0;
-      for(i=0;i<6;i++)
+        ntot=0;
+        for(i=0;i<6;i++)
         {
-          ntot += npart[i];
+            ntot += npart[i];
         }
-      //      pos=new float[3*npart[0]];
-      //      n = read_gadget_float3((float*)pos,"POS ",fd);
+        // pos=new float[3*npart[0]];
+        // n = read_gadget_float3((float*)pos,"POS ",fd);
 
     }
 #ifdef MY_DEBUG
-
-  fprintf(stderr,"finished constructor\n");
+    fprintf(stderr,"finished constructor\n");
 #endif
-  // INITIALIZE DATA MEMBERS
+    fclose(fd);
 }
 
 
@@ -407,69 +421,81 @@ avtGadgetFileFormat::FreeUpResources(void)
 //  Programmer: Ralph Bruckschen
 //  Creation:   Wed Oct 22 12:47:04 PDT 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Feb 27 16:40:26 MST 2013
+//    Use local file handle, and close it at end.
+//
 // ****************************************************************************
 
 void
 avtGadgetFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
 #ifdef MY_DEBUG
-  fprintf(stderr,"pop database\n");
+    fprintf(stderr,"pop database\n");
 #endif
+    
+    FILE *fd = fopen(fname.c_str(),"rb");
+    if(!fd)
+    {
+        EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
+    }  
     //
     // CODE TO ADD A MESH
     //
-  char **labels=new char*[50];
-  int numblocks;
-  string meshname = "POS ";
-  int nblocks = 1;//  <-- this must be 1 for STSD
-//  int block_origin = 0;
-  int spatial_dimension = 3;
-  int topological_dimension = 0;
-  int *vec_flag=new int [50];
-  avtMeshMetaData *mmd = new avtMeshMetaData;
-  mmd->name = "POS ";
-  mmd->spatialDimension = spatial_dimension;
-  mmd->topologicalDimension = topological_dimension;
-  mmd->meshType = AVT_POINT_MESH;
-  mmd->numBlocks = nblocks;
-  md->Add(mmd);
+    char **labels=new char*[50];
+    int numblocks;
+    string meshname = "POS ";
+    int nblocks = 1;//  <-- this must be 1 for STSD
+    //  int block_origin = 0;
+    int spatial_dimension = 3;
+    int topological_dimension = 0;
+    int *vec_flag=new int [50];
+    avtMeshMetaData *mmd = new avtMeshMetaData;
+    mmd->name = "POS ";
+    mmd->spatialDimension = spatial_dimension;
+    mmd->topologicalDimension = topological_dimension;
+    mmd->meshType = AVT_POINT_MESH;
+    mmd->numBlocks = nblocks;
+    md->Add(mmd);
 #ifdef MY_DEBUG
-  fprintf(stderr,"get block names\n");
+    fprintf(stderr,"get block names\n");
 #endif  
-  get_block_names(fd, labels,vec_flag, &numblocks);
+    get_block_names(fd, labels,vec_flag, &numblocks);
 #ifdef MY_DEBUG
-  fprintf(stderr,"got block labels\n");
+    fprintf(stderr,"got block labels\n");
 #endif
-  for(int i=0;i<numblocks;i++)
+    for(int i=0;i<numblocks;i++)
     {
 #ifdef MY_DEBUG
-      fprintf(stderr,"got %s\n",labels[i]);
+        fprintf(stderr,"got %s\n",labels[i]);
 #endif
-    if(strcmp(labels[i],"POS ")!=0 && strcmp(labels[i],"HEAD")!=0)
-      {
-        if(vec_flag[i])
-          {
-            avtVectorMetaData *smd = new avtVectorMetaData;
-            smd->name = labels[i];
-            smd->meshName = "POS ";
-            smd->centering = AVT_ZONECENT;
-            md->Add(smd);
-          }
-        else
-          {
-            avtScalarMetaData *smd = new avtScalarMetaData;
-            smd->name = labels[i];
-            smd->meshName = "POS ";
-            smd->centering = AVT_ZONECENT;
-            md->Add(smd);
-          }
-      }
+        if(strcmp(labels[i],"POS ")!=0 && strcmp(labels[i],"HEAD")!=0)
+        {
+            if(vec_flag[i])
+            {
+                avtVectorMetaData *smd = new avtVectorMetaData;
+                smd->name = labels[i];
+                smd->meshName = "POS ";
+                smd->centering = AVT_ZONECENT;
+                md->Add(smd);
+            }
+            else
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = labels[i];
+                smd->meshName = "POS ";
+                smd->centering = AVT_ZONECENT;
+                md->Add(smd);
+            }
+        }
     }
 #ifdef MY_DEBUG
-  fprintf(stderr,"done creating\n");
+    fprintf(stderr,"done creating\n");
 #endif
 
-  if(vec_flag) delete [] vec_flag;
+    if(vec_flag) 
+        delete [] vec_flag;
+    fclose(fd);
 }
 
 
@@ -488,33 +514,43 @@ avtGadgetFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Ralph Bruckschen
 //  Creation:   Wed Oct 22 12:47:04 PDT 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Feb 27 16:40:26 MST 2013
+//    Use local file handle, and close it at end.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtGadgetFileFormat::GetMesh(const char *meshname)
 {
 #ifdef MY_DEBUG
-  fprintf(stderr,"reading mesh %d\n",ntot);
+    fprintf(stderr,"reading mesh %d\n",ntot);
 #endif
-  vtkPoints *points = vtkPoints::New();
-  points->SetNumberOfPoints(ntot);
-  float *pts = (float *) points->GetVoidPointer(0);
-  
-  int n = read_gadget_float3(pts,meshname,fd);
-#ifdef MY_DEBUG
-  fprintf(stderr,"done reading mesh %d\n",n);
-#endif
-  vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-  ugrid->SetPoints(points);
-  points->Delete();
-  ugrid->Allocate(ntot);
-  vtkIdType onevertex;
-  for(int i = 0; i < (int)ntot; ++i)
+    FILE *fd = fopen(fname.c_str(),"rb");
+    if(!fd)
     {
-      onevertex = i;
-      ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+        EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
+    }  
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(ntot);
+    float *pts = (float *) points->GetVoidPointer(0);
+  
+    int n = read_gadget_float3(pts,meshname,fd);
+#ifdef MY_DEBUG
+    fprintf(stderr,"done reading mesh %d\n",n);
+#endif
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+    ugrid->Allocate(ntot);
+    vtkIdType onevertex;
+    for(int i = 0; i < (int)ntot; ++i)
+    {
+        onevertex = i;
+        ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
     }
-      return ugrid; 
+    fclose(fd);
+    return ugrid; 
 }
 
 
@@ -532,38 +568,46 @@ avtGadgetFileFormat::GetMesh(const char *meshname)
 //  Programmer: Ralph Bruckschen
 //  Creation:   Wed Oct 22 12:47:04 PDT 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Feb 27 16:40:26 MST 2013
+//    Use local file handle, and close it at end.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtGadgetFileFormat::GetVar(const char *varname)
 {
 #ifdef MY_DEBUG
-  fprintf(stderr,"reading data %s\n",varname);
+    fprintf(stderr,"reading data %s\n",varname);
 #endif
-  if(!strcmp(varname,"ID  "))
+    FILE *fd = fopen(fname.c_str(),"rb");
+    if(!fd)
+    {
+        EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
+    }  
+    vtkDataArray *rv = NULL;
+    if(!strcmp(varname,"ID  "))
     {
 #ifdef MY_DEBUG
-      fprintf(stderr,"got ID\n");
+        fprintf(stderr,"got ID\n");
 #endif
-      vtkIntArray *rv=vtkIntArray::New();
-      rv->SetNumberOfTuples(ntot);
-      float *pts = (float *) rv->GetVoidPointer(0);
-      int n = read_gadget_float(pts,varname,fd);
-      return rv;
+        rv=vtkIntArray::New();
+        rv->SetNumberOfTuples(ntot);
+        float *pts = (float *) rv->GetVoidPointer(0);
+        int n = read_gadget_float(pts,varname,fd);
     }
     else
-      {
-        vtkFloatArray *rv = vtkFloatArray::New();
-      
+    {
+        rv = vtkFloatArray::New();
         rv->SetNumberOfTuples(ntot);
         float *pts = (float *) rv->GetVoidPointer(0);
         int n = read_gadget_float(pts,varname,fd);
 #ifdef MY_DEBUG
         fprintf(stderr,"done reading data %s  %d\n",varname,n);
 #endif
-        return rv; 
-      }
-
+    }
+    fclose(fd);
+    return rv;
 }
 
 
@@ -581,31 +625,41 @@ avtGadgetFileFormat::GetVar(const char *varname)
 //  Programmer: Ralph Bruckschen
 //  Creation:   Wed Oct 22 12:47:04 PDT 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Feb 27 16:40:26 MST 2013
+//    Use local file handle, and close it at end.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtGadgetFileFormat::GetVectorVar(const char *varname)
 {
-  //YOU MUST IMPLEMENT THIS
+    //YOU MUST IMPLEMENT THIS
 #ifdef MY_DEBUG
-  fprintf(stderr,"read vector %s\n",varname);
+    fprintf(stderr,"read vector %s\n",varname);
 #endif
-  vtkFloatArray *rv = vtkFloatArray::New();
-  rv->SetNumberOfComponents(3);
-  rv->SetNumberOfTuples(ntot);
-  float *pts = (float *) rv->GetVoidPointer(0);
-  int n = read_gadget_float3(pts,varname,fd);
+    FILE *fd = fopen(fname.c_str(),"rb");
+    if(!fd)
+    {
+        EXCEPTION1(InvalidDBTypeException,"Cant open file\n");
+    }  
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(3);
+    rv->SetNumberOfTuples(ntot);
+    float *pts = (float *) rv->GetVoidPointer(0);
+    int n = read_gadget_float3(pts,varname,fd);
 #ifdef MY_DEBUG
-  fprintf(stderr,"done reading data %s  %d\n",varname,n);
+    fprintf(stderr,"done reading data %s  %d\n",varname,n);
 #endif
-  return rv;
+    fclose(fd);
+    return rv;
 }
 
 int avtGadgetFileFormat::GetCycle(void)
 {
-  return GetCycleFromFilename(fname);
+    return GetCycleFromFilename(fname.c_str());
 }
 double avtGadgetFileFormat::GetTime(void)
 {
-  return time;
+    return time;
 }
