@@ -63,13 +63,18 @@ const double INV_255 = 0.0039215686274509803377;
 //    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
 //    I added the ability to display identifiers at each of the points.
 //
+//    Eric Brugger, Tue Feb 19 16:18:03 PST 2013
+//    I added the ability to set a scale factor and the line width for the
+//    markers.
+//
 // ****************************************************************************
 
 avtMultiCurveLabelMapper::avtMultiCurveLabelMapper()
 {
     markerVisibility = true;
     idVisibility     = false;
-    scale            = 0.05;
+    scale            = 1.;
+    markerLineWidth  = LW_0;
 }
 
 
@@ -100,6 +105,10 @@ avtMultiCurveLabelMapper::~avtMultiCurveLabelMapper()
 //    Eric Brugger, Wed Feb 18 12:05:44 PST 2009
 //    I added the ability to display identifiers at each of the points.
 //
+//    Eric Brugger, Tue Feb 19 16:18:03 PST 2013
+//    I added the ability to set a scale factor and the line width for the
+//    markers.
+//
 // ****************************************************************************
 
 void
@@ -108,6 +117,7 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
     SetMarkerVisibility(markerVisibility);
     SetIdVisibility(idVisibility);
     SetScale(scale);
+    SetMarkerLineWidth(markerLineWidth);
 }
 
 
@@ -141,6 +151,10 @@ avtMultiCurveLabelMapper::CustomizeMappers(void)
 //    I modified the plot to not create the markers and ids if the number of
 //    points is greater than 500. The performance is too slow when the number
 //    of actors gets too large.
+//
+//    Eric Brugger, Tue Feb 19 16:18:03 PST 2013
+//    I added the ability to set a scale factor and the line width for the
+//    markers.
 //
 // ****************************************************************************
 
@@ -188,7 +202,8 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
             la->SetMarker(buf[i]);
         else
             la->SetMarker(2);
-        la->SetScale(scale);
+        la->SetScaleFactor(scale);
+        la->SetLineWidth(LineWidth2Int(markerLineWidth));
         la->SetForegroundColor(col[0], col[1], col[2], col[3]);
         actors.push_back(la);
         colors.push_back(inNum);
@@ -206,7 +221,7 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         else
             sprintf(label, "%d", i);
         la->SetDesignator(label);
-        la->SetScale(scale);
+        la->SetScaleFactor(scale);
         la->SetForegroundColor(col[0], col[1], col[2], col[3]);
         actors.push_back(la);
         colors.push_back(inNum);
@@ -226,6 +241,11 @@ avtMultiCurveLabelMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
 //  Programmer:   Eric Brugger
 //  Creation:     December 12, 2008
 //
+//  Modifications:
+//    Eric Brugger, Tue Feb 19 16:18:03 PST 2013
+//    I added the ability to set a scale factor and the line width for the
+//    markers.
+//
 // ****************************************************************************
 
 void
@@ -234,7 +254,32 @@ avtMultiCurveLabelMapper::SetScale(double s)
     scale = s;
     for (int i = 0; i < actors.size(); i++)
     {
-        actors[i]->SetScale(s);
+        actors[i]->SetScaleFactor(s);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtMultiCurveLabelMapper::SetMarkerLineWidth
+//
+//  Purpose:
+//      Sets the marker line width of each label.
+//
+//  Arguments:
+//      lw        The new marker line width.
+//
+//  Programmer:   Eric Brugger
+//  Creation:     February 19, 2013
+//
+// ****************************************************************************
+
+void
+avtMultiCurveLabelMapper::SetMarkerLineWidth(_LineWidth lw)
+{
+    markerLineWidth = lw;
+    for (int i = 0; i < actors.size(); i++)
+    {
+        actors[i]->SetLineWidth(LineWidth2Int(lw));
     }
 }
 

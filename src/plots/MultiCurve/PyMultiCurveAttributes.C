@@ -147,6 +147,10 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sdisplayMarkers = 0\n", prefix);
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smarkerScale = %g\n", prefix, atts->GetMarkerScale());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%smarkerLineWidth = %d\n", prefix, atts->GetMarkerLineWidth());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smarkerVariable = \"%s\"\n", prefix, atts->GetMarkerVariable().c_str());
     str += tmpStr;
     if(atts->GetDisplayIds())
@@ -762,6 +766,54 @@ MultiCurveAttributes_GetDisplayMarkers(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MultiCurveAttributes_SetMarkerScale(PyObject *self, PyObject *args)
+{
+    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the markerScale in the object.
+    obj->data->SetMarkerScale(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiCurveAttributes_GetMarkerScale(PyObject *self, PyObject *args)
+{
+    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetMarkerScale());
+    return retval;
+}
+
+/*static*/ PyObject *
+MultiCurveAttributes_SetMarkerLineWidth(PyObject *self, PyObject *args)
+{
+    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the markerLineWidth in the object.
+    obj->data->SetMarkerLineWidth(ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiCurveAttributes_GetMarkerLineWidth(PyObject *self, PyObject *args)
+{
+    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMarkerLineWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
 MultiCurveAttributes_SetMarkerVariable(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
@@ -883,6 +935,10 @@ PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH] = {
     {"GetYAxisTickSpacing", MultiCurveAttributes_GetYAxisTickSpacing, METH_VARARGS},
     {"SetDisplayMarkers", MultiCurveAttributes_SetDisplayMarkers, METH_VARARGS},
     {"GetDisplayMarkers", MultiCurveAttributes_GetDisplayMarkers, METH_VARARGS},
+    {"SetMarkerScale", MultiCurveAttributes_SetMarkerScale, METH_VARARGS},
+    {"GetMarkerScale", MultiCurveAttributes_GetMarkerScale, METH_VARARGS},
+    {"SetMarkerLineWidth", MultiCurveAttributes_SetMarkerLineWidth, METH_VARARGS},
+    {"GetMarkerLineWidth", MultiCurveAttributes_GetMarkerLineWidth, METH_VARARGS},
     {"SetMarkerVariable", MultiCurveAttributes_SetMarkerVariable, METH_VARARGS},
     {"GetMarkerVariable", MultiCurveAttributes_GetMarkerVariable, METH_VARARGS},
     {"SetDisplayIds", MultiCurveAttributes_SetDisplayIds, METH_VARARGS},
@@ -955,6 +1011,10 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
         return MultiCurveAttributes_GetYAxisTickSpacing(self, NULL);
     if(strcmp(name, "displayMarkers") == 0)
         return MultiCurveAttributes_GetDisplayMarkers(self, NULL);
+    if(strcmp(name, "markerScale") == 0)
+        return MultiCurveAttributes_GetMarkerScale(self, NULL);
+    if(strcmp(name, "markerLineWidth") == 0)
+        return MultiCurveAttributes_GetMarkerLineWidth(self, NULL);
     if(strcmp(name, "markerVariable") == 0)
         return MultiCurveAttributes_GetMarkerVariable(self, NULL);
     if(strcmp(name, "displayIds") == 0)
@@ -999,6 +1059,10 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MultiCurveAttributes_SetYAxisTickSpacing(self, tuple);
     else if(strcmp(name, "displayMarkers") == 0)
         obj = MultiCurveAttributes_SetDisplayMarkers(self, tuple);
+    else if(strcmp(name, "markerScale") == 0)
+        obj = MultiCurveAttributes_SetMarkerScale(self, tuple);
+    else if(strcmp(name, "markerLineWidth") == 0)
+        obj = MultiCurveAttributes_SetMarkerLineWidth(self, tuple);
     else if(strcmp(name, "markerVariable") == 0)
         obj = MultiCurveAttributes_SetMarkerVariable(self, tuple);
     else if(strcmp(name, "displayIds") == 0)

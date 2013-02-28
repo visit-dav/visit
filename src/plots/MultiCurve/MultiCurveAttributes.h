@@ -114,6 +114,8 @@ public:
     void SetUseYAxisTickSpacing(bool useYAxisTickSpacing_);
     void SetYAxisTickSpacing(double yAxisTickSpacing_);
     void SetDisplayMarkers(bool displayMarkers_);
+    void SetMarkerScale(double markerScale_);
+    void SetMarkerLineWidth(int markerLineWidth_);
     void SetMarkerVariable(const std::string &markerVariable_);
     void SetDisplayIds(bool displayIds_);
     void SetIdVariable(const std::string &idVariable_);
@@ -136,6 +138,8 @@ public:
     bool                        GetUseYAxisTickSpacing() const;
     double                      GetYAxisTickSpacing() const;
     bool                        GetDisplayMarkers() const;
+    double                      GetMarkerScale() const;
+    int                         GetMarkerLineWidth() const;
     const std::string           &GetMarkerVariable() const;
           std::string           &GetMarkerVariable();
     bool                        GetDisplayIds() const;
@@ -179,6 +183,8 @@ public:
         ID_useYAxisTickSpacing,
         ID_yAxisTickSpacing,
         ID_displayMarkers,
+        ID_markerScale,
+        ID_markerLineWidth,
         ID_markerVariable,
         ID_displayIds,
         ID_idVariable,
@@ -198,6 +204,8 @@ private:
     bool                  useYAxisTickSpacing;
     double                yAxisTickSpacing;
     bool                  displayMarkers;
+    double                markerScale;
+    int                   markerLineWidth;
     std::string           markerVariable;
     bool                  displayIds;
     std::string           idVariable;
@@ -207,6 +215,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTICURVEATTRIBUTES_TMFS "au*iaaiisbdbsbsb"
+#define MULTICURVEATTRIBUTES_TMFS "au*iaaiisbdbdisbsb"
 
 #endif
