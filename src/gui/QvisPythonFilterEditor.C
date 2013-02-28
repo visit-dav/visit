@@ -277,7 +277,7 @@ QvisPythonFilterEditor::loadScript(const QString &py_script)
 //   Add other common python filter extentsions (vpe & vpq)
 //
 //   Kathleen Biagas, Wed Feb 26 14:40:09 MST 2013
-//   Replace commas with spaces in filter string for windows.
+//   Replace commas with spaces in filter string.
 //
 // ****************************************************************************
 
@@ -300,11 +300,8 @@ QvisPythonFilterEditor::cmdSaveClick()
     QString default_file = useDir + "/" + QString("visit_filter.py");
 
     // Get the name of the file that the user saved.
-    QString filter(tr("Python Script File") +  QString("  (*.py,*vpe,*vpq);;")
+    QString filter(tr("Python Script File") +  QString("  (*.py *vpe *vpq);;")
                    + tr("All Files") + QString(" (*)"));
-#ifdef _WIN32
-    filter = filter.replace(',', ' ');
-#endif
 
     QString res = QFileDialog::getSaveFileName(this,
                                                tr("Save Python Filter Script"),
@@ -332,7 +329,7 @@ QvisPythonFilterEditor::cmdSaveClick()
 //   Add other common python filter extentsions (vpe & vpq)
 //
 //   Kathleen Biagas, Wed Feb 26 14:40:09 MST 2013
-//   Replace commas with spaces in filter string for windows.
+//   Replace commas with spaces in filter string.
 //
 // ****************************************************************************
 
@@ -341,11 +338,8 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 {
     if(action == loadFile)
     {
-        QString filter(tr("Python Script File") + QString(" (*.py,*vpe,*vpq);;")
+        QString filter(tr("Python Script File") + QString(" (*.py *vpe *vpq);;")
                        + tr("All Files") + QString(" (*)"));
-#ifdef _WIN32
-        filter = filter.replace(',', ' ');
-#endif
         QString res = QFileDialog::getOpenFileName(this,
                                                    tr("Load Python Filter"),
                                                    QDir::current().path(),
