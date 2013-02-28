@@ -14620,7 +14620,7 @@ avtSiloFileFormat::GetMultiMesh(const char *path, const char *name)
     {
         if(mm->nblocks > 0)
         {
-            cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,mm);
+            cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,path,mm);
             multimeshCache.AddEntry(full_path,cache_ent);
         }
         else
@@ -14707,7 +14707,7 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name)
     {
         if(mv->nvars > 0)
         {
-            cache_ent = new avtSiloMultiVarCacheEntry(dbfile,mv);
+            cache_ent = new avtSiloMultiVarCacheEntry(dbfile,path,mv);
             multivarCache.AddEntry(full_path,cache_ent);
         }
         else
@@ -14797,7 +14797,7 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name)
     {
         if(mm->nmats > 0)
         {
-            cache_ent = new avtSiloMultiMatCacheEntry(dbfile,mm);
+            cache_ent = new avtSiloMultiMatCacheEntry(dbfile,path,mm);
             multimatCache.AddEntry(full_path,cache_ent);
         }
         else
@@ -14884,7 +14884,7 @@ avtSiloFileFormat::GetMultiSpec(const char *path, const char *name)
     {
         if(ms->nspec > 0)
         {
-            cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,ms);
+            cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,path,ms);
             multispecCache.AddEntry(full_path,cache_ent);
         }
         else
