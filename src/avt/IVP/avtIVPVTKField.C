@@ -456,7 +456,7 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 avtIVPField::Result
 avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
 {
-    return (loc->FindCell(&pt.x, NULL, true) > 0 ? OK : OUTSIDE_SPATIAL);
+    return (loc->FindCell(&pt.x, NULL, true) >= 0 ? OK : OUTSIDE_SPATIAL);
 }
 
 // ****************************************************************************
