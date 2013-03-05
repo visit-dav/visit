@@ -830,7 +830,7 @@ avtPICSFilter::LoadNextTimeSlice()
     // The mesh may have changed and the ICs need to update their domain.
     // If they want a conn_cmfe, then don't do this expensive step.
     // If they want a pos_cmfe, then we better do it.
-    if (pathlineCMFE != 0)
+    if (pathlineCMFE != PICS_CONN_CMFE)
         icAlgo->UpdateICsDomain( curTimeSlice );
 
     return true;
@@ -1920,6 +1920,10 @@ avtPICSFilter::UpdateDataObjectInfo(void)
 //   Make cell locator be reference counted so it can be cached at the database
 //   level.
 //
+//   Hank Childs, Mon Mar  4 15:18:25 PST 2013
+//   Re-use locators between time slices if we are doing CONN_CMFE and 
+//   pathlines.
+//
 // ****************************************************************************
 
 avtCellLocator_p
@@ -1941,6 +1945,11 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
         else
         {
             std::string velocityName, meshName;
+            int timeSliceForLocator = curTimeSlice;
+            if (doPathlines && (pathlineCMFE == PICS_CONN_CMFE))
+                timeSliceForLocator = -1; // share between time slices
+            int tsfl = timeSliceForLocator;
+
             if (CacheLocators())
             {
                 avtDataRequest_p dr = lastContract->GetDataRequest();
@@ -1948,7 +1957,7 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
 
                 void_ref_ptr vrp = FetchArbitraryRefPtr(SPATIAL_DEPENDENCE,
                                            velocityName.c_str(), domain.domain, 
-                                           curTimeSlice, "BIH_CELL_LOCATOR");
+                                           tsfl, "BIH_CELL_LOCATOR");
                 if (*vrp != NULL)
                 {
                     locator = ref_ptr<avtCellLocator>((avtCellLocator*) (*vrp),
@@ -1967,7 +1976,7 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
                                      locator.GetN());
                     StoreArbitraryRefPtr(SPATIAL_DEPENDENCE,
                                          velocityName.c_str(), domain.domain,
-                                         curTimeSlice, "BIH_CELL_LOCATOR", vrp);
+                                         tsfl, "BIH_CELL_LOCATOR", vrp);
                 }
             }
         }
@@ -3297,7 +3306,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         int timeOffset = +1;
         if (integrationDirection == VTK_INTEGRATE_BACKWARD)
             timeOffset = -1;
-        if( pathlineCMFE == 0 )
+        if( pathlineCMFE == PICS_CONN_CMFE )
         {
             SNPRINTF(defn, 1024, "conn_cmfe(<[%d]id:%s>, %s)",
                      timeOffset, pathlineName.c_str(), meshName.c_str());

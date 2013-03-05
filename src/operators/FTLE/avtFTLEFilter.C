@@ -212,8 +212,8 @@ avtFTLEFilter::avtFTLEFilter()
     //              atts.GetPathlinesOverrideStartingTimeFlag(),
     //              atts.GetPathlinesOverrideStartingTime(),
     //              atts.GetPathlinesCMFE());
-    //SetPathlines(true,false,0,0);
-    //SetPathlines(false,false,0,0);
+    //SetPathlines(true,false,0,PICS_CONN_CMFE);
+    //SetPathlines(false,false,0,PICS_CONN_CMFE);
 
     // These initializations prevent harmless UMRs when we do our first
     // cache lookups.
@@ -283,9 +283,9 @@ avtFTLEFilter::SetAtts(const AttributeGroup *a)
     atts = *(const FTLEAttributes*)a;
 
     if (atts.GetFlowType() == FTLEAttributes::Unsteady)
-        SetPathlines(true,false,0,0);
+        SetPathlines(true,false,0,PICS_CONN_CMFE);
     else
-        SetPathlines(false,false,0,0);
+        SetPathlines(false,false,0,PICS_CONN_CMFE);
 
     if (atts.GetDirection() == FTLEAttributes::Forward)
     {

@@ -274,6 +274,9 @@ using std::vector;
 //    Hank Childs, Fri Jan  4 14:33:11 PST 2013
 //    Add support for time periodicity.
 //
+//    Hank Childs, Mon Mar  4 18:35:27 PST 2013
+//    Initialize duplicateData member.
+//
 // ****************************************************************************
 
 avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
@@ -294,6 +297,7 @@ avtNek5000FileFormat::avtNek5000FileFormat(const char *filename,
     gapBetweenTimePeriods = 0.0;
 
     readOptionToGetAllTimes = atts->GetBool("Read all times and cycles");
+    duplicateData = atts->GetBool("Duplicate data for particle advection (slower for all other techniques)");
 
     iNumBlocks = 0;
     iBlockSize[0] = 1;
@@ -1176,6 +1180,9 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Hank Childs, Sun Oct 28 18:32:18 PDT 2012
 //    Read times and cycles for mdserver.
 //
+//    Hank Childs, Mon Mar  4 18:35:27 PST 2013
+//    Add support for duplicating data.
+//
 // ****************************************************************************
 
 void
@@ -1184,7 +1191,8 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
     string meshname = "mesh";
     double *extents = NULL;
     AddMeshToMetaData(md, meshname, AVT_CURVILINEAR_MESH, extents, 1, 1, iDim, iDim);
-    md->SetFormatCanDoDomainDecomposition(true);
+    if (! duplicateData)
+        md->SetFormatCanDoDomainDecomposition(true);
     
     if (bHasPressure)
         AddScalarVarToMetaData(md, "pressure", meshname, AVT_NODECENT);
@@ -1857,6 +1865,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
 vtkDataArray *
 avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname)
 {
+cerr << PAR_Rank() << ": Reading domain " << domain << ", " << timestep << endl;
     if (numberOfTimePeriods > 1)
     {
         timestep = timestep % iNumTimesteps;
@@ -3108,6 +3117,9 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
 //    Hank Childs, Tue Oct 23 14:53:01 PDT 2012
 //    Mark selections as applied.
 //
+//    Hank Childs, Mon Mar  4 18:35:27 PST 2013
+//    Add support for duplicating data.
+//
 // ****************************************************************************
 
 void
@@ -3240,7 +3252,7 @@ avtNek5000FileFormat::RegisterDataSelections(
     int one_extra_until = nelements % nprocs;
 
     int my_num_elements, my_start, my_end;
-    if (resultMustBeProducedOnlyOnThisProcessor)
+    if (resultMustBeProducedOnlyOnThisProcessor || duplicateData)
     {
         my_num_elements = nelements;
         my_start = 0;
