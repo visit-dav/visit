@@ -430,6 +430,9 @@ avtStreamlinePlot::EnhanceSpecification(avtContract_p in_contract)
 //   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
 //   Add named selections as a seed source.
 //
+//   Hank Childs, Mon Mar  4 15:18:25 PST 2013
+//   Reflect readability change in PICS for CMFE type.
+//
 // ****************************************************************************
 
 void
@@ -498,7 +501,9 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
         break;
     }
 
-    streamlineFilter->SetPathlines(atts.GetPathlines(), atts.GetPathlinesOverrideStartingTimeFlag(), atts.GetPathlinesOverrideStartingTime(), atts.GetPathlinesCMFE());
+    int CMFEType = (atts.GetPathlinesCMFE() == StreamlineAttributes::CONN_CMFE
+                    ? PICS_CONN_CMFE : PICS_POS_CMFE);
+    streamlineFilter->SetPathlines(atts.GetPathlines(), atts.GetPathlinesOverrideStartingTimeFlag(), atts.GetPathlinesOverrideStartingTime(), CMFEType);
 
     streamlineFilter->SetFieldType(atts.GetFieldType());
     streamlineFilter->SetFieldConstant(atts.GetFieldConstant());

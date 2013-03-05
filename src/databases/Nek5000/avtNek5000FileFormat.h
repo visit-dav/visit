@@ -136,6 +136,9 @@ class KeyCompare {
 //    Hank Childs, Fri Jan  4 14:33:11 PST 2013
 //    Add support for time periodicity.
 //
+//    Hank Childs, Mon Mar  4 18:35:27 PST 2013
+//    Add support for duplicating data.
+//
 // ****************************************************************************
 
 class avtNek5000FileFormat : public avtMTMDFileFormat
@@ -208,6 +211,7 @@ class avtNek5000FileFormat : public avtMTMDFileFormat
     int                  timestepToUseForMesh;
 
     bool                 readOptionToGetAllTimes;
+    bool                 duplicateData;
 
     // Cached data describing how to read data out of the file.
     FILE *fdMesh, *fdVar;
