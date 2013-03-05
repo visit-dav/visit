@@ -57,6 +57,10 @@
 #    Matthew Wheeler, Fri Aug 24 12:30:00 BST 2012
 #    Added case for userid "wheeler".
 #
+#    Satheesh Maheswaran, Tue Mar  5 13:44:53 GMT 2013
+#    Added case for userid "maheswar".
+#    Corrected a copy/paste error
+#
 # *****************************************************************************
 
 
@@ -162,7 +166,7 @@ case $1 in
         emaddr=Matthew.Wheeler@awe.co.uk
         ;;
     # Satheesh Maheswaran, AWE UK
-    "wheeler")
+    "maheswar")
         emaddr=Satheesh.Maheswaran@awe.co.uk
         ;;
     *)
