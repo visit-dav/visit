@@ -17429,6 +17429,9 @@ OperatorPluginAddInterface()
 //   Brad Whitlock, Mon May 6 14:00:34 PST 2002
 //   Moved to function calls up one level.
 //
+//   Hari Krishnan, Tue Mar 5 14:47:PST 2013
+//   No need to call event loop in embedded viewer case.
+//
 // ****************************************************************************
 
 static void
@@ -17437,9 +17440,11 @@ DelayedLoadPlugins()
     debug1 << "DelayedLoadPlugins: start" << endl;
 
     // Start reading from the viewer. This will quit when we get a signal
-    // from the viewer insicating that we need to load plugins. This means
+    // from the viewer, indicating that we need to load plugins. This means
     // that the NeedToLoadPlugins() function will be called from
-    visit_eventloop(0);
+    // Note: no need to do this if viewer is embedded.
+    if(!viewerEmbedded)
+        visit_eventloop(0);
 
     // Delete the plugin loader observer so the NeedToLoadPlugins() function
     // is never called again.
@@ -17894,12 +17899,18 @@ LaunchViewer(const char *visitProgram)
 //   I made the Windows implementation keep track of the thread handle so
 //   we can later terminate it, if necessary.
 //
+//   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
+//   Do not create listener thread when using embedded viewer.
+//
 // ****************************************************************************
 
 static void
 CreateListenerThread()
 {
     keepGoing = true;
+
+    if(viewerEmbedded)
+        return;
 
 #ifdef THREADS
     //
@@ -18491,6 +18502,9 @@ visit_eventloop(void *)
 //   UNIX version unlocks it at the end. Making the mutex unlocking part of
 //   the macro allows us to put it where we want.
 //
+//   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
+//   Do not synchronize when using embedded viewer. It would cause deadlock.
+//
 // ****************************************************************************
 
 static int
@@ -18502,7 +18516,7 @@ Synchronize()
     messageObserver->ClearError();
 
     // Return if the thread initialization failed.
-    if(!moduleUseThreads)
+    if(!moduleUseThreads || viewerEmbedded)
         return 0;
 
     //
