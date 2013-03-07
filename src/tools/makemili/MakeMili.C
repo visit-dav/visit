@@ -78,6 +78,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <vector>
 #include <string>
@@ -341,7 +342,8 @@ int GetNumDomains()
     
         Famid dbid;
         int rval;
-        rval = mc_open (rootname, path, "r", &dbid);
+        char rLetter[2] = "r";
+        rval = mc_open (rootname, path, rLetter, &dbid);
         if (rval != OK)
             singleDomainName = true;
     }
@@ -388,10 +390,11 @@ void ReadDomain(int dom, MiliInfo &mi)
 
     Famid dbid;
     int rval;
+    char rLetter[2] = "r";
     if (singleDomainName)
-        rval = mc_open (root, path, "r", &dbid);
+        rval = mc_open (root, path, rLetter, &dbid);
     else
-        rval = mc_open (rootname, path, "r", &dbid);
+        rval = mc_open (rootname, path, rLetter, &dbid);
 
     if (rval != OK)
     {
@@ -1079,10 +1082,11 @@ void GetGlobalData( MiliInfo &mi )
     
     Famid dbid;
     int rval;
+    char rLetter[2] = "r";
     if (singleDomainName)
-        rval = mc_open (root, path, "r", &dbid);
+        rval = mc_open (root, path, rLetter, &dbid);
     else
-        rval = mc_open (rootname, path, "r", &dbid);
+        rval = mc_open (rootname, path, rLetter, &dbid);
 
     mi.ndomains = ndomains;
     mc_query_family(dbid, QTY_STATES, NULL, NULL, &(mi.ntimesteps));
