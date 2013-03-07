@@ -1,6 +1,6 @@
-#/usr/projects/views/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.6/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared_2_6_2/cmake/2.8.8/linux-x86_64_gcc-4.7/bin/cmake
 ##
-## ./build_visit2_6_0 generated host.cmake
+## ./build_visit2_6_2 generated host.cmake
 ## created: Thu Nov 15 16:42:25 MST 2012
 ## system: Linux ci-fe2 2.6.32.49-0.3-default #1 SMP 2011-12-02 11:28:04 +0100 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
@@ -8,8 +8,8 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared_2_6_0)
-SET(VISITARCH linux-x86_64_gcc-4.6)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared_2_6_2)
+SET(VISITARCH linux-x86_64_gcc-4.7)
 
 ##
 ## Compiler flags.
@@ -23,8 +23,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fvisibility=hidden" TYPE STRING)
 ## Add parallel arguments.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/include")
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/5.4.2/xt/gemini/mpich2-gnu/46/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS "-I/opt/cray/mpt/5.6.0/gni/mpich2-gnu/47/include")
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS "-L/opt/cray/mpt/5.6.0/gni/mpich2-gnu/47/lib")
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 
 ##############################################################
@@ -42,7 +42,7 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS mpich)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/projects/views/visit/thirdparty_shared_2_6_0/python/2.6.4/linux-x86_64_gcc-4.6)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /usr/projects/views/visit/thirdparty_shared_2_6_2/python/2.6.4/linux-x86_64_gcc-4.7)
 
 ##
 ## Mesa
