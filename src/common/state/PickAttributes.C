@@ -3824,24 +3824,26 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     bool showZDLC = showZoneDomainLogicalCoords;
     if (plotRequested.HasNumericEntry("showZoneDomainLogicalCoords"))
         showZDLC = plotRequested.GetEntry("showZoneDomainLogicalCoords")->ToBool(); 
+    showZDLC &= !dzoneCoords.empty();
     bool showZBLC = showZoneBlockLogicalCoords;
     if (plotRequested.HasNumericEntry("showZoneBlockLogicalCoords"))
         showZBLC = plotRequested.GetEntry("showZoneBlockLogicalCoords")->ToBool(); 
-    bool showZoneCoords = (showZDLC && !dzoneCoords.empty())  || 
-                          (showZBLC && !bzoneCoords.empty());
+    showZBLC &= !bzoneCoords.empty();
+    bool showZoneCoords = (showZDLC || showZBLC);
 
     bool showNPC = showNodePhysicalCoords;
     if (plotRequested.HasNumericEntry("showNodePhysicalCoords"))
         showNPC = plotRequested.GetEntry("showNodePhysicalCoords")->ToBool();
+    showNPC &= !pnodeCoords.empty();
     bool showNDLC = showNodeDomainLogicalCoords;
     if (plotRequested.HasNumericEntry("showNodeDomainLogicalCoords"))
         showNDLC = plotRequested.GetEntry("showNodeDomainLogicalCoords")->ToBool();
+    showNDLC &= !dnodeCoords.empty();
     bool showNBLC = showNodeBlockLogicalCoords;
     if (plotRequested.HasNumericEntry("showNodeBlockLogicalCoords"))
         showNBLC = plotRequested.GetEntry("showNodeBlockLogicalCoords")->ToBool();
-    bool showNodeCoords = (showNPC  && !pnodeCoords.empty()) || 
-                          (showNDLC && !dnodeCoords.empty()) || 
-                          (showNBLC && !bnodeCoords.empty());
+    showNBLC &= !bnodeCoords.empty();
+    bool showNodeCoords = (showNPC  || showNDLC || showNBLC );
 
     bool showZId = showZoneId;
     if (plotRequested.HasNumericEntry("showZoneId"))
