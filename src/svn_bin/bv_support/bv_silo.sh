@@ -175,8 +175,8 @@ function build_silo
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
-        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
+        --prefix=$VISITDIR/silo/$SILO_VERSION/$VISITARCH \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
         --enable-install-lite-headers --without-readline"
 
     if [[ $? != 0 ]] ; then
