@@ -114,7 +114,6 @@ public:
                                 { return nameGen->NumberOfBlocks();}
     std::string             GenerateName(int idx) const
                                 { return nameGen->Name(idx);}
-
 private:
     avtSiloMBNameGenerator *nameGen;
 };
