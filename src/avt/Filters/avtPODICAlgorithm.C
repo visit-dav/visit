@@ -42,6 +42,7 @@
 
 #include <avtPODICAlgorithm.h>
 #include <TimingsManager.h>
+#include <VisItStreamUtil.h>
 
 using namespace std;
 
@@ -338,6 +339,12 @@ avtPODICAlgorithm::HandleOOBICs(avtIntegralCurve *ic)
 // Programmer:  Dave Pugmire
 // Creation:    March 21, 2012
 //
+// Modifications:
+//
+//   Dave Pugmire, Fri Mar  8 15:49:14 EST 2013
+//   Bug fix. Ensure that the same IC isn't sent to the same rank. Also, when
+//   an IC is received, set the domain from the particle point.
+//
 // ****************************************************************************
 
 bool
@@ -361,10 +368,16 @@ avtPODICAlgorithm::HandleCommunication()
     list<avtIntegralCurve*>::iterator s;
     for (s = oobICs.begin(); s != oobICs.end(); s++)
     {
+        set<int> sentRanks;
         for (int i = 0; i < (*s)->seedPtDomainList.size(); i++)
         {
             int domRank = DomainToRank((*s)->seedPtDomainList[i]);
-            icCounts[domRank]++;
+            //Make sure we don't send duplicate ICs to the same rank.
+            if (sentRanks.find(domRank) == sentRanks.end())
+            {
+                icCounts[domRank]++;
+                sentRanks.insert(domRank);
+            }
         }
     }
     SumIntArrayAcrossAllProcessors(icCounts, allCounts, nProcs);
@@ -385,19 +398,24 @@ avtPODICAlgorithm::HandleCommunication()
     vector<int> domainIndices;
     for (s = oobICs.begin(); s != oobICs.end(); s++)
     {
+        set<int> sentRanks;
         for (int i = 0; i < (*s)->seedPtDomainList.size(); i++)
         {
             int domRank = DomainToRank((*s)->seedPtDomainList[i]);
-            domainIndices.push_back(i);
-            it = sendICs.find(domRank);
-            if (it == sendICs.end())
+            if (sentRanks.find(domRank) == sentRanks.end())
             {
-                vector<avtIntegralCurve *> v;
-                v.push_back(*s);
-                sendICs[domRank] = v;
+                domainIndices.push_back(i);
+                it = sendICs.find(domRank);
+                if (it == sendICs.end())
+                {
+                    vector<avtIntegralCurve *> v;
+                    v.push_back(*s);
+                    sendICs[domRank] = v;
+                }
+                else
+                    it->second.push_back(*s);
+                sentRanks.insert(domRank);
             }
-            else
-                it->second.push_back(*s);
         }
     }
     oobICs.clear();
@@ -419,6 +437,7 @@ avtPODICAlgorithm::HandleCommunication()
             avtVector endPt;
             debug1<<"received :ic.id="<<ic->id<<" from "<<(*s).rank<<endl;
 
+            SetDomain(ic);
             ic->CurrentLocation(endPt);
             if (PointInDomain(endPt, ic->domain))
                 activeICs.push_back(ic);
