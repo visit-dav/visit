@@ -66,7 +66,7 @@ using namespace std;
 // ****************************************************************************
 
 avtSiloMBNameGenerator::avtSiloMBNameGenerator
-(DBfile *dbfile, int nblocks,
+(DBfile *dbfile, char const *objpath, int nblocks,
  char **names_lst, // standard use case
  const char *file_ns, const char *block_ns) // nameschem use case
  : nblocks(nblocks), namesLst(names_lst),
@@ -83,9 +83,9 @@ avtSiloMBNameGenerator::avtSiloMBNameGenerator
 
     // we need to create nameschemes.
     if (file_ns)
-        fileNS = DBMakeNamescheme(file_ns, 0, dbfile);
+        fileNS = DBMakeNamescheme(file_ns, 0, dbfile, objpath);
     if (block_ns)
-        blockNS = DBMakeNamescheme(block_ns, 0, dbfile);
+        blockNS = DBMakeNamescheme(block_ns, 0, dbfile, objpath);
 }
 
 // ****************************************************************************
@@ -169,13 +169,14 @@ avtSiloMBNameGenerator::Name(int idx) const
 // ****************************************************************************
 
 avtSiloMBObjectCacheEntry::avtSiloMBObjectCacheEntry(DBfile *dbfile,
+                                                     char const *objpath,
                                                      int     nblocks,
                                                      char  **mesh_names,
                                                      const char   *file_ns,
                                                      const char   *block_ns)
 : nameGen(NULL)
 {
-    nameGen = new avtSiloMBNameGenerator(dbfile,nblocks,
+    nameGen = new avtSiloMBNameGenerator(dbfile,objpath,nblocks,
                                          mesh_names,
                                          file_ns,block_ns);
 }
@@ -474,8 +475,10 @@ avtSiloMBObjectCache::CombinePath(const char *path, const char *name)
 //
 // ****************************************************************************
 avtSiloMultiMeshCacheEntry::avtSiloMultiMeshCacheEntry(DBfile *dbfile,
+                                                       char const *objpath,
                                                        DBmultimesh *mm)
 : avtSiloMBObjectCacheEntry(dbfile,
+                            objpath,
                             mm->nblocks,
                             mm->meshnames,
                             mm->file_ns,
@@ -541,8 +544,10 @@ avtSiloMultiMeshCacheEntry::MeshType(int idx) const
 //
 // ****************************************************************************
 avtSiloMultiVarCacheEntry::avtSiloMultiVarCacheEntry(DBfile *dbfile,
+                                                     char const *objpath,
                                                      DBmultivar *mv)
 : avtSiloMBObjectCacheEntry(dbfile,
+                            objpath,
                             mv->nvars,
                             mv->varnames,
                             mv->file_ns,
@@ -610,8 +615,10 @@ avtSiloMultiVarCacheEntry::VarType(int idx) const
 //
 // ****************************************************************************
 avtSiloMultiMatCacheEntry::avtSiloMultiMatCacheEntry(DBfile *dbfile,
+                                                     char const *objpath,
                                                      DBmultimat *mm)
 : avtSiloMBObjectCacheEntry(dbfile,
+                            objpath,
                             mm->nmats,
                             mm->matnames,
                             mm->file_ns,
@@ -652,8 +659,10 @@ avtSiloMultiMatCacheEntry::~avtSiloMultiMatCacheEntry()
 //
 // ****************************************************************************
 avtSiloMultiSpecCacheEntry::avtSiloMultiSpecCacheEntry(DBfile *dbfile,
+                                                       char const *objpath,
                                                        DBmultimatspecies *ms)
 : avtSiloMBObjectCacheEntry(dbfile,
+                            objpath,
                             ms->nspec,
                             ms->specnames,
                             ms->file_ns,
