@@ -94,7 +94,7 @@ cleanPluginDir () {
     find . -type d -name .svn -exec rm -rf {} \;
     rm -f *.d .depend .pardepend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f cmake_install.cmake
-    rm -f CMakeFiles
+    rm -rf CMakeFiles
     rm -f *.contrib* *.keep*
     chmod -R a+rX,g+w
     chgrp -R visit
