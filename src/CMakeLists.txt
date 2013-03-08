@@ -363,7 +363,7 @@ ENDFOREACH(CACHE_VAR ${CACHE_VARS})
 SET(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Command used to invoke cmake" FORCE)
 # Create a simple shell script that allows us to reinvoke cmake with the captured command line.
 IF (NOT WIN32)
-    FILE(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "!/bin/sh\n"
+    FILE(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "#!/bin/sh\n"
                                                      "rm -f CMakeCache.txt\n"
                                                      "${CMAKE_INVOKE}\n")
 ENDIF (NOT WIN32)
