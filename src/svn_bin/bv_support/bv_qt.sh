@@ -82,7 +82,7 @@ function bv_qt_initialize_vars
 {
     info "initalizing qt vars"
     if [[ $USE_SYSTEM_QT != "yes" ]]; then
-      QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/"
+      QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
       QT_QMAKE_COMMAND="${QT_INSTALL_DIR}/bin/qmake"
       if [[ -e "$QT_QMAKE_COMMAND" ]]; then
         QT_BIN_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_BINS`
@@ -305,12 +305,12 @@ function build_qt
     qt_flags="${qt_flags} -nomake demos"
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
-    info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/" \
+    info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
          "${qt_flags}" \
          "${EXTRA_QT_FLAGS}"
-   (echo "o"; echo "yes") | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/ \
+   (echo "o"; echo "yes") | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH} \
                     -platform ${QT_PLATFORM} \
                     -make libs -make tools -fast -no-separate-debug-info \
                     ${qt_flags} \
