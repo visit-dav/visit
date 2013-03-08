@@ -1694,12 +1694,12 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
             int silo_mt = -1;
             int meshnum = 0;
             string mb_meshname = "";
-            mm_ent = GetMultiMesh(dirname, multimesh_names[i]);
+            GetMultiMesh(dirname, multimesh_names[i], &mm_ent, &valid_var);
 
             if(mm_ent != NULL)
                 mm = mm_ent->DataObject();
 
-            if (mm != NULL)
+            if (mm != NULL && valid_var)
             {
                 RegisterDomainDirs(mm_ent,dirname);
                 mb_meshname  = mm_ent->GenerateName(meshnum);
@@ -2756,7 +2756,7 @@ avtSiloFileFormat::ReadMultivars(DBfile *dbfile,
             string mb_varname;
             int meshnum = 0;
             bool valid_var = true;
-            mv_ent  = GetMultiVar(dirname, multivar_names[i]);
+            GetMultiVar(dirname, multivar_names[i], &mv_ent, &valid_var);
 
             if(mv_ent != NULL)
                 mv = mv_ent->DataObject();
@@ -3596,7 +3596,7 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
 
             name_w_dir = GenerateName(dirname, multimat_names[i], topDir.c_str());
             bool valid_var = true;
-            mm_ent = GetMultiMat(dirname, multimat_names[i]);
+            GetMultiMat(dirname, multimat_names[i], &mm_ent, &valid_var);
             string mb_matname = "";
 
             if(mm_ent != NULL)
@@ -3952,7 +3952,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
         TRY
         {
             bool valid_var = true;
-            ms_ent = GetMultiSpec(dirname, multimatspecies_names[i]);
+            GetMultiSpec(dirname, multimatspecies_names[i], &ms_ent, &valid_var);
 
             if(ms_ent != NULL )
                 ms = ms_ent->DataObject();
@@ -4013,7 +4013,7 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
                 // get the multimesh for the multimat
                 DBmultimat *mm = NULL;
                 avtSiloMultiMatCacheEntry *mm_ent = NULL;
-                mm_ent = GetMultiMat(dirname, multimatName);
+                GetMultiMat(dirname, multimatName, &mm_ent, &valid_var);
 
                 if(mm_ent != NULL)
                     mm = mm_ent->DataObject();
@@ -6956,7 +6956,7 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     {
         if (mv == NULL)
         {
-            mv_ent = GetMultiVar("", var);
+            GetMultiVar("", var, &mv_ent);
 
             if(mv_ent != NULL)
                 mv = mv_ent->DataObject();
@@ -7129,7 +7129,7 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     {
         if (mv == NULL)
         {
-            mv_ent = GetMultiVar("", var); 
+            GetMultiVar("", var, &mv_ent); 
             if(mv_ent != NULL)
                 mv = mv_ent->DataObject();
         }
@@ -7822,7 +7822,7 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     {
         if (mm == NULL)
         {
-            mm_ent = GetMultiMesh("", mesh);
+            GetMultiMesh("", mesh, &mm_ent);
             if(mm_ent != NULL)
                 mm = mm_ent->DataObject();
         }
@@ -13248,7 +13248,7 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     {
         if (mm == NULL)
         {
-            mm_ent = GetMultiMat("", m);
+            GetMultiMat("", m, &mm_ent);
             if(mm_ent != NULL)
                 mm = mm_ent->DataObject();
         }
@@ -13365,7 +13365,7 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
     {
         if (ms_ent == NULL)
         {
-            ms_ent = GetMultiSpec("", s);
+            GetMultiSpec("", s, &ms_ent);
             if(ms_ent != NULL)
                 ms = ms_ent->DataObject();
         }
@@ -13455,7 +13455,7 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
 
     if (type == DB_MULTIMESH)
     {
-        mm_ent = GetMultiMesh("", m);
+        GetMultiMesh("", m, &mm_ent);
         if(mm_ent != NULL)
             mm = mm_ent->DataObject();
         if (mm == NULL)
@@ -13774,7 +13774,8 @@ avtSiloFileFormat::GetSpatialExtents(const char *meshName)
     // if (mm == NULL)
     //      mm = GetMultimesh("", mesh);
 
-    avtSiloMultiMeshCacheEntry *mm_ent = GetMultiMesh("", mesh);
+    avtSiloMultiMeshCacheEntry *mm_ent = 0;
+    GetMultiMesh("", mesh, &mm_ent);
     if(mm_ent != NULL)
         mm = mm_ent->DataObject();
 
@@ -13847,7 +13848,8 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
     //    mv = GetMultivar("", var);
 
     DBmultivar *mv = NULL;
-    avtSiloMultiVarCacheEntry *mv_ent = GetMultiVar("", var);
+    avtSiloMultiVarCacheEntry *mv_ent = 0;
+    GetMultiVar("", var, &mv_ent);
     if (mv_ent != NULL)
         mv = mv_ent->DataObject();
 
@@ -14399,7 +14401,8 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
         string meshname = metadata->GetMesh(firstNonCSGMesh)->name;
 
         DBmultimesh *mm = NULL;
-        avtSiloMultiMeshCacheEntry *mm_ent = GetMultiMesh("", meshname.c_str());
+        avtSiloMultiMeshCacheEntry *mm_ent = 0;
+        GetMultiMesh("", meshname.c_str(), &mm_ent);
         if(mm_ent != NULL)
             mm = mm_ent->DataObject();
 
@@ -14598,16 +14601,15 @@ avtSiloFileFormat::QueryMultiMesh(const char *path, const char *name)
 //
 // ****************************************************************************
 
-avtSiloMultiMeshCacheEntry *
-avtSiloFileFormat::GetMultiMesh(const char *path, const char *name)
+void
+avtSiloFileFormat::GetMultiMesh(const char *path, const char *name,
+    avtSiloMultiMeshCacheEntry **cache_ent, bool *valid_var)
 {
     //
     // First, check to see if we have already gotten the multi-block obj.
     //
-    avtSiloMultiMeshCacheEntry *cache_ent = QueryMultiMesh(path, name);
-
-    if (cache_ent != NULL)
-        return cache_ent;
+    *cache_ent = QueryMultiMesh(path, name);
+    if (*cache_ent) return;
 
     //
     // We haven't seen this object before -- read it in.
@@ -14620,15 +14622,19 @@ avtSiloFileFormat::GetMultiMesh(const char *path, const char *name)
     {
         if(mm->nblocks > 0)
         {
-            cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,path,mm);
-            multimeshCache.AddEntry(full_path,cache_ent);
+            *cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,path,mm);
+            if ((*cache_ent)->GenerateName(0) == "")
+            {
+                if (valid_var) *valid_var = false;
+            }
+            multimeshCache.AddEntry(full_path,*cache_ent);
         }
         else
         {
             DBFreeMultimesh(mm);
         }
     }
-    return cache_ent;
+    return;
 }
 
 // ****************************************************************************
@@ -14685,16 +14691,16 @@ avtSiloFileFormat::QueryMultiVar(const char *path, const char *name)
 //
 // ****************************************************************************
 
-avtSiloMultiVarCacheEntry *
-avtSiloFileFormat::GetMultiVar(const char *path, const char *name)
+void
+avtSiloFileFormat::GetMultiVar(const char *path, const char *name,
+    avtSiloMultiVarCacheEntry **cache_ent, bool *valid_var)
 {
     //
     // First, check to see if we have already gotten the multi-block obj.
     //
-    avtSiloMultiVarCacheEntry *cache_ent = QueryMultiVar(path, name);
+    *cache_ent = QueryMultiVar(path, name);
 
-    if (cache_ent != NULL)
-        return cache_ent;
+    if (*cache_ent != NULL) return;
 
     //
     // We haven't seen this object before -- read it in.
@@ -14707,8 +14713,12 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name)
     {
         if(mv->nvars > 0)
         {
-            cache_ent = new avtSiloMultiVarCacheEntry(dbfile,path,mv);
-            multivarCache.AddEntry(full_path,cache_ent);
+            *cache_ent = new avtSiloMultiVarCacheEntry(dbfile,path,mv);
+            if ((*cache_ent)->GenerateName(0) == "")
+            {
+                if (valid_var) *valid_var = false;
+            }
+            multivarCache.AddEntry(full_path,*cache_ent);
         }
         else
         {
@@ -14717,7 +14727,7 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name)
 
         
     }
-    return cache_ent;
+    return;
 }
 
 
@@ -14775,16 +14785,16 @@ avtSiloFileFormat::QueryMultiMat(const char *path, const char *name)
 //
 // ****************************************************************************
 
-avtSiloMultiMatCacheEntry *
-avtSiloFileFormat::GetMultiMat(const char *path, const char *name)
+void
+avtSiloFileFormat::GetMultiMat(const char *path, const char *name,
+    avtSiloMultiMatCacheEntry **cache_ent, bool *valid_var)
 {
     //
     // First, check to see if we have already gotten the multi-block obj.
     //
-    avtSiloMultiMatCacheEntry *cache_ent = QueryMultiMat(path, name);
+    *cache_ent = QueryMultiMat(path, name);
 
-    if (cache_ent != NULL)
-        return cache_ent;
+    if (*cache_ent != NULL) return;
 
     //
     // We haven't seen this object before -- read it in.
@@ -14797,15 +14807,19 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name)
     {
         if(mm->nmats > 0)
         {
-            cache_ent = new avtSiloMultiMatCacheEntry(dbfile,path,mm);
-            multimatCache.AddEntry(full_path,cache_ent);
+            *cache_ent = new avtSiloMultiMatCacheEntry(dbfile,path,mm);
+            if ((*cache_ent)->GenerateName(0) == "")
+            {
+                if (valid_var) *valid_var = false;
+            }
+            multimatCache.AddEntry(full_path,*cache_ent);
         }
         else
         {
             DBFreeMultimat(mm);
         }
     }
-    return cache_ent;
+    return;
 }
 
 // ****************************************************************************
@@ -14862,16 +14876,16 @@ avtSiloFileFormat::QueryMultiSpec(const char *path, const char *name)
 //
 // ****************************************************************************
 
-avtSiloMultiSpecCacheEntry *
-avtSiloFileFormat::GetMultiSpec(const char *path, const char *name)
+void
+avtSiloFileFormat::GetMultiSpec(const char *path, const char *name,
+    avtSiloMultiSpecCacheEntry **cache_ent, bool *valid_var)
 {
     //
     // First, check to see if we have already gotten the multi-block obj.
     //
-    avtSiloMultiSpecCacheEntry *cache_ent = QueryMultiSpec(path, name);
+    *cache_ent = QueryMultiSpec(path, name);
 
-    if (cache_ent != NULL)
-        return cache_ent;
+    if (*cache_ent != NULL) return;
 
     //
     // We haven't seen this object before -- read it in.
@@ -14884,15 +14898,19 @@ avtSiloFileFormat::GetMultiSpec(const char *path, const char *name)
     {
         if(ms->nspec > 0)
         {
-            cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,path,ms);
-            multispecCache.AddEntry(full_path,cache_ent);
+            *cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,path,ms);
+            if ((*cache_ent)->GenerateName(0) == "")
+            {
+                if (valid_var) *valid_var = false;
+            }
+            multispecCache.AddEntry(full_path,*cache_ent);
         }
         else
         {
             DBFreeMultimatspecies(ms);
         }
     }
-    return cache_ent;
+    return;
 }
 
 
