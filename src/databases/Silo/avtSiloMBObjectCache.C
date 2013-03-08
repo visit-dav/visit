@@ -82,8 +82,10 @@ avtSiloMBNameGenerator::avtSiloMBNameGenerator
         return;
 
     // we need to create nameschemes.
-    fileNS = DBMakeNamescheme(file_ns, 0, dbfile, objpath);
-    blockNS = DBMakeNamescheme(block_ns, 0, dbfile, objpath);
+    if (file_ns)
+        fileNS = DBMakeNamescheme(file_ns, 0, dbfile, objpath);
+    if (block_ns)
+        blockNS = DBMakeNamescheme(block_ns, 0, dbfile, objpath);
 }
 
 // ****************************************************************************
@@ -140,14 +142,14 @@ avtSiloMBNameGenerator::Name(int idx) const
     {
         const char *file_res = DBGetName(fileNS,idx);
         if(file_res != 0)
-            res += string(file_res);
+            res += (string(file_res) + ":");
     }
 
     if(blockNS !=0)
     {
         const char *block_res = DBGetName(blockNS,idx);
         if(block_res != 0)
-            res += string(":") + string(block_res);
+            res += string(block_res);
     }
 
     return res;
