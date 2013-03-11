@@ -59,6 +59,9 @@ sys.argv = sys.argv[1:]
 #   Correct an error that caused specifying programs on the command line
 #   to fail, such as "visit -mpeg2encode".
 #
+#   Brad Whitlock, Mon Mar 11 11:49:37 PDT 2013
+#   Apply Ilja Honkonen's fix for determining path to frontendlauncher.
+#
 ###############################################################################
 
 import os, string, subprocess
@@ -111,27 +114,10 @@ progdir, progname = os.path.split(sys.argv[0])
 if progdir == "":
     progdir = "."
 
-# Check if we are called via a symbolic link to visit
-try:
-    link = os.readlink(sys.argv[0])
-    linkdir, linkname = os.path.split(link)
-    if linkname == "visit":
-        if linkdir == "":
-            linkdir = "."
-        progdir += (os.path.sep, linkdir)
-except:
-    # We'll get here if sys.argv[0] was not a link. That can happen in
-    # out of source builds.
-    pass
+frontendpath = os.path.realpath(sys.argv[0])
 
-cwd = os.path.abspath(os.path.curdir)
-if progdir[0] == '/':
-    tmpdir = progdir
-elif progdir == '.':
-    tmpdir = cwd
-else:
-    tmpdir = cwd + os.path.sep + progdir
-visitdir, tmp = os.path.split(os.path.abspath(tmpdir))
+# visitdir is two directories up from frontendlauncher
+visitdir = os.path.split(os.path.split(frontendpath)[0])[0]
 if visitdir[-1] != os.path.sep:
     visitdir = visitdir + os.path.sep
 
