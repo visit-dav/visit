@@ -59,6 +59,8 @@
 #   define MUST_CHECK /*nothing*/
 #endif
 
+
+
 namespace StringHelpers
 {
     const std::string NON_RELEVANT_CHARS =
@@ -104,6 +106,10 @@ namespace StringHelpers
                             std::vector<std::string>);
     std::vector<std::string> UTILITY_API split(const std::string,
                                                const char separator);
+    void UTILITY_API rtrim(std::string &var);
+    void UTILITY_API ltrim(std::string &var);
+    void UTILITY_API  trim(std::string &var);
+
     std::string UTILITY_API Replace(const std::string &source,
                                     const std::string &before,
                                     const std::string &after);
@@ -114,7 +120,7 @@ namespace StringHelpers
     bool UTILITY_API IsPureASCII(const char *const txt, int length);
     bool UTILITY_API CaseInsenstiveEqual(const std::string &str_a,
                                          const std::string &str_b);
-    
+
 // ****************************************************************************
 //  Function: str_to_u_numeric
 //
