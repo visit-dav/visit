@@ -68,6 +68,8 @@
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <DebugStream.h>
+#include <StringHelpers.h>
 
 
 using std::vector;
@@ -119,72 +121,78 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Extended the binary file header check to include the strings
 //     "binary" && "BINARY"
 //
+//    Cyrus Harrison, Tue Mar 12 12:43:31 PDT 2013
+//    Support FORTAN output files (lines padded to end with spaces).
+//    Use std strings to avoid indexing bugs.
+//
 // ****************************************************************************
 
 void
-avtEnSightFileFormat::InstantiateReader(const char *fname)
+avtEnSightFileFormat::InstantiateReader(const char *fname_c)
 {
-    int  i;
-
     //
     // Later on we will need separate path and filename components, so separate
     // them out now.
     //
-    char tmp[1024];
-    strcpy(tmp, fname);
-    int lastSlash = -1;
-    int len = strlen(tmp);
-    for (i = 0 ; i < len ; i++)
-        if (tmp[i] == '/' || tmp[i] == '\\')
-            lastSlash = i;
 
-    char case_name[1024];
-    if (lastSlash == -1)
-        strcpy(case_name, tmp);
-    else
-        strcpy(case_name, tmp + lastSlash + 1);
+    string fname(fname_c);
+    string path;
+    string case_name;
 
-    char path[1024] = { '\0' };
-    if (lastSlash != -1)
+    size_t last_slash_pos = fname.rfind('/');
+    if (last_slash_pos == std::string::npos)
+        last_slash_pos = fname.rfind('\\');
+
+    if(last_slash_pos == std::string::npos)
     {
-        tmp[lastSlash+1] = '\0';
-        strcpy(path, tmp);
+        case_name = fname;
     }
+    else
+    {
+        case_name = fname.substr(last_slash_pos+1);
+        path      = fname.substr(0,last_slash_pos+1);
+    }
+
 
     //
     // Now read in the case file ourselves and determine if it is EnSight
     // gold or not.
     //
-    ifstream case_file(fname);
+
+    ifstream case_file(fname.c_str());
     if (case_file.fail())
     {
         EXCEPTION1(InvalidFilesException, fname);
     }
 
-    char type_line[1024] = { '\0' };
-    char model_line[1024] = { '\0' };
+
+    std::string line;
+    std::string type_line;
+    std::string model_line;
 
     while (case_file.good())
     {
-        char line[1024];
-        case_file.getline(line, 1024);
-        if (strstr(line, "type:") != NULL)
-            strcpy(type_line, line);
-        if (strstr(line, "model:") != NULL)
-            strcpy(model_line, line);
+        // use std::string 'getline'
+        getline(case_file,line);
+        StringHelpers::rtrim(line);
+        if(line.find("type:") != std::string::npos)
+            type_line = line;
+        if(line.find("model:") != std::string::npos)
+            model_line = line;
     }
 
-    if (type_line[0] == '\0')
+    if(type_line.empty())
     {
         // Could not even find the line with 'type'.
         EXCEPTION1(InvalidFilesException, fname);
     }
- 
+
     bool isGold = false;
-    if (strstr(type_line, "gold") != NULL)
+
+    if (type_line.find("gold") != std::string::npos)
         isGold = true;
-       
-    if (model_line[0] == '\0')
+
+    if(model_line.empty())
     {
         // Could not even find the line with 'model'.
         EXCEPTION1(InvalidFilesException, fname);
@@ -195,10 +203,10 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
     // We want geo_name.  So just find the start of the last word in the
     // line.
     //
-    int len2 = strlen(model_line);
+
     bool lastWasSpace = false;
     int lastword = -1;
-    for (i = 0 ; i < len2 ; i++)
+    for (size_t i = 0 ; i < model_line.size() ; i++)
     {
         if (lastWasSpace && !(isspace(model_line[i])))
             lastword = i;
@@ -212,39 +220,38 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
     // 001 for any *** (or 0001 for ****, etc).  This way we can get the
     // name of a valid geometry file to open.
     //
-    char model_name[1024];
-    strcpy(model_name, model_line+lastword);
-    len2 = strlen(model_name);
-    for (i = 0 ; i < len2 ; i++)
+
+    string model_name = model_line.substr(lastword);
+    for (size_t i = 0 ; i < model_line.size(); i++)
     {
         if (model_name[i] == '*')
         {
-            if (i+1 < len && model_name[i+1] == '*')
+            if (i+1 < model_name.size() && model_name[i+1] == '*')
                 model_name[i] = '0';
             else
                 model_name[i] = '1';
         }
     }
-    char geo_filename[1024];
-    sprintf(geo_filename, "%s%s", path, model_name);
- 
-    ifstream geo_file(geo_filename);
+
+    string geo_filename = path + model_name;
+    debug5 << "geometry file name: \"" << geo_filename << "\"" <<endl;
+    ifstream geo_file(geo_filename.c_str());
     if (geo_file.fail())
     {
         EXCEPTION1(InvalidFilesException, fname);
     }
 
-    char buff[256];
+    char buff[257] =  { '\0' };
     geo_file.read(buff, 256);
-    
+    string buff_str(buff);
+
     bool isBinary = false;
-    int bin_str_len = strlen("Binary");
-    int end = 256 - bin_str_len;
-    for (i = 0 ; i < end ; i++)
-        if (strncmp(buff + i, "Binary", bin_str_len) == 0 ||
-            strncmp(buff + i, "BINARY", bin_str_len) == 0 ||
-            strncmp(buff + i, "binary", bin_str_len) == 0)
-            isBinary = true;
+    if( buff_str.find("Binary") != std::string::npos ||
+        buff_str.find("BINARY") != std::string::npos ||
+        buff_str.find("binary") != std::string::npos)
+    {
+        isBinary = true;
+    }
 
     if (isBinary)
         debug3 << "Identified file as EnSight binary" << endl;
@@ -265,10 +272,14 @@ avtEnSightFileFormat::InstantiateReader(const char *fname)
             reader = vtkEnSightGoldReader::New();
         else
             reader = vtkEnSight6Reader::New();
-   
-    reader->SetCaseFileName(case_name);
-    if (path[0] != '\0')
-        reader->SetFilePath(path);
+
+    debug5 << "case file name: \"" << case_name << "\"" <<endl;
+    debug5 << "file path:      \"" << path << "\"" <<endl;
+
+    reader->SetCaseFileName(case_name.c_str());
+
+    if (!path.empty())
+        reader->SetFilePath(path.c_str());
 }
 
 
@@ -326,12 +337,12 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
     reader->SetReadAllVariables(0);
     reader->GetPointDataArraySelection()->RemoveAllArrays();
     reader->GetCellDataArraySelection()->RemoveAllArrays();
-    
+
     vector<const char *> vars;
     vars.push_back(primVar);
     for (i = 0 ; i < vars2nd.size() ; i++)
         vars.push_back(*(vars2nd[i]));
- 
+
     if (matnames.size() > 0)
     {
         int numRealMats = matnames.size()-1;
@@ -362,7 +373,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             int nsn = reader->GetNumberOfScalarsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
-                const char *desc = reader->GetDescription(i, 
+                const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::SCALAR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
@@ -377,7 +388,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             int nsz = reader->GetNumberOfScalarsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
-                const char *desc = reader->GetDescription(i, 
+                const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
@@ -392,7 +403,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             int nsn = reader->GetNumberOfVectorsPerNode();
             for (i = 0 ; i < nsn ; i++)
             {
-                const char *desc = reader->GetDescription(i, 
+                const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::VECTOR_PER_NODE);
                 if (strcmp(name, desc) == 0)
                 {
@@ -407,7 +418,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             int nsz = reader->GetNumberOfVectorsPerElement();
             for (i = 0 ; i < nsz ; i++)
             {
-                const char *desc = reader->GetDescription(i, 
+                const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
                 if (strcmp(name, desc) == 0)
                 {
@@ -422,13 +433,13 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             EXCEPTION1(InvalidVariableException, name);
 
         char *vname = (char *) name; // remove const for VTK.
-        
+
         if (isNodal)
         {
             reader->GetPointDataArraySelection()->EnableArray(vname);
         }
-        else 
-        { 
+        else
+        {
             reader->GetCellDataArraySelection()->EnableArray(vname);
         }
     }
@@ -498,7 +509,7 @@ avtEnSightFileFormat::GetNTimesteps(void)
     debug4 << mName << "start" << endl;
     std::vector<double> times;
     GetTimes(times);
-    
+
     debug4 << mName << "end. returning " << times.size() << endl;
     return times.size();
 }
@@ -506,7 +517,7 @@ avtEnSightFileFormat::GetNTimesteps(void)
 // ****************************************************************************
 // Method: avtEnSightFileFormat::GetTimes
 //
-// Purpose: 
+// Purpose:
 //   Returns the list of times from the file.
 //
 // Arguments:
@@ -516,7 +527,7 @@ avtEnSightFileFormat::GetNTimesteps(void)
 // Creation:   Tue Jun 27 10:05:13 PDT 2006
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Mon Jan 29 09:24:16 PST 2007
 //   If there are no times, then spoof one time slice.
 //
@@ -753,7 +764,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     reader->SetReadAllVariables(0);
     reader->GetPointDataArraySelection()->RemoveAllArrays();
     reader->GetCellDataArraySelection()->RemoveAllArrays();
-    reader->Update(); 
+    reader->Update();
 
     int  i;
 
@@ -771,7 +782,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     for (i = 0 ; i < reader->GetNumberOfScalarsPerNode() ; i++)
     {
-        const char *name = reader->GetDescription(i, 
+        const char *name = reader->GetDescription(i,
                                        vtkEnSightReader::SCALAR_PER_NODE);
         AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
@@ -779,7 +790,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     matnames.clear();
     for (i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
     {
-        const char *name = reader->GetDescription(i, 
+        const char *name = reader->GetDescription(i,
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
         AddScalarVarToMetaData(md, name, "mesh", AVT_ZONECENT);
         if (strncmp(name, "volume_fraction", strlen("volume_fraction")) == 0)
@@ -788,14 +799,14 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
     {
-        const char *name = reader->GetDescription(i, 
+        const char *name = reader->GetDescription(i,
                                        vtkEnSightReader::VECTOR_PER_NODE);
         AddVectorVarToMetaData(md, name, "mesh", AVT_NODECENT);
     }
 
     for (i = 0 ; i < reader->GetNumberOfVectorsPerElement() ; i++)
     {
-        const char *name = reader->GetDescription(i, 
+        const char *name = reader->GetDescription(i,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
         AddVectorVarToMetaData(md, name, "mesh", AVT_ZONECENT);
     }

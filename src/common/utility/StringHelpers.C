@@ -67,12 +67,12 @@ static char StaticStringBuf[STATIC_BUF_SIZE];
 bool has_nonspace_chars(const std::string &s);
 
 // ****************************************************************************
-//  Function: RelevantString 
+//  Function: RelevantString
 //
 //  Purpose: Return a string containing only the relevant characters of the
 //  input string. Relevant characters are those NOT in IGNORE_CHARS
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -84,7 +84,7 @@ string RelevantString(string inStr)
    n = inStr.find_first_not_of(IGNORE_CHARS);
    while (n != string::npos)
    {
-       outStr += inStr[n]; 
+       outStr += inStr[n];
        n = inStr.find_first_not_of(IGNORE_CHARS, n+1);
    }
 
@@ -94,9 +94,9 @@ string RelevantString(string inStr)
 // ****************************************************************************
 //  Function: CompareRelevantStrings
 //
-//  Purpose: Compare two strings using only their relevant characters 
+//  Purpose: Compare two strings using only their relevant characters
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -109,12 +109,12 @@ static int CompareRelevantStrings(const void *arg1, const void *arg2)
 }
 
 // ****************************************************************************
-//  Function: GroupStrings 
+//  Function: GroupStrings
 //
 //  Purpose: Groups a list of strings by finding identical leading substrings
 //  of length numLeadingVals.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -145,7 +145,7 @@ StringHelpers::GroupStrings(vector<string> stringList,
    // now, call qsort for this array of string pointers
    qsort(stringPtrs, nStrings, sizeof(char *), CompareRelevantStrings);
 
-   // adjust numLeadingVals if its too big 
+   // adjust numLeadingVals if its too big
    int len = strlen(stringPtrs[0]);
    if (numLeadingVals < 0)
    {
@@ -231,7 +231,7 @@ StringHelpers::GroupStrings(vector<string> stringList,
 //  Purpose: Groups a list of strings that look like file paths into groups
 //  that have same dirname
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -295,7 +295,7 @@ StringHelpers::GroupStringsAsPaths(vector<string> stringList,
 //  Purpose: Groups a list of strings into a fixed number of groups
 //  by alphabetizing and then dividing the alphabetized list into pieces
 //
-//  Programmer: Brad Whitlock 
+//  Programmer: Brad Whitlock
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -352,7 +352,7 @@ StringHelpers::GroupStringsFixedAlpha(vector<string> stringList,
 //  as that for the other GroupStringsFixedAlpha because IGNORE_CHARS gets
 //  set to "", which means use the entire string in comparisons.
 //
-//  Programmer: Brad Whitlock 
+//  Programmer: Brad Whitlock
 //  Creation:   Unknown
 //
 // ****************************************************************************
@@ -384,12 +384,12 @@ StringHelpers::GroupStringsFixedAlpha(
 }
 
 // ****************************************************************************
-//  Function: FindRE 
+//  Function: FindRE
 //
 //  Purpose: Find match of a regular expression in a given string. Return the
 //  starting offset into the string where the match occured.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 //  Modifications:
@@ -432,12 +432,12 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 }
 
 // ****************************************************************************
-//  Function: ReplaceRE 
+//  Function: ReplaceRE
 //
-//  Purpose: Replace portion of string matching RE with replacement string 
+//  Purpose: Replace portion of string matching RE with replacement string
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 17, 2009 
+//  Programmer: Mark C. Miller
+//  Creation:   August 17, 2009
 //
 //  Modifications:
 //    Mark C. Miller, Mon Aug 31 14:37:45 PDT 2009
@@ -490,9 +490,9 @@ StringHelpers::Replace(const string &source,
 }
 
 // ****************************************************************************
-//  Function: ExtractRESubstr 
+//  Function: ExtractRESubstr
 //
-//  Purpose: Extract the (sub)string matched by the regular expression. 
+//  Purpose: Extract the (sub)string matched by the regular expression.
 //
 //  The format of RE string passed here is an opening '<' followed by the
 //  actual regular expression string followed by a closing '>', optionally
@@ -512,8 +512,8 @@ StringHelpers::Replace(const string &source,
 //  That is NOT consistent with 'man 7 regex' which uses a one-origin index.
 //  We should probably update this logic to use one-origin index.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   June 12, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   June 12, 2007
 //
 // ****************************************************************************
 std::string
@@ -531,7 +531,7 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
     int matchToExtract;
     if (re[0] != '<')
         return retval;
-    const char *last = strrchr(re, '>'); 
+    const char *last = strrchr(re, '>');
     if (last == 0)
         return retval;
     if (*(last+1) == '\0')
@@ -577,16 +577,16 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
 }
 
 // ****************************************************************************
-//  Function: Basename 
+//  Function: Basename
 //
 //  Purpose: Find the basename of a file path string
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 //  Modifications:
 //    Jeremy Meredith, Wed May 20 13:46:39 EDT 2009
-//    Should default to "0" for start, and only use "-1" for 
+//    Should default to "0" for start, and only use "-1" for
 //    the "all-slash-string" case.
 //
 //    Kathleen Biagas, Thu Jul 28 09:41:27 PDT 2011
@@ -613,7 +613,7 @@ basename(const char *path, int& start)
    {
        // find end of path string
        int n = 0;
-       while ((path[n] != '\0') && (n < STATIC_BUF_SIZE)) 
+       while ((path[n] != '\0') && (n < STATIC_BUF_SIZE))
            n++;
 
        // deal with string too large
@@ -660,11 +660,11 @@ StringHelpers::Basename(const char *path)
 }
 
 // ****************************************************************************
-//  Function: Dirname 
+//  Function: Dirname
 //
 //  Purpose: Find the dirname of a file path string
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Unknown
 //
 //  Modifications:
@@ -763,7 +763,7 @@ StringHelpers::Normalize(const char *path)
         retval.erase(retval.size()-1);
 
     // At this point we have a string that begins with a slash
-    // and has only <path> terms or "../" terms. We need to 
+    // and has only <path> terms or "../" terms. We need to
     // resolve any "../" terms by backing up through the <path>
     // terms that precede them.
     string slash_dot_dot = VISIT_SLASH_STRING "..";
@@ -797,7 +797,7 @@ StringHelpers::Normalize(const char *path)
         retval.erase(retval.size()-1);
 
     if (retval == "" && !noCharsRemainingToBackup) retval = ".";
-    
+
     StaticStringBuf[0] = '\0';
     strcat(StaticStringBuf, retval.c_str());
     return StaticStringBuf;
@@ -810,9 +810,9 @@ StringHelpers::Normalize(const string& path)
 }
 
 // ****************************************************************************
-//  Function: Dirname 
+//  Function: Dirname
 //
-//  Purpose: Compute absolute path name based on cwd and a path relative to 
+//  Purpose: Compute absolute path name based on cwd and a path relative to
 //  the cwd.
 //
 //  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
@@ -871,8 +871,8 @@ StringHelpers::Absname(const char *cwd_context, const char *path)
 //
 //  Do a 'man 7 regex' for information on format of the regular expression.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   September 20, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Fri Sep 21 20:26:18 PDT 2007
@@ -903,12 +903,12 @@ static void InitTypeNameToFmtREMap()
     typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?z[ouxX]{1}";
 
     // aliases
-    typeNameToFmtREMap["long"]                    = typeNameToFmtREMap["long int"]; 
-    typeNameToFmtREMap["long long"]               = typeNameToFmtREMap["long long int"]; 
-    typeNameToFmtREMap["unsigned"]                = typeNameToFmtREMap["unsigned int"]; 
-    typeNameToFmtREMap["unsigned long"]           = typeNameToFmtREMap["unsigned long int"]; 
-    typeNameToFmtREMap["unsigned long long"]      = typeNameToFmtREMap["unsigned long long int"]; 
-    typeNameToFmtREMap["short"]                   = typeNameToFmtREMap["short int"]; 
+    typeNameToFmtREMap["long"]                    = typeNameToFmtREMap["long int"];
+    typeNameToFmtREMap["long long"]               = typeNameToFmtREMap["long long int"];
+    typeNameToFmtREMap["unsigned"]                = typeNameToFmtREMap["unsigned int"];
+    typeNameToFmtREMap["unsigned long"]           = typeNameToFmtREMap["unsigned long int"];
+    typeNameToFmtREMap["unsigned long long"]      = typeNameToFmtREMap["unsigned long long int"];
+    typeNameToFmtREMap["short"]                   = typeNameToFmtREMap["short int"];
     typeNameToFmtREMap["unsigned short"]          = typeNameToFmtREMap["unsigned short int"];
 }
 
@@ -916,10 +916,10 @@ static void InitTypeNameToFmtREMap()
 //  Function: ValidatePrintfFormatString
 //
 //  Purpose: Validates a printf style format string against a variable length
-//  list of argument type names. 
+//  list of argument type names.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   September 20, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2007
 //
 //  Modifications:
 //    Mark C. Miller, Fri Sep 21 07:31:02 PDT 2007
@@ -950,7 +950,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
         // walk over field width digits
         while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
             n++;
-   
+
         // optional dot
         if (fmtStr[n] == '.')
         {
@@ -995,7 +995,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     // start processing the varargs list
     va_list ap;
     va_start(ap, arg1Type);
-    const char *currentArgTypeName = arg1Type; 
+    const char *currentArgTypeName = arg1Type;
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
@@ -1147,10 +1147,10 @@ StringHelpers::split(const std::string input, const char separator)
 // ****************************************************************************
 //  Function: Plural (and support structures)
 //
-//  Purpose: Given singular english noun, compute plural form 
+//  Purpose: Given singular english noun, compute plural form
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 17, 2009 
+//  Programmer: Mark C. Miller
+//  Creation:   August 17, 2009
 //
 //  Notes: The regular expression table below is by no means complete in that
 //  it covers all nouns in the english language. However, it does cover most
@@ -1356,3 +1356,70 @@ StringHelpers::CaseInsenstiveEqual(const std::string &str_a,
     std::transform(sb_l.begin(),sb_l.end(),sb_l.begin(),::tolower);
     return sa_l == sb_l;
 }
+
+// ****************************************************************************
+// Method:  StringHelpers::rtrim
+//
+// Purpose:
+//  Trim whitespace off the right of a string.
+//
+//
+// Programmer:  Cyrus Harrison
+// Creation:   Tue Mar 12 12:07:21 PDT 2013
+//
+// ****************************************************************************
+void
+StringHelpers::rtrim(string &val)
+{
+    // trim trailing spaces & tabs
+    size_t pos = val.find_last_not_of(" \t");
+    if( string::npos != pos)
+    {
+        val = val.substr( 0, pos+1 );
+    }
+}
+
+
+// ****************************************************************************
+// Method:  StringHelpers::ltrim
+//
+// Purpose:
+//  Trim whitespace off the left of a string.
+//
+//
+// Programmer:  Cyrus Harrison
+// Creation:   Tue Mar 12 12:07:21 PDT 2013
+//
+// ****************************************************************************
+void
+StringHelpers::ltrim(string &val)
+{
+    // trim leading spaces & tabs
+    size_t pos = val.find_first_not_of(" \t");
+    if( string::npos != pos )
+    {
+        val = val.substr( pos );
+    }
+}
+
+
+// ****************************************************************************
+// Method:  StringHelpers::trim
+//
+// Purpose:
+//  Trim whitespace off the left and right of a string.
+//
+// Programmer:  Cyrus Harrison
+// Creation:   Tue Mar 12 12:07:21 PDT 2013
+//
+// ****************************************************************************
+
+void
+StringHelpers::trim(string &val)
+{
+    rtrim(val);
+    ltrim(val);
+}
+
+
+
