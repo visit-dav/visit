@@ -124,8 +124,6 @@ pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
 
 #ifdef PTY_SYSV
 
-#include        <stropts.h>
-
 // ****************************************************************************
 //  Method:  ptym_open  (SYSV)
 //
@@ -187,6 +185,9 @@ ptym_open(char *pts_name)
 //    Remove the checks for the error codes from the ioctl calls since they
 //    may fail on some systems.
 //
+//    Eric Brugger, Tue Mar 12 11:48:46 PDT 2013
+//    Remove the ioctl calls since streams are obsolete.
+//
 // ****************************************************************************
 int
 ptys_open(int fdm, char *pts_name)
@@ -198,11 +199,6 @@ ptys_open(int fdm, char *pts_name)
         close(fdm);
         return(-5);
     }
-    // The following commands may fail on some systems so just
-    // ignore the error codes.
-    ioctl(fds, I_PUSH, "ptem");
-    ioctl(fds, I_PUSH, "ldterm");
-    ioctl(fds, I_PUSH, "ttcompat");
 
     return(fds);
 }
