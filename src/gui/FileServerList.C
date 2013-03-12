@@ -188,6 +188,8 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbbb"),
     createVectorMagnitudeExpressions = true;
 
     // Initialize some callback functions.
+    startServerCallback = 0;
+    startServerCallbackData = 0;
     connectCallback = 0;
     connectCallbackData = 0;
     progressCallback = 0;
