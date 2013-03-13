@@ -85,10 +85,10 @@ sys.argv = sys.argv[1:]
 #                            Check the Python version
 # -----------------------------------------------------------------------------
 
-if sys.version_info.major > 2:
+if sys.version_info[0] > 2:
     exit("\nError: VisIt's launch script is not compatible with Python %d. "
          "You will need to prepend the path to a Python 2 interpreter to your "
-         "path in order to start VisIt.\n" % sys.version_info.major, -1)
+         "path in order to start VisIt.\n" % sys.version_info[0], -1)
 
 # -----------------------------------------------------------------------------
 #                            Figure out visitdir
