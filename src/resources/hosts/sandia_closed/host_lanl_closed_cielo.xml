@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">ci-fe2.lanl.gov</Field>
+    <Field name="hostAliases" type="string">ci-fe#.lanl.gov ci-fe#</Field>
+    <Field name="hostNickname" type="string">LANL Cielo</Field>
+    <Field name="directory" type="string">/usr/projects/views/visit</Field>
+    <Field name="useGateway" type="bool">true</Field>
+    <Field name="gatewayHost" type="string">red-fta05.lanl.gov</Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel viz</Field>
+        <Field name="numProcessors" type="int">128</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">8</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">viz</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">4:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">msub/aprun</Field>
+        <Field name="arguments" type="stringVector"> </Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>
