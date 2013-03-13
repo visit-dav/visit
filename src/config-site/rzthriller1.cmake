@@ -11,8 +11,6 @@
 SET(VISITHOME /usr/gapps/visit)
 SET(VISITARCH linux-x86_64_gcc-4.1)
 
-VISIT_OPTION_DEFAULT(VISIT_VERBOSE_MAKEFILE TRUE TYPE BOOL)
-
 ##
 ## Specify the location of the mesa.
 ##
