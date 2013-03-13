@@ -224,7 +224,7 @@ avtVolumeFilter::Execute(void)
         for (i = 0 ; i < numValsInHist ; i++)
             h1[i] = ((double) numvals[i]) / ((double) maxVal);
     }
-    
+
     MapNode vhist;
     vhist["histogram_size"] = numValsInHist;
     vhist["histogram_1d"] = h1;
@@ -273,8 +273,8 @@ avtVolumeFilter::Execute(void)
 //    Hank Childs, Fri Mar 15 18:11:12 PST 2002
 //    Add support for dataset examiner.
 //
-//    Kathleen Bonnell, Wed Oct 23 13:27:56 PDT 2002  
-//    Set queryable to false for the image and dataset object's validity. 
+//    Kathleen Bonnell, Wed Oct 23 13:27:56 PDT 2002
+//    Set queryable to false for the image and dataset object's validity.
 //
 //    Hank Childs, Mon Jul  7 22:24:26 PDT 2003
 //    If an error occurred, pass that message on.
@@ -333,6 +333,10 @@ avtVolumeFilter::Execute(void)
 //    curve shape power, and an optional max-grad-mag-value clamp useful both
 //    as an extra tweak and for making animations not have erratic lighting.
 //
+//    Cyrus Harrison, Wed Mar 13 08:29:11 PDT 2013
+//    We don't use lighting in the raycasting integration case.
+//    Make sure we don't require the gradient calc.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -351,7 +355,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtRayTracer *software = new avtRayTracer;
     software->SetInput(termsrc.GetOutput());
     software->InsertOpaqueImage(opaque_image);
-   
+
     unsigned char vtf[4*256];
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
@@ -381,13 +385,13 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         if (artificialMin)
         {
             double newMin = vtkSkewValue(range[0], range[0], range[1],
-                                         atts.GetSkewFactor()); 
+                                         atts.GetSkewFactor());
             range[0] = newMin;
         }
         if (artificialMax)
         {
             double newMax = vtkSkewValue(range[1], range[0], range[1],
-                                         atts.GetSkewFactor()); 
+                                         atts.GetSkewFactor());
             range[1] = newMax;
         }
     }
@@ -430,7 +434,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     // This name is explicitly sent to the avtGradientExpression in
     // the avtVolumePlot.
     SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
-    
+
     for (int i = 0 ; i < vl.nvars ; i++)
     {
         if ((strstr(vl.varnames[i].c_str(), "vtk") != NULL) &&
@@ -484,7 +488,9 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
             EXCEPTION1(InvalidVariableException,atts.GetOpacityVariable());
         }
     }
-    if (atts.GetLightingFlag() && gradIndex == -1)
+    if ( (atts.GetRendererType() != VolumeAttributes::RayCastingIntegration) &&
+          atts.GetLightingFlag() &&
+          gradIndex == -1)
     {
         if (vl.nvars <= 0)
         {
@@ -607,7 +613,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         software->SetKernelBasedSampling(true);
         compositeRF->SetWeightVariableIndex(count);
     }
-    
+
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
         software->SetRayFunction(integrateRF);
     else
@@ -646,7 +652,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     const RenderingAttributes &render_atts = window.GetRenderAtts();
     if (render_atts.GetSpecularFlag())
     {
-        lm->SetSpecularInfo(render_atts.GetSpecularFlag(), 
+        lm->SetSpecularInfo(render_atts.GetSpecularFlag(),
                             render_atts.GetSpecularCoeff(),
                             render_atts.GetSpecularPower());
     }
@@ -794,8 +800,8 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Hank Childs, Wed Nov 24 16:23:41 PST 2004
 //    Removed commented out code, since current code is now correct.
 //
-//    Kathleen Bonnell, Fri Mar  4 13:53:45 PST 2005 
-//    Account for different scaling methods. 
+//    Kathleen Bonnell, Fri Mar  4 13:53:45 PST 2005
+//    Account for different scaling methods.
 //
 //    Hank Childs, Sun Mar 13 10:00:01 PST 2005
 //    Tell filters upstream that we have rectilinear optimizations.
@@ -876,7 +882,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
             SNPRINTF(m, 16, "%f", atts.GetColorVarMin());
             SNPRINTF(exprDef, 128, "log10withmin(%s, %s)", var, m);
         }
-        else 
+        else
         {
             SNPRINTF(exprDef, 128, "log10(%s)", var);
         }
@@ -890,9 +896,9 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     else // VolumeAttributes::Skew)
     {
         setupExpr = true;
-        SNPRINTF(exprDef, 128, "var_skew(%s, %f)", var, 
+        SNPRINTF(exprDef, 128, "var_skew(%s, %f)", var,
                  atts.GetSkewFactor());
-        avtDataRequest_p nds = 
+        avtDataRequest_p nds =
             new avtDataRequest(exprName.c_str(),
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
@@ -921,7 +927,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         }
 
         e->SetName(exprName.c_str());
-        e->SetDefinition(exprDef); 
+        e->SetDefinition(exprDef);
         e->SetType(Expression::ScalarMeshVar);
         elist->AddExpressions(*e);
         if (shouldDelete)
@@ -944,7 +950,7 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
 //  Creation:   September 26, 2002
 //
 // ****************************************************************************
- 
+
 void
 avtVolumeFilter::VerifyInput(void)
 {
