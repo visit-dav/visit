@@ -1,399 +1,85 @@
 #!/bin/sh
-# Do a little magic to run python from anywhere in your path.
-unset PYTHONHOME
-lines=`cat $0 | wc -l`
-lines=`expr $lines - 20`
-if (test -n "$TMPDIR") then
-    if (test ! -d "$TMPDIR") then
-        TMPDIR=$HOME
-    fi
-else
-    TMPDIR=$HOME
-fi
-tail -$lines $0 1> $TMPDIR/visitfelpython$$ 2>/dev/null
-if (test $? -ne 0) then
-    tail --lines=$lines $0 1>> $TMPDIR/visitfelpython$$
-fi
-exec python $TMPDIR/visitfelpython$$ $0 ${1+"$@"}
-$0 = shift @ARGV;
-
-
-# Due to the above "magic", we have to alter sys.argv
-import os
-import sys
-_visitfelpython = sys.argv[0]
-try:
-    os.unlink(_visitfelpython)
-except:
-    pass
-sys.argv = sys.argv[1:]
-
 ###############################################################################
 #
 # Purpose:
 #   This is the primary front end launcher for programs in the VisIt toolchain.
-#   It is separate from the pieces than change on a per-version basis.
+#   It is separate from the pieces than change on a per-version basis. This 
+#   script's job is to load frontendlauncher.py using VisIt's python interpreter.
 #
-#   More specifically:
-#     Parse out version arguments and determine the version to run.
-#     Fall back to legacy launcher if needed.
-#     Use argv[0] (i.e. $0) to determine if which program is being run.
-#     Determine if someone is trying to use the old "visit -prog" method
-#         of launching tools, and if so both warn them and fix things.
-#     Keep track of mixing of public and private versions of VisIt.
-#     Finally, if all goes well, launch the "internallauncher" which is
-#         allowed to contain version-specific pieces.
-#
-# Note: Place NO version specific code here!
-#       Place NOTHING that requires backwards compatibility code here.
-#       ...
-#       The only exception in this file is that which is just enough to
-#       fall back to the pre-version-specific visit launcher script, and
-#       by the time you read this note, that should not require changes.
+#   NOTE: The "current" link, when it is present, will be used to select the 
+#         Python interpreter. When "current" does not exist, the script will
+#         iterate through some possible version numbers, keeping the latest
+#         that has a Python interpreter.
 #
 # Programmer:  Brad Whitlock
-# Date      :  Tue May 15 14:00:17 PDT 2012
+# Date      :  Wed Mar 13 11:25:42 PDT 2013
 #
 # Modifications:
-#   Eric Brugger, Mon Nov 19 13:22:18 PST 2012
-#   Correct an error that caused specifying programs on the command line
-#   to fail, such as "visit -mpeg2encode".
-#
-#   Brad Whitlock, Mon Mar 11 11:49:37 PDT 2013
-#   Apply Ilja Honkonen's fix for determining path to frontendlauncher.
-#
+#   
 ###############################################################################
 
-import os, string, subprocess
+# Determine VisIt architecture
+osname=$(uname)
+if [ "$osname" == "Linux" ]; then
+    proc=$(uname -m)
+    if [ "$proc" == "x86_64" ]; then
+        platform="linux-x86_64"
+    elif [ "$proc" == "ppc" ]; then
+        platform="linux-ppc"
+    elif [ "$proc" == "ppc64" ]; then
+        platform="linux-ppc64"
+    else
+        platform="linux-intel"
+    fi
+elif [ "$osname" == "Darwin" ]; then
+    platform="darwin-x86_64"
+elif [ "$osname" == "AIX" ]; then
+    if [ "$OBJECT_MODE" == "32" ]; then
+        platform="ibm-aix-pwr"
+    else
+        platform="ibm-aix-pwr64"
+    fi
+elif [ "$osname" == "freebsd" ]; then
+    version=$(uname -r)
+    proc=$(uname -m)
+    platform="freebsd-${version}-${$proc}"
+else
+    echo "$osname is not a supported platform."
+    exit -1
+fi
 
-def GETENV(var):
-    try:
-        return os.environ[var]
-    except:
-        return ""
+# Come up with a list of versions, starting with current
+versions="current"
+for minor in 9 8 7 6 5 4 3 2 1 0; do
+    for patch in 2 1 0; do
+        versions="$versions 3.$minor.$patch"
+    done
+done
+for minor in 9 8 7 6; do
+    for patch in 2 1 0; do
+        versions="$versions 2.$minor.$patch"
+    done
+done
 
-def SETENV(var, value):
-    try:
-        os.environ[var] = value
-    except:
-        pass
+# Find the most recent VisIt python
+visitpython=""
+dir="$(dirname $0)"
+for ver in $versions; do
+    thispython="$dir/../$ver/$platform/bin/python"
+    if [ -x "$thispython" ]; then
+        visitpython="$thispython"
+        break
+    fi
+done
 
-def exit(msg, value):
-    if msg != None:
-        print >> sys.stderr, msg
-    # Try removing the visitfelpython file.
-    try:
-        os.unlink(_visitfelpython)
-    except:
-        pass
-    sys.exit(value)
-
-def ParseVersion(ver):
-    version = [0,0,-1,-1]
-    b = string.find(ver, "b")
-    if b != -1:
-        ver_b = ver[b:]
-        ver = ver[:b]
-        if ver_b == "b":
-            version[3] = 0
-        else:
-            version[3] = int(ver_b[1:])
-    v = string.split(ver, ".")
-    if len(v) > 3:
-        raise "Invalid version string"
-    for i in xrange(3):
-        if len(v) > i:
-            version[i] = int(v[i])
-    return tuple(version)
-
-# -----------------------------------------------------------------------------
-#                            Figure out visitdir
-# -----------------------------------------------------------------------------
-
-progdir, progname = os.path.split(sys.argv[0])
-if progdir == "":
-    progdir = "."
-
-frontendpath = os.path.realpath(sys.argv[0])
-
-# visitdir is two directories up from frontendlauncher
-visitdir = os.path.split(os.path.split(frontendpath)[0])[0]
-if visitdir[-1] != os.path.sep:
-    visitdir = visitdir + os.path.sep
-
-# -----------------------------------------------------------------------------
-#                            Parse the arguments
-# -----------------------------------------------------------------------------
-
-# Set some defaults.
-want_version = 0
-ver          = ""
-ver_set      = 0
-beta         = 0
-using_dev    = 0
-forceversion = ""
-forceversion_set = 0
-visitargs        = []
-
-programs = (
-"-convert",
-"-makemili",
-"-mpeg2encode",
-"-mpeg_encode",
-"-silex",
-"-surfcomp",
-"-text2polys",
-"-time_annotation",
-"-visitconvert",
-"-visitconvert_par",
-"-xml2atts",
-"-xml2avt",
-"-xml2info",
-"-xml2java",
-"-xml2makefile",
-"-xml2plugin",
-"-xml2projectfile",
-"-xml2python",
-"-xml2window",
-"-xmledit",
-"-xmltest")
-
-programsWithOtherNames = {"convert_par" : "visitconvert_par", 
-"-composite" : "visit_composite",
-"-protocol" : "visitprotocol",
-"-transition" : "visit_transition"
-}
-
-# Parse the arguments 
-i = 1
-while i < len(sys.argv):
-    arg = sys.argv[i]
-    if arg == "-v":
-        if i+1 < len(sys.argv):
-            ver = sys.argv[i+1]
-            ver_set = 1           
-        else:
-            exit("The -v argument requires a value", -1)
-        i = i + 1
-    elif arg == "-forceversion":
-        if i+1 < len(sys.argv):
-            forceversion = sys.argv[i+1]
-            forceversion_set = 1           
-        else:
-            exit("The -forceversion argument requires a value", -1)
-        i = i + 1
-    elif arg == "-beta":
-        beta = 1
-    elif arg == "-dv":
-        using_dev = 1
-    elif arg == "-version":
-        want_version = 1
-    elif arg in programs:
-        progname = arg[1:]
-        print >> sys.stderr, "NOTE:  Specifying tools as an argument to VisIt is "
-        print >> sys.stderr, "no longer necessary.\nIn the future, you should "
-        print >> sys.stderr, "just run '%s' instead.\n" % progname
-    elif arg in programsWithOtherNames.keys():
-        progname = programsWithOtherNames[arg]
-    else:
-        visitargs.append(arg)
-    i = i +1
-
-# -----------------------------------------------------------------------------
-#                        Parse the requested version
-# -----------------------------------------------------------------------------
-# A forced version: (a) overrides any other -v argument, and (b) makes
-# no attempt to parse the version string, which bypasses the rest of
-# the intelligent version selection logic in this launcher script.
-if forceversion_set:
-    ver_set = 1
-    ver = forceversion
-    if progname == "visit":
-        visitargs = visitargs + ["-forceversion", forceversion]
-
-# -----------------------------------------------------------------------------
-#                          Find the right version
-# -----------------------------------------------------------------------------
-# If we have a top-level "exe" directory, then don't bother looking
-# for versions to use; this is a development executable.
-if os.path.exists(visitdir + "exe"):
-    if want_version:
-        exit("The version of Visit in the directory %sexe/ will be launched.\n" % visitdir, 0)
-
-    # They may have specified the version, but we need to ignore it
-    # because development trees don't have version directories.
-    ver = ""
-
-    # The version that we use for plugins. Since we have a development
-    # version, let's try to get the version from the VERSION file.
-    visitpluginver = ""
-    VERSIONFILE = visitdir + "VERSION"
-    VISIT_CONFIG_H = visitdir + "include" + os.path.sep + "visit-config.h"
-    if os.path.exists(VERSIONFILE):
-        visitpluginver = open(VERSIONFILE).readlines()[0][:-1]
-    elif os.path.exists(VISIT_CONFIG_H):
-        tok = "#define VISIT_VERSION"
-        vline = [x for x in open(VISIT_CONFIG_H).readlines() if string.find(x, tok) == 0]
-        visitpluginver = vline[0][23:-2]
-
-    # We want to make sure we know if we are trying to launch a public
-    # version from under a development version.  Keep track of this.
-    # (Note -- don't add it on our own if we're launching a tool.)
-    if using_dev or progname in ("visit", "xml2cmake"):
-        # stick the -dv at beginning of args to ensure it comes
-        # before any '-s' option.
-        visitargs = ["-dv"] + visitargs
-
-    version = ParseVersion(visitpluginver)
-else:
-    # look for the version-specific visit script to determine viable versions
-    exeversions = []
-    try:
-        files = os.listdir(visitdir)
-        for f in files:
-            filename = visitdir + f + os.path.sep + "bin" + os.path.sep + "internallauncher"
-            if os.path.exists(filename):
-                exeversions.append(f)
-    except:
-        pass
-
-    try:
-        current_version = os.readlink(visitdir + "current");
-    except OSError:
-        # If there is no current link then pick the latest version.
-        sorted_versions = sorted(exeversions)
-        try:
-            current_version = sorted_versions[-1]
-        except:
-            current_version = ""
-
-    try:
-        beta_version = os.readlink(visitdir + "beta");
-    except OSError:
-        beta_version = ""
-
-    if want_version:
-        if current_version == "":
-            exit("There is no current version of VisIt.", 1)
-        exit("The current version of VisIt is %s.\n" % current_version, 0)
-
-    if not ver_set:
-        if beta:
-            if beta_version == "":
-                exit("There is no beta version of VisIt.", 1)
-            ver = beta_version
-        else:
-            if current_version == "":
-                exit("There is no current version of VisIt.", 1)
-            ver = current_version
-
-    # If they requested no minor version (i.e. $ver_patch is -1)
-    # then fill it in with the most recent bugfix release.
-    # We don't want to attempt this trick with beta versions.
-    # This behavior is new for 1.7.
-    version = ParseVersion(ver)
-    if (not (version[0] == 1 and version[1] < 7)) and version[2] == -1 and version[3] == -1:
-        unsorted_matches = []
-        for v in exeversions:
-            try:
-                thisver = ParseVersion(v)
-                if thisver[0] == version[0] and thisver[1] == version[1]:
-                    unsorted_matches.append(v)
-            except:
-                continue
-        def by_patch_version(a,b):
-            v1 = string.split(a, ".")
-            v2 = string.split(b, ".")
-            if len(v1) < 3: return -1
-            if len(v2) < 3: return +1
-            if v1[2] < v2[2]: return -1
-            if v1[2] > v2[2]: return +1
-            return 0
-        if len(unsorted_matches) > 0:
-            sorted_matches = sorted(unsorted_matches, cmp=by_patch_version)
-            ver = sorted_matches[-1]
-            version = ParseVersion(ver)
-
-    # If there was no internal laucher for that version, then either
-    # that version wasn't installed, or it is an old version that
-    # didn't have a version-specific launcher script.
-    if ver not in exeversions:
-        exit("Version %s of VisIt does not exist." % ver, 1)
-
-    # Warn if we mixed public and private development versions.
-    if using_dev:
-        print >> sys.stderr, "";
-        print >> sys.stderr, "WARNING: You are launching a public version of VisIt";
-        print >> sys.stderr, "         from within a development version!";
-        print >> sys.stderr, "";
-        visitargs.append("-dv")
-
-    # The actual visit directory is now version-specific
-    visitdir = visitdir + ver
-
-    # The version that we use for plugins. It will always match $ver for
-    # installed versions.
-    visitpluginver = ver
-
-# Make sure that the visitdir path ends in a separator.
-if visitdir[-1] != os.path.sep:
-    visitdir = visitdir + os.path.sep
-
-# -----------------------------------------------------------------------------
-#     Set the environment variables needed for the internal visit launcher
-# -----------------------------------------------------------------------------
-path = list(string.split(GETENV("PATH"), ":"))
-path = path + ["/bin","/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/bsd","/usr/ucb"]
-path = [progdir] + path
-SETENV("PATH",               string.join(path, ":"))
-SETENV("VISITVERSION",       ver)
-SETENV("VISITPLUGINVERSION", visitpluginver)
-SETENV("VISITPROGRAM",       progname)
-SETENV("VISITDIR",           visitdir[:-1])
-
-# -----------------------------------------------------------------------------
-#     If launched from an MacOS app bundle, change directory to users home
-# -----------------------------------------------------------------------------
-# Otherwise all file dialogs in the gui default to a location inside the
-# appbundle, which is confusing to users.
-if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
-    os.chdir(GETENV("HOME"))
-
-# -----------------------------------------------------------------------------
-#                       Run the internal launcher!
-# -----------------------------------------------------------------------------
-launcher = visitdir + "bin" + os.path.sep + "internallauncher"
-ret = 0
-if version[0] <= 1 or (version[0] == 2 and version[1] < 6):
-    # Pre 2.6, run the internallauncher.
-    try:
-        ret = subprocess.call([launcher] + visitargs)
-    except:
-        exit("Can't execute visit launcher script: %s!" % launcher, -1)
-else:
-    # For 2.6 and later, load the internallauncher into this script and
-    # execute it.
-    execfile(launcher)
-    
-    # Create a launcher object
-    launcher = MainLauncher()
-    
-    # Look for custom launcher code.
-    customlauncher = visitdir + "bin" + os.path.sep + "customlauncher"
-    if os.path.exists(customlauncher):
-        execfile(customlauncher)
-        try:
-            newlauncher = createlauncher()
-            launcher = newlauncher
-        except:
-            print >> sys.stderr, "Could not create custom launcher"
-
-    # Now, call the regular internallauncher function with the launcher
-    # object that we created.
-    ret = internallauncher(launcher, visitdir, progname, ver, visitpluginver, visitargs)
-
-exit(None, ret)
-
-
-
-
+# Execute VisIt's Python or system Python, depending on what's available
+frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
+unset PYTHONHOME
+if [ -n "$visitpython" ]; then
+    #echo "VisIt Python: $visitpython $frontendlauncherpy $0 ${1+"$@"}"
+    exec "$visitpython" $frontendlauncherpy $0 ${1+"$@"}
+else
+    #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
+    exec python $frontendlauncherpy $0 ${1+"$@"}
+fi
+$0 = shift @ARGV;

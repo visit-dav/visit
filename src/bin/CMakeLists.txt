@@ -69,6 +69,9 @@
 #  Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #  Use different resource file.
 #
+#  Brad Whitlock, Wed Mar 13 11:41:38 PDT 2013
+#  Install frontendlauncher.py
+#
 #****************************************************************************/
 
 #-----------------------------------------------------------------------------
@@ -81,6 +84,7 @@ SET(VISIT_BIN_FILES
         Doxyfile
         curv3dprep
         frontendlauncher
+        frontendlauncher.py
         makemili
         mkgrdbl
         mpeg2encode

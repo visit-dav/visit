@@ -36,8 +36,14 @@ list of changes in release 2.6.</p>
 
 <p><b><font size="4">Enhancements in version 2.6.2</font></b></p>
 <ul>
-<li></li>
-<li></li>
+<li>A Python interpreter is now installed with VisIt when VisIt is built with Python support.</li>
+<li>A number of changes were made to VisIt's <i>frontendlauncher</i> script in an attempt to resolve Python-related startup errors:
+    <ul>
+       <li>The shell and Python portions of the script have been separated, meaning that VisIt no longer needs to write temporary script files on startup.</li>
+       <li>The shell portion of the script now attempts to locate a suitable Python interpreter within the current or most recent VisIt installations. If a suitable Python interpreter is located within VisIt's installations then that interpreter is used to execute VisIt's launch scripts. Otherwise, the system Python interpreter is used as before.</li>
+       <li>The Python portion of the script checks the Python interpreter version and quits with an error message when Python 3 is detected.</li>
+    </ul>
+</li>
 </ul>
 
 <a name="Dev_changes"></a>

@@ -304,3 +304,29 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
             )
         ENDIF(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
 ENDFUNCTION(THIRD_PARTY_INSTALL_INCLUDE)
+
+#
+# This function installs a library's executables.
+#
+
+FUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE)
+    FOREACH(exe ${ARGN})
+        IF(EXISTS ${exe})
+            INSTALL(PROGRAMS ${exe}
+               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+               PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                           GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                           WORLD_READ WORLD_EXECUTE
+            )
+            IF(APPLE)
+                GET_FILENAME_COMPONENT(pname ${exe}  NAME)
+                INSTALL(CODE
+                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${pname}\"
+                        OUTPUT_VARIABLE OSXOUT)
+                     MESSAGE(STATUS \"\${OSXOUT}\")
+                    ")
+            ENDIF(APPLE)
+        ENDIF(EXISTS ${exe})
+    ENDFOREACH(exe ${ARGN})
+ENDFUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE exes)

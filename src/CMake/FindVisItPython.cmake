@@ -419,11 +419,18 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
     IF(Python_FRAMEWORKS)
         MESSAGE("We need to install the Python framework.")
     ELSE(Python_FRAMEWORKS)
+        MESSAGE(STATUS "We're gonna install Python")
+
         # Install libpython
         THIRD_PARTY_INSTALL_LIBRARY(${PYTHON_LIBRARIES})
 
         # Only install Python support files if we are not using the system Python
         IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
+            # Install the python executable
+            STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
+            STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
+            THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
+
             # Install the python modules
             # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
             # Exclude visit module files.
