@@ -75,7 +75,7 @@
 //    Added a legend.
 //
 //    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
-//    Added avtLUT. 
+//    Added avtLUT.
 //
 //    Hank Childs, Tue Nov 20 17:45:22 PST 2001
 //    Initialized volume filter.
@@ -126,7 +126,7 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
     //
     // This is to allow the legend to reference counted so the behavior can
     // still access it after the plot is deleted.  The legend cannot be
-    // reference counted all of the time since we need to know that it is a 
+    // reference counted all of the time since we need to know that it is a
     // VariableLegend.
     //
     varLegendRefPtr = varLegend;
@@ -318,20 +318,20 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 // Method: avtVolumePlot::SetLegendOpacities
 //
-// Purpose: 
+// Purpose:
 //   Copies the opacity values from the attributes into the legend.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Apr 20 12:14:18 PDT 2001
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Wed Aug 15 10:13:58 PDT 2001
 //   Also set attributes for color table with the legend.
 //
-//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
+//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
 //   Set colors in avtLUT instead of legend.  Use avtLUT to set the
-//   legend's lut. 
+//   legend's lut.
 //
 //   Brad Whitlock, Thu Sep 6 11:25:26 PDT 2001
 //   Modified to account for changes in VolumeAttributes.
@@ -414,7 +414,7 @@ avtVolumePlot::ImageExecute(avtImage_p input,
 //  Arguments:
 //    legendOn : true if the legend should be turned on, false otherwise.
 //
-//  Programmer: Jeremy Meredith 
+//  Programmer: Jeremy Meredith
 //  Creation:   March 27, 2001
 //
 // ****************************************************************************
@@ -457,7 +457,7 @@ avtVolumePlot::GetMapper(void)
 //
 //  Purpose:
 //      Performs the implied operators for an isoVolume plot, namely,
-//      an avtVolumeFilter. 
+//      an avtVolumeFilter.
 //
 //  Arguments:
 //      input   The input data object.
@@ -534,8 +534,8 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //
 //  Returns:    The input data object.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 22, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 22, 2002
 //
 //  Modifications:
 //    Hank Childs, Wed Nov 24 17:03:44 PST 2004
@@ -564,6 +564,11 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    Create gradient as part of the volume plot (instead of cueing EEF to
 //    do it).  This will allow for the volume plot to work on variables
 //    that are created mid-pipeline.
+//
+//
+//    Cyrus Harrison, Tue Mar 12 16:30:45 PDT 2013
+//    Don't calc gradient for raycasting integration, lighting isn't applied
+//    for this case.
 //
 // ****************************************************************************
 
@@ -599,17 +604,21 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         compactTree = NULL;
     }
     avtDataObject_p dob = input;
+
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
         atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
 #ifdef ENGINE
-        if (atts.GetLightingFlag())
+        // gradient calc for raycasting integration not needed, but
+        // lighting flag may still be on
+        if (atts.GetRendererType() == VolumeAttributes::RayCasting &&
+            atts.GetLightingFlag())
         {
             char gradName[128], gradName2[128];
             const char *gradvar = atts.GetOpacityVariable().c_str();
             if (strcmp(gradvar, "default") == 0)
             {
-                if (atts.GetScaling() == VolumeAttributes::Log || 
+                if (atts.GetScaling() == VolumeAttributes::Log ||
                     atts.GetScaling() == VolumeAttributes::Skew)
                 {
                     SNPRINTF(gradName2, 128, "_expr_%s", varname);
@@ -667,7 +676,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             compactTree->SetCompactDomainsMode(avtCompactTreeFilter::Always);
             dob = compactTree->GetOutput();
 
-            // SLIVR would need an additional filter here to turn the likely 
+            // SLIVR would need an additional filter here to turn the likely
             // vtkUnstructuredGrid output of compactTree into vtkRectilinearGrid
             // in the event that the input to the filter is not already rectilinear.
             // That is, we need a last minute resampling step but only if there
@@ -688,7 +697,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtVolumePlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior of the output.  
+//      Customizes the behavior of the output.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   March 27, 2001
@@ -697,7 +706,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Brad Whitlock, Thu Apr 19 16:15:23 PST 2001
 //    Added a legend.
 //
-//    Kathleen Bonnell, Thu Sep 18 13:40:26 PDT 2003 
+//    Kathleen Bonnell, Thu Sep 18 13:40:26 PDT 2003
 //    Set anti-aliased render order to be the same as normal.
 //
 //    Hank Childs, Tue Nov 30 09:03:00 PST 2004
@@ -781,8 +790,8 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
          }
          else if(cv == primaryVariable)
          {
-             // We're not resampling and the compact variable was the same as 
-             // the primary variable, so don't read it again. 
+             // We're not resampling and the compact variable was the same as
+             // the primary variable, so don't read it again.
              return spec;
          }
     }
@@ -821,12 +830,12 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
 //  Creation:   September 12, 2002
 //
 // ****************************************************************************
- 
+
 void
 avtVolumePlot::ReleaseData(void)
 {
     avtVolumeDataPlot::ReleaseData();
- 
+
     if (volumeImageFilter != NULL)
     {
         volumeImageFilter->ReleaseData();
