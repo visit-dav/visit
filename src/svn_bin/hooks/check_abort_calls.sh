@@ -49,6 +49,7 @@ while read fline; do
         */src/cqscore/*|\
         */src/third_party_builtin/*|\
         */src/bin/internallauncher|\
+        */src/bin/*.py|\
         */src/svn_bin/*|\
         */windowsbuild/*)
             # Skip these files and directories
