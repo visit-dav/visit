@@ -75,6 +75,9 @@ class     vtkRenderWindow;
 //      Brad Whitlock, Fri Sep 30 18:13:20 PDT 2011
 //      Override SetImmediateModeRendering.
 //
+//      Brad Whitlock, Wed Mar 13 16:08:08 PDT 2013
+//      Add RenderRenderWindow.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
@@ -97,11 +100,13 @@ class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
     virtual void SetImmediateModeRendering(bool immediateMode);
   protected:
     vtkRenderWindow                   *renWin;
+    int                                displayStatus;
 
     virtual vtkRenderWindow           *GetRenderWindow(void);
     virtual vtkRenderWindowInteractor *GetRenderWindowInteractor(void)
                                            { return NULL; };
 
     virtual void                       RealizeRenderWindow(void);
+    virtual void                       RenderRenderWindow(void);
 };
 #endif
