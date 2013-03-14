@@ -59,6 +59,11 @@
 #  Use 'splitlines' instead of split("\n"), use list version of first 
 #  argmument for Popen command, so that it works on Windows.
 #
+#   Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
+#   Fix __read_visit_env so the Windows changes get executed on Windows and the
+#   previous way gets executed for non-Windows -- so it works again on 
+#   non-Windows.
+#
 ###############################################################################
 
 import sys
@@ -233,7 +238,10 @@ class VisItModuleState(object):
         raise Exception(msg)
     @classmethod
     def __read_visit_env(cls,vcmd):
-        pcmd = [vcmd, "-env"]
+        if sys.platform.startswith("win"):
+            pcmd = [vcmd, "-env"]
+        else:
+            pcmd = vcmd + " -env"
         p = subprocess.Popen(pcmd,
                              shell=True,
                              stdout=subprocess.PIPE,
