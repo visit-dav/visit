@@ -94,6 +94,9 @@ class PlotList;
 //   Brad Whitlock, Tue Mar 29 11:29:00 PDT 2011
 //   I renamed disconnectThisPlot to followTimeSliderThisPlot.
 //
+//   Brad Whitlock, Thu Mar 14 16:22:08 PDT 2013
+//   I added setApplyOperators.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListWidget
@@ -105,6 +108,7 @@ public:
 
     bool isExpanded(int) const;
     int  activeOperatorIndex(int) const;
+    void setApplyOperators(bool);
 
     bool NeedsToBeRegenerated(const PlotList *, 
                               const stringVector &prefixes, 
