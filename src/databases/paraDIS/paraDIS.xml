@@ -7,10 +7,10 @@
       Dumpfile.C
       paraDIS_lib/paradis.C 
       paraDIS_lib/paradis_c_interface.C   
-      RC_c_lib/args.c 
-      RC_c_lib/debugutil.c 
-      RC_c_lib/fileutils.c 
-      RC_c_lib/inventor.c
+      RC_cpp_lib/RC_c_lib/args.c 
+      RC_cpp_lib/RC_c_lib/debugutil.c 
+      RC_cpp_lib/RC_c_lib/fileutils.c 
+      RC_cpp_lib/RC_c_lib/inventor.c
       RC_cpp_lib/RangeList.C 
       RC_cpp_lib/timer.C 
       RC_cpp_lib/pathutil.C
@@ -22,17 +22,17 @@
       Dumpfile.C
       paraDIS_lib/paradis.C 
       paraDIS_lib/paradis_c_interface.C   
-      RC_c_lib/args.c 
-      RC_c_lib/debugutil.c 
-      RC_c_lib/fileutils.c 
-      RC_c_lib/inventor.c
+      RC_cpp_lib/RC_c_lib/args.c 
+      RC_cpp_lib/RC_c_lib/debugutil.c 
+      RC_cpp_lib/RC_c_lib/fileutils.c 
+      RC_cpp_lib/RC_c_lib/inventor.c
       RC_cpp_lib/RangeList.C 
       RC_cpp_lib/timer.C 
       RC_cpp_lib/pathutil.C
     </Files>
     <CXXFLAGS>
       -IparaDIS_lib
-      -IRC_c_lib
+      -IRC_cpp_lib/RC_c_lib
       -IRC_cpp_lib
       -DRC_CPP_VISIT_BUILD
       ${BOOST_INCLUDE_DIR}

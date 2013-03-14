@@ -10,14 +10,14 @@
 ** Livermore, CA 94551-0808
 **
 ** For information about this project see:
-**     http://www.llnl.gov/sccd/lc/img/
+**  http://www.llnl.gov/sccd/lc/img/
 **
 **      or contact: asciviz@llnl.gov
 **
 ** For copyright and disclaimer information see:
 **      $(ASCIVIS_ROOT)/copyright_notice_1.txt
 **
-**     or man llnl_copyright
+**  or man llnl_copyright
 **
 ** $Id: debugutil.c,v 1.8 2008/09/28 01:02:23 rcook Exp $
 **
@@ -32,20 +32,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
 #include <string.h>
 #include <math.h>
 #include <stdarg.h>
 #include "debugutil.h"
 #include <time.h>
-#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
 
-static  int    iVerbose = 0;
-static    int    iCheck = 0;
+static  int iVerbose = 0;
+static  int iCheck = 0;
 
 static FILE *gDebugFile = NULL; 
 #define INITDEBUGFILE if (!gDebugFile) gDebugFile = stderr
@@ -67,6 +63,7 @@ void dbfprintf(FILE *stream, int level, const char *fmt, ...){
       vfprintf(stream,fmt,ap);
       va_end(ap);
     */
+    fflush(stream); 
   }    
   return;
 
@@ -81,6 +78,7 @@ void dbprintf(int level, const char *fmt, ...){
       vfprintf(gDebugFile,fmt,ap);
       va_end(ap);
     */
+    fflush(gDebugFile); 
   }    
   return;
 }
@@ -135,10 +133,9 @@ void dbg_maskstderr(int mask, char *fmt, ...)
 
 /* return 0 on failure, 1 on success */
 int dbg_setfile(const char *dbgfile) {
-  FILE *tmpf = NULL; 
   INITDEBUGFILE; 
   if (!dbgfile) return 0; 
-  tmpf = fopen(dbgfile, "w"); 
+  FILE *tmpf = fopen(dbgfile, "w"); 
   if (!tmpf) return 0; 
   gDebugFile = tmpf; 
   return 1;

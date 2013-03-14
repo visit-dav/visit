@@ -184,24 +184,6 @@ class VarElementFetcher: public ElementFetcher {
   */ 
    int InterpretBurgersType(void); 
 
-  /*!
-    Category
-    initial analysis of burgers vector
-  */ 
-  int Category(float num) {
-    if (!num)
-      return 0;
-    else if (fabs(fabs(num) - 1.15) < 0.01 || fabs(fabs(num) - 1.00) < 0.01) 
-      return 1;
-    else if (fabs(num - 0.577) < 0.001 || fabs(num - 0.500) < 0.001)
-      return 2;
-    else if (fabs(num + 0.577) < 0.001 || fabs(num + 0.500) < 0.001)
-      return 3;
-    debug2 << "\n********************************\n\n";
-    debug2 << "WARNING: Weird value "<<num<<" encountered in Category" << endl;
-    debug2 << "\n********************************\n\n";
-    return 4;
-  }
   
   virtual void InterpretBinaryElement(char *elementData);
 

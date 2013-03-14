@@ -96,7 +96,7 @@ static paraDIS::DataSet *gDataSet = NULL;
   
   void paraDIS_PrintArmStats(void) {
     PARADIS_INIT; 
-    gDataSet->PrintArmStats(); 
+    gDataSet->PrintArmStats(stderr); 
   }
 
   uint32_t paraDIS_GetNumNodes(void){
@@ -106,7 +106,7 @@ static paraDIS::DataSet *gDataSet = NULL;
   
   void paraDIS_printNodeVerbose(uint32_t nodenum){
     PARADIS_INIT;
-    cout << gDataSet->GetNode(nodenum)->Stringify() << endl; 
+    cout << gDataSet->GetNode(nodenum)->Stringify(0) << endl; 
   }
 
   void paraDIS_GetNodeLocation(uint32_t nodenum, float loc[3]){    
@@ -142,7 +142,7 @@ static paraDIS::DataSet *gDataSet = NULL;
   
   void paraDIS_printArmSegmentVerbose(uint32_t segnum){
     PARADIS_INIT;
-    cout << gDataSet->GetArmSegment(segnum)->Stringify() << endl; 
+    cout << gDataSet->GetArmSegment(segnum)->Stringify(0) << endl; 
   }
 
   int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum) {

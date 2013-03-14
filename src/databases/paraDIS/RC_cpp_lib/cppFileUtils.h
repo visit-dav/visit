@@ -3,6 +3,7 @@
 #define CPPFILEUTIL_H
 #include "stringutil.h"
 
+/* returns number of elements read, not bytes!  */ 
 template <class W>
 u_int32_t fread_loop(FILE *theFile, u_int32_t elems2Read, W *bufp) {
   u_int32_t totalRead = fread(bufp, sizeof(W), elems2Read, theFile);

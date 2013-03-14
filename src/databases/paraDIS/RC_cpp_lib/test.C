@@ -5,7 +5,7 @@
 #include <vector> 
 #include <map>
 #include <string>
-
+#include <stdint.h>
 using namespace std; 
 
 //====================================================
@@ -73,7 +73,7 @@ void TestPrefs(void){
     }
     P.SetLabel("new label");
     
-    cout << "Testing RangeList" << endl; 
+    cout << (char*)"Testing RangeList" << endl; 
     RangeList rlist("testrange.txt", 1);
     rlist.Sort();
     rlist.Unique();
@@ -160,7 +160,7 @@ void TestStrings(void) {
   ADDTEST("test1  test2 test3", "(test1, test2, test3)"); 
   ADDTEST("   ", "()"); 
   vector<string>::iterator pos = tests.begin(), endpos = tests.end(); 
-  unsigned int testnum = 0; 
+  uint32_t testnum = 0; 
   while (testnum < tests.size()) {
     RunTest(testnum, tests, expectedResults); 
     ++testnum; 

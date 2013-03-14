@@ -1,7 +1,6 @@
 #ifndef STRINGUTILNOBOOST
 #define STRINGUTILNOBOOST
 
-#define NO_BOOST
-#include "stringutil.h"
+#error stringutil-noboost is deprecated.  Just use stringutil.h.  If you need BOOST, then use stringutil-boost.h
 
 #endif

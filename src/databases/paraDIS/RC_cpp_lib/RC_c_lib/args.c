@@ -145,7 +145,7 @@ int arg_parse_args(int *argc, char *argv[]){
       }
       if (gArgDebug) fprintf(stderr, "entry type %d\n", entry->_type); 
       switch (entry->_type){
-      case BOOL_TYPE:    
+      case BOOL_TYPE:   
         *((long*)entry->_values)=1;
         break;
       case INT_TYPE:
@@ -158,10 +158,10 @@ int arg_parse_args(int *argc, char *argv[]){
             }
             *values++ = atoi(argv[argnum]);
             ConsumeArg(argc, argv, argnum); 
-          }    
+          } 
         }    
-        break;        
-      case LONG_TYPE:    
+        break;      
+      case LONG_TYPE:   
       case LONG_ARRAY_TYPE:
         {
           long *values = (long*)entry->_values; 
@@ -172,10 +172,10 @@ int arg_parse_args(int *argc, char *argv[]){
             }
             *values++ = strtol(argv[argnum], NULL, 10);
             ConsumeArg(argc, argv, argnum); 
-          }    
+          } 
         }    
         break;
-      case FLOAT_TYPE:    
+      case FLOAT_TYPE:  
       case FLOAT_ARRAY_TYPE:
         {
           float *values = (float*)entry->_values; 
@@ -186,21 +186,22 @@ int arg_parse_args(int *argc, char *argv[]){
             }
             *values++ = strtod(argv[argnum], NULL);
             ConsumeArg(argc, argv, argnum); 
-          }    
+          } 
         }    
         break;
       case DOUBLE_TYPE:
       case DOUBLE_ARRAY_TYPE:
         {
           double *values = (double*)entry->_values; 
-          int valnum=entry->_numvals; while (--valnum) {
+          int valnum=entry->_numvals; 
+          while (valnum--) {
             if (argnum == *argc) {
               fprintf(stderr, "ERROR -- arg_parse_args -- missing argument to %s\n", entry->_flag); 
               return 0; 
             }
             *values++ = strtod(argv[argnum], NULL);
             ConsumeArg(argc, argv, argnum); 
-          }    
+          } 
         }    
         break;
       case STRING_TYPE:
