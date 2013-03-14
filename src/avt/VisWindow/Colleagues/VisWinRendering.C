@@ -728,11 +728,11 @@ VisWinRendering::Render()
                 GetSize(w, h);
                 mediator.GetForegroundColor(color);
                 mediator.DoNextExternalRenderAsVisualQueue(w,h,color);
-                GetRenderWindow()->Render();
+                RenderRenderWindow();
             }
 
             avtCallback::ClearRenderingExceptions();
-            GetRenderWindow()->Render();
+            RenderRenderWindow();
             std::string errorMsg = avtCallback::GetRenderingException();
             if (errorMsg != "")
             {
@@ -879,6 +879,32 @@ VisWinRendering::Realize(void)
         realized = true;
         avt::glew::initialize();
     }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::RenderRenderWindow
+//
+// Purpose: 
+//   Render the render window.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       We put this into a method call so we can prevent it from getting
+//             called in subclasses where sometimes we can't render reliably.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 13 16:04:23 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::RenderRenderWindow(void)
+{
+    GetRenderWindow()->Render();
 }
 
 // ****************************************************************************
@@ -1074,14 +1100,14 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         // We can't erase the rgb/z data we just worked
         // so hard to put there a second ago!
         renWin->EraseOff();
-        renWin->Render();
+        RenderRenderWindow();
         renWin->EraseOn();
     }
     else
     {
         // Okay, this is either the first pass or the only pass, 
         // so we better darn well allow erasing before drawing.
-        renWin->Render();
+        RenderRenderWindow();
     }
     visitTimer->StopTimer(t2, "Time for actual vtkRenderWindow::Render()");
 
@@ -1295,7 +1321,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p capturedImage,
     renWin->RemoveRenderer(background);
 
     // render (foreground layer only)
-    renWin->Render();
+    RenderRenderWindow();
 
     // capture the whole image now 
     GetCaptureRegion(r0, c0, w, h, false);

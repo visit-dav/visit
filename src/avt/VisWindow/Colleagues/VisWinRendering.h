@@ -217,6 +217,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Fri Apr  6 11:44:27 PDT 2012
 //    Add GetStereoEnabled method.
 //
+//    Brad Whitlock, Wed Mar 13 16:08:08 PDT 2013
+//    Add RenderRenderWindow.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -405,5 +408,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                   GetRenderWindowInteractor(void) = 0;
 
     virtual void                  RealizeRenderWindow(void) = 0;
+    virtual void                  RenderRenderWindow(void);
 };
 #endif
