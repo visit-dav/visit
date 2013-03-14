@@ -63,6 +63,9 @@ using namespace std;
 //    Mark C. Miller, Wed Oct 31 15:52:34 PDT 2012
 //    Updated to use improved Silo DBnamescheme constructor that can handle
 //    external array references internally itself.
+//
+//    Mark C. Miller, Wed Mar 13 23:03:57 PDT 2013
+//    If objpath is non-null but "", still pass null to DBMakeNamescheme.
 // ****************************************************************************
 
 avtSiloMBNameGenerator::avtSiloMBNameGenerator
@@ -83,9 +86,11 @@ avtSiloMBNameGenerator::avtSiloMBNameGenerator
 
     // we need to create nameschemes.
     if (file_ns)
-        fileNS = DBMakeNamescheme(file_ns, 0, dbfile, objpath);
+        fileNS = DBMakeNamescheme(file_ns, 0, dbfile,
+            objpath?(strlen(objpath)?objpath:0):0);
     if (block_ns)
-        blockNS = DBMakeNamescheme(block_ns, 0, dbfile, objpath);
+        blockNS = DBMakeNamescheme(block_ns, 0, dbfile,
+            objpath?(strlen(objpath)?objpath:0):0);
 }
 
 // ****************************************************************************

@@ -127,7 +127,9 @@ using std::string;
 using std::vector;
 using std::ostringstream;
 using namespace SiloDBOptions;
-
+using StringHelpers::Absname;
+using StringHelpers::Basename;
+using StringHelpers::Dirname;
 
 static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *, const char *);
@@ -638,7 +640,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
     // filename followed by ':' followed by an internal silo directory
     // name.
     //
-    const char *baseFilename = StringHelpers::Basename(filenames[f]);
+    const char *baseFilename = Basename(filenames[f]);
     const char *pColon = strrchr(baseFilename, ':');
     if (pColon != NULL)
     {
@@ -6986,7 +6988,7 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     string directory_var;
-    const char *var_dirname = StringHelpers::Dirname(var);
+    const char *var_dirname = Dirname(var);
 
     DetermineFileAndDirectory(var_location.c_str(), var_dirname, domain_file, directory_var);
 
@@ -7157,7 +7159,7 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     string directory_var;
-    const char *var_dirname = StringHelpers::Dirname(var);
+    const char *var_dirname = Dirname(var);
 
     DetermineFileAndDirectory(var_location.c_str(),var_dirname, domain_file, directory_var);
 
@@ -7853,7 +7855,7 @@ avtSiloFileFormat::GetMeshHelper(int *_domain, const char *m, DBmultimesh **_mm,
     // so handle that here.  
     //
     DBfile *domain_file = dbfile;
-    const char *mesh_dirname = StringHelpers::Dirname(mesh);
+    const char *mesh_dirname = Dirname(mesh);
     DetermineFileAndDirectory(mesh_location.c_str(), mesh_dirname, domain_file, directory_mesh_out);
 
     if (_mm) *_mm = mm;
@@ -14599,6 +14601,8 @@ avtSiloFileFormat::QueryMultiMesh(const char *path, const char *name)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Wed Mar 13 23:02:58 PDT 2013
+//    Pass object's directory when creating a new CacheEntry.
 // ****************************************************************************
 
 void
@@ -14622,7 +14626,8 @@ avtSiloFileFormat::GetMultiMesh(const char *path, const char *name,
     {
         if(mm->nblocks > 0)
         {
-            *cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,path,mm);
+            *cache_ent = new avtSiloMultiMeshCacheEntry(dbfile,
+                 Dirname(full_path.c_str()),mm);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -14689,6 +14694,8 @@ avtSiloFileFormat::QueryMultiVar(const char *path, const char *name)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Wed Mar 13 23:02:58 PDT 2013
+//    Pass object's directory when creating a new CacheEntry.
 // ****************************************************************************
 
 void
@@ -14713,7 +14720,8 @@ avtSiloFileFormat::GetMultiVar(const char *path, const char *name,
     {
         if(mv->nvars > 0)
         {
-            *cache_ent = new avtSiloMultiVarCacheEntry(dbfile,path,mv);
+            *cache_ent = new avtSiloMultiVarCacheEntry(dbfile,
+                Dirname(full_path.c_str()),mv);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -14783,6 +14791,8 @@ avtSiloFileFormat::QueryMultiMat(const char *path, const char *name)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Wed Mar 13 23:02:58 PDT 2013
+//    Pass object's directory when creating a new CacheEntry.
 // ****************************************************************************
 
 void
@@ -14807,7 +14817,8 @@ avtSiloFileFormat::GetMultiMat(const char *path, const char *name,
     {
         if(mm->nmats > 0)
         {
-            *cache_ent = new avtSiloMultiMatCacheEntry(dbfile,path,mm);
+            *cache_ent = new avtSiloMultiMatCacheEntry(dbfile,
+                Dirname(full_path.c_str()),mm);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -14874,6 +14885,8 @@ avtSiloFileFormat::QueryMultiSpec(const char *path, const char *name)
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Mark C. Miller, Wed Mar 13 23:02:58 PDT 2013
+//    Pass object's directory when creating a new CacheEntry.
 // ****************************************************************************
 
 void
@@ -14898,7 +14911,8 @@ avtSiloFileFormat::GetMultiSpec(const char *path, const char *name,
     {
         if(ms->nspec > 0)
         {
-            *cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,path,ms);
+            *cache_ent = new avtSiloMultiSpecCacheEntry(dbfile,
+                Dirname(full_path.c_str()),ms);
             if ((*cache_ent)->GenerateName(0) == "")
             {
                 if (valid_var) *valid_var = false;
@@ -16703,7 +16717,7 @@ static string ResolveSiloIndObjAbsPath(
 
     // If primary object str is the name of an object as opposed to
     // the dir the object lives in, then compute the dirname
-    string obj_abspath = StringHelpers::Absname(dbcwd,
+    string obj_abspath = Absname(dbcwd,
         primary_objname_incl_any_abs_or_rel_path.c_str());
     int vtype = DBInqVarType(dbfile, obj_abspath.c_str());
     if (vtype >= 0 && vtype != DB_DIR)
@@ -16716,7 +16730,7 @@ static string ResolveSiloIndObjAbsPath(
         }
     }
 
-    string indobj_abspath = StringHelpers::Absname(obj_abspath.c_str(),
+    string indobj_abspath = Absname(obj_abspath.c_str(),
         indirect_objname_incl_any_abs_or_rel_path.c_str());
     retval = string(indobj_abspath);
     return retval;
