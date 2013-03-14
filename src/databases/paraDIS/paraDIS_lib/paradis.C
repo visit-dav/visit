@@ -23,6 +23,15 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
 
+#ifdef RC_CPP_VISIT_BUILD
+#define errexit return 
+#define errexit1 return err
+#else
+#define errexit abort()
+#define errexit1 abort()
+#endif
+
+
 std::string INDENT(int i) {
   if (!i) return "";
   return str(boost::format(str(boost::format("%%1$%1%s")%(i*3)))%" "); 
@@ -558,6 +567,7 @@ namespace paraDIS {
 #if LINKED_LOOPS
   //===========================================================================
   void Arm::CheckForLinkedLoops(void) {
+    int err = 0;
     if (mCheckedForLinkedLoop) return; 
     mCheckedForLinkedLoop = true; 
     
@@ -594,7 +604,7 @@ namespace paraDIS {
   
     if (neighbor->mPartOfLinkedLoop) {
             dbprintf(0, "Impossible -- neighbor is part of linked loop but we are not!\n"); 
-            abort(); 
+            errexit; 
           }
           notPartOfLoop = true; 
           break; 
@@ -666,7 +676,7 @@ namespace paraDIS {
   //===========================================================================
   vector<ArmSegment*>Arm::GetSegments(FullNode *startNode) {
 
-
+    vector<ArmSegment*> err; 
     // Find the start segment that matches the given start node:
     ArmSegment *startSegment = NULL;
     vector<ArmSegment*> segments; 
@@ -689,7 +699,7 @@ namespace paraDIS {
     if (!startSegment) {
       string s = string("GetSegments(): Cannot find matching terminal segment in arm for given start node"); 
       dbprintf(0, s.c_str()); 
-      abort(); 
+      errexit1; 
     } 
     ArmSegment *lastSegment = NULL; 
     if (mTerminalSegments.size() > 1)  
@@ -714,6 +724,7 @@ namespace paraDIS {
 
   //===========================================================================
   void Arm::Classify(void) {
+    int err = -1; 
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
 #endif
@@ -738,7 +749,7 @@ namespace paraDIS {
       else if (btype != BURGERS_PPP && btype != BURGERS_PPM && 
                btype != BURGERS_PMP && btype != BURGERS_PMM) {
         dbprintf(0, "Error:  All arms should be type 111 now.\n"); 
-        abort(); 
+        errexit; 
       }
     }
     
@@ -770,7 +781,7 @@ namespace paraDIS {
     if (numSeen != mNumSegments) {
       string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
       dbprintf(0, s.c_str()); 
-      abort();
+      errexit;
     }
 #endif
     return; 
@@ -787,7 +798,7 @@ namespace paraDIS {
     }
     if (sharedNodeNum == -1) {
       dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for extended arm!\n");
-      abort(); 
+      errexit; 
     }    
     int sourceSharedNodeNum = sourceArm->mTerminalNodes.size(); 
     while (sourceSharedNodeNum-- ) {
@@ -795,7 +806,7 @@ namespace paraDIS {
     }
     if (sourceSharedNodeNum == -1) {
       dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for source arm!\n");
-      abort(); 
+      errexit; 
     }   
 
     bool isLoop = false;  
@@ -813,7 +824,7 @@ namespace paraDIS {
         }
         if (!otherSharedSegment->HasEndpoint(sharedNode)) {
           dbprintf(0, "ExtendByArm(): Error:  found a looped arm where one of the terminal segments does not have the shared node as an endpoint.\n");
-          abort(); 
+          errexit; 
         }
         mTerminalSegments.push_back(otherSharedSegment); 
         //dbprintf(5, "ExtendByArm(): After pushing back otherSharedSegment, we look like this: %s\n", Stringify(0, mArmID==130704).c_str()); 
@@ -828,7 +839,7 @@ namespace paraDIS {
 
     if (mTerminalSegments.size() != 2 || mTerminalNodes.size() != 2) {
       dbprintf(0, "ExtendByArm(): Error: arm with a single terminal segment or node cannot be properly extended at this point.\n");  
-      abort(); 
+      errexit; 
     }
 
     // int nonSharedNum = 1-sharedNodeNum; 
@@ -862,7 +873,7 @@ namespace paraDIS {
     }
     if (sharedSegmentNum == -1) {
       dbprintf(0, "Error:  could not find terminal segment that has the old shared node as an endpoint.\n");
-      abort(); 
+      errexit; 
     }
     FullNode *sourceNonSharedNode = sourceArm->mTerminalNodes[sourceNonSharedNum];
     // dbprintf(5, "ExtendByArm():  sharedNode = %d, sharedSegment = %d, sourceNonSharedNode = %d\n", sharedNode->GetIndex(),  mTerminalSegments[sharedSegmentNum]->mSegmentID, sourceNonSharedNode->GetIndex()); 
@@ -926,7 +937,7 @@ namespace paraDIS {
                  segments.size(), mNumSegments); 
         dbprintf(5, "ExtendByArm() line %d: Arm 130704 segments: %s \n",
                  __LINE__, GetSegmentsAsString().c_str()); 
-        abort(); 
+        errexit; 
       }
     }
     
@@ -1146,7 +1157,9 @@ namespace paraDIS {
   //  On first call, candidate != seed, but if we see the seed again, we have looped.  This is guaranteed because the seed is the last thing ever checked of any neighbor of an arm. 
   // 
   //===========================================================================
-  bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) {  
+  bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
+    bool err = false; 
+ 
     dbprintf(4, "\n-------------------------------------------  \n");
     dbprintf(4, "FindEndpoint: seed = %s\nprevious = %s\n\ncandidate = %s\n", 
              seed->Stringify(0).c_str(), previous->Stringify(0).c_str(), candidate->Stringify(0, false).c_str()); 
@@ -1193,7 +1206,7 @@ namespace paraDIS {
     uint32_t nodenum = candidate->mTerminalNodes.size(); 
     if (nodenum < 2) {
       dbprintf(0, "Error:  Found candidate with %d terminal node(s), but we already tested for loops. \n", nodenum); 
-      abort(); 
+      errexit1; 
      }
 
     FullNode * otherNode = NULL; 
@@ -1292,7 +1305,7 @@ namespace paraDIS {
       }
       else {
         dbprintf(0, "FindEndpoints: Seed arm is Type %d MM arm.  This is supposed to be impossible.  Aborting.\n", seed->mArmType); 
-        abort(); 
+        errexit; 
       }       
       AddTerminalArm(seed); 
       mTerminalNodes = seed->mTerminalNodes; 
@@ -2613,7 +2626,7 @@ namespace paraDIS {
       while (armpos != armend) {
         if ((*armpos)->mSeen) {
           fprintf(stderr, "Error in PrintMetaArmFile: arm %d in metaarm %d has mSeen == true", (*armpos)->mArmID, (*pos)->mMetaArmID); 
-          exit(1); 
+          errexit; 
         }
         (*armpos)->mSeen = true; 
         ++armpos;
@@ -2625,7 +2638,7 @@ namespace paraDIS {
     while (armpos != endarm) {   
       if ((*armpos)->mArmType != ARM_EMPTY && !(*armpos)->mSeen) {
         cerr << "Error: arm " << armnum << " has not been seen in a metaarm." << endl; 
-        abort(); 
+        errexit; 
       }
       ++ armnum;
       ++armpos; 
@@ -3161,7 +3174,7 @@ namespace paraDIS {
       if (!(*currentArm)->mSeen && (*currentArm)->mArmType != ARM_EMPTY) {
         uint32_t id = (*currentArm)->mArmID;
         dbprintf(0, "\n\nError: arm %d has not been seen!\n", id); 
-        abort(); 
+        errexit; 
       }
       (*currentArm)->mSeen = false; 
       ++currentArm; 
