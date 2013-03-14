@@ -19,6 +19,199 @@
 #endif
 #include <sys/stat.h>
 #include <errno.h>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/format.hpp>
+
+#ifdef RC_CPP_VISIT_BUILD
+#define errexit return 
+#define errexit1 return err
+#else
+#define errexit abort() // HOOKS_IGNORE
+#define errexit1 abort() // HOOKS_IGNORE
+#endif
+
+
+std::string INDENT(int i) {
+  if (!i) return "";
+  return str(boost::format(str(boost::format("%%1$%1%s")%(i*3)))%" "); 
+}
+#define STARTPROGRESS()                                       \
+  cerr << endl; timer theTimer;  theTimer.start();            \
+  double theTime=theTimer.elapsed_time(), thePercent=0;   
+
+#define UPDATEPROGRESS(count, total, description)                       \
+  if (dbg_isverbose()) {                                                \
+    Progress(theTimer, count, total, thePercent, 1, theTime, 60, description);  }
+
+string BurgersTypeNames(int btype) {
+  switch (btype) {
+  case BURGERS_UNKNOWN  : return "BURGERS_UNKNOWN"; 
+  case BURGERS_NONE   : return "BURGERS_NONE"; 
+  case BURGERS_PPP     : return "BURGERS_PPP"; 
+  case BURGERS_PPM    : return "BURGERS_PPM"; 
+  case BURGERS_PMP   : return "BURGERS_PMP"; 
+  case BURGERS_PMM   : return "BURGERS_PMM"; 
+  case BURGERS_200     : return "BURGERS_200"; 
+  case BURGERS_020      : return "BURGERS_020"; 
+  case BURGERS_002    : return "BURGERS_002"; 
+  case BURGERS_220     : return "BURGERS_220"; 
+  case BURGERS_202      : return "BURGERS_202"; 
+  case BURGERS_022      : return "BURGERS_022"; 
+  case BURGERS_311      : return "BURGERS_311"; 
+  case BURGERS_131     : return "BURGERS_131"; 
+  case BURGERS_113    : return "BURGERS_113"; 
+  case BURGERS_222    : return "BURGERS_222"; 
+  case BURGERS_004     : return "BURGERS_004"; 
+  default: return "UNKNOWN CODE"; 
+  }
+}
+
+string ArmTypeNames(int atype) {
+  switch (atype) {
+  case ARM_EMPTY         : return "ARM_EMPTY"; 
+  case ARM_UNKNOWN        : return "ARM_UNKNOWN"; 
+  case ARM_UNINTERESTING  : return "ARM_UNINTERESTING"; 
+  case ARM_LOOP           : return "ARM_LOOP"; 
+  case ARM_MM_111          : return "ARM_MM_111"; 
+  case ARM_MN_111         : return "ARM_MN_111"; 
+  case ARM_NN_111          : return "ARM_NN_111"; 
+  case ARM_MM_200         : return "ARM_MM_200"; 
+  case ARM_MN_200         : return "ARM_MN_200"; 
+  case ARM_NN_200         : return "ARM_NN_200"; 
+  case ARM_SHORT_NN_111   : return "ARM_SHORT_NN_111"; 
+  case ARM_SHORT_NN_200   : return "ARM_SHORT_NN_200"; 
+  default: return "UNKNOWN ARMTYPE"; 
+  }
+}
+
+string MetaArmTypeNames(int mtype) {
+  switch (mtype) {
+  case METAARM_UNKNOWN     : return "METAARM_UNKNOWN"; 
+  case METAARM_111         : return "METAARM_111"; 
+  case METAARM_LOOP_111    : return "METAARM_LOOP_111"; 
+  case METAARM_LOOP_200    : return "METAARM_LOOP_200"; 
+  default                  : return "METAARM ERROR"; 
+  }
+}; 
+
+int BurgersCategory(float burgval) {
+  int code=burgval/0.577350; 
+  if (code < -1 ) code *= -1; 
+  if (abs(code) > 4) {
+    dbprintf(1, "\n\n********************************\n");
+    dbprintf(1, "WARNING: Weird value %g encountered in Category\n", burgval);
+    dbprintf(1, "\n********************************\n\n");
+  }
+  
+  return code; 
+}
+
+int InterpretBurgersType(float burg[3]) {
+  int burgersType = BURGERS_UNKNOWN;
+  
+  int catarray[3] = 
+    {BurgersCategory(burg[0]), BurgersCategory(burg[1]), BurgersCategory(burg[2])};
+  if (abs(catarray[0]) == 2 && catarray[1] == 0 && catarray[2] == 0)
+    burgersType = BURGERS_200;
+  else if (catarray[0] == 0 && abs(catarray[1]) == 2 && catarray[2] == 0)
+    burgersType = BURGERS_020;
+  else if (catarray[0] == 0 && catarray[1] == 0 && abs(catarray[2]) == 2)
+    burgersType = BURGERS_002;
+  else if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == 1) ||
+           (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == -1))
+    burgersType = BURGERS_PPP;
+  else if ((catarray[0] == 1 && catarray[1] == 1 && catarray[2] == -1) ||
+           (catarray[0] == -1 && catarray[1] == -1 && catarray[2] == 1))
+    burgersType = BURGERS_PPM;
+  else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == 1) ||
+           (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == -1))
+    burgersType = BURGERS_PMP;
+  else if ((catarray[0] == 1 && catarray[1] == -1 && catarray[2] == -1) ||
+           (catarray[0] == -1 && catarray[1] == 1 && catarray[2] == 1))
+    burgersType = BURGERS_PMM;
+  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && catarray[2] == 0)
+    burgersType = BURGERS_220;
+  else if (abs(catarray[0]) == 2 && catarray[1] == 0 && abs(catarray[2]) == 2)
+    burgersType = BURGERS_202;
+  else if (catarray[0] == 0 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
+    burgersType = BURGERS_022;
+  else if (abs(catarray[0]) == 2 && abs(catarray[1]) == 2 && abs(catarray[2]) == 2)
+    burgersType = BURGERS_222;
+  else if (catarray[0] == 3 && abs(catarray[1]) == 1 && abs(catarray[2]) == 1) 
+    burgersType = BURGERS_311;
+  else if (abs(catarray[0]) == 1 && catarray[1] == 3 && abs(catarray[2]) == 1)
+    burgersType = BURGERS_131;
+  else if (abs(catarray[0]) == 1 && abs(catarray[1]) == 1 && catarray[2] == 3)
+    burgersType = BURGERS_113;
+  else if ((abs(catarray[0]) == 0 && abs(catarray[1]) == 0 && catarray[2] == 4) ||
+           (abs(catarray[0]) == 0 && catarray[1] == 4 && abs(catarray[2]) == 0) ||
+           (catarray[0] == 4 && abs(catarray[1]) == 0 && abs(catarray[2]) == 0) )  
+    burgersType = BURGERS_004;
+  else {
+    burgersType = BURGERS_UNKNOWN;
+    dbprintf(3, "\n\n********************************\n");
+    dbprintf(3, "Warning: segment has unknown type: burgers = (%f, %f, %f), categories=(%d, %d, %d)\n", burg[0], burg[1], burg[2], catarray[0], catarray[1], catarray[2]); 
+    dbprintf(3, "\n********************************\n\n");
+  }
+  return burgersType; 
+}
+
+string doctext = "ParaDIS data is a set of disconnected undirected graphs, which may contain cycles.  \n"
+"All nodes in a paraDIS data set have at least one neighbor given in the paraDIS output file.  The connection, or neighbor relation, between two adjacent nodes is called an \"arm segment.\"  A node is considered an \"interior node\" if it has exactly two neighbors, else it is considered a \"terminal node.\"  The only exception to this is that loops always have one terminal node, which may have two neighbors.  \n"
+"An \"arm\" is a sequence of interior nodes terminated by one or two terminal nodes.  A loop is an arm that has only one terminal node.  \n"
+"Every node is part of at least one arm.  If it's not an interior node, we say the node \"has arms.\"  The number of arms equals the number of neighbors, even if some are loops.  E.g., a terminal node with three neighbors has three arms by definition, even if two of the neighbors are part of the same loop, i.e., two of the arms might be the same arm.\n"
+"\n"
+"Segments and arms have Burgers vectors associated with them.  \n"
+"  //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))\n"
+"// These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  \n"
+"#define BURGERS_DECOMPOSED  -2  // for segments that are decomposed\n"
+"#define BURGERS_UNKNOWN     -1  // analysis failed\n"
+"#define BURGERS_NONE        0   // no analysis done yet\n"
+"#define BURGERS_PPP         10  // +++  BEGIN ENERY LEVEL 1\n"
+"#define BURGERS_PPM         11  // ++-\n"
+"#define BURGERS_PMP         12  // +-+\n"
+"#define BURGERS_PMM         13  // +--\n"
+"#define BURGERS_200         20  // BEGIN ENERGY LEVEL 2\n"
+"#define BURGERS_020         21  \n"
+"#define BURGERS_002         22\n"
+"#define BURGERS_220         30  // BEGIN ENERGY LEVEL 3\n"
+"#define BURGERS_202         31\n"
+"#define BURGERS_022         32\n"
+"#define BURGERS_311         40  // BEGIN ENERGY LEVEL 4\n"
+"#define BURGERS_131         41\n"
+"#define BURGERS_113         42\n"
+"#define BURGERS_222         50  // BEGIN ENERGY LEVEL 5\n"
+"#define BURGERS_004         60  // BEGIN ENERGY LEVEL 6\n"
+"NODE TYPES and MONSTER NODES: \n"
+"Every node has a node type.  The vast majority of nodes are simply have NodeType = number of neighboring nodes.  But some nodes get negative types, and these are known as Monster Nodes.  Oooh, scary.  \n"
+"Only a terminal node may be a \"monster node\" A.K.A. \"M Type node.\" If a node is not an \"M\" then it is an \"N\" for \"non-monster\" or \"normal.\"  Interior nodes are always type \"N\" if anyone cares to ask, but this is usually ignored.  \n" 
+"A monster is any node where all four basic 111 type arms are neighbors of the node.  Thus, monster nodes always have 4 or more arms. \n" 
+"\n" 
+"\n"
+"\n"
+"Arms also have \"arm type,\" which mostly indicates whether its endpoints are monsters or not or whether they are looped arms.  \n"
+"  // Arm MN types:\n"
+"#define ARM_EMPTY        -1 //marked for deletion after decomposition step\n"
+"#define ARM_UNKNOWN       0 \n"
+"#define ARM_UNINTERESTING 1\n"
+"#define ARM_LOOP          2\n"
+"#define ARM_MM_111        3 \n"
+"#define ARM_MN_111        4\n"
+"#define ARM_NN_111        5 \n"
+"#define ARM_MM_200        6\n"
+"#define ARM_MN_200        7\n"
+"#define ARM_NN_200        8\n"
+"#define ARM_SHORT_NN_111  9\n"
+"#define ARM_SHORT_NN_200  10\n"
+"\n"
+"MetaArms are collections of arms.  There are three main types, plus an \"unknonwn\" category for misfit arms:\n"
+"#define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state\n"
+"#define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.   Does not include loops. \n"
+"#define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.\n"
+"#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.\n"
+;
+ 
 using namespace RC_Math; 
 using namespace std; 
 namespace paraDIS {
@@ -306,6 +499,7 @@ namespace paraDIS {
 #if LINKED_LOOPS
   //===========================================================================
   void Arm::CheckForLinkedLoops(void) {
+    int err = 0;
     if (mCheckedForLinkedLoop) return; 
     mCheckedForLinkedLoop = true; 
     
@@ -342,7 +536,7 @@ namespace paraDIS {
   
     if (neighbor->mPartOfLinkedLoop) {
             dbprintf(0, "Impossible -- neighbor is part of linked loop but we are not!\n"); 
-            exit(1); 
+            errexit; 
           }
           notPartOfLoop = true; 
           break; 
@@ -403,6 +597,52 @@ namespace paraDIS {
     } else {
       throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
     } 
+
+    else {
+      mArmLength = 0; 
+      vector<ArmSegment*> segments = GetSegments(); 
+      vector<ArmSegment*>::iterator segpos = segments.begin(), endseg = segments.end(); 
+      
+      while (segpos != endseg) {
+        //dbprintf(5, "Adding length for %s\n", (*segpos)->Stringify(0).c_str()); 
+        mArmLength += (*segpos)->GetLength(true); 
+        ++segpos; 
+      }
+      if (mArmLength > mLongestLength) mLongestLength = mArmLength; 
+      dbprintf(5, "ComputeLength(): arm %d has length %g\n", mArmID, mArmLength); 
+    }
+
+    return mArmLength; 
+  }
+  
+  //===========================================================================
+  vector<ArmSegment*>Arm::GetSegments(FullNode *startNode) {
+
+    vector<ArmSegment*> err; 
+    // Find the start segment that matches the given start node:
+    ArmSegment *startSegment = NULL;
+    vector<ArmSegment*> segments; 
+    int segnum = -1;
+    int nodenum = mTerminalNodes.size()-1; 
+    if (startNode) nodenum = -1;
+    do {
+      segnum = mTerminalSegments.size(); 
+      int segnum = mTerminalSegments.size(); 
+      if (nodenum > -1) startNode = mTerminalNodes[nodenum];  
+      while (!startSegment && segnum--) {
+        if (mTerminalSegments[segnum]->GetEndpoint(0) == startNode ||
+            mTerminalSegments[segnum]->GetEndpoint(1) == startNode) {
+          startSegment = mTerminalSegments[segnum];
+        }
+      } 
+      nodenum--; 
+    } while (nodenum > -1 && !startSegment);
+
+    if (!startSegment) {
+      string s = string("GetSegments(): Cannot find matching terminal segment in arm for given start node"); 
+      dbprintf(0, s.c_str()); 
+      errexit1; 
+    } 
     ArmSegment *lastSegment = NULL; 
     if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
     else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
@@ -426,6 +666,7 @@ namespace paraDIS {
   
   //===========================================================================
   void Arm::Classify(void) {
+    int err = -1; 
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
 #endif
@@ -445,6 +686,11 @@ namespace paraDIS {
       int btype = mTerminalSegments[0]->GetBurgersType(); 
       if (btype <= 3) {
         mArmType += 3; 
+      }
+      else if (btype != BURGERS_PPP && btype != BURGERS_PPM && 
+               btype != BURGERS_PMP && btype != BURGERS_PMM) {
+        dbprintf(0, "Error:  All arms should be type 111 now.\n"); 
+        errexit; 
       }
     }
     
@@ -505,37 +751,99 @@ namespace paraDIS {
   
 #ifdef DEBUG
     if (numSeen != mNumSegments) {
-      throw string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
+      string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
+      dbprintf(0, s.c_str()); 
+      errexit;
     }
 #endif
     return; 
   }
   
   //===========================================================================
-  void Arm::CheckForButterfly(void) {
-    /*!
-      There must be two terminal nodes else give up
-    */ 
-    if (mTerminalNodes.size() != 2 )  return; 
-    
-    /*! 
-      The arm must be type 100, else give up. 
-    */ 
-    if (mTerminalSegments[0]->GetBurgersType() > 3 || 
-        mTerminalSegments[0]->GetBurgersType() == 0)  return; 
+  void Arm::ExtendByArm(Arm *sourceArm, FullNode *sharedNode) {
+    // identify the shared terminal node in the neighbor arm:     
+    dbprintf(5, "\n======================================\n   ExtendByArm(): Extending arm: %s\n", Stringify(0, false).c_str()); 
+    int sharedNodeNum = mTerminalNodes.size(); 
+    while (sharedNodeNum-- ) {
+      if (mTerminalNodes[sharedNodeNum] == sharedNode) break; 
+    }
+    if (sharedNodeNum == -1) {
+      dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for extended arm!\n");
+      errexit; 
+    }    
+    int sourceSharedNodeNum = sourceArm->mTerminalNodes.size(); 
+    while (sourceSharedNodeNum-- ) {
+        if (sourceArm->mTerminalNodes[sourceSharedNodeNum] == sharedNode) break; 
+    }
+    if (sourceSharedNodeNum == -1) {
+      dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for source arm!\n");
+      errexit; 
+    }   
 
+    bool isLoop = false;  
+    ArmSegment * otherSharedSegment = NULL; 
+    if (mTerminalNodes.size() == 1) {
+      if (mTerminalSegments.size() == 1) {
+        dbprintf(4, "ExtendByArm(): We are extending a looped arm with a single terminal segment.  So let's treat it as a non-looped arm and duplicate the shared node and other segment.\n"); 
+        isLoop = true; 
+        // we need to find our other terminal segment
+        vector<ArmSegment *> segments = GetSegments(sharedNode); 
+        otherSharedSegment = segments[segments.size()-1]; 
+        if (otherSharedSegment == mTerminalSegments[0]) {
+          //dbprintf(5, "ExtendByArm(): Changing otherSharedSegment to  mTerminalSegments[0]\n"); 
+          otherSharedSegment = segments[0]; 
+        }
+        if (!otherSharedSegment->HasEndpoint(sharedNode)) {
+          dbprintf(0, "ExtendByArm(): Error:  found a looped arm where one of the terminal segments does not have the shared node as an endpoint.\n");
+          errexit; 
+        }
+        mTerminalSegments.push_back(otherSharedSegment); 
+        //dbprintf(5, "ExtendByArm(): After pushing back otherSharedSegment, we look like this: %s\n", Stringify(0, mArmID==130704).c_str()); 
+      }   
+      mTerminalNodes.push_back(sharedNode); 
+    }
+      
+    if (mNumSegments == 1 && mTerminalSegments.size() == 1) {
+      //  dbprintf(5, "ExtendByArm(): Single segment arm:  duplicate our terminal segment.\n"); 
+      mTerminalSegments.push_back(mTerminalSegments[0]); 
+    }
 
-    /*!
-      One of the nodes must be a type 3 node and the other must be either type 3 or type -4 or type -44.  Note that if a node is both a type -3 and type -33, it is considered a type -3 node, which means that here if the node is already type -3, we don't consider it, but if it is type -33, we do.  
-    */
+    if (mTerminalSegments.size() != 2 || mTerminalNodes.size() != 2) {
+      dbprintf(0, "ExtendByArm(): Error: arm with a single terminal segment or node cannot be properly extended at this point.\n");  
+      errexit; 
+    }
+
+    // int nonSharedNum = 1-sharedNodeNum; 
     
     /*!
       first check node 0 against node 1, then node 1 against node 0
     */ 
-    int firstNodeNum = 2; 
-    while (firstNodeNum --) {
-      FullNode *firstNode = mTerminalNodes[firstNodeNum], 
-        *otherNode = mTerminalNodes[1-firstNodeNum]; 
+    int sharedSegmentNum = mTerminalSegments.size(); 
+    while(sharedSegmentNum--) {
+      if (mTerminalSegments[sharedSegmentNum]->HasEndpoint(sharedNode)) {
+        sharedNode->RemoveNeighbor(mTerminalSegments[sharedSegmentNum]); 
+        sharedNode->RemoveNeighbor(this); 
+        mTerminalSegments[sharedSegmentNum]->ReplaceEndpoint(sharedNode, newNode, false);
+        newNode->AddNeighbor(mTerminalSegments[sharedSegmentNum]);
+        // dbprintf(5, "Replaced the sharedNode %d as endpoint of terminal segment %d with newNode %d\n", 
+        //        sharedNode->GetIndex(), mTerminalSegments[sharedSegmentNum]->mSegmentID, newNode->GetIndex()); 
+       break; 
+      }
+    }
+    if (sharedSegmentNum == -1) {
+      dbprintf(0, "Error:  could not find terminal segment that has the old shared node as an endpoint.\n");
+      errexit; 
+    }
+    FullNode *sourceNonSharedNode = sourceArm->mTerminalNodes[sourceNonSharedNum];
+    // dbprintf(5, "ExtendByArm():  sharedNode = %d, sharedSegment = %d, sourceNonSharedNode = %d\n", sharedNode->GetIndex(),  mTerminalSegments[sharedSegmentNum]->mSegmentID, sourceNonSharedNode->GetIndex()); 
+    // Now iterate over all segments and create duplicate internal nodes and segments.  
+    int btype = GetBurgersType(); 
+    vector<ArmSegment*> sourceSegments = sourceArm->GetSegments(sharedNode); 
+    uint32_t seg = 0; 
+    FullNode *sourceNode = sharedNode; // for iterating through source arm 
+    ArmSegment *interiorSegment = NULL;
+    while (seg < sourceSegments.size()) {
+      sourceNode = sourceSegments[seg]->GetOtherEndpoint(sourceNode);
       
       int firstNodeType = firstNode->GetNodeType(), 
         otherNodeType =otherNode->GetNodeType();
@@ -548,17 +856,72 @@ namespace paraDIS {
         */ 
         firstNode->SetNodeType(-33); 
         
-      } else if (firstNodeType == 3 || firstNodeType == -33) {          
-        /*! 
-          Both terminal nodes might be "normal butterflies" (type -3). Need to collect and examine all "non-body" armsegments.    If any two are duplicates or are not type 111 arms, then it is not a special butterfly.  We are only interested in first 3 types but they are 1-based, so allocate four slots.     
-        */ 
-        if (HaveFourUniqueType111ExternalArms()) {
-          firstNode->SetNodeType(-3); 
-          otherNode->SetNodeType(-3); 
-          /*! 
-            Since type -3 "outranks" all other node types, we can stop here
-          */ 
-          return;
+    if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
+      // dbprintf(5, "ExtendByArm(): After extending the arm it now forms a loop.  Consolidating terminal nodes.\n"); 
+      mTerminalNodes.erase(++mTerminalNodes.begin(), mTerminalNodes.end()); 
+    }
+    
+    {
+      // this is intensive, for debugging, take this out later:
+      vector<ArmSegment *>segments = GetSegments(); 
+      if (segments.size() != mNumSegments) {
+        dbprintf(0, "ExtendByArm(): Error:  segments.size() %d  != mNumSegments %d\n", 
+                 segments.size(), mNumSegments); 
+        dbprintf(5, "ExtendByArm() line %d: Arm 130704 segments: %s \n",
+                 __LINE__, GetSegmentsAsString().c_str()); 
+        errexit; 
+      }
+    }
+    
+    dbprintf(5, "\nExtendByArm(): After extension the arm looks like this: %s", Stringify(0,false).c_str()); 
+    /* if (mArmID == 130704) {
+      dbprintf(5, "ExtendByArm() at end of function line %d: Arm 130704 segments: \n%s \n",
+               __LINE__, GetSegmentsAsString().c_str()); 
+               }*/ 
+    return; 
+  }
+
+  //===========================================================================
+  /*!
+    Decompose an arm by absorbing its nodes and segments into lower-energy neighbors 
+  */
+  bool Arm::Decompose(int energy) {
+    int8_t burgtype = GetBurgersType();
+    if (burgtype/10 != energy) 
+      return false; // not yet
+
+    // ComputeLength(); 
+
+    // Find which terminal node to use in decomposing ourself.  
+    // We prefer the terminal node that decomposes us into the smallest number of arms. 
+    // This will be the one with the least number of neighbors.  If two terminal nodes have the same number of neighbors, use the one that has the lowest maximum energy level.  
+    // I believe this greedy algorithm results in the global minimum decomposition too.  
+
+    int numTermNodes = mTerminalNodes.size();
+    vector<int> maxEnergies; // we'll analyze this later. 
+    vector<int> numneighbors; 
+    vector<int> extendedArmIDs; 
+    if (numTermNodes == 0 || numTermNodes == 1) {
+      // We don't expect this!  I don't expect type 200 or higher arms to form loops
+      dbprintf(0, "Looped arm, will not decompose: %s\n", Stringify(0).c_str()); 
+      return false;  
+    }
+
+    vector<int> allNeighborArmIDs; 
+    dbprintf(5, "\n================================================================\n Found arm %d to decompose: %s\n", mArmID, Stringify(0, false).c_str());
+
+    int sharedNodeNum = -1; 
+    int termnode = 0; 
+    while (termnode < numTermNodes) {
+      numneighbors.push_back(mTerminalNodes[termnode]->mNeighborArms.size()); 
+      maxEnergies.push_back(0); 
+      int neighbor = 0;
+      while (neighbor < numneighbors[termnode]) {
+        Arm *neighborArm = mTerminalNodes[termnode]->mNeighborArms[neighbor]; 
+        if (neighborArm != this && 
+            neighborArm->GetBurgersType()/10 > maxEnergies[termnode]) {
+         allNeighborArmIDs.push_back(neighborArm->mArmID); 
+         maxEnergies[termnode] = neighborArm->GetBurgersType()/10;
         }
       }
     }
@@ -605,9 +968,272 @@ namespace paraDIS {
      return s; 
   }
   //===========================================================================
-  // see also DebugPrintArms() -- this just tabulates a summary
-  // Mark C. Miller, Wed Aug 22, 2012: fixed leak of armLengthBins, armBins
-  void DataSet::PrintArmStats(void) {
+  string MetaArm::Stringify(int indent) {
+    int atype = mMetaArmType;
+    string s = INDENT(indent) + str(boost::format("(MetaArm): mLength: %1%, mMetaArmType: %2% (%3%), mMetaArmID: %4%\n\n")%mLength % atype % MetaArmTypeNames(mMetaArmType) % mMetaArmID); 
+    uint32_t i = 0; 
+    while (i<mTerminalNodes.size()) {
+      string s2 = mTerminalNodes[i]->Stringify(indent+1);
+      s += INDENT(indent+1);
+      s+=  str(boost::format("Terminal Node %1%: %2%\n") % i % s2);
+      ++i; 
+    } 
+    s += "\n"; 
+    i = 0; 
+    while (i<mTerminalArms.size()) {
+      s += INDENT(indent+1) + str(boost::format("Terminal Arm %1%: %2%") % i % mTerminalArms[i]->Stringify(indent + 1));
+      ++i; 
+    }
+    return s; 
+  } 
+   
+  //===========================================================================
+  // MetaArm::FindEndpoint()
+  // recursive function, called by FindEndpoints())
+  // Given a type 111 arm as seed, the node connecting the candidate to the previous arm in the chain, and a candidate, see if it can extend to an endpoint.  Return false when it fails, and true when it succeeds.  
+  //  previous == node connecting the candidate to the last examined arm in the calling chain.  
+  //  On first call, candidate != seed, but if we see the seed again, we have looped.  This is guaranteed because the seed is the last thing ever checked of any neighbor of an arm. 
+  // 
+  //===========================================================================
+  bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
+    bool err = false; 
+ 
+    dbprintf(4, "\n-------------------------------------------  \n");
+    dbprintf(4, "FindEndpoint: seed = %s\nprevious = %s\n\ncandidate = %s\n", 
+             seed->Stringify(0).c_str(), previous->Stringify(0).c_str(), candidate->Stringify(0, false).c_str()); 
+
+    if (candidate->mArmType == ARM_EMPTY) {
+      dbprintf(4, "FindEndpoint: candidate arm is empty.  This happens when decomposing high energy arms.  Skipping.\n"); 
+      return false; 
+    } 
+
+    if (candidate->mSeenInMeta) {
+       dbprintf(4, "FindEndpoint: candidate arm is already seen in this arm -- return false\n"); 
+       return false; 
+    }
+
+    if (candidate->mSeen) {
+      dbprintf(4, "FindEndpoint: candidate arm is type111 and already seen somewhere  -- return false\n"); 
+      return false; 
+    }
+    if ( candidate->GetBurgersType() != seed->GetBurgersType()) {
+      dbprintf(4, "FindEndpoint: candidate arm burgers (%s) does not match seed burgers (%s)-- return false\n", BurgersTypeNames(candidate->GetBurgersType()).c_str(), BurgersTypeNames(seed->GetBurgersType()).c_str()); 
+      return false; 
+    }
+    
+    if (candidate->isTypeMM()) {
+      dbprintf(4, "FindEndpoint: Error: candidate arm is type MM -- This should never happen.\n"); 
+      return false; 
+    }
+    
+    if (candidate->mArmType == ARM_LOOP) {
+      dbprintf(4, "FindEndpoint: Candidate is a loop. Do not explore.\n"); 
+      return false; 
+    }
+
+    candidate->mSeen = true; 
+    candidate->mSeenInMeta = true; 
+
+    if (candidate->isType111()) {
+      dbprintf(4, "Candidate is type 111 and we shall try to recurse..\n");
+      mFound111 = true; 
+    }
+    else {
+      dbprintf(4, "Candidate is type 200 and we shall try to recurse..\n");
+    }
+    uint32_t nodenum = candidate->mTerminalNodes.size(); 
+    if (nodenum < 2) {
+      dbprintf(0, "Error:  Found candidate with %d terminal node(s), but we already tested for loops. \n", nodenum); 
+      errexit1; 
+     }
+
+    FullNode * otherNode = NULL; 
+    while (nodenum --) {
+      FullNode * node = candidate->mTerminalNodes[nodenum]; 
+      if (node == previous) {
+        continue; 
+      }
+      otherNode = node; 
+      if (node->GetNodeType() < 0) {
+        dbprintf(4, "FindEndpoint: Candidate has M node on other end.  Terminating and returning true.\n"); 
+        AddTerminalNode(node); 
+        AddTerminalArm(candidate); 
+        return true; 
+      }
+
+      uint32_t neighbornum = node->mNeighborArms.size(); 
+      dbprintf(4, "FindEndpoint: Candidate has N node on other end. Recursing on %d neighbors.\n", neighbornum); 
+      Arm *foundseed = NULL; 
+      while (neighbornum--) {
+        Arm *arm = node->mNeighborArms[neighbornum]; 
+        if (arm == candidate) {
+          continue; // no need to examine ourselves.  
+        }
+        if (arm == seed) {
+          dbprintf(4, "FindEndpoint: Hey!  Neighbor %d is the seed arm.  Are we a loop? Defer.\n", neighbornum); 
+          foundseed = seed; 
+          continue; 
+        }
+        dbprintf(4, "FindEndpoint: Recursing on candidate neighbor arm...\n"); 
+        if (FindEndpoint(seed, node, node->mNeighborArms[neighbornum])) {
+          AddArm(candidate); 
+          return true; 
+        }
+      }
+      dbprintf(4, "FindEndpoint: Done Checking candidate neighbor arms.\n"); 
+      
+      if (foundseed) {
+        dbprintf(4, "FindEndpoint: We found the seed after all other neighbors are exhausted.  Thus we are in a looped arm.\n"); 
+        AddArm(candidate); 
+        AddTerminalArm(seed); 
+        AddTerminalNode(node); 
+        mMetaArmType = METAARM_LOOP_111; 
+        return true;
+      }
+    }
+    dbprintf(4, "FindEndpoint: Done recursing on neighbors.\n"); 
+    
+    if (candidate->isType111()) {
+      dbprintf(4, "FindEndpoint:  Candidate is a type111 arm with no way to extend beyond its type N node.  Terminate and mark as METAARM_UNKNOWN.\n"); 
+      mMetaArmType = METAARM_UNKNOWN; 
+      AddTerminalNode(otherNode); 
+      AddTerminalArm(candidate); 
+      return true; 
+    }
+
+    dbprintf(4, "FindEndpoint:  Candidate is a dead end.\n");   
+    mDeadEnds.push_back(candidate); // so you can mark them as not seen later.  
+    return false; 
+  }
+   
+
+  //===========================================================================
+  void MetaArm::FindEndpoints(Arm *seed) {      
+
+    dbprintf(4, "=======================================================\n", seed->Stringify(0).c_str()); 
+    dbprintf(4, "FindEndpoints called with seed %s\n", seed->Stringify(0, false).c_str()); 
+    
+    seed->mSeen = true; 
+    // mLength = seed->GetLength(); 
+    if (seed->mArmType == ARM_LOOP) {
+      if (seed->isType200()) {
+        dbprintf(4, "FindEndpoints: Seed arm is Type 200 LOOP arm, so this is METAARM_LOOP_200.\n"); 
+        mMetaArmType = METAARM_LOOP_200; 
+      }
+      else {
+        dbprintf(4, "FindEndpoints: Seed arm is Type 111 LOOP arm, so this is METAARM_LOOP_111.\n"); 
+        mMetaArmType = METAARM_LOOP_111; 
+      }
+      dbprintf(0, "FindEndpoints: Seed arm is a loop. Adding as its own metaArm.\n");
+      AddTerminalArm(seed); 
+      mTerminalNodes = seed->mTerminalNodes; 
+      CapturePath(false); 
+      return;
+    }
+
+    mLength = 0; 
+    if (seed->isTypeMM()) {
+      if (seed->isType200()) {
+        dbprintf(4, "FindEndpoints: Seed arm is Type 200 MM arm.  This is METAARM_UNKNOWN, since all non-loop type 200 arms should have been decomposed.\n"); 
+        mMetaArmType = METAARM_UNKNOWN; 
+      }               
+      else if (seed->isType111()){
+        dbprintf(4, "FindEndpoints: Seed arm is Type 111 MM arm, so this is METAARM_111.\n"); 
+        mMetaArmType = METAARM_111; 
+      }
+      else {
+        dbprintf(0, "FindEndpoints: Seed arm is Type %d MM arm.  This is supposed to be impossible.  Aborting.\n", seed->mArmType); 
+        errexit; 
+      }       
+      AddTerminalArm(seed); 
+      mTerminalNodes = seed->mTerminalNodes; 
+      CapturePath(false); 
+      return;
+    }
+    
+    if (seed->isType200() || seed->isTypeUnknown()) {
+      dbprintf(4, "FindEndpoints: Seed arm is Type 200 or Unknown with at least one type N node.  This is a bad choice as seed as it can lead to ambiguities, and it will be included in at least one other meta-arm as a terminal arm.  Giving up and trying new seed.\n"); 
+      mMetaArmType = METAARM_UNKNOWN; 
+      return; 
+    }
+    
+    // consider this to be a completely self contained metaamr. 
+    // Best algorithm: 
+    
+    // A metaarm can continue in up to two directions, call them paths.  
+    //uint32_t pathsTaken = 0; 
+    
+    // First, check each terminal node of the arm.  If it's a monster, add it as a meta arm endpoint and mark off a path.  If it's not, then recurse on it to extend the arm.  
+    dbprintf(4, "FindEndpoints: Checking terminal nodes of seed arm.\n"); 
+    uint32_t nodenum = 0; // seed->mTerminalNodes.size(); 
+    bool seedIsTerminal = false; 
+    while (nodenum <  seed->mTerminalNodes.size()) {
+      FullNode * node = seed->mTerminalNodes[nodenum]; 
+      if (node->GetNodeType() < 0) {
+        dbprintf(4, "FindEndpoints: Terminal node %d is a monster node. Add seed as terminal arm and node as terminal node.\n", nodenum); 
+        // Monster node
+        if (!mTerminalArms.size() || mTerminalArms[0] != seed) {
+          AddTerminalArm(seed); 
+          seedIsTerminal = true; 
+        }
+        AddTerminalNode(node); 
+      }
+      else {
+        dbprintf(4, "FindEndpoints: Terminal node %d is not a monster node. Recurse on its neighbors.\n", nodenum); 
+        int neighborNum = node->mNeighborArms.size(); 
+        while (neighborNum--) {
+          Arm *arm = node->mNeighborArms[neighborNum]; 
+          if (arm == seed) {
+            dbprintf(4, "FindEndpoints: Node neighbor %d is seed.  Ignore.\n", nodenum); 
+            continue; 
+          }
+          dbprintf(4, "FindEndpoints: call FindEndpoint on neighbor %d...\n", nodenum); 
+          if (FindEndpoint(seed, node,  arm)) {            
+            dbprintf(4, "FindEndpoints: Node neighbor %d  resulted in valid endpoint.\n", nodenum);
+            if (nodenum == seed->mTerminalNodes.size()-1) {
+              if (!seedIsTerminal) {
+                dbprintf(4, "Adding seed as it is not a terminal arm and we are on the final terminal node.\n"); 
+                AddArm(seed); 
+              }
+              else {
+                dbprintf(4, "We are on the final terminal node but we are not adding the seed as it is already a terminal arm.\n");
+              }
+            }
+            break; // only one path allowed per terminal node.  
+          }
+        }
+      }
+        
+      CapturePath(nodenum); // Arms are collected in reverse, so reverse that for second node 
+      ++nodenum; 
+    }
+    // we must be METAARM_111; 
+    if (mMetaArmType == METAARM_UNKNOWN) 
+      mMetaArmType = METAARM_111; 
+
+    
+    int armnum = mAllArms.size(); 
+    while (armnum--) {
+      mAllArms[armnum]->mSeenInMeta = false; 
+    }
+    armnum = mTerminalArms.size(); 
+    while (armnum--) {
+      mTerminalArms[armnum]->mSeenInMeta = false; 
+    }
+    armnum = mDeadEnds.size(); 
+    while (armnum--) {
+      mDeadEnds[armnum]->mSeenInMeta = false; 
+    }
+    int atype = mMetaArmType;
+    dbprintf(4, "MetaArm is type %d, and found111 is %d\n", atype, (int)mFound111); 
+
+    return;
+
+  }
+ 
+  //===========================================================================
+  // see also DebugPrintArms() and PrintArmFile() -- this just tabulates a summary
+  void DataSet::PrintArmStats(FILE *thefile) {
     //if (!dbg_isverbose()) return;
     //dbprintf(3, "Beginning PrintArmStats()"); 
     double armLengths[11] = {0}, totalArmLength=0; 
@@ -1714,6 +2340,61 @@ namespace paraDIS {
 
       armpos->CheckForButterfly();      
       ++armnum; 
+      ++pos; 
+    }
+    debugfile << "Number of Metaarms: " << mMetaArms.size()<< endl; 
+    debugfile << "Total memory used by arms: " << mMetaArms.size() * sizeof(MetaArm) << endl; 
+    
+    cerr<< endl << "Wrote MetaArm details to debug file "<< filename<< endl; 
+    return; 
+  }
+
+  //===========================================================================
+  // Print out all arms in vtk file format in a file for analysis, just for Meijie
+  void DataSet::WriteMetaArmVTK(char *vtkfilename) {
+    return; 
+    
+  }
+
+  //===========================================================================
+  // Print out all MetaArms in a simple format in a file for analysis, just for Meijie
+  void DataSet::PrintMetaArmFile(void) {
+    if (mMetaArmFile == "") return;
+    dbprintf(0, "Writing metaarms to metaarm file %s\n", mMetaArmFile.c_str()); 
+    FILE *armfile = fopen (mMetaArmFile.c_str(), "w"); 
+    if (!armfile) {
+      cerr << "ERROR:  Cannot open output file to write out arms" << endl;
+      return;
+    }
+    fprintf(armfile, "DISCUSSION: \n%s\n", doctext.c_str()); 
+    
+    vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
+    uint32_t armnum = 0, metaarmcounts[7]={0}; 
+    double metaarmtypelengths[7] = {0.0}; 
+    uint32_t numarms = 0; 
+    while (pos != endpos) {
+      metaarmcounts[(*pos)->mMetaArmType]++; 
+      metaarmtypelengths[(*pos)->mMetaArmType] += (*pos)->mLength; 
+      numarms += (*pos)->mAllArms.size(); 
+      vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(), armend = (*pos)->mAllArms.end(); 
+      while (armpos != armend) {
+        if ((*armpos)->mSeen) {
+          fprintf(stderr, "Error in PrintMetaArmFile: arm %d in metaarm %d has mSeen == true", (*armpos)->mArmID, (*pos)->mMetaArmID); 
+          errexit; 
+        }
+        (*armpos)->mSeen = true; 
+        ++armpos;
+      } 
+      ++pos; 
+    }
+    vector<Arm*>::iterator armpos = mArms.begin(), endarm = mArms.end(); 
+    armnum = 0; 
+    while (armpos != endarm) {   
+      if ((*armpos)->mArmType != ARM_EMPTY && !(*armpos)->mSeen) {
+        cerr << "Error: arm " << armnum << " has not been seen in a metaarm." << endl; 
+        errexit; 
+      }
+      ++ armnum;
       ++armpos; 
     }
     dbprintf(2, "FindButterflies ended.\n");
@@ -2050,6 +2731,51 @@ namespace paraDIS {
   } 
   
   
+  //===========================================================================
+  void DataSet::FindMetaArms(void){
+    vector<Arm*>::iterator currentArm = mArms.begin(), endArm = mArms.end(); 
+    while (currentArm != endArm) {
+      (*currentArm)->mSeen = false; 
+      ++ currentArm;       
+    }
+    currentArm = mArms.begin(), endArm = mArms.end(); 
+    uint32_t numMetaArms = 0, numArms = 0, totalArms = mArms.size(); 
+    STARTPROGRESS(); 
+    dbprintf(4, "FindMetaArms: %s\n", datestring()); 
+    while (currentArm != endArm) {
+      if ( ! (*currentArm)->mSeen  && 
+           ! (*currentArm)->isTypeUnknown() && 
+           (*currentArm)->mArmType != ARM_EMPTY
+        ) {
+        boost::shared_ptr<MetaArm> metaArmSPtr = boost::make_shared<MetaArm>(); 
+        metaArmSPtr->FindEndpoints(*currentArm); 
+        if (metaArmSPtr->mMetaArmType != METAARM_UNKNOWN) {
+          dbprintf(4, "Adding meta arm %d with seed %d\n", mMetaArms.size(), (*currentArm)->mArmID); 
+          metaArmSPtr->mMetaArmID = mMetaArms.size();
+          mMetaArms.push_back(metaArmSPtr); 
+          numMetaArms++;           
+        }
+      } else {
+        dbprintf(4, "Skipping currentArm %d (type %d) as it was either seen (%d) and was type 111 or an unknown arm, or else FindEndpoints could not handle it.\n", (*currentArm)->mArmID, (*currentArm)->mArmType, (*currentArm)->mSeen);  
+      }
+      numArms++; 
+      ++ currentArm; 
+      UPDATEPROGRESS(numArms, totalArms, str(boost::format("FindMetaArms: %1% MetaArms created")%numMetaArms)); 
+    }
+    currentArm = mArms.begin();
+    while (currentArm != endArm) {
+      if (!(*currentArm)->mSeen && (*currentArm)->mArmType != ARM_EMPTY) {
+        uint32_t id = (*currentArm)->mArmID;
+        dbprintf(0, "\n\nError: arm %d has not been seen!\n", id); 
+        errexit; 
+      }
+      (*currentArm)->mSeen = false; 
+      ++currentArm; 
+    }
+    
+    return; 
+  }
+
   
   
 } // end namespace paraDIS 
