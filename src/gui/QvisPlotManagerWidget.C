@@ -1147,6 +1147,9 @@ QvisPlotManagerWidget::UpdatePlotList()
         plotListBox->blockSignals(false);        
     }
 
+    // Tell the plot list whether we're applying operators to all plots.
+    plotListBox->setApplyOperators(globalAtts->GetApplyOperator());
+
     // If there are no variables, clear out the variable menu.
     if(plotList->GetNumPlots() == 0 && varMenu->count() > 0)
         varMenu->clear();
@@ -2985,6 +2988,10 @@ QvisPlotManagerWidget::applyWindowChanged(int val)
 // Programmer:  Jeremy Meredith
 // Creation:    February 19, 2010
 //
+// Modifications:
+//   Brad Whitlock, Thu Mar 14 16:21:18 PDT 2013
+//   Set applyOperators in the plot list box.
+//
 // ****************************************************************************
 void
 QvisPlotManagerWidget::applyOperatorToggled(bool val)
@@ -2992,6 +2999,8 @@ QvisPlotManagerWidget::applyOperatorToggled(bool val)
     globalAtts->SetApplyOperator(val);
     SetUpdate(false);
     globalAtts->Notify();
+
+    plotListBox->setApplyOperators(val);
 }
 
 // ****************************************************************************

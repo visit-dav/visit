@@ -76,13 +76,20 @@
 
 class QPlotDelegate : public QItemDelegate
 {
+    bool applyOperators;
 public:
     QPlotDelegate(QObject *parent) : QItemDelegate(parent)
     {
+        applyOperators = true;
     }
 
     virtual ~QPlotDelegate()
     {
+    }
+
+    void setApplyOperators(bool val)
+    {
+        applyOperators = val;
     }
 
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, 
@@ -96,6 +103,7 @@ public:
             QRect r(currentItem->listWidget()->visualItemRect(currentItem));
             painter->save();
             painter->translate(QPoint(r.x(), r.y()));
+            currentItem->setApplyOperators(applyOperators);
             currentItem->paint(painter);
             painter->restore();
         }
@@ -497,6 +505,34 @@ QvisPlotListBox::activeOperatorIndex(int id) const
    }
 
    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisPlotListBox::setApplyOperators
+//
+// Purpose: 
+//   Sets the "apply operators to all plots" setting in the list box items so
+//   they can be drawn properly.
+//
+// Arguments:
+//   val : Whether operator actions apply to all operators.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 14 15:35:19 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotListBox::setApplyOperators(bool val)
+{
+    QPlotDelegate *delegate = dynamic_cast<QPlotDelegate *>(itemDelegate());
+    if(delegate != NULL)
+    {
+        delegate->setApplyOperators(val);
+        update();
+    }
 }
 
 // ****************************************************************************

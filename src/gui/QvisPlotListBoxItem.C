@@ -103,6 +103,7 @@ QvisPlotListBoxItem::QvisPlotListBoxItem(const Plot &p, const QString &prefix_,
       clickable()
 {
     addClickableRects = true;
+    applyOperators = true;
 
     // Set the string that we'll use when the item is not expanded.
     setText(GetDisplayString(plot, prefix));
@@ -334,6 +335,10 @@ QvisPlotListBoxItem::textX() const
 //   Brad Whitlock, Fri Jul 23 14:16:11 PDT 2010
 //   I added support for drawing selections.
 //
+//   Brad Whitlock, Thu Mar 14 15:12:45 PDT 2013
+//   Take into account more criteria when determining whether an operator will
+//   be highlighted.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -515,7 +520,10 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
         int i;
         for(i = 0; i < plot.GetNumOperators(); ++i)
         {
-            if(plot.GetActiveOperator() == i)
+            bool highlightOperator = (isSelected()   && plot.GetActiveOperator() == i) ||
+                                     (applyOperators && plot.GetActiveOperator() == i);
+
+            if(highlightOperator)
             {
                 // Draw a selection rectangle for the operator
                 painter->fillRect(iconX - YICON_SPACING,
@@ -526,7 +534,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             }
 
             // Set the text color in the painter.
-            setTextPen(painter, plot.GetActiveOperator() == i);
+            setTextPen(painter, highlightOperator);
 
             // Draw the icon if there is one.
             if(!operatorIcons[i].isNull())
@@ -1273,6 +1281,32 @@ int
 QvisPlotListBoxItem::activeOperatorIndex() const
 {
     return plot.GetActiveOperator();
+}
+
+// ****************************************************************************
+// Method: QvisPlotListBoxItem::setApplyOperators
+//
+// Purpose: 
+//   Called just before paint() to set whether operators should be applied
+//   to all plots.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 14 15:42:39 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotListBoxItem::setApplyOperators(bool val)
+{
+    applyOperators = val;
 }
 
 //
