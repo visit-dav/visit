@@ -188,26 +188,6 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
-    bool retval = true;
-
-#if defined(__unix__)
-printf("__unix__: yes\n");
-#else
-printf("__unix__: no\n");
-#endif
-
-#if defined(__APPLE__)
-printf("__APPLE__: yes\n");
-#else
-printf("__APPLE__: no\n");
-#endif
-
-#if defined(VISIT_USE_MANGLED_MESA)
-printf("VISIT_USE_MANGLED_MESA: yes\n");
-#else
-printf("VISIT_USE_MANGLED_MESA: no\n");
-#endif
-
 #if defined(__unix__) && !defined(__APPLE__) && !defined(VISIT_USE_MANGLED_MESA)
     if(displayStatus == DS_NOT_CHECKED)
     {
