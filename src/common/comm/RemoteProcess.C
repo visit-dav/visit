@@ -1806,6 +1806,9 @@ RemoteProcess::CreatePortNumbers(int *local, int *remote, int *gateway, int nPor
 //   Pass in a MachineProfile since it contains the bundled options that we
 //   need. Also use the newer ssh options in the machine profile.
 //
+//   Brad Whitlock, Wed Mar 13 16:39:36 PDT 2013
+//   Add support for X tunneling through the gateway.
+//
 // ****************************************************************************
 
 void
@@ -1849,6 +1852,11 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
     // Add the SSH arguments to the args vector.
     for(size_t i = 0; i < ssh.size(); ++i)
         args.push_back(ssh[i]);
+
+    // See if the user is forwarding X.
+    bool dashX = false;
+    for(size_t i = 0; i < ssh.size(); ++i)
+        dashX |= (ssh[i] == "-X");
 
     if (profile.GetSshPortSpecified())
     {
@@ -1922,6 +1930,8 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
     {
         args.push_back(profile.GetGatewayHost());
         args.push_back("ssh");
+        if(dashX)
+            args.push_back("-X");
     }
     
     // Set the name of the host to run on.

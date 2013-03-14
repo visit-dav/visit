@@ -42,6 +42,10 @@
 
 #include <VisWinRenderingWithoutWindow.h>
 
+#include <Environment.h>
+#include <avtCallback.h>
+#include <visit-config.h>
+
 #include <vtkMapper.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -69,6 +73,10 @@ void UnMapWindow(vtkRenderWindow* v) { /*do nothing..*/  }
 #endif
 
 #endif
+
+#define DS_NOT_CHECKED    0
+#define DS_NOT_AVAILABLE  1
+#define DS_AVAILABLE      2
 
 // ****************************************************************************
 //  Method: VisWinRenderingWithoutWindow constructor
@@ -111,6 +119,8 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
         renWin->OffScreenRenderingOn();
 #endif
     InitializeRenderWindow(renWin);
+
+    displayStatus = DS_NOT_CHECKED;
 }
 
 
@@ -157,6 +167,75 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 }
 
 // ****************************************************************************
+// Method: VisWinRenderingWithoutWindow::RenderRenderWindow
+//
+// Purpose: 
+//   Render the render window when it is safe to do so.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 13 16:06:22 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRenderingWithoutWindow::RenderRenderWindow(void)
+{
+    bool retval = true;
+
+#if defined(__unix__)
+printf("__unix__: yes\n");
+#else
+printf("__unix__: no\n");
+#endif
+
+#if defined(__APPLE__)
+printf("__APPLE__: yes\n");
+#else
+printf("__APPLE__: no\n");
+#endif
+
+#if defined(VISIT_USE_MANGLED_MESA)
+printf("VISIT_USE_MANGLED_MESA: yes\n");
+#else
+printf("VISIT_USE_MANGLED_MESA: no\n");
+#endif
+
+#if defined(__unix__) && !defined(__APPLE__) && !defined(VISIT_USE_MANGLED_MESA)
+    if(displayStatus == DS_NOT_CHECKED)
+    {
+        // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
+        if(Environment::get("DISPLAY").empty())
+            displayStatus = DS_NOT_AVAILABLE;
+        else
+            displayStatus = DS_AVAILABLE;
+    }
+
+    if(displayStatus == DS_AVAILABLE)
+    {
+        GetRenderWindow()->Render();
+    }
+    else
+    {
+        avtCallback::IssueWarning("VisIt was not built with support for "
+            "software-based offscreen rendering. This means that the DISPLAY "
+            "variable must be set to a valid X-server display in order to render "
+            "an image. If you are running client/server, consider adding -X to "
+            "your SSH arguments.");
+    }
+#else
+    GetRenderWindow()->Render();
+#endif
+}
+
+// ****************************************************************************
 //  Method: VisWinRenderingWithoutWindow::RealizeRenderWindow
 //
 //  Purpose:
@@ -170,6 +249,9 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //   Cyrus Harrison, Sat Nov  3 23:51:13 PDT 2012
 //   Force large window size for offscreen cocoa.
 //
+//   Brad Whitlock, Wed Mar 13 16:07:35 PDT 2013
+//   Don't directly call Render.
+//
 // ****************************************************************************
 
 void
@@ -179,7 +261,7 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   // way to *force* VTK to initialize in all cases.  The good news is that this
   // method is typically called before we've got data in the RW, so it
   // shouldn't be as heavy as it looks at first glance.
-  
+
   //
   // SetSize doesn't work as expected with vtkCocoaRenderWindow in 
   // an offscreen setting.
@@ -198,7 +280,7 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
   {
       renWin->SetSize(300,300);
   }
-  renWin->Render();
+  RenderRenderWindow();
 
 #ifdef EXTERNAL_VTK_BUILD
   std::string cname = renWin->GetClassName();
