@@ -273,6 +273,10 @@ typedef struct _GroupInfo
 //    Removed RemapFacelistForPolyhedronZones since it did not use any class
 //    members and could therefore be defined as a static function in the .C
 //    file.
+//
+//    Cyrus Harrison, Wed Mar 13 09:55:42 PDT 2013
+//    Added useLocalDomainBoundries.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -344,6 +348,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     GroupInfo                       groupInfo;
     bool                            haveAmrGroupInfo;
+    bool                            useLocalDomainBoundries;
 
     std::map<std::string, std::map<int, std::vector<int>* > > arbMeshCellReMap;
     std::map<std::string, std::map<int, std::vector<int>* > > arbMeshNodeReMap;

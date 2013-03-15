@@ -280,6 +280,9 @@ static vtkDataArray *CreateDataArray(int silotype, void *data, int numvals);
 //    Brad Whitlock, Sat Apr 21 23:35:34 PDT 2012
 //    Change to forceSingle so it's easier to understand.
 //
+//    Cyrus Harrison, Wed Mar 13 09:22:30 PDT 2013
+//    Init useLocalDomainBoundries.
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
@@ -304,6 +307,7 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name,
     metadataIsTimeVaryingChecked = false;
     groupInfo.haveGroups = false;
     haveAmrGroupInfo = false;
+    useLocalDomainBoundries = false;
     hasDisjointElements = false;
     topDir = "/";
     siloDriver = DB_UNKNOWN;
@@ -3833,6 +3837,9 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Cyrus Harrison, Thu Mar 14 15:16:43 PDT 2013
+//    Support species names from silo species objects.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
@@ -3869,19 +3876,30 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 
                 vector<int>   numSpecies;
                 vector<vector<string> > speciesNames;
+                int spec_name_idx =0;
+                ostringstream oss;
                 for (j = 0 ; j < spec->nmat ; j++)
                 {
                     numSpecies.push_back(spec->nmatspec[j]);
                     vector<string>  tmp_string_vector;
-
                     //
                     // Species do not currently have names, so just use their index.
                     //
                     for (k = 0 ; k < spec->nmatspec[j] ; k++)
                     {
-                        char num[16];
-                        sprintf(num, "%d", k+1);
-                        tmp_string_vector.push_back(num);
+                        oss.str("");
+                        oss << (k+1);
+                        if(spec->specnames != NULL)
+                        {
+                            //
+                            //add spec name if it exists
+                            //
+                            oss << " ("
+                                << string(spec->specnames[spec_name_idx])
+                                << ")";
+                            spec_name_idx++;
+                        }
+                        tmp_string_vector.push_back(oss.str());
                     }
                     speciesNames.push_back(tmp_string_vector);
                 }
@@ -3937,6 +3955,9 @@ avtSiloFileFormat::ReadSpecies(DBfile *dbfile,
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
+//
+//    Cyrus Harrison, Thu Mar 14 15:16:43 PDT 2013
+//    Support species names from silo species objects. 
 //
 // ****************************************************************************
 void
@@ -4060,15 +4081,27 @@ avtSiloFileFormat::ReadMultispecies(DBfile *dbfile,
             vector< vector<string> > speciesNames;
             if (valid_var)
             {
+                ostringstream oss;
+                int spec_name_idx = 0;
                 for (j = 0 ; j < spec->nmat ; j++)
                 {
                     numSpecies.push_back(spec->nmatspec[j]);
                     vector<string>  tmp_string_vector;
                     for (k = 0 ; k < spec->nmatspec[j] ; k++)
                     {
-                        char num[16];
-                        sprintf(num, "%d", k+1);
-                        tmp_string_vector.push_back(num);
+                        oss.str("");
+                        oss << (k+1);
+                        if(spec->specnames != NULL)
+                        {
+                            //
+                            //add spec name if it exists
+                            //
+                            oss << " ("
+                                << string(spec->specnames[spec_name_idx])
+                                << ")";
+                            spec_name_idx++;
+                        }
+                        tmp_string_vector.push_back(oss.str());
                     }
                     speciesNames.push_back(tmp_string_vector);
                 }
@@ -4840,25 +4873,32 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
 #ifdef PARALLEL
     }
 
+    int useldbi = useLocalDomainBoundries;
+    MPI_Bcast(&useldbi, 1, MPI_INT, 0, VISIT_MPI_COMM);
+    useLocalDomainBoundries = useldbi;
     //
     // Communicate processor 0's information to the rest of the processors.
     //
     MPI_Bcast(&ndomains, 1, MPI_INT, 0, VISIT_MPI_COMM);
     if (ndomains != -1)
     {
-        if (rank != 0)
+        // avoid broadcast if we are using local dbi
+        if(!useLocalDomainBoundries)
         {
-            extents = new int[ndomains*6];
-            nneighbors = new int[ndomains];
+            if (rank != 0)
+            {
+                extents = new int[ndomains*6];
+                nneighbors = new int[ndomains];
+            }
+            MPI_Bcast(extents,     ndomains*6, MPI_INT, 0, VISIT_MPI_COMM);
+            MPI_Bcast(nneighbors,  ndomains,   MPI_INT, 0, VISIT_MPI_COMM);
+            MPI_Bcast(&lneighbors, 1,          MPI_INT, 0, VISIT_MPI_COMM);
+            if (rank != 0)
+            {
+                neighbors = new int[lneighbors];
+            }
+            MPI_Bcast(neighbors,   lneighbors, MPI_INT, 0, VISIT_MPI_COMM);
         }
-        MPI_Bcast(extents,     ndomains*6, MPI_INT, 0, VISIT_MPI_COMM);
-        MPI_Bcast(nneighbors,  ndomains,   MPI_INT, 0, VISIT_MPI_COMM);
-        MPI_Bcast(&lneighbors, 1,          MPI_INT, 0, VISIT_MPI_COMM);
-        if (rank != 0)
-        {
-            neighbors = new int[lneighbors];
-        }
-        MPI_Bcast(neighbors,   lneighbors, MPI_INT, 0, VISIT_MPI_COMM);
     }
 
     MPI_Bcast(&numGroups, 1, MPI_INT, 0, VISIT_MPI_COMM);
@@ -4876,7 +4916,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
     // If we found connectivity information, go ahead and create the 
     // appropriate data structure and register it.
     //
-    if (ndomains > 0 && !avtDatabase::OnlyServeUpMetaData())
+    if (!useLocalDomainBoundries &&
+        ndomains > 0 &&
+        !avtDatabase::OnlyServeUpMetaData())
     {
         avtStructuredDomainBoundaries *dbi = NULL;
         avtMeshType mesh_type = FindDecomposedMeshType(dbfile);
@@ -4891,7 +4933,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile,
                   "Could not determine mesh type for Connectivity "
                   "and Group information.");
         }
-        
+
         dbi->SetNumDomains(ndomains);
 
         int l = 0;
@@ -5142,6 +5184,14 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    Also, it looked like the succeeding code block assumed that err was
 //    never set as in that case, ndomains would be set to -1 and the loop
 //    over domains in the succeeding block would be meaningless anyways.
+//
+//    Cyrus Harrison, Wed Mar 13 09:20:23 PDT 2013
+//    Check for presence of "scalable_format" flag. If it exists and is on
+//    we will be using local domain boundary info in the future. For now
+//    simply make sure the plugin does not attempt to bindly read the
+//    local info as global if it were global and crash. Also support
+//    Domain to Block mapping via Domains_BlockNums array.
+//
 // ****************************************************************************
 
 
@@ -5152,6 +5202,20 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
             bool needGroupInfo)
 {
     bool packed_conn_info = DBInqVarExists(dbfile,"NumDecomp_pack") != 0;
+    bool scalable_fmt = DBInqVarExists(dbfile,"scalable_format") != 0;
+    if(scalable_fmt)
+    {
+        int scalable_fmt_val = 0;
+        // check the value of scalable_fmt
+        DBReadVar(dbfile, "scalable_format", &scalable_fmt_val);
+        scalable_fmt = (scalable_fmt_val == 1);
+    }
+
+    if(scalable_fmt)
+    {
+        useLocalDomainBoundries = true;
+    }
+
 
     DBReadVar(dbfile, "NumDomains", &ndomains);
     if (needConnectivityInfo)
@@ -5167,6 +5231,21 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
          if (numGroups > 1)
          {
              groupIds = new int[ndomains];
+             // check for Domains_BlockNums if we are using local
+             // domain boundries
+            if(useLocalDomainBoundries)
+            {
+                if(DBInqVarExists(dbfile,"Domains_BlockNums") != 0)
+                {
+                    DBReadVar(dbfile,"Domains_BlockNums",groupIds);
+                }
+                else
+                {
+                    //disable group info if we don't have the proper data.
+                    numGroups = 0;
+                    needGroupInfo = false;
+                }
+            }
          }
          else if (numGroups == 1)
          {
@@ -5234,7 +5313,7 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
             }
         }
     }
-    else // used packed connectivity info
+    else if(!useLocalDomainBoundries) // used packed connectivity info
     {
         debug1 << "avtSiloFileFormat: using Decomp_pack connectivity "
                << "info" <<endl;
