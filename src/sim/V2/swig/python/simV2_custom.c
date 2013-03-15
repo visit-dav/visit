@@ -501,11 +501,23 @@ pylibsim_VisItDisconnect(void)
 #define DISCONNECT_CALLBACK1(FUNC) DISCONNECT_CALLBACK_EX(FUNC, "None")
 #define DISCONNECT_CALLBACK2(FUNC) DISCONNECT_CALLBACK_EX(FUNC, "None, None")
 
-    DISCONNECT_CALLBACK1(VisItSetBroadcastIntFunction);
-    DISCONNECT_CALLBACK1(VisItSetBroadcastStringFunction);
+    /*
+     * Note, we do not free the int and string broadcast functions since they are
+     * registered for the life of libsim. If we freed then the sim would have to
+     * register them when the sim reconnected. Sims typically only register the
+     * broadcast functions on startup so let's not require the user to reregister
+     * them.
+     */
+
+    /* Free these callbacks because they are associated with the engine handle,
+     * which is freed later. Reconnecting will reset these.
+     */
     DISCONNECT_CALLBACK1(VisItSetSlaveProcessCallback);
     DISCONNECT_CALLBACK2(VisItSetCommandCallback);
 
+    /*
+     * Free these data callbacks. Reconnecting will reset these.
+     */
     DISCONNECT_CALLBACK2(VisItSetGetMetaData);
     DISCONNECT_CALLBACK2(VisItSetGetMesh);
     DISCONNECT_CALLBACK2(VisItSetGetMaterial);
