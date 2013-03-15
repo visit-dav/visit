@@ -35,37 +35,28 @@
 # DAMAGE.
 #*****************************************************************************
 """
- file: visit_test.py
- author: Cyrus Harrison <cyrush@llnl.gov>
- created: 4/9/2010
+ file: canvas.py
+ author: Cyrus Harrison (cyrush@llnl.gov)
  description:
-    Provides a decorator that allows us to skip visit related tests,
-    when the module is used outside of visit.
+    Handle x setup using Xvfb if necessary
 
 """
 
-import sys
+import os
+import subprocess
 
-def visit_test(fn):
-    """
-    Decorator that skips tests that require visit if
-    we aren't running in the cli.
-    """
-    def run_fn(*args):
-        if "visit" in sys.modules.keys():
-            return fn(*args)
-        return None
-    return run_fn
+def check_x():
+    cmd = "xset -g"
+    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    res = p.communicate()[0]
+    if res.count("xset:  unable to open display") >0:
+        return False
+    return True
 
+def launch_x():
+    if not check_x():
+        print "[x-server not found: launching Xvfb]"
+        subprocess.call("Xvfb :0 -screen 0 500x500x24 &",shell=True)
+        os.environ["DISPLAY"] = "127.0.0.1:0"
 
-def pyside_test(fn):
-    """
-    Decorator that skips tests that require visit if
-    we aren't running in the cli.
-    """
-    def run_fn(*args):
-        if "PySide.QtCore" in sys.modules.keys():
-            return fn(*args)
-        return None
-    return run_fn
 
