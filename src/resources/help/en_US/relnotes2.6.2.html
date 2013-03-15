@@ -34,6 +34,9 @@ list of changes in release 2.6.</p>
 <li>Fixed problems using build_visit to build Silo with Silo's Qt-dependenent Silex tool enabled.</li>
 <li>Fixed a bug where <i>-nopty</i> was required to run client/server from clients running on Red Hat Enterprise Linux 6 systems.</li>
 <li>Importing the VisIt Python module <i>(import visit)</i> in a system Python interpreter works again on UNIX-based platforms.</li>
+<li>Fixed a bug involing tailing spaces in EnSight case files written from FORTAN codes.</li>
+<li>Removed an unnecessary gradient calculation for the Volume plot raycasting integration rendering case.</li>
+<li>Avoid Silo plugin crash when reading a future format that supports packed local domain boundary info.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.6.2</font></b></p>
@@ -47,6 +50,10 @@ list of changes in release 2.6.</p>
     </ul>
 </li>
 <li>If the <i>-X</i> argument is given in the SSH arguments in a host profile, the <i>-X</i> argument will also be passed to the ssh command for gateway computers.</li>
+<li>The Silo DB plugin now reads species names when avalaible in Silo multispecies and species objects.
+The specified names are added to the end of the species name string shown in VisIt's Subset window.</li>
+<li>The <i>visit_utils</i> module now includes a PySide based module (<i>visit_utils.qannote</i>) for rendering annotations on images.</li>
+<li></li>
 </ul>
 
 <a name="Dev_changes"></a>
