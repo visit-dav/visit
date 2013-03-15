@@ -40,7 +40,10 @@ sys.path.append("../../../lib")                # for _simV2.so
 sys.path.append("../../../sim/V2/swig/python") # for simV2.py
 
 from simV2 import *
-#import mpicom  # only for parallel
+
+# Uncomment the next 2 lines for parallel
+#sys.path.append("../../../lib/site-packages") # for mpicom
+#import mpicom
 
 #*****************************************************************************
 # Class: Simulation
@@ -337,6 +340,8 @@ class Simulation:
 # Date:       Fri Mar 18 14:24:17 PDT 2011
 #
 # Modifications:
+#   Brad Whitlock, Fri Mar 15 11:46:21 PDT 2013
+#   Make it use VisItSetupEnvironment2.
 #
 #*****************************************************************************
 
@@ -357,10 +362,20 @@ class ParallelSimulation(Simulation):
         VisItSetParallel(self.par_size  >1)
         VisItSetParallelRank(self.par_rank)
 
-        Simulation.Initialize(self, simname, visitdir)
+        VisItOpenTraceFile("trace.%d.txt" % self.par_rank)
+        VisItSetDirectory(visitdir)
 
-        self.par_size = mpicom.size()
-        self.par_rank = mpicom.rank()
+        # Set up the environment
+        env = ""
+        if self.par_rank == 0:
+            env = VisItGetEnvironment()
+        VisItSetupEnvironment2(env)
+
+        # Write the sim file.
+        if self.par_rank == 0:
+            VisItInitializeSocketAndDumpSimFile(simname, 
+                "Python simulation", "/path/to/where/visit/was/started",
+                 None, None, None)
 
     def GetInputFromConsole(self):
         cmd = ""
