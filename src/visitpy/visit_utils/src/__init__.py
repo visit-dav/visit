@@ -49,6 +49,8 @@ import encoding
 import status
 import ult
 
+import qannote
+
 from query import query, python_query
 from windows import Window, WindowManager
 from property_tree import PropertyTree

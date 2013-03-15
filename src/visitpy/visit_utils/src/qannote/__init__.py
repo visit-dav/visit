@@ -35,37 +35,14 @@
 # DAMAGE.
 #*****************************************************************************
 """
- file: visit_test.py
- author: Cyrus Harrison <cyrush@llnl.gov>
- created: 4/9/2010
+ file: canvas.py
+ author: Cyrus Harrison (cyrush@llnl.gov)
  description:
-    Provides a decorator that allows us to skip visit related tests,
-    when the module is used outside of visit.
+      Simple PySide / Qt based Text & Image annotation overlay lib.
 
 """
 
-import sys
-
-def visit_test(fn):
-    """
-    Decorator that skips tests that require visit if
-    we aren't running in the cli.
-    """
-    def run_fn(*args):
-        if "visit" in sys.modules.keys():
-            return fn(*args)
-        return None
-    return run_fn
-
-
-def pyside_test(fn):
-    """
-    Decorator that skips tests that require visit if
-    we aren't running in the cli.
-    """
-    def run_fn(*args):
-        if "PySide.QtCore" in sys.modules.keys():
-            return fn(*args)
-        return None
-    return run_fn
+import xinit
+from canvas import *
+from items import *
 

@@ -60,6 +60,13 @@ except:
     __visit_imported = False
 
 
+try:
+    import PySide.QtCore
+    __pyside_imported = True
+except:
+    __pyside_imported = False
+
+
 #
 # Some functions wrap calls to the visit module, however not all require
 # it to exist.  Use @require_visit decorator to provide a friendly
@@ -76,6 +83,24 @@ def require_visit(fn):
             raise VisItException("Could not import visit module")
         return fn(*args,**kwargs)
     return run_fn
+
+
+#
+# Some functions use PySide modules, however not all require
+# it to exist.  Use @require_pyside decorator to provide a friendly
+# exception if the PySide modules are not avalaible.
+#
+def require_pyside(fn):
+    """ Decorator for functions that require PySide. """
+    def run_fn(*args,**kwargs):
+        # note: this check happens in the 'common' module but that should
+        # be sufficent - if we can't load it here we wont be able to in other
+        # namespaces.
+        if not __pyside_imported:
+            raise VisItException("Could not import PySide modules")
+        return fn(*args,**kwargs)
+    return run_fn
+
 
 class VisItException(Exception):
     """ Generic exception class for VisIt errors. """
