@@ -1168,6 +1168,7 @@ avtSiloFileFormat::FreeUpResources(void)
 void
 avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    abort();
     DBfile *dbfile = OpenFile(tocIndex);
 
     //
