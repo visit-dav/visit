@@ -27,8 +27,6 @@
 // set this to 1 to re-enable linked loops code
 #define LINKED_LOOPS 0
 
-#define DEBUG 1
-
 /* now for the API */  
 #include <boost/cstdint.hpp>
 using boost::int8_t;
@@ -598,7 +596,9 @@ namespace paraDIS {
           find(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg); 
         if (pos == mNeighborSegments.end()) {
           dbprintf(5, "Error:  no matching neighbor found to remove!\n"); 
+#ifdef DEBUG
           abort(); 
+#endif
         }
         mNeighborSegments.erase(pos); 
       }
@@ -673,7 +673,9 @@ namespace paraDIS {
         vector<Arm*>::iterator pos = find(mNeighborArms.begin(), mNeighborArms.end(), neighbor); 
         if (pos == mNeighborArms.end()) {
           dbprintf(5, "Error:  no matching neighbor arm found to remove!\n"); 
+#ifdef DEBUG
           abort(); 
+#endif
         }
         mNeighborArms.erase(pos); 
       }

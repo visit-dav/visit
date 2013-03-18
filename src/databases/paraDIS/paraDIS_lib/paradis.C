@@ -27,8 +27,13 @@
 #define errexit return 
 #define errexit1 return err
 #else
+#ifdef DEBUG
 #define errexit abort()
 #define errexit1 abort()
+#else
+#define errexit return 
+#define errexit1 return err
+#endif
 #endif
 
 

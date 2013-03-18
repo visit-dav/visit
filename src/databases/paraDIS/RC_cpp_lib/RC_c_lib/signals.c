@@ -60,7 +60,9 @@ int GettingSignaled(void)
       case -1: error
       {
       printf("failed to fork\n");
+#ifdef DEBUG
       exit (1);
+#endif
       }
       case 0: child
       {
@@ -74,7 +76,9 @@ int GettingSignaled(void)
     int err = usleep (999999);
     if (err) {
       fprintf(stderr, "child sleep err %d\n", err);
+#ifdef DEBUG
       exit(1);
+#endif
     }
     printf("Child sleeping... (%d) \n", i);
     fflush(stdout);
