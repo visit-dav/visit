@@ -58,7 +58,9 @@ void _init(void)
             error = "pthread_create is NULL";
         }
         fprintf(stderr, "%s", error);
+#ifdef DEBUG
         exit(EXIT_FAILURE);
+#endif
     }
 }
 

@@ -172,21 +172,39 @@ inline std::string operator +(std::string s , double d){
 
 inline std::string operator +(double d, std::string s){
   return std::string(doubleToString(d)+s);
-}
+} 
 
 //=====================================================
 template <class T> 
-string doubleArrayToString(const vector<T>  &array) {
-  if (!array.size()) return string("[(empty vector)]"); 
+string doubleArrayToString(const vector<T>  &array, int precision = -1) {
+  if (!array.size()) return string("<empty>"); 
 
   string value("<");
   typename vector<T>::const_iterator pos = array.begin(), endpos = array.end();
   while (pos != endpos) {
-    value += (doubleToString(*pos++));
+    string ds = doubleToString(*pos++, precision); 
+    value += ds; 
     if (pos != endpos) value += ", "; 
     else value += ">"; 
   }
   return value; 
+}
+
+//=====================================================
+template <class T> 
+string intArrayToString(const vector<T>  &array) { 
+  if (!array.size()) return string("<empty>"); 
+
+  string value("<");
+  typename vector<T>::const_iterator pos = array.begin(), endpos = array.end();
+  while (pos != endpos) {
+    string ds = doubleToString(*pos++, 0); 
+    value += ds; 
+    if (pos != endpos) value += ", "; 
+    else value += ">"; 
+  }
+  return value; 
+  
 }
 
 //=====================================================

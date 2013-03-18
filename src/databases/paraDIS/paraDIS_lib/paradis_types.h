@@ -1,5 +1,7 @@
 /* $Id: paradis_types.h,v 1.3 2009/04/30 01:23:41 rcook Exp $ 
  $File$
+
+ This file is NOT USED.  
 */
 #ifndef LIBPARADIS_TYPES_H 
 #define LIBPARADIS_TYPES_H
@@ -10,8 +12,6 @@
 #include <HTSFile.h>
 #include "RC_c_lib/debugutil.h"
 #include "RC_cpp_lib/RangeList.h"
-
-using namespace std;
 
 #define HEADER_ID "$Revision: 1.3 $"
 //===========================
@@ -137,7 +137,7 @@ namespace ParaDIS {
     
     void ComputeBurger(float burg[3]) {
       burgersValue = 0;
-      // type 100 nodes are valued 1-3, and type 111 nodes are valued 4-7
+      // type 200 nodes are valued 1-3, and type 111 nodes are valued 4-7
       int valarray[3] = 
         {Category(burg[0]), Category(burg[1]), Category(burg[2])};
       if (valarray[0] == 1 && valarray[1] == 0 && valarray[2] == 0)
@@ -208,9 +208,9 @@ namespace ParaDIS {
 #define ARM_MM_111 3 
 #define ARM_MN_111 4
 #define ARM_NN_111 5 
-#define ARM_MM_100 6
-#define ARM_MN_100 7
-#define ARM_NN_100 8
+#define ARM_MM_200 6
+#define ARM_MN_200 7
+#define ARM_NN_200 8
   
   //forward declaration:  
   struct DataSet; 
