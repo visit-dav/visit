@@ -15,15 +15,10 @@ in the F90 directory, you need a symbolic link to your source directory for
 in the C directory, you need a symbolic link to your source directory for
 /path-to-a-file/src/tools/DataManualExamples/Simulations/SimulationExample.h
 
-The CMakeLists.txt files should be modified to include the correct
-path to your VisIt installation. Make sure to choose a parallel C and
-FORTRAN compilers. You can initialize ccmake with
-
-ccmake -DCMAKE_Fortran_COMPILER=mpif90 .
-
-and
-
-ccmake -DCMAKE_C_COMPILER=mpicc .
+The CMakeLists.txt files include a reference to your Visit install directory,
+which is found under $VISITHOME. Make sure this is correctly set.
+Cmake should be able to detect automatically
+which MPI compilers to use for Fortran and C.
 
 A single compile-time flag is used to enable compilation with in-situ coupling.
 The makefiles generate two executables, a standalone MPI program, and an in-situ
@@ -44,6 +39,6 @@ mpiexec -n 4 python ./jacobi_insitu.py
 
 ----------------------------------
 These are examples are provided by:
-Last updated: Mon May 16 2011
+Last updated: Sun Mar 17 12:28:31 CET 2013
 Jean M. Favre of the Swiss National Supercomputing Center, and
 Brad Whitlock from Lawrence Livermore National Laboratory.
