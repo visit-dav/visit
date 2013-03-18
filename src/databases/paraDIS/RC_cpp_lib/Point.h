@@ -114,7 +114,7 @@ namespace rclib {
      /*! 
         Compute magnitude 
       */ 
-        T Magnitude(void) const {
+      T Magnitude(void) const {
         T sum=T(0);
         int i=3;  while (i--) {
           sum += mXYZ[i] * mXYZ[i]; 
@@ -124,7 +124,7 @@ namespace rclib {
      /*! 
         Compares magnitudes to determine equality.  
       */ 
-        bool SameMagnitude(const Point<T> &rhs) const {        
+      bool SameMagnitude(const Point<T> &rhs) const {        
         T sum1=T(0), sum2=T(0);
         int i=3;  while (i--) {
           sum1 += mXYZ[i] * mXYZ[i]; 

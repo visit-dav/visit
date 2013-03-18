@@ -83,10 +83,9 @@
 #include <iostream>
 #include <iomanip>
 
-class timer; 
-int Progress(timer &iTimer, double iNum, double iMax, 
+int Progress(class timer &iTimer, double iNum, double iMax, 
              double &oPercent, double iPercentDelta, 
-             double &oTime, double iTimeDelta, const char *iMsg);
+             double &oTime, double iTimeDelta,  std::string iMsg);
 
 
 using namespace std; 

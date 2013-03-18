@@ -27,8 +27,13 @@
 #define errexit return 
 #define errexit1 return err
 #else
-#define errexit abort() // HOOKS_IGNORE
-#define errexit1 abort() // HOOKS_IGNORE
+#ifdef DEBUG
+#define errexit abort()
+#define errexit1 abort()
+#else
+#define errexit return 
+#define errexit1 return err
+#endif
 #endif
 
 
@@ -222,25 +227,38 @@ namespace paraDIS {
   int32_t Arm::mNextID = 0;
 
   rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
+  
 #endif
   double Arm::mLongestLength = 0.0; 
+  double Arm::mDecomposedLength = 0.0; 
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
 
   double Arm::mThreshold = -1; 
+  std::vector<FullNode *> 
+  FullNode::mFullNodes, FullNode::mUselessNodes, FullNode::mWrappedNodes; 
+  std::vector<ArmSegment *> ArmSegment::mExtendedArmSegments; 
   //===========================================================================
-  std::string Node::Stringify(void) const {
-    std::string s(std::string("(Node): ") + 
-                  mID.Stringify() + string("\n"));
+  std::string Node::Stringify(int indent) const {
+    std::string s = INDENT(indent) + std::string("(Node): ") + 
+                  mID.Stringify(0) + string("\n");
     s += string("(node): In bounds: ") + (mInBounds?"true":"false");
    
     return s; 
   }
   
   //===========================================================================
-  ArmSegment *FullNode::GetOtherNeighbor (const ArmSegment* n) {
+  ArmSegment *FullNode::GetOtherNeighbor(const ArmSegment* n, bool usePointers) {
     if (mNeighborSegments.size() > 2) {
-      throw string("GetOtherNeighbor called, but mNeighborSegments.size() is greater than 2: ")+Stringify(); 
+      throw string("GetOtherNeighbor called, but mNeighborSegments.size() is greater than 2: ")+Stringify(0); 
+    }
+    if (usePointers) {
+      if (mNeighborSegments.size() != 2) {
+        throw string("GetOtherNeighbor called with userPointers = true and mNeighborSegments.size() != 2"); 
+      }
+      if (mNeighborSegments[0] == n) return mNeighborSegments[1]; 
+      if (mNeighborSegments[1] == n) return mNeighborSegments[0];
+      return NULL; 
     }
     if (*mNeighborSegments[0] == *n) {
       if (mNeighborSegments.size() == 1) {
@@ -250,9 +268,25 @@ namespace paraDIS {
     }
     // else mNeighborSegments[0] != n
     if (mNeighborSegments.size() == 1 || *mNeighborSegments[1] != *n) {
-      throw string("GetOtherNeighbor: given segment is not a neighbor of this segment.  This: ")+this->Stringify()+", given: "+n->Stringify();
+      throw string("GetOtherNeighbor: given segment is not a neighbor of this segment.  This: ")+this->Stringify(0)+", given: "+n->Stringify(0);
     }
     return mNeighborSegments[0];
+  }
+  
+  //===========================================================================
+  /*!
+    Replace a neighbor of this node with a new neighbor -- done when wrapping nodes
+  */ 
+  void FullNode::ReplaceNeighbor(ArmSegment *oldseg,  ArmSegment *newseg) {
+    int segnum = mNeighborSegments.size(); 
+    while (segnum--) {
+      if (oldseg == mNeighborSegments[segnum]) {
+        mNeighborSegments[segnum] = newseg;
+        return; 
+      }
+    }
+    string err = str(boost::format("Error: segment %1%  to replace is not a neighbor of node %2%\n")%newseg->Stringify(0)%Stringify(0)); 
+    throw err; 
   }
   
   //===========================================================================
@@ -265,28 +299,23 @@ namespace paraDIS {
   }
   
   //===========================================================================
-  std::string FullNode::Stringify(bool showneighbors) const {
-    std::string s(string("(FullNode address )") + pointerToString(this) + 
-#ifdef DEBUG
-                  " index " + intToString(mNodeIndex) + 
-#endif
-                  " type " + (intToString(mNodeType) + string("\n")) + 
-                  Node::Stringify() + string("\n") +  "Location: ("); 
+  std::string FullNode::Stringify(int indent, bool shortform) const {
+    int ntype = mNodeType ;
+    vector<int> idarray = GetNeighborArmIDs(); 
+    string armids = intArrayToString(idarray); 
+    std::string s = INDENT(indent) + 
+      str(boost::format("FullNode index %1%, %2%, type %3%, neighbor arms: %4%, %5% neighbor segments, location: (%6% %7% %8%), address %9%")
+          % mNodeIndex % mID.Stringify(0) % ntype % armids % mNeighborSegments.size() % mLocation[0] % mLocation[1] % mLocation[2] % this); 
 
-    uint32_t i=0; while (i<3) {
-      s+= doubleToString(mLocation[i]);
-      if (i<2) s+= ", ";
-      ++i; 
-    }
-    s += ")\n"; 
-    if (showneighbors) {
-      s+= "Neighbors:\n"; 
-      i=0; while (i < mNeighborSegments.size()) {
-        s += "neighbor " + intToString(i) + ": "; 
+    if (!shortform) {
+      s += "\n"; 
+      s+= INDENT(indent) + "Neighbors:\n"; 
+      uint32_t i=0; while (i < mNeighborSegments.size()) {
+        s += INDENT(indent) + "neighbor " + intToString(i) + ": "; 
         if (mNeighborSegments[i]) {
-          s+= mNeighborSegments[i]->Stringify();
+          s+= mNeighborSegments[i]->Stringify(indent+1);
         } else { 
-          s += "(NULL)\n"; 
+          s += INDENT(indent+1) + "(NULL)\n"; 
         } 
         ++i; 
       }
@@ -294,84 +323,59 @@ namespace paraDIS {
     return s; 
   }
   //===========================================================================
-  void FullNode::SetNodeType(int8_t itype) {
-    if (itype != -1) {
-      /*! 
-        Simply set the type as requested
-      */ 
-      mNodeType = itype; 
-    } else {
+  void FullNode::ComputeNodeType(void) {
+    /*!
+      set my own type according to what I know -- this covers all nodes except butterfly ends. 
+    */ 
+    
+    mNodeType = mNeighborSegments.size();  // true for vast majority of nodes. 
+    if (mNodeType >= 4) {//four-armed is forewarned!  Oh, I'm funny. 
       /*!
-        set my own type according to what I know -- this covers all nodes except butterfly ends. 
+        check for a monster or special monster 
       */ 
-
-      mNodeType = mNeighborSegments.size();  // true for vast majority of nodes. 
-      if (mNodeType == 4) {//four-armed is forewarned!  Oh, I'm funny. 
-        /*!
-          check for a monster or special monster 
-        */ 
-        int num_111 = 0, num_100 = 0; 
-        int neighbor = 4; 
-        /*!
-          btypes:  used to check for duplicates -- if any two arms are the same type, it's not a monster. There are only 8 types, but they are 1-based, so allocate 9 slots. 
-        */           
-        bool btypes[9] = {false}; 
-        while (neighbor--) {
-          const ArmSegment *theSegment = 
-            dynamic_cast<const ArmSegment *>(mNeighborSegments[neighbor]);
-          int8_t btype =  theSegment->GetBurgersType(); 
-          if (btypes[btype] || btype == BURGERS_UNKNOWN) {
-            return; //not a monster, we're done
-          }
-          btypes[btype] = true; 
-
-          if (btype < 4) num_100++; 
-          else num_111++; 
+      int neighbor = mNodeType; 
+      /*!
+        btypes:  used to check for duplicates -- if any two arms are the same type, it's not a monster. There are only 8 types, but they are 1-based, so allocate 9 slots. 
+      */           
+      bool btypes[60] = {false}; 
+      while (neighbor--) {
+        const ArmSegment *theSegment = 
+          dynamic_cast<const ArmSegment *>(mNeighborSegments[neighbor]);
+        int8_t btype =  theSegment->GetBurgersType(); 
+        if (btypes[btype] || btype < 0) {
+          continue; //not a monster, we're done
         }
-        /*! 
-          We have four uniquely valued arms.  Are they of the right mix? 
-        */  
-        if (num_111 == 4) {
-          mNodeType = -4; 
-        } else if (num_111 == 2 && num_100 == 2 ) {
-          mNodeType = -44; 
-        }
-      }// end if four-armed
-    }
+        btypes[btype] = true; 
+        
+      }
+      /*! 
+        We have four uniquely valued arms.  Are they of the right mix? 
+      */  
+      if (btypes[ BURGERS_PPP] && btypes[ BURGERS_PPM] && 
+          btypes[ BURGERS_PMP] && btypes[ BURGERS_PMM]) {
+        mNodeType = -mNodeType;  // FOUND MONSTER NODE
+      } 
+    }// end if four-armed or higher
+    
     return; 
   }/* end SetNodeType */ 
 
   
   //===========================================================================
-  void ArmSegment::ComputeBurgersType(float burg[3]) {
-    mBurgersType = BURGERS_UNKNOWN;
-
-    int valarray[3] = 
-      {Category(burg[0]), Category(burg[1]), Category(burg[2])};
-    if (valarray[0] == 1 && valarray[1] == 0 && valarray[2] == 0)
-      mBurgersType = BURGERS_100;
-    else if (valarray[0] == 0 && valarray[1] == 1 && valarray[2] == 0)
-      mBurgersType = BURGERS_010;
-    else if (valarray[0] == 0 && valarray[1] == 0 && valarray[2] == 1)
-      mBurgersType = BURGERS_001;
-    else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 2) ||
-             (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 3))
-      mBurgersType = BURGERS_PPP;
-    else if ((valarray[0] == 2 && valarray[1] == 2 && valarray[2] == 3) ||
-             (valarray[0] == 3 && valarray[1] == 3 && valarray[2] == 2))
-      mBurgersType = BURGERS_PPM;
-    else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 2) ||
-             (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 3))
-      mBurgersType = BURGERS_PMP;
-    else if ((valarray[0] == 2 && valarray[1] == 3 && valarray[2] == 3) ||
-             (valarray[0] == 3 && valarray[1] == 2 && valarray[2] == 2))
-      mBurgersType = BURGERS_PMM;
-    else {
-      mBurgersType = BURGERS_UNKNOWN;
-      dbprintf(3, "\n\n********************************\n");
-      dbprintf(3, "Warning: segment has odd value/category: value = %d, burg = (%f, %f, %f), valarray=(%d, %d, %d)\n", mBurgersType, burg[0], burg[1], burg[2], valarray[0], valarray[1], valarray[2]); 
-      dbprintf(3, "\n********************************\n\n");
+  const std::vector< int> FullNode::GetNeighborArmIDs(void) const {
+    vector<int> ids; 
+    vector<Arm*>::const_iterator armpos = mNeighborArms.begin(); 
+    while (armpos != mNeighborArms.end()) {
+      ids.push_back((*armpos)->mArmID); 
+      ++armpos; 
     }
+    return ids; 
+  }
+  
+  
+  //===========================================================================
+  void ArmSegment::ComputeBurgersType(float burg[3]) {
+    mBurgersType = InterpretBurgersType(burg); 
     return; 
   }
   
@@ -379,6 +383,11 @@ namespace paraDIS {
   bool ArmSegment::Wrap(const rclib::Point<float> &dataSize, 
                         ArmSegment *&oNewSegment, 
                         FullNode *&oWrapped0, FullNode *&oWrapped1) {
+    if (mBurgersType == BURGERS_DECOMPOSED) {
+      // do not wrap these
+      return false; 
+    }
+
     const float *loc0 = mEndpoints[0]->GetLocation(), 
       *loc1 = mEndpoints[1]->GetLocation();     
     float shift_amt[3] = {0}; 
@@ -394,7 +403,7 @@ namespace paraDIS {
 
     if (!wrap) {
       oWrapped0 = NULL; oWrapped1 = NULL; oNewSegment = NULL; 
-      dbprintf(5, "Not wrapped: %s\n", Stringify().c_str()); 
+      dbprintf(5, "Not wrapped: %s\n", Stringify(0).c_str()); 
       gSegLen += GetLength(); 
       return false; 
     }
@@ -457,7 +466,7 @@ namespace paraDIS {
      
     */
     gSegLen += GetLength(); 
-    dbprintf(5, "Wrapped: %s\n", Stringify().c_str()); 
+    dbprintf(5, "Wrapped: %s\n", Stringify(0).c_str()); 
     return true; 
   }
 
@@ -465,20 +474,27 @@ namespace paraDIS {
 
 
   //===========================================================================
+  /* Returns true if the arm has four unique type "111" burgers vectors represented in the exterior arms, but no type "200" burgers vectors types.  Assumes arm has at least one 3-armed endpoint, and the other must be either 3 or 5 armed. */
+  /* Changes:  2012-06-08 Allow 5 armed endpoints to be included in the check.  But we still do not allow type 200 arms to be included.
+   */ 
   bool Arm::HaveFourUniqueType111ExternalArms(void) {
 
     if (mTerminalNodes.size() != 2) return false;
 
-    int btypes[9] = {false}; 
+    // enforce "at least one 3 armed endpoint" condition
+    if (mTerminalNodes[0]->GetNumNeighbors() != 3 && mTerminalNodes[1]->GetNumNeighbors() != 3 ) return false;
+
+    int btypes[13] = {false}; 
     int nodenum = 2; 
     while (nodenum--) {
       FullNode *thisNode = mTerminalNodes[nodenum]; 
       int neighbornum = thisNode->GetNumNeighbors(); 
 
-      if (neighbornum != 3) return false; 
+      // enforce "endpoint must have 3 arms or 5 arms" condition. 
+      if (neighbornum != 3 && neighbornum != 5) return false; 
 
       while (neighbornum--) {
-        const ArmSegment *thisSegment = thisNode->GetNeighbor(neighbornum);
+        const ArmSegment *thisSegment = thisNode->GetNeighborSegment(neighbornum);
         /*!
           Only check exterior segments (those which don't belong to *this).
         */ 
@@ -486,15 +502,72 @@ namespace paraDIS {
             thisSegment == mTerminalSegments[1]) continue; 
 
         int btype = thisSegment->GetBurgersType(); 
-        if (btype <= 3 || btype == 8 || btypes[btype]) return false; 
+        // if (btype <= 3 /*  || btype == 8 || btypes[btype]*/ ) return false; 
         btypes[btype] = true; 
       }
     }
+    
     /*! 
-      At this point, we know that we have four unique type 111 arms 
+      At this point, have we seen four unique type 111 arms?
     */ 
-    return true;  
+    return btypes[4] && btypes[5] && btypes[6] && btypes[7];  
   }/* end HaveFourUniqueType111ExternalArms */ 
+
+  //===========================================================================
+  string Arm::StringifyExternalArms(int indent) const {
+    if (mTerminalNodes.size() == 0) return "(no terminal nodes)";
+    string s1 = INDENT(indent)+"<"; // , s2 = ", <"; 
+    int nodenum = mTerminalNodes.size(); 
+    while (nodenum--) {
+      FullNode *thisNode = mTerminalNodes[nodenum]; 
+      int neighbornum = thisNode->mNeighborArms.size(); 
+      
+      while (neighbornum--) {
+        const Arm *arm = thisNode->GetNeighborArm(neighbornum);
+        /*!
+          Only check exterior segments (those which don't belong to *this).
+        */ 
+        if (arm == this) continue; 
+         s1 += str(boost::format("%1% %2% ")
+                   % arm->mArmID % BurgersTypeNames(arm->GetBurgersType())); 
+      }
+    }
+    return s1 + ">"; 
+  }
+  
+  //===========================================================================
+  bool Arm::HaveTwoMatchingType111ExternalArms(void) {
+    int btypes[13] = {false };
+    if (mTerminalNodes.size() != 2) return false;
+    int nodenum = 2; 
+    while (nodenum--) {
+      FullNode *thisNode = mTerminalNodes[nodenum]; 
+      int neighbornum = thisNode->GetNumNeighbors(); 
+      
+      while (neighbornum--) {
+        const ArmSegment *thisSegment = thisNode->GetNeighborSegment(neighbornum);
+        /*!
+          Only check exterior segments (those which don't belong to *this).
+        */ 
+        if (thisSegment == mTerminalSegments[0] || 
+            thisSegment == mTerminalSegments[1]) continue; 
+        
+        int btype = thisSegment->GetBurgersType(); 
+        if (btype > 3 && btype < 8 && btypes[btype]) {
+          return true; 
+        } 
+        
+        btypes[btype] = true; 
+        
+      }
+    }
+    
+    /*! 
+      At this point, we know that none of our 111 neighbors are matched to each other
+    */ 
+    return false;  
+  }/* end  HaveTwoMatchingType111ExternalArms */ 
+    
 
 #if LINKED_LOOPS
   //===========================================================================
@@ -523,7 +596,7 @@ namespace paraDIS {
       }
       
       while (neighborNum --) {
-        Arm *neighbor = (*termNode)->GetNeighbor(neighborNum)->mParentArm; 
+        Arm *neighbor = (*termNode)->GetNeighborArm(neighborNum); 
         bool knownNeighbor = (neighbor == this); 
         if (!knownNeighbor && 
             neighbor->mCheckedForLinkedLoop) {
@@ -582,20 +655,10 @@ namespace paraDIS {
 #endif // LINKED_LOOPS
   
   //===========================================================================
-  void Arm::ComputeLength(void) {
-    mArmLength = 0; 
-    // first figure out how to iterate.
-    ArmSegment *startSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
-    FullNode *startNode = NULL;  
-    if (startSegment->GetEndpoint(0) == mTerminalNodes[0] ||
-        startSegment->GetEndpoint(1) == mTerminalNodes[0]) {
-      startNode = mTerminalNodes[0];
-    } else if (mTerminalNodes.size() == 2 && 
-               ( startSegment->GetEndpoint(0) == mTerminalNodes[1] ||
-                 startSegment->GetEndpoint(1) == mTerminalNodes[1])) {
-      startNode = mTerminalNodes[1];
-    } else {
-      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
+  double Arm::ComputeLength(void) {
+    //dbprintf(5, "ComputeLength called on arm %d\n", mArmID); 
+    if (!mNumSegments) {
+      mArmLength = 0; 
     } 
 
     else {
@@ -644,33 +707,34 @@ namespace paraDIS {
       errexit1; 
     } 
     ArmSegment *lastSegment = NULL; 
-    if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
-    else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
+    if (mTerminalSegments.size() > 1)  
+      lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1-segnum]); 
     
     // now compute the length of the arm
     FullNode *currentNode = startNode; 
     ArmSegment *currentSegment = startSegment; 
     while (true) {
-      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
-      mArmLength += currentSegment->GetLength(true); 
+      segments.push_back(currentSegment); 
       if (currentSegment == lastSegment) {
         break; 
       }
       currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
-    }
-    if (mArmLength > mLongestLength) mLongestLength = mArmLength; 
-    return; 
+      if (currentNode->GetNumNeighbors() != 2 || currentNode == startNode) {
+        break; 
+      }
+      currentSegment = currentNode->GetOtherNeighbor(currentSegment, true);       
+    } 
+    return segments;
   }
-    
-  
+
   //===========================================================================
   void Arm::Classify(void) {
     int err = -1; 
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
 #endif
-
+    if (!mNumSegments) return; 
+    dbprintf(5, "Classifying arm %s\n", Stringify(0, false).c_str()); 
     if (mTerminalNodes.size() == 1) {
       mArmType = ARM_LOOP; 
     } else {
@@ -681,11 +745,11 @@ namespace paraDIS {
       } else {
         mArmType = ARM_NN_111; 
       }
-      
-      // This changes _111 to _100 by definition
+            
+      // This changes _111 to _200 by definition
       int btype = mTerminalSegments[0]->GetBurgersType(); 
-      if (btype <= 3) {
-        mArmType += 3; 
+      if (btype == BURGERS_NONE || btype == BURGERS_UNKNOWN) {
+        mArmType = ARM_UNKNOWN; 
       }
       else if (btype != BURGERS_PPP && btype != BURGERS_PPM && 
                btype != BURGERS_PMP && btype != BURGERS_PMM) {
@@ -697,56 +761,25 @@ namespace paraDIS {
     /*!
       Now compute the length of the arm to enable "short arm" marking, then mark all segments with their MN type. 
     */ 
-    // first figure out how to iterate.
-    ArmSegment *startSegment = const_cast<ArmSegment*>(mTerminalSegments[0]);
-    FullNode *startNode = NULL;  
-    if (startSegment->GetEndpoint(0) == mTerminalNodes[0] ||
-        startSegment->GetEndpoint(1) == mTerminalNodes[0]) {
-      startNode = mTerminalNodes[0];
-    } else if (mTerminalNodes.size() == 2 && 
-               ( startSegment->GetEndpoint(0) == mTerminalNodes[1] ||
-                 startSegment->GetEndpoint(1) == mTerminalNodes[1])) {
-      startNode = mTerminalNodes[1];
-    } else {
-      throw string("Cannot find matching terminal node in arm for either segment endpoint"); 
-    } 
-    ArmSegment *lastSegment = NULL; 
-    uint32_t numSeen = 0; 
-    if (mTerminalSegments.size() == 1)  lastSegment = startSegment; 
-    else lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1]); 
+    ComputeLength(); 
 
-    // now compute the length of the arm
-    FullNode *currentNode = startNode; 
-    ArmSegment *currentSegment = startSegment; 
-    while (true) {
-      dbprintf(5, "Adding length for %s\n", currentSegment->Stringify().c_str()); 
-      mArmLength += currentSegment->GetLength(); 
-      if (currentSegment == lastSegment) {
-        break; 
-      }
-      currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
-    }
-    
     /*!
-      Now set every segment in this arm to the same type
+      Now set every segment in this arm to the same type so they can be drawn correctly
     */ 
-    currentNode = startNode; 
-    currentSegment = startSegment; 
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111; 
-      if (mArmType == ARM_NN_100) mArmType = ARM_SHORT_NN_100; 
+      if (mArmType == ARM_NN_200) mArmType = ARM_SHORT_NN_200; 
     }
-    while (true) {
-      dbprintf(5, "Classifying segment %s\n", currentSegment->Stringify().c_str()); 
-      currentSegment->SetMNType(mArmType);
+
+    uint32_t numSeen = 0; 
+    vector<ArmSegment*> segments = GetSegments(); 
+    vector<ArmSegment*>::iterator segpos = segments.begin();
+    while (segpos != segments.end()) {
+      dbprintf(5, "Classifying segment %s\n", (*segpos)->Stringify(0).c_str()); 
+      (*segpos)->SetMNType(mArmType);
+      segpos++; 
       gNumClassified++; 
       numSeen ++; 
-      if (currentSegment == lastSegment) {
-        break; 
-      }
-      currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-      currentSegment = currentNode->GetOtherNeighbor(currentSegment);       
     }
   
 #ifdef DEBUG
@@ -759,6 +792,7 @@ namespace paraDIS {
     return; 
   }
   
+
   //===========================================================================
   void Arm::ExtendByArm(Arm *sourceArm, FullNode *sharedNode) {
     // identify the shared terminal node in the neighbor arm:     
@@ -815,8 +849,20 @@ namespace paraDIS {
 
     // int nonSharedNum = 1-sharedNodeNum; 
     
-    /*!
-      first check node 0 against node 1, then node 1 against node 0
+    int sourceNonSharedNum = sourceSharedNodeNum; 
+    if (sourceArm->mTerminalNodes.size() != 1) {
+      sourceNonSharedNum = 1-sourceNonSharedNum; 
+    }    
+
+    FullNode *newNode = new FullNode(*sharedNode, true); 
+    newNode->SetIndex(); 
+    FullNode::mFullNodes.push_back(newNode); 
+    //dbprintf(5, "Created an initial interior node %d as copy of shared terminal node %d\n", newNode->GetIndex(), sharedNode->GetIndex()); 
+  
+    /*
+      Find a terminal segment that has the old shared node as an endpoint. 
+      For loops, this would be both, so just work on the first one here.  
+      Replace the old shared node as its endpoint using our new interior node. 
     */ 
     int sharedSegmentNum = mTerminalSegments.size(); 
     while(sharedSegmentNum--) {
@@ -845,16 +891,43 @@ namespace paraDIS {
     while (seg < sourceSegments.size()) {
       sourceNode = sourceSegments[seg]->GetOtherEndpoint(sourceNode);
       
-      int firstNodeType = firstNode->GetNodeType(), 
-        otherNodeType =otherNode->GetNodeType();
+      FullNode *previousNewNode = newNode; 
+      if (seg == sourceSegments.size()-1) {
+        newNode = sourceNonSharedNode;
+        //dbprintf(5, "ExtendByArm(): Arm segment #%d (last segment): Using source arm's nonshared terminal node %d as newNode.\n", seg, newNode->GetIndex()); 
+      } else {
+        newNode = new FullNode(*sourceNode, true); 
+        newNode->SetIndex(); 
+        FullNode::mFullNodes.push_back(newNode); 
+        //dbprintf(5, "ExtendByArm(): Arm segment #%d: Created newNode %d by copying source node %d.\n", seg, newNode->GetIndex(), sourceNode->GetIndex()); 
+      }
+
+      interiorSegment = new ArmSegment(*sourceSegments[seg]); 
+      sourceSegments[seg]->SetBurgersType(BURGERS_DECOMPOSED); 
+      //dbprintf(5, "ExtendByArm(): Setting source segment %d as BURGERS_DECOMPOSED.\n", sourceSegments[seg]->mSegmentID); 
+      ArmSegment::mExtendedArmSegments.push_back(interiorSegment); 
       
-      if (firstNodeType == 3 && otherNodeType ==  -44) {
-        /*! 
-          type3node is a "special butterfly"  
-          Note -- we don't check if firstNodeType is -33 -- would be redundant.
-          We don't check if firstNodeType is -3, because -33 "loses" to -3. 
-        */ 
-        firstNode->SetNodeType(-33); 
+#if LINKED_LOOPS
+      interiorSegment->mParentArm = this; 
+#endif
+      interiorSegment->SetBurgersType(btype); 
+      interiorSegment->SetEndpoints(previousNewNode, newNode); 
+      interiorSegment->SetID(); 
+      previousNewNode->AddNeighbor(interiorSegment); 
+      newNode->AddNeighbor(interiorSegment); 
+      ++mNumSegments; 
+      //dbprintf(5, "ExtendByArm(): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str()); 
+      //dbprintf(5, "ExtendByArm(): Arm segment #%d: Added newNode: %s\n", seg, newNode->Stringify(0).c_str()); 
+      
+      ++ seg; 
+    }
+    //newNode->ComputeNodeType(); 
+    //dbprintf(5, "ExtendByArm: replacing terminal segment %d (index %d) with final interiorSegment (%d)\n", sharedSegmentNum, mTerminalSegments[sharedSegmentNum]->mSegmentID, interiorSegment->mSegmentID); 
+    mTerminalSegments[sharedSegmentNum] = interiorSegment; 
+    newNode->AddNeighbor(this); 
+
+    //dbprintf(5, "ExtendByArm: replacing terminal node %d (index %d) with final newNode (%d), which is source arm's other terminal node. \n", sharedNodeNum, mTerminalNodes[sharedNodeNum]->GetIndex(), newNode->GetIndex()); 
+    mTerminalNodes[sharedNodeNum] = newNode;
         
     if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
       // dbprintf(5, "ExtendByArm(): After extending the arm it now forms a loop.  Consolidating terminal nodes.\n"); 
@@ -923,33 +996,125 @@ namespace paraDIS {
          allNeighborArmIDs.push_back(neighborArm->mArmID); 
          maxEnergies[termnode] = neighborArm->GetBurgersType()/10;
         }
+        ++neighbor; 
+      }
+      dbprintf(5, "numneighbors[%d] = %d, maxEnergies[%d] = %d\n", termnode, numneighbors[termnode], termnode, maxEnergies[termnode]); 
+      ++termnode; 
+    }
+    if (numneighbors[0] < numneighbors[1]) {
+      dbprintf(5, "Choosing terminal node 0 because it has fewer neighbors.\n");
+      sharedNodeNum = 0; 
+    } else if  (numneighbors[1] < numneighbors[0]) {
+      dbprintf(5, "Choosing terminal node 1 because it has fewer neighbors.\n");
+      sharedNodeNum = 1; 
+    } else {
+      // have to look at max energy levels now.  :-( 
+      if (maxEnergies[0] < maxEnergies[1]) {
+        dbprintf(5, "Choosing terminal node 0 because it has lower max energy.\n");
+        sharedNodeNum = 0;
+      } else {
+        dbprintf(5, "Choosing terminal node 1 because it has lower max energy.\n");
+        sharedNodeNum = 1;
+      }      
+    }
+    //dbprintf(5, "mTerminalNodes[%d] is %s\n",sharedNodeNum,  mTerminalNodes[sharedNodeNum]->Stringify(0).c_str()); 
+    FullNode *sharedNode = mTerminalNodes[sharedNodeNum];
+
+   /* 
+       Extend all neighbor arms along our length.  
+       Formerly terminal nodes will become internal to multiple arms.  
+    */ 
+    // copy our neighbor vector before it changes... 
+    vector <Arm*> neighborArms = sharedNode->mNeighborArms; 
+    int neighbornum = neighborArms.size(); 
+    double decomposedLength = 0; 
+    while (neighbornum--) {
+      Arm *neighborArm = neighborArms[neighbornum]; 
+      if (neighborArm != this) { 
+        //dbprintf(5, "Adding self to arm %s\n", neighborArm->Stringify(0,true).c_str());
+        neighborArm->ExtendByArm(this, sharedNode);
+        decomposedLength += mArmLength; 
+        extendedArmIDs.push_back(neighborArm->mArmID); 
+        // if (mArmID == 130580 || mArmID == 130448) {
+        //  dbprintf(5, "After extension, arm %d segments are: %s\n", 
+        //           mArmID, GetSegmentsAsString().c_str()); 
+        // }
       }
     }
-    return ;
-  }/* end CheckForButterfly()*/ 
-
+    if (decomposedLength > 0) {
+      decomposedLength -= mArmLength; // because we delete ourself once
+    }
+    mDecomposedLength += decomposedLength; 
+     /*
+      Now remove our terminal segments from our terminal nodes' neighbor lists. 
+    */     
+    int termNodeNum = mTerminalNodes.size();     
+    while (termNodeNum--) {
+      int termSegmentNum = mTerminalSegments.size(); 
+      while (termSegmentNum--) {
+        mTerminalNodes[termNodeNum]->RemoveNeighbor(mTerminalSegments[termSegmentNum], true); 
+      }
+      mTerminalNodes[termNodeNum]->RemoveNeighbor(this, true); 
+    }
+    /*     dbprintf(5, str(boost::format("After being absorbed into arms %1%, the Arm looks like this: %2%. It originally had neighbors %3%\n") % intArrayToString(extendedArmIDs) % Stringify(0, false) % intArrayToString(allNeighborArmIDs)).c_str()); 
+        
+    dbprintf(5, "After decomposing, the non-shared node looks like this: %s\n", mTerminalNodes[1-sharedNodeNum]->Stringify(0).c_str()); 
+    */ 
+    // refer back to original neighbors
+    /*    vector<Arm*>::iterator armpos = neighborArms.begin(); 
+          while (armpos != neighborArms.end()) {
+          if (*armpos != this) {
+          int termNodeNum = (*armpos)->mTerminalNodes.size(); 
+          while (termNodeNum--) {
+          if ((*armpos)->mTerminalNodes[termNodeNum]->mNeighborArms.size() == 2){
+          dbprintf(5, "After decomposing, we have a neighbor arm %d with only two neighbors at terminal node %s\n", (*armpos)->mArmID, (*armpos)->mTerminalNodes[termNodeNum]->Stringify(0).c_str()); 
+          }
+          }
+          }
+          ++armpos; 
+          }
+    */
+    mTerminalNodes.clear(); 
+    mTerminalSegments.clear(); 
+    mArmLength = 0; 
+    mNumSegments = 0; 
+    mArmType = ARM_EMPTY;
+    dbprintf(4, "Arm decomposition complete.\n"); 
+    return true;    
+  }
+  
   //===========================================================================
-  std::string Arm::Stringify(void) const {
-    std::string s  = string("(arm): ") + 
-#ifdef DEBUG
-      "number " + intToString(mArmID) + 
-      ", numSegments = " +intToString(mNumSegments) +
-      ", length = " +doubleToString(GetLength()) +
-#endif
-      ", Type " +  intToString(mArmType);
+  std::string Arm::Stringify(int indent, bool shortform) const {
+    string seen = "false"; 
+    if (mSeen) seen = "true"; 
+    string seenMeta = "false"; 
+    if (mSeenInMeta) seenMeta = "true"; 
+    int btype = GetBurgersType();
+    int atype = mArmType; 
+    string btypestring = BurgersTypeNames(GetBurgersType()); 
+    string armtypestring = ArmTypeNames(mArmType);
+    std::string s  = INDENT(indent) + 
+      str(boost::format("(arm): number %1%, mSeen = %2%, mSeenInMeta = %3%, numSegments = %4%, length = %5%, Burgers = %6% (%7%), Type = %8% (%9%), ExternalArms = %10%") 
+          % mArmID % seen % seenMeta % mNumSegments % GetLength() % btype % btypestring % atype % armtypestring  % StringifyExternalArms(0)); 
+
 #if LINKED_LOOPS
     if (mPartOfLinkedLoop) {
-      s += ", is part of linked loop.\n"; 
+      s += ", is part of linked loop."; 
     } else {
-      s += ", is NOT part of linked loop.\n"; 
+      s += ", is NOT part of linked loop."; 
     }
+#else 
+    s += "\n";
 #endif 
+
+    if (shortform) 
+      return s; 
 
     int num = 0, max = mTerminalNodes.size(); 
     while (num < max) {
-      s+= "Terminal Node " + intToString(num) + string(": ");
+      s+= INDENT(indent+1) + "Terminal Node " + intToString(num) + string(": ");
       if (mTerminalNodes[num]) {
-        s += mTerminalNodes[num]->Stringify() + string("\n"); 
+        s += mTerminalNodes[num]->Stringify(0) + string("\n"); 
       } else {
         s += "(NULL)\n"; //deleted because it was useless.  
       }
@@ -957,16 +1122,18 @@ namespace paraDIS {
     }
     max = mTerminalSegments.size(); num = 0; 
     while (num < max) {
-      s+= "Terminal Segment " + intToString(num) + string(": "); 
+      s+= INDENT(indent+1) + "Terminal Segment " + intToString(num) + string(": "); 
       if (mTerminalSegments[num]) {
-        s += mTerminalSegments[num]->Stringify() + string("\n"); 
+        s += mTerminalSegments[num]->Stringify(indent + 1) + string("\n"); 
       } else {
         s+= "(NULL)\n"; 
       }
       ++num; 
     }
-     return s; 
+    //s += StringifyExternalArmTypes(indent+1); 
+    return s; 
   }
+
   //===========================================================================
   string MetaArm::Stringify(int indent) {
     int atype = mMetaArmType;
@@ -1254,28 +1421,32 @@ namespace paraDIS {
     }
     //NN types corresponding to burgers values of the NN arms:    
     const char *armTypes[7] = {
-      "NN_100", 
-      "NN_010", 
-      "NN_001", 
+      "NN_200", 
+      "NN_020", 
+      "NN_002", 
       "NN_+++",
       "NN_++-",
       "NN_+-+",
       "NN_-++"
     };
     
-    double shortLengths[7] = {0}, longLengths[7]={0}; 
-    uint32_t numShortArms[7]={0}, numLongArms[7]={0}; 
+    double shortLengths[16] = {0}, longLengths[16]={0}; 
+    uint32_t numShortArms[16]={0}, numLongArms[16]={0}; 
 
-    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
+    vector<Arm *>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) { 
-      double length = armpos->GetLength(); 
-      int armType = armpos->mArmType; 
+      double length = (*armpos)->GetLength(); 
+      int armType = (*armpos)->mArmType; 
+      if (armType == ARM_EMPTY) {
+        ++armpos; 
+        continue; 
+      }
       if (mThreshold >= 0) {
-        int8_t btype = armpos->GetBurgersType(); 
+        int8_t btype = (*armpos)->GetBurgersType(); 
         if (!btype) {
           printf("Error:  armpos has no terminal segments!\n"); 
         }
-        if (armType == ARM_SHORT_NN_111 || armType == ARM_SHORT_NN_100 ) {
+        if (armType == ARM_SHORT_NN_111 || armType == ARM_SHORT_NN_200 ) {
           numShortArms[btype-1]++;
           shortLengths[btype-1] += length; 
         }
@@ -1285,7 +1456,7 @@ namespace paraDIS {
         }       
       }
       if (mNumBins) {
-        int binNum = length/Arm::mLongestLength * mNumBins; 
+        int binNum = (int)((double)length/Arm::mLongestLength * mNumBins); 
         if (binNum == mNumBins) binNum = mNumBins-1; 
         if (binNum > mNumBins || binNum < 0) {
           printf("Error:  binNum %d is invalid (num bins is %d)\n", binNum, mNumBins); 
@@ -1300,7 +1471,7 @@ namespace paraDIS {
       
       totalArms++; 
 #if LINKED_LOOPS
-      if (armpos->mPartOfLinkedLoop) {
+      if ((*armpos)->mPartOfLinkedLoop) {
         numLinkedLoops ++; 
         linkedLoopLength += length; 
       }
@@ -1308,100 +1479,93 @@ namespace paraDIS {
       ++armpos; 
     }
     
-    const char *armTypeNames[11] = 
-      { "ARM_UNKNOWN",
-        "ARM_UNINTERESTING",
-        "ARM_LOOP",
-        "ARM_MM_111" ,
-        "ARM_MN_111",
-        "ARM_NN_111" ,
-        "ARM_MM_100",
-        "ARM_MN_100",
-        "ARM_NN_100",
-        "ARM_SHORT_NN_111",
-        "ARM_SHORT_NN_100"
-      };
-    printf("\n"); 
-    printf("===========================================\n"); 
-    printf("total Number of arms: %d\n", totalArms); 
-    printf("total length of all arms: %.2f\n", totalArmLength); 
-    printf("Number of segments classified in arm: %d\n", gNumClassified); 
-    printf("Number of segments measured in arm: %d\n", gNumArmSegmentsMeasured); 
-    printf("Number of segments wrapped: %d\n", gNumWrapped); 
-    printf("===========================================\n"); 
+    fprintf(thefile, "\n"); 
+    fprintf(thefile, "===========================================\n"); 
+    fprintf(thefile, "total Number of non-empty arms: %d\n", totalArms); 
+    fprintf(thefile, "total length of all arms before decomposition: %.2f\n", mTotalArmLengthBeforeDecomposition); 
+    fprintf(thefile, "total length of all arms after decomposition: %.2f\n", mTotalArmLengthAfterDecomposition); 
+    fprintf(thefile, "Total decomposed length (computed independently): %.2f\n", Arm::mDecomposedLength); 
+    double ratio = (Arm::mDecomposedLength + mTotalArmLengthBeforeDecomposition) / mTotalArmLengthAfterDecomposition;
+    if (ratio - 1.0 > 0.00001) {
+      string errmsg = str(boost::format("\n\nError:  mDecomposedLength + mTotalArmLengthAfterDecomposition != mTotalArmLengthBeforeDecomposition (ratio is %1%)!\n\n\n")%ratio);
+      cerr  << errmsg; 
+      fprintf(thefile,  errmsg.c_str()); 
+    }
+    fprintf(thefile, "Number of segments classified in arm: %d\n", gNumClassified); 
+    fprintf(thefile, "Number of segments measured in arm: %d\n", gNumArmSegmentsMeasured); 
+    fprintf(thefile, "Number of segments wrapped: %d\n", gNumWrapped); 
+    fprintf(thefile, "===========================================\n"); 
     int i = 0; for (i=0; i<11; i++) {
-      printf("%s: number of arms = %d\n", armTypeNames[i], numArms[i]);
-      printf("%s: total length of arms = %.2f\n", armTypeNames[i], armLengths[i]); 
-      printf("----------------------\n"); 
+      fprintf(thefile, "%s: number of arms = %d\n", ArmTypeNames(i).c_str(), numArms[i]);
+      fprintf(thefile, "%s: total length of arms = %.2f\n", ArmTypeNames(i).c_str(), armLengths[i]); 
+      fprintf(thefile, "----------------------\n"); 
     }
 #if LINKED_LOOPS
-    printf("LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
-    printf("LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
-    printf("----------------------\n"); 
+    fprintf(thefile, "LINKED LOOPS: total number of arms = %d\n", numLinkedLoops); 
+    fprintf(thefile, "LINKED LOOPS: total length of arms = %.2f\n", linkedLoopLength); 
+    fprintf(thefile, "----------------------\n"); 
 #endif
 
     // write a row of arm lengths to make analysis via spreadsheet easier
-    printf("Key: UNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_100\tMN_100\tNN_100\tSHORT_NN_111\tSHORT_NN_100\n"); 
+    fprintf(thefile, "Key: \nUNKNOWN\tUNINTRSTNG\tLOOP\tMM_111\tMN_111\tNN_111\tMM_200\tMN_200\tNN_200\tSHORT_NN_111\tSHORT_NN_200\n"); 
     int n = 0; 
     while (n<11) {
-      printf("%.2f\t",  armLengths[n]); 
+      fprintf(thefile, "%.2f\t",  armLengths[n]); 
       ++n;
     }
 
            
     
     if (mThreshold >= 0.0) {
-      printf("\n\n----------------------\n"); 
-      printf("THRESHOLD data.  Threshold = %.2f\n", mThreshold); 
+      fprintf(thefile, "\n\n----------------------\n"); 
+      fprintf(thefile, "THRESHOLD data.  Threshold = %.2f\n", mThreshold); 
       int n = 0; 
-      for (n=0; n<7; n++) {       
-        printf("----------------------\n"); 
-        printf("Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]); 
-        printf("Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]); 
-        printf("Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]); 
-        printf("Total length of %s arms shorter than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
-        printf("Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]); 
-        printf("Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]); 
-        printf("\n"); 
+      for (n=0; n<16; n++) {       
+        fprintf(thefile, "----------------------\n"); 
+        fprintf(thefile, "Total number of %s arms: %d\n", armTypes[n], numShortArms[n] + numLongArms[n]); 
+        fprintf(thefile, "Total length of %s arms: %.2f\n", armTypes[n], shortLengths[n] + longLengths[n]); 
+        fprintf(thefile, "Number of %s arms SHORTER than threshold = %d\n", armTypes[n], numShortArms[n]); 
+        fprintf(thefile, "Total length of %s arms shorter than threshold = %.2f\n", armTypes[n], shortLengths[n]); 
+        fprintf(thefile, "Number of %s arms LONGER than threshold = %d\n", armTypes[n], numLongArms[n]); 
+        fprintf(thefile, "Total length of %s arms longer than threshold = %.2f\n", armTypes[n], longLengths[n]); 
+        fprintf(thefile, "\n"); 
       }
     }
     
     // write a row of arm lengths to make analysis via spreadsheet easier
-    printf("----------------------\n"); 
-    printf("Key: NN_100\tNN_010\tNN_001\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n"); 
-    printf("SHORT ARM LENGTHS:\n"); 
-    n=0; while (n<7) {
-      printf("%.2f\t",  shortLengths[n]); 
+    fprintf(thefile, "----------------------\n"); 
+    fprintf(thefile, "Key: NN_200\tNN_020\tNN_002\tNN_+++\tNN_++-\tNN_+-+\tNN_-++\n"); 
+    fprintf(thefile, "SHORT ARM LENGTHS:\n"); 
+    n=0; while (n<16) {
+      fprintf(thefile, "%.2f\t",  shortLengths[n]); 
       ++n;
     }
-    printf("\nLONG ARM LENGTHS:\n"); 
-    n = 0; while (n<7) {
-      printf("%.2f\t",  longLengths[n]); 
+    fprintf(thefile, "\nLONG ARM LENGTHS:\n"); 
+    n = 0; while (n<16) {
+      fprintf(thefile, "%.2f\t",  longLengths[n]); 
       ++n;
     }
-    printf("\n"); 
+    fprintf(thefile, "\n"); 
 
-    printf("----------------------\n\n\n"); 
+    fprintf(thefile, "----------------------\n\n\n"); 
 
     if (mNumBins) {
       // print a row of bin values
-      printf("BINS: \n");
-      printf("max length = %.3f\n", Arm::mLongestLength); 
+      fprintf(thefile, "BINS: \n");
+      fprintf(thefile, "max length = %.3f\n", Arm::mLongestLength); 
       
       long totalArms = 0; // reality check
       double totalLength = 0;  // reality check
       string line; 
       int binNum = 0; 
-      printf("%-12s%-12s%-12s\n", "Bin", "Arms", "Lengths"); 
+      fprintf(thefile, "%-12s%-12s%-12s\n", "Bin", "Arms", "Lengths"); 
       for (binNum = 0; binNum < mNumBins; ++binNum) {
-        printf("%-12d%-12ld%-12.3f\n", binNum, armBins[binNum], armLengthBins[binNum]); 
+        fprintf(thefile, "%-12d%-12ld%-12.3f\n", binNum, armBins[binNum], armLengthBins[binNum]); 
         totalArms += armBins[binNum];
         totalLength += armLengthBins[binNum];
       }
-      printf("%-12s%-12ld%-12.3f\n", "TOTAL", totalArms, totalLength); 
+      fprintf(thefile, "%-12s%-12ld%-12.3f\n", "TOTAL", totalArms, totalLength); 
     }
-    free(armLengthBins);
-    free(armBins);
 
 #ifdef DEBUG_SEGMENTS
     // check against segment lengths: 
@@ -1424,22 +1588,22 @@ namespace paraDIS {
       ++segpos; 
     }
     
-    printf("===========================================\n"); 
-    printf("REALITY CHECK:  total length of all segments, skipping wrapped segments\n"); 
-    printf("total Number of segments: %d\n", totalSegments); 
-    printf("total length of all segments: %.2f\n", totalSegmentLength); 
-    printf("===========================================\n"); 
+    fprintf(thefile, "===========================================\n"); 
+    fprintf(thefile, "REALITY CHECK:  total length of all segments, skipping wrapped segments\n"); 
+    fprintf(thefile, "total Number of segments: %d\n", totalSegments); 
+    fprintf(thefile, "total length of all segments: %.2f\n", totalSegmentLength); 
+    fprintf(thefile, "===========================================\n"); 
     for (i=0; i<11; i++) {
-      printf("%s: number of segs = %d\n", armTypeNames[i], numArms[i]);
-      printf("%s: total length of segments = %.2f\n", armTypeNames[i], armLengths[i]); 
-      printf("----------------------\n"); 
+      fprintf(thefile, "%s: number of segs = %d\n", ArmTypeNames(i).c_str(), numArms[i]);
+      fprintf(thefile, "%s: total length of segments = %.2f\n", ArmTypeNames(i).c_str(), armLengths[i]); 
+      fprintf(thefile, "----------------------\n"); 
     }
     
-    printf("CULLED segments = %d\n", culledSegments); 
-    printf("CULLED length = %.2f\n", culledLength); 
+    fprintf(thefile, "CULLED segments = %d\n", culledSegments); 
+    fprintf(thefile, "CULLED length = %.2f\n", culledLength); 
     
-    printf("Wrapped lengths: %.2f\n", gSegLen); 
-    printf("----------------------\n\n\n"); 
+    fprintf(thefile, "Wrapped lengths: %.2f\n", gSegLen); 
+    fprintf(thefile, "----------------------\n\n\n"); 
 #endif
    return; 
   }
@@ -1613,15 +1777,14 @@ namespace paraDIS {
     // done reading neighbor information
     theNode.SetFileOrderIndex(mMinimalNodes.size()); 
     mMinimalNodes.push_back(theNode); 
-    dbprintf(5, "pushed back new Minimal Node: %s\n", theNode.Stringify().c_str()); 
+    // dbprintf(5, "pushed back new Minimal Node: %s\n", theNode.Stringify(0).c_str());
     return; 
   }
   
   //===========================================================================
   void DataSet::CreateMinimalNodes(void){
     dbprintf(2, "CreateMinimalNodes started...\n"); 
-    timer theTimer; 
-    theTimer.start(); 
+    STARTPROGRESS();
     dbprintf(2, "Size of a minimal_node is %d bytes\n",  sizeof(MinimalNode));
     char linebuf[2048]="";
     uint32_t nodenum = 0;
@@ -1696,10 +1859,8 @@ namespace paraDIS {
         throw string( "Error: cannot find first node in data file");
       }
       
-      double theTime=theTimer.elapsed_time(), thePercent=0;
       while (datafile.good() && nodenum++ < mTotalDumpNodes) {
-        if (dbg_isverbose()) 
-          Progress(theTimer, nodenum, mTotalDumpNodes, thePercent, 5, theTime, 60, "Reading datafile"); 
+        UPDATEPROGRESS(nodenum, mTotalDumpNodes, "CreateMinimalNodes: Reading datafile"); 
         ReadMinimalNodeFromFile(lineno, datafile);  
         
       }
@@ -1759,12 +1920,13 @@ namespace paraDIS {
       endpos = mMinimalNodes.end(); 
     uint32_t nodenum = 0; 
     while (pos != endpos) {
-      debugfile << "MinimalNode " << nodenum++ <<":\n"<< pos->Stringify(true) << endl;
+      debugfile << "MinimalNode " << nodenum++ <<":\n"<< pos->Stringify(false) << endl;
       debugfile << "***************************************************" << endl << endl; 
       ++pos; 
     }
     debugfile <<"Total minimal nodes: " << nodenum << endl; 
     debugfile << "Total memory for minimal nodes: " << nodenum * sizeof(MinimalNode) << endl; 
+    cerr << endl << "Wrote minimal nodes to debug file " << filename << endl; 
     return ;
   }
   //===========================================================================
@@ -1779,7 +1941,7 @@ namespace paraDIS {
                     MinimalNode((*neighbor_pos)->GetOtherEndpoint(inode.GetNodeID())));
 
       if (otherEnd == mMinimalNodes.end()) 
-        throw string("Error in DataSet::GetNeighborMinimalNodes -- cannot find other end of neighbor relation from node ")+inode.Stringify(true); 
+        throw string("Error in DataSet::GetNeighborMinimalNodes -- cannot find other end of neighbor relation from node ")+inode.Stringify(false); 
       // we have assumed that otherEnd exists in mMinimalNodes...
       if (! (*otherEnd == inode))
         neighborNodes.push_back(&(*otherEnd)); 
@@ -1897,7 +2059,7 @@ namespace paraDIS {
 
   //===========================================================================
   void DataSet::ReadFullNodeFromFile(std::ifstream &datafile, MinimalNode &theNode){
-    FullNode *fullNode = new FullNode; 
+    FullNode *fullNode = NULL; //new FullNode; 
     char comma;
     long old_id_junk, constraint_junk, numNeighbors; 
     float float_junk, location[3]; 
@@ -1905,7 +2067,7 @@ namespace paraDIS {
     string junkstring;
     dbprintf(5, "ReadFullNodeFromFile\n"); 
     try {
-      while (!( theNode == *fullNode)) {
+      while (!fullNode) { // ( theNode == *fullNode)) {
         //-----------------------------------------------
         // read the first line of node information and see if it matches theNode
         if (mFileVersion > 0) {
@@ -1913,7 +2075,7 @@ namespace paraDIS {
           if (!datafile.good()) {
             throw string("error reading domainID and nodeID of node"); 
           }
-          dbprintf(5, "Got node id (%d, %d)\n", domainID, nodeID); 
+          dbprintf(5, "Got node id (%d,%d)\n", domainID, nodeID); 
         } else {
           datafile >> nodeID >> old_id_junk;
           if (!datafile.good()) {
@@ -1943,6 +2105,7 @@ namespace paraDIS {
         }
         
         if (theNode == NodeID(domainID, nodeID)) {
+          fullNode = new FullNode;
           *fullNode = theNode; 
         }
         else {
@@ -1972,7 +2135,7 @@ namespace paraDIS {
       //------------------------------------------------
       // done reading first line of node information    
       fullNode->SetLocation(location); 
-      fullNode->SetIndex(mFullNodes.size()); 
+      fullNode->SetIndex(); 
       
       //------------------------------------------
       // read neighbor information
@@ -2024,14 +2187,14 @@ namespace paraDIS {
         throw string("Error in DataSet::ReadFullNode reading neighbor ")+intToString(neighbornum)+":" + err; 
       }
     } catch (string err) {
-      throw string("Error trying to read full node info corresponding to ")+theNode.Stringify(true) + string("numskipped is ")+intToString(numskipped) + string("\n") + err;
+      throw string("Error trying to read full node info corresponding to ")+theNode.Stringify(false) + string("numskipped is ")+intToString(numskipped) + string("\n") + err;
     } 
 
-    fullNode->SetNodeType(); 
-    dbprintf(5, "Done creating full node %s\n", fullNode->Stringify(true).c_str()); 
+    //fullNode->ComputeNodeType(); 
+    dbprintf(5, "Done creating full node %s\n", fullNode->Stringify(false).c_str()); 
 
 
-    mFullNodes.push_back(fullNode); 
+    FullNode::mFullNodes.push_back(fullNode); 
     return; 
 
   } /* end ReadFullNodeFromFile */ 
@@ -2065,14 +2228,12 @@ namespace paraDIS {
       if (!datafile.good()) {
         throw string( "Error: cannot find first node in data file");
       }
-      
-      double theTime=theTimer.elapsed_time(), thePercent=0;
+      STARTPROGRESS(); 
       uint32_t nodelimit = mMinimalNodes.size(); 
       std::vector<MinimalNode>::reverse_iterator rpos = mMinimalNodes.rbegin(), rend = mMinimalNodes.rend(); 
       //dbprintf(2, "\n"); 
       while (datafile.good() && nodenum < nodelimit && rpos != rend) {
-        if (dbg_isverbose()) 
-          Progress( theTimer, nodenum, nodelimit, thePercent, 5, theTime, 60, "Reading datafile"); 
+        UPDATEPROGRESS(nodenum, nodelimit,  "CreateFullNodesAndArmSegments: "); 
         ReadFullNodeFromFile(datafile, *rpos++);  
         /*!
           We have "used up" the last node in the vector, delete it to save memory
@@ -2093,6 +2254,8 @@ namespace paraDIS {
   
   //===========================================================================
   void DataSet::WrapBoundarySegments(void) {
+    STARTPROGRESS();
+    uint32_t segnum = 0, totalsegs = mQuickFindArmSegments.size(); 
     ArmSegment *newSegment = NULL; 
     FullNode *newnode0, *newnode1; 
     ArmSegmentSet::const_iterator segpos = mQuickFindArmSegments.begin(), 
@@ -2101,24 +2264,51 @@ namespace paraDIS {
       if ((*segpos)->Wrap(mDataSize, newSegment, newnode0, newnode1)) {
         newSegment->SetID(); 
         mWrappedArmSegments.push_back(newSegment); 
-        newnode0->SetIndex(mFullNodes.size()); 
-        mFullNodes.push_back(newnode0); 
-        newnode1->SetIndex(mFullNodes.size()); 
-        mFullNodes.push_back(newnode1);
-        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode0->GetNodeID().Stringify().c_str()); 
-        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode1->GetNodeID().Stringify().c_str()); 
-        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped segment %s", newSegment->Stringify().c_str()); 
+        newnode0->SetIndex(); 
+        FullNode::mFullNodes.push_back(newnode0); 
+        newnode1->SetIndex(); 
+        FullNode::mFullNodes.push_back(newnode1);
+        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode0->GetNodeID().Stringify(0).c_str()); 
+        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode1->GetNodeID().Stringify(0).c_str()); 
+        dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped segment %s", newSegment->Stringify(0).c_str()); 
         
       } 
+      ++ segnum;
       ++segpos; 
+      UPDATEPROGRESS(segnum, totalsegs, "WrapBoundarySegments"); 
     }
+    dbprintf(1, "\n"); 
     return; 
   }
 
   //===========================================================================
-  void DataSet::DebugPrintFullNodes(const char *name) {
-    uint32_t monsterTypes[5] = {0}; /* types: -44, -4, -3, -33, sum of monsters */ 
+  string DataSet::GetMonsterNodeSummary(void) {
+    vector<uint32_t> monsterTypes(1); 
+    std::vector<FullNode*>::iterator nodepos = FullNode::mFullNodes.begin(), 
+      endnodepos = FullNode::mFullNodes.end(); 
+    while (nodepos != endnodepos) {
+      if ((*nodepos)->GetNodeType() < 0) {
+        uint8_t theType = - (*nodepos)->GetNodeType(); 
+        if (theType >= monsterTypes.size()) {
+          monsterTypes.resize(theType+1); 
+        }
+        monsterTypes[theType]++;
+        monsterTypes[0]++;
+      }
+      ++nodepos; 
+    }    
+    string s; 
+    s += str(boost::format("Total monster nodes: %1%\n") %monsterTypes[0]); 
+    for (uint8_t t = 1; t < monsterTypes.size(); t++) {
+      if (monsterTypes[t]) {
+        s += str(boost::format("Type -%1% monster nodes: %2%\n") % (int)t % monsterTypes[t]); 
+      }
+    }
+    return s; 
+  }
     
+  //===========================================================================
+  void DataSet::DebugPrintFullNodes(const char *name) {
     string basename="FullNodes-list.txt";
     if (name)  basename = name; 
     std::string filename = mDebugOutputDir + "/" + basename; 
@@ -2127,39 +2317,33 @@ namespace paraDIS {
     if (!Mkdir (mDebugOutputDir.c_str())) return;
 
     ofstream debugfile (filename.c_str()); 
+    debugfile << endl << endl; 
+    debugfile << "NODE SUMMARY" << endl; 
+    debugfile << "=================================================" << endl; 
+    debugfile <<"Total full nodes: " << FullNode::mFullNodes.size() << endl; 
 
-    std::vector<FullNode*>::iterator nodepos = mFullNodes.begin(), 
-      endnodepos = mFullNodes.end(); 
+    debugfile << GetMonsterNodeSummary(); 
+
+    debugfile <<"Total memory for nodes and their pointers: " << FullNode::mFullNodes.size() * (sizeof(FullNode) + sizeof(FullNode *)) << endl; 
+    debugfile << "=================================================" << endl; 
+    debugfile << endl << endl; 
+
+    std::vector<FullNode*>::iterator nodepos = FullNode::mFullNodes.begin(), 
+      endnodepos = FullNode::mFullNodes.end(); 
     uint32_t nodenum=0; 
     while (nodepos != endnodepos) {
-      debugfile << "FullNode " << nodenum++ <<":\n" << (*nodepos)->Stringify(true ) << endl; 
+      debugfile << "mFullNodes[" << nodenum++ <<"]: " << (*nodepos)->Stringify(false ) << endl; 
       debugfile << "**************************************************************" << endl << endl; 
-      int nodetype = (*nodepos)->GetNodeType(); 
-      if (nodetype == -44) monsterTypes[0]++; 
-      else if (nodetype == -4) monsterTypes[1]++;
-      else if (nodetype == -3) {
-        debugfile << "Butterfly Node: " << (*nodepos)->GetNodeID().Stringify() << endl;
-        monsterTypes[2]++;
-      }
-      else if (nodetype == -33) monsterTypes[3]++;
-      if (nodetype < 0) monsterTypes[4]++; 
-      
       ++nodepos; 
-    }
-    debugfile <<"Total full nodes: " << nodenum << endl; 
-    debugfile << monsterTypes[0] << " type -44 nodes" << endl; 
-    debugfile << monsterTypes[1] << " type -4 nodes" << endl; 
-    debugfile << monsterTypes[2] << " type -3 nodes" << endl; 
-    debugfile << monsterTypes[3] << " type -33 nodes" << endl; 
-    debugfile << monsterTypes[4] << " monster nodes" << endl; 
-    debugfile <<"Total memory for nodes and their pointers: " << mFullNodes.size() * (sizeof(FullNode) + sizeof(FullNode *)) << endl; 
+    }    
+    cerr << endl <<  "Wrote full nodes to debug file "<< filename << endl; 
     return;  
   }
   
   //===========================================================================
   void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment
 #ifdef DEBUG
-, Arm &theArm
+, Arm *theArm
 #endif
 ) {
     //FullNodeIterator currentNode = iStartNode, otherEnd; 
@@ -2169,8 +2353,8 @@ namespace paraDIS {
     while(true) {
 #ifdef DEBUG
       if (!currentSegment->Seen()) {
-        ++theArm.mNumSegments; 
-        dbprintf(5, "Arm %d: adding segment %s\n", theArm.mArmID, currentSegment->Stringify().c_str());
+        ++(theArm->mNumSegments); 
+        dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
       }
 #endif
       currentSegment->SetSeen(true);  
@@ -2179,7 +2363,7 @@ namespace paraDIS {
       if ((otherEnd)->GetNodeID() == (*iStartNode)->GetNodeID() ||
           (otherEnd)->GetNumNeighbors() != 2) {
         if ((otherEnd)->GetNumNeighbors() == 2) {
-          dbprintf(4, "Arm %d: LOOP detected\n", theArm.mArmID);
+          dbprintf(4, "Arm %d: LOOP detected\n", theArm->mArmID);
         }
         /*!
           we have looped or found a terminal node -- stop 
@@ -2192,10 +2376,10 @@ namespace paraDIS {
       /*! 
         Move on to the next segment, we are not done yet.
       */ 
-      if (*currentSegment == *(otherEnd)->GetNeighbor(0)) {
-        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighbor(1)); 
+      if (*currentSegment == *(otherEnd)->GetNeighborSegment(0)) {
+        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighborSegment(1)); 
       } else {
-        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighbor(0)); 
+        currentSegment = const_cast<ArmSegment*>(otherEnd->GetNeighborSegment(0)); 
       }     
       currentNode = otherEnd; 
     }
@@ -2205,13 +2389,15 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::BuildArms(void) {
     dbprintf(2, "BuildArms started.\n"); 
-    Arm theArm; // reuse to avoid calling umpteen constructors 
+
+    STARTPROGRESS(); 
+
     uint32_t armnum = 0; 
     /*! 
       For now, just look at every inbounds node and if it has not been looked at, make an arm out of it.  
     */ 
-    vector<FullNode*>::iterator nodepos = mFullNodes.begin(), nodeend = mFullNodes.end(); 
-    int nodenum = 0; 
+    vector<FullNode*>::iterator nodepos = FullNode::mFullNodes.begin(), nodeend = FullNode::mFullNodes.end(); 
+    int nodenum = 0, totalNodes = FullNode::mFullNodes.size(); 
     /*!
       If you start from an out of bounds node, you will often trace out arms that have no nodes in them!  That would be segfault fodder. 
     */ 
@@ -2222,27 +2408,28 @@ namespace paraDIS {
           continue;
         }
         int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighbors();       
-        
         FullNode *endNode0, *endNode1; 
         ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
           *startSegment0 = NULL, *startSegment1 = NULL; 
         if (numneighbors == 2) {
-          startSegment0 = const_cast< ArmSegment*>((*nodepos)->GetNeighbor(0));
+          startSegment0 = const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(0));
           if (!startSegment0->Seen()) {
+            Arm *theArm = new Arm; 
+            theArm->Clear();
+            theArm->SetID(); 
 #ifdef DEBUG
-            dbprintf(5, "Starting in middle of arm\n"); 
+            dbprintf(5, "Starting arm %d in middle of arm\n", theArm->mArmID); 
 #endif
-            theArm.Clear();
-            theArm.SetID(); 
             FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
 #ifdef DEBUG
                          , theArm
 #endif
                          ); 
-            theArm.mTerminalNodes.push_back(endNode0); 
-            theArm.mTerminalSegments.push_back(endSegment0); 
+            theArm->mTerminalNodes.push_back(endNode0); 
+            endNode0->mNeighborArms.push_back(theArm); 
+            theArm->mTerminalSegments.push_back(endSegment0); 
 
-            startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighbor(1));
+            startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(1));
             FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
 #ifdef DEBUG
                          , theArm
@@ -2250,38 +2437,42 @@ namespace paraDIS {
                          ); 
             
             if (endNode0 != endNode1) {
-              theArm.mTerminalNodes.push_back(endNode1); 
+              theArm->mTerminalNodes.push_back(endNode1); 
+              endNode1->mNeighborArms.push_back(theArm); 
             }
             if (endSegment0 != endSegment1) {
-              theArm.mTerminalSegments.push_back(endSegment1); 
+              theArm->mTerminalSegments.push_back(endSegment1); 
             }
-            dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
-            mArms.push_back(theArm);            
+            dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
+            mArms.push_back(theArm); 
           }
-        } else {
+        } else { // starting with a terminal node; create multiple arms
           while (neighbornum < numneighbors) {
             startSegment0 = 
-              const_cast< ArmSegment*>((*nodepos)->GetNeighbor(neighbornum));
+              const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(neighbornum));
             if (!startSegment0->Seen()) {
+              Arm *theArm = new Arm; 
+              theArm->Clear();
+              theArm->SetID(); 
 #ifdef DEBUG
-              dbprintf(5, "Starting at one end of arm\n"); 
+              dbprintf(5, "Starting arm %d at one end of arm\n", theArm->mArmID); 
 #endif
-              theArm.Clear();
-              theArm.SetID(); 
               FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
 #ifdef DEBUG
                            , theArm
 #endif
                            ); 
-              theArm.mTerminalNodes.push_back(*nodepos); 
+              theArm->mTerminalNodes.push_back(*nodepos); 
+              (*nodepos)->mNeighborArms.push_back(theArm); 
               if (endNode0 != *nodepos ) {
-                theArm.mTerminalNodes.push_back(endNode0); 
+                theArm->mTerminalNodes.push_back(endNode0); 
+                endNode0->mNeighborArms.push_back(theArm); 
               }
-              theArm.mTerminalSegments.push_back(startSegment0); 
-              if (endSegment0 != startSegment0) {
-                theArm.mTerminalSegments.push_back(endSegment0); 
+              theArm->mTerminalSegments.push_back(startSegment0); 
+              if (endSegment0 != startSegment0) {                
+                theArm->mTerminalSegments.push_back(endSegment0); 
               }
-              dbprintf(5, "(2) Pushing back arm %d: %s\n", armnum++, theArm.Stringify().c_str()); 
+              dbprintf(5, "(2) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
               mArms.push_back(theArm);          
             }
             ++neighbornum; 
@@ -2289,6 +2480,8 @@ namespace paraDIS {
         }
         ++nodepos; 
         ++nodenum; 
+
+        UPDATEPROGRESS(nodenum, totalNodes, str(boost::format("BuildArms: %1% arms created.")%armnum)); 
         
       }   
     } catch (string err) {
@@ -2304,41 +2497,99 @@ namespace paraDIS {
     return; 
   }
 
+
+  //===========================================================================
+  void DataSet::DecomposeArms(void) {
+    uint32_t armnum = 0; 
+    /*  We can now compute arm lengths properly */
+    mTotalArmLengthBeforeDecomposition = ComputeArmLengths(); 
+    vector<Arm*> newArms; 
+    int energyLevel = 7, numarms=mArms.size();
+    vector<int32_t> numDecomposed(7, 0); 
+    while (energyLevel-- > 2) {
+      STARTPROGRESS();       
+      vector<Arm*>::iterator pos = mArms.begin(), endpos = mArms.end(); 
+      armnum = 0; 
+      while (pos != endpos) {
+        if ((*pos)->Decompose(energyLevel)) {
+          numDecomposed[energyLevel]++; 
+        }
+        ++pos; ++armnum;        
+        UPDATEPROGRESS(armnum, numarms, str(boost::format("DecomposeArms: energy level %1% (e.g. %2%), %3% arms analyzed, %4% decomposed.") % energyLevel % BurgersTypeNames(energyLevel*10) % armnum % numDecomposed[energyLevel])); 
+      }
+    }
+    
+    // Add the extended Nodes and Segments to our lists
+    vector<ArmSegment*>::iterator extSeg = ArmSegment::mExtendedArmSegments.begin(); 
+    while (extSeg != ArmSegment::mExtendedArmSegments.end()) {
+      mFinalArmSegments.push_back(*extSeg); 
+      ++ extSeg; 
+    }
+    
+    mTotalArmLengthAfterDecomposition = ComputeArmLengths(); 
+  }
   //===========================================================================
   void DataSet::DebugPrintArms(void) {
     std::string filename = mDebugOutputDir + string("/Arms-list.txt"); 
     dbprintf(1, "Writing arms to debug file %s\n", filename.c_str()); 
-    if (!Mkdir (mDebugOutputDir.c_str())) return; 
+    if (!Mkdir (mDebugOutputDir.c_str())) {
+      cerr << "Error: Cannot create output directory for arm file"; 
+      return; 
+    }
 
     ofstream debugfile (filename.c_str()); 
     
-    debugfile <<"Printout of all arms." << endl; 
-    vector<Arm>::iterator pos = mArms.begin(), endpos = mArms.end(); 
-    uint32_t armnum = 0; 
+    debugfile <<"Printout of all arms.  There are " << mArms.size() << " arms." << endl; 
+    vector<Arm*>::iterator pos = mArms.begin(), endpos = mArms.end(); 
+    uint32_t armnum = 0, empty=0; 
     while (pos != endpos) {
-      debugfile << "Arm #" << armnum << ": " << pos->Stringify() << endl; 
+      debugfile << "Arm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
       //vector<ArmSegment *>segments = pos->GetArmSegments(); 
       //vector<FullNode *>nodes = pos->GetNodes(); 
       debugfile << "******************************************************" << endl << endl; 
+      if ((*pos)->mArmType == ARM_EMPTY) 
+        ++empty; 
       ++armnum; 
       ++pos; 
     }
-    debugfile << "Number of arms: " << mArms.size()<< endl; 
+    debugfile << "Number of arms: " << armnum<< endl; 
+    debugfile << "Number of EMPTY arms: " << empty<< endl; 
+    debugfile << "Number of non-EMPTY arms: " << armnum - empty<< endl; 
     debugfile << "Total memory used by arms: " << mArms.size() * sizeof(Arm) << endl; 
     debugfile << "Number of arm segments: " << mFinalArmSegments.size() << endl; 
-    debugfile << "Memory used by arm segments and their pointers: " << mFinalArmSegments.size() * (sizeof(ArmSegment) + sizeof(ArmSegmentSetElement)) << endl; 
+    debugfile << "Memory used by arm segments and their pointers: " << mFinalArmSegments.size() * (sizeof(ArmSegment) + sizeof(ArmSegmentSetElement)) << endl;
+    cerr <<  "Wrote arm details to debug file "<< filename << endl; 
+    
     return; 
   }
-
   
   //===========================================================================
-  void DataSet::FindButterflies(void) {
-    dbprintf(2, "FindButterflies starting...\n");
-    int armnum=0; 
-    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
-    while (armpos != armend) {
+  void DataSet::DebugPrintMetaArms(void) {
+    std::string filename = mDebugOutputDir + string("/MetaArms-list.txt"); 
+    dbprintf(1, "Writing MetaArms to debug file %s\n", filename.c_str()); 
+    if (!Mkdir (mDebugOutputDir.c_str())) {
+      cerr << "Error: Cannot create output directory for arm file"; 
+      return; 
+    }
 
-      armpos->CheckForButterfly();      
+    ofstream debugfile (filename.c_str()); 
+    
+    debugfile <<"Printout of all MetaArms.  There are " << mMetaArms.size() << " MetaArms." << endl; 
+    vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
+    uint32_t armnum = 0; 
+    while (pos != endpos) {
+      debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
+      debugfile.flush(); 
+#ifdef DEBUG
+      debugfile << (*pos)->mAllArms.size() << " arms included in metaarm " << armnum << ": " << endl;debugfile.flush(); 
+      vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(), armendpos = (*pos)->mAllArms.end(); 
+      while (armpos < armendpos) {
+       debugfile << (*armpos)->Stringify(1); debugfile.flush(); 
+        ++armpos; 
+      } 
+#endif
+
+      debugfile << "******************************************************" << endl << endl; 
       ++armnum; 
       ++pos; 
     }
@@ -2397,32 +2648,197 @@ namespace paraDIS {
       ++ armnum;
       ++armpos; 
     }
-    dbprintf(2, "FindButterflies ended.\n");
+    
+    fprintf(armfile, "\n\n"); 
+    fprintf(armfile, "METAARM SUMMARY STATISTICS \n"); 
+    fprintf(armfile, "=========================================================================\n"); 
+    fprintf(armfile, "%9s%20s%20s%20s\n", "TypeID", "MetaArmType", "NumMetaArms", "MetaArmLengths"); 
+    int i=0; 
+    while (i<4) {
+      fprintf(armfile, "%9d%20s%20d%20.3f\n", 
+              i, 
+              MetaArmTypeNames(i).c_str(), 
+              metaarmcounts[i],
+              metaarmtypelengths[i]); 
+      ++i; 
+    }
+    fprintf(armfile, "Total number of arms in metaarms: %d\n", numarms); 
+    fprintf(armfile, "=========================================================================\n"); 
+    fprintf(armfile, "\n\n"); 
+   
+    fprintf(armfile, "\n\n"); 
+    fprintf(armfile, "MONSTER NODE SUMMARY STATISTICS \n"); 
+    fprintf(armfile, "=========================================================================\n"); 
+    fprintf(armfile, GetMonsterNodeSummary().c_str()); 
+    fprintf(armfile, "=========================================================================\n");     
+    fprintf(armfile, "\n\n"); 
+    
+    fprintf(armfile, "\n\n"); 
+    fprintf(armfile, "METAARM DETAILED STATISTICS\n"); 
+    fprintf(armfile, " (for more, use the -debugfiles option and look in MetaArms-list.txt )\n"); 
+    fprintf(armfile, "=========================================================================\n"); 
+    
+    fprintf(armfile, "%-5s%-5s%-12s%-12s%-10s%-12s%-12s%-12s%-12s%-10s%-12s%-12s%-12s%-12s%s\n", 
+            "ID", "Type", "Length", "EP-Dist", 
+            "EP1-Type", "EP1-ID",   "EP1-X", "EP1-Y", "EP1-Z", 
+            "EP2-Type", "EP2-ID",   "EP2-X", "EP2-Y", "EP2-Z", 
+            "(NumArms):<Arm List>");
+    pos = mMetaArms.begin();
+    armnum = 0; 
+    while (pos != endpos) {
+      int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0};
+      int numtermarms = (*pos)->mTerminalArms.size(); 
+      double eplength = 0.0; 
+      string ids[2]; ids[1] = "--"; 
+      float loc[2][3]={{0}};
+      int ntypes[2]={0}, armtypes[2] = {0}; 
+      if (numtermarms < 1 || numtermarms > 2) {
+        dbprintf(0,  "WARNING: arm # %d has %d terminal arms\n", armnum, numtermarms);
+        dbprintf(0,  (*pos)->Stringify(0).c_str()); 
+      } else {
+        armtypes[0] = (*pos)->mTerminalArms[0]->mArmType; 
+        if ((*pos)->mTerminalArms.size() == 2) {
+          armtypes[1] = (*pos)->mTerminalArms[1]->mArmType; 
+        }
+      }
+      if (numtermnodes < 1 || numtermnodes > 2) {
+        dbprintf(0,  "WARNING: arm # %d has %d terminal arms\n", armnum, numtermnodes);
+        dbprintf(0,  (*pos)->Stringify(0).c_str()); 
+      } else {
+        uint32_t i = numtermnodes, numarms = (*pos)->mAllArms.size(); 
+        while (i--) {
+          (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
+          ntypes[i] = (*pos)->mTerminalNodes[i]->GetNodeType();
+          numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighbors();
+          ids[i]  = str(boost::format("(%1%,%2%)") 
+                        % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
+                        % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
+        }
+        if (numtermnodes == 2) {
+          eplength = (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true); 
+        }    
+        int matype = (*pos)->mMetaArmType; 
+        fprintf(armfile, "%-5d%-5d%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f%-10d%-12s%-12.3f%-12.3f%-12.3f(%d):< ",
+                armnum, matype, (*pos)->mLength, eplength, 
+                ntypes[0], ids[0].c_str(), loc[0][0],loc[0][1],loc[0][2],
+                ntypes[1], ids[1].c_str(), loc[1][0],loc[1][1],loc[1][2],
+                numarms); 
+        if (!numarms) {
+          fprintf(armfile, "NONE >\n"); 
+        }
+        else {
+          i = 0; 
+          while (i<numarms-1) {
+            fprintf(armfile, "%d, ", (*pos)->mAllArms[i]->mArmID); 
+            i++; 
+          }
+          fprintf(armfile, "%d >\n", (*pos)->mAllArms[i]->mArmID); 
+        }
+      }
+      ++armnum; 
+      ++pos; 
+    }
+    
+    cerr << "Wrote meta arms to " << mMetaArmFile << endl; 
+    return ;
+
+  }
+
+  //===========================================================================
+  // Print out all arms in a simple format in a file for analysis, just for Meijie
+  void DataSet::PrintArmFile(char *armfilename) {
+
+    if (!*armfilename) return;
+
+    dbprintf(0, "Writing arms to arm file %s\n", armfilename); 
+
+    FILE *armfile = fopen (armfilename, "w"); 
+    if (!armfile) {
+      cerr << "ERROR:  Cannot open output file to write out arms" << endl;
+      return;
+    }
+
+    fprintf(armfile, "This file is a printout of all arms.\n"); 
+    fprintf(armfile, "DISCUSSION: \n%s\n", doctext.c_str()); // includes key for this file
+
+    fprintf(armfile, "-----------------------------------------------------\n"); 
+
+    PrintArmStats(armfile); 
+
+    fprintf(armfile, "%-12s%-6s%-6s%-15s%-15s%-10s%-10s%-10s%-15s%-15s%-15s%-10s%-10s%-10s%-15s%-15s%-15s\n", 
+            "Arm-ID", "Type", "Burg", "Length", "EP-Distance", 
+            "EP1-ID", "EP1-Type", "EP1-Nbrs", "EP1-X", "EP1-Y", "EP1-Z", 
+            "EP2-ID", "EP2-Type", "EP2-Nbrs", "EP2-X", "EP2-Y", "EP2-Z");
+    vector<Arm*>::iterator pos = mArms.begin(), endpos = mArms.end(); 
+    uint32_t armnum = 0; 
+    while (pos != endpos) {   
+      if ((*pos)->mArmType == ARM_EMPTY) {
+        ++pos; 
+        continue; 
+      }
+      int numtermnodes = (*pos)->mTerminalNodes.size(), numNeighbors[2] = {0};
+      double eplength = 0.0; 
+      float loc[2][3]={{0}};
+      char ntypes[2]={'-','-'}; 
+      string ids[2]; 
+      
+      if (numtermnodes == 2) {
+        eplength = (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true); 
+      }
+      int i = numtermnodes; 
+      while (i--) {
+        (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
+        ntypes[i] = (*pos)->mTerminalNodes[i]->IsTypeM()? 'M':'N';
+        numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighbors();
+        ids[i]  = str(boost::format("(%1%,%2%)") 
+                      % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
+                      % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
+      }
+      
+      fprintf(armfile, "%-12d%-6d%-6d%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f%-10s%-10c%-10d%-15f%-15f%-15f\n",
+              (*pos)->mArmID, (*pos)->mArmType, (*pos)->GetBurgersType(), (*pos)->mArmLength, eplength, ids[0].c_str(), ntypes[0], numNeighbors[0], loc[0][0], loc[0][1], loc[0][2], ids[1].c_str(), ntypes[1], numNeighbors[1], loc[1][0], loc[1][1], loc[1][2]); 
+      
+      
+      ++armnum; 
+      ++pos; 
+    }    
+    int s = mArms.size();
+    fprintf(armfile, "Size of mArms: %d\n",  s); 
+    fprintf(armfile, "Total printed non-EMPTY arms: %d\n",  armnum); 
+    cerr << "Wrote arms file " << armfilename << endl; 
     return; 
   }
 
   //===========================================================================
   void DataSet::ClassifyArms(void) {
     dbprintf(2, "ClassifyArms starting...\n");
-    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
+    STARTPROGRESS()   ;
+    int armNum=0, totalArms = mArms.size(); 
+    vector<Arm*>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) {      
-      armpos->Classify(); 
-      ++armpos; 
+      (*armpos)->Classify(); 
+      ++armpos; ++armNum; 
+      UPDATEPROGRESS(armNum, totalArms, "Classify arms..."); 
     }
     dbprintf(2, "ClassifyArms ended.\n");
+    
     return; 
   }
   
   //===========================================================================
-  void DataSet::ComputeArmLengths(void) {
+  double DataSet::ComputeArmLengths(void) {
     dbprintf(2, "ComputeArmLengths starting...\n");
-    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
+    STARTPROGRESS()   ;
+    double totalLength = 0; 
+    int armNum=0, totalArms = mArms.size(); 
+    vector<Arm*>::iterator armpos = mArms.begin(), armend = mArms.end(); 
     while (armpos != armend) {      
-      armpos->ComputeLength(); 
-      ++armpos; 
+      totalLength += (*armpos)->ComputeLength(); 
+      ++armpos; ++armNum; 
+      UPDATEPROGRESS(armNum, totalArms, "Compute arm lengths..."); 
     }
     dbprintf(2, "ComputeArmLengths ended.\n");
-    return; 
+    return totalLength; 
   }
   
   //==========================================================================
@@ -2438,8 +2854,8 @@ namespace paraDIS {
   /*!
     This is a unary predicate used to efficiently delete all useless arms, that have at least one useless terminal nodes.   
   */ 
-  bool ArmIsUseless( Arm &theArm) {
-    return theArm.IsUseless(); 
+  bool ArmIsUseless( Arm *theArm) {
+    return theArm->IsUseless(); 
   }
 
   //==========================================================================
@@ -2458,9 +2874,8 @@ namespace paraDIS {
       First identify every node that is out of bounds and has no inbound neighbor -- these are useless nodes.  
     */ 
     dbprintf(2, "Identifying useless nodes...\n "); 
-    bool deletable = false; 
-    vector<FullNode *>::iterator nodepos = mFullNodes.begin(), 
-      nodeend = mFullNodes.end(); 
+    vector<FullNode *>::iterator nodepos = FullNode::mFullNodes.begin(), 
+      nodeend = FullNode::mFullNodes.end(); 
     /*    while (nodepos != nodeend) {      
       if ((*nodepos)->GetNodeType() != USELESS_NODE && 
           !(*nodepos)->InBounds()) {
@@ -2468,7 +2883,7 @@ namespace paraDIS {
         deletable = true; 
         int nbr = (*nodepos)->GetNumNeighbors(); 
         while (nbr--) {
-          if ((*nodepos)->GetNeighbor(nbr)->GetOtherEndpoint((*nodepos))->InBounds()) {
+          if ((*nodepos)->GetNeighborSegment(nbr)->GetOtherEndpoint((*nodepos))->InBounds()) {
             deletable=false; 
             break; 
           }
@@ -2500,7 +2915,7 @@ namespace paraDIS {
     ArmSegment *theSegment = NULL; 
     while (segpos != mQuickFindArmSegments.end()) {
       theSegment = *segpos; 
-      if ((*segpos)->IsUseless()) {
+      if ((*segpos)->IsUseless() || (*segpos)->GetBurgersType() == BURGERS_DECOMPOSED) {
         dbprintf(5, "Deleting segment %d\n", theSegment->GetID()); 
         delete theSegment; 
       } else {
@@ -2525,30 +2940,28 @@ namespace paraDIS {
     numdeleted -= mFinalArmSegments.size(); 
     dbprintf(2, "Deleted %d segments\n", numdeleted); 
 
+
+
     /*! 
       Finally, go through and delete all the useless nodes
     */ 
     dbprintf(2, "Deleting useless nodes...\n"); 
-    numdeleted = mFullNodes.size(); 
-    nodepos = mFullNodes.begin(); 
-    while (nodepos != mFullNodes.end()) {
+    numdeleted = FullNode::mFullNodes.size(); 
+    nodepos = FullNode::mFullNodes.begin(); 
+    while (nodepos != FullNode::mFullNodes.end()) {
       int nodetype = (*nodepos)->GetNodeType();
       if (nodetype == USELESS_NODE) {
-        mUselessNodes.push_back(*nodepos); 
-      } else {
-        if (nodetype > 8) {
-          string err = string("Error: bad type ") + intToString( nodetype) +  " in node: " + (*nodepos)->Stringify();
-          throw err;          
-        }
+        FullNode::mUselessNodes.push_back(*nodepos); 
       }
       ++nodepos; 
     }
-    nodepos = remove_if(mFullNodes.begin(), mFullNodes.end(), NodeIsUseless); 
-    mFullNodes.erase(nodepos, mFullNodes.end()); 
-    for_each(mUselessNodes.begin(), mUselessNodes.end(), DeleteNode);     
-    mUselessNodes.clear(); 
+    nodepos = remove_if(FullNode::mFullNodes.begin(), FullNode::mFullNodes.end(), NodeIsUseless); 
+    FullNode::mFullNodes.erase(nodepos, FullNode::mFullNodes.end()); 
+    for_each(FullNode::mUselessNodes.begin(), FullNode::mUselessNodes.end(), DeleteNode);     
+    FullNode::mUselessNodes.clear(); 
 
-    numdeleted -= mFullNodes.size(); 
+ 
+    numdeleted -= FullNode::mFullNodes.size(); 
     dbprintf(2, "Deleted %d nodes\n", numdeleted); 
 
     dbprintf(2, "DeleteUselessNodesAndSegments ended.\n");
@@ -2626,9 +3039,9 @@ namespace paraDIS {
   }
   //=========================================================================
   void DataSet::RenumberNodes(void) {
-    uint32_t nodenum = 0, numnodes = mFullNodes.size(); 
+    uint32_t nodenum = 0, numnodes = FullNode::mFullNodes.size(); 
     while (nodenum != numnodes) {
-      mFullNodes[nodenum]->SetIndex(nodenum); 
+      FullNode::mFullNodes[nodenum]->SetIndex(nodenum); 
       ++nodenum;
     }
   }
@@ -2666,8 +3079,8 @@ namespace paraDIS {
           cout << "******************" << endl; 
           cout << "mProcNum = " << mProcNum << endl; 
           ComputeSubspace(); 
-          cout << "mSubspaceMin: " << mSubspaceMin.Stringify() << endl; 
-          cout << "mSubspaceMax: " << mSubspaceMax.Stringify() << endl; 
+          cout << "mSubspaceMin: " << mSubspaceMin.Stringify(0) << endl; 
+          cout << "mSubspaceMax: " << mSubspaceMax.Stringify(0) << endl; 
         }
         mNumProcs --; 
       }
@@ -2692,9 +3105,9 @@ namespace paraDIS {
       
       BuildArms(); 
 
-      FindButterflies(); 
-      
-      ClassifyArms(); 
+      DecomposeArms(); 
+
+      ClassifyArms(); // This also computes their lengths...
 
       //PrintArmStats(); 
 
@@ -2703,22 +3116,21 @@ namespace paraDIS {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
 #endif
-      /*  We can now compute arm lengths properly */
-      ComputeArmLengths(); 
  
-      /* this used to go before BuildArms() */ 
+       /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
-
-     
+   
       DeleteUselessNodesAndSegments(); 
 
       RenumberNodes(); 
       
+      if (mMetaArmFile != "") {
+        FindMetaArms(); 
+      }
+      
       if (mDoDebugOutput) {
+        DebugPrintMetaArms(); 
         DebugPrintArms(); 
-      }      
-
-      if (mDoDebugOutput) {
         DebugPrintFullNodes(); 
       }
       
@@ -2776,7 +3188,6 @@ namespace paraDIS {
     return; 
   }
 
-  
   
 } // end namespace paraDIS 
 
