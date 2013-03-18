@@ -27,6 +27,8 @@
 // set this to 1 to re-enable linked loops code
 #define LINKED_LOOPS 0
 
+#define DEBUG_PARADIS 1
+
 /* now for the API */  
 #include <boost/cstdint.hpp>
 using boost::int8_t;
@@ -786,7 +788,7 @@ namespace paraDIS {
         mEndpoints[i] = NULL; 
       }
       mGhostEndpoints.clear(); 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       mSegmentID = -1; 
       mWrapped = false; 
 #endif
@@ -879,7 +881,7 @@ namespace paraDIS {
       Set the segment id to the next available global ID
     */ 
     void SetID(void) {
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       mSegmentID = mNextID++; 
 #endif
       return; 
@@ -888,7 +890,7 @@ namespace paraDIS {
       accessor -- noop if not debug mode
     */ 
     int32_t GetID(void) {
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       return mSegmentID; 
 #else
       return -1; 
@@ -917,7 +919,7 @@ namespace paraDIS {
     */ 
     std::string Stringify(int indent) const {
       string s = str(boost::format("ArmSegment at %1%")%this);  
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       s +=  " number " + intToString(mSegmentID); 
 #endif
       int btype = mBurgersType; 
@@ -1082,7 +1084,7 @@ namespace paraDIS {
 
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
     /*!
       purely for debugging
     */ 
@@ -1259,7 +1261,7 @@ namespace paraDIS {
       to set the arm ID for debugging.  In Debug code, this will do nothing
     */ 
     void SetID(void) { 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       mArmID = mNextID++; 
 #endif
       return; 
@@ -1425,7 +1427,7 @@ namespace paraDIS {
     static double mLongestLength; // for binning
     bool mSeen, mSeenInMeta; // for tracing MetaArms -- each arm need only be viewed once
     struct MetaArm * mParentMetaArm; 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
     /*! 
       purely for debugging
     */ 
@@ -1477,7 +1479,7 @@ namespace paraDIS {
       }
       candidate->mParentMetaArm = this;
       mLength += candidate->GetLength(); 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       mFoundArms.push_back(candidate); 
 #endif
       return; 
@@ -1507,7 +1509,7 @@ namespace paraDIS {
       return; 
     }
     inline void CapturePath(bool doreverse) {
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       dbprintf(4, "Capture Path %d called\n", (int)doreverse);  
       if (doreverse) {
         reverse(mFoundArms.begin(), mFoundArms.end());
@@ -1530,7 +1532,7 @@ namespace paraDIS {
     int8_t mMetaArmType; 
     uint32_t mMetaArmID; 
     bool mCombo; 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
     bool mFound111; // if we see a 111 on our search
     vector<Arm*> mFoundArms, mAllArms, mDeadEnds; // only use if debugging is turned on.  
 #endif
@@ -1854,7 +1856,7 @@ s      Tell the data set which file to read
   */ 
     void FindEndOfArm(FullNodeIterator &firstNode, FullNode **oFoundEndNode, 
                       ArmSegment *firstSegment,  ArmSegment *&foundEndSegment
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
 , Arm *theArm
 #endif
 );

@@ -222,7 +222,7 @@ using namespace std;
 namespace paraDIS {
   
   //===========================================================================
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
   int32_t ArmSegment::mNextID = 0; 
   int32_t Arm::mNextID = 0;
 
@@ -782,7 +782,7 @@ namespace paraDIS {
       numSeen ++; 
     }
   
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
     if (numSeen != mNumSegments) {
       string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
       dbprintf(0, s.c_str()); 
@@ -2342,7 +2342,7 @@ namespace paraDIS {
   
   //===========================================================================
   void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
 , Arm *theArm
 #endif
 ) {
@@ -2351,7 +2351,7 @@ namespace paraDIS {
     ArmSegment *currentSegment = iStartSegment; 
     /* loop, don't recurse */ 
     while(true) {
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       if (!currentSegment->Seen()) {
         ++(theArm->mNumSegments); 
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
@@ -2417,11 +2417,11 @@ namespace paraDIS {
             Arm *theArm = new Arm; 
             theArm->Clear();
             theArm->SetID(); 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
             dbprintf(5, "Starting arm %d in middle of arm\n", theArm->mArmID); 
 #endif
             FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
                          , theArm
 #endif
                          ); 
@@ -2431,7 +2431,7 @@ namespace paraDIS {
 
             startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(1));
             FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
                          , theArm
 #endif
                          ); 
@@ -2454,11 +2454,11 @@ namespace paraDIS {
               Arm *theArm = new Arm; 
               theArm->Clear();
               theArm->SetID(); 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
               dbprintf(5, "Starting arm %d at one end of arm\n", theArm->mArmID); 
 #endif
               FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
                            , theArm
 #endif
                            ); 
@@ -2580,7 +2580,7 @@ namespace paraDIS {
     while (pos != endpos) {
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
       debugfile.flush(); 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       debugfile << (*pos)->mAllArms.size() << " arms included in metaarm " << armnum << ": " << endl;debugfile.flush(); 
       vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(), armendpos = (*pos)->mAllArms.end(); 
       while (armpos < armendpos) {
@@ -3111,7 +3111,7 @@ namespace paraDIS {
 
       //PrintArmStats(); 
 
-#ifdef DEBUG
+#ifdef DEBUG_PARADIS
       if (mDoDebugOutput) {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
