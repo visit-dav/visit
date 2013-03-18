@@ -55,7 +55,7 @@ while read fline; do
             # Skip these files and directories
             continue
             ;;
-        branches/*RC|\
+        branches/*RC/*|\
         trunk/*)
             # Do not skip (continue) these
             ;;
