@@ -303,7 +303,7 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
     outputLayout->setMargin(5);
     outputLayout->setSpacing(10);
 
-    computeCovariates = new QCheckBox(tr("Compute return value differences for years"), central);
+    computeCovariates = new QCheckBox(tr("Compute return value for years"), central);
     connect(computeCovariates, SIGNAL(toggled(bool)),
             this, SLOT(computeCovariatesChanged(bool)));
     outputLayout->addWidget(computeCovariates, 0,0);
@@ -313,7 +313,7 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
             this, SLOT(covariateReturnYearsProcessText()));
     outputLayout->addWidget(covariateReturnYears, 0,1);
 
-    computeRVDifferences = new QCheckBox(tr("Compute RV differences"), central);
+    computeRVDifferences = new QCheckBox(tr("Compute return value differences for years"), central);
     connect(computeRVDifferences, SIGNAL(toggled(bool)),
             this, SLOT(computeRVDifferencesChanged(bool)));
     outputLayout->addWidget(computeRVDifferences, 1,0);
