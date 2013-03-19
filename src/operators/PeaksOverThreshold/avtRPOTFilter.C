@@ -809,9 +809,12 @@ avtRPOTFilter::CreateFinalOutput()
         string initialYear = tmp;
 
         string numPerYearStr;
+        int multiplier = 1;
+        if (atts.GetEnsemble())
+            multiplier = atts.GetNumEnsembles();
         if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         {
-            sprintf(tmp, "%d", atts.GetDaysPerYear());
+            sprintf(tmp, "%d", atts.GetDaysPerYear() * multiplier);
             numPerYearStr = tmp;
         }
         else
@@ -819,7 +822,7 @@ avtRPOTFilter::CreateFinalOutput()
             numPerYearStr = "c(";
             for (int m = 0; m < 12; m++)
             {
-                sprintf(tmp, "%d", atts.GetDaysPerMonth()[m]);
+                sprintf(tmp, "%d", atts.GetDaysPerMonth()[m] * multiplier);
                 numPerYearStr = numPerYearStr + tmp;
                 if (m != 11)
                     numPerYearStr = numPerYearStr + ",";
