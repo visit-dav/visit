@@ -88,6 +88,16 @@ public:
         NOV,
         DEC
     };
+    enum CutoffModeType
+    {
+        UPPER_TAIL,
+        LOWER_TAIL
+    };
+    enum OptimizationType
+    {
+        NELDER_MEAD,
+        BFGS
+    };
 
     // These constructors are for objects of this class
     PeaksOverThresholdAttributes();
@@ -114,63 +124,75 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectDataAnalysisYearRange();
     void SelectSeasonalPercentile();
     void SelectMonthlyPercentile();
+    void SelectDaysPerMonth();
     void SelectCovariateReturnYears();
-    void SelectRvDifferences();
 
     // Property setting methods
     void SetDataYearBegin(int dataYearBegin_);
     void SetDataAnalysisYearRangeEnabled(bool dataAnalysisYearRangeEnabled_);
-    void SetDataAnalysisYearRange(const int *dataAnalysisYearRange_);
+    void SetDataAnalysisYear1(int dataAnalysisYear1_);
+    void SetDataAnalysisYear2(int dataAnalysisYear2_);
     void SetEnsemble(bool ensemble_);
     void SetNumEnsembles(int numEnsembles_);
+    void SetCutoff(float cutoff_);
+    void SetCutoffMode(CutoffModeType cutoffMode_);
+    void SetNoConsecutiveDay(bool noConsecutiveDay_);
+    void SetOptimizationMethod(OptimizationType optimizationMethod_);
+    void SetDataScaling(double dataScaling_);
     void SetAggregation(AggregationType aggregation_);
     void SetAnnualPercentile(double annualPercentile_);
     void SetSeasonalPercentile(const double *seasonalPercentile_);
     void SetMonthlyPercentile(const double *monthlyPercentile_);
-    void SetDisplaySeason(SeasonType displaySeason_);
-    void SetDisplayMonth(MonthType displayMonth_);
-    void SetCutoff(float cutoff_);
-    void SetComputeParamValues(bool computeParamValues_);
-    void SetComputeCovariates(bool computeCovariates_);
-    void SetCovariateReturnYears(const intVector &covariateReturnYears_);
+    void SetDaysPerYear(int daysPerYear_);
+    void SetDaysPerMonth(const int *daysPerMonth_);
+    void SetCovariateModelScale(bool covariateModelScale_);
     void SetCovariateModelLocation(bool covariateModelLocation_);
     void SetCovariateModelShape(bool covariateModelShape_);
-    void SetCovariateModelScale(bool covariateModelScale_);
+    void SetComputeCovariates(bool computeCovariates_);
+    void SetCovariateReturnYears(const intVector &covariateReturnYears_);
     void SetComputeRVDifferences(bool computeRVDifferences_);
-    void SetRvDifferences(const int *rvDifferences_);
-    void SetDataScaling(double dataScaling_);
+    void SetRvDifference1(int rvDifference1_);
+    void SetRvDifference2(int rvDifference2_);
+    void SetComputeParamValues(bool computeParamValues_);
+    void SetDisplaySeason(SeasonType displaySeason_);
+    void SetDisplayMonth(MonthType displayMonth_);
     void SetDumpData(bool dumpData_);
 
     // Property getting methods
     int             GetDataYearBegin() const;
     bool            GetDataAnalysisYearRangeEnabled() const;
-    const int       *GetDataAnalysisYearRange() const;
-          int       *GetDataAnalysisYearRange();
+    int             GetDataAnalysisYear1() const;
+    int             GetDataAnalysisYear2() const;
     bool            GetEnsemble() const;
     int             GetNumEnsembles() const;
+    float           GetCutoff() const;
+    CutoffModeType  GetCutoffMode() const;
+    bool            GetNoConsecutiveDay() const;
+    OptimizationType GetOptimizationMethod() const;
+    double          GetDataScaling() const;
     AggregationType GetAggregation() const;
     double          GetAnnualPercentile() const;
     const double    *GetSeasonalPercentile() const;
           double    *GetSeasonalPercentile();
     const double    *GetMonthlyPercentile() const;
           double    *GetMonthlyPercentile();
-    SeasonType      GetDisplaySeason() const;
-    MonthType       GetDisplayMonth() const;
-    float           GetCutoff() const;
-    bool            GetComputeParamValues() const;
+    int             GetDaysPerYear() const;
+    const int       *GetDaysPerMonth() const;
+          int       *GetDaysPerMonth();
+    bool            GetCovariateModelScale() const;
+    bool            GetCovariateModelLocation() const;
+    bool            GetCovariateModelShape() const;
     bool            GetComputeCovariates() const;
     const intVector &GetCovariateReturnYears() const;
           intVector &GetCovariateReturnYears();
-    bool            GetCovariateModelLocation() const;
-    bool            GetCovariateModelShape() const;
-    bool            GetCovariateModelScale() const;
     bool            GetComputeRVDifferences() const;
-    const int       *GetRvDifferences() const;
-          int       *GetRvDifferences();
-    double          GetDataScaling() const;
+    int             GetRvDifference1() const;
+    int             GetRvDifference2() const;
+    bool            GetComputeParamValues() const;
+    SeasonType      GetDisplaySeason() const;
+    MonthType       GetDisplayMonth() const;
     bool            GetDumpData() const;
 
     // Persistence methods
@@ -193,6 +215,16 @@ public:
 protected:
     static std::string MonthType_ToString(int);
 public:
+    static std::string CutoffModeType_ToString(CutoffModeType);
+    static bool CutoffModeType_FromString(const std::string &, CutoffModeType &);
+protected:
+    static std::string CutoffModeType_ToString(int);
+public:
+    static std::string OptimizationType_ToString(OptimizationType);
+    static bool OptimizationType_FromString(const std::string &, OptimizationType &);
+protected:
+    static std::string OptimizationType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -205,25 +237,32 @@ public:
     enum {
         ID_dataYearBegin = 0,
         ID_dataAnalysisYearRangeEnabled,
-        ID_dataAnalysisYearRange,
+        ID_dataAnalysisYear1,
+        ID_dataAnalysisYear2,
         ID_ensemble,
         ID_numEnsembles,
+        ID_cutoff,
+        ID_cutoffMode,
+        ID_noConsecutiveDay,
+        ID_optimizationMethod,
+        ID_dataScaling,
         ID_aggregation,
         ID_annualPercentile,
         ID_seasonalPercentile,
         ID_monthlyPercentile,
-        ID_displaySeason,
-        ID_displayMonth,
-        ID_cutoff,
-        ID_computeParamValues,
-        ID_computeCovariates,
-        ID_covariateReturnYears,
+        ID_daysPerYear,
+        ID_daysPerMonth,
+        ID_covariateModelScale,
         ID_covariateModelLocation,
         ID_covariateModelShape,
-        ID_covariateModelScale,
+        ID_computeCovariates,
+        ID_covariateReturnYears,
         ID_computeRVDifferences,
-        ID_rvDifferences,
-        ID_dataScaling,
+        ID_rvDifference1,
+        ID_rvDifference2,
+        ID_computeParamValues,
+        ID_displaySeason,
+        ID_displayMonth,
         ID_dumpData,
         ID__LAST
     };
@@ -231,31 +270,38 @@ public:
 private:
     int       dataYearBegin;
     bool      dataAnalysisYearRangeEnabled;
-    int       dataAnalysisYearRange[2];
+    int       dataAnalysisYear1;
+    int       dataAnalysisYear2;
     bool      ensemble;
     int       numEnsembles;
+    float     cutoff;
+    int       cutoffMode;
+    bool      noConsecutiveDay;
+    int       optimizationMethod;
+    double    dataScaling;
     int       aggregation;
     double    annualPercentile;
     double    seasonalPercentile[4];
     double    monthlyPercentile[12];
-    int       displaySeason;
-    int       displayMonth;
-    float     cutoff;
-    bool      computeParamValues;
-    bool      computeCovariates;
-    intVector covariateReturnYears;
+    int       daysPerYear;
+    int       daysPerMonth[12];
+    bool      covariateModelScale;
     bool      covariateModelLocation;
     bool      covariateModelShape;
-    bool      covariateModelScale;
+    bool      computeCovariates;
+    intVector covariateReturnYears;
     bool      computeRVDifferences;
-    int       rvDifferences[2];
-    double    dataScaling;
+    int       rvDifference1;
+    int       rvDifference2;
+    bool      computeParamValues;
+    int       displaySeason;
+    int       displayMonth;
     bool      dumpData;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibIbiidDDiifbbi*bbbbIdb"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibiibifibididDDiIbbbbi*biibiib"
 
 #endif

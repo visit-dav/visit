@@ -1,20 +1,20 @@
-potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYears, numPerYear = switch(aggregation, annual = 365.25, c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold = NULL, nCovariates = 0, covariates = NULL, covariatesByYear = NULL, propMissing = 0, thresholdByYear = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
+potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NULL, aggregation = "annual", nYears, numPerYear = switch(aggregation, annual = 365, c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold = NULL, nCovariates = 0, covariatesByYear = NULL, propMissing = 0, thresholdByYear = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
 
-  # data, day, and month are 1-d arrays giving the observed values and corresponding day index and month for the exceedances; note that the day index is NOT the day of the year but a continuous index with arbitrary starting value for the first day of the first year. 'day' is required when 'multiDayEventHandling' is not NULL; 'month' is required for seasonal or monthly analyses.
+  # data, day, month, and year are 1-d arrays giving the observed values and corresponding day index and month and year for the exceedances; note that the day index is NOT the day of the year but a continuous index with arbitrary starting value for the first day of the first year. 'day' is required when 'multiDayEventHandling' is not NULL; 'month' is required for seasonal or monthly analyses. 'year' is required when using covariates as 'covariatesByYear' are matched to 'data' based on 'year' and 'initialYear'
+  # initialYear indicates the first year of the dataset; in some cases this may not be the minimum value in 'year', as no exceedances may have occurred in the first year; required when covariates are used
   # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification. If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
   # nYears is the number of years (blocks) in the full dataset (the dataset before the exceedances are extracted)
-  # numPerYear is the number of days in each year. For annual analyses this should be about 365 (i.e., the average of the number of days in the years, including leap years). For seasonal and monthly analyses, this should be a 1-d array with 12 values, one for each month; the default values assume leap years are one-quarter of the years in the full dataset, thus 28.25 days per February. Strictly speaking this should not vary by year as the interpretation of return values is affected, though the effect of leap years should be minimal.
+  # numPerYear is the number of days in each year. For annual analyses this should be about 365 (i.e., the average of the number of days in the years, including leap years). For seasonal and monthly analyses, this should be a 1-d array with 12 values, one for each month; the default values assume leap years are one-quarter of the years in the full dataset, thus 28.25 days per February. Strictly speaking this should not vary by year as the interpretation of return values is affected, though the effect of leap years should be minimal. Note that if one has replicated data, with multiple independent observations per day, such as from an ensemble of climate model runs, then the usual value should be multiplied by the number of replicates.
   # threshold is a scalar for annual analyses, a 1-d array of 4 values for seasonal (winter, spring, summer, fall thresholds) or a 1-d array of 12 values for monthly analyses (Jan thru Dec thresholds). However, if the thresholds vary by year, threshold should be NULL and thresholdByYear should be specified
-  # nCovariates indicates the number of covariates provided through 'covariates' and 'covariatesByYear' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
-  # covariates is a 1-d array of covariate values (observation x covariate), with the observation index varying fastest and covariate index varying slowest; should be NULL if 'nCovariates' is 0; covariates should not vary within year as the model assumes constant covariates within each year in order to compute the likelihood with only the exceedances over the threshold
+  # nCovariates indicates the number of covariates provided through 'covariatesByYear' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
   # covariatesByYear must be provided if 'nCovariates' is non-zero and must specify the covariate values by year (year x covariate x (optionally) stratum), with the year index varying fastest and stratum index varying slowest
   # thresholdByYear is an (optional) 1-d array of threshold values by year (year x (optionally) stratum), with the year index varying fastest. If the threshold changes over time, this must be included, in which case threshold should be NULL
  # propMissing is either 0 or a 1-d array indicating the proportion of missing values (year x month (for monthly/seasonal analyses)), with the year index varying fastest.  This should include values for all years between the first and last years - years that are entirely missing should have a value of 1
   # dataScaling is a positive-valued scalar used to scale the data values for more robust optimization performance. When multiplied by the values, it should produce values with magnitude around 1
-  # locationModel, scaleModel, and shapeModel are vectors indicating the indices of the covariates to be used in the location, scale and shape parameterization. The values are used to select columns from the 'covariates' and 'covariatesByYear' arrays after they are transformed to multidimensional arrays with the second dimension indexing the covariates
+  # locationModel, scaleModel, and shapeModel are vectors indicating the indices of the covariates to be used in the location, scale and shape parameterization. The values are used to select columns from the 'covariatesByYear' array after they are transformed to a multidimensional array with the second dimension indexing the covariates
   # returnParams is a boolean indicating whether to return the fitted parameter values and their standard errors; WARNINGS: (1) Parameter values for models with covariates must be interpreted based on transforming each covariate by subtracting the mean of the yearly values (from 'covariatesByYear') and dividing by the difference of the max and min of the yearly values. This scales the covariates for better numerical performance in the optimization. (2) parameter values for models with covariates for the scale parameter must interpreted based on the log transformation of the scale parameter
   # rvInterval: the timespan for which return values should be calculated. For example a rvInterval of 20 years corresponds to the value of an event that occurs with probability 1/20 in any year and therefore occurs on average every 20 years
-  # newData should be a 1-d array of the same form as 'covariates', providing covariate values (observation x covariate) for which return values are desired. Values will be calculated for each stratum.
+  # newData should be a 1-d array of the same form as 'covariatesByYear', providing covariate values (observation x covariate) for which return values are desired. Values will be calculated for each stratum.
   # rvDifference should be a 1-d array of covariate values for two sets of covariates for which the difference in return values is desired (set x covariate), with the set index varying fastest; i.e. provide the first covariate for each set, then the second covariate for each set, etc. The difference is computed as the return value for the second set minus the return value for the first set. Values will be calculated for each stratum.
   # multiDayEventHandling should be NULL, "noruns", or a number. If 'noruns' is specified, only the maximum (or minimum if upper.tail = FALSE) value within a set of exceedances occuring on consecutive days is included. If a number, this should indicate the block size within which to allow only the largest (or smallest if upper.tail = FALSE) value
   # upper.tail indicates whether one is working with exceedances over a high threshold (TRUE) or exceedances under a low threshold (FALSE); in the latter case, the function works with the negative of the values and the threshold, changing the sign of the resulting location parameters
@@ -35,6 +35,8 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
     stop("'day' must be of same length as 'data', with one value per observation")
   if(!is.null(month) && length(month) != n)
     stop("'month' must be of same length as 'data', with one value per observation")
+  if(!is.null(year) && length(year) != n)
+    stop("'year' must be of same length as 'data', with one value per observation")
   if(!is.null(threshold))
     if((aggregation == "annual" && length(threshold) != 1) ||
        (aggregation == "seasonal" && length(threshold) != 4) ||
@@ -78,8 +80,6 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
     thresholdByYear = thresholdByYear * dataScaling
 
   # check dimensionality of input arrays
-  if(!is.null(covariates) && length(covariates) != nCovariates*n)
-    stop("must have covariate values for each covariate for each exceedance")
   if(!is.null(covariatesByYear) && !(length(covariatesByYear) %in% (nYears*nCovariates*c(1,nStrata))))
     stop("'covariatesByYear must have covariate values for each covariate for each year (and optionally stratum)")
   if(!is.null(thresholdByYear) && !(length(thresholdByYear) %in% (nYears*c(1,nStrata))))
@@ -89,13 +89,30 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   if(!is.null(rvDifference) && length(rvDifference) != 2*nCovariates)
     stop("length of rvDifference is not equal to two times the number of covariates")
 
-  # manipulate input arrays to have appropriate number of dimensions
-  if(!is.null(covariates))
-    covariates <- array(covariates, c(n, nCovariates))
-  if(!is.null(covariatesByYear))
+  # manipulate input arrays to have appropriate number of dimensions and get covariate vals for obs
+  if(!is.null(covariatesByYear)) {
     covariatesByYear <- array(covariatesByYear, c(nYears, nCovariates, nStrata))
-    if(!is.null(thresholdByYear))
-      thresholdByYear <- array(thresholdByYear, c(nYears, nStrata))
+    if(aggregation == "annual")
+      covariates <- matrix(covariatesByYear[(year - initialYear + 1), , 1], ncol = nCovariates)
+    if(aggregation == "seasonal"){
+      monthToSeason <- matrix(c(1:12, c(1,1,2,2,2,3,3,3,4,4,4,1)), nrow = 12)
+      covariates <- matrix(covariatesByYear[cbind(
+                                       rep((year - initialYear + 1), nCovariates),
+                                       rep(1:nCovariates, each = n),
+                                       rep(monthToSeason[month], nCovariates))],
+                           ncol = nCovariates)
+    }
+    if(aggregation == "monthly")
+      covariates <- matrix(covariatesByYear[cbind(
+                                       rep((year - initialYear + 1), nCovariates),
+                                       rep(1:nCovariates, each = n),
+                                       rep(month, nCovariates))],
+                           ncol = nCovariates)
+  } else{
+    covariates <- NULL
+  }
+  if(!is.null(thresholdByYear))
+    thresholdByYear <- array(thresholdByYear, c(nYears, nStrata))
   if(!is.null(newData)){
     m = length(newData)/nCovariates
     newData <- array(newData, c(m, nCovariates))
@@ -103,14 +120,14 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   if(!is.null(rvDifference))
     rvDifference <- array(rvDifference, c(2, nCovariates))
 
-  if(nCovariates && (is.null(covariates) || is.null(covariatesByYear)))
-    stop("'covariates' and 'covariatesByYear are required for nonstationary modeling")
+  if(nCovariates && is.null(covariatesByYear))
+    stop("'covariatesByYear' is required for nonstationary modeling")
 
   if(is.null(rvInterval) && (!is.null(newData) || !is.null(rvDifference)))
     stop("'rvInterval' must be specified")
     
   # seasonalize
-  if(aggregation == 'seasonal'){
+  if(aggregation == 'seasonal' && !is.null(covariatesByYear)){
     seasons <- c('DJF', 'MAM', 'JJA', 'SON')
     dec = 12
     months = list(DJF = c(1,2,12), MAM = 3:5, JJA = 6:8, SON = 9:11)
@@ -134,13 +151,15 @@ potFit <- function(data, day = NULL, month = NULL, aggregation = "annual", nYear
   # remove multi-day events
   if(is.character(multiDayEventHandling) && multiDayEventHandling == "noruns")
     data = removeRuns(data, day)
-    if(is.numeric(multiDayEventHandling))
-      data = withinBlockScreen(data, day, blockLen = multiDayEventHandling)
+  if(is.numeric(multiDayEventHandling))
+    data = withinBlockScreen(data, day, blockLen = multiDayEventHandling)
 
   month = month[!is.na(data)]
   if(aggregation == "seasonal")
     season = season[!is.na(data)]
-  covariates = covariates[!is.na(data), , drop = FALSE]
+
+  if(nCovariates)
+    covariates <- covariates[!is.na(data), , drop = FALSE]
   data = data[!is.na(data)]
   
   nParam <- 3 + length(locationModel) + length(scaleModel) + length(shapeModel)

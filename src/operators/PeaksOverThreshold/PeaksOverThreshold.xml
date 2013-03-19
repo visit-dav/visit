@@ -26,47 +26,116 @@
         NOV
         DEC
       </Enum>
+      <Enum name="CutoffModeType">
+        UPPER_TAIL
+        LOWER_TAIL
+      </Enum>
+      <Enum name="OptimizationType">
+        NELDER_MEAD
+        BFGS
+      </Enum>
       <Field name="dataYearBegin" label="Year begin" type="int">
         1
       </Field>
-      <Field name="dataAnalysisYearRangeEnabled" label="Select year range" type="bool">
+      <Field name="dataAnalysisYearRangeEnabled" label="Select range of years for analysis" type="bool">
         false
       </Field>
-      <Field name="dataAnalysisYearRange" label="Analysis year range" type="intArray" length="2" enabler="dataAnalysisYearRangeEnabled:true">
+      <Field name="dataAnalysisYear1" label="Analysis year 1" type="int" enabler="dataAnalysisYearRangeEnabled:true">
         0
+      </Field>
+      <Field name="dataAnalysisYear2" label="Analysis year 1" type="int">
         0
       </Field>
       <Field name="ensemble" label="Ensemble" type="bool">
         false
       </Field>
-      <Field name="numEnsembles" label="Number of ensembles" type="int" enabler="ensemble:true">
+      <Field name="numEnsembles" label="Number of members" type="int" enabler="ensemble:true">
         1
+      </Field>
+      <Field name="cutoff" label="Cutoff" type="float">
+        0.000000
+      </Field>
+      <Field name="cutoffMode" label="Analysis" type="enum" subtype="CutoffModeType">
+        UPPER_TAIL
+      </Field>
+      <Field name="noConsecutiveDay" label="no consecutive day" type="bool">
+        false
+      </Field>
+      <Field name="optimizationMethod" label="optimization method" type="enum" subtype="OptimizationType">
+        NELDER_MEAD
+      </Field>
+      <Field name="dataScaling" label="Data Scaling" type="double">
+        1.000000
       </Field>
       <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
         ANNUAL
       </Field>
       <Field name="annualPercentile" label="Annual Percentile" type="double" enabler="aggregation:ANNUAL">
-        0.900000
+        0.950000
       </Field>
       <Field name="seasonalPercentile" label="Seasonal Percentile" type="doubleArray" length="4" enabler="aggregation:SEASONAL">
-        0.900000
-        0.900000
-        0.900000
-        0.900000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
       </Field>
       <Field name="monthlyPercentile" label="Monthly Percentile" type="doubleArray" length="12" enabler="aggregation:MONTHLY">
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
-        0.900000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+        0.950000
+      </Field>
+      <Field name="daysPerYear" label="Days per year" type="int">
+        365
+      </Field>
+      <Field name="daysPerMonth" label="Days per month" type="intArray" length="12">
+        31
+        28
+        31
+        30
+        31
+        30
+        31
+        31
+        29
+        31
+        30
+        31
+      </Field>
+      <Field name="covariateModelScale" label="Linear trend in log scale parameter" type="bool">
+        false
+      </Field>
+      <Field name="covariateModelLocation" label="Linear trend in location parameter" type="bool">
+        false
+      </Field>
+      <Field name="covariateModelShape" label="Linear trend in shape parameter" type="bool">
+        false
+      </Field>
+      <Field name="computeCovariates" label="Compute return value differences for years" type="bool">
+        false
+      </Field>
+      <Field name="covariateReturnYears" label="Return values computed for years" type="intVector" enabler="computeCovariates:true">
+        1
+      </Field>
+      <Field name="computeRVDifferences" label="Compute RV differences" type="bool">
+        false
+      </Field>
+      <Field name="rvDifference1" label="RV Difference1" type="int" enabler="computeRVDifferences:true">
+        0
+      </Field>
+      <Field name="rvDifference2" label="RV Difference2" type="int" enabler="computeRVDifferences:true">
+        0
+      </Field>
+      <Field name="computeParamValues" label="Output parameter values" type="bool">
+        false
       </Field>
       <Field name="displaySeason" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
         WINTER
@@ -74,39 +143,8 @@
       <Field name="displayMonth" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
         JAN
       </Field>
-      <Field name="cutoff" label="Cutoff" type="float">
-        0.000000
-      </Field>
-      <Field name="computeParamValues" label="Output parameter values" type="bool">
-        false
-      </Field>
-      <Field name="computeCovariates" label="Compute covariates" type="bool">
-        false
-      </Field>
-      <Field name="covariateReturnYears" label="Covariate return years" type="intVector" enabler="computeCovariates:true">
-        1
-      </Field>
-      <Field name="covariateModelLocation" label="Covariate Location Model" type="bool" enabler="computeCovariates:true">
-        false
-      </Field>
-      <Field name="covariateModelShape" label="Covariate Shape Model" type="bool" enabler="computeCovariates:true">
-        false
-      </Field>
-      <Field name="covariateModelScale" label="Covariate Scale Model" type="bool" enabler="computeCovariates:true">
-        false
-      </Field>
-      <Field name="computeRVDifferences" label="Compute RV differences" type="bool" enabler="computeCovariates:true">
-        false
-      </Field>
-      <Field name="rvDifferences" label="RV Differences" type="intArray" length="2" enabler="computeRVDifferences:true">
-        0
-        0
-      </Field>
-      <Field name="dataScaling" label="Data Scaling" type="double">
-        86500.000000
-      </Field>
       <Field name="dumpData" label="Dump Data" type="bool">
-        false
+        true
       </Field>
     </Attribute>
   </Plugin>

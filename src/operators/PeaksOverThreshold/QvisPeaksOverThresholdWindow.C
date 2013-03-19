@@ -48,6 +48,8 @@
 #include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QGroupBox>
+#include <QComboBox>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -124,214 +126,244 @@ QvisPeaksOverThresholdWindow::~QvisPeaksOverThresholdWindow()
 void
 QvisPeaksOverThresholdWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
+    int row = 0;
+    //
+    // Inputs group box
+    //
+    QGroupBox *inputGroup = new QGroupBox(central);
+    inputGroup->setTitle(tr("Inputs"));
+    topLayout->addWidget(inputGroup);
+    QGridLayout *inputLayout = new QGridLayout(inputGroup);
+    inputLayout->setMargin(5);
+    inputLayout->setSpacing(10);
 
-    dataYearBeginLabel = new QLabel(tr("Year begin"), central);
-    mainLayout->addWidget(dataYearBeginLabel,0,0);
+    inputLayout->addWidget(new QLabel(tr("Start year"), central), 0, 0);
     dataYearBegin = new QLineEdit(central);
     connect(dataYearBegin, SIGNAL(returnPressed()),
             this, SLOT(dataYearBeginProcessText()));
-    mainLayout->addWidget(dataYearBegin, 0,1);
+    inputLayout->addWidget(dataYearBegin, 0,1);
 
-    dataAnalysisYearRangeEnabled = new QCheckBox(tr("Select year range"), central);
+    dataAnalysisYearRangeEnabled = new QCheckBox(tr("Analysis year range"), central);
     connect(dataAnalysisYearRangeEnabled, SIGNAL(toggled(bool)),
             this, SLOT(dataAnalysisYearRangeEnabledChanged(bool)));
-    mainLayout->addWidget(dataAnalysisYearRangeEnabled, 1,0);
-
-    dataAnalysisYearRangeLabel = new QLabel(tr("Analysis year range"), central);
-    mainLayout->addWidget(dataAnalysisYearRangeLabel,2,0);
-    dataAnalysisYearRange = new QLineEdit(central);
-    connect(dataAnalysisYearRange, SIGNAL(returnPressed()),
-            this, SLOT(dataAnalysisYearRangeProcessText()));
-    mainLayout->addWidget(dataAnalysisYearRange, 2,1);
+    inputLayout->addWidget(dataAnalysisYearRangeEnabled, 1,0);
+    dataAnalysisYear1 = new QLineEdit(central);
+    connect(dataAnalysisYear1, SIGNAL(returnPressed()),
+            this, SLOT(dataAnalysisYear1ProcessText()));
+    inputLayout->addWidget(dataAnalysisYear1, 1,1);
+    dataAnalysisYear2 = new QLineEdit(central);
+    connect(dataAnalysisYear2, SIGNAL(returnPressed()),
+            this, SLOT(dataAnalysisYear2ProcessText()));
+    inputLayout->addWidget(dataAnalysisYear2, 1,2);
 
     ensemble = new QCheckBox(tr("Ensemble"), central);
     connect(ensemble, SIGNAL(toggled(bool)),
             this, SLOT(ensembleChanged(bool)));
-    mainLayout->addWidget(ensemble, 3,0);
+    inputLayout->addWidget(ensemble, 2,0);
 
-    numEnsemblesLabel = new QLabel(tr("Number of ensembles"), central);
-    mainLayout->addWidget(numEnsemblesLabel,4,0);
+    numEnsemblesLabel = new QLabel(tr("Number of members"), central);
+    inputLayout->addWidget(numEnsemblesLabel,2,1);
     numEnsembles = new QLineEdit(central);
     connect(numEnsembles, SIGNAL(returnPressed()),
             this, SLOT(numEnsemblesProcessText()));
-    mainLayout->addWidget(numEnsembles, 4,1);
-
-    aggregationLabel = new QLabel(tr("Aggregation"), central);
-    mainLayout->addWidget(aggregationLabel,5,0);
-    aggregation = new QWidget(central);
-    aggregationButtonGroup= new QButtonGroup(aggregation);
-    QHBoxLayout *aggregationLayout = new QHBoxLayout(aggregation);
-    aggregationLayout->setMargin(0);
-    aggregationLayout->setSpacing(10);
-    QRadioButton *aggregationAggregationTypeANNUAL = new QRadioButton(tr("ANNUAL"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeANNUAL,0);
-    aggregationLayout->addWidget(aggregationAggregationTypeANNUAL);
-    QRadioButton *aggregationAggregationTypeSEASONAL = new QRadioButton(tr("SEASONAL"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeSEASONAL,1);
-    aggregationLayout->addWidget(aggregationAggregationTypeSEASONAL);
-    QRadioButton *aggregationAggregationTypeMONTHLY = new QRadioButton(tr("MONTHLY"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeMONTHLY,2);
-    aggregationLayout->addWidget(aggregationAggregationTypeMONTHLY);
-    connect(aggregationButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(aggregationChanged(int)));
-    mainLayout->addWidget(aggregation, 5,1);
-
-    annualPercentileLabel = new QLabel(tr("Annual Percentile"), central);
-    mainLayout->addWidget(annualPercentileLabel,6,0);
-    annualPercentile = new QLineEdit(central);
-    connect(annualPercentile, SIGNAL(returnPressed()),
-            this, SLOT(annualPercentileProcessText()));
-    mainLayout->addWidget(annualPercentile, 6,1);
-
-    seasonalPercentileLabel = new QLabel(tr("Seasonal Percentile"), central);
-    mainLayout->addWidget(seasonalPercentileLabel,7,0);
-    seasonalPercentile = new QLineEdit(central);
-    connect(seasonalPercentile, SIGNAL(returnPressed()),
-            this, SLOT(seasonalPercentileProcessText()));
-    mainLayout->addWidget(seasonalPercentile, 7,1);
-
-    monthlyPercentileLabel = new QLabel(tr("Monthly Percentile"), central);
-    mainLayout->addWidget(monthlyPercentileLabel,8,0);
-    monthlyPercentile = new QLineEdit(central);
-    connect(monthlyPercentile, SIGNAL(returnPressed()),
-            this, SLOT(monthlyPercentileProcessText()));
-    mainLayout->addWidget(monthlyPercentile, 8,1);
-
-    displaySeasonLabel = new QLabel(tr("Display Season"), central);
-    mainLayout->addWidget(displaySeasonLabel,9,0);
-    displaySeason = new QWidget(central);
-    displaySeasonButtonGroup= new QButtonGroup(displaySeason);
-    QHBoxLayout *displaySeasonLayout = new QHBoxLayout(displaySeason);
-    displaySeasonLayout->setMargin(0);
-    displaySeasonLayout->setSpacing(10);
-    QRadioButton *displaySeasonSeasonTypeWINTER = new QRadioButton(tr("WINTER"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeWINTER,0);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeWINTER);
-    QRadioButton *displaySeasonSeasonTypeSPRING = new QRadioButton(tr("SPRING"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSPRING,1);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSPRING);
-    QRadioButton *displaySeasonSeasonTypeSUMMER = new QRadioButton(tr("SUMMER"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSUMMER,2);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSUMMER);
-    QRadioButton *displaySeasonSeasonTypeFALL = new QRadioButton(tr("FALL"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeFALL,3);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeFALL);
-    connect(displaySeasonButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(displaySeasonChanged(int)));
-    mainLayout->addWidget(displaySeason, 9,1);
-
-    displayMonthLabel = new QLabel(tr("Display Month"), central);
-    mainLayout->addWidget(displayMonthLabel,10,0);
-    displayMonth = new QWidget(central);
-    displayMonthButtonGroup= new QButtonGroup(displayMonth);
-    QHBoxLayout *displayMonthLayout = new QHBoxLayout(displayMonth);
-    displayMonthLayout->setMargin(0);
-    displayMonthLayout->setSpacing(10);
-    QRadioButton *displayMonthMonthTypeJAN = new QRadioButton(tr("JAN"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJAN,0);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJAN);
-    QRadioButton *displayMonthMonthTypeFEB = new QRadioButton(tr("FEB"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeFEB,1);
-    displayMonthLayout->addWidget(displayMonthMonthTypeFEB);
-    QRadioButton *displayMonthMonthTypeMAR = new QRadioButton(tr("MAR"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeMAR,2);
-    displayMonthLayout->addWidget(displayMonthMonthTypeMAR);
-    QRadioButton *displayMonthMonthTypeAPR = new QRadioButton(tr("APR"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeAPR,3);
-    displayMonthLayout->addWidget(displayMonthMonthTypeAPR);
-    QRadioButton *displayMonthMonthTypeMAY = new QRadioButton(tr("MAY"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeMAY,4);
-    displayMonthLayout->addWidget(displayMonthMonthTypeMAY);
-    QRadioButton *displayMonthMonthTypeJUN = new QRadioButton(tr("JUN"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJUN,5);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJUN);
-    QRadioButton *displayMonthMonthTypeJUL = new QRadioButton(tr("JUL"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJUL,6);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJUL);
-    QRadioButton *displayMonthMonthTypeAUG = new QRadioButton(tr("AUG"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeAUG,7);
-    displayMonthLayout->addWidget(displayMonthMonthTypeAUG);
-    QRadioButton *displayMonthMonthTypeSEP = new QRadioButton(tr("SEP"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeSEP,8);
-    displayMonthLayout->addWidget(displayMonthMonthTypeSEP);
-    QRadioButton *displayMonthMonthTypeOCT = new QRadioButton(tr("OCT"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeOCT,9);
-    displayMonthLayout->addWidget(displayMonthMonthTypeOCT);
-    QRadioButton *displayMonthMonthTypeNOV = new QRadioButton(tr("NOV"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeNOV,10);
-    displayMonthLayout->addWidget(displayMonthMonthTypeNOV);
-    QRadioButton *displayMonthMonthTypeDEC = new QRadioButton(tr("DEC"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeDEC,11);
-    displayMonthLayout->addWidget(displayMonthMonthTypeDEC);
-    connect(displayMonthButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(displayMonthChanged(int)));
-    mainLayout->addWidget(displayMonth, 10,1);
+    inputLayout->addWidget(numEnsembles, 2,2);
 
     cutoffLabel = new QLabel(tr("Cutoff"), central);
-    mainLayout->addWidget(cutoffLabel,11,0);
+    inputLayout->addWidget(cutoffLabel,3,0);
     cutoff = new QLineEdit(central);
     connect(cutoff, SIGNAL(returnPressed()),
             this, SLOT(cutoffProcessText()));
-    mainLayout->addWidget(cutoff, 11,1);
+    inputLayout->addWidget(cutoff, 3,1);
 
-    computeParamValues = new QCheckBox(tr("Output parameter values"), central);
-    connect(computeParamValues, SIGNAL(toggled(bool)),
-            this, SLOT(computeParamValuesChanged(bool)));
-    mainLayout->addWidget(computeParamValues, 12,0);
+    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
+    inputLayout->addWidget(dataScalingLabel,3,2);
+    dataScaling = new QLineEdit(central);
+    connect(dataScaling, SIGNAL(returnPressed()),
+            this, SLOT(dataScalingProcessText()));
+    inputLayout->addWidget(dataScaling, 3,3);
 
-    computeCovariates = new QCheckBox(tr("Compute covariates"), central);
+    //
+    // Analysis group box
+    //
+    row = 0;
+    QGroupBox *analysisGroup = new QGroupBox(central);
+    analysisGroup->setTitle(tr("Analysis"));
+    topLayout->addWidget(analysisGroup);
+    QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
+    analysisLayout->setMargin(5);
+    analysisLayout->setSpacing(10);
+
+    cutoffModeButtonGroup = new QButtonGroup(central);
+    QRadioButton *rb = new QRadioButton(tr("Upper tail"), central );
+    rb->setChecked(true);
+    cutoffModeButtonGroup->addButton(rb, 0);
+    analysisLayout->addWidget(rb, row, 0);
+    rb = new QRadioButton(tr("Lower tail"), central );
+    cutoffModeButtonGroup->addButton(rb, 1);
+    analysisLayout->addWidget(rb, row, 1);
+    
+    // Each time a radio button is clicked, call the centeringClicked slot.
+    connect(cutoffModeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(cutoffModeChanged(int)));
+    row++;
+
+    noConsecutiveDay = new QCheckBox(tr("No consecutive day events"), central);
+    connect(noConsecutiveDay, SIGNAL(toggled(bool)),
+            this, SLOT(noConsecutiveDayChanged(bool)));
+    analysisLayout->addWidget(noConsecutiveDay, row,0);
+    row++;
+
+    analysisLayout->addWidget(new QLabel(tr("Optimization"), central), row, 0);
+    optimizationSelect = new QComboBox(central);
+    optimizationSelect->addItem(tr("Nelder-Mead"));
+    optimizationSelect->addItem(tr("BFGS"));
+    connect(optimizationSelect, SIGNAL(activated(int)),
+            this, SLOT(optimizationChanged(int))); 
+    analysisLayout->addWidget(optimizationSelect, row, 1);
+    row++;
+
+    analysisLayout->addWidget(new QLabel(tr("Aggregation"), central), row, 0);
+    aggregationSelect = new QComboBox(central);
+    aggregationSelect->addItem(tr("Annual"));
+    aggregationSelect->addItem(tr("Seasonal"));
+    aggregationSelect->addItem(tr("Monthly"));
+    connect(aggregationSelect, SIGNAL(activated(int)),
+            this, SLOT(aggregationChanged(int))); 
+    analysisLayout->addWidget(aggregationSelect, row, 1);
+
+    analysisLayout->addWidget(new QLabel(tr("Percentile"), central),row,2);
+    annualPercentile = new QLineEdit(central);
+    connect(annualPercentile, SIGNAL(returnPressed()),
+            this, SLOT(annualPercentileProcessText()));
+    analysisLayout->addWidget(annualPercentile, row, 3);
+
+    seasonalPercentile = new QLineEdit(central);
+    connect(seasonalPercentile, SIGNAL(returnPressed()),
+            this, SLOT(seasonalPercentileProcessText()));
+    analysisLayout->addWidget(seasonalPercentile, row,3);
+
+    monthlyPercentile = new QLineEdit(central);
+    connect(monthlyPercentile, SIGNAL(returnPressed()),
+            this, SLOT(monthlyPercentileProcessText()));
+    analysisLayout->addWidget(monthlyPercentile, row,3);
+    row++;
+
+    daysPerYearLabel = new QLabel(tr("Days per year"), central);
+    analysisLayout->addWidget(daysPerYearLabel, row,0);
+    daysPerYear = new QLineEdit(central);
+    connect(daysPerYear, SIGNAL(returnPressed()),
+            this, SLOT(daysPerYearProcessText()));
+    analysisLayout->addWidget(daysPerYear, row,1);
+
+    daysPerMonthLabel = new QLabel(tr("Days per month"), central);
+    analysisLayout->addWidget(daysPerMonthLabel,row,0);
+    daysPerMonth = new QLineEdit(central);
+    connect(daysPerMonth, SIGNAL(returnPressed()),
+            this, SLOT(daysPerMonthProcessText()));
+    analysisLayout->addWidget(daysPerMonth, row,1);
+    row++;
+
+    //
+    // Trend Modeling group box
+    //
+    QGroupBox *trendGroup = new QGroupBox(central);
+    trendGroup->setTitle(tr("Trend Modeling"));
+    analysisLayout->addWidget(trendGroup, row, 0);
+    QGridLayout *trendLayout = new QGridLayout(trendGroup);
+    trendLayout->setMargin(5);
+    trendLayout->setSpacing(10);
+    row = 0;
+
+    covariateModelScale = new QCheckBox(tr("Linear trend in log scale parameter"), central);
+    connect(covariateModelScale, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelScaleChanged(bool)));
+    trendLayout->addWidget(covariateModelScale, row,0);
+    row++;
+
+    covariateModelLocation = new QCheckBox(tr("Linear trend in location parameter"), central);
+    connect(covariateModelLocation, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelLocationChanged(bool)));
+    trendLayout->addWidget(covariateModelLocation, row,0);
+    row++;
+
+    covariateModelShape = new QCheckBox(tr("Linear trend in shape parameter"), central);
+    connect(covariateModelShape, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelShapeChanged(bool)));
+    trendLayout->addWidget(covariateModelShape, row,0);
+    row++;
+
+
+    //
+    // Outputs group box
+    //
+    QGroupBox *outputGroup = new QGroupBox(central);
+    outputGroup->setTitle(tr("Outputs"));
+    topLayout->addWidget(outputGroup);
+    QGridLayout *outputLayout = new QGridLayout(outputGroup);
+    outputLayout->setMargin(5);
+    outputLayout->setSpacing(10);
+
+    computeCovariates = new QCheckBox(tr("Compute return value differences for years"), central);
     connect(computeCovariates, SIGNAL(toggled(bool)),
             this, SLOT(computeCovariatesChanged(bool)));
-    mainLayout->addWidget(computeCovariates, 13,0);
+    outputLayout->addWidget(computeCovariates, 0,0);
 
-    covariateReturnYearsLabel = new QLabel(tr("Covariate return years"), central);
-    mainLayout->addWidget(covariateReturnYearsLabel,14,0);
     covariateReturnYears = new QLineEdit(central);
     connect(covariateReturnYears, SIGNAL(returnPressed()),
             this, SLOT(covariateReturnYearsProcessText()));
-    mainLayout->addWidget(covariateReturnYears, 14,1);
-
-    covariateModelLocation = new QCheckBox(tr("Covariate Location Model"), central);
-    connect(covariateModelLocation, SIGNAL(toggled(bool)),
-            this, SLOT(covariateModelLocationChanged(bool)));
-    mainLayout->addWidget(covariateModelLocation, 15,0);
-
-    covariateModelShape = new QCheckBox(tr("Covariate Shape Model"), central);
-    connect(covariateModelShape, SIGNAL(toggled(bool)),
-            this, SLOT(covariateModelShapeChanged(bool)));
-    mainLayout->addWidget(covariateModelShape, 16,0);
-
-    covariateModelScale = new QCheckBox(tr("Covariate Scale Model"), central);
-    connect(covariateModelScale, SIGNAL(toggled(bool)),
-            this, SLOT(covariateModelScaleChanged(bool)));
-    mainLayout->addWidget(covariateModelScale, 17,0);
+    outputLayout->addWidget(covariateReturnYears, 0,1);
 
     computeRVDifferences = new QCheckBox(tr("Compute RV differences"), central);
     connect(computeRVDifferences, SIGNAL(toggled(bool)),
             this, SLOT(computeRVDifferencesChanged(bool)));
-    mainLayout->addWidget(computeRVDifferences, 18,0);
+    outputLayout->addWidget(computeRVDifferences, 1,0);
 
-    rvDifferencesLabel = new QLabel(tr("RV Differences"), central);
-    mainLayout->addWidget(rvDifferencesLabel,19,0);
-    rvDifferences = new QLineEdit(central);
-    connect(rvDifferences, SIGNAL(returnPressed()),
-            this, SLOT(rvDifferencesProcessText()));
-    mainLayout->addWidget(rvDifferences, 19,1);
+    rvDifference1 = new QLineEdit(central);
+    connect(rvDifference1, SIGNAL(returnPressed()),
+            this, SLOT(rvDifference1ProcessText()));
+    outputLayout->addWidget(rvDifference1, 1,1);
+    rvDifference2 = new QLineEdit(central);
+    connect(rvDifference2, SIGNAL(returnPressed()),
+            this, SLOT(rvDifference2ProcessText()));
+    outputLayout->addWidget(rvDifference2, 1,2);
 
-    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,20,0);
-    dataScaling = new QLineEdit(central);
-    connect(dataScaling, SIGNAL(returnPressed()),
-            this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 20,1);
+    computeParamValues = new QCheckBox(tr("Output parameter values"), central);
+    connect(computeParamValues, SIGNAL(toggled(bool)),
+            this, SLOT(computeParamValuesChanged(bool)));
+    outputLayout->addWidget(computeParamValues, 2,0);
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 21,0);
+    outputLayout->addWidget(dumpData, 3,0);
 
+    displayLabel = new QLabel(tr("Display"), central);
+    outputLayout->addWidget(displayLabel, 4, 0);
+    displaySeasonSelect = new QComboBox(central);
+    displaySeasonSelect->addItem(tr("Winter"));
+    displaySeasonSelect->addItem(tr("Spring"));
+    displaySeasonSelect->addItem(tr("Summer"));
+    displaySeasonSelect->addItem(tr("Fall"));
+    connect(displaySeasonSelect, SIGNAL(activated(int)),
+            this, SLOT(displaySeasonChanged(int)));
+    outputLayout->addWidget(displaySeasonSelect, 4, 1);
+
+    displayMonthSelect = new QComboBox(central);
+    displayMonthSelect->addItem(tr("January"));
+    displayMonthSelect->addItem(tr("February"));
+    displayMonthSelect->addItem(tr("March"));
+    displayMonthSelect->addItem(tr("April"));
+    displayMonthSelect->addItem(tr("May"));
+    displayMonthSelect->addItem(tr("June"));
+    displayMonthSelect->addItem(tr("July"));
+    displayMonthSelect->addItem(tr("August"));
+    displayMonthSelect->addItem(tr("September"));
+    displayMonthSelect->addItem(tr("October"));
+    displayMonthSelect->addItem(tr("November"));
+    displayMonthSelect->addItem(tr("December"));
+    connect(displayMonthSelect, SIGNAL(activated(int)),
+            this, SLOT(displayMonthChanged(int))); 
+    outputLayout->addWidget(displayMonthSelect, 4, 1);
 }
 
 
@@ -372,22 +404,23 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
           case PeaksOverThresholdAttributes::ID_dataAnalysisYearRangeEnabled:
             if (atts->GetDataAnalysisYearRangeEnabled() == true)
             {
-                dataAnalysisYearRange->setEnabled(true);
-                if(dataAnalysisYearRangeLabel)
-                    dataAnalysisYearRangeLabel->setEnabled(true);
+                dataAnalysisYear1->setEnabled(true);
+                dataAnalysisYear2->setEnabled(true);
             }
             else
             {
-                dataAnalysisYearRange->setEnabled(false);
-                if(dataAnalysisYearRangeLabel)
-                    dataAnalysisYearRangeLabel->setEnabled(false);
+                dataAnalysisYear1->setEnabled(false);
+                dataAnalysisYear2->setEnabled(false);
             }
             dataAnalysisYearRangeEnabled->blockSignals(true);
             dataAnalysisYearRangeEnabled->setChecked(atts->GetDataAnalysisYearRangeEnabled());
             dataAnalysisYearRangeEnabled->blockSignals(false);
             break;
-          case PeaksOverThresholdAttributes::ID_dataAnalysisYearRange:
-            dataAnalysisYearRange->setText(IntsToQString(atts->GetDataAnalysisYearRange(),2));
+           case PeaksOverThresholdAttributes::ID_dataAnalysisYear1:
+            dataAnalysisYear1->setText(IntToQString(atts->GetDataAnalysisYear1()));
+            break;
+           case PeaksOverThresholdAttributes::ID_dataAnalysisYear2:
+            dataAnalysisYear2->setText(IntToQString(atts->GetDataAnalysisYear2()));
             break;
           case PeaksOverThresholdAttributes::ID_ensemble:
             if (atts->GetEnsemble() == true)
@@ -409,71 +442,83 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
           case PeaksOverThresholdAttributes::ID_numEnsembles:
             numEnsembles->setText(IntToQString(atts->GetNumEnsembles()));
             break;
+          case PeaksOverThresholdAttributes::ID_cutoff:
+            cutoff->setText(FloatToQString(atts->GetCutoff()));
+            break;
+          case PeaksOverThresholdAttributes::ID_cutoffMode:
+            cutoffModeButtonGroup->blockSignals(true);
+            if(cutoffModeButtonGroup->button((int)atts->GetCutoffMode()) != 0)
+                cutoffModeButtonGroup->button((int)atts->GetCutoffMode())->setChecked(true);
+            cutoffModeButtonGroup->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_dataScaling:
+            dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
+            break;
           case PeaksOverThresholdAttributes::ID_aggregation:
+              annualPercentile->setEnabled(false);
+              monthlyPercentile->setEnabled(false);
+              seasonalPercentile->setEnabled(false);
+              annualPercentile->hide();
+              monthlyPercentile->hide();
+              seasonalPercentile->hide();
+
+              daysPerYearLabel->setEnabled(false);
+              daysPerYearLabel->hide();
+              daysPerYear->setEnabled(false);
+              daysPerYear->hide();
+              daysPerMonthLabel->setEnabled(false);
+              daysPerMonthLabel->hide();
+              daysPerMonth->setEnabled(false);
+              daysPerMonth->hide();
+
+              displayLabel->hide();
+              displayLabel->setEnabled(false);
+              displayMonthSelect->hide();
+              displayMonthSelect->setEnabled(false);
+              displaySeasonSelect->hide();
+              displaySeasonSelect->setEnabled(false);
+
+              
             if (atts->GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
             {
+                annualPercentile->show();
                 annualPercentile->setEnabled(true);
-                if(annualPercentileLabel)
-                    annualPercentileLabel->setEnabled(true);
+                
+                daysPerYear->setEnabled(true);
+                daysPerYear->show();
+                daysPerYearLabel->setEnabled(true);
+                daysPerYearLabel->show();
             }
-            else
+            else if (atts->GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
             {
-                annualPercentile->setEnabled(false);
-                if(annualPercentileLabel)
-                    annualPercentileLabel->setEnabled(false);
-            }
-            if (atts->GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
-            {
+                seasonalPercentile->show();
                 seasonalPercentile->setEnabled(true);
-                if(seasonalPercentileLabel)
-                    seasonalPercentileLabel->setEnabled(true);
+                daysPerMonth->setEnabled(true);
+                daysPerMonth->show();
+                daysPerMonthLabel->setEnabled(true);
+                daysPerMonthLabel->show();
+                displayLabel->show();
+                displayLabel->setEnabled(true);
+                displaySeasonSelect->show();
+                displaySeasonSelect->setEnabled(true);
             }
-            else
+            else if (atts->GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
             {
-                seasonalPercentile->setEnabled(false);
-                if(seasonalPercentileLabel)
-                    seasonalPercentileLabel->setEnabled(false);
-            }
-            if (atts->GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
-            {
+                monthlyPercentile->show();
                 monthlyPercentile->setEnabled(true);
-                if(monthlyPercentileLabel)
-                    monthlyPercentileLabel->setEnabled(true);
+                daysPerMonth->setEnabled(true);
+                daysPerMonth->show();
+                daysPerMonthLabel->setEnabled(true);
+                daysPerMonthLabel->show();
+                displayLabel->show();
+                displayLabel->setEnabled(true);
+                displayMonthSelect->show();
+                displayMonthSelect->setEnabled(true);
+
             }
-            else
-            {
-                monthlyPercentile->setEnabled(false);
-                if(monthlyPercentileLabel)
-                    monthlyPercentileLabel->setEnabled(false);
-            }
-            if (atts->GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
-            {
-                displaySeason->setEnabled(true);
-                if(displaySeasonLabel)
-                    displaySeasonLabel->setEnabled(true);
-            }
-            else
-            {
-                displaySeason->setEnabled(false);
-                if(displaySeasonLabel)
-                    displaySeasonLabel->setEnabled(false);
-            }
-            if (atts->GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
-            {
-                displayMonth->setEnabled(true);
-                if(displayMonthLabel)
-                    displayMonthLabel->setEnabled(true);
-            }
-            else
-            {
-                displayMonth->setEnabled(false);
-                if(displayMonthLabel)
-                    displayMonthLabel->setEnabled(false);
-            }
-            aggregationButtonGroup->blockSignals(true);
-            if(aggregationButtonGroup->button((int)atts->GetAggregation()) != 0)
-                aggregationButtonGroup->button((int)atts->GetAggregation())->setChecked(true);
-            aggregationButtonGroup->blockSignals(false);
+            aggregationSelect->blockSignals(true);
+            aggregationSelect->setCurrentIndex(int(atts->GetAggregation()));
+            aggregationSelect->blockSignals(false);
             break;
           case PeaksOverThresholdAttributes::ID_annualPercentile:
             annualPercentile->setText(DoubleToQString(atts->GetAnnualPercentile()));
@@ -484,77 +529,16 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
           case PeaksOverThresholdAttributes::ID_monthlyPercentile:
             monthlyPercentile->setText(DoublesToQString(atts->GetMonthlyPercentile(), 12));
             break;
-          case PeaksOverThresholdAttributes::ID_displaySeason:
-            displaySeasonButtonGroup->blockSignals(true);
-            if(displaySeasonButtonGroup->button((int)atts->GetDisplaySeason()) != 0)
-                displaySeasonButtonGroup->button((int)atts->GetDisplaySeason())->setChecked(true);
-            displaySeasonButtonGroup->blockSignals(false);
+          case PeaksOverThresholdAttributes::ID_daysPerYear:
+            daysPerYear->setText(IntToQString(atts->GetDaysPerYear()));
             break;
-          case PeaksOverThresholdAttributes::ID_displayMonth:
-            displayMonthButtonGroup->blockSignals(true);
-            if(displayMonthButtonGroup->button((int)atts->GetDisplayMonth()) != 0)
-                displayMonthButtonGroup->button((int)atts->GetDisplayMonth())->setChecked(true);
-            displayMonthButtonGroup->blockSignals(false);
+          case PeaksOverThresholdAttributes::ID_daysPerMonth:
+            daysPerMonth->setText(IntsToQString(atts->GetDaysPerMonth(),12));
             break;
-          case PeaksOverThresholdAttributes::ID_cutoff:
-            cutoff->setText(FloatToQString(atts->GetCutoff()));
-            break;
-          case PeaksOverThresholdAttributes::ID_computeParamValues:
-            computeParamValues->blockSignals(true);
-            computeParamValues->setChecked(atts->GetComputeParamValues());
-            computeParamValues->blockSignals(false);
-            break;
-          case PeaksOverThresholdAttributes::ID_computeCovariates:
-            if (atts->GetComputeCovariates() == true)
-            {
-                covariateReturnYears->setEnabled(true);
-                if(covariateReturnYearsLabel)
-                    covariateReturnYearsLabel->setEnabled(true);
-            }
-            else
-            {
-                covariateReturnYears->setEnabled(false);
-                if(covariateReturnYearsLabel)
-                    covariateReturnYearsLabel->setEnabled(false);
-            }
-            if (atts->GetComputeCovariates() == true)
-            {
-                covariateModelLocation->setEnabled(true);
-            }
-            else
-            {
-                covariateModelLocation->setEnabled(false);
-            }
-            if (atts->GetComputeCovariates() == true)
-            {
-                covariateModelShape->setEnabled(true);
-            }
-            else
-            {
-                covariateModelShape->setEnabled(false);
-            }
-            if (atts->GetComputeCovariates() == true)
-            {
-                covariateModelScale->setEnabled(true);
-            }
-            else
-            {
-                covariateModelScale->setEnabled(false);
-            }
-            if (atts->GetComputeCovariates() == true)
-            {
-                computeRVDifferences->setEnabled(true);
-            }
-            else
-            {
-                computeRVDifferences->setEnabled(false);
-            }
-            computeCovariates->blockSignals(true);
-            computeCovariates->setChecked(atts->GetComputeCovariates());
-            computeCovariates->blockSignals(false);
-            break;
-          case PeaksOverThresholdAttributes::ID_covariateReturnYears:
-            covariateReturnYears->setText(IntsToQString(atts->GetCovariateReturnYears()));
+          case PeaksOverThresholdAttributes::ID_covariateModelScale:
+            covariateModelScale->blockSignals(true);
+            covariateModelScale->setChecked(atts->GetCovariateModelScale());
+            covariateModelScale->blockSignals(false);
             break;
           case PeaksOverThresholdAttributes::ID_covariateModelLocation:
             covariateModelLocation->blockSignals(true);
@@ -566,38 +550,72 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             covariateModelShape->setChecked(atts->GetCovariateModelShape());
             covariateModelShape->blockSignals(false);
             break;
-          case PeaksOverThresholdAttributes::ID_covariateModelScale:
-            covariateModelScale->blockSignals(true);
-            covariateModelScale->setChecked(atts->GetCovariateModelScale());
-            covariateModelScale->blockSignals(false);
+          case PeaksOverThresholdAttributes::ID_computeCovariates:
+            if (atts->GetComputeCovariates() == true)
+            {
+                covariateReturnYears->setEnabled(true);
+            }
+            else
+            {
+                covariateReturnYears->setEnabled(false);
+            }
+            computeCovariates->blockSignals(true);
+            computeCovariates->setChecked(atts->GetComputeCovariates());
+            computeCovariates->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_covariateReturnYears:
+            covariateReturnYears->setText(IntsToQString(atts->GetCovariateReturnYears()));
             break;
           case PeaksOverThresholdAttributes::ID_computeRVDifferences:
             if (atts->GetComputeRVDifferences() == true)
             {
-                rvDifferences->setEnabled(true);
-                if(rvDifferencesLabel)
-                    rvDifferencesLabel->setEnabled(true);
+                rvDifference1->setEnabled(true);
+                rvDifference2->setEnabled(true);
             }
             else
             {
-                rvDifferences->setEnabled(false);
-                if(rvDifferencesLabel)
-                    rvDifferencesLabel->setEnabled(false);
+                rvDifference1->setEnabled(false);
+                rvDifference2->setEnabled(false);
             }
             computeRVDifferences->blockSignals(true);
             computeRVDifferences->setChecked(atts->GetComputeRVDifferences());
             computeRVDifferences->blockSignals(false);
+            break; 
+          case PeaksOverThresholdAttributes::ID_rvDifference1:
+            rvDifference1->setText(IntToQString(atts->GetRvDifference1()));
             break;
-          case PeaksOverThresholdAttributes::ID_rvDifferences:
-            rvDifferences->setText(IntsToQString(atts->GetRvDifferences(),2));
+          case PeaksOverThresholdAttributes::ID_rvDifference2:
+            rvDifference2->setText(IntToQString(atts->GetRvDifference2()));
             break;
-          case PeaksOverThresholdAttributes::ID_dataScaling:
-            dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
+          case PeaksOverThresholdAttributes::ID_computeParamValues:
+            computeParamValues->blockSignals(true);
+            computeParamValues->setChecked(atts->GetComputeParamValues());
+            computeParamValues->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_displayMonth:
+            displayMonthSelect->blockSignals(true);
+            displayMonthSelect->setCurrentIndex(int(atts->GetDisplayMonth()));
+            displayMonthSelect->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_displaySeason:
+            displaySeasonSelect->blockSignals(true);
+            displaySeasonSelect->setCurrentIndex(int(atts->GetDisplaySeason()));
+            displaySeasonSelect->blockSignals(false);
             break;
           case PeaksOverThresholdAttributes::ID_dumpData:
             dumpData->blockSignals(true);
             dumpData->setChecked(atts->GetDumpData());
             dumpData->blockSignals(false);
+            break;
+        case PeaksOverThresholdAttributes::ID_noConsecutiveDay:
+            noConsecutiveDay->blockSignals(true);
+            noConsecutiveDay->setChecked(atts->GetNoConsecutiveDay());
+            noConsecutiveDay->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_optimizationMethod:
+            optimizationSelect->blockSignals(true);
+            optimizationSelect->setCurrentIndex(int(atts->GetOptimizationMethod()));
+            optimizationSelect->blockSignals(false);
             break;
         }
     }
@@ -637,18 +655,31 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
             atts->SetDataYearBegin(atts->GetDataYearBegin());
         }
     }
-
-    // Do dataAnalysisYearRange
-    if(which_widget == PeaksOverThresholdAttributes::ID_dataAnalysisYearRange || doAll)
+    // Do dataAnalysisYear1
+    if(which_widget == PeaksOverThresholdAttributes::ID_dataAnalysisYear1 || doAll)
     {
-        int val[2];
-        if(LineEditGetInts(dataAnalysisYearRange, val, 2))
-            atts->SetDataAnalysisYearRange(val);
+        int val;
+        if(LineEditGetInt(dataAnalysisYear1, val))
+            atts->SetDataAnalysisYear1(val);
         else
         {
-            ResettingError(tr("Analysis year range"),
-                IntsToQString(atts->GetDataAnalysisYearRange(), 2));
-            atts->SetDataAnalysisYearRange(atts->GetDataAnalysisYearRange());
+            ResettingError(tr("Analysis year 1"),
+                IntToQString(atts->GetDataAnalysisYear1()));
+            atts->SetDataAnalysisYear1(atts->GetDataAnalysisYear1());
+        }
+    }
+
+    // Do dataAnalysisYear2
+    if(which_widget == PeaksOverThresholdAttributes::ID_dataAnalysisYear2 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataAnalysisYear2, val))
+            atts->SetDataAnalysisYear2(val);
+        else
+        {
+            ResettingError(tr("Analysis year 1"),
+                IntToQString(atts->GetDataAnalysisYear2()));
+            atts->SetDataAnalysisYear2(atts->GetDataAnalysisYear2());
         }
     }
 
@@ -660,9 +691,37 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
             atts->SetNumEnsembles(val);
         else
         {
-            ResettingError(tr("Number of ensembles"),
+            ResettingError(tr("Number of members"),
                 IntToQString(atts->GetNumEnsembles()));
             atts->SetNumEnsembles(atts->GetNumEnsembles());
+        }
+    }
+
+    // Do cutoff
+    if(which_widget == PeaksOverThresholdAttributes::ID_cutoff || doAll)
+    {
+        float val;
+        if(LineEditGetFloat(cutoff, val))
+            atts->SetCutoff(val);
+        else
+        {
+            ResettingError(tr("Cutoff"),
+                FloatToQString(atts->GetCutoff()));
+            atts->SetCutoff(atts->GetCutoff());
+        }
+    }
+
+    // Do dataScaling
+    if(which_widget == PeaksOverThresholdAttributes::ID_dataScaling || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(dataScaling, val))
+            atts->SetDataScaling(val);
+        else
+        {
+            ResettingError(tr("Data Scaling"),
+                DoubleToQString(atts->GetDataScaling()));
+            atts->SetDataScaling(atts->GetDataScaling());
         }
     }
 
@@ -708,17 +767,31 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do cutoff
-    if(which_widget == PeaksOverThresholdAttributes::ID_cutoff || doAll)
+    // Do daysPerYear
+    if(which_widget == PeaksOverThresholdAttributes::ID_daysPerYear || doAll)
     {
-        float val;
-        if(LineEditGetFloat(cutoff, val))
-            atts->SetCutoff(val);
+        int val;
+        if(LineEditGetInt(daysPerYear, val))
+            atts->SetDaysPerYear(val);
         else
         {
-            ResettingError(tr("Cutoff"),
-                FloatToQString(atts->GetCutoff()));
-            atts->SetCutoff(atts->GetCutoff());
+            ResettingError(tr("Days per year"),
+                IntToQString(atts->GetDaysPerYear()));
+            atts->SetDaysPerYear(atts->GetDaysPerYear());
+        }
+    }
+
+    // Do daysPerMonth
+    if(which_widget == PeaksOverThresholdAttributes::ID_daysPerMonth || doAll)
+    {
+        int val[12];
+        if(LineEditGetInts(daysPerMonth, val, 12))
+            atts->SetDaysPerMonth(val);
+        else
+        {
+            ResettingError(tr("Days per month"),
+                IntsToQString(atts->GetDaysPerMonth(), 12));
+            atts->SetDaysPerMonth(atts->GetDaysPerMonth());
         }
     }
 
@@ -730,40 +803,39 @@ QvisPeaksOverThresholdWindow::GetCurrentValues(int which_widget)
             atts->SetCovariateReturnYears(val);
         else
         {
-            ResettingError(tr("Covariate return years"),
+            ResettingError(tr("Return values computed for years"),
                 IntsToQString(atts->GetCovariateReturnYears()));
             atts->SetCovariateReturnYears(atts->GetCovariateReturnYears());
         }
     }
 
-    // Do rvDifferences
-    if(which_widget == PeaksOverThresholdAttributes::ID_rvDifferences || doAll)
+    // Do rvDifference1
+    if(which_widget == PeaksOverThresholdAttributes::ID_rvDifference1 || doAll)
     {
-        int val[2];
-        if(LineEditGetInts(rvDifferences, val, 2))
-            atts->SetRvDifferences(val);
+        int val;
+        if(LineEditGetInt(rvDifference1, val))
+            atts->SetRvDifference1(val);
         else
         {
-            ResettingError(tr("RV Differences"),
-                IntsToQString(atts->GetRvDifferences(), 2));
-            atts->SetRvDifferences(atts->GetRvDifferences());
+            ResettingError(tr("RV Difference1"),
+                IntToQString(atts->GetRvDifference1()));
+            atts->SetRvDifference1(atts->GetRvDifference1());
         }
     }
 
-    // Do dataScaling
-    if(which_widget == PeaksOverThresholdAttributes::ID_dataScaling || doAll)
+    // Do rvDifference2
+    if(which_widget == PeaksOverThresholdAttributes::ID_rvDifference2 || doAll)
     {
-        double val;
-        if(LineEditGetDouble(dataScaling, val))
-            atts->SetDataScaling(val);
+        int val;
+        if(LineEditGetInt(rvDifference2, val))
+            atts->SetRvDifference2(val);
         else
         {
-            ResettingError(tr("Data Scaling"),
-                DoubleToQString(atts->GetDataScaling()));
-            atts->SetDataScaling(atts->GetDataScaling());
+            ResettingError(tr("RV Difference2"),
+                IntToQString(atts->GetRvDifference2()));
+            atts->SetRvDifference2(atts->GetRvDifference2());
         }
     }
-
 }
 
 
@@ -787,14 +859,20 @@ QvisPeaksOverThresholdWindow::dataAnalysisYearRangeEnabledChanged(bool val)
     Apply();
 }
 
-
 void
-QvisPeaksOverThresholdWindow::dataAnalysisYearRangeProcessText()
+QvisPeaksOverThresholdWindow::dataAnalysisYear1ProcessText()
 {
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataAnalysisYearRange);
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataAnalysisYear1);
     Apply();
 }
 
+
+void
+QvisPeaksOverThresholdWindow::dataAnalysisYear2ProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataAnalysisYear2);
+    Apply();
+}
 
 void
 QvisPeaksOverThresholdWindow::ensembleChanged(bool val)
@@ -813,11 +891,50 @@ QvisPeaksOverThresholdWindow::numEnsemblesProcessText()
 
 
 void
+QvisPeaksOverThresholdWindow::cutoffProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_cutoff);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::cutoffModeChanged(int val)
+{
+    if(val != atts->GetCutoffMode())
+    {
+        atts->SetCutoffMode(PeaksOverThresholdAttributes::CutoffModeType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisPeaksOverThresholdWindow::dataScalingProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataScaling);
+    Apply();
+}
+
+
+void
 QvisPeaksOverThresholdWindow::aggregationChanged(int val)
 {
     if(val != atts->GetAggregation())
     {
         atts->SetAggregation(PeaksOverThresholdAttributes::AggregationType(val));
+        Apply();
+    }
+}
+
+
+void
+QvisPeaksOverThresholdWindow::optimizationChanged(int val)
+{
+    if(val != atts->GetOptimizationMethod())
+    {
+        atts->SetOptimizationMethod(PeaksOverThresholdAttributes::OptimizationType(val));
         Apply();
     }
 }
@@ -848,6 +965,97 @@ QvisPeaksOverThresholdWindow::monthlyPercentileProcessText()
 
 
 void
+QvisPeaksOverThresholdWindow::daysPerYearProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_daysPerYear);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::daysPerMonthProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_daysPerMonth);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::covariateModelScaleChanged(bool val)
+{
+    atts->SetCovariateModelScale(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::covariateModelLocationChanged(bool val)
+{
+    atts->SetCovariateModelLocation(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::covariateModelShapeChanged(bool val)
+{
+    atts->SetCovariateModelShape(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::computeCovariatesChanged(bool val)
+{
+    atts->SetComputeCovariates(val);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::covariateReturnYearsProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_covariateReturnYears);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::computeRVDifferencesChanged(bool val)
+{
+    atts->SetComputeRVDifferences(val);
+    Apply();
+}
+
+void
+QvisPeaksOverThresholdWindow::rvDifference1ProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_rvDifference1);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::rvDifference2ProcessText()
+{
+    GetCurrentValues(PeaksOverThresholdAttributes::ID_rvDifference2);
+    Apply();
+}
+
+
+void
+QvisPeaksOverThresholdWindow::computeParamValuesChanged(bool val)
+{
+    atts->SetComputeParamValues(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
 QvisPeaksOverThresholdWindow::displaySeasonChanged(int val)
 {
     if(val != atts->GetDisplaySeason())
@@ -872,95 +1080,20 @@ QvisPeaksOverThresholdWindow::displayMonthChanged(int val)
 
 
 void
-QvisPeaksOverThresholdWindow::cutoffProcessText()
-{
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_cutoff);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::computeParamValuesChanged(bool val)
-{
-    atts->SetComputeParamValues(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::computeCovariatesChanged(bool val)
-{
-    atts->SetComputeCovariates(val);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::covariateReturnYearsProcessText()
-{
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_covariateReturnYears);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::covariateModelLocationChanged(bool val)
-{
-    atts->SetCovariateModelLocation(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::covariateModelShapeChanged(bool val)
-{
-    atts->SetCovariateModelShape(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::covariateModelScaleChanged(bool val)
-{
-    atts->SetCovariateModelScale(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::computeRVDifferencesChanged(bool val)
-{
-    atts->SetComputeRVDifferences(val);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::rvDifferencesProcessText()
-{
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_rvDifferences);
-    Apply();
-}
-
-
-void
-QvisPeaksOverThresholdWindow::dataScalingProcessText()
-{
-    GetCurrentValues(PeaksOverThresholdAttributes::ID_dataScaling);
-    Apply();
-}
-
-
-void
 QvisPeaksOverThresholdWindow::dumpDataChanged(bool val)
 {
     atts->SetDumpData(val);
     SetUpdate(false);
     Apply();
 }
+
+void
+QvisPeaksOverThresholdWindow::noConsecutiveDayChanged(bool val)
+{
+    atts->SetNoConsecutiveDay(val);
+    SetUpdate(false);
+    Apply();
+}
+
 
 
