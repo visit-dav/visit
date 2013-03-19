@@ -33,13 +33,13 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-export SILO_VERSION=${SILO_VERSION:-"4.9"}
+export SILO_VERSION=${SILO_VERSION:-"4.9.1"}
 export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
 export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.9"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-export SILO_MD5_CHECKSUM="a83eda4f06761a86726e918fc55e782a"
-export SILO_SHA256_CHECKSUM="90f3d069963d859c142809cfcb034bc83eb951f61ac02ccb967fc8e8d0409854"
+export SILO_MD5_CHECKSUM="cd620b52cb8a58989998d33662ffc0ee"
+export SILO_SHA256_CHECKSUM="5754a87055c984ae5c854a526d74be3f0da7997ab951dab973cea2bb97121eaa"
 }
 
 function bv_silo_print
