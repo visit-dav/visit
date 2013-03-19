@@ -328,6 +328,10 @@
 #    in the config-site cmake files change, they will still take precedence
 #    over changes made to CMakeCache.txt (ie preserves old behavior).
 #
+#    Eric Brugger, Tue Mar 19 10:40:49 PDT 2013
+#    Added code to only build the paraDIS reader if boost 1.36.0 or later
+#    was installed on the system.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -890,8 +894,35 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
+INCLUDE(${CMAKE_ROOT}/Modules/FindBoost.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
+
+# Set Boost_USABLE_PARADIS if boost 1.36.0 or later is found. ParaDIS
+# uses make_shared, which was only introduced in boost 1.36.0.
+IF(Boost_VERSION)
+    MESSAGE(STATUS "  Boost_VERSION=${Boost_VERSION}")
+
+    # FindBoost.cmake does not always properly set the major, minor
+    # and subminor versions correctly, so do that ourselves.
+    STRING(REPLACE "." "0" Boost_VERSION_NUMERIC "${Boost_VERSION}")
+    SET(Boost_MAJOR_VERSION 0)
+    SET(Boost_MINOR_VERSION 0)
+    SET(Boost_SUBMINOR_VERSION 0)
+    IF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
+        MATH(EXPR Boost_MAJOR_VERSION "${Boost_VERSION_NUMERIC} / 100000")
+        MATH(EXPR Boost_MINOR_VERSION "${Boost_VERSION_NUMERIC} / 100 % 1000")
+        MATH(EXPR Boost_SUBMINOR_VERSION "${Boost_VERSION_NUMERIC} % 100")
+    ENDIF(NOT "${Boost_VERSION_NUMERIC}" STREQUAL "0")
+    MESSAGE(STATUS "  Boost_MAJOR_VERSION=${Boost_MAJOR_VERSION}")
+    MESSAGE(STATUS "  Boost_MINOR_VERSION=${Boost_MINOR_VERSION}")
+    MESSAGE(STATUS "  Boost_SUBMINOR_VERSION=${Boost_SUBMINOR_VERSION}")
+
+    IF(Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 35)
+        SET(Boost_USABLE_PARADIS 1)
+        MESSAGE(STATUS "  Boost usable by paraDIS")
+    ENDIF(Boost_MAJOR_VERSION GREATER 0 AND Boost_MINOR_VERSION GREATER 35)
+ENDIF(Boost_VERSION)
 
 IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)

@@ -134,6 +134,11 @@
 #
 #    Mark C. Miller, Mon Oct  8 18:07:48 PDT 2012
 #    Added unv file reader from Olivier Cessenat
+#
+#    Eric Brugger, Tue Mar 19 10:45:32 PDT 2013
+#    Added code to only build the paraDIS reader if boost 1.36.0 or later
+#    was installed on the system.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -318,11 +323,16 @@ XSF
 XYZ
 Xmdv
 lata
-paraDIS
-paraDIS_tecplot
 volimage
 unv
 )
+
+IF (Boost_USABLE_PARADIS)
+    LIST(APPEND REQUIRED_DATABASE_PLUGINS
+        paraDIS
+        paraDIS_tecplot
+    )
+ENDIF (Boost_USABLE_PARADIS)
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
