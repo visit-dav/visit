@@ -38,8 +38,8 @@ export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
 export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.9"}
 export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
 export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-export SILO_MD5_CHECKSUM="cd620b52cb8a58989998d33662ffc0ee"
-export SILO_SHA256_CHECKSUM="5754a87055c984ae5c854a526d74be3f0da7997ab951dab973cea2bb97121eaa"
+export SILO_MD5_CHECKSUM="aea6992437e1ed75cddcec1d91c6ff36"
+export SILO_SHA256_CHECKSUM="4908eb77577e26948aedee5976deedc3d2c1fd01b6fc5bd9cb61772cbbe2a56e"
 }
 
 function bv_silo_print
