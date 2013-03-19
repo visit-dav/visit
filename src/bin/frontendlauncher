@@ -76,7 +76,26 @@ done
 frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
 unset PYTHONHOME
 if [ -n "$visitpython" ]; then
+    visitdir="$(dirname $(dirname $visitpython))"
+
+    # Which Python was VisIt built against? Look for python<ver> executable
+    # next to the python binary we located already.
+    pyver=""
+    for ver in 2.4 2.5 2.6 2.7; do
+        if [ -x "$visitpython$ver" ]; then
+            pyver=$ver
+            break
+        fi
+    done
+
+    # Set up Python variables so the binary will look for modules in their new
+    # home inside the VisIt installation instead of where Python was compiled.
+    export PYTHONHOME="$visitdir/lib/python"
+    unset PYTHONPATH
+    export PYTHONPATH="$PYTHONHOME/lib/python$pyver:$PYTHONHOME/lib/python$pyver/lib-dynload"
+
     #echo "VisIt Python: $visitpython $frontendlauncherpy $0 ${1+"$@"}"
+
     exec "$visitpython" $frontendlauncherpy $0 ${1+"$@"}
 else
     #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
