@@ -66,6 +66,8 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     std::vector<std::vector<std::vector<sample> > > values;
 
     void DebugData(int loc, std::string nm);
+
+    int daysPerYear, dayCountAtMonthEnd[12];
 };
 
 #endif

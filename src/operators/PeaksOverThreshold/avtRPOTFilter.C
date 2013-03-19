@@ -91,13 +91,11 @@ avtRPOTFilter::DataCanBeParallelizedOverTime()
 int
 avtRPOTFilter::GetMonthFromDay(int t)
 {
-    int year = GetYearFromDay(t);
-    int dayMonth[12] = {31,59,90,120,151,181,213,244,274,304,334,365}; //no leap year
-    int dayInYear = t % 365;
+    int dayInYear = GetYearFromDay(t) % daysPerYear;
 
     int month = -1;
     for (int i = 0; i < 12; i++)
-        if (dayInYear <= dayMonth[i])
+        if (dayInYear <= dayCountAtMonthEnd[i])
             return i;
     
     EXCEPTION1(ImproperUseException, "Date out of range.");
@@ -114,7 +112,7 @@ avtRPOTFilter::GetMonthFromDay(int t)
 int
 avtRPOTFilter::GetYearFromDay(int t)
 {
-    return t/365;
+    return t/daysPerYear;
 }
 
 // ****************************************************************************
@@ -302,6 +300,21 @@ avtRPOTFilter::Initialize()
     if (initialized)
         return;
 
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+    {
+        daysPerYear = atts.GetDaysPerYear();
+    }
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL||
+             atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+    {
+        daysPerYear = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            daysPerYear += atts.GetDaysPerMonth()[i];
+            dayCountAtMonthEnd[i] = daysPerYear;
+        }
+    }
+
     int nleaves;
     vtkDataSet **leaves = GetInputDataTree()->GetAllLeaves(nleaves);
 
@@ -324,12 +337,12 @@ avtRPOTFilter::Initialize()
     int t0 = GetStartTime();
     int t1 = GetEndTime();
     numTimes = t1-t0 + 1;
-    numYears = numTimes/365;
+    numYears = numTimes/daysPerYear;
 
     if (atts.GetDataAnalysisYearRangeEnabled())
     {
-        numYears = atts.GetDataAnalysisYearRange()[1]-atts.GetDataAnalysisYearRange()[0]+1;
-        numTimes = numYears*365;
+        numYears = atts.GetDataAnalysisYear2()-atts.GetDataAnalysisYear1()+1;
+        numTimes = numYears*daysPerYear;
     }
 
     if (atts.GetEnsemble())
@@ -428,9 +441,9 @@ avtRPOTFilter::Execute()
     
     if (!atts.GetEnsemble() && atts.GetDataAnalysisYearRangeEnabled())
     {
-        int currYear = atts.GetDataYearBegin()+(currentTime/365);
-        if (currYear < atts.GetDataAnalysisYearRange()[0] ||
-            currYear > atts.GetDataAnalysisYearRange()[1])
+        int currYear = atts.GetDataYearBegin()+(currentTime/daysPerYear);
+        if (currYear < atts.GetDataAnalysisYear1() ||
+            currYear > atts.GetDataAnalysisYear2())
         {
             //cout<<"Skipping "<<currentTime<<" : year= "<<currYear<<endl;
             return;
@@ -455,11 +468,23 @@ avtRPOTFilter::Execute()
 
     //cout<<"processing "<<currentTime<<" sv = "<<scalingVal<<" index= "<<index<<endl;
     float scaling = atts.GetDataScaling(), cutoff = atts.GetCutoff();
-    for (int i = 0; i < nTuples; i++)
+    if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
     {
-        float v = vals[i]*scaling;
-        if (v > cutoff)
-            values[i][index].push_back(sample(v,currentTime, dsTime));
+        for (int i = 0; i < nTuples; i++)
+        {
+            float v = vals[i]*scaling;
+            if (v > cutoff)
+                values[i][index].push_back(sample(v,currentTime, dsTime));
+        }
+    }
+    else
+    {
+        for (int i = 0; i < nTuples; i++)
+        {
+            float v = vals[i]*scaling;
+            if (v < cutoff)
+                values[i][index].push_back(sample(v,currentTime, dsTime));
+        }
     }
 }
 
@@ -539,7 +564,6 @@ avtRPOTFilter::CreateFinalOutput()
     delete [] flags;
     delete [] flagsRes;
 #endif
-
     vtkRInterface *RI = vtkRInterface::New();
     char fileLoad[1024];
     sprintf(fileLoad,
@@ -603,10 +627,20 @@ avtRPOTFilter::CreateFinalOutput()
         for (int b = 0; b < numBins; b++)
         {
             int nt = values[i][b].size();
-            for (int t = 0; t < nt; t++)
-                if (values[i][b][t].val > thresholds[b])
-                    numExceedences++;
+            if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
+            {
+                for (int t = 0; t < nt; t++)
+                    if (values[i][b][t].val > thresholds[b])
+                        numExceedences++;
+            }
+            else
+            {
+                for (int t = 0; t < nt; t++)
+                    if (values[i][b][t].val < thresholds[b])
+                        numExceedences++;
+            }
         }
+        
         //cout<<"numExceedences: "<<numExceedences<<endl;
         vtkDoubleArray *exceedences = vtkDoubleArray::New();
         vtkIntArray *dayIndices = vtkIntArray::New();
@@ -626,17 +660,20 @@ avtRPOTFilter::CreateFinalOutput()
         {
             int nt = values[i][b].size();
             for (int t = 0; t < nt; t++)
+            {
                 if (values[i][b][t].val > thresholds[b])
                 {
                     exceedences->SetValue(idx, values[i][b][t].val);
                     dayIndices->SetValue(idx, values[i][b][t].Time+1);
-                    monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].Time)+1);
+                    if (atts.GetAggregation() != PeaksOverThresholdAttributes::ANNUAL)
+                        monthIndices->SetValue(idx, GetMonthFromDay(values[i][b][t].Time)+1);
                     yearIndices->SetValue(idx, GetYearFromDay(values[i][b][t].Time));//+1);
                  
                     idx++;
                     if (idx == numExceedences)
                         break;
                 }
+            }
         }
         RI->AssignVTKDataArrayToRVariable(exceedences, "exceedences");
         RI->AssignVTKDataArrayToRVariable(dayIndices, "dayIndices");
@@ -673,7 +710,8 @@ avtRPOTFilter::CreateFinalOutput()
         }
         
         int nCovariates = 0;
-        string covarNm = "NULL", covByYear = "NULL", newDataStr = "NULL", rvDiffStr = "NULL";
+        string yearIndicesNm = "NULL";
+        string covByYear = "NULL", newDataStr = "NULL", rvDiffStr = "NULL";
         string useLocModelStr = "NULL", useShapeModelStr = "NULL", useScaleModelStr = "NULL";
         string returnParamsStr = "FALSE";
 
@@ -683,7 +721,7 @@ avtRPOTFilter::CreateFinalOutput()
         if (atts.GetComputeCovariates())
         {
             nCovariates = 1;
-            covarNm = "cov";
+            yearIndicesNm = "yearIndices";
             covByYear = "covByYear";
 
             vtkIntArray *covByYearArr = vtkIntArray::New();
@@ -708,7 +746,7 @@ avtRPOTFilter::CreateFinalOutput()
                 for (int y = 0; y < numYears; y++)
                     covByYearArr->SetValue(y, y + atts.GetDataYearBegin());
             }
-            RI->AssignVTKDataArrayToRVariable(yearIndices, covarNm.c_str());
+            RI->AssignVTKDataArrayToRVariable(yearIndices, yearIndicesNm.c_str());
             RI->AssignVTKDataArrayToRVariable(covByYearArr, covByYear.c_str());
             covByYearArr->Delete();
             
@@ -729,8 +767,8 @@ avtRPOTFilter::CreateFinalOutput()
                 vtkIntArray *rvDiff = vtkIntArray::New();
                 rvDiff->SetNumberOfComponents(1);
                 rvDiff->SetNumberOfTuples(2);
-                rvDiff->SetValue(0, atts.GetRvDifferences()[0]);//-atts.GetDataYearBegin() +1);
-                rvDiff->SetValue(1, atts.GetRvDifferences()[1]);//-atts.GetDataYearBegin() +1);
+                rvDiff->SetValue(0, atts.GetRvDifference1());//-atts.GetDataYearBegin() +1);
+                rvDiff->SetValue(1, atts.GetRvDifference2());//-atts.GetDataYearBegin() +1);
                 RI->AssignVTKDataArrayToRVariable(rvDiff, rvDiffStr.c_str());
                 rvDiff->Delete();
             }
@@ -740,6 +778,7 @@ avtRPOTFilter::CreateFinalOutput()
                 useShapeModelStr = "1";
             if (atts.GetCovariateModelScale())
                 useScaleModelStr = "1";
+
         }
         string dumpStr = "";
         if (0)
@@ -760,26 +799,60 @@ avtRPOTFilter::CreateFinalOutput()
             outputStr += "mle = output$mle;\n";
             outputStr += "se_mle = output$se.mle;\n";
         }
+        string optimMethod = (atts.GetOptimizationMethod() == PeaksOverThresholdAttributes::NELDER_MEAD ?
+                              "Nelder-Mead" : "BFGS");
+        string upper_tail = (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL ?
+                             "TRUE" : "FALSE");
+        string multiDayEventHandling = (atts.GetNoConsecutiveDay() ? "'norun'" : "NULL");
+        char tmp[64];
+        sprintf(tmp, "%d", atts.GetDataYearBegin());
+        string initialYear = tmp;
+
+        string numPerYearStr;
+        if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+        {
+            sprintf(tmp, "%d", atts.GetDaysPerYear());
+            numPerYearStr = tmp;
+        }
+        else
+        {
+            numPerYearStr = "c(";
+            for (int m = 0; m < 12; m++)
+            {
+                sprintf(tmp, "%d", atts.GetDaysPerMonth()[m]);
+                numPerYearStr = numPerYearStr + tmp;
+                if (m != 11)
+                    numPerYearStr = numPerYearStr + ",";
+            }
+            numPerYearStr = numPerYearStr + ")";
+        }
 
         int nYears = numYears;
         if (atts.GetEnsemble())
             nYears *= atts.GetNumEnsembles();
-        
         sprintf(potCmd,
                 "require(ismev)\n" \
-                "output = potFit(data = exceedences, day = dayIndices, month = monthIndices, "\
+                "output = potFit(data = exceedences, "\
+                "day = dayIndices, month = monthIndices, year=%s, initialYear=%s, "\
                 "nYears=%d, threshold=%s, aggregation=%s, " \
-                "nCovariates=%d, covariates=%s, covariatesByYear=%s, locationModel=%s, scaleModel=%s, shapeModel=%s,"\
-                "newData=%s, rvDifference=%s," \
-                "returnParams=%s"\
+                "numPerYear=%s, " \
+                "nCovariates=%d, covariatesByYear=%s, "\
+                "locationModel=%s, scaleModel=%s, shapeModel=%s, "\
+                "newData=%s, rvDifference=%s, " \
+                "returnParams=%s, "\
+                "optimMethod=%s, multiDayEventHandling=%s, upper.tail=%s" \
                 ")\n"\
                 "%s" \
                 "%s",
+                yearIndicesNm.c_str(), 
+                initialYear.c_str(),
                 nYears, threshStr.c_str(), aggrStr.c_str(),
-                nCovariates, covarNm.c_str(), covByYear.c_str(),
+                numPerYearStr.c_str(),
+                nCovariates, covByYear.c_str(),
                 useLocModelStr.c_str(), useShapeModelStr.c_str(), useScaleModelStr.c_str(),
                 newDataStr.c_str(), rvDiffStr.c_str(),
                 returnParamsStr.c_str(),
+                optimMethod.c_str(), multiDayEventHandling.c_str(), upper_tail.c_str(),
                 dumpStr.c_str(),
                 outputStr.c_str());
         

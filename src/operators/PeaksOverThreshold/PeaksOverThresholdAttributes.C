@@ -156,6 +156,80 @@ PeaksOverThresholdAttributes::MonthType_FromString(const std::string &s, PeaksOv
     return false;
 }
 
+//
+// Enum conversion methods for PeaksOverThresholdAttributes::CutoffModeType
+//
+
+static const char *CutoffModeType_strings[] = {
+"UPPER_TAIL", "LOWER_TAIL"};
+
+std::string
+PeaksOverThresholdAttributes::CutoffModeType_ToString(PeaksOverThresholdAttributes::CutoffModeType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return CutoffModeType_strings[index];
+}
+
+std::string
+PeaksOverThresholdAttributes::CutoffModeType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return CutoffModeType_strings[index];
+}
+
+bool
+PeaksOverThresholdAttributes::CutoffModeType_FromString(const std::string &s, PeaksOverThresholdAttributes::CutoffModeType &val)
+{
+    val = PeaksOverThresholdAttributes::UPPER_TAIL;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == CutoffModeType_strings[i])
+        {
+            val = (CutoffModeType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for PeaksOverThresholdAttributes::OptimizationType
+//
+
+static const char *OptimizationType_strings[] = {
+"NELDER_MEAD", "BFGS"};
+
+std::string
+PeaksOverThresholdAttributes::OptimizationType_ToString(PeaksOverThresholdAttributes::OptimizationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return OptimizationType_strings[index];
+}
+
+std::string
+PeaksOverThresholdAttributes::OptimizationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return OptimizationType_strings[index];
+}
+
+bool
+PeaksOverThresholdAttributes::OptimizationType_FromString(const std::string &s, PeaksOverThresholdAttributes::OptimizationType &val)
+{
+    val = PeaksOverThresholdAttributes::NELDER_MEAD;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == OptimizationType_strings[i])
+        {
+            val = (OptimizationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: PeaksOverThresholdAttributes::PeaksOverThresholdAttributes
 //
@@ -175,42 +249,58 @@ void PeaksOverThresholdAttributes::Init()
 {
     dataYearBegin = 1;
     dataAnalysisYearRangeEnabled = false;
-    dataAnalysisYearRange[0] = 0;
-    dataAnalysisYearRange[1] = 0;
+    dataAnalysisYear1 = 0;
+    dataAnalysisYear2 = 0;
     ensemble = false;
     numEnsembles = 1;
-    aggregation = ANNUAL;
-    annualPercentile = 0.9;
-    seasonalPercentile[0] = 0.9;
-    seasonalPercentile[1] = 0.9;
-    seasonalPercentile[2] = 0.9;
-    seasonalPercentile[3] = 0.9;
-    monthlyPercentile[0] = 0.9;
-    monthlyPercentile[1] = 0.9;
-    monthlyPercentile[2] = 0.9;
-    monthlyPercentile[3] = 0.9;
-    monthlyPercentile[4] = 0.9;
-    monthlyPercentile[5] = 0.9;
-    monthlyPercentile[6] = 0.9;
-    monthlyPercentile[7] = 0.9;
-    monthlyPercentile[8] = 0.9;
-    monthlyPercentile[9] = 0.9;
-    monthlyPercentile[10] = 0.9;
-    monthlyPercentile[11] = 0.9;
-    displaySeason = WINTER;
-    displayMonth = JAN;
     cutoff = 0;
-    computeParamValues = false;
-    computeCovariates = false;
-    covariateReturnYears.push_back(1);
+    cutoffMode = UPPER_TAIL;
+    noConsecutiveDay = false;
+    optimizationMethod = NELDER_MEAD;
+    dataScaling = 1;
+    aggregation = ANNUAL;
+    annualPercentile = 0.95;
+    seasonalPercentile[0] = 0.95;
+    seasonalPercentile[1] = 0.95;
+    seasonalPercentile[2] = 0.95;
+    seasonalPercentile[3] = 0.95;
+    monthlyPercentile[0] = 0.95;
+    monthlyPercentile[1] = 0.95;
+    monthlyPercentile[2] = 0.95;
+    monthlyPercentile[3] = 0.95;
+    monthlyPercentile[4] = 0.95;
+    monthlyPercentile[5] = 0.95;
+    monthlyPercentile[6] = 0.95;
+    monthlyPercentile[7] = 0.95;
+    monthlyPercentile[8] = 0.95;
+    monthlyPercentile[9] = 0.95;
+    monthlyPercentile[10] = 0.95;
+    monthlyPercentile[11] = 0.95;
+    daysPerYear = 365;
+    daysPerMonth[0] = 31;
+    daysPerMonth[1] = 28;
+    daysPerMonth[2] = 31;
+    daysPerMonth[3] = 30;
+    daysPerMonth[4] = 31;
+    daysPerMonth[5] = 30;
+    daysPerMonth[6] = 31;
+    daysPerMonth[7] = 31;
+    daysPerMonth[8] = 29;
+    daysPerMonth[9] = 31;
+    daysPerMonth[10] = 30;
+    daysPerMonth[11] = 31;
+    covariateModelScale = false;
     covariateModelLocation = false;
     covariateModelShape = false;
-    covariateModelScale = false;
+    computeCovariates = false;
+    covariateReturnYears.push_back(1);
     computeRVDifferences = false;
-    rvDifferences[0] = 0;
-    rvDifferences[1] = 0;
-    dataScaling = 86500;
-    dumpData = false;
+    rvDifference1 = 0;
+    rvDifference2 = 0;
+    computeParamValues = false;
+    displaySeason = WINTER;
+    displayMonth = JAN;
+    dumpData = true;
 
     PeaksOverThresholdAttributes::SelectAll();
 }
@@ -235,11 +325,15 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
 
     dataYearBegin = obj.dataYearBegin;
     dataAnalysisYearRangeEnabled = obj.dataAnalysisYearRangeEnabled;
-    dataAnalysisYearRange[0] = obj.dataAnalysisYearRange[0];
-    dataAnalysisYearRange[1] = obj.dataAnalysisYearRange[1];
-
+    dataAnalysisYear1 = obj.dataAnalysisYear1;
+    dataAnalysisYear2 = obj.dataAnalysisYear2;
     ensemble = obj.ensemble;
     numEnsembles = obj.numEnsembles;
+    cutoff = obj.cutoff;
+    cutoffMode = obj.cutoffMode;
+    noConsecutiveDay = obj.noConsecutiveDay;
+    optimizationMethod = obj.optimizationMethod;
+    dataScaling = obj.dataScaling;
     aggregation = obj.aggregation;
     annualPercentile = obj.annualPercentile;
     for(int i = 0; i < 4; ++i)
@@ -248,20 +342,21 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
     for(int i = 0; i < 12; ++i)
         monthlyPercentile[i] = obj.monthlyPercentile[i];
 
-    displaySeason = obj.displaySeason;
-    displayMonth = obj.displayMonth;
-    cutoff = obj.cutoff;
-    computeParamValues = obj.computeParamValues;
-    computeCovariates = obj.computeCovariates;
-    covariateReturnYears = obj.covariateReturnYears;
+    daysPerYear = obj.daysPerYear;
+    for(int i = 0; i < 12; ++i)
+        daysPerMonth[i] = obj.daysPerMonth[i];
+
+    covariateModelScale = obj.covariateModelScale;
     covariateModelLocation = obj.covariateModelLocation;
     covariateModelShape = obj.covariateModelShape;
-    covariateModelScale = obj.covariateModelScale;
+    computeCovariates = obj.computeCovariates;
+    covariateReturnYears = obj.covariateReturnYears;
     computeRVDifferences = obj.computeRVDifferences;
-    rvDifferences[0] = obj.rvDifferences[0];
-    rvDifferences[1] = obj.rvDifferences[1];
-
-    dataScaling = obj.dataScaling;
+    rvDifference1 = obj.rvDifference1;
+    rvDifference2 = obj.rvDifference2;
+    computeParamValues = obj.computeParamValues;
+    displaySeason = obj.displaySeason;
+    displayMonth = obj.displayMonth;
     dumpData = obj.dumpData;
 
     PeaksOverThresholdAttributes::SelectAll();
@@ -419,11 +514,6 @@ PeaksOverThresholdAttributes::operator = (const PeaksOverThresholdAttributes &ob
 bool
 PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &obj) const
 {
-    // Compare the dataAnalysisYearRange arrays.
-    bool dataAnalysisYearRange_equal = true;
-    for(int i = 0; i < 2 && dataAnalysisYearRange_equal; ++i)
-        dataAnalysisYearRange_equal = (dataAnalysisYearRange[i] == obj.dataAnalysisYearRange[i]);
-
     // Compare the seasonalPercentile arrays.
     bool seasonalPercentile_equal = true;
     for(int i = 0; i < 4 && seasonalPercentile_equal; ++i)
@@ -434,33 +524,40 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
     for(int i = 0; i < 12 && monthlyPercentile_equal; ++i)
         monthlyPercentile_equal = (monthlyPercentile[i] == obj.monthlyPercentile[i]);
 
-    // Compare the rvDifferences arrays.
-    bool rvDifferences_equal = true;
-    for(int i = 0; i < 2 && rvDifferences_equal; ++i)
-        rvDifferences_equal = (rvDifferences[i] == obj.rvDifferences[i]);
+    // Compare the daysPerMonth arrays.
+    bool daysPerMonth_equal = true;
+    for(int i = 0; i < 12 && daysPerMonth_equal; ++i)
+        daysPerMonth_equal = (daysPerMonth[i] == obj.daysPerMonth[i]);
 
     // Create the return value
     return ((dataYearBegin == obj.dataYearBegin) &&
             (dataAnalysisYearRangeEnabled == obj.dataAnalysisYearRangeEnabled) &&
-            dataAnalysisYearRange_equal &&
+            (dataAnalysisYear1 == obj.dataAnalysisYear1) &&
+            (dataAnalysisYear2 == obj.dataAnalysisYear2) &&
             (ensemble == obj.ensemble) &&
             (numEnsembles == obj.numEnsembles) &&
+            (cutoff == obj.cutoff) &&
+            (cutoffMode == obj.cutoffMode) &&
+            (noConsecutiveDay == obj.noConsecutiveDay) &&
+            (optimizationMethod == obj.optimizationMethod) &&
+            (dataScaling == obj.dataScaling) &&
             (aggregation == obj.aggregation) &&
             (annualPercentile == obj.annualPercentile) &&
             seasonalPercentile_equal &&
             monthlyPercentile_equal &&
-            (displaySeason == obj.displaySeason) &&
-            (displayMonth == obj.displayMonth) &&
-            (cutoff == obj.cutoff) &&
-            (computeParamValues == obj.computeParamValues) &&
-            (computeCovariates == obj.computeCovariates) &&
-            (covariateReturnYears == obj.covariateReturnYears) &&
+            (daysPerYear == obj.daysPerYear) &&
+            daysPerMonth_equal &&
+            (covariateModelScale == obj.covariateModelScale) &&
             (covariateModelLocation == obj.covariateModelLocation) &&
             (covariateModelShape == obj.covariateModelShape) &&
-            (covariateModelScale == obj.covariateModelScale) &&
+            (computeCovariates == obj.computeCovariates) &&
+            (covariateReturnYears == obj.covariateReturnYears) &&
             (computeRVDifferences == obj.computeRVDifferences) &&
-            rvDifferences_equal &&
-            (dataScaling == obj.dataScaling) &&
+            (rvDifference1 == obj.rvDifference1) &&
+            (rvDifference2 == obj.rvDifference2) &&
+            (computeParamValues == obj.computeParamValues) &&
+            (displaySeason == obj.displaySeason) &&
+            (displayMonth == obj.displayMonth) &&
             (dumpData == obj.dumpData));
 }
 
@@ -607,25 +704,32 @@ PeaksOverThresholdAttributes::SelectAll()
 {
     Select(ID_dataYearBegin,                (void *)&dataYearBegin);
     Select(ID_dataAnalysisYearRangeEnabled, (void *)&dataAnalysisYearRangeEnabled);
-    Select(ID_dataAnalysisYearRange,        (void *)dataAnalysisYearRange, 2);
+    Select(ID_dataAnalysisYear1,            (void *)&dataAnalysisYear1);
+    Select(ID_dataAnalysisYear2,            (void *)&dataAnalysisYear2);
     Select(ID_ensemble,                     (void *)&ensemble);
     Select(ID_numEnsembles,                 (void *)&numEnsembles);
+    Select(ID_cutoff,                       (void *)&cutoff);
+    Select(ID_cutoffMode,                   (void *)&cutoffMode);
+    Select(ID_noConsecutiveDay,             (void *)&noConsecutiveDay);
+    Select(ID_optimizationMethod,           (void *)&optimizationMethod);
+    Select(ID_dataScaling,                  (void *)&dataScaling);
     Select(ID_aggregation,                  (void *)&aggregation);
     Select(ID_annualPercentile,             (void *)&annualPercentile);
     Select(ID_seasonalPercentile,           (void *)seasonalPercentile, 4);
     Select(ID_monthlyPercentile,            (void *)monthlyPercentile, 12);
-    Select(ID_displaySeason,                (void *)&displaySeason);
-    Select(ID_displayMonth,                 (void *)&displayMonth);
-    Select(ID_cutoff,                       (void *)&cutoff);
-    Select(ID_computeParamValues,           (void *)&computeParamValues);
-    Select(ID_computeCovariates,            (void *)&computeCovariates);
-    Select(ID_covariateReturnYears,         (void *)&covariateReturnYears);
+    Select(ID_daysPerYear,                  (void *)&daysPerYear);
+    Select(ID_daysPerMonth,                 (void *)daysPerMonth, 12);
+    Select(ID_covariateModelScale,          (void *)&covariateModelScale);
     Select(ID_covariateModelLocation,       (void *)&covariateModelLocation);
     Select(ID_covariateModelShape,          (void *)&covariateModelShape);
-    Select(ID_covariateModelScale,          (void *)&covariateModelScale);
+    Select(ID_computeCovariates,            (void *)&computeCovariates);
+    Select(ID_covariateReturnYears,         (void *)&covariateReturnYears);
     Select(ID_computeRVDifferences,         (void *)&computeRVDifferences);
-    Select(ID_rvDifferences,                (void *)rvDifferences, 2);
-    Select(ID_dataScaling,                  (void *)&dataScaling);
+    Select(ID_rvDifference1,                (void *)&rvDifference1);
+    Select(ID_rvDifference2,                (void *)&rvDifference2);
+    Select(ID_computeParamValues,           (void *)&computeParamValues);
+    Select(ID_displaySeason,                (void *)&displaySeason);
+    Select(ID_displayMonth,                 (void *)&displayMonth);
     Select(ID_dumpData,                     (void *)&dumpData);
 }
 
@@ -671,10 +775,16 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("dataAnalysisYearRangeEnabled", dataAnalysisYearRangeEnabled));
     }
 
-    if(completeSave || !FieldsEqual(ID_dataAnalysisYearRange, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_dataAnalysisYear1, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("dataAnalysisYearRange", dataAnalysisYearRange, 2));
+        node->AddNode(new DataNode("dataAnalysisYear1", dataAnalysisYear1));
+    }
+
+    if(completeSave || !FieldsEqual(ID_dataAnalysisYear2, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dataAnalysisYear2", dataAnalysisYear2));
     }
 
     if(completeSave || !FieldsEqual(ID_ensemble, &defaultObject))
@@ -687,6 +797,36 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("numEnsembles", numEnsembles));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cutoff, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cutoff", cutoff));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cutoffMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cutoffMode", CutoffModeType_ToString(cutoffMode)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_noConsecutiveDay, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("noConsecutiveDay", noConsecutiveDay));
+    }
+
+    if(completeSave || !FieldsEqual(ID_optimizationMethod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("optimizationMethod", OptimizationType_ToString(optimizationMethod)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_dataScaling, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dataScaling", dataScaling));
     }
 
     if(completeSave || !FieldsEqual(ID_aggregation, &defaultObject))
@@ -713,40 +853,22 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("monthlyPercentile", monthlyPercentile, 12));
     }
 
-    if(completeSave || !FieldsEqual(ID_displaySeason, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_daysPerYear, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("displaySeason", SeasonType_ToString(displaySeason)));
+        node->AddNode(new DataNode("daysPerYear", daysPerYear));
     }
 
-    if(completeSave || !FieldsEqual(ID_displayMonth, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_daysPerMonth, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("displayMonth", MonthType_ToString(displayMonth)));
+        node->AddNode(new DataNode("daysPerMonth", daysPerMonth, 12));
     }
 
-    if(completeSave || !FieldsEqual(ID_cutoff, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_covariateModelScale, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("cutoff", cutoff));
-    }
-
-    if(completeSave || !FieldsEqual(ID_computeParamValues, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("computeParamValues", computeParamValues));
-    }
-
-    if(completeSave || !FieldsEqual(ID_computeCovariates, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("computeCovariates", computeCovariates));
-    }
-
-    if(completeSave || !FieldsEqual(ID_covariateReturnYears, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("covariateReturnYears", covariateReturnYears));
+        node->AddNode(new DataNode("covariateModelScale", covariateModelScale));
     }
 
     if(completeSave || !FieldsEqual(ID_covariateModelLocation, &defaultObject))
@@ -761,10 +883,16 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("covariateModelShape", covariateModelShape));
     }
 
-    if(completeSave || !FieldsEqual(ID_covariateModelScale, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_computeCovariates, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("covariateModelScale", covariateModelScale));
+        node->AddNode(new DataNode("computeCovariates", computeCovariates));
+    }
+
+    if(completeSave || !FieldsEqual(ID_covariateReturnYears, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("covariateReturnYears", covariateReturnYears));
     }
 
     if(completeSave || !FieldsEqual(ID_computeRVDifferences, &defaultObject))
@@ -773,16 +901,34 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("computeRVDifferences", computeRVDifferences));
     }
 
-    if(completeSave || !FieldsEqual(ID_rvDifferences, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_rvDifference1, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("rvDifferences", rvDifferences, 2));
+        node->AddNode(new DataNode("rvDifference1", rvDifference1));
     }
 
-    if(completeSave || !FieldsEqual(ID_dataScaling, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_rvDifference2, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("dataScaling", dataScaling));
+        node->AddNode(new DataNode("rvDifference2", rvDifference2));
+    }
+
+    if(completeSave || !FieldsEqual(ID_computeParamValues, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("computeParamValues", computeParamValues));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displaySeason, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displaySeason", SeasonType_ToString(displaySeason)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_displayMonth, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("displayMonth", MonthType_ToString(displayMonth)));
     }
 
     if(completeSave || !FieldsEqual(ID_dumpData, &defaultObject))
@@ -831,12 +977,52 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
         SetDataYearBegin(node->AsInt());
     if((node = searchNode->GetNode("dataAnalysisYearRangeEnabled")) != 0)
         SetDataAnalysisYearRangeEnabled(node->AsBool());
-    if((node = searchNode->GetNode("dataAnalysisYearRange")) != 0)
-        SetDataAnalysisYearRange(node->AsIntArray());
+    if((node = searchNode->GetNode("dataAnalysisYear1")) != 0)
+        SetDataAnalysisYear1(node->AsInt());
+    if((node = searchNode->GetNode("dataAnalysisYear2")) != 0)
+        SetDataAnalysisYear2(node->AsInt());
     if((node = searchNode->GetNode("ensemble")) != 0)
         SetEnsemble(node->AsBool());
     if((node = searchNode->GetNode("numEnsembles")) != 0)
         SetNumEnsembles(node->AsInt());
+    if((node = searchNode->GetNode("cutoff")) != 0)
+        SetCutoff(node->AsFloat());
+    if((node = searchNode->GetNode("cutoffMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetCutoffMode(CutoffModeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CutoffModeType value;
+            if(CutoffModeType_FromString(node->AsString(), value))
+                SetCutoffMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("noConsecutiveDay")) != 0)
+        SetNoConsecutiveDay(node->AsBool());
+    if((node = searchNode->GetNode("optimizationMethod")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetOptimizationMethod(OptimizationType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OptimizationType value;
+            if(OptimizationType_FromString(node->AsString(), value))
+                SetOptimizationMethod(value);
+        }
+    }
+    if((node = searchNode->GetNode("dataScaling")) != 0)
+        SetDataScaling(node->AsDouble());
     if((node = searchNode->GetNode("aggregation")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -859,6 +1045,28 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
         SetSeasonalPercentile(node->AsDoubleArray());
     if((node = searchNode->GetNode("monthlyPercentile")) != 0)
         SetMonthlyPercentile(node->AsDoubleArray());
+    if((node = searchNode->GetNode("daysPerYear")) != 0)
+        SetDaysPerYear(node->AsInt());
+    if((node = searchNode->GetNode("daysPerMonth")) != 0)
+        SetDaysPerMonth(node->AsIntArray());
+    if((node = searchNode->GetNode("covariateModelScale")) != 0)
+        SetCovariateModelScale(node->AsBool());
+    if((node = searchNode->GetNode("covariateModelLocation")) != 0)
+        SetCovariateModelLocation(node->AsBool());
+    if((node = searchNode->GetNode("covariateModelShape")) != 0)
+        SetCovariateModelShape(node->AsBool());
+    if((node = searchNode->GetNode("computeCovariates")) != 0)
+        SetComputeCovariates(node->AsBool());
+    if((node = searchNode->GetNode("covariateReturnYears")) != 0)
+        SetCovariateReturnYears(node->AsIntVector());
+    if((node = searchNode->GetNode("computeRVDifferences")) != 0)
+        SetComputeRVDifferences(node->AsBool());
+    if((node = searchNode->GetNode("rvDifference1")) != 0)
+        SetRvDifference1(node->AsInt());
+    if((node = searchNode->GetNode("rvDifference2")) != 0)
+        SetRvDifference2(node->AsInt());
+    if((node = searchNode->GetNode("computeParamValues")) != 0)
+        SetComputeParamValues(node->AsBool());
     if((node = searchNode->GetNode("displaySeason")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -891,26 +1099,6 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
                 SetDisplayMonth(value);
         }
     }
-    if((node = searchNode->GetNode("cutoff")) != 0)
-        SetCutoff(node->AsFloat());
-    if((node = searchNode->GetNode("computeParamValues")) != 0)
-        SetComputeParamValues(node->AsBool());
-    if((node = searchNode->GetNode("computeCovariates")) != 0)
-        SetComputeCovariates(node->AsBool());
-    if((node = searchNode->GetNode("covariateReturnYears")) != 0)
-        SetCovariateReturnYears(node->AsIntVector());
-    if((node = searchNode->GetNode("covariateModelLocation")) != 0)
-        SetCovariateModelLocation(node->AsBool());
-    if((node = searchNode->GetNode("covariateModelShape")) != 0)
-        SetCovariateModelShape(node->AsBool());
-    if((node = searchNode->GetNode("covariateModelScale")) != 0)
-        SetCovariateModelScale(node->AsBool());
-    if((node = searchNode->GetNode("computeRVDifferences")) != 0)
-        SetComputeRVDifferences(node->AsBool());
-    if((node = searchNode->GetNode("rvDifferences")) != 0)
-        SetRvDifferences(node->AsIntArray());
-    if((node = searchNode->GetNode("dataScaling")) != 0)
-        SetDataScaling(node->AsDouble());
     if((node = searchNode->GetNode("dumpData")) != 0)
         SetDumpData(node->AsBool());
 }
@@ -934,11 +1122,17 @@ PeaksOverThresholdAttributes::SetDataAnalysisYearRangeEnabled(bool dataAnalysisY
 }
 
 void
-PeaksOverThresholdAttributes::SetDataAnalysisYearRange(const int *dataAnalysisYearRange_)
+PeaksOverThresholdAttributes::SetDataAnalysisYear1(int dataAnalysisYear1_)
 {
-    dataAnalysisYearRange[0] = dataAnalysisYearRange_[0];
-    dataAnalysisYearRange[1] = dataAnalysisYearRange_[1];
-    Select(ID_dataAnalysisYearRange, (void *)dataAnalysisYearRange, 2);
+    dataAnalysisYear1 = dataAnalysisYear1_;
+    Select(ID_dataAnalysisYear1, (void *)&dataAnalysisYear1);
+}
+
+void
+PeaksOverThresholdAttributes::SetDataAnalysisYear2(int dataAnalysisYear2_)
+{
+    dataAnalysisYear2 = dataAnalysisYear2_;
+    Select(ID_dataAnalysisYear2, (void *)&dataAnalysisYear2);
 }
 
 void
@@ -953,6 +1147,41 @@ PeaksOverThresholdAttributes::SetNumEnsembles(int numEnsembles_)
 {
     numEnsembles = numEnsembles_;
     Select(ID_numEnsembles, (void *)&numEnsembles);
+}
+
+void
+PeaksOverThresholdAttributes::SetCutoff(float cutoff_)
+{
+    cutoff = cutoff_;
+    Select(ID_cutoff, (void *)&cutoff);
+}
+
+void
+PeaksOverThresholdAttributes::SetCutoffMode(PeaksOverThresholdAttributes::CutoffModeType cutoffMode_)
+{
+    cutoffMode = cutoffMode_;
+    Select(ID_cutoffMode, (void *)&cutoffMode);
+}
+
+void
+PeaksOverThresholdAttributes::SetNoConsecutiveDay(bool noConsecutiveDay_)
+{
+    noConsecutiveDay = noConsecutiveDay_;
+    Select(ID_noConsecutiveDay, (void *)&noConsecutiveDay);
+}
+
+void
+PeaksOverThresholdAttributes::SetOptimizationMethod(PeaksOverThresholdAttributes::OptimizationType optimizationMethod_)
+{
+    optimizationMethod = optimizationMethod_;
+    Select(ID_optimizationMethod, (void *)&optimizationMethod);
+}
+
+void
+PeaksOverThresholdAttributes::SetDataScaling(double dataScaling_)
+{
+    dataScaling = dataScaling_;
+    Select(ID_dataScaling, (void *)&dataScaling);
 }
 
 void
@@ -988,45 +1217,25 @@ PeaksOverThresholdAttributes::SetMonthlyPercentile(const double *monthlyPercenti
 }
 
 void
-PeaksOverThresholdAttributes::SetDisplaySeason(PeaksOverThresholdAttributes::SeasonType displaySeason_)
+PeaksOverThresholdAttributes::SetDaysPerYear(int daysPerYear_)
 {
-    displaySeason = displaySeason_;
-    Select(ID_displaySeason, (void *)&displaySeason);
+    daysPerYear = daysPerYear_;
+    Select(ID_daysPerYear, (void *)&daysPerYear);
 }
 
 void
-PeaksOverThresholdAttributes::SetDisplayMonth(PeaksOverThresholdAttributes::MonthType displayMonth_)
+PeaksOverThresholdAttributes::SetDaysPerMonth(const int *daysPerMonth_)
 {
-    displayMonth = displayMonth_;
-    Select(ID_displayMonth, (void *)&displayMonth);
+    for(int i = 0; i < 12; ++i)
+        daysPerMonth[i] = daysPerMonth_[i];
+    Select(ID_daysPerMonth, (void *)daysPerMonth, 12);
 }
 
 void
-PeaksOverThresholdAttributes::SetCutoff(float cutoff_)
+PeaksOverThresholdAttributes::SetCovariateModelScale(bool covariateModelScale_)
 {
-    cutoff = cutoff_;
-    Select(ID_cutoff, (void *)&cutoff);
-}
-
-void
-PeaksOverThresholdAttributes::SetComputeParamValues(bool computeParamValues_)
-{
-    computeParamValues = computeParamValues_;
-    Select(ID_computeParamValues, (void *)&computeParamValues);
-}
-
-void
-PeaksOverThresholdAttributes::SetComputeCovariates(bool computeCovariates_)
-{
-    computeCovariates = computeCovariates_;
-    Select(ID_computeCovariates, (void *)&computeCovariates);
-}
-
-void
-PeaksOverThresholdAttributes::SetCovariateReturnYears(const intVector &covariateReturnYears_)
-{
-    covariateReturnYears = covariateReturnYears_;
-    Select(ID_covariateReturnYears, (void *)&covariateReturnYears);
+    covariateModelScale = covariateModelScale_;
+    Select(ID_covariateModelScale, (void *)&covariateModelScale);
 }
 
 void
@@ -1044,10 +1253,17 @@ PeaksOverThresholdAttributes::SetCovariateModelShape(bool covariateModelShape_)
 }
 
 void
-PeaksOverThresholdAttributes::SetCovariateModelScale(bool covariateModelScale_)
+PeaksOverThresholdAttributes::SetComputeCovariates(bool computeCovariates_)
 {
-    covariateModelScale = covariateModelScale_;
-    Select(ID_covariateModelScale, (void *)&covariateModelScale);
+    computeCovariates = computeCovariates_;
+    Select(ID_computeCovariates, (void *)&computeCovariates);
+}
+
+void
+PeaksOverThresholdAttributes::SetCovariateReturnYears(const intVector &covariateReturnYears_)
+{
+    covariateReturnYears = covariateReturnYears_;
+    Select(ID_covariateReturnYears, (void *)&covariateReturnYears);
 }
 
 void
@@ -1058,18 +1274,38 @@ PeaksOverThresholdAttributes::SetComputeRVDifferences(bool computeRVDifferences_
 }
 
 void
-PeaksOverThresholdAttributes::SetRvDifferences(const int *rvDifferences_)
+PeaksOverThresholdAttributes::SetRvDifference1(int rvDifference1_)
 {
-    rvDifferences[0] = rvDifferences_[0];
-    rvDifferences[1] = rvDifferences_[1];
-    Select(ID_rvDifferences, (void *)rvDifferences, 2);
+    rvDifference1 = rvDifference1_;
+    Select(ID_rvDifference1, (void *)&rvDifference1);
 }
 
 void
-PeaksOverThresholdAttributes::SetDataScaling(double dataScaling_)
+PeaksOverThresholdAttributes::SetRvDifference2(int rvDifference2_)
 {
-    dataScaling = dataScaling_;
-    Select(ID_dataScaling, (void *)&dataScaling);
+    rvDifference2 = rvDifference2_;
+    Select(ID_rvDifference2, (void *)&rvDifference2);
+}
+
+void
+PeaksOverThresholdAttributes::SetComputeParamValues(bool computeParamValues_)
+{
+    computeParamValues = computeParamValues_;
+    Select(ID_computeParamValues, (void *)&computeParamValues);
+}
+
+void
+PeaksOverThresholdAttributes::SetDisplaySeason(PeaksOverThresholdAttributes::SeasonType displaySeason_)
+{
+    displaySeason = displaySeason_;
+    Select(ID_displaySeason, (void *)&displaySeason);
+}
+
+void
+PeaksOverThresholdAttributes::SetDisplayMonth(PeaksOverThresholdAttributes::MonthType displayMonth_)
+{
+    displayMonth = displayMonth_;
+    Select(ID_displayMonth, (void *)&displayMonth);
 }
 
 void
@@ -1095,16 +1331,16 @@ PeaksOverThresholdAttributes::GetDataAnalysisYearRangeEnabled() const
     return dataAnalysisYearRangeEnabled;
 }
 
-const int *
-PeaksOverThresholdAttributes::GetDataAnalysisYearRange() const
+int
+PeaksOverThresholdAttributes::GetDataAnalysisYear1() const
 {
-    return dataAnalysisYearRange;
+    return dataAnalysisYear1;
 }
 
-int *
-PeaksOverThresholdAttributes::GetDataAnalysisYearRange()
+int
+PeaksOverThresholdAttributes::GetDataAnalysisYear2() const
 {
-    return dataAnalysisYearRange;
+    return dataAnalysisYear2;
 }
 
 bool
@@ -1117,6 +1353,36 @@ int
 PeaksOverThresholdAttributes::GetNumEnsembles() const
 {
     return numEnsembles;
+}
+
+float
+PeaksOverThresholdAttributes::GetCutoff() const
+{
+    return cutoff;
+}
+
+PeaksOverThresholdAttributes::CutoffModeType
+PeaksOverThresholdAttributes::GetCutoffMode() const
+{
+    return CutoffModeType(cutoffMode);
+}
+
+bool
+PeaksOverThresholdAttributes::GetNoConsecutiveDay() const
+{
+    return noConsecutiveDay;
+}
+
+PeaksOverThresholdAttributes::OptimizationType
+PeaksOverThresholdAttributes::GetOptimizationMethod() const
+{
+    return OptimizationType(optimizationMethod);
+}
+
+double
+PeaksOverThresholdAttributes::GetDataScaling() const
+{
+    return dataScaling;
 }
 
 PeaksOverThresholdAttributes::AggregationType
@@ -1155,28 +1421,40 @@ PeaksOverThresholdAttributes::GetMonthlyPercentile()
     return monthlyPercentile;
 }
 
-PeaksOverThresholdAttributes::SeasonType
-PeaksOverThresholdAttributes::GetDisplaySeason() const
+int
+PeaksOverThresholdAttributes::GetDaysPerYear() const
 {
-    return SeasonType(displaySeason);
+    return daysPerYear;
 }
 
-PeaksOverThresholdAttributes::MonthType
-PeaksOverThresholdAttributes::GetDisplayMonth() const
+const int *
+PeaksOverThresholdAttributes::GetDaysPerMonth() const
 {
-    return MonthType(displayMonth);
+    return daysPerMonth;
 }
 
-float
-PeaksOverThresholdAttributes::GetCutoff() const
+int *
+PeaksOverThresholdAttributes::GetDaysPerMonth()
 {
-    return cutoff;
+    return daysPerMonth;
 }
 
 bool
-PeaksOverThresholdAttributes::GetComputeParamValues() const
+PeaksOverThresholdAttributes::GetCovariateModelScale() const
 {
-    return computeParamValues;
+    return covariateModelScale;
+}
+
+bool
+PeaksOverThresholdAttributes::GetCovariateModelLocation() const
+{
+    return covariateModelLocation;
+}
+
+bool
+PeaksOverThresholdAttributes::GetCovariateModelShape() const
+{
+    return covariateModelShape;
 }
 
 bool
@@ -1198,45 +1476,39 @@ PeaksOverThresholdAttributes::GetCovariateReturnYears()
 }
 
 bool
-PeaksOverThresholdAttributes::GetCovariateModelLocation() const
-{
-    return covariateModelLocation;
-}
-
-bool
-PeaksOverThresholdAttributes::GetCovariateModelShape() const
-{
-    return covariateModelShape;
-}
-
-bool
-PeaksOverThresholdAttributes::GetCovariateModelScale() const
-{
-    return covariateModelScale;
-}
-
-bool
 PeaksOverThresholdAttributes::GetComputeRVDifferences() const
 {
     return computeRVDifferences;
 }
 
-const int *
-PeaksOverThresholdAttributes::GetRvDifferences() const
+int
+PeaksOverThresholdAttributes::GetRvDifference1() const
 {
-    return rvDifferences;
+    return rvDifference1;
 }
 
-int *
-PeaksOverThresholdAttributes::GetRvDifferences()
+int
+PeaksOverThresholdAttributes::GetRvDifference2() const
 {
-    return rvDifferences;
+    return rvDifference2;
 }
 
-double
-PeaksOverThresholdAttributes::GetDataScaling() const
+bool
+PeaksOverThresholdAttributes::GetComputeParamValues() const
 {
-    return dataScaling;
+    return computeParamValues;
+}
+
+PeaksOverThresholdAttributes::SeasonType
+PeaksOverThresholdAttributes::GetDisplaySeason() const
+{
+    return SeasonType(displaySeason);
+}
+
+PeaksOverThresholdAttributes::MonthType
+PeaksOverThresholdAttributes::GetDisplayMonth() const
+{
+    return MonthType(displayMonth);
 }
 
 bool
@@ -1248,12 +1520,6 @@ PeaksOverThresholdAttributes::GetDumpData() const
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
-
-void
-PeaksOverThresholdAttributes::SelectDataAnalysisYearRange()
-{
-    Select(ID_dataAnalysisYearRange, (void *)dataAnalysisYearRange, 2);
-}
 
 void
 PeaksOverThresholdAttributes::SelectSeasonalPercentile()
@@ -1268,15 +1534,15 @@ PeaksOverThresholdAttributes::SelectMonthlyPercentile()
 }
 
 void
-PeaksOverThresholdAttributes::SelectCovariateReturnYears()
+PeaksOverThresholdAttributes::SelectDaysPerMonth()
 {
-    Select(ID_covariateReturnYears, (void *)&covariateReturnYears);
+    Select(ID_daysPerMonth, (void *)daysPerMonth, 12);
 }
 
 void
-PeaksOverThresholdAttributes::SelectRvDifferences()
+PeaksOverThresholdAttributes::SelectCovariateReturnYears()
 {
-    Select(ID_rvDifferences, (void *)rvDifferences, 2);
+    Select(ID_covariateReturnYears, (void *)&covariateReturnYears);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1305,25 +1571,32 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
     {
     case ID_dataYearBegin:                return "dataYearBegin";
     case ID_dataAnalysisYearRangeEnabled: return "dataAnalysisYearRangeEnabled";
-    case ID_dataAnalysisYearRange:        return "dataAnalysisYearRange";
+    case ID_dataAnalysisYear1:            return "dataAnalysisYear1";
+    case ID_dataAnalysisYear2:            return "dataAnalysisYear2";
     case ID_ensemble:                     return "ensemble";
     case ID_numEnsembles:                 return "numEnsembles";
+    case ID_cutoff:                       return "cutoff";
+    case ID_cutoffMode:                   return "cutoffMode";
+    case ID_noConsecutiveDay:             return "noConsecutiveDay";
+    case ID_optimizationMethod:           return "optimizationMethod";
+    case ID_dataScaling:                  return "dataScaling";
     case ID_aggregation:                  return "aggregation";
     case ID_annualPercentile:             return "annualPercentile";
     case ID_seasonalPercentile:           return "seasonalPercentile";
     case ID_monthlyPercentile:            return "monthlyPercentile";
-    case ID_displaySeason:                return "displaySeason";
-    case ID_displayMonth:                 return "displayMonth";
-    case ID_cutoff:                       return "cutoff";
-    case ID_computeParamValues:           return "computeParamValues";
-    case ID_computeCovariates:            return "computeCovariates";
-    case ID_covariateReturnYears:         return "covariateReturnYears";
+    case ID_daysPerYear:                  return "daysPerYear";
+    case ID_daysPerMonth:                 return "daysPerMonth";
+    case ID_covariateModelScale:          return "covariateModelScale";
     case ID_covariateModelLocation:       return "covariateModelLocation";
     case ID_covariateModelShape:          return "covariateModelShape";
-    case ID_covariateModelScale:          return "covariateModelScale";
+    case ID_computeCovariates:            return "computeCovariates";
+    case ID_covariateReturnYears:         return "covariateReturnYears";
     case ID_computeRVDifferences:         return "computeRVDifferences";
-    case ID_rvDifferences:                return "rvDifferences";
-    case ID_dataScaling:                  return "dataScaling";
+    case ID_rvDifference1:                return "rvDifference1";
+    case ID_rvDifference2:                return "rvDifference2";
+    case ID_computeParamValues:           return "computeParamValues";
+    case ID_displaySeason:                return "displaySeason";
+    case ID_displayMonth:                 return "displayMonth";
     case ID_dumpData:                     return "dumpData";
     default:  return "invalid index";
     }
@@ -1351,25 +1624,32 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
     {
     case ID_dataYearBegin:                return FieldType_int;
     case ID_dataAnalysisYearRangeEnabled: return FieldType_bool;
-    case ID_dataAnalysisYearRange:        return FieldType_intArray;
+    case ID_dataAnalysisYear1:            return FieldType_int;
+    case ID_dataAnalysisYear2:            return FieldType_int;
     case ID_ensemble:                     return FieldType_bool;
     case ID_numEnsembles:                 return FieldType_int;
+    case ID_cutoff:                       return FieldType_float;
+    case ID_cutoffMode:                   return FieldType_enum;
+    case ID_noConsecutiveDay:             return FieldType_bool;
+    case ID_optimizationMethod:           return FieldType_enum;
+    case ID_dataScaling:                  return FieldType_double;
     case ID_aggregation:                  return FieldType_enum;
     case ID_annualPercentile:             return FieldType_double;
     case ID_seasonalPercentile:           return FieldType_doubleArray;
     case ID_monthlyPercentile:            return FieldType_doubleArray;
-    case ID_displaySeason:                return FieldType_enum;
-    case ID_displayMonth:                 return FieldType_enum;
-    case ID_cutoff:                       return FieldType_float;
-    case ID_computeParamValues:           return FieldType_bool;
-    case ID_computeCovariates:            return FieldType_bool;
-    case ID_covariateReturnYears:         return FieldType_intVector;
+    case ID_daysPerYear:                  return FieldType_int;
+    case ID_daysPerMonth:                 return FieldType_intArray;
+    case ID_covariateModelScale:          return FieldType_bool;
     case ID_covariateModelLocation:       return FieldType_bool;
     case ID_covariateModelShape:          return FieldType_bool;
-    case ID_covariateModelScale:          return FieldType_bool;
+    case ID_computeCovariates:            return FieldType_bool;
+    case ID_covariateReturnYears:         return FieldType_intVector;
     case ID_computeRVDifferences:         return FieldType_bool;
-    case ID_rvDifferences:                return FieldType_intArray;
-    case ID_dataScaling:                  return FieldType_double;
+    case ID_rvDifference1:                return FieldType_int;
+    case ID_rvDifference2:                return FieldType_int;
+    case ID_computeParamValues:           return FieldType_bool;
+    case ID_displaySeason:                return FieldType_enum;
+    case ID_displayMonth:                 return FieldType_enum;
     case ID_dumpData:                     return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -1397,25 +1677,32 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
     {
     case ID_dataYearBegin:                return "int";
     case ID_dataAnalysisYearRangeEnabled: return "bool";
-    case ID_dataAnalysisYearRange:        return "intArray";
+    case ID_dataAnalysisYear1:            return "int";
+    case ID_dataAnalysisYear2:            return "int";
     case ID_ensemble:                     return "bool";
     case ID_numEnsembles:                 return "int";
+    case ID_cutoff:                       return "float";
+    case ID_cutoffMode:                   return "enum";
+    case ID_noConsecutiveDay:             return "bool";
+    case ID_optimizationMethod:           return "enum";
+    case ID_dataScaling:                  return "double";
     case ID_aggregation:                  return "enum";
     case ID_annualPercentile:             return "double";
     case ID_seasonalPercentile:           return "doubleArray";
     case ID_monthlyPercentile:            return "doubleArray";
-    case ID_displaySeason:                return "enum";
-    case ID_displayMonth:                 return "enum";
-    case ID_cutoff:                       return "float";
-    case ID_computeParamValues:           return "bool";
-    case ID_computeCovariates:            return "bool";
-    case ID_covariateReturnYears:         return "intVector";
+    case ID_daysPerYear:                  return "int";
+    case ID_daysPerMonth:                 return "intArray";
+    case ID_covariateModelScale:          return "bool";
     case ID_covariateModelLocation:       return "bool";
     case ID_covariateModelShape:          return "bool";
-    case ID_covariateModelScale:          return "bool";
+    case ID_computeCovariates:            return "bool";
+    case ID_covariateReturnYears:         return "intVector";
     case ID_computeRVDifferences:         return "bool";
-    case ID_rvDifferences:                return "intArray";
-    case ID_dataScaling:                  return "double";
+    case ID_rvDifference1:                return "int";
+    case ID_rvDifference2:                return "int";
+    case ID_computeParamValues:           return "bool";
+    case ID_displaySeason:                return "enum";
+    case ID_displayMonth:                 return "enum";
     case ID_dumpData:                     return "bool";
     default:  return "invalid index";
     }
@@ -1453,14 +1740,14 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
         retval = (dataAnalysisYearRangeEnabled == obj.dataAnalysisYearRangeEnabled);
         }
         break;
-    case ID_dataAnalysisYearRange:
+    case ID_dataAnalysisYear1:
         {  // new scope
-        // Compare the dataAnalysisYearRange arrays.
-        bool dataAnalysisYearRange_equal = true;
-        for(int i = 0; i < 2 && dataAnalysisYearRange_equal; ++i)
-            dataAnalysisYearRange_equal = (dataAnalysisYearRange[i] == obj.dataAnalysisYearRange[i]);
-
-        retval = dataAnalysisYearRange_equal;
+        retval = (dataAnalysisYear1 == obj.dataAnalysisYear1);
+        }
+        break;
+    case ID_dataAnalysisYear2:
+        {  // new scope
+        retval = (dataAnalysisYear2 == obj.dataAnalysisYear2);
         }
         break;
     case ID_ensemble:
@@ -1471,6 +1758,31 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_numEnsembles:
         {  // new scope
         retval = (numEnsembles == obj.numEnsembles);
+        }
+        break;
+    case ID_cutoff:
+        {  // new scope
+        retval = (cutoff == obj.cutoff);
+        }
+        break;
+    case ID_cutoffMode:
+        {  // new scope
+        retval = (cutoffMode == obj.cutoffMode);
+        }
+        break;
+    case ID_noConsecutiveDay:
+        {  // new scope
+        retval = (noConsecutiveDay == obj.noConsecutiveDay);
+        }
+        break;
+    case ID_optimizationMethod:
+        {  // new scope
+        retval = (optimizationMethod == obj.optimizationMethod);
+        }
+        break;
+    case ID_dataScaling:
+        {  // new scope
+        retval = (dataScaling == obj.dataScaling);
         }
         break;
     case ID_aggregation:
@@ -1503,34 +1815,24 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
         retval = monthlyPercentile_equal;
         }
         break;
-    case ID_displaySeason:
+    case ID_daysPerYear:
         {  // new scope
-        retval = (displaySeason == obj.displaySeason);
+        retval = (daysPerYear == obj.daysPerYear);
         }
         break;
-    case ID_displayMonth:
+    case ID_daysPerMonth:
         {  // new scope
-        retval = (displayMonth == obj.displayMonth);
+        // Compare the daysPerMonth arrays.
+        bool daysPerMonth_equal = true;
+        for(int i = 0; i < 12 && daysPerMonth_equal; ++i)
+            daysPerMonth_equal = (daysPerMonth[i] == obj.daysPerMonth[i]);
+
+        retval = daysPerMonth_equal;
         }
         break;
-    case ID_cutoff:
+    case ID_covariateModelScale:
         {  // new scope
-        retval = (cutoff == obj.cutoff);
-        }
-        break;
-    case ID_computeParamValues:
-        {  // new scope
-        retval = (computeParamValues == obj.computeParamValues);
-        }
-        break;
-    case ID_computeCovariates:
-        {  // new scope
-        retval = (computeCovariates == obj.computeCovariates);
-        }
-        break;
-    case ID_covariateReturnYears:
-        {  // new scope
-        retval = (covariateReturnYears == obj.covariateReturnYears);
+        retval = (covariateModelScale == obj.covariateModelScale);
         }
         break;
     case ID_covariateModelLocation:
@@ -1543,9 +1845,14 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
         retval = (covariateModelShape == obj.covariateModelShape);
         }
         break;
-    case ID_covariateModelScale:
+    case ID_computeCovariates:
         {  // new scope
-        retval = (covariateModelScale == obj.covariateModelScale);
+        retval = (computeCovariates == obj.computeCovariates);
+        }
+        break;
+    case ID_covariateReturnYears:
+        {  // new scope
+        retval = (covariateReturnYears == obj.covariateReturnYears);
         }
         break;
     case ID_computeRVDifferences:
@@ -1553,19 +1860,29 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
         retval = (computeRVDifferences == obj.computeRVDifferences);
         }
         break;
-    case ID_rvDifferences:
+    case ID_rvDifference1:
         {  // new scope
-        // Compare the rvDifferences arrays.
-        bool rvDifferences_equal = true;
-        for(int i = 0; i < 2 && rvDifferences_equal; ++i)
-            rvDifferences_equal = (rvDifferences[i] == obj.rvDifferences[i]);
-
-        retval = rvDifferences_equal;
+        retval = (rvDifference1 == obj.rvDifference1);
         }
         break;
-    case ID_dataScaling:
+    case ID_rvDifference2:
         {  // new scope
-        retval = (dataScaling == obj.dataScaling);
+        retval = (rvDifference2 == obj.rvDifference2);
+        }
+        break;
+    case ID_computeParamValues:
+        {  // new scope
+        retval = (computeParamValues == obj.computeParamValues);
+        }
+        break;
+    case ID_displaySeason:
+        {  // new scope
+        retval = (displaySeason == obj.displaySeason);
+        }
+        break;
+    case ID_displayMonth:
+        {  // new scope
+        retval = (displayMonth == obj.displayMonth);
         }
         break;
     case ID_dumpData:
