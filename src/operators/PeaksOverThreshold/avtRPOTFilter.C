@@ -91,7 +91,7 @@ avtRPOTFilter::DataCanBeParallelizedOverTime()
 int
 avtRPOTFilter::GetMonthFromDay(int t)
 {
-    int dayInYear = GetYearFromDay(t) % daysPerYear;
+    int dayInYear = t % daysPerYear;
 
     int month = -1;
     for (int i = 0; i < 12; i++)
