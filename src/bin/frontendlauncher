@@ -15,31 +15,33 @@
 # Date      :  Wed Mar 13 11:25:42 PDT 2013
 #
 # Modifications:
+#   Jeremy Meredith, Wed Mar 20 14:57:54 EDT 2013
+#   More sh-compliant version of tests.
 #   
 ###############################################################################
 
 # Determine VisIt architecture
 osname=$(uname)
-if [ "$osname" == "Linux" ]; then
+if test "$osname" = "Linux"; then
     proc=$(uname -m)
-    if [ "$proc" == "x86_64" ]; then
+    if test "$proc" = "x86_64"; then
         platform="linux-x86_64"
-    elif [ "$proc" == "ppc" ]; then
+    elif test "$proc" = "ppc"; then
         platform="linux-ppc"
-    elif [ "$proc" == "ppc64" ]; then
+    elif test "$proc" = "ppc64"; then
         platform="linux-ppc64"
     else
         platform="linux-intel"
     fi
-elif [ "$osname" == "Darwin" ]; then
+elif test "$osname" = "Darwin"; then
     platform="darwin-x86_64"
-elif [ "$osname" == "AIX" ]; then
-    if [ "$OBJECT_MODE" == "32" ]; then
+elif test "$osname" = "AIX"; then
+    if test "$OBJECT_MODE" = "32"; then
         platform="ibm-aix-pwr"
     else
         platform="ibm-aix-pwr64"
     fi
-elif [ "$osname" == "freebsd" ]; then
+elif test "$osname" = "freebsd"; then
     version=$(uname -r)
     proc=$(uname -m)
     platform="freebsd-${version}-${$proc}"
@@ -66,7 +68,7 @@ visitpython=""
 dir="$(dirname $0)"
 for ver in $versions; do
     thispython="$dir/../$ver/$platform/bin/python"
-    if [ -x "$thispython" ]; then
+    if test -x "$thispython"; then
         visitpython="$thispython"
         break
     fi
@@ -75,14 +77,14 @@ done
 # Execute VisIt's Python or system Python, depending on what's available
 frontendlauncherpy="$(dirname $0)/frontendlauncher.py"
 unset PYTHONHOME
-if [ -n "$visitpython" ]; then
+if test -n "$visitpython"; then
     visitdir="$(dirname $(dirname $visitpython))"
 
     # Which Python was VisIt built against? Look for python<ver> executable
     # next to the python binary we located already.
     pyver=""
     for ver in 2.4 2.5 2.6 2.7; do
-        if [ -x "$visitpython$ver" ]; then
+        if test -x "$visitpython$ver"; then
             pyver=$ver
             break
         fi
