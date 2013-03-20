@@ -6281,11 +6281,25 @@ ViewerSubject::ExportEntireState()
 //   Brad Whitlock, Fri Nov 10 09:38:25 PDT 2006
 //   Added arguments to the call to configMgr->ImportEntireState.
 //
+//   Brad Whitlock, Tue Mar 19 17:40:00 PDT 2013
+//   Delete localSettings to avoid condition where delayed setting processing
+//   can happen after session files are restored. This avoids the settings from
+//   deleting restored plots.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::ImportEntireState()
 {
+    // If we're importing a session, delete the localSettings in case the
+    // DelayedProcessSettings method has not fired yet. This affects session
+    // loading via the -sessionfile command line argument.
+    if(localSettings != 0)
+    {
+        delete localSettings;
+        localSettings = 0;
+    }
+
     stringVector empty;
     configMgr->ImportEntireState(GetViewerState()->GetViewerRPC()->GetVariable(),
                                  GetViewerState()->GetViewerRPC()->GetBoolFlag(),
