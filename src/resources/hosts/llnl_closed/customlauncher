@@ -36,18 +36,6 @@ class LLNLLauncher(MainLauncher):
     def __init__(self):
         super(LLNLLauncher, self).__init__()
 
-    def DetermineArchitecture(self):
-        arches = super(LLNLLauncher, self).DetermineArchitecture()
-        if self.sectorname() == "gremlin":
-            a2 = []
-            for a in arches:
-                if a == "linux-x86_64":
-                    a2 = a2 + ["linux-x86_64-chaos4"]
-                else:
-                    a2 = a2 + [a]
-            arches = a2
-        return arches
-
     def Customize(self):
         if self.sectorname() == "ci-fe":
             ld_library_paths = self.splitpaths(GETENV("LD_LIBRARY_PATH"))

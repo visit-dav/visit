@@ -56,6 +56,9 @@
 #   Eric Brugger, Mon Jul 30 10:27:10 PDT 2012
 #   Added gremlin.
 #
+#   Eric Brugger, Wed Mar 20 11:48:51 PDT 2013
+#   Deleted gremlin. Replaced termite with hitit.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -65,9 +68,8 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-termite=true
+hitit=true
 inca=true
-gremlin=true
 cielo=true
 
 dist=undefined
@@ -81,18 +83,17 @@ for abc
 do
    case $1 in
       -none)
-         termite=false
+         hitit=false
          inca=false
-         gremlin=false
          cielo=false
          shift
          ;;
-      -termite)
-         termite=false
+      -hitit)
+         hitit=false
          shift
          ;;
-      +termite)
-         termite=true
+      +hitit)
+         hitit=true
          shift
          ;;
       -inca)
@@ -101,14 +102,6 @@ do
          ;;
       +inca)
          inca=true
-         shift
-         ;;
-      -gremlin)
-         gremlin=false
-         shift
-         ;;
-      +gremlin)
-         gremlin=true
          shift
          ;;
       -cielo)
@@ -133,9 +126,8 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    termite (B-Div, Linux),"
+   echo "    hitit (B-Div, Linux),"
    echo "    inca (LC, x86_64)"
-   echo "    gremlin (LC, x86_64)"
    echo "    cielo (LANL, x86_64)"
    exit
 fi
@@ -151,18 +143,18 @@ then
 fi
 
 #
-# Build on termite.
+# Build on hitit.
 #
-rm -f termite
-cat <<EOF > termite
+rm -f hitit
+cat <<EOF > hitit
 #!/bin/sh
-if test ! -e termite ; then
-   mkdir termite
+if test ! -e hitit ; then
+   mkdir hitit
 fi
-rm -rf termite/visitbuild
-mkdir termite/visitbuild
-mv termite_$dist.tar.gz termite/visitbuild/$dist.tar.gz
-cd termite/visitbuild
+rm -rf hitit/visitbuild
+mkdir hitit/visitbuild
+mv hitit_$dist.tar.gz hitit/visitbuild/$dist.tar.gz
+cd hitit/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
@@ -173,27 +165,27 @@ make package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on termite"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
+echo "        build of visit on hitit"      > resultlog 2>&1
+echo "       -------------------------"     >> resultlog 2>&1
+echo ""                                     >> resultlog 2>&1
+ls -l                                       >> resultlog 2>&1
+echo ""                                     >> resultlog 2>&1
 echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
 echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
+echo ""                                     >> resultlog 2>&1
+echo "The database plugins:"                >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
  
-if [ $termite = true ]
+if [ $hitit = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on termite"
-      scp -P 22 termite termite:termite_buildit
-      scp -P 22 $dist.tar.gz termite:termite_$dist.tar.gz
-      ssh -p 22 termite "chmod 750 termite_buildit;./termite_buildit" &
+      echo "Building on hitit"
+      scp -P 22 hitit hitit:hitit_buildit
+      scp -P 22 $dist.tar.gz hitit:hitit_$dist.tar.gz
+      ssh -p 22 hitit "chmod 750 hitit_buildit;./hitit_buildit" &
    fi
 fi
 
@@ -246,58 +238,6 @@ then
       scp inca inca3:inca_buildit
       scp $dist.tar.gz inca3:inca_$dist.tar.gz
       ssh inca3 "chmod 750 inca_buildit;./inca_buildit" &
-   fi
-fi
-
-#
-# Build on gremlin.
-#
-rm -f gremlin
-cat <<EOF > gremlin
-#!/bin/sh
-XLOCALEDIR=/usr/lib/X11/locale
-PATH=/usr/bin/X11:\$PATH
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/gremlin ; then
-   mkdir /usr/tmp/$user/gremlin
-fi
-rm -rf /usr/tmp/$user/gremlin/visitbuild
-mkdir /usr/tmp/$user/gremlin/visitbuild
-mv gremlin_$dist.tar.gz /usr/tmp/$user/gremlin/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/gremlin/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/usr/gapps/visit/thirdparty_shared_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on gremlin"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $gremlin = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on gremlin"
-      scp gremlin gremlin3:gremlin_buildit
-      scp $dist.tar.gz gremlin3:gremlin_$dist.tar.gz
-      ssh gremlin3 "chmod 750 gremlin_buildit;./gremlin_buildit" &
    fi
 fi
 
@@ -356,5 +296,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f termite inca gremlin cielo
+   rm -f hitit inca cielo
 fi
