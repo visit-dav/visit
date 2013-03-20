@@ -95,10 +95,17 @@
 #define FILL_VAR       0
 #define FILL_CONSTANT  1
 
-#define EXPRESSION_SIMPLE      0
-#define EXPRESSION_DIFF_FIRST  1
-#define EXPRESSION_DIFF_SECOND 2
-#define EXPRESSION_ABS_DIFF    3
+#define EXPRESSION_SIMPLE      0x11
+#define EXPRESSION_MINIMUM     0x12
+#define EXPRESSION_MAXIMUM     0x14
+
+#define EXPRESSION_SUM         0x21
+#define EXPRESSION_AVERAGE     0x22
+#define EXPRESSION_VARIANCE    0x24
+
+#define EXPRESSION_ABS_DIFF    0x41
+#define EXPRESSION_DIFF_FIRST  0x42
+#define EXPRESSION_DIFF_SECOND 0x44
 
 
 int QvisCMFEWizard::timesCompleted = 0;
@@ -477,28 +484,55 @@ QvisCMFEWizard::initializePage(int pageId)
         }
         break;
     case Page_ActivityDescription:
-        exprTypeSelect->blockSignals(true);
-        exprTypeSelect->button(decision_exprtype == EXPRESSION_SIMPLE ? 0 : 1)->setChecked(true);
-        exprTypeSelect->blockSignals(false);
+
         if (decision_exprtype == EXPRESSION_SIMPLE)
         {
+            exprTypeSelect->blockSignals(true);
+            exprTypeSelect->button(0)->setChecked(true);
+            exprTypeSelect->blockSignals(false);
+
             exprDiffVar->setEnabled(false);
             exprDiffTypeSelect->button(0)->setEnabled(false);
             exprDiffTypeSelect->button(1)->setEnabled(false);
             exprDiffTypeSelect->button(2)->setEnabled(false);
+            exprDiffTypeSelect->button(3)->setEnabled(false);
+            exprDiffTypeSelect->button(4)->setEnabled(false);
+            exprDiffTypeSelect->button(5)->setEnabled(false);
+            exprDiffTypeSelect->button(6)->setEnabled(false);
+            exprDiffTypeSelect->button(7)->setEnabled(false);
         }
         else
         {
+            exprTypeSelect->blockSignals(true);
+            exprTypeSelect->button(1)->setChecked(true);
+            exprTypeSelect->blockSignals(false);
+
             exprDiffVar->setEnabled(true);
             exprDiffTypeSelect->button(0)->setEnabled(true);
             exprDiffTypeSelect->button(1)->setEnabled(true);
             exprDiffTypeSelect->button(2)->setEnabled(true);
-            if (decision_exprtype == EXPRESSION_DIFF_FIRST)
-                exprDiffTypeSelect->button(1)->setChecked(true);
-            else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
-                exprDiffTypeSelect->button(2)->setChecked(true);
-            else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+            exprDiffTypeSelect->button(3)->setEnabled(true);
+            exprDiffTypeSelect->button(4)->setEnabled(true);
+            exprDiffTypeSelect->button(5)->setEnabled(true);
+            exprDiffTypeSelect->button(6)->setEnabled(true);
+            exprDiffTypeSelect->button(7)->setEnabled(true);
+
+            if (decision_exprtype == EXPRESSION_MINIMUM)
                 exprDiffTypeSelect->button(0)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_MAXIMUM)
+                exprDiffTypeSelect->button(1)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_SUM)
+                exprDiffTypeSelect->button(2)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_AVERAGE)
+                exprDiffTypeSelect->button(3)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_VARIANCE)
+                exprDiffTypeSelect->button(4)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+                exprDiffTypeSelect->button(5)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
+                exprDiffTypeSelect->button(6)->setChecked(true);
+            else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
+                exprDiffTypeSelect->button(7)->setChecked(true);
         }
         break;
 
@@ -958,19 +992,23 @@ QvisCMFEWizard::CreateActivityPage(void)
 
     QLabel *quesLabel = new QLabel(tr("<u>What do you want to do with the donor field?<u>"), main_widget);
     pageLayout->addWidget(quesLabel);
+
+    // Transfer
     exprTypeSelect = new QButtonGroup(main_widget);
-    QRadioButton *r1 = new QRadioButton(tr("Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)"));
-    exprTypeSelect->addButton(r1, 0);
-    pageLayout->addWidget(r1);
+    QRadioButton *r0 = new QRadioButton(tr("Simply place it on the target mesh (you can then use this field in the expression editor to do more complex things)"));
+    exprTypeSelect->addButton(r0, 0);
+    pageLayout->addWidget(r0);
 
     QGridLayout *glayout2 = new QGridLayout(0);
     pageLayout->addLayout(glayout2);
     glayout2->setColumnStretch(0, 0);
     glayout2->setColumnStretch(1, 100);
 
-    QRadioButton *r00 = new QRadioButton(tr("Difference with "));
-    exprTypeSelect->addButton(r00, 1);
-    glayout2->addWidget(r00, 0, 0);
+    // Expression
+    QRadioButton *r1 = new QRadioButton(tr("Expression with "));
+    exprTypeSelect->addButton(r1, 1);
+    glayout2->addWidget(r1, 0, 0);
+
     connect(exprTypeSelect, SIGNAL(buttonClicked(int)),
             this, SLOT(exprTypeChanged(int)));
 
@@ -985,15 +1023,38 @@ QvisCMFEWizard::CreateActivityPage(void)
             this, SLOT(exprDiffVarChanged(const QString &)));
 
     exprDiffTypeSelect = new QButtonGroup(main_widget);
-    QRadioButton *r11 = new QRadioButton(tr("Absolute value of difference"));
-    exprDiffTypeSelect->addButton(r11, 0);
-    glayout2->addWidget(r11, 1, 1);
-    QRadioButton *r21 = new QRadioButton(tr("Donor field minus variable"));
-    exprDiffTypeSelect->addButton(r21, 1);
-    glayout2->addWidget(r21, 2, 1);
-    QRadioButton *r31 = new QRadioButton(tr("Variable minus donor field"));
-    exprDiffTypeSelect->addButton(r31, 2);
-    glayout2->addWidget(r31, 3, 1);
+
+    // Min/Max
+    QRadioButton *r01 = new QRadioButton(tr("Minimum of valves"));
+    exprDiffTypeSelect->addButton(r01, 0);
+    glayout2->addWidget(r01, 1, 1);
+    QRadioButton *r02 = new QRadioButton(tr("Maximum of valves"));
+    exprDiffTypeSelect->addButton(r02, 1);
+    glayout2->addWidget(r02, 2, 1);
+
+    // Summation
+    QRadioButton *r11 = new QRadioButton(tr("Sum of values"));
+    exprDiffTypeSelect->addButton(r11, 2);
+    glayout2->addWidget(r11, 1, 2);
+    QRadioButton *r12 = new QRadioButton(tr("Average of values"));
+    exprDiffTypeSelect->addButton(r12, 3);
+    glayout2->addWidget(r12, 2, 2);
+    QRadioButton *r13 = new QRadioButton(tr("Variance of values"));
+    exprDiffTypeSelect->addButton(r13, 4);
+    glayout2->addWidget(r13, 3, 2);
+
+
+    // Difference
+    QRadioButton *r21 = new QRadioButton(tr("Absolute value of difference"));
+    exprDiffTypeSelect->addButton(r21, 5);
+    glayout2->addWidget(r21, 1, 3);
+    QRadioButton *r22 = new QRadioButton(tr("Donor field minus variable"));
+    exprDiffTypeSelect->addButton(r22, 6);
+    glayout2->addWidget(r22, 2, 3);
+    QRadioButton *r23 = new QRadioButton(tr("Variable minus donor field"));
+    exprDiffTypeSelect->addButton(r23, 7);
+    glayout2->addWidget(r23, 3, 3);
+
     connect(exprDiffTypeSelect, SIGNAL(buttonClicked(int)),
             this, SLOT(exprDiffTypeChanged(int)));
 
@@ -1408,12 +1469,27 @@ QvisCMFEWizard::AddCMFEExpression(void)
     char defn[1024];
     if (decision_exprtype == EXPRESSION_SIMPLE)
         strcpy(defn, cmfe_part);
+    else if (decision_exprtype == EXPRESSION_MINIMUM)
+        SNPRINTF(defn, 1024, "min(%s, %s)", cmfe_part, filteredVar.c_str());
+    else if (decision_exprtype == EXPRESSION_MAXIMUM)
+        SNPRINTF(defn, 1024, "max(%s, %s)", cmfe_part, filteredVar.c_str());
+    else if (decision_exprtype == EXPRESSION_SUM)
+        SNPRINTF(defn, 1024, "%s+%s", cmfe_part, filteredVar.c_str());
+    else if (decision_exprtype == EXPRESSION_AVERAGE)
+        SNPRINTF(defn, 1024, "(%s+%s)/2.0", cmfe_part, filteredVar.c_str());
+    else  if (decision_exprtype == EXPRESSION_VARIANCE)
+        SNPRINTF(defn, 1024, "(%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0) + (%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0)",
+                 cmfe_part, cmfe_part, filteredVar.c_str(),
+                 cmfe_part, cmfe_part, filteredVar.c_str(),
+                 filteredVar.c_str(), cmfe_part, cmfe_part, 
+                 filteredVar.c_str(), cmfe_part, cmfe_part);
+
+    else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+        SNPRINTF(defn, 1024, "abs(%s-%s)", cmfe_part, filteredVar.c_str());
     else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
         SNPRINTF(defn, 1024, "%s-%s", cmfe_part, filteredVar.c_str());
     else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
         SNPRINTF(defn, 1024, "%s-%s", filteredVar.c_str(), cmfe_part);
-    else
-        SNPRINTF(defn, 1024, "abs(%s-%s)", filteredVar.c_str(), cmfe_part);
 
     e->SetDefinition(defn);
     e->SetType(GetVarType(decision_variable));
@@ -1875,14 +1951,25 @@ QvisCMFEWizard::exprTypeChanged(int v)
     {
         if( decision_diffvarname == "")
             button(QWizard::FinishButton)->setEnabled(false);
+
         if (exprDiffTypeSelect->button(0)->isChecked())
-            decision_exprtype = EXPRESSION_ABS_DIFF;
+            decision_exprtype = EXPRESSION_MINIMUM;
         else if (exprDiffTypeSelect->button(1)->isChecked())
-            decision_exprtype = EXPRESSION_DIFF_FIRST;
+            decision_exprtype = EXPRESSION_MAXIMUM;
         else if (exprDiffTypeSelect->button(2)->isChecked())
+            decision_exprtype = EXPRESSION_SUM;
+        else if (exprDiffTypeSelect->button(3)->isChecked())
+            decision_exprtype = EXPRESSION_AVERAGE;
+        else if (exprDiffTypeSelect->button(4)->isChecked())
+            decision_exprtype = EXPRESSION_VARIANCE;
+        else if (exprDiffTypeSelect->button(5)->isChecked())
+            decision_exprtype = EXPRESSION_ABS_DIFF;
+        else if (exprDiffTypeSelect->button(6)->isChecked())
+            decision_exprtype = EXPRESSION_DIFF_FIRST;
+        else if (exprDiffTypeSelect->button(7)->isChecked())
             decision_exprtype = EXPRESSION_DIFF_SECOND;
         else
-            decision_exprtype = EXPRESSION_ABS_DIFF;
+            decision_exprtype = EXPRESSION_SUM;
     }
     initializePage(Page_ActivityDescription);
 }
@@ -1932,10 +2019,20 @@ void
 QvisCMFEWizard::exprDiffTypeChanged(int v)
 {
     if (v == 0)
-        decision_exprtype = EXPRESSION_ABS_DIFF;
+        decision_exprtype = EXPRESSION_MINIMUM;
     else if (v == 1)
+        decision_exprtype = EXPRESSION_MAXIMUM;
+    else if (v == 2)
+        decision_exprtype = EXPRESSION_SUM;
+    else if (v == 3)
+        decision_exprtype = EXPRESSION_AVERAGE;
+    else if (v == 4)
+        decision_exprtype = EXPRESSION_VARIANCE;
+    else if (v == 5)
+        decision_exprtype = EXPRESSION_ABS_DIFF;
+    else if (v == 6)
         decision_exprtype = EXPRESSION_DIFF_FIRST;
-    else
+    else if (v == 7)
         decision_exprtype = EXPRESSION_DIFF_SECOND;
 }
 
@@ -2056,5 +2153,3 @@ QvisCMFEWizard::SubjectRemoved(Subject *subject)
     else if(subject == windowInfo)
         windowInfo = NULL;
 }
-
-
