@@ -70,6 +70,9 @@
 //    Hank Childs, Thu Jul 24 17:12:17 PDT 2008
 //    Add support for 2D.
 //
+//    Hank Childs, Thu Mar 21 11:51:20 PDT 2013
+//    Fix bug with the reader starting processing without being initialized.
+//
 // ****************************************************************************
 
 class avtUNICFileFormat : public avtSTMDFileFormat
@@ -106,8 +109,10 @@ class avtUNICFileFormat : public avtSTMDFileFormat
     std::vector<std::string>   ptvarnames;
     hid_t                      file_handle;
     int                        spatialDim;
+    bool                       haveInitialized;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    void                   Initialize(void);
 };
 
 
