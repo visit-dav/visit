@@ -332,6 +332,15 @@
 #    Added code to only build the paraDIS reader if boost 1.36.0 or later
 #    was installed on the system.
 #
+#    Eric Brugger, Wed Mar 20 17:23:28 PDT 2013
+#    I modified the script to have VisIt use the system boost everywhere
+#    instead of the internal boost if the system boost is usable by
+#    paraDIS. This is to avoid using the system boost in the paraDIS
+#    reader and the internal boost in the rest of visit. This fix was
+#    recommended by Gunther. The other option was to add more of boost
+#    to the internal boost so that it could be used by paraDIS, but that
+#    seemed like more work.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1039,7 +1048,11 @@ ENDIF(VISIT_TUVOK)
 
 # Set up boost (interval) library
 SET(HAVE_BILIB 1)
-SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0    CACHE PATH "Path to boost lib")
+IF(Boost_USABLE_PARADIS)
+    SET(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR} CACHE PATH "Path to boost lib")
+ELSE(Boost_USABLE_PARADIS)
+    SET(BOOST_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/bilib/boost_1_42_0 CACHE PATH "Path to boost lib")
+ENDIF(Boost_USABLE_PARADIS)
 
 
 
