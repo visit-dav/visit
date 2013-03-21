@@ -81,9 +81,9 @@
 
 #include <snprintf.h>
 
-#define DONOR_FILE 0
-#define DONOR_TIME 1
-#define DONOR_WITHIN_FILE 2
+#define DONOR_SINGLE_DATABASE    0
+#define DONOR_TIME_SLICES        1
+#define DONOR_MULTIPLE_DATABASES 2
 
 #define INTERP_CONN_CMFE 0
 #define INTERP_POS_CMFE  1
@@ -137,7 +137,7 @@ QvisCMFEWizard::QvisCMFEWizard(AttributeSubject *atts, QWidget *parent) :
     setOption(QWizard::HaveHelpButton, false);
     setOption(QWizard::HaveNextButtonOnLastPage, false);
 
-    decision_donorType = DONOR_TIME;
+    decision_donorType = DONOR_SINGLE_DATABASE;
     decision_targetDatabase ="";
     decision_donorDatabase ="";
     decision_absolute = true;
@@ -267,6 +267,8 @@ QvisCMFEWizard::SetExpressionList(ExpressionList *e)
 int
 QvisCMFEWizard::Exec()
 {
+//    initializePage(Page_DonorAndTargetSpecification);
+
     raise();
     activateWindow();
     restart();
@@ -309,7 +311,7 @@ QvisCMFEWizard::nextId() const
             id = Page_DonorAndTargetSpecification;
         break;
     case Page_DonorAndTargetSpecification:
-        if (decision_donorType == DONOR_TIME)
+        if (decision_donorType == DONOR_TIME_SLICES)
             id = Page_TimeSpecification;
         else
             id = Page_InterpSelection;
@@ -351,34 +353,66 @@ QvisCMFEWizard::nextId() const
 bool
 QvisCMFEWizard::validateCurrentPage()
 {
-    bool valid = true;
-
     switch(currentId())
     {
     case Page_DonorAndTargetSpecification:
         if (decision_targetDatabase == "")
-            valid = false;
+            return false;
         if (decision_mesh == "")
-            valid = false;
-        if (decision_variable == "")
-            valid = false;
-        if (decision_mesh == "" && decision_donorType != DONOR_WITHIN_FILE)
-            valid = false;
-        break;
+            return false;
+
+        if( decision_donorType == DONOR_SINGLE_DATABASE )
+        {
+          if (decision_variable == "" && donorList->count() == 0)
+            return false;
+        }
+        else if( decision_donorType == DONOR_TIME_SLICES )
+        {
+          if( decision_variable == "" )
+            return false;
+        }
+        else if( decision_donorType == DONOR_MULTIPLE_DATABASES )
+        {
+          if (decision_donorDatabase == "")
+            return false;
+
+          if (decision_variable == "" && donorList->count() == 0)
+            return false;
+        }
+
+        return true;
+
     case Page_InterpSelection:
         if (decision_interp == INTERP_POS_CMFE && decision_fill == FILL_VAR
             && decision_fillvar == "")
-            valid = false;
-    case Page_ActivityDescription:
-        if (decision_diffvarname == "" && decision_exprtype != EXPRESSION_SIMPLE)
-            valid = false;
-        if (decision_exprname == "")
-            valid = false;
-    default:
-        valid = true;
-    }
+            return false;
 
-    return valid;
+        return true;
+    
+    case Page_ActivityDescription:
+        if (decision_exprname == "")
+            return false;
+
+        if( decision_exprtype != EXPRESSION_SIMPLE)
+        {
+          // Check for multiple donors.
+          if( (decision_donorType == DONOR_SINGLE_DATABASE ||
+               decision_donorType == DONOR_MULTIPLE_DATABASES) &&
+              donorList->count() > 1 ||
+              (donorList->count() == 1 &&
+               decision_donorDatabase != "" && decision_variable != "" ) )
+          {
+          }
+          // Single donor so need a variable
+          else if( decision_diffvarname == "" )
+            return false;
+        }
+
+        return true;
+        
+    default:
+        return true;
+    }
 }
 
 // ****************************************************************************
@@ -409,25 +443,48 @@ QvisCMFEWizard::initializePage(int pageId)
     case Page_DonorType:
         // Initialize page1's button group with the donor type.
         donorTypeSelect->blockSignals(true);
-        donorTypeSelect->button((decision_donorType == DONOR_TIME ? 0 :
-                           (decision_donorType == DONOR_FILE ? 1 : 2)))->setChecked(true);
+
+        donorTypeSelect->button( decision_donorType )->setChecked(true);
         donorTypeSelect->blockSignals(false);
         break;
     case Page_DonorAndTargetSpecification:
         UpdateSourceList();
-        if(decision_donorType == DONOR_FILE)
-        {
-            targetDatabaseLabel->setText(tr("Target Database:"));
-            donorDatabaseLabel->setVisible(true);
-            donorDatabase->setVisible(true);
-            donorDatabaseOpen->setVisible(true);
-        }
-        else
+
+        if(decision_donorType == DONOR_SINGLE_DATABASE)
         {
             targetDatabaseLabel->setText(tr("Database:"));
             donorDatabaseLabel->setVisible(false);
             donorDatabase->setVisible(false);
             donorDatabaseOpen->setVisible(false);
+       
+            donorList->setVisible(true);
+            donorListAddDonor->setVisible(true);
+            donorListDeleteDonor->setVisible(true);
+            donorListDeleteAllDonors->setVisible(true);
+        }
+        else if(decision_donorType == DONOR_TIME_SLICES)
+        {
+            targetDatabaseLabel->setText(tr("Database:"));
+            donorDatabaseLabel->setVisible(false);
+            donorDatabase->setVisible(false);
+            donorDatabaseOpen->setVisible(false);
+
+            donorList->setVisible(false);
+            donorListAddDonor->setVisible(false);
+            donorListDeleteDonor->setVisible(false);
+            donorListDeleteAllDonors->setVisible(false);
+        }
+        else if(decision_donorType == DONOR_MULTIPLE_DATABASES)
+        {
+            targetDatabaseLabel->setText(tr("Target Database:"));
+            donorDatabaseLabel->setVisible(true);
+            donorDatabase->setVisible(true);
+            donorDatabaseOpen->setVisible(true);
+
+            donorList->setVisible(true);
+            donorListAddDonor->setVisible(true);
+            donorListDeleteDonor->setVisible(true);
+            donorListDeleteAllDonors->setVisible(true);
         }
         break;
     case Page_TimeSpecification:
@@ -485,6 +542,41 @@ QvisCMFEWizard::initializePage(int pageId)
         break;
     case Page_ActivityDescription:
 
+        // more than one donor so force the expression to be something
+        // other than simple.
+
+        bool singleDonor;
+
+        // Multiple donors
+        if( (decision_donorType == DONOR_SINGLE_DATABASE ||
+             decision_donorType == DONOR_MULTIPLE_DATABASES) &&
+            donorList->count() > 1 ||
+            (donorList->count() == 1 &&
+             decision_donorDatabase != "" && decision_variable != "" ) )
+        {
+          singleDonor = false;
+
+          if (decision_exprtype == EXPRESSION_SIMPLE)
+            decision_exprtype = EXPRESSION_SUM;
+
+          exprTypeSelect->button(0)->setEnabled(false);
+          exprTypeSelect->button(1)->setEnabled(false);
+
+          exprDiffVar->setEnabled(false);
+          exprDiffVar->setVisible(false);
+        }
+        // Single donor
+        else
+        {
+          singleDonor = true;
+
+          exprTypeSelect->button(0)->setEnabled(true);
+          exprTypeSelect->button(1)->setEnabled(true);
+
+          exprDiffVar->setEnabled(true);
+          exprDiffVar->setVisible(true);
+        }
+
         if (decision_exprtype == EXPRESSION_SIMPLE)
         {
             exprTypeSelect->blockSignals(true);
@@ -507,15 +599,17 @@ QvisCMFEWizard::initializePage(int pageId)
             exprTypeSelect->button(1)->setChecked(true);
             exprTypeSelect->blockSignals(false);
 
-            exprDiffVar->setEnabled(true);
             exprDiffTypeSelect->button(0)->setEnabled(true);
             exprDiffTypeSelect->button(1)->setEnabled(true);
             exprDiffTypeSelect->button(2)->setEnabled(true);
             exprDiffTypeSelect->button(3)->setEnabled(true);
             exprDiffTypeSelect->button(4)->setEnabled(true);
-            exprDiffTypeSelect->button(5)->setEnabled(true);
-            exprDiffTypeSelect->button(6)->setEnabled(true);
-            exprDiffTypeSelect->button(7)->setEnabled(true);
+            exprDiffTypeSelect->button(5)->setEnabled(singleDonor);
+            exprDiffTypeSelect->button(6)->setEnabled(singleDonor);
+            exprDiffTypeSelect->button(7)->setEnabled(singleDonor);
+
+            if (decision_exprtype >= EXPRESSION_ABS_DIFF)
+              decision_exprtype = EXPRESSION_SUM;
 
             if (decision_exprtype == EXPRESSION_MINIMUM)
                 exprDiffTypeSelect->button(0)->setChecked(true);
@@ -578,18 +672,19 @@ QvisCMFEWizard::CreateDonorTypePage(void)
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     donorTypeSelect = new QButtonGroup(page0);
+
+    QRadioButton *r0 = new QRadioButton(tr("Between two or more meshes in a single database"), page0);
+    donorTypeSelect->addButton(r0, 0);
+    buttonLayout->addWidget(r0);
+
     QRadioButton *r1 = new QRadioButton(tr("Between different time slices on the same mesh"), page0);
     r1->setChecked(true);
-    donorTypeSelect->addButton(r1, 0);
+    donorTypeSelect->addButton(r1, 1);
     buttonLayout->addWidget(r1);
 
-    QRadioButton *r2 = new QRadioButton(tr("Between meshes in a single database"), page0);
-    donorTypeSelect->addButton(r2, 1);
+    QRadioButton *r2 = new QRadioButton(tr("Between meshes in two or more separate databases"), page0);
+    donorTypeSelect->addButton(r2, 2);
     buttonLayout->addWidget(r2);
-
-    QRadioButton *r3 = new QRadioButton(tr("Between meshes in two separate databases"), page0);
-    donorTypeSelect->addButton(r3, 2);
-    buttonLayout->addWidget(r3);
 
 
     pageLayout->addStretch(10);
@@ -702,6 +797,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     donorDatabase->setVisible(false);
     donorDatabaseOpen->setVisible(false);
 
+
     QLabel *lbl_dvar = new QLabel(tr("Donor Field:"), main_widget);
 
     donorFieldVar = new QvisCustomSourceVariableButton(false, false, NULL,
@@ -715,6 +811,30 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
 
     main_layout->addWidget(lbl_dvar,4,0);
     main_layout->addWidget(donorFieldVar,4,1);
+
+
+
+    // Donor database list.
+    donorList = new QListWidget(main_widget);
+    main_layout->addWidget(donorList, 5, 0, 3, 3);
+
+    connect(donorList, SIGNAL(itemClicked(QListWidgetItem*)), this,
+            SLOT(donorListClicked(QListWidgetItem*)));
+
+    donorListAddDonor = new QPushButton(tr("Add Donor"), main_widget);
+    donorListDeleteDonor = new QPushButton(tr("Delete Donor"), main_widget);
+    donorListDeleteAllDonors = new QPushButton(tr("Delete All Donors"), main_widget);
+    connect(donorListAddDonor, SIGNAL(clicked()), this, SLOT(addDonor()));
+    connect(donorListDeleteDonor, SIGNAL(clicked()), this, SLOT(deleteDonor()));
+    connect(donorListDeleteAllDonors, SIGNAL(clicked()), this, SLOT(deleteDonors()));
+    main_layout->addWidget(donorListAddDonor, 8, 0);
+    main_layout->addWidget(donorListDeleteDonor, 8, 1);
+    main_layout->addWidget(donorListDeleteAllDonors, 8, 2);
+
+    donorList->setVisible(false);
+    donorListAddDonor->setVisible(false);
+    donorListDeleteDonor->setVisible(false);
+    donorListDeleteAllDonors->setVisible(false);
 
     // Add the page.
     setPage(Page_DonorAndTargetSpecification, page1);
@@ -1180,7 +1300,7 @@ QvisCMFEWizard::UpdateDonorField(void)
     VariableMenuPopulator *populator = new VariableMenuPopulator;
 
 
-    bool useAltFile = decision_donorType == DONOR_FILE;
+    bool useAltFile = decision_donorType == DONOR_MULTIPLE_DATABASES;
 
     std::string filename = (useAltFile ? decision_donorDatabase
                             : decision_targetDatabase);
@@ -1208,6 +1328,8 @@ QvisCMFEWizard::UpdateDonorField(void)
     donorFieldVar->ResetPopulator(populator);
     donorFieldVar->setText(tr("<Select>"));
     decision_variable = "";
+
+    donorList->clear();
 }
 
 
@@ -1298,7 +1420,8 @@ QvisCMFEWizard::GetVarType(const std::string &str)
             return e.GetType();
     }
 
-    bool useAltFile = decision_donorType == DONOR_FILE;
+    bool useAltFile = decision_donorType == DONOR_MULTIPLE_DATABASES;
+
     std::string filename = (useAltFile ? decision_donorDatabase
                             : decision_targetDatabase);
 
@@ -1404,97 +1527,225 @@ QvisCMFEWizard::GetMeshForTargetDatabase(void)
 void
 QvisCMFEWizard::AddCMFEExpression(void)
 {
-    Expression *e = new Expression();
-    e->SetName(decision_exprname);
+    char file_var_part[1024];
 
-    char filepart[1024];
-    if (decision_donorType == DONOR_FILE)
+    if( decision_donorType == DONOR_SINGLE_DATABASE ||
+        decision_donorType == DONOR_MULTIPLE_DATABASES )
     {
-        std::string filteredDB(decision_donorDatabase);
-#ifdef _WIN32
-        // Escape back slashes and drive letter punctuation so it can exist
-        // in the generated expression.
-        filteredDB = StringHelpers::Replace(filteredDB, "\\", "\\\\");
-        filteredDB = StringHelpers::Replace(filteredDB, ":\\", "\\:\\");
-#endif
-        const char *src = filteredDB.c_str();
-        const char *after_colon = strstr(src, ":");
-        if (after_colon != NULL)
-            src = after_colon+1;
-        strcpy(filepart, src);
+      // Flush the donar list.
+      if( decision_variable != "" )
+        addDonor();
+
+      QListWidgetItem *item = donorList->item(0);
+
+      // Get the first donor from the list.
+      if( item )
+        SNPRINTF(file_var_part, 1024, "%s", item->text().toLatin1().data() );
     }
-    else if (decision_donorType == DONOR_TIME)
+    else if (decision_donorType == DONOR_TIME_SLICES)
     {
+        char file_var_part[1024];
+
         if (decision_timeType == TIME_TYPE_SIMTIME)
-            SNPRINTF(filepart, 1024, "[%f]t%s", decision_time, 
-                                               (decision_absolute ? "" : "d"));
+            SNPRINTF(file_var_part, 1024, "<[%f]t%s:%s", decision_time, 
+                     (decision_absolute ? "" : "d"), decision_variable.c_str());
         else if (decision_timeType == TIME_TYPE_SIMCYCLE)
-            SNPRINTF(filepart, 1024, "[%d]c%s", decision_cycle, 
-                                               (decision_absolute ? "" : "d"));
+            SNPRINTF(file_var_part, 1024, "<[%d]c%s:%s", decision_cycle, 
+                     (decision_absolute ? "" : "d"), decision_variable.c_str());
         else if (decision_timeType == TIME_TYPE_INDEX)
-            SNPRINTF(filepart, 1024, "[%d]i%s", decision_index, 
-                                               (decision_absolute ? "" : "d"));
+            SNPRINTF(file_var_part, 1024, "<[%d]i%s:%s", decision_index, 
+                     (decision_absolute ? "" : "d"), decision_variable.c_str());
     }
-    else
-        strcpy(filepart, "[0]id"); // hack for the current time slice
 
     char cmfe_part[1024];
+    char cmfe_part_var[1024];
+
     if (decision_interp == INTERP_CONN_CMFE)
     {
-        SNPRINTF(cmfe_part, 1024, "conn_cmfe(<%s:%s>, %s)", 
-                                          filepart, decision_variable.c_str(), 
-                                          decision_mesh.c_str());
+      SNPRINTF(cmfe_part, 1024, "conn_cmfe(%s, %s)", 
+               file_var_part, decision_mesh.c_str());
     }
     else
     {
-        char fillstr[1024];
-        if (decision_fill == FILL_CONSTANT)
-            SNPRINTF(fillstr, 1024, "%f", decision_fillval);
-        else
-            strcpy(fillstr, decision_fillvar.c_str());
+      char fillstr[1024];
 
-        SNPRINTF(cmfe_part, 1024, "pos_cmfe(<%s:%s>, %s, %s)", 
-                                          filepart, decision_variable.c_str(), 
-                                          decision_mesh.c_str(), fillstr);
-    }
-
-    // Account for some variables that have slashes or spaces.
-    std::string filteredVar(decision_diffvarname);
-    if(filteredVar.find("/") != std::string::npos ||
-       filteredVar.find(" ") != std::string::npos)
-    {
-        filteredVar = std::string("<") + filteredVar + std::string(">");
+      if (decision_fill == FILL_CONSTANT)
+        SNPRINTF(fillstr, 1024, "%f", decision_fillval);
+      else
+        strcpy(fillstr, decision_fillvar.c_str());
+      
+      SNPRINTF(cmfe_part, 1024, "pos_cmfe(%s, %s, %s)", 
+               file_var_part, decision_mesh.c_str(), fillstr);
     }
 
     char defn[1024];
-    if (decision_exprtype == EXPRESSION_SIMPLE)
+    char defn_var[1024];
+
+    // Single donor variable
+    if( (decision_donorType == DONOR_SINGLE_DATABASE && donorList->count() == 1) ||
+        (decision_donorType == DONOR_TIME_SLICES) ||
+        (decision_donorType == DONOR_MULTIPLE_DATABASES && donorList->count() == 1) )
+    {
+      // Account for some variables that have slashes or spaces.
+      std::string filteredVar(decision_diffvarname);
+
+      if (decision_exprtype != EXPRESSION_SIMPLE)
+      {
+        if(filteredVar.find("/") != std::string::npos ||
+           filteredVar.find(" ") != std::string::npos)
+        {
+          filteredVar = std::string("<") + filteredVar + std::string(">");
+        }
+      }
+
+      if (decision_exprtype == EXPRESSION_SIMPLE)
         strcpy(defn, cmfe_part);
-    else if (decision_exprtype == EXPRESSION_MINIMUM)
+      else if (decision_exprtype == EXPRESSION_MINIMUM)
         SNPRINTF(defn, 1024, "min(%s, %s)", cmfe_part, filteredVar.c_str());
-    else if (decision_exprtype == EXPRESSION_MAXIMUM)
+      else if (decision_exprtype == EXPRESSION_MAXIMUM)
         SNPRINTF(defn, 1024, "max(%s, %s)", cmfe_part, filteredVar.c_str());
-    else if (decision_exprtype == EXPRESSION_SUM)
-        SNPRINTF(defn, 1024, "%s+%s", cmfe_part, filteredVar.c_str());
-    else if (decision_exprtype == EXPRESSION_AVERAGE)
+      else if (decision_exprtype == EXPRESSION_SUM)
+        SNPRINTF(defn, 1024, "(%s+%s)", cmfe_part, filteredVar.c_str());
+      else if (decision_exprtype == EXPRESSION_AVERAGE)
         SNPRINTF(defn, 1024, "(%s+%s)/2.0", cmfe_part, filteredVar.c_str());
-    else  if (decision_exprtype == EXPRESSION_VARIANCE)
+      else  if (decision_exprtype == EXPRESSION_VARIANCE)
         SNPRINTF(defn, 1024, "(%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0) + (%s - (%s+%s)/2.0) * (%s - (%s+%s)/2.0)",
                  cmfe_part, cmfe_part, filteredVar.c_str(),
                  cmfe_part, cmfe_part, filteredVar.c_str(),
                  filteredVar.c_str(), cmfe_part, cmfe_part, 
                  filteredVar.c_str(), cmfe_part, cmfe_part);
 
-    else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+      else if (decision_exprtype == EXPRESSION_ABS_DIFF)
         SNPRINTF(defn, 1024, "abs(%s-%s)", cmfe_part, filteredVar.c_str());
-    else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
-        SNPRINTF(defn, 1024, "%s-%s", cmfe_part, filteredVar.c_str());
-    else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
-        SNPRINTF(defn, 1024, "%s-%s", filteredVar.c_str(), cmfe_part);
+      else if (decision_exprtype == EXPRESSION_DIFF_FIRST)
+        SNPRINTF(defn, 1024, "(%s-%s)", cmfe_part, filteredVar.c_str());
+      else if (decision_exprtype == EXPRESSION_DIFF_SECOND)
+        SNPRINTF(defn, 1024, "(%s-%s)", filteredVar.c_str(), cmfe_part);
+    }
 
-    e->SetDefinition(defn);
-    e->SetType(GetVarType(decision_variable));
-    exprList->AddExpressions(*e);
-    delete e;
+    // Multiple donor variables
+    else
+    {
+      char cmfe_part_tmp[1024];
+      cmfe_part_tmp[0] = '\0';
+
+      char cmfe_part_tmp_var[1024];
+      cmfe_part_tmp_var[0] = '\0';
+
+      // Get the donors from the list.
+      for (int i = 0; i < donorList->count(); i++)
+      {
+        QListWidgetItem *item = donorList->item(i);
+
+        if( item )
+        {
+          std::string file_var_part( item->text().toLatin1().data() );
+
+          if (decision_interp == INTERP_CONN_CMFE)
+          {
+            SNPRINTF(cmfe_part, 1024, "%s conn_cmfe(%s, %s)", 
+                     cmfe_part_tmp, file_var_part.c_str(),
+                     decision_mesh.c_str());
+
+
+            if(decision_exprtype == EXPRESSION_VARIANCE)
+              SNPRINTF(cmfe_part_var, 1024,
+                       "%s "
+                       "((conn_cmfe(%s, %s) - %s_average) *"
+                       " (conn_cmfe(%s, %s) - %s_average))", 
+                       cmfe_part_tmp_var,
+                       file_var_part.c_str(), decision_mesh.c_str(),
+                       decision_exprname.c_str(),
+                       file_var_part.c_str(), decision_mesh.c_str(),
+                       decision_exprname.c_str());
+          }
+          else
+          {
+            char fillstr[1024];
+            
+            if (decision_fill == FILL_CONSTANT)
+              SNPRINTF(fillstr, 1024, "%f", decision_fillval);
+            else
+              strcpy(fillstr, decision_fillvar.c_str());
+            
+            SNPRINTF(cmfe_part, 1024, "%s pos_cmfe(%s, %s, %s)", 
+                     cmfe_part_tmp, file_var_part.c_str(),
+                     decision_mesh.c_str(), fillstr);
+
+            if(decision_exprtype == EXPRESSION_VARIANCE)
+              SNPRINTF(cmfe_part_var, 1024,
+                       "%s "
+                       "((pos_cmfe(%s, %s, %s) - %s_average) *"
+                       " (pos_cmfe(%s, %s, %s) - %s_average))", 
+                       cmfe_part_tmp_var,
+                       file_var_part.c_str(), decision_mesh.c_str(), fillstr,
+                       decision_exprname.c_str(),
+                       file_var_part.c_str(), decision_mesh.c_str(), fillstr,
+                       decision_exprname.c_str());
+          }
+        }
+
+        // Add the plus (+) or comma (,)
+        if( i < donorList->count() - 1 )
+        {
+          if (decision_exprtype == EXPRESSION_MINIMUM ||
+              decision_exprtype == EXPRESSION_MAXIMUM)
+            SNPRINTF(cmfe_part_tmp, 1024, "%s, ", cmfe_part);
+          
+          else if (decision_exprtype == EXPRESSION_SUM ||
+                   decision_exprtype == EXPRESSION_AVERAGE ||
+                   decision_exprtype == EXPRESSION_VARIANCE)
+            SNPRINTF(cmfe_part_tmp, 1024, "%s + ", cmfe_part);
+
+          if(decision_exprtype == EXPRESSION_VARIANCE)
+            SNPRINTF(cmfe_part_tmp_var, 1024, "%s + ", cmfe_part_var);
+
+          cmfe_part[0] = '\0';
+          cmfe_part_var[0] = '\0';
+        }
+      }
+
+      if (decision_exprtype == EXPRESSION_MINIMUM)
+        SNPRINTF(defn, 1024, "min(%s)", cmfe_part);
+      else if (decision_exprtype == EXPRESSION_MAXIMUM)
+        SNPRINTF(defn, 1024, "max(%s)", cmfe_part);
+      else if (decision_exprtype == EXPRESSION_SUM)
+        SNPRINTF(defn, 1024, "(%s)", cmfe_part);
+      else if (decision_exprtype == EXPRESSION_AVERAGE ||
+               decision_exprtype == EXPRESSION_VARIANCE)
+        SNPRINTF(defn, 1024, "(%s) / %d", cmfe_part, donorList->count() );
+
+      if (decision_exprtype == EXPRESSION_VARIANCE)
+        SNPRINTF(defn_var, 1024, "(%s) / %d", cmfe_part_var, donorList->count()-1 );
+    }
+
+
+    if( (decision_donorType == DONOR_SINGLE_DATABASE ||
+         decision_donorType == DONOR_MULTIPLE_DATABASES) &&
+        decision_exprtype == EXPRESSION_VARIANCE && donorList->count() > 1)
+    {
+      Expression *e = new Expression();
+      e->SetType(GetVarType(decision_variable));
+
+      e->SetName(decision_exprname + "_average");
+      e->SetDefinition(defn);
+      exprList->AddExpressions(*e);
+
+      e->SetName(decision_exprname);
+      e->SetDefinition(defn_var);
+      exprList->AddExpressions(*e);
+      delete e;
+    }
+    else
+    {
+      Expression *e = new Expression();
+      e->SetType(GetVarType(decision_variable));
+
+      e->SetName(decision_exprname);
+      e->SetDefinition(defn);
+      exprList->AddExpressions(*e);
+      delete e;
+    }
 
     // Tell the viewer that the expressions have changed.
     exprList->Notify();
@@ -1536,8 +1787,14 @@ QvisCMFEWizard::AddCMFEExpression(void)
 void
 QvisCMFEWizard::donorTypeChanged(int val)
 {
-    decision_donorType = (val == 0 ? DONOR_TIME : (val == 1 ? DONOR_WITHIN_FILE
-                                                            : DONOR_FILE));
+  if( val == 0 )
+    decision_donorType = DONOR_SINGLE_DATABASE;
+  else if( val == 1 )
+    decision_donorType = DONOR_TIME_SLICES;
+  else if( val == 2 )
+    decision_donorType = DONOR_MULTIPLE_DATABASES;
+
+  initializePage(Page_DonorAndTargetSpecification);
 }
 
 
@@ -1577,7 +1834,8 @@ QvisCMFEWizard::targetDatabaseChanged(int val)
         QualifiedFilename fileName(sources[val]);
         decision_targetDatabase = fileName.FullName();
         UpdateTargetMesh();
-        if(decision_donorType != DONOR_FILE)
+
+        if(decision_donorType != DONOR_MULTIPLE_DATABASES)
             UpdateDonorField();
     }
     else
@@ -1949,8 +2207,24 @@ QvisCMFEWizard::exprTypeChanged(int v)
     }
     else
     {
-        if( decision_diffvarname == "")
+        if( decision_diffvarname == "" && donorList->count() == 1 )
             button(QWizard::FinishButton)->setEnabled(false);
+
+        // Single donor or multiple donors
+        if( (decision_donorType == DONOR_SINGLE_DATABASE ||
+             decision_donorType == DONOR_MULTIPLE_DATABASES) &&
+            donorList->count() > 1 ||
+            (donorList->count() == 1 &&
+             decision_donorDatabase != "" && decision_variable != "" ) )
+        {
+          exprDiffVar->setEnabled(false);
+          exprDiffVar->setVisible(false);
+        }
+        else
+        {
+          exprDiffVar->setEnabled(true);
+          exprDiffVar->setVisible(true);
+        }
 
         if (exprDiffTypeSelect->button(0)->isChecked())
             decision_exprtype = EXPRESSION_MINIMUM;
@@ -2099,6 +2373,80 @@ QvisCMFEWizard::donorDatabaseOpenClicked()
             GetViewerMethods()->ActivateDatabase(active_src);
     }
 }
+
+
+void
+QvisCMFEWizard::donorListClicked(QListWidgetItem *item)
+{
+}
+
+void
+QvisCMFEWizard::addDonor()
+{
+  if ( (decision_variable == "") ||
+       (decision_donorDatabase == "" && decision_donorType == DONOR_MULTIPLE_DATABASES))
+    return;
+
+  std::string filteredDB(decision_donorDatabase);
+#ifdef _WIN32
+  // Escape back slashes and drive letter punctuation so it can exist
+  // in the generated expression.
+  filteredDB = StringHelpers::Replace(filteredDB, "\\", "\\\\");
+  filteredDB = StringHelpers::Replace(filteredDB, ":\\", "\\:\\");
+#endif
+  const char *src = filteredDB.c_str();
+  const char *after_colon = strstr(src, ":");
+  if (after_colon != NULL)
+    src = after_colon+1;
+
+  std::string donor;
+
+  if( decision_donorType == DONOR_SINGLE_DATABASE )
+    donor = std::string("<[0]id:") + decision_variable + std::string(">");
+  else if( decision_donorType == DONOR_MULTIPLE_DATABASES )  
+    donor = std::string("<") + std::string(src) + std::string(":") +
+      decision_variable + std::string(">");
+
+  QListWidgetItem *item;
+
+  // Do not add a duplicate donor.
+  for (int i = 0; i < donorList->count(); i++)
+  {
+    if( item = donorList->item(i) )
+    {
+      if( donor == std::string( item->text().toLatin1().data() ) )
+      {
+        donorFieldVar->setText(tr("<Select>"));
+        decision_variable = "";
+        
+          return;
+      }
+    }
+  }
+
+  item = new QListWidgetItem(donor.c_str(), donorList);
+  
+  donorList->setCurrentItem(item);
+  
+  donorFieldVar->setText(tr("<Select>"));
+  decision_variable = "";
+}
+
+void
+QvisCMFEWizard::deleteDonor()
+{
+    if (!donorList->selectedItems().empty())
+    {
+        qDeleteAll(donorList->selectedItems());
+    }
+}
+
+void
+QvisCMFEWizard::deleteDonors()
+{
+    donorList->clear();
+}
+
 
 // ****************************************************************************
 // Method: QvisCMFEWizard::Update
