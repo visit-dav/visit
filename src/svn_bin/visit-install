@@ -331,6 +331,9 @@
 #    Eric Brugger, Thu Sep 27 08:01:51 PDT 2012
 #    I deleted the host profile for prism.
 #
+#    Brad Whitlock, Thu Mar 21 10:04:49 PDT 2013
+#    Copy frontendlauncher.py too where we copy frontendlauncher.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -687,10 +690,11 @@ distributiondir=distribution/`ls distribution`
 # installation in a consistent state with the exception of the
 # data directory.
 #
-cp $distributiondir/bin/frontendlauncher "$dir"/bin/frontendlauncher+
-cp $distributiondir/bin/xml2plugin       "$dir"/bin/xml2plugin+
-cp $distributiondir/bin/visit_plugin     "$dir"/bin/visit_plugin+
-cp $distributiondir/bin/mkgrdbl          "$dir"/bin/mkgrdbl+
+cp $distributiondir/bin/frontendlauncher    "$dir"/bin/frontendlauncher+
+cp $distributiondir/bin/frontendlauncher.py "$dir"/bin/frontendlauncher.py+
+cp $distributiondir/bin/xml2plugin          "$dir"/bin/xml2plugin+
+cp $distributiondir/bin/visit_plugin        "$dir"/bin/visit_plugin+
+cp $distributiondir/bin/mkgrdbl             "$dir"/bin/mkgrdbl+
 
 if [ -e "$dir"/$version ]; then
    mv "$dir"/$version "$dir"/$version+
@@ -834,6 +838,7 @@ fi
 chmod $dir_permission "$dir"
 chmod $dir_permission "$dir"/bin
 chmod $dir_permission "$dir"/bin/frontendlauncher+
+chmod $dir_permission "$dir"/bin/frontendlauncher.py+
 chmod $dir_permission "$dir"/bin/xml2plugin+
 chmod $dir_permission "$dir"/bin/visit_plugin+
 chmod $dir_permission "$dir"/bin/mkgrdbl+
@@ -925,6 +930,8 @@ if [ -e $version ]; then
 fi
 [ -e bin/frontendlauncher ] &&   rm -f bin/frontendlauncher
 mv bin/frontendlauncher+ bin/frontendlauncher
+[ -e bin/frontendlauncher.py ] &&   rm -f bin/frontendlauncher.py
+mv bin/frontendlauncher.py+ bin/frontendlauncher.py
 [ -e bin/xml2plugin ] &&         rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
 [ -e bin/visit_plugin ] &&       rm -f bin/visit_plugin
