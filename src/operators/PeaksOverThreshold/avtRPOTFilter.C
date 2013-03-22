@@ -112,6 +112,7 @@ avtRPOTFilter::GetMonthFromDay(int t)
 int
 avtRPOTFilter::GetYearFromDay(int t)
 {
+    int x = t/daysPerYear;
     return t/daysPerYear;
 }
 
@@ -462,11 +463,14 @@ avtRPOTFilter::Execute()
     float *vals = (float *) scalars->GetVoidPointer(0);
 
     float dsTime = (float)GetInput()->GetInfo().GetAttributes().GetTime();
+    int dsCycle = (float)GetInput()->GetInfo().GetAttributes().GetCycle();
 
     int nTuples = scalars->GetNumberOfTuples();
     int index = GetIndexFromDay(currentTime);
 
     //cout<<"processing "<<currentTime<<" sv = "<<scalingVal<<" index= "<<index<<endl;
+    GetYearFromDay(currentTime);
+    
     float scaling = atts.GetDataScaling(), cutoff = atts.GetCutoff();
     if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
     {
@@ -710,24 +714,26 @@ avtRPOTFilter::CreateFinalOutput()
         }
         
         int nCovariates = 0;
-        string yearIndicesNm = "NULL";
+        string yearIndicesNm = "NULL", monthIndicesNm = "NULL";
         string covByYear = "NULL", newDataStr = "NULL", rvDiffStr = "NULL";
         string useLocModelStr = "NULL", useShapeModelStr = "NULL", useScaleModelStr = "NULL";
         string returnParamsStr = "FALSE";
 
         if (atts.GetComputeParamValues())
             returnParamsStr = "TRUE";
+        if (atts.GetAggregation() != PeaksOverThresholdAttributes::ANNUAL)
+            monthIndicesNm = "monthIndices";
         
         if (atts.GetComputeCovariates())
         {
             nCovariates = 1;
             yearIndicesNm = "yearIndices";
             covByYear = "covByYear";
-
+            
             vtkIntArray *covByYearArr = vtkIntArray::New();
             covByYearArr->SetNumberOfComponents(1);
             
-            if (atts.GetEnsemble())
+            if (0)//atts.GetEnsemble())
             {
                 int N = numYears * atts.GetNumEnsembles();
                 covByYearArr->SetNumberOfTuples(N);
@@ -780,12 +786,14 @@ avtRPOTFilter::CreateFinalOutput()
                 useScaleModelStr = "1";
 
         }
-        string dumpStr = "";
-        if (0)
+        string dumpStr0 = "", dumpStr1 = "";
+        if (1)
         {
             char tmp[128];
-            sprintf(tmp, "save.image(file='tmp_%d.RData')\n", PAR_Rank());
-            dumpStr = tmp;
+            sprintf(tmp, "save.image(file='input_%d.RData')\n", PAR_Rank());
+            dumpStr0 = tmp;
+            sprintf(tmp, "save.image(file='output_%d.RData')\n", PAR_Rank());
+            dumpStr1 = tmp;
         }
         string outputStr = "rv = output$returnValue\n";
         outputStr += "se_rv = output$se.returnValue\n";
@@ -809,12 +817,9 @@ avtRPOTFilter::CreateFinalOutput()
         string initialYear = tmp;
 
         string numPerYearStr;
-        int multiplier = 1;
-        if (atts.GetEnsemble())
-            multiplier = atts.GetNumEnsembles();
         if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         {
-            sprintf(tmp, "%d", atts.GetDaysPerYear() * multiplier);
+            sprintf(tmp, "%d", atts.GetDaysPerYear());
             numPerYearStr = tmp;
         }
         else
@@ -822,7 +827,7 @@ avtRPOTFilter::CreateFinalOutput()
             numPerYearStr = "c(";
             for (int m = 0; m < 12; m++)
             {
-                sprintf(tmp, "%d", atts.GetDaysPerMonth()[m] * multiplier);
+                sprintf(tmp, "%d", atts.GetDaysPerMonth()[m]);
                 numPerYearStr = numPerYearStr + tmp;
                 if (m != 11)
                     numPerYearStr = numPerYearStr + ",";
@@ -830,15 +835,16 @@ avtRPOTFilter::CreateFinalOutput()
             numPerYearStr = numPerYearStr + ")";
         }
 
-        int nYears = numYears;
+        int nReplicates = 1;
         if (atts.GetEnsemble())
-            nYears *= atts.GetNumEnsembles();
+            nReplicates = atts.GetNumEnsembles();
         sprintf(potCmd,
+                "%s" \
                 "require(ismev)\n" \
                 "output = potFit(data = exceedences, "\
-                "day = dayIndices, month = monthIndices, year=%s, initialYear=%s, "\
+                "day = dayIndices, month = %s, year=%s, initialYear=%s, "\
                 "nYears=%d, threshold=%s, aggregation=%s, " \
-                "numPerYear=%s, " \
+                "numPerYear=%s, nReplicates=%d, " \
                 "nCovariates=%d, covariatesByYear=%s, "\
                 "locationModel=%s, scaleModel=%s, shapeModel=%s, "\
                 "newData=%s, rvDifference=%s, " \
@@ -847,21 +853,23 @@ avtRPOTFilter::CreateFinalOutput()
                 ")\n"\
                 "%s" \
                 "%s",
+                dumpStr0.c_str(),
+                monthIndicesNm.c_str(),
                 yearIndicesNm.c_str(), 
                 initialYear.c_str(),
-                nYears, threshStr.c_str(), aggrStr.c_str(),
-                numPerYearStr.c_str(),
+                numYears, threshStr.c_str(), aggrStr.c_str(),
+                numPerYearStr.c_str(), nReplicates,
                 nCovariates, covByYear.c_str(),
                 useLocModelStr.c_str(), useShapeModelStr.c_str(), useScaleModelStr.c_str(),
                 newDataStr.c_str(), rvDiffStr.c_str(),
                 returnParamsStr.c_str(),
                 optimMethod.c_str(), multiDayEventHandling.c_str(), upper_tail.c_str(),
-                dumpStr.c_str(),
+                dumpStr1.c_str(),
                 outputStr.c_str());
         
         string command = fileLoad;
         command += potCmd;
-        //cout<<command<<endl;
+        cout<<command<<endl;
         RI->EvalRscript(command.c_str());
 
         vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));

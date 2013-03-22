@@ -1,10 +1,11 @@
-potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NULL, aggregation = "annual", nYears, numPerYear = switch(aggregation, annual = 365, c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold = NULL, nCovariates = 0, covariatesByYear = NULL, propMissing = 0, thresholdByYear = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
+potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NULL, aggregation = "annual", nYears, nReplicates = 1, numPerYear = switch(aggregation, annual = 365, c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)), threshold = NULL, nCovariates = 0, covariatesByYear = NULL, propMissing = 0, thresholdByYear = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, multiDayEventHandling = NULL, upper.tail = TRUE, optimMethod = "Nelder-Mead"){
 
-  # data, day, month, and year are 1-d arrays giving the observed values and corresponding day index and month and year for the exceedances; note that the day index is NOT the day of the year but a continuous index with arbitrary starting value for the first day of the first year. 'day' is required when 'multiDayEventHandling' is not NULL; 'month' is required for seasonal or monthly analyses. 'year' is required when using covariates as 'covariatesByYear' are matched to 'data' based on 'year' and 'initialYear'
+  # data, day, month, and year are 1-d arrays giving the observed values and corresponding day index and month and year for the exceedances; note that the day index is NOT the day of the year but a continuous index with arbitrary starting value for the first day of the first year. 'day' is required when 'multiDayEventHandling' is not NULL; 'month' is required for seasonal or monthly analyses. 'year' is required when using covariates as 'covariatesByYear' are matched to 'data' based on 'year' and 'initialYear'. With replicated data for which multiDayEventHandling is not NULL, these should be ordered in blocks such that all the exceedances for the first replicate are first, then for the second replicate, etc. That will prevent events from different replicates as being treated as the same event in all but unusual circumstances.
   # initialYear indicates the first year of the dataset; in some cases this may not be the minimum value in 'year', as no exceedances may have occurred in the first year; required when covariates are used
   # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification. If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
   # nYears is the number of years (blocks) in the full dataset (the dataset before the exceedances are extracted)
-  # numPerYear is the number of days in each year. For annual analyses this should be about 365 (i.e., the average of the number of days in the years, including leap years). For seasonal and monthly analyses, this should be a 1-d array with 12 values, one for each month; the default values assume leap years are one-quarter of the years in the full dataset, thus 28.25 days per February. Strictly speaking this should not vary by year as the interpretation of return values is affected, though the effect of leap years should be minimal. Note that if one has replicated data, with multiple independent observations per day, such as from an ensemble of climate model runs, then the usual value should be multiplied by the number of replicates.
+    # nReplicates is the number of replicate data sets; primarily for use with model output where you can run the model multiple times to get independent replicates
+  # numPerYear is the number of days in each year. For annual analyses this should be about 365 (i.e., the average of the number of days in the years, including leap years). For seasonal and monthly analyses, this should be a 1-d array with 12 values, one for each month; the default values assume leap years are one-quarter of the years in the full dataset, thus 28.25 days per February. Strictly speaking this should not vary by year as the interpretation of return values is affected, though the effect of leap years should be minimal. 
   # threshold is a scalar for annual analyses, a 1-d array of 4 values for seasonal (winter, spring, summer, fall thresholds) or a 1-d array of 12 values for monthly analyses (Jan thru Dec thresholds). However, if the thresholds vary by year, threshold should be NULL and thresholdByYear should be specified
   # nCovariates indicates the number of covariates provided through 'covariatesByYear' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
   # covariatesByYear must be provided if 'nCovariates' is non-zero and must specify the covariate values by year (year x covariate x (optionally) stratum), with the year index varying fastest and stratum index varying slowest
@@ -94,8 +95,15 @@ potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NU
     covariatesByYear <- array(covariatesByYear, c(nYears, nCovariates, nStrata))
     if(aggregation == "annual")
       covariates <- matrix(covariatesByYear[(year - initialYear + 1), , 1], ncol = nCovariates)
-    if(aggregation == "seasonal"){
-      monthToSeason <- matrix(c(1:12, c(1,1,2,2,2,3,3,3,4,4,4,1)), nrow = 12)
+    if(aggregation == "seasonal"){ # move December to next year
+      monthToSeason <- c(1,1,2,2,2,3,3,3,4,4,4,1)
+      lastDec = year == (initialYear + nYears - 1) & month == 12
+      data = data[!lastDec]
+      n <- length(data)
+      month = month[!lastDec]
+      year = year[!lastDec]
+      day = day[!lastDec]
+      year[month == 12] = year[month == 12] + 1 
       covariates <- matrix(covariatesByYear[cbind(
                                        rep((year - initialYear + 1), nCovariates),
                                        rep(1:nCovariates, each = n),
@@ -145,6 +153,7 @@ potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NU
       tmp[ , seas] = (propMissing%*%wgts) / sum(wgts)
     }
     propMissing = tmp
+    numPerYear = c(sum(numPerYear[months[[1]]]), sum(numPerYear[months[[2]]]), sum(numPerYear[months[[3]]]), sum(numPerYear[months[[4]]]))
   }
 
   
@@ -154,7 +163,11 @@ potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NU
   if(is.numeric(multiDayEventHandling))
     data = withinBlockScreen(data, day, blockLen = multiDayEventHandling)
 
-  month = month[!is.na(data)]
+  if(!is.null(month))
+    month = month[!is.na(data)]
+  if(!is.null(year))
+    year = year[!is.na(data)]
+  
   if(aggregation == "seasonal")
     season = season[!is.na(data)]
 
@@ -224,8 +237,10 @@ potFit <- function(data, day = NULL, month = NULL, year = NULL, initialYear = NU
         tmpcovariates = covariates[season == j, , drop = FALSE]
       } 
     }
+    if(nCovariates && nReplicates > 1)
+      tmpcovariatesByYear = matrix(rep(c(t(tmpcovariatesByYear)), nReplicates), ncol = nCovariates, byrow = TRUE)
 
-    output = pot.fit.wrap(tmpdata, threshold[j], numPerYear[j], tmpcovariates, tmpcovariatesByYear, propMissing[ , j], nYears, thresholdByYear[ , j])
+    output = pot.fit.wrap(tmpdata, threshold[j], numPerYear[j], tmpcovariates, tmpcovariatesByYear, rep(propMissing[ , j], nReplicates), nYears*nReplicates, rep(thresholdByYear[ , j], nReplicates))  
     mle[ , j] <- output$mle
     if(!upper.tail)  # location parameters for lower tail are the negative of those computed based on negative of data values
       mle[1:(length(locationModel)+1), ] <- -mle[1:(length(locationModel)+1), ]
