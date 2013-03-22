@@ -131,7 +131,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         daysPerYear = 365;
         daysPerMonth = new int[12];
         daysPerMonth[0] = 31;
-        daysPerMonth[1] = 28;
+        daysPerMonth[1] = 29;
         daysPerMonth[2] = 31;
         daysPerMonth[3] = 30;
         daysPerMonth[4] = 31;
@@ -195,7 +195,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         daysPerYear = 365;
         daysPerMonth = new int[12];
         daysPerMonth[0] = 31;
-        daysPerMonth[1] = 28;
+        daysPerMonth[1] = 29;
         daysPerMonth[2] = 31;
         daysPerMonth[3] = 30;
         daysPerMonth[4] = 31;
