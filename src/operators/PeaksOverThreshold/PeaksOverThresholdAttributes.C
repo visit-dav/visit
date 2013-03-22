@@ -278,14 +278,14 @@ void PeaksOverThresholdAttributes::Init()
     monthlyPercentile[11] = 0.95;
     daysPerYear = 365;
     daysPerMonth[0] = 31;
-    daysPerMonth[1] = 29;
+    daysPerMonth[1] = 28;
     daysPerMonth[2] = 31;
     daysPerMonth[3] = 30;
     daysPerMonth[4] = 31;
     daysPerMonth[5] = 30;
     daysPerMonth[6] = 31;
     daysPerMonth[7] = 31;
-    daysPerMonth[8] = 29;
+    daysPerMonth[8] = 30;
     daysPerMonth[9] = 31;
     daysPerMonth[10] = 30;
     daysPerMonth[11] = 31;

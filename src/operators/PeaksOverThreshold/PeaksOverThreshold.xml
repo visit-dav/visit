@@ -98,14 +98,14 @@
       </Field>
       <Field name="daysPerMonth" label="Days per month" type="intArray" length="12">
         31
-        29
+        28
         31
         30
         31
         30
         31
         31
-        29
+        30
         31
         30
         31
