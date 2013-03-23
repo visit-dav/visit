@@ -1,3 +1,45 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-442911
+* All rights reserved.
+*
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+// ************************************************************************* //
+//  File: avtRPOTFilter.C
+// ************************************************************************* //
+
 #include <avtParallel.h>
 #include <avtRPOTFilter.h>
 #include <vtkDataSet.h>
@@ -15,12 +57,15 @@
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <InvalidFilesException.h>
+#include <FileWriter.h>
 
 #ifdef PARALLEL
   #include <mpi.h>
 #endif
 
 using namespace std;
+
+static vector<double> makeArray(int n);
 
 // ****************************************************************************
 // Method:  avtRPOTFilter::avtRPOTFilter
@@ -509,6 +554,55 @@ void
 avtRPOTFilter::CreateFinalOutput()
 {
     avtCallback::ResetTimeout(0);
+
+    if (0)
+    {
+        vector<string> meshDimNms;
+        vector<vector<double> > meshDims;
+        vector<POTFilterWriteData::varInfo> vars;
+        vector<int> arrShape;
+        vtkDoubleArray *array = vtkDoubleArray::New();
+        
+        meshDimNms.push_back("lat");
+        meshDimNms.push_back("lon");
+        meshDimNms.push_back("index");
+        int nx = 4, ny = 5, nz = 1;
+        meshDims.push_back(makeArray(nx));
+        meshDims.push_back(makeArray(ny));
+        meshDims.push_back(makeArray(nz));
+        
+        int nVals = nx*ny*nz;
+        int nVars = 2;
+        arrShape.push_back(nVals);
+        arrShape.push_back(nVars);
+        
+        POTFilterWriteData::varInfo v0, v1;
+        v0.name = "var1";
+        v0.dims.push_back("lat");
+        v0.dims.push_back("lon");
+        v0.indices.push_back(0);
+
+        v1.name = "var2";
+        v1.dims.push_back("lat");
+        v1.dims.push_back("lon");
+        v1.indices.push_back(1);
+        vars.push_back(v0);
+        vars.push_back(v1);
+        
+        vector<double> d = makeArray(nVals*nVars);
+        array->SetNumberOfTuples(d.size());
+        for (int i = 0; i < d.size(); i++)
+            array->SetTuple1(i, d[i]);
+        
+        POTFilterWriteData::writeNETCDFData("output.nc",
+                                            meshDimNms, meshDims,
+                                            vars, arrShape, array);
+
+        SetOutputDataTree(new avtDataTree());
+        return;
+    }
+    
+
 
     //Exchange data....
     if (atts.GetEnsemble())
@@ -1103,4 +1197,14 @@ avtRPOTFilter::DebugData(int loc, std::string nm)
             ofile<<values[loc][b][t].val<<" ";    
         ofile<<endl;
     }
+}
+
+
+static vector<double> makeArray(int n)
+{
+    vector<double> d;
+    d.resize(n);
+    for (int i = 0; i < n; i++)
+        d[i] = i;
+    return d;
 }
