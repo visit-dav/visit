@@ -37,79 +37,37 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//  File: avtRPOTFilter.h
+//  File: FileWriter.h
 // ************************************************************************* //
 
-#ifndef AVT_R_EXTREMES_FILTER_H
-#define AVT_R_EXTREMES_FILTER_H
+#ifndef R_POT_FILE_WRITE_H
+#define R_POT_FILE_WRITE_H
 
-#include <filters_exports.h>
-#include <avtDatasetToDatasetFilter.h>
-#include <avtTimeLoopFilter.h>
-#include <PeaksOverThresholdAttributes.h>
 #include <string>
 #include <vector>
 
-class vtkDataSet;
+class vtkAbstractArray;
 
-// ****************************************************************************
-// Class:  avtRPOTFilter
-//
-//
-// Programmer:  Dave Pugmire
-// Creation:    February  7, 2012
-//
-// ****************************************************************************
-
-class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
-                                     virtual public avtTimeLoopFilter
+class POTFilterWriteData
 {
-  public:
-    avtRPOTFilter();
-    virtual ~avtRPOTFilter();
-    virtual const char* GetType() {return "avtRPOTFilter";}
-
-    std::string newVarName, codeDir;
-    PeaksOverThresholdAttributes atts;
-    
-  protected:
-    void                    Initialize();
-    virtual void            Execute();
-    virtual void            PreExecute();
-    virtual void            PostExecute();
-    virtual void            CreateFinalOutput();
-    virtual bool            ExecutionSuccessful();
-
-    virtual bool            FilterSupportsTimeParallelization();
-    virtual bool            DataCanBeParallelizedOverTime(void);
-
-    float                   CalculateThreshold(int loc, int arr);
-    int                     GetIndexFromDay(int t);
-    int                     GetMonthFromDay(int t);
-    int                     GetYearFromDay(int t);
-    int                     GetSeasonFromDay(int t);
-    std::string             CreateQuantileCommand(const char *var, const char *in, int aggregationIdx);
-    std::string             GetDumpFileName(int idx, int yr, int var);
-
-    vtkDataSet *outDS;
-    int numTuples, numTimes, numYears, numBins;
-    bool nodeCenteredData, initialized;
-    int idx0, idxN;
-
-    class sample
+public:
+    struct varInfo
     {
-    public:
-        sample() {val=-1; Cycle=-1; Time=-1;}
-        sample(float v, int c, float t) {val=v; Cycle=c; Time=t;}
-        float val, Time;
-        int Cycle;
+        std::string name;
+        std::vector<std::string> dims;
+        std::vector<int> indices;
     };
-    //values[location][aggregation][time_i]    
-    std::vector<std::vector<std::vector<sample> > > values;
+    
+    static void writeNETCDFData(const std::string &fname,
+                                const std::vector<std::string> &meshDimNms,
+                                const std::vector<std::vector<double> > &meshDims,
+                                const std::vector<varInfo> &vars,
+                                const std::vector<int> &arrayShape,
+                                vtkAbstractArray *vtkarray);
 
-    void DebugData(int loc, std::string nm);
-
-    int daysPerYear, dayCountAtMonthEnd[12];
+                          
+                          
 };
 
 #endif
+
