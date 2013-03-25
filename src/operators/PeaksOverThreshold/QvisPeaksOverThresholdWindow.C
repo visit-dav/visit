@@ -331,14 +331,21 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
     connect(computeParamValues, SIGNAL(toggled(bool)),
             this, SLOT(computeParamValuesChanged(bool)));
     outputLayout->addWidget(computeParamValues, 2,0);
+    computeParamValues->hide();
 
+    
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
     outputLayout->addWidget(dumpData, 3,0);
 
+    dumpDebug = new QCheckBox(tr("Dump Debug"), central);
+    connect(dumpDebug, SIGNAL(toggled(bool)),
+            this, SLOT(dumpDebugChanged(bool)));
+    outputLayout->addWidget(dumpDebug, 4,0);
+
     displayLabel = new QLabel(tr("Display"), central);
-    outputLayout->addWidget(displayLabel, 4, 0);
+    outputLayout->addWidget(displayLabel, 5, 0);
     displaySeasonSelect = new QComboBox(central);
     displaySeasonSelect->addItem(tr("Winter"));
     displaySeasonSelect->addItem(tr("Spring"));
@@ -346,7 +353,7 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
     displaySeasonSelect->addItem(tr("Fall"));
     connect(displaySeasonSelect, SIGNAL(activated(int)),
             this, SLOT(displaySeasonChanged(int)));
-    outputLayout->addWidget(displaySeasonSelect, 4, 1);
+    outputLayout->addWidget(displaySeasonSelect, 5, 1);
 
     displayMonthSelect = new QComboBox(central);
     displayMonthSelect->addItem(tr("January"));
@@ -363,7 +370,7 @@ QvisPeaksOverThresholdWindow::CreateWindowContents()
     displayMonthSelect->addItem(tr("December"));
     connect(displayMonthSelect, SIGNAL(activated(int)),
             this, SLOT(displayMonthChanged(int))); 
-    outputLayout->addWidget(displayMonthSelect, 4, 1);
+    outputLayout->addWidget(displayMonthSelect, 5, 1);
 }
 
 
@@ -536,20 +543,62 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             daysPerMonth->setText(IntsToQString(atts->GetDaysPerMonth(),12));
             break;
           case PeaksOverThresholdAttributes::ID_covariateModelScale:
-            covariateModelScale->blockSignals(true);
-            covariateModelScale->setChecked(atts->GetCovariateModelScale());
-            covariateModelScale->blockSignals(false);
-            break;
+          {
+              /*
+              bool anyTrue = (atts->GetCovariateModelScale() == true ||
+                              atts->GetCovariateModelLocation() == true ||
+                              atts->GetCovariateModelShape() == true);
+              covariateReturnYears->setEnabled(anyTrue);
+              covariateReturnYears->setEnabled(anyTrue);
+              computeRVDifferences->setEnabled(anyTrue);
+              rvDifference1->setEnabled(anyTrue);
+              rvDifference2->setEnabled(anyTrue);
+              cout<<"anyTrue= "<<anyTrue<<endl;
+              */
+
+              covariateModelScale->blockSignals(true);
+              covariateModelScale->setChecked(atts->GetCovariateModelScale());
+              covariateModelScale->blockSignals(false);
+              break;
+          }
           case PeaksOverThresholdAttributes::ID_covariateModelLocation:
-            covariateModelLocation->blockSignals(true);
-            covariateModelLocation->setChecked(atts->GetCovariateModelLocation());
-            covariateModelLocation->blockSignals(false);
-            break;
+          {
+              /*
+              bool anyTrue = (atts->GetCovariateModelScale() == true ||
+                              atts->GetCovariateModelLocation() == true ||
+                              atts->GetCovariateModelShape() == true);
+              covariateReturnYears->setEnabled(anyTrue);
+              covariateReturnYears->setEnabled(anyTrue);
+              computeRVDifferences->setEnabled(anyTrue);
+              rvDifference1->setEnabled(anyTrue);
+              rvDifference2->setEnabled(anyTrue);
+              cout<<"anyTrue= "<<anyTrue<<endl;
+              */
+              
+              covariateModelLocation->blockSignals(true);
+              covariateModelLocation->setChecked(atts->GetCovariateModelLocation());
+              covariateModelLocation->blockSignals(false);
+              break;
+          }
           case PeaksOverThresholdAttributes::ID_covariateModelShape:
-            covariateModelShape->blockSignals(true);
-            covariateModelShape->setChecked(atts->GetCovariateModelShape());
-            covariateModelShape->blockSignals(false);
-            break;
+          {
+              /*
+              bool anyTrue = (atts->GetCovariateModelScale() == true ||
+                              atts->GetCovariateModelLocation() == true ||
+                              atts->GetCovariateModelShape() == true);
+              covariateReturnYears->setEnabled(anyTrue);
+              covariateReturnYears->setEnabled(anyTrue);
+              computeRVDifferences->setEnabled(anyTrue);
+              rvDifference1->setEnabled(anyTrue);
+              rvDifference2->setEnabled(anyTrue);
+              cout<<"anyTrue= "<<anyTrue<<endl;
+              */
+
+              covariateModelShape->blockSignals(true);
+              covariateModelShape->setChecked(atts->GetCovariateModelShape());
+              covariateModelShape->blockSignals(false);
+              break;
+          }
           case PeaksOverThresholdAttributes::ID_computeCovariates:
             if (atts->GetComputeCovariates() == true)
             {
@@ -606,6 +655,11 @@ QvisPeaksOverThresholdWindow::UpdateWindow(bool doAll)
             dumpData->blockSignals(true);
             dumpData->setChecked(atts->GetDumpData());
             dumpData->blockSignals(false);
+            break;
+          case PeaksOverThresholdAttributes::ID_dumpDebug:
+            dumpDebug->blockSignals(true);
+            dumpDebug->setChecked(atts->GetDumpDebug());
+            dumpDebug->blockSignals(false);
             break;
         case PeaksOverThresholdAttributes::ID_noConsecutiveDay:
             noConsecutiveDay->blockSignals(true);
@@ -1083,6 +1137,14 @@ void
 QvisPeaksOverThresholdWindow::dumpDataChanged(bool val)
 {
     atts->SetDumpData(val);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisPeaksOverThresholdWindow::dumpDebugChanged(bool val)
+{
+    atts->SetDumpDebug(val);
     SetUpdate(false);
     Apply();
 }

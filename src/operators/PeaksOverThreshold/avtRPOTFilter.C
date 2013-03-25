@@ -56,6 +56,7 @@
 #include <avtCallback.h>
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
+#include <vtkRectilinearGrid.h>
 #include <InvalidFilesException.h>
 #include <FileWriter.h>
 
@@ -65,7 +66,10 @@
 
 using namespace std;
 
-static vector<double> makeArray(int n);
+string avtRPOTFilter::exceedencesStr = "exceedences";
+string avtRPOTFilter::dayIndicesStr = "dayIndices";
+string avtRPOTFilter::yearIndicesStr = "yearIndices";
+string avtRPOTFilter::monthIndicesStr = "monthIndices";
 
 // ****************************************************************************
 // Method:  avtRPOTFilter::avtRPOTFilter
@@ -77,12 +81,15 @@ static vector<double> makeArray(int n);
 
 avtRPOTFilter::avtRPOTFilter()
 {
-    initialized = false;
     outDS = NULL;
     numTuples = 0;
     nodeCenteredData = false;
     numYears = 0;
     numBins = 0;
+    outputValsPerLoc = 0;
+    initialized = false;
+    idx0 = idxN = 0;
+    cycle0 = 0;
 }
 
 // ****************************************************************************
@@ -201,16 +208,54 @@ avtRPOTFilter::GetIndexFromDay(int t)
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         return GetMonthFromDay(t);
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
-        return GetSeasonFromDay(t);
+        return GetMonthFromDay(t); //DRP GetSeasonFromDay(t);
 }
 
 // ****************************************************************************
-// Method:  avtRPOTFilter::CalculateThreshold
+// Method:  avtRPOTFilter::CalculateThresholds
 //
 // Programmer:  Dave Pugmire
 // Creation:    May 22, 2012
 //
 // ****************************************************************************
+
+vector<float>
+avtRPOTFilter::CalculateThresholds(int loc)
+{
+    vector<float> thresholds;
+    int nArrs = values[loc].size();
+    
+    thresholds.resize(nArrs);
+    vtkRInterface *RI = vtkRInterface::New();
+    
+    for (int i = 0; i < nArrs; i++)
+    {
+        int nVals = values[loc][i].size();
+        if (nVals == 0)
+        {
+            cout<<"FAIL!!"<<endl;
+            thresholds[i] = 0.0f;
+            continue;
+        }
+        
+        vtkDoubleArray *inData = vtkDoubleArray::New();
+        inData->SetNumberOfComponents(1);
+        inData->SetNumberOfTuples(nVals);
+        for (int j = 0; j < nVals; j++)
+            inData->SetValue(j, values[loc][i][j].val);
+
+        RI->AssignVTKDataArrayToRVariable(inData, "inData");
+        RI->EvalRscript(CreateQuantileCommand("q", "inData", i).c_str());
+        vtkDoubleArray *Q = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("q"));
+
+        thresholds[i] = (Q ? (float)Q->GetComponent(0,0) : 0.0f);
+
+        inData->Delete();
+    }
+    
+    RI->Delete();
+    return thresholds;
+}
 
 float
 avtRPOTFilter::CalculateThreshold(int loc, int arr)
@@ -385,6 +430,13 @@ avtRPOTFilter::Initialize()
     numTimes = t1-t0 + 1;
     numYears = numTimes/daysPerYear;
 
+    int dsCycle = (float)GetInput()->GetInfo().GetAttributes().GetCycle();
+#ifdef PARALLEL
+    cycle0 = UnifyMinimumValue(dsCycle);
+#else
+    cycle0 = dsCycle;
+#endif
+
     if (atts.GetDataAnalysisYearRangeEnabled())
     {
         numYears = atts.GetDataAnalysisYear2()-atts.GetDataAnalysisYear1()+1;
@@ -396,7 +448,7 @@ avtRPOTFilter::Initialize()
         numTimes *= atts.GetNumEnsembles();
     }
 
-    //cout<<"numTimes = "<<numTimes<<" : numYears = "<<numYears<<endl;
+    //cout<<"numTimes = "<<numTimes<<" : numYears = "<<numYears<<" daysPerYear= "<<daysPerYear<<endl;
 
 
     //How to compute maxes.
@@ -404,10 +456,10 @@ avtRPOTFilter::Initialize()
     if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         numBins = 12;
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
-        numBins = 4;
+        numBins = 12; //DRP4;
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         numBins = 1;
-    
+
     values.resize(numTuples);
     for (int i = 0; i < numTuples; i++)
         values[i].resize(numBins);
@@ -437,38 +489,35 @@ avtRPOTFilter::Initialize()
     debug1<<"I have: ["<<idx0<<" "<<idxN<<"]"<<endl;
 #endif
     
+    if (atts.GetDumpData())
+    {
+        vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(inDS);
+        if (inDS->GetDataObjectType() != VTK_RECTILINEAR_GRID || rg == NULL)
+        {
+            EXCEPTION1(ImproperUseException, "Can't output non-Rectilinear grid data.");
+        }
+
+        coordinates[0].resize(rg->GetDimensions()[0]);
+        coordinates[1].resize(rg->GetDimensions()[1]);
+        coordinates[2].resize(rg->GetDimensions()[2]);
+
+        vtkDataArray *x = rg->GetXCoordinates();
+        vtkDataArray *y = rg->GetYCoordinates();
+        vtkDataArray *z = rg->GetZCoordinates();
+
+        for (int i = 0; i < coordinates[0].size(); i++)
+            coordinates[0][i] = x->GetTuple1(i);
+        for (int i = 0; i < coordinates[1].size(); i++)
+            coordinates[1][i] = y->GetTuple1(i);
+        for (int i = 0; i < coordinates[2].size(); i++)
+            coordinates[2][i] = z->GetTuple1(i);
+    }
+
+    GenerateOutputInfo();
     initialized = true;
     delete [] leaves;
 }
 
-
-// ****************************************************************************
-// Method:  avtRPOTFilter::PreExecute
-//
-// Programmer:  Dave Pugmire
-// Creation:    March 16, 2012
-//
-// ****************************************************************************
-
-void
-avtRPOTFilter::PreExecute()
-{
-    avtDatasetToDatasetFilter::PreExecute();
-}
-
-// ****************************************************************************
-// Method:  avtRPOTFilter::PostExecute
-//
-// Programmer:  Dave Pugmire
-// Creation:    March 16, 2012
-//
-// ****************************************************************************
-
-void
-avtRPOTFilter::PostExecute()
-{
-    avtDatasetToDatasetFilter::PostExecute();
-}
 
 // ****************************************************************************
 // Method:  avtRPOTFilter::Execute
@@ -482,9 +531,8 @@ void
 avtRPOTFilter::Execute()
 {
     debug1<<"avtRPOTFilter::Execute() time= "<<currentTime<<endl;
-
     Initialize();
-    
+
     if (!atts.GetEnsemble() && atts.GetDataAnalysisYearRangeEnabled())
     {
         int currYear = atts.GetDataYearBegin()+(currentTime/daysPerYear);
@@ -510,20 +558,25 @@ avtRPOTFilter::Execute()
     float dsTime = (float)GetInput()->GetInfo().GetAttributes().GetTime();
     int dsCycle = (float)GetInput()->GetInfo().GetAttributes().GetCycle();
 
-    int nTuples = scalars->GetNumberOfTuples();
-    int index = GetIndexFromDay(currentTime);
+    int timeNow = dsCycle - cycle0;
 
-    //cout<<"processing "<<currentTime<<" sv = "<<scalingVal<<" index= "<<index<<endl;
-    GetYearFromDay(currentTime);
+    int nTuples = scalars->GetNumberOfTuples();
+    int index = GetIndexFromDay(timeNow); //currentTime);
+
+    GetYearFromDay(timeNow); //currentTime);
     
     float scaling = atts.GetDataScaling(), cutoff = atts.GetCutoff();
+    //cout<<"processing "<<currentTime<<" sv = "<<scaling<<" index= "<<index<<" nTuples= "<<nTuples<<endl;
+    //cout<<"Processing: ct= "<<currentTime<<" dsTime= "<<dsTime<<" dsCycle= "<<dsCycle<<endl;
+    //cout<<PAR_Rank()<<" currentTime= "<<currentTime<<" cycle0= "<<cycle0<<" timeNow= "<<timeNow<<endl;
+
     if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
     {
         for (int i = 0; i < nTuples; i++)
         {
             float v = vals[i]*scaling;
             if (v > cutoff)
-                values[i][index].push_back(sample(v,currentTime, dsTime));
+                values[i][index].push_back(sample(v, timeNow)); //currentTime, dsTime));
         }
     }
     else
@@ -532,7 +585,7 @@ avtRPOTFilter::Execute()
         {
             float v = vals[i]*scaling;
             if (v < cutoff)
-                values[i][index].push_back(sample(v,currentTime, dsTime));
+                values[i][index].push_back(sample(v,timeNow)); //currentTime, dsTime));
         }
     }
 }
@@ -554,6 +607,212 @@ void
 avtRPOTFilter::CreateFinalOutput()
 {
     avtCallback::ResetTimeout(0);
+
+    //Exchange data....
+#ifdef PARALLEL
+    float *tmp = new float[numTimes];
+    float *res = new float[numTimes];
+    int *flags = new int[numTimes];
+    int *flagsRes = new int[numTimes];
+    float *times = new float[numTimes];
+    float *timesRes = new float[numTimes];
+    
+    for (int i=0; i<numTuples; i++)
+    {
+        for (int t=0; t<numTimes; t++)
+        {
+            tmp[t] = 0.0;//-numeric_limits<float>::min();
+            flags[t] = 0;
+            times[t] = 0.0;
+        }
+        for (int b = 0; b < numBins; b++)
+        {
+            int nt = values[i][b].size();
+            for (int t=0; t<nt; t++)
+            {
+                tmp[values[i][b][t].Cycle] = values[i][b][t].val;
+                flags[values[i][b][t].Cycle] = 1;
+                times[values[i][b][t].Cycle] = values[i][b][t].Cycle;
+            }
+        }
+        MPI_Allreduce(tmp, res, numTimes, MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
+        MPI_Allreduce(times, timesRes, numTimes, MPI_FLOAT, MPI_SUM, VISIT_MPI_COMM);
+        MPI_Allreduce(flags, flagsRes, numTimes, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+
+        for (int b = 0; b < numBins; b++)
+            values[i][b].resize(0);
+
+        //See if it's one of my locations.
+        if (i >= idx0 && i < idxN)
+        {
+            for (int t=0; t<numTimes; t++)
+            {
+                if (flagsRes[t])
+                {
+                    int b = GetIndexFromDay(t);
+                    values[i][b].push_back(sample(res[t], t, timesRes[t]));
+                }
+            }
+        }
+    }
+    
+    delete [] tmp;
+    delete [] res;
+    delete [] flags;
+    delete [] flagsRes;
+#endif
+
+    vtkRInterface *RI = vtkRInterface::New();
+
+    double *outputData = new double[(idxN-idx0)*outputValsPerLoc];
+    for (int i = 0; i < (idxN-idx0)*outputValsPerLoc; i++)
+        outputData[i] = -1.0;
+
+    for (int i = 0; i < (idxN-idx0); i++)
+    {
+        vector<float> tresholds = CalculateThresholds(i+idx0);
+        
+        vtkDoubleArray *exceedences = vtkDoubleArray::New();
+        vtkIntArray *dayIndices = vtkIntArray::New();
+        vtkIntArray *yearIndices = vtkIntArray::New();
+        vtkIntArray *monthIndices = vtkIntArray::New();
+
+        SetExceedenceData(i+idx0, tresholds, exceedences, dayIndices, yearIndices, monthIndices);
+        
+        RI->AssignVTKDataArrayToRVariable(exceedences, exceedencesStr.c_str());
+        RI->AssignVTKDataArrayToRVariable(yearIndices, yearIndicesStr.c_str());
+        RI->AssignVTKDataArrayToRVariable(monthIndices, monthIndicesStr.c_str());
+        RI->AssignVTKDataArrayToRVariable(dayIndices, dayIndicesStr.c_str());
+
+        string command = GenerateRCommand(tresholds, i+idx0);
+        if (atts.GetDumpDebug())
+        {
+            cout<<"*************************************************************"<<endl;
+            cout<<"location= "<<(idx0+i)<<endl;
+            cout<<command;
+            cout<<"*************************************************************"<<endl;
+        }
+
+        RI->EvalRscript(command.c_str());
+
+        exceedences->Delete();
+        dayIndices->Delete();
+        yearIndices->Delete();
+        monthIndices->Delete();
+
+        int nVars = outputInfo.size();
+        //PrintOutputInfo();
+        for (int j = 0; j < outputInfo.size(); j++)
+        {
+            vtkDoubleArray *outArr = NULL;
+            outArr = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray(outputInfo[j].name.c_str()));
+            //cout<<outputInfo[j].name<<" : "<<outArr->GetNumberOfComponents()<<" x "<<outArr->GetNumberOfTuples()<<endl;
+            for (int k = 0; k < outArr->GetNumberOfTuples(); k++)
+            {
+                outputData[i*outputValsPerLoc + outputInfo[j].index + k] = outArr->GetTuple1(k);
+                //cout<<"    outputData["<<i*outputValsPerLoc + outputInfo[j].index + k<<"] = "<<outArr->GetTuple1(k)<<endl;
+            }
+        }
+    }
+
+#if PARALLEL
+    int sz = numTuples*outputValsPerLoc;
+    
+    double *in = new double[sz], *sum = new double[sz];
+    for (int i = 0; i < sz; i++)
+    {
+        in[i] = 0.0;
+        sum[i] = 0.0;
+    }
+    
+    for (int i=0; i<(idxN-idx0); i++)
+    {
+        for (int j = 0; j < outputValsPerLoc; j++)
+        {
+            in[(i+idx0)*outputValsPerLoc +j] = outputData[i*outputValsPerLoc+j];
+        }
+    }
+    SumDoubleArray(in, sum, sz);
+
+    delete outputData;
+    outputData = new double[sz];
+    for (int i = 0; i < sz; i++)
+        outputData[i] = sum[i];
+    delete [] in;
+    delete [] sum;
+#endif
+
+    if (PAR_Rank() == 0 && atts.GetDumpData())
+    {
+        //PrintOutputInfo();
+        vector<string> meshDimNms;
+        vector<vector<double> > meshDims;
+        vector<POTFilterWriteData::varInfo> vars;
+        vector<int> arrShape;
+
+        //TODO: These should be swapped in the writer...
+        meshDimNms.push_back("Lat");        
+        meshDimNms.push_back("Lon");
+        meshDimNms.push_back("Aggregation");
+        meshDims.resize(3);
+        meshDims[0] = coordinates[1];
+        meshDims[1] = coordinates[0];
+        for (int i = 0; i < numBins; i++)
+            meshDims[2].push_back(i);
+        int nVars = outputInfo.size();
+        int nLocs = meshDims[0].size()*meshDims[1].size();
+        int nVals = nLocs * outputValsPerLoc;
+        
+        int idx = 0;
+        vector<string> varnames;
+        for (int i = 0; i < nVars; i++)
+            varnames.push_back(outputInfo[i].name);
+        
+        //cout<<"DUMP: nVars= "<<nVars<<" nVals= "<<numTuples*outputValsPerLoc<<endl;
+        POTFilterWriteData::writeNETCDFData("POT.output.nc",
+                                            meshDimNms, meshDims,
+                                            varnames, outputData);
+    }
+    
+    //Set the return dataset.
+    if (PAR_Rank() == 0)
+    {
+        int displayIdx = 0;
+        if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+            displayIdx = 0;
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+            displayIdx = (int)atts.GetDisplayMonth() - (int)(PeaksOverThresholdAttributes::JAN);
+        else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+            displayIdx = (int)atts.GetDisplaySeason() - (int)(PeaksOverThresholdAttributes::WINTER);
+        
+        //cout<<"Create output.....("<<numOutputComponents<<" x "<<numTuples<<")"<<endl;
+        vtkFloatArray *outVar = vtkFloatArray::New();
+        outVar->SetNumberOfComponents(1);
+        outVar->SetNumberOfTuples(numTuples);
+        int idx = 0;
+        for (int i = 0; i < numTuples; i++, idx++)
+            outVar->SetValue(i, outputData[i*outputValsPerLoc + displayIdx]);
+    
+        if (nodeCenteredData)
+            outDS->GetPointData()->SetScalars(outVar);
+        else
+            outDS->GetPointData()->SetScalars(outVar);
+        
+        outVar->Delete();
+
+        avtDataTree_p outputTree = new avtDataTree(outDS, 0);
+        SetOutputDataTree(outputTree);
+        outDS->Delete();
+    }
+    else
+        SetOutputDataTree(new avtDataTree());
+
+    RI->Delete();
+
+    avtCallback::ResetTimeout(5*60);
+}
+
+#if 0
 
     if (0)
     {
@@ -966,6 +1225,10 @@ avtRPOTFilter::CreateFinalOutput()
         cout<<command<<endl;
         RI->EvalRscript(command.c_str());
 
+        cout<<"*************************************************************"<<endl;
+        cout<<GenerateRCommand(i);
+        cout<<"*************************************************************"<<endl;
+
         vtkDoubleArray *out_rv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("rv"));
         vtkDoubleArray *out_serv = vtkDoubleArray::SafeDownCast(RI->AssignRVariableToVTKDataArray("se_rv"));
         //cout<<"valsPerLoc: "<<nValsPerOut<<endl;
@@ -1181,6 +1444,278 @@ avtRPOTFilter::CreateFinalOutput()
 
     avtCallback::ResetTimeout(5*60);
 }
+#endif
+
+
+void
+avtRPOTFilter::SetExceedenceData(int loc,
+                                 const std::vector<float> &thresholds,
+                                 vtkDoubleArray *exceedences,
+                                 vtkIntArray *dayIndices,
+                                 vtkIntArray *yearIndices,
+                                 vtkIntArray *monthIndices)
+{
+    int numExceedences = 0;
+    for (int b = 0; b < numBins; b++)
+    {
+        int nt = values[loc][b].size();
+        if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
+        {
+            for (int t = 0; t < nt; t++)
+                if (values[loc][b][t].val > thresholds[b])
+                    numExceedences++;
+        }
+        else
+        {
+            for (int t = 0; t < nt; t++)
+                if (values[loc][b][t].val < thresholds[b])
+                    numExceedences++;
+        }
+    }
+
+    exceedences->SetNumberOfComponents(1);
+    exceedences->SetNumberOfTuples(numExceedences);
+    dayIndices->SetNumberOfComponents(1);
+    dayIndices->SetNumberOfTuples(numExceedences);
+    monthIndices->SetNumberOfComponents(1);
+    monthIndices->SetNumberOfTuples(numExceedences);
+    yearIndices->SetNumberOfComponents(1);
+    yearIndices->SetNumberOfTuples(numExceedences);
+        
+    int idx = 0;
+    for (int b = 0; b < numBins; b++)
+    {
+        int nt = values[loc][b].size();
+        for (int t = 0; t < nt; t++)
+        {
+            if ((atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL &&
+                 values[loc][b][t].val > thresholds[b]) ||
+                (atts.GetCutoffMode() == PeaksOverThresholdAttributes::LOWER_TAIL &&
+                 values[loc][b][t].val < thresholds[b]))
+            {
+                exceedences->SetValue(idx, values[loc][b][t].val);
+                dayIndices->SetValue(idx, values[loc][b][t].Cycle +1);
+                if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY ||
+                    atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
+                {
+                    monthIndices->SetValue(idx, GetMonthFromDay(values[loc][b][t].Cycle) +1);
+                }
+                else
+                    monthIndices->SetValue(idx, -1);
+                yearIndices->SetValue(idx, GetYearFromDay(values[loc][b][t].Cycle)+atts.GetDataYearBegin());
+                
+                idx++;
+                if (idx == numExceedences)
+                    break;
+            }
+        }
+    }
+}
+
+void
+avtRPOTFilter::GenerateOutputInfo()
+{
+    int index = 0;
+    char tmp1[64], tmp2[64];
+
+    if (!atts.GetComputeCovariates() && !atts.GetComputeCovariates())
+    {
+        outputInfo.push_back(outputType("rv", "output$returnValue", numBins, index));
+        index += numBins;
+        outputInfo.push_back(outputType("se_rv", "output$se.returnValue", numBins, index));
+        index += numBins;
+    }
+
+    if (atts.GetComputeCovariates() && atts.GetComputeCovariates())
+    {
+        int nv = atts.GetCovariateReturnYears().size();
+        for (int i = 0; i < nv; i++)
+        {
+            sprintf(tmp1, "rv_%d", (atts.GetCovariateReturnYears()[i]));
+            if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+                sprintf(tmp2, "output$returnValue[%d]", (i+1));
+            else
+            {
+                if (nv == 1)
+                    sprintf(tmp2, "output$returnValue");
+                else
+                    sprintf(tmp2, "output$returnValue[%d,]", (i+1));
+            }
+            outputInfo.push_back(outputType(tmp1, tmp2, numBins, index));
+            index += numBins;
+
+            sprintf(tmp1, "se_rv_%d", (atts.GetCovariateReturnYears()[i]));
+            if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+                sprintf(tmp2, "output$se.returnValue[%d]", (i+1));
+            else
+            {
+                if (nv == 1)
+                    sprintf(tmp2, "output$se.returnValue");
+                else
+                    sprintf(tmp2, "output$se.returnValue[%d,]", (i+1));             
+            }
+            outputInfo.push_back(outputType(tmp1, tmp2, numBins, index));
+            index += numBins;
+        }
+    }
+    
+    if (atts.GetComputeCovariates() && atts.GetComputeRVDifferences())
+    {
+        sprintf(tmp1, "rvDiff_%d_%d", atts.GetRvDifference1(), atts.GetRvDifference2());
+        outputInfo.push_back(outputType(tmp1, "output$returnValueDiff", numBins, index));
+        index += numBins;
+
+        sprintf(tmp1, "se_rvDiff_%d_%d", atts.GetRvDifference1(), atts.GetRvDifference2());
+        outputInfo.push_back(outputType(tmp1, "output$se.returnValueDiff", numBins, index));
+        index += numBins;
+    }
+
+    outputValsPerLoc = index;
+}
+
+void
+avtRPOTFilter::PrintOutputInfo()
+{
+    cout<<"OUTPUTINFO: "<<endl;
+    for (int i = 0; i < outputInfo.size(); i++)
+    {
+        cout<<i<<": "<<outputInfo[i].name<<" "<<outputInfo[i].rName<<" idx= "<<outputInfo[i].index<<" dim= "<<outputInfo[i].dim<<endl;
+    }
+}
+
+string
+avtRPOTFilter::GenerateRCommand(const vector<float> &t, int loc)
+{
+    string command;
+    char tmp[512];
+
+    if (atts.GetDumpDebug())
+    {
+        sprintf(tmp, "save.image(file='input_%d.RData')\n", loc);
+        command += tmp;
+    }
+
+    //load files and packages.
+    sprintf(tmp, "source('%s/auxil.r')\nsource('%s/pp.fit2.r')\nsource('%s/potVisit.r')\n",
+            codeDir.c_str(), codeDir.c_str(), codeDir.c_str());
+    command += tmp;
+    command += "require(ismev)\n";
+    command += "output = potFit(";
+    if (atts.GetDataAnalysisYearRangeEnabled())
+        sprintf(tmp, "initialYear=%d", atts.GetDataAnalysisYear1());
+    else
+        sprintf(tmp, "initialYear=%d", atts.GetDataYearBegin());
+    command += tmp;
+
+    sprintf(tmp, ", nYears=%d", numYears);
+    command += tmp;
+    
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+    {
+        sprintf(tmp, ", numPerYear=%d", atts.GetDaysPerYear());
+        command += tmp;
+    }
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL ||
+             atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+    {
+        int *d = atts.GetDaysPerMonth();
+        sprintf(tmp, ", numPerYear=c(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], d[11]);
+        command += tmp;
+    }
+
+    int nReplicates = 1;
+    if (atts.GetEnsemble())
+        nReplicates = atts.GetNumEnsembles();
+    sprintf(tmp, ", nReplicates=%d", nReplicates);
+    command += tmp;
+    
+    command += ", data=" + exceedencesStr;
+    command += ", day=" + dayIndicesStr;
+    command += ", year="+yearIndicesStr;
+    command += ", month="+monthIndicesStr;
+    
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+        command += ", aggregation='annual'";
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
+        command += ", aggregation='seasonal'";
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+        command += ", aggregation='monthly'";
+    
+    if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
+        sprintf(tmp, "%f", t[0]);
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
+        sprintf(tmp, "c(%f, %f, %f, %f)", t[0], t[1], t[2], t[3]);
+    else if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
+        sprintf(tmp, "c(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", 
+                t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9], t[10], t[11]);
+    command += ", threshold=";
+    command += tmp;
+    
+    if (atts.GetComputeCovariates())
+    {
+        command += ", nCovariates=1";
+        command += ", covariatesByYear=c(";
+        for (int y = 0; y < numYears; y++)
+        {
+            sprintf(tmp, "%d", y + atts.GetDataYearBegin());
+            command += tmp;
+            if (y < (numYears-1))
+                command += ", ";
+        }
+        command += ")";
+        command += ", newData=c(";
+        int n = atts.GetCovariateReturnYears().size();
+        for (int i = 0; i < n; i++)
+        {
+            sprintf(tmp, "%d", atts.GetCovariateReturnYears()[i]);
+            command += tmp;
+            if (i != (n-1))
+                command += ",";
+        }
+        command += ")";
+
+        if (atts.GetComputeRVDifferences())
+        {
+            sprintf(tmp, ", rvDifference=c(%d, %d)", atts.GetRvDifference1(), atts.GetRvDifference2());
+            command += tmp;
+        }
+        
+        if (atts.GetCovariateModelLocation())
+            command += ", locationModel=1";
+        if (atts.GetCovariateModelScale())
+            command += ", scaleModel=1";
+        if (atts.GetCovariateModelShape())
+            command += ", shapeModel=1";
+
+        if (atts.GetComputeParamValues())
+            command += ", returnParams=TRUE";
+    }
+
+    if (atts.GetNoConsecutiveDay())
+        command += ", multiDayEventHandling='norun'";
+    if (atts.GetOptimizationMethod() == PeaksOverThresholdAttributes::NELDER_MEAD)
+        command += ", optimMethod='Nelder-Mead'";
+    else if (atts.GetOptimizationMethod() == PeaksOverThresholdAttributes::BFGS)
+        command += ", optimMethod='BFGS'";
+    if (atts.GetCutoffMode() == PeaksOverThresholdAttributes::UPPER_TAIL)
+        command += ", upper.tail=TRUE";
+    else
+        command += ", upper.tail=FALSE";
+
+    command += ")\n";
+
+    for (int i = 0; i < outputInfo.size(); i++)
+        command += outputInfo[i].name + "=" + outputInfo[i].rName + "\n";
+
+    if (atts.GetDumpDebug())
+    {
+        sprintf(tmp, "save.image(file='output_%d.RData')\n", loc);
+        command += tmp;
+    }
+
+    return command;
+}
 
 
 void
@@ -1200,11 +1735,3 @@ avtRPOTFilter::DebugData(int loc, std::string nm)
 }
 
 
-static vector<double> makeArray(int n)
-{
-    vector<double> d;
-    d.resize(n);
-    for (int i = 0; i < n; i++)
-        d[i] = i;
-    return d;
-}

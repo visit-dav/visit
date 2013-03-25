@@ -51,6 +51,8 @@
 #include <vector>
 
 class vtkDataSet;
+class vtkDoubleArray;
+class vtkIntArray;
 
 // ****************************************************************************
 // Class:  avtRPOTFilter
@@ -73,17 +75,25 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     PeaksOverThresholdAttributes atts;
     
   protected:
-    void                    Initialize();
+    void            Initialize();
     virtual void            Execute();
-    virtual void            PreExecute();
-    virtual void            PostExecute();
     virtual void            CreateFinalOutput();
     virtual bool            ExecutionSuccessful();
 
     virtual bool            FilterSupportsTimeParallelization();
     virtual bool            DataCanBeParallelizedOverTime(void);
 
+    void                    GenerateOutputInfo();
+    void                    PrintOutputInfo();
+    std::string             GenerateRCommand(const std::vector<float> &thresholds, int loc);
+    void                    SetExceedenceData(int loc,
+                                              const std::vector<float> &thresholds,
+                                              vtkDoubleArray *exceedences,
+                                              vtkIntArray *dayIndices, 
+                                              vtkIntArray *yearIndices, 
+                                              vtkIntArray *monthIndices);
     float                   CalculateThreshold(int loc, int arr);
+    std::vector<float>      CalculateThresholds(int loc);
     int                     GetIndexFromDay(int t);
     int                     GetMonthFromDay(int t);
     int                     GetYearFromDay(int t);
@@ -92,21 +102,40 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     std::string             GetDumpFileName(int idx, int yr, int var);
 
     vtkDataSet *outDS;
+    std::vector<double> coordinates[3];
     int numTuples, numTimes, numYears, numBins;
     bool nodeCenteredData, initialized;
     int idx0, idxN;
+    int cycle0;
 
+    // array/data names.
+    static std::string exceedencesStr;
+    static std::string dayIndicesStr, yearIndicesStr, monthIndicesStr;
+
+    class outputType
+    {
+    public:
+        outputType(const std::string &nm, const std::string &rnm, int d, int i) : name(nm), rName(rnm), dim(d), index(i)
+        {}
+        outputType() {dim=1; index=0;}
+        std::string name, rName;
+        int dim, index;
+    };
+    std::vector<outputType> outputInfo;
+    int outputValsPerLoc;
+    
     class sample
     {
     public:
         sample() {val=-1; Cycle=-1; Time=-1;}
-        sample(float v, int c, float t) {val=v; Cycle=c; Time=t;}
+        sample(float v, int c, float t=-1.0f) {val=v; Cycle=c; Time=t;}
         float val, Time;
         int Cycle;
     };
     //values[location][aggregation][time_i]    
     std::vector<std::vector<std::vector<sample> > > values;
-
+    //std::vector<sample> values;
+    
     void DebugData(int loc, std::string nm);
 
     int daysPerYear, dayCountAtMonthEnd[12];

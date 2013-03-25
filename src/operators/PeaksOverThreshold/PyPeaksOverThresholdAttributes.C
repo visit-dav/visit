@@ -339,6 +339,11 @@ PyPeaksOverThresholdAttributes_ToString(const PeaksOverThresholdAttributes *atts
     else
         SNPRINTF(tmpStr, 1000, "%sdumpData = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetDumpDebug())
+        SNPRINTF(tmpStr, 1000, "%sdumpDebug = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdumpDebug = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -1223,6 +1228,30 @@ PeaksOverThresholdAttributes_GetDumpData(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_SetDumpDebug(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dumpDebug in the object.
+    obj->data->SetDumpDebug(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PeaksOverThresholdAttributes_GetDumpDebug(PyObject *self, PyObject *args)
+{
+    PeaksOverThresholdAttributesObject *obj = (PeaksOverThresholdAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDumpDebug()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_NMETH] = {
@@ -1285,6 +1314,8 @@ PyMethodDef PyPeaksOverThresholdAttributes_methods[PEAKSOVERTHRESHOLDATTRIBUTES_
     {"GetDisplayMonth", PeaksOverThresholdAttributes_GetDisplayMonth, METH_VARARGS},
     {"SetDumpData", PeaksOverThresholdAttributes_SetDumpData, METH_VARARGS},
     {"GetDumpData", PeaksOverThresholdAttributes_GetDumpData, METH_VARARGS},
+    {"SetDumpDebug", PeaksOverThresholdAttributes_SetDumpDebug, METH_VARARGS},
+    {"GetDumpDebug", PeaksOverThresholdAttributes_GetDumpDebug, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1422,6 +1453,8 @@ PyPeaksOverThresholdAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "dumpData") == 0)
         return PeaksOverThresholdAttributes_GetDumpData(self, NULL);
+    if(strcmp(name, "dumpDebug") == 0)
+        return PeaksOverThresholdAttributes_GetDumpDebug(self, NULL);
 
     return Py_FindMethod(PyPeaksOverThresholdAttributes_methods, self, name);
 }
@@ -1494,6 +1527,8 @@ PyPeaksOverThresholdAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = PeaksOverThresholdAttributes_SetDisplayMonth(self, tuple);
     else if(strcmp(name, "dumpData") == 0)
         obj = PeaksOverThresholdAttributes_SetDumpData(self, tuple);
+    else if(strcmp(name, "dumpDebug") == 0)
+        obj = PeaksOverThresholdAttributes_SetDumpDebug(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

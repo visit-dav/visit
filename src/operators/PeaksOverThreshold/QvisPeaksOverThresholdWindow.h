@@ -115,6 +115,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     void displaySeasonChanged(int val);
     void displayMonthChanged(int val);
     void dumpDataChanged(bool val);
+    void dumpDebugChanged(bool val);
     void noConsecutiveDayChanged(bool val);
   private:
     QLineEdit *dataYearBegin;
@@ -148,6 +149,7 @@ class QvisPeaksOverThresholdWindow : public QvisOperatorWindow
     QLineEdit *rvDifference1, *rvDifference2;
     QCheckBox *computeParamValues;
     QCheckBox *dumpData;
+    QCheckBox *dumpDebug;
     QLabel *dataYearBeginLabel;
     QLabel *dataAnalysisYearRangeLabel;
     QLabel *numEnsemblesLabel;
