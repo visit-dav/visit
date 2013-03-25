@@ -48,6 +48,8 @@
 #include <QSpinBox>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QGroupBox>
+#include <QComboBox>
 #include <QvisColorTableButton.h>
 #include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
@@ -124,111 +126,219 @@ QvisExtremeValueAnalysisWindow::~QvisExtremeValueAnalysisWindow()
 void
 QvisExtremeValueAnalysisWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(0);
-    topLayout->addLayout(mainLayout);
+    int row = 0;
+    //
+    // Inputs group box
+    //
+    QGroupBox *inputGroup = new QGroupBox(central);
+    inputGroup->setTitle(tr("Inputs"));
+    topLayout->addWidget(inputGroup);
+    QGridLayout *inputLayout = new QGridLayout(inputGroup);
+    inputLayout->setMargin(5);
+    inputLayout->setSpacing(10);
 
-    aggregationLabel = new QLabel(tr("Aggregation"), central);
-    mainLayout->addWidget(aggregationLabel,0,0);
-    aggregation = new QWidget(central);
-    aggregationButtonGroup= new QButtonGroup(aggregation);
-    QHBoxLayout *aggregationLayout = new QHBoxLayout(aggregation);
-    aggregationLayout->setMargin(0);
-    aggregationLayout->setSpacing(10);
-    QRadioButton *aggregationAggregationTypeANNUAL = new QRadioButton(tr("ANNUAL"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeANNUAL,0);
-    aggregationLayout->addWidget(aggregationAggregationTypeANNUAL);
-    QRadioButton *aggregationAggregationTypeMONTHLY = new QRadioButton(tr("MONTHLY"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeMONTHLY,1);
-    aggregationLayout->addWidget(aggregationAggregationTypeMONTHLY);
-    QRadioButton *aggregationAggregationTypeSEASONAL = new QRadioButton(tr("SEASONAL"), aggregation);
-    aggregationButtonGroup->addButton(aggregationAggregationTypeSEASONAL,2);
-    aggregationLayout->addWidget(aggregationAggregationTypeSEASONAL);
-    connect(aggregationButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(aggregationChanged(int)));
-    mainLayout->addWidget(aggregation, 0,1);
+    inputLayout->addWidget(new QLabel(tr("Start year"), central), row, 0);
+    dataYearBegin = new QLineEdit(central);
+    connect(dataYearBegin, SIGNAL(returnPressed()),
+            this, SLOT(dataYearBeginProcessText()));
+    inputLayout->addWidget(dataYearBegin, row,1);
 
-    displayMonthLabel = new QLabel(tr("Display Month"), central);
-    mainLayout->addWidget(displayMonthLabel,1,0);
-    displayMonth = new QWidget(central);
-    displayMonthButtonGroup= new QButtonGroup(displayMonth);
-    QHBoxLayout *displayMonthLayout = new QHBoxLayout(displayMonth);
-    displayMonthLayout->setMargin(0);
-    displayMonthLayout->setSpacing(10);
-    QRadioButton *displayMonthMonthTypeJanuary = new QRadioButton(tr("January"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJanuary,0);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJanuary);
-    QRadioButton *displayMonthMonthTypeFebruary = new QRadioButton(tr("February"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeFebruary,1);
-    displayMonthLayout->addWidget(displayMonthMonthTypeFebruary);
-    QRadioButton *displayMonthMonthTypeMarch = new QRadioButton(tr("March"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeMarch,2);
-    displayMonthLayout->addWidget(displayMonthMonthTypeMarch);
-    QRadioButton *displayMonthMonthTypeApril = new QRadioButton(tr("April"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeApril,3);
-    displayMonthLayout->addWidget(displayMonthMonthTypeApril);
-    QRadioButton *displayMonthMonthTypeMay = new QRadioButton(tr("May"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeMay,4);
-    displayMonthLayout->addWidget(displayMonthMonthTypeMay);
-    QRadioButton *displayMonthMonthTypeJune = new QRadioButton(tr("June"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJune,5);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJune);
-    QRadioButton *displayMonthMonthTypeJuly = new QRadioButton(tr("July"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeJuly,6);
-    displayMonthLayout->addWidget(displayMonthMonthTypeJuly);
-    QRadioButton *displayMonthMonthTypeAugust = new QRadioButton(tr("August"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeAugust,7);
-    displayMonthLayout->addWidget(displayMonthMonthTypeAugust);
-    QRadioButton *displayMonthMonthTypeSeptember = new QRadioButton(tr("September"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeSeptember,8);
-    displayMonthLayout->addWidget(displayMonthMonthTypeSeptember);
-    QRadioButton *displayMonthMonthTypeOctober = new QRadioButton(tr("October"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeOctober,9);
-    displayMonthLayout->addWidget(displayMonthMonthTypeOctober);
-    QRadioButton *displayMonthMonthTypeNovember = new QRadioButton(tr("November"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeNovember,10);
-    displayMonthLayout->addWidget(displayMonthMonthTypeNovember);
-    QRadioButton *displayMonthMonthTypeDecember = new QRadioButton(tr("December"), displayMonth);
-    displayMonthButtonGroup->addButton(displayMonthMonthTypeDecember,11);
-    displayMonthLayout->addWidget(displayMonthMonthTypeDecember);
-    connect(displayMonthButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(displayMonthChanged(int)));
-    mainLayout->addWidget(displayMonth, 1,1);
+    row++;
+    dataAnalysisYearRangeEnabled = new QCheckBox(tr("Analysis year range"), central);
+    connect(dataAnalysisYearRangeEnabled, SIGNAL(toggled(bool)),
+            this, SLOT(dataAnalysisYearRangeEnabledChanged(bool)));
+    inputLayout->addWidget(dataAnalysisYearRangeEnabled, row,0);
+    dataAnalysisYear1 = new QLineEdit(central);
+    connect(dataAnalysisYear1, SIGNAL(returnPressed()),
+            this, SLOT(dataAnalysisYear1ProcessText()));
+    inputLayout->addWidget(dataAnalysisYear1, row,1);
+    dataAnalysisYear2 = new QLineEdit(central);
+    connect(dataAnalysisYear2, SIGNAL(returnPressed()),
+            this, SLOT(dataAnalysisYear2ProcessText()));
+    inputLayout->addWidget(dataAnalysisYear2, row,2);
+    row++;
 
-    displaySeasonLabel = new QLabel(tr("Display Season"), central);
-    mainLayout->addWidget(displaySeasonLabel,2,0);
-    displaySeason = new QWidget(central);
-    displaySeasonButtonGroup= new QButtonGroup(displaySeason);
-    QHBoxLayout *displaySeasonLayout = new QHBoxLayout(displaySeason);
-    displaySeasonLayout->setMargin(0);
-    displaySeasonLayout->setSpacing(10);
-    QRadioButton *displaySeasonSeasonTypeWINTER = new QRadioButton(tr("WINTER"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeWINTER,0);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeWINTER);
-    QRadioButton *displaySeasonSeasonTypeSPRING = new QRadioButton(tr("SPRING"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSPRING,1);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSPRING);
-    QRadioButton *displaySeasonSeasonTypeSUMMER = new QRadioButton(tr("SUMMER"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeSUMMER,2);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeSUMMER);
-    QRadioButton *displaySeasonSeasonTypeFALL = new QRadioButton(tr("FALL"), displaySeason);
-    displaySeasonButtonGroup->addButton(displaySeasonSeasonTypeFALL,3);
-    displaySeasonLayout->addWidget(displaySeasonSeasonTypeFALL);
-    connect(displaySeasonButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(displaySeasonChanged(int)));
-    mainLayout->addWidget(displaySeason, 2,1);
+    ensemble = new QCheckBox(tr("Ensemble"), central);
+    connect(ensemble, SIGNAL(toggled(bool)),
+            this, SLOT(ensembleChanged(bool)));
+    inputLayout->addWidget(ensemble, row,0);
+
+    numEnsemblesLabel = new QLabel(tr("Number of members"), central);
+    inputLayout->addWidget(numEnsemblesLabel,row,1);
+    numEnsembles = new QLineEdit(central);
+    connect(numEnsembles, SIGNAL(returnPressed()),
+            this, SLOT(numEnsemblesProcessText()));
+    inputLayout->addWidget(numEnsembles, row,2);
+    row++;
+
+    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
+    inputLayout->addWidget(dataScalingLabel,row,0);
+    dataScaling = new QLineEdit(central);
+    connect(dataScaling, SIGNAL(returnPressed()),
+            this, SLOT(dataScalingProcessText()));
+    inputLayout->addWidget(dataScaling, row,1);
+
+    row = 0;
+
+    //
+    // Analysis group box
+    //
+    QGroupBox *analysisGroup = new QGroupBox(central);
+    analysisGroup->setTitle(tr("Analysis"));
+    topLayout->addWidget(analysisGroup);
+    QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
+    analysisLayout->setMargin(5);
+    analysisLayout->setSpacing(10);
+
+    analysisLayout->addWidget(new QLabel(tr("Extremes"), central), row, 0);
+    extremeMethod = new QWidget(central);
+    extremeMethodButtonGroup= new QButtonGroup(extremeMethod);
+    QHBoxLayout *extremeMethodLayout = new QHBoxLayout(extremeMethod);
+    extremeMethodLayout->setMargin(0);
+    extremeMethodLayout->setSpacing(10);
+    QRadioButton *extremeMethodExtremeTypeMINIMA = new QRadioButton(tr("Minima"), extremeMethod);
+    extremeMethodButtonGroup->addButton(extremeMethodExtremeTypeMINIMA,0);
+    extremeMethodLayout->addWidget(extremeMethodExtremeTypeMINIMA);
+    QRadioButton *extremeMethodExtremeTypeMAXIMA = new QRadioButton(tr("Maxima"), extremeMethod);
+    extremeMethodButtonGroup->addButton(extremeMethodExtremeTypeMAXIMA,1);
+    extremeMethodLayout->addWidget(extremeMethodExtremeTypeMAXIMA);
+    connect(extremeMethodButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(extremeMethodChanged(int)));
+    analysisLayout->addWidget(extremeMethod, row,1);
+    row++;
+
+    analysisLayout->addWidget(new QLabel(tr("Optimization"), central),row,0);
+    optimizationSelect = new QComboBox(central);
+    optimizationSelect->addItem(tr("Nelder-Mead"));
+    optimizationSelect->addItem(tr("BFGS"));
+    connect(optimizationSelect, SIGNAL(activated(int)),
+            this, SLOT(optimizationChanged(int))); 
+    analysisLayout->addWidget(optimizationSelect, row, 1);
+    row++;
+
+    analysisLayout->addWidget(new QLabel(tr("Aggregation"), central), row, 0);
+    aggregationSelect = new QComboBox(central);
+    aggregationSelect->addItem(tr("Annual"));
+    aggregationSelect->addItem(tr("Seasonal"));
+    aggregationSelect->addItem(tr("Monthly"));
+    connect(aggregationSelect, SIGNAL(activated(int)),
+            this, SLOT(aggregationChanged(int))); 
+    analysisLayout->addWidget(aggregationSelect, row, 1);
+    row++;
+
+    //
+    // Trend Modeling group box
+    //
+    QGroupBox *trendGroup = new QGroupBox(central);
+    trendGroup->setTitle(tr("Trend Modeling"));
+    analysisLayout->addWidget(trendGroup, row, 0);
+    QGridLayout *trendLayout = new QGridLayout(trendGroup);
+    trendLayout->setMargin(5);
+    trendLayout->setSpacing(10);
+    row = 0;
+
+    covariateModelScale = new QCheckBox(tr("Linear trend in log scale parameter"), central);
+    connect(covariateModelScale, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelScaleChanged(bool)));
+    trendLayout->addWidget(covariateModelScale, row,0);
+    row++;
+
+    covariateModelLocation = new QCheckBox(tr("Linear trend in location parameter"), central);
+    connect(covariateModelLocation, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelLocationChanged(bool)));
+    trendLayout->addWidget(covariateModelLocation, row,0);
+    row++;
+
+    covariateModelShape = new QCheckBox(tr("Linear trend in shape parameter"), central);
+    connect(covariateModelShape, SIGNAL(toggled(bool)),
+            this, SLOT(covariateModelShapeChanged(bool)));
+    trendLayout->addWidget(covariateModelShape, row,0);
+    row++;
+
+
+    //
+    // Outputs group box
+    //
+    row = 0;
+    QGroupBox *outputGroup = new QGroupBox(central);
+    outputGroup->setTitle(tr("Outputs"));
+    topLayout->addWidget(outputGroup);
+    QGridLayout *outputLayout = new QGridLayout(outputGroup);
+    outputLayout->setMargin(5);
+    outputLayout->setSpacing(10);
+
+    computeReturnValues = new QCheckBox(tr("Compute return value for years"), central);
+    connect(computeReturnValues, SIGNAL(toggled(bool)),
+            this, SLOT(computeReturnValuesChanged(bool)));
+    outputLayout->addWidget(computeReturnValues, row,0);
+
+    returnValues = new QLineEdit(central);
+    connect(returnValues, SIGNAL(returnPressed()),
+            this, SLOT(returnValuesProcessText()));
+    outputLayout->addWidget(returnValues, row,1);
+    row++;
+
+    computeRVDifferences = new QCheckBox(tr("Compute return value differences for years"), central);
+    connect(computeRVDifferences, SIGNAL(toggled(bool)),
+            this, SLOT(computeRVDifferencesChanged(bool)));
+    outputLayout->addWidget(computeRVDifferences, row,0);
+
+    rvDifference1 = new QLineEdit(central);
+    connect(rvDifference1, SIGNAL(returnPressed()),
+            this, SLOT(rvDifference1ProcessText()));
+    outputLayout->addWidget(rvDifference1, row,1);
+    rvDifference2 = new QLineEdit(central);
+    connect(rvDifference2, SIGNAL(returnPressed()),
+            this, SLOT(rvDifference2ProcessText()));
+    outputLayout->addWidget(rvDifference2, row,2);
+    row++;
+
+    computeParamValues = new QCheckBox(tr("Output parameter values"), central);
+    connect(computeParamValues, SIGNAL(toggled(bool)),
+            this, SLOT(computeParamValuesChanged(bool)));
+    outputLayout->addWidget(computeParamValues, row,0);
+    computeParamValues->hide();
+    row++;
 
     dumpData = new QCheckBox(tr("Dump Data"), central);
     connect(dumpData, SIGNAL(toggled(bool)),
             this, SLOT(dumpDataChanged(bool)));
-    mainLayout->addWidget(dumpData, 3,0);
+    outputLayout->addWidget(dumpData, row,0);
+    row++;
 
-    dataScalingLabel = new QLabel(tr("Data Scaling"), central);
-    mainLayout->addWidget(dataScalingLabel,4,0);
-    dataScaling = new QLineEdit(central);
-    connect(dataScaling, SIGNAL(returnPressed()),
-            this, SLOT(dataScalingProcessText()));
-    mainLayout->addWidget(dataScaling, 4,1);
+    dumpDebug = new QCheckBox(tr("Dump Debug"), central);
+    connect(dumpDebug, SIGNAL(toggled(bool)),
+            this, SLOT(dumpDebugChanged(bool)));
+    outputLayout->addWidget(dumpDebug, row,0);
+    row++;
 
+    displayLabel = new QLabel(tr("Display"), central);
+    outputLayout->addWidget(displayLabel, row, 0);
+    displaySeasonSelect = new QComboBox(central);
+    displaySeasonSelect->addItem(tr("Winter"));
+    displaySeasonSelect->addItem(tr("Spring"));
+    displaySeasonSelect->addItem(tr("Summer"));
+    displaySeasonSelect->addItem(tr("Fall"));
+    connect(displaySeasonSelect, SIGNAL(activated(int)),
+            this, SLOT(displaySeasonChanged(int)));
+    outputLayout->addWidget(displaySeasonSelect, row, 1);
+
+    displayMonthSelect = new QComboBox(central);
+    displayMonthSelect->addItem(tr("January"));
+    displayMonthSelect->addItem(tr("February"));
+    displayMonthSelect->addItem(tr("March"));
+    displayMonthSelect->addItem(tr("April"));
+    displayMonthSelect->addItem(tr("May"));
+    displayMonthSelect->addItem(tr("June"));
+    displayMonthSelect->addItem(tr("July"));
+    displayMonthSelect->addItem(tr("August"));
+    displayMonthSelect->addItem(tr("September"));
+    displayMonthSelect->addItem(tr("October"));
+    displayMonthSelect->addItem(tr("November"));
+    displayMonthSelect->addItem(tr("December"));
+    connect(displayMonthSelect, SIGNAL(activated(int)),
+            this, SLOT(displayMonthChanged(int))); 
+    outputLayout->addWidget(displayMonthSelect, row, 1);
 }
 
 
@@ -263,55 +373,160 @@ QvisExtremeValueAnalysisWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case ExtremeValueAnalysisAttributes::ID_aggregation:
-            if (atts->GetAggregation() == ExtremeValueAnalysisAttributes::MONTHLY)
+          case ExtremeValueAnalysisAttributes::ID_dataYearBegin:
+            dataYearBegin->setText(IntToQString(atts->GetDataYearBegin()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_dataAnalysisYearRangeEnabled:
+            if (atts->GetDataAnalysisYearRangeEnabled() == true)
             {
-                displayMonth->setEnabled(true);
-                if(displayMonthLabel)
-                    displayMonthLabel->setEnabled(true);
+                dataAnalysisYear1->setEnabled(true);
+                dataAnalysisYear2->setEnabled(true);
             }
             else
             {
-                displayMonth->setEnabled(false);
-                if(displayMonthLabel)
-                    displayMonthLabel->setEnabled(false);
+                dataAnalysisYear1->setEnabled(false);
+                dataAnalysisYear2->setEnabled(false);
+            }
+            dataAnalysisYearRangeEnabled->blockSignals(true);
+            dataAnalysisYearRangeEnabled->setChecked(atts->GetDataAnalysisYearRangeEnabled());
+            dataAnalysisYearRangeEnabled->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_dataAnalysisYear1:
+            dataAnalysisYear1->setText(IntToQString(atts->GetDataAnalysisYear1()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_dataAnalysisYear2:
+            dataAnalysisYear2->setText(IntToQString(atts->GetDataAnalysisYear2()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_ensemble:
+            if (atts->GetEnsemble() == true)
+            {
+                numEnsembles->setEnabled(true);
+                if(numEnsemblesLabel)
+                    numEnsemblesLabel->setEnabled(true);
+            }
+            else
+            {
+                numEnsembles->setEnabled(false);
+                if(numEnsemblesLabel)
+                    numEnsemblesLabel->setEnabled(false);
+            }
+            ensemble->blockSignals(true);
+            ensemble->setChecked(atts->GetEnsemble());
+            ensemble->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_numEnsembles:
+            numEnsembles->setText(IntToQString(atts->GetNumEnsembles()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_dataScaling:
+            dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_extremeMethod:
+            extremeMethodButtonGroup->blockSignals(true);
+            if(extremeMethodButtonGroup->button((int)atts->GetExtremeMethod()) != 0)
+                extremeMethodButtonGroup->button((int)atts->GetExtremeMethod())->setChecked(true);
+            extremeMethodButtonGroup->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_optimizationMethod:
+            optimizationSelect->blockSignals(true);
+            optimizationSelect->setCurrentIndex(int(atts->GetOptimizationMethod()));
+            optimizationSelect->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_aggregation:
+            displayLabel->hide();
+            displayLabel->setEnabled(false);
+            displayMonthSelect->hide();
+            displayMonthSelect->setEnabled(false);
+            displaySeasonSelect->hide();
+            displaySeasonSelect->setEnabled(false);
+
+            if (atts->GetAggregation() == ExtremeValueAnalysisAttributes::MONTHLY)
+            {
+                displayLabel->show();
+                displayLabel->setEnabled(true);
+                displayMonthSelect->show();
+                displayMonthSelect->setEnabled(true);
             }
             if (atts->GetAggregation() == ExtremeValueAnalysisAttributes::SEASONAL)
             {
-                displaySeason->setEnabled(true);
-                if(displaySeasonLabel)
-                    displaySeasonLabel->setEnabled(true);
+                displayLabel->show();
+                displayLabel->setEnabled(true);
+                displaySeasonSelect->show();
+                displaySeasonSelect->setEnabled(true);
             }
+            aggregationSelect->blockSignals(true);
+            aggregationSelect->setCurrentIndex(int(atts->GetAggregation()));
+            aggregationSelect->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_covariateModelScale:
+            covariateModelScale->blockSignals(true);
+            covariateModelScale->setChecked(atts->GetCovariateModelScale());
+            covariateModelScale->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_covariateModelLocation:
+            covariateModelLocation->blockSignals(true);
+            covariateModelLocation->setChecked(atts->GetCovariateModelLocation());
+            covariateModelLocation->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_covariateModelShape:
+            covariateModelShape->blockSignals(true);
+            covariateModelShape->setChecked(atts->GetCovariateModelShape());
+            covariateModelShape->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_computeReturnValues:
+            if (atts->GetComputeReturnValues() == true)
+                returnValues->setEnabled(true);
             else
-            {
-                displaySeason->setEnabled(false);
-                if(displaySeasonLabel)
-                    displaySeasonLabel->setEnabled(false);
-            }
-            aggregationButtonGroup->blockSignals(true);
-            if(aggregationButtonGroup->button((int)atts->GetAggregation()) != 0)
-                aggregationButtonGroup->button((int)atts->GetAggregation())->setChecked(true);
-            aggregationButtonGroup->blockSignals(false);
+                returnValues->setEnabled(false);
+            computeReturnValues->blockSignals(true);
+            computeReturnValues->setChecked(atts->GetComputeReturnValues());
+            computeReturnValues->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_returnValues:
+            returnValues->setText(IntsToQString(atts->GetReturnValues()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_computeRVDifferences:
+            if (atts->GetComputeRVDifferences() == true)
+                rvDifference1->setEnabled(true);
+            else
+                rvDifference1->setEnabled(false);
+            if (atts->GetComputeRVDifferences() == true)
+                rvDifference2->setEnabled(true);
+            else
+                rvDifference2->setEnabled(false);
+            computeRVDifferences->blockSignals(true);
+            computeRVDifferences->setChecked(atts->GetComputeRVDifferences());
+            computeRVDifferences->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_rvDifference1:
+            rvDifference1->setText(IntToQString(atts->GetRvDifference1()));
+            break;
+          case ExtremeValueAnalysisAttributes::ID_rvDifference2:
+            rvDifference2->setText(IntToQString(atts->GetRvDifference2()));
             break;
           case ExtremeValueAnalysisAttributes::ID_displayMonth:
-            displayMonthButtonGroup->blockSignals(true);
-            if(displayMonthButtonGroup->button((int)atts->GetDisplayMonth()) != 0)
-                displayMonthButtonGroup->button((int)atts->GetDisplayMonth())->setChecked(true);
-            displayMonthButtonGroup->blockSignals(false);
+            displayMonthSelect->blockSignals(true);
+            displayMonthSelect->setCurrentIndex(int(atts->GetDisplayMonth()));
+            displayMonthSelect->blockSignals(false);
             break;
           case ExtremeValueAnalysisAttributes::ID_displaySeason:
-            displaySeasonButtonGroup->blockSignals(true);
-            if(displaySeasonButtonGroup->button((int)atts->GetDisplaySeason()) != 0)
-                displaySeasonButtonGroup->button((int)atts->GetDisplaySeason())->setChecked(true);
-            displaySeasonButtonGroup->blockSignals(false);
+            displaySeasonSelect->blockSignals(true);
+            displaySeasonSelect->setCurrentIndex(int(atts->GetDisplaySeason()));
+            displaySeasonSelect->blockSignals(false);
+            break;
+          case ExtremeValueAnalysisAttributes::ID_computeParamValues:
+            computeParamValues->blockSignals(true);
+            computeParamValues->setChecked(atts->GetComputeParamValues());
+            computeParamValues->blockSignals(false);
             break;
           case ExtremeValueAnalysisAttributes::ID_dumpData:
             dumpData->blockSignals(true);
             dumpData->setChecked(atts->GetDumpData());
             dumpData->blockSignals(false);
             break;
-          case ExtremeValueAnalysisAttributes::ID_dataScaling:
-            dataScaling->setText(DoubleToQString(atts->GetDataScaling()));
+          case ExtremeValueAnalysisAttributes::ID_dumpDebug:
+            dumpDebug->blockSignals(true);
+            dumpDebug->setChecked(atts->GetDumpDebug());
+            dumpDebug->blockSignals(false);
             break;
         }
     }
@@ -338,6 +553,62 @@ QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
+    // Do dataYearBegin
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_dataYearBegin || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataYearBegin, val))
+            atts->SetDataYearBegin(val);
+        else
+        {
+            ResettingError(tr("dataYearBegin"),
+                IntToQString(atts->GetDataYearBegin()));
+            atts->SetDataYearBegin(atts->GetDataYearBegin());
+        }
+    }
+
+    // Do dataAnalysisYear1
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_dataAnalysisYear1 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataAnalysisYear1, val))
+            atts->SetDataAnalysisYear1(val);
+        else
+        {
+            ResettingError(tr("dataAnalysisYear1"),
+                IntToQString(atts->GetDataAnalysisYear1()));
+            atts->SetDataAnalysisYear1(atts->GetDataAnalysisYear1());
+        }
+    }
+
+    // Do dataAnalysisYear2
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_dataAnalysisYear2 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(dataAnalysisYear2, val))
+            atts->SetDataAnalysisYear2(val);
+        else
+        {
+            ResettingError(tr("dataAnalysisYear2"),
+                IntToQString(atts->GetDataAnalysisYear2()));
+            atts->SetDataAnalysisYear2(atts->GetDataAnalysisYear2());
+        }
+    }
+
+    // Do numEnsembles
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_numEnsembles || doAll)
+    {
+        int val;
+        if(LineEditGetInt(numEnsembles, val))
+            atts->SetNumEnsembles(val);
+        else
+        {
+            ResettingError(tr("numEnsembles"),
+                IntToQString(atts->GetNumEnsembles()));
+            atts->SetNumEnsembles(atts->GetNumEnsembles());
+        }
+    }
+
     // Do dataScaling
     if(which_widget == ExtremeValueAnalysisAttributes::ID_dataScaling || doAll)
     {
@@ -352,12 +623,134 @@ QvisExtremeValueAnalysisWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do returnValues
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_returnValues || doAll)
+    {
+        intVector val;
+        if(LineEditGetInts(returnValues, val))
+            atts->SetReturnValues(val);
+        else
+        {
+            ResettingError(tr("returnValues"),
+                           IntsToQString(atts->GetReturnValues()));
+            atts->SetReturnValues(atts->GetReturnValues());
+        }
+    }
+
+    // Do rvDifference1
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_rvDifference1 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(rvDifference1, val))
+            atts->SetRvDifference1(val);
+        else
+        {
+            ResettingError(tr("rvDifference1"),
+                IntToQString(atts->GetRvDifference1()));
+            atts->SetRvDifference1(atts->GetRvDifference1());
+        }
+    }
+
+    // Do rvDifference2
+    if(which_widget == ExtremeValueAnalysisAttributes::ID_rvDifference2 || doAll)
+    {
+        int val;
+        if(LineEditGetInt(rvDifference2, val))
+            atts->SetRvDifference2(val);
+        else
+        {
+            ResettingError(tr("rvDifference2"),
+                IntToQString(atts->GetRvDifference2()));
+            atts->SetRvDifference2(atts->GetRvDifference2());
+        }
+    }
+
 }
 
 
 //
 // Qt Slot functions
 //
+
+
+void
+QvisExtremeValueAnalysisWindow::dataYearBeginProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataYearBegin);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::dataAnalysisYearRangeEnabledChanged(bool val)
+{
+    atts->SetDataAnalysisYearRangeEnabled(val);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::dataAnalysisYear1ProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataAnalysisYear1);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::dataAnalysisYear2ProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataAnalysisYear2);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::ensembleChanged(bool val)
+{
+    atts->SetEnsemble(val);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::numEnsemblesProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_numEnsembles);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::dataScalingProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataScaling);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::extremeMethodChanged(int val)
+{
+    if(val != atts->GetExtremeMethod())
+    {
+        atts->SetExtremeMethod(ExtremeValueAnalysisAttributes::ExtremeType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::optimizationChanged(int val)
+{
+    if(val != atts->GetOptimizationMethod())
+    {
+        atts->SetOptimizationMethod(ExtremeValueAnalysisAttributes::OptimizationType(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
 
 
 void
@@ -368,6 +761,73 @@ QvisExtremeValueAnalysisWindow::aggregationChanged(int val)
         atts->SetAggregation(ExtremeValueAnalysisAttributes::AggregationType(val));
         Apply();
     }
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::covariateModelScaleChanged(bool val)
+{
+    atts->SetCovariateModelScale(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::covariateModelLocationChanged(bool val)
+{
+    atts->SetCovariateModelLocation(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::covariateModelShapeChanged(bool val)
+{
+    atts->SetCovariateModelShape(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::computeReturnValuesChanged(bool val)
+{
+    atts->SetComputeReturnValues(val);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::returnValuesProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_returnValues);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::computeRVDifferencesChanged(bool val)
+{
+    atts->SetComputeRVDifferences(val);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::rvDifference1ProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_rvDifference1);
+    Apply();
+}
+
+
+void
+QvisExtremeValueAnalysisWindow::rvDifference2ProcessText()
+{
+    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_rvDifference2);
+    Apply();
 }
 
 
@@ -394,6 +854,13 @@ QvisExtremeValueAnalysisWindow::displaySeasonChanged(int val)
     }
 }
 
+void
+QvisExtremeValueAnalysisWindow::computeParamValuesChanged(bool val)
+{
+    atts->SetComputeParamValues(val);
+    SetUpdate(false);
+    Apply();
+}
 
 void
 QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
@@ -403,11 +870,11 @@ QvisExtremeValueAnalysisWindow::dumpDataChanged(bool val)
     Apply();
 }
 
-
 void
-QvisExtremeValueAnalysisWindow::dataScalingProcessText()
+QvisExtremeValueAnalysisWindow::dumpDebugChanged(bool val)
 {
-    GetCurrentValues(ExtremeValueAnalysisAttributes::ID_dataScaling);
+    atts->SetDumpDebug(val);
+    SetUpdate(false);
     Apply();
 }
 

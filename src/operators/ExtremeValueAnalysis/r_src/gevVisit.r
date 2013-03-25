@@ -1,10 +1,10 @@
-gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovariates = 0, covariates = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, missingFlag = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, maxes = TRUE, optimMethod = "Nelder-Mead"){
+gevFit <- function(data, aggregation = "annual", nYears, nReplicates = 1, nCovariates = 0, covariates = NULL, dataScaling = 1, locationModel = NULL, scaleModel = NULL, shapeModel = NULL, missingFlag = NULL, returnParams = FALSE, rvInterval = 20, newData = NULL, rvDifference = NULL, maxes = TRUE, optimMethod = "Nelder-Mead"){
   # data should be a 1-d array containing the maxes (or mins) by year (year x (optionally) month x (optionally) location), with the year index varying fastest and the location index varying slowest. For "seasonal" aggregation, the maxes should be provided by month. For seasonal analysis, data should be given as consecutive years, with NA for missing values, as the code needs to treat December as being with the following year. If there are NAs for any months of a given season, the seasonal value is taken to be NA.
   # aggregation should be one of "annual", "seasonal", or "monthly", indicating the stratification. If monthly or seasonal, separate results will be reported for each stratum (i.e., each month or season)
   # nYears is the number of years (more generally of blocks) of data provided
-  # nLocations is the number of locations provided
+  # nReplicates is the number of replicate data sets; primarily for use with model output where you can run the model multiple times to get independent replicates
   # nCovariates indicates the number of covariates provided through 'covariates' (note that any subset of the covariates that are provided may be used in the location, scale, and shape modeling, as specified in locationModel, scaleModel, shapeModel)
-  # covariates is a 1-d array of covariate values (year x covariate x (optionally) month or season), with the observation index varying fastest and month/season index varying slowest. This should be NULL if 'nCovariates' is 0.  Currently the function does not support having covariates vary by location, but this can be done by calling the function separately for each location.
+  # covariates is a 1-d array of covariate values (year x covariate x (optionally) month or season), with the observation index varying fastest and month/season index varying slowest. This should be NULL if 'nCovariates' is 0.
   # dataScaling is a positive-valued scalar used to scale the data values for more robust optimization performance. When multiplied by the values, it should produce values with magnitude around 1
   # locationModel, scaleModel, and shapeModel are vectors indicating the indices of the covariates to be used in the location, scale and shape parameterization. The values are used to select columns from the 'covariates' array after they are transformed to multidimensional arrays with the second dimension indexing the covariates
   # missingFlag is a value to be interpreted as missing values (NA in R), intended for use in other languages calling this function
@@ -38,8 +38,8 @@ gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovari
   data <- data * dataScaling
 
   # check dimensionality of input arrays
-  if((aggregation == "annual" && length(data) != nYears*nLocations) ||
-     (aggregation != "annual" && length(data) != nYears*12*nLocations))
+  if((aggregation == "annual" && length(data) != nYears*nReplicates) ||
+     (aggregation != "annual" && length(data) != nYears*12*nReplicates))
     stop("length of input data does not match number of years, covariates, and months (the latter is required for seasonal and monthly analyses")
   if(!is.null(covariates) && !(length(covariates) %in% (nYears*nCovariates*c(1, nStrata))))
     stop("supplied 'covariate' values do not match number of years, covariates and strata")
@@ -50,14 +50,14 @@ gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovari
   
   # manipulate input arrays to have appropriate number of dimensions
   if(aggregation == "annual"){
-    data <- array(data, c(nYears, nStrata, nLocations))
+    data <- array(data, c(nYears, nStrata, nReplicates))
   } else{
-    data <- array(data, c(nYears, 12, nLocations))
+    data <- array(data, c(nYears, 12, nReplicates))
   }
   if(!is.null(covariates))
     covariates <- array(covariates, c(nYears, nCovariates, nStrata))
   if(!is.null(newData)){
-    m = length(newData)/nCovariates
+    m = length(newData)/nCovariates # number of return values to compute
     newData <- array(newData, c(m, nCovariates))
   }
   if(!is.null(rvDifference))
@@ -112,76 +112,73 @@ gevFit <- function(data, aggregation = "annual", nYears, nLocations = 1, nCovari
   extract <- function(index, object, name)
     object[[index]][[name]]
 
-  mle <- se <- array(NA, c(nParam, nStrata, nLocations))
-  covmat <- array(NA, c(nParam, nParam, nStrata, nLocations))
+  mle <- se <- array(NA, c(nParam, nStrata))
+  covmat <- array(NA, c(nParam, nParam, nStrata))
 
   for(j in 1:nStrata){
-    output <- apply(matrix(data[ , j, ], nc = nLocations), 2, gev.fit.wrap, matrix(covariates[ , , j], nc = nCovariates))
-    mle[ , j, ] <- sapply(1:nLocations, extract, output, "mle")
+    output <- gev.fit.wrap(c(data[ , j, ]), matrix(rep(c(t(covariates[ , , j])), nReplicates), ncol = nCovariates, byrow = TRUE))
+    mle[ , j] <- output[["mle"]]
     if(!maxes)  # location parameters for minima are the negative of those computed based on negative of minima
-      mle[1:(length(locationModel)+1), , ] <- -mle[1:(length(locationModel)+1), , ]
-    se[ , j, ] <- sapply(1:nLocations, extract, output, "se")
-    covmat[ , , j, ] <- sapply(1:nLocations, extract, output, "cov")
+      mle[1:(length(locationModel)+1), ] <- -mle[1:(length(locationModel)+1), ]
+    se[ , j] <- output[["se"]]
+    covmat[ , , j] <- output[["cov"]]
   }
 
   results <- list()
   numLocScaleParams = 2 + length(locationModel) + length(scaleModel)
   # rescale parameters so on scale of original data
-  mle[1:numLocScaleParams, , ] <- mle[1:numLocScaleParams, , ] / dataScaling
-  se[1:numLocScaleParams, , ] <- se[1:numLocScaleParams, , ] / dataScaling
+  mle[1:numLocScaleParams, ] <- mle[1:numLocScaleParams, ] / dataScaling
+  se[1:numLocScaleParams, ] <- se[1:numLocScaleParams, ] / dataScaling
   
   if(returnParams){
     if(aggregation == 'seasonal')
       attributes(mle)$dimnames[[2]] <- attributes(se)$dimnames[[2]] <- seasons
-    results$mle <- mle[ , , , drop = TRUE]
-    results$se.mle <- se[ , , , drop = TRUE]
+    results$mle <- mle[ , , drop = TRUE]
+    results$se.mle <- se[ , , drop = TRUE]
   }
   
   # get return values for newData observations
   # perhaps make this more efficient with an apply, but it needs to pass in both mle and cov
   if(!is.null(newData)){
-    rv <- array(0, c(m, nStrata, nLocations, 2))
+    rv <- array(0, c(m, nStrata, 2))
     for(i in 1:m)
-      for(j in 1:nStrata)
-        for(k in 1:nLocations){
-          fit = list(mle = mle[ , j, k], cov = covmat[ , , j, k], model = list(locationModel, scaleModel, shapeModel), link = link)
-          class(fit) = "gev.fit"
-          rv[i, j, k, ] <- returnValue(fit, rvInterval, newData[i, ])
-        }
+      for(j in 1:nStrata){
+        fit = list(mle = mle[ , j], cov = covmat[ , , j], model = list(locationModel, scaleModel, shapeModel), link = link) 
+        class(fit) = "gev.fit"
+        rv[i, j, ] <- returnValue(fit, rvInterval, newData[i, ])
+      }
     if(aggregation == "seasonal")
       attributes(rv)$dimnames[[2]] <- seasons
-    results$returnValue <- rv[ , , , 1]
-    results$se.returnValue <- rv[ , , , 2]
+    results$returnValue <- rv[ , , 1]
+    results$se.returnValue <- rv[ , , 2]
   }
 
   # get stationary return value
   if(is.null(newData) && !is.null(rvInterval) && is.null(covariates)){ 
-    rv <- array(0, c(nStrata, nLocations, 2))
-    for(j in 1:nStrata)
-      for(k in 1:nLocations){
-        fit = list(mle = mle[ , j, k], cov = covmat[ , , j, k], model = list(locationModel, scaleModel, shapeModel), link = link)
-        class(fit) = "gev.fit"
-        rv[j, k, ] <- returnValue(fit, rvInterval, rvCovariates = NULL)
-      }
+    rv <- array(0, c(nStrata, 2))
+    for(j in 1:nStrata) {
+      fit = list(mle = mle[ , j], cov = covmat[ , , j], model = list(locationModel, scaleModel, shapeModel), link = link)
+      class(fit) = "gev.fit"
+      rv[j, ] <- returnValue(fit, rvInterval, rvCovariates = NULL)
+    }
     if(aggregation == "seasonal")
       attributes(rv)$dimnames[[1]] <- seasons
-    results$returnValue <- rv[ , , 1]
-    results$se.returnValue <- rv[ , , 2]
+    results$returnValue <- rv[ , 1]
+    results$se.returnValue <- rv[ , 2]
   }
   
   # get return value difference
   if(!is.null(rvDifference)){
-    rvDiff <- array(0, c(nStrata, nLocations, 2))
-    for(j in 1:nStrata)
-      for(k in 1:nLocations){
-        fit = list(mle = mle[ , j, k], cov = covmat[ , , j, k], model = list(locationModel, scaleModel, shapeModel), link = link)
-        class(fit) = "gev.fit"
-        rvDiff[j, k, ] <- returnValueDiff(fit, rvInterval, rvDifference)
-      }
+    rvDiff <- array(0, c(nStrata, 2))
+    for(j in 1:nStrata) {
+      fit = list(mle = mle[ , j], cov = covmat[ , , j], model = list(locationModel, scaleModel, shapeModel), link = link)
+      class(fit) = "gev.fit"
+      rvDiff[j, ] <- returnValueDiff(fit, rvInterval, rvDifference)
+    }
     if(aggregation == "seasonal")
       attributes(rvDiff)$dimnames[[1]] <- seasons
-    results$returnValueDiff <- rvDiff[ , , 1]
-    results$se.returnValueDiff <- rvDiff[ , , 2]
+    results$returnValueDiff <- rvDiff[ , 1]
+    results$se.returnValueDiff <- rvDiff[ , 2]
   }
  
   return(results)

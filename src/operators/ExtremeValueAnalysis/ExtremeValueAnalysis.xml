@@ -3,22 +3,22 @@
     <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="AggregationType">
         ANNUAL
-        MONTHLY
         SEASONAL
+        MONTHLY
       </Enum>
       <Enum name="MonthType">
-        January
-        February
-        March
-        April
-        May
-        June
-        July
-        August
-        September
-        October
-        November
-        December
+        JANUARY
+        FEBRUARY
+        MARCH
+        APRIL
+        MAY
+        JUNE
+        JULY
+        AUGUST
+        SEPTEMBER
+        OCTOBER
+        NOVEMBER
+        DECEMBER
       </Enum>
       <Enum name="SeasonType">
         WINTER
@@ -26,20 +26,82 @@
         SUMMER
         FALL
       </Enum>
+      <Enum name="OptimizationType">
+        NELDER_MEAD
+        BFGS
+      </Enum>
+      <Enum name="ExtremeType">
+        MINIMA
+        MAXIMA
+      </Enum>
+      <Field name="dataYearBegin" label="dataYearBegin" type="int">
+        1
+      </Field>
+      <Field name="dataAnalysisYearRangeEnabled" label="dataAnalysisYearRangeEnabled" type="bool">
+        false
+      </Field>
+      <Field name="dataAnalysisYear1" label="dataAnalysisYear1" type="int" enabler="dataAnalysisYearRangeEnabled:true">
+        1
+      </Field>
+      <Field name="dataAnalysisYear2" label="dataAnalysisYear2" type="int" enabler="dataAnalysisYearRangeEnabled:true">
+        1
+      </Field>
+      <Field name="ensemble" label="ensemble" type="bool">
+        false
+      </Field>
+      <Field name="numEnsembles" label="numEnsembles" type="int" enabler="ensemble:true">
+        1
+      </Field>
+      <Field name="dataScaling" label="Data Scaling" type="double">
+        1.000000
+      </Field>
+      <Field name="extremeMethod" label="extremeMethod" type="enum" subtype="ExtremeType">
+        MAXIMA
+      </Field>
+      <Field name="optimizationMethod" label="optimization method" type="enum" subtype="OptimizationType">
+        NELDER_MEAD
+      </Field>
       <Field name="aggregation" label="Aggregation" type="enum" subtype="AggregationType">
-        MONTHLY
+        ANNUAL
+      </Field>
+      <Field name="covariateModelScale" label="covariateModelScale" type="bool">
+        false
+      </Field>
+      <Field name="covariateModelLocation" label="covariateModelLocation" type="bool">
+        false
+      </Field>
+      <Field name="covariateModelShape" label="covariateModelShape" type="bool">
+        false
+      </Field>
+      <Field name="computeReturnValues" label="computeReturnValues" type="bool">
+        false
+      </Field>
+      <Field name="returnValues" label="returnValues" type="intVector" enabler="computeReturnValues:true">
+        1
+      </Field>
+      <Field name="computeRVDifferences" label="computeRVDifferences" type="bool">
+        false
+      </Field>
+      <Field name="rvDifference1" label="rvDifference1" type="int" enabler="computeRVDifferences:true">
+        1
+      </Field>
+      <Field name="rvDifference2" label="rvDifference2" type="int" enabler="computeRVDifferences:true">
+        1
       </Field>
       <Field name="displayMonth" label="Display Month" type="enum" subtype="MonthType" enabler="aggregation:MONTHLY">
-        January
+        JANUARY
       </Field>
       <Field name="displaySeason" label="Display Season" type="enum" subtype="SeasonType" enabler="aggregation:SEASONAL">
         WINTER
       </Field>
-      <Field name="dumpData" label="Dump Data" type="bool">
+      <Field name="computeParamValues" label="computeParamValues" type="bool">
         false
       </Field>
-      <Field name="dataScaling" label="Data Scaling" type="double">
-        1.000000
+      <Field name="dumpData" label="Dump Data" type="bool">
+        true
+      </Field>
+      <Field name="dumpDebug" label="dumpDebug" type="bool">
+        false
       </Field>
     </Attribute>
   </Plugin>

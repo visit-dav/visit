@@ -36,29 +36,40 @@
 *
 *****************************************************************************/
 
-#ifndef PY_EXTREMEVALUEANALYSISATTRIBUTES_H
-#define PY_EXTREMEVALUEANALYSISATTRIBUTES_H
-#include <Python.h>
-#include <ExtremeValueAnalysisAttributes.h>
+// ************************************************************************* //
+//  File: FileWriter.h
+// ************************************************************************* //
 
-//
-// Functions exposed to the VisIt module.
-//
-#define EXTREMEVALUEANALYSISATTRIBUTES_NMETH 48
-void           PyExtremeValueAnalysisAttributes_StartUp(ExtremeValueAnalysisAttributes *subj, void *data);
-void           PyExtremeValueAnalysisAttributes_CloseDown();
-PyMethodDef *  PyExtremeValueAnalysisAttributes_GetMethodTable(int *nMethods);
-bool           PyExtremeValueAnalysisAttributes_Check(PyObject *obj);
-ExtremeValueAnalysisAttributes *  PyExtremeValueAnalysisAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyExtremeValueAnalysisAttributes_New();
-PyObject *     PyExtremeValueAnalysisAttributes_Wrap(const ExtremeValueAnalysisAttributes *attr);
-void           PyExtremeValueAnalysisAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyExtremeValueAnalysisAttributes_SetDefaults(const ExtremeValueAnalysisAttributes *atts);
-std::string    PyExtremeValueAnalysisAttributes_GetLogString();
-std::string    PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *, const char *);
-PyObject *     PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name);
-int            PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBUTES_NMETH];
+#ifndef R_POT_FILE_WRITE_H
+#define R_POT_FILE_WRITE_H
+
+#include <string>
+#include <vector>
+
+class vtkAbstractArray;
+
+class POTFilterWriteData
+{
+public:
+    struct varInfo
+    {
+        std::string name;
+        std::vector<std::string> dims;
+        std::vector<int> indices;
+    };
+    
+    static void writeNETCDFData(const std::string &fname,
+                                const std::vector<std::string> &meshDimNms,
+                                const std::vector<std::vector<double> > &meshDims,
+                                const std::vector<varInfo> &vars,
+                                double *data);
+
+    static void writeNETCDFData(const std::string &fname,
+                                const std::vector<std::string> &meshDimNms,
+                                const std::vector<std::vector<double> > &meshDims,
+                                const std::vector<std::string> &varnames,
+                                double *data);
+};
 
 #endif
 
