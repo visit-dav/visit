@@ -62,11 +62,13 @@ public:
                                 const std::vector<std::string> &meshDimNms,
                                 const std::vector<std::vector<double> > &meshDims,
                                 const std::vector<varInfo> &vars,
-                                const std::vector<int> &arrayShape,
-                                vtkAbstractArray *vtkarray);
+                                double *data);
 
-                          
-                          
+    static void writeNETCDFData(const std::string &fname,
+                                const std::vector<std::string> &meshDimNms,
+                                const std::vector<std::vector<double> > &meshDims,
+                                const std::vector<std::string> &varnames,
+                                double *data);
 };
 
 #endif

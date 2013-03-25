@@ -159,6 +159,7 @@ public:
     void SetDisplaySeason(SeasonType displaySeason_);
     void SetDisplayMonth(MonthType displayMonth_);
     void SetDumpData(bool dumpData_);
+    void SetDumpDebug(bool dumpDebug_);
 
     // Property getting methods
     int             GetDataYearBegin() const;
@@ -194,6 +195,7 @@ public:
     SeasonType      GetDisplaySeason() const;
     MonthType       GetDisplayMonth() const;
     bool            GetDumpData() const;
+    bool            GetDumpDebug() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -264,6 +266,7 @@ public:
         ID_displaySeason,
         ID_displayMonth,
         ID_dumpData,
+        ID_dumpDebug,
         ID__LAST
     };
 
@@ -297,11 +300,12 @@ private:
     int       displaySeason;
     int       displayMonth;
     bool      dumpData;
+    bool      dumpDebug;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibiibifibididDDiIbbbbi*biibiib"
+#define PEAKSOVERTHRESHOLDATTRIBUTES_TMFS "ibiibifibididDDiIbbbbi*biibiibb"
 
 #endif

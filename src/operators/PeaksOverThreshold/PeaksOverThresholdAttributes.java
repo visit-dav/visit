@@ -61,7 +61,7 @@ import java.util.Vector;
 
 public class PeaksOverThresholdAttributes extends AttributeSubject implements Plugin
 {
-    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 29;
+    private static int PeaksOverThresholdAttributes_numAdditionalAtts = 30;
 
     // Enum values
     public final static int AGGREGATIONTYPE_ANNUAL = 0;
@@ -155,6 +155,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         displaySeason = SEASONTYPE_WINTER;
         displayMonth = MONTHTYPE_JAN;
         dumpData = true;
+        dumpDebug = false;
     }
 
     public PeaksOverThresholdAttributes(int nMoreFields)
@@ -219,6 +220,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         displaySeason = SEASONTYPE_WINTER;
         displayMonth = MONTHTYPE_JAN;
         dumpData = true;
+        dumpDebug = false;
     }
 
     public PeaksOverThresholdAttributes(PeaksOverThresholdAttributes obj)
@@ -270,6 +272,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         displaySeason = obj.displaySeason;
         displayMonth = obj.displayMonth;
         dumpData = obj.dumpData;
+        dumpDebug = obj.dumpDebug;
 
         SelectAll();
     }
@@ -341,7 +344,8 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
                 (computeParamValues == obj.computeParamValues) &&
                 (displaySeason == obj.displaySeason) &&
                 (displayMonth == obj.displayMonth) &&
-                (dumpData == obj.dumpData));
+                (dumpData == obj.dumpData) &&
+                (dumpDebug == obj.dumpDebug));
     }
 
     public String GetName() { return "PeaksOverThreshold"; }
@@ -536,6 +540,12 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         Select(28);
     }
 
+    public void SetDumpDebug(boolean dumpDebug_)
+    {
+        dumpDebug = dumpDebug_;
+        Select(29);
+    }
+
     // Property getting methods
     public int      GetDataYearBegin() { return dataYearBegin; }
     public boolean  GetDataAnalysisYearRangeEnabled() { return dataAnalysisYearRangeEnabled; }
@@ -566,6 +576,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     public int      GetDisplaySeason() { return displaySeason; }
     public int      GetDisplayMonth() { return displayMonth; }
     public boolean  GetDumpData() { return dumpData; }
+    public boolean  GetDumpDebug() { return dumpDebug; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -628,6 +639,8 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             buf.WriteInt(displayMonth);
         if(WriteSelect(28, buf))
             buf.WriteBool(dumpData);
+        if(WriteSelect(29, buf))
+            buf.WriteBool(dumpDebug);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -721,6 +734,9 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
         case 28:
             SetDumpData(buf.ReadBool());
             break;
+        case 29:
+            SetDumpDebug(buf.ReadBool());
+            break;
         }
     }
 
@@ -807,6 +823,7 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
             str = str + "MONTHTYPE_DEC";
         str = str + "\n";
         str = str + boolToString("dumpData", dumpData, indent) + "\n";
+        str = str + boolToString("dumpDebug", dumpDebug, indent) + "\n";
         return str;
     }
 
@@ -841,5 +858,6 @@ public class PeaksOverThresholdAttributes extends AttributeSubject implements Pl
     private int      displaySeason;
     private int      displayMonth;
     private boolean  dumpData;
+    private boolean  dumpDebug;
 }
 

@@ -56,15 +56,14 @@ POTFilterWriteData::writeNETCDFData(const string &fname,
                                     const vector<string> &meshDimNms,
                                     const vector<vector<double> > &meshDims,
                                     const vector<varInfo> &vars,
-                                    const vector<int> &arrayShape,
-                                    vtkAbstractArray *vtkarray)
+                                    double *arr)
 
 {
-    vtkDoubleArray *arr = vtkDoubleArray::SafeDownCast(vtkarray);
 
+#if 0
     int ncID;
-    int nVals = arrayShape[0];
-    int nArrs = arrayShape[1];
+    int nVals = 0;//arrayShape[0];
+    int nArrs = 0;//arrayShape[1];
     int nVars = vars.size();
     int nDims = meshDims.size();
 
@@ -72,11 +71,13 @@ POTFilterWriteData::writeNETCDFData(const string &fname,
     
     //Define dimensions.
     map<string, int> meshIdMap;
+    map<string, int> DimSzMap;
     int *dimIds = new int[nDims];
     for (int i = 0; i < nDims; i++)
     {
         nc_def_dim(ncID, meshDimNms[i].c_str() , meshDims[i].size(), &dimIds[i]);
         meshIdMap[meshDimNms[i]] = dimIds[i];
+        DimSzMap[meshDimNms[i]] = meshDims[i].size();
     }
     //Define dim-vars.
     int *dimVarIds = new int[nDims];
@@ -116,15 +117,82 @@ POTFilterWriteData::writeNETCDFData(const string &fname,
     }
 
     //Dump out var values.
+    for (int i = 0; i < nVars; i++)
+    {
+        nVals = 1;
+        for (int j = 0; j < vars[i].dims.size(); j++)
+            nVals *= (DimSzMap[vars[i].dims[j]])->second;
+        double *tmp = new double[nVals];
+
+        for (int j = 0; j < nVals; j++)
+            tmp[j] = arr[j*nVars +i];
+        nc_put_var_double(ncID, varIds[i], tmp);
+        delete [] tmp;
+    }
+
+
+    delete [] dimIds;
+    delete [] dimVarIds;
+    delete [] varIds;
+    
+    nc_close(ncID);
+#endif
+}
+
+void
+POTFilterWriteData::writeNETCDFData(const std::string &fname,
+                                    const std::vector<std::string> &meshDimNms,
+                                    const std::vector<std::vector<double> > &meshDims,
+                                    const std::vector<std::string> &varnames,
+                                    double *data)
+{
+    int ncID;
+    int nLocs = meshDims[0].size()*meshDims[1].size();
+    int nBins = meshDims[2].size();
+    int nVars = varnames.size();
+    int nDims = meshDims.size();
+
+    //cout<<"FileWriter DUMP: nVars= "<<nVars<<" nLocs= "<<nLocs<<" nBins= "<<nBins<<endl;
+    if (nBins == 1)
+        nDims = 2;
+    
+    nc_create(fname.c_str(), NC_CLOBBER, &ncID);
+
+    int *dimIds = new int[nDims];
+    for (int i = 0; i < nDims; i++)
+        nc_def_dim(ncID, meshDimNms[i].c_str() , meshDims[i].size(), &dimIds[i]);
+    
+    //Define vars.
+    int *dimVarIds = new int[nDims];
+    for (int i = 0; i < nDims; i++)
+        nc_def_var(ncID, meshDimNms[i].c_str(), NC_DOUBLE, 1, &dimIds[i], &dimVarIds[i]);
+    
+    int *varIds = new int[nVars];
+    for (int i = 0; i < varnames.size(); i++)
+        nc_def_var(ncID, varnames[i].c_str(), NC_DOUBLE, nDims, dimIds, &varIds[i]);
+    nc_enddef(ncID);
+
+    //dump out dim values.
+    for (int i = 0; i < nDims; i++)
+    {
+        double *d = new double[meshDims[i].size()];
+        for (int j = 0; j < meshDims[i].size(); j++)
+            d[j] = meshDims[i][j];
+        nc_put_var_double(ncID, dimVarIds[i], d);
+        delete [] d;
+    }
+
+    int nVals = nLocs*nBins;
     double *tmp = new double[nVals];
     for (int i = 0; i < nVars; i++)
     {
-        for (int j = 0; j < nVals; j++)
-            tmp[j] = arr->GetTuple1(i*nVals +j);
+        int idx = 0;
+        for (int j = 0; j < nLocs; j++)
+            for (int k = 0; k < nBins; k++)
+                tmp[idx++] = data[j*(nVars*nBins) + i*nBins +k];
         nc_put_var_double(ncID, varIds[i], tmp);
     }
-    delete [] tmp;
-
+    nc_close(ncID);
 
     delete [] dimIds;
     delete [] dimVarIds;
@@ -140,8 +208,7 @@ POTFilterWriteData::writeNETCDFData(const string &fname,
                                     const vector<string> &meshDimNms,
                                     const vector<vector<double> > &meshDims,
                                     const vector<varInfo> &vars,
-                                    const vector<int> &arrayShape,
-                                    vtkAbstractArray *vtkarray)
+                                    double *data)
 {
 }
 

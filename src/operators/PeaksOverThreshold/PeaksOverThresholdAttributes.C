@@ -301,6 +301,7 @@ void PeaksOverThresholdAttributes::Init()
     displaySeason = WINTER;
     displayMonth = JAN;
     dumpData = true;
+    dumpDebug = false;
 
     PeaksOverThresholdAttributes::SelectAll();
 }
@@ -358,6 +359,7 @@ void PeaksOverThresholdAttributes::Copy(const PeaksOverThresholdAttributes &obj)
     displaySeason = obj.displaySeason;
     displayMonth = obj.displayMonth;
     dumpData = obj.dumpData;
+    dumpDebug = obj.dumpDebug;
 
     PeaksOverThresholdAttributes::SelectAll();
 }
@@ -558,7 +560,8 @@ PeaksOverThresholdAttributes::operator == (const PeaksOverThresholdAttributes &o
             (computeParamValues == obj.computeParamValues) &&
             (displaySeason == obj.displaySeason) &&
             (displayMonth == obj.displayMonth) &&
-            (dumpData == obj.dumpData));
+            (dumpData == obj.dumpData) &&
+            (dumpDebug == obj.dumpDebug));
 }
 
 // ****************************************************************************
@@ -731,6 +734,7 @@ PeaksOverThresholdAttributes::SelectAll()
     Select(ID_displaySeason,                (void *)&displaySeason);
     Select(ID_displayMonth,                 (void *)&displayMonth);
     Select(ID_dumpData,                     (void *)&dumpData);
+    Select(ID_dumpDebug,                    (void *)&dumpDebug);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -937,6 +941,12 @@ PeaksOverThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("dumpData", dumpData));
     }
 
+    if(completeSave || !FieldsEqual(ID_dumpDebug, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("dumpDebug", dumpDebug));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1101,6 +1111,8 @@ PeaksOverThresholdAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("dumpData")) != 0)
         SetDumpData(node->AsBool());
+    if((node = searchNode->GetNode("dumpDebug")) != 0)
+        SetDumpDebug(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1315,6 +1327,13 @@ PeaksOverThresholdAttributes::SetDumpData(bool dumpData_)
     Select(ID_dumpData, (void *)&dumpData);
 }
 
+void
+PeaksOverThresholdAttributes::SetDumpDebug(bool dumpDebug_)
+{
+    dumpDebug = dumpDebug_;
+    Select(ID_dumpDebug, (void *)&dumpDebug);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1517,6 +1536,12 @@ PeaksOverThresholdAttributes::GetDumpData() const
     return dumpData;
 }
 
+bool
+PeaksOverThresholdAttributes::GetDumpDebug() const
+{
+    return dumpDebug;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1598,6 +1623,7 @@ PeaksOverThresholdAttributes::GetFieldName(int index) const
     case ID_displaySeason:                return "displaySeason";
     case ID_displayMonth:                 return "displayMonth";
     case ID_dumpData:                     return "dumpData";
+    case ID_dumpDebug:                    return "dumpDebug";
     default:  return "invalid index";
     }
 }
@@ -1651,6 +1677,7 @@ PeaksOverThresholdAttributes::GetFieldType(int index) const
     case ID_displaySeason:                return FieldType_enum;
     case ID_displayMonth:                 return FieldType_enum;
     case ID_dumpData:                     return FieldType_bool;
+    case ID_dumpDebug:                    return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1704,6 +1731,7 @@ PeaksOverThresholdAttributes::GetFieldTypeName(int index) const
     case ID_displaySeason:                return "enum";
     case ID_displayMonth:                 return "enum";
     case ID_dumpData:                     return "bool";
+    case ID_dumpDebug:                    return "bool";
     default:  return "invalid index";
     }
 }
@@ -1888,6 +1916,11 @@ PeaksOverThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs)
     case ID_dumpData:
         {  // new scope
         retval = (dumpData == obj.dumpData);
+        }
+        break;
+    case ID_dumpDebug:
+        {  // new scope
+        retval = (dumpDebug == obj.dumpDebug);
         }
         break;
     default: retval = false;
