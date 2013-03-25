@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class CartographicProjectionAttributes extends AttributeSubject implements Plugin
 {
-    private static int CartographicProjectionAttributes_numAdditionalAtts = 1;
+    private static int CartographicProjectionAttributes_numAdditionalAtts = 2;
 
     // Enum values
     public final static int PROJECTIONID_AITOFF = 0;
@@ -80,6 +80,7 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
         super(CartographicProjectionAttributes_numAdditionalAtts);
 
         projectionID = PROJECTIONID_AITOFF;
+        centralMeridian = 0;
     }
 
     public CartographicProjectionAttributes(int nMoreFields)
@@ -87,6 +88,7 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
         super(CartographicProjectionAttributes_numAdditionalAtts + nMoreFields);
 
         projectionID = PROJECTIONID_AITOFF;
+        centralMeridian = 0;
     }
 
     public CartographicProjectionAttributes(CartographicProjectionAttributes obj)
@@ -94,6 +96,7 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
         super(CartographicProjectionAttributes_numAdditionalAtts);
 
         projectionID = obj.projectionID;
+        centralMeridian = obj.centralMeridian;
 
         SelectAll();
     }
@@ -111,7 +114,8 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
     public boolean equals(CartographicProjectionAttributes obj)
     {
         // Create the return value
-        return ((projectionID == obj.projectionID));
+        return ((projectionID == obj.projectionID) &&
+                (centralMeridian == obj.centralMeridian));
     }
 
     public String GetName() { return "CartographicProjection"; }
@@ -124,19 +128,36 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
         Select(0);
     }
 
+    public void SetCentralMeridian(double centralMeridian_)
+    {
+        centralMeridian = centralMeridian_;
+        Select(1);
+    }
+
     // Property getting methods
-    public int GetProjectionID() { return projectionID; }
+    public int    GetProjectionID() { return projectionID; }
+    public double GetCentralMeridian() { return centralMeridian; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
             buf.WriteInt(projectionID);
+        if(WriteSelect(1, buf))
+            buf.WriteDouble(centralMeridian);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
     {
-        SetProjectionID(buf.ReadInt());
+        switch(index)
+        {
+        case 0:
+            SetProjectionID(buf.ReadInt());
+            break;
+        case 1:
+            SetCentralMeridian(buf.ReadDouble());
+            break;
+        }
     }
 
     public String toString(String indent)
@@ -166,11 +187,13 @@ public class CartographicProjectionAttributes extends AttributeSubject implement
         if(projectionID == PROJECTIONID_WINK2)
             str = str + "PROJECTIONID_WINK2";
         str = str + "\n";
+        str = str + doubleToString("centralMeridian", centralMeridian, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int projectionID;
+    private int    projectionID;
+    private double centralMeridian;
 }
 
