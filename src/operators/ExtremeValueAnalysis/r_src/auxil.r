@@ -13,7 +13,7 @@ seasonalize <- function(arr, maxes = TRUE){
 
   tmp <- array(NA, c(nYr, nSeas, dim(arr)[3]))
   for(j in 1:nSeas){
-    tmp[ , j, ] <- apply(arr[, seasonIndices[[j]], ], c(1, 3), FUN, na.rm = FALSE)
+    tmp[ , j, ] <- apply(arr[, seasonIndices[[j]], , drop = FALSE], c(1, 3), FUN, na.rm = FALSE)
   }
   return(tmp)
 }

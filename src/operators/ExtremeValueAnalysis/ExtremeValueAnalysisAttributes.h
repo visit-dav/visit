@@ -63,23 +63,23 @@ public:
     enum AggregationType
     {
         ANNUAL,
-        MONTHLY,
-        SEASONAL
+        SEASONAL,
+        MONTHLY
     };
     enum MonthType
     {
-        January,
-        February,
-        March,
-        April,
-        May,
-        June,
-        July,
-        August,
-        September,
-        October,
-        November,
-        December
+        JANUARY,
+        FEBRUARY,
+        MARCH,
+        APRIL,
+        MAY,
+        JUNE,
+        JULY,
+        AUGUST,
+        SEPTEMBER,
+        OCTOBER,
+        NOVEMBER,
+        DECEMBER
     };
     enum SeasonType
     {
@@ -87,6 +87,16 @@ public:
         SPRING,
         SUMMER,
         FALL
+    };
+    enum OptimizationType
+    {
+        NELDER_MEAD,
+        BFGS
+    };
+    enum ExtremeType
+    {
+        MINIMA,
+        MAXIMA
     };
 
     // These constructors are for objects of this class
@@ -114,20 +124,58 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectReturnValues();
 
     // Property setting methods
+    void SetDataYearBegin(int dataYearBegin_);
+    void SetDataAnalysisYearRangeEnabled(bool dataAnalysisYearRangeEnabled_);
+    void SetDataAnalysisYear1(int dataAnalysisYear1_);
+    void SetDataAnalysisYear2(int dataAnalysisYear2_);
+    void SetEnsemble(bool ensemble_);
+    void SetNumEnsembles(int numEnsembles_);
+    void SetDataScaling(double dataScaling_);
+    void SetExtremeMethod(ExtremeType extremeMethod_);
+    void SetOptimizationMethod(OptimizationType optimizationMethod_);
     void SetAggregation(AggregationType aggregation_);
+    void SetCovariateModelScale(bool covariateModelScale_);
+    void SetCovariateModelLocation(bool covariateModelLocation_);
+    void SetCovariateModelShape(bool covariateModelShape_);
+    void SetComputeReturnValues(bool computeReturnValues_);
+    void SetReturnValues(const intVector &returnValues_);
+    void SetComputeRVDifferences(bool computeRVDifferences_);
+    void SetRvDifference1(int rvDifference1_);
+    void SetRvDifference2(int rvDifference2_);
     void SetDisplayMonth(MonthType displayMonth_);
     void SetDisplaySeason(SeasonType displaySeason_);
+    void SetComputeParamValues(bool computeParamValues_);
     void SetDumpData(bool dumpData_);
-    void SetDataScaling(double dataScaling_);
+    void SetDumpDebug(bool dumpDebug_);
 
     // Property getting methods
+    int             GetDataYearBegin() const;
+    bool            GetDataAnalysisYearRangeEnabled() const;
+    int             GetDataAnalysisYear1() const;
+    int             GetDataAnalysisYear2() const;
+    bool            GetEnsemble() const;
+    int             GetNumEnsembles() const;
+    double          GetDataScaling() const;
+    ExtremeType     GetExtremeMethod() const;
+    OptimizationType GetOptimizationMethod() const;
     AggregationType GetAggregation() const;
-    MonthType GetDisplayMonth() const;
-    SeasonType GetDisplaySeason() const;
-    bool   GetDumpData() const;
-    double GetDataScaling() const;
+    bool            GetCovariateModelScale() const;
+    bool            GetCovariateModelLocation() const;
+    bool            GetCovariateModelShape() const;
+    bool            GetComputeReturnValues() const;
+    const intVector &GetReturnValues() const;
+          intVector &GetReturnValues();
+    bool            GetComputeRVDifferences() const;
+    int             GetRvDifference1() const;
+    int             GetRvDifference2() const;
+    MonthType       GetDisplayMonth() const;
+    SeasonType      GetDisplaySeason() const;
+    bool            GetComputeParamValues() const;
+    bool            GetDumpData() const;
+    bool            GetDumpDebug() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -149,6 +197,16 @@ public:
 protected:
     static std::string SeasonType_ToString(int);
 public:
+    static std::string OptimizationType_ToString(OptimizationType);
+    static bool OptimizationType_FromString(const std::string &, OptimizationType &);
+protected:
+    static std::string OptimizationType_ToString(int);
+public:
+    static std::string ExtremeType_ToString(ExtremeType);
+    static bool ExtremeType_FromString(const std::string &, ExtremeType &);
+protected:
+    static std::string ExtremeType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -159,25 +217,61 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_aggregation = 0,
+        ID_dataYearBegin = 0,
+        ID_dataAnalysisYearRangeEnabled,
+        ID_dataAnalysisYear1,
+        ID_dataAnalysisYear2,
+        ID_ensemble,
+        ID_numEnsembles,
+        ID_dataScaling,
+        ID_extremeMethod,
+        ID_optimizationMethod,
+        ID_aggregation,
+        ID_covariateModelScale,
+        ID_covariateModelLocation,
+        ID_covariateModelShape,
+        ID_computeReturnValues,
+        ID_returnValues,
+        ID_computeRVDifferences,
+        ID_rvDifference1,
+        ID_rvDifference2,
         ID_displayMonth,
         ID_displaySeason,
+        ID_computeParamValues,
         ID_dumpData,
-        ID_dataScaling,
+        ID_dumpDebug,
         ID__LAST
     };
 
 private:
-    int    aggregation;
-    int    displayMonth;
-    int    displaySeason;
-    bool   dumpData;
-    double dataScaling;
+    int       dataYearBegin;
+    bool      dataAnalysisYearRangeEnabled;
+    int       dataAnalysisYear1;
+    int       dataAnalysisYear2;
+    bool      ensemble;
+    int       numEnsembles;
+    double    dataScaling;
+    int       extremeMethod;
+    int       optimizationMethod;
+    int       aggregation;
+    bool      covariateModelScale;
+    bool      covariateModelLocation;
+    bool      covariateModelShape;
+    bool      computeReturnValues;
+    intVector returnValues;
+    bool      computeRVDifferences;
+    int       rvDifference1;
+    int       rvDifference2;
+    int       displayMonth;
+    int       displaySeason;
+    bool      computeParamValues;
+    bool      dumpData;
+    bool      dumpDebug;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "iiibd"
+#define EXTREMEVALUEANALYSISATTRIBUTES_TMFS "ibiibidiiibbbbi*biiiibbb"
 
 #endif

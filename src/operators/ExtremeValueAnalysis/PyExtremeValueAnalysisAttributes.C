@@ -76,76 +76,171 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
     std::string str; 
     char tmpStr[1000]; 
 
-    const char *aggregation_names = "ANNUAL, MONTHLY, SEASONAL";
-    switch (atts->GetAggregation())
+    SNPRINTF(tmpStr, 1000, "%sdataYearBegin = %d\n", prefix, atts->GetDataYearBegin());
+    str += tmpStr;
+    if(atts->GetDataAnalysisYearRangeEnabled())
+        SNPRINTF(tmpStr, 1000, "%sdataAnalysisYearRangeEnabled = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdataAnalysisYearRangeEnabled = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdataAnalysisYear1 = %d\n", prefix, atts->GetDataAnalysisYear1());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdataAnalysisYear2 = %d\n", prefix, atts->GetDataAnalysisYear2());
+    str += tmpStr;
+    if(atts->GetEnsemble())
+        SNPRINTF(tmpStr, 1000, "%sensemble = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sensemble = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%snumEnsembles = %d\n", prefix, atts->GetNumEnsembles());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
+    str += tmpStr;
+    const char *extremeMethod_names = "MINIMA, MAXIMA";
+    switch (atts->GetExtremeMethod())
     {
-      case ExtremeValueAnalysisAttributes::ANNUAL:
-          SNPRINTF(tmpStr, 1000, "%saggregation = %sANNUAL  # %s\n", prefix, prefix, aggregation_names);
+      case ExtremeValueAnalysisAttributes::MINIMA:
+          SNPRINTF(tmpStr, 1000, "%sextremeMethod = %sMINIMA  # %s\n", prefix, prefix, extremeMethod_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::MONTHLY:
-          SNPRINTF(tmpStr, 1000, "%saggregation = %sMONTHLY  # %s\n", prefix, prefix, aggregation_names);
-          str += tmpStr;
-          break;
-      case ExtremeValueAnalysisAttributes::SEASONAL:
-          SNPRINTF(tmpStr, 1000, "%saggregation = %sSEASONAL  # %s\n", prefix, prefix, aggregation_names);
+      case ExtremeValueAnalysisAttributes::MAXIMA:
+          SNPRINTF(tmpStr, 1000, "%sextremeMethod = %sMAXIMA  # %s\n", prefix, prefix, extremeMethod_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    const char *displayMonth_names = "January, February, March, April, May, "
-        "June, July, August, September, "
-        "October, November, December";
+    const char *optimizationMethod_names = "NELDER_MEAD, BFGS";
+    switch (atts->GetOptimizationMethod())
+    {
+      case ExtremeValueAnalysisAttributes::NELDER_MEAD:
+          SNPRINTF(tmpStr, 1000, "%soptimizationMethod = %sNELDER_MEAD  # %s\n", prefix, prefix, optimizationMethod_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::BFGS:
+          SNPRINTF(tmpStr, 1000, "%soptimizationMethod = %sBFGS  # %s\n", prefix, prefix, optimizationMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *aggregation_names = "ANNUAL, SEASONAL, MONTHLY";
+    switch (atts->GetAggregation())
+    {
+      case ExtremeValueAnalysisAttributes::ANNUAL:
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sANNUAL  # %s\n", prefix, prefix, aggregation_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::SEASONAL:
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sSEASONAL  # %s\n", prefix, prefix, aggregation_names);
+          str += tmpStr;
+          break;
+      case ExtremeValueAnalysisAttributes::MONTHLY:
+          SNPRINTF(tmpStr, 1000, "%saggregation = %sMONTHLY  # %s\n", prefix, prefix, aggregation_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    if(atts->GetCovariateModelScale())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelScale = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelScale = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetCovariateModelLocation())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelLocation = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelLocation = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetCovariateModelShape())
+        SNPRINTF(tmpStr, 1000, "%scovariateModelShape = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scovariateModelShape = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetComputeReturnValues())
+        SNPRINTF(tmpStr, 1000, "%scomputeReturnValues = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scomputeReturnValues = 0\n", prefix);
+    str += tmpStr;
+    {   const intVector &returnValues = atts->GetReturnValues();
+        SNPRINTF(tmpStr, 1000, "%sreturnValues = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < returnValues.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", returnValues[i]);
+            str += tmpStr;
+            if(i < returnValues.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetComputeRVDifferences())
+        SNPRINTF(tmpStr, 1000, "%scomputeRVDifferences = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scomputeRVDifferences = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srvDifference1 = %d\n", prefix, atts->GetRvDifference1());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%srvDifference2 = %d\n", prefix, atts->GetRvDifference2());
+    str += tmpStr;
+    const char *displayMonth_names = "JANUARY, FEBRUARY, MARCH, APRIL, MAY, "
+        "JUNE, JULY, AUGUST, SEPTEMBER, "
+        "OCTOBER, NOVEMBER, DECEMBER";
     switch (atts->GetDisplayMonth())
     {
-      case ExtremeValueAnalysisAttributes::January:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJanuary  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::JANUARY:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJANUARY  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::February:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sFebruary  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::FEBRUARY:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sFEBRUARY  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::March:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMarch  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::MARCH:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMARCH  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::April:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sApril  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::APRIL:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAPRIL  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::May:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMay  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::MAY:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sMAY  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::June:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJune  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::JUNE:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJUNE  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::July:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJuly  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::JULY:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sJULY  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::August:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAugust  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::AUGUST:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sAUGUST  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::September:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sSeptember  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::SEPTEMBER:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sSEPTEMBER  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::October:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sOctober  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::OCTOBER:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sOCTOBER  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::November:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sNovember  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::NOVEMBER:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sNOVEMBER  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
-      case ExtremeValueAnalysisAttributes::December:
-          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sDecember  # %s\n", prefix, prefix, displayMonth_names);
+      case ExtremeValueAnalysisAttributes::DECEMBER:
+          SNPRINTF(tmpStr, 1000, "%sdisplayMonth = %sDECEMBER  # %s\n", prefix, prefix, displayMonth_names);
           str += tmpStr;
           break;
       default:
@@ -175,12 +270,20 @@ PyExtremeValueAnalysisAttributes_ToString(const ExtremeValueAnalysisAttributes *
           break;
     }
 
+    if(atts->GetComputeParamValues())
+        SNPRINTF(tmpStr, 1000, "%scomputeParamValues = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%scomputeParamValues = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetDumpData())
         SNPRINTF(tmpStr, 1000, "%sdumpData = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sdumpData = 0\n", prefix);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sdataScaling = %g\n", prefix, atts->GetDataScaling());
+    if(atts->GetDumpDebug())
+        SNPRINTF(tmpStr, 1000, "%sdumpDebug = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sdumpDebug = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -192,6 +295,240 @@ ExtremeValueAnalysisAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataYearBegin(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataYearBegin in the object.
+    obj->data->SetDataYearBegin((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataYearBegin(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataYearBegin()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataAnalysisYearRangeEnabled(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataAnalysisYearRangeEnabled in the object.
+    obj->data->SetDataAnalysisYearRangeEnabled(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataAnalysisYearRangeEnabled(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDataAnalysisYearRangeEnabled()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataAnalysisYear1(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataAnalysisYear1 in the object.
+    obj->data->SetDataAnalysisYear1((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataAnalysisYear1(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataAnalysisYear1()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataAnalysisYear2(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the dataAnalysisYear2 in the object.
+    obj->data->SetDataAnalysisYear2((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataAnalysisYear2(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetDataAnalysisYear2()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetEnsemble(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the ensemble in the object.
+    obj->data->SetEnsemble(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetEnsemble(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetEnsemble()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetNumEnsembles(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the numEnsembles in the object.
+    obj->data->SetNumEnsembles((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetNumEnsembles(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetNumEnsembles()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetDataScaling(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the dataScaling in the object.
+    obj->data->SetDataScaling(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetDataScaling(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetDataScaling());
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetExtremeMethod(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the extremeMethod in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetExtremeMethod(ExtremeValueAnalysisAttributes::ExtremeType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid extremeMethod value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "MINIMA, MAXIMA.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetExtremeMethod(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetExtremeMethod()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetOptimizationMethod(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the optimizationMethod in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetOptimizationMethod(ExtremeValueAnalysisAttributes::OptimizationType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid optimizationMethod value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "NELDER_MEAD, BFGS.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetOptimizationMethod(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptimizationMethod()));
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -211,7 +548,7 @@ ExtremeValueAnalysisAttributes_SetAggregation(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid aggregation value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "ANNUAL, MONTHLY, SEASONAL.");
+                        "ANNUAL, SEASONAL, MONTHLY.");
         return NULL;
     }
 
@@ -224,6 +561,237 @@ ExtremeValueAnalysisAttributes_GetAggregation(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAggregation()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetCovariateModelScale(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelScale in the object.
+    obj->data->SetCovariateModelScale(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetCovariateModelScale(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelScale()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetCovariateModelLocation(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelLocation in the object.
+    obj->data->SetCovariateModelLocation(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetCovariateModelLocation(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelLocation()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetCovariateModelShape(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the covariateModelShape in the object.
+    obj->data->SetCovariateModelShape(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetCovariateModelShape(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCovariateModelShape()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetComputeReturnValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the computeReturnValues in the object.
+    obj->data->SetComputeReturnValues(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetComputeReturnValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeReturnValues()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetReturnValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    intVector  &vec = obj->data->GetReturnValues();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the returnValues in the object as modified.
+    obj->data->SelectReturnValues();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetReturnValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the returnValues.
+    const intVector &returnValues = obj->data->GetReturnValues();
+    PyObject *retval = PyTuple_New(returnValues.size());
+    for(size_t i = 0; i < returnValues.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(returnValues[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetComputeRVDifferences(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the computeRVDifferences in the object.
+    obj->data->SetComputeRVDifferences(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetComputeRVDifferences(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeRVDifferences()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetRvDifference1(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the rvDifference1 in the object.
+    obj->data->SetRvDifference1((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetRvDifference1(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRvDifference1()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetRvDifference2(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the rvDifference2 in the object.
+    obj->data->SetRvDifference2((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetRvDifference2(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRvDifference2()));
     return retval;
 }
 
@@ -244,9 +812,9 @@ ExtremeValueAnalysisAttributes_SetDisplayMonth(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid displayMonth value was given. "
                         "Valid values are in the range of [0,11]. "
                         "You can also use the following names: "
-                        "January, February, March, April, May, "
-                        "June, July, August, September, "
-                        "October, November, December.");
+                        "JANUARY, FEBRUARY, MARCH, APRIL, MAY, "
+                        "JUNE, JULY, AUGUST, SEPTEMBER, "
+                        "OCTOBER, NOVEMBER, DECEMBER.");
         return NULL;
     }
 
@@ -296,6 +864,30 @@ ExtremeValueAnalysisAttributes_GetDisplaySeason(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ExtremeValueAnalysisAttributes_SetComputeParamValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the computeParamValues in the object.
+    obj->data->SetComputeParamValues(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtremeValueAnalysisAttributes_GetComputeParamValues(PyObject *self, PyObject *args)
+{
+    ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetComputeParamValues()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 ExtremeValueAnalysisAttributes_SetDumpData(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
@@ -320,26 +912,26 @@ ExtremeValueAnalysisAttributes_GetDumpData(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_SetDataScaling(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_SetDumpDebug(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the dataScaling in the object.
-    obj->data->SetDataScaling(dval);
+    // Set the dumpDebug in the object.
+    obj->data->SetDumpDebug(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExtremeValueAnalysisAttributes_GetDataScaling(PyObject *self, PyObject *args)
+ExtremeValueAnalysisAttributes_GetDumpDebug(PyObject *self, PyObject *args)
 {
     ExtremeValueAnalysisAttributesObject *obj = (ExtremeValueAnalysisAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetDataScaling());
+    PyObject *retval = PyInt_FromLong(obj->data->GetDumpDebug()?1L:0L);
     return retval;
 }
 
@@ -347,16 +939,52 @@ ExtremeValueAnalysisAttributes_GetDataScaling(PyObject *self, PyObject *args)
 
 PyMethodDef PyExtremeValueAnalysisAttributes_methods[EXTREMEVALUEANALYSISATTRIBUTES_NMETH] = {
     {"Notify", ExtremeValueAnalysisAttributes_Notify, METH_VARARGS},
+    {"SetDataYearBegin", ExtremeValueAnalysisAttributes_SetDataYearBegin, METH_VARARGS},
+    {"GetDataYearBegin", ExtremeValueAnalysisAttributes_GetDataYearBegin, METH_VARARGS},
+    {"SetDataAnalysisYearRangeEnabled", ExtremeValueAnalysisAttributes_SetDataAnalysisYearRangeEnabled, METH_VARARGS},
+    {"GetDataAnalysisYearRangeEnabled", ExtremeValueAnalysisAttributes_GetDataAnalysisYearRangeEnabled, METH_VARARGS},
+    {"SetDataAnalysisYear1", ExtremeValueAnalysisAttributes_SetDataAnalysisYear1, METH_VARARGS},
+    {"GetDataAnalysisYear1", ExtremeValueAnalysisAttributes_GetDataAnalysisYear1, METH_VARARGS},
+    {"SetDataAnalysisYear2", ExtremeValueAnalysisAttributes_SetDataAnalysisYear2, METH_VARARGS},
+    {"GetDataAnalysisYear2", ExtremeValueAnalysisAttributes_GetDataAnalysisYear2, METH_VARARGS},
+    {"SetEnsemble", ExtremeValueAnalysisAttributes_SetEnsemble, METH_VARARGS},
+    {"GetEnsemble", ExtremeValueAnalysisAttributes_GetEnsemble, METH_VARARGS},
+    {"SetNumEnsembles", ExtremeValueAnalysisAttributes_SetNumEnsembles, METH_VARARGS},
+    {"GetNumEnsembles", ExtremeValueAnalysisAttributes_GetNumEnsembles, METH_VARARGS},
+    {"SetDataScaling", ExtremeValueAnalysisAttributes_SetDataScaling, METH_VARARGS},
+    {"GetDataScaling", ExtremeValueAnalysisAttributes_GetDataScaling, METH_VARARGS},
+    {"SetExtremeMethod", ExtremeValueAnalysisAttributes_SetExtremeMethod, METH_VARARGS},
+    {"GetExtremeMethod", ExtremeValueAnalysisAttributes_GetExtremeMethod, METH_VARARGS},
+    {"SetOptimizationMethod", ExtremeValueAnalysisAttributes_SetOptimizationMethod, METH_VARARGS},
+    {"GetOptimizationMethod", ExtremeValueAnalysisAttributes_GetOptimizationMethod, METH_VARARGS},
     {"SetAggregation", ExtremeValueAnalysisAttributes_SetAggregation, METH_VARARGS},
     {"GetAggregation", ExtremeValueAnalysisAttributes_GetAggregation, METH_VARARGS},
+    {"SetCovariateModelScale", ExtremeValueAnalysisAttributes_SetCovariateModelScale, METH_VARARGS},
+    {"GetCovariateModelScale", ExtremeValueAnalysisAttributes_GetCovariateModelScale, METH_VARARGS},
+    {"SetCovariateModelLocation", ExtremeValueAnalysisAttributes_SetCovariateModelLocation, METH_VARARGS},
+    {"GetCovariateModelLocation", ExtremeValueAnalysisAttributes_GetCovariateModelLocation, METH_VARARGS},
+    {"SetCovariateModelShape", ExtremeValueAnalysisAttributes_SetCovariateModelShape, METH_VARARGS},
+    {"GetCovariateModelShape", ExtremeValueAnalysisAttributes_GetCovariateModelShape, METH_VARARGS},
+    {"SetComputeReturnValues", ExtremeValueAnalysisAttributes_SetComputeReturnValues, METH_VARARGS},
+    {"GetComputeReturnValues", ExtremeValueAnalysisAttributes_GetComputeReturnValues, METH_VARARGS},
+    {"SetReturnValues", ExtremeValueAnalysisAttributes_SetReturnValues, METH_VARARGS},
+    {"GetReturnValues", ExtremeValueAnalysisAttributes_GetReturnValues, METH_VARARGS},
+    {"SetComputeRVDifferences", ExtremeValueAnalysisAttributes_SetComputeRVDifferences, METH_VARARGS},
+    {"GetComputeRVDifferences", ExtremeValueAnalysisAttributes_GetComputeRVDifferences, METH_VARARGS},
+    {"SetRvDifference1", ExtremeValueAnalysisAttributes_SetRvDifference1, METH_VARARGS},
+    {"GetRvDifference1", ExtremeValueAnalysisAttributes_GetRvDifference1, METH_VARARGS},
+    {"SetRvDifference2", ExtremeValueAnalysisAttributes_SetRvDifference2, METH_VARARGS},
+    {"GetRvDifference2", ExtremeValueAnalysisAttributes_GetRvDifference2, METH_VARARGS},
     {"SetDisplayMonth", ExtremeValueAnalysisAttributes_SetDisplayMonth, METH_VARARGS},
     {"GetDisplayMonth", ExtremeValueAnalysisAttributes_GetDisplayMonth, METH_VARARGS},
     {"SetDisplaySeason", ExtremeValueAnalysisAttributes_SetDisplaySeason, METH_VARARGS},
     {"GetDisplaySeason", ExtremeValueAnalysisAttributes_GetDisplaySeason, METH_VARARGS},
+    {"SetComputeParamValues", ExtremeValueAnalysisAttributes_SetComputeParamValues, METH_VARARGS},
+    {"GetComputeParamValues", ExtremeValueAnalysisAttributes_GetComputeParamValues, METH_VARARGS},
     {"SetDumpData", ExtremeValueAnalysisAttributes_SetDumpData, METH_VARARGS},
     {"GetDumpData", ExtremeValueAnalysisAttributes_GetDumpData, METH_VARARGS},
-    {"SetDataScaling", ExtremeValueAnalysisAttributes_SetDataScaling, METH_VARARGS},
-    {"GetDataScaling", ExtremeValueAnalysisAttributes_GetDataScaling, METH_VARARGS},
+    {"SetDumpDebug", ExtremeValueAnalysisAttributes_SetDumpDebug, METH_VARARGS},
+    {"GetDumpDebug", ExtremeValueAnalysisAttributes_GetDumpDebug, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -385,41 +1013,85 @@ ExtremeValueAnalysisAttributes_compare(PyObject *v, PyObject *w)
 PyObject *
 PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "dataYearBegin") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataYearBegin(self, NULL);
+    if(strcmp(name, "dataAnalysisYearRangeEnabled") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataAnalysisYearRangeEnabled(self, NULL);
+    if(strcmp(name, "dataAnalysisYear1") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataAnalysisYear1(self, NULL);
+    if(strcmp(name, "dataAnalysisYear2") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataAnalysisYear2(self, NULL);
+    if(strcmp(name, "ensemble") == 0)
+        return ExtremeValueAnalysisAttributes_GetEnsemble(self, NULL);
+    if(strcmp(name, "numEnsembles") == 0)
+        return ExtremeValueAnalysisAttributes_GetNumEnsembles(self, NULL);
+    if(strcmp(name, "dataScaling") == 0)
+        return ExtremeValueAnalysisAttributes_GetDataScaling(self, NULL);
+    if(strcmp(name, "extremeMethod") == 0)
+        return ExtremeValueAnalysisAttributes_GetExtremeMethod(self, NULL);
+    if(strcmp(name, "MINIMA") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MINIMA));
+    if(strcmp(name, "MAXIMA") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MAXIMA));
+
+    if(strcmp(name, "optimizationMethod") == 0)
+        return ExtremeValueAnalysisAttributes_GetOptimizationMethod(self, NULL);
+    if(strcmp(name, "NELDER_MEAD") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::NELDER_MEAD));
+    if(strcmp(name, "BFGS") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::BFGS));
+
     if(strcmp(name, "aggregation") == 0)
         return ExtremeValueAnalysisAttributes_GetAggregation(self, NULL);
     if(strcmp(name, "ANNUAL") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::ANNUAL));
-    if(strcmp(name, "MONTHLY") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MONTHLY));
     if(strcmp(name, "SEASONAL") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SEASONAL));
+    if(strcmp(name, "MONTHLY") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MONTHLY));
 
+    if(strcmp(name, "covariateModelScale") == 0)
+        return ExtremeValueAnalysisAttributes_GetCovariateModelScale(self, NULL);
+    if(strcmp(name, "covariateModelLocation") == 0)
+        return ExtremeValueAnalysisAttributes_GetCovariateModelLocation(self, NULL);
+    if(strcmp(name, "covariateModelShape") == 0)
+        return ExtremeValueAnalysisAttributes_GetCovariateModelShape(self, NULL);
+    if(strcmp(name, "computeReturnValues") == 0)
+        return ExtremeValueAnalysisAttributes_GetComputeReturnValues(self, NULL);
+    if(strcmp(name, "returnValues") == 0)
+        return ExtremeValueAnalysisAttributes_GetReturnValues(self, NULL);
+    if(strcmp(name, "computeRVDifferences") == 0)
+        return ExtremeValueAnalysisAttributes_GetComputeRVDifferences(self, NULL);
+    if(strcmp(name, "rvDifference1") == 0)
+        return ExtremeValueAnalysisAttributes_GetRvDifference1(self, NULL);
+    if(strcmp(name, "rvDifference2") == 0)
+        return ExtremeValueAnalysisAttributes_GetRvDifference2(self, NULL);
     if(strcmp(name, "displayMonth") == 0)
         return ExtremeValueAnalysisAttributes_GetDisplayMonth(self, NULL);
-    if(strcmp(name, "January") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::January));
-    if(strcmp(name, "February") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::February));
-    if(strcmp(name, "March") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::March));
-    if(strcmp(name, "April") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::April));
-    if(strcmp(name, "May") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::May));
-    if(strcmp(name, "June") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::June));
-    if(strcmp(name, "July") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::July));
-    if(strcmp(name, "August") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::August));
-    if(strcmp(name, "September") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::September));
-    if(strcmp(name, "October") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::October));
-    if(strcmp(name, "November") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::November));
-    if(strcmp(name, "December") == 0)
-        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::December));
+    if(strcmp(name, "JANUARY") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::JANUARY));
+    if(strcmp(name, "FEBRUARY") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::FEBRUARY));
+    if(strcmp(name, "MARCH") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MARCH));
+    if(strcmp(name, "APRIL") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::APRIL));
+    if(strcmp(name, "MAY") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::MAY));
+    if(strcmp(name, "JUNE") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::JUNE));
+    if(strcmp(name, "JULY") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::JULY));
+    if(strcmp(name, "AUGUST") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::AUGUST));
+    if(strcmp(name, "SEPTEMBER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::SEPTEMBER));
+    if(strcmp(name, "OCTOBER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::OCTOBER));
+    if(strcmp(name, "NOVEMBER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::NOVEMBER));
+    if(strcmp(name, "DECEMBER") == 0)
+        return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::DECEMBER));
 
     if(strcmp(name, "displaySeason") == 0)
         return ExtremeValueAnalysisAttributes_GetDisplaySeason(self, NULL);
@@ -432,10 +1104,12 @@ PyExtremeValueAnalysisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "FALL") == 0)
         return PyInt_FromLong(long(ExtremeValueAnalysisAttributes::FALL));
 
+    if(strcmp(name, "computeParamValues") == 0)
+        return ExtremeValueAnalysisAttributes_GetComputeParamValues(self, NULL);
     if(strcmp(name, "dumpData") == 0)
         return ExtremeValueAnalysisAttributes_GetDumpData(self, NULL);
-    if(strcmp(name, "dataScaling") == 0)
-        return ExtremeValueAnalysisAttributes_GetDataScaling(self, NULL);
+    if(strcmp(name, "dumpDebug") == 0)
+        return ExtremeValueAnalysisAttributes_GetDumpDebug(self, NULL);
 
     return Py_FindMethod(PyExtremeValueAnalysisAttributes_methods, self, name);
 }
@@ -450,16 +1124,52 @@ PyExtremeValueAnalysisAttributes_setattr(PyObject *self, char *name, PyObject *a
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "aggregation") == 0)
+    if(strcmp(name, "dataYearBegin") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataYearBegin(self, tuple);
+    else if(strcmp(name, "dataAnalysisYearRangeEnabled") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataAnalysisYearRangeEnabled(self, tuple);
+    else if(strcmp(name, "dataAnalysisYear1") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataAnalysisYear1(self, tuple);
+    else if(strcmp(name, "dataAnalysisYear2") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataAnalysisYear2(self, tuple);
+    else if(strcmp(name, "ensemble") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetEnsemble(self, tuple);
+    else if(strcmp(name, "numEnsembles") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetNumEnsembles(self, tuple);
+    else if(strcmp(name, "dataScaling") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDataScaling(self, tuple);
+    else if(strcmp(name, "extremeMethod") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetExtremeMethod(self, tuple);
+    else if(strcmp(name, "optimizationMethod") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetOptimizationMethod(self, tuple);
+    else if(strcmp(name, "aggregation") == 0)
         obj = ExtremeValueAnalysisAttributes_SetAggregation(self, tuple);
+    else if(strcmp(name, "covariateModelScale") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetCovariateModelScale(self, tuple);
+    else if(strcmp(name, "covariateModelLocation") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetCovariateModelLocation(self, tuple);
+    else if(strcmp(name, "covariateModelShape") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetCovariateModelShape(self, tuple);
+    else if(strcmp(name, "computeReturnValues") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetComputeReturnValues(self, tuple);
+    else if(strcmp(name, "returnValues") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetReturnValues(self, tuple);
+    else if(strcmp(name, "computeRVDifferences") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetComputeRVDifferences(self, tuple);
+    else if(strcmp(name, "rvDifference1") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetRvDifference1(self, tuple);
+    else if(strcmp(name, "rvDifference2") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetRvDifference2(self, tuple);
     else if(strcmp(name, "displayMonth") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDisplayMonth(self, tuple);
     else if(strcmp(name, "displaySeason") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDisplaySeason(self, tuple);
+    else if(strcmp(name, "computeParamValues") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetComputeParamValues(self, tuple);
     else if(strcmp(name, "dumpData") == 0)
         obj = ExtremeValueAnalysisAttributes_SetDumpData(self, tuple);
-    else if(strcmp(name, "dataScaling") == 0)
-        obj = ExtremeValueAnalysisAttributes_SetDataScaling(self, tuple);
+    else if(strcmp(name, "dumpDebug") == 0)
+        obj = ExtremeValueAnalysisAttributes_SetDumpDebug(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -55,6 +55,7 @@ class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
+class QComboBox;
 
 // ****************************************************************************
 // Class: QvisExtremeValueAnalysisWindow
@@ -86,24 +87,59 @@ class QvisExtremeValueAnalysisWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void dataYearBeginProcessText();
+    void dataAnalysisYearRangeEnabledChanged(bool val);
+    void dataAnalysisYear1ProcessText();
+    void dataAnalysisYear2ProcessText();
+    void ensembleChanged(bool val);
+    void numEnsemblesProcessText();
+    void dataScalingProcessText();
+    void extremeMethodChanged(int val);
+    void optimizationChanged(int val);
     void aggregationChanged(int val);
+    void covariateModelScaleChanged(bool val);
+    void covariateModelLocationChanged(bool val);
+    void covariateModelShapeChanged(bool val);
+    void computeReturnValuesChanged(bool val);
+    void returnValuesProcessText();
+    void computeRVDifferencesChanged(bool val);
+    void rvDifference1ProcessText();
+    void rvDifference2ProcessText();
     void displayMonthChanged(int val);
     void displaySeasonChanged(int val);
+    void computeParamValuesChanged(bool val);
     void dumpDataChanged(bool val);
-    void dataScalingProcessText();
+    void dumpDebugChanged(bool val);
   private:
-    QWidget      *aggregation;
-    QButtonGroup *aggregationButtonGroup;
-    QWidget      *displayMonth;
-    QButtonGroup *displayMonthButtonGroup;
-    QWidget      *displaySeason;
-    QButtonGroup *displaySeasonButtonGroup;
-    QCheckBox *dumpData;
+    QLineEdit *dataYearBegin;
+    QCheckBox *dataAnalysisYearRangeEnabled;
+    QLineEdit *dataAnalysisYear1;
+    QLineEdit *dataAnalysisYear2;
+    QCheckBox *ensemble;
+    QLineEdit *numEnsembles;
     QLineEdit *dataScaling;
-    QLabel *aggregationLabel;
+    QWidget      *extremeMethod;
+    QButtonGroup *extremeMethodButtonGroup;
+    QComboBox      *optimizationSelect;
+    QComboBox      *aggregationSelect;
+    QCheckBox *covariateModelScale;
+    QCheckBox *covariateModelLocation;
+    QCheckBox *covariateModelShape;
+    QCheckBox *computeReturnValues;
+    QLineEdit *returnValues;
+    QCheckBox *computeRVDifferences;
+    QLineEdit *rvDifference1;
+    QLineEdit *rvDifference2;
+    QComboBox      *displayMonthSelect;
+    QComboBox      *displaySeasonSelect;
+    QCheckBox *computeParamValues;
+    QCheckBox *dumpData;
+    QCheckBox *dumpDebug;
+    QLabel *numEnsemblesLabel;
+    QLabel *dataScalingLabel;
+    QLabel *displayLabel;
     QLabel *displayMonthLabel;
     QLabel *displaySeasonLabel;
-    QLabel *dataScalingLabel;
 
     ExtremeValueAnalysisAttributes *atts;
 };
