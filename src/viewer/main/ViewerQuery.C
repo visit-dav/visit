@@ -459,13 +459,21 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
     int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
 
-    resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction()); 
+    resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction());
+
     //
-    // Copy operators from the originating plot to the results (curve) plot.
+    // Variables with implied operators will already have an operator applied.
+    //
+    int nExistingOperators = resultsPlot->GetNOperators();
+
+    //
+    // Copy operator attributes from the originating plot to the results
+    // (curve) plot. We may need to add the operators too.
     //
     for (int j = 0; j < originatingPlot->GetNOperators(); ++j)
     {
         ViewerOperator *op = originatingPlot->GetOperator(j);
+
         //
         // Keep a copy of the slice-plane atts, so that the line endpoints
         // may be updated accordingly whent the slice-plane changes.
@@ -475,11 +483,13 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
             planeAtts = (PlaneAttributes *)op->GetOperatorAtts()->
                         CreateCompatible("PlaneAttributes");
         }
-        resultsPlot->AddOperator(op->GetType());
+        // Just add operators that were not already on the plot when it was created.
+        if(j >= nExistingOperators)
+            resultsPlot->AddOperator(op->GetType());
         ViewerOperator *newOp = resultsPlot->GetOperator(j);
         newOp->SetOperatorAtts(op->GetOperatorAtts());
     }
- 
+
     //
     // Add the lineout operator.
     //

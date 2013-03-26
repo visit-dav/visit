@@ -535,12 +535,16 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
 //    Removed calculation of cell centers.
 //
-//   Hank Childs, Thu Jan 24 09:44:45 PST 2008
-//   Make use of new data members.
+//    Hank Childs, Thu Jan 24 09:44:45 PST 2008
+//    Make use of new data members.
 //
 //    Kathleen Bonnell, Thu Jun 11 08:29:51 PDT 2009
 //    Calculate the min side-length of a cell, to be used as a tolerance when
 //    determining if PointsEqual.
+//
+//    Brad Whitlock, Tue Mar 26 10:11:39 PDT 2013
+//    Make sure we have original cells. If we don't, back up to another lineout
+//    method instead of failing.
 //
 // ****************************************************************************
 
@@ -719,14 +723,19 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         cells->InsertNextId(isectedCells[i]);
     }
 
-    if (!useOriginalCells)
-    {
-        rv = CreateRGrid(in_ds, point1, point2, pts, cells);
-    }
-    else 
+    // If we want original cells, be sure that we have them since it's 
+    // possible that filters before lineout might not be capable of preserving
+    // the original cells.
+    if (useOriginalCells &&
+        in_ds->GetCellData()->GetArray("avtOriginalCellNumbers") != NULL)
     {
         rv = CreateRGridFromOrigCells(in_ds, point1, point2, pts, cells);
     }
+    else
+    {
+        rv = CreateRGrid(in_ds, point1, point2, pts, cells);
+    }
+
     if (rv->GetNumberOfCells() == 0 ||
         rv->GetNumberOfPoints() == 0)
     {
