@@ -75,6 +75,7 @@ avtTimeLoopFilter::avtTimeLoopFilter()
     stride = -1; 
     nFrames = 0;
     actualEnd = 0;
+    nIterations = 1;
     parallelizingOverTime = false;
 }
 
@@ -178,7 +179,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
-    for (currentLoopIter = 0; currentLoopIter < numTimeLoopIterations; currentLoopIter++)
+    for (int currentLoopIter = 0; currentLoopIter < numTimeLoopIterations; currentLoopIter++)
     {
         debug4 << "Time loop filter updating with iteration # "<<currentLoopIter<<endl;
         int curIter = 0;
@@ -394,7 +395,7 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         EXCEPTION2(UnexpectedValueException, expected, startTime);
     }
 
-    nFrames = (int) ceil((((float)endTime -startTime))/(float)stride) + 1; 
+    nFrames = (int) ceil(((float) endTime - startTime) / (float) stride) + 1; 
 
     if (nFrames < 1)
     {

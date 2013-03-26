@@ -100,6 +100,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
                                             { stride = s; };
     int                                 GetStartTime() const {return startTime;}
     int                                 GetEndTime() const {return endTime;}
+    int                                 GetNFrames() const {return nFrames;}
 
   protected:
     intVector                           validTimes;
@@ -108,9 +109,11 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     avtSILRestriction_p                 currentSILR;
     std::string                         errorMessage;
 
-    virtual void                        BeginIteration(int i) {}
+    virtual void                        BeginIteration(int i) { iteration = i; }
     virtual void                        EndIteration(int i) {}
-    virtual int                         GetNumberOfIterations() {return 1;}
+    virtual int                         SetNumberOfIterations( int i) {nIterations = i;}
+    virtual int                         GetNumberOfIterations() {return nIterations;}
+    virtual int                         GetIteration() {return iteration;}
     virtual bool                        NeedCurrentTimeSlice() {return true;}
     virtual void                        CreateFinalOutput(void) = 0;
     virtual bool                        ExecutionSuccessful(void) = 0;
@@ -122,6 +125,8 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     int                                 stride;
     int                                 nFrames;
     int                                 actualEnd;
+    int                                 nIterations;
+    int                                 iteration;
     bool                                parallelizingOverTime;
 
     virtual void                        InitializeTimeLoop(void) {};
