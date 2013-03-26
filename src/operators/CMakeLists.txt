@@ -117,6 +117,7 @@ Slice
 Smooth
 SphereSlice
 Stagger
+StatisticalTrends
 SurfaceNormal
 ThreeSlice
 Threshold
