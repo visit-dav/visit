@@ -44,7 +44,7 @@ int main()
 {
     int i;
     int P[100], U[4];
-    char *N[3];
+    const char *N[3] = { "red", "green", "blue" };
 
     // Test a somewhat complex expression 
     Namescheme *ns = new Namescheme("@foo_%+03d@3-((n % 3)*(4+1)+1/2)+1");
@@ -125,9 +125,6 @@ int main()
     delete ns;
 
     /* Test array-based references to char* valued array */
-    N[0] = "red";
-    N[1] = "green";
-    N[2] = "blue";
     ns = new Namescheme("Hfoo_%sH$N[n%3]", N);
     if (strcmp(ns->GetName(17), "foo_blue") != 0) return 1;
     if (strcmp(ns->GetName(6), "foo_red") != 0) return 1;
