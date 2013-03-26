@@ -66,6 +66,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Brad Whitlock, Tue Mar 26 12:06:51 PDT 2013
+#    I added TestOperatorCreatedVariables.
+#
 # ----------------------------------------------------------------------------
 
 def GetOutputArray(plotID = -1, winID = -1):
@@ -544,6 +547,83 @@ def TestTecPlot():
     # remove plots from window 1
     DeleteAllPlots()
 
+def TestOperatorCreatedVariables():
+    def SetCurveAtts():
+        c = CurveAttributes(1)
+        c.lineStyle = c.SOLID
+        c.lineWidth = 2
+        c.curveColor = (255,0,0,255)
+        c.curveColorSource = c.Custom
+        c.showLabels = 0
+        SetPlotOptions(c)
+
+    TestSection("Operator-Created Variables")
+    OpenDatabase(silo_data_path("noise.silo"))
+
+    # Do lineout on a data binning variable.
+    AddPlot("Pseudocolor", "operators/DataBinning/2D/Mesh", 1, 1)
+    DataBinningAtts = DataBinningAttributes()
+    DataBinningAtts.numDimensions = DataBinningAtts.Two  # One, Two, Three
+    DataBinningAtts.dim1BinBasedOn = DataBinningAtts.X  # X, Y, Z, Variable
+    DataBinningAtts.dim1Var = "default"
+    DataBinningAtts.dim1SpecifyRange = 0
+    DataBinningAtts.dim1MinRange = 0
+    DataBinningAtts.dim1MaxRange = 1
+    DataBinningAtts.dim1NumBins = 50
+    DataBinningAtts.dim2BinBasedOn = DataBinningAtts.Y  # X, Y, Z, Variable
+    DataBinningAtts.dim2Var = "default"
+    DataBinningAtts.dim2SpecifyRange = 0
+    DataBinningAtts.dim2MinRange = 0
+    DataBinningAtts.dim2MaxRange = 1
+    DataBinningAtts.dim2NumBins = 50
+    DataBinningAtts.dim3BinBasedOn = DataBinningAtts.Variable  # X, Y, Z, Variable
+    DataBinningAtts.dim3Var = "default"
+    DataBinningAtts.dim3SpecifyRange = 0
+    DataBinningAtts.dim3MinRange = 0
+    DataBinningAtts.dim3MaxRange = 1
+    DataBinningAtts.dim3NumBins = 50
+    DataBinningAtts.outOfBoundsBehavior = DataBinningAtts.Clamp  # Clamp, Discard
+    DataBinningAtts.reductionOperator = DataBinningAtts.Maximum  # Average, Minimum, Maximum, StandardDeviation, Variance, Sum, Count, RMS, PDF
+    DataBinningAtts.varForReduction = "hardyglobal"
+    DataBinningAtts.emptyVal = 0
+    DataBinningAtts.outputType = DataBinningAtts.OutputOnBins  # OutputOnBins, OutputOnInputMesh
+    DataBinningAtts.removeEmptyValFromCurve = 1
+    SetOperatorOptions(DataBinningAtts, 1)
+    DrawPlots()
+    Lineout((9, 9), (4.5, -9))
+    SetActiveWindow(1)
+    ResetView()
+    Test("lineout_op_vars_00")
+    SetActiveWindow(2)
+    InitAnnotation()
+    ResetView()
+    SetCurveAtts()
+    Test("lineout_op_vars_01")
+
+    # delete window 2
+    DeleteWindow()
+    # remove plots from window 1
+    DeleteAllPlots()
+
+    # Do lineout on a data binning variable that had other operators
+    OpenDatabase(silo_data_path("noise.silo"))
+    AddPlot("Pseudocolor", "operators/DataBinning/2D/Mesh", 1, 1)
+    SetOperatorOptions(DataBinningAtts, 1)
+    AddOperator("Transform")
+    AddOperator("Project")
+    DrawPlots()
+    Lineout((9, 9), (4.5, -9))
+    SetActiveWindow(2)
+    InitAnnotation()
+    SetCurveAtts()
+    Test("lineout_op_vars_02")
+
+    # delete window 2
+    DeleteWindow()
+    # remove plots from window 1
+    DeleteAllPlots()
+
+
 def DoTests(t,s):
     TestLineout2D(t,s)
     TestLineout3D(t,s)
@@ -567,7 +647,7 @@ def LineoutMain():
 
     TestDynamic2()
     TestTecPlot()
-
+    TestOperatorCreatedVariables()
 
 # Call the main function
 LineoutMain()
