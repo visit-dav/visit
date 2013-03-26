@@ -192,7 +192,7 @@ public:
     virtual void SetFromNode(DataNode *node);
     virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 
-    friend ostream& operator<<(ostream& os, const AttributeGroup&);
+    STATE_API friend ostream& operator<<(ostream& os, const AttributeGroup&);
 
     virtual bool CopyAttributes(const AttributeGroup *atts);
     virtual void InterpolateConst(const AttributeGroup *atts1,
@@ -340,12 +340,12 @@ private:
                                 //as well.
 };
 
-ostream& operator<<(ostream& os, const AttributeGroup&);
+STATE_API ostream& operator<<(ostream& os, const AttributeGroup&);
 
 typedef std::vector<AttributeGroup *> AttributeGroupVector;
 
 // An exception class
-class BadDeclareFormatString : public VisItException { };
-class StateObjectException : public VisItException { };
+class STATE_API BadDeclareFormatString : public VisItException { };
+class STATE_API StateObjectException : public VisItException { };
 
 #endif
