@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+  <Plugin name="StatisticalTrends" type="operator" label="StatisticalTrends" version="2.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="StatisticalTrends.xpm" category="Analysis">
+    <Attribute name="StatisticalTrendsAttributes" purpose="This class contains attributes for the StatisticalTrends operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
+      <Enum name="TrendTypeEnum">
+        Absolute
+        Relative
+      </Enum>
+      <Enum name="StatisticTypeEnum">
+        Sum
+        Mean
+        Variance
+        Slope
+        Residuals
+      </Enum>
+      <Enum name="TrendAxisEnum">
+        Step
+        Time
+        Cycle
+      </Enum>      <Field name="startIndex" label="Index of first time slice" type="int">
+        0
+      </Field>
+      <Field name="stopIndex" label="Index of last time slice" type="int">
+        1
+      </Field>
+      <Field name="stride" label="Skip rate between time slices" type="int">
+        1
+      </Field>
+      <Field name="startTrendType" label="Type of Trend" type="enum" subtype="TrendTypeEnum">
+        Absolute
+      </Field>
+      <Field name="stopTrendType" label="Type of Trend" type="enum" subtype="TrendTypeEnum">
+        Absolute
+      </Field>
+      <Field name="statisticType" label="Type of statistic" type="enum" subtype="StatisticTypeEnum">
+        Mean
+      </Field>
+      <Field name="trendAxis" label="Trend axis" type="enum" subtype="TrendAxisEnum">
+        Step
+      </Field>
+    </Attribute>
+  </Plugin>
