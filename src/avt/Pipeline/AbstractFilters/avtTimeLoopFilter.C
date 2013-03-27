@@ -72,7 +72,8 @@ avtTimeLoopFilter::avtTimeLoopFilter()
 {
     startTime = -1;
     endTime = -1;
-    stride = -1; 
+    stride = -1;
+    includeLastTime = true;
     nFrames = 0;
     actualEnd = 0;
     nIterations = 1;
@@ -179,26 +180,31 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
-    for (int currentLoopIter = 0; currentLoopIter < numTimeLoopIterations; currentLoopIter++)
+    for (int currentLoopIter=0; currentLoopIter<numTimeLoopIterations; ++currentLoopIter)
     {
-        debug4 << "Time loop filter updating with iteration # "<<currentLoopIter<<endl;
+        debug4 << "Time loop filter updating with iteration # "
+               << currentLoopIter << endl;
+
         int curIter = 0;
 
         BeginIteration(currentLoopIter);
-        for (i = startTime; i < actualEnd; i+= stride)
+
+        for (i=0, currentTime=startTime; i<nFrames; ++i, currentTime+=stride)
         {
             bool shouldDoThisTimeSlice = true;
+
             if (parallelizingOverTime)
                 if ((curIter % PAR_Size()) != PAR_Rank())
                     shouldDoThisTimeSlice = false;
             curIter++;
+
             if (!shouldDoThisTimeSlice)
                 continue;
-             
-            if (i < endTime)
-                currentTime = i;
-            else 
-                currentTime = endTime;
+
+            // Depending on the stride the last frame may be before
+            // the end.
+            if (currentTime > endTime)
+              currentTime = endTime;
             
             if (!NeedCurrentTimeSlice())
                 continue;
@@ -365,10 +371,12 @@ avtTimeLoopFilter::FinalizeTimeLoop()
     {
         startTime = 0;
     }
+
     if (endTime < 0)
     {
         endTime = numStates - 1;
     }
+
     if (stride < 0)
     {
         stride = 1;
@@ -385,6 +393,7 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         std::string msg(oss.str());
         avtCallback::IssueWarning(msg.c_str());
     }
+
     if (startTime > endTime)
     {
         std::ostringstream oss;
@@ -395,7 +404,12 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         EXCEPTION2(UnexpectedValueException, expected, startTime);
     }
 
-    nFrames = (int) ceil(((float) endTime - startTime) / (float) stride) + 1; 
+    // Regardless of the stride include the last frame. This only
+    // happens when the (endTime-startTime) % stride != 0.
+    if( includeLastTime )
+      nFrames = (int) ceil(((float) endTime - startTime) / (float) stride) + 1; 
+    else
+      nFrames = (endTime - startTime) / stride + 1; 
 
     if (nFrames < 1)
     {
@@ -407,14 +421,6 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         std::string got(oss2.str());
         EXCEPTION2(UnexpectedValueException, expected, got);
     }
-
-    //
-    // Ensure that the specified endTime is included,
-    // regardless of the stride.
-    //
-    actualEnd = startTime + nFrames *stride;
-    if (actualEnd < endTime)
-        actualEnd = endTime + stride;
 }
 
 

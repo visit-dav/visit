@@ -48,7 +48,6 @@
 #include <avtFilter.h>
 
 
-
 // ****************************************************************************
 //  Method: avtTimeLoopFilter
 //
@@ -98,9 +97,11 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
                                             { endTime = e; };
     void                                SetStride(int s)
                                             { stride = s; };
+    void                                GetIncludeLastTime(bool val) { includeLastTime = val;};
     int                                 GetStartTime() const {return startTime;}
     int                                 GetEndTime() const {return endTime;}
     int                                 GetNFrames() const {return nFrames;}
+    bool                                GetIncludeLastTime() const { return includeLastTime;};
 
   protected:
     intVector                           validTimes;
@@ -127,6 +128,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     int                                 actualEnd;
     int                                 nIterations;
     int                                 iteration;
+    bool                                includeLastTime;
     bool                                parallelizingOverTime;
 
     virtual void                        InitializeTimeLoop(void) {};
@@ -159,8 +161,6 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     bool                                CanDoTimeParallelization(void);
 
 };
-
-
 #endif
 
 
