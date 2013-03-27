@@ -97,7 +97,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
                                             { endTime = e; };
     void                                SetStride(int s)
                                             { stride = s; };
-    void                                GetIncludeLastTime(bool val) { includeLastTime = val;};
+    void                                SetIncludeLastTime(bool val) { includeLastTime = val;};
     int                                 GetStartTime() const {return startTime;}
     int                                 GetEndTime() const {return endTime;}
     int                                 GetNFrames() const {return nFrames;}
