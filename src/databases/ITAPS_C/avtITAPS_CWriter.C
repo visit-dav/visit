@@ -263,6 +263,11 @@ static int compare_ehs(const void *a, const void *b)
 //    Mark C. Miller, Thu May 14 21:30:51 PDT 2009
 //    Added chunkSet and nblocks arg. Added logic to ONLY create chunk set if
 //    there are indeed multiple blocks.
+//
+//    Jeremy Meredith, Wed Mar 27 15:34:24 EDT 2013
+//    Catch iBase_ErrorType, not just iBase_Error.
+//    Also, iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 static void
 WriteMesh(vtkDataSet *_ds, int nblocks, int chunk,
@@ -466,13 +471,13 @@ WriteMesh(vtkDataSet *_ds, int nblocks, int chunk,
         }
 
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType TErr)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))
@@ -709,6 +714,11 @@ static void ConvertTypeAndStorageOrder(vtkDataArray *arr, int sorder, T **buf)
 //
 //    Mark C. Miller, Tue Apr 21 16:06:48 PDT 2009
 //    Updated to newest iMesh/iBase specification.
+//
+//    Jeremy Meredith, Wed Mar 27 15:34:24 EDT 2013
+//    Catch iBase_ErrorType, not just iBase_Error.
+//    Also, iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 static void
 WriteVariables(vtkDataSet *ds, int chunk,
@@ -818,13 +828,13 @@ WriteVariables(vtkDataSet *ds, int chunk,
             }
         }
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType TErr)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))
@@ -857,6 +867,11 @@ funcEnd: ;
 //
 //    Mark C. Miller, Thu May 14 21:30:21 PDT 2009
 //    Added material output. Added nblocks/chunkSet args to WriteMesh.
+//
+//    Jeremy Meredith, Wed Mar 27 15:34:24 EDT 2013
+//    Catch iBase_ErrorType, not just iBase_Error.
+//    Also, iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 
 void
@@ -913,13 +928,13 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
         CheckITAPSError(itapsMesh, iMesh_save, NoL);
 
     }
-    catch (iBase_Error TErr)
+    catch (iBase_ErrorType TErr)
     {
         char msg[512];
         char desc[256];
         desc[0] = '\0';
         int tmpError = itapsError;
-        iMesh_getDescription(itapsMesh, desc, &itapsError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", tmpError, desc);
         if (!avtCallback::IssueWarning(msg))

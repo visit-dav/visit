@@ -87,29 +87,29 @@ function bv_itaps_host_profile
 
 function bv_itaps_info
 {
-export ITAPS_VERSION=${ITAPS_VERSION:-"1.2"}
-export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.0.1RC2"}
+export ITAPS_VERSION=${ITAPS_VERSION:-"1.4"}
+export ITAPS_MOAB_VERSION=${ITAPS_MOAB_VERSION:-"4.6.0"}
 export ITAPS_MOAB_FILE=${ITAPS_MOAB_FILE:-"moab-${ITAPS_MOAB_VERSION}.tar.gz"}
-export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://gnep.mcs.anl.gov:8010}
-export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-4.0.1"}
+export ITAPS_MOAB_URL=${ITAPS_MOAB_URL:-http://ftp.mcs.anl.gov/pub/fathom}
+export ITAPS_MOAB_BUILD_DIR=${ITAPS_MOAB_BUILD_DIR:-"moab-${ITAPS_MOAB_VERSION}"}
 
-export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.2"}
+export ITAPS_FMDB_VERSION=${ITAPS_FMDB_VERSION:-"1.4.0"}
 export ITAPS_FMDB_FILE=${ITAPS_FMDB_FILE:-"FMDB-${ITAPS_FMDB_VERSION}.tar.gz"}
-export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/branches/1.2RC/release_distros/FMDB}
+export ITAPS_FMDB_URL=${ITAPS_FMDB_URL:-http://www.scorec.rpi.edu/FMDB/source}
 export ITAPS_FMDB_BUILD_DIR=${ITAPS_FMDB_BUILD_DIR:-"${ITAPS_FMDB_FILE%.tar*}"}
 
 # CGM is an indirect dependency introduced by ITAPS_GRUMMP. No other part
 # of VisIt uses CGM, presently. That is likely to change in the future
 # if we add an iGeom reader to VisIt.
-export ITAPS_GRUMMP_CGM_VERSION=${ITAPS_GRUMMP_CGM_VERSION:-"10.2.3"}
-export ITAPS_GRUMMP_CGM_FILE=${ITAPS_GRUMMP_CGM_FILE:-"cgma-${ITAPS_GRUMMP_CGM_VERSION}.tar.gz"}
-export ITAPS_GRUMMP_CGM_URL=${ITAPS_GRUMMP_CGM_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/tags/1.2/release_distros}
-export ITAPS_GRUMMP_CGM_BUILD_DIR=${ITAPS_GRUMMP_CGM_BUILD_DIR:-"${ITAPS_GRUMMP_CGM_FILE%.tar*}"}
+export ITAPS_GRUMMP_CGM_VERSION=${ITAPS_GRUMMP_CGM_VERSION:-"12.2.0b1"}
+export ITAPS_GRUMMP_CGM_FILE=${ITAPS_GRUMMP_CGM_FILE:-"cgm-${ITAPS_GRUMMP_CGM_VERSION}.tar.gz"}
+export ITAPS_GRUMMP_CGM_URL=${ITAPS_GRUMMP_CGM_URL:-http://ftp.mcs.anl.gov/pub/fathom}
+export ITAPS_GRUMMP_CGM_BUILD_DIR=${ITAPS_GRUMMP_CGM_BUILD_DIR:-"cgma-${ITAPS_GRUMMP_CGM_VERSION}"}
 
-export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.3"}
+export ITAPS_GRUMMP_VERSION=${ITAPS_GRUMMP_VERSION:-"0.6.5"}
 export ITAPS_GRUMMP_FILE=${ITAPS_GRUMMP_FILE:-"GRUMMP-${ITAPS_GRUMMP_VERSION}.tar.gz"}
-export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-https://redmine.scorec.rpi.edu/anonsvn/itaps/software/tags/1.2/release_distros}
-export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"${ITAPS_GRUMMP_FILE%.tar*}"}
+#export ITAPS_GRUMMP_URL=${ITAPS_GRUMMP_URL:-ftp://tetra.mech.ubc.ca/pub/GRUMMP}
+export ITAPS_GRUMMP_BUILD_DIR=${ITAPS_GRUMMP_BUILD_DIR:-"GRUMMP-${ITAPS_GRUMMP_VERSION}"}
 export ITAPS_MD5_CHECKSUM=""
 export ITAPS_SHA256_CHECKSUM=""
 }
@@ -255,12 +255,12 @@ function build_itaps_fmdb
     cd $ITAPS_FMDB_BUILD_DIR
     abs_itaps_fmdb_build_dir=$(pwd)
 
-    if [[ ! -e GMI-1.0.tar.gz ]]; then
-        download_file GMI-1.0.tar.gz $ITAPS_FMDB_URL
-        [[ $? -eq 0 ]] || { error "Unable to download GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
+    if [[ ! -e GMI-1.0.1.tar.gz ]]; then
+        download_file GMI-1.0.1.tar.gz $ITAPS_FMDB_URL
+        [[ $? -eq 0 ]] || { error "Unable to download GMI-1.0.1.tar.gz for ITAPS_FMDB" && return 1; }
     fi
-    gunzip < GMI-1.0.tar.gz | tar xf -
-    [[ $? -eq 0 ]] || { error "Unable to untar GMI-1.0.tar.gz for ITAPS_FMDB" && return 1; }
+    gunzip < GMI-1.0.1.tar.gz | tar xf -
+    [[ $? -eq 0 ]] || { error "Unable to untar GMI-1.0.1.tar.gz for ITAPS_FMDB" && return 1; }
     if [[ ! -e SCUtil.tar.gz ]]; then
         download_file SCUtil.tar.gz $ITAPS_FMDB_URL
         [[ $? -eq 0 ]] || { error "Unable to download SCUtil.tar.gz for ITAPS_FMDB" && return 1; }
@@ -278,7 +278,7 @@ function build_itaps_fmdb
     # Configure GMI
     #
     info "Configuring GMI for ITAPS_FMDB. . ."
-    pushd GMI-1.0 >/dev/null 2>&1
+    pushd GMI-1.0.1 >/dev/null 2>&1
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         --with-fmdb=$abs_itaps_fmdb_build_dir \

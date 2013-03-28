@@ -775,9 +775,9 @@ def UpdateExpressions(mdl, mdr):
             if addedExpressions[expr_j] == currentExpressions[expr_i][0]:
                 foundExprName = 1
                 break
-        if foundExprName == 0:
-            DeleteExpression(currentExpressions[expr_i][0])
-            deletedExpressions.append(currentExpressions[expr_i][0])
+#        if foundExprName == 0:
+#            DeleteExpression(currentExpressions[expr_i][0])
+#            deletedExpressions.append(currentExpressions[expr_i][0])
 
     # Print out some information about what we did
     if diffSummaryOnly == 0:

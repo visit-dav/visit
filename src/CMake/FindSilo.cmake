@@ -58,6 +58,10 @@
 #    without hdf5 support. It looks for silo configured with hdf5 support
 #    first, then without it.
 #
+#    Mark C. Miller, Thu Jan 31 10:47:11 PST 2013
+#    Removed logic to detect version of Silo and determine if PDB Lite has
+#    long long support. VisIt no requires Silo 4.9 or newer and all newer
+#    versions have long long support in PDB Lite.
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file 
@@ -95,25 +99,7 @@ ENDIF (WIN32)
 # We use Silo for PDB most of the time so set up additional PDB variables.
 IF(SILO_FOUND)
 
-    # Inspect Silo version number to infer whether or not PDB Lite (in Silo)
-    # has support for long long type. Failure to either find silo.h header file
-    # or find a matching line in that file with SILO_VERS_MAJ/MIN/PAT will result
-    # in executing the block where VERSION_LESS is true. That is appropriate as
-    # older versions of Silo do not have a PDB Lite with long long support.
-    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_MAJ")
-    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_MAJ[ \t]*(0x0)?([0-9]*)" \\2 SILO_MAJ_NO "${SILO_VERS_LINE}")
-    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_MIN")
-    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_MIN[ \t]*(0x0)?([0-9]*)" \\2 SILO_MIN_NO "${SILO_VERS_LINE}")
-    FILE(STRINGS ${SILO_INCLUDE_DIR}/silo.h SILO_VERS_LINE REGEX "#define[ \t]*SILO_VERS_PAT")
-    STRING(REGEX REPLACE "#define[ \t]*SILO_VERS_PAT[ \t]*(0x0)?([0-9]*)" \\2 SILO_PAT_NO "${SILO_VERS_LINE}")
-    IF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
-        SET(PDB_LITE_HAS_LONG_LONG 0 CACHE INTERNAL "Support for longlong type in PDB Lite")
-        MESSAGE(STATUS "    PDB Lite does not have long long support")
-    ELSE("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
-        SET(PDB_LITE_HAS_LONG_LONG 1 CACHE INTERNAL "Support for longlong type in PDB Lite")
-        MESSAGE(STATUS "    PDB Lite has long long support")
-    ENDIF("${SILO_MAJ_NO}.${SILO_MIN_NO}.${SILO_PAT_NO}" VERSION_LESS 4.7.2)
-
+    MESSAGE(STATUS "    Using PDB Lite built into Silo")
     SET(PDB_FOUND 1 CACHE BOOL "PDB library found" FORCE)
     SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory" FORCE)
     SET(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory" FORCE)
@@ -121,3 +107,4 @@ IF(SILO_FOUND)
     MARK_AS_ADVANCED(PDB_INCLUDE_DIR PDB_LIBRARY_DIR PDB_LIB)
 
 ENDIF(SILO_FOUND)
+
