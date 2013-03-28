@@ -112,7 +112,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
 
     virtual void                        BeginIteration(int i) { iteration = i; }
     virtual void                        EndIteration(int i) {}
-    virtual int                         SetNumberOfIterations( int i) {nIterations = i;}
+    virtual void                        SetNumberOfIterations( int i) {nIterations = i;}
     virtual int                         GetNumberOfIterations() {return nIterations;}
     virtual int                         GetIteration() {return iteration;}
     virtual bool                        NeedCurrentTimeSlice() {return true;}
