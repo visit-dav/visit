@@ -64,9 +64,9 @@ using     std::vector;
 
 map<string, int> avtITAPS_CUtility::messageCounts;
 int avtITAPS_CUtility::itapsError;
-char** avtITAPS_CUtility::entTypes = 0;
-char** avtITAPS_CUtility::entTopologies = 0;
-char** avtITAPS_CUtility::itapsDataTypeNames = 0;
+const char** avtITAPS_CUtility::entTypes = 0;
+const char** avtITAPS_CUtility::entTopologies = 0;
+const char** avtITAPS_CUtility::itapsDataTypeNames = 0;
 const char *avtITAPS_CUtility::supressMessage = "further warnings regarding this error will be supressed";
 
 // supports passing variable length list of void pointers that if non-zero
@@ -89,6 +89,9 @@ avtITAPS_CUtility::ITAPSErrorCleanupHelper(void *first, ...)
 
 using namespace avtITAPS_CUtility;
 
+//    Jeremy Meredith, Wed Mar 27 15:28:34 EDT 2013
+//    Changed pointers to arrays of constant strings to add const.
+//
 void
 avtITAPS_CUtility::InitDataTypeNames()
 {
@@ -98,7 +101,7 @@ avtITAPS_CUtility::InitDataTypeNames()
 
     // Ensure we map entity topologies to appropriate strings
     int nTopologies = iMesh_ALL_TOPOLOGIES+1;
-    entTopologies = new char*[nTopologies];
+    entTopologies = new const char*[nTopologies];
     entTopologies[iMesh_POINT]          = "point";
     entTopologies[iMesh_LINE_SEGMENT]   = "line segment";
     entTopologies[iMesh_POLYGON]        = "polygon";
@@ -114,7 +117,7 @@ avtITAPS_CUtility::InitDataTypeNames()
 
     // Ensure we map entity types to appropriate strings
     int nTypes = iBase_ALL_TYPES+1;
-    entTypes = new char*[nTypes];
+    entTypes = new const char*[nTypes];
     entTypes[iBase_VERTEX]    = "vertex";
     entTypes[iBase_EDGE]      = "edge";
     entTypes[iBase_FACE]      = "face";
@@ -123,7 +126,7 @@ avtITAPS_CUtility::InitDataTypeNames()
 
     // Ensure we map data type names to appropriate strings
     int nDataTypes = 5;
-    itapsDataTypeNames = new char*[nDataTypes];
+    itapsDataTypeNames = new const char*[nDataTypes];
     itapsDataTypeNames[iBase_INTEGER]       = "integer";
     itapsDataTypeNames[iBase_DOUBLE]        = "double";
     itapsDataTypeNames[iBase_ENTITY_HANDLE] = "ehandle";
@@ -223,6 +226,12 @@ int avtITAPS_CUtility::ITAPSEntityTopologyToVTKZoneType(int ttype)
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Jeremy Meredith, Wed Mar 27 15:31:05 EDT 2013
+//    Spaces in %s format arguments are redundant and generate warnings
+//    in newer g++ versions, so I removed them.  Also, iBase_EntityHandle
+//    is a pointer, so I use %p instead of the unsigned-int-assuming %X.
+//
 // ****************************************************************************
 
 void
@@ -317,7 +326,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     if (level<2) CheckITAPSError(aMesh, iMesh_getXXIntData, NoL); 
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %d", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %d", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, theVal);
                     }
                 }
@@ -339,7 +348,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     free(tagvals);
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, valBuf.c_str());
                     }
                 }
@@ -347,7 +356,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                 {
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, "invalid size");
                     }
                 }
@@ -364,7 +373,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     if (level<2) CheckITAPSError(aMesh, iMesh_getXXDblData, NoL); 
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %f", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %f", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, theVal);
                     }
                 }
@@ -386,7 +395,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     free(tagvals);
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, valBuf.c_str());
                     }
                 }
@@ -394,7 +403,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                 {
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, "invalid size");
                     }
                 }
@@ -422,7 +431,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     free(theVal);
                 if (DebugStream::Level4())
                 {
-                    SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                    SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                         tagName.c_str(), itapsDataTypeNames[typeId], tagSize, valBuf.c_str());
                 }
             }
@@ -438,8 +447,8 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     if (level<2) CheckITAPSError(aMesh, iMesh_getXXEHData, NoL); 
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %X", 
-                            tagName.c_str(), itapsDataTypeNames[typeId], tagSize, theVal, &itapsError);
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %p", 
+                            tagName.c_str(), itapsDataTypeNames[typeId], tagSize, theVal);
                     }
                 }
                 else if (tagSize > 1)
@@ -454,13 +463,13 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                     for (int k = 0; k < tagSize; k++)
                     {
                         char tmpChars[32];
-                        sprintf(tmpChars, "%X ", tagvals[k]);
+                        sprintf(tmpChars, "%p ", tagvals[k]);
                         valBuf += std::string(tmpChars);
                     }
                     free(tagvals);
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, valBuf.c_str());
                     }
                 }
@@ -468,7 +477,7 @@ avtITAPS_CUtility::TraverseSetHierarchy(iMesh_Instance aMesh, int level,
                 {
                     if (DebugStream::Level4())
                     {
-                        SNPRINTF(lineBuf, sizeof(lineBuf), "% 16s     % 8s     %03d     %s", 
+                        SNPRINTF(lineBuf, sizeof(lineBuf), "%16s     %8s     %03d     %s", 
                             tagName.c_str(), itapsDataTypeNames[typeId], tagSize, "invalid size");
                     }
                 }
@@ -684,7 +693,7 @@ avtITAPS_CUtility::GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
                     else
                         iMesh_getEHData(aMesh, eh, tags[t], &theVal, &itapsError);
                     if (level<2) CheckITAPSError(aMesh, iMesh_getXXEHData, NoL); 
-                    SNPRINTF(lineBuf, sizeof(lineBuf), "%X", theVal);
+                    SNPRINTF(lineBuf, sizeof(lineBuf), "%p", theVal);
                 }
                 else if (tagSize > 1)
                 {
@@ -698,7 +707,7 @@ avtITAPS_CUtility::GetTagsForEntity(iMesh_Instance aMesh, bool isEntitySet,
                     for (int k = 0; k < tagSize; k++)
                     {
                         char tmpChars[32];
-                        sprintf(tmpChars, "%X ", tagvals[k]);
+                        sprintf(tmpChars, "%p ", tagvals[k]);
                         valBuf += std::string(tmpChars);
                     }
                     free(tagvals);
@@ -762,6 +771,12 @@ avtITAPS_CUtility::GetTopLevelSets(iMesh_Instance ima, int level, int memidx,
 //  but will presently NOT return tag values except on entity set.
 //
 //  Mark C. Miller, Mon Apr 14 15:41:21 PDT 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
+//    iMesh_initEntIter needs a new argument for resilient iterators; I
+//    assume we don't need resilient iterators and set it to zero.
+//
 // ****************************************************************************
 int avtITAPS_CUtility::GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set,
     int ent_type, string name, int *type, int *size, void **vals)
@@ -779,7 +794,7 @@ int avtITAPS_CUtility::GetTagStuff(iMesh_Instance ima, iBase_EntitySetHandle set
         iBase_EntityHandle oneEnt;
         iBase_EntityIterator entIt;
 
-        iMesh_initEntIter(ima, set, ent_type, iMesh_ALL_TOPOLOGIES, &entIt, &err);
+        iMesh_initEntIter(ima, set, ent_type, iMesh_ALL_TOPOLOGIES, 0, &entIt, &err);
         iMesh_getNextEntIter(ima, entIt, &oneEnt, &has_data, &err);
         if (has_data && err == iBase_SUCCESS)
             iMesh_getAllTags(ima, oneEnt, IMESH_AARG(tags), &err); 

@@ -105,6 +105,11 @@
 //    Mark C. Miller, Tue Apr 21 16:03:55 PDT 2009
 //    Removed got and cleanup stuff as that could inadvertently cause odd
 //    behavior.
+//
+//    Jeremy Meredith, Wed Mar 27 15:27:15 EDT 2013
+//    iMesh_getDescription no longer takes an error output argument.
+//    Changed pointers to arrays of constant strings to add const.
+//
 // ****************************************************************************
 #define CheckITAPSError2(IMI, ERR, FN, ARGS, THELINE, THEFILE)                                  \
     if (ERR != 0)                                                                               \
@@ -113,7 +118,7 @@
         char desc[256];                                                                         \
         for (int i = 0; i < sizeof(desc); i++) desc[i] = '\0';                                  \
         int dummyError = ERR;                                                                   \
-        iMesh_getDescription(IMI, desc, &dummyError, sizeof(desc));                             \
+        iMesh_getDescription(IMI, desc, sizeof(desc));                             \
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) after call to \"%s\""          \
             " at line %d in file \"%s\"\nThe description is...\n"                               \
             "    \"%s\"\n", ERR, #FN, THELINE, THEFILE, desc);                                  \
@@ -148,9 +153,9 @@ typedef bool (*HandleThisSet)(iMesh_Instance ima, int level, int memidx, bool is
 namespace avtITAPS_CUtility
 {
     extern int itapsError;
-    extern char** entTypes;
-    extern char** entTopologies;
-    extern char** itapsDataTypeNames;
+    extern const char** entTypes;
+    extern const char** entTopologies;
+    extern const char** itapsDataTypeNames;
     extern std::map<std::string, int> messageCounts;
     extern const char *supressMessage;
 

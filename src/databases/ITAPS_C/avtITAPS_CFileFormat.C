@@ -195,6 +195,12 @@ avtITAPS_CFileFormat::FreeUpResources(void)
 //
 //    Mark C. Miller, Thu Apr 23 08:10:02 PDT 2009
 //    Added logic to handle Zoltan partition as VisIt's domains.
+//
+//    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
+//    iMesh_initEntIter needs a new argument for resilient iterators; I
+//    assume we don't need resilient iterators and set it to zero.
+//    iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 
 void
@@ -433,7 +439,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             // initialize an entity iterator and get the first entity
             iMesh_initEntIter(itapsMesh, domainSets[0], (iBase_EntityType) entTypeClass,
-                iMesh_ALL_TOPOLOGIES, &entIt, &itapsError);
+                iMesh_ALL_TOPOLOGIES, 0, &entIt, &itapsError);
             CheckITAPSError(itapsMesh, iMesh_initEntIter, NoL);
             iMesh_getNextEntIter(itapsMesh, entIt, &oneEntity, &has_data, &itapsError);
             CheckITAPSError(itapsMesh, iMesh_getNextEntIter, NoL);
@@ -538,7 +544,7 @@ avtITAPS_CFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         desc[0] = '\0';
         int origError = (int) errType;
         int tmpError = (int) errType;
-        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -586,6 +592,10 @@ funcEnd: ;
 //
 //    Mark C. Miller, Wed May  6 13:52:16 PDT 2009
 //    Changed 'Invalid' in error message to 'Unsupported'.
+//
+//    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
+//    iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -911,7 +921,7 @@ avtITAPS_CFileFormat::GetMesh(int domain, const char *meshname)
         desc[0] = '\0';
         int origError = (int) errType;
         int tmpError = (int) errType;
-        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -984,6 +994,10 @@ typedef map<coord_t,int,coordcomp> coordmap_t;
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   Tue Apr 22 14:09:11 PDT 2008
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
+//    iMesh_getDescription no longer needs an error output argument.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -1138,7 +1152,7 @@ avtITAPS_CFileFormat::GetNodalSubsetVar(int domain, const char *varname,
         desc[0] = '\0';
         int origError = (int) errType;
         int tmpError = (int) errType;
-        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
@@ -1179,6 +1193,10 @@ funcEnd:
 //    them cached in this object. Added logic to deal with variable names
 //    that have had 'stuff' added to them because the are same name on
 //    different classes of entities.
+//
+//    Jeremy Meredith, Wed Mar 27 15:33:20 EDT 2013
+//    iMesh_getDescription no longer needs an error output argument.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1320,7 +1338,7 @@ tagFound:
         desc[0] = '\0';
         int origError = (int) errType;
         int tmpError = (int) errType;
-        iMesh_getDescription(itapsMesh, desc, &tmpError, sizeof(desc));
+        iMesh_getDescription(itapsMesh, desc, sizeof(desc));
         SNPRINTF(msg, sizeof(msg), "Encountered ITAPS error (%d) \"%s\""
             "\nUnable to open file!", origError, desc); 
         if (!avtCallback::IssueWarning(msg))
