@@ -321,6 +321,7 @@ vtkVectorGlyph::FillInputPortInformation(int port, vtkInformation *info)
 {
     info->Remove(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE());
     info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+    return 1;
 }
 
 // ****************************************************************************
