@@ -2097,6 +2097,10 @@ class MainLauncher(object):
     #   Brad Whitlock, Tue Nov 27 10:13:42 PST 2012
     #   Set PYTHONHOME if we're running the cli.
     #
+    #   Brad Whitlock, Wed Apr  3 10:15:00 PDT 2013
+    #   Removed /usr/local/lib from the LD_LIBRARY_PATH since it was an old fix
+    #   for Suns that caused problems on Linux.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2116,12 +2120,6 @@ class MainLauncher(object):
         # Set R_HOME in case R has been installed it will be in this location..
         visitrdir = os.path.join(self.visitlibdir, "r_support", "R")
         SETENV("R_HOME", visitrdir)
-
-        # Add /usr/local/lib to the shared library path.  This was added for the
-        # c++ library on some sun systems, but it may have broader applicability.
-        # Note that we can assume that LD_LIBRARY_PATH is not empty, since it was
-        # set to $visitlibdir above.
-        SETENV("LD_LIBRARY_PATH", self.joinpaths([GETENV("LD_LIBRARY_PATH"), "/usr/local/lib"]))
 
         # Get the private plugin directory.
         visitprivateplugins = self.PrivatePlugins()

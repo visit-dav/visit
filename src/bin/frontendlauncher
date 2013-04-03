@@ -17,7 +17,10 @@
 # Modifications:
 #   Jeremy Meredith, Wed Mar 20 14:57:54 EDT 2013
 #   More sh-compliant version of tests.
-#   
+#
+#   Brad Whitlock, Wed Apr  3 14:48:05 PDT 2013
+#   Set LD_LIBRARY_PATH so VisIt's python interpreter will work.
+#
 ###############################################################################
 
 # Determine VisIt architecture
@@ -89,6 +92,13 @@ if test -n "$visitpython"; then
             break
         fi
     done
+
+    # VisIt's Python interpreter probably uses a shared Python library.
+    if test -n "$LD_LIBRARY_PATH" ; then
+        export LD_LIBRARY_PATH="$visitdir/lib:$LD_LIBRARY_PATH"
+    else
+        export LD_LIBRARY_PATH="$visitdir/lib"
+    fi
 
     # Set up Python variables so the binary will look for modules in their new
     # home inside the VisIt installation instead of where Python was compiled.
