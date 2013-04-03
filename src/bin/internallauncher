@@ -2731,7 +2731,7 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
         exit("This hardware platform is not supported by VisIt.", 1)
     # Print the architectures and exit.
     if launcher.generalArgs.arch:
-        self.message(string.join(supportedarches, " "))
+        print string.join(supportedarches, " ")
         return 0
 
     launcher.ConsistencyCheck()
