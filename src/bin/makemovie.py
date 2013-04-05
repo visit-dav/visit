@@ -659,8 +659,10 @@ class MakeMovie(object):
 
         # Set the slash used in filenames based on the platform.
         self.slash = "/"
+        self.allow_ffmpeg = 1
         if(sys.platform == "win32"):
             self.slash = "\\"
+            self.allow_ffmpeg = 0
 
         # Movie properties.
         self.stateFile = ""
