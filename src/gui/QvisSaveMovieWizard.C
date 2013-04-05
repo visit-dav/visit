@@ -94,7 +94,6 @@
 // Movie format information.
 //
 #define MPEG_FORMAT  "MPEG movie"
-#define MPEG4_FORMAT "MPEG 4 movie"
 #define JPEG_FORMAT  "JPEG images"
 
 struct movie_format_info
@@ -107,7 +106,7 @@ struct movie_format_info
 // from VisIt's visit_utils.encoding.encoders() Python function.
 movie_format_info movieFormatInfo[] = {
     {"BMP  images",     "bmp"},
-    {"JPEG images",     "jpeg"},
+    {JPEG_FORMAT,       "jpeg"},
     {"PNG  images",     "png"},
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
@@ -116,7 +115,7 @@ movie_format_info movieFormatInfo[] = {
 #ifndef _WIN32
     {"AVI movie",       "avi"},
     {"DIVX movie",      "divx"},
-    {MPEG4_FORMAT,      "mp4"},
+    {"MPEG 4 movie",    "mp4"},
     {"QuickTime movie", "mov"},
     {"SWF movie",       "swf"},
     {"WMV movie",       "wmv"},
@@ -124,12 +123,8 @@ movie_format_info movieFormatInfo[] = {
     {"Streaming movie", "sm"}
 };
 
-// Prefer MPEG4 if we're not on Windows.
-#ifdef _WIN32
+// Prefer MPEG since we provide an encoder for that format.
 #define PREFERRED_FORMAT MPEG_FORMAT
-#else
-#define PREFERRED_FORMAT MPEG4_FORMAT
-#endif
 
 #define N_MOVIE_FORMATS  (sizeof(movieFormatInfo) / sizeof(movie_format_info))
 

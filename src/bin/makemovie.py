@@ -35,7 +35,7 @@
 #
 ##############################################################################
 
-import os, string, sys, thread
+import os, select, signal, socket, string, sys, thread
 from xmllib import *
 
 from visit_utils import encoding
@@ -258,7 +258,6 @@ def removeFiles(format, nframes):
 ###############################################################################
 
 def visit_pipe(command, line_callback, line_callback_data):
-    import os, sys
     child_exit = 0
 
     iterate = 1
@@ -267,7 +266,6 @@ def visit_pipe(command, line_callback, line_callback_data):
         iterate = 0
 
     do_fork = 1
-    import signal
     try:
         signal.signal(signal.SIGCHLD, stop_iterating)
     except ValueError:
@@ -297,7 +295,6 @@ def visit_pipe(command, line_callback, line_callback_data):
         sys.exit(ret)
     else:
         # Parent
-        import select
         s = ""
         while iterate:
             # Wait for input from the child.
@@ -330,7 +327,10 @@ def visit_pipe(command, line_callback, line_callback_data):
                     else:
                         line = line + s[index]
                     index = index + 1
-        child_result = os.waitpid(id, 0)
+        try:
+            child_result = os.waitpid(id, 0)
+        except IOError:
+            child_result=(id,0)
         child_exit = child_result[1] / 256
     return child_exit
 
@@ -644,8 +644,6 @@ class MakeMovie(object):
             if fmt not in ("mpg", "mov", "sm"):
                 self.formatInfo[fmt] = [(fmt,), "jpeg", fmt, 0, 0]
 
-        self.allow_ffmpeg = 1
-
         self.STEREO_NONE = 0
         self.STEREO_LEFTRIGHT = 1
         self.STEREO_REDBLUE = 2
@@ -659,10 +657,13 @@ class MakeMovie(object):
 
         # Set the slash used in filenames based on the platform.
         self.slash = "/"
-        self.allow_ffmpeg = 1
         if(sys.platform == "win32"):
             self.slash = "\\"
-            self.allow_ffmpeg = 0
+
+        # Set allow_ffmpeg based on whether it's in the path.
+        self.allow_ffmpeg = 0
+        if CommandInPath("ffmpeg"):
+            self.allow_ffmpeg = 1
 
         # Movie properties.
         self.stateFile = ""
@@ -2975,7 +2976,6 @@ class MakeMovie(object):
         # Compose an e-mail message
         host = "?"
         try:
-            import socket
             host = socket.gethostname()
         except ImportError:
             try:
