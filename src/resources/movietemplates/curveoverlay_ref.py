@@ -68,7 +68,7 @@ def Sequence2Frames_clip_cb(i, cbdata):
 
 class OverlayCurveOnReflectedPlotsMovieTemplate(VisItMovieTemplate):
     def __init__(self, mm, tr):
-        VisItMovieTemplate.__init__(self, mm, tr)
+        super(OverlayCurveOnReflectedPlotsMovieTemplate, self).__init__(mm, tr)
         self.timeSlider = ""
 
     ###########################################################################

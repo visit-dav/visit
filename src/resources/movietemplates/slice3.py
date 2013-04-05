@@ -74,7 +74,7 @@ def Sequence1Frames_advance_time_and_slice(i, cbdata):
 
 class Slice3MovieTemplate(VisItMovieTemplate):
     def __init__(self, mm, tr):
-        VisItMovieTemplate.__init__(self, mm, tr)
+        super(Slice3MovieTemplate, self).__init__(mm, tr)
         self.ts = 0
 
     ###########################################################################

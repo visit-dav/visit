@@ -385,10 +385,11 @@ def RotateSequence_changeview(i, cb_data):
 #
 ###############################################################################
 
-class VisItMovieTemplate:
+class VisItMovieTemplate(object):
     # error class that we use to throw exceptions.
-    class error:
+    class error(object):
         def __init__(self, msg):
+            super(error,self).__init__()
             self.message = msg
 
     ###########################################################################
@@ -410,6 +411,8 @@ class VisItMovieTemplate:
     ###########################################################################
 
     def __init__(self, mm, tr):
+        super(VisItMovieTemplate,self).__init__()
+
         self.moviemaker = mm
         self.stereoFilenames = 0
 
@@ -948,8 +951,8 @@ class VisItMovieTemplate:
                 SetRenderingAttributes(ra)
                 currentRA = ra
 
-                s.width = formats[i][0]
-                s.height = formats[i][1]
+                s.width = int(formats[i][0])
+                s.height = int(formats[i][1])
                 s.outputToCurrentDirectory = 1
                 SetSaveWindowAttributes(s)
                 try:
@@ -1402,6 +1405,8 @@ class VisItMovieTemplate:
     # Date:       Thu Sep 21 11:37:01 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Thu Apr  4 11:35:01 PDT 2013
+    #   Update for formatInfo changes.
     #
     ###########################################################################
 
@@ -1433,17 +1438,17 @@ class VisItMovieTemplate:
             formatExtension = ".ppm"
             destDir = self.moviemaker.tmpDir
             convertDir = self.moviemaker.outputDir
-            if format[1] == self.moviemaker.FORMAT_PPM:
+            if format[1] == "ppm":
                 destDir = self.moviemaker.outputDir
-            elif format[1] == self.moviemaker.outputNeedsInput[format[1]]:
+            elif format[1] == self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]:
                 doFormatConvert = 1
-                formatExtension = self.moviemaker.formatExtension[format[1]]
+                formatExtension = self.moviemaker.OutputExtension(format[1])
             else:
                 # We need to convert for an image encoder that does not take PPM.
                 convertDir = self.moviemaker.tmpDir
                 doFormatConvert = 1
-                cf = self.moviemaker.outputNeedsInput[format[1]]
-                formatExtension = self.moviemaker.formatExtension[cf]
+                cf = self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]
+                formatExtension = self.moviemaker.OutputExtension(cf)
 
             # Determine the name of the sequence going to each viewport.
             current_sequence_for_viewport = {}
@@ -1666,7 +1671,7 @@ class VisItMovieTemplate:
                         newFormatName = "%s%s" % (format[0] % composite_index, formatExtension)
                         newFormatName = self.InsertPrefix(newFormatName, sPrefix)
                         newFormatName = convertDir + self.moviemaker.slash + newFormatName
-                        command = "convert %s %s" % (outputName, newFormatName)
+                        command = "convert -depth 8 %s %s" % (outputName, newFormatName)
                         self.Debug(5, command)
                         os.system(command)
 
@@ -1709,6 +1714,8 @@ class VisItMovieTemplate:
     # Date:       Fri Oct 13 15:03:16 PST 2006
     #
     # Modifications:
+    #   Brad Whitlock, Thu Apr  4 11:43:32 PDT 2013
+    #   Use formatInfo.
     #
     ###########################################################################
 
@@ -1743,12 +1750,12 @@ class VisItMovieTemplate:
                 nFrames = sequence_frames[seqName][0]
                 seqBase = sequence_frames[seqName][1]
                 for frame in range(nFrames):
-                    imageT = self.moviemaker.outputNeedsInput[format[1]]
-                    ext = self.moviemaker.formatExtension[imageT]
+                    imageT = self.moviemaker.formatInfo[format[1]][self.moviemaker.FMT_INPUTFORMAT]
+                    ext = self.moviemaker.OutputExtension(imageT)
                     if stereo == self.moviemaker.STEREO_LEFTRIGHT:
                         for eye in ("left_", "right_"):
                             srcName = self.CreateFilename(eye + seqBase, (vpw, vph, stereo), frame)
-                            if format[1] != self.moviemaker.FORMAT_PPM:
+                            if format[1] != "ppm":
                                 destName = "%s%s" % (format[0] % index, ext)
                             else:
                                 destName = "%s.ppm" % format[0] % index
@@ -1757,7 +1764,7 @@ class VisItMovieTemplate:
                                 destName = prefix + destName[:lastSlash+1] + eye + destName[lastSlash+1:]
                             else:
                                 destName = prefix + eye + destName
-                            if imageT != self.moviemaker.FORMAT_PPM:
+                            if imageT != "ppm":
                                 command = "convert %s %s" % (srcName, destName)
                                 self.Debug(5, "LinkFrames: %s" % command)
                                 os.system(command)
@@ -1767,7 +1774,7 @@ class VisItMovieTemplate:
                     else:
                         srcName = self.CreateFilename(seqBase, (vpw, vph, stereo), frame)
                         destName = prefix + "%s%s" % (format[0] % index, ext)
-                        if imageT != self.moviemaker.FORMAT_PPM:
+                        if imageT != "ppm":
                             command = "convert %s %s" % (srcName, destName)
                             self.Debug(5, "LinkFrames: %s" % command)
                             os.system(command)
