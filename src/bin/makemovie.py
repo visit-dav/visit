@@ -38,6 +38,8 @@
 import os, string, sys, thread
 from xmllib import *
 
+from visit_utils import encoding
+
 ###############################################################################
 # Function: CommandInPath
 #
@@ -237,62 +239,6 @@ def removeFilesHelper(threadID, start, end, conversionargs):
 def removeFiles(format, nframes):
     conversionargs = format
     return applyFunctionToFrames(removeFilesHelper, nframes, conversionargs)
-
-###############################################################################
-# Function: createQuickTimeFile
-#
-# Purpose:    This function creates a quicktime movie.
-#
-# Programmer: Brad Whitlock
-# Date:       Wed Dec 18 11:33:22 PDT 2002
-#
-# Modifications:
-#   Hank Childs, Thu Apr  1 07:48:41 PST 2004
-#   Added frames per second.
-#
-#   Brad Whitlock, Mon Jul 25 16:15:35 PST 2005
-#   Made it return a value.
-#
-###############################################################################
-
-def createQuickTimeFile(moviename, baseFormat, start, end, xres, yres, fps):
-    names = ""
-    for i in range(start, end):
-        filename = baseFormat % i
-        names = names + " " + filename
-    # Create the movie file.
-    command = "dmconvert -f qt -p video,comp=qt_mjpega,inrate=%d,rate=%d %s %s" % (fps, fps, names, moviename)
-    #print command
-    return os.system(command)
-
-###############################################################################
-# Function: EncodeQuickTimeMovieHelper
-#
-# Purpose:    This function is a thread callback function that creates a
-#             QuickTime movie for a small set of frames.
-#
-# Programmer: Brad Whitlock
-# Date:       Wed Dec 18 11:33:22 PDT 2002
-#
-# Modifications:
-#   Hank Childs, Thu Apr  1 07:52:00 PST 2004
-#   Added frames per second.
-#
-#   Brad Whitlock, Mon Jul 25 16:15:24 PST 2005
-#   Made it return a value.
-#
-###############################################################################
-
-def EncodeQuickTimeMovieHelper(threadID, start, end, conversionargs):
-    # Extract the arguments.
-    moviename = conversionargs[0]
-    baseFormat = conversionargs[1]
-    xres = conversionargs[2]
-    yres = conversionargs[3]
-    fps = conversionargs[4]
-    # Create the name of the part of the movie and the names of the files to use.
-    subMovieName = "%s.%d" % (moviename, threadID)
-    return createQuickTimeFile(subMovieName, baseFormat, start, end, xres, yres, fps)
 
 ###############################################################################
 # Function: visit_pipe
@@ -622,9 +568,12 @@ class WindowSizeParser(XMLParser):
 #   Brad Whitlock, Fri Feb 10 14:18:54 PST 2012
 #   I added support for -source command line arguments.
 #
+#   Brad Whitlock, Wed Apr  3 16:44:08 PDT 2013
+#   Use visit_utils for movie encoding.
+#
 ###############################################################################
 
-class MakeMovie:
+class MakeMovie(object):
     ###########################################################################
     # Method: __init__
     #
@@ -664,64 +613,38 @@ class MakeMovie:
     #   Brad Whitlock, Fri Feb 10 14:19:17 PST 2012
     #   Set sources to empty list.
     #
+    #   Brad Whitlock, Wed Apr  3 16:44:08 PDT 2013
+    #   Change various lists to formatInfo dictionary.
+    #
     ###########################################################################
 
     def __init__(self):
-        # Output file types.
-        self.FORMAT_PPM  = 0
-        self.FORMAT_TIFF = 1
-        self.FORMAT_JPEG = 2
-        self.FORMAT_BMP  = 3
-        self.FORMAT_RGB  = 4
-        self.FORMAT_PNG  = 5
-        self.FORMAT_MPEG = 6
-        self.FORMAT_QT   = 7
-        self.FORMAT_SM   = 8
+        super(MakeMovie,self).__init__()
 
-        # This map helps us determine what kind of image VisIt needs to save
-        # in order to create the specified type of movie
-        self.outputNeedsInput = { \
-           self.FORMAT_PPM  : self.FORMAT_PPM, \
-           self.FORMAT_TIFF : self.FORMAT_TIFF, \
-           self.FORMAT_JPEG : self.FORMAT_JPEG, \
-           self.FORMAT_BMP  : self.FORMAT_BMP, \
-           self.FORMAT_RGB  : self.FORMAT_RGB, \
-           self.FORMAT_PNG  : self.FORMAT_PNG, \
-           self.FORMAT_MPEG : self.FORMAT_PPM, \
-           self.FORMAT_QT   : self.FORMAT_PNG, \
-           self.FORMAT_SM   : self.FORMAT_PPM \
+        # format, extensions, input file type, needs encoding)
+        self.FMT_EXTENSIONS = 0
+        self.FMT_INPUTFORMAT = 1
+        self.FMT_ENCODER = 2
+        self.FMT_WINDOWSCOMPATIBLE = 3
+        self.FMT_SUPPORTS_STEREO = 4
+        self.formatInfo = {
+            "ppm"  : [("ppm", ),       "ppm",  None, 1, 0],\
+            "tiff" : [("tif", "tiff"), "tiff", None, 1, 0],\
+            "jpeg" : [("jpeg", "jpg"), "jpeg", None, 1, 0],\
+            "bmp"  : [("bmp",),        "bmp",  None, 1, 0],\
+            "rgb"  : [("rgb",),        "rgb",  None, 1, 0],\
+            "png"  : [("png",),        "png",  None, 1, 0],\
+            "mpeg" : [("mpg", "mpeg"), "jpeg", "mpg", 1, 0],\
+            "qt"   : [("mov", "qt"),   "jpeg", "mov", 0, 0],\
+            "sm"   : [("sm",),         "png",  "sm",  0, 1]\
         }
 
-        # Flag for whether we'll use ffmpeg for mpeg encoding.
-        self.ffmpegForMPEG = CommandInPath("ffmpeg")
-        if self.ffmpegForMPEG:
-            self.outputNeedsInput[self.FORMAT_MPEG] = self.FORMAT_JPEG
+        # See if there are any other encoders that we can use.
+        for fmt in encoding.encoders():
+            if fmt not in ("mpg", "mov", "sm"):
+                self.formatInfo[fmt] = [(fmt,), "jpeg", fmt, 0, 0]
 
-        # This map gives us the file extension to use for a specific file format.
-        self.formatExtension = { \
-           self.FORMAT_PPM  : ".ppm", \
-           self.FORMAT_TIFF : ".tif", \
-           self.FORMAT_JPEG : ".jpeg", \
-           self.FORMAT_BMP  : ".bmp", \
-           self.FORMAT_RGB  : ".rgb", \
-           self.FORMAT_PNG  : ".png", \
-           self.FORMAT_MPEG : ".mpeg", \
-           self.FORMAT_QT   : ".qt", \
-           self.FORMAT_SM   : ".sm" \
-        }
-
-        # This map gives us the type associated with a format name.
-        self.formatNameToType = { \
-           "ppm"  : self.FORMAT_PPM, \
-           "tiff" : self.FORMAT_TIFF, \
-           "jpeg" : self.FORMAT_JPEG, \
-           "bmp"  : self.FORMAT_BMP , \
-           "rgb"  : self.FORMAT_RGB , \
-           "png"  : self.FORMAT_PNG , \
-           "mpeg" : self.FORMAT_MPEG, \
-           "qt"   : self.FORMAT_QT  , \
-           "sm"   : self.FORMAT_SM \
-        }
+        self.allow_ffmpeg = 1
 
         self.STEREO_NONE = 0
         self.STEREO_LEFTRIGHT = 1
@@ -855,6 +778,9 @@ class MakeMovie:
     #   Brad Whitlock, Fri Feb 10 14:20:02 PST 2012
     #   Add -source argument.
     #
+    #   Brad Whitlock, Wed Apr  3 16:49:40 PDT 2013
+    #   Print formats based on the available encoders.
+    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -870,22 +796,31 @@ class MakeMovie:
         print "                       format for your movie. The supported values "
         print "                       for fmt are:"
         print ""
-        print "                       mpeg : MPEG 1 movie."
-        print "                       qt   : Quicktime movie."
-        print "                       sm   : Streaming movie format"
-        print "                              (popular for powerwall demos)."
-        print "                       ppm  : Save raw movie frames as individual"
-        print "                              PPM files."
-        print "                       tiff : Save raw movie frames as individual"
-        print "                              TIFF files."
-        print "                       jpeg : Save raw movie frames as individual"
-        print "                              JPEG files."
-        print "                       bmp  : Save raw movie frames as individual"
-        print "                              BMP (Windows Bitmap) files."
-        print "                       rgb  : Save raw movie frames as individual"
-        print "                              RGB (SGI format) files."
-        print "                       png  : Save raw movie frames as individual"
-        print "                              PNG files."
+        print "                       Movie formats"
+        print "                       -------------"
+        keys = self.formatInfo.keys()
+        keys.sort()
+        for k in keys:
+            if self.formatInfo[k][self.FMT_ENCODER] != None:
+                s = ""
+                for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
+                    if s != "":
+                        s = s + ", " + ext
+                    else:
+                        s = ext
+                print "                       %s" % s
+        print ""
+        print "                       Image formats"
+        print "                       -------------"
+        for k in keys:
+            if self.formatInfo[k][self.FMT_ENCODER] == None:
+                s = ""
+                for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
+                    if s != "":
+                        s = s + ", " + ext
+                    else:
+                        s = ext
+                print "                       %s" % s
         print ""
         print "                       You can specify multiple formats by concatenating"
         print "                       more than one allowed format using commas. Example:"
@@ -1201,15 +1136,25 @@ class MakeMovie:
     #   Brad Whitlock, Fri Oct 20 16:29:55 PST 2006
     #   Added stereoName argument.
     #
+    #   Brad Whitlock, Thu Apr  4 10:46:58 PDT 2013
+    #   Change how the format is determined.
+    #
     ###########################################################################
 
     def RequestFormat(self, fmtName, w, h, stereoName):
         self.Debug(1, "Requesting movie %s at %dx%d with stereo %s" % (fmtName, w, h, stereoName))
-        fmt = self.formatNameToType[fmtName]
+
+        # The string used as fmtName will be one of the extensions for the format.
+        fmt = ""
+        for k in self.formatInfo.keys():
+            for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
+                if fmtName == ext:
+                    fmt = k
+
         sfmt = self.stereoNameToType[stereoName]
         formatString = ""
         # If we're making MPEG then restrict the resolution to multiples of 16.
-        if fmt == self.FORMAT_MPEG:
+        if fmt == "mpeg":
             w = int(w / 16) * 16
             h = int(h / 16) * 16
 
@@ -1316,36 +1261,26 @@ class MakeMovie:
             # We're processing arguments as usual.
             if(commandLine[i] == "-format"):
                 if((i+1) < len(commandLine)):
-                    formats = self.SplitString(commandLine[i+1], ",")
+                    formats = self.SplitString(commandLine[i+1], ",")                   
                     for format in formats:
-                        if(format == "mpeg"):
-                            formatList = formatList + [format]
-                        elif(format == "qt"):
-                            if(sys.platform != "win32"):
-                                formatList = formatList + [format]
-                            else:
-                                self.PrintUsage();
+                        # See if the format is valid.
+                        validFormat = ""
+                        for k in self.formatInfo.keys():
+                            for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
+                                if ext == format:
+                                    validFormat = k
+
+                        if validFormat != "":
+                            if sys.platform == "win32" and self.formatInfo[validFormat][self.FMT_WINDOWSCOMPATIBLE]:
+                                print "Error! ", format, " is not supported on Windows."
                                 sys.exit(-1)
-                        elif(format == "sm"):
-                            if(sys.platform != "win32"):
-                                formatList = formatList + [format]
                             else:
-                                self.PrintUsage();
-                                sys.exit(-1)
-                        elif(format == "tiff" or format == "tif"):
-                            formatList = formatList + ["tiff"]
+                                formatList = formatList + [validFormat]
                         else:
-                            found = 0
-                            format2 = "." + format
-                            # Look for the format in the list of supported formats.
-                            for k in self.formatExtension.keys():
-                                if self.formatExtension[k] == format2:
-                                    formatList = formatList + [format]
-                                    found = 1
-                                    break;
-                            if(found == 0):
-                                self.PrintUsage()
-                                sys.exit(-1)
+                            print "Error! ",format," is not a valid format."
+                            self.PrintUsage();
+                            sys.exit(-1)
+
                     i = i + 1
                 else:
                     self.PrintUsage()
@@ -1487,7 +1422,7 @@ class MakeMovie:
                     self.PrintUsage()
                     sys.exit(-1)
             elif(commandLine[i] == "-noffmpeg"):
-                self.ffmpegForMPEG = 0
+                self.allow_ffmpeg = 0
             elif(commandLine[i] == "-enginerestartinterval"):
                 if((i+1) < len(commandLine)):
                     try:
@@ -1591,10 +1526,10 @@ class MakeMovie:
 
         # If we are using ffmpeg for the mpeg encoder then let's make sure that 
         # we make JPEG images to start with.
-        if self.ffmpegForMPEG:
-            self.outputNeedsInput[self.FORMAT_MPEG] = self.FORMAT_JPEG
+        if self.allow_ffmpeg:
+            self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "jpeg"
         else:
-            self.outputNeedsInput[self.FORMAT_MPEG] = self.FORMAT_PPM
+            self.formatInfo["mpeg"][self.FMT_INPUTFORMAT] = "ppm"
 
         # If the formatList or sizeList were not specified, give them 
         # default values.
@@ -1713,6 +1648,9 @@ class MakeMovie:
     #   Brad Whitlock, Wed Sep 27 17:57:59 PST 2006
     #   Made it use new outputDir member.
     #
+    #   Brad Whitlock, Thu Apr  4 13:12:51 PDT 2013
+    #   Use formatInfo.
+    #
     ###########################################################################
 
     def CreateTemporaryDirectory(self):
@@ -1722,7 +1660,7 @@ class MakeMovie:
         any_formats_get_encoded = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if self.outputNeedsInput[fmt] != fmt:
+            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
                 any_formats_get_encoded = 1
                 break
 
@@ -1774,6 +1712,9 @@ class MakeMovie:
     #   Brad Whitlock, Wed Sep 27 18:09:32 PST 2006
     #   I made frames always get saved to tmpDir. I changed how stereo works.
     #
+    #   Brad Whitlock, Wed Apr  3 17:32:26 PDT 2013
+    #   Change how format is determined.
+    #
     ###########################################################################
 
     def SaveImage(self, index):
@@ -1816,18 +1757,18 @@ class MakeMovie:
             self.Debug(5, "SaveImage: %s" % s.fileName)
 
             # Determine the format of the frame that VisIt needs to save.
-            frameFormat = self.outputNeedsInput[format[1]]
-            if(frameFormat == self.FORMAT_PPM):
+            frameFormat = self.formatInfo[format[1]][self.FMT_INPUTFORMAT]
+            if(frameFormat == "ppm"):
                 s.format =  s.PPM
-            elif(frameFormat == self.FORMAT_TIFF):
+            elif(frameFormat == "tiff"):
                 s.format =  s.TIFF
-            elif(frameFormat == self.FORMAT_JPEG):
+            elif(frameFormat == "jpeg"):
                 s.format =  s.JPEG
-            elif(frameFormat == self.FORMAT_BMP):
+            elif(frameFormat == "bmp"):
                 s.format =  s.BMP
-            elif(frameFormat == self.FORMAT_RGB):
+            elif(frameFormat == "rgb"):
                 s.format =  s.RGB
-            elif(frameFormat == self.FORMAT_PNG):
+            elif(frameFormat == "png"):
                 s.format =  s.PNG
 
             # Images that will be used in a movie go to tmpDir while other
@@ -2270,6 +2211,9 @@ class MakeMovie:
     #   Brad Whitlock, Tue May  1 10:57:40 PDT 2012
     #   Move the movietemplates directory into resources.
     #
+    #   Brad Whitlock, Wed Apr  3 17:36:15 PDT 2013
+    #   Check formatInfo.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2296,19 +2240,15 @@ class MakeMovie:
         index = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
+            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
                 self.percentAllocationFrameGen = 0.9
                 self.percentAllocationEncode = 0.1
                 if format[4] == self.STEREO_LEFTRIGHT:
-                    if fmt == self.FORMAT_MPEG:
-                        msg = "Left/Right stereo is not supported for MPEG movies. VisIt will instead create stereo PPM files."
+                    if not self.formatInfo[fmt][self.FMT_SUPPORTS_STEREO]:
+                        msg = "Left/Right stereo is not supported for %s movies. VisIt will instead create stereo PPM files." % fmt
                         self.ClientMessageBox(msg)
                         self.Log(msg)
-                        self.movieFormats[index][1] = self.FORMAT_PPM
-                    elif fmt == self.FORMAT_QT:
-                        msg = "Left/Right stereo is not supported for Quicktime movies. VisIt will instead create stereo PPM files."
-                        self.ClientMessageBox(msg)
-                        self.movieFormats[index][1] = self.FORMAT_PPM
+                        self.movieFormats[index][1] = "ppm"
             index = index + 1
 
         # Determine if the formats contain different resolutions.
@@ -2530,7 +2470,50 @@ class MakeMovie:
         return 1
 
     ###########################################################################
+    # Method: OutputExtension
+    #
+    # Purpose:    This method returns the extension to use for a file.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Wed Apr  3 16:32:42 PDT 2013
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def OutputExtension(self, fmt):
+        return "." + self.formatInfo[fmt][self.FMT_EXTENSIONS][0]
+
+    ###########################################################################
     # Method: EncodeMPEGMovie
+    #
+    # Purpose:    This method creates an MPEG movie.
+    #
+    # Programmer: Brad Whitlock
+    # Date:       Wed Apr  3 16:32:42 PDT 2013
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
+        if self.allow_ffmpeg:
+            frameExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
+            framePattern = self.tmpDir + self.slash + imageFormatString + frameExt
+            absMovieName = self.outputDir + self.slash + moviename
+
+            success = 1
+            msg = ""
+            if encoding.encode(framePattern, absMovieName) > 0:
+                success = 0
+                msg = "The movie encoder used in the visit_utils module did not complete successfully."
+
+            return (success, moviename, msg)
+        else:
+            return self.EncodeMPEGMovie_old(moviename, imageFormatString, xres, yres)
+
+    ###########################################################################
+    # Method: EncodeMPEGMovie_old
     #
     # Purpose:    This method creates an MPEG movie.
     #
@@ -2586,9 +2569,12 @@ class MakeMovie:
     #   Kathleen Bonnell, Tue Nov  2 12:20:11 PDT 2010 
     #   Executable is mpeg2encode.exe on Windows (since CMake overhaul). 
     # 
+    #   Brad Whitlock, Wed Apr  3 16:30:39 PDT 2013
+    #   Rename to EncodeMPEGMovie_old and remove ffmpeg code.
+    #
     ###########################################################################
 
-    def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
+    def EncodeMPEGMovie_old(self, moviename, imageFormatString, xres, yres):
         self.Debug(1, "EncodeMPEGMovie")
 
         retval = 0
@@ -2607,7 +2593,7 @@ class MakeMovie:
                          print "movie will be encoded at %f frames per second" %(30./i)
 
             # Now create symbolic links to the images at that pad rate.
-            formatExt = self.formatExtension[self.outputNeedsInput[self.FORMAT_MPEG]]
+            formatExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
             linkbase = "mpeg_link"
             linkindex = 0
             doSymlink = "symlink" in dir(os)
@@ -2628,94 +2614,80 @@ class MakeMovie:
                 bitrate = 104000000
 
             absMovieName = self.outputDir + self.slash + moviename
-            if self.ffmpegForMPEG:
-                # MPEG1 bit rate is really capped at about 100M due to 1000x1000x30x3 limits.
-                if bitrate > 100000000:
-                    bitrate = 100000000
-                # Use the user's ffmpeg encoder program.
-                framePattern = self.tmpDir+self.slash+linkbase+"%04d"+formatExt
-                command = "ffmpeg -f image2 -i %s -mbd rd -flags +mv4+aic -trellis 1 -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b %s %s\n" % (framePattern, bitrate, absMovieName)
-                def print_ffmpeg_line_cb(line, this):
-                    print line
-                    this.Debug(5, line)
-                self.Debug(1, command)
-                r = visit_pipe(command, print_ffmpeg_line_cb, self)
-                self.Debug(1, "ffmpeg returned %d" % r)
-            else:
-                # Use VisIt's mpeg2encode MPEG encoder program.
-                f = open(paramFile, "w")
-                f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
-                f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
-                f.write('-         /* name of reconstructed images ("-": do not store) */\n')
-                f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
-                f.write('-         /* name of non intra quant matrix file ("-": default matrix) */\n')
-                f.write('%s        /* name of statistics file ("-": stdout ) */\n' % statFile)
-                f.write('2         /* input picture file format: 0=*.Y,*.U,*.V, 1=*.yuv, 2=*.ppm */\n')
-                f.write('%d        /* number of frames */\n' % nframes)
-                f.write('0         /* number of first frame */\n')
-                f.write('00:00:00:00 /* timecode of first frame */\n')
-                f.write('15        /* N (# of frames in GOP) */\n')  # 15
-                f.write('3         /* M (I/P frame distance) */\n')
-                f.write('1         /* ISO/IEC 11172-2 stream */\n')
-                f.write('0         /* 0:frame pictures, 1:field pictures */\n')
-                f.write('%d        /* horizontal_size */\n' % xres)
-                f.write('%d        /* vertical_size */\n' % yres)
-                f.write('8         /* aspect_ratio_information 8=CCIR601 625 line, 9=CCIR601 525 line */\n')
-                f.write('5         /* frame_rate_code 1=23.976, 2=24, 3=25, 4=29.97, 5=30 frames/sec. */\n')
-                f.write('%d.0      /* bit_rate (bits/s) */\n' % bitrate)
-                f.write('112       /* vbv_buffer_size (in multiples of 16 kbit) */\n')
-                f.write('0         /* low_delay  */\n')
-                f.write('0         /* constrained_parameters_flag */\n')
-                f.write('4         /* Profile ID: Simple = 5, Main = 4, SNR = 3, Spatial = 2, High = 1 */\n')
-                f.write('4         /* Level ID:   Low = 10, Main = 8, High 1440 = 6, High = 4          */\n')
-                f.write('1         /* progressive_sequence */\n')
-                f.write('1         /* chroma_format: 1=4:2:0, 2=4:2:2, 3=4:4:4 */\n')
-                f.write('0         /* video_format: 0=comp., 1=PAL, 2=NTSC, 3=SECAM, 4=MAC, 5=unspec. */\n')
-                f.write('5         /* color_primaries */\n')
-                f.write('5         /* transfer_characteristics */\n')
-                f.write('5         /* matrix_coefficients */\n')
-                f.write('%d        /* display_horizontal_size */\n' % xres)
-                f.write('%d        /* display_vertical_size */\n' % yres)
-                f.write('0         /* intra_dc_precision (0: 8 bit, 1: 9 bit, 2: 10 bit, 3: 11 bit */\n')
-                f.write('0         /* top_field_first */\n')
-                f.write('1 1 1     /* frame_pred_frame_dct (I P B) */\n')
-                f.write('0 0 0     /* concealment_motion_vectors (I P B) */\n')
-                f.write('0 0 0     /* q_scale_type  (I P B) */\n')
-                f.write('0 0 0     /* intra_vlc_format (I P B)*/\n')
-                f.write('0 0 0     /* alternate_scan (I P B) */\n')
-                f.write('0         /* repeat_first_field */\n')
-                f.write('1         /* progressive_frame */\n')
-                f.write('0         /* P distance between complete intra slice refresh */\n')
-                f.write('0         /* rate control: r (reaction parameter) */\n')
-                f.write('0         /* rate control: avg_act (initial average activity) */\n')
-                f.write('0         /* rate control: Xi (initial I frame global complexity measure) */\n')
-                f.write('0         /* rate control: Xp (initial P frame global complexity measure) */\n')
-                f.write('0         /* rate control: Xb (initial B frame global complexity measure) */\n')
-                f.write('0         /* rate control: d0i (initial I frame virtual buffer fullness) */\n')
-                f.write('0         /* rate control: d0p (initial P frame virtual buffer fullness) */\n')
-                f.write('0         /* rate control: d0b (initial B frame virtual buffer fullness) */\n')
-                f.write('2 2 11 11 /* P:  forw_hor_f_code forw_vert_f_code search_width/height */\n')
-                f.write('1 1 3  3  /* B1: forw_hor_f_code forw_vert_f_code search_width/height */\n')
-                f.write('1 1 7  7  /* B1: back_hor_f_code back_vert_f_code search_width/height */\n')
-                f.write('1 1 7  7  /* B2: forw_hor_f_code forw_vert_f_code search_width/height */\n')
-                f.write('1 1 3  3  /* B2: back_hor_f_code back_vert_f_code search_width/height */\n')
-                f.close();
 
-                # Create the movie
-                if (sys.platform != "win32"):
-                    command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
+            # Use VisIt's mpeg2encode MPEG encoder program.
+            f = open(paramFile, "w")
+            f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
+            f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
+            f.write('-         /* name of reconstructed images ("-": do not store) */\n')
+            f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
+            f.write('-         /* name of non intra quant matrix file ("-": default matrix) */\n')
+            f.write('%s        /* name of statistics file ("-": stdout ) */\n' % statFile)
+            f.write('2         /* input picture file format: 0=*.Y,*.U,*.V, 1=*.yuv, 2=*.ppm */\n')
+            f.write('%d        /* number of frames */\n' % nframes)
+            f.write('0         /* number of first frame */\n')
+            f.write('00:00:00:00 /* timecode of first frame */\n')
+            f.write('15        /* N (# of frames in GOP) */\n')  # 15
+            f.write('3         /* M (I/P frame distance) */\n')
+            f.write('1         /* ISO/IEC 11172-2 stream */\n')
+            f.write('0         /* 0:frame pictures, 1:field pictures */\n')
+            f.write('%d        /* horizontal_size */\n' % xres)
+            f.write('%d        /* vertical_size */\n' % yres)
+            f.write('8         /* aspect_ratio_information 8=CCIR601 625 line, 9=CCIR601 525 line */\n')
+            f.write('5         /* frame_rate_code 1=23.976, 2=24, 3=25, 4=29.97, 5=30 frames/sec. */\n')
+            f.write('%d.0      /* bit_rate (bits/s) */\n' % bitrate)
+            f.write('112       /* vbv_buffer_size (in multiples of 16 kbit) */\n')
+            f.write('0         /* low_delay  */\n')
+            f.write('0         /* constrained_parameters_flag */\n')
+            f.write('4         /* Profile ID: Simple = 5, Main = 4, SNR = 3, Spatial = 2, High = 1 */\n')
+            f.write('4         /* Level ID:   Low = 10, Main = 8, High 1440 = 6, High = 4          */\n')
+            f.write('1         /* progressive_sequence */\n')
+            f.write('1         /* chroma_format: 1=4:2:0, 2=4:2:2, 3=4:4:4 */\n')
+            f.write('0         /* video_format: 0=comp., 1=PAL, 2=NTSC, 3=SECAM, 4=MAC, 5=unspec. */\n')
+            f.write('5         /* color_primaries */\n')
+            f.write('5         /* transfer_characteristics */\n')
+            f.write('5         /* matrix_coefficients */\n')
+            f.write('%d        /* display_horizontal_size */\n' % xres)
+            f.write('%d        /* display_vertical_size */\n' % yres)
+            f.write('0         /* intra_dc_precision (0: 8 bit, 1: 9 bit, 2: 10 bit, 3: 11 bit */\n')
+            f.write('0         /* top_field_first */\n')
+            f.write('1 1 1     /* frame_pred_frame_dct (I P B) */\n')
+            f.write('0 0 0     /* concealment_motion_vectors (I P B) */\n')
+            f.write('0 0 0     /* q_scale_type  (I P B) */\n')
+            f.write('0 0 0     /* intra_vlc_format (I P B)*/\n')
+            f.write('0 0 0     /* alternate_scan (I P B) */\n')
+            f.write('0         /* repeat_first_field */\n')
+            f.write('1         /* progressive_frame */\n')
+            f.write('0         /* P distance between complete intra slice refresh */\n')
+            f.write('0         /* rate control: r (reaction parameter) */\n')
+            f.write('0         /* rate control: avg_act (initial average activity) */\n')
+            f.write('0         /* rate control: Xi (initial I frame global complexity measure) */\n')
+            f.write('0         /* rate control: Xp (initial P frame global complexity measure) */\n')
+            f.write('0         /* rate control: Xb (initial B frame global complexity measure) */\n')
+            f.write('0         /* rate control: d0i (initial I frame virtual buffer fullness) */\n')
+            f.write('0         /* rate control: d0p (initial P frame virtual buffer fullness) */\n')
+            f.write('0         /* rate control: d0b (initial B frame virtual buffer fullness) */\n')
+            f.write('2 2 11 11 /* P:  forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 3  3  /* B1: forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 7  7  /* B1: back_hor_f_code back_vert_f_code search_width/height */\n')
+            f.write('1 1 7  7  /* B2: forw_hor_f_code forw_vert_f_code search_width/height */\n')
+            f.write('1 1 3  3  /* B2: back_hor_f_code back_vert_f_code search_width/height */\n')
+            f.close();
+            # Create the movie
+            if (sys.platform != "win32"):
+                command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
+            else:
+                command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
+            self.Debug(1, command)
+            # Function to print the mpeg2encode output
+            def print_mpeg_line_cb(line, this):
+                if line[:8] == "Encoding":
+                    print line
+                    this.Debug(1, line)
                 else:
-                    command = "mpeg2encode.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
-                self.Debug(1, command)
-                # Function to print the mpeg2encode output
-                def print_mpeg_line_cb(line, this):
-                    if line[:8] == "Encoding":
-                        print line
-                        this.Debug(1, line)
-                    else:
-                        this.Debug(5, line)
-                r = visit_pipe(command, print_mpeg_line_cb, self)
-                self.Debug(1, "mpeg2encode returned %d" % r)
+                    this.Debug(5, line)
+            r = visit_pipe(command, print_mpeg_line_cb, self)
+            self.Debug(1, "mpeg2encode returned %d" % r)
 
             # Make sure that the movie exists before we delete files.
             files = os.listdir(self.outputDir)
@@ -2737,9 +2709,8 @@ class MakeMovie:
                 retval = (1, moviename, "")
 
                 # Remove the param and the statistics file.
-                if not self.ffmpegForMPEG:
-                    RemoveFile(paramFile);
-                    RemoveFile(statFile);
+                RemoveFile(paramFile);
+                RemoveFile(statFile);
 
                 # Remove the symbolic links.
                 linkindex = 0
@@ -2752,8 +2723,6 @@ class MakeMovie:
                         linkindex = linkindex + 1
             else:
                 pName = "VisIt's mpeg2encode"
-                if self.ffmpegForMPEG:
-                    pName = "The ffmpeg encoder"
                 s = pName + " program was not successful. No MPEG \n"
                 s = s + "movie was created. You can access the raw source frames\n"
                 s = s + "in: %s." % self.tmpDir
@@ -2767,100 +2736,31 @@ class MakeMovie:
         return retval
 
     ###########################################################################
-    # Method: GetDMConvertSuccess
+    # Method: EncodeMovie
     #
-    # Purpose:    This method determines whether dmconvert ran successfully.
+    # Purpose:    This method creates a movie with visit_utils.
     #
     # Programmer: Brad Whitlock
-    # Date:       Mon Jul 25 16:14:42 PST 2005
+    # Date:       Wed Apr  3 17:51:17 PDT 2013
     #
     # Modifications:
     #
     ###########################################################################
 
-    def GetDMConvertSuccess(self, retval):
+    def EncodeMovie(self, fmt, moviename, imageFormatString, xres, yres, stereo):
+        self.Debug(1, "EncodeMovie")
+
+        formatExt = "." + self.formatInfo[fmt][self.FMT_INPUTFORMAT]
+        framePattern = self.tmpDir + self.slash + imageFormatString + formatExt
+        absMovieName = self.outputDir + self.slash + moviename
+
         success = 1
-        if type(retval) == type([]):
-            for v in retval:
-                if v == 256:
-                    success = 0
-        elif type(retval) == type(0):
-            if retval == 256:
-                success = 0
+        msg = ""
+        if encoding.encode(framePattern, absMovieName) > 0:
+            success = 0
+            msg = "The movie encoder used in the visit_utils module did not complete successfully."
 
-        return success
-
-    ###########################################################################
-    # Method: EncodeQuickTimeMovie
-    #
-    # Purpose:    This method creates a QuickTime movie.
-    #
-    # Notes:      If there are many movies, this routine will create several
-    #             smaller QuickTime movies that are concatenated once they are
-    #             all generated. This avoids a limit of 1000 or so command
-    #             line arguments on the shell.
-    #
-    # Programmer: Brad Whitlock
-    # Date:       Mon Jul 28 13:58:06 PST 2003
-    #
-    # Modifications:
-    #   Hank Childs, Thu Apr  1 07:48:41 PST 2004
-    #   Set frames per second.
-    #
-    #   Brad Whitlock, Tue May 10 11:22:46 PDT 2005
-    #   Made it return more status about the movie encoding process. Passed in
-    #   imageFormatString, xres, yres.
-    #
-    #   Brad Whitlock, Mon Jul 25 16:09:01 PST 2005
-    #   Made it more tolerant to failures of the dmconvert command.
-    #
-    ###########################################################################
-
-    def EncodeQuickTimeMovie(self, moviename, imageFormatString, xres, yres):
-        self.Debug(1, "EncodeQuickTimeMovie")
-        retval = 0
-
-        if(CommandInPath("dmconvert")):
-            # Determine the image extension
-            ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_QT]]
-            fps = self.fps
-            baseFormat = self.tmpDir + self.slash + imageFormatString + ext
-
-            # Create small QuickTime movies
-            conversionargs = (moviename, baseFormat, xres, yres, fps)
-            framesPerMovie = 50
-            nframes = self.numFrames
-            retval = applyFunctionToNFrames(EncodeQuickTimeMovieHelper, framesPerMovie, nframes, conversionargs)
-            msg = ""
-            success = self.GetDMConvertSuccess(retval)
-
-            # Glue the submovies together.
-            nSubMovies = nframes / framesPerMovie
-            if(nSubMovies * framesPerMovie < nframes):
-                nSubMovies = nSubMovies + 1
-            subMovieFormat = "%s.%%d" % moviename
-            if success == 1:
-                s = createQuickTimeFile(moviename, subMovieFormat, 0, nSubMovies, xres, yres, fps)
-                success = self.GetDMConvertSuccess(s)
-
-            if success == 0:
-                msg =        "The command \"dmconvert\" could not create a QuickTime \n"
-                msg = msg + "movie. You can still access the frames of your \n"
-                msg = msg + "movie in: %s.\n" % self.tmpDir
-
-            # Delete the submovies.
-            removeFiles(subMovieFormat, nSubMovies)
-
-            retval = (success, moviename, msg)
-        else:
-            s =     "The command \"dmconvert\", which is required to make \n"
-            s = s + "QuickTime movies is not in your path so your source \n"
-            s = s + "frames cannot be automatically converted into a \n"
-            s = s + "QuickTime movie. You can, however, still access the \n"
-            s = s + "frames of your movie in: %s.\n" % self.tmpDir
-            retval = (0, moviename, s)
-
-        return retval
+        return (success, moviename, msg)
 
     ###########################################################################
     # Method: EncodeStreamingMovie
@@ -2884,15 +2784,29 @@ class MakeMovie:
     #   Brad Whitlock, Mon Nov 6 16:44:58 PST 2006
     #   Added support for stereo.
     #
+    #   Brad Whitlock, Thu Apr  4 14:59:38 PDT 2013
+    #   Use formatInfo. Use current location for img2sm at LC.
+    #
     ###########################################################################
 
     def EncodeStreamingMovie(self, moviename, imageFormatString, xres, yres, stereo):
         self.Debug(1, "EncodeStreamingMovie")
         retval = 0
 
-        if(CommandInPath("img2sm")):
+        # Look for the location of the img2sm command. The code to get the 
+        # latest at LC is adapted from visit_utils.
+        img2sm = ""
+        if CommandInPath("img2sm"):
+            img2sm = "img2sm"
+        else:
+            if os.environ.has_key('SYS_TYPE'):
+                res = os.path.join("/usr/gapps/asciviz/blockbuster/latest",os.environ["SYS_TYPE"],"bin/img2sm")
+                if os.path.exists(res):
+                    img2sm = res
+
+        if img2sm != "":
             # Determine the image extension
-            ext = self.formatExtension[self.outputNeedsInput[self.FORMAT_SM]]
+            ext = "." + self.formatInfo["sm"][self.FMT_INPUTFORMAT]
 
             # Execute the img2sm command
             r = 0
@@ -2923,14 +2837,14 @@ class MakeMovie:
 
                 # Now make the stereo movie.
                 format = self.tmpDir + self.slash + imageFormatString
-                command = "img2sm -rle -stereo -fps %d -first 0 -last %d -form pnm %s%s %s" % \
-                          (self.fps, (self.numFrames-1)*2, format, ext, moviename)
+                command = "%s -rle -stereo -fps %d -first 0 -last %d -form pnm %s%s %s" % \
+                          (img2sm, self.fps, (self.numFrames-1)*2, format, ext, moviename)
                 self.Debug(1, command)
                 r = os.system(command)
             else:
                 format = self.tmpDir + self.slash + imageFormatString
-                command = "img2sm -rle -fps %d -first 0 -last %d -form png %s%s %s" % \
-                          (self.fps, self.numFrames-1, format, ext, moviename)
+                command = "%s -rle -fps %d -first 0 -last %d -form png %s%s %s" % \
+                          (img2sm, self.fps, self.numFrames-1, format, ext, moviename)
                 self.Debug(1, command)
                 r = os.system(command)
 
@@ -2943,7 +2857,7 @@ class MakeMovie:
                 retval = (0, moviename, s)
         else:
             s =     "The command \"img2sm\", which is required to make \n"
-            s = s + "streaming movies, is not in your path so your source \n"
+            s = s + "streaming movies, could not be located so your source \n"
             s = s + "frames cannot be automatically converted into a streaming\n"
             s = s + "movie. You can, however, still access the frames of your \n"
             s = s + "movie in: %s.\n" % self.tmpDir
@@ -2960,6 +2874,8 @@ class MakeMovie:
     # Date:       Tue May 31 17:19:20 PST 2005
     #
     # Modifications:
+    #   Brad Whitlock, Wed Apr  3 17:44:42 PDT 2013
+    #   Use formatInfo.
     #
     ###########################################################################
 
@@ -2969,10 +2885,12 @@ class MakeMovie:
         moviename = filebase
         if useGeom == 1:
             filebase = "%s_%dx%d" % (self.movieBase, xres, yres)
-        formatExt = self.formatExtension[fmt]
+
+        formatExt = self.OutputExtension(fmt)
+
         ext = filebase[-len(formatExt):]
         if(ext != formatExt):
-            moviename = filebase + self.formatExtension[fmt]
+            moviename = filebase + formatExt
         return moviename
 
     ###########################################################################
@@ -3027,6 +2945,9 @@ class MakeMovie:
     #   Kathleen Bonnell, Fri Jul 20 10:36:10 PDT 2007 
     #   Use self.outputDir to report where movie was stored when completed. 
     #
+    #   Brad Whitlock, Wed Apr  3 17:45:51 PDT 2013
+    #   Change how encoders are invoked.
+    #
     ###########################################################################
 
     def EncodeFrames(self):
@@ -3036,8 +2957,8 @@ class MakeMovie:
         nEncodedMovies = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
-               nEncodedMovies = nEncodedMovies + 1
+            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+                nEncodedMovies = nEncodedMovies + 1
 
         # Send a "stage transition" by changing the text.
         if nEncodedMovies > 0:
@@ -3077,14 +2998,14 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
 
             # Encode the movie if needed.
             encodeMovie = 0
-            if(fmt == self.FORMAT_MPEG):
+            if(fmt == "mpeg"):
                 val = self.EncodeMPEGMovie(movieName, formatString, xres, yres)
                 encodeMovie = 1
-            elif(fmt == self.FORMAT_QT):
-                val = self.EncodeQuickTimeMovie(movieName, formatString, xres, yres)
-                encodeMovie = 1
-            elif(fmt == self.FORMAT_SM):
+            elif(fmt == "sm"):
                 val = self.EncodeStreamingMovie(movieName, formatString, xres, yres, stereo)
+                encodeMovie = 1
+            elif self.formatInfo[fmt][self.FMT_ENCODER] != None:
+                val = self.EncodeMovie(fmt, movieName, formatString, xres, yres, stereo)
                 encodeMovie = 1
 
             # If we encoded a movie, send the client some progress.

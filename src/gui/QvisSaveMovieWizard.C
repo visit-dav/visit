@@ -80,6 +80,8 @@
 #include <MovieSequence.h>
 #include <MovieTemplateConfig.h>
 #include <AccessViewerSession.h>
+
+#include <StringHelpers.h>
 #include <snprintf.h>
 
 #define movieAtts ((MovieAttributes *)localCopy)
@@ -91,8 +93,9 @@
 //
 // Movie format information.
 //
-#define MPEG_FORMAT "MPEG movie"
-#define TIFF_FORMAT "TIFF images"
+#define MPEG_FORMAT  "MPEG movie"
+#define MPEG4_FORMAT "MPEG 4 movie"
+#define JPEG_FORMAT  "JPEG images"
 
 struct movie_format_info
 {
@@ -100,16 +103,33 @@ struct movie_format_info
     const char *format;
 };
 
+// Maybe someday we can populate these based on a config file or the results
+// from VisIt's visit_utils.encoding.encoders() Python function.
 movie_format_info movieFormatInfo[] = {
     {"BMP  images",     "bmp"},
     {"JPEG images",     "jpeg"},
     {"PNG  images",     "png"},
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
-    {TIFF_FORMAT,       "tiff"},
+    {"TIFF images",     "tiff"},
     {MPEG_FORMAT,       "mpeg"},
+#ifndef _WIN32
+    {"AVI movie",       "avi"},
+    {"DIVX movie",      "divx"},
+    {MPEG4_FORMAT,      "mp4"},
+    {"QuickTime movie", "mov"},
+    {"SWF movie",       "swf"},
+    {"WMV movie",       "wmv"},
+#endif
     {"Streaming movie", "sm"}
 };
+
+// Prefer MPEG4 if we're not on Windows.
+#ifdef _WIN32
+#define PREFERRED_FORMAT MPEG_FORMAT
+#else
+#define PREFERRED_FORMAT MPEG4_FORMAT
+#endif
 
 #define N_MOVIE_FORMATS  (sizeof(movieFormatInfo) / sizeof(movie_format_info))
 
@@ -414,6 +434,9 @@ QvisSaveMovieWizard::Exec()
 //   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
 //   Support for internationalization.
 //
+//   Brad Whitlock, Thu Apr  4 17:23:15 PDT 2013
+//   Fixed for template movies.
+//
 // ****************************************************************************
 
 void
@@ -474,6 +497,10 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             templateSpec->GetTemplateFile(specificationFile);
             debug1 << mName << "Specification file: " << specificationFile.c_str() << endl;
 
+            // If we have the default movie template as the name of the specification
+            // file that we're saving then replace the name of the specification.
+            specificationFile = StringHelpers::Replace(specificationFile, "visitmovietemplate.py", "untitled.mt");
+
             // Create a new .py template filename from the specification file.
             // Also create the name of the session file that we'll be saving.
             std::string specExt(specificationFile.substr(
@@ -484,6 +511,15 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
                 std::string base(specificationFile.substr(0, 
                     specificationFile.size() - 3));
 
+                templateFile = base + ".py";
+                sessionFile = base + ".session";
+            }
+            else if(specExt == ".py")
+            {
+                std::string base(specificationFile.substr(0, 
+                    specificationFile.size() - 3));
+
+                specificationFile = base + ".mt";
                 templateFile = base + ".py";
                 sessionFile = base + ".session";
             }
@@ -523,9 +559,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
                 fprintf(pyFile, "Source(\"%s\")\n\n", GetVisItMovieTemplateBaseClass().c_str());
                 fprintf(pyFile, "class CustomMovieTemplate(VisItMovieTemplate):\n");
                 fprintf(pyFile, "    def __init__(self, mm, tr):\n");
-                fprintf(pyFile, "        VisItMovieTemplate.__init__(self, mm, tr)\n");
-                fprintf(pyFile, "    def __del__(self):\n");
-                fprintf(pyFile, "        VisItMovieTemplate.__del__(self)\n");
+                fprintf(pyFile, "        super(CustomMovieTemplate, self).__init__(mm, tr)\n");
                 fprintf(pyFile, "    # Override SetupVisualization so it uses a session file.\n");
                 fprintf(pyFile, "    def SetupVisualization(self):\n");
                 fprintf(pyFile, "        self.SetupVisualizationFromSession()\n\n");
@@ -2191,7 +2225,7 @@ QvisSaveMovieWizard::initializePage(int pageId)
         page9_UpdateOutputs();
         if(movieAtts->GetFileFormats().size() > 0)
         {
-            // Try for the first format but default to TIFF otherwise.
+            // Try for the first format but default to JPEG otherwise.
             const stringVector &formats = movieAtts->GetFileFormats();
             const intVector &w = movieAtts->GetWidths();
             const intVector &h = movieAtts->GetHeights();
@@ -2201,15 +2235,15 @@ QvisSaveMovieWizard::initializePage(int pageId)
             const doubleVector &scales = movieAtts->GetScales();
 
             if(!page9_UpdateFormat(FormatToMenuName(formats[0].c_str())))
-                page9_UpdateFormat(TIFF_FORMAT);
+                page9_UpdateFormat(JPEG_FORMAT);
 
             page9_UpdateResolution(useCurrent[0]>0, scales[0], w[0], h[0], s[0], sc);
         }
         else
         {
-            // Try for MPEG but default to TIFF otherwise.
-            if(!page9_UpdateFormat(MPEG_FORMAT))
-                page9_UpdateFormat(TIFF_FORMAT);
+            // Try for MPEG but default to JPEG otherwise.
+            if(!page9_UpdateFormat(PREFERRED_FORMAT))
+                page9_UpdateFormat(JPEG_FORMAT);
 
             page9_UpdateResolution(true, 1., (int)(default_movie_size[0]),
                                    (int)(default_movie_size[1]), 0, false);
@@ -2977,7 +3011,7 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
     page9_outputFormats->clear();
     if(formats.size() > 0)
     {
-        // Try for the first format but default to TIFF otherwise.
+        // Try for the first format but default to JPEG otherwise.
         const intVector    &w = movieAtts->GetWidths();
         const intVector    &h = movieAtts->GetHeights();
         const intVector    &s = movieAtts->GetStereoFlags();

@@ -81,7 +81,7 @@ def Sequence2Frames_clip_cb(i, cbdata):
 
 class OverlayCurveMovieTemplate(VisItMovieTemplate):
     def __init__(self, mm, tr):
-        VisItMovieTemplate.__init__(self, mm, tr)
+        super(OverlayCurveMovieTemplate, self).__init__(mm, tr)
         self.databaseTimes = []
 
     ###########################################################################
