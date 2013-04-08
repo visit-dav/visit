@@ -23,7 +23,7 @@
             <lib name="tcmalloc"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
-            <lib name="mdsplus"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="h5part"/>
             <lib name="fastbit"/>
             <lib name="ccmio"/>
@@ -138,7 +138,7 @@
         <group name="advanced" comment="Must be manually downloaded">
             <lib name="mili"/>
             <lib name="visus"/>
-            <lib name="mdsplus"/>
+<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="tcmalloc"/>
             <lib name="itaps"/>
             <lib name="hdf4"/>
