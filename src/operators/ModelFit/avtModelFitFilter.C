@@ -620,11 +620,12 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
   
     ExpressionList *elist = ParsingExprList::Instance()->GetList();
 
-    if(!strcmp(pipelineVar, "operators/ModelFit/model") || 
-    (!strcmp(pipelineVar, "operators/ModelFit/distance")))
+    if((!strcmp(pipelineVar, "operators/ModelFit/model")) || 
+       (!strcmp(pipelineVar, "operators/ModelFit/distance")))
         for(int i = 0; ; i++)
-            if(strcmp(curListedVars[i].c_str(), "operators/ModelFit/model") && 
-            (strcmp(curListedVars[i].c_str(), "operators/ModelFit/distance"))){
+          if((strcmp(curListedVars[i].c_str(), "operators/ModelFit/model")) && 
+             (strcmp(curListedVars[i].c_str(), "operators/ModelFit/distance")))
+            {
                 strcpy(new_pipelineVar, curListedVars[i].c_str());
                 break;
             }

@@ -40,8 +40,8 @@
 //  File: ModelFitPluginInfo.h
 // ************************************************************************* //
 
-#ifndef RELATVIEW_PLUGIN_INFO_H
-#define RELATVIEW_PLUGIN_INFO_H
+#ifndef MODELFIT_PLUGIN_INFO_H
+#define MODELFIT_PLUGIN_INFO_H
 #include <OperatorPluginInfo.h>
 #include <operator_plugin_exports.h>
 
@@ -67,6 +67,7 @@ class ModelFitGeneralPluginInfo : public virtual GeneralOperatorPluginInfo
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
     virtual bool  EnabledByDefault() const;
+    virtual const char *GetCategoryName() const;
 };
 
 class ModelFitCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virtual ModelFitGeneralPluginInfo
@@ -93,6 +94,7 @@ class ModelFitViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
+    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,

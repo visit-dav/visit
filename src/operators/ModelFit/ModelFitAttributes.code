@@ -1,0 +1,66 @@
+Target: xml2info
+Function: ModelFitCommonPluginInfo::GetCreatedExpressions
+Declaration: ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *md)
+Definition:
+// ****************************************************************************
+// Method:  ModelFitCommonPluginInfo::GetCreatedExpressions
+//
+// Purpose:
+//   Get the expressions this operator can generate.
+//
+// Arguments:
+//   md         the metadata to create our expressions around
+//
+// Programmer:  Rob Sisneros
+// Creation:    omitted
+//
+//  Modifications:
+//   Jeremy Meredith, Thu Jan 12 13:28:49 EST 2012
+//   Some files, like curves, don't have expressions.  Don't assume
+//   we have any meshes in our file.
+//   
+// ****************************************************************************
+ExpressionList *
+ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+{
+    int i;
+    int numMeshes = md->GetNumMeshes();
+    if (numMeshes == 0)
+        return NULL;
+
+    Expression *e = new Expression();
+
+    char mesh[1024];
+    strcpy(mesh, md->GetMesh(0)->name.c_str());
+
+    std::string varname = "operators/ModelFit/model"; //(";
+    //varname += mesh;
+    //varname += ")";
+    e->SetName(varname);
+    char defn[1024];
+    sprintf(defn, "point_constant(%s, 0)", mesh);
+    e->SetDefinition(defn);
+    e->SetMeshName(std::string(mesh));
+    e->SetType(Expression::ScalarMeshVar);
+    e->SetFromOperator(true);
+    e->SetOperatorName("ModelFit");
+    ExpressionList *expressions = new ExpressionList;
+    expressions->AddExpressions(*e);
+    delete e;
+
+    e = new Expression();
+
+    varname = "operators/ModelFit/distance"; //(";
+    //varname += mesh;
+    //varname += ")";
+    e->SetName(varname);
+    sprintf(defn, "point_constant(%s, 0)", mesh);
+    e->SetDefinition(defn);
+    e->SetMeshName(std::string(mesh));
+    e->SetType(Expression::ScalarMeshVar);
+    e->SetFromOperator(true);
+    e->SetOperatorName("ModelFit");
+    expressions->AddExpressions(*e);
+
+    return expressions;
+}
