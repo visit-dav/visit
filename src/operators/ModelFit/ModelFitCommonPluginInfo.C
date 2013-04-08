@@ -42,9 +42,21 @@
 
 #include <ModelFitPluginInfo.h>
 #include <ModelFitAtts.h>
-#include <avtDatabaseMetaData.h>
 
-#include <ParsingExprList.h>
+#include <Expression.h>
+#include <ExpressionList.h>
+#include <avtDatabaseMetaData.h>
+#include <avtMeshMetaData.h>
+#include <avtSubsetsMetaData.h>
+#include <avtScalarMetaData.h>
+#include <avtVectorMetaData.h>
+#include <avtTensorMetaData.h>
+#include <avtSymmetricTensorMetaData.h>
+#include <avtArrayMetaData.h>
+#include <avtMaterialMetaData.h>
+#include <avtSpeciesMetaData.h>
+#include <avtCurveMetaData.h>
+#include <avtLabelMetaData.h>
 
 // ****************************************************************************
 //  Method: ModelFitCommonPluginInfo::AllocAttributes
@@ -86,8 +98,6 @@ ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 {
     *((ModelFitAtts *) to) = *((ModelFitAtts *) from);
 }
-
-
 // ****************************************************************************
 // Method:  ModelFitCommonPluginInfo::GetCreatedExpressions
 //
@@ -150,3 +160,4 @@ ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
 
     return expressions;
 }
+
