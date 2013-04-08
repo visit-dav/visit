@@ -140,7 +140,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
     }
 
     public String GetName() { return "StatisticalTrends"; }
-    public String GetVersion() { return "2.0"; }
+    public String GetVersion() { return "1.0"; }
 
     // Property setting methods
     public void SetStartIndex(int startIndex_)
