@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="FTLE" type="operator" label="FTLE" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="scalar">
-    <Attribute name="FTLEAttributes" purpose="Attributes for FTLE" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="FTLEAttributes" purpose="Attributes for FTLE" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="FTLEAttributes.code">
       <Enum name="Region">
         NativeResolutionOfMesh
         RegularGrid
@@ -46,5 +46,7 @@
       <Field name="flowType" label="FlowType" type="enum" subtype="FlowType">
         Unsteady
       </Field>
+      <Function name="FTLECommonPluginInfo::GetCreatedExpressions" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>
