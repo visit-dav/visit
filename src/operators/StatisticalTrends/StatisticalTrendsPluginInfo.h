@@ -75,6 +75,7 @@ class StatisticalTrendsCommonPluginInfo : public virtual CommonOperatorPluginInf
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
 };
 
 class StatisticalTrendsGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual StatisticalTrendsCommonPluginInfo

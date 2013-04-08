@@ -43,6 +43,7 @@
 #include <AttributeSubject.h>
 
 class StatisticalTrendsAttributes;
+class QGroupBox;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
@@ -110,6 +111,7 @@ class QvisStatisticalTrendsWindow : public QvisOperatorWindow
     QLabel *startTrendTypeLabel;
     QLabel *stopTrendTypeLabel;
     QButtonGroup *statisticTypeButtonGroup;
+    QGroupBox * trendAxisGroup;
     QButtonGroup *trendAxisButtonGroup;
 
     StatisticalTrendsAttributes *atts;

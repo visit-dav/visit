@@ -92,6 +92,9 @@ class avtStatisticalTrendsFilter : virtual public avtPluginFilter,
     virtual void InitializeTimeLoop(void);
 
     virtual void ExamineContract(avtContract_p in_contract);
+    virtual void UpdateDataObjectInfo();
+
+    virtual avtContract_p ModifyContract(avtContract_p in_spec);
     virtual void Execute(void);
     virtual void CreateFinalOutput(void);
     virtual bool ExecutionSuccessful(void);
@@ -101,6 +104,8 @@ class avtStatisticalTrendsFilter : virtual public avtPluginFilter,
 
     vtkDataSet *sumX_ds, *sumY_ds, *sumX2_ds, *sumY2_ds, *sumXY_ds,
        *slope_ds, *intercept_ds, *out_ds;
+
+    std::string outVarName;
 
     bool validTimeAxis;
     double lastTimeAxisValue;

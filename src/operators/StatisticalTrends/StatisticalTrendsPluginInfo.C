@@ -96,7 +96,7 @@ StatisticalTrendsGeneralPluginInfo::GetName() const
 const char *
 StatisticalTrendsGeneralPluginInfo::GetVersion() const
 {
-    return "2.0";
+    return "1.0";
 }
 
 // ****************************************************************************
@@ -115,7 +115,7 @@ StatisticalTrendsGeneralPluginInfo::GetVersion() const
 const char *
 StatisticalTrendsGeneralPluginInfo::GetID() const
 {
-    return "StatisticalTrends_2.0";
+    return "StatisticalTrends_1.0";
 }
 // ****************************************************************************
 //  Method: StatisticalTrendsGeneralPluginInfo::EnabledByDefault
