@@ -46,7 +46,5 @@
       <Field name="flowType" label="FlowType" type="enum" subtype="FlowType">
         Unsteady
       </Field>
-      <Function name="FTLECommonPluginInfo::GetCreatedExpressions" user="true" member="true">
-      </Function>
     </Attribute>
   </Plugin>
