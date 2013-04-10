@@ -1672,7 +1672,6 @@ ViewerPlot::SetVariableName(const std::string &name)
                         {
                           hasAlready = true;
                           op->UpdateOperatorAtts();
-                          break;
                         }
                     }
 
