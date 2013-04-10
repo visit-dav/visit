@@ -134,21 +134,23 @@ printf "%-15s %s [%s]\n" "--system-python" "Use System Python" "Used unless --no
 
 function bv_python_host_profile
 {
-echo >> $HOSTCONF
-echo "##" >> $HOSTCONF
-echo "## Python" >> $HOSTCONF
-echo "##" >> $HOSTCONF
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Python" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
 
-if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
-    #incase the PYTHON_DIR does not find the include and library set it manually...
-    echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
-else
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
-fi
+        if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+            #incase the PYTHON_DIR does not find the include and library set it manually...
+            echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+        fi
+    fi
 }
 
 function bv_python_initialize_vars
