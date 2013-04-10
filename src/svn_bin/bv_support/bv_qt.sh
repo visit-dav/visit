@@ -130,17 +130,22 @@ printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory" "Use
 
 function bv_qt_host_profile
 {
-echo >> $HOSTCONF
-echo "##" >> $HOSTCONF
-echo "## Qt" >> $HOSTCONF
-echo "##" >> $HOSTCONF
-if [[ $USE_SYSTEM_QT == "yes" ]]; then
-    echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
-else
-    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
-fi
-    
+if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+    if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+        if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+            echo >> $HOSTCONF
+            echo "##" >> $HOSTCONF
+            echo "## Qt" >> $HOSTCONF
+            echo "##" >> $HOSTCONF
+            if [[ $USE_SYSTEM_QT == "yes" ]]; then
+                echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+            else
+                echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+            fi
+        fi
+    fi
+fi    
 }
 
 function bv_qt_ensure
