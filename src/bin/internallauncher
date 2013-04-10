@@ -1090,6 +1090,34 @@ class StraceDebugger(Debugger):
         return launcherargs + strace + visitargs
 
 ###############################################################################
+# Class: ApitraceDebugger
+#
+# Purpose:    Launch a VisIt component under apitrace.
+#
+# Programmer: Kathleen Biagas
+# Date:       Mon Apr  8 14:19:36 PDT 2013
+#
+# Modifications:
+#
+###############################################################################
+
+class ApitraceDebugger(Debugger):
+    def __init__(self, launcher):
+        super(ApitraceDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["apitrace"]
+
+    def CreateCommand(self, args):
+        apitrace = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            apitrace = apitrace + self.DebuggerArguments()
+        else:
+            apitrace = apitrace + ["trace", "--api", "gl"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + apitrace + visitargs
+
+###############################################################################
 # Class: DebugMallocDebugger
 #
 # Purpose:    Launch a VisIt component with malloc debugging on Mac.
@@ -2365,10 +2393,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     # Date: Thu May 31 10:19:44 PDT 2012
     #
     # Modifications:
+    #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
+    #   Added apitrace.
     #
     ############################################################################
     def Debuggers(self):
-        return ["gdb", "totalview", "valgrind", "strace", "debug-malloc"]
+        return ["gdb", "totalview", "valgrind", "strace", "apitrace", "debug-malloc"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -2382,6 +2412,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     # Date: Thu May 31 10:19:44 PDT 2012
     #
     # Modifications:
+    #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
+    #   Added apitrace.
     #
     ############################################################################
 
@@ -2394,6 +2426,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return ValgrindDebugger(self)
         elif debugger == "strace":
             return StraceDebugger(self)
+        elif debugger == "apitrace":
+            return ApitraceDebugger(self)
         elif debugger == "debug-malloc":
             return DebugMallocDebugger(self)
         # Return a debugger that does not do anything.

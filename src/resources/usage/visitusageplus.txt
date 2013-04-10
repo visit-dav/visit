@@ -318,6 +318,14 @@
                              and the VisIt component name are treated as args
                              to the tool.
 
+        -apitrace <args> <comp>
+                             Run apitrace with <args> on component <comp>.
+                             Default <args> is trace --api gl.
+
+                             In the above, all arguments between the tool name
+                             and the VisIt component name are treated as args
+                             to the tool.
+
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
                              on MacOS X systems. The libMallocDebug library
