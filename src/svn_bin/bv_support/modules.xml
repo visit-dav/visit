@@ -37,6 +37,7 @@
             <lib name="pyside"/>
             <lib name="manta"/>
             <lib name="mpich"/>
+            <lib name="zlib"/>
         </optional>
 
 
@@ -69,6 +70,7 @@
             <lib name="pyside"/>
             <lib name="manta"/>
             <lib name="mpich"/>
+            <lib name="zlib"/>
         </group>
 
 
