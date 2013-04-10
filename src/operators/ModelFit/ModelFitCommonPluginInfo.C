@@ -116,6 +116,8 @@ ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 //   we have any meshes in our file.
 //   
 // ****************************************************************************
+#include <string.h>
+
 ExpressionList *
 ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
 {
