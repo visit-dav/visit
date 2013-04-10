@@ -1664,15 +1664,20 @@ ViewerPlot::SetVariableName(const std::string &name)
                 {
                     // See if it already has the operator
                     int nOps = GetNOperators();
-                    bool hasAlready = false;
+                    ViewerOperator *op = 0;
                     for (int opId = 0 ; opId < nOps ; opId++)
                     {
-                        ViewerOperator *op = GetOperator(opId);
+                        op = GetOperator(opId);
+
                         if (op->GetPluginID() == id)
-                            hasAlready = true;
+                            break;
                     }
 
-                    if (!hasAlready)
+                    if (op)
+                    {
+                        op->UpdateOperatorAtts();
+                    }
+                    else
                     {
                         AddOperator(j, true);
                         SetExpanded(true);

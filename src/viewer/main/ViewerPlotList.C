@@ -4363,6 +4363,7 @@ ViewerPlotList::SetPlotVar(const std::string &variable)
     // Update the client attributes.
     //
     UpdatePlotList();
+    UpdatePlotAtts();
 
     //
     // Update the client SIL restriction attributes.

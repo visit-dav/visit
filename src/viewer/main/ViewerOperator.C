@@ -590,3 +590,40 @@ ViewerOperator::SetFromNode(DataNode *parentNode, const std::string &configVersi
     // Let the operator try to initialize its attributes.
     operatorAtts->SetFromNode(operatorNode);
 }
+
+// New method that can be called from ViewerPlot::SetVariableName
+
+
+// ****************************************************************************
+// Method: ViewerOperator::UpdateOperatorAtts
+//
+// Purpose: 
+//   Lets the attributes be set based on the variable name.
+//
+// Arguments:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 10 13:10:51 PST 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::UpdateOperatorAtts()
+{
+    AttributeSubject *clientAtts = viewerPluginInfo->GetClientAtts();
+    AttributeSubject *tmp = clientAtts->NewInstance(true);
+
+    // Store the current operator atts in clientAtts.
+    viewerPluginInfo->SetClientAtts(operatorAtts);
+
+    // Initialize the operator from the client atts, which is a no-op
+    // but but lets the plugin execute extra code present in its
+    // InitializeOperatorAtts method.
+    viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot, false);
+
+    // Restore the client atts.
+    viewerPluginInfo->SetClientAtts(tmp);
+    delete tmp;
+}
