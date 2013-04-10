@@ -28,6 +28,10 @@ function bv_silo_depends_on
         depends_on="$depends_on szip"    
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"    
+    fi
+
     echo $depends_on
 }
 
@@ -76,9 +80,15 @@ function bv_silo_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
             >> $HOSTCONF
         else
-            echo \
-            "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
-            >> $HOSTCONF
+            if [[ "$DO_ZLIB" == "yes" ]] ; then
+               echo \
+               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP ZLIB_LIBRARY_DIR z TYPE STRING)" \
+               >> $HOSTCONF
+            else
+               echo \
+               "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP /usr/lib z TYPE STRING)" \
+               >> $HOSTCONF
+            fi
         fi
     fi
 }
@@ -113,6 +123,10 @@ function bv_silo_dry_run
 #   Mark C. Miller Mon Jan  7 10:31:46 PST 2013
 #   PDB/SCORE lite headers are now handled in Silo and require additional
 #   configure option to ensure they are installed.
+#
+#   Brad Whitlock, Tue Apr  9 12:20:22 PDT 2013
+#   Add support for custom zlib.
+#
 # *************************************************************************** #
 
 function build_silo
@@ -157,6 +171,10 @@ function build_silo
        WITHSILOQTARG="--with-Qt-dir=$SILOQTDIR --with-Qt-lib=QtGui"
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+       ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
+    fi
+
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
     else
@@ -168,7 +186,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
-        --enable-install-lite-headers --without-readline"
+        --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
@@ -177,7 +195,7 @@ function build_silo
         $FORTRANARGS \
         --prefix=$VISITDIR/silo/$SILO_VERSION/$VISITARCH \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
-        --enable-install-lite-headers --without-readline"
+        --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     if [[ $? != 0 ]] ; then
        warn "Silo configure failed.  Giving up"

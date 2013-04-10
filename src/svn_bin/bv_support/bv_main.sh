@@ -95,6 +95,11 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           export CXX_COMPILER=${CXX_COMPILER-"xlC"}
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-xlc" #aix-xlc"
+      elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
+          #CFLAGS="$CFLAGS -qpic"
+          #FCFLAGS="$FCFLAGS -qpic"
+          #CXXFLAGS="$CXXFLAGS -qpic"
+          export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
       else
           CFLAGS="$CFLAGS -fPIC"
           FCFLAGS="$FCFLAGS -fPIC"
@@ -911,7 +916,7 @@ for arg in "${arguments[@]}" ; do
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
         --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
-        --static) DO_STATIC_BUILD="yes";;
+        --static) DO_STATIC_BUILD="yes"; USE_VISIBILIITY_HIDDEN="no";;
         --stdout) LOG_FILE="/dev/tty";;
         --svn) DO_SVN="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
         --svn-anon) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;

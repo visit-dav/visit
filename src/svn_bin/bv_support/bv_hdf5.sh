@@ -30,7 +30,13 @@ function bv_hdf5_depends_on
     if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
         echo ""
     else
-        echo "szip"
+        local depends_on="szip"
+
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+           depends_on="$depends_on zlib"    
+        fi
+
+        echo $depends_on
     fi
 }
 
@@ -88,13 +94,20 @@ function bv_hdf5_host_profile
             echo \
             "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
             >> $HOSTCONF 
+
+            if [[ "$DO_ZLIB" == "yes" ]] ; then
+               ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
+            else
+               ZLIB_LIBDEP="/usr/lib z"
+            fi
+
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz /usr/lib z TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
             else
                 echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP /usr/lib z TYPE STRING)" \
+                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                 >> $HOSTCONF
             fi
         fi
