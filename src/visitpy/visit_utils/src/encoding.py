@@ -175,13 +175,13 @@ def encode_mpeg1(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 2 "
             cmd += "-b:v 18000000 -r 24 %s"
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
-            cmd += "-rd -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
+            cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r 24 %s"
         cmd =  cmd % (enc_bin,ipattern,ofile)
         return sexe(cmd)
@@ -194,7 +194,7 @@ def encode_wmv(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
             cmd += "-b:v 18000000 -r 30 %s"
@@ -213,7 +213,7 @@ def encode_swf(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
             cmd += "-b:v 18000000 -r 30 -f swf %s"
@@ -233,7 +233,7 @@ def encode_avi(ipattern,ofile):
      """
      enc_bin = ffmpeg_bin()
      if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -vcodec mjpeg -q:v 1 -an %s "
         else:
             cmd =  "echo y | %s -f image2 -i %s -vcodec mjpeg -qscale 1 -an %s "
@@ -249,7 +249,7 @@ def encode_divx(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd  = "echo y | %s -f image2 -i %s -vcodec mpeg4 -q:v 1 -f avi "
             cmd += "-vtag DX50 -an %s "
         else:
@@ -267,7 +267,7 @@ def encode_mov(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1 "
             cmd += "-an -b:v 18000000 -f mov -r 30 %s"
@@ -286,7 +286,7 @@ def encode_mp4(ipattern,ofile):
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
-        if ffmpeg_version() > 1.:
+        if ffmpeg_version() > .09 :
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
             cmd += "-an -b:v 18000000 -f mp4 %s"
