@@ -53,6 +53,10 @@
 #   Add back QtScript, we may want to use it in conjunction w/ 
 #   PySide & QtDesigner
 #
+#   Brad Whitlock, Wed Apr 10 18:04:33 PDT 2013
+#   Fix Qt dependent libraries to include some extra frameworks. These were
+#   needed on a 10.8 machine.
+# 
 #****************************************************************************/
 
 #
@@ -140,6 +144,11 @@ IF(NOT "${QT_BIN}" MATCHES "OFF")
   IF(APPLE)
     IF(QT_MAC_USE_COCOA)
       ADD_DEFINITIONS(-DVISIT_MAC_NO_CARBON)
+
+      IF(VISIT_STATIC)
+         SET(QT_QTCORE_LIB_DEPENDENCIES ${QT_QTCORE_LIB_DEPENDENCIES} "-framework Security" "-framework AppKit" -lobjc)
+         SET(QT_QTNETWORK_LIB_DEPENDENCIES ${QT_QTNETWORK_LIB_DEPENDENCIES} "-framework SystemConfiguration")
+      ENDIF(VISIT_STATIC)
     ENDIF(QT_MAC_USE_COCOA)
   ENDIF(APPLE)
 

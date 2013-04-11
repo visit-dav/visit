@@ -985,6 +985,20 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 #   Disable python filters.
 #-----------------------------------------------------------------------------
 
+# If we did not find Python then turn off VISIT_PYTHON_SCRIPTING
+IF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
+    SET(VISIT_PYTHON_SCRIPTING OFF)
+    MESSAGE(STATUS "Python scripting disabled because Python was not found.")
+ENDIF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
+
+# Disable Python scripting if we're doing a static build for engine-only or server-components-only.
+IF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
+    IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+        SET(VISIT_PYTHON_SCRIPTING OFF)
+        MESSAGE(STATUS "Python scripting disabled because an engine-only or server-components-only build was selected.")
+    ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+ENDIF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
+
 # Disable Python filters if we don't have Python.
 IF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
     SET(VISIT_PYTHON_FILTERS OFF)

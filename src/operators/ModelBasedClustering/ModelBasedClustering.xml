@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
   <Plugin name="ModelBasedClustering" type="operator" label="ModelBasedClustering" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
     <Attribute name="ModelBasedClusteringAttributes" purpose="ModelBasedClustering Attributes" persistent="true" keyframe="true" exportAPI="" exportInclude="">
-      <Enum name="clusterAlgorithmType">
+    <Files components="E">
+      avtModelBasedClusteringFilter.C
+      avtRModelBasedClusteringFilter.C
+    </Files>
+    <Enum name="clusterAlgorithmType">
         EM
         ACEM
         APECM

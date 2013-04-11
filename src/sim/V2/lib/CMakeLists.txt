@@ -82,7 +82,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_BINARY_DIR}/include
 )
 
-IF(NOT WIN32)
+IF(NOT WIN32 AND NOT VISIT_STATIC)
   # Allinea Software:
   # Create a libsimV2.so shared library for the standard VisIt
   # interface (normally provided by statically linking with libsimV2.a).
@@ -93,7 +93,7 @@ IF(NOT WIN32)
   ADD_DEFINITIONS(-g -fvisibility=default)
   ADD_LIBRARY(simV2dyn SHARED ${LIBSIM_SOURCES})
   SET(LIBSIM_DYN simV2dyn)
-ENDIF(NOT WIN32)
+ENDIF(NOT WIN32 AND NOT VISIT_STATIC)
 
 ADD_LIBRARY(simV2 STATIC ${LIBSIM_SOURCES})
 ADD_LIBRARY(simV2f STATIC ${FORTRAN_LIBSIM_SOURCES})
