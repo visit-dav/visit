@@ -31,10 +31,14 @@ function bv_vtk_alt_vtk_dir
 
 function bv_vtk_depends_on
 {
- depends_on="cmake python"
+ depends_on="cmake"
 
  if [[ "$DO_MESA" == "yes" ]]; then
       depends_on="${depends_on} mesa"
+ fi
+
+ if [[ "$DO_PYTHON" == "yes" ]]; then
+      depends_on="${depends_on} python"
  fi
 
  if [[ "$DO_R" == "yes" ]]; then

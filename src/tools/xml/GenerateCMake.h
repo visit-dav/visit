@@ -259,6 +259,11 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(ConvertDollarParenthesis(cxxflags[i]));
         }
 
+        out << endl
+            << "IF(VISIT_PYTHON_SCRIPTING)" << endl;
+        out << "    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} " << VisItIncludeDir() << "/visitpy/visitpy)" << endl;
+        out << "ENDIF(VISIT_PYTHON_SCRIPTING)" << endl << endl;
+
         // Includes
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
@@ -312,8 +317,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
         out << "${VTK_INCLUDE_DIRS} " << endl;
-        out << "${PYTHON_INCLUDE_PATH} " << endl;
-        out << VisItIncludeDir() << "/visitpy/visitpy " << endl;
+        out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
         out << ")" << endl;
