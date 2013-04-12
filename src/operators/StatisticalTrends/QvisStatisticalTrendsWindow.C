@@ -197,7 +197,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
 
 
     // Statistics
-    QGroupBox * statisticGroup = new QGroupBox(central);
+    statisticGroup = new QGroupBox(central);
     statisticGroup->setTitle(tr("Statistic Type"));
     topLayout->addWidget(statisticGroup);
 
@@ -329,6 +329,8 @@ QvisStatisticalTrendsWindow::UpdateWindow(bool doAll)
               statisticTypeButtonGroup->button((int)atts->GetStatisticType())->setChecked(true);
             statisticTypeButtonGroup->blockSignals(false);
 
+            statisticGroup->setEnabled( atts->GetVariableSource() == StatisticalTrendsAttributes::Default );
+
             if( atts->GetStatisticType() == StatisticalTrendsAttributes::Slope ||
                 atts->GetStatisticType() == StatisticalTrendsAttributes::Residuals )
               trendAxisGroup->setEnabled( true );
@@ -340,6 +342,10 @@ QvisStatisticalTrendsWindow::UpdateWindow(bool doAll)
             if(trendAxisButtonGroup->button((int)atts->GetTrendAxis()) != 0)
                 trendAxisButtonGroup->button((int)atts->GetTrendAxis())->setChecked(true);
             trendAxisButtonGroup->blockSignals(false);
+            break;
+
+         case StatisticalTrendsAttributes::ID_variableSource:
+           statisticGroup->setEnabled( atts->GetVariableSource() == StatisticalTrendsAttributes::Default );
             break;
         }
     }

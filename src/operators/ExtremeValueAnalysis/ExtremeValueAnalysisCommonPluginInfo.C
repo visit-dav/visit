@@ -139,6 +139,8 @@ ExtremeValueAnalysisCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMet
         if (e.GetType() == Expression::ScalarMeshVar)
         {
             {
+                if (e.GetFromOperator())
+                    continue; // weird ordering behavior otherwise
                 Expression e2;
                 sprintf(name, "operators/ExtremeValueAnalysis/%s", e.GetName().c_str());
                 e2.SetName(name);

@@ -48,11 +48,11 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     OnionPeelAttributes *opAtts = (OnionPeelAttributes*)atts;
 
 
-    string categoryName = opAtts->GetCategoryName();
-    string subsetName = opAtts->GetSubsetName();
-    string defaultName = "Whole";
-    string firstCategoryName = defaultName;
-    string firstSubsetName = defaultName;
+    std::string categoryName = opAtts->GetCategoryName();
+    std::string subsetName = opAtts->GetSubsetName();
+    std::string defaultName = "Whole";
+    std::string firstCategoryName = defaultName;
+    std::string firstSubsetName = defaultName;
 
     bool categoryNameValid = false;
     bool subsetNameValid = false;
@@ -144,4 +144,6 @@ OnionPeelViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
         opAtts->SetCategoryName(firstCategoryName);
         defaultAtts->SetCategoryName(firstCategoryName);
     }
+
+    UpdateOperatorAtts(opAtts, plot);
 }

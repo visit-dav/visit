@@ -79,6 +79,11 @@ public:
         Time,
         Cycle
     };
+    enum VariableSourceEnum
+    {
+        Default,
+        OperatorExpression
+    };
 
     // These constructors are for objects of this class
     StatisticalTrendsAttributes();
@@ -114,6 +119,7 @@ public:
     void SetStopTrendType(TrendTypeEnum stopTrendType_);
     void SetStatisticType(StatisticTypeEnum statisticType_);
     void SetTrendAxis(TrendAxisEnum trendAxis_);
+    void SetVariableSource(VariableSourceEnum variableSource_);
 
     // Property getting methods
     int GetStartIndex() const;
@@ -123,6 +129,7 @@ public:
     TrendTypeEnum GetStopTrendType() const;
     StatisticTypeEnum GetStatisticType() const;
     TrendAxisEnum GetTrendAxis() const;
+    VariableSourceEnum GetVariableSource() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -144,6 +151,11 @@ public:
 protected:
     static std::string TrendAxisEnum_ToString(int);
 public:
+    static std::string VariableSourceEnum_ToString(VariableSourceEnum);
+    static bool VariableSourceEnum_FromString(const std::string &, VariableSourceEnum &);
+protected:
+    static std::string VariableSourceEnum_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -161,6 +173,7 @@ public:
         ID_stopTrendType,
         ID_statisticType,
         ID_trendAxis,
+        ID_variableSource,
         ID__LAST
     };
 
@@ -172,11 +185,12 @@ private:
     int stopTrendType;
     int statisticType;
     int trendAxis;
+    int variableSource;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define STATISTICALTRENDSATTRIBUTES_TMFS "iiiiiii"
+#define STATISTICALTRENDSATTRIBUTES_TMFS "iiiiiiii"
 
 #endif

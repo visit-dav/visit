@@ -110,6 +110,7 @@ class QvisStatisticalTrendsWindow : public QvisOperatorWindow
     QLabel *strideLabel;
     QLabel *startTrendTypeLabel;
     QLabel *stopTrendTypeLabel;
+    QGroupBox * statisticGroup;
     QButtonGroup *statisticTypeButtonGroup;
     QGroupBox * trendAxisGroup;
     QButtonGroup *trendAxisButtonGroup;

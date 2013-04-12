@@ -314,6 +314,40 @@ avtPlot::GetDataExtents(std::vector<double> &extents)
 
 
 // ****************************************************************************
+//  Method: avtPlot::SetPlotTitle
+//
+//  Purpose:
+//      Sets the title for the plot.
+//
+//  Arguments:
+//      title     The title of the plot.
+//
+//  Programmer:  Hank Childs
+//  Creation:    March 9, 2001
+//
+// ****************************************************************************
+
+void
+avtPlot::SetPlotTitle(const char *title)
+{
+  if( title && strlen(title) )
+    GetLegend()->SetTitle( title );
+  else
+  {
+    // Get the name of the plot 
+    std::string plotName( GetName() );
+
+    // All plots should end in "Plot" so strip that off.
+    std::size_t pos = plotName.find_last_of("Plot");
+
+    if( pos != std::string::npos)
+      plotName.erase( pos-3, 4 );
+
+    GetLegend()->SetTitle( plotName.c_str() );
+  }
+}
+
+// ****************************************************************************
 //  Method: avtPlot::SetVarName
 //
 //  Purpose:

@@ -94,10 +94,15 @@ class BoxViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virt
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
+    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
+    virtual void UpdateOperatorAtts(AttributeSubject *atts,
+                                    const ViewerPlot *plot);
+    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
+                                                  const ViewerPlot *plot);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;
 

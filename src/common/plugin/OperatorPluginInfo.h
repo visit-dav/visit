@@ -187,6 +187,10 @@ class PLUGIN_API ViewerOperatorPluginInfo : public virtual CommonOperatorPluginI
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault) = 0;
+    virtual void UpdateOperatorAtts(AttributeSubject *atts,
+                                    const ViewerPlot *plot) = 0;
+    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
+                                                  const ViewerPlot *plot) = 0;
     virtual QString *GetMenuName() const = 0;
     virtual const char **XPMIconData() const { return 0; }
     virtual bool GetUserSelectable() const { return true; }
