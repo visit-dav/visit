@@ -112,5 +112,8 @@ class avtStatisticalTrendsFilter : virtual public avtPluginFilter,
 
     std::string mainVariable;   
     bool haveData;
+
+    int numTypes;
+    char typeString[5][12];
 };
 #endif

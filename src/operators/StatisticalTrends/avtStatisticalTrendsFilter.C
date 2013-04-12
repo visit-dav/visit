@@ -81,6 +81,14 @@ avtStatisticalTrendsFilter::avtStatisticalTrendsFilter() :
     slope_ds     = 0;
     intercept_ds = 0;
     out_ds       = 0;
+
+    numTypes = 5;
+
+    strcpy( typeString[0], "Sum" );
+    strcpy( typeString[1], "Mean" );
+    strcpy( typeString[2], "Variance" );
+    strcpy( typeString[3], "Slope" );
+    strcpy( typeString[4], "Residuals" );
 }
 
 
@@ -198,19 +206,16 @@ avtStatisticalTrendsFilter::ExamineContract(avtContract_p in_contract)
 avtContract_p
 avtStatisticalTrendsFilter::ModifyContract(avtContract_p in_contract)
 {
-    const char numTypes = 5;
-    const char *typeString[5] = { "Sum/", "Mean/", "Variance/",
-                                  "Slope/", "Residuals/" };
-
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    std::string var =  in_dr->GetOriginalVariable();
+    outVarName = in_dr->GetOriginalVariable();
 
     in_dr->SetUsesAllDomains(true);
 
-    if( strncmp(var.c_str(), "operators/StatisticalTrends/",
+    if( strncmp(outVarName.c_str(), "operators/StatisticalTrends/",
                 strlen("operators/StatisticalTrends/")) == 0)
     {
-      std::string operatorWithVar = var.substr(strlen("operators/StatisticalTrends/"));
+      std::string operatorWithVar =
+        outVarName.substr(strlen("operators/StatisticalTrends/"));
 
       for (int t = 0; t < numTypes; ++t)
       { 
@@ -221,7 +226,7 @@ avtStatisticalTrendsFilter::ModifyContract(avtContract_p in_contract)
             atts.SetStatisticType( (StatisticalTrendsAttributes::StatisticTypeEnum) t );
 
           std::string justTheVar =
-            operatorWithVar.substr(strlen(typeString[t]));
+            operatorWithVar.substr(strlen(typeString[t])+1);
 
           outVarName = justTheVar;
 
@@ -251,29 +256,24 @@ avtStatisticalTrendsFilter::ModifyContract(avtContract_p in_contract)
 void
 avtStatisticalTrendsFilter::UpdateDataObjectInfo(void)
 {
-    const char numTypes = 5;
-    const char *typeString[5] = { "Sum/", "Mean/", "Variance/",
-                                  "Slope/", "Residuals/" };
-
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
 
-    // The outvarname has been assigned and will be added.
     if( outVarName != "" )
     {
-      std::string fullVarName = std::string("operators/StatisticalTrends/") +
-          std::string( typeString[(int) atts.GetStatisticType()] ) + outVarName;
-
-        out_atts.RemoveVariable(in_atts.GetVariableName());
-
-        if( !out_atts.ValidVariable(fullVarName) )
-        {
-            out_atts.AddVariable((fullVarName).c_str());
-            out_atts.SetActiveVariable(fullVarName.c_str());
-            out_atts.SetVariableDimension(1);
-
-            out_atts.SetVariableType(AVT_SCALAR_VAR);
-        }
+      std::string fullVarName = outVarName + " " +
+        std::string( typeString[(int) atts.GetStatisticType()] );
+      
+      out_atts.RemoveVariable(in_atts.GetVariableName());
+      
+      if( !out_atts.ValidVariable(fullVarName) )
+      {
+        out_atts.AddVariable((fullVarName).c_str());
+        out_atts.SetActiveVariable(fullVarName.c_str());
+        out_atts.SetVariableDimension(1);
+        
+        out_atts.SetVariableType(AVT_SCALAR_VAR);
+      }
     }
 
     avtPluginFilter::UpdateDataObjectInfo();
@@ -1073,21 +1073,9 @@ avtStatisticalTrendsFilter::CreateFinalOutput(void)
       }
     }
 
+    std::string newPipelineVariable =
+      outVarName + " " + std::string( typeString[(int) atts.GetStatisticType()] );
 
-    std::string newPipelineVariable(pipelineVariable);
-
-    // if( atts.GetStatisticType() == StatisticalTrendsAttributes::Sum)
-    //   newPipelineVariable += std::string(" Sum");
-    // else if( atts.GetStatisticType() == StatisticalTrendsAttributes::Mean)
-    //   newPipelineVariable += std::string(" Mean");
-    // else if( atts.GetStatisticType() == StatisticalTrendsAttributes::Variance)
-    //   newPipelineVariable += std::string(" Variance");
-    // else if( atts.GetStatisticType() == StatisticalTrendsAttributes::Slope)
-    //   newPipelineVariable += std::string(" Slope");
-    // else if( atts.GetStatisticType() == StatisticalTrendsAttributes::Residuals)
-    //   newPipelineVariable += std::string(" Residuals");
-
-       
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 

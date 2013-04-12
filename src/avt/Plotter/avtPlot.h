@@ -306,6 +306,7 @@ class PLOTTER_API avtPlot
     void                       SetDataExtents(const std::vector<double> &);
     virtual void               GetDataExtents(std::vector<double> &);
 
+    virtual void               SetPlotTitle(const char *title);
     virtual void               SetVarName(const char *name);
     void                       SetVarUnits(const char *units);
     void                       SetMeshType(const avtMeshType);

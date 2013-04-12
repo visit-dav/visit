@@ -109,7 +109,7 @@
       </Function>
       <Function name="DataBinningCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
       </Function>
-      <Function name="DataBinningViewerPluginInfo::InitializeOperatorAtts" user="false" member="true">
+      <Function name="DataBinningViewerPluginInfo::UpdateOperatorAtts" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         ConstructDataBinningAttributes.h

@@ -208,7 +208,119 @@ StatisticalTrendsViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts
         *(StatisticalTrendsAttributes*)atts = *defaultAtts;
     else
         *(StatisticalTrendsAttributes*)atts = *clientAtts;
+
+    UpdateOperatorAtts(atts, plot);
 }
+
+// ****************************************************************************
+//  Method: StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts
+//
+//  Purpose:
+//    Update the operator attributes when using operator expressions.
+//
+//  Arguments:
+//    atts        The attribute subject to update.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   9 April 2013
+//
+// ****************************************************************************
+
+#include <ViewerPlot.h>
+
+void
+StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
+                                                      const ViewerPlot *plot)
+{
+    StatisticalTrendsAttributes *atts_in = (StatisticalTrendsAttributes *)atts;
+    const char numTypes = 5;
+    const char *typeString[5] = { "Sum", "Mean", "Variance",
+                                  "Slope", "Residuals" };
+
+    std::string var = plot->GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/StatisticalTrends/",
+                strlen("operators/StatisticalTrends/")) == 0)
+    {
+      std::string operatorWithVar =
+          var.substr(strlen("operators/StatisticalTrends/"));
+
+      for (int t = 0; t < numTypes; ++t)
+      { 
+        if( strncmp(operatorWithVar.c_str(), typeString[t],
+                    strlen(typeString[t])) == 0)
+        {
+          if( t != atts_in->GetStatisticType() )
+            atts_in->SetStatisticType( (StatisticalTrendsAttributes::StatisticTypeEnum) t );
+
+          if( atts_in->GetVariableSource() != StatisticalTrendsAttributes::OperatorExpression )
+            atts_in->SetVariableSource( StatisticalTrendsAttributes::OperatorExpression );
+          var = operatorWithVar.substr(strlen(typeString[t])+1);
+        }
+      }
+    }
+    else
+    {
+      if( atts_in->GetVariableSource() != StatisticalTrendsAttributes::Default )
+        atts_in->SetVariableSource( StatisticalTrendsAttributes::Default );
+    }
+}
+
+// ****************************************************************************
+//  Method: StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription
+//
+//  Purpose:
+//    Return the operator variable description.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   9 April 2013
+//
+// ****************************************************************************
+
+#include <ViewerPlot.h>
+
+std::string
+StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                             const ViewerPlot *plot)
+{
+    StatisticalTrendsAttributes *atts_in = (StatisticalTrendsAttributes *)atts;
+    const char numTypes = 5;
+    const char *typeString[5] = { "Sum", "Mean", "Variance",
+                                  "Slope", "Residuals" };
+
+    std::string var = plot->GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/StatisticalTrends/",
+                strlen("operators/StatisticalTrends/")) == 0)
+    {
+      std::string operatorWithVar =
+          var.substr(strlen("operators/StatisticalTrends/"));
+
+      for (int t = 0; t < numTypes; ++t)
+      { 
+        if( strncmp(operatorWithVar.c_str(), typeString[t],
+                    strlen(typeString[t])) == 0)
+        {
+          var = operatorWithVar.substr(strlen(typeString[t])+1);
+
+          var += std::string(" ") + std::string(typeString[t]);
+        }
+      }
+    }
+    else
+    {
+      var += std::string(" ") +
+        std::string(typeString[atts_in->GetStatisticType()]);
+    }
+
+    return var;
+}
+
 // ****************************************************************************
 //  Method: StatisticalTrendsViewerPluginInfo::GetMenuName
 //
@@ -247,4 +359,3 @@ StatisticalTrendsViewerPluginInfo::XPMIconData() const
 {
     return StatisticalTrends_xpm;
 }
-

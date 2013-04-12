@@ -99,6 +99,10 @@ class CartographicProjectionViewerPluginInfo : public virtual ViewerOperatorPlug
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
+    virtual void UpdateOperatorAtts(AttributeSubject *atts,
+                                    const ViewerPlot *plot);
+    virtual std::string GetOperatorVarDescription(AttributeSubject *atts,
+                                                  const ViewerPlot *plot);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;
 

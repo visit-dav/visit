@@ -93,6 +93,11 @@ avtLineSamplerFilter::avtLineSamplerFilter() :
 
 avtLineSamplerFilter::~avtLineSamplerFilter()
 {
+    if( composite_ds )
+    {
+      composite_ds->Delete();
+      composite_ds = NULL;
+    }
 }
 
 
@@ -235,7 +240,7 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
       SetEndFrame( atts.GetTimeStepStop() );
       SetStride( atts.GetTimeStepStride() );
 
-      nTimeSteps = 2 + (atts.GetTimeStepStop()-atts.GetTimeStepStart()) /
+      nTimeSteps = 1 + (atts.GetTimeStepStop()-atts.GetTimeStepStart()) /
         atts.GetTimeStepStride();
     }
 
@@ -479,7 +484,7 @@ avtLineSamplerFilter::Execute()
         int nPoints = tmp_ds->GetNumberOfPoints();
         
         // Sanity check.
-        if( nPoints != nArrays* nChannels )
+        if( nPoints != nArrays * nChannels )
         {
           std::string msg;
           msg += "The number of samples per channel is greater than one. " +
@@ -963,7 +968,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     for( int a=0; a<nArrays; ++a ) 
     {
       // Loop through each channel.
-      for( int c=0; c<nChannels*nRows; ++c ) 
+      for( int c=0; c<nChannels*nRows; ++c )
       {
           // Inital start point is the origin.
           avtVector startPoint = avtVector( 0, 0, 0 );
@@ -1394,6 +1399,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                      // without regards to whether
                                      // the filter owns it or not.
 
+//          std::cerr << __LINE__ << "  " << startPoint << "  " <<  stopPoint << std::endl;
+
           }
 
           // Integrate along the channel
@@ -1621,6 +1628,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                   }
               }
           }
+
+//        std::cerr << __LINE__ << std::endl;
 
           // Merge all of the datasets together
           appendFilter->AddInput( out_ds );

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class StatisticalTrendsAttributes extends AttributeSubject implements Plugin
 {
-    private static int StatisticalTrendsAttributes_numAdditionalAtts = 7;
+    private static int StatisticalTrendsAttributes_numAdditionalAtts = 8;
 
     // Enum values
     public final static int TRENDTYPEENUM_ABSOLUTE = 0;
@@ -75,6 +75,9 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
     public final static int TRENDAXISENUM_TIME = 1;
     public final static int TRENDAXISENUM_CYCLE = 2;
 
+    public final static int VARIABLESOURCEENUM_DEFAULT = 0;
+    public final static int VARIABLESOURCEENUM_OPERATOREXPRESSION = 1;
+
 
     public StatisticalTrendsAttributes()
     {
@@ -87,6 +90,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
         stopTrendType = TRENDTYPEENUM_ABSOLUTE;
         statisticType = STATISTICTYPEENUM_MEAN;
         trendAxis = TRENDAXISENUM_STEP;
+        variableSource = VARIABLESOURCEENUM_DEFAULT;
     }
 
     public StatisticalTrendsAttributes(int nMoreFields)
@@ -100,6 +104,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
         stopTrendType = TRENDTYPEENUM_ABSOLUTE;
         statisticType = STATISTICTYPEENUM_MEAN;
         trendAxis = TRENDAXISENUM_STEP;
+        variableSource = VARIABLESOURCEENUM_DEFAULT;
     }
 
     public StatisticalTrendsAttributes(StatisticalTrendsAttributes obj)
@@ -113,6 +118,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
         stopTrendType = obj.stopTrendType;
         statisticType = obj.statisticType;
         trendAxis = obj.trendAxis;
+        variableSource = obj.variableSource;
 
         SelectAll();
     }
@@ -136,7 +142,8 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
                 (startTrendType == obj.startTrendType) &&
                 (stopTrendType == obj.stopTrendType) &&
                 (statisticType == obj.statisticType) &&
-                (trendAxis == obj.trendAxis));
+                (trendAxis == obj.trendAxis) &&
+                (variableSource == obj.variableSource));
     }
 
     public String GetName() { return "StatisticalTrends"; }
@@ -185,6 +192,12 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
         Select(6);
     }
 
+    public void SetVariableSource(int variableSource_)
+    {
+        variableSource = variableSource_;
+        Select(7);
+    }
+
     // Property getting methods
     public int GetStartIndex() { return startIndex; }
     public int GetStopIndex() { return stopIndex; }
@@ -193,6 +206,7 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
     public int GetStopTrendType() { return stopTrendType; }
     public int GetStatisticType() { return statisticType; }
     public int GetTrendAxis() { return trendAxis; }
+    public int GetVariableSource() { return variableSource; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -211,6 +225,8 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
             buf.WriteInt(statisticType);
         if(WriteSelect(6, buf))
             buf.WriteInt(trendAxis);
+        if(WriteSelect(7, buf))
+            buf.WriteInt(variableSource);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -237,6 +253,9 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
             break;
         case 6:
             SetTrendAxis(buf.ReadInt());
+            break;
+        case 7:
+            SetVariableSource(buf.ReadInt());
             break;
         }
     }
@@ -279,6 +298,12 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
         if(trendAxis == TRENDAXISENUM_CYCLE)
             str = str + "TRENDAXISENUM_CYCLE";
         str = str + "\n";
+        str = str + indent + "variableSource = ";
+        if(variableSource == VARIABLESOURCEENUM_DEFAULT)
+            str = str + "VARIABLESOURCEENUM_DEFAULT";
+        if(variableSource == VARIABLESOURCEENUM_OPERATOREXPRESSION)
+            str = str + "VARIABLESOURCEENUM_OPERATOREXPRESSION";
+        str = str + "\n";
         return str;
     }
 
@@ -291,5 +316,6 @@ public class StatisticalTrendsAttributes extends AttributeSubject implements Plu
     private int stopTrendType;
     private int statisticType;
     private int trendAxis;
+    private int variableSource;
 }
 

@@ -158,6 +158,21 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
           break;
     }
 
+    const char *variableSource_names = "Default, OperatorExpression";
+    switch (atts->GetVariableSource())
+    {
+      case StatisticalTrendsAttributes::Default:
+          SNPRINTF(tmpStr, 1000, "%svariableSource = %sDefault  # %s\n", prefix, prefix, variableSource_names);
+          str += tmpStr;
+          break;
+      case StatisticalTrendsAttributes::OperatorExpression:
+          SNPRINTF(tmpStr, 1000, "%svariableSource = %sOperatorExpression  # %s\n", prefix, prefix, variableSource_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -375,6 +390,39 @@ StatisticalTrendsAttributes_GetTrendAxis(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+StatisticalTrendsAttributes_SetVariableSource(PyObject *self, PyObject *args)
+{
+    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the variableSource in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetVariableSource(StatisticalTrendsAttributes::VariableSourceEnum(ival));
+    else
+    {
+        fprintf(stderr, "An invalid variableSource value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Default, OperatorExpression.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+StatisticalTrendsAttributes_GetVariableSource(PyObject *self, PyObject *args)
+{
+    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableSource()));
+    return retval;
+}
+
 
 
 PyMethodDef PyStatisticalTrendsAttributes_methods[STATISTICALTRENDSATTRIBUTES_NMETH] = {
@@ -393,6 +441,8 @@ PyMethodDef PyStatisticalTrendsAttributes_methods[STATISTICALTRENDSATTRIBUTES_NM
     {"GetStatisticType", StatisticalTrendsAttributes_GetStatisticType, METH_VARARGS},
     {"SetTrendAxis", StatisticalTrendsAttributes_SetTrendAxis, METH_VARARGS},
     {"GetTrendAxis", StatisticalTrendsAttributes_GetTrendAxis, METH_VARARGS},
+    {"SetVariableSource", StatisticalTrendsAttributes_SetVariableSource, METH_VARARGS},
+    {"GetVariableSource", StatisticalTrendsAttributes_GetVariableSource, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -463,6 +513,13 @@ PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Cycle") == 0)
         return PyInt_FromLong(long(StatisticalTrendsAttributes::Cycle));
 
+    if(strcmp(name, "variableSource") == 0)
+        return StatisticalTrendsAttributes_GetVariableSource(self, NULL);
+    if(strcmp(name, "Default") == 0)
+        return PyInt_FromLong(long(StatisticalTrendsAttributes::Default));
+    if(strcmp(name, "OperatorExpression") == 0)
+        return PyInt_FromLong(long(StatisticalTrendsAttributes::OperatorExpression));
+
 
     return Py_FindMethod(PyStatisticalTrendsAttributes_methods, self, name);
 }
@@ -491,6 +548,8 @@ PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args
         obj = StatisticalTrendsAttributes_SetStatisticType(self, tuple);
     else if(strcmp(name, "trendAxis") == 0)
         obj = StatisticalTrendsAttributes_SetTrendAxis(self, tuple);
+    else if(strcmp(name, "variableSource") == 0)
+        obj = StatisticalTrendsAttributes_SetVariableSource(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

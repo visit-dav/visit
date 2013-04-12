@@ -262,6 +262,8 @@ ThresholdViewerPluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     
     initAtts->SetDefaultVarName(plot->GetVariableName());
     initAtts->SetDefaultVarIsScalar(plot->GetVarType() == AVT_SCALAR_VAR);
+
+    UpdateOperatorAtts(initAtts, plot);
 }
 
 Target: xml2info

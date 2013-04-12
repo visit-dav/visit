@@ -17,6 +17,10 @@
         Time
         Cycle
       </Enum>
+      <Enum name="VariableSourceEnum">
+        Default
+        OperatorExpression
+      </Enum>
       <Field name="startIndex" label="Index of first time slice" type="int">
         0
       </Field>
@@ -38,7 +42,14 @@
       <Field name="trendAxis" label="Trend axis" type="enum" subtype="TrendAxisEnum">
         Step
       </Field>
+      <Field name="variableSource" label="Variable source" type="enum" subtype="VariableSourceEnum">
+        Default
+      </Field>
       <Function name="StatisticalTrendsCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+      <Function name="StatisticalTrendsViewerPluginInfo::UpdateOperatorAtts" user="false" member="true">
+      </Function>
+      <Function name="StatisticalTrendsViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

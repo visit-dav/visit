@@ -152,6 +152,43 @@ StatisticalTrendsAttributes::TrendAxisEnum_FromString(const std::string &s, Stat
     return false;
 }
 
+//
+// Enum conversion methods for StatisticalTrendsAttributes::VariableSourceEnum
+//
+
+static const char *VariableSourceEnum_strings[] = {
+"Default", "OperatorExpression"};
+
+std::string
+StatisticalTrendsAttributes::VariableSourceEnum_ToString(StatisticalTrendsAttributes::VariableSourceEnum t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return VariableSourceEnum_strings[index];
+}
+
+std::string
+StatisticalTrendsAttributes::VariableSourceEnum_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return VariableSourceEnum_strings[index];
+}
+
+bool
+StatisticalTrendsAttributes::VariableSourceEnum_FromString(const std::string &s, StatisticalTrendsAttributes::VariableSourceEnum &val)
+{
+    val = StatisticalTrendsAttributes::Default;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == VariableSourceEnum_strings[i])
+        {
+            val = (VariableSourceEnum)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: StatisticalTrendsAttributes::StatisticalTrendsAttributes
 //
@@ -176,6 +213,7 @@ void StatisticalTrendsAttributes::Init()
     stopTrendType = Absolute;
     statisticType = Mean;
     trendAxis = Step;
+    variableSource = Default;
 
     StatisticalTrendsAttributes::SelectAll();
 }
@@ -204,6 +242,7 @@ void StatisticalTrendsAttributes::Copy(const StatisticalTrendsAttributes &obj)
     stopTrendType = obj.stopTrendType;
     statisticType = obj.statisticType;
     trendAxis = obj.trendAxis;
+    variableSource = obj.variableSource;
 
     StatisticalTrendsAttributes::SelectAll();
 }
@@ -367,7 +406,8 @@ StatisticalTrendsAttributes::operator == (const StatisticalTrendsAttributes &obj
             (startTrendType == obj.startTrendType) &&
             (stopTrendType == obj.stopTrendType) &&
             (statisticType == obj.statisticType) &&
-            (trendAxis == obj.trendAxis));
+            (trendAxis == obj.trendAxis) &&
+            (variableSource == obj.variableSource));
 }
 
 // ****************************************************************************
@@ -518,6 +558,7 @@ StatisticalTrendsAttributes::SelectAll()
     Select(ID_stopTrendType,  (void *)&stopTrendType);
     Select(ID_statisticType,  (void *)&statisticType);
     Select(ID_trendAxis,      (void *)&trendAxis);
+    Select(ID_variableSource, (void *)&variableSource);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -590,6 +631,12 @@ StatisticalTrendsAttributes::CreateNode(DataNode *parentNode, bool completeSave,
     {
         addToParent = true;
         node->AddNode(new DataNode("trendAxis", TrendAxisEnum_ToString(trendAxis)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_variableSource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("variableSource", VariableSourceEnum_ToString(variableSource)));
     }
 
 
@@ -698,6 +745,22 @@ StatisticalTrendsAttributes::SetFromNode(DataNode *parentNode)
                 SetTrendAxis(value);
         }
     }
+    if((node = searchNode->GetNode("variableSource")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetVariableSource(VariableSourceEnum(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            VariableSourceEnum value;
+            if(VariableSourceEnum_FromString(node->AsString(), value))
+                SetVariableSource(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -753,6 +816,13 @@ StatisticalTrendsAttributes::SetTrendAxis(StatisticalTrendsAttributes::TrendAxis
     Select(ID_trendAxis, (void *)&trendAxis);
 }
 
+void
+StatisticalTrendsAttributes::SetVariableSource(StatisticalTrendsAttributes::VariableSourceEnum variableSource_)
+{
+    variableSource = variableSource_;
+    Select(ID_variableSource, (void *)&variableSource);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -799,6 +869,12 @@ StatisticalTrendsAttributes::GetTrendAxis() const
     return TrendAxisEnum(trendAxis);
 }
 
+StatisticalTrendsAttributes::VariableSourceEnum
+StatisticalTrendsAttributes::GetVariableSource() const
+{
+    return VariableSourceEnum(variableSource);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -830,6 +906,7 @@ StatisticalTrendsAttributes::GetFieldName(int index) const
     case ID_stopTrendType:  return "stopTrendType";
     case ID_statisticType:  return "statisticType";
     case ID_trendAxis:      return "trendAxis";
+    case ID_variableSource: return "variableSource";
     default:  return "invalid index";
     }
 }
@@ -861,6 +938,7 @@ StatisticalTrendsAttributes::GetFieldType(int index) const
     case ID_stopTrendType:  return FieldType_enum;
     case ID_statisticType:  return FieldType_enum;
     case ID_trendAxis:      return FieldType_enum;
+    case ID_variableSource: return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -892,6 +970,7 @@ StatisticalTrendsAttributes::GetFieldTypeName(int index) const
     case ID_stopTrendType:  return "enum";
     case ID_statisticType:  return "enum";
     case ID_trendAxis:      return "enum";
+    case ID_variableSource: return "enum";
     default:  return "invalid index";
     }
 }
@@ -951,6 +1030,11 @@ StatisticalTrendsAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) 
     case ID_trendAxis:
         {  // new scope
         retval = (trendAxis == obj.trendAxis);
+        }
+        break;
+    case ID_variableSource:
+        {  // new scope
+        retval = (variableSource == obj.variableSource);
         }
         break;
     default: retval = false;
