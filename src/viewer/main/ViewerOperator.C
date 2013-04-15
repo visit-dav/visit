@@ -597,8 +597,8 @@ ViewerOperator::SetFromNode(DataNode *parentNode, const std::string &configVersi
 // ****************************************************************************
 // Method: ViewerOperator::UpdateOperatorAtts
 //
-// Purpose: 
-//   Lets the attributes be set based on the variable name.
+// Purpose: Updates the attributes be set based on the operator
+//   expression variable.
 //
 // Arguments:
 //
@@ -612,18 +612,26 @@ ViewerOperator::SetFromNode(DataNode *parentNode, const std::string &configVersi
 void
 ViewerOperator::UpdateOperatorAtts()
 {
-    AttributeSubject *clientAtts = viewerPluginInfo->GetClientAtts();
-    AttributeSubject *tmp = clientAtts->NewInstance(true);
+    viewerPluginInfo->UpdateOperatorAtts(operatorAtts, plot);
+}
 
-    // Store the current operator atts in clientAtts.
-    viewerPluginInfo->SetClientAtts(operatorAtts);
+// ****************************************************************************
+// Method: ViewerOperator::UpdateOperatorAtts
+//
+// Purpose: Updates the attributes be set based on the operator
+//   expression variable.
+//
+// Arguments:
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Apr 10 13:10:51 PST 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-    // Initialize the operator from the client atts, which is a no-op
-    // but but lets the plugin execute extra code present in its
-    // InitializeOperatorAtts method.
-    viewerPluginInfo->InitializeOperatorAtts(operatorAtts, plot, false);
-
-    // Restore the client atts.
-    viewerPluginInfo->SetClientAtts(tmp);
-    delete tmp;
+std::string
+ViewerOperator::GetOperatorVarDescription()
+{
+  return viewerPluginInfo->GetOperatorVarDescription(operatorAtts, plot);
 }

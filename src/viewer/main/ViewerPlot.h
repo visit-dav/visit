@@ -356,6 +356,9 @@ class VIEWER_API ViewerPlot : public ViewerBase
     const EngineKey &GetEngineKey() const;
     bool SetVariableName(const std::string &name);
     const std::string &GetVariableName() const;
+    void SetVariableDescription(const std::string &);
+    void UpdateVariableDescription( bool resest = false );
+    const std::string &GetVariableDescription() const;
     const avtCentering GetVariableCentering() const;
     const std::string &GetMeshName() const;
     const std::string &GetPlotDescription() const;
@@ -547,6 +550,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     std::string             hostName;
     std::string             databaseName;
     std::string             variableName;
+    std::string             variableDescription;
     std::string             meshName;
     std::vector<double>     dataExtents;
     bool                    followsTime;
