@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="ExtremeValueAnalysis" type="operator" label="ExtremeValueAnalysis" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="scalar" exprOutType="scalar">
-    <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="ExtremeValueAnalysisAttributes" purpose="Attributes for ExtremeValueAnalysis operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ExtremeValueAnalysis.code">
       <Enum name="AggregationType">
         ANNUAL
         SEASONAL
@@ -103,5 +103,7 @@
       <Field name="dumpDebug" label="dumpDebug" type="bool">
         false
       </Field>
+      <Function name="ExtremeValueAnalysisCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>
