@@ -522,6 +522,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
     isLabel             = obj.isLabel;
     followsTime         = obj.followsTime;
     plotDescription     = obj.plotDescription;
+    variableDescription = obj.variableDescription;
     errorFlag           = false;
     networkID           = -1;
     clonedNetworkId     = -1;
@@ -1368,7 +1369,111 @@ void
 ViewerPlot::SetPlotDescription(const std::string &Description)
 {
     plotDescription = Description;
+
+    for (int i = 0; i < cacheSize; i++)
+    {
+        if (*plotList[i] != NULL)
+        {
+            (*plotList[i])->SetPlotTitle(plotDescription.c_str());
+        }
+    }
 }
+
+// ****************************************************************************
+// Method: ViewerPlot::GetVariableDescription
+//
+// Purpose: 
+//   Returns the description of the variable.
+//
+// Programmer: Allen Sanderson
+// Creation:   Fri April 12 15:53:39 PST 2013
+//
+// ****************************************************************************
+
+const std::string &
+ViewerPlot::GetVariableDescription() const
+{
+    return variableDescription;
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::SetVariableDescription
+//
+// Purpose: 
+//   Sets the variable description.
+//
+// Note: 
+//
+// Programmer: Allen Sanderson
+// Creation:   Fri April 12 15:53:39 PST 2013
+//
+// ****************************************************************************
+
+void
+ViewerPlot::SetVariableDescription(const std::string &Description)
+{
+    variableDescription = Description;
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlot::UpdateVariableDescription
+//
+// Purpose: 
+//   Update the variable description.
+//
+// Note: 
+//
+// Programmer: Allen Sanderson
+// Creation:   Fri April 12 15:53:39 PST 2013
+//
+// ****************************************************************************
+
+void
+ViewerPlot::UpdateVariableDescription( bool reset )
+{
+  SetVariableDescription("");
+
+  if( reset )
+  {
+    for (int i = 0; i < cacheSize; i++)
+    {
+      if (*plotList[i] != 0)
+      {
+        plotList[i]->SetVarName(variableName.c_str());
+      }
+    }
+  }
+  else
+  {
+    // Check for a new variable description. The last operator
+    // gets to the provide the description.
+    int nOps = GetNOperators();
+    
+    for (int opId = 0 ; opId < nOps ; opId++)
+    {
+      ViewerOperator *op = GetOperator(opId);
+      
+      if( op->GetOperatorVarDescription() != "" )
+        SetVariableDescription( op->GetOperatorVarDescription() );
+    }
+
+    //
+    // Set the variable description for any existing plots.
+    //
+    for (int i = 0; i < cacheSize; i++)
+    {
+      if (*plotList[i] != 0)
+      {
+        if( variableDescription != "" )
+          plotList[i]->SetVarName(variableDescription.c_str());
+        else
+          plotList[i]->SetVarName(variableName.c_str());
+      }
+    }
+  }
+}
+
 
 // ****************************************************************************
 // Method: ViewerPlot::GetMetaData
@@ -1624,17 +1729,6 @@ ViewerPlot::SetVariableName(const std::string &name)
         }
     }
 
-    //
-    // Set the variable name for any existing plots.
-    //
-    for (int i = 0; i < cacheSize; i++)
-    {
-        if (*plotList[i] != 0)
-        {
-            plotList[i]->SetVarName(variableName.c_str());
-        }
-    }
-
     if (notifyQuery && queryAtts != 0)
     {
         queryAtts->SetChangeType(PlotQueryInfo::VarName);
@@ -1653,39 +1747,43 @@ ViewerPlot::SetVariableName(const std::string &name)
         ExpressionList *exprs = NULL;
         if (md != 0)
             exprs = info->GetCreatedExpressions(md);
-        if (exprs == NULL)
-            continue;
-        for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
+        if (exprs)
         {
-            Expression expr = exprs->GetExpressions(k);
-            if (name == expr.GetName())
+            for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
             {
-                if (expr.GetFromOperator()) // should always be true
+                Expression expr = exprs->GetExpressions(k);
+                if (name == expr.GetName())
                 {
-                    // See if it already has the operator
-                    int nOps = GetNOperators();
-                    bool hasAlready = false;
-                    for (int opId = 0 ; opId < nOps ; opId++)
+                    if (expr.GetFromOperator()) // should always be true
                     {
-                        ViewerOperator *op = GetOperator(opId);
-                        if (op->GetPluginID() == id)
+                        // See if it already has the operator
+                        int nOps = GetNOperators();
+                        bool hasAlready = false;
+                        for (int opId = 0 ; opId < nOps ; opId++)
                         {
-                          hasAlready = true;
-                          op->UpdateOperatorAtts();
+                            ViewerOperator *op = GetOperator(opId);
+                            op->UpdateOperatorAtts();
+                            
+                            if (op->GetPluginID() == id)
+                            {
+                                hasAlready = true;
+                            }
                         }
+                        
+                        if (!hasAlready)
+                        {
+                            AddOperator(j, true);
+                            SetExpanded(true);
+                        }
+                        break;
                     }
-
-                    if (!hasAlready)
-                    {
-                        AddOperator(j, true);
-                        SetExpanded(true);
-                    }
-                    break;
                 }
             }
         }
     }
 
+    // Set the variable description for any existing plots.
+    UpdateVariableDescription();
 
     return retval;
 }
@@ -2207,6 +2305,11 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
     //
     ClearActors();
 
+    //
+    // Update the variable description.
+    //
+    UpdateVariableDescription();
+
     return nOperators-1;
 }
 
@@ -2296,6 +2399,11 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
             Error(msg);
         }
     }
+
+    //
+    // Update the variable description.
+    //
+    UpdateVariableDescription();
 
     return retval;
 }
@@ -2423,6 +2531,11 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
         }
     }
 
+    //
+    // Update the variable description.
+    //
+    UpdateVariableDescription();
+
     return retval;
 }
 
@@ -2495,6 +2608,11 @@ ViewerPlot::RemoveLastOperator()
                       arg(operators[nOperators-1]->GetMenuName());
         Error(msg);
     }
+
+    //
+    // Update the variable description.
+    //
+    UpdateVariableDescription();
 }
 
 // ****************************************************************************
@@ -2562,6 +2680,11 @@ ViewerPlot::RemoveAllOperators()
                       arg(operators[nOperators-1]->GetMenuName());
         Error(msg);
     }
+
+    //
+    // Update the variable description.
+    //
+    UpdateVariableDescription( true );
 }
 
 // ****************************************************************************
@@ -2678,6 +2801,11 @@ ViewerPlot::SetOperatorAttsFromClient(const int type,
     //
     if (changed)
     {
+        // If an operator changed update teh variable description.
+        for(int i = 0; i < nOperators; ++i)
+          if( operators[i]->GetOperatorVarDescription() != "" )
+            SetVariableDescription( operators[i]->GetOperatorVarDescription() );
+
         if (queryAtts != 0)
         {
             queryAtts->SetChangeType(PlotQueryInfo::OpAtts);
@@ -3177,7 +3305,11 @@ ViewerPlot::CreateActor(bool createNew,
         }
     }
     plotList[cacheIndex]->SetAtts(curPlotAtts);
-    plotList[cacheIndex]->SetVarName(variableName.c_str());
+    plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
+    if( variableDescription != "" )
+      plotList[cacheIndex]->SetVarName(variableDescription.c_str());
+    else
+      plotList[cacheIndex]->SetVarName(variableName.c_str());
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
     plotList[cacheIndex]->SetIndex(networkID);

@@ -162,6 +162,7 @@ class VIEWER_API ViewerOperator : public ViewerBase
     void SetFromNode(DataNode *, const std::string &);
 
     void UpdateOperatorAtts();
+    std::string GetOperatorVarDescription();
 
   protected:
     ViewerPlot                   *plot;
