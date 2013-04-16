@@ -3304,8 +3304,14 @@ ViewerPlot::CreateActor(bool createNew,
             }
         }
     }
+
     plotList[cacheIndex]->SetAtts(curPlotAtts);
-    plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
+
+    if( plotDescription.size() )
+      plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
+    else
+      plotList[cacheIndex]->SetPlotTitle(GetMenuName().toStdString().c_str());
+
     if( variableDescription != "" )
       plotList[cacheIndex]->SetVarName(variableDescription.c_str());
     else

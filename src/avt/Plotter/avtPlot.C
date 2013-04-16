@@ -343,6 +343,21 @@ avtPlot::SetPlotTitle(const char *title)
     if( pos != std::string::npos)
       plotName.erase( pos-3, 4 );
 
+    // Next search for an upper case letter and add space between.
+    pos = 1;
+
+    while( pos < plotName.length() )
+    {
+      if( 'A' <= plotName[pos] && plotName[pos] <= 'Z' )
+      {
+        plotName.insert( pos, " " );
+
+        pos += 2;
+      }
+      else
+        ++pos;
+    }
+
     GetLegend()->SetTitle( plotName.c_str() );
   }
 }
