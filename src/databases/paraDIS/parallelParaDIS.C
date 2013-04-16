@@ -598,7 +598,7 @@ void VarElementFetcher:: InterpretTextElement(std::string line, long linenum) {
   }
   debug5 << ")" << endl;
   if (mElementName == "Burgers type" ) {
-    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(); 
+    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(mVarBuffer); 
   } else {
     ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   }
@@ -633,7 +633,7 @@ inline void VarElementFetcher::InterpretBinaryElement(char *elementData){
   debug5 << ")" << endl;
 
   if (mElementName == "Burgers type" ) {
-    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(); 
+    ((int*)mOutputData)[mOutputIndex++] = InterpretBurgersType(mVarBuffer); 
   } else {
     ((vtkFloatArray *)mOutputData)->SetTuple(mOutputIndex++, mVarBuffer); 
   }
