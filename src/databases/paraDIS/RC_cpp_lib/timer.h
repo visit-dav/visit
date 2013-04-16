@@ -89,6 +89,28 @@ int Progress(class timer &iTimer, double iNum, double iMax,
 
 
 using namespace std; 
+
+// ======================================================================== 
+// Get current date/time, format "%Y-%m-%d.%X" means YYYY-MM-DD.HH:mm:ss
+static const inline std::string timestamp(const char *format=NULL) {
+  string fmtstring; 
+  if (!format || string(format)=="") {
+    fmtstring = "%Y-%m-%d.%X";
+  } else {
+    fmtstring = format; 
+  }
+  time_t     now = time(0);
+  struct tm  tstruct;
+  char       buf[1000];
+  tstruct = *localtime(&now);
+  // Visit http://www.cplusplus.com/reference/clibrary/ctime/strftime/
+  // for more information about date/time format
+  strftime(buf, sizeof(buf), fmtstring.c_str(), &tstruct);
+  
+  return buf;
+}
+
+// ======================================================================== 
 class timer
 {
  friend std::ostream& operator<<(std::ostream& os, timer& t);
