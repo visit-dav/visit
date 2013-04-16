@@ -700,6 +700,7 @@ avtLineSamplerFilter::Execute()
 //  Creation:   May 07, 2011
 //
 // ****************************************************************************
+#include <vtkSmartPointer.h>
 
 vtkDataSet *
 avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
@@ -1226,12 +1227,16 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             probeFilter->Update();
             
             out_ds->Delete();
-
             out_ds = probeFilter->GetOutput();
             out_ds->Register(NULL);  // Up the reference count as
                                      // this pointer will be deleted
                                      // without regards to whether
                                      // the filter owns it or not.
+
+            out_ds->SetSource(NULL);  // Break the update pipeline
+                                      // (i.e no updating from append
+                                      // filter as it has been
+                                      // deleted).
 
             int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
@@ -1352,6 +1357,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                          // without regards to whether
                                          // the filter owns it or not.
 
+                out_ds->SetSource(NULL);  // Break the update pipeline
+                                          // (i.e no updating from
+                                          // append filter as it has
+                                          // been deleted).
+
                 float* out_data =
                   (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
                 
@@ -1399,8 +1409,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                      // without regards to whether
                                      // the filter owns it or not.
 
-//          std::cerr << __LINE__ << "  " << startPoint << "  " <<  stopPoint << std::endl;
-
+            out_ds->SetSource(NULL);  // Break the update pipeline
+                                      // (i.e no updating from append
+                                      // filter as it has been
+                                      // deleted).
           }
 
           // Integrate along the channel
@@ -1502,6 +1514,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                          // this pointer will be deleted
                                          // without regards to whether
                                          // the filter owns it or not.
+
+                out_ds->SetSource(NULL);  // Break the update pipeline
+                                          // (i.e no updating from
+                                          // transform filter as it has
+                                          // been deleted).
             }
 
             else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
@@ -1523,6 +1540,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                          // without regards to whether
                                          // the filter owns it or not.
 
+                out_ds->SetSource(NULL);  // Break the update pipeline
+                                          // (i.e no updating from
+                                          // transform filter as it has
+                                          // been deleted).
             }
           }
 
@@ -1588,6 +1609,11 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                                        // without regards to whether
                                        // the filter owns it or not.
 
+              out_ds->SetSource(NULL);  // Break the update pipeline
+                                        // (i.e no updating from
+                                        // transform filter as it has
+                                        // been deleted).
+
               // At this point the data can now be elevated.
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
 //                   atts.GetChannelGeometry() == LineSamplerAttributes::Line )
@@ -1628,8 +1654,6 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                   }
               }
           }
-
-//        std::cerr << __LINE__ << std::endl;
 
           // Merge all of the datasets together
           appendFilter->AddInput( out_ds );
