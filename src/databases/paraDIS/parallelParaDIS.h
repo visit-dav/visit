@@ -166,27 +166,20 @@ class ElementFetcher {
 class VarElementFetcher: public ElementFetcher {
  public:
   VarElementFetcher(std::string varname, FileSet *fileset):
-    ElementFetcher(varname, fileset), 
+  ElementFetcher(varname, fileset), 
     mNumVarComponents(-1), 
     mVarTokenPositionInElement(-1), mVarBytePositionInElement(-1), 
     mVarBuffer(NULL)
-    {
-      return; 
-    }
-    int *GetMaterialElems(void);
-    
-    vtkDataArray *GetVarElems(void); 
-    virtual void InterpretTextElement(std::string line, long linenum);
-
-  /*!
-    InterpretBurgersType(void)
-    Helper function to change mVarBuffer[0] to the enumerated value corresponding to the burgers type detected in mVarBuffer at start of function. 
-  */ 
-   int InterpretBurgersType(void); 
-
+      {
+        return; 
+      }
+  int *GetMaterialElems(void);
+  
+  vtkDataArray *GetVarElems(void); 
+  virtual void InterpretTextElement(std::string line, long linenum);
   
   virtual void InterpretBinaryElement(char *elementData);
-
+  
   int mNumVarComponents, // generally 1 (scalar) or 3 (vector)
     mVarTokenPositionInElement, // first var component  position in element
     mVarBytePositionInElement;  // first var component  position in element
