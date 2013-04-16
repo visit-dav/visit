@@ -324,6 +324,11 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f=index;
       scalars->InsertTuple(index,&f); //value(ith element) == i
     }
+  }   else if (varname == "nodeType") {
+    for (index=0; index<numnodes; index++) {
+      f=paraDIS_GetNodeType(index); 
+      scalars->InsertTuple(index,&f); //value(ith element) == i
+    }
   } 
   debug1 << "done with Dumpfile::GetVar"<<endl;
   return scalars;
