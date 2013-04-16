@@ -55,18 +55,6 @@ int GettingSignaled(void)
   printf("test host is %s\n", hep->h_name);
   fflush(stdout);
 
-  /*  switch (fork())
-      {
-      case -1: error
-      {
-      printf("failed to fork\n");
-#ifdef DEBUG
-      exit (1);
-#endif
-      }
-      case 0: child
-      {
-  */
   fprintf(stdout, "Child stdout.\n");
   fprintf(stderr, "Child stderr new.\n");   
   /*fclose(stdout);*/
@@ -83,17 +71,5 @@ int GettingSignaled(void)
     printf("Child sleeping... (%d) \n", i);
     fflush(stdout);
   }
-  /*
-    }
-    default:
-    {
-    fprintf(stdout, "parent stdout.");
-    fprintf(stderr, "parent stderr x.");
-    fclose(stdout);/
-    fclose(stderr);/
-    return 0;
-    }
-    }
-  */
   return 0;
 }

@@ -105,10 +105,9 @@ int InterpretBurgersType(float burg[3]) ;
 
 /* ========================================  */ 
 /*!
-  Two special FullNode types, for special occasions.  PLACEHOLDER_NODE is used in ArmSegments for temporary nodes not yet seen in the data file.  USELESS_NODE is an out-of-bounds node without any in-bounds neighbors.   
+  Two special FullNode types, for special occasions.  PLACEHOLDER_NODE is used in ArmSegments for temporary nodes not yet seen in the data file.  
 */ 
 #define PLACEHOLDER_NODE (-42)
-#define USELESS_NODE (-43)
 /* ========================================  */ 
 
 std::string INDENT(int i); 
@@ -116,10 +115,6 @@ std::string INDENT(int i);
 //=============================================================================
 namespace paraDIS {
   class FullNode; 
-  /*!
-    Unary predicate for trying to delete nodes.  this is way harder than it should be. 
-  */ 
-  bool NodeIsUseless(FullNode *node);
 
   //============================================================
   class NodeID {  
@@ -478,7 +473,7 @@ namespace paraDIS {
       mInBounds = false; 
       float location[3] = {0,0,0}; 
       SetLocation(location); 
-      mNodeType = 0; 
+      mNodeType = mNodeTag = 0; 
     }
     /*!
       Full nodes are first copied from MinimalNodes.  This is just a member-wise "shallow" copy.  
@@ -708,6 +703,7 @@ namespace paraDIS {
       }
     }
 
+    int8_t mNodeTag; // for new scheme for Meijie -- loop nodes = 8, else 0
     /*!
       Connectivity to our neighboring arms.
       Only used for terminal nodes.  
@@ -719,11 +715,6 @@ namespace paraDIS {
     */ 
     static std::vector<FullNode *> mFullNodes; 
     
-    /*!
-      Use a set of node pointers to know what to delete.  This complication is because it looks like remove_copy_if() is broken in g++ 3.2.3
-    */ 
-    static std::vector<FullNode *>mUselessNodes; 
-
     /*!
       to avoid memory leaks, track all these in one place
     */ 
@@ -1037,24 +1028,6 @@ namespace paraDIS {
       return;
     }
 
-    /*!
-      Just immediately returns true if a useless endpoint is in mEndpoints, which means this segment itself is useless!
-      If not, then  goes through and removes all the leftover crappy useless endpoints from our ghost endpoints, since they will just be deleted and become dangling references anyhow.  The returns false. 
-    */ 
-    bool IsUseless(void) const {
-      // I don't remember why we consider any nodes useless.. Let's keep everything. 
-      return false; 
-
-      if( mEndpoints[0]->GetNodeType() == USELESS_NODE ||
-          mEndpoints[1]->GetNodeType() == USELESS_NODE || 
-          (!mEndpoints[0]->InBounds() && ! mEndpoints[1]->InBounds())) {  
-        return true; 
-      }
-      vector<FullNode*>::iterator nodepos = 
-        remove_if(const_cast<ArmSegment*>(this)->mGhostEndpoints.begin(), const_cast<ArmSegment*>(this)->mGhostEndpoints.end(), NodeIsUseless); 
-      const_cast<ArmSegment*>(this)->mGhostEndpoints.erase(nodepos, const_cast<ArmSegment*>(this)->mGhostEndpoints.end()); 
-      return false; 
-    }
 
     /*! 
       Given the size of the periodic bounds of the data, determine if the nodes are closer if you wrap one of them.  If not, just return false and set oNewSegment to NULL.   
@@ -1313,29 +1286,6 @@ namespace paraDIS {
       Classify the arm as one of NN, MN or MM, combined with 200 or 111...
     */ 
     void Classify(void) ; 
-    /*!
-      If either terminal segment is useless,mark it as NULL and return true. 
-      Else, return false.
-    */ 
-    bool IsUseless(void) {
- 
-      /*   int segnum =  mTerminalSegments.size(); 
-           bool useless = false; 
-           while (segnum--) {
-           if (mTerminalSegments[segnum]->IsUseless()) {
-           useless = true; 
-           mTerminalSegments[segnum] = NULL; 
-           }
-           }
-           int nodenum = mTerminalNodes.size(); 
-           while (nodenum--) {
-           if (mTerminalNodes[nodenum]->GetNodeType() == USELESS_NODE) {
-           mTerminalNodes[nodenum] = NULL; 
-           }
-           }
-      */
-      return false;       
-    }  
 
     bool isTypeMM(void) const {
       return mArmType == ARM_MM_111  ||  mArmType == ARM_MM_200; 
@@ -1585,11 +1535,7 @@ namespace paraDIS {
     */
     void PrintArmStats(FILE *); 
       
-    /*!
-      Print all meta-arms into a VTK file for visualizing with VisIt or other tool (paraview?)
-    */
-    void WriteMetaArmVTK(char*filename);
-
+ 
    /*!
       Print all arms in a simple format into a file for analysis
     */
@@ -1627,6 +1573,11 @@ s      Tell the data set which file to read
     void SetDataFile(std::string datafile) {
       mDataFilename = datafile;
     }
+
+    /*!
+      Write out a copy of the input file that has all FullNode tags in it.
+    */
+    void WriteTagFile(char *outputname); 
 
     /*!
       Using 3-way binary decomposition, determine our chunk of subspace based on our processor number
@@ -1731,6 +1682,10 @@ s      Tell the data set which file to read
       init(); 
     }
 
+    /*!
+      set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
+    */ 
+    static set<ArmSegment *, CompareSegPtrs> mQuickFindArmSegments; 
     //=======================================================================
     // PRIVATE 
     //======================================================================
@@ -1806,6 +1761,11 @@ s      Tell the data set which file to read
       Prints out all MetaArms
     */ 
     void DebugPrintMetaArms(void);
+
+    /*!
+      Read a node from the input file and write it out with its tag to the tagfile
+    */
+    void CopyNodeFromFile(uint32_t &lineno, uint32_t &fullNodeNum, std::ifstream &datafile, std::ofstream &tagfile);
     /*! 
       Read a node and its neighbors from a file.  This has to be done in DataSet because we avoid duplicate neighbor structs by using pointers into a global neighbor array.
     */ 
@@ -1876,6 +1836,9 @@ s      Tell the data set which file to read
     */ 
      void DecomposeArms(void);
 
+     /* put all arm segments into mFinalArmSegments */ 
+     void CollectAllArmSegments(void);
+
     /*!
       Makethe final classification on arms as ARM_XX_YYY.  
     */ 
@@ -1883,12 +1846,7 @@ s      Tell the data set which file to read
 
     double ComputeArmLengths(void); 
 
-   /*!
-      Identify all useless nodes, which are out of bounds and have no in-bounds neighbors.  Then delete all segments connecting two useless nodes.  Finally, delete all useless nodes.  
-    */ 
-    void DeleteUselessNodesAndSegments(void); 
-
-
+ 
     /*!
       Go through and renumber the nodes so that their index is the same as their position in the vector
     */ 
@@ -1913,10 +1871,6 @@ s      Tell the data set which file to read
     std::set<Neighbor> mMinimalNeighbors; 
 
 
-    /*!
-      set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
-    */ 
-    set<ArmSegment *, CompareSegPtrs> mQuickFindArmSegments; 
     /*!
       The QuickFind array does not allow duplicates, so put wrapped arm segments here 
     */ 

@@ -233,10 +233,10 @@ namespace paraDIS {
   double Arm::mDecomposedLength = 0.0; 
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
-
+  set<ArmSegment *, CompareSegPtrs> DataSet::mQuickFindArmSegments; 
   double Arm::mThreshold = -1; 
   std::vector<FullNode *> 
-  FullNode::mFullNodes, FullNode::mUselessNodes, FullNode::mWrappedNodes; 
+  FullNode::mFullNodes, FullNode::mWrappedNodes; 
   std::vector<ArmSegment *> ArmSegment::mExtendedArmSegments; 
   //===========================================================================
   std::string Node::Stringify(int indent) const {
@@ -451,20 +451,6 @@ namespace paraDIS {
     //oWrapped0->ConfirmNeighbors(); 
     //oWrapped1->ConfirmNeighbors(); 
     
-    /*!
-      Now is the time to most easily check if the wrapping has created a useless pair of nodes (both out of bounds)
-    */ 
-    /*
-    if (!oWrapped0->InBounds() && !mEndpoints[1]->InBounds()) {
-      oWrapped0->SetNodeType(USELESS_NODE); 
-      mEndpoints[1]->SetNodeType(USELESS_NODE); 
-    }
-    if (!oWrapped1->InBounds() && !mEndpoints[0]->InBounds()) {
-      oWrapped1->SetNodeType(USELESS_NODE); 
-      mEndpoints[0]->SetNodeType(USELESS_NODE); 
-    }
-     
-    */
     gSegLen += GetLength(); 
     dbprintf(5, "Wrapped: %s\n", Stringify(0).c_str()); 
     return true; 
@@ -729,7 +715,9 @@ namespace paraDIS {
 
   //===========================================================================
   void Arm::Classify(void) {
+#ifdef RC_CPP_VISIT_BUILD
     int err = -1; 
+#endif 
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
 #endif
@@ -906,7 +894,7 @@ namespace paraDIS {
       sourceSegments[seg]->SetBurgersType(BURGERS_DECOMPOSED); 
       //dbprintf(5, "ExtendByArm(): Setting source segment %d as BURGERS_DECOMPOSED.\n", sourceSegments[seg]->mSegmentID); 
       ArmSegment::mExtendedArmSegments.push_back(interiorSegment); 
-      
+      //DataSet::mQuickFindArmSegments.insert(interiorSegment); 
 #if LINKED_LOOPS
       interiorSegment->mParentArm = this; 
 #endif
@@ -1163,7 +1151,9 @@ namespace paraDIS {
   // 
   //===========================================================================
   bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
+#ifdef RC_CPP_VISIT_BUILD
     bool err = false; 
+#endif
  
     dbprintf(4, "\n-------------------------------------------  \n");
     dbprintf(4, "FindEndpoint: seed = %s\nprevious = %s\n\ncandidate = %s\n", 
@@ -1713,6 +1703,68 @@ namespace paraDIS {
   
   
   //====================================================================== 
+  void DataSet::CopyNodeFromFile(uint32_t &lineno, uint32_t &fullNodeNum, std::ifstream &datafile, std::ofstream &tagfile) {
+    // read the first line of the next node in the file: 
+    char comma;
+    int domainID, nodeID; 
+    long old_id_junk, tag, numNeighbors; 
+    float x,y,z; 
+    if (mFileVersion > 0) {
+      datafile >> domainID >> comma >> nodeID;
+    }
+    else { // old-style
+      datafile >> nodeID >> old_id_junk;
+    }
+    datafile >> x >> y >> z >> numNeighbors >> tag;    
+    if (mFileVersion == 0){
+      datafile  >> domainID >>  old_id_junk; 
+    }
+    if (!datafile.good()) {
+      throw string("error reading node"); 
+    }
+    ++lineno;
+    NodeID theID(domainID, nodeID); 
+    
+    // match the ID to our fullNode
+    if (fullNodeNum >= FullNode::mFullNodes.size() ) {
+      throw string("Error: full node index out of range.");
+    }
+    FullNode *fullnode = FullNode::mFullNodes[fullNodeNum]; 
+
+    while (! (*fullnode == theID)) {
+      if (++fullNodeNum > FullNode::mFullNodes.size()-1) {
+        throw string("Error: full node index out of range while looking for match.") ;
+      }
+      fullnode = FullNode::mFullNodes[fullNodeNum]; 
+      tag = fullnode->mNodeTag;
+    }
+    
+    if (mFileVersion > 0) {
+      tagfile << domainID << comma << nodeID;
+    }
+    else { // old-style
+      tagfile << nodeID << old_id_junk;
+    }
+    tagfile << x << y << z << numNeighbors << tag;    
+    if (mFileVersion == 0){
+      tagfile  << domainID <<  old_id_junk; 
+    }
+    tagfile << endl;
+
+    string linebuf; 
+    int neighbornum = 0; 
+    while (neighbornum < numNeighbors && datafile.good()) {
+      // read and write two lines per neighbor
+      getline(datafile, linebuf); 
+      tagfile << linebuf << endl; 
+      getline(datafile, linebuf); 
+      tagfile << linebuf << endl; 
+      ++neighbornum;
+    }
+    return;
+  }
+
+  //====================================================================== 
   void DataSet::ReadMinimalNodeFromFile(uint32_t &lineno, std::ifstream &datafile) {
     MinimalNode theNode;
     char comma;
@@ -2169,7 +2221,7 @@ namespace paraDIS {
           
           currentSegment->ComputeBurgersType(burgers); 
           
-#ifdef __GNUC__
+          //#ifdef __GNUC__
           ArmSegmentSet::iterator foundSegment = mQuickFindArmSegments.find(currentSegment); 
           if (foundSegment == mQuickFindArmSegments.end()) {
             currentSegment->SetID(); 
@@ -2179,7 +2231,7 @@ namespace paraDIS {
             (*foundSegment)->ReplacePlaceholder(fullNode);             
           }
           fullNode->AddNeighbor((*foundSegment)); 
-#endif
+          //#endif
          
           ++neighbornum; 
         }; // done reading neighbor information
@@ -2255,11 +2307,10 @@ namespace paraDIS {
   //===========================================================================
   void DataSet::WrapBoundarySegments(void) {
     STARTPROGRESS();
-    uint32_t segnum = 0, totalsegs = mQuickFindArmSegments.size(); 
+    uint32_t segnum = 0, totalsegs = mFinalArmSegments.size(); 
     ArmSegment *newSegment = NULL; 
     FullNode *newnode0, *newnode1; 
-    ArmSegmentSet::const_iterator segpos = mQuickFindArmSegments.begin(), 
-      endseg = mQuickFindArmSegments.end(); 
+    vector <ArmSegment *>::const_iterator segpos = mFinalArmSegments.begin(), endseg = mFinalArmSegments.end(); 
     while (segpos != endseg) {      
       if ((*segpos)->Wrap(mDataSize, newSegment, newnode0, newnode1)) {
         newSegment->SetID(); 
@@ -2278,6 +2329,14 @@ namespace paraDIS {
       UPDATEPROGRESS(segnum, totalsegs, "WrapBoundarySegments"); 
     }
     dbprintf(1, "\n"); 
+
+    // Now transfer all new wrapped segments into the final arm segments: 
+    vector<ArmSegment*>::iterator wrappos = mWrappedArmSegments.begin(); 
+    while (wrappos != mWrappedArmSegments.end()) {
+      mFinalArmSegments.push_back(*wrappos);       
+      ++wrappos;
+    }
+    mWrappedArmSegments.clear(); 
     return; 
   }
 
@@ -2519,6 +2578,12 @@ namespace paraDIS {
       }
     }
     
+    mTotalArmLengthAfterDecomposition = ComputeArmLengths(); 
+  }
+
+  //===========================================================================
+  /* put all arm segments into mFinalArmSegments so that WrapBoundarySegments doesn't miss anything */ 
+  void DataSet::CollectAllArmSegments(void) {
     // Add the extended Nodes and Segments to our lists
     vector<ArmSegment*>::iterator extSeg = ArmSegment::mExtendedArmSegments.begin(); 
     while (extSeg != ArmSegment::mExtendedArmSegments.end()) {
@@ -2526,8 +2591,24 @@ namespace paraDIS {
       ++ extSeg; 
     }
     
-    mTotalArmLengthAfterDecomposition = ComputeArmLengths(); 
+    // We will be extending arms and now want duplicates to be allowed, so copy mQuickFindArmSegments into mFinalArmSegments and then clear it.  
+    ArmSegmentSet::const_iterator segpos = mQuickFindArmSegments.begin();
+    ArmSegment *theSegment = NULL; 
+    while (segpos != mQuickFindArmSegments.end()) {
+      theSegment = *segpos; 
+      if ((*segpos)->GetBurgersType() == BURGERS_DECOMPOSED) {
+        dbprintf(5, "Deleting segment %d\n", theSegment->GetID()); 
+        delete theSegment; 
+      } else {
+        dbprintf(5, "Keeping segment %d\n", theSegment->GetID()); 
+        mFinalArmSegments.push_back(theSegment);         
+      }
+      ++segpos;   
+    }
+    mQuickFindArmSegments.clear(); 
+    return; 
   }
+
   //===========================================================================
   void DataSet::DebugPrintArms(void) {
     std::string filename = mDebugOutputDir + string("/Arms-list.txt"); 
@@ -2601,10 +2682,52 @@ namespace paraDIS {
   }
 
   //===========================================================================
-  // Print out all arms in vtk file format in a file for analysis, just for Meijie
-  void DataSet::WriteMetaArmVTK(char *vtkfilename) {
-    return; 
+  // Write a file containing all tagged nodes with their tag values. 
+  void DataSet::WriteTagFile(char *outputname) {
+    string basename="nodes.tags";
+    if (outputname)  basename = outputname; 
+    dbprintf(1, "Writing node tags to file %s\n", outputname); 
+
+    uint32_t nodenum = 0;
+    uint32_t lineno = 1; 
+    char linebuf[2048]="";
+    STARTPROGRESS();
+
+    try {
+      ofstream tagfile (outputname); 
+      if (!tagfile.good()){
+        throw string("Error: cannot open tagfile for writing: ")+ outputname;
+      }
+
+      tagfile << "# paraDIS dump file with added tags, generated by analyzeParaDIS from file " << mDataFilename << " on " << timestamp() << endl; 
+      
+      ifstream datafile(mDataFilename.c_str()); 
+      // =================================================
+      /* Read in old header and copy to new file verbatim */ 
+      while (datafile.good() && !strstr(linebuf, "Secondary lines:")) {
+        datafile.getline(linebuf, 2048);  
+        tagfile << linebuf << endl; 
+        ++lineno; 
+      }
+      
+      if (mFileVersion > 0 && mFileVersion < 4) {
+        datafile.getline(linebuf, 2048); //should be "#"
+        tagfile << linebuf << endl; 
+        ++lineno; 
+      }
+      
+      uint32_t fullNodeNum = 0; 
+      // the nodes in the file should correspond exactly to our FullNode list.  But let's be cautious the first time through and check it out. 
+      while (datafile.good() && nodenum++ < mTotalDumpNodes) {
+        UPDATEPROGRESS(nodenum, mTotalDumpNodes, "WriteTageFile: creating new tagged datafile"); 
+        CopyNodeFromFile(lineno, fullNodeNum, datafile, tagfile);          
+      }
+      dbprintf(1, "\n"); 
+    } catch (string err) {
+      throw string("Error in WriteTageFile while translating node ") + intToString(nodenum) +" at line " + intToString(lineno) + ":\n" + err; 
+    }
     
+    return;  
   }
 
   //===========================================================================
@@ -2621,9 +2744,12 @@ namespace paraDIS {
     
     vector<boost::shared_ptr<MetaArm> >::iterator pos = mMetaArms.begin(), endpos = mMetaArms.end(); 
     uint32_t armnum = 0, metaarmcounts[7]={0}; 
-    double metaarmtypelengths[7] = {0.0}; 
+    double metaarmtypelengths[7] = {0.0}, totalEPDist = 0.0; 
     uint32_t numarms = 0; 
     while (pos != endpos) {
+      if ((*pos)->mTerminalNodes.size() == 2) {
+        totalEPDist += (*pos)->mTerminalNodes[0]->Distance(*( (*pos)->mTerminalNodes[1]), true); 
+      }
       metaarmcounts[(*pos)->mMetaArmType]++; 
       metaarmtypelengths[(*pos)->mMetaArmType] += (*pos)->mLength; 
       numarms += (*pos)->mAllArms.size(); 
@@ -2663,6 +2789,7 @@ namespace paraDIS {
       ++i; 
     }
     fprintf(armfile, "Total number of arms in metaarms: %d\n", numarms); 
+    fprintf(armfile, "Total EP-Dist: %20.3f\n", totalEPDist); 
     fprintf(armfile, "=========================================================================\n"); 
     fprintf(armfile, "\n\n"); 
    
@@ -2841,23 +2968,7 @@ namespace paraDIS {
     return totalLength; 
   }
   
-  //==========================================================================
-  /*!
-    Unary predicate for using STL to remove all useless nodes in a range
-  */ 
-   bool NodeIsUseless(FullNode *node) {
-     return false; 
-    return node->GetNodeType() == USELESS_NODE; 
-  }
-
-  //==========================================================================
-  /*!
-    This is a unary predicate used to efficiently delete all useless arms, that have at least one useless terminal nodes.   
-  */ 
-  bool ArmIsUseless( Arm *theArm) {
-    return theArm->IsUseless(); 
-  }
-
+  
   //==========================================================================
   /*! 
     To be used with for_each() to delete all nodes in the container
@@ -2866,107 +2977,6 @@ namespace paraDIS {
     delete node; 
   } 
 
-  //===========================================================================
-  void DataSet::DeleteUselessNodesAndSegments(void) {
-    dbprintf(2, "DeleteUselessNodesAndSegments starting...\n");
-    int numdeleted = 0; 
-    /*!
-      First identify every node that is out of bounds and has no inbound neighbor -- these are useless nodes.  
-    */ 
-    dbprintf(2, "Identifying useless nodes...\n "); 
-    vector<FullNode *>::iterator nodepos = FullNode::mFullNodes.begin(), 
-      nodeend = FullNode::mFullNodes.end(); 
-    /*    while (nodepos != nodeend) {      
-      if ((*nodepos)->GetNodeType() != USELESS_NODE && 
-          !(*nodepos)->InBounds()) {
-
-        deletable = true; 
-        int nbr = (*nodepos)->GetNumNeighbors(); 
-        while (nbr--) {
-          if ((*nodepos)->GetNeighborSegment(nbr)->GetOtherEndpoint((*nodepos))->InBounds()) {
-            deletable=false; 
-            break; 
-          }
-        }
-        if (deletable) (*nodepos)->SetNodeType(USELESS_NODE); 
-        
-      }
-      ++nodepos; 
-    }   
-    */
-    /*!
-      Next find all arms that have a useless node as either endpoint.  Delete them.  
-    */ 
-    /*  dbprintf(2, "Identifying and deleting useless arms...\n"); 
-    numdeleted = mArms.size(); 
-    vector<Arm>::iterator armpos = mArms.begin(), armend = mArms.end(); 
-    armpos = remove_if(armpos, armend, ArmIsUseless); 
-    mArms.erase(armpos, mArms.end()); 
-    numdeleted -= mArms.size(); 
-    dbprintf(2, "Deleted %d arms.\n", numdeleted); 
-    */
-    /*!
-      Useless arm segments are arm segments that have a useless node as either endpoint, or two out of bounds endpoints.  Delete those while copying non-useless arm segments into the final vector.
-    */ 
-    dbprintf(2, "Identifying and deleting useless segments...\n"); 
-    numdeleted = mQuickFindArmSegments.size() + mWrappedArmSegments.size(); 
-
-    ArmSegmentSet::const_iterator segpos = mQuickFindArmSegments.begin();
-    ArmSegment *theSegment = NULL; 
-    while (segpos != mQuickFindArmSegments.end()) {
-      theSegment = *segpos; 
-      if ((*segpos)->IsUseless() || (*segpos)->GetBurgersType() == BURGERS_DECOMPOSED) {
-        dbprintf(5, "Deleting segment %d\n", theSegment->GetID()); 
-        delete theSegment; 
-      } else {
-        dbprintf(5, "Keeping segment %d\n", theSegment->GetID()); 
-        mFinalArmSegments.push_back(theSegment);         
-      }
-      ++segpos;   
-    }
-    mQuickFindArmSegments.clear(); 
-
-    vector<ArmSegment*>::iterator wrappos = mWrappedArmSegments.begin(); 
-    while (wrappos != mWrappedArmSegments.end()) {
-      if ((*wrappos)->IsUseless()) {
-        delete *wrappos; 
-      } else { 
-        mFinalArmSegments.push_back(*wrappos); 
-      }
-      ++wrappos;
-    }
-    mWrappedArmSegments.clear(); 
-
-    numdeleted -= mFinalArmSegments.size(); 
-    dbprintf(2, "Deleted %d segments\n", numdeleted); 
-
-
-
-    /*! 
-      Finally, go through and delete all the useless nodes
-    */ 
-    dbprintf(2, "Deleting useless nodes...\n"); 
-    numdeleted = FullNode::mFullNodes.size(); 
-    nodepos = FullNode::mFullNodes.begin(); 
-    while (nodepos != FullNode::mFullNodes.end()) {
-      int nodetype = (*nodepos)->GetNodeType();
-      if (nodetype == USELESS_NODE) {
-        FullNode::mUselessNodes.push_back(*nodepos); 
-      }
-      ++nodepos; 
-    }
-    nodepos = remove_if(FullNode::mFullNodes.begin(), FullNode::mFullNodes.end(), NodeIsUseless); 
-    FullNode::mFullNodes.erase(nodepos, FullNode::mFullNodes.end()); 
-    for_each(FullNode::mUselessNodes.begin(), FullNode::mUselessNodes.end(), DeleteNode);     
-    FullNode::mUselessNodes.clear(); 
-
- 
-    numdeleted -= FullNode::mFullNodes.size(); 
-    dbprintf(2, "Deleted %d nodes\n", numdeleted); 
-
-    dbprintf(2, "DeleteUselessNodesAndSegments ended.\n");
-    return; 
-  }
   //===========================================================================
   void DataSet::ComputeSubspace(void){
     dbprintf(2, "starting ComputeSubspace\n"); 
@@ -3107,6 +3117,8 @@ namespace paraDIS {
 
       DecomposeArms(); 
 
+      CollectAllArmSegments(); 
+
       ClassifyArms(); // This also computes their lengths...
 
       //PrintArmStats(); 
@@ -3120,7 +3132,6 @@ namespace paraDIS {
        /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
    
-      DeleteUselessNodesAndSegments(); 
 
       RenumberNodes(); 
       
