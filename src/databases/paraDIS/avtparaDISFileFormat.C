@@ -252,6 +252,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddScalarVarToMetaData(md, "simulationDomain", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "simulationID", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "nodeIndex", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "nodeType", "nodes", AVT_NODECENT); 
     
     if (mDumpfile.mVerbosity > 1) {
       AddScalarVarToMetaData(md, "nodeEngine", "nodes", AVT_NODECENT);
