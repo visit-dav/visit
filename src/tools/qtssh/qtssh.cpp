@@ -11,8 +11,10 @@
 
 #include "qtssh.h"
 
+#if defined(_WIN32)
 #include <io.h>
 #include <process.h>
+#endif
 
 // Static variables.
 static Config                  *qtssh_config = NULL;
@@ -175,6 +177,7 @@ qtssh_handle_new_username(const char *host)
         printf("\n");
 #endif
 
+#if defined(_WIN32)
         // make a new console and minimize it.
         FreeConsole();
         AllocConsole();
@@ -185,6 +188,7 @@ qtssh_handle_new_username(const char *host)
 
         // Exit this one.
         cleanup_exit(0);
+#endif
     }
 }
 
