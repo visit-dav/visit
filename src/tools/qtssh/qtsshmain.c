@@ -177,6 +177,7 @@ static void usage(void)
     printf("  -P port   connect to specified port\n");
     printf("  -l user   connect with specified username\n");
     printf("  -batch    disable all interactive prompts\n");
+    printf("  -log logname  log packets to the specified file\n");
     printf("The following options only apply to SSH connections:\n");
     printf("  -pw passw login with specified password\n");
     printf("  -D [listen-IP:]listen-port\n");
@@ -348,6 +349,17 @@ int main(int argc, char **argv)
             } else if (!strcmp(p, "-pgpfp")) {
                 pgp_fingerprints();
                 exit(1);
+            } else if (!strcmp(p, "-log")) {
+                cfg.logtype = LGTYP_PACKETS;
+                cfg.logxfovr = LGXF_APN;
+                if (argc <= 1) {
+                    fprintf(stderr,
+                            "plink: option \"-log\" requires an argument\n");
+		    errors = 1;
+		} else {
+                    --argc;
+		    strcpy(cfg.logfilename.path, *++argv);
+		}
 	    } else {
 		fprintf(stderr, "plink: unknown option \"%s\"\n", p);
 		errors = 1;
@@ -561,6 +573,10 @@ int main(int argc, char **argv)
     }
 
     logctx = log_init(NULL, &cfg);
+    if (cfg.logtype == LGTYP_PACKETS)
+    {
+        logfopen(logctx);
+    }
     console_provide_logctx(logctx);
 
     /*
