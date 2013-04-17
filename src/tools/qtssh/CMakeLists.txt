@@ -47,10 +47,13 @@
 #   Brad Whitlock, Tue Jun 12 16:14:32 PST 2012
 #   Redo qtssh using new sources and refactored viewer windows.
 #
+#   Eric Brugger, Wed Apr 17 12:02:02 PDT 2013
+#   Create a linux version of qtssh.
+#
 #****************************************************************************/
 
-# All of the plink sources, according to the plink.dsp project file.
-SET(PLINK_SOURCES
+# All of the platform independent plink sources.
+SET(PLINK_CORE_SOURCES
 be_all_s.c
 cmdline.c
 cproxy.c
@@ -88,6 +91,11 @@ timing.c
 tree234.c
 version.c
 wildcard.c
+x11fwd.c
+)
+
+# All of the windows specific plink sources.
+SET(PLINK_WINDOWS_SOURCES
 windows/plink.rc
 windows/putty.ico
 windows/wincons.c
@@ -104,15 +112,46 @@ windows/winser.c
 windows/winstore.c
 windows/wintime.c
 windows/winx11.c
-x11fwd.c
 )
 
+# All of the unix specific plink sources.
+SET(PLINK_UNIX_SOURCES
+time.c
+unix/ux_x11.c
+unix/uxagentc.c
+unix/uxcons.c
+unix/uxgss.c
+unix/uxmisc.c
+unix/uxnet.c
+unix/uxnoise.c
+unix/uxproxy.c
+unix/uxsel.c
+unix/uxser.c
+unix/uxsignal.c
+unix/uxstore.c
+)
+
+IF(WIN32)
+SET(PLINK_SOURCES ${PLINK_CORE_SOURCES} ${PLINK_WINDOWS_SOURCES})
+ELSE(WIN32)
+SET(PLINK_SOURCES ${PLINK_CORE_SOURCES} ${PLINK_UNIX_SOURCES})
+ENDIF(WIN32)
+
+IF(WIN32)
 SET(QTSSH_SOURCES
 qtssh.cpp
 qtsshmain.c
 ${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.C
 ${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.C
 )
+ELSE(WIN32)
+SET(QTSSH_SOURCES
+qtssh.cpp
+uxqtsshmain.c
+${VISIT_SOURCE_DIR}/viewer/main/VisItChangeUsernameWindow.C
+${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.C
+)
+ENDIF(WIN32)
 
 # The subset of the sources that have Q_OBJECT in their header.
 SET(QTSSH_MOC_SOURCES
@@ -121,6 +160,7 @@ ${VISIT_SOURCE_DIR}/viewer/main/VisItPasswordWindow.h
 )
 QT_WRAP_CPP(qtssh QTSSH_SOURCES ${QTSSH_MOC_SOURCES})
 
+IF(WIN32)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/windows
@@ -131,10 +171,25 @@ ${QT_INCLUDE_DIR}
 ${QT_QTGUI_INCLUDE_DIR}
 ${QT_QTCORE_INCLUDE_DIR}
 )
+ELSE(WIN32)
+INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/charset
+${CMAKE_CURRENT_SOURCE_DIR}/unix
+${VISIT_BINARY_DIR}/include
+${VISIT_SOURCE_DIR}/viewer/main
+${VISIT_COMMON_INCLUDES}
+${QT_INCLUDE_DIR}
+${QT_QTGUI_INCLUDE_DIR}
+${QT_QTCORE_INCLUDE_DIR}
+)
+ENDIF(WIN32)
 
 LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
 
+IF(WIN32)
 ADD_DEFINITIONS(-DSECURITY_WIN32)
+ENDIF(WIN32)
 
 ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES} ${PLINK_SOURCES})
 TARGET_LINK_LIBRARIES(qtssh ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})

@@ -56,6 +56,9 @@
 #   Eric Brugger, Wed Dec  5 13:17:20 PST 2012
 #   Add xmf_writer.
 #
+#   Eric Brugger, Wed Apr 17 12:00:47 PDT 2013
+#   Also build qtssh on unix.
+#
 #****************************************************************************/
 
 MACRO(VISIT_TOOLS_ADD_FOLDER type)
@@ -87,9 +90,9 @@ ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
         ADD_SUBDIRECTORY(mrgtree2dot)
     ENDIF(SILO_FOUND)
     ADD_SUBDIRECTORY(protocol)
-    IF(WIN32)
+    IF(WIN32 OR UNIX)
        ADD_SUBDIRECTORY(qtssh)
-    ENDIF(WIN32)
+    ENDIF(WIN32 OR UNIX)
     IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
         ADD_SUBDIRECTORY(dataserver)
         ADD_SUBDIRECTORY(writer)
