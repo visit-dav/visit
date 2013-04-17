@@ -1809,6 +1809,11 @@ RemoteProcess::CreatePortNumbers(int *local, int *remote, int *gateway, int nPor
 //   Brad Whitlock, Wed Mar 13 16:39:36 PDT 2013
 //   Add support for X tunneling through the gateway.
 //
+//   Eric Brugger, Wed Apr 17 14:53:43 PDT 2013
+//   I modified the routine to always pass "-l username" to ssh when running
+//   on Windows since qtssh requires it on Windows and will prompt for it if
+//   it doesn't have it.
+//
 // ****************************************************************************
 
 void
@@ -1872,6 +1877,13 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
         args.push_back("-l");
         args.push_back(profile.UserName());
     }
+#if defined(_WIN32)
+    else if(!GetLocalUserName().empty())
+    {
+        args.push_back("-l");
+        args.push_back(GetLocalUserName());
+    }
+#endif
 
     // If we're tunneling, add the arguments to SSH to 
     // forward a bunch of remote ports to our local ports.
