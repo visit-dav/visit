@@ -110,6 +110,5 @@ GetPLYWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Binary format", true);
-    rv->SetBool("poo", false);
     return rv;
 }
