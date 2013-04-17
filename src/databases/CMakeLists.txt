@@ -303,6 +303,7 @@ PuReMD
 PLOT2D
 PLOT3D
 PlainText
+PLY
 Point3D
 ProteinDataBank
 RAW
