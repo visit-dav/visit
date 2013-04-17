@@ -74,9 +74,10 @@ very likely I've chosen the wrong MPI
 implementation; you might have to hack 
 internallauncher to load the module you need."""
             print msg
-            f.write("eval $(modulecmd sh swap PE-pgi PE-gnu)\n")
+            tfile.write("eval $(modulecmd sh unload PE-pgi)\n")
+            tfile.write("eval $(modulecmd sh load PE-gnu)\n")
         elif self.launcher.IsRunningOnJaguar():
-            f.write("eval $(modulecmd sh load PrgEnv-gnu)\n")
+            tfile.write("eval $(modulecmd sh load PrgEnv-gnu)\n")
 
     def aprun_args(self):
         mpicmd = self.aprun()
@@ -127,8 +128,8 @@ class ORNLLauncher(MainLauncher):
         if self.lens == -1:
             self.lens = 0
             if self.parallelArgs.parallel and \
-               self.generalArgs.exe_name == "engine" and \
-               self.sectorname() == "lens" and \
+               self.generalArgs.exe_name == "engine_par" and \
+               self.sectorname() == "lens-login" and \
                self.domainname() == "ccs.ornl.gov":
                 self.lens = 1
         return self.lens
