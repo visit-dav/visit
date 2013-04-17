@@ -66,7 +66,7 @@ avtSTLWriter : public avtDatabaseWriter
 {
   public:
                    avtSTLWriter(DBOptionsAttributes *);
-    virtual       ~avtSTLWriter() {;};
+    virtual       ~avtSTLWriter() {}
 
   protected:
     std::string    stem;
@@ -78,9 +78,14 @@ avtSTLWriter : public avtDatabaseWriter
                                 std::vector<std::string> &);
     virtual void   WriteChunk(vtkDataSet *, int);
     virtual void   CloseFile(void);
+    
   private:
     std::vector<vtkPolyData *> polydatas;
     bool                       doBinary;
+
+#ifdef PARALLEL
+    void SendPolyDataToRank0();
+#endif
 };
 
 
