@@ -1457,7 +1457,6 @@ ViewerPlot::UpdateVariableDescription( bool reset )
       if( op->GetOperatorVarDescription() != "" )
         SetVariableDescription( op->GetOperatorVarDescription() );
     }
-
     //
     // Set the variable description for any existing plots.
     //
@@ -3307,16 +3306,19 @@ ViewerPlot::CreateActor(bool createNew,
 
     plotList[cacheIndex]->SetAtts(curPlotAtts);
 
-    if( plotDescription.size() )
-      plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
-    else
-      plotList[cacheIndex]->SetPlotTitle(GetMenuName().toStdString().c_str());
-
+    // Set the variable name first as there may be multiple legends
+    // and the variable name determines which legend is used.
     if( variableDescription != "" )
       plotList[cacheIndex]->SetVarName(variableDescription.c_str());
     else
       plotList[cacheIndex]->SetVarName(variableName.c_str());
-    plotList[cacheIndex]->SetBackgroundColor(bgColor);
+
+    // Set the plot title in the legend.
+    if( plotDescription != "" )
+      plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
+    else
+      plotList[cacheIndex]->SetPlotTitle(GetMenuName().toStdString().c_str());
+
     plotList[cacheIndex]->SetForegroundColor(fgColor);
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);

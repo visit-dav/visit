@@ -335,10 +335,13 @@ void
 avtPlot::SetPlotTitle(const char *title)
 {
     avtLegend_p legend = GetLegend();
+
     if (*legend != NULL)
     {
         if( title && strlen(title) )
+        {
             legend->SetTitle( title );
+        }
         else
         {
             // Get the name of the plot 
@@ -571,14 +574,14 @@ avtDataObjectWriter_p
 avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
                  const WindowAttributes *atts, const bool combinedExecute)
 {
-    std::string varname = contract->GetDataRequest()->GetVariable();
-    SetVarName(varname.c_str());
+    std::string varName = contract->GetDataRequest()->GetVariable();
+    SetVarName(varName.c_str());
 
     //
     // We don't know that the varname is has extents.  It might be a mesh or a material.  But
     // that won't hurt anything ... the extents calculation won't happen in that case any way.
     //
-    contract->SetCalculateVariableExtents(varname, true);
+    contract->SetCalculateVariableExtents(varName, true);
 
     if (*input == NULL)
     {
