@@ -322,8 +322,8 @@ avtPlot::GetDataExtents(std::vector<double> &extents)
 //  Arguments:
 //      title     The title of the plot.
 //
-//  Programmer:  Hank Childs
-//  Creation:    March 9, 2001
+//  Programmer:  Allen Sanderson
+//  Creation:    April 13, 2013
 //
 //  Modifications:
 //    Kathleen Biagas, Wed Apr 17 17:08:25 PDT 2013
