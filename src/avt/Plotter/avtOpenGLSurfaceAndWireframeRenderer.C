@@ -1921,6 +1921,7 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface()
                << endl;
         return;
     }
+cerr << "avtOpenGLSurfaceAndWireframeRenderer::DrawSurface" << endl;
 
     //
     //  Make sure we have a display list index for this input.

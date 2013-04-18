@@ -325,41 +325,48 @@ avtPlot::GetDataExtents(std::vector<double> &extents)
 //  Programmer:  Hank Childs
 //  Creation:    March 9, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 17 17:08:25 PDT 2013
+//    Make sure legend exists before attempting to set its title.
+//
 // ****************************************************************************
 
 void
 avtPlot::SetPlotTitle(const char *title)
 {
-  if( title && strlen(title) )
-    GetLegend()->SetTitle( title );
-  else
-  {
-    // Get the name of the plot 
-    std::string plotName( GetName() );
-
-    // All plots should end in "Plot" so strip that off.
-    std::size_t pos = plotName.find_last_of("Plot");
-
-    if( pos != std::string::npos)
-      plotName.erase( pos-3, 4 );
-
-    // Next search for an upper case letter and add space between.
-    pos = 1;
-
-    while( pos < plotName.length() )
+    avtLegend_p legend = GetLegend();
+    if (*legend != NULL)
     {
-      if( 'A' <= plotName[pos] && plotName[pos] <= 'Z' )
-      {
-        plotName.insert( pos, " " );
+        if( title && strlen(title) )
+            legend->SetTitle( title );
+        else
+        {
+            // Get the name of the plot 
+            std::string plotName( GetName() );
 
-        pos += 2;
-      }
-      else
-        ++pos;
+            // All plots should end in "Plot" so strip that off.
+            std::size_t pos = plotName.find_last_of("Plot");
+
+            if( pos != std::string::npos)
+                plotName.erase( pos-3, 4 );
+
+            // Next search for an upper case letter and add space between.
+            pos = 1;
+
+            while( pos < plotName.length() )
+            {
+                if( 'A' <= plotName[pos] && plotName[pos] <= 'Z' )
+                {
+                    plotName.insert( pos, " " );
+                    pos += 2;
+                }
+                else
+                    ++pos;
+            }
+
+            legend->SetTitle( plotName.c_str() );
+        }
     }
-
-    GetLegend()->SetTitle( plotName.c_str() );
-  }
 }
 
 // ****************************************************************************
