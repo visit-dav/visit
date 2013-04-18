@@ -602,7 +602,7 @@ ViewerOperator::SetFromNode(DataNode *parentNode, const std::string &configVersi
 //
 // Arguments:
 //
-// Programmer: Brad Whitlock
+// Programmer: Allen Sanderson
 // Creation:   Wed Apr 10 13:10:51 PST 2013
 //
 // Modifications:
@@ -623,7 +623,7 @@ ViewerOperator::UpdateOperatorAtts()
 //
 // Arguments:
 //
-// Programmer: Brad Whitlock
+// Programmer: Allen Sanderson
 // Creation:   Wed Apr 10 13:10:51 PST 2013
 //
 // Modifications:
