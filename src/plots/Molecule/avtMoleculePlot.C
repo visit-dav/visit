@@ -57,6 +57,7 @@
 #include <DebugStream.h>
 #include <LineAttributes.h>
 #include <InvalidColortableException.h>
+#include <ImproperUseException.h>
 
 #include <math.h>
 #include <limits.h>
@@ -418,20 +419,32 @@ avtMoleculePlot::CustomizeBehavior(void)
 {
     SetLegendRange();
 
-    string v(varname);
-    if (v == "element" ||
-        (v.length()>7 && v.substr(0,7) == "element") ||
-        v == "resseq"  ||
-        v == "restype" ||
-        (v.length()>8 && v.substr(v.length()-8) == "/element") ||
-        (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
-        (v.length()>8 && v.substr(v.length()-8) == "/restype"))
+    if( varname != 0 )
     {
-        behavior->SetLegend(levelsLegendRefPtr);
+      string v(varname);
+      if (v == "element" ||
+          (v.length()>7 && v.substr(0,7) == "element") ||
+          v == "resseq"  ||
+          v == "restype" ||
+          (v.length()>8 && v.substr(v.length()-8) == "/element") ||
+          (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
+          (v.length()>8 && v.substr(v.length()-8) == "/restype"))
+      {
+          behavior->SetLegend(levelsLegendRefPtr);
+      }
+      else
+      {
+        behavior->SetLegend(variableLegendRefPtr);
+      }
     }
     else
     {
-        behavior->SetLegend(variableLegendRefPtr);
+      debug1 << "Can not access the legend because " <<
+        "the variable name has not been set" << std::endl;
+
+      EXCEPTION1(ImproperUseException,
+                 "Can not access the legend because"
+                 "the variable name has not been set");
     }
 }
 
@@ -594,20 +607,35 @@ avtMoleculePlot::EnhanceSpecification(avtContract_p spec)
 avtLegend_p
 avtMoleculePlot::GetLegend(void)
 {
-    string v(varname);
-    if (v == "element" ||
-        (v.length()>7 && v.substr(0,7) == "element") ||
-        v == "resseq"  ||
-        v == "restype" ||
-        (v.length()>8 && v.substr(v.length()-8) == "/element") ||
-        (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
-        (v.length()>8 && v.substr(v.length()-8) == "/restype"))
+    if( varname != 0 )
     {
-        return levelsLegendRefPtr;
+      string v(varname);
+
+      if (v == "element" ||
+          (v.length()>7 && v.substr(0,7) == "element") ||
+          v == "resseq"  ||
+          v == "restype" ||
+          (v.length()>8 && v.substr(v.length()-8) == "/element") ||
+          (v.length()>7 && v.substr(v.length()-7) == "/resseq")  ||
+          (v.length()>8 && v.substr(v.length()-8) == "/restype"))
+      {
+          return levelsLegendRefPtr;
+      }
+      else
+      {
+          return variableLegendRefPtr;
+      }
     }
     else
     {
-        return variableLegendRefPtr;
+      debug1 << "Can not access the legend because " <<
+        "the variable name has not been set" << std::endl;
+
+      // EXCEPTION1(ImproperUseException,
+      //                 "Can not access the legend because "
+      //                 "the variable name has not been set");
+
+      return NULL;
     }
 }
 
@@ -679,7 +707,7 @@ avtMoleculePlot::SetLegendRange()
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage("No subsets present");
     }
-    else
+    else if( varname != 0 )
     {
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
@@ -818,6 +846,15 @@ avtMoleculePlot::SetLegendRange()
         levelsLegend->SetVarRange(min,max);
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
+    }
+    else
+    {
+      debug1 << "Can not access the legend because " <<
+        "the variable name has not been set" << std::endl;
+
+      EXCEPTION1(ImproperUseException,
+                 "Can not access the legend because"
+                 "the variable name has not been set");
     }
 }
 
