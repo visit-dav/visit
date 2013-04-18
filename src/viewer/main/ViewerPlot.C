@@ -3319,6 +3319,7 @@ ViewerPlot::CreateActor(bool createNew,
     else
       plotList[cacheIndex]->SetPlotTitle(GetMenuName().toStdString().c_str());
 
+    plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
