@@ -207,6 +207,10 @@ avtWavefrontOBJWriter::SendPolyDataToRank0()
             
             writer->Write();
             len = writer->GetOutputStringLength();
+
+            for(size_t i = 0; i < pds.size(); ++i)
+                pds[i]->Delete();
+            pds.clear();
         }
         
         inA[PAR_Rank()] = len;
@@ -299,5 +303,6 @@ avtWavefrontOBJWriter::CloseFile(void)
 
     for(size_t i = 0; i < pds.size(); ++i)
         pds[i]->Delete();
+    pds.clear();
     writer->Delete();
 }
