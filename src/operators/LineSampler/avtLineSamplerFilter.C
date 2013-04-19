@@ -1227,16 +1227,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             probeFilter->Update();
             
             out_ds->Delete();
-            out_ds = probeFilter->GetOutput();
-            out_ds->Register(NULL);  // Up the reference count as
-                                     // this pointer will be deleted
-                                     // without regards to whether
-                                     // the filter owns it or not.
+            out_ds = probeFilter->GetOutput()->NewInstance();
+            out_ds->ShallowCopy(probeFilter->GetOutput());
 
-            out_ds->SetSource(NULL);  // Break the update pipeline
-                                      // (i.e no updating from append
-                                      // filter as it has been
-                                      // deleted).
+            // out_ds = probeFilter->GetOutput();
+            // out_ds->Register(NULL);  // Up the reference count as
+            //                          // this pointer will be deleted
+            //                          // without regards to whether
+            //                          // the filter owns it or not.
+
+            // out_ds->SetSource(NULL);  // Break the update pipeline
+            //                           // (i.e no updating from append
+            //                           // filter as it has been
+            //                           // deleted).
 
             int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
@@ -1351,16 +1354,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 probeFilter->Update();
 
                 tmp_ds->Delete();
-                tmp_ds = probeFilter->GetOutput();
-                tmp_ds->Register(NULL);  // Up the reference count as
-                                         // this pointer will be deleted
-                                         // without regards to whether
-                                         // the filter owns it or not.
+                tmp_ds = probeFilter->GetOutput()->NewInstance();
+                tmp_ds->ShallowCopy(probeFilter->GetOutput());
 
-                out_ds->SetSource(NULL);  // Break the update pipeline
-                                          // (i.e no updating from
-                                          // append filter as it has
-                                          // been deleted).
+                // tmp_ds = probeFilter->GetOutput();
+                // tmp_ds->Register(NULL);  // Up the reference count as
+                //                          // this pointer will be deleted
+                //                          // without regards to whether
+                //                          // the filter owns it or not.
+
+                // tmp_ds->SetSource(NULL);  // Break the update pipeline
+                //                           // (i.e no updating from
+                //                           // append filter as it has
+                //                           // been deleted).
 
                 float* out_data =
                   (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
@@ -1403,16 +1409,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             probeFilter->Update();
 
             out_ds->Delete();
-            out_ds = probeFilter->GetOutput();
-            out_ds->Register(NULL);  // Up the reference count as
-                                     // this pointer will be deleted
-                                     // without regards to whether
-                                     // the filter owns it or not.
+            out_ds = probeFilter->GetOutput()->NewInstance();
+            out_ds->ShallowCopy(probeFilter->GetOutput());
 
-            out_ds->SetSource(NULL);  // Break the update pipeline
-                                      // (i.e no updating from append
-                                      // filter as it has been
-                                      // deleted).
+            // out_ds = probeFilter->GetOutput();
+            // out_ds->Register(NULL);  // Up the reference count as
+            //                          // this pointer will be deleted
+            //                          // without regards to whether
+            //                          // the filter owns it or not.
+
+            // out_ds->SetSource(NULL);  // Break the update pipeline
+            //                           // (i.e no updating from append
+            //                           // filter as it has been
+            //                           // deleted).
           }
 
           // Integrate along the channel
@@ -1509,16 +1518,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transformFilter->Update();
 
                 out_ds->Delete();
-                out_ds = transformFilter->GetOutput();
-                out_ds->Register(NULL);  // Up the reference count as
-                                         // this pointer will be deleted
-                                         // without regards to whether
-                                         // the filter owns it or not.
+                out_ds = transformFilter->GetOutput()->NewInstance();
+                out_ds->ShallowCopy(transformFilter->GetOutput());
 
-                out_ds->SetSource(NULL);  // Break the update pipeline
-                                          // (i.e no updating from
-                                          // transform filter as it has
-                                          // been deleted).
+                // out_ds = transformFilter->GetOutput();
+                // out_ds->Register(NULL);  // Up the reference count as
+                //                          // this pointer will be deleted
+                //                          // without regards to whether
+                //                          // the filter owns it or not.
+
+                // out_ds->SetSource(NULL);  // Break the update pipeline
+                //                           // (i.e no updating from
+                //                           // transform filter as it has
+                //                           // been deleted).
             }
 
             else if( atts.GetMeshGeometry() == LineSamplerAttributes::Toroidal &&
@@ -1534,16 +1546,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transformFilter->Update();
 
                 out_ds->Delete();
-                out_ds = transformFilter->GetOutput();
-                out_ds->Register(NULL);  // Up the reference count as
-                                         // this pointer will be deleted
-                                         // without regards to whether
-                                         // the filter owns it or not.
+                out_ds = transformFilter->GetOutput()->NewInstance();
+                out_ds->ShallowCopy(transformFilter->GetOutput());
 
-                out_ds->SetSource(NULL);  // Break the update pipeline
-                                          // (i.e no updating from
-                                          // transform filter as it has
-                                          // been deleted).
+                // out_ds = transformFilter->GetOutput();
+                // out_ds->Register(NULL);  // Up the reference count as
+                //                          // this pointer will be deleted
+                //                          // without regards to whether
+                //                          // the filter owns it or not.
+
+                // out_ds->SetSource(NULL);  // Break the update pipeline
+                //                           // (i.e no updating from
+                //                           // transform filter as it has
+                //                           // been deleted).
             }
           }
 
@@ -1603,16 +1618,19 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               transformFilter->Update();
 
               out_ds->Delete();
-              out_ds = transformFilter->GetOutput();
-              out_ds->Register(NULL);  // Up the reference count as
-                                       // this pointer will be deleted
-                                       // without regards to whether
-                                       // the filter owns it or not.
+              out_ds = transformFilter->GetOutput()->NewInstance();
+              out_ds->ShallowCopy(transformFilter->GetOutput());
 
-              out_ds->SetSource(NULL);  // Break the update pipeline
-                                        // (i.e no updating from
-                                        // transform filter as it has
-                                        // been deleted).
+              // out_ds = transformFilter->GetOutput();
+              // out_ds->Register(NULL);  // Up the reference count as
+              //                          // this pointer will be deleted
+              //                          // without regards to whether
+              //                          // the filter owns it or not.
+
+              // out_ds->SetSource(NULL);  // Break the update pipeline
+              //                           // (i.e no updating from
+              //                           // transform filter as it has
+              //                           // been deleted).
 
               // At this point the data can now be elevated.
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Point ||
@@ -1664,14 +1682,17 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
     // Get the appended datasets.
     appendFilter->Update();
-    out_ds = appendFilter->GetOutput();
-    out_ds->Register(NULL);    // Up the reference count as the filter
-                               // that owns it will be deleted so make
-                               // sure the memory stays around.
+    out_ds = appendFilter->GetOutput()->NewInstance();
+    out_ds->ShallowCopy(appendFilter->GetOutput());
 
-    out_ds->SetSource(NULL);  // Break the update pipeline (i.e no
-                              // updating from append filter as it has
-                              // been deleted).
+    // out_ds = appendFilter->GetOutput();
+    // out_ds->Register(NULL);    // Up the reference count as the filter
+    //                            // that owns it will be deleted so make
+    //                            // sure the memory stays around.
+
+    // out_ds->SetSource(NULL);  // Break the update pipeline (i.e no
+    //                           // updating from append filter as it has
+    //                           // been deleted).
 
     // Nuke all the vtk filters
     appendFilter->Delete();    
