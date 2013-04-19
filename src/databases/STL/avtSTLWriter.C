@@ -218,6 +218,9 @@ avtSTLWriter::SendPolyDataToRank0()
             
             writer->Write();
             len = writer->GetOutputStringLength();
+            for(size_t i = 0; i < polydatas.size(); ++i)
+                polydatas[i]->Delete();
+            polydatas.clear();
         }
         
         inA[PAR_Rank()] = len;
