@@ -1295,7 +1295,7 @@ namespace paraDIS {
   // 
   //===========================================================================
   bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
-#ifdef  RC_CPP_VISIT_BUILD
+#ifndef  USE_ABORT
     bool err = false; 
 #endif
  
