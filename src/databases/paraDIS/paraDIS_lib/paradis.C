@@ -24,14 +24,13 @@
 #include <boost/format.hpp>
 
 // GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
-#ifdef  RC_CPP_VISIT_BUILD
-#define errexit return 
-#define errexit1 return err
-#else 
-#ifdef DEBUG
+#ifdef  USE_ABORT
 #define errexit abort()
 #define errexit1 abort()
-#endif
+#warning USE_ABORT defined 
+#else
+#define errexit return 
+#define errexit1 return err
 #endif
 
 using namespace rclib; 
@@ -221,12 +220,10 @@ using namespace std;
 namespace paraDIS {
   
   //===========================================================================
-#ifdef DEBUG
   int32_t Arm::mNextID = 0;
 
   rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
   
-#endif
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
   set<ArmSegment *, CompareSegPtrs> DataSet::mQuickFindArmSegments; 
@@ -928,13 +925,11 @@ namespace paraDIS {
       numSeen ++; 
     }
   
-#ifdef DEBUG
     if (numSeen != mNumSegments) {
       string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
       dbprintf(0, s.c_str()); 
       errexit;
     }
-#endif
     return; 
   }
   
@@ -1300,7 +1295,7 @@ namespace paraDIS {
   // 
   //===========================================================================
   bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
-#ifdef DEBUG
+#ifdef  RC_CPP_VISIT_BUILD
     bool err = false; 
 #endif
  
@@ -2762,22 +2757,17 @@ namespace paraDIS {
   }
   
   //===========================================================================
-  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment
-#ifdef DEBUG
-, Arm *theArm
-#endif
+  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment, Arm *theArm
 ) {
     //FullNodeIterator currentNode = iStartNode, otherEnd; 
     FullNode *currentNode = *iStartNode, *otherEnd; 
     ArmSegment *currentSegment = iStartSegment; 
     /* loop, don't recurse */ 
     while(true) {
-#ifdef DEBUG
       if (!currentSegment->Seen()) {
         ++(theArm->mNumSegments); 
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
       }
-#endif
       currentSegment->SetSeen(true);  
       currentSegment->mParentArm =theArm; 
       otherEnd = currentSegment->GetOtherEndpoint(currentNode);
@@ -2838,24 +2828,14 @@ namespace paraDIS {
             Arm *theArm = new Arm; 
             theArm->Clear();
             theArm->SetID(); 
-#ifdef DEBUG
             dbprintf(5, "Starting arm %d in middle of arm\n", theArm->mArmID); 
-#endif
-            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG
-                         , theArm
-#endif
-                         ); 
+            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm ); 
             theArm->mTerminalNodes.push_back(endNode0); 
             endNode0->mNeighborArms.push_back(theArm); 
             theArm->mTerminalSegments.push_back(endSegment0); 
 
             startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(1));
-            FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
-#ifdef DEBUG
-                         , theArm
-#endif
-                         ); 
+            FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1 , theArm ); 
             
             if (endNode0 != endNode1) {
               theArm->mTerminalNodes.push_back(endNode1); 
@@ -2875,14 +2855,8 @@ namespace paraDIS {
               Arm *theArm = new Arm; 
               theArm->Clear();
               theArm->SetID(); 
-#ifdef DEBUG
               dbprintf(5, "Starting arm %d at one end of arm\n", theArm->mArmID); 
-#endif
-              FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG
-                           , theArm
-#endif
-                           ); 
+              FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm); 
               theArm->mTerminalNodes.push_back(*nodepos); 
               (*nodepos)->mNeighborArms.push_back(theArm); 
               if (endNode0 != *nodepos ) {
@@ -3015,7 +2989,7 @@ namespace paraDIS {
     while (pos != endpos) {
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
       debugfile.flush(); 
-#ifdef DEBUG
+#if INSANE_DEBUG
       debugfile << (*pos)->mAllArms.size() << " arms included in metaarm " << armnum << ": " << endl;debugfile.flush(); 
       vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(), armendpos = (*pos)->mAllArms.end(); 
       while (armpos < armendpos) {
@@ -3023,7 +2997,6 @@ namespace paraDIS {
         ++armpos; 
       } 
 #endif
-
       debugfile << "******************************************************" << endl << endl; 
       ++armnum; 
       ++pos; 
@@ -3569,7 +3542,7 @@ namespace paraDIS {
  
       ClassifyArms(); // This also computes their lengths...
 
-#ifdef DEBUG
+#if INSANE_DEBUG
       if (mDoDebugOutput) {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
