@@ -6,10 +6,10 @@
 #include <iomanip> 
 #include <istream>
 #include "DebugStream.h"
-#include "stringutil.h"  // for doubleToString
+#include "stringutil.h"
 
 namespace rclib {
-  using namespace std; // HOOKS_IGNORE
+  using namespace std;
   template <class T>
     struct Point {
       /*!
@@ -30,8 +30,10 @@ namespace rclib {
       /*! 
         Yet another constructor
       */ 
-      Point(T t[3]) { int i=3;   while (i--) mXYZ[i] = t[i];  }      
-      /*! 
+      Point(const T t[3]) { int i=3;   while (i--) mXYZ[i] = t[i];  }      
+ 
+ 
+     /*! 
         Yet another constructor -- e.g. to allow Point<float>(100).  Hopefully, does not cause problems with accidental construction per Effective C++.  
       */ 
       Point(T t) {
@@ -46,7 +48,7 @@ namespace rclib {
       /*!
         Accessor -- assumes xyz is allocated
       */ 
-      void Get(float *xyz) const {
+      void Get(T *xyz) const {
         int i=3; while (i--) {
           xyz[i] = mXYZ[i]; 
         }

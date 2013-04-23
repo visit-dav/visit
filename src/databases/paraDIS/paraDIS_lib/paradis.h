@@ -27,7 +27,6 @@
 // set this to 1 to re-enable linked loops code
 #define LINKED_LOOPS 0
 
-#define DEBUG_PARADIS 1
 
 /* now for the API */  
 #include <boost/cstdint.hpp>
@@ -48,6 +47,7 @@ using boost::uint32_t;
 #include <math.h>
 
 #include "Point.h"
+
 #include "stringutil.h" /* from RC_c_lib, is this a good idea? */ 
 #include "debugutil.h" /* from RC_c_lib, now we're committed. */ 
 
@@ -55,7 +55,8 @@ extern std::string doctext;
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
 string MetaArmTypeNames(int mtype);
-
+string NodeTagNames(int mtype);
+    
 //=============================================
 
 int BurgersCategory(float burgval); 
@@ -102,6 +103,9 @@ int InterpretBurgersType(float burg[3]) ;
 #define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.  Does not include loops. 
 #define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.
 #define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.
+
+#define NODETAG_NONE 0
+#define NODETAG_LOOP 8
 
 /* ========================================  */ 
 /*!
@@ -502,19 +506,19 @@ namespace paraDIS {
     /*!
       Accessor function
     */ 
-    float GetLocation(int index) { return mLocation[index]; }
+    float GetLocation(int index) const { return mLocation[index]; }
 
     /*!
       Accessor function
     */ 
-    const float *GetLocation(void) {
+    const float *GetLocation(void) const {
       return mLocation; 
     }
 
     /*!
       Accessor
     */
-    void GetLocation(float oLoc[3]) {
+    void GetLocation(float oLoc[3]) const {
       int i=3; while (i--) oLoc[i] = mLocation[i]; 
     }
 
@@ -562,6 +566,11 @@ namespace paraDIS {
     int8_t GetNodeType(void) { return mNodeType; }
     
     /*!
+      Accessor function
+    */ 
+    int8_t GetNodeTag(void) { return mNodeTag; }
+    
+    /*!
       Query
     */
     bool IsTypeM(void) {
@@ -592,10 +601,15 @@ namespace paraDIS {
         vector<ArmSegment*>::iterator pos = 
           find(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg); 
         if (pos == mNeighborSegments.end()) {
-          dbprintf(5, "Error:  no matching neighbor found to remove!\n"); 
+          dbprintf(5, "RemoveNeighbor ERROR:  no matching neighbor found to remove!\n"); 
+
 #ifdef DEBUG
+// HOOKS_IGNORE
           abort(); 
+#else
+          return;
 #endif
+
         }
         mNeighborSegments.erase(pos); 
       }
@@ -643,20 +657,22 @@ namespace paraDIS {
       mBoundsSize = max-min; 
     }
 
+
     /*!
       Accessor function
     */ 
-    int GetNumNeighbors(void) const { return mNeighborSegments.size(); }
+    int GetNumNeighborSegments(void) const { return mNeighborSegments.size(); }
+    int GetNumNeighborArms(void) const { return mNeighborArms.size(); }
     /*! 
-      Accessor function --  returns const due to the fact that neighbors are stored in a set in the data set.  But you can always create a copy of what you get, or use const_cast<> on it. 
+      Accessor function 
     */ 
-    const ArmSegment *GetNeighborSegment(uint32_t num)  const { 
+    ArmSegment *GetNeighborSegment(uint32_t num)  const { 
       if (num >= mNeighborSegments.size()) 
         throw std::string("subscript out of range in GetNeighborSegment"); 
       return mNeighborSegments[num]; 
     }
 
-    const struct Arm *GetNeighborArm(uint32_t num)  const { 
+    struct Arm *GetNeighborArm(uint32_t num)  const { 
       if (num >= mNeighborArms.size()) 
         throw std::string("subscript out of range in GetNeighborArm"); 
       return mNeighborArms[num]; 
@@ -670,9 +686,14 @@ namespace paraDIS {
         vector<Arm*>::iterator pos = find(mNeighborArms.begin(), mNeighborArms.end(), neighbor); 
         if (pos == mNeighborArms.end()) {
           dbprintf(5, "Error:  no matching neighbor arm found to remove!\n"); 
+
 #ifdef DEBUG
+// HOOKS_IGNORE
           abort(); 
+#else
+          return;
 #endif
+
         }
         mNeighborArms.erase(pos); 
       }
@@ -703,7 +724,8 @@ namespace paraDIS {
       }
     }
 
-    int8_t mNodeTag; // for new scheme for Meijie -- loop nodes = 8, else 0
+    int8_t mNodeTag; 
+
     /*!
       Connectivity to our neighboring arms.
       Only used for terminal nodes.  
@@ -758,12 +780,9 @@ namespace paraDIS {
     Arm segments are like Neighbors in that they contain neighbor relationships, but these are encoded as pointers to nodes instead of NodeIDs, for faster access to complete node data as needed. They also contain burgers and arm-type information for later analysis.  I almost called them "FullNeighbor", but in common terminology they are called "arm segments," since one or more of them comprise an Arm, so I just called them that.  
   */ 
   class ArmSegment
-#if LINKED_LOOPS
-    : mParentArm(NULL)
-#endif
     {
   public: 
-    ArmSegment() { 
+    ArmSegment(): mParentArm(NULL) { 
       init(); 
     }
     ArmSegment(const ArmSegment &other){
@@ -779,7 +798,7 @@ namespace paraDIS {
         mEndpoints[i] = NULL; 
       }
       mGhostEndpoints.clear(); 
-#ifdef DEBUG_PARADIS
+#ifdef DEBUG
       mSegmentID = -1; 
       mWrapped = false; 
 #endif
@@ -837,7 +856,7 @@ namespace paraDIS {
     */
     bool Cullable(void) { 
       if (mGhostEndpoints.size() > 1) {
-        throw string("Error:  I don't know how there can be more than one ghost endpoint for any segment"); 
+        throw string("Error:  There cannot be more than one ghost endpoint for any segment"); 
       }
       if (!mGhostEndpoints.size()) return false; 
       return (*(mGhostEndpoints[0]) < *(mEndpoints[0]) || 
@@ -872,22 +891,22 @@ namespace paraDIS {
       Set the segment id to the next available global ID
     */ 
     void SetID(void) {
-#ifdef DEBUG_PARADIS
       mSegmentID = mNextID++; 
-#endif
       return; 
     }
     /*!
       accessor -- noop if not debug mode
     */ 
     int32_t GetID(void) {
-#ifdef DEBUG_PARADIS
       return mSegmentID; 
-#else
-      return -1; 
-#endif
     }
-      
+
+    /* Get the metaarm ID for the parent of this segment */ 
+    uint32_t GetMetaArmID(void); 
+
+    /* Get the metaarm Type for the parent of this segment */ 
+    uint8_t GetMetaArmType(void);
+    
      /*!
       Accessor function
     */ 
@@ -910,9 +929,7 @@ namespace paraDIS {
     */ 
     std::string Stringify(int indent) const {
       string s = str(boost::format("ArmSegment at %1%")%this);  
-#ifdef DEBUG_PARADIS
       s +=  " number " + intToString(mSegmentID); 
-#endif
       int btype = mBurgersType; 
       s += str(boost::format(", %1%\n") %BurgersTypeNames(btype)); 
       //      string s2= str(boost::format(", Burgers: %1% (%2%), length: %3%\n")% btype % string(BurgersTypeNames[mBurgersType]) % GetLength());
@@ -976,6 +993,14 @@ namespace paraDIS {
     }
 
     /*! 
+      Accessor
+    */ 
+    FullNode * GetGhostEndpoint(void) const {
+      if (!mGhostEndpoints.size()) return NULL;
+      return mGhostEndpoints[0]; 
+    }
+
+    /*! 
       Called by a node as part of bookkeeping when wrapping a segment.  Make sure the given node is one of our endpoints -- add it as a ghost if not
     */ 
     void ConfirmEndpoint(FullNode *ep)  {
@@ -1015,7 +1040,7 @@ namespace paraDIS {
     /*! 
       This is called only for wrapped segments, when you need to replace a "real" node pointer with a pointer to a wrapped node.  We still need to keep the old pointer to the real node to notify it if we are deleted. 
     */     
-    void ReplaceEndpoint(FullNode *oldEP, FullNode *newEP, bool doGhost=true) {
+    void ReplaceEndpoint(FullNode *oldEP, FullNode *newEP, bool doGhost) {
       if (mEndpoints[0] == oldEP) {
         if (doGhost) mGhostEndpoints.push_back(mEndpoints[0]); 
         mEndpoints[0] = newEP; 
@@ -1037,27 +1062,39 @@ namespace paraDIS {
     bool Wrap(const rclib::Point<float> &dataSize, ArmSegment *&oNewSegment, 
               FullNode *&oWrapped0, FullNode *&oWrapped1);
     
-    
+     /*!
+      When iterating through an arm, if you find a node with only one 
+      neighbor, it's a wrapped node and you have to switch to the segment's
+      "wrapped double" on the other side of the data set to continue.  This
+      function returns the double and changes wrappedNode to the new node so
+      you can continue iterating. 
+    */ 
+    ArmSegment *SwitchToWrappedDouble(FullNode **wrappedNode) const; 
+
+
     /*! 
       Accessor function.  
       \param epnum Must be 0 or 1
     */  
     FullNode *GetEndpoint(int epnum) const { return mEndpoints[epnum]; }
 
-      
     /*!
       Common Accessor operation: we have one node ID, but we're looking to see what the other end of the segment is -- we cannot operate on nodes, because we don't have the global node list, so we use NodeID. 
     */ 
     FullNode *GetOtherEndpoint(const FullNode *node) const {
-      if (*mEndpoints[0] == *node) 
-        return mEndpoints[1];
-      else if (*mEndpoints[1] == *node) 
-        return mEndpoints[0]; 
-      throw string("Error in GetOtherEndpoint: cannot find node corresponding to ")+node->Stringify(0); 
-
+      int idx = 0;
+      while (idx < 2) {
+        if (*mEndpoints[idx] == *node  ) {
+          break; 
+        }
+        ++idx;
+      }
+      if (idx == 2) {
+        throw string("Error in GetOtherEndpoint: cannot find node corresponding to ")+node->Stringify(0); 
+        
+      }
+      return mEndpoints[1-idx];
     }
-
-#ifdef DEBUG_PARADIS
     /*!
       purely for debugging
     */ 
@@ -1071,7 +1108,6 @@ namespace paraDIS {
       to find out if wrapped
     */
     bool mWrapped; 
-#endif
     
     /*!
       A bucket for new segments:  "extended" segments from arm decomposition
@@ -1106,9 +1142,7 @@ namespace paraDIS {
 
 
   public:
-#if LINKED_LOOPS
     struct Arm *mParentArm; 
-#endif
     /*!
       We usually need two slots for endpoints, but may need extra slots for "ghost endpoints" created when nodes are wrapped.  When this segment is deleted, it goes through its endpoints and tells all of them they are gone.  But wrapping causes some segments to be the neighbor of 3 or even (very rarely) more nodes. So we need to track those special cases. 
     */ 
@@ -1189,6 +1223,7 @@ namespace paraDIS {
       mSeen=false;
       mSeenInMeta=false; 
       mParentMetaArm=NULL;
+      mNumSegments = 0; 
 #if LINKED_LOOPS
       mPartOfLinkedLoop=false; 
       mCheckedForLinkedLoop=false;
@@ -1234,26 +1269,18 @@ namespace paraDIS {
       to set the arm ID for debugging.  In Debug code, this will do nothing
     */ 
     void SetID(void) { 
-#ifdef DEBUG_PARADIS
       mArmID = mNextID++; 
-#endif
       return; 
     }
 
-#if LINKED_LOOPS
-    /*!
-      After an arm has been pushed into the array, you need to set
-      up the back-pointers so you can find it from the terminal segments. 
-    */
-    void SetSegmentBackPointers(void) {
-      int numsegs = mTerminalSegments.size(); 
-      while (numsegs--) {
-        mTerminalSegments[numsegs]->mParentArm = this; 
-      } 
-      return;
-    }
+    /* Get the metaarm ID for the parent of this arm */ 
+    uint32_t GetMetaArmID(void);
 
-    /*! 
+    /* Get the metaarm Type for the parent of this arm */ 
+    uint8_t GetMetaArmType(void);
+
+  #if LINKED_LOOPS
+   /*! 
       A linked loop is defined as:
       A) Two arms which have the same four-armed terminal nodes 
       OR
@@ -1263,10 +1290,39 @@ namespace paraDIS {
 #endif
 
     /*!
+      Return a  vector with pointers to all nodes in arm,
+      computed in order from end to end.  In a loop, the startNode is 
+      repeated as first and last node.  This ensures that the number of nodes
+      returned is always numSegments + 1
+    */ 
+    vector<FullNode*> GetNodes(FullNode *startNode = NULL) const;
+
+    // same as GetNodes(mTerminalNodes[1]); If only one terminal node, issue warning and just call GetNodes().  Returns empty vector if only no terminal node.
+    vector<FullNode*> GetNodesReversed(void) {
+      FullNode *startNode = NULL; 
+      if (mTerminalNodes.size() == 2) {
+        startNode = mTerminalNodes[1]; 
+      } else  if (!mTerminalNodes.size())  {
+        vector<FullNode *>nodes; 
+        return nodes;    
+      } else {
+        dbprintf(1, "WARNING: GetNodesReversed() called with  %d terminal nodes\n", mTerminalNodes.size()); 
+      }
+      return GetNodes(startNode); 
+    }
+    
+    /*!
       Return a new vector with pointers to all segments in arm,
       computed in order from end to end. 
     */ 
-    vector<ArmSegment*> GetSegments(FullNode *startNode = NULL);
+    vector<ArmSegment*> GetSegments(FullNode *startNode = NULL) const;
+    vector<ArmSegment*> GetSegmentsReversed(void) const{
+      if (mTerminalNodes.size() == 2) 
+        return GetSegments(mTerminalNodes[1]); 
+      
+      vector<ArmSegment *>segs; 
+      return segs;    
+    }
     
     string GetSegmentsAsString(FullNode *startNode = NULL) {  
       string s; 
@@ -1353,6 +1409,10 @@ namespace paraDIS {
       return mArmLength; 
     }
 
+    uint8_t GetArmType(void) const { return mArmType; }
+
+    struct MetaArm *GetParentMetaArm(void) const { return mParentMetaArm; }
+
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
     */ 
@@ -1377,7 +1437,10 @@ namespace paraDIS {
     static double mLongestLength; // for binning
     bool mSeen, mSeenInMeta; // for tracing MetaArms -- each arm need only be viewed once
     struct MetaArm * mParentMetaArm; 
-#ifdef DEBUG_PARADIS
+    /*!
+      number of segments in arm
+    */ 
+    uint32_t mNumSegments; 
     /*! 
       purely for debugging
     */ 
@@ -1386,11 +1449,6 @@ namespace paraDIS {
       purely for debugging
     */ 
     static int32_t mNextID; 
-    /*!
-      statistics for debugging
-    */ 
-    uint32_t mNumSegments; 
-#endif
   };
 
   //=============================================
@@ -1412,26 +1470,37 @@ namespace paraDIS {
     MetaArm:  A collection of arms.  Theoretically should span from M to M, but this is not always the case yet.  
   */
   struct MetaArm {
-    MetaArm(): mLength(0.0), mMetaArmType(METAARM_UNKNOWN) , mCombo(false), mFound111(false)
+    MetaArm(): mLength(0.0), mMetaArmType(METAARM_UNKNOWN), mNumSegments(0) , mCombo(false) , mFound111(false)
     {return;}
     ~MetaArm() {}
 
     std::string Stringify(int indent); 
-    double ComputeLength(void) ; 
+    // vector<ArmSegment*> GetArmSegments(void);
+
+    vector<FullNode* > GetNodes(void);    
+ 
+    vector<rclib::Point<float> > GetNodeLocations(void);    
+ 
+    uint32_t GetNumSegments(void) { 
+      if (!mNumSegments) {
+        dbprintf(1, "WARNING: MetaArm::GetNumSegments(): mNumSegments is 0.  You should call GetNodeLocations() before GetNumSegments() to avoid a permormance penalty.\n"); 
+        GetNodeLocations(); 
+      }
+      return mNumSegments; 
+    }
+
     bool FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate);
     void FindEndpoints(Arm *seedArm); 
 
     // ======================
     /* Just to clean the code, I encapsulate this to make debugging easier */
-    inline void AddArm(Arm *candidate ) {
+    void AddArm(Arm *candidate ) {
       if (candidate->mParentMetaArm == this)  {
         dbprintf(0, "WARNING! Already added arm %d to this metaarm!\n"); 
       }
       candidate->mParentMetaArm = this;
       mLength += candidate->GetLength(); 
-#ifdef DEBUG_PARADIS
       mFoundArms.push_back(candidate); 
-#endif
       return; 
     }
     // ======================
@@ -1459,7 +1528,6 @@ namespace paraDIS {
       return; 
     }
     inline void CapturePath(bool doreverse) {
-#ifdef DEBUG_PARADIS
       dbprintf(4, "Capture Path %d called\n", (int)doreverse);  
       if (doreverse) {
         reverse(mFoundArms.begin(), mFoundArms.end());
@@ -1471,21 +1539,22 @@ namespace paraDIS {
       }
       mAllArms.insert(mAllArms.end(), mFoundArms.begin(), mFoundArms.end());
       mFoundArms.clear(); 
-#endif
       return; 
     }
     
+    int8_t GetMetaArmType(void) { return mMetaArmType; }
+    int32_t GetMetaArmID(void) { return mMetaArmID; }
 
     vector<FullNode *>mTerminalNodes; // 
     vector<Arm*> mTerminalArms; // one or two arms
     double mLength; 
     int8_t mMetaArmType; 
     uint32_t mMetaArmID; 
+    uint32_t mNumSegments, mNumNodes; 
+    static rclib::Point<float> mWrappedNode; // Used in GetNodeLocations -- used to indicate a gap in the point list from a MetaArm where a segment is skipped due to wrapping.  
     bool mCombo; 
-#ifdef DEBUG_PARADIS
     bool mFound111; // if we see a 111 on our search
     vector<Arm*> mFoundArms, mAllArms, mDeadEnds; // only use if debugging is turned on.  
-#endif
   }; 
 
   //=============================================
@@ -1510,7 +1579,12 @@ namespace paraDIS {
       mDebugOutputDir = dir; 
     }
 
-    void EnableMetaArmSearch (std::string filename) { mMetaArmFile = filename; }
+    void EnableMetaArmSearch (void) { 
+      mMetaArmFile = "metaArmFile.txt"; 
+    }
+    void EnableMetaArmSearch (std::string filename) { 
+      mMetaArmFile = filename; 
+    }
     /*!
       verbosity goes from 0-5, based on dbg_setverbose() from librc.a
       filename if null means stderr
@@ -1575,6 +1649,11 @@ s      Tell the data set which file to read
     }
 
     /*!
+      Tag all METAARM_LOOP nodes
+    */
+    void TagNodes(void);
+ 
+    /*!
       Write out a copy of the input file that has all FullNode tags in it.
     */
     void WriteTagFile(char *outputname); 
@@ -1611,10 +1690,6 @@ s      Tell the data set which file to read
     /* Starting from the given arm, trace out the containing meta arm and return a shared_ptr to the result */
     boost::shared_ptr<MetaArm> TraceMetaArm(vector<Arm>::const_iterator arm); 
 
-    /*! 
-      Optionally create the list of meta-arms to trace out the M-N network on a higher level. 
-    */ 
-    void FindMetaArms(void);    
     
     /*!
       Accessor function.
@@ -1663,6 +1738,17 @@ s      Tell the data set which file to read
       return mFinalArmSegments[segnum]; 
     }
 
+    /*!
+      Accessor function
+    */
+    uint32_t GetNumMetaArms(void) { return mMetaArms.size(); }
+
+    /*!
+      Accessor function
+    */
+    boost::shared_ptr<MetaArm> GetMetaArm(uint32_t metaArmNum) {
+      return mMetaArms[metaArmNum]; 
+    }
 
     /*!
       Set the bounds for our chunk of space 
@@ -1675,12 +1761,23 @@ s      Tell the data set which file to read
       return; 
     }
 
+    /*!
+      Wrap one or the other locations if they cross a periodic boundary.
+      Return true if any change was made. 
+    */ 
+    static bool Wrap(float *loc0, float *loc2);
+
     /*! 
         Free up all memory and go back to virgin state. 
     */ 
     void Clear(void) {
       init(); 
     }
+
+    /*! 
+      Optionally create the list of meta-arms to trace out the M-N network on a higher level. 
+    */ 
+    void FindMetaArms(void);    
 
     /*!
       set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
@@ -1815,11 +1912,7 @@ s      Tell the data set which file to read
     This will be where we actually discriminate between node types, etc.  But as mentioned for BuildArms, we don't do that yet.  
   */ 
     void FindEndOfArm(FullNodeIterator &firstNode, FullNode **oFoundEndNode, 
-                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment
-#ifdef DEBUG_PARADIS
-, Arm *theArm
-#endif
-);
+                      ArmSegment *firstSegment,  ArmSegment *&foundEndSegment, Arm *theArm);
     /*! 
       Create all arms for our region. This function is a bit long because we are avoiding recursion by using loops.  Recursion for these arms would get pretty deep. 
       IN THE FUTURE, to save memory, we will implement the following: 
@@ -1852,10 +1945,11 @@ s      Tell the data set which file to read
     */ 
     void RenumberNodes(void); 
 
+    
     /*!
       Extents of the full data set: 
     */ 
-    rclib::Point<float> mDataMin, mDataMax, mDataSize;
+    static rclib::Point<float> mDataMin, mDataMax, mDataSize;
     /*!
       Subspace of interest: 
     */ 

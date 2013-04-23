@@ -47,7 +47,7 @@
 #include "debugutil.h"
 #include "pathutil.h"
 #include "version.h"
-
+#include "paradis.h"
 #include <string>
 #include <vector>
 
@@ -158,7 +158,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug1 << "populateDatabaseMetaData using the newer parallelizable data format... " << endl;
     /*!
       =======================================================
-      populate the segments mesh
+      populate the segments mesh for parallel data files
       =======================================================
     */ 
     int numvars = mParallelData.mSegmentFiles.mDataArrayNames.size(); 
@@ -192,7 +192,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     */
    /*!
       =======================================================
-      populate the nodes mesh
+      populate the nodes mesh for parallel data files
       =======================================================
     */ 
     
@@ -212,52 +212,99 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     
     md->SetFormatCanDoDomainDecomposition(true);  
   } // end of parallel data format mesh creation 
-  else if (mFormat == PARADIS_DUMPFILE_FORMAT) { // mDumpfile.FileIsValid()) { 
+  else if (mFormat == PARADIS_DUMPFILE_FORMAT) { 
+    /*! 
+      ==============================================
+      //  for dumpfile (serial)
+      ==============================================
+    */
     debug1 << " populateDatabaseMetaData detected dumpfile-based dataset" << endl;  
-
+    
 #ifdef PARALLEL
     EXCEPTION1(VisItException, "You cannot read old ParaDIS dump files in parallel.  Run VisIt in serial to do this, or create ParaDIS parallel vis files.  Contact Rich Cook at 423-9605 regarding this error.");     
 #else
     
+    /*! 
+      ==============================================
+      Add a mesh for the meta-arms for dumpfile (serial) 
+      ==============================================
+    */
+    meshname = "Meta Arms"; 
+    topological_dimension = 1; /* lines */ 
+    meshtype = AVT_UNSTRUCTURED_MESH; 
+    AddMeshToMetaData(md, meshname, meshtype, NULL, nblocks, block_origin,
+                      spatial_dimension, topological_dimension);
+    
+    AddMaterialToMetaData(md, "MetaArm type", "Meta Arms", 
+                          mDumpfile.mMetaArmTypes.size(), 
+                          mDumpfile.mMetaArmTypes); 
+    AddScalarVarToMetaData(md, "MetaArm ID", "Meta Arms", AVT_ZONECENT);
+
     /*!
       =======================================================
-      populate the segments mesh
+      populate the segments mesh for dumpfile (serial) 
       =======================================================
     */ 
     AddScalarVarToMetaData(md, "segmentIndex", "segments", AVT_ZONECENT);
-    AddScalarVarToMetaData(md, "burgersType", "segments", AVT_ZONECENT);
-    if (mDumpfile.mVerbosity > 1) {
-      AddScalarVarToMetaData(md, "segmentEngine", "segments", AVT_ZONECENT);
+ 
+    // Enumerated types give you some more flexibility in the interface.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
+    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
+    avtScalarMetaData *burgers_smd =
+      new avtScalarMetaData("burgersType", "segments", AVT_ZONECENT);
+    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<18; i++) {
+      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), i);
     }
+    md->Add(burgers_smd);
+
+    AddScalarVarToMetaData(md, "Parent MetaArm ID", "segments", AVT_ZONECENT);
+
     
-    // VisIt only allows one material set, so we have to let the user choose one
-    if (mDumpfile.mMaterialSetChoice == 0) {
-      AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
-                            mDumpfile.mBurgersTypes.size(), mDumpfile.mBurgersTypes);
-    } else {
-      AddMaterialToMetaData(md, "Segment_MN_Type", "segments", 
-                            mDumpfile.mSegmentMNTypes.size(), mDumpfile.mSegmentMNTypes);
+    avtScalarMetaData *matype_smd =
+      new avtScalarMetaData("Parent MetaArm Type", "segments", AVT_ZONECENT);
+    matype_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<4; i++) {
+      matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
     }
+    md->Add(matype_smd);
     
+    
+    // Materials are cool because you can assign arbitrary colors to them discretely without a color map.  VisIt only allows one material set per mesh, so we have to use enumerated scalars for more than one.  
+    
+    AddMaterialToMetaData(md, "Segment_Burgers_Type", "segments", 
+                          mDumpfile.mBurgersTypes.size(), mDumpfile.mBurgersTypes);
+    
+    
+    avtScalarMetaData *mn_smd =
+      new avtScalarMetaData("Segment_MN_Type", "segments", AVT_ZONECENT);
+    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=-1; i<11; i++) {
+      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
+    }
+    md->Add(mn_smd);
+   
     /*!
       =======================================================
-      populate the nodes mesh
+      populate the nodes mesh for dumpfile (serial) 
       =======================================================
     */ 
     
-    //AddScalarVarToMetaData(md, "nodeType", "nodes", AVT_NODECENT);
     // use a material for the node types 
     AddMaterialToMetaData(md, "Node_Num_Neighbors", "nodes", mDumpfile.mNodeNeighborValues.size(), mDumpfile.mNodeNeighborValues);
     
     AddScalarVarToMetaData(md, "simulationDomain", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "simulationID", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "nodeIndex", "nodes", AVT_NODECENT); 
+
+    // Can't use enumerated scalar here because nodes can have almost arbitrary types.  
     AddScalarVarToMetaData(md, "nodeType", "nodes", AVT_NODECENT); 
     
-    if (mDumpfile.mVerbosity > 1) {
-      AddScalarVarToMetaData(md, "nodeEngine", "nodes", AVT_NODECENT);
-    }
-    
+    avtScalarMetaData *node_smd =
+      new avtScalarMetaData("Node Tag", "nodes", AVT_NODECENT);
+    node_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    node_smd->AddEnumNameValue("UNTAGGED", 0);
+    node_smd->AddEnumNameValue("LOOP", 8);
+    md->Add(node_smd);
     md->SetFormatCanDoDomainDecomposition(true);  
     
 #endif
@@ -268,111 +315,8 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
   debug3 << " populateDatabaseMetaData complete" << endl; 
   return;
-  
-  // NOTES FOR DOCUMENTATION
-  // CODE TO ADD A MESH
-  //
-  // string meshname = ...
-  //
-  // AVT_RECTILINEAR_MESH, AVT_CURVILINEAR_MESH, AVT_UNSTRUCTURED_MESH,
-  // AVT_POINT_MESH, AVT_SURFACE_MESH, AVT_UNKNOWN_MESH
-  // avtMeshType mt = AVT_RECTILINEAR_MESH;
-  //
-  // int nblocks = 1;  <-- this must be 1 for STSD
-  // int block_origin = 0;
-  // int spatial_dimension = 2;
-  // int topological_dimension = 2;
-  // float *extents = NULL;
-  //
-  // Here's the call that tells the meta-data object that we have a mesh:
-  //
-  // AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-  //                   spatial_dimension, topological_dimension);
-  //
-  
-  //
-  // CODE TO ADD A SCALAR VARIABLE
-  //
-  // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-  // string varname = ...
-  //
-  // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-  // avtCentering cent = AVT_NODECENT;
-  //
-  //
-  // Here's the call that tells the meta-data object that we have a var:
-  //
-  //AddScalarVarToMetaData(md, varname, meshname, cent); 
-  
-  //
-  // CODE TO ADD A VECTOR VARIABLE
-  //
-  // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-  // string varname = ...
-  // int vector_dim = 2;
-  //
-  // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-  // avtCentering cent = AVT_NODECENT;
-  //
-  //
-  // Here's the call that tells the meta-data object that we have a var:
-  //
-  // AddVectorVarToMetaData(md, varname, mesh_for_this_var, cent,vector_dim);
-  //
-  
-  //
-  // CODE TO ADD A TENSOR VARIABLE
-  //
-  // string mesh_for_this_var = meshname; // ??? -- could be multiple meshes
-  // string varname = ...
-  // int tensor_dim = 9;
-  //
-  // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-  // avtCentering cent = AVT_NODECENT;
-  //
-  //
-  // Here's the call that tells the meta-data object that we have a var:
-  //
-  // AddTensorVarToMetaData(md, varname, mesh_for_this_var, cent,tensor_dim);
-  //
-  
-  //
-  // CODE TO ADD A MATERIAL
-  //
-  
-  /* 
-     string matname = "mymaterial";
-     string mesh_for_mat = "segments"; 
-     vector<string> mnames;
-     mnames.push_back(string("100 arm type"));    
-     mnames.push_back(string("010 arm type"));
-     mnames.push_back(string("001 arm type"));
-     mnames.push_back(string("+++ arm type"));
-     mnames.push_back(string("++- arm type"));
-     mnames.push_back(string("+-+ arm type"));
-     mnames.push_back(string("-++ arm type"));
-     mnames.push_back(string("unknown arm type"));
-     
-     int nmats = 8;
-  */ 
-  // 
-  // Here's the call that tells the meta-data object that we have a mat:
-  //
-  //AddMaterialToMetaData(md, matname, mesh_for_mat, nmats, mnames);
-  //
-  //
-  // Here's the way to add expressions:
-  //Expression momentum_expr;
-  //momentum_expr.SetName("momentum");
-  //momentum_expr.SetDefinition("{u, v}");
-  //momentum_expr.SetType(Expression::VectorMeshVar);
-  //md->AddExpression(&momentum_expr);
-  //Expression KineticEnergy_expr;
-  //KineticEnergy_expr.SetName("KineticEnergy");
-  //KineticEnergy_expr.SetDefinition("0.5*(momentum*momentum)/(rho*rho)");
-  //KineticEnergy_expr.SetType(Expression::ScalarMeshVar);
-  //md->AddExpression(&KineticEnergy_expr);
-  
+
+   
 }
 
 // ****************************************************************************
@@ -407,26 +351,7 @@ avtparaDISFileFormat::GetMesh(const char *meshname)
   if (!mesh) {
     EXCEPTION1(VisItException, "Could not get mesh requested"); 
   }
-  /* DEBUG CODE 
-  int npts = mesh->GetNumberOfPoints();
-  double pvals[3];
-  double pvmax = -FLT_MAX;
-  double pvmin =  FLT_MAX;
-  for(int i=0;i<npts;i++)
-    {
-      mesh->GetPoint(i,pvals);
-      if(pvals[0]>  pvmax) pvmax= pvals[0];
-      if(pvals[1]>  pvmax) pvmax= pvals[1];
-      if(pvals[2]>  pvmax) pvmax= pvals[2];
-      if(pvals[0]<  pvmin) pvmin= pvals[0];
-      if(pvals[1]<  pvmin) pvmin= pvals[1];
-      if(pvals[2]<  pvmin) pvmin= pvals[2];
-    }
-  cout<<  "For " << mFilename << ", npts = " << npts << ", pv min&  max = "<<  pvmin<<  " "<<  pvmax<<endl;
-  cout<<  "plast = "<<  pvals[0]<<  " "<<  pvals[1]<<  " "<<
-    pvals[2]<<endl;
-  */ 
-  return mesh;
+ return mesh;
 }
 
 // ****************************************************************************
@@ -481,39 +406,6 @@ avtparaDISFileFormat::GetVectorVar(const char *varname)
 {
   return GetVar(varname); 
 
-  //YOU MUST IMPLEMENT THIS
-
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a vector variable, here is some code that may be helpful.
-    //
-    // int ncomps = YYY;  // This is the rank of the vector - typically 2 or 3.
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // int ucomps = (ncomps == 2 ? 3 : ncomps);
-    // rv->SetNumberOfComponents(ucomps);
-    // rv->SetNumberOfTuples(ntuples);
-    // float *one_entry = new float[ucomps];
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      int j;
-    //      for (j = 0 ; j < ncomps ; j++)
-    //           one_entry[j] = ...
-    //      for (j = ncomps ; j < ucomps ; j++)
-    //           one_entry[j] = 0.;
-    //      rv->SetTuple(i, one_entry); 
-    // }
-    //
-    // delete [] one_entry;
-    // return rv;
-    //
 }
 
 

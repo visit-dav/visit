@@ -43,6 +43,7 @@
 #include <string>
 #include <vtkFloatArray.h>
 #include "ParaDISFileSet.h" 
+#include "paradis_c_interface.h"
 
 struct Dumpfile: public ParaDISFileSet {
  public:
@@ -57,8 +58,9 @@ struct Dumpfile: public ParaDISFileSet {
   /*!
     paraDIS data SERIAL
   */
-  std::vector<std::string> mNodeNeighborValues, mSegmentMNTypes;
+  std::vector<std::string> mNodeNeighborValues, mSegmentMNTypes, mMetaArmTypes;
   
+  uint32_t mNumMetaArmSegments; // computed in GetMesh() to avoid having to recompute at GetVar() 
   int mVerbosity; 
   int mMaterialSetChoice; 
   std::string mFilename; 

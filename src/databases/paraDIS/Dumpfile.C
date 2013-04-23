@@ -39,7 +39,6 @@
 *****************************************************************************/
 #include "Dumpfile.h"
 #include <DebugStream.h>
-#include "paradis_c_interface.h"
 #include <DBOptionsAttributes.h>
 #include "debugutil.h"
 #include <vtkFloatArray.h>
@@ -51,11 +50,11 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
+#include <boost/format.hpp>
 using namespace std; 
 
 Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts): 
-  mVerbosity(0),  mMaterialSetChoice(0), mFilename(filename) {
-
+  mVerbosity(0),  mMaterialSetChoice(0), mFilename(filename), mNumMetaArmSegments(0) {
   paraDIS_init(); 
   // DebugStream::GetLevel doesn't exist in 1.12RC, so turning off
   // debugging as a work around.  It does exist in the trunk, so 
@@ -65,17 +64,40 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
     Write out files
   */ 
   mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
-  debug3 << "paradis verbosity of dumpfile reader set to " << mVerbosity << endl; 
+  char *cp = getenv("PARADIS_VERBOSITY"); 
+  if (cp) mVerbosity=atoi(cp); 
+  cerr << "paradis verbosity of dumpfile reader set to " << mVerbosity << endl; 
+
   if (mVerbosity) {
     mDebugFile = rdatts->GetString(PARADIS_DEBUG_FILE);
   }
+  cerr << "setting verbosity to " << mVerbosity << endl; 
+  cp = getenv("PARADIS_DEBUG_FILE");
+  if (cp) mDebugFile = cp; 
+
   paraDIS_SetVerbosity(mVerbosity, mDebugFile.c_str()); 
+
   paraDIS_EnableDebugOutput(rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT)); 
+  cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
+  if (cp) paraDIS_EnableDebugOutput(atoi(cp)); 
+  
+  paraDIS_EnableMetaArmSearch(); 
 
   dbg_setverbose(mVerbosity); 
-
+    
+  
   mMaterialSetChoice = rdatts->GetEnum(PARADIS_MATERIAL_SET_CHOICE); 
+  cp = getenv("PARADIS_USE_MN_MATERIALS"); 
+  if (cp) {
+    mMaterialSetChoice = atoi(cp); 
+  }
+
   paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
+  cp = getenv("PARADIS_NN_ARM_THRESHOLD"); 
+  if (cp)  {
+    paraDIS_SetThreshold(atof(cp));
+  }
+
  // Adding a material to the mesh, which is the correct thing to do for int-valued data (discrete) as it allows subsetting to work
   // our own data members. 
   mSegmentMNTypes.clear(); 
@@ -91,6 +113,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mSegmentMNTypes.push_back(string("ARM_SHORT_NN_111"));
   mSegmentMNTypes.push_back(string("ARM_SHORT_NN_100"));
 
+  mNodeNeighborValues.clear(); 
   mNodeNeighborValues.push_back(string("0 neighbors"));    
   mNodeNeighborValues.push_back(string("1 neighbor"));    
   mNodeNeighborValues.push_back(string("2 neighbors"));    
@@ -102,6 +125,12 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mNodeNeighborValues.push_back(string("8 neighbors"));    
   mNodeNeighborValues.push_back(string("more than 8 neighbors"));    
   
+  mMetaArmTypes.clear(); 
+  mMetaArmTypes.push_back("METAARM_UNKNOWN"); 
+  mMetaArmTypes.push_back("METAARM_111"); 
+  mMetaArmTypes.push_back("METAARM_LOOP_111"); 
+  mMetaArmTypes.push_back("METAARM_LOOP_200"); 
+
   // PARADIS METADATA
   paraDIS_SetDataFile(mFilename.c_str());    
   paraDIS_SetProcNum(0, 1); // always serial; processor 0 of 1
@@ -161,7 +190,7 @@ Dumpfile::GetMesh(std::string meshname) {
   try {
     //==================================================================
     /*! 
-      Nodes or segments
+      Nodes, segments or metaarms
     */ 
     debug1 << "Starting Dumpfile::GetMesh(" <<meshname<<")"<< endl; 
     //return TestGetMesh(); 
@@ -177,87 +206,135 @@ Dumpfile::GetMesh(std::string meshname) {
       if (dbg_isverbose() > 1) {
         paraDIS_PrintArmStats(); 
       }
-      debug2 << "Dumpfile::GetMesh: created " << paraDIS_GetNumNodes() << " nodes  and " << paraDIS_GetNumArmSegments() << " arm segments." << endl; 
+      debug2 << "Dumpfile::paradis created " << paraDIS_GetNumNodes() << " nodes, " << paraDIS_GetNumArmSegments() << " arm segments " << endl; 
     }
-    
-    //=============================================================
-    /* nodes or segments */ 
-    //===============================================================
-    
-    /*! 
-      The set of points in both segments and node meshes are the same.  This redundancy is the way our data is.
+    /*!
+      =============================================================
+      Nodes, segments or metaarms  
+      ===============================================================
     */ 
-    vtkPoints *points =  vtkPoints::New();
-    int numpoints = paraDIS_GetNumNodes(); 
-    debug2 << "Setting number of points to  " <<numpoints << endl; 
-    points->SetNumberOfPoints(numpoints); 
-    
-    debug2 << "Dumpfile::GetMesh: setting locations" << endl; 
-    float location[3] ; 
-    int nodenum = 0; 
-    while (nodenum < numpoints) {
-      paraDIS_GetNodeLocation(nodenum, location); 
-      debug5 << "Setting point " << nodenum << " to (" << location[0] << ", " << location[1] << ", " << location[2] << ")" << endl; 
-      points->SetPoint(nodenum, location); 
-      ++nodenum; 
+     if (meshname == "segments" || meshname == "nodes") {
+       vtkPoints *points =  vtkPoints::New();
+      /*! 
+        The set of points in both segments and node meshes are the same.  This redundancy is the way our data is.
+      */ 
+      int numpoints = paraDIS_GetNumNodes(); 
+      debug2 << "Setting number of points to  " <<numpoints << endl; 
+      points->SetNumberOfPoints(numpoints); 
+      
+      debug2 << "Dumpfile::GetMesh: setting locations" << endl; 
+      float location[3] ; 
+      int nodenum = 0; 
+      while (nodenum < numpoints) {
+        paraDIS_GetNodeLocation(nodenum, location); 
+        debug5 << "Setting point " << nodenum << " to (" << location[0] << ", " << location[1] << ", " << location[2] << ")" << endl; 
+        points->SetPoint(nodenum, location); 
+        ++nodenum; 
+      }
+      
+      
+      debug2 << "Dumpfile::GetMesh: *** creating "<< meshname << " mesh ***" << endl; 
+      /*! 
+        For segments, build the mesh from the ArmSegments
+      */ 
+      if (meshname == "segments") {
+        
+        int numsegments = paraDIS_GetNumArmSegments(); 
+        
+        vtkUnstructuredGrid *linemesh = vtkUnstructuredGrid::New(); // reference-counted "new"
+        linemesh->SetPoints(points); 
+        points->Delete();  // memory is not really freed here, I think due to ref counting. From now on, points are by index    
+        
+        /*!
+          Associate node IDs to each segment.  
+        */ 
+        vtkIdType nodeIndices[2]; 
+        int index0, index1, segnum = 0; 
+        while (segnum < numsegments) {
+          index0 = paraDIS_GetEndpointIndex(segnum, 0); 
+          index1 = paraDIS_GetEndpointIndex(segnum, 1); 
+          debug5 << "Dumpfile::GetMesh: Segment " << segnum << " node indices: (" << index0 << ", " << index1 << endl; 
+          nodeIndices[0] = index0;
+          nodeIndices[1] = index1;
+          linemesh->InsertNextCell(VTK_LINE, 2, nodeIndices);
+          ++segnum; 
+        } 
+        debug1 << "Dumpfile::GetMesh: Ending GetMesh(segments)" << endl; 
+        return linemesh; 
+      }/* End segments mesh */ 
+      else {      
+        vtkIdType nodeIndex[1]; //has to be array type
+        vtkUnstructuredGrid *nodemesh = vtkUnstructuredGrid::New(); 
+        nodemesh->SetPoints(points); 
+        points->Delete(); 
+        nodenum = 0; 
+        while (nodenum != numpoints) {
+          nodeIndex[0] = nodenum; 
+          debug5 << "Inserting node index " << nodenum << " = " <<  nodeIndex[0] << endl;        
+          nodemesh->InsertNextCell(VTK_VERTEX, 1, nodeIndex); 
+          
+          ++nodenum;
+          
+        }
+        debug1 << "Dumpfile::GetMesh: Ending GetMesh(nodes)" << endl; 
+        return nodemesh;         
+      }/* end node mesh */ 
     }
-    
-    
-    /*! 
-      For segments, build the mesh from the ArmSegments
-    */ 
-    if (meshname == "segments") {
-      debug2 << "Dumpfile::GetMesh: *** creating segment mesh ***" << endl; 
-      
-      
-      //vtkCellArray *lines = vtkCellArray::New(); 
-      int numsegments = paraDIS_GetNumArmSegments(); 
-      //lines->Allocate(3*numsegments); 
-      
+    else if (meshname == "Meta Arms") {
+      // For the meta arms, points and nodes are discovered per metaarm.  
+      vtkPoints *points =  vtkPoints::New();
       vtkUnstructuredGrid *linemesh = vtkUnstructuredGrid::New(); // reference-counted "new"
+      
+      /*!
+        Associate 0-based node IDs to each segment
+      */ 
+      uint32_t nodenum = 0;
+      mNumMetaArmSegments = 0; // 0 based node IDs
+      vtkIdType nodeIndices[2]; 
+      uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
+      while (manum < numMetaArms) {
+        float *locations = paraDIS_GetMetaArmPoints(manum); 
+        uint32_t segnum = 0, segsInArm = paraDIS_GetMetaArmNumSegments(manum); // sanity check
+        while (!paraDIS_EndBuffCheck(locations)) {
+          float *next = (locations+3); 
+          if (*locations != WRAPPED_NODE && 
+              *next != WRAPPED_NODE && 
+              !paraDIS_EndBuffCheck(next) ) {
+            nodeIndices[0] = nodenum;  
+            nodeIndices[1] = nodenum+1; 
+            dbprintf(5, "Dumpfile::GetMesh: MetaArm %d segment %d  node indices: (%d, %d)\n", manum, mNumMetaArmSegments,nodeIndices[0], nodeIndices[1]);             
+            linemesh->InsertNextCell(VTK_LINE, 2, nodeIndices);
+            mNumMetaArmSegments++; 
+            segnum++; 
+          }
+          if (*locations == WRAPPED_NODE) {
+            dbprintf(5, "Dumpfile::GetMesh: MetaArm %d: Skip location: WRAPPED_NODE\n", manum); 
+            locations++; 
+          } else { // not wrapped
+            dbprintf(5, "Dumpfile::GetMesh: MetaArm %d points->InsertNextPoint %d at (%f, %f, %f);\n", manum, nodenum, locations[0], locations[1], locations[2]);  
+            points->InsertNextPoint(locations); 
+            locations += 3; 
+            nodenum++; 
+          }
+          if (segnum > segsInArm) {
+            dbprintf(0, "ERROR: metaarm %d: numsegs (%d) has exceeded number of segements from paraDIS_GetMetaArmPoints (%d)\n", manum, segnum, segsInArm); 
+            
+          }
+        } 
+        if (segnum != segsInArm) {
+          throw str(boost::format("ERROR: metaarm %1%: number of segements from paraDIS_GetMetaArmPoints (%2%) does not match number of segments from paraDIS_GetMetaArmNumSegments() (%3%)\n")% manum% segnum% segsInArm);
+          // dbprintf(0, "ERROR: metaarm %d: number of segements from paraDIS_GetMetaArmPoints (%d) does not match number of segments from paraDIS_GetMetaArmNumSegments() (%d)\n", manum, segnum, paraDIS_GetMetaArmNumSegments(manum)); 
+          
+        }
+        dbprintf(5, "Done with metaarm %d\n\n", manum); 
+        ++manum;
+      }
+      debug3 << mNumMetaArmSegments << " meta arm segments added to mesh" << endl;
+      debug1 << "Dumpfile::GetMesh: Ending GetMesh(Meta Arms)" << endl; 
       linemesh->SetPoints(points); 
       points->Delete();  // memory is not really freed here, I think due to ref counting. From now on, points are by index    
-      
-      /*!
-        Associate node IDs to each segment
-      */ 
-      vtkIdType nodeIndices[2]; 
-      int index0, index1, segnum = 0; 
-      while (segnum < numsegments) {
-        index0 = paraDIS_GetEndpointIndex(segnum, 0); 
-        index1 = paraDIS_GetEndpointIndex(segnum, 1); 
-        debug5 << "Dumpfile::GetMesh: Segment " << segnum << " node indices: (" << index0 << ", " << index1 << endl; 
-        nodeIndices[0] = index0;
-        nodeIndices[1] = index1;
-        linemesh->InsertNextCell(VTK_LINE, 2, nodeIndices);
-        ++segnum; 
-      } 
-      /*!
-        Assign lines to mesh
-      */ 
-      //linemesh->SetLines(lines);
-      //lines->Delete(); // actually a deref, not deleted...
-      debug1 << "Dumpfile::GetMesh: Ending GetMesh" << endl; 
       return linemesh; 
-    }/* End segments mesh */ 
-    else {      
-      debug2 << "Dumpfile::GetMesh: *** creating node mesh ***" << endl; 
-      vtkIdType nodeIndex[1]; //has to be array type
-      vtkUnstructuredGrid *nodemesh = vtkUnstructuredGrid::New(); 
-      nodemesh->SetPoints(points); 
-      points->Delete(); 
-      nodenum = 0; 
-      while (nodenum != numpoints) {
-        nodeIndex[0] = nodenum; 
-        debug5 << "Inserting node index " << nodenum << " = " <<  nodeIndex[0] << endl;        
-        nodemesh->InsertNextCell(VTK_VERTEX, 1, nodeIndex); 
-        
-        ++nodenum;
-        
-      }
-      debug1 << "Dumpfile::GetMesh: Ending GetMesh" << endl; 
-      return nodemesh;         
-    }/* end node mesh */ 
+    }/* End MetaArm mesh */ 
   } catch (string err) {
     cerr << err << endl; 
     EXCEPTION1(VisItException, err.c_str());
@@ -304,7 +381,17 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f= paraDIS_GetSegmentBurgersType(index); 
       scalars->InsertTuple(index,&f);
     }
-  }   else if (varname == "simulationDomain") {
+  }  else if (varname == "Parent MetaArm ID") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentMetaArmID(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  }  else if (varname == "Parent MetaArm Type") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentMetaArmType(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  }  else if (varname == "simulationDomain") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeSimulationDomain(index); 
       scalars->InsertTuple(index,&f); 
@@ -314,7 +401,7 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f=paraDIS_GetNodeSimulationID(index); 
       scalars->InsertTuple(index,&f); 
     }
-  }   else if (varname == "nodeEngine") {
+  }  else if (varname == "nodeEngine") {
     for (index=0; index<numnodes; index++) {
       f= 0; 
       scalars->InsertTuple(index,&f); 
@@ -329,7 +416,40 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f=paraDIS_GetNodeType(index); 
       scalars->InsertTuple(index,&f); //value(ith element) == i
     }
-  } 
+  }   else if (varname == "Node Tag") {
+    for (index=0; index<numnodes; index++) {
+      f=paraDIS_GetNodeTag(index); 
+      scalars->InsertTuple(index,&f); //value(ith element) == i
+    }
+  }  else if (varname == "MetaArm ID") {
+    uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
+    uint32_t totalSegs = 0; 
+    //debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
+    while (manum < numMetaArms) {
+      f= paraDIS_GetMetaArmID(manum); 
+      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
+      while (segnum++ < numsegs) {          
+        scalars->InsertTuple(totalSegs++,&f);
+      }
+      ++manum;       
+    }
+  }/*
+     // enumerated scalar
+  else if (varname == "MetaArm type" ) {
+  uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
+    uint32_t totalSegs = 0; 
+    //debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
+    while (manum < numMetaArms) {
+      f = paraDIS_GetMetaArmType(manum); 
+      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
+      while (segnum++ < numsegs) {          
+        scalars->InsertTuple(totalSegs++,&f);
+      }
+      ++manum; 
+    }
+    debug4 << "total # values placed into mesh is " << totalSegs << endl; 
+  }
+   */ 
   debug1 << "done with Dumpfile::GetVar"<<endl;
   return scalars;
     //
@@ -409,10 +529,29 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
     debug3 << "mNodeNeighborValues.size() = " << mNodeNeighborValues.size() << endl; 
     mat =  new avtMaterial(mNodeNeighborValues.size(), mNodeNeighborValues, 
                            numnodes, matId, 0, NULL, NULL, NULL, NULL);
-  } else {
-    /* 
-       string err = string("Error: unknown variable: ") + var; 
-       EXCEPTION1(VisItException, err.c_str());
+  } else  if (string(var) == "MetaArm type" ) {
+    uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
+    debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
+    int *matId = new int[mNumMetaArmSegments];
+    int *matptr = matId; 
+    uint32_t totalSegs = 0;
+    while (manum < numMetaArms) {
+      uint8_t matype = paraDIS_GetMetaArmType(manum); 
+      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
+      while (segnum < numsegs) {          
+        *(matptr++)=matype;  
+        ++ totalSegs;  
+        ++segnum; 
+      }
+      ++manum; 
+    }
+    mat =  new avtMaterial(mMetaArmTypes.size(), mMetaArmTypes, 
+                           mNumMetaArmSegments, matId, 0, NULL, NULL, NULL, NULL);
+    debug4 << "total # values placed into material is " << totalSegs << endl; 
+  }  else {
+    /*
+    string err = string("Error: unknown material: ") + var; 
+    EXCEPTION1(VisItException, err.c_str());
     */
     return NULL; 
   }

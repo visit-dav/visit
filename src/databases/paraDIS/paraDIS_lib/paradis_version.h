@@ -1,0 +1,5 @@
+#ifndef RC_PARADIS_VERSION
+#define RC_PARADIS_VERSION "2.3"
+#define RC_PARADIS_VERSION_DATE "Mon Apr 22 18:31:10 PDT 2013"
+#endif
+
