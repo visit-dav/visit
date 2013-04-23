@@ -63,6 +63,8 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   /*!
     Write out files
   */ 
+  dbprintf(5, "Dumpfile::Dumpfile(%s, rdatts)\n", filename.c_str()); 
+
   mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
   char *cp = getenv("PARADIS_VERBOSITY"); 
   if (cp) mVerbosity=atoi(cp); 
@@ -134,6 +136,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   // PARADIS METADATA
   paraDIS_SetDataFile(mFilename.c_str());    
   paraDIS_SetProcNum(0, 1); // always serial; processor 0 of 1
+  paraDIS_GetBounds(mExtents); 
 
   return; 
 }
@@ -371,12 +374,12 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f=index; 
       scalars->InsertTuple(index,&f); 
     }
-  } else if (varname == "segmentEngine") {
+  } else if (varname == "Segment Engine") {
     for (index=0; index<numsegs; index++) {
       f= 0; 
       scalars->InsertTuple(index,&f);
     }
-  } else if (varname == "burgersType") {
+  } else if (varname == "Burgers Type") {
     for (index=0; index<numsegs; index++) {
       f= paraDIS_GetSegmentBurgersType(index); 
       scalars->InsertTuple(index,&f);
@@ -391,27 +394,27 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f= paraDIS_GetSegmentMetaArmType(index); 
       scalars->InsertTuple(index,&f);
     }
-  }  else if (varname == "simulationDomain") {
+  }  else if (varname == "Simulation Domain") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeSimulationDomain(index); 
       scalars->InsertTuple(index,&f); 
     }
-  }   else if (varname == "simulationID") {
+  }   else if (varname == "Simulation ID") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeSimulationID(index); 
       scalars->InsertTuple(index,&f); 
     }
-  }  else if (varname == "nodeEngine") {
+  }  else if (varname == "Node Engine") {
     for (index=0; index<numnodes; index++) {
       f= 0; 
       scalars->InsertTuple(index,&f); 
     }
-  }   else if (varname == "nodeIndex") {
+  }   else if (varname == "Node Index") {
     for (index=0; index<numnodes; index++) {
       f=index;
       scalars->InsertTuple(index,&f); //value(ith element) == i
     }
-  }   else if (varname == "nodeType") {
+  }   else if (varname == "Node Type") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeType(index); 
       scalars->InsertTuple(index,&f); //value(ith element) == i
@@ -469,12 +472,12 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
 
   avtMaterial *mat = NULL;
   
-  if (string(var).substr(0,8) == "Segment_") {
+  if (string(var).substr(0,8) == "Segment ") {
     int index; 
     int numsegs = paraDIS_GetNumArmSegments(); 
     int *matId = new int[numsegs];
     int *matptr = matId; 
-    if (string(var) == "Segment_Burgers_Type") {
+    if (string(var) == "Segment Burgers Type") {
       //---------------------------------------------
       for (index=0; index<numsegs; index++) {
         *(matptr++)=paraDIS_GetSegmentBurgersType(index)-1; 
@@ -488,7 +491,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
       mat = new avtMaterial(mBurgersTypes.size(), mBurgersTypes, 
                             numsegs, matId, 0, NULL, NULL, NULL, NULL);
       //---------------------------------------------      
-    }     else if (string(var) == "Segment_MN_Type")  {
+    }     else if (string(var) == "Segment MN Type")  {
       //---------------------------------------------      
       for (index=0; index<numsegs; index++) {
         *(matptr++)=paraDIS_GetSegmentMNType(index); 
@@ -502,7 +505,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
     }
     
   }
-  else if (string(var) == "Node_Num_Neighbors") {
+  else if (string(var) == "Node Num Neighbors") {
     int index; 
     int numnodes = paraDIS_GetNumNodes(); 
     int *matId = new int[numnodes];
@@ -513,7 +516,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
     debug3 << "mNodeNeighborValues.size() = " << mNodeNeighborValues.size() << endl; 
     mat =  new avtMaterial(mNodeNeighborValues.size(), mNodeNeighborValues, 
                            numnodes, matId, 0, NULL, NULL, NULL, NULL);
-  } else  if (string(var) == "MetaArm type" || 
+  } else  if (string(var) == "MetaArm Type" || 
               string(var) == "Wrapped MetaArm type") {
     bool wrap = (string(var) == "Wrapped MetaArm type"); 
     uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
@@ -535,10 +538,6 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
                            mNumMetaArmSegments, matId, 0, NULL, NULL, NULL, NULL);
     debug4 << "total # values placed into material is " << totalSegs << endl; 
   }  else {
-    /*
-    string err = string("Error: unknown material: ") + var; 
-    EXCEPTION1(VisItException, err.c_str());
-    */
     return NULL; 
   }
   df = avtMaterial::Destruct;
