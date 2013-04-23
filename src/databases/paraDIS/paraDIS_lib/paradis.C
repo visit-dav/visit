@@ -27,7 +27,6 @@
 #ifdef  USE_ABORT
 #define errexit abort()
 #define errexit1 abort()
-#warning USE_ABORT defined 
 #else
 #define errexit return 
 #define errexit1 return err
