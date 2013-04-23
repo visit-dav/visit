@@ -95,9 +95,9 @@ extern "C" {
 
   int8_t paraDIS_GetMetaArmType(uint32_t metaArmNum);
 
-  uint32_t paraDIS_GetMetaArmNumSegments(uint32_t metaArmNum);
+  uint32_t paraDIS_GetMetaArmNumSegments(uint32_t metaArmNum, bool wrapEndpoints);
 
-  float *paraDIS_GetMetaArmPoints(uint32_t metaArmNum); 
+  float *paraDIS_GetMetaArmPoints(uint32_t metaArmNum, bool wrapEndpoints); 
 
   bool paraDIS_EndBuffCheck(float *bufp); 
 
