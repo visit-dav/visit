@@ -60,6 +60,7 @@ struct Dumpfile: public ParaDISFileSet {
   */
   std::vector<std::string> mNodeNeighborValues, mSegmentMNTypes, mMetaArmTypes;
   
+  double mExtents[6]; // xxyyzz
   uint32_t mNumMetaArmSegments; // computed in GetMesh() to avoid having to recompute at GetVar() 
   int mVerbosity; 
   int mMaterialSetChoice; 
