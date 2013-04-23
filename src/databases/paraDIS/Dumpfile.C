@@ -280,7 +280,8 @@ Dumpfile::GetMesh(std::string meshname) {
         return nodemesh;         
       }/* end node mesh */ 
     }
-    else if (meshname == "Meta Arms") {
+    else if (meshname == "Meta Arms" || meshname == "Wrapped Meta Arms") {
+      bool wrap = (meshname == "Wrapped Meta Arms"); 
       // For the meta arms, points and nodes are discovered per metaarm.  
       vtkPoints *points =  vtkPoints::New();
       vtkUnstructuredGrid *linemesh = vtkUnstructuredGrid::New(); // reference-counted "new"
@@ -293,8 +294,8 @@ Dumpfile::GetMesh(std::string meshname) {
       vtkIdType nodeIndices[2]; 
       uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
       while (manum < numMetaArms) {
-        float *locations = paraDIS_GetMetaArmPoints(manum); 
-        uint32_t segnum = 0, segsInArm = paraDIS_GetMetaArmNumSegments(manum); // sanity check
+        float *locations = paraDIS_GetMetaArmPoints(manum, wrap); 
+        uint32_t segnum = 0, segsInArm = paraDIS_GetMetaArmNumSegments(manum, wrap); // sanity check
         while (!paraDIS_EndBuffCheck(locations)) {
           float *next = (locations+3); 
           if (*locations != WRAPPED_NODE && 
@@ -323,7 +324,6 @@ Dumpfile::GetMesh(std::string meshname) {
         } 
         if (segnum != segsInArm) {
           throw str(boost::format("ERROR: metaarm %1%: number of segements from paraDIS_GetMetaArmPoints (%2%) does not match number of segments from paraDIS_GetMetaArmNumSegments() (%3%)\n")% manum% segnum% segsInArm);
-          // dbprintf(0, "ERROR: metaarm %d: number of segements from paraDIS_GetMetaArmPoints (%d) does not match number of segments from paraDIS_GetMetaArmNumSegments() (%d)\n", manum, segnum, paraDIS_GetMetaArmNumSegments(manum)); 
           
         }
         dbprintf(5, "Done with metaarm %d\n\n", manum); 
@@ -421,35 +421,19 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f=paraDIS_GetNodeTag(index); 
       scalars->InsertTuple(index,&f); //value(ith element) == i
     }
-  }  else if (varname == "MetaArm ID") {
+  }  else if (varname == "MetaArm ID" || varname == "Wrapped MetaArm ID") {
+    bool wrap = (varname == "Wrapped MetaArm ID");
     uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
     uint32_t totalSegs = 0; 
-    //debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
     while (manum < numMetaArms) {
       f= paraDIS_GetMetaArmID(manum); 
-      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
+      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum,wrap);
       while (segnum++ < numsegs) {          
         scalars->InsertTuple(totalSegs++,&f);
       }
       ++manum;       
-    }
-  }/*
-     // enumerated scalar
-  else if (varname == "MetaArm type" ) {
-  uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
-    uint32_t totalSegs = 0; 
-    //debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
-    while (manum < numMetaArms) {
-      f = paraDIS_GetMetaArmType(manum); 
-      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
-      while (segnum++ < numsegs) {          
-        scalars->InsertTuple(totalSegs++,&f);
-      }
-      ++manum; 
-    }
-    debug4 << "total # values placed into mesh is " << totalSegs << endl; 
+    }  
   }
-   */ 
   debug1 << "done with Dumpfile::GetVar"<<endl;
   return scalars;
     //
@@ -529,7 +513,9 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
     debug3 << "mNodeNeighborValues.size() = " << mNodeNeighborValues.size() << endl; 
     mat =  new avtMaterial(mNodeNeighborValues.size(), mNodeNeighborValues, 
                            numnodes, matId, 0, NULL, NULL, NULL, NULL);
-  } else  if (string(var) == "MetaArm type" ) {
+  } else  if (string(var) == "MetaArm type" || 
+              string(var) == "Wrapped MetaArm type") {
+    bool wrap = (string(var) == "Wrapped MetaArm type"); 
     uint32_t manum = 0, numMetaArms = paraDIS_GetNumMetaArms(); 
     debug3 << "numMetaArms is " << numMetaArms << " and mNumMetaArmSegments is " << mNumMetaArmSegments << endl; 
     int *matId = new int[mNumMetaArmSegments];
@@ -537,7 +523,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
     uint32_t totalSegs = 0;
     while (manum < numMetaArms) {
       uint8_t matype = paraDIS_GetMetaArmType(manum); 
-      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum); 
+      uint32_t segnum = 0, numsegs = paraDIS_GetMetaArmNumSegments(manum, wrap); 
       while (segnum < numsegs) {          
         *(matptr++)=matype;  
         ++ totalSegs;  

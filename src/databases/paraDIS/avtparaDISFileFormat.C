@@ -240,6 +240,23 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           mDumpfile.mMetaArmTypes); 
     AddScalarVarToMetaData(md, "MetaArm ID", "Meta Arms", AVT_ZONECENT);
 
+   /*! 
+      ==============================================
+      Now a special mesh for meta-arms that wraps its endpoints 
+      instead of "taking a shortcut" across the data. 
+      ==============================================
+    */
+    meshname = "Wrapped Meta Arms"; 
+    topological_dimension = 1; /* lines */ 
+    meshtype = AVT_UNSTRUCTURED_MESH; 
+    AddMeshToMetaData(md, meshname, meshtype, NULL, nblocks, block_origin,
+                      spatial_dimension, topological_dimension);
+
+    AddMaterialToMetaData(md, "Wrapped MetaArm type", "Wrapped Meta Arms", 
+                          mDumpfile.mMetaArmTypes.size(), 
+                          mDumpfile.mMetaArmTypes); 
+    AddScalarVarToMetaData(md, "Wrapped MetaArm ID", "Wrapped Meta Arms", AVT_ZONECENT);
+
     /*!
       =======================================================
       populate the segments mesh for dumpfile (serial) 

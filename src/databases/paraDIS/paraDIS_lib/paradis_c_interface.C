@@ -200,8 +200,8 @@ extern "C" {
     return pci_gDataSet->GetMetaArm(metaArmNum)->GetMetaArmType(); 
   }  
   
-  uint32_t paraDIS_GetMetaArmNumSegments(uint32_t metaArmNum) {
-    return pci_gDataSet->GetMetaArm(metaArmNum)->GetNumSegments(); 
+  uint32_t paraDIS_GetMetaArmNumSegments(uint32_t metaArmNum, bool wrapEndpoints) {
+    return pci_gDataSet->GetMetaArm(metaArmNum)->GetNumSegments(wrapEndpoints); 
   }
 
   /*!
@@ -213,11 +213,11 @@ extern "C" {
     END_OF_NODELIST == "END" of list.  
     Return number of points in buffer. 
   */ 
-  float *paraDIS_GetMetaArmPoints(uint32_t metaArmNum) {
+  float *paraDIS_GetMetaArmPoints(uint32_t metaArmNum, bool wrapEndpoints) {
     dbprintf(5, "paraDIS_GetMetaArmPoints(%d)\n", metaArmNum);
     paraDIS_init(NULL);
     float *bufp = gNodeLocationBuffer; 
-    vector<rclib::Point<float> > points = pci_gDataSet->GetMetaArm(metaArmNum)->GetNodeLocations(); 
+    vector<rclib::Point<float> > points = pci_gDataSet->GetMetaArm(metaArmNum)->GetNodeLocations(wrapEndpoints); 
     uint32_t p = 0; 
     while (p < points.size()) {
       if (points[p] == paraDIS::MetaArm::mWrappedNode) {

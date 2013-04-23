@@ -1479,12 +1479,12 @@ namespace paraDIS {
 
     vector<FullNode* > GetNodes(void);    
  
-    vector<rclib::Point<float> > GetNodeLocations(void);    
+    vector<rclib::Point<float> > GetNodeLocations(bool wrapEndpoints);    
  
-    uint32_t GetNumSegments(void) { 
+    uint32_t GetNumSegments(bool wrapEndpoints) { 
       if (!mNumSegments) {
         dbprintf(1, "WARNING: MetaArm::GetNumSegments(): mNumSegments is 0.  You should call GetNodeLocations() before GetNumSegments() to avoid a permormance penalty.\n"); 
-        GetNodeLocations(); 
+        GetNodeLocations(wrapEndpoints); 
       }
       return mNumSegments; 
     }

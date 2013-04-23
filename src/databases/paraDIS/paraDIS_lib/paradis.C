@@ -1541,10 +1541,10 @@ namespace paraDIS {
     vector<FullNode*> nodes;
     mNumSegments = 0; 
     if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_200) {
-      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Get all loop node locations for all member arms.\n", mMetaArmID); 
+      dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Get all loop node locations for all member arms.\n", mMetaArmID); 
       
       /* start with the first arm */ 
-      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
+      dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
       
       nodes = mTerminalArms[0]->GetNodes(); 
       
@@ -1561,11 +1561,11 @@ namespace paraDIS {
 
         // Find the neighbor on the lastNode side of arm %d that has us as its parent.
         FullNode *lastNode = *(nodes.end()-1); 
-        dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: lastNode is %s\n", mMetaArmID, lastNode->Stringify(0).c_str()); 
+        dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: lastNode is %s\n", mMetaArmID, lastNode->Stringify(0).c_str()); 
         int n = lastNode->GetNumNeighborSegments(); 
         while (n--) {
           Arm *neighbor = lastNode->GetNeighborSegment(n)->mParentArm; 
-          dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d, Looking at neighbor arm %d , ID %d: ", mMetaArmID, n, neighbor->mArmID); 
+          dbprintf(5, "MetaArm::GetNodes(), MetaArm %d, Looking at neighbor arm %d , ID %d: ", mMetaArmID, n, neighbor->mArmID); 
           if (neighbor == firstArm) {
             foundFirst = true; 
             dbprintf(5, "neighbor == firstArm\n"); 
@@ -1584,16 +1584,16 @@ namespace paraDIS {
             previousArm = currentArm; 
             currentArm = neighbor;             
             numarms++;           
-            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Found new armID %d.\n", mMetaArmID, currentArm->mArmID); 
+            dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Found new armID %d.\n", mMetaArmID, currentArm->mArmID); 
             // First, remove currentArm's last element just to avoid duplicate nodes, although they are probably harmless visually, they will cause the code to think they are wrapped nodes as they will have the same consecutive node IDs.
             
             if (currentArm->mTerminalNodes.size() != 2) { 
-              dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR:  While looking for firstArm in looped metaArm with multiple member arms, we found a member arm that is itself a loop.  This complicates things and must be addressed if it is ever seen. \n", mMetaArmID); 
+              dbprintf(0, "MetaArm::GetNodes(), MetaArm %d: ERROR:  While looking for firstArm in looped metaArm with multiple member arms, we found a member arm that is itself a loop.  This complicates things and must be addressed if it is ever seen. \n", mMetaArmID); 
               currentArm = NULL; 
             } else {
               vector<FullNode*> newnodes = currentArm->GetNodes(lastNode); 
               if (*(nodes.end()-1) == newnodes[0]) {
-                dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: deleting duplicate end node.\n", mMetaArmID); 
+                dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: deleting duplicate end node.\n", mMetaArmID); 
                 nodes.erase(nodes.end()-1); 
               }
               nodes.insert(nodes.end(), newnodes.begin(), newnodes.end());  
@@ -1603,9 +1603,9 @@ namespace paraDIS {
         }
         if (!foundGood) {
           if (foundFirst) {
-            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Looped back to the first node.  Stop.\n", mMetaArmID); 
+            dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Looped back to the first node.  Stop.\n", mMetaArmID); 
           } else {
-            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR: we did not find the next arm in the meta arm, and we have not looped around.\n", mMetaArmID); 
+            dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: ERROR: we did not find the next arm in the meta arm, and we have not looped around.\n", mMetaArmID); 
           }
           currentArm = NULL;
         }
@@ -1618,7 +1618,7 @@ namespace paraDIS {
       if (nsize != ssize+1) {
         int verbsave = dbg_isverbose(); 
         dbg_setverbose(5); 
-        dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: WARNING: nodes.size() (%d) != GetSegments(startNode).size()+1 (%d) for arm %d\n", mMetaArmID, nsize, ssize+1, mTerminalArms[0]->mArmID);     
+        dbprintf(0, "MetaArm::GetNodes(), MetaArm %d: WARNING: nodes.size() (%d) != GetSegments(startNode).size()+1 (%d) for arm %d\n", mMetaArmID, nsize, ssize+1, mTerminalArms[0]->mArmID);     
         mTerminalArms[0]->GetSegments(); 
         mTerminalArms[0]->GetNodes(); 
         dbg_setverbose(verbsave);        
@@ -1629,11 +1629,11 @@ namespace paraDIS {
         vector<FullNode*> nodes2 = mTerminalArms[0]->GetNodesReversed(); 
         int ssize2 = mTerminalArms[0]->GetSegmentsReversed().size();
         if (nodes2.size() != nodes.size() || ssize != ssize2) {
-          dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR: GetNodes() != GetNodesReversed.size() or ssize != ssize2\n", mMetaArmID); 
+          dbprintf(0, "MetaArm::GetNodes(), MetaArm %d: ERROR: GetNodes() != GetNodesReversed.size() or ssize != ssize2\n", mMetaArmID); 
           return nodes; 
         }
       }
-      dbprintf(4, "MetaArm::GetNodeLocations(), MetaArm %d: All checks seem consistent.\n", mMetaArmID); 
+      dbprintf(4, "MetaArm::GetNodes(), MetaArm %d: All checks seem consistent.\n", mMetaArmID); 
 #endif // SANITY_CHECK
       return nodes; 
       
@@ -1647,9 +1647,9 @@ namespace paraDIS {
   /*!
     Return a list of locations for the nodes in the metaArm.  If the MetaArm
     contains any wrapped segments, then the interruption will be notated with 
-    mWrappedNode.
+    mWrappedNode.  The endpoints can be wrapped if desired.  
   */ 
-  vector<rclib::Point<float> > MetaArm::GetNodeLocations(void) {
+  vector<rclib::Point<float> > MetaArm::GetNodeLocations(bool wrapEndpoints) {
     vector<rclib::Point<float> > points; 
     if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_200) {
       vector<FullNode *>nodes = GetNodes(); 
@@ -1674,6 +1674,7 @@ namespace paraDIS {
       dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: mNumSegments is %d;\n", mMetaArmID, mNumSegments); 
       
    } else {
+      mNumSegments = 0; 
       dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d Not a loop -- we can simply return the two terminal nodes.\n", mMetaArmID); 
       if (mTerminalNodes.size() != 2) {
         dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d ERROR: We are in a non-loop meta arm that has %d terminal nodes.\n", mMetaArmID, mTerminalNodes.size()); 
@@ -1685,13 +1686,23 @@ namespace paraDIS {
       mTerminalNodes[1]->GetLocation(loc2); 
       mTerminalNodes[1]->GetLocation(loc2new); 
       dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  non-loop: pushing back 2 nodes: (%f, %f, %f) and (%f, %f, %f).\n", mMetaArmID, loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]); 
-      /*if (DataSet::Wrap(loc1new, loc2new)) {
-        dbprintf(5, "MetaArm::GetNodeLocations() Wrapped terminal nodes.\n"); 
-        dbprintf(5, "MetaArm::GetNodeLocations(), non-loop: wrapped nodes to new locations: (%f, %f, %f) and (%f, %f, %f).\n", loc1[0], loc1[1], loc1[2], loc2new[0], loc2new[1], loc2new[2]); 
-        }*/
-      points.push_back(loc1); 
-      points.push_back(loc2new);    
-      mNumSegments = 1; 
+
+      // #define VISUALIZE_WRAPPING 1
+      if (wrapEndpoints && DataSet::Wrap(loc1new, loc2new)) {
+        dbprintf(5, "MetaArm::GetNodeLocations() Wrapped terminal nodes, so there will appear to be four.\n"); 
+        dbprintf(5, "MetaArm::GetNodeLocations(), non-loop: wrapped nodes to new locations: (%f, %f, %f) -> (%f, %f, %f) and (%f, %f, %f) -> (%f, %f, %f).\n", loc1[0], loc1[1], loc1[2], loc1new[0], loc1new[1], loc1new[2], loc2[0], loc2[1], loc2[2], loc2new[0], loc2new[1], loc2new[2]); 
+        points.push_back(loc1); 
+        points.push_back(loc2new);    
+        points.push_back(mWrappedNode); 
+        points.push_back(loc2); 
+        points.push_back(loc1new);    
+        mNumSegments = 2; 
+      }
+      else {
+        points.push_back(loc1); 
+        points.push_back(loc2); 
+        mNumSegments = 1; 
+      }      
     }
     dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  COMPLETE\n", mMetaArmID); 
     return points; 
