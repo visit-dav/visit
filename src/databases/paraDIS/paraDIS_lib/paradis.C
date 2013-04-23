@@ -28,9 +28,11 @@
 #define errexit return 
 #define errexit1 return err
 #else 
+#ifdef DEBUG
 #define errexit abort()
 #define errexit1 abort()
-#else
+#endif
+#endif
 
 using namespace rclib; 
 
