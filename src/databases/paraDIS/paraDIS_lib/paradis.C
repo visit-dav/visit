@@ -23,19 +23,16 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
 
-#ifdef RC_CPP_VISIT_BUILD
-#define errexit return 
-#define errexit1 return err
-#else
-#ifdef DEBUG
+// GRRR.  Visit hooks are lame.  This is bad code but if I don't structure it like this, the SVN hooks complain. 
+#ifdef  USE_ABORT
 #define errexit abort()
 #define errexit1 abort()
 #else
 #define errexit return 
 #define errexit1 return err
 #endif
-#endif
 
+using namespace rclib; 
 
 std::string INDENT(int i) {
   if (!i) return "";
@@ -222,22 +219,25 @@ using namespace std;
 namespace paraDIS {
   
   //===========================================================================
-#ifdef DEBUG_PARADIS
-  int32_t ArmSegment::mNextID = 0; 
   int32_t Arm::mNextID = 0;
 
   rclib::Point<float> FullNode::mBoundsMin, FullNode::mBoundsMax, FullNode::mBoundsSize; 
   
-#endif
-  double Arm::mLongestLength = 0.0; 
-  double Arm::mDecomposedLength = 0.0; 
   double gSegLen = 0 ;
   uint32_t gNumClassified = 0, gNumWrapped = 0, gNumArmSegmentsMeasured=0; 
   set<ArmSegment *, CompareSegPtrs> DataSet::mQuickFindArmSegments; 
+  rclib::Point<float> DataSet::mDataMin, DataSet::mDataMax, DataSet::mDataSize;
+
+  double Arm::mLongestLength = 0.0; 
+  double Arm::mDecomposedLength = 0.0; 
   double Arm::mThreshold = -1; 
   std::vector<FullNode *> 
   FullNode::mFullNodes, FullNode::mWrappedNodes; 
+
+  int32_t ArmSegment::mNextID = 0; 
   std::vector<ArmSegment *> ArmSegment::mExtendedArmSegments; 
+
+  rclib::Point<float> MetaArm::mWrappedNode(-424242.42, 424242.42, -424242.42); 
   //===========================================================================
   std::string Node::Stringify(int indent) const {
     std::string s = INDENT(indent) + std::string("(Node): ") + 
@@ -306,11 +306,31 @@ namespace paraDIS {
     std::string s = INDENT(indent) + 
       str(boost::format("FullNode index %1%, %2%, type %3%, neighbor arms: %4%, %5% neighbor segments, location: (%6% %7% %8%), address %9%")
           % mNodeIndex % mID.Stringify(0) % ntype % armids % mNeighborSegments.size() % mLocation[0] % mLocation[1] % mLocation[2] % this); 
-
-    if (!shortform) {
       s += "\n"; 
-      s+= INDENT(indent) + "Neighbors:\n"; 
-      uint32_t i=0; while (i < mNeighborSegments.size()) {
+      s+= INDENT(indent) + "Neighbors:"; 
+
+    if (shortform) {
+      if (! mNeighborSegments.size()) {
+        s += "<NONE>"; 
+      } else {
+       s += "<"; 
+       uint32_t i=0; while (i < mNeighborSegments.size()) {
+         if (mNeighborSegments[i]) {
+           s += intToString(mNeighborSegments[i]->GetID()); 
+         } else {
+           s += "NULL"; 
+         }
+         if (i == mNeighborSegments.size()-1) {
+           s+= ">\n"; 
+         } else {
+           s+= ", "; 
+         }
+         ++i; 
+       }
+      }
+    } else {
+       s += "\n"; 
+     uint32_t i=0; while (i < mNeighborSegments.size()) {
         s += INDENT(indent) + "neighbor " + intToString(i) + ": "; 
         if (mNeighborSegments[i]) {
           s+= mNeighborSegments[i]->Stringify(indent+1);
@@ -388,18 +408,11 @@ namespace paraDIS {
       return false; 
     }
 
-    const float *loc0 = mEndpoints[0]->GetLocation(), 
-      *loc1 = mEndpoints[1]->GetLocation();     
-    float shift_amt[3] = {0}; 
-    bool wrap = false;
-    int i=3; while (i--) {
-      float dist = fabs(loc0[i] - loc1[i]); 
-      if (dataSize[i]/2.0 < dist) {
-        wrap = true; 
-        shift_amt[i] = dataSize[i]; 
-      }
-    }
-    
+    float loc0[3], loc1[3]; 
+    mEndpoints[0]->GetLocation(loc0), 
+    mEndpoints[1]->GetLocation(loc1);     
+
+    bool wrap = DataSet::Wrap(loc0, loc1); 
 
     if (!wrap) {
       oWrapped0 = NULL; oWrapped1 = NULL; oNewSegment = NULL; 
@@ -408,26 +421,13 @@ namespace paraDIS {
       return false; 
     }
     gNumWrapped++; 
-    oWrapped0 = new FullNode(*mEndpoints[0], true);   
-    oWrapped1 = new FullNode(*mEndpoints[1], true); 
-    
+    oWrapped0 = new FullNode(*mEndpoints[0], true); // WHY? skip neighbors
+    oWrapped1 = new FullNode(*mEndpoints[1], true); // WHY? skip neighbors
+     
     oNewSegment = new ArmSegment(*this); 
     oNewSegment->mWrapped = true; 
-    i = 3; while (i--) {             
-      if (oWrapped0->GetLocation(i) < oWrapped1->GetLocation(i)) {
-        /*! 
-          Wrap node0 "forward" and wrap node1 "backward" in space
-        */ 
-        oWrapped0->AddToLocation(i, shift_amt[i]); 
-        oWrapped1->AddToLocation(i, -shift_amt[i]); 
-      } else {
-        /*! 
-          Wrap node0 "backward" and wrap node1 "forward" in space
-        */ 
-        oWrapped0->AddToLocation(i, -shift_amt[i]); 
-        oWrapped1->AddToLocation(i, shift_amt[i]);           
-      }
-    }
+    oWrapped0->SetLocation(loc0); 
+    oWrapped1->SetLocation(loc1); 
 
     oWrapped0->SetInBounds(); 
     oWrapped1->SetInBounds(); 
@@ -438,18 +438,17 @@ namespace paraDIS {
     /*! 
       insert the new segment between endpoint 1 and the new node 0
     */ 
-    oNewSegment->ReplaceEndpoint(mEndpoints[0], oWrapped0); 
-    oWrapped0->AddNeighbor(oNewSegment); 
+    oNewSegment->ReplaceEndpoint(mEndpoints[0], oWrapped0, true); 
+    oWrapped0->AddNeighbor(oNewSegment);
     mEndpoints[1]->ReplaceNeighbor(this,oNewSegment); 
+    
 
     /*!
       Insert *this between endpoint 0 and the new node 1
     */ 
     oWrapped1->AddNeighbor(this); 
-    this->ReplaceEndpoint(mEndpoints[1], oWrapped1); 
+    this->ReplaceEndpoint(mEndpoints[1], oWrapped1, true); 
         
-    //oWrapped0->ConfirmNeighbors(); 
-    //oWrapped1->ConfirmNeighbors(); 
     
     gSegLen += GetLength(); 
     dbprintf(5, "Wrapped: %s\n", Stringify(0).c_str()); 
@@ -457,7 +456,59 @@ namespace paraDIS {
   }
 
 
+  //===========================================================================
+  ArmSegment *ArmSegment::SwitchToWrappedDouble(FullNode **wrappedNode) const {
+    FullNode *originalNode = *wrappedNode; 
+    *wrappedNode = NULL;
+    if (originalNode->GetNumNeighborSegments() != 1) {
+      dbprintf(0, "SwitchToWrappedDouble(): ERROR:  wrappedNode should have only one neighbor but doesn't.\n"); 
+      return NULL; 
+    }
+    if (!mGhostEndpoints.size()) {
+      dbprintf(0, "SwitchToWrappedDouble(): ERROR:  no ghost endpoints in segment.\n"); 
+      return NULL; 
+    }
+    if (! (*originalNode == *mGhostEndpoints[0])) {
+      dbprintf(0, "SwitchToWrappedDouble(): ERROR: ghost node does not come from the given original node.\n"); 
+      return NULL; 
+    }
+    *wrappedNode = mGhostEndpoints[0]; 
+    FullNode *myOtherNode = GetOtherEndpoint(originalNode);
+    int ne = 0 ;
+    int numGhostNeighbors = (*wrappedNode)->GetNumNeighborSegments(); 
+    while (ne < numGhostNeighbors) {
+      ArmSegment *neighbor = (*wrappedNode)->GetNeighborSegment(ne); 
+      FullNode * neighborghost = neighbor->GetGhostEndpoint(); 
+      if (neighborghost) {
+        if (*neighborghost == *myOtherNode) {
+          dbprintf(5, "SwitchToWrappedDouble(): found wrapped double: %s\n", neighbor->Stringify(0).c_str()); 
+          return neighbor; 
+        }  
+      }
+      ++ne; 
+    }
+    dbprintf(0, "SwitchToWrappedDouble(): ERROR: could not find wrapped double in my ghost node's neighbors.\n");    
+    return NULL; 
+  }
 
+
+  //===========================================================================
+  uint32_t ArmSegment::GetMetaArmID(void) {
+    if (!mParentArm) {
+      dbprintf(0, "ERROR: GetMetaArmID() called on parentless segment.\n"); 
+      return METAARM_UNKNOWN; 
+    }
+    return mParentArm->GetMetaArmID(); 
+  }
+
+  //===========================================================================
+  uint8_t ArmSegment::GetMetaArmType(void) {
+    if (!mParentArm) {
+      dbprintf(0, "ERROR: GetMetaArmType() called on parentless segment.\n"); 
+      return METAARM_UNKNOWN; 
+    }
+    return mParentArm->GetMetaArmType(); 
+  }
 
   //===========================================================================
   /* Returns true if the arm has four unique type "111" burgers vectors represented in the exterior arms, but no type "200" burgers vectors types.  Assumes arm has at least one 3-armed endpoint, and the other must be either 3 or 5 armed. */
@@ -468,13 +519,13 @@ namespace paraDIS {
     if (mTerminalNodes.size() != 2) return false;
 
     // enforce "at least one 3 armed endpoint" condition
-    if (mTerminalNodes[0]->GetNumNeighbors() != 3 && mTerminalNodes[1]->GetNumNeighbors() != 3 ) return false;
+    if (mTerminalNodes[0]->GetNumNeighborSegments() != 3 && mTerminalNodes[1]->GetNumNeighborSegments() != 3 ) return false;
 
     int btypes[13] = {false}; 
     int nodenum = 2; 
     while (nodenum--) {
       FullNode *thisNode = mTerminalNodes[nodenum]; 
-      int neighbornum = thisNode->GetNumNeighbors(); 
+      int neighbornum = thisNode->GetNumNeighborSegments(); 
 
       // enforce "endpoint must have 3 arms or 5 arms" condition. 
       if (neighbornum != 3 && neighbornum != 5) return false; 
@@ -528,7 +579,7 @@ namespace paraDIS {
     int nodenum = 2; 
     while (nodenum--) {
       FullNode *thisNode = mTerminalNodes[nodenum]; 
-      int neighbornum = thisNode->GetNumNeighbors(); 
+      int neighbornum = thisNode->GetNumNeighborSegments(); 
       
       while (neighbornum--) {
         const ArmSegment *thisSegment = thisNode->GetNeighborSegment(neighbornum);
@@ -555,6 +606,24 @@ namespace paraDIS {
   }/* end  HaveTwoMatchingType111ExternalArms */ 
     
 
+ //===========================================================================
+  uint32_t Arm::GetMetaArmID(void) {
+    if (!mParentMetaArm) {
+      dbprintf(0, "Error: GetMetaArmID() called on parentless arm.\n");
+      return METAARM_UNKNOWN; 
+    }
+    return mParentMetaArm->GetMetaArmID(); 
+  }
+
+ //===========================================================================
+  uint8_t Arm::GetMetaArmType(void) {
+    if (!mParentMetaArm) {
+      dbprintf(0, "Error: GetMetaArmType() called on parentless arm.\n");
+      return METAARM_UNKNOWN; 
+    }
+    return mParentMetaArm->GetMetaArmType(); 
+  }
+
 #if LINKED_LOOPS
   //===========================================================================
   void Arm::CheckForLinkedLoops(void) {
@@ -573,7 +642,7 @@ namespace paraDIS {
     vector<Arm*> myNeighbors; 
     vector<FullNode *>::iterator termNode = mTerminalNodes.begin(), endNode = mTerminalNodes.end();  
     for (; !notPartOfLoop && termNode != endNode; termNode++) {
-      int neighborNum = (*termNode)->GetNumNeighbors(); 
+      int neighborNum = (*termNode)->GetNumNeighborSegments(); 
       if (!numTerminalNodeArms) {
         numTerminalNodeArms = neighborNum; 
       } else if (neighborNum != numTerminalNodeArms) {
@@ -664,8 +733,79 @@ namespace paraDIS {
     return mArmLength; 
   }
   
+   //===========================================================================
+  vector<FullNode*>Arm::GetNodes(FullNode*startNode) const {
+    vector<FullNode*> err; 
+    // Find the start segment that matches the given start node:
+    ArmSegment *startSegment = NULL;
+    vector<FullNode*> nodes; 
+    int segnum = mTerminalSegments.size(); 
+    if (!startNode) {
+      startNode = mTerminalNodes[0]; 
+    }
+    while (!startSegment && segnum--) {
+      int ep = 2; 
+      while (ep--) {
+        if (*(mTerminalSegments[segnum]->GetEndpoint(ep)) == *startNode)  {
+          startSegment = mTerminalSegments[segnum];    
+          startNode = mTerminalSegments[segnum]->GetEndpoint(ep); // get rid of aliasing to avoid returning nodes that are not part of this arm but are wrapped
+        }
+      }
+    }    
+ 
+    if (!startSegment) {
+      dbprintf(0, "GetNodes(): Cannot find matching terminal segment in arm %d for known good start node!\n", mArmID); 
+      errexit1; 
+    } 
+    FullNode *lastNode = NULL; 
+    if (mTerminalNodes.size() > 1)  
+      lastNode = const_cast<FullNode*>(mTerminalNodes[1]); 
+      
+    FullNode *currentNode = startNode; 
+    nodes.push_back(currentNode); 
+    dbprintf(5, "GetNodes(%d): pushed back startNode: %s\n", mArmID, currentNode->Stringify(0,true).c_str()); 
+
+    const ArmSegment *currentSegment = startSegment; 
+    while (true) {
+      dbprintf(5, "GetNodes(%d): currentSegment: %s\n", mArmID, currentSegment->Stringify(0).c_str() ); 
+      currentNode = currentSegment->GetOtherEndpoint(currentNode); 
+      
+      nodes.push_back(currentNode); 
+      dbprintf(5, "GetNodes(%d): pushed back node: %s\n", mArmID, currentNode->Stringify(0,true).c_str()); 
+      
+      if (currentNode->GetNumNeighborSegments() == 1) {
+        const ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(&currentNode); 
+        if (!wDouble) {
+          dbprintf(0, "GetNodes(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n", mArmID); 
+          
+        }
+        dbprintf(3, "GetNodes(%d): found a wrapped node and successfully switched to new node.\n", mArmID);
+        currentSegment = wDouble; 
+        dbprintf(5, "GetNodes(%d): currentSegment: %s\n", mArmID, currentSegment->Stringify(0).c_str() ); 
+        nodes.push_back(currentNode); 
+        dbprintf(5, "GetNodes(%d): pushed back ghost node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());        
+      }
+      if (currentNode == startNode) {
+        dbprintf(5, "GetNodes(%d): currentNode == startNode, we are at the end of the arm\n", mArmID); 
+        break; 
+      } 
+      else if (currentNode == lastNode) {
+        dbprintf(5, "GetNodes(%d): currentNode == lastNode, we are at the end of the arm\n", mArmID); 
+        break; 
+      } 
+      else if (currentNode->GetNumNeighborSegments() > 2) {
+        dbprintf(5, "GetNodes(%d): currentNode->GetNumNeighborSegments() = %d,we are at the end of the arm\n", mArmID, currentNode->GetNumNeighborSegments()); 
+        break; 
+      } 
+      currentSegment = currentNode->GetOtherNeighbor(currentSegment, true);  
+    } 
+    dbprintf(5, "GetNodes(%d) got %d nodes\n\n", mArmID, nodes.size()); 
+   
+    return nodes;
+  }
+
   //===========================================================================
-  vector<ArmSegment*>Arm::GetSegments(FullNode *startNode) {
+  vector<ArmSegment*>Arm::GetSegments(FullNode *startNode) const {
 
     vector<ArmSegment*> err; 
     // Find the start segment that matches the given start node:
@@ -688,28 +828,42 @@ namespace paraDIS {
     } while (nodenum > -1 && !startSegment);
 
     if (!startSegment) {
-      string s = string("GetSegments(): Cannot find matching terminal segment in arm for given start node"); 
-      dbprintf(0, s.c_str()); 
+      dbprintf(0, "GetSegments(): Cannot find matching terminal segment in arm %d for given start node\n", mArmID); 
       errexit1; 
     } 
     ArmSegment *lastSegment = NULL; 
     if (mTerminalSegments.size() > 1)  
-      lastSegment = const_cast<ArmSegment*>(mTerminalSegments[1-segnum]); 
+      lastSegment = mTerminalSegments[1-segnum]; 
     
-    // now compute the length of the arm
     FullNode *currentNode = startNode; 
+    
+    dbprintf(5, "GetSegments(%d): startNode: %s\n", mArmID, startNode->Stringify(0,true).c_str()); 
+
     ArmSegment *currentSegment = startSegment; 
     while (true) {
       segments.push_back(currentSegment); 
+      dbprintf(5, "GetSegments(%d): pushed back segment: %s\n", mArmID, currentSegment->Stringify(0).c_str() ); 
       if (currentSegment == lastSegment) {
         break; 
       }
       currentNode = currentSegment->GetOtherEndpoint(currentNode); 
-      if (currentNode->GetNumNeighbors() != 2 || currentNode == startNode) {
+      if (currentNode->GetNumNeighborSegments() == 1) {
+        ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(&currentNode); 
+        if (!wDouble) {
+          dbprintf(5, "GetNodes(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n"); 
+        }
+        dbprintf(5, "GetNodes(%d): found a wrapped node and successfully switched to new node.\n"); 
+        currentSegment = wDouble; 
+      }
+      
+      dbprintf(5, "GetSegments(%d): next node: %s\n", mArmID, currentNode->Stringify(0,true).c_str()); 
+
+      if (currentNode->GetNumNeighborSegments() != 2 || currentNode == startNode) {
         break; 
       }
       currentSegment = currentNode->GetOtherNeighbor(currentSegment, true);       
     } 
+    dbprintf(5, "GetSegments(%d): Found %d segments\n\n", mArmID, segments.size()); 
     return segments;
   }
 
@@ -770,13 +924,11 @@ namespace paraDIS {
       numSeen ++; 
     }
   
-#ifdef DEBUG_PARADIS
     if (numSeen != mNumSegments) {
       string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
       dbprintf(0, s.c_str()); 
       errexit;
     }
-#endif
     return; 
   }
   
@@ -895,9 +1047,7 @@ namespace paraDIS {
       //dbprintf(5, "ExtendByArm(): Setting source segment %d as BURGERS_DECOMPOSED.\n", sourceSegments[seg]->mSegmentID); 
       ArmSegment::mExtendedArmSegments.push_back(interiorSegment); 
       //DataSet::mQuickFindArmSegments.insert(interiorSegment); 
-#if LINKED_LOOPS
       interiorSegment->mParentArm = this; 
-#endif
       interiorSegment->SetBurgersType(btype); 
       interiorSegment->SetEndpoints(previousNewNode, newNode); 
       interiorSegment->SetID(); 
@@ -928,17 +1078,11 @@ namespace paraDIS {
       if (segments.size() != mNumSegments) {
         dbprintf(0, "ExtendByArm(): Error:  segments.size() %d  != mNumSegments %d\n", 
                  segments.size(), mNumSegments); 
-        dbprintf(5, "ExtendByArm() line %d: Arm 130704 segments: %s \n",
-                 __LINE__, GetSegmentsAsString().c_str()); 
         errexit; 
       }
     }
     
     dbprintf(5, "\nExtendByArm(): After extension the arm looks like this: %s", Stringify(0,false).c_str()); 
-    /* if (mArmID == 130704) {
-      dbprintf(5, "ExtendByArm() at end of function line %d: Arm 130704 segments: \n%s \n",
-               __LINE__, GetSegmentsAsString().c_str()); 
-               }*/ 
     return; 
   }
 
@@ -963,8 +1107,7 @@ namespace paraDIS {
     vector<int> numneighbors; 
     vector<int> extendedArmIDs; 
     if (numTermNodes == 0 || numTermNodes == 1) {
-      // We don't expect this!  I don't expect type 200 or higher arms to form loops
-      dbprintf(0, "Looped arm, will not decompose: %s\n", Stringify(0).c_str()); 
+      dbprintf(4, "Looped arm, will not decompose: %s\n", Stringify(0).c_str()); 
       return false;  
     }
 
@@ -1151,7 +1294,7 @@ namespace paraDIS {
   // 
   //===========================================================================
   bool MetaArm::FindEndpoint(Arm *seed, FullNode *previous, Arm* candidate) { 
-#ifdef RC_CPP_VISIT_BUILD
+#ifndef  USE_ABORT
     bool err = false; 
 #endif
  
@@ -1241,9 +1384,9 @@ namespace paraDIS {
       
       if (foundseed) {
         dbprintf(4, "FindEndpoint: We found the seed after all other neighbors are exhausted.  Thus we are in a looped arm.\n"); 
-        AddArm(candidate); 
         AddTerminalArm(seed); 
         AddTerminalNode(node); 
+        AddArm(candidate); 
         mMetaArmType = METAARM_LOOP_111; 
         return true;
       }
@@ -1281,7 +1424,7 @@ namespace paraDIS {
         dbprintf(4, "FindEndpoints: Seed arm is Type 111 LOOP arm, so this is METAARM_LOOP_111.\n"); 
         mMetaArmType = METAARM_LOOP_111; 
       }
-      dbprintf(0, "FindEndpoints: Seed arm is a loop. Adding as its own metaArm.\n");
+      dbprintf(4, "FindEndpoints: Seed arm is a loop. Adding as its own metaArm.\n");
       AddTerminalArm(seed); 
       mTerminalNodes = seed->mTerminalNodes; 
       CapturePath(false); 
@@ -1388,6 +1531,172 @@ namespace paraDIS {
 
   }
  
+  //===========================================================================
+  /*!
+    Return a list of locations for the nodes in the metaArm.  If the MetaArm
+    contains any wrapped segments, then the interruption will be notated with 
+    mWrappedNode.
+  */ 
+  vector<FullNode * > MetaArm::GetNodes(void) {
+    vector<FullNode*> nodes;
+    mNumSegments = 0; 
+    if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_200) {
+      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Get all loop node locations for all member arms.\n", mMetaArmID); 
+      
+      /* start with the first arm */ 
+      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
+      
+      nodes = mTerminalArms[0]->GetNodes(); 
+      
+      Arm *firstArm = mTerminalArms[0]; 
+      Arm *previousArm = firstArm;
+      Arm *currentArm = firstArm; 
+      uint32_t numarms = 1; 
+      if (firstArm->mTerminalNodes.size() != 2) {
+        currentArm = NULL; 
+      }
+      while (currentArm) {
+        currentArm->mSeen = true; 
+        bool foundGood = false, foundFirst = false; 
+
+        // Find the neighbor on the lastNode side of arm %d that has us as its parent.
+        FullNode *lastNode = *(nodes.end()-1); 
+        dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: lastNode is %s\n", mMetaArmID, lastNode->Stringify(0).c_str()); 
+        int n = lastNode->GetNumNeighborSegments(); 
+        while (n--) {
+          Arm *neighbor = lastNode->GetNeighborSegment(n)->mParentArm; 
+          dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d, Looking at neighbor arm %d , ID %d: ", mMetaArmID, n, neighbor->mArmID); 
+          if (neighbor == firstArm) {
+            foundFirst = true; 
+            dbprintf(5, "neighbor == firstArm\n"); 
+          }
+          else  if (neighbor == previousArm) {
+            dbprintf(5, "neighbor == previousArm\n"); 
+          }
+          else if (neighbor->GetParentMetaArm() != this ) {
+            dbprintf(5, "neighbor->GetParentMetaArm() != this\n"); 
+          }
+          else if (neighbor->mSeen) {
+            dbprintf(5, "Neighbor has been seen before.\n", mMetaArmID); 
+          } 
+          else {
+            foundGood = true; 
+            previousArm = currentArm; 
+            currentArm = neighbor;             
+            numarms++;           
+            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Found new armID %d.\n", mMetaArmID, currentArm->mArmID); 
+            // First, remove currentArm's last element just to avoid duplicate nodes, although they are probably harmless visually, they will cause the code to think they are wrapped nodes as they will have the same consecutive node IDs.
+            
+            if (currentArm->mTerminalNodes.size() != 2) { 
+              dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR:  While looking for firstArm in looped metaArm with multiple member arms, we found a member arm that is itself a loop.  This complicates things and must be addressed if it is ever seen. \n", mMetaArmID); 
+              currentArm = NULL; 
+            } else {
+              vector<FullNode*> newnodes = currentArm->GetNodes(lastNode); 
+              if (*(nodes.end()-1) == newnodes[0]) {
+                dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: deleting duplicate end node.\n", mMetaArmID); 
+                nodes.erase(nodes.end()-1); 
+              }
+              nodes.insert(nodes.end(), newnodes.begin(), newnodes.end());  
+            }
+            break; 
+          }        
+        }
+        if (!foundGood) {
+          if (foundFirst) {
+            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: Looped back to the first node.  Stop.\n", mMetaArmID); 
+          } else {
+            dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR: we did not find the next arm in the meta arm, and we have not looped around.\n", mMetaArmID); 
+          }
+          currentArm = NULL;
+        }
+      } 
+
+
+      //#define SANITY_CHECK 0
+#if (SANITY_CHECK==1)
+      int nsize = nodes.size(), ssize = mTerminalArms[0]->GetSegments().size();
+      if (nsize != ssize+1) {
+        int verbsave = dbg_isverbose(); 
+        dbg_setverbose(5); 
+        dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: WARNING: nodes.size() (%d) != GetSegments(startNode).size()+1 (%d) for arm %d\n", mMetaArmID, nsize, ssize+1, mTerminalArms[0]->mArmID);     
+        mTerminalArms[0]->GetSegments(); 
+        mTerminalArms[0]->GetNodes(); 
+        dbg_setverbose(verbsave);        
+      }     
+    
+      if (mTerminalArms[0]->mTerminalNodes.size() > 1) {
+        dbprintf(5, "Checking with reverse search for nodes and segments.\n"); 
+        vector<FullNode*> nodes2 = mTerminalArms[0]->GetNodesReversed(); 
+        int ssize2 = mTerminalArms[0]->GetSegmentsReversed().size();
+        if (nodes2.size() != nodes.size() || ssize != ssize2) {
+          dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d: ERROR: GetNodes() != GetNodesReversed.size() or ssize != ssize2\n", mMetaArmID); 
+          return nodes; 
+        }
+      }
+      dbprintf(4, "MetaArm::GetNodeLocations(), MetaArm %d: All checks seem consistent.\n", mMetaArmID); 
+#endif // SANITY_CHECK
+      return nodes; 
+      
+    }
+    else {
+      return mTerminalNodes; 
+    }
+  }
+
+  //===========================================================================
+  /*!
+    Return a list of locations for the nodes in the metaArm.  If the MetaArm
+    contains any wrapped segments, then the interruption will be notated with 
+    mWrappedNode.
+  */ 
+  vector<rclib::Point<float> > MetaArm::GetNodeLocations(void) {
+    vector<rclib::Point<float> > points; 
+    if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_200) {
+      vector<FullNode *>nodes = GetNodes(); 
+      uint32_t  p = 0; 
+      while (p < nodes.size()-1) {
+        const float *f = nodes[p]->GetLocation();
+        points.push_back(f);
+        dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: push back node (%f, %f, %f).\n", mMetaArmID, f[0], f[1], f[2]); 
+        mNumNodes ++; 
+        if (*nodes[p] == *nodes[p+1]) {
+          // wrapped nodes always have the same NodeID. 
+          points.push_back(mWrappedNode); 
+          dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: push back wrapped node\n", mMetaArmID);
+        } else {
+          mNumSegments++; 
+        }
+        ++p; 
+      } 
+      const float *f = nodes[p]->GetLocation();
+      points.push_back(f);
+      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: push back %dth node (%f, %f, %f).\n", mMetaArmID, ++p, f[0], f[1], f[2]); 
+      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: mNumSegments is %d;\n", mMetaArmID, mNumSegments); 
+      
+   } else {
+      dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d Not a loop -- we can simply return the two terminal nodes.\n", mMetaArmID); 
+      if (mTerminalNodes.size() != 2) {
+        dbprintf(0, "MetaArm::GetNodeLocations(), MetaArm %d ERROR: We are in a non-loop meta arm that has %d terminal nodes.\n", mMetaArmID, mTerminalNodes.size()); 
+        return points; 
+      }      
+      float loc1[3], loc1new[3], loc2[3], loc2new[3]; 
+      mTerminalNodes[0]->GetLocation(loc1); 
+      mTerminalNodes[0]->GetLocation(loc1new); 
+      mTerminalNodes[1]->GetLocation(loc2); 
+      mTerminalNodes[1]->GetLocation(loc2new); 
+      dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  non-loop: pushing back 2 nodes: (%f, %f, %f) and (%f, %f, %f).\n", mMetaArmID, loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]); 
+      /*if (DataSet::Wrap(loc1new, loc2new)) {
+        dbprintf(5, "MetaArm::GetNodeLocations() Wrapped terminal nodes.\n"); 
+        dbprintf(5, "MetaArm::GetNodeLocations(), non-loop: wrapped nodes to new locations: (%f, %f, %f) and (%f, %f, %f).\n", loc1[0], loc1[1], loc1[2], loc2new[0], loc2new[1], loc2new[2]); 
+        }*/
+      points.push_back(loc1); 
+      points.push_back(loc2new);    
+      mNumSegments = 1; 
+    }
+    dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  COMPLETE\n", mMetaArmID); 
+    return points; 
+  }
+
   //===========================================================================
   // see also DebugPrintArms() and PrintArmFile() -- this just tabulates a summary
   void DataSet::PrintArmStats(FILE *thefile) {
@@ -1701,6 +2010,39 @@ namespace paraDIS {
     return; 
   }
   
+  //====================================================================== 
+  bool DataSet::Wrap(float *loc0, float *loc1) {
+    float shift_amt[3] = {0}; 
+    bool wrap = false;
+    int i=3; while (i--) {
+      float dist = fabs(loc0[i] - loc1[i]); 
+      if (mDataSize[i]/2.0 < dist) {
+        wrap = true; 
+        shift_amt[i] = mDataSize[i]; 
+      }
+    }
+    if (wrap) {
+      i = 3; while (i--) {             
+        if (loc0[i] < loc1[i]) {
+          /*! 
+            Wrap loc0 "forward" and wrap loc1 "backward" in space
+          */ 
+          loc0[i] += shift_amt[i]; 
+          loc1[i] -= shift_amt[i]; 
+          
+        } else {
+          /*! 
+            Wrap loc0 "backward" and wrap loc1 "forward" in space
+          */ 
+          loc0[i] -= shift_amt[i]; 
+          loc1[i] += shift_amt[i];    
+          
+        }
+        
+      }
+    }
+    return wrap; 
+  }
   
   //====================================================================== 
   void DataSet::CopyNodeFromFile(uint32_t &lineno, uint32_t &fullNodeNum, std::ifstream &datafile, std::ofstream &tagfile) {
@@ -1715,43 +2057,53 @@ namespace paraDIS {
     else { // old-style
       datafile >> nodeID >> old_id_junk;
     }
+    if (!datafile.good()) {
+      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node")% __LINE__); 
+    }
+    //dbprintf(5, "Got node ID (%d, %d) at line %d\n", domainID, nodeID, lineno); 
     datafile >> x >> y >> z >> numNeighbors >> tag;    
     if (mFileVersion == 0){
       datafile  >> domainID >>  old_id_junk; 
     }
     if (!datafile.good()) {
-      throw string("error reading node"); 
+      throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node")% __LINE__); 
     }
+    //dbprintf(5, "Got loc (%f, %f, %f), neighbors %d, and tag %d at line %d\n", x,y,z,numNeighbors, tag, lineno);  
     ++lineno;
     NodeID theID(domainID, nodeID); 
     
     // match the ID to our fullNode
     if (fullNodeNum >= FullNode::mFullNodes.size() ) {
-      throw string("Error: full node index out of range.");
+      throw string("DataSet::CopyNodeFromFile: Error: full node index out of range.");
     }
     FullNode *fullnode = FullNode::mFullNodes[fullNodeNum]; 
 
     while (! (*fullnode == theID)) {
       if (++fullNodeNum > FullNode::mFullNodes.size()-1) {
-        throw string("Error: full node index out of range while looking for match.") ;
+        throw string("DataSet::CopyNodeFromFile: Error: full node index out of range while looking for match.") ;
       }
       fullnode = FullNode::mFullNodes[fullNodeNum]; 
-      tag = fullnode->mNodeTag;
+      if (tag != fullnode->mNodeTag) {
+        dbprintf(5, "DataSet::CopyNodeFromFile: Node %d: Old tag %d --> New tag %d\n", fullNodeNum, tag, fullnode->mNodeTag); 
+        tag = fullnode->mNodeTag;
+      }        
     }
-    
-    if (mFileVersion > 0) {
-      tagfile << domainID << comma << nodeID;
-    }
-    else { // old-style
-      tagfile << nodeID << old_id_junk;
-    }
-    tagfile << x << y << z << numNeighbors << tag;    
-    if (mFileVersion == 0){
-      tagfile  << domainID <<  old_id_junk; 
-    }
-    tagfile << endl;
 
     string linebuf; 
+    // Write back out the first line of node information
+    if (mFileVersion > 0) {
+      linebuf = str(boost::format("%1%,%2% ")%domainID%nodeID); 
+    }
+    else { // old-style
+      linebuf = str(boost::format("%1%,%2% ")%nodeID%old_id_junk);
+    }
+    linebuf +=  str(boost::format("%1% %2% %3% %4% %5%")%x%y%z%numNeighbors % tag); 
+    if (mFileVersion == 0){
+      linebuf +=  str(boost::format("%1% %2%")% domainID % old_id_junk); 
+    }
+    tagfile << linebuf << endl; 
+ 
+   getline(datafile, linebuf); // clear the '\n' waiting in datafile. 
     int neighbornum = 0; 
     while (neighbornum < numNeighbors && datafile.good()) {
       // read and write two lines per neighbor
@@ -1759,7 +2111,11 @@ namespace paraDIS {
       tagfile << linebuf << endl; 
       getline(datafile, linebuf); 
       tagfile << linebuf << endl; 
+      if (!datafile.good()) {
+        throw str(boost::format("DataSet::CopyNodeFromFile line %1%: error reading node %1%, neighbor %2%")% __LINE__% fullNodeNum% neighbornum); 
+      }      
       ++neighbornum;
+      lineno += 2; 
     }
     return;
   }
@@ -1784,7 +2140,7 @@ namespace paraDIS {
       datafile  >> domainID >>  old_id_junk; 
     }
     if (!datafile.good()) {
-      throw string("error reading node"); 
+      throw string("DataSet::ReadMinimalNodeFromFile: error reading node"); 
     }
     ++lineno;
 
@@ -1819,7 +2175,7 @@ namespace paraDIS {
       theNode.AddNeighbor(&(*pos)); 
       
       if (!datafile.good()) {
-        throw string("error reading neighbor number ") + intToString(neighbornum);
+        throw string("DataSet::ReadMinimalNodeFromFile: error reading neighbor number ") + intToString(neighbornum);
       }
       ++lineno; 
       ++neighbornum; 
@@ -2125,13 +2481,13 @@ namespace paraDIS {
         if (mFileVersion > 0) {
           datafile >> domainID >> comma >> nodeID;
           if (!datafile.good()) {
-            throw string("error reading domainID and nodeID of node"); 
+            throw string("DataSet::ReadFullNodeFromFile: error reading domainID and nodeID of node"); 
           }
           dbprintf(5, "Got node id (%d,%d)\n", domainID, nodeID); 
         } else {
           datafile >> nodeID >> old_id_junk;
           if (!datafile.good()) {
-            throw string("error reading nodeID"); 
+            throw string("DataSet::ReadFullNodeFromFile: error reading nodeID"); 
           }
         }
         /*! 
@@ -2139,21 +2495,21 @@ namespace paraDIS {
         */ 
         int i=0; while (i < 3) datafile >> location[i++];
         if (!datafile.good()) {
-          throw string("error reading location"); 
+          throw string("DataSet::ReadFullNodeFromFile: error reading location"); 
         }
         dbprintf(5, "read location (%f, %f, %f)\n", location[0], location[1], location[2]); 
         datafile >> numNeighbors >> constraint_junk;
         if (!datafile.good()) {
-          throw string("error reading numNeighbors"); 
+          throw string("DataSet::ReadFullNodeFromFile: error reading numNeighbors"); 
         }
         if (mFileVersion == 0){
           datafile  >> domainID >>  old_id_junk; 
           if (!datafile.good()) {
-            throw string("error reading domainID"); 
+            throw string("DataSet::ReadFullNodeFromFile: error reading domainID"); 
           }
         }
         if (!datafile.good()) {
-          throw string("error reading node"); 
+          throw string("DataSet::ReadFullNodeFromFile: error reading node"); 
         }
         
         if (theNode == NodeID(domainID, nodeID)) {
@@ -2167,14 +2523,14 @@ namespace paraDIS {
           //dbprintf(5, "skipping node: (%d, %d)\n", domainID, nodeID); 
           getline(datafile, junkstring); // finish the current line
           if (!datafile.good()) {
-            throw string("error looking for end of line"); 
+            throw string("DataSet::ReadFullNodeFromFile: error looking for end of line"); 
           }
           int neighborNum = 0; 
           while (neighborNum < numNeighbors) {
             int linenum = 0; while (linenum < 2) {
               getline(datafile, junkstring);  
               if (!datafile.good()) {
-                throw string("error reading line ")+ intToString(linenum) + string(" of neighbor ") + intToString(neighborNum);
+                throw string("DataSet::ReadFullNodeFromFile: error reading line ")+ intToString(linenum) + string(" of neighbor ") + intToString(neighborNum);
               }
               ++linenum;
             }
@@ -2183,7 +2539,7 @@ namespace paraDIS {
           ++numskipped; 
         }      
       }
-      dbprintf(5, "Found node info for minimal node (%d, %d)\n", domainID, nodeID); 
+      dbprintf(5, "DataSet::ReadFullNodeFromFile: Found node info for minimal node (%d, %d)\n", domainID, nodeID); 
       //------------------------------------------------
       // done reading first line of node information    
       fullNode->SetLocation(location); 
@@ -2201,14 +2557,14 @@ namespace paraDIS {
           if (mFileVersion > 0) {
             datafile >> neighborDomain >> comma >> neighborID;   
             if (!datafile.good()) {
-              throw string("error reading neighborDomain and neighborID of neighbor"); 
+              throw string("DataSet::ReadFullNodeFromFile: error reading neighborDomain and neighborID of neighbor"); 
             }
           }
           else {
             neighborDomain   = 0;
             datafile >> neighborID;
             if (!datafile.good()) {
-              throw string("error reading neighborID"); 
+              throw string("DataSet::ReadFullNodeFromFile: error reading neighborID"); 
             }
           }
           currentSegment->SetEndpoints(fullNode, neighborDomain, neighborID); 
@@ -2216,7 +2572,7 @@ namespace paraDIS {
           // read burgers value and discard "nx, ny, nz". 
           datafile >> burgers[0] >> burgers[1] >> burgers[2] >> float_junk >> float_junk >> float_junk;
           if (!datafile.good()) {
-            throw string("error reading burgers values"); 
+            throw string("DataSet::ReadFullNodeFromFile: error reading burgers values"); 
           }
           
           currentSegment->ComputeBurgersType(burgers); 
@@ -2236,14 +2592,14 @@ namespace paraDIS {
           ++neighbornum; 
         }; // done reading neighbor information
       } catch (string err) {
-        throw string("Error in DataSet::ReadFullNode reading neighbor ")+intToString(neighbornum)+":" + err; 
+        throw string("DataSet::ReadFullNodeFromFile: Error in DataSet::ReadFullNode reading neighbor ")+intToString(neighbornum)+":" + err; 
       }
     } catch (string err) {
-      throw string("Error trying to read full node info corresponding to ")+theNode.Stringify(false) + string("numskipped is ")+intToString(numskipped) + string("\n") + err;
+      throw string("DataSet::ReadFullNodeFromFile: Error trying to read full node info corresponding to ")+theNode.Stringify(false) + string("numskipped is ")+intToString(numskipped) + string("\n") + err;
     } 
 
     //fullNode->ComputeNodeType(); 
-    dbprintf(5, "Done creating full node %s\n", fullNode->Stringify(false).c_str()); 
+    dbprintf(5, "DataSet::ReadFullNodeFromFile: Done creating full node %s\n", fullNode->Stringify(false).c_str()); 
 
 
     FullNode::mFullNodes.push_back(fullNode); 
@@ -2400,28 +2756,23 @@ namespace paraDIS {
   }
   
   //===========================================================================
-  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment
-#ifdef DEBUG_PARADIS
-, Arm *theArm
-#endif
+  void DataSet::FindEndOfArm(FullNodeIterator &iStartNode, FullNode **oEndNode,  ArmSegment *iStartSegment,  ArmSegment *&oEndSegment, Arm *theArm
 ) {
     //FullNodeIterator currentNode = iStartNode, otherEnd; 
     FullNode *currentNode = *iStartNode, *otherEnd; 
     ArmSegment *currentSegment = iStartSegment; 
     /* loop, don't recurse */ 
     while(true) {
-#ifdef DEBUG_PARADIS
       if (!currentSegment->Seen()) {
         ++(theArm->mNumSegments); 
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
       }
-#endif
       currentSegment->SetSeen(true);  
-      
+      currentSegment->mParentArm =theArm; 
       otherEnd = currentSegment->GetOtherEndpoint(currentNode);
       if ((otherEnd)->GetNodeID() == (*iStartNode)->GetNodeID() ||
-          (otherEnd)->GetNumNeighbors() != 2) {
-        if ((otherEnd)->GetNumNeighbors() == 2) {
+          (otherEnd)->GetNumNeighborSegments() != 2) {
+        if ((otherEnd)->GetNumNeighborSegments() == 2) {
           dbprintf(4, "Arm %d: LOOP detected\n", theArm->mArmID);
         }
         /*!
@@ -2466,7 +2817,7 @@ namespace paraDIS {
           ++nodepos; 
           continue;
         }
-        int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighbors();       
+        int neighbornum = 0, numneighbors = (*nodepos)->GetNumNeighborSegments();       
         FullNode *endNode0, *endNode1; 
         ArmSegment *endSegment0 = NULL, *endSegment1 = NULL, 
           *startSegment0 = NULL, *startSegment1 = NULL; 
@@ -2476,24 +2827,14 @@ namespace paraDIS {
             Arm *theArm = new Arm; 
             theArm->Clear();
             theArm->SetID(); 
-#ifdef DEBUG_PARADIS
             dbprintf(5, "Starting arm %d in middle of arm\n", theArm->mArmID); 
-#endif
-            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG_PARADIS
-                         , theArm
-#endif
-                         ); 
+            FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm ); 
             theArm->mTerminalNodes.push_back(endNode0); 
             endNode0->mNeighborArms.push_back(theArm); 
             theArm->mTerminalSegments.push_back(endSegment0); 
 
             startSegment1 = const_cast< ArmSegment*>((*nodepos)->GetNeighborSegment(1));
-            FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1
-#ifdef DEBUG_PARADIS
-                         , theArm
-#endif
-                         ); 
+            FindEndOfArm(nodepos, &endNode1,startSegment1, endSegment1 , theArm ); 
             
             if (endNode0 != endNode1) {
               theArm->mTerminalNodes.push_back(endNode1); 
@@ -2513,14 +2854,8 @@ namespace paraDIS {
               Arm *theArm = new Arm; 
               theArm->Clear();
               theArm->SetID(); 
-#ifdef DEBUG_PARADIS
               dbprintf(5, "Starting arm %d at one end of arm\n", theArm->mArmID); 
-#endif
-              FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0
-#ifdef DEBUG_PARADIS
-                           , theArm
-#endif
-                           ); 
+              FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm); 
               theArm->mTerminalNodes.push_back(*nodepos); 
               (*nodepos)->mNeighborArms.push_back(theArm); 
               if (endNode0 != *nodepos ) {
@@ -2546,12 +2881,6 @@ namespace paraDIS {
     } catch (string err) {
       throw string("Arm #")+intToString(armnum)+": "+err;
     }
-#if LINKED_LOOPS
-    int armNum = mArms.size(); 
-    while (armNum--) {
-      mArms[armNum].SetSegmentBackPointers(); 
-    } 
-#endif
     dbprintf(2, "BuildArms ended; %d arms created.\n", armnum); 
     return; 
   }
@@ -2625,8 +2954,6 @@ namespace paraDIS {
     uint32_t armnum = 0, empty=0; 
     while (pos != endpos) {
       debugfile << "Arm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
-      //vector<ArmSegment *>segments = pos->GetArmSegments(); 
-      //vector<FullNode *>nodes = pos->GetNodes(); 
       debugfile << "******************************************************" << endl << endl; 
       if ((*pos)->mArmType == ARM_EMPTY) 
         ++empty; 
@@ -2661,7 +2988,7 @@ namespace paraDIS {
     while (pos != endpos) {
       debugfile << "MetaArm #" << armnum << ": " << (*pos)->Stringify(0) << endl; 
       debugfile.flush(); 
-#ifdef DEBUG_PARADIS
+#if INSANE_DEBUG
       debugfile << (*pos)->mAllArms.size() << " arms included in metaarm " << armnum << ": " << endl;debugfile.flush(); 
       vector<Arm*>::iterator armpos = (*pos)->mAllArms.begin(), armendpos = (*pos)->mAllArms.end(); 
       while (armpos < armendpos) {
@@ -2669,7 +2996,6 @@ namespace paraDIS {
         ++armpos; 
       } 
 #endif
-
       debugfile << "******************************************************" << endl << endl; 
       ++armnum; 
       ++pos; 
@@ -2680,14 +3006,35 @@ namespace paraDIS {
     cerr<< endl << "Wrote MetaArm details to debug file "<< filename<< endl; 
     return; 
   }
+  
 
+  //===========================================================================
+  void DataSet::TagNodes(void) {
+    // First, have to tag all nodes.  Luckily, we only care about LOOPs.  
+    int manum = 0, numMetaArms = mMetaArms.size(); 
+    STARTPROGRESS();
+    while (manum < numMetaArms) {
+      vector<FullNode*> nodes = mMetaArms[manum]->GetNodes(); 
+      if (mMetaArms[manum]->GetMetaArmType() == METAARM_LOOP_111 || mMetaArms[manum]->GetMetaArmType() == METAARM_LOOP_200) {
+        int n = nodes.size(); 
+        while (n--) {
+          nodes[n]->mNodeTag = 8; 
+        }
+      }
+      UPDATEPROGRESS(manum, numMetaArms, "TagNodes: tagging METAARM_LOOP nodes."); 
+      ++manum;
+    }
+    return;
+  }
+  
   //===========================================================================
   // Write a file containing all tagged nodes with their tag values. 
   void DataSet::WriteTagFile(char *outputname) {
     string basename="nodes.tags";
     if (outputname)  basename = outputname; 
-    dbprintf(1, "Writing node tags to file %s\n", outputname); 
+    dbprintf(1, "DataSet::WriteTagFile: Writing node tags to file %s\n", outputname); 
 
+    
     uint32_t nodenum = 0;
     uint32_t lineno = 1; 
     char linebuf[2048]="";
@@ -2712,19 +3059,25 @@ namespace paraDIS {
       
       if (mFileVersion > 0 && mFileVersion < 4) {
         datafile.getline(linebuf, 2048); //should be "#"
-        tagfile << linebuf << endl; 
         ++lineno; 
+        if (!strstr(linebuf, "#")){
+          dbprintf(0, "ERROR: Expected line:\n#\n but got:\n%s\n", linebuf);
+          throw string("Error in file format"); 
+        }
+        tagfile << linebuf << endl; 
       }
       
       uint32_t fullNodeNum = 0; 
       // the nodes in the file should correspond exactly to our FullNode list.  But let's be cautious the first time through and check it out. 
       while (datafile.good() && nodenum++ < mTotalDumpNodes) {
-        UPDATEPROGRESS(nodenum, mTotalDumpNodes, "WriteTageFile: creating new tagged datafile"); 
+        UPDATEPROGRESS(nodenum, mTotalDumpNodes, "WriteTagFile: creating new tagged datafile"); 
         CopyNodeFromFile(lineno, fullNodeNum, datafile, tagfile);          
       }
       dbprintf(1, "\n"); 
     } catch (string err) {
-      throw string("Error in WriteTageFile while translating node ") + intToString(nodenum) +" at line " + intToString(lineno) + ":\n" + err; 
+      string outs = str(boost::format("Error in WriteTagFile while translating node %1% at line %2%: %3%\n") % nodenum % lineno %  err); 
+      dbprintf(0, outs.c_str()); 
+      throw outs; 
     }
     
     return;  
@@ -2734,7 +3087,13 @@ namespace paraDIS {
   // Print out all MetaArms in a simple format in a file for analysis, just for Meijie
   void DataSet::PrintMetaArmFile(void) {
     if (mMetaArmFile == "") return;
-    dbprintf(0, "Writing metaarms to metaarm file %s\n", mMetaArmFile.c_str()); 
+    dbprintf(0, "Writing metaarms to metaarm file %s\n", mMetaArmFile.c_str());
+    
+    uint32_t a = mArms.size(); 
+    while (a--) {
+      mArms[a]->mSeen = false; 
+    }
+
     FILE *armfile = fopen (mMetaArmFile.c_str(), "w"); 
     if (!armfile) {
       cerr << "ERROR:  Cannot open output file to write out arms" << endl;
@@ -2836,7 +3195,7 @@ namespace paraDIS {
         while (i--) {
           (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
           ntypes[i] = (*pos)->mTerminalNodes[i]->GetNodeType();
-          numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighbors();
+          numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighborSegments();
           ids[i]  = str(boost::format("(%1%,%2%)") 
                         % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
                         % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
@@ -2916,7 +3275,7 @@ namespace paraDIS {
       while (i--) {
         (*pos)->mTerminalNodes[i]->GetLocation(loc[i]);
         ntypes[i] = (*pos)->mTerminalNodes[i]->IsTypeM()? 'M':'N';
-        numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighbors();
+        numNeighbors[i] = (*pos)->mTerminalNodes[i]->GetNumNeighborSegments();
         ids[i]  = str(boost::format("(%1%,%2%)") 
                       % (*pos)->mTerminalNodes[i]->GetNodeSimulationDomain()
                       % (*pos)->mTerminalNodes[i]->GetNodeSimulationID());  
@@ -2962,7 +3321,7 @@ namespace paraDIS {
     while (armpos != armend) {      
       totalLength += (*armpos)->ComputeLength(); 
       ++armpos; ++armNum; 
-      UPDATEPROGRESS(armNum, totalArms, "Compute arm lengths..."); 
+     UPDATEPROGRESS(armNum, totalArms, "Compute arm lengths..."); 
     }
     dbprintf(2, "ComputeArmLengths ended.\n");
     return totalLength; 
@@ -3057,6 +3416,67 @@ namespace paraDIS {
   }
 
   //===========================================================================
+  void DataSet::FindMetaArms(void){
+    vector<Arm*>::iterator currentArm = mArms.begin(), endArm = mArms.end(); 
+    while (currentArm != endArm) {
+      (*currentArm)->mSeen = false; 
+      ++ currentArm;       
+    }
+    currentArm = mArms.begin(), endArm = mArms.end(); 
+    uint32_t numMetaArms = 0, numArms = 0, totalArms = mArms.size(); 
+    STARTPROGRESS(); 
+    dbprintf(4, "FindMetaArms: %s\n", datestring()); 
+    while (currentArm != endArm) {
+      if ( ! (*currentArm)->mSeen  && 
+           ! (*currentArm)->isTypeUnknown() && 
+           (*currentArm)->mArmType != ARM_EMPTY
+        ) {
+        boost::shared_ptr<MetaArm> metaArmSPtr = boost::make_shared<MetaArm>(); 
+        if ((*currentArm)->mArmID == 265) {
+          dbprintf(5, "Here we are, about to FindEndpoints for MetaArm 83 with seed 265...\n"); 
+        }
+         metaArmSPtr->FindEndpoints(*currentArm); 
+        if (metaArmSPtr->mMetaArmType != METAARM_UNKNOWN) {
+          dbprintf(4, "Adding meta arm %d with seed %d and arms <", mMetaArms.size(), (*currentArm)->mArmID); 
+          int nummaarms = metaArmSPtr->mAllArms.size(); 
+          int maarm = 0; 
+          for ( maarm = 0; maarm < nummaarms; maarm++) {
+            dbprintf(5, "%d",metaArmSPtr->mAllArms[maarm]->mArmID); 
+            if (maarm < nummaarms-1) {
+              dbprintf(5, ", "); 
+            } 
+          }
+          if (!maarm) {
+            dbprintf(5, "NONE"); 
+          }
+          dbprintf(5, ">\n"); 
+          metaArmSPtr->mMetaArmID = mMetaArms.size();
+          mMetaArms.push_back(metaArmSPtr); 
+          numMetaArms++;      
+        }      
+      } else {
+        dbprintf(4, "Skipping currentArm %d (type %d) as it was either seen (%d) and was type 111 or an unknown arm, or else FindEndpoints could not handle it.\n", (*currentArm)->mArmID, (*currentArm)->mArmType, (*currentArm)->mSeen);  
+      }
+      numArms++; 
+      ++ currentArm; 
+      UPDATEPROGRESS(numArms, totalArms, str(boost::format("FindMetaArms: %1% MetaArms created")%numMetaArms)); 
+    }
+    currentArm = mArms.begin();
+    while (currentArm != endArm) {
+      if (!(*currentArm)->mSeen && (*currentArm)->mArmType != ARM_EMPTY) {
+        uint32_t id = (*currentArm)->mArmID;
+        dbprintf(0, "\n\nError: arm %d has not been seen!\n", id); 
+        errexit; 
+      }
+      (*currentArm)->mSeen = false; 
+      ++currentArm; 
+    }
+    
+    return; 
+  }
+
+
+  //===========================================================================
   void DataSet::ReadData(std::string filename){
     dbprintf(1, "ReadData called with debug level %d\n", dbg_isverbose()); 
     try { 
@@ -3114,31 +3534,27 @@ namespace paraDIS {
       CreateFullNodesAndArmSegments(); 
       
       BuildArms(); 
-
+ 
       DecomposeArms(); 
 
       CollectAllArmSegments(); 
-
+ 
       ClassifyArms(); // This also computes their lengths...
 
-      //PrintArmStats(); 
-
-#ifdef DEBUG_PARADIS
+#if INSANE_DEBUG
       if (mDoDebugOutput) {
         DebugPrintFullNodes("NodesBeforeDeletion");       
       }
 #endif
  
-       /* this used to go before BuildArms() */ 
       WrapBoundarySegments();  
-   
-
+  
       RenumberNodes(); 
-      
-      if (mMetaArmFile != "") {
-        FindMetaArms(); 
-      }
-      
+       
+      FindMetaArms(); 
+     
+      TagNodes(); // for Meijie
+
       if (mDoDebugOutput) {
         DebugPrintMetaArms(); 
         DebugPrintArms(); 
@@ -3154,50 +3570,6 @@ namespace paraDIS {
   } 
   
   
-  //===========================================================================
-  void DataSet::FindMetaArms(void){
-    vector<Arm*>::iterator currentArm = mArms.begin(), endArm = mArms.end(); 
-    while (currentArm != endArm) {
-      (*currentArm)->mSeen = false; 
-      ++ currentArm;       
-    }
-    currentArm = mArms.begin(), endArm = mArms.end(); 
-    uint32_t numMetaArms = 0, numArms = 0, totalArms = mArms.size(); 
-    STARTPROGRESS(); 
-    dbprintf(4, "FindMetaArms: %s\n", datestring()); 
-    while (currentArm != endArm) {
-      if ( ! (*currentArm)->mSeen  && 
-           ! (*currentArm)->isTypeUnknown() && 
-           (*currentArm)->mArmType != ARM_EMPTY
-        ) {
-        boost::shared_ptr<MetaArm> metaArmSPtr = boost::make_shared<MetaArm>(); 
-        metaArmSPtr->FindEndpoints(*currentArm); 
-        if (metaArmSPtr->mMetaArmType != METAARM_UNKNOWN) {
-          dbprintf(4, "Adding meta arm %d with seed %d\n", mMetaArms.size(), (*currentArm)->mArmID); 
-          metaArmSPtr->mMetaArmID = mMetaArms.size();
-          mMetaArms.push_back(metaArmSPtr); 
-          numMetaArms++;           
-        }
-      } else {
-        dbprintf(4, "Skipping currentArm %d (type %d) as it was either seen (%d) and was type 111 or an unknown arm, or else FindEndpoints could not handle it.\n", (*currentArm)->mArmID, (*currentArm)->mArmType, (*currentArm)->mSeen);  
-      }
-      numArms++; 
-      ++ currentArm; 
-      UPDATEPROGRESS(numArms, totalArms, str(boost::format("FindMetaArms: %1% MetaArms created")%numMetaArms)); 
-    }
-    currentArm = mArms.begin();
-    while (currentArm != endArm) {
-      if (!(*currentArm)->mSeen && (*currentArm)->mArmType != ARM_EMPTY) {
-        uint32_t id = (*currentArm)->mArmID;
-        dbprintf(0, "\n\nError: arm %d has not been seen!\n", id); 
-        errexit; 
-      }
-      (*currentArm)->mSeen = false; 
-      ++currentArm; 
-    }
-    
-    return; 
-  }
 
   
 } // end namespace paraDIS 
