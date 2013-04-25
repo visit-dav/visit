@@ -55,7 +55,6 @@ extern std::string doctext;
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
 string MetaArmTypeNames(int mtype);
-string NodeTagNames(int mtype);
     
 //=============================================
 
@@ -104,8 +103,7 @@ int InterpretBurgersType(float burg[3]) ;
 #define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.
 #define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.
 
-#define NODETAG_NONE 0
-#define NODETAG_LOOP 8
+
 
 /* ========================================  */ 
 /*!
@@ -477,7 +475,8 @@ namespace paraDIS {
       mInBounds = false; 
       float location[3] = {0,0,0}; 
       SetLocation(location); 
-      mNodeType = mNodeTag = 0; 
+      mNodeType = 0; 
+      mIsLoopNode = false; 
     }
     /*!
       Full nodes are first copied from MinimalNodes.  This is just a member-wise "shallow" copy.  
@@ -565,16 +564,24 @@ namespace paraDIS {
     */ 
     int8_t GetNodeType(void) { return mNodeType; }
     
-    /*!
-      Accessor function
-    */ 
-    int8_t GetNodeTag(void) { return mNodeTag; }
     
     /*!
       Query
     */
     bool IsTypeM(void) {
        return mNodeType < 0; 
+    }
+
+    bool IsTypeN(void) {
+       return mNodeType > 2; 
+    }
+
+    bool IsLoopNode(void) {
+      return mIsLoopNode;  
+    }
+    
+    void SetLoopNode(bool tf = true) {
+      mIsLoopNode = tf; 
     }
 
     /*!
@@ -724,8 +731,6 @@ namespace paraDIS {
       }
     }
 
-    int8_t mNodeTag; 
-
     /*!
       Connectivity to our neighboring arms.
       Only used for terminal nodes.  
@@ -755,6 +760,8 @@ namespace paraDIS {
     */ 
     int8_t mNodeType; 
     
+    bool mIsLoopNode; 
+
     /*!
       This is needed for things like Visit, where nodes are accessed by node ID, whereas this library uses pointers.  Since it is also our index inthe global array of nodes, it turns out to be a good way to get the "real" counterpart of a wrapped node.  
     */ 
@@ -843,7 +850,6 @@ namespace paraDIS {
         (*mEndpoints[0] == *other.mEndpoints[0] && *mEndpoints[1] == *other.mEndpoints[1]) ||
         (*mEndpoints[0] == *other.mEndpoints[1] && *mEndpoints[1] == *other.mEndpoints[0]); 
     }
-
     /*!
       inequality
     */
@@ -897,7 +903,7 @@ namespace paraDIS {
     /*!
       accessor -- noop if not debug mode
     */ 
-    int32_t GetID(void) {
+    uint32_t GetID(void) {
       return mSegmentID; 
     }
 
@@ -907,7 +913,10 @@ namespace paraDIS {
     /* Get the metaarm Type for the parent of this segment */ 
     uint8_t GetMetaArmType(void);
     
-     /*!
+    /* Get the arm ID for the parent of this segment */ 
+    uint32_t GetArmID(void);
+    
+    /*!
       Accessor function
     */ 
     void GetNodeIndices(uint32_t indices[2]) {
@@ -927,34 +936,8 @@ namespace paraDIS {
     /*!
       convert ArmSegment to string
     */ 
-    std::string Stringify(int indent) const {
-      string s = str(boost::format("ArmSegment at %1%")%this);  
-      s +=  " number " + intToString(mSegmentID); 
-      int btype = mBurgersType; 
-      s += str(boost::format(", %1%\n") %BurgersTypeNames(btype)); 
-      //      string s2= str(boost::format(", Burgers: %1% (%2%), length: %3%\n")% btype % string(BurgersTypeNames[mBurgersType]) % GetLength());
-      uint32_t epnum = 0; 
-      while (epnum < 2) {
-        s+= INDENT(indent+1) + "ep "+intToString(epnum)+": "; 
-        if (mEndpoints[epnum]) s+= mEndpoints[epnum]->Stringify(0); 
-        else s+= "(NULL)"; 
-        s+= "\n"; 
-        epnum++; 
-      }
-      epnum = 0; 
-      while (epnum < mGhostEndpoints.size()) {
-        s+= INDENT(indent+1) + "GHOST ep "+intToString(epnum)+": ";
-        if (mGhostEndpoints[epnum]) {
-          s += mGhostEndpoints[epnum]->Stringify(0); 
-        } else {
-          s += "(NULL)";
-        } 
-        s+= "\n"; 
-        ++epnum; 
-      }
-      return INDENT(indent) + s; 
-    }
-
+    std::string Stringify(int indent) const; 
+ 
     /*! 
       Given the float values for the burgers vector from the data set, set the burgers type for the arm segment 
     */ 
@@ -1069,7 +1052,7 @@ namespace paraDIS {
       function returns the double and changes wrappedNode to the new node so
       you can continue iterating. 
     */ 
-    ArmSegment *SwitchToWrappedDouble(FullNode **wrappedNode) const; 
+    ArmSegment *SwitchToWrappedDouble(FullNode *originalNode, FullNode **wrappedOriginal, FullNode **wrappedOtherEnd) const; 
 
 
     /*! 
@@ -1412,7 +1395,12 @@ namespace paraDIS {
     uint8_t GetArmType(void) const { return mArmType; }
 
     struct MetaArm *GetParentMetaArm(void) const { return mParentMetaArm; }
-
+    void SetParentMetaArm(struct MetaArm *ma) { 
+      if (mArmID == 1112) {
+        dbprintf(5, "Setting arm 1112 parent \n"); 
+      }
+      mParentMetaArm = ma; 
+    }
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
     */ 
@@ -1436,8 +1424,7 @@ namespace paraDIS {
 #endif
     static double mLongestLength; // for binning
     bool mSeen, mSeenInMeta; // for tracing MetaArms -- each arm need only be viewed once
-    struct MetaArm * mParentMetaArm; 
-    /*!
+   /*!
       number of segments in arm
     */ 
     uint32_t mNumSegments; 
@@ -1445,10 +1432,14 @@ namespace paraDIS {
       purely for debugging
     */ 
     int32_t mArmID; 
-    /*! 
+
+     /*! 
       purely for debugging
     */ 
     static int32_t mNextID; 
+
+    private: 
+    struct MetaArm * mParentMetaArm; 
   };
 
   //=============================================
@@ -1495,10 +1486,10 @@ namespace paraDIS {
     // ======================
     /* Just to clean the code, I encapsulate this to make debugging easier */
     void AddArm(Arm *candidate ) {
-      if (candidate->mParentMetaArm == this)  {
+      if (candidate->GetParentMetaArm() == this)  {
         dbprintf(0, "WARNING! Already added arm %d to this metaarm!\n"); 
       }
-      candidate->mParentMetaArm = this;
+      candidate->SetParentMetaArm(this);
       mLength += candidate->GetLength(); 
       mFoundArms.push_back(candidate); 
       return; 

@@ -916,9 +916,9 @@ ParallelData::GetAuxiliaryData(const char *var, const char *type,
   FileSet *fileset = NULL; 
   if (mNodeFiles.HaveVar(varname)) {
     fileset = &mNodeFiles;
-  } else if (varname == "Burgers type" || mSegmentFiles.HaveVar(varname)) {
+  }  else if (varname == "Burgers type" || mSegmentFiles.HaveVar(varname)) {
     fileset = &mSegmentFiles;
-  } 
+    }  
   if (!fileset) {
     debug1 << "WARNING ParallelData::GetVar is unable to find a fileset that contains the variable requested" << endl; 
     return NULL; 
