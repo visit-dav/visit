@@ -125,9 +125,19 @@ extern "C" {
     return pci_gDataSet->GetNode(nodenum)->GetNodeType(); 
   }  
     
-  int8_t paraDIS_GetNodeTag(uint32_t nodenum){
+  int8_t paraDIS_NodeIsLoop(uint32_t nodenum){
     paraDIS_init(NULL);
-    return pci_gDataSet->GetNode(nodenum)->GetNodeTag(); 
+    return pci_gDataSet->GetNode(nodenum)->IsLoopNode()?1:0; 
+  }  
+    
+  int8_t paraDIS_NodeIsTypeM(uint32_t nodenum){
+    paraDIS_init(NULL);
+    return pci_gDataSet->GetNode(nodenum)->IsTypeM()?1:0; 
+  }  
+    
+  int8_t paraDIS_NodeIsTypeN(uint32_t nodenum){
+    paraDIS_init(NULL);
+    return pci_gDataSet->GetNode(nodenum)->IsTypeN()?1:0; 
   }  
     
   int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum){
@@ -160,6 +170,15 @@ extern "C" {
     return pci_gDataSet->GetArmSegment(segmentnum)->GetBurgersType(); 
   }  
   
+  int32_t paraDIS_GetSegmentSimulationIndex(uint32_t segmentnum) {
+    return pci_gDataSet->GetArmSegment(segmentnum)->mSegmentID;
+  }
+  
+  int32_t paraDIS_GetSegmentArmID(uint32_t segmentnum) {
+    paraDIS_init(NULL);
+    return pci_gDataSet->GetArmSegment(segmentnum)->GetArmID(); 
+  }
+
   int32_t paraDIS_GetSegmentMetaArmID(uint32_t segmentnum) {
     paraDIS_init(NULL);
     return pci_gDataSet->GetArmSegment(segmentnum)->GetMetaArmID(); 

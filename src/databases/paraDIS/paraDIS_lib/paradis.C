@@ -394,6 +394,39 @@ namespace paraDIS {
   
   
   //===========================================================================
+  std::string ArmSegment::Stringify(int indent) const {
+    string s = str(boost::format("ArmSegment at %1%")%this);  
+    s +=  " number " + intToString(mSegmentID); 
+    int btype = mBurgersType; 
+    s += str(boost::format(", %1%, parentArm ") %BurgersTypeNames(btype)); 
+    if (mParentArm) {
+      s += str(boost::format("%1%\n") % mParentArm->mArmID);
+    } else {
+      s += "(NONE)\n"; 
+    }
+    uint32_t epnum = 0; 
+    while (epnum < 2) {
+      s+= INDENT(indent+1) + "ep "+intToString(epnum)+": "; 
+      if (mEndpoints[epnum]) s+= mEndpoints[epnum]->Stringify(0); 
+      else s+= "(NULL)"; 
+      s+= "\n"; 
+      epnum++; 
+    }
+    epnum = 0; 
+    while (epnum < mGhostEndpoints.size()) {
+      s+= INDENT(indent+1) + "GHOST ep "+intToString(epnum)+": ";
+      if (mGhostEndpoints[epnum]) {
+        s += mGhostEndpoints[epnum]->Stringify(0); 
+      } else {
+        s += "(NULL)";
+      } 
+      s+= "\n"; 
+      ++epnum; 
+    }
+    return INDENT(indent) + s; 
+  }
+
+  //===========================================================================
   void ArmSegment::ComputeBurgersType(float burg[3]) {
     mBurgersType = InterpretBurgersType(burg); 
     return; 
@@ -457,9 +490,12 @@ namespace paraDIS {
 
 
   //===========================================================================
-  ArmSegment *ArmSegment::SwitchToWrappedDouble(FullNode **wrappedNode) const {
-    FullNode *originalNode = *wrappedNode; 
-    *wrappedNode = NULL;
+  ArmSegment *ArmSegment::SwitchToWrappedDouble(FullNode *originalNode, FullNode **wrappedOriginal, FullNode **wrappedOtherEnd) const {
+    //FullNode *originalNode = *wrappedNode, *otherNode = *wrappedGhost; 
+    *wrappedOriginal = NULL;
+    if (wrappedOtherEnd) {
+      *wrappedOtherEnd = NULL; 
+    }
     if (originalNode->GetNumNeighborSegments() != 1) {
       dbprintf(0, "SwitchToWrappedDouble(): ERROR:  wrappedNode should have only one neighbor but doesn't.\n"); 
       return NULL; 
@@ -472,16 +508,19 @@ namespace paraDIS {
       dbprintf(0, "SwitchToWrappedDouble(): ERROR: ghost node does not come from the given original node.\n"); 
       return NULL; 
     }
-    *wrappedNode = mGhostEndpoints[0]; 
-    FullNode *myOtherNode = GetOtherEndpoint(originalNode);
+    *wrappedOriginal = mGhostEndpoints[0]; 
+    FullNode *myOtherEnd = GetOtherEndpoint(originalNode);
     int ne = 0 ;
-    int numGhostNeighbors = (*wrappedNode)->GetNumNeighborSegments(); 
+    int numGhostNeighbors = (*wrappedOriginal)->GetNumNeighborSegments(); 
     while (ne < numGhostNeighbors) {
-      ArmSegment *neighbor = (*wrappedNode)->GetNeighborSegment(ne); 
+      ArmSegment *neighbor = (*wrappedOriginal)->GetNeighborSegment(ne); 
       FullNode * neighborghost = neighbor->GetGhostEndpoint(); 
       if (neighborghost) {
-        if (*neighborghost == *myOtherNode) {
+        if (*neighborghost == *myOtherEnd) {
           dbprintf(5, "SwitchToWrappedDouble(): found wrapped double: %s\n", neighbor->Stringify(0).c_str()); 
+          if (wrappedOtherEnd) {
+            *wrappedOtherEnd = neighbor->GetOtherEndpoint(*wrappedOriginal); 
+          }
           return neighbor; 
         }  
       }
@@ -491,6 +530,14 @@ namespace paraDIS {
     return NULL; 
   }
 
+
+ //===========================================================================
+  uint32_t ArmSegment::GetArmID(void) {    
+    if (mSegmentID == 15662) {
+      dbprintf(5, "hello\n"); 
+    }
+    return mParentArm->mArmID;
+  }
 
   //===========================================================================
   uint32_t ArmSegment::GetMetaArmID(void) {
@@ -757,10 +804,37 @@ namespace paraDIS {
       dbprintf(0, "GetNodes(): Cannot find matching terminal segment in arm %d for known good start node!\n", mArmID); 
       errexit1; 
     } 
+
+    dbprintf(5, "Found start segment %s and startNode %s\n", startSegment->Stringify(0).c_str(), startNode->Stringify(0).c_str()); 
     FullNode *lastNode = NULL; 
     if (mTerminalNodes.size() > 1)  
       lastNode = const_cast<FullNode*>(mTerminalNodes[1]); 
+
+    if (startNode->GetNumNeighborSegments() == 1) {
+      /* 
+         This is a special case.  Here the initial segment is wrapped and we are starting on the non-wrapped side.  We do want to draw the wrapped double, so we will make our start node be the ghost instead. 
+      */ 
+      if (startSegment->mGhostEndpoints.size() != 1) {
+        dbprintf(0, "GetNodes(%d): ERROR: We have an endpoing with only one neighbor on a segment with %d ghost nodes.\n"); 
+        return nodes; 
+      }
+      startNode = startSegment->mGhostEndpoints[0]; 
+      dbprintf(5, "GetNodes(%d): We had a node with only one neighbor as the startNode.  This would leave an undrawn segment.  We must instead start with the ghost node of this segment and corresponding parent segment and let them get wrapped naturally later.\n", mArmID);
       
+      startSegment = NULL; 
+      segnum = startNode->GetNumNeighborSegments(); 
+      while (!startSegment && segnum--) {
+        if (startNode->GetNeighborSegment(segnum)->mParentArm == this) 
+          startSegment =  startNode->GetNeighborSegment(segnum);
+        // do not switch node though.           
+      }
+        
+      if (!startSegment) {
+        dbprintf(0, "GetNodes(): Cannot find matching terminal segment in arm %d for known good start node!\n", mArmID); 
+        errexit1; 
+      }        
+    }
+    
     FullNode *currentNode = startNode; 
     nodes.push_back(currentNode); 
     dbprintf(5, "GetNodes(%d): pushed back startNode: %s\n", mArmID, currentNode->Stringify(0,true).c_str()); 
@@ -774,14 +848,18 @@ namespace paraDIS {
       dbprintf(5, "GetNodes(%d): pushed back node: %s\n", mArmID, currentNode->Stringify(0,true).c_str()); 
       
       if (currentNode->GetNumNeighborSegments() == 1) {
-        const ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(&currentNode); 
+        FullNode *wrappedPrevious = NULL; 
+        const ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, &wrappedPrevious); 
         if (!wDouble) {
           dbprintf(0, "GetNodes(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n", mArmID); 
           
         }
-        dbprintf(3, "GetNodes(%d): found a wrapped node and successfully switched to new node.\n", mArmID);
+        dbprintf(3, "GetNodes(%d): found a wrapped node.  Pushing back NULL followed by ghost node %d.\n", mArmID, wrappedPrevious->Stringify(0).c_str() );
+        nodes.push_back(NULL); 
+        nodes.push_back(wrappedPrevious)
+; 
         currentSegment = wDouble; 
-        dbprintf(5, "GetNodes(%d): currentSegment: %s\n", mArmID, currentSegment->Stringify(0).c_str() ); 
+        dbprintf(5, "GetNodes(%d): New wrapped currentSegment: %s\n", mArmID, currentSegment->Stringify(0).c_str() ); 
         nodes.push_back(currentNode); 
         dbprintf(5, "GetNodes(%d): pushed back ghost node: %s\n", mArmID, currentNode->Stringify(0,true).c_str());        
       }
@@ -848,7 +926,7 @@ namespace paraDIS {
       }
       currentNode = currentSegment->GetOtherEndpoint(currentNode); 
       if (currentNode->GetNumNeighborSegments() == 1) {
-        ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(&currentNode); 
+        ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, NULL); 
         if (!wDouble) {
           dbprintf(5, "GetNodes(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n"); 
         }
@@ -1543,13 +1621,14 @@ namespace paraDIS {
     if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_200) {
       dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Get all loop node locations for all member arms.\n", mMetaArmID); 
       
+ 
       /* start with the first arm */ 
       dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
       
       nodes = mTerminalArms[0]->GetNodes(); 
       
       Arm *firstArm = mTerminalArms[0]; 
-      Arm *previousArm = firstArm;
+      Arm *previousArm = firstArm; // , *armBeforeThat = firstArm;
       Arm *currentArm = firstArm; 
       uint32_t numarms = 1; 
       if (firstArm->mTerminalNodes.size() != 2) {
@@ -1558,7 +1637,7 @@ namespace paraDIS {
       while (currentArm) {
         currentArm->mSeen = true; 
         bool foundGood = false, foundFirst = false; 
-
+        
         // Find the neighbor on the lastNode side of arm %d that has us as its parent.
         FullNode *lastNode = *(nodes.end()-1); 
         dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: lastNode is %s\n", mMetaArmID, lastNode->Stringify(0).c_str()); 
@@ -1570,21 +1649,22 @@ namespace paraDIS {
             foundFirst = true; 
             dbprintf(5, "neighbor == firstArm\n"); 
           }
-          else  if (neighbor == previousArm) {
-            dbprintf(5, "neighbor == previousArm\n"); 
+          else  if (neighbor == previousArm) { 
+            dbprintf(5, "neighbor == previousArm\n");  
+          }
+          else if (neighbor == currentArm) {
+            dbprintf(5, "neighbor == currentArm\n"); 
           }
           else if (neighbor->GetParentMetaArm() != this ) {
             dbprintf(5, "neighbor->GetParentMetaArm() != this\n"); 
           }
-          else if (neighbor->mSeen) {
-            dbprintf(5, "Neighbor has been seen before.\n", mMetaArmID); 
-          } 
           else {
             foundGood = true; 
+            //armBeforeThat = previousArm; 
             previousArm = currentArm; 
-            currentArm = neighbor;             
+            currentArm = neighbor;   
             numarms++;           
-            dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: Found new armID %d.\n", mMetaArmID, currentArm->mArmID); 
+            dbprintf(5, "Found new armID %d, previousArm = %d\n", currentArm->mArmID, previousArm->mArmID); 
             // First, remove currentArm's last element just to avoid duplicate nodes, although they are probably harmless visually, they will cause the code to think they are wrapped nodes as they will have the same consecutive node IDs.
             
             if (currentArm->mTerminalNodes.size() != 2) { 
@@ -1592,10 +1672,11 @@ namespace paraDIS {
               currentArm = NULL; 
             } else {
               vector<FullNode*> newnodes = currentArm->GetNodes(lastNode); 
+              dbprintf(5, "Got nodes from new armID %d, previousArm = %d\n", currentArm->mArmID, previousArm->mArmID); 
               if (*(nodes.end()-1) == newnodes[0]) {
-                dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: deleting duplicate end node.\n", mMetaArmID); 
+                dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: deleting duplicate end node %s.\n", mMetaArmID, (*(nodes.end()-1))->Stringify(0).c_str()); 
                 nodes.erase(nodes.end()-1); 
-              }
+              } 
               nodes.insert(nodes.end(), newnodes.begin(), newnodes.end());  
             }
             break; 
@@ -1635,19 +1716,23 @@ namespace paraDIS {
       }
       dbprintf(4, "MetaArm::GetNodes(), MetaArm %d: All checks seem consistent.\n", mMetaArmID); 
 #endif // SANITY_CHECK
+      dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: returning %d nodes.\n", mMetaArmID, nodes.size());  
       return nodes; 
       
     }
     else {
+      dbprintf(5, "MetaArm::GetNodes(), MetaArm %d: returning 2 terminal nodes.\n", mMetaArmID, nodes.size());  
       return mTerminalNodes; 
     }
   }
 
   //===========================================================================
   /*!
-    Return a list of locations for the nodes in the metaArm.  If the MetaArm
+    Return a list of locations for the nodes in the metaArm if it's a loop, 
+    otherwise just the endpoints.  The endpoints can be wrapped if desired.  
+    If the MetaArm
     contains any wrapped segments, then the interruption will be notated with 
-    mWrappedNode.  The endpoints can be wrapped if desired.  
+    mWrappedNode.  
   */ 
   vector<rclib::Point<float> > MetaArm::GetNodeLocations(bool wrapEndpoints) {
     vector<rclib::Point<float> > points; 
@@ -1659,9 +1744,10 @@ namespace paraDIS {
         points.push_back(f);
         dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: push back node (%f, %f, %f).\n", mMetaArmID, f[0], f[1], f[2]); 
         mNumNodes ++; 
-        if (*nodes[p] == *nodes[p+1]) {
+        if (!nodes[p+1]) {
           // wrapped nodes always have the same NodeID. 
           points.push_back(mWrappedNode); 
+          ++p; 
           dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d: push back wrapped node\n", mMetaArmID);
         } else {
           mNumSegments++; 
@@ -1687,7 +1773,6 @@ namespace paraDIS {
       mTerminalNodes[1]->GetLocation(loc2new); 
       dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  non-loop: pushing back 2 nodes: (%f, %f, %f) and (%f, %f, %f).\n", mMetaArmID, loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]); 
 
-      // #define VISUALIZE_WRAPPING 1
       if (wrapEndpoints && DataSet::Wrap(loc1new, loc2new)) {
         dbprintf(5, "MetaArm::GetNodeLocations() Wrapped terminal nodes, so there will appear to be four.\n"); 
         dbprintf(5, "MetaArm::GetNodeLocations(), non-loop: wrapped nodes to new locations: (%f, %f, %f) -> (%f, %f, %f) and (%f, %f, %f) -> (%f, %f, %f).\n", loc1[0], loc1[1], loc1[2], loc1new[0], loc1new[1], loc1new[2], loc2[0], loc2[1], loc2[2], loc2new[0], loc2new[1], loc2new[2]); 
@@ -1704,7 +1789,7 @@ namespace paraDIS {
         mNumSegments = 1; 
       }      
     }
-    dbprintf(5, "MetaArm::GetNodeLocations(),MetaArm %d:  COMPLETE\n", mMetaArmID); 
+    dbprintf(5, "MetaArm::GetNodeLocations(), MetaArm %d:  COMPLETE returning %d points\n", mMetaArmID, points.size()); 
     return points; 
   }
 
@@ -2061,7 +2146,7 @@ namespace paraDIS {
     char comma;
     int domainID, nodeID; 
     long old_id_junk, tag, numNeighbors; 
-    float x,y,z; 
+    double x,y,z; 
     if (mFileVersion > 0) {
       datafile >> domainID >> comma >> nodeID;
     }
@@ -2094,9 +2179,13 @@ namespace paraDIS {
         throw string("DataSet::CopyNodeFromFile: Error: full node index out of range while looking for match.") ;
       }
       fullnode = FullNode::mFullNodes[fullNodeNum]; 
-      if (tag != fullnode->mNodeTag) {
-        dbprintf(5, "DataSet::CopyNodeFromFile: Node %d: Old tag %d --> New tag %d\n", fullNodeNum, tag, fullnode->mNodeTag); 
-        tag = fullnode->mNodeTag;
+      int nodetag = 0; 
+      if (fullnode->IsLoopNode()) nodetag += 128; 
+      if (fullnode->IsTypeM()) nodetag += 256; 
+      if (fullnode->IsTypeN()) nodetag += 512; 
+      if (tag != nodetag) {
+        dbprintf(5, "DataSet::CopyNodeFromFile: Node %d: Old tag %d --> New tag %d\n", fullNodeNum, tag, nodetag); 
+        tag = nodetag;
       }        
     }
 
@@ -2108,7 +2197,7 @@ namespace paraDIS {
     else { // old-style
       linebuf = str(boost::format("%1%,%2% ")%nodeID%old_id_junk);
     }
-    linebuf +=  str(boost::format("%1% %2% %3% %4% %5%")%x%y%z%numNeighbors % tag); 
+    linebuf +=  str(boost::format("%.8f %.8f %8f %d %d")%x%y%z%numNeighbors % tag); 
     if (mFileVersion == 0){
       linebuf +=  str(boost::format("%1% %2%")% domainID % old_id_junk); 
     }
@@ -2137,7 +2226,7 @@ namespace paraDIS {
     char comma;
     int domainID, nodeID; 
     long old_id_junk, constraint_junk, numNeighbors; 
-    float x,y,z, float_junk; 
+    double x,y,z, float_junk; 
     //-----------------------------------------------
     // read the first line of node information
     if (mFileVersion > 0) {
@@ -2779,7 +2868,7 @@ namespace paraDIS {
         dbprintf(5, "Arm %d: adding segment %s\n", theArm->mArmID, currentSegment->Stringify(0).c_str());
       }
       currentSegment->SetSeen(true);  
-      currentSegment->mParentArm =theArm; 
+      currentSegment->mParentArm = theArm; 
       otherEnd = currentSegment->GetOtherEndpoint(currentNode);
       if ((otherEnd)->GetNodeID() == (*iStartNode)->GetNodeID() ||
           (otherEnd)->GetNumNeighborSegments() != 2) {
@@ -3029,7 +3118,9 @@ namespace paraDIS {
       if (mMetaArms[manum]->GetMetaArmType() == METAARM_LOOP_111 || mMetaArms[manum]->GetMetaArmType() == METAARM_LOOP_200) {
         int n = nodes.size(); 
         while (n--) {
-          nodes[n]->mNodeTag = 8; 
+          if (nodes[n]) {
+            nodes[n]->SetLoopNode(true); 
+          }
         }
       }
       UPDATEPROGRESS(manum, numMetaArms, "TagNodes: tagging METAARM_LOOP nodes."); 
@@ -3448,7 +3539,20 @@ namespace paraDIS {
         }
          metaArmSPtr->FindEndpoints(*currentArm); 
         if (metaArmSPtr->mMetaArmType != METAARM_UNKNOWN) {
-          dbprintf(4, "Adding meta arm %d with seed %d and arms <", mMetaArms.size(), (*currentArm)->mArmID); 
+          dbprintf(4, "Adding meta arm %d with seed %d, terminal arms <", mMetaArms.size(), (*currentArm)->mArmID); 
+          int numterms = metaArmSPtr->mTerminalArms.size(); 
+          int tnum = 0; 
+          for ( tnum = 0; tnum < numterms; tnum++) {
+            dbprintf(5, "%d",metaArmSPtr->mTerminalArms[tnum]->mArmID); 
+            if (tnum < numterms-1) {
+              dbprintf(5, ", "); 
+            } 
+          }
+          if (!tnum) {
+            dbprintf(5, "NONE"); 
+          }
+            
+          dbprintf(4, ">, and arms <"); 
           int nummaarms = metaArmSPtr->mAllArms.size(); 
           int maarm = 0; 
           for ( maarm = 0; maarm < nummaarms; maarm++) {

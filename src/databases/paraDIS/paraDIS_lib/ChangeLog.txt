@@ -1,0 +1,8 @@
+Well, better late than never.  Introducing a changelog for the paraDIS library. 
+
+2013-04-25: version 2.3
+        Implemented MetaArm visualization, including subsetting by some new variables in the meshes.  Using enumerated scalars now for better subset operations.  
+        We now have metaarm visualization.  
+        Added several new variables, some having to do with meta-arms, cleaned up variable naming convention, and converted some into enumerated scalars to allow subset operations to work. 
+        Added the ability to write out so-called tagfiles, which are simply a copy of the original data with certain values replaced by "8" when a node is in a LOOP metaarm.  
+        
