@@ -59,8 +59,12 @@ extern "C" {
   
   int8_t paraDIS_GetNodeType(uint32_t nodenum);
 
-  int8_t paraDIS_GetNodeTag(uint32_t nodenum);
-
+  int8_t paraDIS_NodeIsLoop(uint32_t nodenum); 
+    
+  int8_t paraDIS_NodeIsTypeM(uint32_t nodenum);
+    
+  int8_t paraDIS_NodeIsTypeN(uint32_t nodenum);
+ 
   int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum);
 
   /*!
@@ -80,6 +84,10 @@ extern "C" {
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum);
 
   int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum);
+  
+  int32_t paraDIS_GetSegmentSimulationIndex(uint32_t segmentnum);
+  
+  int32_t paraDIS_GetSegmentArmID(uint32_t segmentnum);
   
   int32_t paraDIS_GetSegmentMetaArmID(uint32_t segmentnum);
   
