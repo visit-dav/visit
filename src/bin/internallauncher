@@ -233,10 +233,10 @@ class JobSubmitter_poe(JobSubmitter):
         super(JobSubmitter_poe, self).__init__(launcher)
 
     def Executable(self):
-        return self.VisItExecutable()
+        return ["poe"]
 
     def CreateCommand(self, args, debugger):
-        parcmd = self.Executable() + args
+        parcmd = self.Executable() + self.VisItExecutable() + args
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
         if self.parallel.np != None:
@@ -244,7 +244,8 @@ class JobSubmitter_poe(JobSubmitter):
         if self.parallel.nn != None:
             parcmd = parcmd + ["-nodes", self.parallel.nn]
         if self.parallel.partition != None:
-            parcmd = debugger.CreateCommand(parcmd + ["-rmpool", self.parallel.partition])
+            parcmd = parcmd + ["-rmpool", self.parallel.partition]
+        parcmd = debugger.CreateCommand(parcmd)
         return parcmd
 
 ###############################################################################
