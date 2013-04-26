@@ -51,6 +51,13 @@
 #include <vtkPolyDataWriter.h>
 #include <vtkPointData.h>
 
+#include <vtkScalarsToColors.h>
+#include <vtkColorTransferFunction.h>
+#include <avtColorTables.h>
+#include <ColorTableAttributes.h>
+#include <ColorControlPointList.h>
+#include <ColorControlPoint.h>
+
 #include <vtkPolyData.h>
 #include <vtkPLYWriter.h>
 #include <avtDatabaseMetaData.h>
@@ -76,6 +83,10 @@ using     std::vector;
 avtPLYWriter::avtPLYWriter(DBOptionsAttributes *atts)
 {
     doBinary = atts->GetBool("Binary format");
+    doColor = atts->GetBool("Output colors");
+    colorTable = atts->GetString("Color table");
+    colorTableMin = atts->GetDouble("Color table min");
+    colorTableMax = atts->GetDouble("Color table max");
 }
 
 // ****************************************************************************
@@ -268,6 +279,8 @@ avtPLYWriter::SendPolyDataToRank0()
 //   Dave Pugmire, Fri Apr 19 13:26:56 EDT 2013
 //   Fix memory leak.
 //
+//   Dave Pugmire, Fri Apr 26 12:33:39 EDT 2013
+//   Add color table options.
 //
 // ****************************************************************************
 
@@ -307,12 +320,27 @@ avtPLYWriter::CloseFile(void)
     vtkPLYWriter *writer = vtkPLYWriter::New();
     
     writer->SetFileName(filename.c_str());
+#if (VTK_MAJOR_VERSION == 5)
+    writer->SetInput(allPD);
+#else
+    writer->SetInputData(allPD);
+#endif
+
     if(doBinary)
         writer->SetFileTypeToBinary();
     else
         writer->SetFileTypeToASCII();
+
+    if (doColor && allPD->GetPointData()->GetScalars())
+    {
+        vtkScalarsToColors *lut = GetColorTable();
+        if (lut)
+        {
+            writer->SetArrayName(allPD->GetPointData()->GetScalars()->GetName());
+            writer->SetLookupTable(lut);
+        }
+    }
     
-    writer->SetInput(allPD);
     writer->Update();
     writer->Write();
     writer->Delete();
@@ -322,4 +350,48 @@ avtPLYWriter::CloseFile(void)
     
     polydatas.clear();
     allPD->Delete();
+}
+
+//****************************************************************************
+// Method:  avtPLYWriter::GetColorTable()
+//
+// Purpose:
+//   Create color table
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    April 26, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkScalarsToColors *
+avtPLYWriter::GetColorTable()
+{
+    const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
+    int nCT = colorTables->GetNumColorTables();
+    for (int i=0; i<nCT; i++)
+    {
+        if (colorTables->GetNames()[i] == colorTable)
+        {
+            const ColorControlPointList &table = colorTables->GetColorTables(i);
+            vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+            double *vals = new double[3*table.GetNumControlPoints()];
+            for (int j=0; j<table.GetNumControlPoints(); j++)
+            {
+                const ColorControlPoint &pt = table.GetControlPoints(j);
+                vals[j*3 + 0] = pt.GetColors()[0]/255.0;
+                vals[j*3 + 1] = pt.GetColors()[1]/255.0;
+                vals[j*3 + 2] = pt.GetColors()[2]/255.0;
+            }
+            
+            lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table.GetNumControlPoints(), vals);
+            delete [] vals;
+
+            return lut;
+        }
+    }
+    return NULL;
 }
