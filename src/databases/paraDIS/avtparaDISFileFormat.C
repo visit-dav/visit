@@ -216,50 +216,11 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     EXCEPTION1(VisItException, "You cannot read old ParaDIS dump files in parallel.  Run VisIt in serial to do this, or create ParaDIS parallel vis files.  Contact Rich Cook at 423-9605 regarding this error.");     
 #else
     
-    /*!
-      =======================================================
-      populate the segments mesh for dumpfile (serial) 
-      =======================================================
-    */ 
-    string meshname = "segments"; 
+    string meshname; 
     int topological_dimension = 1; /* lines */ 
-    avtMeshType meshtype = AVT_UNSTRUCTURED_MESH; 
-    
-    AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
-                      spatial_dimension, topological_dimension);
-    
-    AddScalarVarToMetaData(md, "Segment-Index", "segments", AVT_ZONECENT);
- 
-    // Enumerated types give you some more flexibility in the interface and allows arbitrary values, not just 0-indexed list.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
-    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
-    avtScalarMetaData *burgers_smd =
-      new avtScalarMetaData("Segment-Burgers-Type", "segments", AVT_ZONECENT);
-    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<18; i++) {
-      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), btypes[i]);
-    }
-    md->Add(burgers_smd);
+    avtMeshType meshtype; 
+
      
-    AddScalarVarToMetaData(md, "Segment-Parent-MetaArm-ID", "segments", AVT_ZONECENT);
-    AddScalarVarToMetaData(md, "Segment-Parent-Arm-ID", "segments", AVT_ZONECENT);
-       
-    avtScalarMetaData *matype_smd =
-      new avtScalarMetaData("Segment-Parent-MetaArm-Type", "segments", AVT_ZONECENT);
-    matype_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<4; i++) {
-      matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
-    }
-    md->Add(matype_smd);
-    
-    
-    avtScalarMetaData *mn_smd =
-      new avtScalarMetaData("Segment-MN-Type", "segments", AVT_ZONECENT);
-    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=-1; i<11; i++) {
-      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
-    }
-    md->Add(mn_smd);
-    
     /*!
       =======================================================
       populate the nodes mesh for dumpfile (serial) 
@@ -275,8 +236,8 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // use a material for the node types 
     AddMaterialToMetaData(md, "Node-Num-Neighbors", "nodes", mDumpfile.mNodeNeighborValues.size(), mDumpfile.mNodeNeighborValues);
     
-    AddScalarVarToMetaData(md, "Simulation-Domain", "nodes", AVT_NODECENT); 
-    AddScalarVarToMetaData(md, "Simulation-ID", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-Simulation-Domain", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-Simulation-ID", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "Node-Index", "nodes", AVT_NODECENT); 
 
     // Can't use enumerated scalar here because nodes can have almost arbitrary types.  
@@ -314,6 +275,58 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(node_typen);
     
      
+   /*!
+      =======================================================
+      populate the segments mesh for dumpfile (serial) 
+      =======================================================
+    */ 
+    
+    meshname = "segments"; 
+    topological_dimension = 1; /* lines */ 
+    meshtype = AVT_UNSTRUCTURED_MESH; 
+    
+    AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
+                      spatial_dimension, topological_dimension);
+    
+    AddScalarVarToMetaData(md, "Segment-Index", "segments", AVT_ZONECENT);
+ 
+    // Enumerated types give you some more flexibility in the interface and allows arbitrary values, not just 0-indexed list.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
+    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
+    avtScalarMetaData *burgers_smd =
+      new avtScalarMetaData("Segment-Burgers-Type", "segments", AVT_ZONECENT);
+    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<18; i++) {
+      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), btypes[i]);
+    }
+    md->Add(burgers_smd);
+     
+    AddScalarVarToMetaData(md, "Segment-Parent-MetaArm-ID", "segments", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "Segment-Parent-Arm-ID", "segments", AVT_ZONECENT);
+       
+    avtScalarMetaData *matype_smd =
+      new avtScalarMetaData("Segment-Parent-MetaArm-Type", "segments", AVT_ZONECENT);
+    matype_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<4; i++) {
+      matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
+    }
+    md->Add(matype_smd);
+    
+    
+    avtScalarMetaData *mn_smd =
+      new avtScalarMetaData("Segment-MN-Type", "segments", AVT_ZONECENT);
+    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=-1; i<11; i++) {
+      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
+    }
+    md->Add(mn_smd);
+
+    avtScalarMetaData *segment_dup =
+      new avtScalarMetaData("Segment-Duplicates", "segments", AVT_ZONECENT);
+    segment_dup->SetEnumerationType(avtScalarMetaData::ByValue);
+    segment_dup->AddEnumNameValue("NOT LOOP", 0);
+    segment_dup->AddEnumNameValue("LOOP", 1);
+    md->Add(segment_dup);
+    
     /*! 
       ==============================================
       Add a mesh for the meta-arms for dumpfile (serial) 

@@ -51,6 +51,8 @@ using boost::uint32_t;
 #include "stringutil.h" /* from RC_c_lib, is this a good idea? */ 
 #include "debugutil.h" /* from RC_c_lib, now we're committed. */ 
 
+std::string get_version(const char *progname);
+
 extern std::string doctext;
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
@@ -91,17 +93,13 @@ int InterpretBurgersType(float burg[3]) ;
 #define ARM_MM_111         3 
 #define ARM_MN_111         4
 #define ARM_NN_111         5 
-#define ARM_MM_200         6
-#define ARM_MN_200         7
-#define ARM_NN_200         8
-#define ARM_SHORT_NN_111   9
-#define ARM_SHORT_NN_200   10
+#define ARM_SHORT_NN_111   6
 
 // MetaArm types:
 #define METAARM_UNKNOWN     0  // Not defined, error, or some other odd state
 #define METAARM_111         1  // Entirely composed of type 111 arms of the same burgers vector.  Does not include loops. 
 #define METAARM_LOOP_111    2  // Contains a loop, composed entirely of type 111 arms.
-#define METAARM_LOOP_200    3  // Contains a loop, composed entirely of type 200 arms.
+#define METAARM_LOOP_HIGH_ENERGY    3  // Contains a loop, composed entirely of type 200 arms or higher.
 
 
 
@@ -557,7 +555,10 @@ namespace paraDIS {
    /*!
       Accessor function set the node type.  
     */ 
-    void SetNodeType(int8_t itype) { mNodeType = itype; }
+    void SetNodeType(int8_t itype) { 
+      mNodeType = itype; 
+      return; 
+    }
 
     /*!
       Accessor function
@@ -595,7 +596,7 @@ namespace paraDIS {
     */
     void AddNeighbor( ArmSegment *segment) {
       mNeighborSegments.push_back(segment); 
-      ComputeNodeType(); 
+      //ComputeNodeType(); 
     }
      
     /*! 
@@ -620,7 +621,7 @@ namespace paraDIS {
         }
         mNeighborSegments.erase(pos); 
       }
-      ComputeNodeType(); 
+      //ComputeNodeType(); 
     }
 
     /*!
@@ -805,10 +806,9 @@ namespace paraDIS {
         mEndpoints[i] = NULL; 
       }
       mGhostEndpoints.clear(); 
-#ifdef DEBUG
       mSegmentID = -1; 
       mWrapped = false; 
-#endif
+      mNumDuplicates = 0; 
     }
     /*!
       Destructor
@@ -1092,6 +1092,11 @@ namespace paraDIS {
     */
     bool mWrapped; 
     
+    /*! 
+      If this segment is part of an extended arm, that's useful to know for visualization as there will be two or more superposed segments in the same place. 
+    */ 
+    int mNumDuplicates; 
+
     /*!
       A bucket for new segments:  "extended" segments from arm decomposition
     */ 
@@ -1225,7 +1230,7 @@ namespace paraDIS {
     /*!
       A helper for Decompose() function.  
     */ 
-    void ExtendByArm(Arm *sourceArm, FullNode *sharedNode); 
+    void ExtendByArm(Arm *sourceArm, FullNode *sharedNode, int numDuplicates); 
     
     /*!
       Merge with neighbor arms. 
@@ -1327,7 +1332,7 @@ namespace paraDIS {
     void Classify(void) ; 
 
     bool isTypeMM(void) const {
-      return mArmType == ARM_MM_111  ||  mArmType == ARM_MM_200; 
+      return mArmType == ARM_MM_111; 
     }
            
     bool isTypeUnknown(void) const { 
@@ -1335,12 +1340,11 @@ namespace paraDIS {
     }
 
     bool isType111(void) {
-      return mArmType == ARM_MM_111 ||  mArmType == ARM_MN_111  ||  
-        mArmType == ARM_NN_111  ||  mArmType == ARM_SHORT_NN_111;
+      return mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BURGERS_PPP && mTerminalSegments[0]->GetBurgersType() <= BURGERS_PMM;
     }
-    bool isType200(void) {
-      return  mArmType == ARM_MM_200 ||  mArmType == ARM_MN_200  ||  
-        mArmType == ARM_NN_200  ||  mArmType == ARM_SHORT_NN_200; 
+
+    bool isHighEnergy(void) {
+      return  mTerminalSegments.size() && mTerminalSegments[0]->GetBurgersType() >= BURGERS_200; 
     }
 
     FullNode *GetCommonNode(Arm *other) {
@@ -1395,6 +1399,7 @@ namespace paraDIS {
     uint8_t GetArmType(void) const { return mArmType; }
 
     struct MetaArm *GetParentMetaArm(void) const { return mParentMetaArm; }
+
     void SetParentMetaArm(struct MetaArm *ma) { 
       if (mArmID == 1112) {
         dbprintf(5, "Setting arm 1112 parent \n"); 
@@ -1461,7 +1466,7 @@ namespace paraDIS {
     MetaArm:  A collection of arms.  Theoretically should span from M to M, but this is not always the case yet.  
   */
   struct MetaArm {
-    MetaArm(): mLength(0.0), mMetaArmType(METAARM_UNKNOWN), mNumSegments(0) , mCombo(false) , mFound111(false)
+    MetaArm(): mLength(0.0),  mMetaArmType(METAARM_UNKNOWN),  mNumSegments(0) , mCombo(false) , mFound111(false)
     {return;}
     ~MetaArm() {}
 
@@ -1934,7 +1939,7 @@ s      Tell the data set which file to read
     /*!
       Go through and renumber the nodes so that their index is the same as their position in the vector
     */ 
-    void RenumberNodes(void); 
+    void RenumberNodesAndComputeNodeTypes(void); 
 
     
     /*!

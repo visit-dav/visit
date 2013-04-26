@@ -194,6 +194,10 @@ extern "C" {
     return pci_gDataSet->GetArmSegment(segmentnum)->GetMNType(); 
   }  
   
+  int8_t paraDIS_GetSegmentDuplicates(uint32_t segmentnum) {
+    return pci_gDataSet->GetArmSegment(segmentnum)->mNumDuplicates;
+  }
+
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum){
     paraDIS_init(NULL);
     return pci_gDataSet->GetArmSegment(segmentnum)->GetNodeIndex(endpointnum);

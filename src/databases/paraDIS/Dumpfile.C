@@ -131,7 +131,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mMetaArmTypes.push_back("METAARM_UNKNOWN"); 
   mMetaArmTypes.push_back("METAARM_111"); 
   mMetaArmTypes.push_back("METAARM_LOOP_111"); 
-  mMetaArmTypes.push_back("METAARM_LOOP_200"); 
+  mMetaArmTypes.push_back("METAARM_LOOP_HIGH_ENERGY"); 
 
   // PARADIS METADATA
   paraDIS_SetDataFile(mFilename.c_str());    
@@ -369,42 +369,12 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
   int numsegs = paraDIS_GetNumArmSegments(), 
     numnodes = paraDIS_GetNumNodes();
   debug4 << "Dumpfile::GetVar: numsegs is " << numsegs << " and numnodes is " << numnodes << endl;
-  if (varname == "Segment-Index") {
-    for (index=0; index<numsegs; index++) {
-      f=paraDIS_GetSegmentSimulationIndex(index); // segment ID != index necessarily 
-      scalars->InsertTuple(index,&f); 
-    }
-  } else if (varname == "Segment-Engine") {
-    for (index=0; index<numsegs; index++) {
-      f= 0; 
-      scalars->InsertTuple(index,&f);
-    }
-  } else if (varname == "Segment-Burgers-Type") {
-    for (index=0; index<numsegs; index++) {
-      f= paraDIS_GetSegmentBurgersType(index); 
-      scalars->InsertTuple(index,&f);
-    }
-  }  else if (varname == "Segment-Parent-Arm-ID") {
-    for (index=0; index<numsegs; index++) {
-      f= paraDIS_GetSegmentArmID(index); 
-      scalars->InsertTuple(index,&f);
-    }
-  }  else if (varname == "Segment-Parent-MetaArm-ID") {
-    for (index=0; index<numsegs; index++) {
-      f= paraDIS_GetSegmentMetaArmID(index); 
-      scalars->InsertTuple(index,&f);
-    }
-  }  else if (varname == "Segment-Parent-MetaArm-Type") {
-    for (index=0; index<numsegs; index++) {
-      f= paraDIS_GetSegmentMetaArmType(index); 
-      scalars->InsertTuple(index,&f);
-    }
-  }  else if (varname == "Simulation-Domain") {
+  if (varname == "Node-Simulation-Domain") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeSimulationDomain(index); 
       scalars->InsertTuple(index,&f); 
     }
-  }   else if (varname == "Simulation-ID") {
+  }   else if (varname == "Node-Simulation-ID") {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_GetNodeSimulationID(index); 
       scalars->InsertTuple(index,&f); 
@@ -443,6 +413,41 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
     for (index=0; index<numnodes; index++) {
       f=paraDIS_NodeIsTypeN(index); 
       scalars->InsertTuple(index,&f); 
+    }
+  }  else if (varname == "Segment-Index") {
+    for (index=0; index<numsegs; index++) {
+      f=paraDIS_GetSegmentSimulationIndex(index); // segment ID != index necessarily 
+      scalars->InsertTuple(index,&f); 
+    }
+  } else if (varname == "Segment-Engine") {
+    for (index=0; index<numsegs; index++) {
+      f= 0; 
+      scalars->InsertTuple(index,&f);
+    }
+  } else if (varname == "Segment-Burgers-Type") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentBurgersType(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  } else if (varname == "Segment-Duplicates") {
+    for (index=0; index<numsegs; index++) {
+      f = paraDIS_GetSegmentDuplicates(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  }  else if (varname == "Segment-Parent-Arm-ID") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentArmID(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  }  else if (varname == "Segment-Parent-MetaArm-ID") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentMetaArmID(index); 
+      scalars->InsertTuple(index,&f);
+    }
+  }  else if (varname == "Segment-Parent-MetaArm-Type") {
+    for (index=0; index<numsegs; index++) {
+      f= paraDIS_GetSegmentMetaArmType(index); 
+      scalars->InsertTuple(index,&f);
     }
   }  else if (varname == "MetaArm-ID" || varname == "Wrapped-MetaArm-ID") {
     bool wrap = (varname == "Wrapped-MetaArm-ID");
