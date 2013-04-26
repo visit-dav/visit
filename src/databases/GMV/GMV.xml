@@ -5,6 +5,7 @@
     </CXXFLAGS>
     <FilePatterns>
       *.gmv
+      *.gmvG
     </FilePatterns>
     <Files components="M">
       avtGMVFileFormat.C

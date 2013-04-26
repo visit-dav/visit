@@ -420,6 +420,9 @@ gmvAddRegularCell(vtkUnstructuredGrid *ugrid)
 //   Cyrus Harrison, Tue Oct  9 13:21:32 PDT 2012
 //   Use tess2 via new avtPolygonToTrianglesTesselator class.
 //
+//   Brad Whitlock, Fri Apr 26 14:29:40 PDT 2013
+//   Account for polygons defined as general cells.
+//
 // ****************************************************************************
 
 int
@@ -467,7 +470,10 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
     // Now, iterate over the faces, adding solid cells for them
     vtkIdType verts[5];
     const long *nodes = gmv_data.longdata2;
-    for(int i = 0; i < gmv_data.nlongdata1; ++i)
+    int nFaces = gmv_data.nlongdata1;
+    bool doVolumes = nFaces > 1;
+
+    for(int i = 0; i < nFaces; ++i)
     {
         int nPointsInFace = gmv_data.longdata1[i];
 #ifdef GMV_DEBUG_PRINT
@@ -475,87 +481,165 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 #endif
         if(nPointsInFace == 3)
         {
-            // Add a tet
-            verts[0] = nodes[2]-1;
-            verts[1] = nodes[1]-1;
-            verts[2] = nodes[0]-1;
-            verts[3] = phCenter;
-            ugrid->InsertNextCell(VTK_TETRA, 4, verts);
-#ifdef GMV_DEBUG_PRINT
-            debug5 << "    adding tet: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << endl;
-#endif
-            splitCount++;
-        }
-        else if(nPointsInFace == 4)
-        {
-            // Add a pyramid
-            verts[0] = nodes[3]-1;
-            verts[1] = nodes[2]-1;
-            verts[2] = nodes[1]-1;
-            verts[3] = nodes[0]-1;
-            verts[4] = phCenter;
-            ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
-#ifdef GMV_DEBUG_PRINT
-            debug5 << "    adding pyr: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << ", " << verts[4] << endl;
-#endif
-            splitCount++;
-        }
-        else if(nPointsInFace > 4)
-        {
-            // Find the face center so we can determine a proxy for a normal.
-            double fc[3] = {0., 0., 0.};
-            for(int j = 0; j < nPointsInFace; ++j)
+            if(doVolumes)
             {
-                points->GetPoint(nodes[j]-1, pt);
-                fc[0] += pt[0];
-                fc[1] += pt[1];
-                fc[2] += pt[2];
-            }
-            fc[0] /= double(nPointsInFace);
-            fc[1] /= double(nPointsInFace);
-            fc[2] /= double(nPointsInFace);
-            double n[3] = {0.,0.,0.};
-            n[0] = center[0] - fc[0];
-            n[1] = center[1] - fc[1];
-            n[2] = center[2] - fc[2];
-
-            // Tesselate the shape into triangles and add tets. We create
-            // a tessellator each time so we can add the face's points to
-            // it. This should cause the points to be in the same order as
-            // they are in the face.
-            vtkPoints *localPts = vtkPoints::New();
-            localPts->Allocate(nPointsInFace);
-            long *local2Global = new long[nPointsInFace];
-
-            avtPolygonToTrianglesTesselator tess(localPts);
-            tess.SetNormal(n);
-
-            tess.BeginContour();
-            for(int j = 0; j < nPointsInFace; ++j)
-            {
-                local2Global[j] = nodes[j]-1;
-                tess.AddContourVertex(points->GetPoint(local2Global[j]));
-            }
-            tess.EndContour();
-
-            int ntris = tess.Tessellate();
-            for(int t = 0; t < ntris; ++t)
-            {
-                int a = 0, b = 0, c = 0;
-                tess.GetTriangleIndices(t, a, b, c);
-                verts[0] = local2Global[a];
-                verts[1] = local2Global[b];
-                verts[2] = local2Global[c];
+                // Add a tet
+                verts[0] = nodes[2]-1;
+                verts[1] = nodes[1]-1;
+                verts[2] = nodes[0]-1;
                 verts[3] = phCenter;
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
 #ifdef GMV_DEBUG_PRINT
                 debug5 << "    adding tet: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << endl;
 #endif
-                splitCount++;
+            }
+            else
+            {
+                // Add a tri
+                verts[0] = nodes[0]-1;
+                verts[1] = nodes[1]-1;
+                verts[2] = nodes[2]-1;
+                ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+#ifdef GMV_DEBUG_PRINT
+                debug5 << "    adding tri: " << verts[0] << ", " << verts[1] << ", " << verts[2] << endl;
+#endif
             }
 
-            localPts->Delete();
-            delete [] local2Global;
+            splitCount++;
+        }
+        else if(nPointsInFace == 4)
+        {
+            if(doVolumes)
+            {
+                // Add a pyramid
+                verts[0] = nodes[3]-1;
+                verts[1] = nodes[2]-1;
+                verts[2] = nodes[1]-1;
+                verts[3] = nodes[0]-1;
+                verts[4] = phCenter;
+                ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+#ifdef GMV_DEBUG_PRINT
+                debug5 << "    adding pyr: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << ", " << verts[4] << endl;
+#endif
+            }
+            else
+            {
+                // Add a quad
+                verts[0] = nodes[0]-1;
+                verts[1] = nodes[1]-1;
+                verts[2] = nodes[2]-1;
+                verts[3] = nodes[3]-1;
+                ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+#ifdef GMV_DEBUG_PRINT
+                debug5 << "    adding quad: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << endl;
+#endif
+            }
+
+            splitCount++;
+        }
+        else if(nPointsInFace > 4)
+        {
+            // Find the face center so we can determine a proxy for a normal.
+            if(doVolumes)
+            {
+                double fc[3] = {0., 0., 0.};
+                for(int j = 0; j < nPointsInFace; ++j)
+                {
+                    points->GetPoint(nodes[j]-1, pt);
+                    fc[0] += pt[0];
+                    fc[1] += pt[1];
+                    fc[2] += pt[2];
+                }
+                fc[0] /= double(nPointsInFace);
+                fc[1] /= double(nPointsInFace);
+                fc[2] /= double(nPointsInFace);
+                double n[3] = {0.,0.,0.};
+                n[0] = center[0] - fc[0];
+                n[1] = center[1] - fc[1];
+                n[2] = center[2] - fc[2];
+
+                // Tesselate the shape into triangles and add tets. We create
+                // a tessellator each time so we can add the face's points to
+                // it. This should cause the points to be in the same order as
+                // they are in the face.
+                vtkPoints *localPts = vtkPoints::New();
+                localPts->Allocate(nPointsInFace);
+                long *local2Global = new long[nPointsInFace];
+
+                avtPolygonToTrianglesTesselator tess(localPts);
+                tess.SetNormal(n);
+                tess.BeginContour();
+                for(int j = 0; j < nPointsInFace; ++j)
+                {
+                    local2Global[j] = nodes[j]-1;
+                    tess.AddContourVertex(points->GetPoint(local2Global[j]));
+                }
+                tess.EndContour();
+
+                int ntris = tess.Tessellate();
+                for(int t = 0; t < ntris; ++t)
+                {
+                    int a = 0, b = 0, c = 0;
+                    tess.GetTriangleIndices(t, a, b, c);
+
+                    if(a < 0 || a >= nPointsInFace)
+                    {
+#ifdef GMV_DEBUG_PRINT
+                        debug5 << "ERROR: invalid a = " << a << endl;
+#endif
+                        continue;
+                    }
+                    if(b < 0 || b >= nPointsInFace)
+                    {
+#ifdef GMV_DEBUG_PRINT
+                        debug5 << "ERROR: invalid b = " << b << endl;
+#endif
+                        continue;
+                    }
+                    if(c < 0 || c >= nPointsInFace)
+                    {
+#ifdef GMV_DEBUG_PRINT
+                        debug5 << "ERROR: invalid c = " << c << endl;
+#endif
+                        continue;
+                    }
+
+                    verts[0] = local2Global[a];
+                    verts[1] = local2Global[b];
+                    verts[2] = local2Global[c];
+                    verts[3] = phCenter;
+                    ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+#ifdef GMV_DEBUG_PRINT
+                    debug5 << "    adding tet: " << verts[0] << ", " << verts[1] << ", " << verts[2] << ", " << verts[3] << endl;
+#endif
+                    splitCount++;
+                }
+
+                localPts->Delete();
+                delete [] local2Global;
+            }
+            else
+            {
+#ifdef GMV_DEBUG_PRINT
+                debug5 << "    adding polygon" << endl;
+#endif
+                if(nPointsInFace < 20)
+                {
+                    vtkIdType polyverts[20];
+                    for(int j = 0; j < nPointsInFace; ++j)
+                        polyverts[j] = nodes[j]-1;
+                     ugrid->InsertNextCell(VTK_POLYGON, nPointsInFace, polyverts);
+                }
+                else
+                {
+                    vtkIdType *polyverts = new vtkIdType[nPointsInFace];
+                    for(int j = 0; j < nPointsInFace; ++j)
+                        polyverts[j] = nodes[j]-1;
+                    ugrid->InsertNextCell(VTK_POLYGON, nPointsInFace, polyverts);
+                    delete [] polyverts;
+                }
+                splitCount++;
+            }
         }
 
         nodes += nPointsInFace;
@@ -1173,6 +1257,9 @@ removets(const char *s)
 //   Brad Whitlock, Wed Aug 22 12:41:41 PDT 2012
 //   be more defensive about gmvCreateVariable returning NULL.
 //
+//   Brad Whitlock, Fri Apr 26 15:27:58 PDT 2013
+//   Set mesh origin to 1.
+//
 // ****************************************************************************
 
 void
@@ -1261,13 +1348,18 @@ avtGMVFileFormat::ReadData()
                     pos = meshes.find(meshname);
 
                     // Add this mesh to the metadata.
-                    int nblocks = 1;
-                    int block_origin = 0;
-                    int spatial_dimension = 3;
-                    double *extents = NULL;
-                    AddMeshToMetaData(&md, meshname, mt, extents, nblocks,
-                                      block_origin, spatial_dimension,
-                                      topological_dimension);
+                    avtMeshMetaData *mmd = new avtMeshMetaData;
+                    mmd->name = meshname;
+                    mmd->meshType = mt;
+                    mmd->numBlocks = 1;
+                    mmd->blockOrigin = 1;
+                    mmd->cellOrigin = 1;
+                    mmd->nodeOrigin = 1;
+                    mmd->groupOrigin = 1;
+                    mmd->spatialDimension = 3;
+                    mmd->topologicalDimension = topological_dimension;
+                    mmd->hasSpatialExtents = false;
+                    md.Add(mmd);
                     }
                     break;
                 case CELLS:

@@ -167,6 +167,7 @@ GMVGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.gmv");
+    defaultPatterns.push_back("*.gmvG");
 
     return defaultPatterns;
 }
