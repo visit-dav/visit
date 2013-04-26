@@ -95,6 +95,8 @@ extern "C" {
 
   int8_t paraDIS_GetSegmentMNType(uint32_t segmentnum);
   
+  int8_t paraDIS_GetSegmentDuplicates(uint32_t segmentnum);
+
   void paraDIS_EnableMetaArmSearch(void);
 
   uint32_t paraDIS_GetNumMetaArms(void);

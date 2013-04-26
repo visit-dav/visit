@@ -177,6 +177,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMaterialToMetaData(md, "Burgers type", "segments", 
                           mParallelData.mBurgersTypes.size(), 
                           mDumpfile.mBurgersTypes);
+    
     /*!
       =======================================================
       populate the nodes mesh for parallel data files
@@ -215,55 +216,11 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     EXCEPTION1(VisItException, "You cannot read old ParaDIS dump files in parallel.  Run VisIt in serial to do this, or create ParaDIS parallel vis files.  Contact Rich Cook at 423-9605 regarding this error.");     
 #else
     
-    /*!
-      =======================================================
-      populate the segments mesh for dumpfile (serial) 
-      =======================================================
-    */ 
-    string meshname = "segments"; 
+    string meshname; 
     int topological_dimension = 1; /* lines */ 
-    avtMeshType meshtype = AVT_UNSTRUCTURED_MESH; 
-    
-    AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
-                      spatial_dimension, topological_dimension);
-    
-    AddScalarVarToMetaData(md, "Segment Index", "segments", AVT_ZONECENT);
- 
-    // Enumerated types give you some more flexibility in the interface.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
-    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
-    avtScalarMetaData *burgers_smd =
-      new avtScalarMetaData("Burgers Type", "segments", AVT_ZONECENT);
-    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<18; i++) {
-      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), i);
-    }
-    md->Add(burgers_smd);
-    
-    AddScalarVarToMetaData(md, "Parent MetaArm ID", "segments", AVT_ZONECENT);
-       
-    avtScalarMetaData *matype_smd =
-      new avtScalarMetaData("Parent MetaArm Type", "segments", AVT_ZONECENT);
-    matype_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<4; i++) {
-      matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
-    }
-    md->Add(matype_smd);
-    
-    
-    // Materials are cool because you can assign arbitrary colors to them discretely without a color map.  VisIt only allows one material set per mesh, so we have to use enumerated scalars for more than one.  
-    
-    AddMaterialToMetaData(md, "Segment Burgers Type", "segments", 
-                          mDumpfile.mBurgersTypes.size(), mDumpfile.mBurgersTypes);
-    
-    
-    avtScalarMetaData *mn_smd =
-      new avtScalarMetaData("Segment MN Type", "segments", AVT_ZONECENT);
-    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=-1; i<11; i++) {
-      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
-    }
-    md->Add(mn_smd);
-    
+    avtMeshType meshtype; 
+
+     
     /*!
       =======================================================
       populate the nodes mesh for dumpfile (serial) 
@@ -277,24 +234,99 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     
     
     // use a material for the node types 
-    AddMaterialToMetaData(md, "Node Num Neighbors", "nodes", mDumpfile.mNodeNeighborValues.size(), mDumpfile.mNodeNeighborValues);
+    AddMaterialToMetaData(md, "Node-Num-Neighbors", "nodes", mDumpfile.mNodeNeighborValues.size(), mDumpfile.mNodeNeighborValues);
     
-    AddScalarVarToMetaData(md, "Simulation Domain", "nodes", AVT_NODECENT); 
-    AddScalarVarToMetaData(md, "Simulation ID", "nodes", AVT_NODECENT); 
-    AddScalarVarToMetaData(md, "Node Index", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-Simulation-Domain", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-Simulation-ID", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-Index", "nodes", AVT_NODECENT); 
 
     // Can't use enumerated scalar here because nodes can have almost arbitrary types.  
-    AddScalarVarToMetaData(md, "Node Type", "nodes", AVT_NODECENT); 
     
-    avtScalarMetaData *node_smd =
-      new avtScalarMetaData("Node Tag", "nodes", AVT_NODECENT);
-    node_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    node_smd->AddEnumNameValue("UNTAGGED", 0);
-    node_smd->AddEnumNameValue("LOOP", 8);
-    md->Add(node_smd);
-    md->SetFormatCanDoDomainDecomposition(true);  
+    avtScalarMetaData *node_type =
+      new avtScalarMetaData("Node-Type", "nodes", AVT_NODECENT);
+    node_type->SetEnumerationType(avtScalarMetaData::ByValue);    
+    node_type->AddEnumNameValue("LESS THAN -10", -11);
+    for (int i = -10; i<7; i++) {
+      if (i<-3 || i>0)
+        node_type->AddEnumNameValue(str(boost::format("%d")%i), i); 
+    }
+    node_type->AddEnumNameValue("GREATER THAN 10", 10);      
+    md->Add(node_type);
+
+    avtScalarMetaData *node_loop =
+      new avtScalarMetaData("Node-Is-Loop", "nodes", AVT_NODECENT);
+    node_loop->SetEnumerationType(avtScalarMetaData::ByValue);
+    node_loop->AddEnumNameValue("NOT LOOP", 0);
+    node_loop->AddEnumNameValue("LOOP", 1);
+    md->Add(node_loop);
+    
+    avtScalarMetaData *node_typem =
+      new avtScalarMetaData("Node-Is-Type-M", "nodes", AVT_NODECENT);
+    node_typem->SetEnumerationType(avtScalarMetaData::ByValue);
+    node_typem->AddEnumNameValue("NOT TYPE M", 0);
+    node_typem->AddEnumNameValue("TYPE M", 1);
+    md->Add(node_typem);
+    
+    avtScalarMetaData *node_typen =
+      new avtScalarMetaData("Node-Is-Type-N", "nodes", AVT_NODECENT);
+    node_typen->SetEnumerationType(avtScalarMetaData::ByValue);
+    node_typen->AddEnumNameValue("NOT TYPE N", 0);
+    node_typen->AddEnumNameValue("TYPE N", 1);
+    md->Add(node_typen);
     
      
+   /*!
+      =======================================================
+      populate the segments mesh for dumpfile (serial) 
+      =======================================================
+    */ 
+    
+    meshname = "segments"; 
+    topological_dimension = 1; /* lines */ 
+    meshtype = AVT_UNSTRUCTURED_MESH; 
+    
+    AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
+                      spatial_dimension, topological_dimension);
+    
+    AddScalarVarToMetaData(md, "Segment-Index", "segments", AVT_ZONECENT);
+ 
+    // Enumerated types give you some more flexibility in the interface and allows arbitrary values, not just 0-indexed list.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
+    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
+    avtScalarMetaData *burgers_smd =
+      new avtScalarMetaData("Segment-Burgers-Type", "segments", AVT_ZONECENT);
+    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<18; i++) {
+      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), btypes[i]);
+    }
+    md->Add(burgers_smd);
+     
+    AddScalarVarToMetaData(md, "Segment-Parent-MetaArm-ID", "segments", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "Segment-Parent-Arm-ID", "segments", AVT_ZONECENT);
+       
+    avtScalarMetaData *matype_smd =
+      new avtScalarMetaData("Segment-Parent-MetaArm-Type", "segments", AVT_ZONECENT);
+    matype_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=0; i<4; i++) {
+      matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
+    }
+    md->Add(matype_smd);
+    
+    
+    avtScalarMetaData *mn_smd =
+      new avtScalarMetaData("Segment-MN-Type", "segments", AVT_ZONECENT);
+    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+    for (int i=-1; i<11; i++) {
+      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
+    }
+    md->Add(mn_smd);
+
+    avtScalarMetaData *segment_dup =
+      new avtScalarMetaData("Segment-Duplicates", "segments", AVT_ZONECENT);
+    segment_dup->SetEnumerationType(avtScalarMetaData::ByValue);
+    segment_dup->AddEnumNameValue("NOT LOOP", 0);
+    segment_dup->AddEnumNameValue("LOOP", 1);
+    md->Add(segment_dup);
+    
     /*! 
       ==============================================
       Add a mesh for the meta-arms for dumpfile (serial) 
@@ -306,10 +338,10 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
     
-    AddMaterialToMetaData(md, "MetaArm Type", "Meta Arms", 
+    AddMaterialToMetaData(md, "MetaArm-Type", "Meta Arms", 
                           mDumpfile.mMetaArmTypes.size(), 
                           mDumpfile.mMetaArmTypes); 
-    AddScalarVarToMetaData(md, "MetaArm ID", "Meta Arms", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "MetaArm-ID", "Meta Arms", AVT_ZONECENT);
 
    /*! 
       ==============================================
@@ -323,10 +355,10 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     AddMeshToMetaData(md, meshname, meshtype, mDumpfile.mExtents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
 
-    AddMaterialToMetaData(md, "Wrapped MetaArm Type", "Wrapped Meta Arms", 
+    AddMaterialToMetaData(md, "Wrapped-MetaArm-Type", "Wrapped Meta Arms", 
                           mDumpfile.mMetaArmTypes.size(), 
                           mDumpfile.mMetaArmTypes); 
-    AddScalarVarToMetaData(md, "Wrapped MetaArm ID", "Wrapped Meta Arms", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "Wrapped-MetaArm-ID", "Wrapped Meta Arms", AVT_ZONECENT);
 
 #endif // not PARALLEL
   } // end DumpFile format 
