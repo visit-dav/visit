@@ -537,6 +537,11 @@ namespace paraDIS {
 
 
  //===========================================================================
+  int8_t ArmSegment::GetMNType(void) const { 
+    return mParentArm->mArmType; 
+  } 
+
+ //===========================================================================
   uint32_t ArmSegment::GetArmID(void) {    
     if (mSegmentID == 15662) {
       dbprintf(5, "hello\n"); 
@@ -983,35 +988,11 @@ namespace paraDIS {
       }
     }
     
-    /*!
-      Now compute the length of the arm to enable "short arm" marking, then mark all segments with their MN type. 
-    */ 
-    ComputeLength(); 
-
-    /*!
-      Now set every segment in this arm to the same type so they can be drawn correctly
-    */ 
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111; 
     }
 
-    uint32_t numSeen = 0; 
-    vector<ArmSegment*> segments = GetSegments(); 
-    vector<ArmSegment*>::iterator segpos = segments.begin();
-    while (segpos != segments.end()) {
-      dbprintf(5, "Classifying segment %s\n", (*segpos)->Stringify(0).c_str()); 
-      (*segpos)->SetMNType(mArmType);
-      segpos++; 
-      gNumClassified++; 
-      numSeen ++; 
-    }
-  
-    if (numSeen != mNumSegments) {
-      string s = string("Error in Arm ")+intToString(mArmID)+":  classified "+intToString(numSeen)+" segments, but expected "+ intToString(mNumSegments); 
-      dbprintf(0, s.c_str()); 
-      errexit;
-    }
-    return; 
+     return; 
   }
   
 

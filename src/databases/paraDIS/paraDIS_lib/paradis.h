@@ -799,7 +799,7 @@ namespace paraDIS {
     }
 
     void init(void) {
-      mMNType = ARM_UNKNOWN; 
+      //mMNType = ARM_UNKNOWN; 
       mBurgersType = 0; 
       mSeen = false; 
       int i=2; while (i--) {
@@ -872,14 +872,7 @@ namespace paraDIS {
     
     int8_t GetBurgersType(void) const { return mBurgersType; } 
 
-    /*! 
-      Accessors for MN type values (set by parent arm)
-    */ 
-    int8_t GetMNType(void) const { return mMNType; } 
-
-    void SetMNType(int8_t val)  {  mMNType=val; } 
-
-    /*!
+   /*!
       Return the distance between the endpoints
     */ 
     double GetLength(bool wrap=false) const { 
@@ -913,7 +906,12 @@ namespace paraDIS {
     /* Get the metaarm Type for the parent of this segment */ 
     uint8_t GetMetaArmType(void);
     
-    /* Get the arm ID for the parent of this segment */ 
+    /*! 
+      Accessor for MN type
+    */ 
+    int8_t GetMNType(void) const;
+
+     /* Get the arm ID for the parent of this segment */ 
     uint32_t GetArmID(void);
     
     /*!
@@ -1113,7 +1111,7 @@ namespace paraDIS {
     /*! 
       The MN_type of the segment is set by its parent arm.  See Arm struct for definitions, but it describes whether the segment is 200 or 111 and whether its parent arm has any monsters at either end. 
     */ 
-    int8_t mMNType; 
+    //int8_t mMNType; 
      
     /* The metaArm type that it belongs to.  */ 
     int8_t mMetaArmType; 
