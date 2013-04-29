@@ -350,10 +350,6 @@ namespace paraDIS {
     */ 
     mNodeType = mNeighborSegments.size();  // true for vast majority of nodes. 
     
-   if (mNodeIndex == 5743) {
-      dbprintf(5, "mNodeIndex == 5743\n"); 
-    }
-    
     if (mNodeType >= 4) {//four-armed is forewarned!  Oh, I'm funny. 
       /*!
         check for a monster or special monster 
@@ -543,9 +539,6 @@ namespace paraDIS {
 
  //===========================================================================
   uint32_t ArmSegment::GetArmID(void) {    
-    if (mSegmentID == 15662) {
-      dbprintf(5, "hello\n"); 
-    }
     return mParentArm->mArmID;
   }
 
@@ -768,7 +761,6 @@ namespace paraDIS {
   
   //===========================================================================
   double Arm::ComputeLength(void) {
-    //dbprintf(5, "ComputeLength called on arm %d\n", mArmID); 
     if (!mNumSegments) {
       mArmLength = 0; 
     } 
@@ -779,7 +771,6 @@ namespace paraDIS {
       vector<ArmSegment*>::iterator segpos = segments.begin(), endseg = segments.end(); 
       
       while (segpos != endseg) {
-        //dbprintf(5, "Adding length for %s\n", (*segpos)->Stringify(0).c_str()); 
         mArmLength += (*segpos)->GetLength(true); 
         ++segpos; 
       }
@@ -811,11 +802,11 @@ namespace paraDIS {
     }    
  
     if (!startSegment) {
-      dbprintf(0, "GetNodes(arm %d): Cannot find matching terminal segment in arm for known good start node!\n", mArmID); 
+      dbprintf(0, "Arm::GetNodes(arm %d): Cannot find matching terminal segment in arm for known good start node!\n", mArmID); 
       errexit1; 
     } 
 
-    dbprintf(5, "Found start segment %s and startNode %s\n", startSegment->Stringify(0).c_str(), startNode->Stringify(0).c_str()); 
+    dbprintf(5, "Arm::GetNodes(arm %d): Found start segment %s and startNode %s\n", mArmID, startSegment->Stringify(0).c_str(), startNode->Stringify(0).c_str()); 
     FullNode *lastNode = NULL; 
     if (mTerminalNodes.size() > 1)  
       lastNode = const_cast<FullNode*>(mTerminalNodes[1]); 
@@ -916,7 +907,7 @@ namespace paraDIS {
     } while (nodenum > -1 && !startSegment);
 
     if (!startSegment) {
-      dbprintf(0, "Arm::GetSegments(): Cannot find matching terminal segment in arm %d for given start node\n", mArmID); 
+      dbprintf(0, "Arm::GetSegments(%d): Cannot find matching terminal segment in arm for given start node\n", mArmID); 
       errexit1; 
     } 
     ArmSegment *lastSegment = NULL; 
@@ -938,9 +929,9 @@ namespace paraDIS {
       if (currentNode->GetNumNeighborSegments() == 1) {
         ArmSegment *wDouble =  currentSegment->SwitchToWrappedDouble(currentNode, &currentNode, NULL); 
         if (!wDouble) {
-          dbprintf(5, "Arm::GetSegments(arm %d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n"); 
+          dbprintf(5, "Arm::GetSegments(%d): ERROR:  We have a node with only one neighbor which is not a ghost node.  Things are going to get bad from here.\n"); 
         }
-        dbprintf(5, "Arm::GetSegments(arm %d): found a wrapped node and successfully switched to new node.\n"); 
+        dbprintf(5, "Arm::GetSegments(%d): found a wrapped node and successfully switched to new node.\n"); 
         currentSegment = wDouble; 
       }
       
@@ -951,7 +942,7 @@ namespace paraDIS {
       }
       currentSegment = currentNode->GetOtherNeighbor(currentSegment, true);       
     } 
-    dbprintf(5, "GetSegments(%d): Found %d segments\n\n", mArmID, segments.size()); 
+    dbprintf(5, "Arm::GetSegments(%d): Found %d segments\n\n", mArmID, segments.size()); 
     return segments;
   }
 
@@ -960,18 +951,21 @@ namespace paraDIS {
 #ifdef RC_CPP_VISIT_BUILD
     int err = -1; 
 #endif 
+    dbprintf(5, "Arm::Classify(%d) called for arm %s\n", mArmID, Stringify(0).c_str()); 
 #if LINKED_LOOPS
     CheckForLinkedLoops(); 
 #endif
-    if (!mNumSegments) return; 
-    dbprintf(5, "Classifying arm %s\n", Stringify(0, false).c_str()); 
+    if (!mNumSegments) {
+      dbprintf(5, "Arm::Classify(%d): no segments in arm.\n", mArmID); 
+      return; 
+    }
     if (mTerminalNodes.size() == 1) {
       mArmType = ARM_LOOP; 
     } else {
       if (mTerminalNodes[0]->IsTypeM() && mTerminalNodes[1]->IsTypeM()) {
         mArmType = ARM_MM_111; 
       } else if (mTerminalNodes[0]->IsTypeM() || mTerminalNodes[1]->IsTypeM()){
-        mArmType = ARM_MN_111; 
+       mArmType = ARM_MN_111; 
       } else {
         mArmType = ARM_NN_111; 
       }
@@ -991,7 +985,7 @@ namespace paraDIS {
     if (mThreshold > 0 && mArmLength < mThreshold) {
       if (mArmType == ARM_NN_111) mArmType = ARM_SHORT_NN_111; 
     }
-
+    dbprintf(5, "Arm::Classify(%d): gave arm type %d.\n", mArmID, mArmType); 
      return; 
   }
   
@@ -2922,7 +2916,7 @@ namespace paraDIS {
             Arm *theArm = new Arm; 
             theArm->Clear();
             theArm->SetID(); 
-            dbprintf(5, "Starting arm %d in middle of arm\n", theArm->mArmID); 
+            dbprintf(5, "DataSet::BuildArms(): Starting arm %d in middle of arm\n", theArm->mArmID); 
             FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm ); 
             theArm->mTerminalNodes.push_back(endNode0); 
             endNode0->mNeighborArms.push_back(theArm); 
@@ -2938,7 +2932,7 @@ namespace paraDIS {
             if (endSegment0 != endSegment1) {
               theArm->mTerminalSegments.push_back(endSegment1); 
             }
-            dbprintf(5, "(1) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
+            dbprintf(5, "DataSet::BuildArms() (from middle of arm):  Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
             mArms.push_back(theArm); 
           }
         } else { // starting with a terminal node; create multiple arms
@@ -2949,7 +2943,7 @@ namespace paraDIS {
               Arm *theArm = new Arm; 
               theArm->Clear();
               theArm->SetID(); 
-              dbprintf(5, "Starting arm %d at one end of arm\n", theArm->mArmID); 
+              dbprintf(5, "DataSet::BuildArms(): Starting arm %d at one end of arm\n", theArm->mArmID); 
               FindEndOfArm(nodepos, &endNode0, startSegment0, endSegment0, theArm); 
               theArm->mTerminalNodes.push_back(*nodepos); 
               (*nodepos)->mNeighborArms.push_back(theArm); 
@@ -2961,7 +2955,7 @@ namespace paraDIS {
               if (endSegment0 != startSegment0) {                
                 theArm->mTerminalSegments.push_back(endSegment0); 
               }
-              dbprintf(5, "(2) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
+              dbprintf(5, "DataSet::BuildArms(): (from end of arm) Pushing back arm %d: %s\n", armnum++, theArm->Stringify(0).c_str()); 
               mArms.push_back(theArm);          
             }
             ++neighbornum; 
@@ -3508,12 +3502,21 @@ namespace paraDIS {
     
     return; 
   }
+
   //=========================================================================
-  void DataSet::RenumberNodesAndComputeNodeTypes(void) {
+  void DataSet::RenumberNodes(void) {
     uint32_t nodenum = 0, numnodes = FullNode::mFullNodes.size(); 
     while (nodenum != numnodes) {
       FullNode *thenode = FullNode::mFullNodes[nodenum]; 
       thenode->SetIndex(nodenum); 
+      ++nodenum;
+    }
+  }
+  //=========================================================================
+  void DataSet::ComputeNodeTypes(void) {
+    uint32_t nodenum = 0, numnodes = FullNode::mFullNodes.size(); 
+    while (nodenum != numnodes) {
+      FullNode *thenode = FullNode::mFullNodes[nodenum]; 
       thenode->ComputeNodeType(); 
       ++nodenum;
     }
@@ -3653,6 +3656,8 @@ namespace paraDIS {
       DecomposeArms(); 
 
       CollectAllArmSegments(); 
+
+      ComputeNodeTypes(); 
  
       ClassifyArms(); // This also computes their lengths...
 
@@ -3664,7 +3669,7 @@ namespace paraDIS {
  
       WrapBoundarySegments();  
   
-      RenumberNodesAndComputeNodeTypes(); 
+      RenumberNodes(); 
        
       FindMetaArms(); 
      

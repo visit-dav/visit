@@ -302,6 +302,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
      
     AddScalarVarToMetaData(md, "Segment-Parent-MetaArm-ID", "segments", AVT_ZONECENT);
     AddScalarVarToMetaData(md, "Segment-Parent-Arm-ID", "segments", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "Segment-Duplicates", "segments", AVT_ZONECENT);
        
     avtScalarMetaData *matype_smd =
       new avtScalarMetaData("Segment-Parent-MetaArm-Type", "segments", AVT_ZONECENT);
@@ -309,8 +310,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     for (int i=0; i<4; i++) {
       matype_smd->AddEnumNameValue(MetaArmTypeNames(i), i);
     }
-    md->Add(matype_smd);
-    
+    md->Add(matype_smd);    
     
     avtScalarMetaData *mn_smd =
       new avtScalarMetaData("Segment-MN-Type", "segments", AVT_ZONECENT);
@@ -320,13 +320,13 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     md->Add(mn_smd);
 
-    avtScalarMetaData *segment_dup =
-      new avtScalarMetaData("Segment-Duplicates", "segments", AVT_ZONECENT);
-    segment_dup->SetEnumerationType(avtScalarMetaData::ByValue);
-    segment_dup->AddEnumNameValue("NOT LOOP", 0);
-    segment_dup->AddEnumNameValue("LOOP", 1);
-    md->Add(segment_dup);
-    
+    /* avtScalarMetaData *segment_dup =
+       new avtScalarMetaData("Segment-Duplicates", "segments", AVT_ZONECENT);
+       segment_dup->SetEnumerationType(avtScalarMetaData::ByValue);
+       segment_dup->AddEnumNameValue("NOT DUPLICATED", 0);
+       segment_dup->AddEnumNameValue("DUPLICATE", 1);
+       md->Add(segment_dup);
+    */ 
     /*! 
       ==============================================
       Add a mesh for the meta-arms for dumpfile (serial) 

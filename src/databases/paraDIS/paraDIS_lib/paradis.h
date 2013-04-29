@@ -1399,10 +1399,7 @@ namespace paraDIS {
     struct MetaArm *GetParentMetaArm(void) const { return mParentMetaArm; }
 
     void SetParentMetaArm(struct MetaArm *ma) { 
-      if (mArmID == 1112) {
-        dbprintf(5, "Setting arm 1112 parent \n"); 
-      }
-      mParentMetaArm = ma; 
+     mParentMetaArm = ma; 
     }
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
@@ -1933,11 +1930,17 @@ s      Tell the data set which file to read
 
     double ComputeArmLengths(void); 
 
+    /*! 
+      Compute all node types
+    */ 
+    void ComputeNodeTypes(void); 
+
  
     /*!
       Go through and renumber the nodes so that their index is the same as their position in the vector
     */ 
-    void RenumberNodesAndComputeNodeTypes(void); 
+    void RenumberNodes(void); 
+
 
     
     /*!
