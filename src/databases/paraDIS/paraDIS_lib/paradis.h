@@ -54,6 +54,7 @@ using boost::uint32_t;
 std::string get_version(const char *progname);
 
 extern std::string doctext;
+
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
 string MetaArmTypeNames(int mtype);
@@ -65,6 +66,7 @@ int InterpretBurgersType(float burg[3]) ;
 
 //  Segment BURGERS TYPES: (P = plus(+) and M = minus(-))
 // These are valued in order of increasing energy levels, corresponding to the sum of the square of the components of the burgers vector.  
+
 #define BURGERS_DECOMPOSED  -2  // for segments that are decomposed
 #define BURGERS_UNKNOWN     -1  // analysis failed
 #define BURGERS_NONE        0   // no analysis done yet
@@ -474,7 +476,8 @@ namespace paraDIS {
       float location[3] = {0,0,0}; 
       SetLocation(location); 
       mNodeType = 0; 
-      mIsLoopNode = false; 
+      mIsLoopNode = false;
+      mWrappedCopy = false; 
     }
     /*!
       Full nodes are first copied from MinimalNodes.  This is just a member-wise "shallow" copy.  
@@ -732,6 +735,10 @@ namespace paraDIS {
       }
     }
 
+    bool IsWrappedCopy(void) { return mWrappedCopy; }
+    
+    void SetWrappedCopy(bool tf) { mWrappedCopy = tf; }
+
     /*!
       Connectivity to our neighboring arms.
       Only used for terminal nodes.  
@@ -762,6 +769,8 @@ namespace paraDIS {
     int8_t mNodeType; 
     
     bool mIsLoopNode; 
+
+    bool mWrappedCopy; // when wrapping, mark the copies as such to prevent double-counting in statistics
 
     /*!
       This is needed for things like Visit, where nodes are accessed by node ID, whereas this library uses pointers.  Since it is also our index inthe global array of nodes, it turns out to be a good way to get the "real" counterpart of a wrapped node.  

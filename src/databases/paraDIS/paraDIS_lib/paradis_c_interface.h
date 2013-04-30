@@ -79,10 +79,8 @@ extern "C" {
   
   uint32_t paraDIS_GetNumArmSegments(void);
   
-  void paraDIS_printArmSegmentVerbose(uint32_t segnum);
-
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum);
-
+  
   int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum);
   
   int32_t paraDIS_GetSegmentSimulationIndex(uint32_t segmentnum);
