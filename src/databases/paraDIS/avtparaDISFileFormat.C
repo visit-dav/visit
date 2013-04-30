@@ -290,15 +290,19 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     
     AddScalarVarToMetaData(md, "Segment-Index", "segments", AVT_ZONECENT);
  
-    // Enumerated types give you some more flexibility in the interface and allows arbitrary values, not just 0-indexed list.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
-    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
-    avtScalarMetaData *burgers_smd =
-      new avtScalarMetaData("Segment-Burgers-Type", "segments", AVT_ZONECENT);
-    burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=0; i<18; i++) {
-      burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), btypes[i]);
-    }
-    md->Add(burgers_smd);
+    AddMaterialToMetaData(md, "Segment-Burgers-Type", "segments",
+                          mDumpfile.mSegmentBurgerTypeNames.size(), 
+                          mDumpfile.mSegmentBurgerTypeNames); 
+   // Enumerated types give you some more flexibility in the interface and allows arbitrary values, not just 0-indexed list.  Use if there is a palette of choices.  Stolen from avtOUTCARFileFormat
+    /*    int btypes[] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60}; 
+          avtScalarMetaData *burgers_smd =
+          new avtScalarMetaData("Segment-Burgers-Type", "segments", AVT_ZONECENT);
+          burgers_smd->SetEnumerationType(avtScalarMetaData::ByValue);
+          for (int i=0; i<18; i++) {
+          burgers_smd->AddEnumNameValue(BurgersTypeNames(btypes[i]), btypes[i]);
+          }
+          md->Add(burgers_smd);
+    */ 
      
     AddScalarVarToMetaData(md, "Segment-Parent-MetaArm-ID", "segments", AVT_ZONECENT);
     AddScalarVarToMetaData(md, "Segment-Parent-Arm-ID", "segments", AVT_ZONECENT);

@@ -51,10 +51,13 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 #include <boost/format.hpp>
+#include "paradis.h"
 using namespace std; 
 
+int burgersTypes[18] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60};
+
 Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts): 
-  mVerbosity(0),  mMaterialSetChoice(0), mFilename(filename), mNumMetaArmSegments(0) {
+  mVerbosity(0), /* mMaterialSetChoice(0), */ mFilename(filename), mNumMetaArmSegments(0) {
   paraDIS_init(); 
   // DebugStream::GetLevel doesn't exist in 1.12RC, so turning off
   // debugging as a work around.  It does exist in the trunk, so 
@@ -68,53 +71,54 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
   char *cp = getenv("PARADIS_VERBOSITY"); 
   if (cp) mVerbosity=atoi(cp); 
-  cerr << "paradis verbosity of dumpfile reader set to " << mVerbosity << endl; 
+  else cp = (char*)"unset"; 
+  cerr << "PARADIS_VERBOSITY variable is " << cp << ", verbosity of dumpfile reader set to " << mVerbosity << endl; 
 
   if (mVerbosity) {
     mDebugFile = rdatts->GetString(PARADIS_DEBUG_FILE);
   }
-  cerr << "setting verbosity to " << mVerbosity << endl; 
   cp = getenv("PARADIS_DEBUG_FILE");
   if (cp) mDebugFile = cp; 
+  else cp = (char*)"unset"; 
 
   paraDIS_SetVerbosity(mVerbosity, mDebugFile.c_str()); 
+  cerr << "PARADIS_DEBUG_FILE variable is " << cp << endl; 
 
   paraDIS_EnableDebugOutput(rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT)); 
   cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
   if (cp) paraDIS_EnableDebugOutput(atoi(cp)); 
-  
+  else cp = (char*)"unset"; 
+  cerr << "PARADIS_ENABLE_DEBUG_OUTPUT variable is " << cp << endl; 
+    
   paraDIS_EnableMetaArmSearch(); 
 
   dbg_setverbose(mVerbosity); 
     
-  
+  /* 
   mMaterialSetChoice = rdatts->GetEnum(PARADIS_MATERIAL_SET_CHOICE); 
   cp = getenv("PARADIS_USE_MN_MATERIALS"); 
   if (cp) {
     mMaterialSetChoice = atoi(cp); 
   }
-
+  else cp = "unset"; 
+  */ 
   paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
   cp = getenv("PARADIS_NN_ARM_THRESHOLD"); 
   if (cp)  {
     paraDIS_SetThreshold(atof(cp));
   }
+  else cp = (char*)"unset"; 
+  cerr << "PARADIS_NN_ARM_THRESHOLD variable is " << cp << endl; 
 
- // Adding a material to the mesh, which is the correct thing to do for int-valued data (discrete) as it allows subsetting to work
-  // our own data members. 
-  mSegmentMNTypes.clear(); 
-  mSegmentMNTypes.push_back(string("ARM_UNKNOWN"));    
-  mSegmentMNTypes.push_back(string("ARM_UNINTERESTING"));
-  mSegmentMNTypes.push_back(string("ARM_LOOP"));
-  mSegmentMNTypes.push_back(string("ARM_MM_111"));
-  mSegmentMNTypes.push_back(string("ARM_MN_111"));
-  mSegmentMNTypes.push_back(string("ARM_NN_111"));
-  mSegmentMNTypes.push_back(string("ARM_MM_100"));
-  mSegmentMNTypes.push_back(string("ARM_MN_100"));
-  mSegmentMNTypes.push_back(string("ARM_NN_100"));
-  mSegmentMNTypes.push_back(string("ARM_SHORT_NN_111"));
-  mSegmentMNTypes.push_back(string("ARM_SHORT_NN_100"));
-
+ // Adding a material to the mesh, allows subsetting and discrete colors:
+  int numtypes = sizeof(burgersTypes)/sizeof(burgersTypes[0]); 
+  mSegmentBurgerTypes = vector<int> (burgersTypes, burgersTypes + numtypes); 
+  int t = 0; 
+  while (t<numtypes) {
+    mSegmentBurgerTypeNames.push_back(BurgersTypeNames(mSegmentBurgerTypes[t])); 
+    ++t; 
+  }
+ 
   mNodeNeighborValues.clear(); 
   mNodeNeighborValues.push_back(string("0 neighbors"));    
   mNodeNeighborValues.push_back(string("1 neighbor"));    
@@ -424,12 +428,15 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       f= 0; 
       scalars->InsertTuple(index,&f);
     }
-  } else if (varname == "Segment-Burgers-Type") {
-    for (index=0; index<numsegs; index++) {
-      f= paraDIS_GetSegmentBurgersType(index); 
-      scalars->InsertTuple(index,&f);
-    }
-  } else if (varname == "Segment-Duplicates") {
+  }
+  /* else if (varname == "Segment-Burgers-Type") {
+     for (index=0; index<numsegs; index++) {
+     f= paraDIS_GetSegmentBurgersType(index); 
+     scalars->InsertTuple(index,&f);
+     }
+     } 
+  */
+  else if (varname == "Segment-Duplicates") {
     for (index=0; index<numsegs; index++) {
       f = paraDIS_GetSegmentDuplicates(index); 
       scalars->InsertTuple(index,&f);
@@ -464,27 +471,6 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
   }
   debug1 << "done with Dumpfile::GetVar"<<endl;
   return scalars;
-    //
-    // If you have a file format where variables don't apply (for example a
-    // strictly polygonal format like the STL (Stereo Lithography) format,
-    // then uncomment the code below.
-    //
-    // EXCEPTION1(InvalidVariableException, varname);
-    //
-
-    //
-    // If you do have a scalar variable, here is some code that may be helpful.
-    //
-    // int ntuples = XXX; // this is the number of entries in the variable.
-    // vtkFloatArray *rv = vtkFloatArray::New();
-    // rv->SetNumberOfTuples(ntuples);
-    // for (int i = 0 ; i < ntuples ; i++)
-    // {
-    //      rv->SetTuple1(i, VAL);  // you must determine value for ith entry.
-    // }
-    //
-    // return rv;
-    //
 }
 
 void *
@@ -496,28 +482,23 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
   }
 
   avtMaterial *mat = NULL;
-  
+   
   if (string(var).substr(0,8) == "Segment-") {
     int index; 
     int numsegs = paraDIS_GetNumArmSegments(); 
     int *matId = new int[numsegs];
     int *matptr = matId; 
-    /* if (string(var) == "Segment Burgers Type") {
+    if (string(var) == "Segment-Burgers-Type") {
       //---------------------------------------------
       for (index=0; index<numsegs; index++) {
         *(matptr++)=BurgersTypeToIndex(paraDIS_GetSegmentBurgersType(index)); 
       }    
-      debug3 << "mBurgersTypes.size(): " << mBurgersTypes.size() << endl;
-      int i=0; 
-      while (i < mBurgersTypes.size()) {
-        debug3 << "mBurgersTypes["<<i<<"] = "<<mBurgersTypes[i]<< endl; 
-        ++i; 
-      }
-      mat = new avtMaterial(mBurgersTypes.size(), mBurgersTypes, 
+      mat = new avtMaterial(mSegmentBurgerTypeNames.size(), 
+                            mSegmentBurgerTypeNames, 
                             numsegs, matId, 0, NULL, NULL, NULL, NULL);
       //---------------------------------------------      
-      }     else */ 
-    if (string(var) == "Segment-MN-Type")  {
+    }     
+    /*   else if (string(var) == "Segment-MN-Type")  {
       //---------------------------------------------      
       for (index=0; index<numsegs; index++) {
         *(matptr++)=paraDIS_GetSegmentMNType(index); 
@@ -525,7 +506,8 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
       mat = new avtMaterial(mSegmentMNTypes.size(), mSegmentMNTypes, 
                             numsegs, matId, 0, NULL, NULL, NULL, NULL);
       //---------------------------------------------
-    } else {
+      } */ 
+    else {
       string err = string("Error: unknown variable: ") + var; 
       EXCEPTION1(VisItException, err.c_str());
     }
@@ -571,5 +553,16 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
   return mat;
 }
       
+uint8_t Dumpfile::BurgersTypeToIndex(int btype) {
+  int numtypes = sizeof(burgersTypes)/sizeof(burgersTypes[0]); 
+  int i=0; 
+  for  (i=0; i<numtypes; i++) {
+    if (btype == burgersTypes[i]) {
+      return i;
+    }
+  }
+  return 0; 
+}
+
 
 
