@@ -51,6 +51,7 @@
 #include <ParseException.h>
 #include <string>
 #include <vector>
+#include <visit-config.h>
 using std::vector;
 using std::string;
 
@@ -170,6 +171,10 @@ ExprParser::~ExprParser()
 //    Jeremy Meredith, Mon Dec 15 14:30:57 EST 2008
 //    Allow unary minus to get integrated directly into float and int
 //    constants.
+//
+//    Kathleen Biagas, Mon Apr 29 19:35:54 MST 2013 
+//    Use VISIT_SLASH_STRING for path separators, to preserve correct path
+//    form on windows.
 //
 // ****************************************************************************
 ParseTreeNode*
@@ -412,13 +417,13 @@ ExprParser::ApplyRule(const Symbol           &sym,
         {
         case 0:
             node = E[0];
-            ((PathExpr *) node)->Append("/");
+            ((PathExpr *) node)->Append(VISIT_SLASH_STRING);
             ((PathExpr *) node)->Append(((Identifier*)T[2])->GetVal());
 
             delete E[1];
             break;
         case 1:
-            node = new PathExpr(p, "/");
+            node = new PathExpr(p, VISIT_SLASH_STRING);
             ((PathExpr *) node)->Append(((Identifier*)T[1])->GetVal());
             delete E[0];
             break;
