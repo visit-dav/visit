@@ -1224,6 +1224,7 @@ namespace paraDIS {
     }
     double decomposedLength = 0; 
     neighbornum = neighborArms.size();
+    
     while (neighbornum--) {
       Arm *neighborArm = neighborArms[neighbornum]; 
       if (neighborArm != this) { 
@@ -1231,11 +1232,7 @@ namespace paraDIS {
         neighborArm->ExtendByArm(this, sharedNode, numDuplicates);
         decomposedLength += mArmLength; 
         extendedArmIDs.push_back(neighborArm->mArmID); 
-        // if (mArmID == 130580 || mArmID == 130448) {
-        //  dbprintf(5, "After extension, arm %d segments are: %s\n", 
-        //           mArmID, GetSegmentsAsString().c_str()); 
-        // }
-      }
+       }
     }
     if (decomposedLength > 0) {
       decomposedLength -= mArmLength; // because we delete ourself once
@@ -2760,8 +2757,10 @@ namespace paraDIS {
         newSegment->SetID(); 
         mWrappedArmSegments.push_back(newSegment); 
         newnode0->SetIndex(); 
+        newnode0->SetWrappedCopy(true); 
         FullNode::mFullNodes.push_back(newnode0); 
         newnode1->SetIndex(); 
+        newnode1->SetWrappedCopy(true); 
         FullNode::mFullNodes.push_back(newnode1);
         dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode0->GetNodeID().Stringify(0).c_str()); 
         dbprintf(5, "\n***********\nWrapBoundarySegments: Created new wrapped node %s", newnode1->GetNodeID().Stringify(0).c_str()); 
@@ -2790,7 +2789,7 @@ namespace paraDIS {
     std::vector<FullNode*>::iterator nodepos = FullNode::mFullNodes.begin(), 
       endnodepos = FullNode::mFullNodes.end(); 
     while (nodepos != endnodepos) {
-      if ((*nodepos)->GetNodeType() < 0) {
+      if ((*nodepos)->GetNodeType() < 0 && !(*nodepos)->IsWrappedCopy()) {
         uint8_t theType = - (*nodepos)->GetNodeType(); 
         if (theType >= monsterTypes.size()) {
           monsterTypes.resize(theType+1); 
