@@ -123,6 +123,7 @@ public:
     rationalSurfaceTolerance = 0;
 
     maxPunctures      = 0;
+    numPunctures      = 0;
     nPuncturesNeeded  = 0;
 
     parentOPointIC = 0;
@@ -157,8 +158,7 @@ enum AnalysisMethod { UNKNOWN_METHOD = 0,
                       DEFAULT_METHOD = 1,
 
                       RATIONAL_SEARCH   = 10,
-                      RATIONAL_MINIMIZE = 11,
-                      RATIONAL_BRACKET  = 12 }; //Remove a curve from continueExecute logic
+                      RATIONAL_MINIMIZE };
 
 enum AnalysisState { UNKNOWN_ANALYSIS = 0,
 
@@ -191,16 +191,14 @@ enum SearchState { UNKNOWN_SEARCH = 0,
                    SEARCHING_SEED,
                    WAITING_SEED,
                    FINISHED_SEED,
+                   DEAD_SEED,
                    MINIMIZING_A      = 105,  // Used to bracket the minimum
                    MINIMIZING_B,
                    MINIMIZING_C,
                    MINIMIZING_X0     = 110, // Used for Golden search routine
                    MINIMIZING_X1,
                    MINIMIZING_X2,
-                   MINIMIZING_X3,
-                   BRACKETING_A      = 120, //Used to bracket the minimum
-                   BRACKETING_B,
-                   BRACKETING_C
+                   MINIMIZING_X3
                       ////// Code for rational surface search
 };
 
@@ -263,6 +261,7 @@ public:
   float nnodes;
 
   unsigned int maxPunctures;
+  unsigned int numPunctures;
   unsigned int nPuncturesNeeded;
 
   // Rational Surface periodicity measures
@@ -294,6 +293,8 @@ public:
   avtVector rationalPt2;
 
   std::vector< avtPoincareIC *> *children;
+
+  avtVector srcPt;
   ////// Code for rational surface search
 };
 #endif
@@ -340,13 +341,12 @@ public:
 
 
     ////// Code for rational surface search
-    avtPoincareIC *source_ic;
+    avtPoincareIC *src_seed_ic;
+    avtPoincareIC *src_rational_ic;
 
     // If this curve is minimizing, keep track of 'a' and 'c' (this is 'b')
-    float a_bound_dist;
     avtPoincareIC *a_IC;
     avtPoincareIC *b_IC;
-    float c_bound_dist;
     avtPoincareIC *c_IC;
     // Golden Search catches X0. X1, X2 and X3 must all have had integration done
     avtPoincareIC *GS_x1;

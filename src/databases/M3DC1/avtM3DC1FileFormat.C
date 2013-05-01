@@ -920,10 +920,12 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
                 "Can not find '" + string(meshnamePtr) + "'" );
 
+  bool refinedMesh = strlen(meshnamePtr);
+  
   // Parse the mesh variable name to get the refinement level.
   int refinement;
 
-  if( strlen(meshnamePtr) && atoi(&(meshnamePtr[1])) == m_refinement )
+  if( refinedMesh && atoi(&(meshnamePtr[1])) == m_refinement )
       refinement = m_refinement;
   else
     refinement = 0;
@@ -969,7 +971,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
       mins[0] = 0;
 
       if ( refinement == 0 )
-        maxs[0] = nelms-1;
+         maxs[0] = nelms-1;
       else if( element_dimension == 2 )
         maxs[0] = nelms*pow((double) refinement+1.0, 2.0)-1;
       else if( element_dimension == 3 )
@@ -1040,6 +1042,45 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     wedge->Delete();
   }
 
+
+  // Retrieving the base mesh so add in the scalar global values
+  // needed for the interpolation of the magnetic field.
+  if( !refinedMesh )
+  {
+    // Create a new vtkFieldData which gets added to the vtkDataObject.
+    vtkFieldData *fieldData = vtkFieldData::New();
+    grid->SetFieldData(fieldData);
+
+    // Save the number of elements to create a field with a single tuple.
+    int tmp_nelms = nelms;
+    nelms = 1;
+
+    vtkDataArray *eqsubtractVar = GetHeaderVar( timestate, "eqsubtract");
+    fieldData->AddArray( eqsubtractVar );
+
+    if( element_dimension == 2 )
+    {
+      vtkDataArray *linearVar = GetHeaderVar( timestate, "linear");
+      fieldData->AddArray( linearVar );
+
+      vtkDataArray *ntorVar = GetHeaderVar( timestate, "ntor");
+      fieldData->AddArray( ntorVar );
+
+      vtkDataArray *bzeroVar = GetHeaderVar( timestate, "bzero");
+      fieldData->AddArray( bzeroVar );
+
+      vtkDataArray *rzeroVar = GetHeaderVar( timestate, "rzero");
+      fieldData->AddArray( rzeroVar );
+    }
+    else // if( element_dimension == 3 )
+    {
+      vtkDataArray *nplanesVar = GetHeaderVar( timestate, "nplanes");
+      fieldData->AddArray( nplanesVar );
+    }
+
+    nelms = tmp_nelms;
+  }
+
   return grid;
 }
 
@@ -1066,6 +1107,7 @@ vtkDataArray *
 avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
 {
   // Get the header variable
+  vtkDataArray * dataArray;
 
   // Header variables are at the top level group.
   hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
@@ -1075,8 +1117,7 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
 
   // Everything is converted to floats by visit so might as well do it
   // here and save the copying time and memory.
-  string variable(&(varname[7]));
-  float value;
+  string variable(varname);
 
   // Read in 3D flag and nplanes an an int
   if( variable == "nplanes" )
@@ -1089,17 +1130,31 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       if ( ! ReadAttribute( rootID, "nplanes", &intVal ) )
       {
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nplanes' was not found or was the wrong type." );
+
+        intVal = 0;
       }
-      else
-        value = intVal;
     }  
     else
     {
-      value = 1;
-    }  
+      intVal = 1;
+    }
+
+    vtkIntArray *var = vtkIntArray::New();
+
+    dataArray = var;
+
+    // Set the number of components before setting the number of tuples
+    // for proper memory allocation.
+    var->SetNumberOfComponents( 1 );
+    var->SetNumberOfTuples( nelms );
+    
+    int* varPtr = (int *) var->GetVoidPointer(0);
+    
+    for( int i=0; i<nelms; ++i)
+      *varPtr++ = intVal;
   }
 
-  // Read in linear flag and ntor an an int
+  // Read in eqsubtract, linear flag and ntor as an int
   else if( variable == "eqsubtract" ||
            variable == "linear" ||
            variable == "ntor"   )
@@ -1109,9 +1164,22 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute '" + variable + "' was not found or was the wrong type." );
+
+        intVal = 0;
       }
-      else
-        value = intVal;
+
+      vtkIntArray *var = vtkIntArray::New();
+      dataArray = var;
+
+      // Set the number of components before setting the number of tuples
+      // for proper memory allocation.
+      var->SetNumberOfComponents( 1 );
+      var->SetNumberOfTuples( nelms );
+    
+      int* varPtr = (int *) var->GetVoidPointer(0);
+    
+      for( int i=0; i<nelms; ++i)
+        *varPtr++ = intVal;
   }
     
   // Read in bzero and rzero as a double
@@ -1122,26 +1190,29 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute '" + variable + "' was not found or was the wrong type." );
+
+        dblVal = 0;
       }
-      else
-        value = dblVal;
+
+      vtkDoubleArray *var = vtkDoubleArray::New();
+      dataArray = var;
+
+      // Set the number of components before setting the number of tuples
+      // for proper memory allocation.
+      var->SetNumberOfComponents( 1 );
+      var->SetNumberOfTuples( nelms );
+    
+      double* varPtr = (double *) var->GetVoidPointer(0);
+    
+      for( int i=0; i<nelms; ++i)
+        *varPtr++ = dblVal;
   }
 
-  vtkFloatArray *var = vtkFloatArray::New();
-
-  // Set the number of components before setting the number of tuples
-  // for proper memory allocation.
-  var->SetNumberOfComponents( 1 );
-  var->SetNumberOfTuples( nelms );
-    
-  float* varPtr = (float *) var->GetVoidPointer(0);
-    
-  for( int i=0; i<nelms; ++i)
-    *varPtr++ = value;
-    
   H5Gclose( rootID );
-    
-  return var;
+
+  dataArray->SetName(varname);
+
+  return dataArray;
 }
 
 
@@ -1198,13 +1269,13 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   }
 
   // Open the group.
-  hid_t groupID = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
-  if ( groupID < 0 )
+  hid_t groupId = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
+  if ( groupId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
                 "Group '" + string(groupStr) + "' was not found" );
 
   // Open the field dataset
-  hid_t datasetId = H5Dopen(groupID, varStr, H5P_DEFAULT);
+  hid_t datasetId = H5Dopen(groupId, varStr, H5P_DEFAULT);
   if ( datasetId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Open",
                 "Dataset '" + string(varStr) + "' was not found" );
@@ -1221,8 +1292,46 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
                 string(groupStr) + string("/") + string(varStr) +
                 "' the number of elements or the component size does not match" );
 
-  // Create the VTK structure to hole the field variable.
-  vtkFloatArray *var = vtkFloatArray::New();
+  hid_t type = H5Dget_type(datasetId);
+
+  vtkDataArray *var;
+  hid_t nativeType;
+
+  // Create the VTK structure to hold the field variable.
+  if( H5Tget_class (type) == H5T_FLOAT )
+  {
+    int size = H5Tget_size (type);
+
+    // For now type cast everything to floats as that is the storage
+    // and what is assumed down stream.
+    vtkFloatArray *varFloat = vtkFloatArray::New();
+    var = varFloat;
+
+    nativeType = H5T_NATIVE_FLOAT;
+
+    // if( size == 4 )
+    // {
+    //   vtkFloatArray *varFloat = vtkFloatArray::New();
+    //   var = varFloat;
+
+    //   nativeType = H5T_NATIVE_FLOAT;
+
+    // }
+    // else if( size == 8 )
+    // {
+    //   vtkDoubleArray *varDouble = vtkDoubleArray::New();
+    //   var = varDouble;
+      
+    //   nativeType = H5T_NATIVE_DOUBLE;
+    // }
+  }
+  else
+  {
+    EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
+                "Dataset '" +
+                string(groupStr) + string("/") + string(varStr) +
+                "' is not of native float or double type" );
+  }
 
   // Set the number of components before setting the number of tuples
   // for proper memory allocation.
@@ -1234,9 +1343,14 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   // directly - this usage works because the vtk and hdf5 memory
   // layout are the same.
 
-//   float *vals = new float[sdim[0]*sdim[1]];
+  // void *vals;
+  // if( type == H5T_NATIVE_FLOAT )
+  //   vals = (void *) new float[sdim[0]*sdim[1]];
+  // else if( type == H5T_NATIVE_DOUBLE )
+  //   vals = (void *) new double[sdim[0]*sdim[1]];
+
 //   if( H5Dread( datasetId,
-//             H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
+//             type, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
 //     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
 //              "Dataset '" + string(groupStr) + string("/") + string(varStr) +
 //              "' can not be read" );
@@ -1247,12 +1361,12 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   
 
   // Pointer to the vtk memory.
-  float* values = (float*) var->GetVoidPointer(0);
+  void* values = (void*) var->GetVoidPointer(0);
   
   // Read the data directly into the vtk memory - this call assume
   // that the hdfd5 and vtk memory layout are the same.
   if( H5Dread( datasetId,
-              H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
+               nativeType, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
                 "Dataset '" + string(groupStr) + string("/") + string(varStr) +
                 "' can not be read" );
@@ -1267,7 +1381,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
 
   H5Dclose(spaceId);
   H5Dclose(datasetId);
-  H5Gclose( groupID );
+  H5Gclose( groupId );
   
   return var;
 }
@@ -1298,11 +1412,15 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   // C1 mesh.
   if( strncmp(varname, "hidden/", 7) == 0 )
   {
-    char varStr[64];
+    char *varStr = (char *) malloc( strlen(varname) );
     strcpy( varStr, &(varname[7]) );
 
-    if( strncmp(varStr, "header", 6) == 0 )
+    if( strncmp(varStr, "header/", 7) == 0 )
+    {
+      strcpy( varStr, &(varname[14]) );
+
       return GetHeaderVar( timestate, varStr);
+    }
     else
       return 0;
   }

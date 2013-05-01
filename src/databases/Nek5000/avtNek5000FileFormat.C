@@ -50,11 +50,13 @@
 
 
 #include <vtkCellArray.h>
+#include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkFieldData.h>
 
 #include <DBOptionsAttributes.h>
 
@@ -1400,6 +1402,17 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     cellTypes->Delete();
     cellLocations->Delete();
     cells->Delete();
+
+    vtkIntArray *sem = vtkIntArray::New();
+    sem->SetNumberOfComponents( 1 );
+    sem->SetNumberOfTuples(3);
+    sem->SetTuple1(0, iBlockSize[0]);
+    sem->SetTuple1(1, iBlockSize[1]);
+    sem->SetTuple1(2, iBlockSize[2]);
+    sem->SetName("Nek_SpectralElementData");
+    ugrid->GetFieldData()->AddArray(sem);
+    sem->Delete();
+
     visitTimer->StopTimer(t2, "Building unstructured mesh");
     return ugrid;
 }

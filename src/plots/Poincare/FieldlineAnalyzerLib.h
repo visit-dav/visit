@@ -120,6 +120,7 @@ public:
     rationalSurfaceTolerance = 0;
 
     maxPunctures      = 0;
+    numPunctures      = 0;
     nPuncturesNeeded  = 0;
 
     parentOPointIC = 0;
@@ -259,6 +260,7 @@ public:
   float nnodes;
 
   unsigned int maxPunctures;
+  unsigned int numPunctures;
   unsigned int nPuncturesNeeded;
 
   // Rational Surface periodicity measures

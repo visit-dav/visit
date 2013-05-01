@@ -500,18 +500,16 @@ bool FieldlineLib::hullCheck( std::vector< Point > &points, int &direction )
 }
 
 
-// Determine if a number is prime - return zero otherwise the GCD.
+// Determine if a number is prime - return 1 otherwise the GCD.
 unsigned int FieldlineLib::isPrime( unsigned int a )
 {
-  unsigned int gcd = 0;
-
-  for( unsigned int i=2; i<a/2; ++i )
+  for( unsigned int i=a/2; i>1; --i )
   {
     if( a % i == 0 )
-      gcd = i;
+      return i;
   }
 
-  return gcd;
+  return 1;
 }
 
 
@@ -663,7 +661,7 @@ ResonanceCheck( std::vector< std::pair< unsigned int, double > > &stats,
 
         // Previous resonance it may be a secondary resonance but now
         // we found the primary.
-        else if( isPrime(group) != 0 )
+        else if( isPrime(group) > 1 )
         {
           minPercent = (double) cc / (double) num_entries;
           
@@ -2072,11 +2070,6 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
 
   double phiTotal = phiBase;
 
-//   FILE *fp = fopen( "island.txt", "w");
-
-//   fprintf( fp, "X Y Z index\n" );
-
-
   double dPhi, dTheta;
   double rotationalSum = 0;
   double ridgelineRotationalSum = 0;
@@ -2338,8 +2331,6 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
       maxZ = 0;
     }
   }
-
-//  fclose( fp );
 
   if( verboseFlag )
     std::cerr << "phiTotal " << phiTotal << "  "
@@ -2729,7 +2720,16 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                           rationalSurfaceTolerance,
                           OLineToroidalWinding );
 
-  rationalSurfaceTolerance *= rationalSurfaceFactor;
+  // Check to see if puncture points were actually added.
+  if( fi.analysisState == FieldlineProperties::ADDING_POINTS &&
+      fi.numPunctures == poloidal_puncture_pts.size() )
+  {
+    fi.analysisState = FieldlineProperties::TERMINATED;
+
+    return;
+  }
+
+  fi.numPunctures = poloidal_puncture_pts.size();
 
   if( ptList.empty() ||
       poloidal_puncture_pts.empty() ||
@@ -2759,6 +2759,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     return;
   }
 
+  rationalSurfaceTolerance *= rationalSurfaceFactor;
 
   bool helicity = ccw( ptList[1] - ptList[0], ptList[1] - ptList[2] );
 
@@ -2976,33 +2977,75 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
         (float) toroidalResonance / (float) poloidalResonance )
     {
       if( verboseFlag )
-        std::cerr << toroidalResonance << "  "
+        std::cerr << "Windings found "
+                  << mergedWindingPairStats[0].toroidal << "  "
+                  << mergedWindingPairStats[0].poloidal << "  "
+                  << "Resonances found "
+                  << toroidalResonance << "  "
                   << poloidalResonance << std::endl;
 
-      // Can not remember this case ... and why????????????
-      if ( toroidalWinding % toroidalResonance == 0 &&
-           poloidalWinding != poloidalResonance )
+      // Can not remember this case ... and why???????????? The first
+      // test assures that the toroidal resonance is "good". While the
+      // second test assures that the first pair is not the resonance.
+      if ( mergedWindingPairStats[0].toroidal % toroidalResonance == 0 &&
+           mergedWindingPairStats[0].poloidal != poloidalResonance )
       {
         // Get GCD from winding pairs ...
         unsigned int freq;
         std::vector< unsigned int > values;
+        unsigned int minResonance;
+
+        unsigned int lastDrawable = 0;
+
+        if( toroidalResonance == 1 && poloidalResonance == 1 )
+          minResonance = 2;
+        else
+          minResonance = 2;
 
         values.resize( mergedWindingPairStats.size() );
 
         // Check the toroidal windings ...
         for( unsigned int i=0; i<mergedWindingPairStats.size(); ++i )
+        {
           values[i] = mergedWindingPairStats[i].toroidal;
 
-        toroidalResonance = GCD( values, freq );
+          windingGroupOffset = Blankinship( mergedWindingPairStats[i].toroidal,
+                                            mergedWindingPairStats[i].poloidal );
+
+          bool drawable = IntersectCheck( poloidal_puncture_pts,
+                                          mergedWindingPairStats[i].toroidal,
+                                          windingGroupOffset );
+
+          if( drawable )
+          {
+            std::cerr << i << "  "
+                      << mergedWindingPairStats[i].toroidal << "  "
+                      << mergedWindingPairStats[i].poloidal << "  "
+                      << std::endl;
+
+            lastDrawable = i;
+          }
+        }
+        
+        if( lastDrawable == 0 )
+          lastDrawable = mergedWindingPairStats.size();
+
+
+        values.resize( lastDrawable );
+
+        toroidalResonance = GCD( values, freq, minResonance );
 
         // Check the poloidal windings ...
         for( unsigned int i=0; i<mergedWindingPairStats.size(); ++i )
           values[i] = mergedWindingPairStats[i].poloidal;
 
-        poloidalResonance = GCD( values, freq );
+        values.resize( lastDrawable );
+
+        poloidalResonance = GCD( values, freq, minResonance );
 
         if( verboseFlag )
-          std::cerr << "winding pair resonance "
+          std::cerr << lastDrawable << "  " << mergedWindingPairStats.size()
+                    << "  Winding pair resonance "
                     << toroidalResonance << "  "
                     << poloidalResonance << std::endl;
 
@@ -3011,13 +3054,11 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
             (float) mergedWindingPairStats[0].poloidal !=
             (float) toroidalResonance / (float) poloidalResonance )
         {
+          if( verboseFlag )
+            std::cerr << "Resonances don't match first winding pair - chaotic??" << std::endl;
+
           toroidalResonance = 1;
           poloidalResonance = 1;
-        }
-        else
-        {
-          if( verboseFlag )
-            std::cerr << "Using resonance from the winding pairs." << std::endl;
         }
       }
       else
@@ -3059,9 +3100,6 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
               << std::endl;
 
 
-
-
-
   int drawableRank  = -1;  // Rank of the first drawable widing pair
   int drawableIndex = -1;  // Index of the first drawable widing pair
   std::vector< unsigned int > drawableIndexs;
@@ -3098,56 +3136,69 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
     windingGroupOffset = Blankinship( mergedWindingPairStats[i].toroidal,
                                       mergedWindingPairStats[i].poloidal );
 
-    // Load in the the first N puncture points where N is the toroidal
-    // winding.
-    poloidal_puncture_pts2 = poloidal_puncture_pts;
-
-    poloidal_puncture_pts2.resize(mergedWindingPairStats[i].toroidal);
-
     bool drawable = IntersectCheck( poloidal_puncture_pts,
                                     mergedWindingPairStats[i].toroidal,
                                     windingGroupOffset );
 
-    // If the poloidal winding is 1 do not check.
-//     int gcd = GCD( mergedWindingPairs[i].toroidal,
-//                    mergedWindingPairs[i].poloidal );
+    // If islands check the based period.
+    unsigned int gcd = toroidalResonance == 1 ?
+      1 : GCD( mergedWindingPairStats[i].toroidal,
+               mergedWindingPairStats[i].poloidal );
 
     // Does not appear to work with islands about the O-point.
-    if( toroidalBase == 1.0 &&
-        drawable && mergedWindingPairStats[i].toroidal >= 5 &&
+    if( toroidalBase == 1.0 && drawable &&
+        mergedWindingPairStats[i].toroidal/gcd >= 5 &&
+
+        // This eliminates islands that are not classified as islands
+        // because of chaos.
         GCD( mergedWindingPairStats[i].toroidal,
              mergedWindingPairStats[i].poloidal ) !=
         mergedWindingPairStats[i].poloidal )
     {
+      // Load in the the first N puncture points where N is the toroidal
+      // winding.
+      poloidal_puncture_pts2 = poloidal_puncture_pts;
+
+      poloidal_puncture_pts2.resize(mergedWindingPairStats[i].toroidal/gcd);
+
       bool tmpVerboseFlag = verboseFlag;
 
       verboseFlag = false;
 
+      // Find the closest neighbor offset index by looking for the
+      // minimum distance between points. The minimum distance will
+      // occur when the two points are adjacent.
       periodicityStats( poloidal_puncture_pts2, toroidalStats2,
-                        mergedWindingPairStats[i].toroidal/2, 4 );
+                        mergedWindingPairStats[i].toroidal/gcd/2, 4 );
 
       verboseFlag = tmpVerboseFlag;
 
+      // The winding group offsest should match the closest neighbor
+      // offset but due to cusps it may not.
       if( windingGroupOffset != toroidalStats2[0].first && 
-          windingGroupOffset != (mergedWindingPairStats[i].toroidal -
+          windingGroupOffset != (mergedWindingPairStats[i].toroidal/gcd -
                                  toroidalStats2[0].first) )
       {      
         if( verboseFlag && (drawable || i < 10) )
-          std::cerr << "Offset via "
-               << poloidal_puncture_pts2.size() << "  "
-               << "poloidal points, "
-               << "max period " << mergedWindingPairStats[i].toroidal/2
-               << std::endl;
+          std::cerr << "Examining "
+                    << mergedWindingPairStats[i].toroidal << ","
+                    << mergedWindingPairStats[i].poloidal << "  "
+                    << "Offset via "
+                    << poloidal_puncture_pts2.size() << "  "
+                    << "poloidal points, "
+                    << "max period " << mergedWindingPairStats[i].toroidal/gcd/2
+                    << std::endl;
 
+        // Redo the stats for verbose.
         periodicityStats( poloidal_puncture_pts2, toroidalStats2,
-                          mergedWindingPairStats[i].toroidal/2, 4 );
+                          mergedWindingPairStats[i].toroidal/gcd/2, 4 );
         
         if( verboseFlag && (drawable || i < 10) )
           std::cerr << "Rotational sum error, "
                << "expected windingGroupOffset " << toroidalStats2[0].first
-               << " or " << mergedWindingPairStats[i].toroidal - toroidalStats2[0].first
+               << " or " << mergedWindingPairStats[i].toroidal/gcd - toroidalStats2[0].first
                << " got " << windingGroupOffset << std::endl
-               << "Incorrect poloidal winding is " << mergedWindingPairStats[i].poloidal
+               << "Incorrect poloidal winding is " << mergedWindingPairStats[i].poloidal/gcd
                << "  ";
 
         // Low order Blankinship offset which is an indication of what
@@ -3166,79 +3217,79 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
         // The best windingGroupOffset can be either either side
         // i.e. the offset or toroidalWinding - offset. As such take
-        // the one that results in the lowest order Balnkinship value.
+        // the one that results in the lowest order Balnkinship Value.
 
-        if( Blankinship( mergedWindingPairStats[i].toroidal,
+        if( Blankinship( mergedWindingPairStats[i].toroidal/gcd,
                          toroidalStats2[0].first ) <
-            Blankinship( mergedWindingPairStats[i].toroidal,
-                         mergedWindingPairStats[i].toroidal -
+            Blankinship( mergedWindingPairStats[i].toroidal/gcd,
+                         mergedWindingPairStats[i].toroidal/gcd -
                          toroidalStats2[0].first ) )
         {
           windingGroupOffset = toroidalStats2[0].first;
         }
         else
         {
-          windingGroupOffset = (mergedWindingPairStats[i].toroidal -
+          windingGroupOffset = (mergedWindingPairStats[i].toroidal/gcd -
                                 toroidalStats2[0].first );
         }
 
-        wMax = Blankinship( mergedWindingPairStats[i].toroidal,
+        // Lowest order Balnkinship value.
+        wMax = Blankinship( mergedWindingPairStats[i].toroidal/gcd,
                             windingGroupOffset );
+
         if( verboseFlag )
           std::cerr << "windingGroupOffset " << windingGroupOffset << "  "
                     << "wMax " << wMax << std::endl;
 
-        unsigned int w;
+        wMax *= gcd;
 
         // Search through the possible choices to find an offset.
         // NOTE: ARS believes that the correct poloidal winding for
         // these cases will be mergedWindingPairs[i].toroidal + wMax
-        for( w=1; w<=wMax; ++w )
-        {
-          if( windingGroupOffset ==
-              Blankinship( mergedWindingPairStats[i].toroidal,
-                           mergedWindingPairStats[i].toroidal+w ) )
-          {
-            if( mergedWindingPairStats[i].poloidal >
-                mergedWindingPairStats[i].toroidal )
-              mergedWindingPairStats[i].poloidal =
-                mergedWindingPairStats[i].toroidal-w;
-            else
-              mergedWindingPairStats[i].poloidal =
-                mergedWindingPairStats[i].toroidal-w;
+        if( mergedWindingPairStats[i].poloidal >
+            mergedWindingPairStats[i].toroidal )
+          mergedWindingPairStats[i].poloidal =
+            mergedWindingPairStats[i].toroidal + wMax;
+        else if( abs(mergedWindingPairStats[i].poloidal-wMax) <
+                 abs(mergedWindingPairStats[i].poloidal-(mergedWindingPairStats[i].toroidal-wMax) ) )
+          mergedWindingPairStats[i].poloidal = wMax;
+        else
+          mergedWindingPairStats[i].poloidal =
+            mergedWindingPairStats[i].toroidal - wMax;
 
-            if( verboseFlag && (drawable || i < 10) )
-              std::cerr << "Correct poloidal winding is "
-                   << mergedWindingPairStats[i].poloidal
-                   << ( w == wMax ? " as predicted" : "" ) << std::endl;
-            break;
-          }
-        }
+        if( verboseFlag && (drawable || i < 10) )
+          std::cerr << "Correct poloidal winding is "
+                    << mergedWindingPairStats[i].poloidal
+//                  << ( w == wMax ? " as predicted" : "" )
+                    << std::endl;
 
-        if( w > wMax )
-        {
-          if( verboseFlag && (drawable || i < 10) )
-          {
-            std::cerr << "Can not correct poloidal winding." << std::endl;
+//        unsigned int w;
+
+
+//         if( w > wMax )
+//         {
+//           if( verboseFlag && (drawable || i < 10) )
+//           {
+//             std::cerr << "Can not correct poloidal winding." << std::endl;
           
-            for( w=1; w<=wMax; ++w )
-            {
-              if( verboseFlag && (drawable || i < 10) )
-                std::cerr << "Checking poloidal value " << w;
+//             for( w=1; w<=wMax; ++w )
+//             {
+//               if( verboseFlag && (drawable || i < 10) )
+//                 std::cerr << "Checking poloidal value " << w;
               
-              std::cerr << "  Failed  "
-                        << Blankinship( mergedWindingPairStats[i].toroidal,
-                                        mergedWindingPairStats[i].toroidal+w )
-                        << std::endl;
-            }
-          }
-        }
+//               std::cerr << "  Failed  "
+//                         << Blankinship( mergedWindingPairStats[i].toroidal,
+//                                         mergedWindingPairStats[i].toroidal+w )
+//                         << std::endl;
+//             }
+//           }
+//         }
       }
     }
 
     // Now have valid winding pairs.
     if( verboseFlag && (drawable || i < 10) )
-      std::cerr << "Final "
+      std::cerr << "Final " << i << "  "
            << (drawable ? "Drawable " : "Rejected ") 
            << "winding pair:  " 
            << mergedWindingPairStats[i].toroidal << ","
@@ -4392,7 +4443,7 @@ FieldlineLib::fieldlineProperties2( std::vector< Point > &ptList,
 
     // If the resonance GCD is 1 then only one island per group thus a
     // simple island chain.
-    if( isPrime( toroidalResonance ) == 0 )
+    if( isPrime( toroidalResonance ) == 1 )
     {
       type = FieldlineProperties::ISLAND_PRIMARY_CHAIN;
 

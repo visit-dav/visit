@@ -319,21 +319,22 @@ StreamlineAttributes::StreamlineAlgorithmType_FromString(const std::string &s, S
 //
 
 static const char *FieldType_strings[] = {
-"Default", "M3DC12DField", "M3DC13DField", 
-"NIMRODField", "FlashField"};
+"Default", "FlashField", "M3DC12DField", 
+"M3DC13DField", "Nek5000Field", "NIMRODField"
+};
 
 std::string
 StreamlineAttributes::FieldType_ToString(StreamlineAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return FieldType_strings[index];
 }
 
 std::string
 StreamlineAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return FieldType_strings[index];
 }
 
@@ -341,7 +342,7 @@ bool
 StreamlineAttributes::FieldType_FromString(const std::string &s, StreamlineAttributes::FieldType &val)
 {
     val = StreamlineAttributes::Default;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == FieldType_strings[i])
         {
@@ -2411,7 +2412,7 @@ StreamlineAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetFieldType(FieldType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -5391,6 +5392,9 @@ StreamlineAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 //   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
 //   Add vary tube radius by variable.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
 //
 // ****************************************************************************
 

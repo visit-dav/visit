@@ -394,11 +394,16 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sabsTolBBox = %g\n", prefix, atts->GetAbsTolBBox());
     str += tmpStr;
-    const char *fieldType_names = "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField";
+    const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
+        "NIMRODField";
     switch (atts->GetFieldType())
     {
       case StreamlineAttributes::Default:
           SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case StreamlineAttributes::FlashField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::M3DC12DField:
@@ -409,12 +414,12 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
-      case StreamlineAttributes::NIMRODField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+      case StreamlineAttributes::Nek5000Field:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
-      case StreamlineAttributes::FlashField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+      case StreamlineAttributes::NIMRODField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -2060,15 +2065,15 @@ StreamlineAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 6)
         obj->data->SetFieldType(StreamlineAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField"
-                        ".");
+                        "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
+                        "NIMRODField.");
         return NULL;
     }
 
@@ -4312,14 +4317,16 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetFieldType(self, NULL);
     if(strcmp(name, "Default") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Default));
+    if(strcmp(name, "FlashField") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::FlashField));
     if(strcmp(name, "M3DC12DField") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::M3DC12DField));
     if(strcmp(name, "M3DC13DField") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::M3DC13DField));
+    if(strcmp(name, "Nek5000Field") == 0)
+        return PyInt_FromLong(long(StreamlineAttributes::Nek5000Field));
     if(strcmp(name, "NIMRODField") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::NIMRODField));
-    if(strcmp(name, "FlashField") == 0)
-        return PyInt_FromLong(long(StreamlineAttributes::FlashField));
 
     if(strcmp(name, "fieldConstant") == 0)
         return StreamlineAttributes_GetFieldConstant(self, NULL);

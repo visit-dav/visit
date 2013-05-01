@@ -69,10 +69,11 @@ public:
     enum FieldType
     {
         Default,
+        FlashField,
         M3DC12DField,
         M3DC13DField,
-        NIMRODField,
-        FlashField
+        Nek5000Field,
+        NIMRODField
     };
     enum IntegrationType
     {

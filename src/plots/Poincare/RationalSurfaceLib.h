@@ -57,42 +57,84 @@
 #include <avtPoincareIC.h>
 
 #include <vector>
+#include <iomanip>
+
+// Notes
+// The rational surfaces parameter in the GUI is currently nonfunctional. Just using largest angle.
 
 
 // Rational Search Settings
 //--------------------------
-// This is the max distance new seeds will be placed from each other
-#define MAX_SEED_SPACING               0.0125
+
+// To enable logging
+#define RATIONAL_DEBUG                 2
+
+// if 1, just draw the first seeds (approximation to rational surface based on circle)
+#define NO_MINIMIZATION                0
+
+// hard set seed z offset from the plane (helps with consistent point finding)
+#define Z_OFFSET                       -0.000001;
+
+// The distance used to calculate how many new seeds will be placed
+#define MAX_SEED_SPACING               0.001
 
 // Sometimes the rational search gets caught in a loop. This is a hard limit on that.
-#define MAX_ITERATIONS                 50
+#define MAX_ITERATIONS                35
 
-// I'm not using this right now, the purpose was superceded by the introduction of MAX_SPACING
-#define MINIMIZING_SPACING_FACTOR      0.01
+// How close the minimizing points need to be before it's considered minimized
+#define MAX_SPACING                    0.00041
 
-// This clarifies that what I'm seeing are all rationals, to make life easier while programming
-#define HIDE_NON_RATIONALS             1
+// Should be the width of the initial bracket
+#define BRACKET_WIDTH                  0.00075
 
-// This is to enable logging
-#define RATIONAL_DEBUG                 1
-
-// This basically says how close two intersections have to be on the plane for the curve to be considered a rational
-#define MAX_SPACING                    .0001
 
 
 // This is a constant used in the minimization algorithm. The golden ratio is essentially used to guess
 // a new point if a minimum has not been bracketed
-const double golden_R = 0.61803399, golden_C = 1 - golden_R;
+const double golden_R = 0.61803398875;
+const double golden_C = 1.0 - golden_R;
+const double GOLD = 1.61803398875;
+
+
+
+
+bool NeedToMinimize(avtPoincareIC *poincare_ic);
+
+bool PrepareToBracket(avtPoincareIC *seed,avtVector &newA,avtVector &newB,avtVector &newC);
+bool UpdateBracket(avtPoincareIC *poincare_ic, bool &swapped, avtVector &C);
+bool BracketIsValid(avtPoincareIC *poincare_ic);
+bool MinimumIsBracketed(avtPoincareIC *poincare_ic);
+bool SetupNewBracketA(avtPoincareIC *bracketA, avtPoincareIC *parent_seed, avtVector aPt);
+bool SetupNewBracketB(avtPoincareIC *bracketB, avtPoincareIC *parent_seed, avtVector bPt);
+bool SetupNewBracketC(avtPoincareIC *bracketC, avtPoincareIC *parent_seed, avtVector cPt);
+
+bool SetupRational(avtPoincareIC *rational);
+bool SetupNewSeed(avtPoincareIC *seed,
+                  avtPoincareIC *rational,
+                  avtVector seedPt,
+                   avtVector point1,
+                   avtVector point2);
+bool PrepareToMinimize(avtPoincareIC *poincare_ic, avtVector &newPt, bool &cbGTba);
+
 
 // HELPER METHODS //
 double PythDist( avtVector p1, avtVector p2 );
 double GetAngle( avtVector a, avtVector b, avtVector c );
 std::vector<avtVector> GetSeeds( avtPoincareIC *poincare_ic,
-                                 double maxDistance = .025); //MAX_SEED_SPACING
-float RationalDistance( std::vector< avtVector >& points,
+                                 avtVector &point1,
+                                 avtVector &point2,
+                                 double maxDistance = MAX_SEED_SPACING
+                                 ); 
+double MaxRationalDistance( avtPoincareIC *ic,
                         unsigned int toroidalWinding,
                         unsigned int &index );
-int FindMinimizationIndex( std::vector<avtVector> puncturePts,
-                           avtVector pt1,
-                           avtVector pt2);
+double MinRationalDistance( avtPoincareIC *ic,
+                        unsigned int toroidalWinding,
+                        unsigned int &index );
+int FindMinimizationIndex( avtPoincareIC* ic);
+double FindMinimizationDistance( avtPoincareIC* ic);
+
+avtPoincareIC *PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtPoincareIC *x2, avtPoincareIC *x3, std::vector<int> &ids_to_delete); 
+void SwapWithSeed(avtPoincareIC* swap, avtPoincareIC *poincare_ic);
+std::string VectorToString(avtVector &vec);
 #endif

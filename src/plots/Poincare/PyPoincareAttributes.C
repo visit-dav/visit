@@ -182,11 +182,16 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
     }
     SNPRINTF(tmpStr, 1000, "%spointDensity = %d\n", prefix, atts->GetPointDensity());
     str += tmpStr;
-    const char *fieldType_names = "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField";
+    const char *fieldType_names = "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
+        "NIMRODField";
     switch (atts->GetFieldType())
     {
       case PoincareAttributes::Default:
           SNPRINTF(tmpStr, 1000, "%sfieldType = %sDefault  # %s\n", prefix, prefix, fieldType_names);
+          str += tmpStr;
+          break;
+      case PoincareAttributes::FlashField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       case PoincareAttributes::M3DC12DField:
@@ -197,12 +202,12 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
           SNPRINTF(tmpStr, 1000, "%sfieldType = %sM3DC13DField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::NIMRODField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
+      case PoincareAttributes::Nek5000Field:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNek5000Field  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
-      case PoincareAttributes::FlashField:
-          SNPRINTF(tmpStr, 1000, "%sfieldType = %sFlashField  # %s\n", prefix, prefix, fieldType_names);
+      case PoincareAttributes::NIMRODField:
+          SNPRINTF(tmpStr, 1000, "%sfieldType = %sNIMRODField  # %s\n", prefix, prefix, fieldType_names);
           str += tmpStr;
           break;
       default:
@@ -1006,15 +1011,15 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the fieldType in the object.
-    if(ival >= 0 && ival < 5)
+    if(ival >= 0 && ival < 6)
         obj->data->SetFieldType(PoincareAttributes::FieldType(ival));
     else
     {
         fprintf(stderr, "An invalid fieldType value was given. "
-                        "Valid values are in the range of [0,4]. "
+                        "Valid values are in the range of [0,5]. "
                         "You can also use the following names: "
-                        "Default, M3DC12DField, M3DC13DField, NIMRODField, FlashField"
-                        ".");
+                        "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
+                        "NIMRODField.");
         return NULL;
     }
 
@@ -2820,14 +2825,16 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
         return PoincareAttributes_GetFieldType(self, NULL);
     if(strcmp(name, "Default") == 0)
         return PyInt_FromLong(long(PoincareAttributes::Default));
+    if(strcmp(name, "FlashField") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::FlashField));
     if(strcmp(name, "M3DC12DField") == 0)
         return PyInt_FromLong(long(PoincareAttributes::M3DC12DField));
     if(strcmp(name, "M3DC13DField") == 0)
         return PyInt_FromLong(long(PoincareAttributes::M3DC13DField));
+    if(strcmp(name, "Nek5000Field") == 0)
+        return PyInt_FromLong(long(PoincareAttributes::Nek5000Field));
     if(strcmp(name, "NIMRODField") == 0)
         return PyInt_FromLong(long(PoincareAttributes::NIMRODField));
-    if(strcmp(name, "FlashField") == 0)
-        return PyInt_FromLong(long(PoincareAttributes::FlashField));
 
     if(strcmp(name, "fieldConstant") == 0)
         return PoincareAttributes_GetFieldConstant(self, NULL);
