@@ -301,13 +301,6 @@ ViewerMethods::SetActiveWindow(int windowId, bool raiseWindow)
 void
 ViewerMethods::IconifyAllWindows()
 {
-#ifdef FROM_VIEWER_PROXY
-    //
-    // Send a special opcode to stop the animation.
-    //
-    xfer->SendSpecialOpcode(iconifyOpcode);
-#endif
-
     //
     // Set the rpc type and arguments.
     //
@@ -1392,11 +1385,8 @@ ViewerMethods::CloseComputeEngine(const std::string &hostName,
 // ****************************************************************************
 void
 ViewerMethods::InterruptComputeEngine(const std::string &hostName,
-                                    const std::string &simName)
+                                      const std::string &simName)
 {
-#ifdef FROM_VIEWER_PROXY
-    xfer->SendInterruption();
-#endif
 }
 
 // ****************************************************************************
@@ -1524,13 +1514,6 @@ ViewerMethods::AnimationReversePlay()
 void
 ViewerMethods::AnimationStop()
 {
-#ifdef FROM_VIEWER_PROXY
-    //
-    // Send a special opcode to stop the animation.
-    //
-    xfer->SendSpecialOpcode(animationStopOpcode);
-#endif
-
     //
     // Set the rpc type and arguments.
     //

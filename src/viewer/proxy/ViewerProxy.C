@@ -973,7 +973,7 @@ void
 ViewerProxy::Close()
 {
     // Tell the viewer to close.
-    methods->Close();
+    GetViewerMethods()->Close();
 
     //
     // Wait for the viewer to exit.
@@ -998,7 +998,7 @@ ViewerProxy::Close()
 void
 ViewerProxy::Detach()
 {
-    methods->Detach();
+    GetViewerMethods()->Detach();
 }
 
 // ****************************************************************************
@@ -1053,7 +1053,7 @@ ViewerProxy::AnimationStop()
     //
     xfer->SendSpecialOpcode(animationStopOpcode);
 
-    methods->AnimationStop();
+    GetViewerMethods()->AnimationStop();
 }
 
 // ****************************************************************************
@@ -1090,7 +1090,7 @@ ViewerProxy::SetPlotSILRestriction()
 
         // Now that the new SIL restriction attributes have been sent to the
         // viewer, send the RPC that tells the viewer to apply them.
-        methods->SetPlotSILRestriction();
+        GetViewerMethods()->SetPlotSILRestriction();
 
         // Delete the new SRA since we're done with it.
         delete newSRA;
@@ -1137,7 +1137,7 @@ ViewerProxy::SetPlotSILRestriction(avtSILRestriction_p newRestriction)
 
         // Now that the new SIL restriction attributes have been sent to the
         // viewer, send the RPC that tells the viewer to apply them.
-        methods->SetPlotSILRestriction();
+        GetViewerMethods()->SetPlotSILRestriction();
 
         // Delete the new SRA since we're done with it.
         delete newSRA;
