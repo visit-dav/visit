@@ -18,8 +18,11 @@ list of changes in release 2.6.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.6.3</font></b></p>
 <ul>
+<li>VisIt's frontendlauncher script now sets LD_LIBRARY_PATH so VisIt's internal Python interpreter can properly locate Python shared libraries within the VisIt installation.</li>
+<li>VisIt once again honors any plugin directories specified by the <i>VISITPLUGINDIR</i> environment variable. Some sites use the environment variable to point multiple users to a custom plugin directory.</li>
 <li>VisIt now always passes "-l username" to ssh when making remote connections when running on Windows since qtssh, the ssh utility VisIt uses on Windows, requires it.</li>
 <li>Windows installer would install VisIt's parallel components, even when user requested they be skipped.</li>
+<li>The <i>Stop</i> button in VisIt's animation controls was broken when used in PySide applications. This made the <i>Stop</i> button unable to actually stop animations.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.6.3</font></b></p>
