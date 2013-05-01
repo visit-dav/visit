@@ -67,10 +67,11 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_SPECIFIEDLINE = 1;
 
     public final static int FIELDTYPE_DEFAULT = 0;
-    public final static int FIELDTYPE_M3DC12DFIELD = 1;
-    public final static int FIELDTYPE_M3DC13DFIELD = 2;
-    public final static int FIELDTYPE_NIMRODFIELD = 3;
-    public final static int FIELDTYPE_FLASHFIELD = 4;
+    public final static int FIELDTYPE_FLASHFIELD = 1;
+    public final static int FIELDTYPE_M3DC12DFIELD = 2;
+    public final static int FIELDTYPE_M3DC13DFIELD = 3;
+    public final static int FIELDTYPE_NEK5000FIELD = 4;
+    public final static int FIELDTYPE_NIMRODFIELD = 5;
 
     public final static int INTEGRATIONTYPE_EULER = 0;
     public final static int INTEGRATIONTYPE_LEAPFROG = 1;
@@ -1430,14 +1431,16 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + indent + "fieldType = ";
         if(fieldType == FIELDTYPE_DEFAULT)
             str = str + "FIELDTYPE_DEFAULT";
+        if(fieldType == FIELDTYPE_FLASHFIELD)
+            str = str + "FIELDTYPE_FLASHFIELD";
         if(fieldType == FIELDTYPE_M3DC12DFIELD)
             str = str + "FIELDTYPE_M3DC12DFIELD";
         if(fieldType == FIELDTYPE_M3DC13DFIELD)
             str = str + "FIELDTYPE_M3DC13DFIELD";
+        if(fieldType == FIELDTYPE_NEK5000FIELD)
+            str = str + "FIELDTYPE_NEK5000FIELD";
         if(fieldType == FIELDTYPE_NIMRODFIELD)
             str = str + "FIELDTYPE_NIMRODFIELD";
-        if(fieldType == FIELDTYPE_FLASHFIELD)
-            str = str + "FIELDTYPE_FLASHFIELD";
         str = str + "\n";
         str = str + doubleToString("fieldConstant", fieldConstant, indent) + "\n";
         str = str + doubleArrayToString("velocitySource", velocitySource, indent) + "\n";

@@ -58,6 +58,7 @@ avtIVPLeapfrog.C
 avtIVPSolver.C
 avtIVPM3DC1Field.C
 avtIVPM3DC1Integrator.C
+avtIVPNek5000Field.C
 avtIVPNIMRODField.C
 avtIVPFlashField.C
 avtIVPVTKField.C

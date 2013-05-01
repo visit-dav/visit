@@ -74,6 +74,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0), factor(fact),
   nelms(0), element_dimension(0), nplanes(0), reparameterize(false)
 {
+  vtkFieldData *fieldData = dataset->GetFieldData();
+
   // Pick off all of the data stored with the vtk field.
   // Get the numver of elements for checking the validity of the data.
 
@@ -89,7 +91,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     element_size =
       ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfComponents();
   }
-  // 2.0 Change data is at the cells for POINCARE
+  // 2.0 Change data is now at the cells for POINCARE
   else
   {
     nelms =
@@ -119,9 +121,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     SetDataPointer( ds, fltVar, "hidden/elements", element_size );
 
   // Equalibrium field
-  intPtr = SetDataPointer( ds, intVar, "hidden/header/eqsubtract", 1 );
-  eqsubtract = intPtr[0];
-  delete [] intPtr;
+  eqsubtract =
+      ((int *) fieldData->GetAbstractArray("eqsubtract")->GetVoidPointer(0))[0];
 
   if( eqsubtract )
   {
@@ -135,23 +136,19 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 
   if( element_size == ELEMENT_SIZE_2D )
   {
+    linflag =
+      ((int *) fieldData->GetAbstractArray("linear")->GetVoidPointer(0))[0];
+
+    tmode =
+      ((int *) fieldData->GetAbstractArray("ntor")->GetVoidPointer(0))[0];
+
+    bzero =
+      ((double *) fieldData->GetAbstractArray("bzero")->GetVoidPointer(0))[0];
+
+    rzero =
+      ((double *) fieldData->GetAbstractArray("rzero")->GetVoidPointer(0))[0];
+
     nplanes = 1;
-
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", 1 );
-    linflag = intPtr[0];
-    delete [] intPtr;
-
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor", 1 );
-    tmode = intPtr[0];
-    delete [] intPtr;
-
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero", 1 );
-    bzero = fltPtr[0];
-    delete [] fltPtr;
-
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/rzero", 1 );
-    rzero = fltPtr[0];
-    delete [] fltPtr;
 
     // Now set some values using the above data.
     F0 = -bzero * rzero;
@@ -168,9 +165,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   else //if( element_size == ELEMENT_SIZE_3D )
   {
     // Single values from the header attributes.
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/nplanes", 1 );
-    nplanes = intPtr[0];
-    delete [] intPtr;
+    nplanes =
+      ((int *) fieldData->GetAbstractArray("nplanes")->GetVoidPointer(0))[0];
 
     f   = SetDataPointer( ds, fltVar, "hidden/f",   scalar_size, factor );
     psi = SetDataPointer( ds, fltVar, "hidden/psi", scalar_size, factor );
@@ -281,7 +277,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     array = ds->GetPointData()->GetArray(varname);
     XX = 3;
   }
-  // 2.0 Change data is at the cells for POINCARE
+  // 2.0 Change data is now at the cells for POINCARE
   else
   {
     array = ds->GetCellData()->GetArray(varname);
@@ -347,12 +343,6 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
         newptr[i*ncomponents+j] = (type) (factor * ptr[i*XX*ncomponents+j]);
-
-//     std::cerr << varname << std::endl;
-//     for( int j=0; j<ncomponents; ++j )
-//       std::cerr << newptr[106795*ncomponents+j]  << "  ";
-//     std::cerr << std::endl;
-//     std::cerr << std::endl;
 
     return newptr;
   }

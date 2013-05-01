@@ -219,10 +219,11 @@ QvisPoincarePlotWindow::CreateWindowContents()
     fieldLayout->addWidget( new QLabel(tr("Field"), fieldGroup), 0,0);
     fieldType = new QComboBox(fieldGroup);
     fieldType->addItem(tr("Default"));
+    fieldType->addItem(tr("Flash"));
     fieldType->addItem(tr("M3D-C1 2D"));
     fieldType->addItem(tr("M3D-C1 3D"));
+    fieldType->addItem(tr("Nek5000"));
     fieldType->addItem(tr("NIMROD"));
-    fieldType->addItem(tr("Flash"));
     connect(fieldType, SIGNAL(activated(int)),
             this, SLOT(fieldTypeChanged(int)));
     fieldLayout->addWidget(fieldType, 0,1);

@@ -71,10 +71,11 @@
       </Enum>
       <Enum name="FieldType">
         Default
+        FlashField
         M3DC12DField
         M3DC13DField
+        Nek5000Field
         NIMRODField
-        FlashField
       </Enum>
       <Enum name="IntegrationType">
         Euler

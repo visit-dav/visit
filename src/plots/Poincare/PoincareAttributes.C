@@ -84,21 +84,22 @@ PoincareAttributes::SourceType_FromString(const std::string &s, PoincareAttribut
 //
 
 static const char *FieldType_strings[] = {
-"Default", "M3DC12DField", "M3DC13DField", 
-"NIMRODField", "FlashField"};
+"Default", "FlashField", "M3DC12DField", 
+"M3DC13DField", "Nek5000Field", "NIMRODField"
+};
 
 std::string
 PoincareAttributes::FieldType_ToString(PoincareAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return FieldType_strings[index];
 }
 
 std::string
 PoincareAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return FieldType_strings[index];
 }
 
@@ -106,7 +107,7 @@ bool
 PoincareAttributes::FieldType_FromString(const std::string &s, PoincareAttributes::FieldType &val)
 {
     val = PoincareAttributes::Default;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == FieldType_strings[i])
         {
@@ -1803,7 +1804,7 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetFieldType(FieldType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

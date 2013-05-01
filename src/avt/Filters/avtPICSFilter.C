@@ -94,6 +94,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPLeapfrog.h>
 #include <avtIVPM3DC1Integrator.h>
 #include <avtIVPM3DC1Field.h>
+#include <avtIVPNek5000Field.h>
 #include <avtIVPNIMRODField.h>
 #include <avtIVPFlashField.h>
 #include <avtIntervalTree.h>
@@ -2082,7 +2083,10 @@ avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
     }
     else
     {
-      if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+      if( fieldType == STREAMLINE_FIELD_FLASH )
+        return new avtIVPFlashField(ds, *locator, fieldConstant );
+
+      else if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
         return new avtIVPM3DC1Field(ds, *locator, fieldConstant );
 
       else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
@@ -2091,11 +2095,11 @@ avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
         field->reparameterize = true;
         return field;
       }
+      else if( fieldType == STREAMLINE_FIELD_NEK5000 )
+         return new avtIVPNek5000Field(ds, *locator);
+
       else if( fieldType == STREAMLINE_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
-
-      else if( fieldType == STREAMLINE_FIELD_FLASH )
-        return new avtIVPFlashField(ds, *locator, fieldConstant );
 
       else if (haveOffsets) {
         debug5 <<"avtPICSFilter::GetFieldForDomain() - using offset field interpolator." <<std::endl;
@@ -3195,14 +3199,6 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Assume the user has selected B as the primary variable.
         // Which is ignored.
 
-        // Single variables stored as attributes on the header
-        out_dr->AddSecondaryVariable("hidden/header/eqsubtract");// /eqsubtract
-        out_dr->AddSecondaryVariable("hidden/header/linear");  // /linear
-        out_dr->AddSecondaryVariable("hidden/header/ntor");    // /ntor
-
-        out_dr->AddSecondaryVariable("hidden/header/bzero");    // /bzero
-        out_dr->AddSecondaryVariable("hidden/header/rzero");    // /rzero
-
         // The mesh - N elements x 7
         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
 
@@ -3223,11 +3219,6 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         // Assume the user has selected B as the primary variable.
         // Which is ignored.
 
-        // Single variables stored as attributes on the header
-        out_dr->AddSecondaryVariable("hidden/header/nplanes"); // /nplanes
-
-        out_dr->AddSecondaryVariable("hidden/header/eqsubtract");// /eqsubtract
-
         // The mesh - N elements x 9
         out_dr->AddSecondaryVariable("hidden/elements"); // /time_000/mesh/elements
 
@@ -3239,6 +3230,17 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/f");    // /time_XXX/fields/f
         out_dr->AddSecondaryVariable("hidden/psi");  // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/I");    // /time_XXX/fields/I
+    }
+    else if ( fieldType == STREAMLINE_FIELD_NEK5000 )
+    {
+        // Add in the other fields that the NEK 5000 Interpolation needs
+
+        // Assume the user has selected B as the primary variable.
+        // Which is ignored.
+
+        // Fourier series grid and data stored on the original mesh
+//        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
+//        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
     }
     else if ( fieldType == STREAMLINE_FIELD_NIMROD )
     {
