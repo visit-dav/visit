@@ -176,15 +176,24 @@ def encode_mpeg1(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         if ffmpeg_version() > .09 :
+            # two pass support with newer versions requires two calls to ffmpeg
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
-            cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 2 "
+            cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-b:v 18000000 -r 24 %s"
+            # pass 1
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
+            res = sexe(cmd_pass1)
+            if res == 0:
+                # pass 2
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
+                res = sexe(cmd_pass2)
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r 24 %s"
-        cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+            cmd =  cmd % (enc_bin,ipattern,ofile)
+            res = sexe(cmd)
+        return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mpeg.")
 
@@ -195,15 +204,24 @@ def encode_wmv(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         if ffmpeg_version() > .09 :
+            # two pass support with newer versions requires two calls to ffmpeg
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
-            cmd += "-flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
+            cmd += "-flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-b:v 18000000 -r 30 %s"
+            # pass 1
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
+            res = sexe(cmd_pass1)
+            if res == 0:
+                # pass 2
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
+                res = sexe(cmd_pass2)
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-mbd -rd -flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r 30 %s"
-        cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+            cmd =  cmd % (enc_bin,ipattern,ofile)
+            res = sexe(cmd)
+        return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode wmv.")
 
@@ -214,15 +232,24 @@ def encode_swf(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         if ffmpeg_version() > .09 :
+            # two pass support with newer versions requires two calls to ffmpeg
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
-            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
+            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-b:v 18000000 -r 30 -f swf %s"
+            # pass 1
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
+            res = sexe(cmd_pass1)
+            if res == 0:
+                # pass 2
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
+                res = sexe(cmd_pass2)
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r 30 -f swf %s"
-        cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+            cmd =  cmd % (enc_bin,ipattern,ofile)
+            res = sexe(cmd)
+        return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode swf.")
 
@@ -268,15 +295,24 @@ def encode_mov(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         if ffmpeg_version() > .09 :
+            # two pass support with newer versions requires two calls to ffmpeg
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1 "
+            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-an -b:v 18000000 -f mov -r 30 %s"
+            # pass 1
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
+            res = sexe(cmd_pass1)
+            if res == 0:
+                # pass 2
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
+                res = sexe(cmd_pass2)
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-an -b 18000000 -f mov -r 30 %s"
-        cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+            cmd =  cmd % (enc_bin,ipattern,ofile)
+            res = sexe(cmd)
+        return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mov.")
 
@@ -287,15 +323,24 @@ def encode_mp4(ipattern,ofile):
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:
         if ffmpeg_version() > .09 :
+            # two pass support with newer versions requires two calls to ffmpeg
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
-            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 2 "
+            cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-an -b:v 18000000 -f mp4 %s"
+            # pass 1
+            cmd_pass1 =  cmd % (enc_bin,ipattern,1,ofile)
+            res = sexe(cmd_pass1)
+            if res == 0:
+                # pass 2
+                cmd_pass2 =  cmd % (enc_bin,ipattern,2,ofile)
+                res = sexe(cmd_pass2)
         else:
             cmd =  "echo y | %s -f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-an -b 18000000 -f mp4 %s"
-        cmd =  cmd % (enc_bin,ipattern,ofile)
-        return sexe(cmd)
+            cmd =  cmd % (enc_bin,ipattern,ofile)
+            res = sexe(cmd)
+        return res
     else:
         raise VisItException("ffmpeg not found: Unable to encode mp4.")
 
