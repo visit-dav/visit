@@ -2168,7 +2168,7 @@ class MainLauncher(object):
             SETENV("VISITPLUGINDIR", self.visitplugins)
         else:
             if GETENV("VISITPLUGINDIRORIG") == "":
-                SETENV("VISITPLUGINDIR", GETENV("VISITPLUGINDIR"))
+                SETENV("VISITPLUGINDIRORIG", GETENV("VISITPLUGINDIR"))
             SETENV("VISITPLUGINDIR", self.joinpaths([GETENV("VISITPLUGINDIRORIG"), visitprivateplugins,self.visitplugins]))
 
         # If we are using a public version, or if any main plugin directory is
