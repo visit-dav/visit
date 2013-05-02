@@ -41,6 +41,8 @@
 // ************************************************************************* //
 
 #include "RationalSurfaceLib.h"
+#include <algorithm>
+#include <limits>
 bool MinimumIsBracketed(avtPoincareIC *poincare_ic)
 {
   Vector xzplane(0,1,0);
