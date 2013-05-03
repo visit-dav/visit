@@ -2169,7 +2169,9 @@ class MainLauncher(object):
         else:
             if GETENV("VISITPLUGINDIRORIG") == "":
                 SETENV("VISITPLUGINDIRORIG", GETENV("VISITPLUGINDIR"))
-            SETENV("VISITPLUGINDIR", self.joinpaths([GETENV("VISITPLUGINDIRORIG"), visitprivateplugins,self.visitplugins]))
+            vpdo = self.splitpaths(GETENV("VISITPLUGINDIRORIG"))
+            vpd = self.joinpaths(vpdo + [visitprivateplugins, self.visitplugins])
+            SETENV("VISITPLUGINDIR", vpd)
 
         # If we are using a public version, or if any main plugin directory is
         # not writeable, then we should default to a private plugin installation.
