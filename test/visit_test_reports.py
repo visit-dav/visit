@@ -382,6 +382,7 @@ class JSONIndex(object):
     def load_cases(cls,fname,res):
         index_base     = os.path.split(os.path.abspath(fname))[0]
         for script_res in res["results"]:
+          try:
             if not "details" in script_res.keys():
                 tsr = TestScriptResult(**script_res )
                 cases_results =  pjoin(index_base,
@@ -391,7 +392,8 @@ class JSONIndex(object):
                     script_res["details"] = case_vals
                 else:
                     script_res["details"] = {}
-
+          except AttributeError:
+              pass
 def text_summary(json_res,errors_only=False):
     rtxt  = ""
     for r in json_res["results"]:
