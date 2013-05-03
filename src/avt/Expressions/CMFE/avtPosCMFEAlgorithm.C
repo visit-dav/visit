@@ -1400,6 +1400,9 @@ avtPosCMFEAlgorithm::FastLookupGrouping::ClearAllInputMeshes(void)
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Cyrus Harrison, Fri May  3 16:07:29 PDT 2013
+//    Make sure to init map_to_ds for the degenerate mesh case.
+//
 // ****************************************************************************
 
 void
@@ -1444,6 +1447,12 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
     if (degenerate)
     {
         double bounds[6] = { 0, 1, 0, 1, 0, 1 };
+        //
+        // make sure to init this value for the
+        // degenerate case. It will be used for a ghost zone
+        // check on the empty mesh.
+        //
+        map_to_ds[0]=0;
         itree->AddElement(0, bounds);
     }
 
