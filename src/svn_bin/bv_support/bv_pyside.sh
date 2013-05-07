@@ -125,10 +125,17 @@ function build_pyside_component
     fi
 
     cd $1
+    #
+    # Make sure to pass compilers and compiler flags to cmake
+    #
     mkdir -p build
     cd build #PySide 1.1.1 fails during in source build..
     info "Configuring pyside/$1 . . ."
     $CMAKE_COMMAND .. \
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
+        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
+        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_INSTALL_PREFIX:FILEPATH="$VISIT_PYSIDE_DIR" \
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=FALSE\
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=FALSE\

@@ -418,10 +418,22 @@ function build_pil
             warn "Patch failed, but continuing."
     fi
 
+    # NOTE:
+    # we need to compose both XFLAGS and X_OPT_FLAGS to get the correct
+    # settings from build_visit command line opts
+    # see:https://visitbugs.ornl.gov/issues/1443
+    #
+
+    PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
+    PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
+
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
-        info "Building PIL ..."
-        ${PYHOME}/bin/python ./setup.py build 
+        info "Building PIL ...\n" \
+        "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
+        "  ${PYHOME}/bin/python ./setup.py build "
+        CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
+            ${PYHOME}/bin/python ./setup.py build 
         info "Installing PIL ..."
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
