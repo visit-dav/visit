@@ -130,17 +130,22 @@ printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory" "Use
 
 function bv_qt_host_profile
 {
-echo >> $HOSTCONF
-echo "##" >> $HOSTCONF
-echo "## Qt" >> $HOSTCONF
-echo "##" >> $HOSTCONF
-if [[ $USE_SYSTEM_QT == "yes" ]]; then
-    echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
-else
-    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
-fi
-    
+if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+    if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+        if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+            echo >> $HOSTCONF
+            echo "##" >> $HOSTCONF
+            echo "## Qt" >> $HOSTCONF
+            echo "##" >> $HOSTCONF
+            if [[ $USE_SYSTEM_QT == "yes" ]]; then
+                echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+            else
+                echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH}/bin)" >> $HOSTCONF
+            fi
+        fi
+    fi
+fi    
 }
 
 function bv_qt_ensure
@@ -261,6 +266,7 @@ function build_qt
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -cocoa"
         fi
 
+        QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
         # webkit causes the linker on Hank's mac to run out of memory
         EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
 
@@ -272,6 +278,7 @@ function build_qt
         if [[ "$GCC_BUILD_ARCH" == "x86_64" ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -arch x86_64"
         fi
+
     elif [[ "$OPSYS" == "Linux" ]] ; then
         # w/ Qt 4.8.3, these guys will on fail on linux
         # if gstreamer isn't installed ...
@@ -281,7 +288,39 @@ function build_qt
         if [[ "${VER:0:3}" == "2.4" ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
         fi
-    fi 
+
+        #
+        # select the proper value for QT_PLATFORM 
+        #
+        # Most of the logic for QT_PLATFORM on various os flavors
+        # is still in bv_main.sh, and should be detangled and placed here.
+        #
+        # For now add support for icc on linux.
+        #
+
+        # enable icc qt build on linux
+        #
+        # Question: could qt auto detect this via the CC and CXX env vars?
+        #
+        # For osx, and linux - we may also need clang support in the future.
+        # We should try to see if we can avoid setting the platform, set
+        # CC and CXX and see if that is enough to trigger qt's detection logic.
+        #
+        #
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
+            if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
+                QT_PLATFORM="linux-icc-64"
+            else
+                QT_PLATFORM="linux-g++-64"
+            fi
+        else
+          if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
+                QT_PLATFORM="linux-icc"
+            else
+                QT_PLATFORM="linux-g++"
+            fi
+        fi
+    fi
 
     # We may be building statically.
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -292,6 +331,11 @@ function build_qt
     #
     # Call configure
     #
+
+
+    QT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
+    QT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
+
     qt_flags=""
     qt_flags="${qt_flags} -no-qt3support"
     qt_flags="${qt_flags} -no-dbus"
@@ -305,17 +349,19 @@ function build_qt
     qt_flags="${qt_flags} -nomake demos"
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
-    info "Configuring Qt4: ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}" \
+    info "Configuring Qt4: CFLAGS=${QT_CFLAGS} CXXFLAGS=${QT_CXXFLAGS}" \
+         "./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -fast -no-separate-debug-info" \
          "${qt_flags}" \
          "${EXTRA_QT_FLAGS}"
-   (echo "o"; echo "yes") | ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH} \
+
+   (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
+           ./configure --prefix=${VISITDIR}/qt/${QT_VERSION}/${VISITARCH} \
                     -platform ${QT_PLATFORM} \
                     -make libs -make tools -fast -no-separate-debug-info \
                     ${qt_flags} \
                     ${EXTRA_QT_FLAGS} | tee qt.config.out
-    
     if [[ $? != 0 ]] ; then
        warn "Qt4 configure failed. Giving up."
        return 1

@@ -134,21 +134,23 @@ printf "%-15s %s [%s]\n" "--system-python" "Use System Python" "Used unless --no
 
 function bv_python_host_profile
 {
-echo >> $HOSTCONF
-echo "##" >> $HOSTCONF
-echo "## Python" >> $HOSTCONF
-echo "##" >> $HOSTCONF
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Python" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
 
-if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
-    #incase the PYTHON_DIR does not find the include and library set it manually...
-    echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
-else
-    echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
-fi
+        if [[ "$USE_SYSTEM_PYTHON" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+            #incase the PYTHON_DIR does not find the include and library set it manually...
+            echo "VISIT_OPTION_DEFAULT(PYTHON_INCLUDE_PATH $PYTHON_INCLUDE_PATH)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY ${PYTHON_LIBRARY})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR $PYTHON_LIBRARY_DIR)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(PYTHON_VERSION $PYTHON_COMPATIBILITY_VERSION)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR $VISIT_PYTHON_DIR)" >> $HOSTCONF
+        fi
+    fi
 }
 
 function bv_python_initialize_vars
@@ -416,10 +418,22 @@ function build_pil
             warn "Patch failed, but continuing."
     fi
 
+    # NOTE:
+    # we need to compose both XFLAGS and X_OPT_FLAGS to get the correct
+    # settings from build_visit command line opts
+    # see:https://visitbugs.ornl.gov/issues/1443
+    #
+
+    PYEXT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
+    PYEXT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
+
     PYHOME="${VISITDIR}/python/${PYTHON_VERSION}/${VISITARCH}"
     pushd $PIL_BUILD_DIR > /dev/null
-        info "Building PIL ..."
-        ${PYHOME}/bin/python ./setup.py build 
+        info "Building PIL ...\n" \
+        "CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS}" \
+        "  ${PYHOME}/bin/python ./setup.py build "
+        CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
+            ${PYHOME}/bin/python ./setup.py build 
         info "Installing PIL ..."
         ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
