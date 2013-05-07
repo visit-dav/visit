@@ -115,13 +115,13 @@ class STATE_API JSONNode
 
     virtual  ~JSONNode();
 
-    JSONType GetType() const { return type; } const
+    JSONType GetType()   const { return type; }
 
     bool isNullValue()   const { return json.num.nullValue; }
-    bool   GetBool()    const { return json.num.boolValue; }
-    int    GetInt()       const { return (int)GetLong(); }
-    long   GetLong()      const { return json.num.lnumber; }
-    float  GetFloat()     const { return (float)GetDouble(); }
+    bool   GetBool()     const { return json.num.boolValue; }
+    int    GetInt()      const { return (int)GetLong(); }
+    long   GetLong()     const { return json.num.lnumber; }
+    float  GetFloat()    const { return (float)GetDouble(); }
     double GetDouble() const { return type == JSONINTEGER || type == JSONLONG ?
                                         (double)json.num.lnumber :
                                                 json.num.dnumber; }
