@@ -991,117 +991,83 @@ namespace paraDIS {
   
 
   //===========================================================================
-  void Arm::ExtendByArm(Arm *sourceArm, FullNode *sharedNode, int numDuplicates) {
-    // identify the shared terminal node in the neighbor arm:     
-    dbprintf(5, "\n======================================\n   ExtendByArm(): Extending arm: %s\n", Stringify(0, false).c_str()); 
+  void Arm::ExtendBySegments(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, FullNode *sharedNode, int numDuplicates) {
+
     int sharedNodeNum = mTerminalNodes.size(); 
     while (sharedNodeNum-- ) {
       if (mTerminalNodes[sharedNodeNum] == sharedNode) break; 
     }
     if (sharedNodeNum == -1) {
-      dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for extended arm!\n");
+      dbprintf(0, "ExtendByArm(%d): Error:  cannot find shared terminal node for extended arm!\n", mArmID);
       errexit; 
     }    
     int sourceSharedNodeNum = sourceArm->mTerminalNodes.size(); 
     while (sourceSharedNodeNum-- ) {
-        if (sourceArm->mTerminalNodes[sourceSharedNodeNum] == sharedNode) break; 
+      if (sourceArm->mTerminalNodes[sourceSharedNodeNum] == sharedNode) break; 
     }
     if (sourceSharedNodeNum == -1) {
-      dbprintf(0, "ExtendByArm(): Error:  cannot find shared terminal node for source arm!\n");
+      dbprintf(0, "ExtendByArm(%d): Error:  cannot find shared terminal node for source arm!\n", mArmID);
       errexit; 
     }   
-
-    bool isLoop = false;  
-    ArmSegment * otherSharedSegment = NULL; 
-    if (mTerminalNodes.size() == 1) {
-      if (mTerminalSegments.size() == 1) {
-        dbprintf(4, "ExtendByArm(): We are extending a looped arm with a single terminal segment.  So let's treat it as a non-looped arm and duplicate the shared node and other segment.\n"); 
-        isLoop = true; 
-        // we need to find our other terminal segment
-        vector<ArmSegment *> segments = GetSegments(sharedNode); 
-        otherSharedSegment = segments[segments.size()-1]; 
-        if (otherSharedSegment == mTerminalSegments[0]) {
-          //dbprintf(5, "ExtendByArm(): Changing otherSharedSegment to  mTerminalSegments[0]\n"); 
-          otherSharedSegment = segments[0]; 
-        }
-        if (!otherSharedSegment->HasEndpoint(sharedNode)) {
-          dbprintf(0, "ExtendByArm(): Error:  found a looped arm where one of the terminal segments does not have the shared node as an endpoint.\n");
-          errexit; 
-        }
-        mTerminalSegments.push_back(otherSharedSegment); 
-        //dbprintf(5, "ExtendByArm(): After pushing back otherSharedSegment, we look like this: %s\n", Stringify(0, mArmID==130704).c_str()); 
-      }   
-      mTerminalNodes.push_back(sharedNode); 
-    }
-      
-    if (mNumSegments == 1 && mTerminalSegments.size() == 1) {
-      //  dbprintf(5, "ExtendByArm(): Single segment arm:  duplicate our terminal segment.\n"); 
-      mTerminalSegments.push_back(mTerminalSegments[0]); 
-    }
-
-    if (mTerminalSegments.size() != 2 || mTerminalNodes.size() != 2) {
-      dbprintf(0, "ExtendByArm(): Error: arm with a single terminal segment or node cannot be properly extended at this point.\n");  
-      errexit; 
-    }
-
-    // int nonSharedNum = 1-sharedNodeNum; 
-    
-    int sourceNonSharedNum = sourceSharedNodeNum; 
-    if (sourceArm->mTerminalNodes.size() != 1) {
-      sourceNonSharedNum = 1-sourceNonSharedNum; 
+    int sourceNonSharedNum = -1; 
+    if (sourceArm->mTerminalNodes.size() == 2) {
+      sourceNonSharedNum = 1-sourceSharedNodeNum; 
     }    
+    FullNode *sourceNonSharedNode = NULL; 
+    if (sourceNonSharedNum != -1) {
+      sourceNonSharedNode = sourceArm->mTerminalNodes[sourceNonSharedNum];
+    }
 
+   /*!
+      Duplicate the shared node in all respects, except without neighbors 
+    */ 
     FullNode *newNode = new FullNode(*sharedNode, true); 
     newNode->SetIndex(); 
     FullNode::mFullNodes.push_back(newNode); 
-    //dbprintf(5, "Created an initial interior node %d as copy of shared terminal node %d\n", newNode->GetIndex(), sharedNode->GetIndex()); 
-  
+
     /*
-      Find a terminal segment that has the old shared node as an endpoint. 
+      Find the terminal segment that has the shared node as an endpoint. 
       For loops, this would be both, so just work on the first one here.  
-      Replace the old shared node as its endpoint using our new interior node. 
+      Use our new interior node as its endpoint, replacing the shared node. 
     */ 
     int sharedSegmentNum = mTerminalSegments.size(); 
     while(sharedSegmentNum--) {
       if (mTerminalSegments[sharedSegmentNum]->HasEndpoint(sharedNode)) {
         sharedNode->RemoveNeighbor(mTerminalSegments[sharedSegmentNum]); 
-        sharedNode->RemoveNeighbor(this); 
         mTerminalSegments[sharedSegmentNum]->ReplaceEndpoint(sharedNode, newNode, false);
         newNode->AddNeighbor(mTerminalSegments[sharedSegmentNum]);
-        // dbprintf(5, "Replaced the sharedNode %d as endpoint of terminal segment %d with newNode %d\n", 
-        //        sharedNode->GetIndex(), mTerminalSegments[sharedSegmentNum]->mSegmentID, newNode->GetIndex()); 
+        // dbprintf(5, "ExtendByArm(%d): Replaced the sharedNode %d as endpoint of terminal segment %d with newNode %d\n", 
+        //  mArmID, sharedNode->GetIndex(), mTerminalSegments[sharedSegmentNum]->mSegmentID, newNode->GetIndex()); 
        break; 
       }
     }
     if (sharedSegmentNum == -1) {
-      dbprintf(0, "Error:  could not find terminal segment that has the old shared node as an endpoint.\n");
+      dbprintf(0, "ExtendByASegments(%d): Error:  could not find terminal segment that has the old shared node as an endpoint.\n", mArmID);
       errexit; 
     }
-    FullNode *sourceNonSharedNode = sourceArm->mTerminalNodes[sourceNonSharedNum];
-    // dbprintf(5, "ExtendByArm():  sharedNode = %d, sharedSegment = %d, sourceNonSharedNode = %d\n", sharedNode->GetIndex(),  mTerminalSegments[sharedSegmentNum]->mSegmentID, sourceNonSharedNode->GetIndex()); 
-    // Now iterate over all segments and create duplicate internal nodes and segments.  
-    int btype = GetBurgersType(); 
-    vector<ArmSegment*> sourceSegments = sourceArm->GetSegments(sharedNode); 
-    uint32_t seg = 0; 
-    FullNode *sourceNode = sharedNode; // for iterating through source arm 
+
     ArmSegment *interiorSegment = NULL;
+
+    int btype = GetBurgersType(); 
+    FullNode *sourceNode = sharedNode; // for iterating through source arm 
+    uint32_t seg = 0; 
     while (seg < sourceSegments.size()) {
       sourceNode = sourceSegments[seg]->GetOtherEndpoint(sourceNode);
       
       FullNode *previousNewNode = newNode; 
       if (seg == sourceSegments.size()-1) {
         newNode = sourceNonSharedNode;
-        //dbprintf(5, "ExtendByArm(): Arm segment #%d (last segment): Using source arm's nonshared terminal node %d as newNode.\n", seg, newNode->GetIndex()); 
+        if (!newNode) newNode = sharedNode; // source is a loop
+
+        //dbprintf(5, "ExtendByArm(%d): Arm segment #%d (last segment): Using source arm's nonshared terminal node %d as newNode.\n", mArmID, seg, newNode->GetIndex()); 
       } else {
         newNode = new FullNode(*sourceNode, true); 
         newNode->SetIndex(); 
         FullNode::mFullNodes.push_back(newNode); 
-        //dbprintf(5, "ExtendByArm(): Arm segment #%d: Created newNode %d by copying source node %d.\n", seg, newNode->GetIndex(), sourceNode->GetIndex()); 
+        //dbprintf(5, "ExtendByArm(%d): Arm segment #%d: Created newNode %d by copying source node %d.\n", mArmID, seg, newNode->GetIndex(), sourceNode->GetIndex()); 
       }
-
       interiorSegment = new ArmSegment(*sourceSegments[seg]); 
-      sourceSegments[seg]->SetBurgersType(BURGERS_DECOMPOSED); 
-      //dbprintf(5, "ExtendByArm(): Setting source segment %d as BURGERS_DECOMPOSED.\n", sourceSegments[seg]->mSegmentID); 
+      //dbprintf(5, "ExtendByArm(%d): Setting source segment %d as BURGERS_DECOMPOSED.\n", mArmID, sourceSegments[seg]->mSegmentID); 
       ArmSegment::mExtendedArmSegments.push_back(interiorSegment); 
       //DataSet::mQuickFindArmSegments.insert(interiorSegment); 
       interiorSegment->mParentArm = this; 
@@ -1112,35 +1078,92 @@ namespace paraDIS {
       previousNewNode->AddNeighbor(interiorSegment); 
       newNode->AddNeighbor(interiorSegment); 
       ++mNumSegments; 
-      //dbprintf(5, "ExtendByArm(): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str()); 
-      //dbprintf(5, "ExtendByArm(): Arm segment #%d: Added newNode: %s\n", seg, newNode->Stringify(0).c_str()); 
+      //dbprintf(5, "ExtendByArm(%d): Arm segment #%d: created segment %d by copying source segment %d, resulting in: %s\n", mArmID, seg, interiorSegment->mSegmentID, sourceSegments[seg]->mSegmentID, interiorSegment->Stringify(0).c_str()); 
+      //dbprintf(5, "ExtendByArm(%d): Arm segment #%d: Added newNode: %s\n", mArmID, seg, newNode->Stringify(0).c_str()); 
       
       ++ seg; 
+  
     }
-    //newNode->ComputeNodeType(); 
-    //dbprintf(5, "ExtendByArm: replacing terminal segment %d (index %d) with final interiorSegment (%d)\n", sharedSegmentNum, mTerminalSegments[sharedSegmentNum]->mSegmentID, interiorSegment->mSegmentID); 
     mTerminalSegments[sharedSegmentNum] = interiorSegment; 
     newNode->AddNeighbor(this); 
 
-    //dbprintf(5, "ExtendByArm: replacing terminal node %d (index %d) with final newNode (%d), which is source arm's other terminal node. \n", sharedNodeNum, mTerminalNodes[sharedNodeNum]->GetIndex(), newNode->GetIndex()); 
     mTerminalNodes[sharedNodeNum] = newNode;
-        
+
+    dbprintf(5, "\nExtendBySegments(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str()); 
+    return; 
+  }
+
+  //===========================================================================
+  void Arm::ExtendByArm(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, FullNode *sharedNode, int numDuplicates) {
+    // identify the shared terminal node in the neighbor arm:     
+    dbprintf(5, "\n======================================\n   ExtendByArm(): Extending arm: %s\n", Stringify(0, false).c_str()); 
+
+    bool isLoop = false;  
+    ArmSegment * otherSharedSegment = NULL; 
+    if (mTerminalNodes.size() == 1) {
+      isLoop = true; 
+      if (mTerminalSegments.size() == 1) {
+        dbprintf(4, "ExtendByArm(%d): Looped arm with only one terminal segment.  We need to duplicate our terminal segment so we can \"double extend\" the arm.\n", mArmID); 
+        // we need to find our other terminal segment so we can "double extend"
+        vector<ArmSegment *> segments = GetSegments(sharedNode); 
+        otherSharedSegment = segments[segments.size()-1]; 
+        if (otherSharedSegment == mTerminalSegments[0]) {
+          //dbprintf(5, "ExtendByArm(%d): Changing otherSharedSegment to  mTerminalSegments[0]\n", mArmID); 
+          otherSharedSegment = segments[0]; 
+        }
+        if (!otherSharedSegment->HasEndpoint(sharedNode)) {
+          dbprintf(0, "ExtendByArm(%d): Error:  found a looped arm where one of the terminal segments does not have the shared node as an endpoint.\n", mArmID);
+          errexit; 
+        }
+        mTerminalSegments.push_back(otherSharedSegment); 
+        //dbprintf(5, "ExtendByArm(%d): After pushing back otherSharedSegment, we look like this: %s\n", mArmID, Stringify(0, mArmID==130704).c_str()); 
+      }
+      dbprintf(4, "ExtendByArm(%d): We are extending a looped arm, so have to duplicate our terminal node for the algorithm to proceed correctly.\n", mArmID);
+      mTerminalNodes.push_back(sharedNode); 
+    }
+     
+    if (mNumSegments == 1 && mTerminalSegments.size() == 1) {
+      dbprintf(5, "ExtendByArm(%d): Single segment arm:  duplicate our terminal segment.\n", mArmID); 
+      mTerminalSegments.push_back(mTerminalSegments[0]); 
+    }
+
+    if (mTerminalSegments.size() != 2 || mTerminalNodes.size() != 2) {
+      dbprintf(0, "ExtendByArm(%d): Error: arm with a single terminal segment should not be possible at this point.\n", mArmID);  
+      errexit; 
+    }
+
+    bool sourceIsLoop = (sourceArm->mTerminalNodes.size() == 1);
+    if (!isLoop && !sourceIsLoop) {
+      dbprintf(5, "ExtendByArm(%d): CASE 1: no loops: extend by source once.\n", mArmID); 
+      ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates); 
+    } 
+    else if (isLoop && !sourceIsLoop) {
+      dbprintf(5, "ExtendByArm(%d): CASE 2: Extending a loop by a non-loop: extend by source twice.\n", mArmID); 
+      ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates); 
+      ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates); 
+    }      
+    else if (!isLoop && sourceIsLoop) {
+      dbprintf(5, "ExtendByArm(%d): CASE 3: Extending a non-loop by a loop: extend by self once, then by source once.\n", mArmID); 
+      FullNode *otherNode = mTerminalNodes[0]; 
+      if (otherNode == sharedNode) otherNode = mTerminalNodes[1]; 
+      vector<ArmSegment*> mysegments = GetSegments(sharedNode); 
+      ExtendBySegments(this, mysegments, otherNode, numDuplicates); 
+
+      ExtendBySegments(sourceArm, sourceSegments, sharedNode, numDuplicates); 
+    }      
+    else { 
+      dbprintf(5, "ExtendByArm(%d): CASE 4: ERROR: Extending a loop by a loopI do not think this should ever happen.\n", mArmID); 
+      errexit; 
+    }
+
+    sharedNode->RemoveNeighbor(this); 
+
     if (mTerminalNodes.size() == 2 && mTerminalNodes[0] == mTerminalNodes[1]) {
-      // dbprintf(5, "ExtendByArm(): After extending the arm it now forms a loop.  Consolidating terminal nodes.\n"); 
+      dbprintf(5, "ExtendByArm(%d): After extending the arm it now forms a loop.  Consolidating terminal nodes.\n", mArmID); 
       mTerminalNodes.erase(++mTerminalNodes.begin(), mTerminalNodes.end()); 
     }
     
-    {
-      // this is intensive, for debugging, take this out later:
-      vector<ArmSegment *>segments = GetSegments(); 
-      if (segments.size() != mNumSegments) {
-        dbprintf(0, "ExtendByArm(): Error:  segments.size() %d  != mNumSegments %d\n", 
-                 segments.size(), mNumSegments); 
-        errexit; 
-      }
-    }
-    
-    dbprintf(5, "\nExtendByArm(): After extension the arm looks like this: %s", Stringify(0,false).c_str()); 
+    dbprintf(5, "\nExtendByArm(%d): After extension the arm looks like this: %s", mArmID, Stringify(0,false).c_str()); 
     return; 
   }
 
@@ -1214,6 +1237,8 @@ namespace paraDIS {
        Formerly terminal nodes will become internal to multiple arms.  
     */ 
     // copy our neighbor vector before it changes... 
+    dbprintf(0, "WARNING: Duplicate numbers are being incorrectly computed.\n"); 
+    
     vector <Arm*> neighborArms = sharedNode->mNeighborArms; 
     int neighbornum = neighborArms.size(), numDuplicates = 0; 
     while (neighbornum--) {
@@ -1224,12 +1249,13 @@ namespace paraDIS {
     }
     double decomposedLength = 0; 
     neighbornum = neighborArms.size();
-    
+    vector<ArmSegment*> sourceSegments = this->GetSegments(sharedNode); 
+
     while (neighbornum--) {
       Arm *neighborArm = neighborArms[neighbornum]; 
       if (neighborArm != this) { 
-        dbprintf(5, "Arm::Decompose(arm %d): Adding self to arm %d\n", mArmID, neighborArm->mArmID);
-        neighborArm->ExtendByArm(this, sharedNode, numDuplicates);
+        dbprintf(5, "Arm::Decompose(arm %d): Adding self to arm %d.\n", mArmID, neighborArm->mArmID, Stringify(0).c_str());
+        neighborArm->ExtendByArm(this, sourceSegments, sharedNode, numDuplicates);
         decomposedLength += mArmLength; 
         extendedArmIDs.push_back(neighborArm->mArmID); 
        }
@@ -1238,7 +1264,13 @@ namespace paraDIS {
       decomposedLength -= mArmLength; // because we delete ourself once
     }
     mDecomposedLength += decomposedLength; 
-     /*
+    vector<ArmSegment*> ::iterator segpos =  sourceSegments.begin(), endpos = sourceSegments.end(); 
+    while (segpos != endpos) {
+      (*segpos)->SetBurgersType(BURGERS_DECOMPOSED); 
+      ++segpos; 
+    }
+
+   /*
       Now remove our terminal segments from our terminal nodes' neighbor lists. 
     */     
     int termNodeNum = mTerminalNodes.size();     
@@ -1254,7 +1286,7 @@ namespace paraDIS {
     mArmLength = 0; 
     mNumSegments = 0; 
     mArmType = ARM_EMPTY;
-    dbprintf(4, "Arm decomposition complete.\n"); 
+    dbprintf(4, "Arm::Decompose(arm %d): Arm decomposition complete.\n", mArmID); 
     return true;    
   }
   
@@ -1427,9 +1459,8 @@ namespace paraDIS {
       
       if (foundseed) {
         dbprintf(4, "FindEndpoint(metaarm %d): We found the seed after all other neighbors are exhausted.  Thus we are in a looped arm.\n", mMetaArmID); 
-        AddTerminalArm(seed); 
-        AddTerminalNode(node); 
         AddArm(candidate); 
+        AddTerminalNode(node); 
         mMetaArmType = METAARM_LOOP_111; 
         return true;
       }
@@ -1516,7 +1547,7 @@ namespace paraDIS {
     dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Checking terminal nodes of seed arm.\n", mMetaArmID, seed->mArmID); 
     uint32_t nodenum = 0; // seed->mTerminalNodes.size(); 
     bool seedIsTerminal = false; 
-    while (nodenum <  seed->mTerminalNodes.size()) {
+    while (nodenum <  seed->mTerminalNodes.size() && mMetaArmType != METAARM_LOOP_111) {
       FullNode * node = seed->mTerminalNodes[nodenum]; 
       if (node->GetNodeType() < 0) {
         dbprintf(4, "FindEndpoints(metaarm %d) (seed %d): Terminal node %d is a monster node. Add seed as terminal arm and node as terminal node.\n", mMetaArmID, seed->mArmID, nodenum); 
@@ -1552,8 +1583,10 @@ namespace paraDIS {
           }
         }
       }
-        
-      CapturePath(nodenum); // Arms are collected in reverse, so reverse that for second node 
+      if (mMetaArmType == METAARM_LOOP_111) {
+        AddTerminalArm(seed); 
+      }
+      CapturePath(nodenum); // Arms are collected in reverse, so reverse that for last node 
       ++nodenum; 
     }
     if (mTerminalNodes.size() == 1 || mTerminalArms.size() == 1) {
@@ -1605,9 +1638,29 @@ namespace paraDIS {
     if (mMetaArmType == METAARM_LOOP_111 || mMetaArmType == METAARM_LOOP_HIGH_ENERGY) {
       dbprintf(5, "MetaArm::GetNodes(MetaArm %d): Get all loop node locations for all member arms.\n", mMetaArmID); 
       
- 
+      vector<Arm*>::iterator armpos = mAllArms.begin(), endpos = mAllArms.end(); 
+      FullNode *lastNode = mTerminalNodes[0]; 
+      
+      while (armpos != endpos) {
+        Arm *currentArm = *armpos; 
+        vector<FullNode*> newnodes = currentArm->GetNodes(lastNode); 
+        dbprintf(5, "MetaArm::GetNodes(MetaArm %d): Got %d nodes from new armID %d\n", mMetaArmID, newnodes.size(), currentArm->mArmID); 
+        if (!newnodes.size()) {
+          dbprintf(5, "MetaArm::GetNodes(MetaArm %d): ERROR! Failed to get nodes from arm!\n", mMetaArmID); 
+          return nodes; 
+        }
+        if (nodes.size() && *(nodes.end()-1) == newnodes[0]) {
+          dbprintf(5, "MetaArm::GetNodes(MetaArm %d): deleting duplicate end node %s.\n", mMetaArmID, (*(nodes.end()-1))->Stringify(0).c_str()); 
+          nodes.erase(nodes.end()-1); 
+        } 
+        nodes.insert(nodes.end(), newnodes.begin(), newnodes.end());  
+        lastNode = *(nodes.end()-1);
+        dbprintf(5, "MetaArm::GetNodes(MetaArm %d): lastNode is %d\n", mMetaArmID, lastNode->GetIndex());         
+        ++armpos; 
+      }
+
       /* start with the first arm */ 
-      dbprintf(5, "MetaArm::GetNodes(MetaArm %d): Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
+      /*  dbprintf(5, "MetaArm::GetNodes(MetaArm %d): Starting by adding nodes from arm %d\n", mMetaArmID, mTerminalArms[0]->mArmID); 
       
       nodes = mTerminalArms[0]->GetNodes(); 
       
@@ -1675,7 +1728,7 @@ namespace paraDIS {
           currentArm = NULL;
         }
       } 
-
+      */ 
 
       //#define SANITY_CHECK 0
 #if (SANITY_CHECK==1)
@@ -3232,10 +3285,10 @@ namespace paraDIS {
     fprintf(armfile, "\n\n"); 
     fprintf(armfile, "METAARM SUMMARY STATISTICS \n"); 
     fprintf(armfile, "=========================================================================\n"); 
-    fprintf(armfile, "%9s%20s%20s%20s\n", "TypeID", "MetaArmType", "NumMetaArms", "MetaArmLengths"); 
+    fprintf(armfile, "%9s%28s%20s%20s\n", "TypeID", "MetaArmType", "NumMetaArms", "MetaArmLengths"); 
     int i=0; 
     while (i<4) {
-      fprintf(armfile, "%9d%20s%20d%20.3f\n", 
+      fprintf(armfile, "%9d%28s%20d%20.3f\n", 
               i, 
               MetaArmTypeNames(i).c_str(), 
               metaarmcounts[i],
