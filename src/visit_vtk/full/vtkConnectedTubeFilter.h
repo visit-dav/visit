@@ -102,17 +102,19 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
     //  Purpose:
     //    Encapsulates a single doubly connected point sequence.
     //
+    //    Jean Favre, Tue May  7 16:38:37 CEST 2013
+    //    Used vtkIdType where needed
     // ************************************************************************
     struct PointSequence
     {
         int length;
-        int *index;
-        int *cellindex;
+        vtkIdType *index;
+        vtkIdType *cellindex;
       public:
         PointSequence();
         ~PointSequence();
         void Init(int maxlen);
-        void Add(int i, int ci);
+        void Add(vtkIdType i, vtkIdType ci);
     };
 
     // ************************************************************************
@@ -125,20 +127,22 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
     //    Rich Cook and Hank Childs, Thu Oct  2 16:31:45 PDT 2008
     //    Added data member to support tubing over loops.
     //
+    //    Jean Favre, Tue May  7 16:38:37 CEST 2013
+    //    Used vtkIdType where needed
     // ************************************************************************
     class PointSequenceList
     {
       private:
         // connectivity data
         int          len;
-        int         *numneighbors;
-        int         *connectivity[2];
-        int         *cellindex;
+        vtkIdType         *numneighbors;
+        vtkIdType         *connectivity[2];
+        vtkIdType         *cellindex;
         vtkPoints   *pts;
 
         // traversal variables
         bool  *visited;
-        int    index;
+        vtkIdType    index;
         bool   lookforloops;
       public:
         PointSequenceList();
