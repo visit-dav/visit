@@ -696,7 +696,7 @@ namespace paraDIS {
       } else {
         vector<Arm*>::iterator pos = find(mNeighborArms.begin(), mNeighborArms.end(), neighbor); 
         if (pos == mNeighborArms.end()) {
-          dbprintf(5, "Error:  no matching neighbor arm found to remove!\n"); 
+          dbprintf(5, "RemoveNeighbor() Error:  no matching neighbor arm found to remove!\n"); 
 
 #ifdef DEBUG
 // HOOKS_IGNORE
@@ -1235,9 +1235,14 @@ namespace paraDIS {
     }
     
     /*!
+      A helper for ExtendByArm() function.  
+    */ 
+    void ExtendBySegments(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, FullNode *sharedNode, int numDuplicates);
+
+    /*!
       A helper for Decompose() function.  
     */ 
-    void ExtendByArm(Arm *sourceArm, FullNode *sharedNode, int numDuplicates); 
+    void ExtendByArm(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, FullNode *sharedNode, int numDuplicates); 
     
     /*!
       Merge with neighbor arms. 
@@ -1554,7 +1559,7 @@ namespace paraDIS {
     static rclib::Point<float> mWrappedNode; // Used in GetNodeLocations -- used to indicate a gap in the point list from a MetaArm where a segment is skipped due to wrapping.  
     bool mCombo; 
     bool mFound111; // if we see a 111 on our search
-    vector<Arm*> mFoundArms, mAllArms, mDeadEnds; // only use if debugging is turned on.  
+    vector<Arm*> mFoundArms, mAllArms, mDeadEnds; 
   }; 
 
   //=============================================
