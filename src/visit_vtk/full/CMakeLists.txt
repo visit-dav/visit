@@ -122,10 +122,9 @@ ENDIF(HAVE_BILIB)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
-IF (VTK_MAJOR_VERSION STREQUAL "6")
 TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff)
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkGraphics vtkImaging ${VTK_TIFF_LIBRARIES})
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
+# Add vtk definitions
+ADD_TARGET_DEFINITIONS(visit_vtk ${VTK_DEFINITIONS})
+
 
 VISIT_INSTALL_TARGETS(visit_vtk)

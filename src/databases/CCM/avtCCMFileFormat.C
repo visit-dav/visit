@@ -844,7 +844,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
 
         // Read the cell connectivity
         CellInfoVector cellInfo;
-        int minFaceSize = VTK_LARGE_INTEGER;
+        int minFaceSize = VTK_INT_MAX;
         int maxFaceSize = -1;
         int t1 = visitTimer->StartTimer();
         ReadCellInfo(dom, meshname,
@@ -1897,17 +1897,17 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
         for (j = 0; j < nFaces; ++j)
         {
             nPts += ci.faces[j].nodes.size();
-            fbounds.push_back(VTK_LARGE_FLOAT);
-            fbounds.push_back(-VTK_LARGE_FLOAT);
-            fbounds.push_back(VTK_LARGE_FLOAT);
-            fbounds.push_back(-VTK_LARGE_FLOAT);
-            fbounds.push_back(VTK_LARGE_FLOAT);
-            fbounds.push_back(-VTK_LARGE_FLOAT);
+            fbounds.push_back(VTK_FLOAT_MAX);
+            fbounds.push_back(VTK_FLOAT_MIN);
+            fbounds.push_back(VTK_FLOAT_MAX);
+            fbounds.push_back(VTK_FLOAT_MIN);
+            fbounds.push_back(VTK_FLOAT_MAX);
+            fbounds.push_back(VTK_FLOAT_MIN);
         }
         double *pt;
-        double cbounds[6] = {VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT,
-                             VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT,
-                             VTK_LARGE_FLOAT, -VTK_LARGE_FLOAT};
+        double cbounds[6] = {VTK_FLOAT_MAX, VTK_FLOAT_MIN,
+                             VTK_FLOAT_MAX, VTK_FLOAT_MIN,
+                             VTK_FLOAT_MAX, VTK_FLOAT_MIN};
 
         int cnt = 0;
         for (j = 0; j < nFaces; ++j)

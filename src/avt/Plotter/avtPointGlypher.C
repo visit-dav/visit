@@ -265,13 +265,16 @@ avtPointGlypher::SetUpGlyphs(int nGlyphs)
 //    Brad Whitlock, Thu Aug 25 10:24:49 PDT 2005
 //    Added support for sphere points.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertGlyphs.
+//
 // ****************************************************************************
 
-vtkDataSet *
+vtkAlgorithmOutput *
 avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
 {
     if (glyphType == Point || glyphType == Sphere) // Point, Sphere
-        return ds;
+        return NULL;
 
     if (whichGlyph < 0 || whichGlyph >= nGlyphFilters)
     {
@@ -293,21 +296,17 @@ avtPointGlypher::InsertGlyphs(vtkDataSet *ds, int whichGlyph, int spatDim)
         normalsFilter[whichGlyph] = vtkVisItPolyDataNormals::New();
     }
 
-#if (VTK_MAJOR_VERSION == 5)
-    glyphFilter[whichGlyph]->SetInput(ds);
-#else
     glyphFilter[whichGlyph]->SetInputData(ds);
-#endif
     glyphFilter[whichGlyph]->SetVectorModeToVectorRotationOff();
 
     if (spatialDim == 3)
     {
         normalsFilter[whichGlyph]->SetInputConnection(glyphFilter[whichGlyph]->GetOutputPort());
-        return normalsFilter[whichGlyph]->GetOutput();
+        return normalsFilter[whichGlyph]->GetOutputPort();
     }
     else
     {
-        return glyphFilter[whichGlyph]->GetOutput();
+        return glyphFilter[whichGlyph]->GetOutputPort();
     }
 }
 

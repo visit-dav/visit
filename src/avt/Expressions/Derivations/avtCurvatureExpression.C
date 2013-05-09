@@ -132,11 +132,7 @@ avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkCurvatures *curvatures = vtkCurvatures::New();
     curvatures->SetCurvatureType((doGauss ? VTK_CURVATURE_GAUSS 
                                           : VTK_CURVATURE_MEAN));
-#if (VTK_MAJOR_VERSION == 5)
-    curvatures->SetInput(pd);
-#else
     curvatures->SetInputData(pd);
-#endif
     curvatures->Update();
 
     vtkPolyData *out = curvatures->GetOutput();

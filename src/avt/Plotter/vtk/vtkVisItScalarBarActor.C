@@ -165,11 +165,7 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->ColorBar = vtkPolyData::New();
   this->ColorBarMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->ColorBarMapper->SetInput(this->ColorBar);
-#else
   this->ColorBarMapper->SetInputData(this->ColorBar);
-#endif
   this->ColorBarActor = vtkActor2D::New();
   this->ColorBarActor->SetMapper(this->ColorBarMapper);
   this->ColorBarActor->GetPositionCoordinate()->
@@ -177,11 +173,7 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->Tics = vtkPolyData::New();
   this->TicsMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->TicsMapper->SetInput(this->Tics);
-#else
   this->TicsMapper->SetInputData(this->Tics);
-#endif
   this->TicsActor = vtkActor2D::New();
   this->TicsActor->SetMapper(this->TicsMapper);
   this->TicsActor->GetPositionCoordinate()->
@@ -189,11 +181,7 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
 
   this->BoundingBox = vtkPolyData::New();
   this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->BoundingBoxMapper->SetInput(this->BoundingBox);
-#else
   this->BoundingBoxMapper->SetInputData(this->BoundingBox);
-#endif
   this->BoundingBoxActor = vtkActor2D::New();
   this->BoundingBoxActor->SetMapper(this->BoundingBoxMapper);
   this->BoundingBoxActor->GetPositionCoordinate()->
@@ -569,6 +557,10 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
 //    Switch to vtkTextActor.
 //
+//    Kathleen Biagas, Tue May  7 16:11:52 PDT 2013
+//    VTK's text renderer now renders empty strings as 'blobs', so send a space
+//    instead of an empty string to get around this for now.
+//
 // ****************************************************************************
 
 void 
@@ -712,6 +704,14 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
           }
         else // not using supplied labels
           sprintf(labelString, "%s", this->definedLabels[idx].c_str());
+
+        // Sending an empty string or empty input to the text renderer yields
+        // blobs, so send a space instead.
+        if (labelString[0] == '\0')
+          {
+          labelString[0] = ' ';
+          labelString[1] = '\0';
+          }
         this->LabelActors[i]->SetInput(labelString);
         }
         break;
@@ -745,6 +745,13 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
           else
             {
             sprintf(labelString, "%s", "");
+            }
+          // Sending an empty string or empty input to the text renderer yields
+          // blobs, so send a space instead.
+          if (labelString[0] == '\0')
+            {
+            labelString[0] = ' ';
+            labelString[1] = '\0';
             }
           this->LabelActors[i]->SetInput(labelString);
           }
@@ -795,6 +802,13 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             }
           calculatedValues.push_back(val);
           sprintf(labelString, this->LabelFormat, val);
+          // Sending an empty string or empty input to the text renderer yields
+          // blobs, so send a space instead.
+          if (labelString[0] == '\0')
+            {
+            labelString[0] = ' ';
+            labelString[1] = '\0';
+            }
           this->LabelActors[i]->SetInput(labelString);
           }
         this->NumberOfLabelsBuilt = nLabels;

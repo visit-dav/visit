@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="CartographicProjection" type="operator" label="Cartographic Projection" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="CartographicProjection.xpm" category="Transforms">
     <LIBS components="ESer">
-      vtkGeovis
+      vtkGeovisCore
     </LIBS>
     <LIBS components="EPar">
-      vtkGeovis
+      vtkGeovisCore
     </LIBS>
     <Attribute name="CartographicProjectionAttributes" purpose="" persistent="true" keyframe="false" exportAPI="" exportInclude="">
       <Enum name="ProjectionID">

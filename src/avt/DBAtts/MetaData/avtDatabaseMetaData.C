@@ -6167,14 +6167,18 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
             out << "All Times are ***NOT*** Accurate" << endl;
         if (shouldPrintTimes)
         {
-            out << "Times: ";
+            out << "Times: " << endl;
+            Indent(out, indent+1);
             for (size_t i = 0; i < times.size(); ++i)
             {
                 out << times[i];
                 if(i < times.size() - 1)
                     out << ", ";
-                if((i+1)%20 == 0)
-                    out << endl << "       ";
+                if((i+1)%5 == 0)
+                {
+                    out << endl;
+                    Indent(out, indent+1);
+                }
             }
         }
         else
@@ -6195,14 +6199,18 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
             out << "All Cycles are Accurate" << endl;
         else
             out << "All Cycles are ***NOT*** Accurate" << endl;
-        out << "Cycles: ";
+        out << "Cycles: " << endl;
+        Indent(out, indent+1);
         for (size_t i = 0; i < cycles.size(); ++i)
         {
             out << cycles[i];
             if(i < cycles.size() - 1)
                 out << ", ";
-            if((i+1)%20 == 0)
-                out << endl << "        ";
+            if((i+1)%10 == 0)
+            {
+                out << endl;
+                Indent(out, indent+1);
+            }
         }
         out << endl;
     }

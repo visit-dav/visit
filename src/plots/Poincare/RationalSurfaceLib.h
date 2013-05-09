@@ -134,7 +134,7 @@ double MinRationalDistance( avtPoincareIC *ic,
 int FindMinimizationIndex( avtPoincareIC* ic);
 double FindMinimizationDistance( avtPoincareIC* ic);
 
-avtPoincareIC *PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtPoincareIC *x2, avtPoincareIC *x3, std::vector<int> &ids_to_delete); 
+void PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtPoincareIC *x2, avtPoincareIC *x3, std::vector<int> &ids_to_delete); 
 void SwapWithSeed(avtPoincareIC* swap, avtPoincareIC *poincare_ic);
 std::string VectorToString(avtVector &vec);
 #endif

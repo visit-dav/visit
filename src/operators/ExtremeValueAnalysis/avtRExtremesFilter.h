@@ -55,7 +55,7 @@ class vtkDoubleArray;
 class vtkIntArray;
 
 // ****************************************************************************
-// Class:  avtRPOTFilter
+// Class:  avtRExtremesFilter
 //
 //
 // Programmer:  Dave Pugmire

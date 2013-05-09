@@ -3276,7 +3276,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
         pd->SetLines(cells);
         scalars->SetName("colorVar");
         pd->GetPointData()->SetScalars(scalars);
-        append->AddInput(pd);
+        append->AddInputData(pd);
         
         points->Delete();
         cells->Delete();
@@ -3319,7 +3319,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                     
                     vtkPolyData *ball = CreateSphere(color_value, pt);
                     
-                    append->AddInput(ball);
+                    append->AddInputData(ball);
                     ball->Delete();
                 }
             }
@@ -3372,7 +3372,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                 pd->SetVerts(cells);
                 scalars->SetName("colorVar");
                 pd->GetPointData()->SetScalars(scalars);
-                append->AddInput(pd);
+                append->AddInputData(pd);
     
                 points->Delete();
                 cells->Delete();
@@ -3384,7 +3384,6 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
     append->Update();
     vtkPolyData *outPD = append->GetOutput();
     outPD->Register(NULL);
-    outPD->SetSource(NULL);
     append->Delete();
     
     dt->Merge( new avtDataTree(outPD, 0) );
@@ -3520,7 +3519,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
               pd->SetLines(cells);
               scalars->SetName("colorVar");
               pd->GetPointData()->SetScalars(scalars);
-              append->AddInput(pd);
+              append->AddInputData(pd);
             
               points->Delete();
               cells->Delete();
@@ -3615,7 +3614,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
               pd->SetLines(cells);
               scalars->SetName("colorVar");
               pd->GetPointData()->SetScalars(scalars);
-              append->AddInput(pd);
+              append->AddInputData(pd);
             
               points->Delete();
               cells->Delete();
@@ -3657,7 +3656,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                     
                     vtkPolyData *ball = CreateSphere(color_value, pt);
 
-                    append->AddInput(ball);
+                    append->AddInputData(ball);
                     ball->Delete();
                 }
             }
@@ -3712,7 +3711,7 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                 pd->SetVerts(cells);
                 scalars->SetName("colorVar");
                 pd->GetPointData()->SetScalars(scalars);
-                append->AddInput(pd);
+                append->AddInputData(pd);
     
                 points->Delete();
                 cells->Delete();
@@ -3724,7 +3723,6 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
     append->Update();
     vtkPolyData *outPD = append->GetOutput();
     outPD->Register(NULL);
-    outPD->SetSource(NULL);
     append->Delete();
 
     
@@ -4052,7 +4050,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
         pd->SetLines(cells);
         scalars->SetName("colorVar");
         pd->GetPointData()->SetScalars(scalars);
-        append->AddInput(pd);
+        append->AddInputData(pd);
         
         points->Delete();
         cells->Delete();
@@ -4087,7 +4085,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
         colorMax = color_value;
       
       vtkPolyData *ball = CreateSphere(color_value, pt);
-      append->AddInput(ball);
+      append->AddInputData(ball);
       ball->Delete();
     }
   }
@@ -4136,7 +4134,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
     pd->SetVerts(cells);
     scalars->SetName("colorVar");
     pd->GetPointData()->SetScalars(scalars);
-    append->AddInput(pd);
+    append->AddInputData(pd);
     
     points->Delete();
     cells->Delete();
@@ -4146,7 +4144,6 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
   append->Update();
   vtkPolyData *outPD = append->GetOutput();
   outPD->Register(NULL);
-  outPD->SetSource(NULL);
   append->Delete();
   
   dt->Merge( new avtDataTree(outPD, 0) );
@@ -4200,7 +4197,7 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
     pd->SetVerts(cells);
     scalars->SetName("colorVar");
     pd->GetPointData()->SetScalars(scalars);
-    append->AddInput(pd);
+    append->AddInputData(pd);
     
     points->Delete();
     cells->Delete();
@@ -4210,7 +4207,6 @@ avtPoincareFilter::drawPoints( avtDataTree *dt,
   append->Update();
   vtkPolyData *outPD = append->GetOutput();
   outPD->Register(NULL);
-  outPD->SetSource(NULL);
   append->Delete();
   
   dt->Merge( new avtDataTree(outPD, 0) );

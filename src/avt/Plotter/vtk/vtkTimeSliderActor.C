@@ -485,11 +485,7 @@ vtkTimeSliderActor::CreateSlider(vtkViewport *viewport)
     // Create the actors, etc.
     //
     this->SliderMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-    this->SliderMapper->SetInput(this->SliderPolyData);
-#else
     this->SliderMapper->SetInputData(this->SliderPolyData);
-#endif
 #ifndef CREATE_POLYDATA_IN_SCREEN_SPACE
     // If we're not creating the polydata in screen space then we're defining it
     // once in viewport coordinates. Set the transform coordinate so the mapper

@@ -52,7 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ****************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002 
+//    Kathleen Bonnell, Wed Mar  6 17:10:03 PST 2002
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 //
 // ****************************************************************************

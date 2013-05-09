@@ -489,7 +489,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     if (outDS == newDS)
     {
-        ManageMemory(outDS);
+        outDS->Register(NULL);
     }
     newDS->Delete();
 

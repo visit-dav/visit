@@ -228,11 +228,7 @@ avtFeatureEdgesFilter::ExecuteData(vtkDataSet *inDS, int, string)
         // Set up and apply the filter
         //
         vtkVisItFeatureEdges *featureEdgesFilter = vtkVisItFeatureEdges::New();
-#if (VTK_MAJOR_VERSION == 5)
-        featureEdgesFilter->SetInput((vtkPolyData*)inDS);
-#else
         featureEdgesFilter->SetInputData((vtkPolyData*)inDS);
-#endif
         featureEdgesFilter->BoundaryEdgesOn();
         if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
         {

@@ -143,7 +143,6 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
                             vtkInformationVector *);
     virtual int FillInputPortInformation(int port, vtkInformation *info);
 
-    void GeneralExecute(vtkDataSet *, vtkUnstructuredGrid *);
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
 
   private:

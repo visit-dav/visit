@@ -648,11 +648,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         new_in_ds->CopyStructure(in_ds);
         new_in_ds->GetCellData()->AddArray(cellVar);
         vtkVisItCellDataToPointData *cd2pd = vtkVisItCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(new_in_ds);
-#else
         cd2pd->SetInputData(new_in_ds);
-#endif
         cd2pd->GetExecutive()->SetOutputData(0, toBeContoured);
         cd2pd->Update();
         for (int i = 0 ; i < in_ds->GetPointData()->GetNumberOfArrays() ; i++)
@@ -719,11 +715,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     // Do the actual contouring.  Split each isolevel into its own dataset.
     //
     vtkDataSet **out_ds = new vtkDataSet*[isoValues.size()];
-#if (VTK_MAJOR_VERSION == 5)
-    cf->SetInput(toBeContoured);
-#else
     cf->SetInputData(toBeContoured);
-#endif
     vtkPolyData *output = cf->GetOutput();
     for (size_t i = 0 ; i < isoValues.size() ; i++)
     {
@@ -1180,11 +1172,7 @@ avtContourFilter::ReleaseData(void)
 {
     avtSIMODataTreeIterator::ReleaseData();
 
-#if (VTK_MAJOR_VERSION == 5)
-    cf->SetInput(NULL);
-#else
     cf->SetInputData(NULL);
-#endif
     vtkPolyData *p = vtkPolyData::New();
     cf->SetOutput(p);
     p->Delete();

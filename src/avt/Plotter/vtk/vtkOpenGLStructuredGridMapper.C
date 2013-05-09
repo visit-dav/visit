@@ -147,12 +147,8 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
   else
     {
     this->InvokeEvent(vtkCommand::StartEvent,NULL);
-#if (VTK_MAJOR_VERSION == 5)
-    input->Update();
-#else
     if (!this->Static)
       this->GetInputAlgorithm()->Update();
-#endif
     this->InvokeEvent(vtkCommand::EndEvent,NULL);
 
     numPts = input->GetNumberOfPoints();

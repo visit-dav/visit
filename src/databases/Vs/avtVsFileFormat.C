@@ -1907,9 +1907,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                         << "Allocation succeeded." << std::endl;
     }
     // JRC: what goes here to detect failure to allocate?
-    catch (vtkstd::bad_alloc) {
+    catch (std::bad_alloc) {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Caught vtkstd::bad_alloc exception. "
+                        << "Caught std::bad_alloc exception. "
                         << "Unable to allocate space for cells.  Cleaning up."
                         << "Returning NULL." << std::endl;
       delete [] vertices;
@@ -2348,9 +2348,9 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
         << "Allocating " << gdims[0]
         << " vertices.  If old VTK and this fails, it will just abort." << std::endl;
       meshPtr->Allocate(gdims[0]);
-    } catch (vtkstd::bad_alloc) {
+    } catch (std::bad_alloc) {
       VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
-                        << "Caught vtkstd::bad_alloc. Unable to allocate cells."
+                        << "Caught std::bad_alloc. Unable to allocate cells."
                         << "Returning NULL." << std::endl;
       meshPtr->Delete();
       return NULL;

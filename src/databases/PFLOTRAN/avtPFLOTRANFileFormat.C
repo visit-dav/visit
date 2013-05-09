@@ -45,14 +45,16 @@
 #include <DebugStream.h>
 #include <snprintf.h>
 
+#include <vtkCellData.h>
+#include <vtkCellType.h>
 #include <vtkDoubleArray.h>
+#include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkIdList.h>
-#include <vtkCellData.h>
-#include <vtkIntArray.h>
-#include <vtkCellType.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDatabase.h>
@@ -623,7 +625,8 @@ avtPFLOTRANFileFormat::AddGhostCellInfo(vtkDataSet *ds)
     ds->GetFieldData()->AddArray(baseIndex);
     ds->GetFieldData()->CopyFieldOn("base_index");    
 
-    ds->SetUpdateGhostLevel(0);
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0); 
 }
 
 

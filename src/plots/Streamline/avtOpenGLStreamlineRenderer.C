@@ -666,7 +666,7 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 
     //Easy case, make tubes and we're done.
     if (!atts.GetDisplayBeginFlag() && !atts.GetDisplayEndFlag())
-        tube->SetInput(data);
+        tube->SetInputData(data);
     else
     {
         // If we need to trim either end, create a new trimmed polyline
@@ -685,13 +685,13 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
 
             if (pd != NULL)
             {
-                append->AddInput(pd);
+                append->AddInputData(pd);
                 pd->Delete();
             }
         }
-        
-        append->Update();
-        tube->SetInput(append->GetOutput());
+        //VTK-6.0 FIX ME -- ksb, is this update necessary?
+        //append->Update();
+        tube->SetInputConnection(append->GetOutputPort());
         append->Delete();
     }
     
@@ -702,7 +702,7 @@ avtOpenGLStreamlineRenderer::DrawAsTubes(vtkPolyData *data)
         data->GetPointData()->SetActiveScalars(activeScalars->GetName());
 
     if (appendForTranspPolys)
-        appendForTranspPolys->AddInput(tube->GetOutput());
+        appendForTranspPolys->AddInputConnection(tube->GetOutputPort());
     else
         DrawPolyData(tube->GetOutput());
     
@@ -820,11 +820,11 @@ avtOpenGLStreamlineRenderer::DrawAsRibbons(vtkPolyData *data)
         if (atts.GetRibbonWidthSizeType() == StreamlineAttributes::FractionOfBBox)
             ribbonWidth = atts.GetRibbonWidthBBox() * GetBBoxSize();
         ribbons->SetWidth(ribbonWidth);
-        ribbons->SetInput(pd);
+        ribbons->SetInputData(pd);
         ribbons->Update();
         
         if (appendForTranspPolys)
-            appendForTranspPolys->AddInput(ribbons->GetOutput());
+            appendForTranspPolys->AddInputConnection(ribbons->GetOutputPort());
         else
             DrawPolyData(ribbons->GetOutput());
         
@@ -887,7 +887,7 @@ avtOpenGLStreamlineRenderer::DrawSeedPoints(vtkPolyData *data)
         {
             vtkPolyData *pd = GenerateSpherePolys(pt[0], pt[1], pt[2], rad, quality,
                                                   s[*segptr], 0.0);
-            appendForTranspPolys->AddInput(pd);
+            appendForTranspPolys->AddInputData(pd);
             pd->Delete();
         }
         else
@@ -1029,7 +1029,7 @@ avtOpenGLStreamlineRenderer::DrawHeadGeom(vtkPolyData *data)
             
             if (pd)
             {
-                appendForTranspPolys->AddInput(pd);
+                appendForTranspPolys->AddInputData(pd);
                 pd->Delete();
             }
         }
@@ -1345,7 +1345,6 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *input)
     if (input->GetPoints() == NULL)
         return;
 
-    input->Update();
     vtkPolyData *poly = input;
     vtkDepthSortPolyData *sorter = NULL;
 
@@ -1357,7 +1356,7 @@ avtOpenGLStreamlineRenderer::DrawPolyData(vtkPolyData *input)
         sorter->SetDirectionToFrontToBack();
         sorter->SetDepthSortModeToBoundsCenter();
         
-        sorter->SetInput(input);
+        sorter->SetInputData(input);
         sorter->Update();
         poly = sorter->GetOutput();
     }
@@ -1977,7 +1976,7 @@ avtOpenGLStreamlineRenderer::GenerateConePolys(float x0,
 
     //tri strip them.
     vtkStripper *stripper = vtkStripper::New();
-    stripper->SetInput(pd);
+    stripper->SetInputData(pd);
     stripper->Update();
     
     pd->Delete();
@@ -2098,7 +2097,7 @@ avtOpenGLStreamlineRenderer::GenerateSpherePolys(float x0,
 
     //tri strip them.
     vtkStripper *stripper = vtkStripper::New();
-    stripper->SetInput(pd);
+    stripper->SetInputData(pd);
     stripper->Update();
     
     pd->Delete();

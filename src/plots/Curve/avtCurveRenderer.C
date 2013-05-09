@@ -121,7 +121,7 @@ avtCurveRenderer::Render(vtkDataSet *ds)
         if (ds->GetDataObjectType() != VTK_POLY_DATA) 
         {
             vtkGeometryFilter *gf = vtkGeometryFilter::New();
-            gf->SetInput(ds);
+            gf->SetInputData(ds);
             input = vtkPolyData::New();
             gf->SetOutput(input);
             gf->Update();

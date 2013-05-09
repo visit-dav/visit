@@ -904,8 +904,8 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     //
     if (rv != NULL)
     {
-        rv->SetIsEnsemble(isEnsemble);
         int t0 = visitTimer->StartTimer();
+        rv->SetIsEnsemble(isEnsemble);
         rv->SetStrictMode(strictMode);
         if (timestep != -2)
             rv->ActivateTimestep(timestep);

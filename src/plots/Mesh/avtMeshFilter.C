@@ -225,7 +225,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
     if (!v.GetUsingAllData() && 
         inDS->GetCellData()->GetArray("avtGhostZones"))
     {
-        ghostFilter->SetInput(inDS);
+        ghostFilter->SetInputData(inDS);
         ghostFilter->Update();
         revisedInput = ghostFilter->GetOutput();
     }
@@ -252,13 +252,13 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         if (revisedInput->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
             rectFacesFilter->SetForceFaceConsolidation(true);
-            rectFacesFilter->SetInput(revisedInput);
+            rectFacesFilter->SetInputData(revisedInput);
             rectFacesFilter->Update();
             opaquePolys = rectFacesFilter->GetOutput();
         }
         else
         {
-            geometryFilter->SetInput(revisedInput);
+            geometryFilter->SetInputData(revisedInput);
             geometryFilter->Update();
             opaquePolys = geometryFilter->GetOutput();
         }
@@ -267,7 +267,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
     if (atts.GetShowInternal() && 
         revisedInput->GetDataObjectType() != VTK_POLY_DATA)
     {
-        extractEdges->SetInput(revisedInput);
+        extractEdges->SetInputData(revisedInput);
         extractEdges->Update();
         revisedInput2 = extractEdges->GetOutput();
     }
@@ -287,7 +287,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         revisedInput2->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
         vtkGeometryFilter *geo = vtkGeometryFilter::New();
-        geo->SetInput(revisedInput2);
+        geo->SetInputData(revisedInput2);
         geo->Update();
         revisedInput3 = geo->GetOutput()->NewInstance();
         revisedInput3->ShallowCopy(geo->GetOutput());
@@ -310,7 +310,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         // or polygonal data, so we should be safe ignoring it.
         //
         rlines = vtkRectilinearLinesNoDataFilter::New();
-        rlines->SetInput(revisedInput3);
+        rlines->SetInputData(revisedInput3);
         rlines->Update();
         outDS = rlines->GetOutput();
     }
@@ -329,7 +329,7 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
 
         if (topoDim == 2)
         {
-            lineFilter->SetInput((vtkPolyData*)revisedInput3);
+            lineFilter->SetInputData((vtkPolyData*)revisedInput3);
             lineFilter->Update();
             outDS = lineFilter->GetOutput();
         }
@@ -369,8 +369,8 @@ avtMeshFilter::ExecuteDataTree(vtkDataSet *inDS, int dom, std::string lab)
         if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0)
         {
             vtkAppendPolyData *append = vtkAppendPolyData::New();
-            append->AddInput(outDS);
-            append->AddInput(opaquePolys);
+            append->AddInputData(outDS);
+            append->AddInputData(opaquePolys);
             append->Update();
             vtkPolyData *outPoly = vtkPolyData::New();
             outPoly->ShallowCopy(append->GetOutput());

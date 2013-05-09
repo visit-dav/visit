@@ -77,18 +77,57 @@
 #
 #----------------------------------------------------------------------------
 
-FOREACH(LIB ${MESA_LIB})
+IF(MESA_FOUND)
     IF (NOT WIN32)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+                        ${CMAKE_CURRENT_BINARY_DIR}/osmesa
+                        RESULT_VARIABLE GEN_OSMESA_DIR)
+        #
+        # make sure lib/osmesa exists before we try to
+        # symlink OSMesa.so as libGL.so
+        #
+        IF(NOT "${GEN_OSMESA_DIR}" STREQUAL "0")
+            MESSAGE(WARNING "Failed to create lib/osmesa/")
+        ENDIF(NOT "${GEN_OSMESA_DIR}" STREQUAL "0")
+
+        ## TODO:
+        ## We need to use SONAME of the detected GL lib.
+        ## Not sure how to best approach this.
+        ## I don't think the strategy we use to find symlinks in ThirdPartyInstallLibrary
+        ## will work for gl libs
+        ##
+        ## /usr/lib64/nvidia/libGL.so -> /usr/lib64/nvidia/libGL.so.304.43
+        ## /usr/lib64/nvidia/libGL.so.1 -> /usr/lib64/nvidia/libGL.so.304.43
+        ##
+        ## In cmake we can detect, libGL.so, we can get the realpath /usr/lib64/nvidia/libGL.so.304.43
+        ## BUT what we really need is "libGL.so.1", see:
+        ##
+        ## rzalastor2@cyrush: objdump /usr/lib64/nvidia/libGL.so.304.43 -p | grep SONAME
+        ##   SONAME               libGL.so.1
+        ##
+        ## This is what all of the VTK libs link to (not libGL.so, or libGL.so.304.43)
+        ## Since we want to pull a LD_LIB_PATH trick, we need to get this right.
+        ##
+
+
+        GET_FILENAME_COMPONENT(OSMESA_LIB_REAL ${MESA_LIBRARY_DIR}/${MESA_LIB} REALPATH)
+        GET_FILENAME_COMPONENT(OSMESA_LIB_BASE ${OSMESA_LIB_REAL} NAME)
+
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
-                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
+                                    ${CMAKE_CURRENT_BINARY_DIR}/osmesa/libGL.so)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                    ${CMAKE_CURRENT_BINARY_DIR}/osmesa/libGL.so.1) # TODO USE SONAME HERE!
+
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
-                                ${MESA_LIBRARY_DIR}/${LIB}
-                                ${CMAKE_CURRENT_BINARY_DIR}/${LIB})
-    ELSE (NOT WIN32)
-        FILE(COPY        ${MESA_LIBRARY_DIR}/${LIB}
-             DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    ENDIF (NOT WIN32)
-ENDFOREACH(LIB in ${MESA_LIB})
+                                ${MESA_LIBRARY_DIR}/${OSMESA_LIB_BASE}
+                                ${CMAKE_CURRENT_BINARY_DIR}/osmesa/libGL.so)
+        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${MESA_LIBRARY_DIR}/${OSMESA_LIB_BASE}
+                                ${CMAKE_CURRENT_BINARY_DIR}/osmesa/libGL.so.1) # TODO USE SONAME HERE!
+    ENDIF(NOT WIN32)
+ENDIF(MESA_FOUND)
+
+
 
 FOREACH(LIB ${R_LIB})
     IF (NOT WIN32)
@@ -114,10 +153,10 @@ ELSE (NOT WIN32)
 
     # because you don't need to choose your configuration up-front
     # on windows, make this a custom target so they are copied to the
-    # correct lib/${CFG} directory 
+    # correct lib/${CFG} directory
     ADD_CUSTOM_TARGET(python_lib ALL)
     ADD_CUSTOM_COMMAND(TARGET python_lib POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VISIT_PYTHON_DIR}/Lib
             ${VISIT_LIBRARY_DIR}/python/Lib
             COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib"
@@ -165,11 +204,11 @@ IF(VISIT_PYTHON_FILTERS)
         FILE(GLOB VTK_EGG_FILE "${VISIT_VTK_DIR}/lib/site-packages/*egg*")
         # because you don't need to choose your configuration up-front
         # on windows, make this a custom target so they are copied to the
-        # correct lib/${CFG} directory 
+        # correct lib/${CFG} directory
         ADD_CUSTOM_TARGET(vtk_python_modules ALL)
         ADD_CUSTOM_COMMAND(TARGET vtk_python_modules POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory 
-                    ${VISIT_VTK_DIR}/lib/site-packages/vtk 
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${VISIT_VTK_DIR}/lib/site-packages/vtk
                     ${VISIT_LIBRARY_DIR}/site-packages/vtk
             COMMAND ${CMAKE_COMMAND} -E copy
                     ${VTK_EGG_FILE}
@@ -201,8 +240,8 @@ IF(VISIT_PYTHON_SCRIPTING AND HAVE_PYSIDE)
     ELSE (NOT WIN32)
         ADD_CUSTOM_TARGET(pyside_modules ALL)
         ADD_CUSTOM_COMMAND(TARGET pyside_modules POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory 
-                    ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide 
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide
                     ${VISIT_LIBRARY_DIR}/site-packages/PySide
             COMMENT "Copying ${VISIT_PYSIDE_DIR}/lib/site-packages/PySide to ${VISIT_LIBRARY_DIR}/site-packages/PySide"
             )

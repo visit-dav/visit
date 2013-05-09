@@ -236,7 +236,6 @@ avtTensorFilter::Equivalent(bool us, int red)
 vtkDataSet *
 avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
-    vtkPolyData *outPD = vtkPolyData::New();
 
     if (inDS->GetPointData()->GetTensors() != NULL)
     {
@@ -247,11 +246,11 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         vertex->VertexAtPointsOff();
     }
 
-    vertex->SetInput(inDS);
-    reduce->SetInput(vertex->GetOutput());
-    reduce->SetOutput(outPD);
-    outPD->Delete();
-    outPD->Update();
+    vertex->SetInputData(inDS);
+    reduce->SetInputConnection(vertex->GetOutputPort());
+    reduce->Update();
+    vtkPolyData *outPD = reduce->GetOutput();
+    outPD->Register(NULL);
 
     return outPD;
 }
@@ -277,6 +276,10 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 //    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005
 //    Added keepNodeZone.
 //
+//    Kathleen Biagas, Thu Mar 14 12:58:39 PDT 2013
+//    Allow normals calculation.  The TensorGlyph filter now does a good job
+//    copying, and also reversing inside-out normals. But they must be present.
+//
 // ****************************************************************************
 
 void
@@ -284,7 +287,6 @@ avtTensorFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
-    GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
     GetOutput()->GetInfo().GetAttributes().SetKeepNodeZoneArrays(keepNodeZone);
 }
 
@@ -314,11 +316,11 @@ avtTensorFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
 
-    reduce->SetInput(NULL);
+    reduce->SetInputData(NULL);
     vtkPolyData *p = vtkPolyData::New();
     reduce->SetOutput(p);
     p->Delete();
-    vertex->SetInput(NULL);
+    vertex->SetInputData(NULL);
     p = vtkPolyData::New();
     vertex->SetOutput(p);
     p->Delete();

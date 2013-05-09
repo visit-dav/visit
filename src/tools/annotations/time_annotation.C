@@ -62,7 +62,6 @@
 #include <vtkCamera.h>
 #include <vtkGraphicsFactory.h>
 #include <vtkImageData.h>
-#include <vtkImagingFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -113,7 +112,6 @@ main(int argc, char *argv[])
 
 #if !defined(_WIN32)
     vtkGraphicsFactory::SetUseMesaClasses(1);
-    vtkImagingFactory::SetUseMesaClasses(1);
 #endif
 
     int width = 2*size;
@@ -138,14 +136,14 @@ main(int argc, char *argv[])
     if (!no_time_bounds)
     {
         vtkPolyDataMapper *start_mapper = vtkPolyDataMapper::New();
-        start_mapper->SetInput(CreateText(1, &start_time));
+        start_mapper->SetInputData(CreateText(1, &start_time));
         vtkActor *start_actor = vtkActor::New();
         start_actor->SetMapper(start_mapper);
         start_actor->GetProperty()->SetColor(fg[0]/255.,fg[1]/255.,fg[2]/255.);
         start_actor->SetPosition(-6, -1, 0);
 
         vtkPolyDataMapper *stop_mapper = vtkPolyDataMapper::New();
-        stop_mapper->SetInput(CreateText(1, &stop_time));
+        stop_mapper->SetInputData(CreateText(1, &stop_time));
         vtkActor *stop_actor = vtkActor::New();
         stop_actor->SetMapper(stop_mapper);
         stop_actor->GetProperty()->SetColor(fg[0]/255., fg[1]/255.,fg[2]/255.);
@@ -186,7 +184,7 @@ main(int argc, char *argv[])
             
         sprintf(str, "Time: %s%s", time_str, units_str);
         char *stupid_warning = str; // For picky compilers.
-        current_mapper->SetInput(CreateText(1, &stupid_warning));
+        current_mapper->SetInputData(CreateText(1, &stupid_warning));
         vtkActor *current_actor = vtkActor::New();
         current_actor->SetMapper(current_mapper);
         current_actor->GetProperty()->SetColor(fg[0]/255., fg[1]/255., 
@@ -203,7 +201,7 @@ main(int argc, char *argv[])
         // background color.
         vtkPolyDataMapper *dummy_mapper = vtkPolyDataMapper::New();
         const char *dummy_str = "_";
-        dummy_mapper->SetInput(CreateText(1, &dummy_str));
+        dummy_mapper->SetInputData(CreateText(1, &dummy_str));
         vtkActor *dummy_actor = vtkActor::New();
         dummy_actor->SetMapper(dummy_mapper);
         dummy_actor->GetProperty()->SetColor(bg[0]/255.,bg[1]/255.,bg[2]/255.);
@@ -223,7 +221,6 @@ main(int argc, char *argv[])
     w2if->SetInput(renwin);
     vtkImageData *image = w2if->GetOutput();
     renwin->Render();
-    image->Update();
     vtkUnsignedCharArray *uchar = (vtkUnsignedCharArray *) 
                                            image->GetPointData()->GetScalars();
     unsigned char *ptr = uchar->GetPointer(0);
@@ -315,7 +312,7 @@ main(int argc, char *argv[])
     // Write out the TIFF.
     //
     vtkTIFFWriter *wrtr = vtkTIFFWriter::New();
-    wrtr->SetInput(image);
+    wrtr->SetInputData(image);
     wrtr->SetFileName(output_file);
     wrtr->Write();
 }

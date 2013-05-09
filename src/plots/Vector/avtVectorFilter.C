@@ -378,14 +378,14 @@ avtVectorFilter::ExecuteData(vtkDataSet *inDS, int, string)
     }
     reduce->SetLimitToOriginal(origOnly);
 
-    vertex->SetInput(inDS);
-    reduce->SetInput(vertex->GetOutput());
+    vertex->SetInputData(inDS);
+    reduce->SetInputConnection(vertex->GetOutputPort());
+    reduce->Update();
 
     vtkPolyData *outPD = reduce->GetOutput();
-    outPD->Update();
-    ManageMemory(outPD);
-    vertex->Delete();
+    outPD->Register(NULL);
     reduce->Delete();
+    vertex->Delete();
     return outPD;
 }
 

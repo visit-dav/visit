@@ -246,11 +246,7 @@ avtLineScanTransformQuery::ExecuteLineScan(vtkPolyData *pd)
     vtkCleanPolyData *cpd = vtkCleanPolyData::New();  
     cpd->SetToleranceIsAbsolute(0);
     cpd->SetTolerance(1e-7);
-#if (VTK_MAJOR_VERSION == 5)
-    cpd->SetInput(pd);
-#else
     cpd->SetInputData(pd);
-#endif
     cpd->Update();
     vtkPolyData *output = cpd->GetOutput();
 

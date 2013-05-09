@@ -546,11 +546,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
             datasetType = dst;
              
             vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-            writer->SetInput(asVTK);
-#else
             writer->SetInputData(asVTK);
-#endif
             writer->SetWriteToOutputString(1);
             writer->SetFileTypeToBinary();
             writer->Write();
@@ -1135,11 +1131,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         string vtk_fpath = dump_dir + vtk_fname;
 
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        wrtr->SetInput(newDS);
-#else
         wrtr->SetInputData(newDS);
-#endif
         wrtr->SetFileName(vtk_fpath.c_str());
         wrtr->Write();
         wrtr->Delete();

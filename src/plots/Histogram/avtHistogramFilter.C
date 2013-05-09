@@ -704,7 +704,7 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
         new_in_ds->GetPointData()->AddArray(
                                           inDS->GetPointData()->GetArray(var));
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-        pd2cd->SetInput(new_in_ds);
+        pd2cd->SetInputData(new_in_ds);
         pd2cd->Update();
 
         bin_arr = pd2cd->GetOutput()->GetCellData()->GetArray(var);
@@ -821,7 +821,7 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
             new_in_ds->GetPointData()->AddArray(
                                 inDS->GetPointData()->GetArray(weightVarName));
             vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-            pd2cd->SetInput(new_in_ds);
+            pd2cd->SetInputData(new_in_ds);
             pd2cd->Update();
             weightVar = pd2cd->GetOutput()->GetCellData()->GetArray(weightVarName);
             weightVar->Register(NULL);
@@ -834,7 +834,7 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
             new_in_ds->GetCellData()->AddArray(
                                 inDS->GetCellData()->GetArray(weightVarName));
             vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-            cd2pd->SetInput(new_in_ds);
+            cd2pd->SetInputData(new_in_ds);
             cd2pd->Update();
             weightVar = cd2pd->GetOutput()->GetPointData()->GetArray(weightVarName);
             weightVar->Register(NULL);

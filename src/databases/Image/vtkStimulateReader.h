@@ -86,8 +86,10 @@ public:
 
 protected:
   enum dtype {UCHAR, SHORT, INT, FLOAT};
-  void ExecuteInformation();
-  void ExecuteData(vtkDataObject *);
+  int RequestInformation(vtkInformation* request,
+                         vtkInformationVector** inputVector,
+                         vtkInformationVector* outputVector);
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation* outInfo);
   virtual int OpenFile(void);
   vtkStimulateReader();
   ~vtkStimulateReader();

@@ -217,7 +217,7 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     color_array->Delete();
 
-    ManageMemory(outDS);
+    outDS->Register(NULL);
     outDS->Delete();
 
     return outDS;

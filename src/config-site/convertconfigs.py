@@ -157,8 +157,6 @@ def translate_section(f, section):
     elif "DEFAULT_SILO_LIBLOC" in keys:
         f.write("SET(SILO_DIR %s)\n" % translate_vars(section["DEFAULT_SILO_LIBLOC"]))
         f.write("SET(SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${HDF5_LIBDEP})\n")
-    elif "DEFAULT_VISUS_LIB" in keys:
-        f.write("SET(VISUS_DIR %s)\n" % translate_vars(section["DEFAULT_VISUS_LIB"]))
     elif "DEFAULT_ADVIO_LIB" in keys:
         f.write("SET(ADVIO_DIR %s)\n" % translate_vars(section["DEFAULT_ADVIO_LIB"]))
     elif "DEFAULT_SZIP_LIB" in keys:

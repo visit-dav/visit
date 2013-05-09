@@ -186,7 +186,7 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
         vtkRectilinearGridFacelistFilter *flf = 
             vtkRectilinearGridFacelistFilter::New();
-        flf->SetInput((vtkRectilinearGrid *)ds);
+        flf->SetInputData((vtkRectilinearGrid *)ds);
         flf->Update();
         pd = flf->GetOutput();
         pd->Register(NULL);
@@ -196,7 +196,7 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
         vtkStructuredGridFacelistFilter *flf = 
             vtkStructuredGridFacelistFilter::New();
-        flf->SetInput((vtkStructuredGrid *)ds);
+        flf->SetInputData((vtkStructuredGrid *)ds);
         flf->Update();
         pd = flf->GetOutput();
         pd->Register(NULL);
@@ -206,7 +206,7 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
         vtkUnstructuredGridFacelistFilter *flf = 
             vtkUnstructuredGridFacelistFilter::New();
-        flf->SetInput((vtkUnstructuredGrid *)ds);
+        flf->SetInputData((vtkUnstructuredGrid *)ds);
         flf->Update();
         pd = flf->GetOutput();
         pd->Register(NULL);

@@ -48,9 +48,11 @@
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -1094,7 +1096,8 @@ avtCosmosFileFormat::ReadMesh(int domain)
         realDims->Delete();
         ghostLevels->Delete();
         
-        rv->SetUpdateGhostLevel(0);
+        rv->GetInformation()->Set(
+            vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
     } 
     
     meshes[domain] = rv;

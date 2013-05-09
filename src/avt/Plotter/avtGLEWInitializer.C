@@ -41,10 +41,13 @@
 // ************************************************************************* //
 #include <algorithm>
 #include <iterator>
+
 #include "avtGLEWInitializer.h"
 #include <avtCallback.h>
 #include <DebugStream.h>
 #include <LibraryNotFoundException.h>
+#include "VisItInit.h"
+#include <visit-config.h>
 #include <RuntimeSetting.h>
 #include <StringHelpers.h>
 
@@ -90,6 +93,7 @@ static bool initialized = false;
 
 bool initialize(bool force)
 {
+
     if(initialized && !force) // Bail early if we've already been here.
     {
         return true;
@@ -99,15 +103,22 @@ bool initialize(bool force)
     stringvec gl_errors;
     enum GL_Name_Convention convention;
     enum GL_Library_Type libtype;
-#ifdef VISIT_USE_MANGLED_MESA
-#ifndef WIN32
-    const bool use_mesa = avtCallback::GetSoftwareRendering();
-#else
-    const bool use_mesa = false;
+
+    bool use_mesa = false;
+
+#ifdef HAVE_OSMESA
+    std::string comp_name(VisItInit::GetComponentName());
+    //if(comp_name == "engine_ser" || comp_name == "engine_par")
+    //{
+    use_mesa = avtCallback::GetSoftwareRendering();
+    //}
+    debug1 << comp_name << " avtGLEWInitializer::initialize use_mesa = " << use_mesa  <<endl;
+    // FIXME_VTK6 remove this cout statment after the dust settles:
+    cout << comp_name << " avtGLEWInitializer::initialize use_mesa = " << use_mesa  <<endl;
 #endif
-#else
-    const bool use_mesa = false;
-#endif
+
+
+
 
 #ifdef VISIT_STATIC
     // VisIt is being built statically so we pass a NULL gl_lib to GLEW so
@@ -116,7 +127,7 @@ bool initialize(bool force)
     const char *gl_lib = NULL;
     if(use_mesa)
     {
-        convention = GLEW_NAME_MANGLED;
+        convention = GLEW_NAME_STANDARD;
         libtype = GLEW_LIB_TYPE_OSMESA;
     }
     else
@@ -142,7 +153,7 @@ bool initialize(bool force)
     if(use_mesa)
     {
         gl_lib = RuntimeSetting::lookups("mesa-lib");
-        convention = GLEW_NAME_MANGLED;
+        convention = GLEW_NAME_STANDARD;
         libtype = GLEW_LIB_TYPE_OSMESA;
     }
     else

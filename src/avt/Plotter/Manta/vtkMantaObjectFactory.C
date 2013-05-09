@@ -80,9 +80,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkMantaTexture.h"
 #include "vtkMantaCubeAxesActor.h"
 
-#ifdef VTKMANTA_FOR_PARAVIEW
-#include "vtkMantaLODActor.h"
-#endif
 
 vtkStandardNewMacro(vtkMantaObjectFactory);
 
@@ -103,78 +100,145 @@ VTK_CREATE_CREATE_FUNCTION(vtkMantaTexture);
 VTK_CREATE_CREATE_FUNCTION(vtkMantaCubeAxesActor);
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Biagas, Thu Feb 14 10:39:54 MST 2013
+//    Turn off any overrides that already exist, so that the Manta overrides
+//    will be honored.
+//
 vtkMantaObjectFactory::vtkMantaObjectFactory()
 {
+  // FIX_ME_VTK6.0 -- ksb -- the code using vtkObjectFactory::SetAllEnableFlags
+  // to 0 turns off any pre-existing overrides for a particular class. This is
+  // currently the only method I found that allows user-specified overrides to 
+  // be used when there are default overrides already existing.
+  // This is method I found while investigating the override system, when I 
+  // looked at Common/Core/Testing/cxx/TestObjectFactory.cxx   
+  // This MAY NOT be the best way, and I am waiting to hear back from the 
+  // Kitware developers.   This may need to be changed if they suggest a
+  // different path, or if a mechanims is implemented whereby user-defined
+  // overrides take precedence over default ones.
+
+  vtkOverrideInformationCollection *oic =
+      vtkOverrideInformationCollection::New();
+
+  vtkObjectFactory::GetOverrideInformation("vtkActor", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkActor");
   this->RegisterOverride("vtkActor",
                          "vtkMantaActor",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaActor);
+
+  vtkObjectFactory::GetOverrideInformation("vtkCamera", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkCamera");
   this->RegisterOverride("vtkCamera",
                          "vtkMantaCamera",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaCamera);
 
+  vtkObjectFactory::GetOverrideInformation("vtkLight", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkLight");
   this->RegisterOverride("vtkLight",
                          "vtkMantaLight",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaLight);
+
+  vtkObjectFactory::GetOverrideInformation("vtkPolyDataMapper", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkPolyDataMapper");
   this->RegisterOverride("vtkPolyDataMapper",
                          "vtkMantaPolyDataMapper",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaPolyDataMapper);
 
+  vtkObjectFactory::GetOverrideInformation("vtkProperty", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkProperty");
   this->RegisterOverride("vtkProperty",
                          "vtkMantaProperty",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaProperty);
 
+  vtkObjectFactory::GetOverrideInformation("vtkRenderer", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkRenderer");
   this->RegisterOverride("vtkRenderer",
                          "vtkMantaRenderer",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaRenderer);
 
-/*this->RegisterOverride("vtkRenderer",
+#if 0
+  vtkObjectFactory::GetOverrideInformation("vtkRenderer", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkRenderer");
+  this->RegisterOverride("vtkRenderer",
                          "vtkOpenGLRenderer2",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkOpenGLRenderer2);
-*/
+#endif
 
-/*   this->RegisterOverride("vtkRenderWindow",
+
+#if 0
+  vtkObjectFactory::GetOverrideInformation("vtkRenderWindow", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkRenderWindow");
+  this->RegisterOverride("vtkRenderWindow",
                          "vtkMantaRenderWindow",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaRenderWindow);
+#endif
 
-this->RegisterOverride("vtkOSMesaRenderWindow",
+#if 0
+  vtkObjectFactory::GetOverrideInformation("vtkOSMesaRenderWindow", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkOSMesaRenderWindow");
+  this->RegisterOverride("vtkOSMesaRenderWindow",
                          "vtkMantaRenderWindow",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaRenderWindow);
+#endif
 
-this->RegisterOverride("vtkQtRenderWindow",
+#if 0
+  vtkObjectFactory::GetOverrideInformation("vtkQtRenderWindow", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkQtRenderWindow");
+  this->RegisterOverride("vtkQtRenderWindow",
                          "vtkMantaRenderWindow",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaRenderWindow);
-*/
+#endif
+
+  vtkObjectFactory::GetOverrideInformation("vtkTexture", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkTexture");
+
   this->RegisterOverride("vtkTexture",
                          "vtkMantaTexture",
                          "Manta",
                          1,
                          vtkObjectFactoryCreatevtkMantaTexture);
 
+  vtkObjectFactory::GetOverrideInformation("vtkCubeAxesActor", oic);
+  if (oic->GetNumberOfItems() != 0)
+      vtkObjectFactory::SetAllEnableFlags(0, "vtkCubeAxesActor");
   this->RegisterOverride("vtkCubeAxesActor",
                       "vtkMantaCubeAxesActor",
                       "Manta",
                       1,
                       vtkObjectFactoryCreatevtkMantaCubeAxesActor);
+  oic->Delete();
 }
 
 //----------------------------------------------------------------------------

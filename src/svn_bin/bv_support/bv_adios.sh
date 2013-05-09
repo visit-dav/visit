@@ -26,7 +26,7 @@ echo "mxml"
 
 function bv_adios_info
 {
-export ADIOS_FILE=${ADIOS_FILE:-"adios-1.3.tar.gz"}
+export ADIOS_FILE=${ADIOS_FILE:-"adios-1.3-mpi1.tar.gz"}
 export ADIOS_VERSION=${ADIOS_VERSION:-"1.3"}
 export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"1.3"}
 export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-1.3"}

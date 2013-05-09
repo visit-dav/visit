@@ -160,11 +160,7 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds)
         if (ds->GetDataObjectType() == VTK_POLY_DATA)
         {
             pdrpf = vtkPolyDataRelevantPointsFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-            pdrpf->SetInput((vtkPolyData *) ds);
-#else
             pdrpf->SetInputData((vtkPolyData *) ds);
-#endif
             pdrpf->Update();
             ds = pdrpf->GetOutput();
         }

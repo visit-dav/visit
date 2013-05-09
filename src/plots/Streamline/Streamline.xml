@@ -18,9 +18,11 @@
     </Files>
     <LIBS components="ESer">
       ${GLEW_LIB}
+      vtkFiltersModeling
     </LIBS>
     <LIBS components="EPar">
       ${GLEW_LIB}
+      vtkFiltersModeling
     </LIBS>
     <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">

@@ -706,19 +706,11 @@ CAddInputToAppendFilter(avtDataRepresentation & data, void *arg, bool &)
     
     if (ds->GetDataObjectType() == VTK_POLY_DATA)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        pmap->pf->AddInput((vtkPolyData*)ds);
-#else
         pmap->pf->AddInputData((vtkPolyData*)ds);
-#endif
     }
     else if (pmap->compactAllGrids || ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        pmap->af->AddInput(ds);
-#else
         pmap->af->AddInputData(ds);
-#endif
     }
 }
 

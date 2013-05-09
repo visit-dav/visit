@@ -115,9 +115,9 @@ vtkVectorGlyph::vtkVectorGlyph()
 
 int
 vtkVectorGlyph::RequestData(
-    vtkInformation *vtkNotUsed(request),
-    vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector)
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
     vtkDebugMacro(<<"Executing vtkVectorGlyph");
 
@@ -341,13 +341,14 @@ vtkVectorGlyph::FillInputPortInformation(int port, vtkInformation *info)
 void
 vtkVectorGlyph::PrintSelf(ostream &os, vtkIndent indent)
 {
-    this->Superclass::PrintSelf(os, indent);
-    os << indent << "Arrow:    " << this->Arrow << "\n";
-    os << indent << "MakeHead: " << this->MakeHead << "\n";
-    os << indent << "ConeHead: " << this->ConeHead << "\n";
-    os << indent << "LineStem: " << this->LineStem << "\n";
-    os << indent << "StemWidth: " << this->StemWidth << "\n";
-    os << indent << "CapEnds:  " << this->CapEnds << "\n";
-    os << indent << "HighQuality: " << this->HighQuality << "\n";
-    os << indent << "Relative Size of Heads: " << this->HeadSize << "\n";
+   this->Superclass::PrintSelf(os, indent);
+   os << indent << "Arrow:    " << this->Arrow << "\n";
+   os << indent << "MakeHead: " << this->MakeHead << "\n";
+   os << indent << "ConeHead: " << this->ConeHead << "\n";
+   os << indent << "LineStem: " << this->LineStem << "\n";
+   os << indent << "StemWidth: " << this->StemWidth << "\n";
+   os << indent << "CapEnds:  " << this->CapEnds << "\n";
+   os << indent << "HighQuality: " << this->HighQuality << "\n";
+   os << indent << "Relative Size of Heads: " << this->HeadSize << "\n";
 }
+

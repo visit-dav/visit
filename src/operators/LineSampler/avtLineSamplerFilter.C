@@ -1223,7 +1223,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               return NULL;
 
             // Do the sampling of the original dataset at r = 0
-            probeFilter->SetInput( out_ds );
+            probeFilter->SetInputData( out_ds );
             probeFilter->Update();
             
             out_ds->Delete();
@@ -1350,7 +1350,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                   return NULL;
 
                 // Do the sampling of the outer radial locations.
-                probeFilter->SetInput( tmp_ds );
+                probeFilter->SetInputData( tmp_ds );
                 probeFilter->Update();
 
                 tmp_ds->Delete();
@@ -1405,7 +1405,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               return NULL;
 
             // Do the sampling of the original dataset
-            probeFilter->SetInput( out_ds );
+            probeFilter->SetInputData( out_ds );
             probeFilter->Update();
 
             out_ds->Delete();
@@ -1514,7 +1514,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transform->Translate( 0, -toroidalAngle, 0 );
 
                 transformFilter->SetTransform( transform );
-                transformFilter->SetInput( out_ds );
+                transformFilter->SetInputData( out_ds );
                 transformFilter->Update();
 
                 out_ds->Delete();
@@ -1542,7 +1542,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 transform->RotateZ( -toroidalAngle );
                 
                 transformFilter->SetTransform( transform );
-                transformFilter->SetInput( out_ds );
+                transformFilter->SetInputData( out_ds );
                 transformFilter->Update();
 
                 out_ds->Delete();
@@ -1614,7 +1614,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //                 transform->Translate( 0, (double) c*0.1, 0 );
         
               transformFilter->SetTransform( transform );
-              transformFilter->SetInput( out_ds );
+              transformFilter->SetInputData( out_ds );
               transformFilter->Update();
 
               out_ds->Delete();
@@ -1674,7 +1674,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           // Merge all of the datasets together
-          appendFilter->AddInput( out_ds );
+          appendFilter->AddInputData(out_ds);
           appendFilter->Update();
           out_ds->Delete();
       }
@@ -2477,7 +2477,6 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     SetOutputDataTree(newTree);
        
     double bounds[6];
-    composite_ds->Update();
     composite_ds->GetBounds( bounds );
 
     avtExtents newExtents(3);

@@ -25,7 +25,7 @@
 #ifndef __vtkVisItDataSetMapper_h
 #define __vtkVisItDataSetMapper_h
 #include <plotter_exports.h>
-#include "vtkDataSetMapper.h"
+#include <vtkDataSetMapper.h>
 
 class vtkPolyDataMapper;
 class vtkRectilinearGridMapper;

@@ -1171,12 +1171,10 @@ vtkVisItSplitter::RequestData(
     //
     // Initialize some frequently used values.
     //
-    vtkDataSet *input = vtkDataSet::SafeDownCast(
+    vtkDataSet *ds = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
     vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
-
-    vtkDataSet *ds = input;
 
     int do_type = ds->GetDataObjectType();
 

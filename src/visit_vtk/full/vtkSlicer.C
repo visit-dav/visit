@@ -670,30 +670,18 @@ vtkSlicer::UnstructuredGridExecute(void)
         {
             vtkPolyData *not_from_zoo  = vtkPolyData::New();
             SliceDataset(stuff_I_cant_slice, not_from_zoo, true);
-#if (VTK_MAJOR_VERSION == 5)
-            appender->AddInput(not_from_zoo);
-#else
             appender->AddInputData(not_from_zoo);
-#endif
             not_from_zoo->Delete();
         }
 
         if (numVertices > 0)
         {
-#if (VTK_MAJOR_VERSION == 5)
-            appender->AddInput(vertices_on_slice);
-#else
             appender->AddInputData(vertices_on_slice);
-#endif
         }
 
         vtkPolyData *just_from_zoo = vtkPolyData::New();
         sfv.ConstructPolyData(inPD, inCD, just_from_zoo, inPts);
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput(just_from_zoo);
-#else
         appender->AddInputData(just_from_zoo);
-#endif
         just_from_zoo->Delete();
 
         appender->Update();
@@ -746,11 +734,7 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     {
         vtkCutter *cutter = vtkCutter::New();
         cutter->SetCutFunction(plane);
-#if (VTK_MAJOR_VERSION == 5)
-        cutter->SetInput(in_ds);
-#else
         cutter->SetInputData(in_ds);
-#endif
         cutter->Update();
 
         out_pd->ShallowCopy(cutter->GetOutput());
@@ -760,11 +744,7 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     {
         vtkVisItCutter *cutter = vtkVisItCutter::New();
         cutter->SetCutFunction(plane);
-#if (VTK_MAJOR_VERSION == 5)
-        cutter->SetInput(in_ds);
-#else
         cutter->SetInputData(in_ds);
-#endif
         cutter->Update();
 
         out_pd->ShallowCopy(cutter->GetOutput());

@@ -26,6 +26,9 @@
       avtVTKWriter.C
       vtkVisItXMLPDataReader.C
     </Files>
+    <LIBS>
+      vtkIOXML
+    </LIBS>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>
   </Plugin>

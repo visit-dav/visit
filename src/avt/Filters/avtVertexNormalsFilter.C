@@ -192,11 +192,7 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                 pointNormals = false;
         }
         vtkVisItPolyDataNormals *normals = vtkVisItPolyDataNormals::New();
-#if (VTK_MAJOR_VERSION == 5)
-        normals->SetInput(pd);
-#else
         normals->SetInputData(pd);
-#endif
         normals->SetFeatureAngle(45.);
         if (pointNormals)
             normals->SetNormalTypeToPoint();
@@ -225,11 +221,7 @@ avtVertexNormalsFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         }
         vtkVisItStructuredGridNormals *normals = 
                                             vtkVisItStructuredGridNormals::New();
-#if (VTK_MAJOR_VERSION == 5)
-        normals->SetInput(sgrid);
-#else
         normals->SetInputData(sgrid);
-#endif
         if (pointNormals)
             normals->SetNormalTypeToPoint();
         else

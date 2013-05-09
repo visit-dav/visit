@@ -179,6 +179,11 @@ static int nConfigArgs = 1;
 
 #include <algorithm>
 
+#include <visit-config.h>
+#ifdef HAVE_OSMESA
+#include <vtkVisItOSMesaRenderingFactory.h>
+#endif
+
 static std::string getToken(std::string buff, bool reset);
 static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
 static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);
@@ -2880,7 +2885,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-            InitVTKRendering::ForceMesa();
+            //InitVTKRendering::ForceMesa();
+#ifdef HAVE_OSMESA
+            vtkVisItOSMesaRenderingFactory::ForceMesa();
+#endif
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
         }

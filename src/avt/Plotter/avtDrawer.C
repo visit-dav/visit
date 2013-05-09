@@ -45,7 +45,6 @@
 #include <vector>
 
 #include <vtkCamera.h>
-#include <vtkImageData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkWindowToImageFilter.h>

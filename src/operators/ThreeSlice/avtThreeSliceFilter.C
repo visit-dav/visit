@@ -344,11 +344,11 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         
         out_ds[i] = vtkPolyData::New();
     
-        slicer->SetInput(in_ds);
+        slicer->SetInputData(in_ds);
         slicer->Update();
         out_ds[i]->ShallowCopy(slicer->GetOutput());
 
-        merger->AddInput(out_ds[i]);
+        merger->AddInputData(out_ds[i]);
         if (cellList[i])
             delete[] cellList[i];
     }
@@ -370,7 +370,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     {
         if (out_ds[i])
         {
-            merger->RemoveInput(out_ds[i]);
+            merger->RemoveInputData(out_ds[i]);
             out_ds[i]->Delete();
         }
     }    
@@ -446,7 +446,7 @@ avtThreeSliceFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
 
-    slicer->SetInput(NULL);
+    slicer->SetInputData(NULL);
     vtkPolyData *p = vtkPolyData::New();
     slicer->SetOutput(p);
     p->Delete();

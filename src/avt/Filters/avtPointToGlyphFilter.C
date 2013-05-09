@@ -474,20 +474,12 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     int dstype = ds->GetDataObjectType();
     if (dstype == VTK_POLY_DATA)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        pdrp->SetInput((vtkPolyData *) ds);
-#else
         pdrp->SetInputData((vtkPolyData *) ds);
-#endif
         ds = pdrp->GetOutput();
     }
     else if (dstype == VTK_UNSTRUCTURED_GRID)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        ugrp->SetInput((vtkUnstructuredGrid *) ds);
-#else
         ugrp->SetInputData((vtkUnstructuredGrid *) ds);
-#endif
         ds = ugrp->GetOutput();
     }
 
@@ -498,11 +490,7 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     {
         // vtkGeometryFilter should work just fine for this.
         vtkGeometryFilter *geom = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        geom->SetInput(ds);
-#else
         geom->SetInputData(ds);
-#endif
         vtkPolyData *output = geom->GetOutput();
         geom->Update();
         ManageMemory(output);
@@ -528,13 +516,8 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     glyphFilter->SetVectorModeToVectorRotationOff();
     glyphFilter->SetIndexModeToOff();
 
-#if (VTK_MAJOR_VERSION == 5)
-    glyphFilter->SetSource(glyph);
-    glyphFilter->SetInput(ds);
-#else
     glyphFilter->SetSourceData(glyph);
     glyphFilter->SetInputData(ds);
-#endif
     glyphFilter->SetGeneratePointIds(1);
     glyphFilter->Update();
 

@@ -490,11 +490,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     //
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    gzFilter2->SetInput(ds);
-#else
     gzFilter2->SetInputData(ds);
-#endif
     gzFilter2->Update();
 
     vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
@@ -562,19 +558,15 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
 
     vtkDataSetRemoveGhostCells *gzFilter1 = vtkDataSetRemoveGhostCells::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    geomFilter->SetInput(ds);
-#else
     geomFilter->SetInputData(ds);
-#endif
     boundaryFilter->SetInputConnection(geomFilter->GetOutputPort());
-#if (VTK_MAJOR_VERSION == 5)
-    boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
-    boundaryFilter->Update();
-#else
     // FIX_ME_VTK6.0, ESB, is this correct?
     vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(boundaryFilter->GetInformation(), 2);
-#endif
+    //boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
+    //boundaryFilter->Update();
+
+    //vtkPolyData *allLines = boundaryFilter->GetOutput();
+    //allLines->SetSource(NULL);
 
     gzFilter1->SetInputConnection(boundaryFilter->GetOutputPort());
     gzFilter1->Update();
@@ -602,11 +594,7 @@ avtCompactnessQuery::Execute1(vtkDataSet *ds, const int dom)
     //
     vtkPolyDataRelevantPointsFilter *relPts =
                                     vtkPolyDataRelevantPointsFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    relPts->SetInput(pd_1d_nogz_allpts);
-#else
     relPts->SetInputData(pd_1d_nogz_allpts);
-#endif
     vtkPolyData *pd_1d_nogz = relPts->GetOutput();
     relPts->Update();
 
@@ -681,11 +669,7 @@ avtCompactnessQuery::Execute2(vtkDataSet *ds, const int dom)
     //
     vtkDataSetRemoveGhostCells *gzFilter2 = vtkDataSetRemoveGhostCells::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    gzFilter2->SetInput(ds);
-#else
     gzFilter2->SetInputData(ds);
-#endif
     gzFilter2->Update();
     vtkDataSet *ds_2d_nogz = gzFilter2->GetOutput();
 

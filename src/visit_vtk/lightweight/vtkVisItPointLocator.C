@@ -163,7 +163,7 @@ vtkIdType vtkVisItPointLocator::FindClosestPoint(const double x[3])
 {
   int i, j;
   double minDist2;
-  double dist2 = VTK_LARGE_FLOAT;
+  double dist2 = VTK_FLOAT_MAX;
   double pt[3];
   int closest, level;
   vtkIdType ptId, cno;
@@ -195,7 +195,7 @@ vtkIdType vtkVisItPointLocator::FindClosestPoint(const double x[3])
   //  points in this bucket, search 1st level neighbors, and so on,
   //  until closest point found.
   //
-  for (closest=(-1),minDist2=VTK_LARGE_FLOAT,level=0; (closest == -1) && 
+  for (closest=(-1),minDist2=VTK_FLOAT_MAX,level=0; (closest == -1) && 
          (level < this->Divisions[0] || level < this->Divisions[1] || 
           level < this->Divisions[2]); level++) 
     {
@@ -1349,7 +1349,7 @@ int vtkVisItPointLocator::InitPointInsertion(vtkPoints *newPts,
 
   this->InsertionTol2 = this->Tolerance * this->Tolerance;
 
-  for (maxDivs=0, hmin=VTK_LARGE_FLOAT, i=0; i<3; i++) 
+  for (maxDivs=0, hmin=VTK_FLOAT_MAX, i=0; i<3; i++) 
     {
     hmin = (this->H[i] < hmin ? this->H[i] : hmin);
     maxDivs = (maxDivs > this->Divisions[i] ? maxDivs : this->Divisions[i]);
@@ -1567,7 +1567,7 @@ vtkIdType vtkVisItPointLocator::FindClosestInsertedPoint(const double x[3])
   //  points in this bucket, search 1st level neighbors, and so on,
   //  until closest point found.
   //
-  for (closest=0,minDist2=VTK_LARGE_FLOAT,level=0; (closest == 0) && 
+  for (closest=0,minDist2=VTK_FLOAT_MAX,level=0; (closest == 0) && 
   (level < this->Divisions[0] || level < this->Divisions[1] || 
   level < this->Divisions[2]); level++) 
     {

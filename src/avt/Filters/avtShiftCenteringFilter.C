@@ -234,11 +234,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //  create the point data from cell data.
         //
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(dsToShift);
-#else
         cd2pd->SetInputData(dsToShift);
-#endif
         cd2pd->GetExecutive()->SetOutputData(0, outDS);
         cd2pd->Update();
         cd2pd->Delete();
@@ -352,11 +348,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         //
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
      
-#if (VTK_MAJOR_VERSION == 5)
-        pd2cd->SetInput(dsToShift);
-#else
         pd2cd->SetInputData(dsToShift);
-#endif
         pd2cd->GetExecutive()->SetOutputData(0, outDS);
         pd2cd->Update();
         pd2cd->Delete();

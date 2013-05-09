@@ -43,9 +43,9 @@
 #include <avtVectorGlyphMapper.h>
 
 #include <vtkActor.h>
+#include <vtkAlgorithmOutput.h>
 #include <vtkDataSetMapper.h>
 #include <vtkLookupTable.h>
-#include <vtkPolyData.h>
 #include <vtkProperty.h>
 #include <vtkVisItGlyph3D.h>
 #include <vtkVisItPolyDataNormals.h>
@@ -96,12 +96,17 @@
 //    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //    Initialize setMin, setMax and limitsMode.
 //
+//    Kathleen Biagas, Web Feb 6 19:38:27 PST 2013
+//    Changed arg to vtkAlgorithmOutput for pipeline connections with VTK v 6.
+//
+//    Kathleen Biagas, Thu Feb 7 12:58:49 PST 2013
+//    We don't want to own glyph, so don't up the ref count.
+//
 // ****************************************************************************
 
-avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
+avtVectorGlyphMapper::avtVectorGlyphMapper(vtkAlgorithmOutput *g)
 {
     glyph = g;
-    glyph->Register(NULL);
 
     lineWidth         = LW_0;
     lineStyle         = SOLID; 
@@ -129,16 +134,13 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkPolyData *g)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Deleted poly data normals.
 //
+//    Kathleen Biagas, Thu Feb 7 12:58:49 PST 2013
+//    We don't own glyph, so don't delete it here.
+//
 // ****************************************************************************
 
 avtVectorGlyphMapper::~avtVectorGlyphMapper()
 {
-    if (glyph != NULL)
-    {
-        glyph->Delete();
-        glyph = NULL;
-    }
-
     if (glyphFilter != NULL)
     {
         for (int i = 0 ; i < nGlyphFilters ; i++)
@@ -236,7 +238,7 @@ avtVectorGlyphMapper::CustomizeMappers(void)
         {
             if (glyphFilter[i] != NULL)
             {
-                glyphFilter[i]->SetSourceData(glyph);
+                glyphFilter[i]->SetSourceConnection(glyph);
                 if (scaleByMagnitude)
                     glyphFilter[i]->SetScaleModeToScaleByVector();
                 else
@@ -373,9 +375,12 @@ avtVectorGlyphMapper::SetUpFilters(int nDoms)
 //    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
 //    Use VisIt's version of vtkGlyph3D. 
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters.
+//
 // ****************************************************************************
 
-vtkDataSet *
+vtkAlgorithmOutput *
 avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
     if (dom < 0 || dom >= nGlyphFilters)
@@ -396,20 +401,16 @@ avtVectorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         normalsFilter[dom] = vtkVisItPolyDataNormals::New();
     }
 
-#if (VTK_MAJOR_VERSION == 5)
-    glyphFilter[dom]->SetInput(ds);
-#else
     glyphFilter[dom]->SetInputData(ds);
-#endif
 
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
     {
         normalsFilter[dom]->SetInputConnection(glyphFilter[dom]->GetOutputPort());
-        return normalsFilter[dom]->GetOutput();
+        return normalsFilter[dom]->GetOutputPort();
     }
     else
     {
-        return glyphFilter[dom]->GetOutput();
+        return glyphFilter[dom]->GetOutputPort();
     }
 }
 

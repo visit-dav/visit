@@ -3250,8 +3250,8 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
             mergedWindingPairStats[i].toroidal )
           mergedWindingPairStats[i].poloidal =
             mergedWindingPairStats[i].toroidal + wMax;
-        else if( abs(mergedWindingPairStats[i].poloidal-wMax) <
-                 abs(mergedWindingPairStats[i].poloidal-(mergedWindingPairStats[i].toroidal-wMax) ) )
+        else if( abs((int)(mergedWindingPairStats[i].poloidal-wMax)) <
+                 abs((int)(mergedWindingPairStats[i].poloidal-(mergedWindingPairStats[i].toroidal-wMax)) ) )
           mergedWindingPairStats[i].poloidal = wMax;
         else
           mergedWindingPairStats[i].poloidal =

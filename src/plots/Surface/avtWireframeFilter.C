@@ -183,9 +183,9 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 {
     // xtract the edges for correct wireframe rendering.
     
-    geoFilter->SetInput(inDS);
+    geoFilter->SetInputData(inDS);
 
-    //
+    // VTK-6.0 FIX ME -- ksb, is this still true??
     // If the input to the geometry filter is poly data, it does not pass
     // the field data through.  So copy that now.
     //
@@ -194,18 +194,17 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
         geoFilter->GetOutput()->GetFieldData()
                                            ->ShallowCopy(inDS->GetFieldData());
 
-    edgesFilter->SetInput(geoFilter->GetOutput());
+    edgesFilter->SetInputConnection(geoFilter->GetOutputPort());
 
+    // VTK-6.0 FIX ME -- ksb, is this still true?
     //
     // Lines must go before polys to avoid VTK bug with indexing cell data.
     //
-    appendFilter->SetInputByNumber(0, edgesFilter->GetOutput());
-    appendFilter->SetInputByNumber(1, geoFilter->GetOutput());
- 
-    vtkPolyData *outPolys = vtkPolyData::New();
-    appendFilter->SetOutput(outPolys);
-    outPolys->Delete();
+    appendFilter->SetInputConnectionByNumber(0, edgesFilter->GetOutputPort());
+    appendFilter->SetInputConnectionByNumber(1, geoFilter->GetOutputPort());
     appendFilter->Update();
+    vtkPolyData *outPolys = appendFilter->GetOutput();
+    outPolys->Register(NULL);
 
     return outPolys;
 }
@@ -242,7 +241,7 @@ avtWireframeFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
 
-    geoFilter->SetInput(NULL);
+    geoFilter->SetInputData(NULL);
     geoFilter->SetLocator(NULL);
     vtkPolyData *p = vtkPolyData::New();
     geoFilter->SetOutput(p);
@@ -251,13 +250,13 @@ avtWireframeFilter::ReleaseData(void)
     int nInputs = appendFilter->GetTotalNumberOfInputConnections();
     for (int i = nInputs-1 ; i >= 0 ; i--)
     {
-        appendFilter->SetInputByNumber(i, NULL);
+        appendFilter->SetInputConnectionByNumber(i, NULL);
     }
     p = vtkPolyData::New();
     appendFilter->SetOutput(p);
     p->Delete();
 
-    edgesFilter->SetInput(NULL);
+    edgesFilter->SetInputData(NULL);
     edgesFilter->SetLocator(NULL);
     p = vtkPolyData::New();
     edgesFilter->SetOutput(p);

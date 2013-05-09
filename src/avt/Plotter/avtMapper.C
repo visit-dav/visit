@@ -378,6 +378,10 @@ avtMapper::GetDrawable(void)
 //    Hank Childs, Tue Nov 18 05:46:45 PST 2008
 //    Do not assume the tree is going to be non-NULL.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters to return vtkAlgorithmOutput, so
+//    connections are set up properly with vtk-6.
+//
 // ****************************************************************************
 
 void
@@ -431,12 +435,11 @@ avtMapper::SetUpMappers(void)
             continue;
 
         mappers[i] = CreateMapper();
-        vtkDataSet *ds = InsertFilters(children[i], i);
-#if (VTK_MAJOR_VERSION == 5)
-        mappers[i]->SetInput(ds);
-#else
-        mappers[i]->SetInputData(ds);
-#endif
+        vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
+        if (outputPort != NULL)
+            mappers[i]->SetInputConnection(outputPort);
+        else
+            mappers[i]->SetInputData(children[i]);
         if (immediateMode)
         {
             mappers[i]->ImmediateModeRenderingOn();
@@ -521,12 +524,16 @@ avtMapper::SetUpFilters(int)
 //    Removed argument related to having multiple rendering modes.
 //    No longer needed.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters to return vtkAlgorithmOutput, so
+//    connections are set up properly with vtk-6.
+//
 // ****************************************************************************
 
-vtkDataSet *
+vtkAlgorithmOutput *
 avtMapper::InsertFilters(vtkDataSet *ds, int)
 {
-    return ds;
+    return NULL;
 }
 
 

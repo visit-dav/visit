@@ -172,15 +172,16 @@ avtDelaunayFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if (dimension == 2)
     {
         d2 = vtkDelaunay2D::New();
-        d2->SetInput(inDS);
+        d2->SetInputData(inDS);
+        d2->Update();
         outDS = d2->GetOutput();
     }
     else if (dimension == 3)
     {
         d3 = vtkDelaunay3D::New();
-        d3->SetInput(inDS);
-        outDS = vtkUnstructuredGrid::New();
-        d3->SetOutput(outDS);
+        d3->SetInputData(inDS);
+        d3->Update();
+        outDS = d3->GetOutput();
     }
     else
     {
@@ -188,7 +189,6 @@ avtDelaunayFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                    "dimension data");
     }
 
-    outDS->Update();
     ManageMemory(outDS);
 
     if (d2)

@@ -273,6 +273,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Fix occasional parallel engine crash by performing Update on 
 //    removeGhostCells filter instead of its output.
 //
+//    Kathleen Biagas, Thu Feb 21 11:04:44 MST 2013
+//    We no longer create outds here, so don't Delete it here.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -355,7 +358,7 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     if (in_ds->GetCellData()->GetArray("avtGhostZones"))
     {
         removeGhostCells = vtkDataSetRemoveGhostCells::New();
-        removeGhostCells->SetInput(ds);
+        removeGhostCells->SetInputData(ds);
         removeGhostCells->Update();
         ds = removeGhostCells->GetOutput();
     }
@@ -426,35 +429,31 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
                poly_opf->SetLogicalIndex(id[0], id[1]);
     }
 
-    vtkDataSet *outds;
+    vtkDataSet *outds = NULL;
 
     if (opf)
     {
-        opf->SetInput(ds);
+        opf->SetInputData(ds);
         opf->SetRequestedLayer(atts.GetRequestedLayer());
         opf->SetAdjacencyType(atts.GetAdjacencyType());
         opf->SetSeedIdIsForCell((int)
             (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
         opf->SetReconstructOriginalCells((int)
             !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
-        outds = vtkUnstructuredGrid::New();
-        opf->SetOutput((vtkUnstructuredGrid*)outds);
-        outds->Delete();
-        outds->Update();
+        opf->Update();
+        outds = opf->GetOutput();
     }
     else 
     {
-        poly_opf->SetInput((vtkPolyData*)ds);
+        poly_opf->SetInputData(ds);
         poly_opf->SetRequestedLayer(atts.GetRequestedLayer());
         poly_opf->SetAdjacencyType(atts.GetAdjacencyType());
         poly_opf->SetSeedIdIsForCell((int)
             (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
         poly_opf->SetReconstructOriginalCells((int)
             !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
-        outds = vtkPolyData::New();
-        poly_opf->SetOutput((vtkPolyData*)outds);
-        outds->Delete();
-        outds->Update();
+        poly_opf->Update();
+        outds = poly_opf->GetOutput();
     }
 
     if (removeGhostCells != NULL)
@@ -1018,14 +1017,14 @@ avtOnionPeelFilter::ReleaseData(void)
     avtPluginDataTreeIterator::ReleaseData();
     if (opf)
     {
-        opf->SetInput(NULL);
+        opf->SetInputData(NULL);
         vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
         opf->SetOutput(ug);
         ug->Delete();
     }
     if (poly_opf)
     {
-        poly_opf->SetInput(NULL);
+        poly_opf->SetInputData(NULL);
         vtkPolyData *pdata = vtkPolyData::New();
         poly_opf->SetOutput(pdata);
         pdata->Delete();

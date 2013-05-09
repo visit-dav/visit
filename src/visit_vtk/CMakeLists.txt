@@ -43,3 +43,8 @@ PROJECT(visit_vtk)
 ADD_SUBDIRECTORY(lightweight)
 ADD_SUBDIRECTORY(full)
 
+# if mesa is enabled, add our external mesa rendering lib
+IF(MESA_FOUND)
+    ADD_SUBDIRECTORY(osmesa)
+ENDIF(MESA_FOUND)
+

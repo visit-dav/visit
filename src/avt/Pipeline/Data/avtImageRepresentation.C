@@ -591,20 +591,10 @@ vtkImageData *
 avtImageRepresentation::NewImage(int width, int height)
 {
     vtkImageData *image = vtkImageData::New();
-#if (VTK_MAJOR_VERSION == 5)
-    image->SetWholeExtent(0, width-1, 0, height-1, 0, 0);
-    image->SetUpdateExtent(0, width-1, 0, height-1, 0, 0);
-#endif
     image->SetExtent(0, width-1, 0, height-1, 0, 0);
     image->SetSpacing(1., 1., 1.);
     image->SetOrigin(0., 0., 0.);
-#if (VTK_MAJOR_VERSION == 5)
-    image->SetNumberOfScalarComponents(3);
-    image->SetScalarType(VTK_UNSIGNED_CHAR);
-    image->AllocateScalars();
-#else
     image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-#endif
 
     return image;
 }
@@ -700,11 +690,7 @@ CreateStringFromVTKInput(vtkImageData *img, unsigned char *&str, int &len)
     vtkStructuredPointsWriter *writer = vtkStructuredPointsWriter::New();
     writer->SetFileTypeToBinary();
     writer->WriteToOutputStringOn();
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(tmp);
-#else
     writer->SetInputData(tmp);
-#endif
     writer->SetFileTypeToBinary();
     writer->Write();
 
@@ -780,11 +766,7 @@ void avtImageRepresentation::GetImageFromString(unsigned char *str,
     reader->SetInputArray(charArray);
     reader->Update();
     img = reader->GetOutput();
-#if (VTK_MAJOR_VERSION == 5)
-    img->SetScalarType(VTK_UNSIGNED_CHAR);
-#else
     img->SetScalarType(VTK_UNSIGNED_CHAR, img->GetInformation());
-#endif
     img->Register(NULL);
     //  calling SetSource sets' PipelineInformation to NULL, and then
     //  vtkImageData no longer knows its scalar data type, and who knows

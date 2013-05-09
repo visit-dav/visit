@@ -1616,30 +1616,18 @@ avtDataTree::GetDatasetAsString()
     vtkAppendFilter* vaf = vtkAppendFilter::New();
 
     for(int i = 0; i < nLeaves; ++i)
-#if (VTK_MAJOR_VERSION == 5)
-        vaf->AddInput(ds[i]);
-#else
         vaf->AddInputData(ds[i]);
-#endif
 
     vtkGeometryFilter* vu = vtkGeometryFilter::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    vu->AddInput(vaf->GetOutput());
-#else
     vu->AddInputData(vaf->GetOutput());
-#endif
     vtkDataSet* dataset = dynamic_cast<vtkDataSet*>(vu->GetOutput());
 
     vtkDataSetWriter* writer = vtkDataSetWriter::New();
 
     writer->SetFileTypeToASCII();
     writer->WriteToOutputStringOn();
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(dataset);
-#else
     writer->SetInputData(dataset);
-#endif
     writer->Write();
 
     std::string res = writer->GetOutputString();

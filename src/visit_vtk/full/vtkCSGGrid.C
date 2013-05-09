@@ -939,14 +939,12 @@ vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                 else
                 {
                     os << ", is a boolean ";
-#if (VTK_MAJOR_VERSION == 5)
                     switch (boolFunc->GetOperationType())
                     {
-                        case VTK_INTERSECTION: os << "intersection "; break;
-                        case VTK_UNION:        os << "union "; break;
-                        case VTK_DIFFERENCE:   os << "difference "; break;
+                        case vtkImplicitBoolean::VTK_INTERSECTION: os << "intersection "; break;
+                        case vtkImplicitBoolean::VTK_UNION:        os << "union "; break;
+                        case vtkImplicitBoolean::VTK_DIFFERENCE:   os << "difference "; break;
                     }
-#endif
 
                     vtkIdType leftId  = funcMap[leftFunc];
                     vtkIdType rightId = funcMap[rightFunc];
@@ -2098,7 +2096,6 @@ vtkCSGGrid::DiscretizeSurfaces(
         regSample->Delete();
         reg->Delete();
     }
-
     appender->Update();
     vtkPolyData *rv = appender->GetOutput();
     rv->Register(0);
@@ -2197,11 +2194,7 @@ vtkCSGGrid::DiscretizeSpace(
 
         // Clip it!
         vtkVisItClipper *regClipper = vtkVisItClipper::New();
-#if (VTK_MAJOR_VERSION == 5)
-        regClipper->SetInput(rgrid);
-#else
         regClipper->SetInputData(rgrid);
-#endif
         regClipper->SetClipFunction(reg);
         regClipper->SetInsideOut(true);
         regClipper->Update();
@@ -2213,6 +2206,7 @@ vtkCSGGrid::DiscretizeSpace(
     }
 
     appender->Update();
+
     vtkUnstructuredGrid *rv = appender->GetOutput();
     rv->Register(0);
     appender->Delete();
@@ -2415,11 +2409,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(const double bnds[6], const int dims[3],
 
     multipassTags = new vector<FixedLengthBitField<64> >;
 
-#if (VTK_MAJOR_VERSION == 5)
-    regClipper->SetInput(rgrid);
-#else
     regClipper->SetInputData(rgrid);
-#endif
     regClipper->SetTagBitField(multipassTags);
     regClipper->SetClipFunctions(gridBoundaries, numBoundaries);
 
@@ -2474,11 +2464,7 @@ vtkCSGGrid::GetMultiPassDiscretization(int specificZone)
 
     // Threshold out the cells for this region
     vtkThreshold *threshold = vtkThreshold::New();
-#if (VTK_MAJOR_VERSION == 5)
-    threshold->SetInput(rv);
-#else
     threshold->SetInputData(rv);
-#endif
     threshold->ThresholdByUpper(0.5);
     threshold->Update();
     rv = threshold->GetOutput();
@@ -2724,11 +2710,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
                 vtkQuadric *quadric = vtkQuadric::New();
                 quadric->SetCoefficients(&gridBoundaries[NUM_QCOEFFS*bndId]);
                 vtkVisItClipper *pieceCutter = vtkVisItClipper::New();
-#if (VTK_MAJOR_VERSION == 5)
-                pieceCutter->SetInput((*piecesCurrent)[i]);
-#else
                 pieceCutter->SetInputData((*piecesCurrent)[i]);
-#endif
                 pieceCutter->SetUseZeroCrossings(true);
                 pieceCutter->SetClipFunction(quadric);
 
@@ -2856,11 +2838,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
             const int theInt = it->first;
 
             vtkVisItClipper *boxCutter = vtkVisItClipper::New();
-#if (VTK_MAJOR_VERSION == 5)
-            boxCutter->SetInput(boxUgrid);
-#else
             boxCutter->SetInputData(boxUgrid);
-#endif
             boxCutter->SetUseZeroCrossings(true);
 
             vtkQuadric *quadric = vtkQuadric::New();

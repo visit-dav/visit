@@ -183,6 +183,7 @@ ${VISIT_SOURCE_DIR}/launcher/rpc
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/visit_vtk/full
+${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VISIT_SOURCE_DIR}/vtkqt
 ${VISIT_SOURCE_DIR}/winutil
 ${QT_INCLUDE_DIR}
@@ -193,7 +194,8 @@ ${QT_QTNETWORK_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+
 
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
@@ -240,6 +242,10 @@ ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
 )
 
+IF(MESA_FOUND)
+    TARGET_LINK_LIBRARIES(viewer visit_vtk_osmesa)
+ENDIF(MESA_FOUND)
+
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
     ADD_EXECUTABLE(viewer_exe ${VISIT_APPLICATION_STYLE} viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_VIEWER_RESOURCE_FILE})
@@ -266,9 +272,9 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    ${VTK_PNG_LIBRARIES}
-    ${VTK_JPEG_LIBRARIES}
-    ${VTK_ZLIB_LIBRARIES}
+    vtkpng
+    vtkjpeg
+    vtkzlib
     ${VTK_FREETYPE_LIBRARIES}
     vtkftgl
 )

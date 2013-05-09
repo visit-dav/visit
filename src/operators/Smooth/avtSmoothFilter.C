@@ -186,16 +186,20 @@ avtSmoothFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     // We only work on surface data
     vtkGeometryFilter *geom = NULL;
+    vtkSmoothPolyDataFilter *smooth = vtkSmoothPolyDataFilter::New();
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
         geom = vtkGeometryFilter::New();
-        geom->SetInput(in_ds);
-        in_ds = geom->GetOutput();
+        geom->SetInputData(in_ds);
+        smooth->SetInputConnection(geom->GetOutputPort());
+        // FIX_ME_VTK6.0, ESB, can we delete geom here since smooth has
+        //                     a reference to it? Can the also make geom
+        //                     defined locally in the if scope
     }
-
-    vtkPolyData *pd = (vtkPolyData *) in_ds;
-    vtkSmoothPolyDataFilter *smooth = vtkSmoothPolyDataFilter::New();
-    smooth->SetInput(pd);
+    else
+    {
+        smooth->SetInputData(in_ds);
+    }
 
     smooth->SetConvergence(atts.GetConvergence());
     smooth->SetNumberOfIterations(atts.GetNumIterations());
@@ -204,13 +208,12 @@ avtSmoothFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     smooth->SetFeatureAngle(atts.GetFeatureAngle());
     smooth->SetEdgeAngle(atts.GetEdgeAngle());
     smooth->SetBoundarySmoothing(atts.GetSmoothBoundaries());
+    smooth->Update();
 
     vtkPolyData *output = smooth->GetOutput();
-    output->Update();
-
     ManageMemory(output);
-    smooth->Delete();
 
+    smooth->Delete();
     if (geom)
         geom->Delete();
 

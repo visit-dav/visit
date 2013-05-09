@@ -59,7 +59,7 @@ void vtkMantaDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     vtkDataSetSurfaceFilter *gf = vtkDataSetSurfaceFilter::New();
     vtkMantaPolyDataMapper *pm = vtkMantaPolyDataMapper::New();
-    pm->SetInput(gf->GetOutput());
+    pm->SetInputConnection(gf->GetOutputPort());
     mapper = pm;
     this->GeometryExtractor = gf;
     this->PolyDataMapper = pm;

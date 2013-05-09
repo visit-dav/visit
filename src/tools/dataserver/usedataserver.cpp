@@ -258,7 +258,7 @@ main(int argc, char *argv[])
                 SNPRINTF(vtkfile, 100, "%s%04d.vtk", filebases[j], i);
                 cout << "\tWriting " << vtkfile << endl;
                 vtkDataSetWriter *writer = vtkDataSetWriter::New();
-                writer->SetInput(datasets[i]);
+                writer->SetInputData(datasets[i]);
                 writer->SetFileName(vtkfile);
                 writer->Update();
                 writer->Delete();

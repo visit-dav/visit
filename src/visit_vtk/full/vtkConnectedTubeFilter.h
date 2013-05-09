@@ -74,12 +74,12 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 
     // Description:
     // Set the minimum tube radius (minimum because the tube radius may vary).
-    vtkSetClampMacro(Radius,float,0.0,VTK_LARGE_FLOAT);
+    vtkSetClampMacro(Radius,float,0.0,VTK_FLOAT_MAX);
     vtkGetMacro(Radius,float);
 
     // Description:
     // Set the number of sides for the tube. At a minimum, number of sides is 3.
-    vtkSetClampMacro(NumberOfSides,int,3,VTK_LARGE_INTEGER);
+    vtkSetClampMacro(NumberOfSides,int,3,VTK_INT_MAX);
     vtkGetMacro(NumberOfSides,int);
 
     // Description:

@@ -213,7 +213,7 @@ vtkCrackWidthFilter::RequestData(
     EXCEPTION0(ImproperUseException); 
 
   vtkCellData *inCD = input->GetCellData();
-  this->Slicer->SetInput(input);
+  this->Slicer->SetInputData(input);
 
   vtkDataArray *cd1 = NULL;
   if (this->Crack1Var != NULL)
@@ -281,7 +281,7 @@ vtkCrackWidthFilter::RequestData(
 
   for (vtkIdType cellId = 0; cellId < numCells; cellId++)
     {
-    double center[3] = {VTK_LARGE_FLOAT, VTK_LARGE_FLOAT, VTK_LARGE_FLOAT};
+    double center[3] = {VTK_FLOAT_MAX, VTK_FLOAT_MAX, VTK_FLOAT_MAX};
     double delta1 = strain->GetComponent(cellId, 0);
     double delta2 = strain->GetComponent(cellId, 4);
     double delta3 = strain->GetComponent(cellId, 8);
@@ -406,7 +406,7 @@ vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, vtkIdType cellId,
     this->Slicer->SetCellList(&cellId, 1);
     this->Slicer->SetNormal(const_cast<double*>(dir));
     this->Slicer->SetOrigin(const_cast<double*>(center));
-    this->MassProp->SetInput(this->Slicer->GetOutput());
+    this->MassProp->SetInputConnection(this->Slicer->GetOutputPort());
     this->MassProp->Update();
     L =  zVol / this->MassProp->GetSurfaceArea();
     }

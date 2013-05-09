@@ -358,11 +358,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     if (ds->GetDataObjectType() != VTK_POLY_DATA) 
     {
         vtkGeometryFilter *gf = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        gf->SetInput(ds);
-#else
         gf->SetInputData(ds);
-#endif
         gf->Update();
         input = gf->GetOutput();
         input->Register(NULL);

@@ -1958,6 +1958,10 @@ avtOpenGLLabelRenderer::ClearZBuffer()
 //   Change the zTolerance calculation to match the updated method in the 
 //   mesh renderer.
 //
+//   Eric Brugger, Wed Apr 10 14:03:26 PDT 2013
+//   Changed the check against vtkMesaRenderWindow to vtkOSMesaGLRenderWindow
+//   because of the change to VTK-6.
+//
 // ****************************************************************************
 
 void
@@ -1977,7 +1981,7 @@ avtOpenGLLabelRenderer::InitializeZBuffer(bool haveNodeData,
         zBufferWidth  = VTKRen->GetVTKWindow()->GetSize()[0];
         zBufferHeight = VTKRen->GetVTKWindow()->GetSize()[1];
 
-        if (VTKRen->GetVTKWindow()->IsA("vtkMesaRenderWindow"))
+        if (VTKRen->GetVTKWindow()->IsA("vtkOSMesaGLRenderWindow"))
         {
             // If we're using Mesa then let's just query since we already have
             // the zbuffer in memory.

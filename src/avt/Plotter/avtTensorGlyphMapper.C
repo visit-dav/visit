@@ -43,6 +43,7 @@
 #include <avtTensorGlyphMapper.h>
 
 #include <vtkActor.h>
+#include <vtkAlgorithmOutput.h>
 #include <vtkDataSetMapper.h>
 #include <vtkLookupTable.h>
 #include <vtkProperty.h>
@@ -73,19 +74,26 @@
 //    Eric Brugger, Wed Nov 24 13:04:09 PST 2004
 //    Added scaleByMagnitude and autoScale.
 //
+//    Kathleen Biagas, Thu Feb 7 08:45:03 PST 2013
+//    Changed arg to vtkAlgorithmOutput for pipeline connections with VTK v 6.
+//
+//    Kathleen Biagas, Thu Feb 7 12:58:49 PST 2013
+//    We don't want to own glyph, so don't up the ref count.
+//
+//    Kathleen Biagas, Thu Mar 14 13:04:18 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
-avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
+avtTensorGlyphMapper::avtTensorGlyphMapper(vtkAlgorithmOutput *g)
 {
     glyph = g;
-    glyph->Register(NULL);
 
     colorByMag        = true;
     scale             = 0.2;
     scaleByMagnitude  = true;
     autoScale         = true;
     tensorFilter      = NULL;
-    normalsFilter     = NULL;
     nTensorFilters    = 0;
     lut = NULL;
 }
@@ -102,16 +110,16 @@ avtTensorGlyphMapper::avtTensorGlyphMapper(vtkPolyData *g)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Deleted poly data normals.
 //
+//    Kathleen Biagas, Thu Feb 7 12:58:49 PST 2013
+//    We don't own glyph, so don't delete it here.
+//
+//    Kathleen Biagas, Thu Mar 14 13:04:18 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
 avtTensorGlyphMapper::~avtTensorGlyphMapper()
 {
-    if (glyph != NULL)
-    {
-        glyph->Delete();
-        glyph = NULL;
-    }
-
     if (tensorFilter != NULL)
     {
         for (int i = 0 ; i < nTensorFilters ; i++)
@@ -122,17 +130,6 @@ avtTensorGlyphMapper::~avtTensorGlyphMapper()
             }
         }
         delete [] tensorFilter;
-    }
-    if (normalsFilter != NULL)
-    {
-        for (int i = 0 ; i < nTensorFilters ; i++)
-        {
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->Delete();
-            }
-        }
-        delete [] normalsFilter;
     }
 }
 
@@ -155,6 +152,12 @@ avtTensorGlyphMapper::~avtTensorGlyphMapper()
 //    Eric Brugger, Wed Nov 24 13:04:09 PST 2004
 //    Added scaleByMagnitude and autoScale.
 //
+//    Kathleen Biagas, Thu Feb 7 08:46:37 PST 2013
+//    Set the SourceConnection to the tensorFilter, not SourceData.
+//
+//    Kathleen Biagas, Thu Mar 14 13:04:18 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
 void
@@ -166,15 +169,11 @@ avtTensorGlyphMapper::CustomizeMappers(void)
         {
             if (tensorFilter[i] != NULL)
             {
-                tensorFilter[i]->SetSource(glyph);
+                tensorFilter[i]->SetSourceConnection(glyph);
                 if (scaleByMagnitude)
                     tensorFilter[i]->SetScaling(1);
                 else
                     tensorFilter[i]->SetScaling(0);
-            }
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->SetNormalTypeToCell();
             }
         }
     }
@@ -221,6 +220,9 @@ avtTensorGlyphMapper::CustomizeMappers(void)
 //    Use VisIt version of TensorGlyph, so that original cell and node
 //    arrays can be copied through. 
 //
+//    Kathleen Biagas, Thu Mar 14 13:04:18 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
 void
@@ -237,25 +239,12 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
         }
         delete [] tensorFilter;
     }
-    if (normalsFilter != NULL)
-    {
-        for (int i = 0 ; i < nTensorFilters ; i++)
-        {
-            if (normalsFilter[i] != NULL)
-            {
-                normalsFilter[i]->Delete();
-            }
-        }
-        delete [] normalsFilter;
-    }
 
     nTensorFilters     = nDoms;
     tensorFilter       = new vtkVisItTensorGlyph*[nTensorFilters];
-    normalsFilter      = new vtkVisItPolyDataNormals*[nTensorFilters];
     for (int i = 0 ; i < nTensorFilters ; i++)
     {
         tensorFilter[i] = NULL;
-        normalsFilter[i] = NULL;
     }
 }
 
@@ -288,9 +277,15 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
 //    Use VisIt version of TensorGlyph, so that original cell and node
 //    arrays can be copied through. 
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters.
+//
+//    Kathleen Biagas, Thu Mar 14 13:04:18 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
-vtkDataSet *
+vtkAlgorithmOutput *
 avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
     if (dom < 0 || dom >= nTensorFilters)
@@ -306,26 +301,9 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         //
         tensorFilter[dom] = vtkVisItTensorGlyph::New();
     }
-    if (normalsFilter[dom] == NULL)
-    {
-        normalsFilter[dom] = vtkVisItPolyDataNormals::New();
-    }
 
-#if (VTK_MAJOR_VERSION == 5)
-    tensorFilter[dom]->SetInput(ds);
-#else
     tensorFilter[dom]->SetInputData(ds);
-#endif
-
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 3)
-    {
-        normalsFilter[dom]->SetInputConnection(tensorFilter[dom]->GetOutputPort());
-        return normalsFilter[dom]->GetOutput();
-    }
-    else
-    {
-        return tensorFilter[dom]->GetOutput();
-    }
+    return tensorFilter[dom]->GetOutputPort();
 }
 
 

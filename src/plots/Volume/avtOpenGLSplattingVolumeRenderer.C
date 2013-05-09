@@ -655,7 +655,7 @@ avtOpenGLSplattingVolumeRenderer::Render(
         dspd->SetDepthSortModeToFirstPoint();
         dspd->SetDirectionToBackToFront();
         dspd->SetCamera(camera);
-        dspd->SetInput(pd);
+        dspd->SetInputData(pd);
         dspd->Update();
 
         iarr = (vtkIntArray *)dspd->GetOutput()->GetCellData()->GetArray("OriginalIndex");

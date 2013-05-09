@@ -146,9 +146,9 @@ avtPLYWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (pd == NULL)
     {
         vtkGeometryFilter *geom = vtkGeometryFilter::New();
-        geom->SetInput(ds);
+        geom->SetInputData(ds);
 
-        tri->SetInput(geom->GetOutput());        
+        tri->SetInputConnection(geom->GetOutputPort());        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -156,7 +156,7 @@ avtPLYWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        tri->SetInput(pd);        
+        tri->SetInputData(pd);        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -204,14 +204,14 @@ avtPLYWriter::SendPolyDataToRank0()
             writer->WriteToOutputStringOn();
             writer->SetFileTypeToBinary();
             if (polydatas.size() == 1)
-                writer->SetInput(polydatas[0]);
+                writer->SetInputData(polydatas[0]);
             else
             {
                 vtkAppendPolyData *f = vtkAppendPolyData::New();
                 for(size_t i = 0; i < polydatas.size(); ++i)
-                    f->AddInput(polydatas[i]);
+                    f->AddInputData(polydatas[i]);
                 
-                writer->SetInput(f->GetOutput());
+                writer->SetInputConnection(f->GetOutputPort());
             }
             
             writer->Write();
@@ -309,7 +309,7 @@ avtPLYWriter::CloseFile(void)
     {
         vtkAppendPolyData *f = vtkAppendPolyData::New();
         for(size_t i = 0; i < polydatas.size(); ++i)
-            f->AddInput(polydatas[i]);
+            f->AddInputData(polydatas[i]);
 
         allPD = f->GetOutput();
         allPD->Register(NULL);
@@ -320,12 +320,6 @@ avtPLYWriter::CloseFile(void)
     vtkPLYWriter *writer = vtkPLYWriter::New();
     
     writer->SetFileName(filename.c_str());
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(allPD);
-#else
-    writer->SetInputData(allPD);
-#endif
-
     if(doBinary)
         writer->SetFileTypeToBinary();
     else
@@ -341,6 +335,7 @@ avtPLYWriter::CloseFile(void)
         }
     }
     
+    writer->SetInputData(allPD);
     writer->Update();
     writer->Write();
     writer->Delete();

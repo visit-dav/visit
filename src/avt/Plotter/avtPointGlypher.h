@@ -46,6 +46,7 @@
 #include <plotter_exports.h>
 #include <string>
 
+class     vtkAlgorithmOutput;
 class     vtkDataSet;
 class     vtkPolyData;
 class     vtkVisItGlyph3D;
@@ -69,6 +70,9 @@ class     vtkVisItPolyDataNormals;
 //
 //    Brad Whitlock, Mon Jan  7 16:53:56 PST 2013
 //    Adding new glyph types.
+//
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertGlyphs.
 //
 // ****************************************************************************
 
@@ -112,7 +116,7 @@ class PLOTTER_API  avtPointGlypher
     vtkVisItPolyDataNormals  **normalsFilter;
     int                        nGlyphFilters;
 
-    virtual vtkDataSet        *InsertGlyphs(vtkDataSet *, int, int);
+    virtual vtkAlgorithmOutput *InsertGlyphs(vtkDataSet *, int, int);
     virtual void               SetUpGlyphs(int);
     virtual void               CustomizeGlyphs(int);
 

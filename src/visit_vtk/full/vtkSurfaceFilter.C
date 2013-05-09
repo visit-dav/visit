@@ -46,7 +46,7 @@
 //
 //  Programmer:  Kathleen S. Bonnell
 //
-//  Creation:  14 March 2001 
+//  Creation:  14 March 2001
 //
 //  Modifications:
 //
@@ -71,8 +71,8 @@
 
 // ****************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
-//    Replace 'New' method with Macro to match VTK 4.0 API. 
+//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
+//    Replace 'New' method with Macro to match VTK 4.0 API.
 // ****************************************************************************
 
 vtkStandardNewMacro(vtkSurfaceFilter);
@@ -98,12 +98,12 @@ vtkSurfaceFilter::~vtkSurfaceFilter()
 // ****************************************************************************
 //  Method: vtkSurfaceFilter::RequestData
 //
-//  Purpose:  
-//    vtk Required method. Updates state of the filter by 
+//  Purpose:
+//    vtk Required method. Updates state of the filter by
 //
 //  Arguments:  None
 //
-//  Returns:    None 
+//  Returns:    None
 //
 //  Assumptions and Comments:
 //
@@ -162,17 +162,17 @@ vtkSurfaceFilter::FillInputPortInformation(int, vtkInformation *info)
 // ****************************************************************************
 //  Method: vtkSurfaceFilter::PrintSelf
 //
-//  Purpose:  Prints pertinent information regarding the state of this class 
+//  Purpose:  Prints pertinent information regarding the state of this class
 //            to the given output stream.
 //
 //  Arguments:
 //    os      The output stream to which the information is printed
 //    indent  The amount of spaces to indent.
 //
-//  Returns:  None 
+//  Returns:  None
 //
 //  Assumptions and Comments:
-//    Calls the superclass method first. 
+//    Calls the superclass method first.
 //
 //  Programmer: Kathleen S. Bonnell
 //  Creation:   5 October 2000
@@ -195,7 +195,7 @@ vtkSurfaceFilter::PrintSelf(ostream& os, vtkIndent indent)
 //  Method: vtkSurfaceFilter::ExecuteRectilinearGrid
 //
 //  Purpose:  
-//    Execution method for rectilinear grid input types. 
+//    Execution method for rectilinear grid input types.
 //
 //  Arguments: rg   the rectilinear grid input
 //
@@ -274,12 +274,12 @@ vtkSurfaceFilter::ExecuteRectilinearGrid(vtkRectilinearGrid *rg,
 // ****************************************************************************
 //  Method: vtkSurfaceFilter::ExecutePointSet
 //
-//  Purpose:  
-//    Execution method for rectilinear grid input types. 
+//  Purpose:
+//    Execution method for rectilinear grid input types.
 //
 //  Arguments: rg   the rectilinear grid input
 //
-//  Returns:   None 
+//  Returns:   None
 //
 //  Assumptions and Comments:
 //

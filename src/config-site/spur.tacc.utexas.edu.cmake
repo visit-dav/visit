@@ -65,10 +65,6 @@ SET(VISIT_CXX_FLAGS "-m64 -I/opt/apps/intel10_1/mvapich/1.0.1/include")
 ##
 
 ##
-## Exodus
-##
-
-##
 ## GDAL
 ##
 

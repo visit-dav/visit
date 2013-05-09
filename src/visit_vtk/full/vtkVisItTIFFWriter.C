@@ -79,12 +79,7 @@ public:
 };
 
 //----------------------------------------------------------------------------
-#if (VTK_MAJOR_VERSION == 5)
-void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data)
-#else
-void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data,
-  int wExt[6])
-#endif
+void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data, int wExt[6])
 {
   int dims[3];
   int width, height;
@@ -93,6 +88,11 @@ void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data,
   int stype = data->GetScalarType();
   double resolution = -1;
   uint32 rowsperstrip = (uint32) -1;
+
+  int min0 = wExt[0],
+      max0 = wExt[1],
+      min1 = wExt[2],
+      max1 = wExt[3];
 
   int bps;
   switch (stype)
@@ -118,16 +118,8 @@ void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data,
   int predictor = 0;
 
   // Find the length of the rows to write.
-#if (VTK_MAJOR_VERSION == 5)
-  int min0, max0, min1, max1, min2, max2;
-
-  data->GetWholeExtent(min0, max0, min1, max1, min2, max2);
   width = (max0 - min0 + 1);
   height = (max1 - min1 + 1);
-#else
-  width = (wExt[1] - wExt[0] + 1);
-  height = (wExt[3] - wExt[2] + 1);
-#endif
 
   TIFF* tif = TIFFClientOpen(this->GetFileName(), "w",
     (thandle_t) file,
@@ -156,7 +148,7 @@ void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data,
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bps); // Fix for stype
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
-  if ( stype == VTK_FLOAT )
+  if(stype == VTK_FLOAT)
     {
     TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
     }
@@ -222,13 +214,8 @@ void vtkVisItTIFFWriter::WriteFileHeader(ofstream *file, vtkImageData *data,
 
 
 //----------------------------------------------------------------------------
-#if (VTK_MAJOR_VERSION == 5)
 void vtkVisItTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
-  int extent[6])
-#else
-void vtkVisItTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
-  int extent[6], int wExtent[6])
-#endif
+  int extent[6], int wExt[6])
 {
   int idx1, idx2;
   void *ptr;
@@ -249,10 +236,10 @@ void vtkVisItTIFFWriter::WriteFile(ofstream *, vtkImageData *data,
     }
 
   // take into consideration the scalar type
-  if ( data->GetScalarType() != VTK_UNSIGNED_CHAR
-    && data->GetScalarType() != VTK_UNSIGNED_SHORT
-    && data->GetScalarType() != VTK_FLOAT
-    )
+  if( data->GetScalarType() != VTK_UNSIGNED_CHAR
+   && data->GetScalarType() != VTK_UNSIGNED_SHORT
+   && data->GetScalarType() != VTK_FLOAT
+   )
     {
     vtkErrorMacro("TIFFWriter only accepts unsigned char/short or float scalars!");
     return;

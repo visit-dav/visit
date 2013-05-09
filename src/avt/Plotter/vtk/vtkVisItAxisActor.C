@@ -122,11 +122,7 @@ vtkVisItAxisActor::vtkVisItAxisActor()
 
   this->Axis = vtkPolyData::New();
   this->AxisMapper = vtkPolyDataMapper::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->AxisMapper->SetInput(this->Axis);
-#else
   this->AxisMapper->SetInputData(this->Axis);
-#endif
   this->AxisActor = vtkActor::New();
   this->AxisActor->SetMapper(this->AxisMapper);
   

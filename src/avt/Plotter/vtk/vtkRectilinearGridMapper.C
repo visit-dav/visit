@@ -43,25 +43,10 @@ vtkRectilinearGridMapper::vtkRectilinearGridMapper()
 }
 
 //----------------------------------------------------------------------------
-#if (VTK_MAJOR_VERSION == 5)
-void vtkRectilinearGridMapper::SetInput(vtkRectilinearGrid *input)
-{
-  if(input)
-    {
-    this->SetInputConnection(0, input->GetProducerPort());
-    }
-  else
-    {
-    // Setting a NULL input removes the connection.
-    this->SetInputConnection(0, 0);
-    }
-}
-#else
 void vtkRectilinearGridMapper::SetInputData(vtkRectilinearGrid *input)
 {
     this->SetInputDataInternal(0, input);
 }
-#endif
 
 //----------------------------------------------------------------------------
 // Specify the input data or filter.

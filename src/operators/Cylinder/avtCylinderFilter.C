@@ -244,9 +244,9 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkVisItClipper *clipper = vtkVisItClipper::New();
     clipper->SetInsideOut(true);
     clipper->SetClipFunction(cylinderSlice);
-    clipper->SetInput(in_ds);
+    clipper->SetInputData(in_ds);
+    clipper->Update();
     vtkDataSet *rv = clipper->GetOutput();
-    rv->Update();
 
     ManageMemory(rv);
     clipper->Delete();

@@ -2840,12 +2840,9 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 
     outMesh->GetCellData()->AddArray(ghostCells);
     ghostCells->Delete();
-#if (VTK_MAJOR_VERSION == 5)
-    outMesh->SetUpdateGhostLevel(0);
-#else
     // FIX_ME_VTK6.0, ESB, is this correct?
     vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(outMesh->GetInformation(), 0);
-#endif
+    //outMesh->SetUpdateGhostLevel(0);
 
     //
     //  Create a field-data array indicating the extents of real zones.

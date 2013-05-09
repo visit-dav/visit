@@ -114,6 +114,11 @@
 #include <Environment.h>
 #include <avtStructuredDomainBoundaries.h>
 
+#include <visit-config.h>
+#ifdef HAVE_OSMESA
+#include <vtkVisItOSMesaRenderingFactory.h>
+#endif
+
 #include <string>
 using std::string;
 
@@ -884,9 +889,14 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
 
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
+
     if (avtCallback::GetSoftwareRendering())
     {
-        InitVTKRendering::ForceMesa();
+        // Install factory for  VisIt's OSMesa Render Windnow
+        //InitVTKRendering::ForceMesa();
+#ifdef HAVE_OSMESA
+        vtkVisItOSMesaRenderingFactory::ForceMesa();
+#endif
     }
     else
     {

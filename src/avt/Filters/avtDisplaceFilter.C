@@ -198,11 +198,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         one_var_ds->GetCellData()->AddArray(cell_vecs);
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(one_var_ds);
-#else
         cd2pd->SetInputData(one_var_ds);
-#endif
         cd2pd->Update();
         vtkDataSet *pt_one_var_ds = cd2pd->GetOutput();
 
@@ -223,11 +219,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         || in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
         vtkWarpVector *warp = vtkWarpVector::New();
-#if (VTK_MAJOR_VERSION == 5)
-        warp->SetInput((vtkPointSet *)in_ds);
-#else
         warp->SetInputData((vtkPointSet *)in_ds);
-#endif
         warp->SetScaleFactor(factor);
         warp->Update();
         rv = warp->GetOutput();

@@ -19,7 +19,6 @@
             <lib name="netcdf"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
-            <lib name="exodus"/>
             <lib name="tcmalloc"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
@@ -33,7 +32,6 @@
             <lib name="xdmf"/>
             <lib name="mxml"/>
             <lib name="adios"/>
-            <lib name="visus"/>
             <lib name="pyside"/>
             <lib name="manta"/>
             <lib name="mpich"/>
@@ -56,7 +54,6 @@
             <lib name="netcdf"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
-            <lib name="exodus"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
             <lib name="h5part"/>
@@ -90,7 +87,6 @@
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
-            <lib name="exodus"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
@@ -110,7 +106,6 @@
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
             <lib name="cgns"/>
-            <lib name="exodus"/>
             <lib name="fastbit"/>
             <lib name="gdal"/>
             <lib name="h5part"/>
@@ -139,7 +134,6 @@
         -->
         <group name="advanced" comment="Must be manually downloaded">
             <lib name="mili"/>
-            <lib name="visus"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="tcmalloc"/>
             <lib name="itaps"/>

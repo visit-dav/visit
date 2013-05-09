@@ -325,11 +325,7 @@ avtCompactTreeFilter::Execute(void)
             if (createCleanPolyData)
             {
                 vtkCleanPolyData *cpd = vtkCleanPolyData::New();
-#if (VTK_MAJOR_VERSION == 5)
-                cpd->SetInput((vtkPolyData *) ds);
-#else
                 cpd->SetInputData((vtkPolyData *) ds);
-#endif
                 cpd->SetToleranceIsAbsolute(1);
                 cpd->SetAbsoluteTolerance(tolerance);
                 cpd->Update();

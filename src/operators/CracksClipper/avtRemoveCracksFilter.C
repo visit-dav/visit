@@ -344,7 +344,7 @@ avtRemoveCracksFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     // cracks clip filter
     //
     vtkCrackWidthFilter *cwf = vtkCrackWidthFilter::New();
-    cwf->SetInput(useThis); 
+    cwf->SetInputData(useThis); 
     cwf->SetCrack1Var(atts.GetCrack1Var().c_str());
     cwf->SetCrack2Var(atts.GetCrack2Var().c_str());
     cwf->SetCrack3Var(atts.GetCrack3Var().c_str());
@@ -608,7 +608,7 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
             if (first)
                 posClip->SetCellList(&cellId, 1);
             posClip->SetUseOppositePlane(false);
-            posClip->SetInput(dsToUse);
+            posClip->SetInputData(dsToUse);
             posClip->SetCrackDir(crackvar);
             posClip->SetCrackWidth(crackwidth);
             posClip->SetCellCenters(centers);
@@ -628,7 +628,7 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
             if (first)
                 negClip->SetCellList(&cellId, 1);
             negClip->SetUseOppositePlane(true);
-            negClip->SetInput(dsToUse);
+            negClip->SetInputData(dsToUse);
             negClip->SetCrackDir(crackvar);
             negClip->SetCrackWidth(crackwidth);
             negClip->SetCellCenters(centers);
@@ -665,9 +665,9 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
             else
             {
                 vtkAppendFilter *append = vtkAppendFilter::New();
-                append->AddInput(outds1);
-                append->AddInput(outds2);
-                append->GetOutput()->Update();
+                append->AddInputData(outds1);
+                append->AddInputData(outds2);
+                append->Update();
                 dsToUse->ShallowCopy(append->GetOutput());
                 apdInput[apdInputNum]->ShallowCopy(append->GetOutput());
                 outds1->Delete();
@@ -685,15 +685,15 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
         {
             if (apdInputNum == 4)
             {
-                apd->AddInput(apdInput[apdInputNum]);
-                apd->GetOutput()->Update();
+                apd->AddInputData(apdInput[apdInputNum]);
+                apd->Update();
                 apdInputNum = 0;
                 apdInput[apdInputNum]->ShallowCopy(apd->GetOutput());
                 apd->Delete();
                 apd = vtkAppendFilter::New();
                 avtCallback::ResetTimeout(60*5);
             }
-            apd->AddInput(apdInput[apdInputNum]);
+            apd->AddInputData(apdInput[apdInputNum]);
             apdInputNum++;
         }
     }
@@ -709,13 +709,13 @@ avtRemoveCracksFilter::RemoveCracks(vtkDataSet *inds)
     {
         vtkDataSet *temp = inds->NewInstance();
         temp->ShallowCopy(inds);
-        extract->SetInput(temp);
+        extract->SetInputData(temp);
         extract->SetCellList(cellsToKeepIntact);
-        apd->AddInput(extract->GetOutput());
+        apd->AddInputConnection(extract->GetOutputPort());
         temp->Delete();
     }
     
-    apd->GetOutput()->Update();
+    apd->Update();
     vtkDataSet *ds = apd->GetOutput()->NewInstance();
     ds->ShallowCopy(apd->GetOutput());
 

@@ -286,11 +286,7 @@ vtkBackgroundActor::CreateBackground()
     }
 
     this->GradientMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-    this->GradientMapper->SetInput(this->GradientData);
-#else
     this->GradientMapper->SetInputData(this->GradientData);
-#endif
 
     this->GradientActor = vtkActor2D::New();
 //    this->GradientActor->Modified();

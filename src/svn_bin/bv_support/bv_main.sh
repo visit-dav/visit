@@ -910,7 +910,7 @@ for arg in "${arguments[@]}" ; do
         --java) DO_JAVA="yes"; ON_JAVA="on";;
         --makeflags) next_arg="makeflags";;
         --no-hostconf) DO_HOSTCONF="no"; ON_HOSTCONF="off";;
-        --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on"; ON_parallel="on";;
+        --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; ON_parallel="on";;
         --prefix) next_arg="prefix";;
         --print-vars) next_action="print-vars";;
         --python-module) DO_MODULE="yes"; ON_MODULE="on";;
@@ -948,7 +948,6 @@ for arg in "${arguments[@]}" ; do
         -S) deprecated="${deprecated} --slivr";;
         -t) deprecated="${deprecated} --tarball '<file>'";;
         -v) deprecated="${deprecated} --tarball 'visit<version>.tar.gz'";;
-        -V) deprecated="${deprecated} --visus";;
         -b|-B) deprecated="${deprecated} --boxlib";;
         -f|-F) deprecated="${deprecated} --cfitsio";;
         -g|-G) deprecated="${deprecated} --gdal";;
@@ -1115,7 +1114,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  VISIT_FILE="$(echo $result)"
                  USE_VISIT_FILE="yes";;
               Parallel)
-                 parallel="yes"; DO_ICET="yes"; ON_ICET="on"; DO_MESA="yes"; ON_MESA="on";;
+                 parallel="yes"; DO_ICET="yes"; ON_ICET="on";;
               PythonModule)
                  DO_MODULE="yes";;
               Java)
@@ -1430,13 +1429,13 @@ initialize_module_variables
 # so echo it here.
 #
 if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]]; then
-
+    BYPASS_QT_LICENSE="no"
     check_if_installed "qt" $QT_VERSION
     if [[ $? == 0 ]] ; then
-        DO_QT="no"
+        BYPASS_QT_LICENSE="yes"
     fi
 
-    if [[ "$DO_QT" == "yes" && "$DOWNLOAD_ONLY" == "no" ]] ; then
+    if [[ "$BYPASS_QT_LICENSE" == "no" && "$DOWNLOAD_ONLY" == "no" ]] ; then
         qt_license_prompt
         if [[ $? != 0 ]] ;then
             error "Qt4 Open Source Edition License Declined. Bailing out."

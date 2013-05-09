@@ -201,7 +201,7 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
         temp_ds->GetCellData()->SetScalars(in_ds->GetCellData()->GetScalars());
 
         cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInput(temp_ds);
+        cd2pd->SetInputData(temp_ds);
         cd2pd->Update();
 
         vtkDataSet *temporary = cd2pd->GetOutput();
@@ -223,10 +223,9 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
     //
     // Do the clipping!
     //
-    vtkDataSet *out_ds;
-    clipper->SetInput(in_ds);
-    out_ds = clipper->GetOutput();
-    out_ds->Update();
+    clipper->SetInputData(in_ds);
+    clipper->Update();
+    vtkDataSet *out_ds = clipper->GetOutput();
     ManageMemory(out_ds);
     clipper->Delete();
 

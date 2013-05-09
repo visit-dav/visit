@@ -426,11 +426,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     clean->ConvertPolysToLinesOff();
     clean->ConvertStripsToPolysOff();
     clean->PointMergingOn();
-#if (VTK_MAJOR_VERSION == 5)
-    clean->SetInput(pd);
-#else
     clean->SetInputData(pd);
-#endif
     clean->Update();
     pd->Delete();
 

@@ -866,13 +866,8 @@ vtkVisItGlyph3D::RequestData(
        outPD2->InsertNextCell(c, ptIds);
      }
      vtkAppendPolyData *appender = vtkAppendPolyData::New();
-#if (VTK_MAJOR_VERSION == 5)
-     appender->AddInput(outPD2);
-     appender->AddInput(outPD);
-#else
      appender->AddInputData(outPD2);
      appender->AddInputData(outPD);
-#endif
      appender->Update();
      output->ShallowCopy(appender->GetOutput());
      outPD2->Delete();
@@ -980,37 +975,6 @@ vtkVisItGlyph3D::FillInputPortInformation(int port, vtkInformation *info)
 void
 vtkVisItGlyph3D::SetSourceData(int id, vtkPolyData *pd)
 {
-#if (VTK_MAJOR_VERSION == 5)
-  if (id < 0)
-    {
-    vtkErrorMacro("Bad index " << id << " for source.");
-    return;
-    }
-
-  int numConnections = this->GetNumberOfInputConnections(1);
-  vtkAlgorithmOutput *algOutput = 0;
-  if (pd)
-    {
-    algOutput = pd->GetProducerPort();
-    }
-  else
-    {
-    vtkErrorMacro("Cannot set NULL source.");
-    return;
-    }
-
-  if (id < numConnections)
-    {
-    if (algOutput)
-      {
-      this->SetNthInputConnection(1, id, algOutput);
-      }
-    }
-  else if (id == numConnections && algOutput)
-    {
-    this->AddInputConnection(1, algOutput);
-    }
-#else
   int numConnections = this->GetNumberOfInputConnections(1);
 
   if (id < 0 || id > numConnections)
@@ -1046,7 +1010,6 @@ vtkVisItGlyph3D::SetSourceData(int id, vtkPolyData *pd)
     {
     tp->Delete();
     }
-#endif
 }
 
 // Get a pointer to a source object at a specified table location.

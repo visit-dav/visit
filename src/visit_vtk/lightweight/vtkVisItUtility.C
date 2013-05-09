@@ -1085,11 +1085,7 @@ void
 vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(ds);
-#else
     writer->SetInputData(ds);
-#endif
     writer->SetFileName(fname);
     writer->SetFileTypeToASCII();
     writer->Write();

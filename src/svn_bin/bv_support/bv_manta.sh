@@ -169,6 +169,11 @@ function build_manta
        return 1
     fi
 
+    chmod -R ug+w,a+rX $VISITDIR/manta
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chgrp -R ${GROUP} "$VISITDIR/manta"
+    fi
+
     cd "$START_DIR"
     info "Done with Manta"
 

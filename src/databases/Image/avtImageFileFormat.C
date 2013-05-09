@@ -691,9 +691,9 @@ void avtImageFileFormat::ReadInImage(void)
         if (haveSelections)
             reader->SetDataVOI(xmin,xmax,ymin,ymax,0,0);
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->Delete();
     }
@@ -701,9 +701,9 @@ void avtImageFileFormat::ReadInImage(void)
     {
         vtkPNGReader *reader = vtkPNGReader::New();
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->Delete();
     }
@@ -712,9 +712,9 @@ void avtImageFileFormat::ReadInImage(void)
     {
         vtkJPEGReader *reader = vtkJPEGReader::New();
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->Delete();
     }
@@ -723,9 +723,9 @@ void avtImageFileFormat::ReadInImage(void)
     {
         vtkTIFFReader *reader = vtkTIFFReader::New();
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->Delete();
     }
@@ -735,9 +735,9 @@ void avtImageFileFormat::ReadInImage(void)
         if (haveSelections)
             reader->SetDataVOI(xmin,xmax,ymin,ymax,0,0);
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->Delete();
     }
@@ -746,9 +746,9 @@ void avtImageFileFormat::ReadInImage(void)
     {
         vtkStimulateReader *reader = vtkStimulateReader::New();
         reader->SetFileName(subImages[idx].c_str());
+        reader->Update();
         image = reader->GetOutput();
         image->Register(NULL);
-        image->Update();
         //image->SetSource(NULL);
         reader->GetOrigin(xStart, yStart);
         reader->GetStep(xStep, yStep);

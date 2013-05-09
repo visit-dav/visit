@@ -1,14 +1,14 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkVisItTensorGlyph.h,v $
+  Module:    vtkVisItTensorGlyph.h
 
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -22,36 +22,36 @@
 // tensor, the eigenvalues (and associated eigenvectors) are sorted to
 // determine the major, medium, and minor eigenvalues/eigenvectors.
 //
-// If the boolean variable ThreeGlyphs is not set the major eigenvalue 
-// scales the glyph in the x-direction, the medium in the y-direction, 
-// and the minor in the  z-direction. Then, the glyph is rotated so 
-// that the glyph's local x-axis lies along the major eigenvector, 
-// y-axis along the medium eigenvector, and z-axis along the minor. 
+// If the boolean variable ThreeGlyphs is not set the major eigenvalue
+// scales the glyph in the x-direction, the medium in the y-direction,
+// and the minor in the  z-direction. Then, the glyph is rotated so
+// that the glyph's local x-axis lies along the major eigenvector,
+// y-axis along the medium eigenvector, and z-axis along the minor.
 //
-// If the boolean variable ThreeGlyphs is set three glyphs are produced, 
-// each of them oriented along an eigenvector and scaled according to the 
+// If the boolean variable ThreeGlyphs is set three glyphs are produced,
+// each of them oriented along an eigenvector and scaled according to the
 // corresponding eigenvector.
 //
-// If the boolean variable Symmetric is set each glyph is mirrored (2 or 6 
+// If the boolean variable Symmetric is set each glyph is mirrored (2 or 6
 // glyphs will be produced)
 //
-// The x-axis of the source glyph will correspond to the eigenvector 
+// The x-axis of the source glyph will correspond to the eigenvector
 // on output. Point (0,0,0) in the source will be placed in the data point.
-// Variable Length will normally correspond to the distance from the 
-// origin to the tip of the source glyph along the x-axis, 
+// Variable Length will normally correspond to the distance from the
+// origin to the tip of the source glyph along the x-axis,
 // but can be changed to produce other results when Symmetric is on,
 // e.g. glyphs that do not touch or that overlap.
 //
-// Please note that when Symmetric is false it will generally be better 
+// Please note that when Symmetric is false it will generally be better
 // to place the source glyph from (-0.5,0,0) to (0.5,0,0), i.e. centred
 // at the origin. When symmetric is true the placement from (0,0,0) to
 // (1,0,0) will generally be more convenient.
 //
-// A scale factor is provided to control the amount of scaling. Also, you 
-// can turn off scaling completely if desired. The boolean variable 
+// A scale factor is provided to control the amount of scaling. Also, you
+// can turn off scaling completely if desired. The boolean variable
 // ClampScaling controls the maximum scaling (in conjunction with
-// MaxScaleFactor.) This is useful in certain applications where 
-// singularities or large order of magnitude differences exist in 
+// MaxScaleFactor.) This is useful in certain applications where
+// singularities or large order of magnitude differences exist in
 // the eigenvalues.
 //
 // If the boolean variable ColorGlyphs is set to true the glyphs are
@@ -86,15 +86,26 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description
-  // Construct object with scaling on and scale factor 1.0. Eigenvalues are 
+  // Construct object with scaling on and scale factor 1.0. Eigenvalues are
   // extracted, glyphs are colored with input scalar data, and logarithmic
   // scaling is turned off.
   static vtkVisItTensorGlyph *New();
 
   // Description:
-  // Specify the geometry to copy to each point.
-  void SetSource(vtkPolyData *source);
+  // Specify the geometry to copy to each point. Old style. See
+  // SetSourceConnection.
+  void SetSourceData(vtkPolyData *source);
   vtkPolyData *GetSource();
+
+  // Description:
+  // Specify a source object at a specified table location. New style.
+  // Source connection is stored in port 1. This method is equivalent
+  // to SetInputConnection(1, id, outputPort).
+  void SetSourceConnection(int id, vtkAlgorithmOutput* algOutput);
+  void SetSourceConnection(vtkAlgorithmOutput* algOutput)
+    {
+      this->SetSourceConnection(0, algOutput);
+    }
 
   // Description:
   // Turn on/off scaling of glyph with eigenvalues.
@@ -121,7 +132,7 @@ public:
   vtkBooleanMacro(Symmetric,int);
 
   // Description:
-  // Set/Get the distance, along x, from the origin to the end of the 
+  // Set/Get the distance, along x, from the origin to the end of the
   // source glyph. It is used to draw the symmetric glyphs.
   vtkSetMacro(Length,double);
   vtkGetMacro(Length,double);
@@ -162,7 +173,7 @@ public:
   void SetColorModeToScalars()
     {this->SetColorMode(COLOR_BY_SCALARS);};
   void SetColorModeToEigenvalues()
-    {this->SetColorMode(COLOR_BY_EIGENVALUES);};  
+    {this->SetColorMode(COLOR_BY_EIGENVALUES);};
 
   // Description:
   // Turn on/off scalar clamping. If scalar clamping is on, the ivar
@@ -175,7 +186,7 @@ public:
   // Description:
   // Set/Get the maximum allowable scale factor. This value is compared to the
   // combination of the scale factor times the eigenvalue. If less, the scale
-  // factor is reset to the MaxScaleFactor. The boolean ClampScaling has to 
+  // factor is reset to the MaxScaleFactor. The boolean ClampScaling has to
   // be "on" for this to work.
   vtkSetMacro(MaxScaleFactor,double);
   vtkGetMacro(MaxScaleFactor,double);
@@ -184,6 +195,7 @@ protected:
   vtkVisItTensorGlyph();
   ~vtkVisItTensorGlyph();
 
+  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *);
   virtual int RequestData(vtkInformation *, vtkInformationVector **, 
                           vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *);

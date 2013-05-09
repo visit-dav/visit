@@ -75,70 +75,81 @@
 #   Kathleen Biagas, Wed Jan 30 17:54:21 MST 2013
 #   Preliminary changes for VTK-6.
 #
+#   Kathleen Biagas, Thu Feb 21 16:04:58 MST 2013
+#   Set VTK_LIBRARY_DIRS manually.
+#
+#   Kathleen Biagas, Thu May  2 10:11:44 PDT 2013
+#   Don't attempt the python wrappers if we don't have PYTHON_VERSION.
+# 
+#   Kathleen Biagas, Fri May  3 17:00:03 MST 2013
+#   Ensure that the vtk install has all the libraries we require.
+# 
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
 # Use the VTK_DIR hint from the config-site .cmake file 
 
-SET(USING_VTK5 TRUE)
-IF(EXISTS ${VISIT_VTK_DIR}/VTKConfig.cmake)
-    SET(VTK_DIR ${VISIT_VTK_DIR})
-ELSE(EXISTS ${VISIT_VTK_DIR}/VTKConfig.cmake)
-    IF(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
-        SET(VTK_DIR ${VISIT_VTK_DIR}/lib/vtk-5.8)
-    ELSE(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
-        IF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
-            SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
-            SET(USING_VTK5 FALSE)
-        ELSE(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
-            SET(VTK_DIR ${VISIT_VTK_DIR}/lib)
-        ENDIF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
-    ENDIF(EXISTS ${VISIT_VTK_DIR}/lib/vtk-5.8)
-ENDIF(EXISTS ${VISIT_VTK_DIR}/VTKConfig.cmake)
-
-IF (USING_VTK5)
-# Declare VTK_USE_MANGLED_MESA as a cache variable so we can access it later.
-# We rely on FindVTK to set it to the right value.
-SET(VTK_USE_MANGLED_MESA OFF CACHE INTERNAL "Set a cache variable that FindVTK can override")
-ELSE (USING_VTK5)
-ENDIF (USING_VTK5)
+IF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0/VTKConfig.cmake)
+    SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-6.0)
+ENDIF()
 
 MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
-IF (USING_VTK5)
-INCLUDE(${CMAKE_ROOT}/Modules/FindVTK.cmake)
-ELSE (USING_VTK5)
-#VTK-6 Migration guide says that find_package is preferred
-find_package(VTK 6.0  REQUIRED NO_MODULE
-             PATHS ${VTK_DIR})
-ENDIF (USING_VTK5)
 
+# Set up our list of required and optional vtk modules
+SET(REQ_VTK_MODS 
+        vtkCommonCore
+        vtkCommonDataModel
+        vtkFiltersCore
+        vtkFiltersFlowPaths
+        vtkFiltersHybrid
+        vtkFiltersModeling
+        vtkIOLegacy
+        vtkIOPLY
+        vtkIOXML
+        vtkInteractionStyle
+        vtkRenderingAnnotation
+        vtkRenderingFreeTypeOpenGL 
+        vtkRenderingOpenGL)
+
+IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    LIST(APPEND REQ_VTK_MODS vtkGUISupportQtOpenGL)
+ENDIF()
+
+# Optional
+#SET(OPT_VTK_MODS
+#       vtkGeovisCore # Cartographic Projection
+#       vtkIOEnSight  # EnSight
+#       vtklibxml2    # Xdmf
+#   )
+
+# We don't list our required modules in the find_package call because it
+# does funny things with VTK_INCLUDES, and the OPTIONAL_COMPONENTS arg
+# causes an error if anything in the optional list is not found, would be better
+# if it issued a warning instead. Perhaps one day it will be fixed, and we can 
+# use this: find_package(VTK 6.0 REQUIRED ${REQ_VTK_MODS} OPTIONAL_COMPONENTS ${OPT_VTK_MODS} NO_MODULE PATHS ${VTK_DIR})
+
+find_package(VTK 6.0 REQUIRED NO_MODULE PATHS ${VTK_DIR})
+
+# Ensure we have all the required modules:
+FOREACH(module ${REQ_VTK_MODS})
+    IF(NOT TARGET ${module})
+        MESSAGE(ERROR "VisIt requires ${module}")
+    ENDIF()
+ENDFOREACH()
+
+
+
+SET(VTK_LIBRARY_DIRS ${VTK_INSTALL_PREFIX}/lib CACHE PATH "Path to vtk libraries" FORCE)
 MESSAGE(STATUS "  VTK_FOUND=${VTK_FOUND}")
-MESSAGE(STATUS "  VTK_USE_FILE=${VTK_USE_FILE}")
 MESSAGE(STATUS "  VTK_MAJOR_VERSION=${VTK_MAJOR_VERSION}")
 MESSAGE(STATUS "  VTK_MINOR_VERSION=${VTK_MINOR_VERSION}")
 MESSAGE(STATUS "  VTK_BUILD_VERSION=${VTK_BUILD_VERSION}")
 MESSAGE(STATUS "  VTK_INCLUDE_DIRS=${VTK_INCLUDE_DIRS}")
-MESSAGE(STATUS "  VTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}")
-IF (VTK_MAJOR_VERSION STREQUAL "6")
 MESSAGE(STATUS "  VTK_DEFINITIONS=${VTK_DEFINITIONS}")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-MESSAGE(STATUS "  VTK_KITS=${VTK_KITS}")
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
-
-
-# Set the VisIt mangled mesa off of the VTK mangled mesa variable.
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-IF("${VTK_USE_MANGLED_MESA}" STREQUAL "ON")
-   MESSAGE(STATUS "VTK uses mangled mesa")
-   SET(VISIT_USE_MANGLED_MESA "ON" CACHE BOOL "Use mangled mesa in VisIt")
-   # Add path to the directory that includes MangledMesa to the include 
-   # directories.
-   GET_FILENAME_COMPONENT(MANGLEMESADIR ${VTK_DIR}/../../include ABSOLUTE)
-   SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS} ${MANGLEMESADIR})
-ENDIF("${VTK_USE_MANGLED_MESA}" STREQUAL "ON")
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
+MESSAGE(STATUS "  VTK_LIBRARIES=${VTK_LIBRARIES}")
+MESSAGE(STATUS "  VTK_INSTALL_PREFIX=${VTK_INSTALL_PREFIX}")
+MESSAGE(STATUS "  VTK_LIBRARY_DIRS=${VTK_LIBRARY_DIRS}")
 
 # Add install commands for all of the VTK libraries. Is there a better way?
 IF(APPLE)
@@ -155,88 +166,43 @@ IF(VISIT_VTK_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping installation of VTK libraries")
 ELSE(VISIT_VTK_SKIP_INSTALL)
     IF(NOT WIN32)
-        SET(pathnameandprefix "${VTK_LIBRARY_DIRS}/lib")
+        SET(pathnameandprefix "${VTK_INSTALL_PREFIX}/lib/lib")
     ELSE()
-        SET(pathnameandprefix "${VTK_RUNTIME_DIRS}/")
+        SET(pathnameandprefix "${VTK_INSTALL_PREFIX}/bin/")
+        SET(pathnameandprefixlib "${VTK_INSTALL_PREFIX}/lib/")
     ENDIF(NOT WIN32)
-
     MACRO(SETUP_INSTALL vtklib)
-IF (VTK_MAJOR_VERSION STREQUAL "6")
         SET(LIBNAME   ${pathnameandprefix}${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-        SET(LIBNAME   ${pathnameandprefix}${vtklib}.${SO_EXT})
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
         IF(EXISTS ${LIBNAME})
             THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
         ENDIF(EXISTS ${LIBNAME})
 
         IF(WIN32)
             # install .lib versions, too
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-            SET(LIBNAME   ${pathnameandprefix}${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-            SET(LIBNAME   ${pathnameandprefix}${vtklib}.lib)
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
+            SET(LIBNAME   ${pathnameandprefixlib}${vtklib}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib)
             IF(EXISTS ${LIBNAME})
                 THIRD_PARTY_INSTALL_LIBRARY(${LIBNAME})
             ENDIF(EXISTS ${LIBNAME})
         ENDIF(WIN32)
     ENDMACRO(SETUP_INSTALL vtklib)
-   
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-    # FIX_ME_VTK6.0, BAD, BAD, BAD, should get python version another way. 
-    IF(WIN32)
-       SET(PYVER "27")
-    ELSE(WIN32)
-       SET(PYVER "26")
-    ENDIF(WIN32)
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
+  
     # Base libs and their python wrappings
     FOREACH(VTKLIB ${VTK_LIBRARIES})
         SETUP_INSTALL("${VTKLIB}")
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-        # this needs python version now, majorminor
-        SETUP_INSTALL("${VTKLIB}Python${PYVER}D")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-        SETUP_INSTALL("${VTKLIB}PythonD")
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
     ENDFOREACH(VTKLIB)  
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-    UNSET(PYVER) 
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
-    # Utility libs, and misc not defined by VTK_LIBRARIES var
-    FOREACH(VTKLIB 
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-        ${VTK_PNG_LIBRARIES}
-        ${VTK_ZLIB_LIBRARIES}
-        ${VTK_JPEG_LIBRARIES}
-        ${VTK_TIFF_LIBRARIES}
-        ${VTK_EXPAT_LIBRARIES}
-        ${VTK_FREETYPE_LIBRARIES}
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
-        ${VTK_LIBXML2_LIBRARIES}
-        ${VTK_LIBPROJ4_LIBRARIES}
-        MapReduceMPI
-        mpistubs
-        vtkDICOMParser
-        vtkPythonCore
-        vtkalglib
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-        vtkftgl
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
-        vtksqlite
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-        vtksys
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
-        vtkverdict
-        )
-        SETUP_INSTALL("${VTKLIB}")
-    ENDFOREACH(VTKLIB)  
+
+    # Python
+    IF(PYTHON_VERSION)
+        # different naming convention.
+        # Remove '.' from python version for use in vtk python library naming. 
+        STRING(REPLACE "." "" PYVER ${PYTHON_VERSION})
+        FOREACH(VTKLIB ${VTK_LIBRARIES})
+            SETUP_INSTALL("${VTKLIB}Python${PYVER}D")
+        ENDFOREACH(VTKLIB)  
+        FOREACH(VTKLIB vtkWrappingPython${PYVER})
+            SETUP_INSTALL("${VTKLIB}")
+        ENDFOREACH(VTKLIB)  
+    ENDIF(PYTHON_VERSION)
 
     # Add install targets for VTK headers too -- but just the vtk-5.0 dir.
     # The VTK_INCLUDE_DIRS may contain stuff like /usr/include or the
@@ -326,6 +292,7 @@ MARK_AS_ADVANCED(VTK_PYTHON_WRAPPERS_FOUND)
 
 # If vtk was build with R, we need to add the R link dirs to VTK_LIBRARY_DIRS
 # This is necessary b/c VTK doesn't do a good job exposing R support in VTKConfig.cmake.
+# VTK-6 FIX ME -- verify if this is still the case
 IF(R_FOUND)
     SET(VTK_LIBRARY_DIRS ${VTK_LIBRARY_DIRS} ${R_LIBRARY_DIR})
 ENDIF(R_FOUND)

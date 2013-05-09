@@ -55,7 +55,7 @@ public:
   // Specify the length of a line segment. The length is expressed in terms of
   // elapsed time. Smaller values result in smoother appearing streamlines, but
   // greater numbers of line primitives.
-  vtkSetClampMacro(StepLength,double,0.000001,VTK_LARGE_FLOAT);
+  vtkSetClampMacro(StepLength,double,0.000001,VTK_FLOAT_MAX);
   vtkGetMacro(StepLength,double);
 
 protected:

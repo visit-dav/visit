@@ -65,6 +65,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkShortArray.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
@@ -10220,7 +10221,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
         ghostZones->SetName("avtGhostZones");
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
-        ugrid->SetUpdateGhostLevel(0);
+        vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(ugrid->GetInformation(), 0);
     }
 }
 
@@ -11344,7 +11345,7 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
         ghostZones->SetName("avtGhostZones");
         ugrid->GetCellData()->AddArray(ghostZones);
         ghostZones->Delete();
-        ugrid->SetUpdateGhostLevel(0);
+        vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(ugrid->GetInformation(), 0);
     }
 
     //
@@ -12234,8 +12235,7 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
         ds->GetFieldData()->AddArray(realDims);
         ds->GetFieldData()->CopyFieldOn("avtRealDims");
         realDims->Delete();
-
-        ds->SetUpdateGhostLevel(0);
+        vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(ds->GetInformation(), 0);
     }
 }
 

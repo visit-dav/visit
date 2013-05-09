@@ -76,11 +76,11 @@ function bv_hdf4_host_profile
         >> $HOSTCONF
         if [[ "$DO_SZIP" == "yes" ]] ; then
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg-${VTK_SHORT_VERSION} TYPE STRING)" \
             >> $HOSTCONF
           else
             echo \
-            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH}/lib vtkjpeg-${VTK_SHORT_VERSION} TYPE STRING)" \
             >> $HOSTCONF
         fi
     fi
@@ -1073,13 +1073,13 @@ diff -c a/configure hdf-4.2.5/configure
 
   done
 
-!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg" >&5
-! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg... " >&6; }
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg-6.0" >&5
+! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg-6.0... " >&6; }
 ! if test "${ac_cv_lib_jpeg_vtk_jpeg_start_decompress+set}" = set; then :
     $as_echo_n "(cached) " >&6
   else
     ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lvtkjpeg  $LIBS"
+! LIBS="-lvtkjpeg-6.0  $LIBS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
   /* end confdefs.h.  */
 
@@ -1155,7 +1155,7 @@ diff -c a/configure hdf-4.2.5/configure
   #define HAVE_LIBJPEG 1
   _ACEOF
 
-!   LIBS="-lvtkjpeg $LIBS"
+!   LIBS="-lvtkjpeg-6.0 $LIBS"
 
   else
     unset HAVE_JPEG
@@ -1178,13 +1178,13 @@ diff -c a/configure hdf-4.2.5/configure
         LDFLAGS="$LDFLAGS -L$jpeg_lib"
       fi
 
-!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg" >&5
-! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg... " >&6; }
+!     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for vtk_jpeg_start_decompress in -lvtkjpeg-6.0" >&5
+! $as_echo_n "checking for vtk_jpeg_start_decompress in -lvtkjpeg-6.0... " >&6; }
 ! if test "${ac_cv_lib_jpeg_vtk_jpeg_start_decompress+set}" = set; then :
     $as_echo_n "(cached) " >&6
   else
     ac_check_lib_save_LIBS=$LIBS
-! LIBS="-lvtkjpeg  $LIBS"
+! LIBS="-lvtkjpeg-6.0  $LIBS"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
   /* end confdefs.h.  */
 
@@ -1260,7 +1260,7 @@ diff -c a/configure hdf-4.2.5/configure
   #define HAVE_LIBJPEG 1
   _ACEOF
 
-!   LIBS="-lvtkjpeg $LIBS"
+!   LIBS="-lvtkjpeg-6.0 $LIBS"
 
   else
     unset HAVE_JPEG
@@ -1339,11 +1339,11 @@ function build_hdf4
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-        CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/ \
-        -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtkjpeg\" \
+        CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
+        -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
-        --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH\" \
+        --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
         --disable-dependency-tracking"
         if [[ $? != 0 ]] ; then
@@ -1356,13 +1356,13 @@ function build_hdf4
         export LD_LIBRARY_PATH="$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib":"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
         # In order to ensure $FORTRANARGS is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
-        sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        issue_command sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" LIBS=\"-lm\" \
-        CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/ \
-        -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtkjpeg\" \
+        CPPFLAGS=\"-I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION} \
+        -I$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
-        --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH\" \
+        --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\""
         if [[ $? != 0 ]] ; then
            warn "HDF4 configure failed.  Giving up.\n"\
@@ -1406,7 +1406,7 @@ function build_hdf4
            -Wl,-current_version,$HDF4_VERSION \
            -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
            -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
-           -lvtkjpeg -lsz -lz
+           -lvtkjpeg-${VTK_SHORT_VERSION} -lsz -lz
         if [[ $? != 0 ]] ; then
            warn \
 "HDF4 dynamic library build failed for libdf.${SO_EXT}.  Giving up"
@@ -1423,7 +1423,7 @@ function build_hdf4
            -L"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib" \
            -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
            -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
-           -lvtkjpeg -ldf -lsz -lz
+           -lvtkjpeg-${VTK_SHORT_VERSION} -ldf -lsz -lz
         if [[ $? != 0 ]] ; then
            warn \
 "HDF4 dynamic library build failed for libmfhdf.${SO_EXT}.  Giving up"

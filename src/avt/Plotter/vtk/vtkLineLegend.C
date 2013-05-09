@@ -100,11 +100,7 @@ vtkLineLegend::vtkLineLegend()
 
   this->BoundingBox = vtkPolyData::New();
   this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->BoundingBoxMapper->SetInput(this->BoundingBox);
-#else
   this->BoundingBoxMapper->SetInputData(this->BoundingBox);
-#endif
   this->BoundingBoxActor = vtkActor2D::New();
   this->BoundingBoxActor->SetMapper(this->BoundingBoxMapper);
   this->BoundingBoxActor->GetPositionCoordinate()->
@@ -124,11 +120,7 @@ vtkLineLegend::vtkLineLegend()
 
   this->Line = vtkPolyData::New();
   this->LineMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->LineMapper->SetInput(this->Line);
-#else
   this->LineMapper->SetInputData(this->Line);
-#endif
   this->LineActor = vtkActor2D::New();
   this->LineActor->SetMapper(this->LineMapper);
   this->LineActor->GetPositionCoordinate()->

@@ -537,11 +537,7 @@ avtLineScanFilter::PostExecute(void)
         if (pd_msg[i] != NULL)
         {
             vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-            writer->SetInput(pd_msg[i]);
-#else
             writer->SetInputData(pd_msg[i]);
-#endif
             writer->SetWriteToOutputString(1);
             writer->SetFileTypeToBinary();
             writer->Write();
@@ -610,11 +606,7 @@ avtLineScanFilter::PostExecute(void)
             charArray->SetArray((char *) recvmessages[i],recvcount[i], iOwnIt);
             reader->SetReadFromInputString(1);
             reader->SetInputArray(charArray);
-#if (VTK_MAJOR_VERSION == 5)
-            appender->AddInput(reader->GetOutput());
-#else
             appender->AddInputData(reader->GetOutput());
-#endif
             reader->Delete();
             charArray->Delete();
         }
@@ -653,11 +645,7 @@ avtLineScanFilter::PostExecute(void)
 #else
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
     for (int i = 0 ; i < nLeaves ; i++)
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput((vtkPolyData *) leaves[i]);
-#else
         appender->AddInputData((vtkPolyData *) leaves[i]);
-#endif
     appender->Update();
     vtkPolyData *output = appender->GetOutput();
     avtDataTree_p newtree = new avtDataTree(output, -1);

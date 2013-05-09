@@ -4,7 +4,7 @@
       $(ENSIGHT_FLAGS)
     </CXXFLAGS>
     <LIBS>
-      $(ENSIGHT_LIBS)
+      vtkIOEnSight
     </LIBS>
     <FilePatterns>
       *.case
