@@ -16,7 +16,9 @@
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file":"zipwrapper.py"},
+                    {"category":"databases","file":"exodus.py"},
                     {"category":"queries","file": "pick.py","cases":"PickAfterEngineCrash"},
+                    {"category":"queries","file":"conncomp.py"},
                     {"category":"session","file":"correlationsession.py"},
                     {"category":"session","file":"rect3d-contour.py"},
                     {"category":"session","file":"sessionexpression.py"},
@@ -39,6 +41,7 @@
                     {"category":"hybrid","file":"matsel.py","cases":["hybrid_matsel_02"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"zipwrapper.py"},
+                    {"category":"databases","file":"exodus.py"},
                     {"category":"databases","file": "pixie.py","cases":["pixie_04"]},
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
@@ -56,7 +59,8 @@
                     {"category":"session","file":"wavecontour.py"},
                     {"category":"session","file":"legendproperties.py","cases":["legendproperties00","legendproperties01"]},
                     {"category":"queries","file": "pick.py","cases":"PickAfterEngineCrash"},
-                    {"category":"queries","file": "revolved_surface_area.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"},
+                    {"category":"queries","file":"conncomp.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"plots","file": "streamline_geom.py", "cases":["streamline_geom_08",
@@ -77,6 +81,7 @@
                     {"category":"databases","file": "silo.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file": "silo_altdriver.py","cases":["silo_05","silo_06"]},
                     {"category":"databases","file":"zipwrapper.py"},
+                    {"category":"databases","file":"exodus.py"},
                     {"category":"hybrid","file": "missingdata.py", "cases":["missingdata_0_04"]},
                     {"category":"rendering","file":"compositing.py"},
                     {"category": "plots", "file":"pics.py","cases":["pics_MB_3D_rect_POD_DormandPrince_stream_both"]},
@@ -90,6 +95,7 @@
                     {"category":"session","file":"wavecontour.py"},
                     {"category":"session","file":"legendproperties.py","cases":["legendpropeties00","legendproperties01"]},
                     {"category":"queries","file": "pick.py","cases":"PickAfterEngineCrash"},
-                    {"category":"queries","file": "revolved_surface_area.py"}
+                    {"category":"queries","file": "revolved_surface_area.py"},
+                    {"category":"queries","file":"conncomp.py"}
                     ]}
 ]}
