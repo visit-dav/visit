@@ -84,10 +84,6 @@ ADD_LIBRARY(lightweight_visit_vtk
     ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
 )
 
-IF (VTK_MAJOR_VERSION STREQUAL "6")
-TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommonCore vtkFiltersCore vtkIOCore)
-ELSE (VTK_MAJOR_VERSION STREQUAL "6")
-TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommon vtkFiltering vtkIO)
-ENDIF (VTK_MAJOR_VERSION STREQUAL "6")
+TARGET_LINK_LIBRARIES(lightweight_visit_vtk visitcommon vtkCommonCore vtkFiltersCore vtkIOLegacy)
 
 VISIT_INSTALL_TARGETS(lightweight_visit_vtk)

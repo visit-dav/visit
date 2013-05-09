@@ -818,13 +818,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
     image->SetExtent(0, nx-1, 0, ny-1, 0, 0);
     image->SetSpacing(1., 1., 1.);
     image->SetOrigin(0., 0., 0.);
-#if (VTK_MAJOR_VERSION == 5)
-    image->SetNumberOfScalarComponents(3);
-    image->SetScalarType(VTK_UNSIGNED_CHAR);
-    image->AllocateScalars();
-#else
     image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-#endif
     unsigned char *pixels = (unsigned char *)image->GetScalarPointer(0, 0, 0);
 
     unsigned char pixel;
@@ -847,11 +841,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
         char fileName[24];
         sprintf(fileName, "output%02d.bmp", iImage);
         writer->SetFileName(fileName);
-#if (VTK_MAJOR_VERSION == 5)
-        writer->SetInput(image);
-#else
         writer->SetInputData(image);
-#endif
         writer->Write();
         writer->Delete();
     }
@@ -861,11 +851,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
         char fileName[24];
         sprintf(fileName, "output%02d.jpg", iImage);
         writer->SetFileName(fileName);
-#if (VTK_MAJOR_VERSION == 5)
-        writer->SetInput(image);
-#else
         writer->SetInputData(image);
-#endif
         writer->Write();
         writer->Delete();
     }
@@ -875,11 +861,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
         char fileName[24];
         sprintf(fileName, "output%02d.png", iImage);
         writer->SetFileName(fileName);
-#if (VTK_MAJOR_VERSION == 5)
-        writer->SetInput(image);
-#else
         writer->SetInputData(image);
-#endif
         writer->Write();
         writer->Delete();
     }
@@ -889,11 +871,7 @@ avtXRayImageQuery::WriteImage(int iImage, int nPixels, T *fbuf)
         char fileName[24];
         sprintf(fileName, "output%02d.tif", iImage);
         writer->SetFileName(fileName);
-#if (VTK_MAJOR_VERSION == 5)
-        writer->SetInput(image);
-#else
         writer->SetInputData(image);
-#endif
         writer->Write();
         writer->Delete();
     }
@@ -940,7 +918,7 @@ avtXRayImageQuery::WriteFloats(int iImage, int nPixels, T *fbuf)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, char *type)
+avtXRayImageQuery::WriteBOVHeader(int iImage, int nx, int ny, const char *type)
 {
     char fileName[24];
     sprintf(fileName, "output%02d.bov", iImage);

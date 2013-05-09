@@ -287,7 +287,7 @@ WriteMesh(vtkDataSet *_ds, int nblocks, int chunk,
         debug5 << "Converting mesh to simplexes..." << endl;
         debug5 << "    " << _ds->GetNumberOfPoints() << " points, " << _ds->GetNumberOfCells() << " cells ==> ";
         vtkDataSetTriangleFilter *tf = vtkDataSetTriangleFilter::New();
-        tf->SetInput(_ds);
+        tf->SetInputData(_ds);
         tf->Update();
         ds = (vtkDataSet*) tf->GetOutput();
         ds->Register(NULL);
@@ -882,7 +882,7 @@ avtITAPS_CWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // What is rule for the null character in specifying length of string
     // What should impl. do with a string that is empty (e.g. "") as opposed
     // to a pointer to 0.
-    char *dummyStr = 0;
+    char const *dummyStr = 0;
 #if defined(ITAPS_GRUMMP)
     if (spatialDim == 2)
         dummyStr = "2D";

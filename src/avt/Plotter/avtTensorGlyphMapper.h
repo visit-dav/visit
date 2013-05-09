@@ -48,6 +48,7 @@
 #include <avtMapper.h>
 
 class     vtkVisItTensorGlyph;
+class     vtkAlgorithmOutput;
 class     vtkLookupTable;
 class     vtkPolyData;
 class     vtkVisItPolyDataNormals;
@@ -75,12 +76,22 @@ class     vtkVisItPolyDataNormals;
 //    Use VisIt's version of TensorGlyph so that orignal zone and node
 //    arrays can be copied through.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PST 2013
+//    Changed signature of InsertFilters.
+//
+//    Kathleen Biagas, Thu Feb 7 08:45:03 PST 2013
+//    Changed signature of constructor to accept vtkAlgorithmInput in order
+//    to preserve pipeline connections with vtk-6.
+//
+//    Kathleen Biagas, Thu Mar 14 13:03:50 PDT 2013
+//    Remove normalsFilter.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
 {
   public:
-                               avtTensorGlyphMapper(vtkPolyData *);
+                               avtTensorGlyphMapper(vtkAlgorithmOutput *);
     virtual                   ~avtTensorGlyphMapper();
 
     void                       ColorByMagOn(void);
@@ -91,7 +102,7 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     void                       SetLookupTable(vtkLookupTable *lut);
 
   protected:
-    vtkPolyData               *glyph;
+    vtkAlgorithmOutput        *glyph;
     vtkLookupTable            *lut;
     bool                       colorByMag;
     unsigned char              glyphColor[3];
@@ -100,12 +111,11 @@ class PLOTTER_API  avtTensorGlyphMapper : public avtMapper
     bool                       autoScale;
 
     vtkVisItTensorGlyph      **tensorFilter;
-    vtkVisItPolyDataNormals  **normalsFilter;
     int                        nTensorFilters;
 
     virtual void               CustomizeMappers(void);
 
-    virtual vtkDataSet        *InsertFilters(vtkDataSet *, int);
+    virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int);
     virtual void               SetUpFilters(int);
 };
 

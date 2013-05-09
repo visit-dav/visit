@@ -1229,10 +1229,10 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         {
             slicer->SetCellList(NULL, 0);
         }
-        slicer->SetInput(in_ds);
+        slicer->SetInputData(in_ds);
         if (atts.GetProject2d())
         {
-            transform->SetInput(slicer->GetOutput());
+            transform->SetInputConnection(slicer->GetOutputPort());
             transform->GetExecutive()->SetOutputData(0, pd);
     
             //
@@ -2224,8 +2224,8 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
     // Slice and project our bounding box to mimic what would happen to our
     // original dataset.
     //
-    slicer->SetInput(rgrid);
-    transform->SetInput(slicer->GetOutput());
+    slicer->SetInputData(rgrid);
+    transform->SetInputConnection(slicer->GetOutputPort());
     transform->Update();
 
     //

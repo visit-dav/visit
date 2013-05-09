@@ -163,38 +163,25 @@ vtkMultiSplitter::RequestData(
     //
     // Initialize some frequently used values.
     //
-    vtkDataSet *input = vtkDataSet::SafeDownCast(
+    vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
     vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-    vtkDataSet *ds = input;
-
-    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
-    {
-        debug1 << "vtkMutliSplitter: Can't operate on this dataset.\n";
-        return 1;
-    }
-
     //
     // Set general input/output data
     //
-    vtkCellData *inCD = ds->GetCellData();
+    vtkCellData *inCD = rg->GetCellData();
 
     //
     // Populate the vfv with all the hexes.
     //
-    vtkRectilinearGrid *rg = NULL;
     int        dims[3];
-    float     *X   = NULL;
-    float     *Y   = NULL;
-    float     *Z   = NULL;
-
-    rg = (vtkRectilinearGrid*)ds;
     rg->GetDimensions(dims);
-    X = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
-    Y = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
-    Z = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
+
+    float *X   = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
+    float *Y   = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
+    float *Z   = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
 
     int npts = dims[0] * dims[1] * dims[2];
     std::vector<float> pts;
@@ -542,7 +529,7 @@ vtkMultiSplitter::RequestData(
 int
 vtkMultiSplitter::FillInputPortInformation(int, vtkInformation *info)
 {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkRectilinearGrid");
     return 1;
 }
 

@@ -132,11 +132,7 @@ Zoom2D::Zoom2D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
     lines->Delete();
 #endif
     guideLinesMapper = proxy.CreateXorGridMapper();
-#if (VTK_MAJOR_VERSION == 5)
-    guideLinesMapper->SetInput(guideLines);
-#else
     guideLinesMapper->SetInputData(guideLines);
-#endif
 //    guideLinesMapper->SetDots(2, 3);
     
     guideLinesActor  = vtkActor2D::New();

@@ -153,11 +153,7 @@ int vtkLinesFromOriginalCells::RequestData(
       vtkDebugMacro(<<"No proper match for OriginalCellNumbers found in "
                     "field data. Using vtkExtractEdges.");
       vtkExtractEdges *extractor = vtkExtractEdges::New();
-#if (VTK_MAJOR_VERSION == 5)
-      extractor->SetInput(input);
-#else
       extractor->SetInputData(input);
-#endif
       extractor->Update();
       output->ShallowCopy(extractor->GetOutput());
       extractor->Delete();

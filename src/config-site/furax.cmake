@@ -57,10 +57,6 @@ SET(VISIT_CXX_FLAGS "-O2")
 ##
 
 ##
-## Exodus
-##
-
-##
 ## GDAL
 ##
 

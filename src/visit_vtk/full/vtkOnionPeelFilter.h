@@ -132,7 +132,7 @@ public:
 
   // Description:
   // Set the current layer value.
-  vtkSetClampMacro(RequestedLayer,int, 0, VTK_LARGE_INTEGER);
+  vtkSetClampMacro(RequestedLayer,int, 0, VTK_INT_MAX);
   vtkGetMacro(RequestedLayer,int);
 
   // Description:
@@ -152,7 +152,7 @@ public:
        { this->SetAdjacencyType(VTK_NODE_ADJACENCY); };
   const char *GetAdjacencyTypeAsString();
 
-  bool Initialize();
+  bool Initialize(vtkDataSet *);
 
   void SetBadSeedCallback(BadSeedCallback, void *);
  
@@ -167,22 +167,19 @@ protected:
                           vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
-  void Grow();
-  void GenerateOutputGrid();
+  void Grow(vtkDataSet *);
+  void GenerateOutputGrid(vtkDataSet *, vtkUnstructuredGrid *);
 
-  void FindCellNeighborsByNodeAdjacency(vtkIdList *, vtkIdList*);
-  void FindCellNeighborsByFaceAdjacency(vtkIdList *, vtkIdList*);
-  void FindCellsCorrespondingToOriginal(int, vtkIdList*);
-  void FindCellsCorrespondingToOriginal(vtkIdList *, vtkIdList*);
-  void FindNodesCorrespondingToOriginal(int, vtkIdList*);
+  void FindCellNeighborsByNodeAdjacency(vtkDataSet *, vtkIdList *, vtkIdList*);
+  void FindCellNeighborsByFaceAdjacency(vtkDataSet *, vtkIdList *, vtkIdList*);
+  void FindCellsCorrespondingToOriginal(vtkDataSet *, int, vtkIdList*);
+  void FindCellsCorrespondingToOriginal(vtkDataSet *, vtkIdList *, vtkIdList*);
+  void FindNodesCorrespondingToOriginal(vtkDataSet *, int, vtkIdList*);
 
 // Protected Data Members
 
   vtkIdList *layerCellIds;
   vtkIdList *cellOffsets;
-
-  vtkDataSet *input;
-  vtkUnstructuredGrid *output;
 
   int maxLayersReached;
   int maxLayerNum;

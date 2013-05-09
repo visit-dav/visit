@@ -325,11 +325,7 @@ avtTransform::ExecuteData(vtkDataSet *in_ds, int, std::string)
       case VTK_POLY_DATA:
       case VTK_UNSTRUCTURED_GRID:
       case VTK_STRUCTURED_GRID:
-#if (VTK_MAJOR_VERSION == 5)
-        transform->SetInput((vtkPointSet *)in_ds);
-#else
         transform->SetInputData((vtkPointSet *)in_ds);
-#endif
         break;
 
       default:

@@ -51,9 +51,11 @@
 #include <vtkCellType.h>
 #include <vtkExtentTranslator.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -2413,7 +2415,8 @@ debug4 << "Ymin: " << info.start[1] << " < " << info.start_no_ghost[1] << endl;
     ds->GetCellData()->AddArray(ghostCells);
     ghostCells->Delete();
 
-    ds->SetUpdateGhostLevel(0);
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 #endif
     // Add the min/max local logical extents of this domain.  It's
     // an alternate way we label ghost zones for structured grids.

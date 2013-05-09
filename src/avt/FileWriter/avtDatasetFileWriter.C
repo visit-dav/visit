@@ -352,6 +352,9 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    Brad Whitlock, Thu Feb 16 10:08:08 PST 2012
 //    Add vtkGeometryFilter to ensure that we have polydata for the OBJ writer.
 //
+//    Kathleen Biagas, Fri Feb 22 15:39:02 PST 2013
+//    If using cd2pd, use it's ouput port as input to the geometry filter.
+//
 // ****************************************************************************
 
 void
@@ -359,30 +362,25 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
                                    const char *label)
 {
     vtkDataSet *activeDS = ds;
-    vtkCellDataToPointData *cd2pd = NULL;
+
+    // Make sure that we have polydata.
+    vtkGeometryFilter *geom = vtkGeometryFilter::New();
 
     //
     // The OBJ file is going to expect the dataset as having node-centered
     // data.  
     //
+    vtkCellDataToPointData *cd2pd = NULL;
     if (activeDS->GetCellData()->GetScalars() != NULL)
     {
         cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(activeDS);
-#else
         cd2pd->SetInputData(activeDS);
-#endif
-        activeDS = cd2pd->GetOutput();
+        geom->SetInputConnection(cd2pd->GetOutputPort());
     }
-
-    // Make sure that we have polydata.
-    vtkGeometryFilter *geom = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    geom->SetInput(activeDS);
-#else
-    geom->SetInputData(activeDS);
-#endif
+    else 
+    {
+        geom->SetInputData(activeDS);
+    }
     geom->Update();
     activeDS = geom->GetOutput();
 
@@ -430,11 +428,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
     {
         writer->SetLabel(label);
     }
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput((vtkPolyData *) toBeWritten);
-#else
     writer->SetInputData((vtkPolyData *) toBeWritten);
-#endif
     writer->SetFileName(fname);
     writer->Write();
     writer->Delete();
@@ -530,11 +524,7 @@ void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(ds);
-#else
     writer->SetInputData(ds);
-#endif
     if (bin)
     {
         writer->SetFileTypeToBinary();
@@ -644,11 +634,7 @@ avtDatasetFileWriter::WriteSTLFile(const char *filename, bool binary)
     vtkTriangleFilter *tris = vtkTriangleFilter::New();
     tris->SetPassLines(false);
     tris->SetPassVerts(false);
-#if (VTK_MAJOR_VERSION == 5)
-    tris->SetInput((vtkPolyData *) ds);
-#else
     tris->SetInputData((vtkPolyData *) ds);
-#endif
 
     vtkVisItSTLWriter *writer = vtkVisItSTLWriter::New();
     if (binary)
@@ -705,11 +691,7 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
     if (arr)
         writer->SetArrayName(arr->GetName());
     
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(ds);
-#else
     writer->SetInputData(ds);
-#endif
     writer->SetFileName(filename);
     
     vtkScalarsToColors *lut = (arr ? GetColorTableFromEnv() : NULL);
@@ -931,11 +913,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
         for (int i = 0 ; i < numInputs ; i++)
         {
             inInfo = pmap.pf->GetInputPortInformation(i);
-#if (VTK_MAJOR_VERSION == 5)
-            pmap.af->AddInput(vtkPolyData::SafeDownCast(
-#else
             pmap.af->AddInputData(vtkPolyData::SafeDownCast(
-#endif
                               inInfo->Get(vtkDataObject::DATA_OBJECT()))); 
         }
         pmap.pf->RemoveAllInputs();
@@ -969,11 +947,8 @@ avtDatasetFileWriter::GetSingleDataset(void)
         }
     }
     rv->Register(NULL);
-#if (VTK_MAJOR_VERSION == 5)
-    // rv->Update();
-#else
     // FIX_ME_VTK6.0, ESB, can we remove the update safely?
-#endif
+    //rv->Update();
     pmap.af->Delete();
     pmap.pf->Delete();
     return rv;
@@ -1642,20 +1617,12 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     //
     if (ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        geom->SetInput(ds);
-#else
         geom->SetInputData(ds);
-#endif
         tris->SetInputConnection(geom->GetOutputPort());
     }
     else
     {
-#if (VTK_MAJOR_VERSION == 5)
-        tris->SetInput((vtkPolyData*)ds);
-#else
         tris->SetInputData((vtkPolyData*)ds);
-#endif
     }
 
     //

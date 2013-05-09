@@ -12,6 +12,7 @@
     </LDFLAGS>
     <LIBS>
        $(ITAPS_C_LIB)
+      vtkFiltersGeneral
     </LIBS>
     <Files components="M">
       avtITAPS_CFileFormat.C

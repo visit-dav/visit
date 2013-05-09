@@ -39,7 +39,7 @@
 #define __vtkVisItFeatureEdges_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
 class vtkPointLocator;
 

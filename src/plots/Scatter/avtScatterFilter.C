@@ -968,7 +968,7 @@ avtScatterFilter::PointMeshFromVariables(DataInput *d1,
     thisProcsSpatialExtents[4] = zMin;
     thisProcsSpatialExtents[5] = zMax;
 
-    ManageMemory(outDS);
+    outDS->Register(NULL);
     outDS->Delete();
 
     return outDS;
@@ -1321,10 +1321,9 @@ avtScatterFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         ds2->GetPointData()->SetScalars(arr);
 
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-        pd2cd->SetInput(ds2);
-        vtkDataSet *ds3 = pd2cd->GetOutput();
-        ds3->Update();
-        outv = ds3->GetCellData()->GetScalars();
+        pd2cd->SetInputData(ds2);
+        pd2cd->Update();
+        outv = pd2cd->GetOutput()->GetCellData()->GetScalars();
         outv->Register(NULL);
         pd2cd->Delete();
     }
@@ -1340,10 +1339,9 @@ avtScatterFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         ds2->GetCellData()->SetScalars(arr);
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-        cd2pd->SetInput(ds2);
-        vtkDataSet *ds3 = cd2pd->GetOutput();
-        ds3->Update();
-        outv = ds3->GetPointData()->GetScalars();
+        cd2pd->SetInputData(ds2);
+        cd2pd->Update();
+        outv = cd2pd->GetOutput()->GetPointData()->GetScalars();
         outv->Register(NULL);
         cd2pd->Delete();
     }

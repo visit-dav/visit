@@ -78,7 +78,6 @@ public:
   // Description:
   // Instantiate a stride filter that throws away nine of every ten elements.
   static vtkVectorGlyph *New();
-
   vtkSetMacro(HighQuality,int);
   vtkBooleanMacro(HighQuality,int);
   vtkGetMacro(HighQuality,int);
@@ -116,8 +115,8 @@ protected:
   ~vtkVectorGlyph() {};
 
   virtual int RequestData(vtkInformation *,
-                          vtkInformationVector **,
-                          vtkInformationVector *);
+                  vtkInformationVector **,
+                  vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
   int HighQuality;
@@ -136,3 +135,5 @@ private:
 };
 
 #endif
+
+

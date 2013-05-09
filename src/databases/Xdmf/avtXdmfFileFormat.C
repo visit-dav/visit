@@ -56,8 +56,9 @@
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkFieldData.h>
-#include <vtkImageData.h>
+#include <vtkInformation.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtksys/SystemTools.hxx>
@@ -2059,7 +2060,8 @@ avtXdmfFileFormat::GetStructuredGhostZones(int dims[3], int ghostOffsets[6],
     ds->GetFieldData()->CopyFieldOn("avtRealDims");
     realDims->Delete();
 
-    ds->SetUpdateGhostLevel(0);
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 }
 
 // ****************************************************************************

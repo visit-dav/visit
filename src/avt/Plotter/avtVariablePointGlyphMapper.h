@@ -67,6 +67,9 @@
 //    Brad Whitlock, Wed Jul 26 13:53:29 PST 2006
 //    Added SetFullFrameScaling.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMapper,
@@ -87,7 +90,7 @@ class PLOTTER_API  avtVariablePointGlyphMapper : virtual public avtVariableMappe
 
     virtual void               CustomizeMappers(void);
 
-    virtual vtkDataSet        *InsertFilters(vtkDataSet *, int);
+    virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int);
     virtual void               SetUpFilters(int);
 
   private:

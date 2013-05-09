@@ -59,6 +59,9 @@
 /* Define if you have the R library. */
 #cmakedefine HAVE_LIB_R
 
+/* Define if you have the OSMESA */
+#cmakedefine HAVE_OSMESA
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/

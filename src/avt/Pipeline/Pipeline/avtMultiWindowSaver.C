@@ -143,13 +143,7 @@ avtMultiWindowSaver::CreateImage()
     const int nColorComponents = 3;
     vtkImageData *newImage = vtkImageData::New();
     newImage->SetDimensions(width, height, 1);
-#if (VTK_MAJOR_VERSION == 5)
-    newImage->SetScalarTypeToUnsignedChar();
-    newImage->SetNumberOfScalarComponents(nColorComponents);
-    newImage->AllocateScalars();
-#else
     newImage->AllocateScalars(VTK_UNSIGNED_CHAR, nColorComponents);
-#endif
     unsigned char *out_ptr = (unsigned char *)newImage->GetScalarPointer();
 
     int nLayers = 16;

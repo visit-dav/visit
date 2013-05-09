@@ -90,7 +90,7 @@ class PIPELINE_API avtDatasetToVTKDatasetFilter : public avtDatasetToDatasetFilt
 };
 
 
-#include <vtkUnstructuredGridSource.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 // ****************************************************************************
 //  Class: vtkAVTPipelineBridge
@@ -113,7 +113,7 @@ class PIPELINE_API avtDatasetToVTKDatasetFilter : public avtDatasetToDatasetFilt
 //
 // ****************************************************************************
 
-class PIPELINE_API vtkAVTPipelineBridge : public vtkUnstructuredGridSource
+class PIPELINE_API vtkAVTPipelineBridge : public vtkUnstructuredGridAlgorithm
 {
   public:
     static vtkAVTPipelineBridge   *New();

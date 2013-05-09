@@ -62,9 +62,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __vtkUniqueFeatureEdges_h
 #include <visit_vtk_exports.h>
 
-#include "vtkPolyDataAlgorithm.h"
+#include <vtkPolyDataAlgorithm.h>
 
-#include <vtkPointLocator.h>
+class vtkPointLocator;
 
 // ****************************************************************************
 //  Class: vtkUniqueFeatureEdges
@@ -100,8 +100,8 @@ public:
 
   // Description:
   // Specify the feature angle for extracting feature edges.
-  vtkSetClampMacro(FeatureAngle,float,0.0,180.0);
-  vtkGetMacro(FeatureAngle,float);
+  vtkSetClampMacro(FeatureAngle,double,0.0,180.0);
+  vtkGetMacro(FeatureAngle,double);
 
   // Description:
   // Turn on/off the extraction of non-manifold edges.
@@ -140,7 +140,7 @@ protected:
                                   vtkInformationVector **,
                                   vtkInformationVector *);
   
-  float FeatureAngle;
+  double FeatureAngle;
   int BoundaryEdges;
   int FeatureEdges;
   int NonManifoldEdges;

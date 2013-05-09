@@ -56,26 +56,18 @@ vtkPPMWriter::vtkPPMWriter()
   this->FileLowerLeft = 1;
 }
 
-#if (VTK_MAJOR_VERSION == 5)
-void vtkPPMWriter::WriteFileHeader(ofstream *file, vtkImageData *cache)
-#else
-void vtkPPMWriter::WriteFileHeader(ofstream *file, vtkImageData *, int wExt[6])
-#endif
+void vtkPPMWriter::WriteFileHeader(ofstream *file, vtkImageData *cache, int wExt[6])
 {
-#if (VTK_MAJOR_VERSION == 5)
-  int min0, max0, min1, max1, min2, max2;
+  int min0 = wExt[0], 
+      max0 = wExt[1], 
+      min1 = wExt[2], 
+      max1 = wExt[3], 
+      min2 = wExt[4], 
+      max2 = wExt[5];
   int width, height;
   
-  // Find the length of the rows to write.
-  cache->GetWholeExtent(min0, max0, min1, max1, min2, max2);
   width = (max0 - min0 + 1);
   height = (max1 - min1 + 1);
-#else
-  int width, height;
-
-  width = (wExt[1] - wExt[0] + 1);
-  height = (wExt[3] - wExt[2] + 1);
-#endif
 
   // Figure out the header and write it to the file.
   char header[100];
@@ -85,13 +77,8 @@ void vtkPPMWriter::WriteFileHeader(ofstream *file, vtkImageData *, int wExt[6])
 }
 
 
-#if (VTK_MAJOR_VERSION == 5)
 void vtkPPMWriter::WriteFile(ofstream *file, vtkImageData *data,
-                             int extent[6])
-#else
-void vtkPPMWriter::WriteFile(ofstream *file, vtkImageData *data,
-                             int extent[6], int wExtent[6])
-#endif
+                             int extent[6], int wExt[6])
 {
   int idx1;
   int rowLength, i; // in bytes
@@ -121,13 +108,10 @@ void vtkPPMWriter::WriteFile(ofstream *file, vtkImageData *data,
   // Row length of x axis
   rowLength = extent[1] - extent[0] + 1;
 
-#if (VTK_MAJOR_VERSION == 5)
-  int *wExtent = this->GetInput()->GetWholeExtent();
-#endif
   area = ((extent[5] - extent[4] + 1)*(extent[3] - extent[2] + 1)*
           (extent[1] - extent[0] + 1)) / 
-    ((wExtent[5] -wExtent[4] + 1)*(wExtent[3] -wExtent[2] + 1)*
-     (wExtent[1] -wExtent[0] + 1));
+    ((wExt[5] -wExt[4] + 1)*(wExt[3] -wExt[2] + 1)*
+     (wExt[1] -wExt[0] + 1));
     
   target = (unsigned long)((extent[5]-extent[4]+1)*
                            (extent[3]-extent[2]+1)/(50.0*area));

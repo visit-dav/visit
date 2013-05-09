@@ -81,6 +81,9 @@
 //    Hank Childs, Wed Aug 25 09:42:13 PDT 2010
 //    Initialize resample filter.
 //
+//    Kathleen Biagas, Wed Feb 6 19:43:12 PST 2013
+//    Use glyph's output port when creating avtVectorGlyphMapper.
+//
 // ****************************************************************************
 
 avtVectorPlot::avtVectorPlot()
@@ -91,7 +94,7 @@ avtVectorPlot::avtVectorPlot()
     resampleFilter = NULL;
     ghostFilter  = new avtGhostZoneFilter();
     ghostFilter->GhostDataMustBeRemoved();
-    glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutput());
+    glyphMapper  = new avtVectorGlyphMapper(glyph->GetOutputPort());
     avtLUT       = new avtLookupTable();
 
     varLegend = new avtVariableLegend;

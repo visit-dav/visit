@@ -116,12 +116,12 @@ TARGET_LINK_LIBRARIES(mdserver
     avtdatabase_ser 
     lightweight_visit_vtk 
     visit_verdict 
-    vtkCommon 
-    vtkIO 
-    ${VTK_TIFF_LIBRARIES}
-    ${VTK_ZLIB_LIBRARIES} 
-    ${VTK_PNG_LIBRARIES}
-    ${VTK_JPEG_LIBRARIES}
+    vtkCommonCore
+    vtkIOCore 
+    vtktiff
+    vtkzlib
+    vtkpng
+    vtkjpeg
     ${ZLIB_LIB} 
     ${CMAKE_THREAD_LIBS} 
     ${DL_LIB}

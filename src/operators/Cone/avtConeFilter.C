@@ -54,13 +54,15 @@
 #include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunction.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMath.h>
 #include <vtkMatrixToLinearTransform.h>
 #include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataToPolyDataFilter.h>
+#include <vtkPolyDataAlgorithm.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
@@ -88,30 +90,54 @@ void      ProjectExtents(double *, vtkTransformPolyDataFilter *, vtkVisItCutter 
 // It also make assumptions about cells that are incident to the origin and
 // bloats them out in a way that makes "prettier pictures".
 //
-class vtkPolarTransformFilter : public vtkPolyDataToPolyDataFilter
+class vtkPolarTransformFilter : public vtkPolyDataAlgorithm
 {
 public:
+  vtkTypeMacro(vtkPolarTransformFilter,vtkPolyDataAlgorithm);
+  void PrintSelf(ostream& os, vtkIndent indent);
+
   static vtkPolarTransformFilter *New();
+
 protected:
   vtkPolarTransformFilter() {;};
   ~vtkPolarTransformFilter() {;};
 
-  void Execute();
+  virtual int RequestData(vtkInformation *,
+                          vtkInformationVector **,
+                          vtkInformationVector *);
+
 private:
   vtkPolarTransformFilter(const vtkPolarTransformFilter&);  //Not implemented.
   void operator=(const vtkPolarTransformFilter&);  // Not implemented.
 };
 
+
 vtkStandardNewMacro(vtkPolarTransformFilter);
 
-void
-vtkPolarTransformFilter::Execute(void)
+
+int
+vtkPolarTransformFilter::RequestData(
+    vtkInformation *vtkNotUsed(request),
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector)
 {
+    vtkDebugMacro(<<"Executing vtkPolarTransformFilter");
+
+    // get the info objects
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    //
+    // Initialize some frequently used values.
+    //
+    vtkPolyData *input  = vtkPolyData::SafeDownCast(
+        inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vtkPolyData *output = vtkPolyData::SafeDownCast(
+        outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
     int   i, j;
 
     // This assumes that the data has already been projected to 2D.
-    vtkPolyData *input = this->GetInput();
-    vtkPolyData *output = this->GetOutput();
     vtkIdType nPts   = input->GetNumberOfPoints();
     vtkIdType nCells = input->GetNumberOfCells();
 
@@ -290,6 +316,20 @@ vtkPolarTransformFilter::Execute(void)
     outPD->Squeeze();
     output->Squeeze();
     newPts->Delete();
+
+    return 1;
+}
+
+
+// ****************************************************************************
+//  Method: vtkPolarTransformFilter::PrintSelf
+//
+// ****************************************************************************
+
+void
+vtkPolarTransformFilter::PrintSelf(ostream& os, vtkIndent indent)
+{
+    this->Superclass::PrintSelf(os,indent);
 }
 
 
@@ -788,17 +828,18 @@ vtkDataSet *
 avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     vtkDataSet *rv = NULL;
+    vtkPolyDataAlgorithm *outputFilter = NULL;
 
     //
     // First clip to the cone.
     //
-    cutter->SetInput(in_ds);
-    vtkPolyData *cur_ds = cutter->GetOutput();
+    cutter->SetInputData(in_ds);
+    outputFilter = cutter;
 
     if (atts.GetCutByLength())
     {
-        clipByLength->SetInput(cur_ds);
-        cur_ds = clipByLength->GetOutput();
+        clipByLength->SetInputConnection(outputFilter->GetOutputPort());
+        outputFilter = clipByLength;
     }
 
     //
@@ -808,27 +849,28 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     switch (atts.GetRepresentation())
     {
       case ConeAttributes::ThreeD:
-        rv = cur_ds;
         break;
 
       case ConeAttributes::Flattened:
-        transform->SetInput(cur_ds);
-        rv = transform->GetOutput();
+        transform->SetInputConnection(outputFilter->GetOutputPort());
+        outputFilter = transform;
         break;
 
       case ConeAttributes::R_Theta:
-        clipBottom->SetInput(cur_ds);
-        transform->SetInput(clipBottom->GetOutput());
-        polar->SetInput(transform->GetOutput());
-        clipOffSides->SetInput(polar->GetOutput());
-        rv = clipOffSides->GetOutput();
+        clipBottom->SetInputConnection(outputFilter->GetOutputPort());
+        transform->SetInputConnection(clipBottom->GetOutputPort());
+        polar->SetInputConnection(transform->GetOutputPort());
+        clipOffSides->SetInputConnection(polar->GetOutputPort());
+        outputFilter = clipOffSides;
         break;
 
       default:
         EXCEPTION0(ImproperUseException);
     }
 
-    rv->Update();
+    outputFilter->Update();
+    rv = outputFilter->GetOutput();
+    // FIX_ME_VTK6.0, ESB, what does this logic do??
     vtkDataSet *ds = (vtkDataSet *) rv->NewInstance();
     ds->ShallowCopy(rv);
     ManageMemory(ds);
@@ -1008,32 +1050,32 @@ avtConeFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
 
-    cutter->SetInput(NULL);
+    cutter->SetInputData(NULL);
     vtkPolyData *p = vtkPolyData::New();
     cutter->SetOutput(p);
     p->Delete();
 
-    polar->SetInput(NULL);
+    polar->SetInputData(NULL);
     p = vtkPolyData::New();
     polar->SetOutput(p);
     p->Delete();
 
-    transform->SetInput(NULL);
+    transform->SetInputData(NULL);
     p = vtkPolyData::New();
     transform->SetOutput(p);
     p->Delete();
 
-    clipOffSides->SetInput(NULL);
+    clipOffSides->SetInputData(NULL);
     p = vtkPolyData::New();
     clipOffSides->SetOutput(p);
     p->Delete();
 
-    clipBottom->SetInput(NULL);
+    clipBottom->SetInputData(NULL);
     p = vtkPolyData::New();
     clipBottom->SetOutput(p);
     p->Delete();
 
-    clipByLength->SetInput(NULL);
+    clipByLength->SetInputData(NULL);
     p = vtkPolyData::New();
     clipByLength->SetOutput(p);
     p->Delete();
@@ -1123,8 +1165,8 @@ ProjectExtents(double *b, vtkTransformPolyDataFilter *trans,
     // Slice and project our bounding box to mimic what would happen to our
     // original dataset.
     //
-    cutter->SetInput(rgrid);
-    trans->SetInput(cutter->GetOutput());
+    cutter->SetInputData(rgrid);
+    trans->SetInputConnection(cutter->GetOutputPort());
     trans->Update();
  
     //
@@ -1245,8 +1287,8 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkVisItCutter *cutte
     // Slice and project our bounding box to mimic what would happen to our
     // original dataset.
     //
-    cutter->SetInput(rgrid);
-    trans->SetInput(cutter->GetOutput());
+    cutter->SetInputData(rgrid);
+    trans->SetInputConnection(cutter->GetOutputPort());
     trans->Update();
  
     //
@@ -1295,6 +1337,7 @@ PolarExtents(double *b, vtkTransformPolyDataFilter *trans, vtkVisItCutter *cutte
     z->Delete();
     rgrid->Delete();
 }
+
 
 // ****************************************************************************
 //  Method: avtConeFilter::ModifyContract

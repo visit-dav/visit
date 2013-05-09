@@ -236,13 +236,13 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             ugridAsPD->InsertNextCell(celltype, npts, pts);
         }
 
-        cpd->SetInput(ugridAsPD);
-        tube->SetInput(ugridAsPD);
+        cpd->SetInputData(ugridAsPD);
+        tube->SetInputData(ugridAsPD);
     }
     else
     {
-        cpd->SetInput((vtkPolyData *)in_ds);
-        tube->SetInput((vtkPolyData*)in_ds);
+        cpd->SetInputData(in_ds);
+        tube->SetInputData(in_ds);
     }
 
     // Note -- if we're scaling by a variable, our vtkConnectedTubeFilter
@@ -254,6 +254,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         tube->CreateNormalsOn();
         tube->SetNumberOfSides(atts.GetFineness());
         tube->SetCapping(atts.GetCapping() ? 1 : 0);
+        tube->Update();
         output = tube->GetOutput();
     }
     else
@@ -261,7 +262,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         // The vtk tube filter is sensitive to duplicated points, etc.
         // Use the vtkCleanPolyData filter to make sure it is in a good
         // format.
-        vtktube->SetInput(cpd->GetOutput());
+        vtktube->SetInputConnection(cpd->GetOutputPort());
         if (atts.GetScaleByVarFlag())
         {
             vtktube->SetVaryRadius(VTK_VARY_RADIUS_BY_ABSOLUTE_SCALAR);
@@ -276,10 +277,10 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
         vtktube->SetDefaultNormal(0.001, 0.001, 0.001);
         vtktube->SetNumberOfSides(atts.GetFineness());
         vtktube->SetCapping(atts.GetCapping() ? 1 : 0);
+        vtktube->Update();
         output = vtktube->GetOutput();
     }
 
-    output->Update();
     ManageMemory(output);
     vtktube->Delete();
     tube->Delete();

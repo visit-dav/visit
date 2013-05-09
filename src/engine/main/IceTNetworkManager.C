@@ -714,8 +714,7 @@ IceTNetworkManager::Readback(VisWindow * const viswin,
     // components and reallocate the data; unfortunately this means we do an
     // allocate in NewImage and then immediately throw it away when doing an
     // allocate here.
-    image->SetNumberOfScalarComponents(3);
-    image->AllocateScalars();
+    image->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
     {
         unsigned char *img_pix = (unsigned char *) image->GetScalarPointer();
         const int numPix = width*height;

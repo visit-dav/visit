@@ -294,11 +294,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
         if(iData->GetNumberOfScalarComponents() < 4)
         {
                vtkImageData *tmpdata = vtkImageData::New();
-#if (VTK_MAJOR_VERSION == 5)
-               tmpdata->SetNumberOfScalarComponents(4);
-#else
                tmpdata->SetNumberOfScalarComponents(4, tmpdata->GetInformation());
-#endif
                tmpdata->SetExtent(iData->GetExtent());
 
                for(int i = 0; i < iData->GetDimensions()[0]; ++i)
@@ -315,11 +311,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
                        tmpdata->SetScalarComponentFromDouble(i, j, 0, 3, 255.);
                    }
 #ifdef RESAMPLE_IMAGE
-#if (VTK_MAJOR_VERSION == 5)
-               resample->SetInput(tmpdata);
-#else
                resample->SetInputData(tmpdata);
-#endif
 #endif
                iData->Delete();
                iData = tmpdata;
@@ -497,28 +489,16 @@ avtImageColleague::UpdateImage(std::string filename)
             // Resample the image to the proper size.
 #ifdef RESAMPLE_IMAGE
             resample = vtkImageResample::New();
-#if (VTK_MAJOR_VERSION == 5)
-            resample->SetInput(iData);
-#else
             resample->SetInputData(iData);
-#endif
 
             mapper->SetInputConnection(resample->GetOutputPort());
 #else
-#if (VTK_MAJOR_VERSION == 5)
-            mapper->SetInput(iData);
-#else
             mapper->SetInputData(iData);
-#endif
 #endif
         }
         else
         {
-#if (VTK_MAJOR_VERSION == 5)
-            mapper->SetInput(NULL);
-#else
             mapper->SetInputData(NULL);
-#endif
             retval = false;
         }
 
@@ -535,11 +515,7 @@ avtImageColleague::UpdateImage(std::string filename)
             avtCallback::IssueWarning(msg.c_str());
         }
 
-#if (VTK_MAJOR_VERSION == 5)
-        if(mapper) { mapper->SetInput(NULL); }
-#else
         if(mapper) { mapper->SetInputData(NULL); }
-#endif
 #ifdef RESAMPLE_IMAGE
         if(resample) { resample->Delete(); resample = NULL; }
 #endif

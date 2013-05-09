@@ -55,6 +55,8 @@
 
 class vtkTransform;
 class vtkDataSet;
+class vtkPolyData;
+class vtkUnstructuredGrid;
 
 
 // ****************************************************************************

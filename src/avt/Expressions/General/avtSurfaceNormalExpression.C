@@ -148,11 +148,7 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
         n->SetNormalTypeToPoint();
     else
         n->SetNormalTypeToCell();
-#if (VTK_MAJOR_VERSION == 5)
-    n->SetInput(pd);
-#else
     n->SetInputData(pd);
-#endif
     n->Update();
     vtkPolyData *out = n->GetOutput();
 

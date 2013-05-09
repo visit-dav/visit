@@ -158,11 +158,7 @@ avtSmoothPolyDataFilter::ExecuteData(vtkDataSet *inDS, int, string)
     if (inDS->GetDataObjectType() != VTK_POLY_DATA)
     {
         geom = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        geom->SetInput(inDS);
-#else
         geom->SetInputData(inDS);
-#endif
         inDS = geom->GetOutput();
     }
 
@@ -170,11 +166,7 @@ avtSmoothPolyDataFilter::ExecuteData(vtkDataSet *inDS, int, string)
     // Set up and apply the filter
     //
     vtkSmoothPolyDataFilter *smoothPolyData = vtkSmoothPolyDataFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    smoothPolyData->SetInput((vtkPolyData*)inDS);
-#else
     smoothPolyData->SetInputData((vtkPolyData*)inDS);
-#endif
     vtkPolyData *newDS = vtkPolyData::New();
     smoothPolyData->SetOutput(newDS);
 

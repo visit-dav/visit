@@ -155,14 +155,9 @@ avtWavefrontOBJFileFormat::ReadInDataset(void)
     //
     vtkVisItOBJReader *reader = vtkVisItOBJReader::New();
     reader->SetFileName(filename);
+    reader->Update();
     dataset = reader->GetOutput();
     dataset->Register(NULL);
-
-    //
-    // Force the read and make sure that the reader is really gone, so we don't
-    // eat up too many file descriptors.
-    //
-    dataset->Update();
 
     //dataset->SetSource(NULL);
     reader->Delete();

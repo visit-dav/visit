@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtWavefrontOBJWriter.C                             //
+//                       avtWavefrontOBJWriter.C                             //
 // ************************************************************************* //
 
 #include <avtWavefrontOBJWriter.h>
@@ -139,9 +139,9 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(pd == NULL)
     {
         vtkGeometryFilter *geom = vtkGeometryFilter::New();
-        geom->SetInput(ds);
+        geom->SetInputData(ds);
 
-        tri->SetInput(geom->GetOutput());        
+        tri->SetInputConnection(geom->GetOutputPort());        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -149,7 +149,7 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        tri->SetInput(pd);        
+        tri->SetInputData(pd);        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -195,14 +195,14 @@ avtWavefrontOBJWriter::SendPolyDataToRank0()
             writer->WriteToOutputStringOn();
             writer->SetFileTypeToBinary();
             if (pds.size() == 1)
-                writer->SetInput(pds[0]);
+                writer->SetInputData(pds[0]);
             else
             {
                 vtkAppendPolyData *f = vtkAppendPolyData::New();
                 for(size_t i = 0; i < pds.size(); ++i)
-                    f->AddInput(pds[i]);
+                    f->AddInputData(pds[i]);
                 
-                writer->SetInput(f->GetOutput());
+                writer->SetInputConnection(f->GetOutputPort());
             }
             
             writer->Write();
@@ -282,16 +282,16 @@ avtWavefrontOBJWriter::CloseFile(void)
 
     if(pds.size() == 1)
     {
-        writer->SetInput(pds[0]);
+        writer->SetInputData(pds[0]);
         writer->Update();
     }
     else if(pds.size() > 1)
     {
         vtkAppendPolyData *f = vtkAppendPolyData::New();
         for(size_t i = 0; i < pds.size(); ++i)
-            f->AddInput(pds[i]);
+            f->AddInputData(pds[i]);
 
-        writer->SetInput(f->GetOutput());
+        writer->SetInputConnection(f->GetOutputPort());
         writer->Update();
 
         f->Delete();

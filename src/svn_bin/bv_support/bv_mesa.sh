@@ -23,11 +23,11 @@ echo ""
 
 function bv_mesa_info
 {
-export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
-export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
-export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
-export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
-export MESA_MD5_CHECKSUM="c89b63d253605ed40e8ac370d25a833c"
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.10.2/"
+export MESA_MD5_CHECKSUM=""
 export MESA_SHA256_CHECKSUM=""
 }
 
@@ -677,7 +677,7 @@ function build_mesa
     # -lMesaGL" when they want to render/link to an offscreen Mesa
     # context.  The two libraries will have a host of duplicate
     # symbols, and it is important that we pick up the ones from OSMesa.
-    info "Configuring Mesa (Mangled glX) ..."
+    info "Configuring Mesa (glX) ..."
     if [[ "$OPSYS" == "AIX" ]]; then
         export AIX_MESA_CFLAGS="-qcpluscmt -qlanglvl=extc99"
         autoconf
@@ -697,50 +697,8 @@ function build_mesa
     if test `uname` = "Linux" ; then
         HACK_FLAGS="-fPIC -DGLX_USE_TLS"
     fi
-    ./configure \
-      CC="${C_COMPILER}" \
-      CXX="${CXX_COMPILER}" \
-      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
-      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
-      --prefix=${PF}               \
-      --without-demos              \
-      --disable-gallium            \
-      --with-driver=xlib           \
-      --enable-gl-osmesa           \
-      --enable-glx-tls             \
-      --disable-glw                \
-      --disable-glu                \
-      --disable-egl ${MESA_STATIC_DYNAMIC}
-    if [[ $? != 0 ]] ; then
-        warn "Mesa: 'configure' for Mangled glX failed.  Giving up"
-        return 1
-    fi
 
-    # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
-    # libraries supplied by the vendor.
-    cat configs/autoconf | sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit || return 1
-    mv configs/autoconf.edit configs/autoconf
-    cat configs/autoconf | sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit || return 1
-    mv configs/autoconf.edit configs/autoconf
-
-    info "Building Mesa (Mangled glX) ..."
-    ${MAKE} ${MAKE_OPT_FLAGS}
-    if [[ $? != 0 ]] ; then
-        warn "Mesa: 'make' for Mangled glX failed.  Giving up"
-        return 1
-    fi
-    info "Installing Mesa (Mangled glX) ..."
-    ${MAKE} install
-    if [[ $? != 0 ]] ; then
-        warn "Mesa: 'make install' for Mangled glX failed.  Giving up"
-        return 1
-    fi
-
-    # Now install #2, the OSMesa that we want/need.
-    ${MAKE} clean &>/dev/null
-    info "Configuring Mesa (Mangled Offscreen) ..."
-
-    # Do not build libMesaGLU unless we're on MacOS X
+    # Do not build libGLU unless we're on MacOS X
     DISABLE_GLU="--disable-glu"
     if [[ "$OPSYS" == "Darwin" ]]; then
         DISABLE_GLU=""
@@ -756,8 +714,8 @@ function build_mesa
     ./configure \
       CC="${C_COMPILER}" \
       CXX="${CXX_COMPILER}" \
-      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
-      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} -DUSE_MGL_NAMESPACE ${HACK_FLAGS}" \
+      CFLAGS="${C_OPT_FLAGS} ${CFLAGS} ${AIX_MESA_CFLAGS} ${HACK_FLAGS}" \
+      CXXFLAGS="${CXX_OPT_FLAGS} ${CXXFLAGS} ${HACK_FLAGS}" \
       --prefix=${PF}                    \
       --without-demos                   \
       --with-driver=osmesa              \
@@ -769,26 +727,20 @@ function build_mesa
       ${DISABLE_GLU}                    \
       --disable-egl  ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
-        warn "Mesa: 'configure' for Mangled Offscreen failed.  Giving up"
+        warn "Mesa: 'configure' for Offscreen failed.  Giving up"
         return 1
     fi
-    # Make sure we build 'MesaGL*' libraries, to avoid conflict with GL
-    # libraries supplied by the vendor.
-    cat configs/autoconf | sed -e "s,GL_LIB = GL,GL_LIB=MesaGL,g" > configs/autoconf.edit || return 1
-    mv configs/autoconf.edit configs/autoconf
-    cat configs/autoconf | sed -e "s,GLU_LIB = GLU,GLU_LIB=MesaGLU,g" > configs/autoconf.edit || return 1
-    mv configs/autoconf.edit configs/autoconf
 
-    info "Building Mesa (Mangled Offscreen) ..."
+    info "Building Mesa (Offscreen) ..."
     ${MAKE} ${MAKE_OPT_FLAGS}
     if [[ $? != 0 ]] ; then
-        warn "Mesa: 'make' for Mangled Offscreen failed.  Giving up"
+        warn "Mesa: 'make' for Offscreen failed.  Giving up"
         return 1
     fi
-    info "Installing Mesa (Mangled Offscreen) ..."
+    info "Installing Mesa (Offscreen) ..."
     ${MAKE} install
     if [[ $? != 0 ]] ; then
-        warn "Mesa: 'make install' for Mangled Offscreen failed.  Giving up"
+        warn "Mesa: 'make install' for Offscreen failed.  Giving up"
         return 1
     fi
 

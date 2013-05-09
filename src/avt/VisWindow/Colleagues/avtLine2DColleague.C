@@ -139,11 +139,7 @@ avtLine2DColleague::avtLine2DColleague(VisWindowColleagueProxy &m):
 
     // Create the mapper.
     mapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-    mapper->SetInput(lineData);
-#else
     mapper->SetInputData(lineData);
-#endif
 
     //
     // Create and position the actor.
@@ -518,51 +514,28 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     if(beginArrowStyle)
         allData = vtkAppendPolyData::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    if(beginArrowStyle == 1)
-        allData->AddInput(beginArrowLine);
-    else if(beginArrowStyle == 2)
-        allData->AddInput(beginArrowSolid);
-#else
     if(beginArrowStyle == 1)
         allData->AddInputData(beginArrowLine);
     else if(beginArrowStyle == 2)
         allData->AddInputData(beginArrowSolid);
-#endif
 
     if(endArrowStyle && !allData)
         allData = vtkAppendPolyData::New();
 
-#if (VTK_MAJOR_VERSION == 5)
-    if(endArrowStyle == 1)
-        allData->AddInput(endArrowLine);
-    else if(endArrowStyle == 2)
-        allData->AddInput(endArrowSolid);
-#else
     if(endArrowStyle == 1)
         allData->AddInputData(endArrowLine);
     else if(endArrowStyle == 2)
         allData->AddInputData(endArrowSolid);
-#endif
 
     //
     // Set the mapper.
     //
-#if (VTK_MAJOR_VERSION == 5)
-    if(allData)
-    {
-        allData->AddInput(lineData);
-        mapper->SetInput(allData->GetOutput());
-    }
-    else mapper->SetInput(lineData);
-#else
     if(allData)
     {
         allData->AddInputData(lineData);
         mapper->SetInputData(allData->GetOutput());
     }
     else mapper->SetInputData(lineData);
-#endif
 
     //
     // Set the object's visibility.

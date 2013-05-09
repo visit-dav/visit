@@ -753,7 +753,7 @@ avtSpheralFileFormat::GetMesh(int dom, const char *name)
             if (validNodeLists[i] && cache[dom].meshes[i] != NULL)
             {
                 one_dataset = cache[dom].meshes[i];
-                appender->AddInput(one_dataset);
+                appender->AddInputData(one_dataset);
                 nInputs++;
             }
         }
@@ -766,8 +766,8 @@ avtSpheralFileFormat::GetMesh(int dom, const char *name)
             }
             else
             {
+                appender->Update();
                 rv = appender->GetOutput();
-                rv->Update();
             }
             rv->Register(NULL);
         }

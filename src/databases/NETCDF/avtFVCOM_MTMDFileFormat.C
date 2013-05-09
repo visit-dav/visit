@@ -46,7 +46,9 @@
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -1473,7 +1475,8 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
         }
     
         retval->GetCellData()->AddArray(ghostCells);
-        retval->SetUpdateGhostLevel(0);
+        retval->GetInformation()->Set(
+            vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         ghostCells->Delete();
         debug4 << mName << "Found Ghost Zones" << endl;
 

@@ -646,7 +646,8 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
     if (PAR_Size() > 1 || usePerfectSort)
     {
         perfectSort->SetCamera(cam);
-        myMapper->SetInputConnection(perfectSort->GetOutputPort());
+        perfectSort->Update();
+        myMapper->SetInputData(perfectSort->GetOutput());
         vtkMatrix4x4 *mat = cam->GetViewTransformMatrix();
         lastCamera->DeepCopy(mat);
     }
@@ -684,46 +685,22 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
             switch (biggest)
             {
               case -3:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetMinusZOutput());
-#else
                 myMapper->SetInputData(axisSort->GetMinusZOutput());
-#endif
                 break;
               case -2:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetMinusYOutput());
-#else
                 myMapper->SetInputData(axisSort->GetMinusYOutput());
-#endif
                 break;
               case -1:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetMinusXOutput());
-#else
                 myMapper->SetInputData(axisSort->GetMinusXOutput());
-#endif
                 break;
               case 1:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetPlusXOutput());
-#else
                 myMapper->SetInputData(axisSort->GetPlusXOutput());
-#endif
                 break;
               case 2:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetPlusYOutput());
-#else
                 myMapper->SetInputData(axisSort->GetPlusYOutput());
-#endif
                 break;
               case 3:
-#if (VTK_MAJOR_VERSION == 5)
-                myMapper->SetInput(axisSort->GetPlusZOutput());
-#else
                 myMapper->SetInputData(axisSort->GetPlusZOutput());
-#endif
                 break;
             }
         }
@@ -858,11 +835,7 @@ avtTransparencyActor::SetUpActor(void)
                 if (preparedDataset[i][j] != NULL)
                 {
                     addedInput = true;
-#if (VTK_MAJOR_VERSION == 5)
-                    appender->AddInput(preparedDataset[i][j]);
-#else
                     appender->AddInputData(preparedDataset[i][j]);
-#endif
                     repActor = actors[i][j];
                 }
             }
@@ -876,11 +849,7 @@ avtTransparencyActor::SetUpActor(void)
     {
         // use empty input? 
         vtkPolyData *pd = vtkPolyData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput(pd);
-#else
         appender->AddInputData(pd);
-#endif
         pd->Delete();
     }
 
@@ -1095,12 +1064,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     vtkPolyData *pd = NULL;
 
     // break upstream vtk pipeline
-#if (VTK_MAJOR_VERSION == 5)
-    // in_ds->SetSource(NULL);
-#else
-    // FIX_ME_VTK6.0, ESB, can this be safely commented out (removed)?
-    // in_ds->SetSource(NULL);
-#endif
+    //in_ds->SetSource(NULL);
     if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
     {
         pd = (vtkPolyData *) in_ds;
@@ -1108,11 +1072,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
         gf = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        gf->SetInput(in_ds);
-#else
         gf->SetInputData(in_ds);
-#endif
         ghost_filter = vtkDataSetRemoveGhostCells::New();
         ghost_filter->SetInputConnection(gf->GetOutputPort());
         ghost_filter->Update();
@@ -1121,11 +1081,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     else if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         gf = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        gf->SetInput(in_ds);
-#else
         gf->SetInputData(in_ds);
-#endif
         normals = vtkVisItPolyDataNormals::New();
         if (mapper->GetScalarVisibility() != 0 &&
             in_ds->GetPointData()->GetScalars() == NULL &&
@@ -1158,19 +1114,11 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     else
     {
         gf = vtkGeometryFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        gf->SetInput(in_ds);
-#else
         gf->SetInputData(in_ds);
-#endif
         gf->Update();
         pd = gf->GetOutput();
     }
-#if (VTK_MAJOR_VERSION == 5)
-    mapper->SetInput(pd);
-#else
     mapper->SetInputData(pd);
-#endif
 
     //
     // Create the output dataset that we will be creating an RGBA field for.

@@ -254,11 +254,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     vtkDataSetRemoveGhostCells *filter = vtkDataSetRemoveGhostCells::New();
     filter->SetGhostNodeTypesToRemove(ghostNodeTypesToRemove);
     filter->SetGhostZoneTypesToRemove(ghostZoneTypesToRemove);
-#if (VTK_MAJOR_VERSION == 5)
-    filter->SetInput(in_ds);
-#else
     filter->SetInputData(in_ds);
-#endif
 
     //
     // Set up filter so that all cells with ghost level >=1

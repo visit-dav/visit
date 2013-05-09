@@ -180,7 +180,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
     vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
     if (doBinary)
         wrtr->SetFileTypeToBinary();
-    wrtr->SetInput(ds);
+    wrtr->SetInputData(ds);
     wrtr->SetFileName(chunkname);
     wrtr->Write();
 

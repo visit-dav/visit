@@ -50,11 +50,7 @@ vtkVisItProbeFilter::~vtkVisItProbeFilter()
 //----------------------------------------------------------------------------
 void vtkVisItProbeFilter::SetSource(vtkDataSet *input)
 {
-#if (VTK_MAJOR_VERSION == 5)
-  this->SetInput(1, input);
-#else
   this->SetInputData(1, input);
-#endif
 }
 
 //----------------------------------------------------------------------------
@@ -175,18 +171,6 @@ int vtkVisItProbeFilter::RequestData(
       outPD->NullPoint(ptId);
       }
     }
-#if (VTK_MAJOR_VERSION == 5)
-  // BUG FIX: JB.
-  // Output gets setup from input, but when output is imagedata, scalartype
-  // depends on source scalartype not input scalartype
-  if (output->IsA("vtkImageData"))
-    {
-    vtkImageData *out = (vtkImageData*)output;
-    vtkDataArray *s = outPD->GetScalars();
-    out->SetScalarType(s->GetDataType());
-    out->SetNumberOfScalarComponents(s->GetNumberOfComponents());
-    }
-#endif
   if (mcs>256)
     {
     delete [] weights;
@@ -232,11 +216,11 @@ int vtkVisItProbeFilter::RequestInformation(
       {
       if (m1 < -1)
         {
-        m1 = VTK_LARGE_INTEGER;
+        m1 = VTK_INT_MAX;
         }
       if (m2 < -1)
         {
-        m2 = VTK_LARGE_INTEGER;
+        m2 = VTK_INT_MAX;
         }
       if (m2 < m1)
         {
@@ -247,8 +231,6 @@ int vtkVisItProbeFilter::RequestInformation(
       }
     }
 
-#if (VTK_MAJOR_VERSION == 5)
-#else
   // A variation of the bug fix from John Biddiscombe.
   // Make sure that the scalar type and number of components
   // are propagated from the source not the input.
@@ -263,7 +245,6 @@ int vtkVisItProbeFilter::RequestInformation(
       vtkImageData::GetNumberOfScalarComponents(sourceInfo),
       outInfo);
     }
-#endif
 
   return 1;
 }

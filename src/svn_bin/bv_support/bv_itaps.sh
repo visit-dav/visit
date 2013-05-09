@@ -212,7 +212,7 @@ function build_itaps_moab
     #
     # Install into the VisIt third party location.
     #
-    info "Installing ITAPS_FMDB"
+    info "Installing ITAPS_MOAB"
 
     if [[ "$OPSYS" == "Darwin" ]]; then
         warn "I do not know how to install ITAPS_MOAB on a Mac. Giving up"

@@ -37,11 +37,7 @@ public:
 
   // Description:
   // Specify the input data to map.
-#if (VTK_MAJOR_VERSION == 5)
-  void SetInput(vtkRectilinearGrid *in);
-#else
   void SetInputData(vtkRectilinearGrid *in);
-#endif
   vtkRectilinearGrid *GetInput();
   
   // Description:

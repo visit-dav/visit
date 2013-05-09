@@ -161,7 +161,7 @@ avtExtrudedVolWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if (timestep == -1)
     {
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-        wrtr->SetInput(ds);
+        wrtr->SetInputData(ds);
         char filename[1024];
         SNPRINTF(filename, 1024, "%s.%d.exvol_conn", stem.c_str(), chunk);
         wrtr->SetFileName(filename);

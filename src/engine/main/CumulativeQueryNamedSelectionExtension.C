@@ -728,7 +728,7 @@ CumulativeQuery<CQCellIdentifier, CQSelection>::CalculateFrequency(
                     {
                         debug5 << "Recentering " << histVar << " so we can histogram with it." << endl;
                         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-                        pd2cd->SetInput(leaves[i]);
+                        pd2cd->SetInputData(leaves[i]);
                         pd2cd->Update();
 
                         vtkDataSet *ds2 = pd2cd->GetOutput();

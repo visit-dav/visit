@@ -571,11 +571,7 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
   }
  
   vtkVisItExtractRectilinearGrid *extractor = vtkVisItExtractRectilinearGrid::New();
-#if (VTK_MAJOR_VERSION == 5)
-  extractor->SetInput(inGrid);
-#else
   extractor->SetInputData(inGrid);
-#endif
   extractor->SetVOI(voi);
   extractor->Update();
  
@@ -660,11 +656,7 @@ vtkDataSetRemoveGhostCells::StructuredGridExecute()
   }
  
   vtkVisItExtractGrid *extractor = vtkVisItExtractGrid::New();
-#if (VTK_MAJOR_VERSION == 5)
-  extractor->SetInput(inGrid);
-#else
   extractor->SetInputData(inGrid);
-#endif
   extractor->SetVOI(voi);
   extractor->Update();
  

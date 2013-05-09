@@ -43,6 +43,7 @@
 #include "RationalSurfaceLib.h"
 #include <algorithm>
 #include <limits>
+
 bool MinimumIsBracketed(avtPoincareIC *poincare_ic)
 {
   Vector xzplane(0,1,0);
@@ -773,7 +774,8 @@ double FindMinimizationDistance( avtPoincareIC* ic)
 }
 
 // can use a,b, c too
-avtPoincareIC *PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtPoincareIC *x2, avtPoincareIC *x3, std::vector<int> &ids_to_delete)
+void
+PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtPoincareIC *x2, avtPoincareIC *x3, std::vector<int> &ids_to_delete)
 {
   avtPoincareIC *seed = x0->src_seed_ic;
   std::vector<avtPoincareIC *> *children = x0->src_rational_ic->properties.children;
@@ -931,6 +933,7 @@ avtPoincareIC *PickBestAndSetupToDraw(avtPoincareIC *x0, avtPoincareIC *x1, avtP
         std::cerr << "LINE " << __LINE__ << "Where's the seed...?\n";
     }
 }
+
 std::string VectorToString(avtVector &vec)
 {
   std::ostringstream ss;

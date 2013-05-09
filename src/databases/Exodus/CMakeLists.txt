@@ -16,20 +16,18 @@ SET(LIBM_SOURCES
 ExodusMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtExodusFileFormat.C
-vtkVisItExodusReader.C
 )
 
 SET(LIBE_SOURCES
 ExodusEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtExodusFileFormat.C
-vtkVisItExodusReader.C
 )
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${EXODUSII_INCLUDE_DIR}
 ${NETCDF_INCLUDE_DIR}
+${BOOST_INCLUDE_DIR} 
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -53,8 +51,11 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS} 
 )
 
+IF(WIN32)
+  ADD_DEFINITIONS(-DDLL_NETCDF)
+ENDIF(WIN32)
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${EXODUSII_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${NETCDF_LIBRARY_DIR} )
 
 ADD_LIBRARY(IExodusDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IExodusDatabase visitcommon)
@@ -62,19 +63,19 @@ SET(INSTALLTARGETS IExodusDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MExodusDatabase ${LIBM_SOURCES}    )
-    TARGET_LINK_LIBRARIES(MExodusDatabase visitcommon avtdbatts avtdatabase_ser ${EXODUSII_LIB} )
+    TARGET_LINK_LIBRARIES(MExodusDatabase visitcommon avtdbatts avtdatabase_ser ${NETCDF_LIB} )
     ADD_TARGET_DEFINITIONS(MExodusDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MExodusDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EExodusDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EExodusDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${EXODUSII_LIB} )
+TARGET_LINK_LIBRARIES(EExodusDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${NETCDF_LIB} )
 ADD_TARGET_DEFINITIONS(EExodusDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EExodusDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EExodusDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EExodusDatabase_par visitcommon avtdatabase_par avtpipeline_par ${EXODUSII_LIB} )
+    TARGET_LINK_LIBRARIES(EExodusDatabase_par visitcommon avtdatabase_par avtpipeline_par ${NETCDF_LIB} )
     ADD_TARGET_DEFINITIONS(EExodusDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EExodusDatabase_par)
 ENDIF(VISIT_PARALLEL)

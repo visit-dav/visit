@@ -150,9 +150,9 @@ avtSTLWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(pd == NULL)
     {
         vtkGeometryFilter *geom = vtkGeometryFilter::New();
-        geom->SetInput(ds);
+        geom->SetInputData(ds);
 
-        tri->SetInput(geom->GetOutput());        
+        tri->SetInputConnection(geom->GetOutputPort());        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -160,7 +160,7 @@ avtSTLWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        tri->SetInput(pd);        
+        tri->SetInputData(pd);        
         tri->Update();
         pd = tri->GetOutput();
         pd->Register(NULL);
@@ -206,14 +206,14 @@ avtSTLWriter::SendPolyDataToRank0()
             writer->WriteToOutputStringOn();
             writer->SetFileTypeToBinary();
             if (polydatas.size() == 1)
-                writer->SetInput(polydatas[0]);
+                writer->SetInputData(polydatas[0]);
             else
             {
                 vtkAppendPolyData *f = vtkAppendPolyData::New();
                 for(size_t i = 0; i < polydatas.size(); ++i)
-                    f->AddInput(polydatas[i]);
+                    f->AddInputData(polydatas[i]);
                 
-                writer->SetInput(f->GetOutput());
+                writer->SetInputConnection(f->GetOutputPort());
             }
             
             writer->Write();
@@ -301,16 +301,16 @@ avtSTLWriter::CloseFile(void)
 
     if(polydatas.size() == 1)
     {
-        writer->SetInput(polydatas[0]);
+        writer->SetInputData(polydatas[0]);
         writer->Update();
     }
     else if(polydatas.size() > 1)
     {
         vtkAppendPolyData *f = vtkAppendPolyData::New();
         for(size_t i = 0; i < polydatas.size(); ++i)
-            f->AddInput(polydatas[i]);
+            f->AddInputData(polydatas[i]);
 
-        writer->SetInput(f->GetOutput());
+        writer->SetInputConnection(f->GetOutputPort());
         writer->Update();
 
         f->Delete();
@@ -322,5 +322,6 @@ avtSTLWriter::CloseFile(void)
 
     for(size_t i = 0; i < polydatas.size(); ++i)
         polydatas[i]->Delete();
+
     writer->Delete();
 }

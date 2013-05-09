@@ -151,11 +151,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     // gradient
     int th_grad = visitTimer->StartTimer();
     vtkCQS *cqs = vtkCQS::New();
-#if (VTK_MAJOR_VERSION == 5)
-    cqs->SetInput(ds);
-#else
     cqs->SetInputData(ds);
-#endif
     cqs->Update();
     ds = cqs->GetOutput();
     ds->Register(NULL);
@@ -164,11 +160,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     for (int m=0; m<nmats; m++)
     {
         vtkDataSetGradient *grad = vtkDataSetGradient::New();
-#if (VTK_MAJOR_VERSION == 5)
-        grad->SetInput(ds);
-#else
         grad->SetInputData(ds);
-#endif
 
         char str[256];
         sprintf(str, "material%05d", mapUsedMatToMat[m]);
@@ -188,11 +180,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     // recenter the gradient!
     int th_recenter = visitTimer->StartTimer();
     vtkVisItPointDataToCellData *pd2cd = vtkVisItPointDataToCellData::New();
-#if (VTK_MAJOR_VERSION == 5)
-    pd2cd->SetInput(ds);
-#else
     pd2cd->SetInputData(ds);
-#endif
     pd2cd->Update();
     ds = pd2cd->GetOutput();
     ds->Register(NULL);
@@ -361,11 +349,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     {
         vtkAppendFilter *append = vtkAppendFilter::New();
         for (int i=0; i<matDS.size(); i++)
-#if (VTK_MAJOR_VERSION == 5)
-            append->AddInput(matDS[i]);
-#else
             append->AddInputData(matDS[i]);
-#endif
 
         retval = append->GetOutput();
         append->Update();

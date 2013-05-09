@@ -45,9 +45,11 @@
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
@@ -192,7 +194,8 @@ GetQuadGhostZones(int nnodes, int ndims,
         ds->GetFieldData()->CopyFieldOn("avtRealDims");
         realDims->Delete();
 
-        ds->SetUpdateGhostLevel(0);
+        ds->GetInformation()->Set(
+            vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
     }
 }
 
@@ -1387,7 +1390,8 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
             ghostZones->SetName(AVT_GHOST_ZONES_ARRAY);
             ugrid->GetCellData()->AddArray(ghostZones);
             ghostZones->Delete();
-            ugrid->SetUpdateGhostLevel(0);
+            ugrid->GetInformation()->Set(
+                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         }
     }
 

@@ -80,7 +80,7 @@ public:
 
   // Description:
   // Which TimeStep to read.  Indexed from 1.
-  vtkSetClampMacro(TimeStep, int, 1, VTK_LARGE_INTEGER);
+  vtkSetClampMacro(TimeStep, int, 1, VTK_INT_MAX);
   vtkGetMacro(TimeStep, int);
   
   // Description:

@@ -65,10 +65,6 @@ SET(VISIT_CXX_FLAGS "-O2 -fno-common -fexceptions")
 ##
 
 ##
-## Exodus
-##
-
-##
 ## GDAL
 ##
 

@@ -1,8 +1,8 @@
-#/home/miller86/visit/visit/install_2_7_0/cmake/2.8.8/linux-x86_64_mpicc/bin/cmake
+#/home/miller86/visit/visit/install_2_7_0/cmake/2.8.10.2/linux-x86_64_mpicc/bin/cmake
 ##
-## ./trunk/src/svn_bin/build_visit generated host.cmake
-## created: Wed Mar 27 22:59:40 PDT 2013
-## system: Linux floyd.llnl.gov 2.6.18-348.3.1.el5 #1 SMP Tue Mar 5 13:19:32 EST 2013 x86_64 x86_64 x86_64 GNU/Linux
+## VTK-6/src/svn_bin/build_visit generated host.cmake
+## created: Thu Feb 28 20:16:47 PST 2013
+## system: Linux floyd.llnl.gov 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux
 ## by: miller86
 
 ##
@@ -39,14 +39,9 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /home/miller86/visit/visit/install/mpich
 ##
 
 ##
-## Mesa
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
-
-##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /home/miller86/visit/visit/install_2_7_0/python/2.7.3/linux-x86_64_mpicc)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/2.7.3/linux-x86_64_mpicc)
 
 ##
 ## Qt
@@ -56,7 +51,7 @@ VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${VISITHOME}/qt/4.8.3/${VISITARCH}/bin)
 ##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0.a/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/6.0.0/${VISITARCH})
 ##
 
 ##
@@ -107,12 +102,6 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-
-##
-## Exodus
-##
-VISIT_OPTION_DEFAULT(VISIT_EXODUSII_DIR ${VISITHOME}/exodus/4.98/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_EXODUSII_LIBDEP NETCDF_LIBRARY_DIR netcdf ${VISIT_NETCDF_LIBDEP} TYPE STRING)
 
 ##
 ## FastBit
@@ -169,5 +158,5 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  ${VISIT_VTK_DIR}/lib vtklibxml2-6.0  TYPE STRING)
 

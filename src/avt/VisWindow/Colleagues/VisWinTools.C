@@ -1131,11 +1131,7 @@ vtkHighlightActor2D::RegenerateHighlight()
     if(highlightMapper != NULL)
         highlightMapper->Delete();
     highlightMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-    highlightMapper->SetInput(highlightData);
-#else
     highlightMapper->SetInputData(highlightData);
-#endif
 
     if(highlightActor != NULL)
         highlightActor->Delete();

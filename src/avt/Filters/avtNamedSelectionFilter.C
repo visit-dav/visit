@@ -182,11 +182,7 @@ avtNamedSelectionFilter::SelectedData(vtkDataSet *in_ds,
         ds->GetCellData()->AddArray(arr);
         arr->Delete();
         vtkThreshold *thres = vtkThreshold::New();
-#if (VTK_MAJOR_VERSION == 5)
-        thres->SetInput(ds);
-#else
         thres->SetInputData(ds);
-#endif
         thres->ThresholdBetween(0.5, 1.5);
         thres->SetInputArrayToProcess(0, 0, 0, 
               vtkDataObject::FIELD_ASSOCIATION_CELLS, "_avt_thresh_var");

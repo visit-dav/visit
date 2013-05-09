@@ -43,25 +43,10 @@ vtkStructuredGridMapper::vtkStructuredGridMapper()
 }
 
 //----------------------------------------------------------------------------
-#if (VTK_MAJOR_VERSION == 5)
-void vtkStructuredGridMapper::SetInput(vtkStructuredGrid *input)
-{
-  if(input)
-    {
-    this->SetInputConnection(0, input->GetProducerPort());
-    }
-  else
-    {
-    // Setting a NULL input removes the connection.
-    this->SetInputConnection(0, 0);
-    }
-}
-#else
 void vtkStructuredGridMapper::SetInputData(vtkStructuredGrid *input)
 {
     this->SetInputDataInternal(0, input);
 }
-#endif
 
 //----------------------------------------------------------------------------
 // Specify the input data or filter.

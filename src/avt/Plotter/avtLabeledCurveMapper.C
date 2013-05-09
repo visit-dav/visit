@@ -208,11 +208,7 @@ avtLabeledCurveMapper::SetDatasetInput(vtkDataSet *ds, int inNum)
         filter[inNum] = vtkMaskPoints::New();
     }
 
-#if (VTK_MAJOR_VERSION == 5)
-    filter[inNum]->SetInput(ds);
-#else
     filter[inNum]->SetInputData(ds);
-#endif
     filter[inNum]->SetOnRatio(ds->GetNumberOfPoints()/5);
     filter[inNum]->Update();
     vtkPoints *points = filter[inNum]->GetOutput()->GetPoints();

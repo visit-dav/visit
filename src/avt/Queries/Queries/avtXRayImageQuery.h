@@ -147,7 +147,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteImage(int, int, T*);
     template <typename T>
     void                      WriteFloats(int, int, T*);
-    void                      WriteBOVHeader(int, int, int, char *);
+    void                      WriteBOVHeader(int, int, int, const char *);
 };
 
 

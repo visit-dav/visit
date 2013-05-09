@@ -751,11 +751,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         ds2->GetPointData()->SetScalars(arr);
 
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        pd2cd->SetInput(ds2);
-#else
         pd2cd->SetInputData(ds2);
-#endif
         pd2cd->Update();
         vtkDataSet *ds3 = pd2cd->GetOutput();
         outv = ds3->GetCellData()->GetScalars();
@@ -787,11 +783,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
         ds2->GetCellData()->SetScalars(arr);
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(ds2);
-#else
         cd2pd->SetInputData(ds2);
-#endif
         cd2pd->Update();
         vtkDataSet *ds3 = cd2pd->GetOutput();
         outv = ds3->GetPointData()->GetScalars();

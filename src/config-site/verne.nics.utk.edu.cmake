@@ -68,10 +68,6 @@ VISIT_OPTION_DEFAULT(VISIT_BOXLIB3D_DIR ${VISITHOME}/boxlib/${VISITARCH})
 ##
 
 ##
-## Exodus
-##
-
-##
 ## GDAL
 ##
 

@@ -302,11 +302,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             switch(no_vars->GetDataObjectType())
             {
                 case VTK_POLY_DATA:
-#if (VTK_MAJOR_VERSION == 5)
-                    rpfPD->SetInput((vtkPolyData*)no_vars);
-#else
                     rpfPD->SetInputData((vtkPolyData*)no_vars);
-#endif
                     out_pd = vtkPolyData::New();
                     rpfPD->SetOutput(out_pd);
                     out_pd->Delete();
@@ -315,11 +311,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                     break;
     
                 case VTK_UNSTRUCTURED_GRID:
-#if (VTK_MAJOR_VERSION == 5)
-                    rpfUG->SetInput((vtkUnstructuredGrid*)no_vars);
-#else
                     rpfUG->SetInputData((vtkUnstructuredGrid*)no_vars);
-#endif
                     out_ug = vtkUnstructuredGrid::New();
                     rpfUG->SetOutput(out_ug);
                     out_ug->Delete();
@@ -374,20 +366,12 @@ avtCondenseDatasetFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
 
-#if (VTK_MAJOR_VERSION == 5)
-    rpfPD->SetInput(NULL);
-#else
     rpfPD->SetInputData(NULL);
-#endif
     vtkPolyData *p = vtkPolyData::New();
     rpfPD->SetOutput(p);
     p->Delete();
 
-#if (VTK_MAJOR_VERSION == 5)
-    rpfUG->SetInput(NULL);
-#else
     rpfUG->SetInputData(NULL);
-#endif
     vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
     rpfUG->SetOutput(u);
     u->Delete();

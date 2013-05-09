@@ -49,7 +49,9 @@
 
 // vtk includes
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -427,7 +429,8 @@ GetMesh(int timestate, int domain, const char *meshname)
     mesh->SetYCoordinates(gridvals[1]);
     mesh->SetZCoordinates(gridvals[2]);
     mesh->SetExtent(0, width-1, 0, height-1, 0, depth-1);
-    mesh->SetWholeExtent(0, width-1, 0, height-1, 0, depth-1);
+    int wext[6] = {0, width-1, 0, height-1, 0, depth-1};
+    mesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), wext, 6);
 
     DEBUG("size=[%d,%d,%d]", width, height, depth);
 

@@ -311,7 +311,7 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
     }
     else
     {
-        pointsFilter->SetMaximumNumberOfPoints(VTK_LARGE_INTEGER);
+        pointsFilter->SetMaximumNumberOfPoints(VTK_INT_MAX);
     }
     curvilinearFilter->SetIncludeBoundary(1);
     rectilinearFilter->SetIncludeBoundary(1);
@@ -454,7 +454,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             in_ds->GetCellData()->GetArray("avtGhostZones"))
         {
             removeGhostCells  = vtkDataSetRemoveGhostCells::New();
-            removeGhostCells->SetInput(in_ds);
+            removeGhostCells->SetInputData(in_ds);
     
             //
             // There is something buggy about the extents when this filter is 
@@ -510,20 +510,20 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         int dstype = ds->GetDataObjectType();
         if (dstype == VTK_STRUCTURED_GRID)
         {
-            curvilinearFilter->SetInput((vtkStructuredGrid *) ds);
+            curvilinearFilter->SetInputData(ds);
             curvilinearFilter->Update();
             rv = curvilinearFilter->GetOutput();
         }
         else if (dstype == VTK_RECTILINEAR_GRID)
         {
-            rectilinearFilter->SetInput((vtkRectilinearGrid *) ds);
+            rectilinearFilter->SetInputData(ds);
             rectilinearFilter->Update();
             rv = rectilinearFilter->GetOutput();
         }
         else if (topoDim == 0 &&
                  (dstype == VTK_POLY_DATA || dstype == VTK_UNSTRUCTURED_GRID))
         {
-            pointsFilter->SetInput(ds);
+            pointsFilter->SetInputData(ds);
             pointsFilter->Update();
             rv = pointsFilter->GetOutput();
         }
@@ -538,8 +538,6 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             }
             return in_ds;
         }
-
-        rv->Update();
 
         if (removeGhostCells != NULL)
         {
@@ -1087,17 +1085,17 @@ avtIndexSelectFilter::ReleaseData(void)
 {
     avtPluginDataTreeIterator::ReleaseData();
 
-    curvilinearFilter->SetInput(NULL);
+    curvilinearFilter->SetInputData(NULL);
     vtkStructuredGrid *s = vtkStructuredGrid::New();
     curvilinearFilter->SetOutput(s);
     s->Delete();
 
-    rectilinearFilter->SetInput(NULL);
+    rectilinearFilter->SetInputData(NULL);
     vtkRectilinearGrid *r = vtkRectilinearGrid::New();
     rectilinearFilter->SetOutput(r);
     r->Delete();
 
-    pointsFilter->SetInput(NULL);
+    pointsFilter->SetInputData(NULL);
     vtkPolyData *p = vtkPolyData::New();
     pointsFilter->SetOutput(p);
     p->Delete();

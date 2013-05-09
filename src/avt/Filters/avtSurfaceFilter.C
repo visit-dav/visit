@@ -344,11 +344,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
                 inDS->GetCellData()->SetScalars(inDS->GetCellData()
                                        ->GetArray(atts.GetVariable().c_str()));
         }
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(inDS);
-#else
         cd2pd->SetInputData(inDS);
-#endif
         cd2pd->Update();
         inScalars = cd2pd->GetOutput()->GetPointData()->GetScalars();
     }
@@ -437,11 +433,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkUnstructuredGrid *outUG = vtkUnstructuredGrid::New(); 
 
     // call the vtk filter to create the output dataset.
-#if (VTK_MAJOR_VERSION == 5)
-    filter->SetInput(inDS);
-#else
     filter->SetInputData(inDS);
-#endif
     filter->SetinScalars(outScalars);
     filter->SetOutput(outUG);
     filter->Update();
@@ -846,11 +838,7 @@ avtSurfaceFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
 
-#if (VTK_MAJOR_VERSION == 5)
-    filter->SetInput(NULL);
-#else
     filter->SetInputData(NULL);
-#endif
     vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
     filter->SetOutput(u);
     u->Delete();

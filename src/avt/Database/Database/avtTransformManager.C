@@ -1469,12 +1469,10 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
             }
 
         }
-#if (VTK_MAJOR_VERSION == 5)
         // FIX_ME_VTK6.0, ESB, I assume this needs to be done for VTK based
         // readers. Can we eliminate this or do we need to move it somewhere
         // else. All the tests pass with this commented out.
         // dgrid->Update();
-#endif
 
         //
         // Cache the discretized mesh for this timestep

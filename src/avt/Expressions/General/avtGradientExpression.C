@@ -448,11 +448,7 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
         }
 
         vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        cd2pd->SetInput(in_ds);
-#else
         cd2pd->SetInputData(in_ds);
-#endif
         cd2pd->Update();
 
         scalarValues = cd2pd->GetOutput()->GetPointData()->GetScalars();
@@ -531,11 +527,7 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
         new_ds->GetPointData()->SetVectors(results);
 
         vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        pd2cd->SetInput(new_ds);
-#else
         pd2cd->SetInputData(new_ds);
-#endif
         pd2cd->Update();
         
         vtkDataArray *new_results = pd2cd->GetOutput()->GetCellData()
@@ -1329,11 +1321,7 @@ avtGradientExpression::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds,
                 new_ds->CopyStructure(in_ds);
                 char *name = val->GetName();
                 new_ds->GetCellData()->AddArray(val);
-#if (VTK_MAJOR_VERSION == 5)
-                cd2pd->SetInput(new_ds);
-#else
                 cd2pd->SetInputData(new_ds);
-#endif
                 cd2pd->Update();
                 val = cd2pd->GetOutput()->GetPointData()->GetArray(name);
                 val->Register(NULL);
@@ -1682,11 +1670,7 @@ avtGradientExpression::FastGradient(vtkDataSet *in_ds,
     new_ds->CopyStructure(in_ds);
     new_ds->GetCellData()->AddArray(cellGrad);
     vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
-#if (VTK_MAJOR_VERSION == 5)
-    cd2pd->SetInput(new_ds);
-#else
     cd2pd->SetInputData(new_ds);
-#endif
     cd2pd->Update();
     vtkDataArray *rv = cd2pd->GetOutput()->GetPointData()->GetArray("tmpGrad");
     rv->Register(NULL);

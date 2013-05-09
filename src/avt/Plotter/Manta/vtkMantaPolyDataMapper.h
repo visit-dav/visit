@@ -116,7 +116,7 @@ class PLOTTER_API vtkMantaPolyDataMapper : public vtkPolyDataMapper
 
     // Description:
     // Draw method for Manta.
-    virtual void Draw(vtkRenderer *ren, vtkActor *a);
+    virtual int Draw(vtkRenderer *ren, vtkActor *a);
 
 
     void AddSphere(double x, double y, double z, double radius, unsigned char r, unsigned char g, unsigned char b);

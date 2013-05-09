@@ -1878,7 +1878,6 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
 vtkDataArray *
 avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname)
 {
-cerr << PAR_Rank() << ": Reading domain " << domain << ", " << timestep << endl;
     if (numberOfTimePeriods > 1)
     {
         timestep = timestep % iNumTimesteps;

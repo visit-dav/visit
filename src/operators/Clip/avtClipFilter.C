@@ -248,13 +248,11 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
     }
 
     // Set up and apply the clipping filters.
-    vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
-
     vtkVisItClipper *clipper1 = NULL, *clipper2 = NULL,
                     *clipper3 = NULL, *last = NULL;
 
     clipper1 = vtkVisItClipper::New();
-    clipper1->SetInput(in);
+    clipper1->SetInputData(in);
     clipper1->SetClipFunction(funcs1);
     clipper1->SetInsideOut(true);
     clipper1->SetRemoveWholeCells(nodesCritical);
@@ -263,7 +261,7 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
     if (p2 != NULL)
     {
         clipper2 = vtkVisItClipper::New();
-        clipper2->SetInput(clipper1->GetOutput());
+        clipper2->SetInputConnection(last->GetOutputPort());
         clipper2->SetClipFunction(funcs2);
         clipper2->SetInsideOut(true);
         clipper2->SetRemoveWholeCells(nodesCritical);
@@ -272,14 +270,15 @@ avtClipFilter::ClipAgainstPlanes(vtkDataSet *in, bool nodesCritical,
     if (p3 != NULL)
     {
         clipper3 = vtkVisItClipper::New();
-        clipper3->SetInput(clipper2->GetOutput());
+        clipper3->SetInputConnection(last->GetOutputPort());
         clipper3->SetClipFunction(funcs3);
         clipper3->SetInsideOut(true);
         clipper3->SetRemoveWholeCells(nodesCritical);
         last = clipper3;
     }
-    last->SetOutput(ug);
     last->Update();
+    vtkUnstructuredGrid *ug = last->GetOutput();
+    ug->Register(NULL);
 
     funcs1->Delete();
     clipper1->Delete();
@@ -552,7 +551,7 @@ avtClipFilter::ComputeAccurateClip(vtkDataSet *inDS, vtkDataSet **outDS,
         bool inverse = atts.GetSphereInverse();
 
         vtkVisItClipper *clipper = vtkVisItClipper::New();
-        clipper->SetInput(inDS);
+        clipper->SetInputData(inDS);
         clipper->SetClipFunction(funcs);
         clipper->SetInsideOut(inverse);
         clipper->SetRemoveWholeCells(nodesAreCritical);
@@ -628,7 +627,7 @@ avtClipFilter::ComputeFastClip(vtkDataSet *inDS, vtkDataSet **outDS,
     if (doFast)
     {
         vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
-        fastClipper->SetInput(inDS);
+        fastClipper->SetInputData(inDS);
         fastClipper->SetOutput(ug);
         fastClipper->SetClipFunction(ifuncs);
         fastClipper->SetInsideOut(inverse);

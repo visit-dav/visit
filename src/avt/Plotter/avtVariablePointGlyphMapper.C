@@ -246,16 +246,19 @@ avtVariablePointGlyphMapper::SetUpFilters(int nDoms)
 //    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
 //    Glyph if topological dimension is <= 1.
 //
+//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
+//    Changed signature of InsertFilters.
+//
 // ****************************************************************************
 
-vtkDataSet *
+vtkAlgorithmOutput *
 avtVariablePointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
         return InsertGlyphs(ds, dom, 
                             GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
     else
-        return ds;
+        return NULL;
 }
 
 
@@ -407,11 +410,11 @@ avtVariablePointGlyphMapper::SetGlyphType(PointGlyphType type)
                 {
                     if (mappers[i] != NULL)
                     {
-#if (VTK_MAJOR_VERSION == 5)
-                        mappers[i]->SetInput(InsertFilters(children[i], i));
-#else
-                        mappers[i]->SetInputData(InsertFilters(children[i], i));
-#endif
+                        vtkAlgorithmOutput *output = InsertFilters(children[i], i);
+                        if (output != NULL)
+                            mappers[i]->SetInputConnection(output);
+                        else 
+                            mappers[i]->SetInputData(children[i]);
                     }
                 }
                 // this was allocated in GetAllLeaves, need to free it now

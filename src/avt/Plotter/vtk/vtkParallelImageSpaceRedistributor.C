@@ -504,11 +504,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
                                      vtkPolyDataRelevantPointsFilter::New();
             outgoingPolyData[i]->SetPoints(inPts);
             outgoingPolyData[i]->GetPointData()->ShallowCopy(inPD);
-#if (VTK_MAJOR_VERSION == 5)
-            rpf->SetInput(outgoingPolyData[i]);
-#else
             rpf->SetInputData(outgoingPolyData[i]);
-#endif
             rpf->Update();
             outgoingPolyData[i]->Delete();
             outgoingPolyData[i] = rpf->GetOutput();
@@ -646,11 +642,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     // remember we explicitly didn't convert our own data to a string, so
     // we have to add it to the appender explicitly
     if (outgoingPolyData[rank])
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput(outgoingPolyData[rank]);
-#else
         appender->AddInputData(outgoingPolyData[rank]);
-#endif
 
     for (i=0; i<size; i++)
     {
@@ -658,11 +650,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
         {
             vtkPolyData *pd = GetDataVTK(&big_recv_buffer[recvDisp[i]],
                                          recvCount[i]);
-#if (VTK_MAJOR_VERSION == 5)
-            appender->AddInput(pd);
-#else
             appender->AddInputData(pd);
-#endif
             pd->Delete();
         }
     }
@@ -780,11 +768,7 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
  */
 
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
-#if (VTK_MAJOR_VERSION == 5)
-    writer->SetInput(asVTK);
-#else
     writer->SetInputData(asVTK);
-#endif
     writer->SetWriteToOutputString(1);
     writer->SetFileTypeToBinary();
     writer->Write();

@@ -321,6 +321,9 @@
 #    is indeed (forced) cached so it winds up in CMakeCache.txt and
 #    adjusted name of the shell script to recmake_visit.sh.
 #
+#    Mark C. Miller, Wed Feb  6 16:23:09 PST 2013
+#    Fix missing '#' in first line of recmake_visit.sh file.
+#
 #    Kathleen Biagas, Tue Feb 26 13:58:12 MST 2013
 #    Added VISIT_XXX_DEFAULT internal cache vars that store values set in
 #    config-site cmake files via VISIT_OPTION_DEFAULT.  This allows for
@@ -340,6 +343,12 @@
 #    recommended by Gunther. The other option was to add more of boost
 #    to the internal boost so that it could be used by paraDIS, but that
 #    seemed like more work.
+#
+#    Kathleen Biagas, Thur May 2 14:08:27 MST 2013
+#    Don't bother finding bulk of thirdparty libs if building minimal plugins.
+#
+#    Kathleen Biagas, Wed May  8 16:24:01 PDT 2013
+#    Remove EXODUS, no longer needed.
 #
 #****************************************************************************/
 
@@ -593,9 +602,9 @@ IF(WIN32)
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
 IF(VISIT_MESA_DIR)
-  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt"
-ON)
+  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt" OFF)
 ENDIF(VISIT_MESA_DIR)
+
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
 
@@ -665,8 +674,6 @@ VISIT_3RDPARTY_VAR(CCMIO_DIR     "Path containing the CCMIO library's include an
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
 VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
 VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
-VISIT_3RDPARTY_VAR(EXODUSII_DIR  "Path containing the ExodusII library's include and lib")
-VISIT_3RDPARTY_DEP(EXODUSII_LIBDEP "ExodusII library dependencies")
 VISIT_3RDPARTY_VAR(FASTBIT_DIR   "Path containing the Fastbit library's include and lib")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
@@ -681,7 +688,6 @@ VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
 VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
-VISIT_3RDPARTY_VAR(VISUS_DIR     "Path containing the ViSUS library's include and lib")
 VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
@@ -970,6 +976,9 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 # Configure Mesa support.
 IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
+    IF(MESA_FOUND)
+        SET(HAVE_OSMESA 1)
+    ENDIF(MESA_FOUND)
 ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
 
 IF(VISIT_R_DIR)
@@ -1106,122 +1115,113 @@ ELSE(CMAKE_HOST_UNIX)
   ENDIF(WIN32)
 ENDIF(CMAKE_HOST_UNIX)
 
-# Configure HDF5 support. Do it before the other libraries since many can depend on it.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
-IF(HDF5_FOUND)
-    SET(HAVE_LIBHDF5 1)
-ENDIF(HDF5_FOUND)
+IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
+    # Configure HDF5 support. 
+    # Do it before the other libraries since many can depend on it.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
+    IF(HDF5_FOUND)
+        SET(HAVE_LIBHDF5 1)
+    ENDIF(HDF5_FOUND)
 
-# Configure adios support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
-IF(ADIOS_FOUND)
-    SET(HAVE_LIBADIOS 1)
-ENDIF(ADIOS_FOUND)
+    # Configure adios support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
+    IF(ADIOS_FOUND)
+        SET(HAVE_LIBADIOS 1)
+    ENDIF(ADIOS_FOUND)
 
-# Configure advio support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
-IF(ADVIO_FOUND)
-    SET(HAVE_LIBADVIO 1)
-ENDIF(ADVIO_FOUND)
+    # Configure advio support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
+    IF(ADVIO_FOUND)
+        SET(HAVE_LIBADVIO 1)
+    ENDIF(ADVIO_FOUND)
 
-# Configure Boxlib support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-IF(BOXLIB_FOUND)
-    SET(HAVE_LIBBOXLIB 1)
-ENDIF(BOXLIB_FOUND)
+    # Configure Boxlib support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
+    IF(BOXLIB_FOUND)
+        SET(HAVE_LIBBOXLIB 1)
+    ENDIF(BOXLIB_FOUND)
 
-# Configure ccmio support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCCMIO.cmake)
-IF(CCMIO_FOUND)
-    SET(HAVE_LIBCCMIO 1)
-ENDIF(CCMIO_FOUND)
+    # Configure ccmio support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCCMIO.cmake)
+    IF(CCMIO_FOUND)
+        SET(HAVE_LIBCCMIO 1)
+    ENDIF(CCMIO_FOUND)
 
-# Configure cfitsio support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
-IF(CFITSIO_FOUND)
-    SET(HAVE_LIBCFITSIO 1)
-ENDIF(CFITSIO_FOUND)
+    # Configure cfitsio support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
+    IF(CFITSIO_FOUND)
+        SET(HAVE_LIBCFITSIO 1)
+    ENDIF(CFITSIO_FOUND)
 
-# Configure CGNS support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
-IF(CGNS_FOUND)
-    SET(HAVE_LIBCGNS 1)
-ENDIF(CGNS_FOUND)
+    # Configure CGNS support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
+    IF(CGNS_FOUND)
+        SET(HAVE_LIBCGNS 1)
+    ENDIF(CGNS_FOUND)
 
-# Configure Fastbit support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
-IF(FASTBIT_FOUND)
-    SET(HAVE_LIBFASTBIT 1)
-ENDIF(FASTBIT_FOUND)
+    # Configure Fastbit support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFastBit.cmake)
+    IF(FASTBIT_FOUND)
+        SET(HAVE_LIBFASTBIT 1)
+    ENDIF(FASTBIT_FOUND)
 
-# Configure gdal support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-IF(GDAL_FOUND)
-    SET(HAVE_LIBGDAL 1)
-ENDIF(GDAL_FOUND)
+    # Configure gdal support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
+    IF(GDAL_FOUND)
+        SET(HAVE_LIBGDAL 1)
+    ENDIF(GDAL_FOUND)
 
-# Configure HDF4 support.
-IF(VISIT_STATIC)
-  # There's a problem including HDF4 and Netcdf in the same executable due
-  # to some netcdf-like symbols in libmfhdf
-  MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
-ELSE(VISIT_STATIC)
-  INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
-  IF(HDF4_FOUND)
-      SET(HAVE_LIBHDF4 1)
-  ENDIF(HDF4_FOUND)
-ENDIF(VISIT_STATIC)
+    # Configure HDF4 support.
+    IF(VISIT_STATIC)
+      # There's a problem including HDF4 and Netcdf in the same executable due
+      # to some netcdf-like symbols in libmfhdf
+      MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
+    ELSE(VISIT_STATIC)
+      INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
+      IF(HDF4_FOUND)
+          SET(HAVE_LIBHDF4 1)
+      ENDIF(HDF4_FOUND)
+    ENDIF(VISIT_STATIC)
 
-# Configure h5part support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
-IF(H5PART_FOUND)
-    SET(HAVE_LIBH5PART 1)
-ENDIF(H5PART_FOUND)
+    # Configure h5part support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
+    IF(H5PART_FOUND)
+        SET(HAVE_LIBH5PART 1)
+    ENDIF(H5PART_FOUND)
 
-# Configure ITAPS support -- it's treated specially.
-CONFIGURE_ITAPS()
+    # Configure ITAPS support -- it's treated specially.
+    CONFIGURE_ITAPS()
 
-# Configure Mili support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
-IF(MILI_FOUND)
-    SET(HAVE_LIBMILI 1)
-ENDIF(MILI_FOUND)
+    # Configure Mili support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
+    IF(MILI_FOUND)
+        SET(HAVE_LIBMILI 1)
+    ENDIF(MILI_FOUND)
 
-# Configure netcdf support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
-IF(NETCDF_FOUND)
-    SET(HAVE_LIBNETCDF 1)
+    # Configure netcdf support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
+    IF(NETCDF_FOUND)
+        SET(HAVE_LIBNETCDF 1)
+    ENDIF(NETCDF_FOUND)
 
-    # Configure ExodusII support (Depends on NETCDF)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindExodusII.cmake)
-    IF(EXODUSII_FOUND)
-        SET(HAVE_LIBEXODUSII 1)
-    ENDIF(EXODUSII_FOUND)
-ENDIF(NETCDF_FOUND)
+    # Configure Silo support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
+    IF(SILO_FOUND)
+        SET(HAVE_LIBSILO 1)
+    ENDIF(SILO_FOUND)
 
-# Configure Silo support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
-IF(SILO_FOUND)
-    SET(HAVE_LIBSILO 1)
-ENDIF(SILO_FOUND)
+    # Configure Xdmf support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
+    IF(XDMF_FOUND)
+        SET(HAVE_LIBXDMF 1)
+    ENDIF(XDMF_FOUND)
 
-# Configure ViSUS support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
-IF(VISUS_FOUND)
-    SET(HAVE_LIBVISUS 1)
-ENDIF(VISUS_FOUND)
-
-# Configure Xdmf support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
-IF(XDMF_FOUND)
-    SET(HAVE_LIBXDMF 1)
-ENDIF(XDMF_FOUND)
-
-# Configure MDSplus support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
-IF(MDSPLUS_FOUND)
-    SET(HAVE_LIBMDSPLUS 1)
-ENDIF(MDSPLUS_FOUND)
+    # Configure MDSplus support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
+    IF(MDSPLUS_FOUND)
+        SET(HAVE_LIBMDSPLUS 1)
+    ENDIF(MDSPLUS_FOUND)
+ENDIF(NOT VISIT_BUILD_MINIMAL_PLUGINS)
 
 # Configure Manta support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
@@ -2008,7 +2008,7 @@ IF(UNIX)
 ELSE(UNIX)
    SET(python_include_relative_path "/python")
    SET(exodusii_include_relative_path "/exodusii/include")
-   SET(vtk_include_relative_path "/vtk/vtk-5.8")
+   SET(vtk_include_relative_path "/vtk/vtk-6.0")
 ENDIF(UNIX)
 
 # If we're installing MPICH as our MPI then filter the parallel flags so

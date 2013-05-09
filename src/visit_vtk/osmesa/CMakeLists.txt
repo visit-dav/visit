@@ -38,13 +38,27 @@
 #
 #****************************************************************************/
 
-# Use the VISUS_DIR hint from the config-site .cmake file 
+SET(VISIT_OSMESA_SOURCES
+vtkOSMesaGLRenderWindow.C
+vtkOSMesaGLExtensionManager.C
+vtkVisItOSMesaRenderingFactory.C
+)
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+INCLUDE_DIRECTORIES(
+${VISIT_BINARY_DIR}/include
+${VISIT_SOURCE_DIR}/include
+${MESA_INCLUDE_DIR}
+${VTK_INCLUDE_DIRS}
+)
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(VISUS lib/${VISIT_MSVC_VERSION} include idx_i local vtkzlib)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(VISUS lib include idx_i local z)
-ENDIF (WIN32)
 
+# Add link directories needed to use our libraries and VTK.
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
+
+ADD_LIBRARY(visit_vtk_osmesa ${VISIT_OSMESA_SOURCES})
+
+TARGET_LINK_LIBRARIES(visit_vtk_osmesa ${MESA_LIBRARY_DIR}/${MESA_LIB})
+
+ADD_TARGET_DEFINITIONS(visit_vtk_osmesa ${VTK_DEFINITIONS})
+
+VISIT_INSTALL_TARGETS(visit_vtk_osmesa)

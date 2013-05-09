@@ -64,10 +64,10 @@ avtLabelActor:: avtLabelActor()
     scaleFactor = 1.;
 
     labelActor = vtkFollower::New(); 
-        labelActor->GetProperty()->SetColor(0., 0., 0.);
-        labelActor->GetProperty()->SetLineWidth(1);
-        labelActor->SetScale(0.5);
-        labelActor->PickableOff();
+    labelActor->GetProperty()->SetColor(0., 0., 0.);
+    labelActor->GetProperty()->SetLineWidth(1);
+    labelActor->SetScale(0.5);
+    labelActor->PickableOff();
 
     renderer = NULL; 
 }
@@ -360,11 +360,7 @@ void avtLabelActor::SetMarker(const int index)
     // Create the actor.
     //
     vtkPolyDataMapper *labelMapper = vtkPolyDataMapper::New();
-#if (VTK_MAJOR_VERSION == 5)
-    labelMapper->SetInput(polyData);
-#else
     labelMapper->SetInputData(polyData);
-#endif
 
     labelActor->SetMapper(labelMapper);
 

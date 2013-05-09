@@ -343,11 +343,7 @@ avtThresholdFilter::ProcessOneChunk(
         {
             curVarName = curVariables[curVarNum].c_str();
             
-#if (VTK_MAJOR_VERSION == 5)
-            threshold->SetInput(curOutDataSet);
-#else
             threshold->SetInputData(curOutDataSet);
-#endif
             // We registered curOutDataSet so it wouldn't be deleted.  But now that
             // we have fed it back into the threshold filter, we are done with it.
             // So decrement its reference count.

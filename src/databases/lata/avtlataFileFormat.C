@@ -41,26 +41,29 @@
 
 #include <avtlataFileFormat.h>
 
+#include <LmlReader.h>
+#include <LataJournal.h>
+
+#include <avtDatabaseMetaData.h>
+#include <avtGhostData.h>
+#include <DebugStream.h>
+#include <Expression.h>
+#include <InvalidVariableException.h>
+
+#include <vtkCellData.h>
+#include <vtkCellType.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <vtkFloatArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkCellType.h>
-#include <avtDatabaseMetaData.h>
-#include <DebugStream.h>
-#include <Expression.h>
-#include <avtGhostData.h>
-#include <vtkUnsignedCharArray.h>
-#include <InvalidVariableException.h>
-#include <vtkCellData.h>
-#include <vtkIntArray.h>
-
-#include <LmlReader.h>
-#include <LataJournal.h>
 
 // ****************************************************************************
 //  Method: avtlata constructor
@@ -539,7 +542,8 @@ avtlataFileFormat::GetMesh(int timestate, int block, const char *meshname)
       for (i = ncells - n; i < ncells; i++)
         dat[i] = ghost;
       ugrid->GetCellData()->AddArray(ghostcells);
-      ugrid->SetUpdateGhostLevel(0);
+      ugrid->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
       ghostcells->Delete();
     }
     return_value = ugrid;
@@ -621,7 +625,8 @@ avtlataFileFormat::GetMesh(int timestate, int block, const char *meshname)
       }
       
       sgrid->GetCellData()->AddArray(ghostcells);
-      sgrid->SetUpdateGhostLevel(0);
+      sgrid->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
       ghostcells->Delete();
     }
 

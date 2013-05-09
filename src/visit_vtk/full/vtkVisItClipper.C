@@ -78,7 +78,7 @@ vtkStandardNewMacro(vtkVisItClipper);
 //    percent value to hit the zero crossing
 //
 //  Programmer: Mark C. Miller
-//  Creation:   December 3, 2006 
+//  Creation:   December 3, 2006
 //
 //  Modifications:
 //    Brad Whitlock, Fri Mar 23 17:13:49 PDT 2012
@@ -270,11 +270,7 @@ vtkVisItClipper::FilterState::ClipDataset(vtkDataSet *in_ds,
                                           vtkUnstructuredGrid *out_ds)
 {
     vtkClipDataSet *clipData = vtkClipDataSet::New();
-#if (VTK_MAJOR_VERSION == 5)
-    clipData->SetInput(in_ds);
-#else
     clipData->SetInputData(in_ds);
-#endif
     if (this->clipFunction)
     {
         clipData->SetClipFunction(this->clipFunction);
@@ -1151,34 +1147,21 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
         bridge.ConstructDataSet(vfvIn, just_from_zoo);
 
         vtkAppendFilter *appender = vtkAppendFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput(not_from_zoo);
-        appender->AddInput(just_from_zoo);
-#else
         appender->AddInputData(not_from_zoo);
         appender->AddInputData(just_from_zoo);
-#endif
         appender->Update();
 
         output->ShallowCopy(appender->GetOutput());
 
         if (state.computeInsideAndOut)
         {
-#if (VTK_MAJOR_VERSION == 5)
-            appender->RemoveInput(just_from_zoo);
-#else
             appender->RemoveInputData(just_from_zoo);
-#endif
             just_from_zoo->Delete();
 
             just_from_zoo = vtkUnstructuredGrid::New();
             bridge.ConstructDataSet(vfvOut, just_from_zoo);
 
-#if (VTK_MAJOR_VERSION == 5)
-            appender->AddInput(just_from_zoo);
-#else
             appender->AddInputData(just_from_zoo);
-#endif
             appender->Update();
 
             if (state.otherOutput != NULL)
@@ -1535,7 +1518,7 @@ vtkVisItClipper::RequestData(
     {
         debug1 << "vtkVisItClipper: Can't operate on this dataset,\n";
         debug1 << "                 reverting to raw VTK code.\n";
-        GeneralExecute(ds, output);
+        ClipDataset(ds, output);
     }
     visitTimer->StopTimer(t0, "vtkVisItClipper");
 
@@ -1559,11 +1542,6 @@ void vtkVisItClipper::PrintSelf(ostream& os, vtkIndent indent)
     Superclass::PrintSelf(os,indent);
 }
 
-void vtkVisItClipper::GeneralExecute(vtkDataSet *input,
-    vtkUnstructuredGrid *output)
-{
-    ClipDataset(input, output);
-}
 
 // ****************************************************************************
 //  Modifications:

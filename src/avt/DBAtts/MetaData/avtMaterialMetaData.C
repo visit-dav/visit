@@ -526,14 +526,34 @@ avtMaterialMetaData::Print(ostream &out, int indent) const
     avtBaseVarMetaData::Print(out, indent);
 
     Indent(out, indent);
-    out << "The materials names are = ";
+    out << "Materials names:" << endl;
+    Indent(out, indent+1);
     for (size_t i = 0; i < materialNames.size() ; ++i)
     {
         out << "\"" << materialNames[i].c_str() << "\"";
-        if (colorNames.size() && colorNames[i] != "")
-            out << "(color=\"" << colorNames[i].c_str() << "\")";
-        if(i < materialNames.size() - 1)
-            out << ", ";
+
+        if (colorNames.size())
+        {
+            if (colorNames[i] != "")
+                out << "(color=\"" << colorNames[i].c_str() << "\")";
+            if (i < materialNames.size() - 1)
+                out << ", ";
+            if((i+1)%3 == 0)
+            {
+                out << endl;
+                Indent(out, indent+1);
+            }
+        }
+        else
+        {
+            if (i < materialNames.size() - 1)
+                out << ", ";
+            if((i+1)%6 == 0)
+            {
+                out << endl;
+                Indent(out, indent+1);
+            }
+        }
     }
     out << endl;
 }

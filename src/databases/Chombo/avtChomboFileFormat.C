@@ -50,17 +50,19 @@
 #include <algorithm>
 #include <sstream>
 
-#include <vtkFieldData.h>
-#include <vtkCellData.h>
 #include <vtkCellArray.h>
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkPolyData.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
+#include <vtkDoubleArray.h>
+#include <vtkFieldData.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <DBOptionsAttributes.h>
 
@@ -2275,7 +2277,8 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
             }
 
             rg->GetCellData()->AddArray(ghostCells);
-            rg->SetUpdateGhostLevel(0);
+            rg->GetInformation()->Set(
+                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
             ghostCells->Delete();
         }
 

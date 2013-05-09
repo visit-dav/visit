@@ -1720,17 +1720,9 @@ avtPosCMFEAlgorithm::FastLookupGrouping::RelocateDataUsingPartition(
             {
                 vtkUnstructuredGridRelevantPointsFilter *ugrpf = 
                                 vtkUnstructuredGridRelevantPointsFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-                ugrpf->SetInput(meshForProcP[j]);
-#else
                 ugrpf->SetInputData(meshForProcP[j]);
-#endif
                 ugrpf->Update();
-#if (VTK_MAJOR_VERSION == 5)
-                appenders[j]->AddInput(ugrpf->GetOutput());
-#else
                 appenders[j]->AddInputData(ugrpf->GetOutput());
-#endif
                 ugrpf->Delete();
                 meshForProcP[j]->Delete();
             }

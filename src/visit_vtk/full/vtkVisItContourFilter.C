@@ -492,13 +492,8 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         sfv.ConstructPolyData(inPD, inCD, just_from_zoo, inPts);
 
         vtkAppendPolyData *appender = vtkAppendPolyData::New();
-#if (VTK_MAJOR_VERSION == 5)
-        appender->AddInput(not_from_zoo);
-        appender->AddInput(just_from_zoo);
-#else
         appender->AddInputData(not_from_zoo);
         appender->AddInputData(just_from_zoo);
-#endif
         appender->Update();
 
         output->ShallowCopy(appender->GetOutput());
@@ -530,11 +525,7 @@ vtkVisItContourFilter::ContourDataset(vtkDataSet *in_ds,
     contour->SetNumberOfContours(1);
     contour->SetValue(0, Isovalue);
 
-#if (VTK_MAJOR_VERSION == 5)
-    contour->SetInput(in_ds);
-#else
     contour->SetInputData(in_ds);
-#endif
     contour->Update();
 
     out_pd->ShallowCopy(contour->GetOutput());

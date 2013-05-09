@@ -153,16 +153,11 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
             EXCEPTION1(ImproperUseException, "only for scalar data");
         
         vtkCellDataToPointData *myFilter = vtkCellDataToPointData::New();
-        myFilter->SetInput(in_ds);
-        
-        vtkDataSet *ds = (vtkDataSet*)in_ds->NewInstance();
-        myFilter->GetExecutive()->SetOutputData(0,ds);
-        ds->Update();
-        //ds->SetSource(NULL);
-
-        data = ds->GetPointData()->GetScalars();
+        myFilter->SetInputData(in_ds);
+        myFilter->Update();
+        data = myFilter->GetOutput()->GetPointData()->GetScalars();
         data->Register(NULL);
-        ds->Delete();
+        myFilter->Delete();
     }
     
     //
@@ -356,7 +351,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
     for (cl = 0; cl < 4; ++cl)
     {
         contourInput->GetPointData()->SetScalars(rv[cl]);
-        cf->SetInput(contourInput);
+        cf->SetInputData(contourInput);
         cf->SetValue(0, contourLevel);
         cf->Update();
         vtkPolyData *pd = vtkPolyData::New();
@@ -365,7 +360,7 @@ avtTopologyFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string)
         labels.push_back(labelNames[cl]);
     }
 
-    cf->SetInput(NULL);
+    cf->SetInputData(NULL);
 
     rv[0]->Delete();
     rv[1]->Delete();
@@ -794,7 +789,7 @@ avtTopologyFilter::ReleaseData()
 
     if (cf)
     {
-        cf->SetInput(NULL);
+        cf->SetInputData(NULL);
         vtkPolyData *p = vtkPolyData::New();
         cf->SetOutput(p);
         p->Delete();

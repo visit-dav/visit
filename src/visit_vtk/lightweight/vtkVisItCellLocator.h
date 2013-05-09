@@ -71,7 +71,7 @@ public:
 
   // Description:
   // Specify the average number of cells in each octant.
-  vtkSetClampMacro(NumberOfCellsPerBucket,int,1,VTK_LARGE_INTEGER);
+  vtkSetClampMacro(NumberOfCellsPerBucket,int,1,VTK_INT_MAX);
   vtkGetMacro(NumberOfCellsPerBucket,int);
 
   // Description:

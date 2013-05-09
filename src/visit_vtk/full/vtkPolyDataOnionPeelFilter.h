@@ -133,7 +133,7 @@ public:
 
   // Description:
   // Set the current layer value.
-  vtkSetClampMacro(RequestedLayer,int, 0, VTK_LARGE_INTEGER);
+  vtkSetClampMacro(RequestedLayer,int, 0, VTK_INT_MAX);
   vtkGetMacro(RequestedLayer,int);
 
   // Description:

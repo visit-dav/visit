@@ -65,10 +65,6 @@ SET(VISIT_CXX_FLAGS "-m64")
 ##
 
 ##
-## Exodus
-##
-
-##
 ## GDAL
 ##
 

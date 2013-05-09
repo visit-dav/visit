@@ -184,11 +184,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if (atts.GetTopologicalDimension() == 2)
     {
-#if (VTK_MAJOR_VERSION == 5)
-        geomFilter->SetInput(tmp_ds);
-#else
         geomFilter->SetInputData(tmp_ds);
-#endif
         boundaryFilter->BoundaryEdgesOn();
         boundaryFilter->FeatureEdgesOff();
         boundaryFilter->NonManifoldEdgesOff();
@@ -196,12 +192,9 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
         boundaryFilter->ColoringOff();
     
         boundaryFilter->SetInputConnection(geomFilter->GetOutputPort());
-#if (VTK_MAJOR_VERSION == 5)
-        boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
-#else
         // FIX_ME_VTK6.0, ESB, is this correct?
         vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(boundaryFilter->GetInformation(), 2);
-#endif
+        //boundaryFilter->GetOutput()->SetUpdateGhostLevel(2);
         boundaryFilter->Update();
 
         allLines = boundaryFilter->GetOutput();
@@ -212,11 +205,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     }
     else
     {
-#if (VTK_MAJOR_VERSION == 5)
-        geomFilter->SetInput(tmp_ds);
-#else
         geomFilter->SetInputData(tmp_ds);
-#endif
         allLines = geomFilter->GetOutput();
     }
 
@@ -224,11 +213,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
     // Remove ghost zones.
     //
     vtkDataSetRemoveGhostCells *gzFilter = vtkDataSetRemoveGhostCells::New();
-#if (VTK_MAJOR_VERSION == 5)
-    gzFilter->SetInput(allLines);
-#else
     gzFilter->SetInputData(allLines);
-#endif
     gzFilter->Update();
     vtkDataSet *ds_1d_nogz = gzFilter->GetOutput();
 

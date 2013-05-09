@@ -971,7 +971,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
       mins[0] = 0;
 
       if ( refinement == 0 )
-         maxs[0] = nelms-1;
+        maxs[0] = nelms-1;
       else if( element_dimension == 2 )
         maxs[0] = nelms*pow((double) refinement+1.0, 2.0)-1;
       else if( element_dimension == 3 )

@@ -341,11 +341,7 @@ avtConnComponentsExpression::Execute()
         for( i = 0 ; i < nsets ; i++)
         {
             ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
-#if (VTK_MAJOR_VERSION == 5)
-            ghost_filters[i]->SetInput(data_sets[i]);
-#else
             ghost_filters[i]->SetInputData(data_sets[i]);
-#endif
             ghost_filters[i]->Update();
             data_sets[i] = ghost_filters[i]->GetOutput();
         }
@@ -2390,18 +2386,10 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
                 // use this filter to remove unnecessary points
                 vtkUnstructuredGridRelevantPointsFilter *ugrpf=
                     vtkUnstructuredGridRelevantPointsFilter::New();
-#if (VTK_MAJOR_VERSION == 5)
-                ugrpf->SetInput(des_mesh);
-#else
                 ugrpf->SetInputData(des_mesh);
-#endif
                 ugrpf->Update();
                 // add the filter output to the proper appender
-#if (VTK_MAJOR_VERSION == 5)
-                appenders[j]->AddInput(ugrpf->GetOutput());
-#else
                 appenders[j]->AddInputData(ugrpf->GetOutput());
-#endif
                 // dec ref count for the filter
                 ugrpf->Delete();
                 // delete the temporary mesh

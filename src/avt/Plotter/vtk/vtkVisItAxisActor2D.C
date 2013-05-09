@@ -175,11 +175,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 
   this->Axis = vtkPolyData::New();
   this->AxisMapper = vtkPolyDataMapper2D::New();
-#if (VTK_MAJOR_VERSION == 5)
-  this->AxisMapper->SetInput(this->Axis);
-#else
   this->AxisMapper->SetInputData(this->Axis);
-#endif
   this->AxisActor = vtkActor2D::New();
   this->AxisActor->SetMapper(this->AxisMapper);
   

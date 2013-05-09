@@ -76,7 +76,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkFloatArray.h"
 #include "vtkGenericCell.h"
 #include "vtkGlyph3D.h"
-#include "vtkImageData.h"
 #include "vtkMatrix4x4.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
@@ -152,7 +151,7 @@ class vtkMantaPolyDataMapper::Helper {
     ~Helper() {}
 
     Manta::Material *material;
-    vtkstd::vector<Manta::Vector> texCoords;
+    std::vector<Manta::Vector> texCoords;
 };
 
 //vtkStandardNewMacro(vtkMantaPolyDataMapper);
@@ -255,7 +254,7 @@ void vtkMantaPolyDataMapper::RenderPiece(vtkRenderer *ren, vtkActor *act)
     // down the pipeline and therefore saves the time that would be otherwise taken
     if ( !this->Static )
     {
-      input->Update();
+      this->GetInputAlgorithm()->Update();
     }
 
     this->InvokeEvent( vtkCommand::EndEvent, NULL );
@@ -324,7 +323,7 @@ void vtkMantaPolyDataMapper::DrawPolygons(vtkPolyData *polys,
     Manta::Group *lines)
 {
   Manta::Material *material = this->MyHelper->material;
-  vtkstd::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
+  std::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
 
   int total_triangles = 0;
   vtkCellArray *cells = polys->GetPolys();
@@ -504,7 +503,7 @@ void vtkMantaPolyDataMapper::DrawTStrips(vtkPolyData *polys,
     Manta::Group *lines)
 {
   Manta::Material *material = this->MyHelper->material;
-  vtkstd::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
+  std::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
 
   // total number of triangles
   int total_triangles = 0;
@@ -893,19 +892,19 @@ for (int ix=0; ix<numverts; ix++, vertptr += (1+*vertptr))
 
 //----------------------------------------------------------------------------
 // Draw method for Manta.
-void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
+int vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
 {
   vtkMantaActor *mantaActor =
     vtkMantaActor::SafeDownCast(actor);
   if (!mantaActor)
   {
-    return;
+    return 0;
   }
   vtkMantaProperty *mantaProperty =
     vtkMantaProperty::SafeDownCast( mantaActor->GetProperty() );
   if (!mantaProperty)
   {
-    return;
+    return 0;
   }
   vtkPolyData *input = this->GetInput();
 
@@ -937,7 +936,7 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
   this->MyHelper->material = NULL;
   this->MyHelper->texCoords.clear();
   Manta::Material *&material = this->MyHelper->material;
-  vtkstd::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
+  std::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
 
   if ( !this->ScalarVisibility || (!this->Colors && !this->ColorCoordinates))
   {
@@ -1272,6 +1271,7 @@ void vtkMantaPolyDataMapper::Draw(vtkRenderer *renderer, vtkActor *actor)
     delete group;
     cerr << "NOTHING TO SEE" << endl;
   }
+  return 1;
 }
 
 /*
@@ -1313,7 +1313,7 @@ this->CellScalarColor = true;
 this->MyHelper->material = NULL;
 this->MyHelper->texCoords.clear();
 Manta::Material *&material = this->MyHelper->material;
-vtkstd::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
+std::vector<Manta::Vector> &texCoords = this->MyHelper->texCoords;
 
 if ( !this->ScalarVisibility || (!this->Colors && !this->ColorCoordinates))
 {

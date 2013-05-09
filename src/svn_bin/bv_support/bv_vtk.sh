@@ -33,16 +33,16 @@ function bv_vtk_depends_on
 {
  depends_on="cmake"
 
- if [[ "$DO_MESA" == "yes" ]]; then
-      depends_on="${depends_on} mesa"
- fi
-
  if [[ "$DO_PYTHON" == "yes" ]]; then
       depends_on="${depends_on} python"
  fi
 
  if [[ "$DO_R" == "yes" ]]; then
       depends_on="${depends_on} R"
+ fi
+
+ if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+      depends_on="${depends_on} qt"
  fi
 
  echo ${depends_on}
@@ -58,11 +58,13 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-export VTK_FILE=${VTK_FILE:-"visit-vtk-5.8.0.a.tar.gz"}
-export VTK_VERSION=${VTK_VERSION:-"5.8.0.a"}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"visit-vtk-5.8.0.a"}
+export VTK_FILE=${VTK_FILE:-"VTK-12fca6b.tar.gz"}  ##vtk-6.0.0.tar.gz"}
+export VTK_VERSION=${VTK_VERSION:-"6.0.0"}
+export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.0"}
+export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-12fca6b"} #vtk-6.0.0"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-export VTK_MD5_CHECKSUM="6964a8d1e4e50d3a4a2d4fb39b900b05"
+export VTK_MD5_CHECKSUM=""
 export VTK_SHA256_CHECKSUM=""
 }
 
@@ -99,21 +101,12 @@ function bv_vtk_host_profile
 
 function bv_vtk_initialize_vars
 {
-    #if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
-    #    if [[ "$DO_MESA" == "yes" || "$parallel" == "yes" ]]; then
-    #        error "System VTK with Custom MESA is not supported"
-    #    fi
-    #fi
     info "initalizing vtk vars"
     if [[ $DO_R == "yes" ]]; then
         VTK_INSTALL_DIR="vtk-r"
     fi
     if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
         VTK_INSTALL_DIR="mangled-$VTK_INSTALL_DIR"
-    fi
-
-    if [[ "$DO_MESA" == "no" ]] ; then
-        VTK_VERSION="${VTK_VERSION}.no.mesa"
     fi
 }
 
@@ -138,34 +131,237 @@ function bv_vtk_dry_run
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
-function apply_vtk_580a_patch
+function apply_vtk_600_patch
 {
-
-    # As of 11/4/2012 all patches were rolled into 5.8.0.a.
-    if [[ ! -e ${VTK_BUILD_DIR}/Wrapping/Python/CMakeLists.txt ]]; then
-        return 0
-    fi
-    patch ${VTK_BUILD_DIR}/Wrapping/Python/CMakeLists.txt <<\EOF
-189a190,193
-> IF (VTK_USE_GNU_R)
->   SET(VTKPYTHON_LINK_LIBS ${VTKPYTHON_LINK_LIBS}  ${R_LIBRARIES})
-> ENDIF(VTK_USE_GNU_R)
-> 
-EOF
-
     return 0
 }
 
 function apply_vtk_patch
 {
-    if [[ ${VTK_VERSION} == 5.8.0.a ]] ; then
-        apply_vtk_580a_patch
+    if [[ ${VTK_VERSION} == 6.0.0 ]] ; then
+        apply_vtk_600_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
     fi
 
     return 0
+}
+
+function bv_vtk_fixup
+{
+    #
+    # If on Darwin, fix install names
+    #
+    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
+        INSTALLNAMEPATH="$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib"
+
+        # The list of VTK libraries that our build produces.
+        #
+        cat >> vtklibnames.txt <<EOF
+libvtkCommonComputationalGeometry
+libvtkCommonComputationalGeometryPython27D
+libvtkCommonCore
+libvtkCommonCorePython27D
+libvtkCommonDataModel
+libvtkCommonDataModelPython27D
+libvtkCommonExecutionModel
+libvtkCommonExecutionModelPython27D
+libvtkCommonMath
+libvtkCommonMathPython27D
+libvtkCommonMisc
+libvtkCommonMiscPython27D
+libvtkCommonSystem
+libvtkCommonSystemPython27D
+libvtkCommonTransforms
+libvtkCommonTransformsPython27D
+libvtkDICOMParser
+libvtkFiltersCore
+libvtkFiltersCorePython27D
+libvtkFiltersExtraction
+libvtkFiltersExtractionPython27D
+libvtkFiltersFlowPaths
+libvtkFiltersFlowPathsPython27D
+libvtkFiltersGeneral
+libvtkFiltersGeneralPython27D
+libvtkFiltersGeometry
+libvtkFiltersGeometryPython27D
+libvtkFiltersHybrid
+libvtkFiltersHybridPython27D
+libvtkFiltersModeling
+libvtkFiltersModelingPython27D
+libvtkFiltersSources
+libvtkFiltersSourcesPython27D
+libvtkFiltersStatistics
+libvtkFiltersStatisticsPython27D
+libvtkGUISupportQt
+libvtkGUISupportQtOpenGL
+libvtkGeovisCore
+libvtkGeovisCorePython27D
+libvtkIOCore
+libvtkIOCorePython27D
+libvtkIOEnSight
+libvtkIOEnSightPython27D
+libvtkIOGeometry
+libvtkIOGeometryPython27D
+libvtkIOImage
+libvtkIOImagePython27D
+libvtkIOLegacy
+libvtkIOLegacyPython27D
+libvtkIOPLY
+libvtkIOPLYPython27D
+libvtkIOXML
+libvtkIOXMLParser
+libvtkIOXMLParserPython27D
+libvtkIOXMLPython27D
+libvtkImagingColor
+libvtkImagingColorPython27D
+libvtkImagingCore
+libvtkImagingCorePython27D
+libvtkImagingFourier
+libvtkImagingFourierPython27D
+libvtkImagingGeneral
+libvtkImagingGeneralPython27D
+libvtkImagingHybrid
+libvtkImagingHybridPython27D
+libvtkImagingSources
+libvtkImagingSourcesPython27D
+libvtkInfovisCore
+libvtkInfovisCorePython27D
+libvtkInfovisLayout
+libvtkInfovisLayoutPython27D
+libvtkInteractionStyle
+libvtkInteractionStylePython27D
+libvtkInteractionWidgets
+libvtkInteractionWidgetsPython27D
+libvtkRenderingAnnotation
+libvtkRenderingAnnotationPython27D
+libvtkRenderingCore
+libvtkRenderingCorePython27D
+libvtkRenderingFreeType
+libvtkRenderingFreeTypeOpenGL
+libvtkRenderingFreeTypeOpenGLPython27D
+libvtkRenderingFreeTypePython27D
+libvtkRenderingOpenGL
+libvtkRenderingOpenGLPython27D
+libvtkRenderingVolume
+libvtkRenderingVolumePython27D
+libvtkViewsCore
+libvtkViewsCorePython27D
+libvtkWrappingPython27Core
+libvtkalglib
+libvtkexpat
+libvtkfreetype
+libvtkftgl
+libvtkjpeg
+libvtkjsoncpp
+libvtklibxml2
+libvtkmetaio
+libvtkpng
+libvtkproj4
+libvtksys
+libvtktiff
+libvtkzlib
+EOF
+
+        # first change the libraries name and identification by executing the
+        # following bourne shell script
+        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
+            #remove python since mangle vtk libraries does not support python (yet:TODO:Fix this)
+            # Change "vtk" to "mtk"
+            sed "/s/libvtk/libmtk/g" vtklibnames.txt > mtklibnames.txt
+            VTK_LIB_NAMES="`cat mtklibnames.txt`"
+            rm -f mtklibnames.txt
+        else
+            VTK_LIB_NAMES="`cat vtklibnames.txt`"
+        fi
+        rm -f vtklibnames.txt
+        for i in $VTK_LIB_NAMES
+        do
+            install_name_tool -id \
+                $INSTALLNAMEPATH/${i}-${VTK_COMPATIBILITY_VERSION}.$SO_EXT \
+                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/${i}-${VTK_COMPATIBILITY_VERSION}.$SO_EXT
+        done
+
+        #
+        # Next change the dependent libraries names and paths
+        for i in $VTK_LIB_NAMES
+        do
+            for j in $VTK_LIB_NAMES
+            do
+                install_name_tool -change \
+                    $j-${VTK_COMPATIBILITY_VERSION}.1.$SO_EXT \
+                    $INSTALLNAMEPATH/$j-${VTK_COMPATIBILITY_VERSION}.$SO_EXT \
+                    $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/${i}-${VTK_COMPATIBILITY_VERSION}.$SO_EXT
+            done
+
+#        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
+#            install_name_tool -change \
+#                libmtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libmtkNetCDF_cxx.dylib \
+#                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+#        else
+#            install_name_tool -change \
+#                libvtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libvtkNetCDF_cxx.dylib \
+#                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+#        fi
+#        if [[ "$DO_R" == "yes" ]]; then
+#            install_name_tool -change \
+#                libR.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libR.dylib \
+#            install_name_tool -change \
+#                libRblas.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libRblas.dylib \
+#                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+#            install_name_tool -change \
+#                libRlapack.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libRlapack.dylib \
+#                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
+#        fi
+        done
+
+        # Come up with the names of the Python modules
+        VTK_PYTHON_MOD_LIB_NAMES=""
+        for i in $VTK_LIB_NAMES
+        do
+            py=`echo $i | grep Python`
+            if [[ "x${i}" == "x${py}" ]]; then
+                for f in 26D 27D 30D 31D 32D 33D 26 27 30 31 32 33 
+                do
+                    py=`echo $py | sed "s/$f//g"`
+                done
+
+                VTK_PYTHON_MOD_LIB_NAMES="$VTK_PYTHON_MOD_LIB_NAMES $py.so"
+            fi
+        done
+
+        #
+        # Fix vtk python wrapper module install names.
+        #
+        for i in $VTK_PYTHON_MOD_LIB_NAMES
+        do
+            install_name_tool -id \
+                $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i \
+                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
+        done
+
+        #
+        # The vtk python module libs depend on the main vtk libs,
+        # resolve these install names.
+        #
+
+        # The vtk python libs have install names that point to an abs path
+        # below VTK_BUILD_DIR.
+        # We should be in ${VTK_BUILD_DIR}, we just need its abs path
+        VTK_BUILD_DIR_ABS=`pwd`
+        info "VTK build directory absolute path: $VTK_BUILD_DIR_ABS"
+        for i in $VTK_PYTHON_MOD_LIB_NAMES
+        do
+            for j in $VTK_LIB_NAMES
+            do
+                install_name_tool -change \
+                    $VTK_BUILD_DIR_ABS/bin/$j-${VTK_COMPATIBILITY_VERSION}.1.$SO_EXT \
+                    $INSTALLNAMEPATH/$j-${VTK_COMPATIBILITY_VERSION}.$SO_EXT \
+                    $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
+            done
+        done
+    fi
 }
 
 function build_vtk
@@ -196,6 +392,21 @@ function build_vtk
             build_python
             if [[ $? != 0 ]] ; then
                 warn "Unable to build python. Giving up"
+                return 1
+            fi
+        fi
+    fi
+
+    #
+    # We need Qt to build the vtk Qt support.
+    #
+    if [[ -e ${QT_BIN_DIR}/qmake ]] ; then
+        info "VTK: Qt found"
+    else
+        if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+            build_qt
+            if [[ $? != 0 ]] ; then
+                warn "Unable to build Qt. Giving up"
                 return 1
             fi
         fi
@@ -279,77 +490,29 @@ function build_vtk
     fi
 
     vopts=""
-    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
-    vopts="${vopts} -D${VTK_PREFIX}_DEBUG_LEAKS:BOOL=OFF"
+    vtk_build_mode="Debug" # "Release"
+    vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
+    vtk_debug_leaks="true" # "false"
+
+    # Some linker flags.
+    lf=""
+    if test "${OPSYS}" = "Darwin" ; then
+        lf="-Wl,-headerpad_max_install_names"
+        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
+        lf="${lf},-current_version,${VTK_VERSION}"
+    fi
+
+    # normal stuff
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${vtk_build_mode}"
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     else
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-
-    vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
-    vopts="${vopts} -D${VTK_PREFIX}_INSTALL_INCLUDE_DIR:PATH=/include/"
-    vopts="${vopts} -D${VTK_PREFIX}_INSTALL_LIB_DIR:PATH=/lib/"
-    vopts="${vopts} -DBUILD_TESTING:BOOL=OFF"
-    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_NETCDF:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_EXODUS:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_TK:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_64BIT_IDS:BOOL=ON"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_INFOVIS:BOOL=ON"
-    if test "$DO_R" = "yes" ; then
-        vopts="${vopts} -D${VTK_PREFIX}_USE_GNU_R:BOOL=ON"
-        vopts="${vopts} -DR_COMMAND:PATH=${R_INSTALL_DIR}/bin/R"
-        vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
-        vopts="${vopts} -DR_INCLUDE_DIR:PATH=${R_INSTALL_DIR}/lib/R/include"
-        vopts="${vopts} -DR_LIBRARY_BASE:PATH=${R_INSTALL_DIR}/lib/R/lib/libR.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=${R_INSTALL_DIR}/lib/R/lib/libRlapack.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=${R_INSTALL_DIR}/lib/R/lib/libRblas.${SO_EXT}"
-    else
-        vopts="${vopts} -D${VTK_PREFIX}_USE_CHARTS:BOOL=OFF"
-    fi
-    vopts="${vopts} -D${VTK_PREFIX}_USE_METAIO:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_PARALLEL:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_LEGACY_REMOVE:BOOL=ON"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_SYSTEM_JPEG:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_SYSTEM_PNG:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_SYSTEM_TIFF:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_SYSTEM_ZLIB:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_SYSTEM_HDF5:BOOL=ON"
-    vopts="${vopts} -DHDF5_C_INCLUDE_DIR:PATH=${VISIT_HDF5_DIR}/include"
-    vopts="${vopts} -DHDF5_INCLUDE_DIR:PATH=${VISIT_HDF5_DIR}/include"
-    h5diff="${VISIT_HDF5_DIR}/bin/hdf5diff"
-    vopts="${vopts} -DHDF5_DIFF_EXECUTABLE:FILEPATH=${h5diff}"
-    h5lib="${VISIT_HDF5_DIR}/lib/libhdf5"
-    for ext in a so dylib ; do
-        if test -f ${h5lib}.${ext} ; then h5lib="${h5lib}.${ext}" ; fi
-    done
-    h5hl="${VISIT_HDF5_DIR}/lib/libhdf5_hl"
-    for ext in a so dylib ; do
-        if test -f ${h5hl}.${ext} ; then h5hl="${h5hl}.${ext}" ; fi
-    done
-    vopts="${vopts} -DHDF5_LIBRARY=${h5lib}"
-    vopts="${vopts} -DHDF5_hdf5_LIBRARY:FILEPATH=${h5lib}"
-    vopts="${vopts} -DHDF5_hdf5_LIBRARY_RELEASE:FILEPATH=${h5lib}"
-    vopts="${vopts} -DHDF5_hdf5_hl_LIBRARY:FILEPATH=${h5hl}"
-    vopts="${vopts} -DHDF5_hdf5_hl_LIBRARY_RELEASE:FILEPATH=${h5hl}"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_CARBON:BOOL=OFF"
-    vopts="${vopts} -D${VTK_PREFIX}_USE_ANSI_STD_LIB:BOOL=ON"
-
-    if test "${OPSYS}" = "Darwin" ; then
-        lo="-Wl,-headerpad_max_install_names"
-        lo="${lo},-compatibility_version,5.7"
-        lo="${lo},-current_version,5.7.0"
-        vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lo}"
-        vopts="${vopts} -D${VTK_PREFIX}_USE_COCOA:BOOL=ON"
-    fi
-
-    lf=""
-    if test "${OPSYS}" = "IRIX64" ; then
-        CFLAGS="${CFLAGS} -LANG:std -64"
-        lf="${lf} -LANG:std -64"
-    fi
+    vopts="${vopts} -D${VTK_PREFIX}_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
+    vopts="${vopts} -DBUILD_TESTING:BOOL=false"
+    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=${CFLAGS}"
@@ -357,41 +520,74 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-
-    if [[ "$DO_MESA" == "yes" && "$DO_DBIO_ONLY" != "yes" ]]; then
-        # mesa
-        mm="${VISITDIR}/mesa/${MESA_VERSION}/${VISITARCH}"
-        vopts="${vopts} -D${VTK_PREFIX}_USE_MANGLED_MESA:BOOL=OFF"
-        vopts="${vopts} -D${VTK_PREFIX}_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${mm}/include"
-        osm_lib="${mm}/lib/libOSMesa"
-        mm_lib="${mm}/lib/libMesaGL"
-        for ext in a so dylib ; do
-            if test -f ${osm_lib}.${ext} ; then osm_lib="${osm_lib}.${ext}" ; fi
-            if test -f ${mm_lib}.${ext} ; then mm_lib="${mm_lib}.${ext}" ; fi
-        done
-        vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=${osm_lib}"
+    if test "${OPSYS}" = "Darwin" ; then
+        vopts="${vopts} -D${VTK_PREFIX}_USE_COCOA:BOOL=ON"
     fi
 
+    # allow VisIt to override any of vtk's classes
+    vopts="${vopts} -D${VTK_PREFIX}_ALL_NEW_OBJECT_FACTORY:BOOL=true"
+
+    # Turn off module groups
+    vopts="${vopts} -D${VTK_PREFIX}_Group_Imaging:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_MPI:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_Qt:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_Rendering:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_StandAlone:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_Tk:BOOL=false"
+    vopts="${vopts} -D${VTK_PREFIX}_Group_Views:BOOL=false"
+
+    # Turn on individual modules. dependent modules are turned on automatically
+    vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
+    vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
+    vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"
+    vopts="${vopts} -DModule_vtkFiltersModeling:BOOL=true"
+    vopts="${vopts} -DModule_vtkGeovisCore:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOEnSight:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOGeometry:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
+    vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
+    vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
+    vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
+    vopts="${vopts} -DModule_vtkRenderingFreeTypeOpenGL:BOOL=true"
+    vopts="${vopts} -DModule_vtkRenderingOpenGL:BOOL=true"
+    vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
+
+    # Tell VTK where to locate qmake if we're building graphical support.
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
+        vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
+    fi
+
+    # Add python wrapping
     if test "x${DO_DBIO_ONLY}" != "xyes" ; then
         # python... but static libs and python filters are incompatible.
         if test "x${DO_STATIC_BUILD}" != "xyes" ; then
-            if [[ "$DO_MANGLED_LIBRARIES" != "yes" ]]; then
-                vopts="${vopts} -D${VTK_PREFIX}_WRAP_PYTHON:BOOL=ON"
-            else
-                vopts="${vopts} -D${VTK_PREFIX}_WRAP_PYTHON:BOOL=OFF"
-            fi
-
             py="${PYTHON_COMMAND}"
-            vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
             pyinc="${PYTHON_INCLUDE_DIR}"
-            vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
             pylib="${PYTHON_LIBRARY}"
-            vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+
+            vopts="${vopts} -D${VTK_PREFIX}_WRAP_PYTHON:BOOL=true"
+            vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+            vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
+            vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+#            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
         fi
+    fi
+
+    # Add R support
+    if test "$DO_R" = "yes" ; then
+        vopts="${vopts} -DModule_vtkFiltersStatisticsGnuR:BOOL=true"
+        vopts="${vopts} -DR_COMMAND:PATH=${R_INSTALL_DIR}/bin/R"
+        vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
+        vopts="${vopts} -DR_INCLUDE_DIR:PATH=${R_INSTALL_DIR}/lib/R/include"
+        vopts="${vopts} -DR_LIBRARY_BASE:PATH=${R_INSTALL_DIR}/lib/R/lib/libR.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=${R_INSTALL_DIR}/lib/R/lib/libRlapack.${SO_EXT}"
+        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=${R_INSTALL_DIR}/lib/R/lib/libRblas.${SO_EXT}"
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
@@ -410,98 +606,13 @@ function build_vtk
     info "Installing VTK . . . "
     $MAKE install || error "VTK did not install correctly."
 
-    #
-    # If on Darwin, fix install names
-    #
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
-        INSTALLNAMEPATH="$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib"
+    # Filter out an include that references the user's VTK build directory
+    configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
+    cat ${configdir}/VTKConfig.cmake | grep -v "vtkTestingMacros" > ${configdir}/VTKConfig.cmake.new
+    mv ${configdir}/VTKConfig.cmake.new ${configdir}/VTKConfig.cmake
 
-        # fix the internal name with in the libraries
-        #
-        # first change the libraries name and identification by executing the
-        # following bourne shell script
-        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-            #remove python since mangle vtk libraries does not support python (yet:TODO:Fix this)
-            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libmtkCommon libmtkDICOMParser libmtkFiltering libmtkGenericFiltering libmtkGeovis libmtkGraphics libmtkHybrid libmtkInfovis libmtkIO libmtkImaging libmtkRendering libmtkViews libmtkVolumeRendering libmtkWidgets libmtkalglib libmtkexpat libmtkfreetype libmtkftgl libmtkjpeg libmtklibxml2 libmtkpng libmtkproj4 libmtksqlite libmtksys libmtktiff libmtkverdict libmtkzlib"
-        else
-            VTK_LIB_NAMES="libMapReduceMPI libmpistubs libvtkCommon libvtkCommonPythonD libvtkDICOMParser libvtkFiltering libvtkFilteringPythonD libvtkGenericFiltering libvtkGenericFilteringPythonD libvtkGeovis libvtkGeovisPythonD libvtkGraphics libvtkGraphicsPythonD libvtkHybrid libvtkHybridPythonD libvtkInfovis libvtkInfovisPythonD libvtkIO libvtkIOPythonD libvtkImaging libvtkImagingPythonD libvtkPythonCore libvtkRendering libvtkRenderingPythonD libvtkViews libvtkViewsPythonD libvtkVolumeRendering libvtkVolumeRenderingPythonD libvtkWidgets libvtkWidgetsPythonD libvtkalglib libvtkexpat libvtkfreetype libvtkftgl libvtkjpeg libvtklibxml2 libvtkpng libvtkproj4 libvtksqlite libvtksys libvtktiff libvtkverdict libvtkzlib"
-        fi
-        for i in $VTK_LIB_NAMES
-        do
-            install_name_tool -id \
-                $INSTALLNAMEPATH/$i.$SO_EXT \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-        done
-
-        #
-        # Next change the dependent libraries names and paths
-        for i in $VTK_LIB_NAMES
-        do
-            for j in $VTK_LIB_NAMES
-            do
-                install_name_tool -change \
-                    $j.5.8.$SO_EXT \
-                    $INSTALLNAMEPATH/$j.$SO_EXT \
-                    $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-            done
-        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-            install_name_tool -change \
-                libmtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libmtkNetCDF_cxx.dylib \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-        else
-            install_name_tool -change \
-                libvtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libvtkNetCDF_cxx.dylib \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-        fi
-        if [[ "$DO_R" == "yes" ]]; then
-            install_name_tool -change \
-                libR.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libR.dylib \
-            install_name_tool -change \
-                libRblas.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libRblas.dylib \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-            install_name_tool -change \
-                libRlapack.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libRlapack.dylib \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-        fi
-        done
-
-        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-            VTK_PYTHON_MOD_LIB_NAMES="mtkCommonPython.so mtkFilteringPython.so mtkGenericFilteringPython.so mtkGeovisPython.so mtkGraphicsPython.so mtkHybridPython.so mtkInfovisPython.so mtkIOPython.so mtkImagingPython.so mtkRenderingPython.so mtkViewsPython.so mtkVolumeRenderingPython.so"
-        else
-            VTK_PYTHON_MOD_LIB_NAMES="vtkCommonPython.so vtkFilteringPython.so vtkGenericFilteringPython.so vtkGeovisPython.so vtkGraphicsPython.so vtkHybridPython.so vtkInfovisPython.so vtkIOPython.so vtkImagingPython.so vtkRenderingPython.so vtkViewsPython.so vtkVolumeRenderingPython.so"
-        fi
-        #
-        # Fix vtk python wrapper module intall names.
-        #
-        for i in $VTK_PYTHON_MOD_LIB_NAMES
-        do
-            install_name_tool -id \
-                $INSTALLNAMEPATH/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i \
-                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
-        done
-
-        #
-        # The vtk python module libs depend on the main vtk libs,
-        # resolve these install names.
-        #
-
-        # The vtk python libs have install names that point to an abs path
-        # below VTK_BUILD_DIR.
-        # We should be in ${VTK_BUILD_DIR}, we just need its abs path
-        VTK_BUILD_DIR_ABS=`pwd`
-        info "VTK build directory absolute path: $VTK_BUILD_DIR_ABS"
-
-        for i in $VTK_PYTHON_MOD_LIB_NAMES
-        do
-            for j in $VTK_LIB_NAMES
-            do
-                install_name_tool -change \
-                    $VTK_BUILD_DIR_ABS/bin/$j.5.8.$SO_EXT \
-                    $INSTALLNAMEPATH/$j.$SO_EXT \
-                    $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/${VTK_INSTALL_DIR}/$i
-            done
-        done
-    fi
+    # Fix up the libraries for MacOS X.
+    bv_vtk_fixup
 
     chmod -R ug+w,a+rX ${VISITDIR}/${VTK_INSTALL_DIR}
     if [[ "$DO_GROUP" == "yes" ]] ; then

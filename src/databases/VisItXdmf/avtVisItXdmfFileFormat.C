@@ -50,6 +50,7 @@
 #include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -2637,7 +2638,7 @@ avtVisItXdmfFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *
     ds->GetFieldData()->CopyFieldOn("avtRealDims");
     realDims->Delete();
 
-    ds->SetUpdateGhostLevel(0);
+    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(ds->GetInformation(), 0);
 }
 
 

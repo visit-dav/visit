@@ -784,11 +784,7 @@ VisitPointTool::UpdateGuide()
     CREATEQUAD(4,7,6,3);
 
     // Set the mapper's input to be the new dataset.
-#if (VTK_MAJOR_VERSION == 5)
-    guideMapper->SetInput(guideData);
-#else
     guideMapper->SetInputData(guideData);
-#endif
 }
 
 // ****************************************************************************
@@ -914,12 +910,8 @@ VisitPointTool::UpdateSphere()
     source->SetThetaResolution(15);
 
     vtkPolyDataNormals *pdn = vtkPolyDataNormals::New();
-#if (VTK_MAJOR_VERSION == 5)
-    pdn->AddInput(source->GetOutput());
-#else
     // FIX_ME_VTK6.0, ESB, should this be a AddInputConnection?
     pdn->AddInputData(source->GetOutput());
-#endif
     pdn->Update();
     sphereData = pdn->GetOutput();
     sphereData->Register(NULL);
@@ -942,12 +934,8 @@ VisitPointTool::UpdateSphere()
     sphereActor->GetProperty()->SetColor(fg);
 
     // Set the mapper's input to be the new dataset.
-#if (VTK_MAJOR_VERSION == 5)
-    sphereMapper->SetInput(sphereData);
-#else
     // FIX_NE_VTK6.0, ESB, why isn't this all one large pipeline
     sphereMapper->SetInputData(sphereData);
-#endif
 }
 
 // ****************************************************************************

@@ -59,13 +59,8 @@ protected:
   vtkVisItTIFFWriter();
   ~vtkVisItTIFFWriter() {}
 
-#if (VTK_MAJOR_VERSION == 5)
-  virtual void WriteFile(ofstream *file, vtkImageData *data, int ext[6]);
-  virtual void WriteFileHeader(ofstream *, vtkImageData *);
-#else
   virtual void WriteFile(ofstream *file, vtkImageData *data, int ext[6], int wExt[6]);
   virtual void WriteFileHeader(ofstream *, vtkImageData *, int wExt[6]);
-#endif
   virtual void WriteFileTrailer(ofstream *, vtkImageData *);
 
   void* TIFFPtr;

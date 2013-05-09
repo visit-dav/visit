@@ -49,10 +49,12 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -1029,7 +1031,8 @@ avtCaleFileFormat::GetMesh(const char *meshname)
             }
         }
         sgrid->GetCellData()->AddArray(ghostCells);
-        sgrid->SetUpdateGhostLevel(0);
+        sgrid->GetInformation()->Set(
+            vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         ghostCells->Delete();
         // Clean up
         delete [] blanks;

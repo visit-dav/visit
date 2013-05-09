@@ -1013,7 +1013,7 @@ avtMantaMoleculeRenderer::Render(vtkPolyData *data,
     //vtkDataSet *input = this->GetInput();
     vtkPolyData* pinput = data;//dynamic_cast<vtkPolyData*>(input);
     if (pinput)
-      mpdm->SetInput(pinput);
+      mpdm->SetInputData(pinput);
     else
       cerr << "couldn't convert input\n";
     if (!VTKRen)

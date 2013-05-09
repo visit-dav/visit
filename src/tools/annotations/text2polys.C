@@ -130,7 +130,7 @@ main(int argc, char *argv[])
     // Now write the output to a file.
     //
     vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-    writer->SetInput(output);
+    writer->SetInputData(output);
     writer->SetFileName(output_file_name);
     writer->Write();
 

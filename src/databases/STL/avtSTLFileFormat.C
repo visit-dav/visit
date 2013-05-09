@@ -155,6 +155,7 @@ avtSTLFileFormat::ReadInDataset(void)
     vtkSTLReader *reader = vtkSTLReader::New();
     //reader->SetStrict(GetStrictMode());
     reader->SetFileName(filename);
+    reader->Update();
     dataset = reader->GetOutput();
     dataset->Register(NULL);
 
@@ -162,7 +163,6 @@ avtSTLFileFormat::ReadInDataset(void)
     // Force the read and make sure that the reader is really gone, so we don't
     // eat up too many file descriptors.
     //
-    dataset->Update();
     //dataset->SetSource(NULL);
     reader->Delete();
 

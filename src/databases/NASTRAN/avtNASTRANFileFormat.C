@@ -897,7 +897,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         int rpfTime = visitTimer->StartTimer();
         vtkUnstructuredGridRelevantPointsFilter *rpf = 
             vtkUnstructuredGridRelevantPointsFilter::New();
-        rpf->SetInput(ugrid);
+        rpf->SetInputData(ugrid);
         rpf->Update();
 
         meshDS = vtkUnstructuredGrid::New();

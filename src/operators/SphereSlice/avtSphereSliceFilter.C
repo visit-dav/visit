@@ -187,7 +187,7 @@ avtSphereSliceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
     vtkVisItCutter *cutter = vtkVisItCutter::New();
     cutter->SetCutFunction(quadric);
-    cutter->SetInput(in_ds);
+    cutter->SetInputData(in_ds);
     cutter->Update();
 
     vtkDataSet *out_ds = cutter->GetOutput();

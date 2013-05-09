@@ -42,16 +42,18 @@
 
 #include <avtCHGCARFileFormat.h>
 
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkIdList.h>
-#include <vtkCellData.h>
-#include <vtkPolyData.h>
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
@@ -806,7 +808,8 @@ avtCHGCARFileFormat::AddGhostCellInfo(vtkDataSet *ds)
     ds->GetFieldData()->AddArray(baseIndex);
     ds->GetFieldData()->CopyFieldOn("base_index");    
 
-    ds->SetUpdateGhostLevel(0);
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 }
 
 

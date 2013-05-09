@@ -293,6 +293,8 @@ protected:
                                   vtkInformationVector *);
   virtual int FillInputPortInformation(int port, vtkInformation *info);
 
+  vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
+
   vtkPolyData **Source; // Geometry to copy to each point
   int Scaling; // Determine whether scaling of geometry is performed
   int ScaleMode; // Scale by scalar value or vector magnitude

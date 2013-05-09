@@ -127,11 +127,7 @@ ZoomInteractor::ZoomInteractor(VisWindowInteractorProxy &vw)
 #endif
 
     rubberBandMapper = proxy.CreateRubberbandMapper();
-#if (VTK_MAJOR_VERSION == 5)
-    rubberBandMapper->SetInput(rubberBand);
-#else
     rubberBandMapper->SetInputData(rubberBand);
-#endif
 
     rubberBandActor  = vtkActor2D::New();
     rubberBandActor->SetMapper(rubberBandMapper);
