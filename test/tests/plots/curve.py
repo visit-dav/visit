@@ -304,7 +304,7 @@ def TestTimeCue():
 
     SuppressQueryOutputOn()
     Query("NumNodes")
-    n = GetQueryOutputValue()
+    n = int(GetQueryOutputValue())
     for i in range(n-1):
         c.timeForTimeCue = i
         SetPlotOptions(c)

@@ -77,7 +77,7 @@ def main():
 
     # Make sure that it works with specular highlights.
     r = GetRenderingAttributes()
-    r.specularFlag = 1.
+    r.specularFlag = 1
     SetRenderingAttributes(r)
     Test("colortexture_04")
 
