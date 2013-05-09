@@ -277,7 +277,7 @@ BUILD_DATA_TARGET(${VTK_TARGET}
                   LIB_DIRS
                     ${VTK_LIBRARY_DIRS}
                   LIBS
-                    vtkIO
+                    vtkIOLegacy
                  )
 ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 

@@ -199,9 +199,9 @@ WriteOutDomain(DBfile *dbfile, int dI, int dJ, int dK)
     float y_step = rangeY / (ny-1);
     float z_step = rangeZ / (nz-1);
 
-    char *meshname = "mesh";
-    char *varname  = "dist";
-    char *zvarname  = "p";
+    const char *meshname = "mesh";
+    const char *varname  = "dist";
+    const char *zvarname  = "p";
     int dims[3];
     dims[0] = nx-1;
     dims[1] = ny-1;
