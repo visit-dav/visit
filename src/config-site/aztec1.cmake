@@ -1,4 +1,4 @@
-#/usr/gapps/visit/thirdparty_shared_2_7_0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake
+#/usr/gapps/visit/thirdparty_shared/2.7.0/cmake/2.8.10.2/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit generated host.cmake
 ## created: Wed Feb  6 15:33:06 PST 2013
@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/gapps/visit/thirdparty_shared_2_7_0)
+SET(VISITHOME /usr/gapps/visit/thirdparty_shared/2.7.0)
 SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
