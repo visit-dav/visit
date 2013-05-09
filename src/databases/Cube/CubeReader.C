@@ -1,7 +1,7 @@
 #include "CubeReader.h"
 
 #include <InvalidFilesException.h>
-
+#include <DebugStream.h>
 using namespace std;
 
 CubeReader::CubeReader(const char* fname) {
@@ -66,12 +66,12 @@ void CubeReader::readMetaData(bool keepFileOpen) {
     stringstream ss(header);
     ss>>keyword>>norbitals;
 
-    cout<<"Found "<<norbitals<<" orbitals"<<endl;
+    debug4 <<"Found "<< norbitals << " orbitals" << endl;
     for (int o=0;o<norbitals; o++) {
       int orbital_num;
       ss>>orbital_num;
       orbitals.push_back(orbital_num);
-      cout<<"        "<<orbital_num<<endl;
+      debug4 << "        " << orbital_num << endl;
     }
   }
 
@@ -98,14 +98,14 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   if (natoms<0) {
     natoms = -1 * natoms;
     SetAtomUnitsToBohr();
-    cout<<"Setting atom units to bohr"<<endl;
+    debug4 << "Setting atom units to bohr" << endl;
   }
     
-  cout<<"There are "<<natoms<<" atoms "<<endl;
-  cout<<"Grid starts at "<<x_origin
-      <<", "<<y_origin
-      <<", "<<z_origin
-      <<endl;
+  debug4 << "There are "<<natoms<<" atoms " << endl;
+  debug4 << "Grid starts at " << x_origin
+      << ", " << y_origin
+      << ", " << z_origin
+      << endl;
 
   //4. line: Read the x grid
   float t1, t2;
@@ -126,7 +126,7 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   if (x_size<0){
     x_size = -1 * x_size;
     SetGridUnitsToBohr();
-    cout<<"Setting grid units to bohr"<<endl;
+    debug4 << "Setting grid units to bohr" << endl;
   }
   
   if ((dx[1]!=0)||(dx[2]!=0)) 
@@ -150,7 +150,7 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   if (y_size<0){
     y_size = -1 * y_size;
     SetGridUnitsToBohr();
-    cout<<"Setting grid units to bohr"<<endl;
+    debug4 << "Setting grid units to bohr" << endl;
   }
   if ((dy[0]!=0)||(dy[2]!=0)) 
     isSheared = true;
@@ -173,20 +173,20 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   if (z_size<0){
     z_size = -1 * z_size;
     SetGridUnitsToBohr();
-    cout<<"Setting grid units to bohr"<<endl;
+    debug4 << "Setting grid units to bohr" << endl;
   }
   if ((dz[0]!=0)||(dz[1]!=0)) 
     isSheared = true;
   
-  cout<<"Grid size is "<<x_size<<"x"
-      <<y_size<<"x"
-      <<z_size<<endl;
+  debug4 << "Grid size is " << x_size << "x"
+      << y_size << "x"
+      << z_size << endl;
   
-  cout<<"Step size is"
-      <<"("<<dx[0]<<","<<dx[1]<<","<<dx[2]<<") x "
-      <<"("<<dy[0]<<","<<dy[1]<<","<<dy[2]<<") x "
-      <<"("<<dz[0]<<","<<dz[1]<<","<<dz[2]<<")"
-      <<endl;
+  debug4 << "Step size is"
+      << "(" << dx[0] << "," << dx[1] << "," << dx[2] << ") x "
+      << "(" << dy[0] << "," << dy[1] << "," << dy[2] << ") x "
+      << "(" << dz[0] << "," << dz[1] << "," << dz[2] << ")"
+      << endl;
   
   //Line 7 to 7+natoms : Read for each atom its type, isotope and x ,y , z location
   atom_types.clear();
@@ -213,9 +213,9 @@ void CubeReader::readMetaData(bool keepFileOpen) {
     }
   }
 
-  cout<<"determined shear to be " << isSheared<<endl;
-  cout<<"Atom type array has "<<atom_types.size()<<" entries"<<endl;
-  cout<<"Atom locations array has "<<atom_locations.size()<<" entries"<<endl;
+  debug4 << "determined shear to be " << isSheared << endl;
+  debug4 << "Atom type array has " << atom_types.size() << " entries" << endl;
+  debug4 << "Atom locations array has " << atom_locations.size() << " entries" << endl;
  
   //Check whether the file contains orbitals
   streampos endHeaderPos = file.tellg(); //save the current location
@@ -233,10 +233,10 @@ void CubeReader::readMetaData(bool keepFileOpen) {
         errorString = "Cube reader: Number of orbitals does not match the number of orbitals given.";
         return;
     }
-    cout<<"Found "<<norbitals<<" orbitals"<<endl;
+    debug4 << "Found " << norbitals << " orbitals" << endl;
     for (int o=1;o<=norbitals; o++) {
       orbitals.push_back( atoi( tokens[o].c_str() ) );
-    cout<<"        "<<orbitals[o-1]<<endl;
+    debug4 << "        "<< orbitals[o-1] << endl;
     }
   }else{
     //Go back to the real ending of the header
@@ -249,7 +249,7 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   if( !keepFileOpen ){
      file.close();
   }
-  cout<<"---------------------------------------"<<endl;
+  debug4 << "---------------------------------------" << endl;
 }
 
 
@@ -327,6 +327,26 @@ void CubeReader::GetShearedGridLocations(float* x, float* y, float* z) {
       }  
 }
 
+// this is the new version, assuming a grid with one extra cell in each dimension has been allocated
+// This is the result of our email exchange with Jeremy Meredith
+// I have also merged the operation to save 2 floating point multiply by iteration
+void CubeReader::GetShearedGridLocations2(float* xyz) {
+  
+  int count = 0;
+  for (int k=0; k<=z_size; k++) 
+    for (int j=0; j<=y_size; j++)
+      for (int i=0; i<=x_size; i++) {
+        float new_x,new_y,new_z;
+
+        new_x = x_origin + (i*dx[0] + j*dy[0] + k*dz[0])*grid_units;
+        new_y = y_origin + (i*dx[1] + j*dy[1] + k*dz[1])*grid_units;
+        new_z = z_origin + (i*dx[2] + j*dy[2] + k*dz[2])*grid_units;
+
+        xyz[count++] = new_x;
+        xyz[count++] = new_y;
+        xyz[count++] = new_z;
+      }  
+}
 int CubeReader::GetNumOrbitals() {
   return orbitals.size();
 }
@@ -337,15 +357,15 @@ int CubeReader::GetOrbitalNumber(int i) {
 
 void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
   
-  cout<<"GetOrbitalValues called for "<<varname<<endl;
+  debug4 << "GetOrbitalValues called for " << varname << endl;
   string var = string(varname);
   // first figure out what orbital offset corresponds to this varname
   string keyword = "orbital_";
   size_t found_k = var.find(keyword.c_str(),0,keyword.length());
   string num_str = var.substr(keyword.length(), var.length()-keyword.length());
-  cout<<"num_str = "<<num_str;
+  debug4 << "num_str = " << num_str;
   int orbital_num = atoi(num_str.c_str());
-  cout<<"determined target orbital_num to be "<<orbital_num<<endl;
+  debug4 << "determined target orbital_num to be " << orbital_num << endl;
 
 
   int index = -1;
@@ -353,12 +373,12 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
   for (int i=0; i<orbitals.size(); i++) {
     if (orbitals[i]==orbital_num){
       index = i;
-      cout<<"FOUND index = "<<index<<endl;
+      debug4 << "FOUND index = " << index << endl;
     }
   }
   
   if (index ==-1) {
-    cout<<"WARNING: could not find orbital"<<endl;
+    debug4 << "WARNING: could not find orbital" << endl;
     return;
   }
 
@@ -384,11 +404,11 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
   int dest_index;
 
   float val= 99;
-  cout<<"         Done with headers, now trying to read the data"<<endl;
-  cout<<"                 size="<<x_size<<"x"<<y_size<<"x"<<z_size<<endl;
+  debug4 << "         Done with headers, now trying to read the data" << endl;
+  debug4 << "                 size=" << x_size << "x" << y_size << "x" << z_size << endl;
 
   int norbitals = orbitals.size();
-  cout<<"                 norbitals = "<<norbitals<<endl;
+  debug4 << "                 norbitals = " << norbitals << endl;
   
   for (int i=0; i<x_size; i++) {
     for (int j=0; j<y_size; j++) {
@@ -408,7 +428,7 @@ void CubeReader::GetOrbitalValues(float* vals, const char* varname) {
     }//j
   }//i
 
-  cout<<"        done with reading data, closing file"<<endl;
+  debug4 << "        done with reading data, closing file" << endl;
   fclose(file);  
 }
 
@@ -449,8 +469,8 @@ void CubeReader::GetGridValues(float* vals) {
   int dest_index;
   
   float val= 99;
-  cout<<"         Done with headers, now trying to read the data"<<endl;
-  cout<<"                 size="<<x_size<<"x"<<y_size<<"x"<<z_size<<endl;
+  debug4 << "         Done with headers, now trying to read the data" << endl;
+  debug4 << "                 size=" << x_size << "x" << y_size << "x" << z_size << endl;
 
   for (int i=0; i<x_size; i++) {
     for (int j=0; j<y_size; j++) {
@@ -465,22 +485,130 @@ void CubeReader::GetGridValues(float* vals) {
         count++;
       }
     }
-    //cout<<count<<endl;
+    //debug4 << count << endl;
   }
-  cout<<"        done with reading data, closing file"<<endl;
+  debug4 << "        done with reading data, closing file" << endl;
   fclose(file);
 }
 
-void CubeReader::GetUnitCell(float *UCO, float *UCV)
+// this is the new version, assuming a grid with one extra cell in each dimension has been allocated
+// This is the result of our email exchange with Jeremy Meredith 
+
+void CubeReader::GetGridValues2(float* vals) {
+  
+  FILE *file;
+  file = fopen(filename.c_str(),"r");
+  if (!file){
+     EXCEPTION1(InvalidFilesException, "Fild could not be opened.");
+  }
+    
+  char header[1024];
+  for (int i=0; i<6; i++)
+    fgets(header, 1024, file);
+
+  char atoms[1024];
+  for (int i=0; i<natoms; i++)
+    fgets(atoms, 1024, file);
+  
+  int count = 0;
+  int dest_index;
+  
+  float val= 99;
+  debug4 << "         Done with headers, now trying to read the data" << endl;
+  debug4 << "                 size=" << x_size << "x" << y_size << "x" << z_size << endl;
+
+// to scan the file, the loop bounds remain the same
+// but the indexing should change to allow for the extra cell.
+// optimize by putting outside of loop constant value, such as cst1, cst0
+  int cst0 = (x_size+1)*(y_size+1);
+  for (int i=0; i<x_size; i++) {
+    for (int j=0; j<y_size; j++) {
+      int cst1 = i + (j)*(x_size+1);
+      for (int k=0; k<z_size; k++) {
+        // the input values are written w/ z being fastest index and x
+        // being slowest; visit is exactly the opposite
+        fscanf(file, "%E", &val);
+
+        dest_index = cst1 + (k)*cst0;
+        vals[dest_index] = val;
+      }
+    }
+  }
+// we now need to copy the missing stuff on the "xmax" face, "ymax" face and "zmax" face
+// the grid has been expanded by one cell-width in all directions and has now dimensions
+// (x_size+1)*(y_size+1)*(z_size+1)
+
+// copy face i=0 to the "xmax" face
+// we use now the VisIt indexing, i.e. x varies faster, z varies slowest
+
+  for (int k=0; k<z_size; k++) {
+    int cst0 = k * (x_size+1)*(y_size+1);
+    for (int j=0; j<y_size; j++) {
+      int cst1 = (j)*(x_size+1);
+      dest_index = cst1 + cst0;
+      vals[dest_index + x_size] = vals[dest_index + 0];
+    }
+  }
+
+// copy face j=0 to the "ymax" face
+
+  for (int k=0; k<z_size; k++) {
+    int cst0 = k * (x_size+1)*(y_size+1);
+      for (int i=0; i<x_size; i++) {
+        dest_index = i +  cst0;
+        vals[dest_index + y_size*(x_size+1)] = vals[dest_index + 0];
+      }
+  }
+
+// copy face k=0 to the "zmax" face
+
+    for (int j=0; j<y_size; j++) {
+      int cst1 = (j)*(x_size+1);
+      for (int i=0; i<x_size; i++) {
+        dest_index = i +  cst1;
+        vals[dest_index + z_size * (x_size+1)*(y_size+1)] = vals[dest_index + 0];
+      }
+    }
+
+// copy edge "i=j=0" to the "i=xmax, j=jmax" edge
+
+    for (int k=0; k<z_size; k++) {
+      vals[(k+1) * (x_size+1)*(y_size+1) - 1] = vals[k * (x_size+1)*(y_size+1)];
+    }
+
+// copy edge "i=k=0" to the "i=xmax, k=kmax" edge
+
+    for (int j=0; j<y_size; j++) {
+      vals[z_size * (x_size+1)*(y_size+1) + x_size + (x_size+1)*j] = vals[j * (x_size+1)];
+    }
+
+// copy edge "y=k=0" to the "y=ymax, k=kmax" edge
+
+    for (int i=0; i<x_size; i++) {
+      vals[(x_size+1)*(y_size+1)*(z_size+1)+i-x_size-1] = vals[i];
+    }
+
+// copy single vertex (i=j=k=0) to the (i=xmax, j=ymax, k=kmax) vertex
+  vals[(x_size+1)*(y_size+1)*(z_size+1)-1] = vals[0];
+
+  fclose(file);
+}
+
+void CubeReader::GetUnitCell(float *UCO, float *UCV, bool Extend)
 {
+  int offset;
   UCO[0] = x_origin;
   UCO[1] = y_origin;
   UCO[2] = z_origin;
+  if(Extend)
+    offset = 0;
+  else
+    offset = 1;
   for(int i=0; i<3; i++)
     {
-    UCV[i] =   (x_size - 1) * dx[i];
-    UCV[3+i] = (y_size - 1) * dy[i];
-    UCV[6+i] = (z_size - 1) * dz[i];
+    UCV[i] =   (x_size - offset) * dx[i];
+    UCV[3+i] = (y_size - offset) * dy[i];
+    UCV[6+i] = (z_size - offset) * dz[i];
     }
 }
 

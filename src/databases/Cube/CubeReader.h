@@ -28,8 +28,10 @@ class CubeReader
   void GetGridLocations(float* x, float* y, float* z);
 
   void GetShearedGridLocations(float* x, float* y, float* z);
+  void GetShearedGridLocations2(float* xyz);
   
   void GetGridValues(float* vals);
+  void GetGridValues2(float* vals);
   
   void GetAtomLocations(std::vector<float> &locations);
   
@@ -49,7 +51,7 @@ class CubeReader
   int  GetOrbitalNumber(int i);
   void GetOrbitalValues(float* ptr, const char* varname);
 
-  void GetUnitCell(float *UCO, float *UCV); // unit cell origin and unit cell vector
+  void GetUnitCell(float *UCO, float *UCV, bool extend); // unit cell origin and unit cell vector
  private:
   //The name of the input file
   std::string filename;
