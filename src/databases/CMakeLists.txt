@@ -309,7 +309,6 @@ Point3D
 ProteinDataBank
 RAW
 SAR
-S3DRaw
 SAS
 STL
 Shapefile
