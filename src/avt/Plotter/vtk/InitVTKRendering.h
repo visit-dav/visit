@@ -53,13 +53,15 @@
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2001
 //
+//  Modifications:
+//    Eric Brugger, Fri May 10 14:38:10 PDT 2013
+//    I removed support for mangled mesa.
+//
 // ****************************************************************************
 
 namespace InitVTKRendering
 {
     PLOTTER_API void Initialize();
-    PLOTTER_API void ForceMesa();
-    PLOTTER_API void UnforceMesa();
 }
 
 #endif

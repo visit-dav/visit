@@ -2643,6 +2643,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Carson Brownlee, Sun May  6 16:25:28 PDT 2012
 //    Add -manta argument.
 //
+//    Eric Brugger, Fri May 10 14:44:11 PDT 2013
+//    I removed support for mangled mesa.
+//
 // ****************************************************************************
 
 void
@@ -2885,7 +2888,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-            //InitVTKRendering::ForceMesa();
 #ifdef HAVE_OSMESA
             vtkVisItOSMesaRenderingFactory::ForceMesa();
 #endif

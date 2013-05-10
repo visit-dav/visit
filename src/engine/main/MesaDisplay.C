@@ -146,13 +146,14 @@ MesaDisplay::Initialize(std::string display,
 //    Tom Fogal, Tue May 25 16:10:10 MDT 2010
 //    Interface change: retval void -> bool
 //
+//    Eric Brugger, Fri May 10 14:41:57 PDT 2013
+//    I removed support for mangled mesa.
+//
 // ****************************************************************************
 
 bool
 MesaDisplay::Connect()
 {
-    InitVTKRendering::ForceMesa();
-
     Environment::unset("DISPLAY");
 
     return true;

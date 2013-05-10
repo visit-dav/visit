@@ -864,6 +864,9 @@ public:
 //    Brad Whitlock, Mon Oct 10 11:23:14 PDT 2011
 //    Added enginePropertiesRPC.
 //
+//    Eric Brugger, Fri May 10 14:41:08 PDT 2013
+//    I removed support for mangled mesa.
+//
 // ****************************************************************************
 
 void
@@ -893,7 +896,6 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OSMesa Render Windnow
-        //InitVTKRendering::ForceMesa();
 #ifdef HAVE_OSMESA
         vtkVisItOSMesaRenderingFactory::ForceMesa();
 #endif
