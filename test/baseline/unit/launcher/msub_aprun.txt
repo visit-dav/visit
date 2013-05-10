@@ -4,7 +4,7 @@ CASE: msub/aprun
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600
 
 RESULTS:
-msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -21,7 +21,7 @@ CASE: msub/aprun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -38,7 +38,7 @@ CASE: msub/aprun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -55,7 +55,7 @@ CASE: msub/aprun -strace engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh

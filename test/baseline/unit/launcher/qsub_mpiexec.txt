@@ -4,7 +4,7 @@ CASE: qsub/mpiexec
 INPUT: visit -engine -norun engine_par -l qsub/mpiexec -np 16 -nn 4 -t 1:00:00 -sla "-env MV2_ON_DEMAND_THRESHOLD 1024" -slpre "cd $PBS_O_WORKDIR; setenv NUM_NODES `wc -l $PBS_NODEFILE | cut -f 1 --delimiter=" "`; mpdboot -n $NUM_NODES -f $PBS_NODEFILE --remcons" -slpost "cd $PBS_O_WORKDIR; mpdallexit" -host 127.0.0.1 -port 5600
 
 RESULTS:
-qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
+qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -21,7 +21,7 @@ CASE: qsub/mpiexec -totalview engine_par
 INPUT: visit -engine -norun engine_par -l qsub/mpiexec -np 16 -nn 4 -t 1:00:00 -sla "-env MV2_ON_DEMAND_THRESHOLD 1024" -slpre "cd $PBS_O_WORKDIR; setenv NUM_NODES `wc -l $PBS_NODEFILE | cut -f 1 --delimiter=" "`; mpdboot -n $NUM_NODES -f $PBS_NODEFILE --remcons" -slpost "cd $PBS_O_WORKDIR; mpdallexit" -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
+qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -38,7 +38,7 @@ CASE: qsub/mpiexec -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l qsub/mpiexec -np 16 -nn 4 -t 1:00:00 -sla "-env MV2_ON_DEMAND_THRESHOLD 1024" -slpre "cd $PBS_O_WORKDIR; setenv NUM_NODES `wc -l $PBS_NODEFILE | cut -f 1 --delimiter=" "`; mpdboot -n $NUM_NODES -f $PBS_NODEFILE --remcons" -slpost "cd $PBS_O_WORKDIR; mpdallexit" -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
+qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -55,7 +55,7 @@ CASE: qsub/mpiexec -strace engine_par
 INPUT: visit -engine -norun engine_par -l qsub/mpiexec -np 16 -nn 4 -t 1:00:00 -sla "-env MV2_ON_DEMAND_THRESHOLD 1024" -slpre "cd $PBS_O_WORKDIR; setenv NUM_NODES `wc -l $PBS_NODEFILE | cut -f 1 --delimiter=" "`; mpdboot -n $NUM_NODES -f $PBS_NODEFILE --remcons" -slpost "cd $PBS_O_WORKDIR; mpdallexit" -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
+qsub -v LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib:$VISITDIR/lib/osmesa,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=4:ppn=4 -l walltime=1:00:00 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
