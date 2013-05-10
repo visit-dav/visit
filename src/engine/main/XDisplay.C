@@ -207,6 +207,9 @@ XDisplay::Initialize(std::string display,
 //    Tom Fogal, Fri May 13 18:56:52 MDT 2011
 //    Quick hacks to fix mac.
 //
+//    Eric Brugger, Fri May 10 14:43:04 PDT 2013
+//    I removed support for mangled mesa.
+//
 // ****************************************************************************
 
 bool
@@ -223,7 +226,6 @@ XDisplay::Connect()
         debug1 << this->hostname << ": putenv(\"" << env_display
                << "\") failed.\n";
     }
-    InitVTKRendering::UnforceMesa();
 
     // Test our connection.
     Display* dpy=NULL;

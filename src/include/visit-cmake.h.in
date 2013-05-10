@@ -245,9 +245,6 @@
 /* Define NO_SETBUF if streambuf::setbuf is not public. */
 #cmakedefine NO_SETBUF
 
-/* Enable use of mangled Mesa classes in VisIt. */
-#cmakedefine VISIT_USE_MANGLED_MESA
-
 /* Define if we want to use VisIt's no-spin BCast. */
 #cmakedefine VISIT_USE_NOSPIN_BCAST
 

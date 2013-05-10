@@ -350,6 +350,9 @@
 #    Kathleen Biagas, Wed May  8 16:24:01 PDT 2013
 #    Remove EXODUS, no longer needed.
 #
+#    Eric Brugger, Thu May  9 17:09:27 PDT 2013
+#    Removed support for mangled mesa.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -601,9 +604,6 @@ IF(WIN32)
       SET(VISIT_APPLICATION_STYLE "WIN32")
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
-IF(VISIT_MESA_DIR)
-  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt" OFF)
-ENDIF(VISIT_MESA_DIR)
 
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
