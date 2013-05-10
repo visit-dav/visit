@@ -1030,6 +1030,43 @@ class TotalviewDebugger(Debugger):
     def CreateCommand(self, args):
         return self.Executable() + [args[0], "-a", "-dograb"] + self.DebuggerArguments() + args[1:]
 
+
+###############################################################################
+# Class: DDTDebugger
+#
+# Purpose:    Launch a VisIt component under ddt.
+#
+# Programmer: Cyrus Harrison
+# Date:       Fri May 10 10:05:07 PDT 2013
+#
+# Modifications:
+#
+###############################################################################
+
+class DDTDebugger(Debugger):
+    def __init__(self, launcher):
+        super(DDTDebugger, self).__init__(launcher)
+    def Executable(self):
+        return ["ddt"]
+    def CreateCommand(self, args):
+        ddt_args =self.DebuggerArguments()
+        if "-offline" in ddt_args:
+            # if a specific html log file wasn't passed, provide a sensible name
+            # to capture ddt output
+            ddt_log   = "ddt_%s_log.html" % os.path.split(args[0])[1]
+            off_index = ddt_args.index("-offline")
+            if off_index == len(ddt_args) -1: 
+                #last arg is -offline
+                ddt_args.append(ddt_log)
+            elif not ddt_args[off_index+1].endswith(".html"):
+                # -offline isn't followed by a html file name
+                ddt_args.insert(off_index+1,ddt_log)
+        else:
+            ddt_args.insert(0,"-start")
+        ddt_cmd = self.Executable() + ddt_args + args
+        return ddt_cmd
+
+
 ###############################################################################
 # Class: ValgrindDebugger
 #
@@ -2420,9 +2457,18 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kathleen Biagas, Mon Apr  8 14:19:36 PDT 2013
     #   Added apitrace.
     #
+    #   Cyrus Harrison, Fri May 10 15:55:49 PDT 2013
+    #   Added ddt.
+    #
     ############################################################################
     def Debuggers(self):
-        return ["gdb", "totalview", "valgrind", "strace", "apitrace", "debug-malloc"]
+        return ["gdb",
+                "totalview",
+                "valgrind",
+                "strace",
+                "apitrace",
+                "debug-malloc",
+                "ddt"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -2454,6 +2500,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return ApitraceDebugger(self)
         elif debugger == "debug-malloc":
             return DebugMallocDebugger(self)
+        elif debugger == "ddt":
+            return DDTDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
