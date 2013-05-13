@@ -606,7 +606,7 @@ avtLineScanFilter::PostExecute(void)
             charArray->SetArray((char *) recvmessages[i],recvcount[i], iOwnIt);
             reader->SetReadFromInputString(1);
             reader->SetInputArray(charArray);
-            appender->AddInputData(reader->GetOutput());
+            appender->AddInputConnection(reader->GetOutputPort());
             reader->Delete();
             charArray->Delete();
         }
