@@ -43,6 +43,8 @@
 #ifndef AVT_PAR_DOM_IC_ALGORITHM_H
 #define AVT_PAR_DOM_IC_ALGORITHM_H
 
+#if 0
+
 #ifdef PARALLEL
 #include "avtParICAlgorithm.h"
 
@@ -109,8 +111,6 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
 
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &sls);
-    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice = -1);
-    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
     virtual const char*       AlgoName() const {return "ParallelStaticDomains";}
 
   protected:
@@ -140,4 +140,6 @@ class avtParDomICAlgorithm : public avtParICAlgorithm
 
 
 #endif
+#endif
+
 #endif

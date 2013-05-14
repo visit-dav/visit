@@ -199,7 +199,7 @@ class AVTFILTERS_API avtPICSFilter :
     void InitializeLocators(void);
     void UpdateProgress(int amt, int total)
     {
-      avtFilter::UpdateProgress(amt, total);
+        avtFilter::UpdateProgress(amt, total);
     };
 
     virtual void ReleaseData(void);
@@ -208,8 +208,9 @@ class AVTFILTERS_API avtPICSFilter :
     void         ConvertToCartesian(bool val) { convertToCartesian = val; };
     bool         PostStepCallback();
 
-    void                      SetDomain(avtIntegralCurve *ic);
-
+    void         FindCandidateBlocks(avtIntegralCurve *ic, BlockIDType *skipBlk=NULL);
+    bool         ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block);
+    
   protected:
     bool   emptyDataset;
     double maxStepLength;
@@ -268,16 +269,11 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              ExamineContract(avtContract_p);
     virtual bool              CheckOnDemandViability(void);
 
-    void                      AdvectParticle(avtIntegralCurve *ic, int maxSteps=-1);
-    void                      AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps=-1);
-    void                      IntegrateDomain(avtIntegralCurve *ic, 
-                                              vtkDataSet *ds,
-                                              double *extents,
-                                              int maxSteps=-1);
-    virtual vtkDataSet        *GetDomain(const BlockIDType &, double = 0.0, double = 0.0, double = 0.0);
+    void                      AdvectParticle(avtIntegralCurve *ic);
+    virtual vtkDataSet        *GetDomain(const BlockIDType &, const avtVector &);
     bool                      LoadNextTimeSlice();
     virtual int               GetTimeStep(double t) const;
-    virtual bool              DomainLoaded(BlockIDType &) const;
+    virtual bool              BlockLoaded(BlockIDType &) const;
 
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,

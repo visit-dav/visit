@@ -829,37 +829,16 @@ avtParICAlgorithm::RecvMsg(vector<MsgCommData> &msgs)
 void
 avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
-    vector<int> domainIndices;
-    SendICs(dst, ics, domainIndices);
-}
-
-void
-avtParICAlgorithm::SendICs(int dst, vector<avtIntegralCurve*> &ics,
-                           vector<int> &domainIndices)
-{
     int timerHandle = visitTimer->StartTimer();
     for (int i = 0; i < ics.size(); i++)
         ics[i]->PrepareForSend();
 
-    if (DoSendICs(dst, ics, domainIndices))
-    {
-        for (int i = 0; i < ics.size(); i++)
-        {
-            avtIntegralCurve *ic = ics[i];
-            
-            //Add if id/seq is unique. (single streamlines can be sent to multiple dst).
-            list<avtIntegralCurve*>::const_iterator si = communicatedICs.begin();
-            bool found = false;
-            for (si = communicatedICs.begin(); !found && si != communicatedICs.end(); si++)
-                found = (*si)->SameCurve(ic);
-        
-            if (!found)
-                communicatedICs.push_back(ic);
-        }
-    }
-
+    DoSendICs(dst, ics);
+    
     for (int i = 0; i < ics.size(); i++)
         ics[i]->ResetAfterSend();
+    
+    communicatedICs.insert(communicatedICs.end(), ics.begin(), ics.end());
     
     ICCommCnt.value += ics.size();
     ics.resize(0);
@@ -967,19 +946,14 @@ avtParICAlgorithm::RecvICs(list<avtIntegralCurve *> &recvICs)
 // ****************************************************************************
 
 bool
-avtParICAlgorithm::DoSendICs(int dst, 
-                             vector<avtIntegralCurve*> &ics)
+avtParICAlgorithm::DoSendICs(int dst, vector<avtIntegralCurve*> &ics)
 {
-    vector<int> domainIndices;
-    return DoSendICs(dst, ics, domainIndices);
-}
-
-bool
-avtParICAlgorithm::DoSendICs(int dst, 
-                             vector<avtIntegralCurve*> &ics,
-                             vector<int> &domainIndices)
-{
-    if (dst == rank || ics.empty())
+    if (dst == rank)
+    {
+        EXCEPTION1(VisItException, "avtParICAlgorithm::DoSendICs() Sending ICs to yourself. Error.");
+    }
+    
+    if (ics.empty())
         return false;
 
     MemStream *buff = new MemStream;
@@ -988,12 +962,8 @@ avtParICAlgorithm::DoSendICs(int dst,
     int num = ics.size();
     buff->write(num);
     
-    for ( int i = 0; i < ics.size(); i++)
-    {
-        if (ics.size() == domainIndices.size())
-            ics[i]->domain = ics[i]->seedPtDomainList[domainIndices[i]];
+    for (int i = 0; i < ics.size(); i++)
         ics[i]->Serialize(MemStream::WRITE, *buff, GetSolver(), avtIntegralCurve::SERIALIZE_NO_OPT);
-    }
     
     SendData(dst, avtParICAlgorithm::STREAMLINE_TAG, buff);
     
@@ -1104,7 +1074,6 @@ avtParICAlgorithm::RecvDS(vector<DSCommData> &ds)
 void
 avtParICAlgorithm::PostRunAlgorithm()
 {
-
     // We are enumerating the possible communication styles and then just
     // calling the correct one.  This is an okay solution if there are a small
     // number of styles (which there are right now).  That said, it would be

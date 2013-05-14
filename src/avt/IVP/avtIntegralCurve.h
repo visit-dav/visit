@@ -48,10 +48,10 @@
 #include <string>
 #include <vector>
 #include <avtVector.h>
+#include <strstream>
 
-class vtkObject;
-
-typedef bool (*avtIntegralCurveCallback)(void);
+//IC state tracking support.
+//#define USE_IC_STATE_TRACKING
 
 // ****************************************************************************
 // Class: BlockIDType
@@ -103,6 +103,102 @@ class IVP_API BlockIDType
         out<<"["<<d.domain<<", "<<d.timeStep<<"]";
         return out;
     }
+};
+
+//****************************************************************************
+// Class:  ICStatus
+//
+// Purpose:
+//   Describes the status of an integral curve.
+//
+// 
+// Programmer:  Dave Pugmire
+// Creation:    April 15, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+class IVP_API ICStatus
+{
+ public:
+    ICStatus() {Clear(); SetOK();}
+    ICStatus(const ICStatus &s) {status=s.status;}
+    ~ICStatus() {Clear();}
+
+    //Get
+    bool OK() const {return CheckBit(STATUS_OK);}
+    bool Error() const {return !OK();}
+    bool Terminated() const
+    {
+        return Error() || TerminationMet() ||
+            ExitedSpatialBoundary()||ExitedTemporalBoundary();
+    }
+    bool Integrateable() const
+    {
+        return !Terminated() && !EncounteredSpatialBoundary() && !EncounteredTemporalBoundary();
+    }
+    bool OutsideBoundary() const {return EncounteredSpatialBoundary()||EncounteredTemporalBoundary();}
+    bool TerminationMet() const {return CheckBit(TERMINATION_MET);}
+    bool EncounteredSpatialBoundary() const {return CheckBit(ENCOUNTERED_SPATIAL_BOUNDARY);}
+    bool EncounteredTemporalBoundary() const {return CheckBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
+    bool ExitedSpatialBoundary() const {return CheckBit(EXITED_SPATIAL_BOUNDARY);}
+    bool ExitedTemporalBoundary() const {return CheckBit(EXITED_TEMPORAL_BOUNDARY);}
+    bool NumericalError() const {return CheckBit(NUMERICAL_ERROR);}
+    bool BadStepError() const {return CheckBit(BAD_STEP_ERROR);}
+
+    //Set
+    void Clear()    {status = 0;}
+    void SetOK()    {SetBit(STATUS_OK);}
+    void SetError() {ClearBit(STATUS_OK);}
+    void SetInsideBlock() {SetBit(INSIDE_BLOCK);}
+    void SetTerminationMet() {SetBit(TERMINATION_MET);}
+    void SetAtSpatialBoundary() {SetBit(ENCOUNTERED_SPATIAL_BOUNDARY);}
+    void SetAtTemporalBoundary() {SetBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
+    void SetExitSpatialBoundary() {SetBit(EXITED_SPATIAL_BOUNDARY);}
+    void SetExitTemporalBoundary() {SetBit(EXITED_TEMPORAL_BOUNDARY);}
+    void SetNumericalError() {SetError(); SetBit(NUMERICAL_ERROR);}
+    void SetBadStepError() {SetError(); SetBit(BAD_STEP_ERROR);}
+
+    //Clear
+    void ClearInsideBlock() {ClearBit(INSIDE_BLOCK);}
+    void ClearTerminationMet() {ClearBit(TERMINATION_MET);}
+    void ClearAtSpatialBoundary() {ClearBit(ENCOUNTERED_SPATIAL_BOUNDARY);}
+    void ClearExitSpatialBoundary() {ClearBit(EXITED_SPATIAL_BOUNDARY);}
+    void ClearSpatialBoundary(){ ClearAtSpatialBoundary(); ClearExitSpatialBoundary();}
+    void ClearAtTemporalBoundary() {ClearBit(ENCOUNTERED_TEMPORAL_BOUNDARY);}
+    void ClearExitTemporalBoundary() {ClearBit(EXITED_TEMPORAL_BOUNDARY);}
+    void ClearTemporalBoundary(){ ClearAtTemporalBoundary(); ClearExitTemporalBoundary();}
+    void ClearNumericalError() {ClearBit(NUMERICAL_ERROR);}
+    void ClearBadStepError() {ClearBit(BAD_STEP_ERROR);}
+
+ private:
+    //bit assignments:
+    //0:   OK
+    //1:   inside Block
+    //2:   termination met
+    //3,4: at spatial/temporal boundary
+    //5,6: exit spatial/temporal
+    //7:   numerical error
+    //8:   bad step error
+    unsigned long status;
+
+    enum ICStatusBits
+    {
+        STATUS_OK                     = 0x0001,
+        INSIDE_BLOCK                  = 0x0002,
+        TERMINATION_MET               = 0x0004,
+        ENCOUNTERED_SPATIAL_BOUNDARY  = 0x0008,
+        ENCOUNTERED_TEMPORAL_BOUNDARY = 0x0010,
+        EXITED_SPATIAL_BOUNDARY       = 0x0020,
+        EXITED_TEMPORAL_BOUNDARY      = 0x0040,
+        NUMERICAL_ERROR               = 0x0080,
+        BAD_STEP_ERROR                = 0x0100,
+    };
+
+    void SetBit(const ICStatusBits &b) {status |= b;}
+    void ClearBit(const ICStatusBits &b) {status &= ~b;}
+    bool CheckBit(const ICStatusBits &b) const {return status & b;}
 };
 
 
@@ -208,13 +304,6 @@ class IVP_API avtIntegralCurve
         DIRECTION_BACKWARD = 1,
     };
 
-    enum Status
-    {
-        STATUS_OK         = 0,
-        STATUS_FINISHED   = 1,
-        STATUS_TERMINATED = 2,
-    };
-
     enum SerializeFlags
     {
         SERIALIZE_ALL     = -1,
@@ -223,97 +312,82 @@ class IVP_API avtIntegralCurve
         SERIALIZE_INC_SEQ = 2,
     };
 
-    avtIntegralCurve( const avtIVPSolver* model, 
-                      Direction dir, 
-                      const double& t_start, 
-                      const avtVector &p_start, 
-                      const avtVector &v_start, 
-                      long ID );
+    avtIntegralCurve(const avtIVPSolver* model,
+                     Direction dir,
+                     const double& t_start,
+                     const avtVector &p_start,
+                     const avtVector &v_start,
+                     long ID);
 
     avtIntegralCurve();
     virtual ~avtIntegralCurve();
 
     void Advance(avtIVPField* field);
 
-    double    CurrentTime() const;
-    void      CurrentLocation(avtVector &end);
+    double    CurrentTime()     const {return ivp->GetCurrentT();}
+    avtVector CurrentLocation() const {return ivp->GetCurrentY();}
 
     virtual void      Serialize(MemStream::Mode mode, MemStream &buff, 
                                 avtIVPSolver *solver, SerializeFlags serializeFlags);
 
-    virtual void      PrepareForSend(void) { ; };
-    virtual void      ResetAfterSend(void) { ; };
+    virtual void      PrepareForSend() {}
+    virtual void      ResetAfterSend() {}
 
-    virtual bool      SameCurve(avtIntegralCurve *ic)
-                               { return id == ic->id; };
+    virtual bool      SameCurve(avtIntegralCurve *ic) {return id==ic->id;}
 
     static bool       DomainCompare(const avtIntegralCurve *slA,
                                     const avtIntegralCurve *slB);
 
-    bool              EncounteredNumericalProblems(void)
-                             { return encounteredNumericalProblems; };
-
-    void     SetPostStepCallback(avtIntegralCurveCallback func) {postStepCallbackFunction = func; }
+    bool              EncounteredNumericalProblems() {return status.NumericalError();}
 
     virtual avtIntegralCurve* MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v) = 0;
-    virtual void      PrepareForFinalCommunication(void) {;};
+    virtual void      PrepareForFinalCommunication() {}
 
     // This is used for sorting, particularly for parallel communication
     virtual bool LessThan(const avtIntegralCurve *ic) const;
 
-  protected:
-    avtIntegralCurveCallback postStepCallbackFunction;
-
-    avtIntegralCurve( const avtIntegralCurve& );
-    avtIntegralCurve& operator=( const avtIntegralCurve& );
-    
-    virtual void AnalyzeStep( avtIVPStep& step,
-                              avtIVPField* field ) = 0;
-    virtual bool    UseFixedTerminationTime(void) { return false; };
-    virtual double  FixedTerminationTime(void)    { return 0; };
-
-  public:
-
-    Status    status;
+    ICStatus status;
     Direction direction;
 
     // Helpers needed for figuring out which domain to use next
-    std::vector<BlockIDType> seedPtDomainList;
-    BlockIDType domain;
+    std::list<BlockIDType> blockList;
     long long sortKey;
 
     long id;
-    int counter;
+    int counter, originatingRank;
 
-    bool   encounteredNumericalProblems;
-    int    originatingRank;
   protected:
+    avtIntegralCurve(const avtIntegralCurve&);
+    avtIntegralCurve& operator=(const avtIntegralCurve&);
+    
+    virtual void AnalyzeStep(avtIVPStep &step,
+                             avtIVPField *field) = 0;
+    virtual bool    UseFixedTerminationTime() {return false;}
+    virtual double  FixedTerminationTime()    {return 0;}
 
     avtIVPSolver*       ivp;
-
     static const double minHFactor;
+
+ public:
+
+    //IC state tracking support.
+#ifdef USE_IC_STATE_TRACKING
+    std::ofstream trk;
+    
+    void InitTrk()
+    {
+        char tmp[64];
+        sprintf(tmp, "IC_%d.txt", (int)id);
+        trk.open(tmp, ofstream::out);
+        trk<<"Init: ID= "<<id<<endl;
+    }
+#endif
+    
 };
 
 
-// ostream operators for avtIntegralCurve's enum types
-inline std::ostream& operator<<( std::ostream& out, 
-                                 avtIntegralCurve::Status status )
-{
-    switch( status )
-    {
-    case avtIntegralCurve::STATUS_OK:
-        return out << "OK";
-    case avtIntegralCurve::STATUS_FINISHED:
-        return out << "FINISHED";
-    case avtIntegralCurve::STATUS_TERMINATED:
-        return out << "TERMINATED";
-    default:
-        return out << "UNKNOWN";
-    }
-}
-
-inline std::ostream& operator<<( std::ostream& out, 
-                                 avtIntegralCurve::Direction dir )
+inline std::ostream& operator<<(std::ostream& out, 
+                                avtIntegralCurve::Direction dir)
 {
     switch( dir )
     {
@@ -326,7 +400,32 @@ inline std::ostream& operator<<( std::ostream& out,
     }
 }
 
+// ostream operators for avtICStatus
+inline std::ostream& operator<<(std::ostream& out, 
+                                ICStatus status)
+{
+    if (status.OK())
+        out<<"OK: {";
+    else
+        out<<"ERROR: {";
+    if (status.TerminationMet())
+        out<<"Term ";
+    if (status.EncounteredSpatialBoundary())
+        out<<"AtSpatialBoundary ";
+    if (status.EncounteredTemporalBoundary())
+        out<<"AtTemporalBoundary ";
+    if (status.ExitedSpatialBoundary())
+        out<<"ExitSpatialBoundary ";
+    if (status.ExitedTemporalBoundary())
+        out<<"ExitTemporalBoundary ";
+    if (status.NumericalError())
+        out<<"NumericalError ";
+    
+    out<<"}";
+    return out;
+}
 
-#endif // AVT_STREAMLINE_H
+
+#endif //  AVT_INTEGRAL_CURVE_H
 
 

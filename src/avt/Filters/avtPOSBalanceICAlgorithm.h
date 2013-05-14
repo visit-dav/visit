@@ -43,6 +43,8 @@
 #ifndef AVT_POS_BALANCE_IC_ALGORITHM_H
 #define AVT_POS_BALANCE_IC_ALGORITHM_H
 
+#if 0
+
 #ifdef PARALLEL
 #include "avtParICAlgorithm.h"
 
@@ -98,4 +100,6 @@ class avtPOSBalanceWorkerICAlgorithm : public avtPOSBalanceICAlgorithm
 
 
 #endif
+#endif
+
 #endif

@@ -40,6 +40,8 @@
 //                              avtCommDSOnDemandICAlgorithm.C                 //
 // ************************************************************************* //
 
+#if 0
+
 #include <avtCommDSOnDemandICAlgorithm.h>
 #include <TimingsManager.h>
 #include <vtkDataSetWriter.h>
@@ -796,5 +798,8 @@ avtCommDSOnDemandICAlgorithm::PostStepCallback()
 {
     return HandleMessages(true, false, false);
 }
+
+#endif
+
 
 #endif

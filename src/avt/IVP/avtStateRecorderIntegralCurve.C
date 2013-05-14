@@ -224,9 +224,7 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
     distance += step.GetLength();
 
     if (CheckForTermination(step, field))
-    {
-        status = STATUS_FINISHED;
-    }
+        status.SetTerminationMet();
 
     // This must be called after CheckForTermination, because 
     // CheckForTermination will modify the step if it goes beyond the
@@ -473,7 +471,7 @@ avtStateRecorderIntegralCurve::MergeIntegralCurveSequence(std::vector<avtIntegra
 
     // Need to get the ending setting transfered.
     v[0]->status = v[vSize-1]->status;
-    v[0]->domain = v[vSize-1]->domain;
+    v[0]->blockList = v[vSize-1]->blockList;
     avtIVPSolver *tmpSolver = v[0]->ivp;
     v[0]->ivp = v[vSize-1]->ivp;
     v[vSize-1]->ivp = tmpSolver;

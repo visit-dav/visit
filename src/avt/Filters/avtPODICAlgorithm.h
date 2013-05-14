@@ -67,17 +67,13 @@ class avtPODICAlgorithm : public avtParICAlgorithm
 
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &sls);
-    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice = -1);
-    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice);
 
   protected:
     virtual void              RunAlgorithm();
     virtual void              PreRunAlgorithm();
     bool                      HandleCommunication();
-    void                      HandleOOBICs(avtIntegralCurve *ic);
     
-    int maxCount, numICs;
-    std::list<avtIntegralCurve *> activeICs, oobICs;
+    int maxCount;
 };
 
 #endif

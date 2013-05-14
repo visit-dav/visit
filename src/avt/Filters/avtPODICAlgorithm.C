@@ -62,7 +62,6 @@ using namespace std;
 avtPODICAlgorithm::avtPODICAlgorithm(avtPICSFilter *picsFilter, int count)
     : avtParICAlgorithm(picsFilter)
 {
-    numICs = 0;
     maxCount = count;
 }
 
@@ -102,71 +101,6 @@ avtPODICAlgorithm::Initialize(vector<avtIntegralCurve *> &seeds)
 }
 
 // ****************************************************************************
-// Method:  avtPODICAlgorithm::ResetIntegralCurvesForContinueExecute
-//
-// Purpose: Reset for continuation.
-//
-// Programmer:  Dave Pugmire
-// Creation:    March 21, 2012
-//
-// ****************************************************************************
-
-void
-avtPODICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
-{
-    while (! terminatedICs.empty())
-    {
-        avtIntegralCurve *s = terminatedICs.front();
-        terminatedICs.pop_front();
-        
-        activeICs.push_back(s);
-        s->status = avtIntegralCurve::STATUS_OK;
-    }
-}
-
-// ****************************************************************************
-// Method:  avtPODICAlgorithm::CheckNextTimeStepNeeded
-//
-// Purpose: See if more timesteps needed.
-//
-// Programmer:  Dave Pugmire
-// Creation:    March 21, 2012
-//
-// Modifications:
-//
-//   Hank Childs, Wed Mar 28 08:36:34 PDT 2012
-//   Add support for terminated particle status.
-//
-//   Hank Childs, Sun Apr  1 10:32:00 PDT 2012
-//   Fix recently introduced error with bad logic about what has been terminated.
-//
-// ****************************************************************************
-
-bool
-avtPODICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
-{
-    int val = 0;
-    list<avtIntegralCurve *>::const_iterator it;
-    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
-    {
-        bool itsDone = false;
-        if ((*it)->domain.domain == -1 || (*it)->domain.timeStep == curTimeSlice)
-            itsDone = true;
-        if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
-            itsDone = true;
-        if (! itsDone)
-        {
-            val = 1;
-            break;
-        }
-    }
-
-    SumIntAcrossAllProcessors(val);
-
-    return val > 0;
-}
-
-// ****************************************************************************
 // Method:  avtPODICAlgorithm::AddIntegralCurves
 //
 // Purpose: Add ICs.
@@ -182,33 +116,24 @@ avtPODICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve*> &ics)
     //Get the ICs that I own.
     for (int i = 0; i < ics.size(); i++)
     {
-        avtIntegralCurve *s = ics[i];
+        avtIntegralCurve *ic = ics[i];
         
-        if (OwnDomain(s->domain))
+        if (DomainLoaded(ic->blockList.front()))
         {
-            avtVector endPt;
-            s->CurrentLocation(endPt);
+            ic->originatingRank = rank;
+            activeICs.push_back(ic);
             
-            if (PointInDomain(endPt, s->domain))
-            {
-                activeICs.push_back(s);
-                s->originatingRank = rank;
-            }
-            else
-                delete s;
+#ifdef USE_IC_STATE_TRACKING
+            ic->InitTrk();
+#endif
         }
         else
-            delete s;
+            delete ic;
     }
-
-    numICs = activeICs.size();
-    SumIntAcrossAllProcessors(numICs);
-
 
     if (DebugStream::Level1())
     {
         debug1<<"My ICcount= "<<activeICs.size()<<endl;
-        debug1<<"numICs= "<<numICs<<endl;
         debug1<<"I own: [";
         for (int i = 0; i < numDomains; i++)
         {
@@ -254,81 +179,43 @@ avtPODICAlgorithm::PreRunAlgorithm()
 void
 avtPODICAlgorithm::RunAlgorithm()
 {
-    if (DebugStream::Level1())
-        debug1<<"avtPODICAlgorithm::RunAlgorithm(): numICs: "<<numICs<< " activeICs.size(): " << activeICs.size() << endl;
+    debug1<<"avtPODICAlgorithm::RunAlgorithm() activeICs: "<<activeICs.size()<<" inactiveICs: "<<inactiveICs.size()<<endl;
+    
     int timer = visitTimer->StartTimer();
     
-    bool done = false;
-
+    bool done = HandleCommunication();
     while (!done)
     {
-        //Integrate upto maxCnt streamlines.
-        list<avtIntegralCurve *>::iterator s;
         int cnt = 0;
         while (cnt < maxCount && !activeICs.empty())
         {
-            avtIntegralCurve *s = activeICs.front();
+            avtIntegralCurve *ic = activeICs.front();
             activeICs.pop_front();
-            
-            if (s->domain.domain == -1 && s->seedPtDomainList.size() > 0)
+
+            do
             {
-                // We don't have the particle, but someone else might.
-                // This happens with pathlines when a new time slice is
-                // loaded and the domain that contains the particle is
-                // on a different MPI task.
-                HandleOOBICs(s);
-                cnt++;
-                continue;
+                AdvectParticle(ic);
             }
-           
-            AdvectParticle(s);
-            if (s->status != avtIntegralCurve::STATUS_OK)
-                terminatedICs.push_back(s);
+            while (ic->status.Integrateable() &&
+                   DomainLoaded(ic->blockList.front()));
+            
+            if (ic->status.EncounteredSpatialBoundary())
+            {
+                if (!ic->blockList.empty() && DomainLoaded(ic->blockList.front()))
+                    activeICs.push_back(ic);
+                else
+                    inactiveICs.push_back(ic);
+            }
             else
-                HandleOOBICs(s);
+                terminatedICs.push_back(ic);
             
             cnt++;
         }
+        
         done = HandleCommunication();
     }
 
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
-}
-
-// ****************************************************************************
-// Method:  avtPODICAlgorithm::HandleOOBICs
-//
-// Purpose: Handle out of bounds ICs.
-//
-// Programmer:  Dave Pugmire
-// Creation:    March 21, 2012
-//
-// ****************************************************************************
-
-void
-avtPODICAlgorithm::HandleOOBICs(avtIntegralCurve *ic)
-{
-    //debug1<<"Handle OOBIC: "<<ic->id<<": ";
-    for (int i = 0; i < ic->seedPtDomainList.size(); i++)
-    {
-        int domRank = DomainToRank(ic->seedPtDomainList[i]);
-        if (domRank == rank)
-        {
-            avtVector endPt;
-            ic->CurrentLocation(endPt);
-            
-            if (PointInDomain(endPt, ic->domain))
-            {
-                //debug1<<" MINE"<<endl;
-                activeICs.push_back(ic);
-                return;
-            }
-        }
-    }
-    
-    //Not my IC.
-    //debug1<<" OTHER"<<endl;
-    oobICs.push_back(ic);
 }
 
 // ****************************************************************************
@@ -350,109 +237,109 @@ avtPODICAlgorithm::HandleOOBICs(avtIntegralCurve *ic)
 bool
 avtPODICAlgorithm::HandleCommunication()
 {
-    debug1<<"avtPODICAlgorithm::HandleCommunication()"<<endl;
-    
-    int numActive = oobICs.size() + activeICs.size();
+    int numICs = inactiveICs.size() + activeICs.size();
     
     //See if we're done.
-    SumIntAcrossAllProcessors(numActive);
+    SumIntAcrossAllProcessors(numICs);
     MsgCnt.value++;
-    if (numActive == 0)
+
+    //debug1<<"avtPODICAlgorithm::HandleCommunication() numICs= "<<numICs<<endl;
+    if (numICs == 0)
         return true;
 
-    //Exchange ICs.
+    //Tell everyone how many ICs are coming their way.
     int *icCounts = new int[nProcs], *allCounts = new int[nProcs];
     for (int i = 0; i < nProcs; i++)
         icCounts[i] = 0;
     
     list<avtIntegralCurve*>::iterator s;
-    for (s = oobICs.begin(); s != oobICs.end(); s++)
-    {
-        set<int> sentRanks;
-        for (int i = 0; i < (*s)->seedPtDomainList.size(); i++)
-        {
-            int domRank = DomainToRank((*s)->seedPtDomainList[i]);
-            //Make sure we don't send duplicate ICs to the same rank.
-            if (sentRanks.find(domRank) == sentRanks.end())
-            {
-                icCounts[domRank]++;
-                sentRanks.insert(domRank);
-            }
-        }
-    }
-    SumIntArrayAcrossAllProcessors(icCounts, allCounts, nProcs);
-    int incomingCnt = allCounts[rank];
-
-    /*
-    debug1<<"allCounts[";
-    for(int i = 0; i < nProcs; i++)
-        debug1<<allCounts[i]<<" ";
-    debug1<<endl;
-    */
-
-    //Send out ICs.
     map<int, vector<avtIntegralCurve *> > sendICs;
     map<int, vector<avtIntegralCurve *> >::iterator it;
-
-    //Collect into vectors for each rank.
-    vector<int> domainIndices;
-    for (s = oobICs.begin(); s != oobICs.end(); s++)
+    list<avtIntegralCurve*> tmp;
+    for (s = inactiveICs.begin(); s != inactiveICs.end(); s++)
     {
-        set<int> sentRanks;
-        for (int i = 0; i < (*s)->seedPtDomainList.size(); i++)
+        int domRank = DomainToRank((*s)->blockList.front());
+        icCounts[domRank]++;
+            
+        //Add to sending map.
+        it = sendICs.find(domRank);
+        if (it == sendICs.end())
         {
-            int domRank = DomainToRank((*s)->seedPtDomainList[i]);
-            if (sentRanks.find(domRank) == sentRanks.end())
-            {
-                domainIndices.push_back(i);
-                it = sendICs.find(domRank);
-                if (it == sendICs.end())
-                {
-                    vector<avtIntegralCurve *> v;
-                    v.push_back(*s);
-                    sendICs[domRank] = v;
-                }
-                else
-                    it->second.push_back(*s);
-                sentRanks.insert(domRank);
-            }
+            vector<avtIntegralCurve *> v;
+            v.push_back(*s);
+            sendICs[domRank] = v;
         }
+        else
+            it->second.push_back(*s);
     }
-    oobICs.clear();
-
-    //Send out ICs.
+    inactiveICs.clear();
+    
+    SumIntArrayAcrossAllProcessors(icCounts, allCounts, nProcs);
+    bool anyToSend = false;
+    for (int i = 0; i < nProcs && !anyToSend; i++)
+        anyToSend = (allCounts[i] > 0);
+    
+    int incomingCnt = allCounts[rank];
+    
+    //Send out my ICs.
     for (it = sendICs.begin(); it != sendICs.end(); it++)
-        SendICs(it->first, it->second, domainIndices);
+        SendICs(it->first, it->second);
 
-    //Wait for all my ics.
+    //Wait till I get all my ICs.
     while (incomingCnt > 0)
     {
         list<ICCommData> ics;
-        RecvAny(NULL, &ics, NULL, true);
-        
         list<ICCommData>::iterator s;
+
+        RecvAny(NULL, &ics, NULL, true);
         for (s = ics.begin(); s != ics.end(); s++)
         {
             avtIntegralCurve *ic = (*s).ic;
-            avtVector endPt;
-            debug1<<"received :ic.id="<<ic->id<<" from "<<(*s).rank<<endl;
 
-            SetDomain(ic);
-            ic->CurrentLocation(endPt);
-            if (PointInDomain(endPt, ic->domain))
-                activeICs.push_back(ic);
-            else
-                delete ic;
+            //See if I have this block.
+            BlockIDType blk;
+            list<BlockIDType> tmp;
+            bool blockFound = false;
+            while (!ic->blockList.empty())
+            {
+                blk = ic->blockList.front();
+                ic->blockList.pop_front();
+                if (DomainLoaded(blk))
+                {
+                    if (picsFilter->ICInBlock(ic, blk))
+                    {
+                        ic->status.ClearSpatialBoundary();
+                        ic->blockList.clear();
+                        ic->blockList.push_back(blk);
+                        blockFound = true;
+                        activeICs.push_back(ic);
+                        break;
+                    }
+                }
+                else
+                    tmp.push_back(blk);
+            }
+
+            //IC Not in my blocks.  Terminate if blockList empty, or send to
+            //block owner of next block in list.
+            if (!blockFound)
+            {
+                ic->blockList = tmp;
+                if (ic->blockList.empty())
+                    terminatedICs.push_back(ic);
+                else
+                    inactiveICs.push_back(ic);
+            }
         }
-
+        
         incomingCnt -= ics.size();
         CheckPendingSendRequests();
     }
     
-    CheckPendingSendRequests();
-    
+    CheckPendingSendRequests(); 
     delete [] icCounts;
     delete [] allCounts;
+    
     return false;
 }
 

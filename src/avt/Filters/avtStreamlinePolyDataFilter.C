@@ -173,7 +173,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
         if (ic->EncounteredNumericalProblems())
             numStiff++;
     }
-
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
     {
         SumIntAcrossAllProcessors(numEarlyTerminators);
@@ -228,7 +227,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
             avtCallback::IssueWarning(str);
         }
     }
-
     if (numICs == 0)
         return;
 

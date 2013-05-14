@@ -43,6 +43,8 @@
 #include "avtSerialICAlgorithm.h"
 #include <TimingsManager.h>
 #include <avtParallel.h>
+#include <DebugStream.h>
+#include <VisItStreamUtil.h>
 
 using namespace std;
 
@@ -134,9 +136,9 @@ avtSerialICAlgorithm::RestoreInitialize(std::vector<avtIntegralCurve *> &ics, in
     {
         avtIntegralCurve *s = ics[i];
 
-        if (s->domain.timeStep == curTimeSlice)
+        if (s->blockList.front().timeStep == curTimeSlice)
         {
-            s->status = avtIntegralCurve::STATUS_OK;
+            s->status.ClearAtTemporalBoundary();
             SetDomain(s);
             activeICs.push_back(s);
         }
@@ -199,21 +201,46 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
     for (int i = i1; i < nSeeds; i++)
         delete ics[i];
 #endif
-
-    if (DebugStream::Level5())
-        debug5 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
-
-    // Filter the seeds for proper domain inclusion and fill the activeICs list.
-    avtVector endPt;
-    for ( int i = i0; i < i1; i++)
+    
+    for (int i = i0; i < i1; i++)
     {
-        avtIntegralCurve *s = ics[i];
-        s->CurrentLocation(endPt);
-        if (PointInDomain(endPt, s->domain))
-            activeICs.push_back(s);
-        else
-            delete s;
+        inactiveICs.push_back(ics[i]);
+        
+#ifdef USE_IC_STATE_TRACKING
+        ics[i]->InitTrk();
+#endif
     }
+
+    debug1 << "I have seeds: "<<i0<<" to "<<i1<<" of "<<nSeeds<<endl;
+}
+
+// ****************************************************************************
+// Method:  avtSerialICAlgorithm::ActivateICs()
+//
+// Purpose:
+//   Move ICs from inactive to active list, as possible.
+//
+// Programmer:  Dave Pugmire
+// Creation:    May 30, 2012
+//
+// ****************************************************************************
+
+void
+avtSerialICAlgorithm::ActivateICs()
+{
+    list<avtIntegralCurve *>::iterator it = inactiveICs.begin();
+    while (it != inactiveICs.end())
+    {
+        if (!(*it)->status.EncounteredTemporalBoundary())
+        {
+            activeICs.push_back(*it);
+            it = inactiveICs.erase(it);
+        }
+        else
+            it++;
+    }
+    
+    SortIntegralCurves(activeICs);
 }
 
 // ****************************************************************************
@@ -262,190 +289,29 @@ avtSerialICAlgorithm::AddIntegralCurves(vector<avtIntegralCurve *> &ics)
 void
 avtSerialICAlgorithm::RunAlgorithm()
 {
-    if (DebugStream::Level1())
-        debug1<<"avtSerialICAlgorithm::RunAlgorithm()\n";
-    int timer = visitTimer->StartTimer();
-
-    //Sort the streamlines and load the first domain.
-    SortIntegralCurves(activeICs);
-    if (!activeICs.empty())
-    {
-        avtIntegralCurve *s = activeICs.front();
-        GetDomain(s);
-    }
-
-    int numParticlesTotal = activeICs.size();
-    int numParticlesResolved = 0;
     while (1)
     {
-        // Integrate all loaded domains.
-        while (! activeICs.empty())
+        ActivateICs();
+        if (activeICs.empty())
+            break;
+        
+        while (!activeICs.empty())
         {
-            avtIntegralCurve *s = activeICs.front();
+            avtIntegralCurve *ic = activeICs.front();
             activeICs.pop_front();
-
-            if (DomainLoaded(s->domain))
+            GetDomain(ic);
+            do
             {
-#ifndef PARALLEL
-                // In serial, we return that every domain is loaded.
-                // That's basically okay.
-                // But it screws up time reporting, because the domain isn't
-                // loaded until AdvectParticle calls GetDomain.
-                // So call it explicitly first, so I/O can be correctly 
-                // counted.
-                GetDomain(s);
-#endif
-                AdvectParticle(s);
-
-                if( s->status != avtIntegralCurve::STATUS_OK )
-                {
-                    terminatedICs.push_back(s);
-                    numParticlesResolved++;
-                    picsFilter->UpdateProgress(numParticlesResolved,
-                                               numParticlesTotal);
-                }
-                else
-                {
-                    if( s->domain.domain == -1 && s->domain.timeStep == -1 )
-                    {
-                        terminatedICs.push_back(s);
-                    }
-                    else
-                    {
-                        oobICs.push_back(s);
-                    }
-                }
+                AdvectParticle(ic);
             }
+            while (ic->status.Integrateable() &&
+                   DomainLoaded(ic->blockList.front()));
+            
+            if (ic->status.EncounteredSpatialBoundary())
+                inactiveICs.push_back(ic);
             else
-            {
-                if( s->domain.domain == -1 && s->domain.timeStep == -1 )
-                {
-                    terminatedICs.push_back(s);
-                }
-                else
-                {
-                    oobICs.push_back(s);
-                }
-            }
-        }
+                terminatedICs.push_back(ic);
 
-        //We are done!
-        if (oobICs.empty())
-            break;
-
-        //Sort the remaining streamlines, get the next domain, continue.
-        activeICs = oobICs;
-        oobICs.clear();
-        
-        SortIntegralCurves(activeICs);
-        avtIntegralCurve *s = activeICs.front();
-        GetDomain(s);
-    }
-
-    TotalTime.value += visitTimer->StopTimer(timer, "Execute");
-}
-
-// ****************************************************************************
-//  Method: avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute
-//
-//  Purpose:
-//      Reset for continued streamline integration.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Aug 18 08:59:40 EDT 2009
-//
-//  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as 
-//   opposed to streamlines.
-//
-//   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
-//   Change IC status when ic to not-terminated.
-//
-//   Hank Childs, Tue Jan  8 17:53:46 PST 2013
-//   Continue to set particles to "OK", making pathlines work again.
-//
-// ****************************************************************************
-
-void
-avtSerialICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
-{
-    std::list<avtIntegralCurve *> termICs;
-
-    while (! terminatedICs.empty())
-    {
-        avtIntegralCurve *s = terminatedICs.front();
-        terminatedICs.pop_front();
-        
-        if( curTimeSlice == -1 || s->domain.timeStep == curTimeSlice )
-        {
-            activeICs.push_back(s);
-            s->status = avtIntegralCurve::STATUS_OK;
-        }
-        else
-        {
-            termICs.push_back(s);
         }
     }
-
-    terminatedICs = termICs;
 }
-
-
-// ****************************************************************************
-// Method:  avtSerialICAlgorithm::CheckNextTimeStepNeeded
-//
-// Purpose: Is the next time slice required to continue?
-//   
-//
-// Programmer:  Dave Pugmire
-// Creation:    December  2, 2010
-//
-//  Modifications:
-//
-//  David Camp, Tue Aug 23 09:53:35 PDT 2011
-//  We need to check if all ranks are done, because most of the database
-//  readers use collective communication. So if one or more of the serial
-//  rank exit the execute loop we will hang in the LoadNextTimeSlice()
-//  on all of the other ranks that did not exit the execute loop.
-//
-//  Hank Childs, Fri Mar  9 16:49:06 PST 2012
-//  Add support for reverse pathlines.
-//
-//  Hank Childs, Wed Mar 28 08:36:34 PDT 2012
-//  Add support for terminated particles.
-//
-//  Hank Childs, Sun Apr  1 10:32:00 PDT 2012
-//  Fix recently introduced error with bad logic about what has been terminated.
-//
-// ****************************************************************************
-
-bool
-avtSerialICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
-{
-    int val = 0;
-    list<avtIntegralCurve *>::const_iterator it;
-    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
-    {
-        bool itsDone = false;
-        if ((*it)->domain.domain == -1 || (*it)->domain.timeStep == curTimeSlice)
-            itsDone = true;
-        if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
-            itsDone = true;
-        if (! itsDone)
-        {
-            val = 1;
-            break;
-        }
-    }
-
-    // Serial algorithm ... they don't need to be synched up.
-    //SumIntAcrossAllProcessors(val);
-
-    return val > 0;
-}
-

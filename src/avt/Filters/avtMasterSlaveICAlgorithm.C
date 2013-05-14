@@ -40,6 +40,8 @@
 //                              avtMasterSlaveICAlgorithm.C                  //
 // ************************************************************************* //
 
+#if 0
+
 #include "avtMasterSlaveICAlgorithm.h"
 #include <TimingsManager.h>
 #include <iostream>
@@ -2831,5 +2833,7 @@ SlaveInfo::Debug()
     debug1<<endl;
 }
 
+
+#endif
 
 #endif

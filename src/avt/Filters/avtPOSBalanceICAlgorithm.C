@@ -40,6 +40,7 @@
 //                              avtPOSBalanceICAlgorithm.C                   //
 // ************************************************************************* //
 
+#if 0
 #include <avtPOSBalanceICAlgorithm.h>
 #include <TimingsManager.h>
 
@@ -467,5 +468,7 @@ avtPOSBalanceWorkerICAlgorithm::RunAlgorithm()
     CheckPendingSendRequests();
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
+
+#endif
 
 #endif
