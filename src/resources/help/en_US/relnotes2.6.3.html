@@ -23,6 +23,7 @@ list of changes in release 2.6.</p>
 <li>VisIt now always passes "-l username" to ssh when making remote connections when running on Windows since qtssh, the ssh utility VisIt uses on Windows, requires it.</li>
 <li>Windows installer would install VisIt's parallel components, even when user requested they be skipped.</li>
 <li>The <i>Stop</i> button in VisIt's animation controls was broken when used in PySide applications. This made the <i>Stop</i> button unable to actually stop animations.</li>
+<li>VisIt now properly reads pvti files. The previous version was incorrectly looking for a PImage element instead of a PImageData element.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.6.3</font></b></p>
