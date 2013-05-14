@@ -43,6 +43,8 @@
 #ifndef AVT_MASTER_SLAVE_IC_ALGORITHM_H
 #define AVT_MASTER_SLAVE_IC_ALGORITHM_H
 
+#if 0
+
 #include "avtParICAlgorithm.h"
 
 #include <vector>
@@ -328,5 +330,8 @@ class SlaveInfo
 };
 
 #endif
+
+#endif
+
 
 #endif

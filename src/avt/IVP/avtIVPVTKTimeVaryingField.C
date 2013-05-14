@@ -196,13 +196,13 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
 
     if (t0 < t1)
     {
-        if( time < t0 || time > t1 )
+        if( time < t0 || time >= t1 )
             inside[1] = false;
     }
     else
     {
         // backwards integration
-        if( time < t1 || time > t0 )
+        if( time < t1 || time >= t0 )
             inside[1] = false;
     }
 

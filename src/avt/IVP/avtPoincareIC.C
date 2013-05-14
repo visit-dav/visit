@@ -127,14 +127,13 @@ avtPoincareIC::~avtPoincareIC()
 bool
 avtPoincareIC::CheckForTermination(avtIVPStep& step, avtIVPField *)
 {
-    if( IntersectPlane( step.GetP0(), step.GetP1() ) )
+    if (IntersectPlane( step.GetP0(), step.GetP1()))
     {
         numIntersections++;
-
-        if( numIntersections >= maxIntersections )
-           return true;
+        if (numIntersections >= maxIntersections)
+            return true;
     }
-
+    
     return false;
 }
 

@@ -489,7 +489,7 @@ avtDatasetOnDemandFilter::DomainLoaded(int domainID, int timeStep) const
 {
     if ( ! OperatingOnDemand() )
         EXCEPTION0(ImproperUseException);
-
+    
     if ( domainID >= 0 )
     {
         std::list<DomainCacheEntry>::const_iterator it;

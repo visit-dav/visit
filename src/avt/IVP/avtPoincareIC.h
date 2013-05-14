@@ -44,8 +44,9 @@
 #define AVT_POINCARE_IC_H
 
 #include <avtStateRecorderIntegralCurve.h>
-
 #include <map>
+
+class vtkObject;
 
 // ****************************************************************************
 //  Class: avtPoincareIC

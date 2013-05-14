@@ -152,7 +152,7 @@ public:
         }
 
         p_end = step.GetP1();
-        CurrentLocation(p_end);
+        p_end = CurrentLocation();
 
         /** update other termination criteria */
         numStep += 1;
@@ -164,9 +164,7 @@ public:
 
         /* if Code has to be terminated */
         if( shouldTerminate )
-        {
-            status = STATUS_TERMINATED;
-        }
+            status.SetTerminationMet();
     }
 
     virtual void Serialize(MemStream::Mode mode, MemStream &buff, avtIVPSolver *solver, SerializeFlags serializeFlags)

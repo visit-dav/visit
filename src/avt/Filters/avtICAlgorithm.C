@@ -45,6 +45,7 @@
 #include <DebugStream.h>
 #include <iostream>
 #include <iomanip>
+#include <VisItStreamUtil.h>
 
 using namespace std;
 
@@ -155,9 +156,10 @@ avtICAlgorithm::~avtICAlgorithm()
 vtkDataSet *
 avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 {
-    avtVector pt;
-    ic->CurrentLocation(pt);
-    return GetDomain(ic->domain, pt.x, pt.y, pt.z);
+    avtVector pt = ic->CurrentLocation();
+    vtkDataSet *ds = GetDomain(ic->blockList.front(), pt);
+    if (ds)
+        ic->status.ClearSpatialBoundary();
 }
 
 // ****************************************************************************
@@ -172,10 +174,10 @@ avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
 // ****************************************************************************
 
 vtkDataSet *
-avtICAlgorithm::GetDomain(const BlockIDType &dom, double X, double Y, double Z)
+avtICAlgorithm::GetDomain(const BlockIDType &dom, const avtVector &pt)
 {
     int timerHandle = visitTimer->StartTimer();
-    vtkDataSet *ds = picsFilter->GetDomain(dom, X, Y, Z);
+    vtkDataSet *ds = picsFilter->GetDomain(dom, pt);
     IOTime.value += visitTimer->StopTimer(timerHandle, "GetDomain()");
     
     return ds;
@@ -214,15 +216,18 @@ avtICAlgorithm::AdvectParticle(avtIntegralCurve *s)
 }
 
 
+#if 0
+//DRP: FIX THIS by having the communicated dataset cached in the PICS filter.
 void
-avtICAlgorithm::AdvectParticle(avtIntegralCurve *s, vtkDataSet *ds)
+avtICAlgorithm::AdvectParticle(avtIntegralCurve *s, vtkDataSet *ds, const BlockIDType &blk)
 {
     int timerHandle = visitTimer->StartTimer();
 
-    picsFilter->AdvectParticle(s, ds);
+    picsFilter->AdvectParticle(s, ds, blk);
     IntegrateTime.value += visitTimer->StopTimer(timerHandle, "AdvectParticle()");
     IntegrateCnt.value++;
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtICAlgorithm::Initialize
@@ -355,10 +360,10 @@ avtICAlgorithm::SortIntegralCurves(list<avtIntegralCurve *> &ic)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
     {
-        long long d = (*s)->domain.domain, t = (*s)->domain.timeStep;
+        long long d = (*s)->blockList.front().domain, t = (*s)->blockList.front().timeStep;
         long long key = (d<<32) + t;
-        key = (*s)->domain.domain;
-        if ( DomainLoaded((*s)->domain))
+        key = (*s)->blockList.front().domain;
+        if (DomainLoaded((*s)->blockList.front()))
             (*s)->sortKey = -key;
         else
             (*s)->sortKey = key;
@@ -402,10 +407,10 @@ avtICAlgorithm::SortIntegralCurves(vector<avtIntegralCurve *> &ic)
     //Set sortkey to -domain. (So that loaded domains sort first).
     for (s=ic.begin(); s != ic.end(); ++s)
     {
-        if ( DomainLoaded((*s)->domain))
-            (*s)->sortKey = -(*s)->domain.domain;
+        if (DomainLoaded((*s)->blockList.front()))
+            (*s)->sortKey = -(*s)->blockList.front().domain;
         else
-            (*s)->sortKey = (*s)->domain.domain;
+            (*s)->sortKey = (*s)->blockList.front().domain;
     }
 
     sort(ic.begin(), ic.end(), icDomainCompare);
@@ -1108,8 +1113,185 @@ avtICAlgorithm::UpdateICsDomain( int curTimeSlice )
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         // Update the current time slice ICs. No need to update others ICs.
-        if( (*it)->domain.timeStep == curTimeSlice )
+        if( (*it)->blockList.front().timeStep == curTimeSlice )
             SetDomain( (*it) );
     }
 }
 
+
+//****************************************************************************
+// Method:  avtICAlgorithm::CheckNextTimeStepNeeded
+//
+// Purpose: Is the next time slice required to continue?
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September  6, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
+{
+    int cnt = 0;
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
+    {
+        if ((*it)->status.EncounteredTemporalBoundary())
+        {
+            cnt = 1;
+            break;
+        }
+    }
+    
+#ifdef PARALLEL
+    SumIntAcrossAllProcessors(cnt);
+#endif
+    return cnt > 0;
+}
+
+//****************************************************************************
+// Method:  avtICAlgorithm::ActivateICsForNextTimeStep
+//
+// Purpose: Activate ICs for new time step loading.
+//   
+// Programmer:  Dave Pugmire
+// Creation:    September  6, 2012
+//
+// Modifications:
+//
+//****************************************************************************
+
+void
+avtICAlgorithm::ActivateICsForNextTimeStep()
+{
+    list<avtIntegralCurve *>::iterator it = terminatedICs.begin();
+    while (it != terminatedICs.end())
+    {
+        avtIntegralCurve *ic = *it;
+        if (ic->status.EncounteredTemporalBoundary())
+        {
+            ic->status.ClearAtTemporalBoundary();
+            activeICs.push_back(ic);
+            it = terminatedICs.erase(it);
+        }
+        else
+            it++;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtICAlgorithm::ResetIntegralCurvesForContinueExecute
+//
+//  Purpose:
+//      Reset for continued streamline integration.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Tue Aug 18 08:59:40 EDT 2009
+//
+//  Modifications:
+//
+//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
+//   Use avtStreamlines, not avtStreamlineWrappers.
+//
+//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
+//   Rename this method to reflect the new emphasis in particle advection, as 
+//   opposed to streamlines.
+//
+//   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
+//   Change IC status when ic to not-terminated.
+//
+// ****************************************************************************
+
+void
+avtICAlgorithm::ResetIntegralCurvesForContinueExecute()
+{
+    activeICs.splice(activeICs.end(), terminatedICs);
+    terminatedICs.clear();
+}
+
+//****************************************************************************
+// Method:  avtICAlgorithm::activeICInfo()
+//
+// Purpose:
+//   Debuging helper to string-ify the activeICs.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April 15, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+
+string
+avtICAlgorithm::activeICInfo() const
+{
+    strstream str;
+    str<<"[";
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = activeICs.begin(); it != activeICs.end(); it++)
+    {
+        avtIntegralCurve *ic = *it;
+        str<<"("<<ic->id<<" "<<ic->CurrentLocation()<<" "<<ic->CurrentTime()<<") ";
+    }
+    str<<"]";
+    return str.str();
+}
+
+//****************************************************************************
+// Method:  avtICAlgorithm::inactiveICInfo()
+//
+// Purpose:
+//   Debuging helper to string-ify the inactiveICs.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April 15, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+string
+avtICAlgorithm::inactiveICInfo() const
+{
+    strstream str;
+    str<<"[";
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = inactiveICs.begin(); it != inactiveICs.end(); it++)
+    {
+        avtIntegralCurve *ic = *it;
+        str<<"("<<ic->id<<" "<<ic->CurrentLocation()<<" "<<ic->CurrentTime()<<") ";
+    }
+    str<<"]";
+    return str.str();
+}
+
+//****************************************************************************
+// Method:  avtICAlgorithm::terminatedICInfo()
+//
+// Purpose:
+//   Debuging helper to string-ify the terminatedICs.
+//
+// Programmer:  Dave Pugmire
+// Creation:    April 15, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+string
+avtICAlgorithm::terminatedICInfo() const
+{
+    strstream str;
+    str<<"[";
+    list<avtIntegralCurve *>::const_iterator it;
+    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
+    {
+        avtIntegralCurve *ic = *it;
+        str<<"("<<ic->id<<":"<<ic->CurrentLocation()<<","<<ic->CurrentTime()<<") ";
+    }
+    str<<"]";
+    return str.str();
+}

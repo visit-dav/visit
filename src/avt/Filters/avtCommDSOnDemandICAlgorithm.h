@@ -43,6 +43,8 @@
 #ifndef AVT_COMM_DS_ON_DEMAND_IC_ALGORITHM_H
 #define AVT_COMM_DS_ON_DEMAND_IC_ALGORITHM_H
 
+#if 0
+
 #ifdef PARALLEL
 #include <avtParICAlgorithm.h>
 
@@ -133,7 +135,7 @@ class avtCommDSOnDemandICAlgorithm : public avtParICAlgorithm
     }
 };
 
-
+#endif
 
 #endif
 #endif

@@ -49,6 +49,7 @@
 #include <DebugStream.h>
 #include <avtVector.h>
 #include <algorithm>
+#include <snprintf.h>
 
 const double avtIntegralCurve::minHFactor = std::numeric_limits<double>::epsilon() * 100.0;
 
@@ -105,13 +106,13 @@ avtIntegralCurve::avtIntegralCurve( const avtIVPSolver* model,
                                     const avtVector &p_start, 
                                     const avtVector &v_start, 
                                     long ID )
-    : status(STATUS_OK), direction(dir), domain(-1), sortKey(0), id(ID), originatingRank(-1)
+    : direction(dir), sortKey(0), id(ID), originatingRank(-1)
 {
     ivp = model->Clone();
     ivp->Reset( t_start, p_start, v_start );
     counter = 0;
-    encounteredNumericalProblems = false;
-    postStepCallbackFunction = NULL;
+    status.Clear();
+    status.SetOK();
 }
 
 
@@ -154,15 +155,11 @@ avtIntegralCurve::avtIntegralCurve()
 {
     ivp = NULL;
 
-    status = STATUS_OK;
     direction = DIRECTION_FORWARD;
-    domain = -1;
     sortKey = 0;
     id = -1;
     counter = 0;
     originatingRank = -1;
-    encounteredNumericalProblems = false;
-    postStepCallbackFunction = NULL;
 }
 
 
@@ -181,8 +178,12 @@ avtIntegralCurve::avtIntegralCurve()
 
 avtIntegralCurve::~avtIntegralCurve()
 {
-    if( ivp )
+    if (ivp)
         delete ivp;
+    
+#ifdef USE_IC_STATE_TRACKING
+    trk.close();
+#endif
 }
 
 // ****************************************************************************
@@ -243,18 +244,25 @@ avtIntegralCurve::~avtIntegralCurve()
 void
 avtIntegralCurve::Advance(avtIVPField *field)
 {
+    status.Clear();
+    status.SetOK();
+
+    double range[2];
+    field->GetTimeRange(range);
 
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
-    if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
+    avtIVPField::Result fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+    if (fieldRes != avtIVPField::OK)
     {
         if( DebugStream::Level5() )
             debug5 << "avtIntegralCurve::Advance(): initial point is outside domain\n";
+        if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+            status.SetAtSpatialBoundary();
+        if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+            status.SetAtTemporalBoundary();
         return;
     }
-
-    double range[2];
-    field->GetTimeRange( range );
 
     // Determine the maximum integration time from the field's temporal
     // extent and the time termination criterion (if set).
@@ -275,6 +283,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
             tfinal = FixedTerminationTime();
     }
 
+    status.SetInsideBlock();
     // Loop doing integration steps.
     do
     {
@@ -283,23 +292,35 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
         result = ivp->Step( field, tfinal, &step );
 
-        if( result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE )
+        if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
         {
             // The step was successful, call AnalyzeStep() which will
             // determine((among other things) whether to terminate.
-            AnalyzeStep( step, field );
+            AnalyzeStep(step, field);
 
-            if( result == avtIVPSolver::TERMINATE )
+            if (result == avtIVPSolver::TERMINATE)
+            {
+                fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtSpatialBoundary();
+                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtTemporalBoundary();
                 break;
+            }
 
             // Check if the new position is outside the domain
+
             // (or in the domain's ghost data); in this case
             // finish here and continue in the next domain.
-            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
+            fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+            if (fieldRes != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): step ended in ghost data\n";
-                
+                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtSpatialBoundary();
+                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtTemporalBoundary();
                 break;
             }
         }
@@ -309,12 +330,16 @@ avtIntegralCurve::Advance(avtIVPField *field)
 
             // First, check if the current point is inside the domain.
             // If it is outside, there is nothing further we can do.
-            if (field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY()) != avtIVPField::OK)
+            fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+            if (fieldRes != avtIVPField::OK)
             {
                 if( DebugStream::Level5() )
                     debug5 << "avtIntegralCurve::Advance(): "
                            << "current point outside domain\n";
-
+                if (fieldRes == avtIVPField::OUTSIDE_SPATIAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtSpatialBoundary();
+                if (fieldRes == avtIVPField::OUTSIDE_TEMPORAL || fieldRes == avtIVPField::OUTSIDE_BOTH)
+                    status.SetAtTemporalBoundary();
                 break;
             }
 
@@ -350,11 +375,12 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 // next domain.
                 avtVector y = ivp->GetCurrentY();
                 avtVector v;
-                if( (*field)(t, y, v) != avtIVPSolver::OK )
+                if( (*field)(t, y, v) != avtIVPField::OK )
                 {
                     if( DebugStream::Level5() )
                         debug5 << "avtIntegralCurve::Advance(): bad step, "
                                << "Error with t: " << t << " y: " << y << endl;
+                    status.SetBadStepError();
                     break;
                 }
                         
@@ -396,9 +422,9 @@ avtIntegralCurve::Advance(avtIVPField *field)
                     debug5 << "avtIntegralCurve::Advance(): step outside, minimal "
                            << "stepsize reached, pushing to " << y << '\n';
                         
+                status.SetAtSpatialBoundary();
                 ivp->SetCurrentT( t );
                 ivp->SetCurrentY( y );
-
                 break;
             }
 
@@ -412,63 +438,15 @@ avtIntegralCurve::Advance(avtIVPField *field)
             if( DebugStream::Level5() )
                 debug5 << "avtIntegralCurve::Advance(): "
                        << "error during step, finished\n";
-            encounteredNumericalProblems = true;
-
-            status = STATUS_FINISHED;
+            status.SetNumericalError();
         }
-        
-        /*
-        if (status == STATUS_OK && postStepCallbackFunction != NULL)
-            postStepCallbackFunction();
-        */
     }
-    while( status == STATUS_OK );
-
+    while (status.OK());
+    
+    status.ClearInsideBlock();
+    
     if( DebugStream::Level5() )
-        debug5 << "avtIntegralCurve::Advance(): done, status is "
-               << status << '\n';
-}
-
-
-// ****************************************************************************
-//  Method: avtIntegralCurve::CurrentTime
-//
-//  Purpose:
-//      Returns the current t value.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications:
-//     
-//     Hank Childs, Thu Jun  3 09:29:32 PDT 2010
-//     If we haven't taken any steps, then get the time from the solver.
-//     Renamed to CurrentTime.
-//     
-// ****************************************************************************
-
-double
-avtIntegralCurve::CurrentTime() const
-{
-    return ivp->GetCurrentT();
-}
-
-
-// ****************************************************************************
-//  Method: avtIntegralCurve::CurrentLocation
-//
-//  Purpose:
-//      Sets the current location of the integration.
-//
-//  Programmer: Hank Childs
-//  Creation:   June 3, 2010
-//
-// ****************************************************************************
-
-void
-avtIntegralCurve::CurrentLocation(avtVector &end)
-{
-    end = ivp->GetCurrentY();
+        debug5 << "avtIntegralCurve::Advance(): done, status: "<<status<<endl;
 }
 
 
@@ -541,21 +519,20 @@ void
 avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff, 
                             avtIVPSolver *solver, SerializeFlags serializeFlags)
 {
-    if( DebugStream::Level5() )
+    if (DebugStream::Level5())
         debug5 << "  avtIntegralCurve::Serialize "
-           << (mode==MemStream::READ?"READ":"WRITE")<<endl;
+               << (mode==MemStream::READ?"READ":"WRITE")<<endl;
 
     buff.io(mode, id);
     buff.io(mode, direction);
-    buff.io(mode, domain);
+    buff.io(mode, blockList);
     buff.io(mode, status);
     buff.io(mode, counter);
-    buff.io(mode, encounteredNumericalProblems);
     buff.io(mode, originatingRank);
     
     if (solver)
     {
-        if ( mode == MemStream::WRITE )
+        if (mode == MemStream::WRITE)
         {
             avtIVPState solverState;
 
@@ -570,7 +547,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
             avtIVPState solverState;
             solverState.Serialize(mode, buff);
 
-            if( ivp )
+            if (ivp)
                 delete ivp;
 
             ivp = solver->Clone();
@@ -578,7 +555,25 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         }
     }
 
-    if( DebugStream::Level5() )
+    
+#ifdef USE_IC_STATE_TRACKING
+    if (mode == MemStream::WRITE)
+    {
+        trk<<"Serialize"<<endl;
+        trk.close();
+    }
+    else
+    {
+        trk<<flush;
+        trk.close();
+        char tmp[64];
+        sprintf(tmp, "IC_%d.txt", (int)id);
+        trk.open(tmp, ofstream::app);
+        trk<<"De-serialize"<<endl;
+    }
+#endif
+
+    if (DebugStream::Level5())
         debug5 << "avtIntegralCurve::Serialize() size is " 
                << buff.len() << endl;
 }
@@ -596,8 +591,10 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
 bool
 avtIntegralCurve::DomainCompare(const avtIntegralCurve *icA,
                                 const avtIntegralCurve *icB)
-{
-    return icA->domain < icB->domain;
+{  
+    if (!icA->blockList.empty() && !icB->blockList.empty()) 
+        return icA->blockList.front().domain < icB->blockList.front().domain; 
+    return false;
 }
 
 

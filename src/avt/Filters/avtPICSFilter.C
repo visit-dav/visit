@@ -130,17 +130,9 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #endif
 
 using std::vector;
+inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, char *message );
 
 static const char restartFilename[] = "PICS_Restart";
-
-avtPICSFilter *pcFilter = NULL;
-bool PostStepCB(void)
-{
-    if (pcFilter)
-        return pcFilter->PostStepCallback();
-
-    return false;
-}
 
 // ****************************************************************************
 //  Method: avtPICSFilter constructor
@@ -214,7 +206,7 @@ avtPICSFilter::avtPICSFilter()
 
 avtPICSFilter::~avtPICSFilter()
 {
-   ClearDomainToCellLocatorMap();
+    ClearDomainToCellLocatorMap();
 }
 
 // ****************************************************************************
@@ -296,157 +288,68 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
     }
 }
 
-
 // ****************************************************************************
-//  Method: avtPICSFilter::SetDomain
+// Method:  avtPICSFilter::FindCandidateBlocks
 //
-//  Purpose:
-//      Sets the list of possible domains a seed point may lie in.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   June 23, 2008
-//
-//  Modifications:
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-//   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
-//   Put if statements in front of debug's.  The generation of strings to
-//   output to debug was doubling the total integration time.
-//
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
+// Purpose: 
+//   Determine candidate blocks for an IC. *Does no I/O*.
 //   
-//   Hank Childs, Thu Jun  3 10:22:16 PDT 2010
-//   Use new name "GetCurrentLocation".
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Tue Mar 13 18:10:11 PDT 2012
-//   Fix problem where the time slice will change, but the change is not 
-//   properly communicated to the calling function.
-//
-//   Hank Childs, Wed Mar 28 08:36:34 PDT 2012
-//   Add support for terminated particles.
+// Programmer:  Dave Pugmire
+// Creation:    May 29, 2012
 //
 // ****************************************************************************
 
 void
-avtPICSFilter::SetDomain(avtIntegralCurve *ic)
+avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
+                                   BlockIDType *skipBlk)
 {
-    if (ic->status == avtIntegralCurve::STATUS_TERMINATED)
-    {
-        ic->domain.domain = -1;
-        ic->domain.timeStep = -1;
-        return;
-    }
-
-    ic->seedPtDomainList.clear();
-
-    double t = ic->CurrentTime();
-    int timeStep = GetTimeStep( t );
-    if( timeStep == -1 )
-        return;
-    if( timeStep != curTimeSlice )
-    {
-        // We can't use the interval tree to find the correct one.
-        // And assigning -1 tells VisIt this particle is done.
-        // Assign 0 as a valid domain.
-        // The domain will be set right in icAlgo->UpdateICsDomain.
-        ic->domain.domain = 0;
-        ic->domain.timeStep = timeStep;
-        return; // this will be handled with separate logic by the caller
-    }
-
-    avtVector endPt;
-    ic->CurrentLocation(endPt);
-    double xyz[3] = { endPt.x, endPt.y, endPt.z };
-
-    std::vector<int> doms;
-
-    intervalTree->GetElementsListFromRange( xyz, xyz, doms );
-
-    //if (DebugStream::Level5())
-    //    debug5<<"SetDomain(): pt= "<<endPt<<" t "<<t<<" doms= "<<doms<<endl;
-
-    for( int i=0; i < doms.size(); i++ )
-        ic->seedPtDomainList.push_back( BlockIDType( doms[i], timeStep ) );
-
-    // save the last domain so we can ignore it later
-    BlockIDType oldDomain = ic->domain;
-    ic->domain = BlockIDType(-1,-1);
-
-    // Point in multiple domains. See if we can shorten the list by 
-    // looking at "my" domains.
-    if (ic->seedPtDomainList.size() > 1)
-    {
-        // Point in multiple domains. See if we can shorten the list by 
-        // looking at "my" domains.
-        // See if the point is contained in a domain owned by "me".
-        vector<BlockIDType> newDomList;
-        bool foundOwner = false;
-        for (int i = 0; i < ic->seedPtDomainList.size(); i++)
-        {
-            BlockIDType dom = ic->seedPtDomainList[i];
-
-            if( dom == oldDomain )
-            {
-                if(DebugStream::Level5())
-                    debug5 << "avtPICSFilter::SetDomain(): ignoring old domain " << dom << '\n';
-                    
-                continue;
-            }        
-            
-            if(OwnDomain(dom))
-            {
-                // If point is inside domain, we are done.
-                if (PointInDomain(endPt, dom))
-                {
-                    ic->seedPtDomainList.resize(0);
-                    ic->seedPtDomainList.push_back(dom);
-                    foundOwner = true;
-                    break;
-                }
-            }
-            else
-            {
-                newDomList.push_back(dom);
-            }
-        }
-
-        // Update the list in ic.
-        if (!foundOwner)
-        {
-            ic->seedPtDomainList.resize(0);
-            for (int i = 0; i < newDomList.size(); i++)
-                ic->seedPtDomainList.push_back(newDomList[i]);
-        }
-    }
-
-    // 1 domain, easy.
-    if (ic->seedPtDomainList.size() == 1)
-    {
-        if(OwnDomain(ic->seedPtDomainList[0]))
-            ic->domain = ic->seedPtDomainList[0];
-    }
-
-    if (DebugStream::Level5())
-    {
-        debug5<<"SetDomain: id: "<<ic->id<<" time: "<<t<<" Domain:"<<ic->domain<<endl;
-        /*
-        debug1<<"::SetDomain() pt=["<<endPt.xyz[0]<<" "<<endPt.xyz[1]
-            <<" "<<endPt.xyz[2]<<"] in domains: ";
-        for (int i = 0; i < ic->seedPtDomainList.size(); i++)
-            debug1<<ic->seedPtDomainList[i]<<", ";
-        debug1<<endl;
-        */
-    }
+    ic->blockList.clear();
+    ic->status.ClearTemporalBoundary();
+    ic->status.ClearSpatialBoundary();
     
-    // in case of multiple domains
-}
+    int timeStep = GetTimeStep(ic->CurrentTime());
+    if (timeStep == -1)
+    {
+        ic->status.SetExitTemporalBoundary();
+        return;
+    }
+    if (timeStep != curTimeSlice)
+    {
+        ic->status.SetAtTemporalBoundary();
+        return;
+    }
 
+    avtVector pt = ic->CurrentLocation();
+    double xyz[3] = {pt.x, pt.y, pt.z};
+    std::vector<int> doms;
+    intervalTree->GetElementsListFromRange(xyz, xyz, doms);
+    bool blockLoaded = false;
+    for (int i = 0; i < doms.size(); i++)
+    {
+        BlockIDType curr(doms[i], timeStep);
+
+        if (skipBlk != NULL && curr == *skipBlk)
+            continue;
+        else if (BlockLoaded(curr))
+        {
+            if (ICInBlock(ic, curr))
+            {
+                ic->blockList.clear();
+                ic->blockList.push_back(curr);
+                blockLoaded = true;
+                break;
+    }
+        }
+        else
+            ic->blockList.push_back(curr);
+    }
+
+    // No blocks, exited spatial boundary.
+    if (ic->blockList.empty())
+        ic->status.SetExitSpatialBoundary();
+    else if (!blockLoaded)
+        ic->status.SetAtSpatialBoundary();
+}
 
 // ****************************************************************************
 //  Method: avtPICSFilter::GetDomain
@@ -478,21 +381,20 @@ avtPICSFilter::SetDomain(avtIntegralCurve *ic)
 // ****************************************************************************
 
 vtkDataSet *
-avtPICSFilter::GetDomain(const BlockIDType &domain,
-                         double X, double Y, double Z)
+avtPICSFilter::GetDomain(const BlockIDType &domain, const avtVector &pt)
 {
-    //    if (DebugStream::Level5())
-    //        debug5<<"avtPICSFilter::GetDomain("<<domain<<" "<<X<<" "<<Y<<" "<<Z<<"), OperatingOnDemand()=" << OperatingOnDemand() << endl;
-    
+    debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
+
     if (domain.domain == -1 || domain.timeStep == -1)
         return NULL;
 
     vtkDataSet *ds = NULL;
     if (OperatingOnDemand())
     {
+        debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
         if (specifyPoint)
         {
-            ds = avtDatasetOnDemandFilter::GetDataAroundPoint(X,Y,Z,
+            ds = avtDatasetOnDemandFilter::GetDataAroundPoint(pt.x, pt.y, pt.z,
                                                               domain.timeStep);
         }
         else
@@ -519,12 +421,12 @@ avtPICSFilter::GetDomain(const BlockIDType &domain,
     }
     else
     {
+        debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<endl;
         ds = dataSets[domain.domain];
     }
-
-    //    if (DebugStream::Level5())
-    //        debug5<<ds<<endl;
-
+    
+    debug1<<"GetDomain() dom= "<<domain<<" pt= "<<pt<<" line= "<<__LINE__<<" ds= "<<ds<<endl;
+    
     return ds;
 }
 
@@ -546,16 +448,10 @@ inline void PrintTreeExtents( avtIntervalTree * intervalTree, int curTimeSlice, 
     {
         int nDomains = intervalTree->GetNLeaves();
 
-        debug5 << curTimeSlice << message << " Number of Domains: " << nDomains << endl;
         for (int i = 0 ; i < nDomains ; i++)
         {
-            double  extents[6] = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0 };
-            int    domain = intervalTree->GetLeafExtents(i, extents);
-
-            debug5 << curTimeSlice << message << " Domains: " << domain;
-            for (int j = 0 ; j < 6 ; ++j)
-                debug5 << " " << extents[j];
-            debug5 << endl;
+            double  e[6] = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0 };
+            int    domain = intervalTree->GetLeafExtents(i, e);
         }
     }
 }
@@ -908,16 +804,21 @@ avtPICSFilter::GetTimeStep(double t) const
 // ****************************************************************************
 
 bool
-avtPICSFilter::DomainLoaded(BlockIDType &domain) const
+avtPICSFilter::BlockLoaded(BlockIDType &domain) const
 {
-    //debug1<< "avtPICSFilter::DomainLoaded("<<domain<<");\n";
+    bool val = false;
 #ifdef PARALLEL
     if (OperatingOnDemand())
-        return avtDatasetOnDemandFilter::DomainLoaded(domain.domain, domain.timeStep);
-    return PAR_Rank() == domainToRank[domain.domain];
+    {
+        val = avtDatasetOnDemandFilter::DomainLoaded(domain.domain, domain.timeStep);
+    }
+    else
+        val = (PAR_Rank() == domainToRank[domain.domain]);
+#else
+    val = true;
 #endif
-    
-    return true;
+    debug1<<"BlockLoaded("<<domain<<")= "<<val<<endl;
+    return val;
 }
 
 
@@ -1276,6 +1177,7 @@ avtPICSFilter::Execute(void)
         icAlgo = new avtSerialICAlgorithm(this);
     else if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtPODICAlgorithm(this, maxCount);
+    /*
     else if (method == STREAMLINE_PARALLEL_COMM_DOMAINS)
         icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
     else if (method == STREAMLINE_PARALLEL_MASTER_SLAVE)
@@ -1286,6 +1188,7 @@ avtPICSFilter::Execute(void)
                                                    PAR_Size(),
                                                    workGroupSz);
     }
+    */
 #else
     icAlgo = new avtSerialICAlgorithm(this);
 #endif
@@ -1315,26 +1218,33 @@ avtPICSFilter::Execute(void)
     {
         for (int i = 0; i < domainTimeIntervals.size(); i++)
         {
-            icAlgo->Execute();
-            while (ContinueExecute())
+            while (1)
             {
-                icAlgo->ResetIntegralCurvesForContinueExecute(curTimeSlice);
                 icAlgo->Execute();
+                
+                if (ContinueExecute())
+                    icAlgo->ResetIntegralCurvesForContinueExecute();
+                else
+                    break;
             }
-
             if (icAlgo->CheckNextTimeStepNeeded(curTimeSlice) && LoadNextTimeSlice())
-                icAlgo->ResetIntegralCurvesForContinueExecute(curTimeSlice);
+            {
+                icAlgo->ActivateICsForNextTimeStep();
+            }
             else
                 break;
         }
     }
     else
     {
-        icAlgo->Execute();
-        while (ContinueExecute())
+        while (1)
         {
-            icAlgo->ResetIntegralCurvesForContinueExecute();
             icAlgo->Execute();
+
+            if (ContinueExecute())
+                icAlgo->ResetIntegralCurvesForContinueExecute();
+            else
+                break;
         }
     }
 }
@@ -1840,7 +1750,8 @@ avtPICSFilter::InitializeLocators(void)
 
             if( cli == domainToCellLocatorMap.end() )
             {
-                vtkDataSet *ds = GetDomain(dom, 0,0,0);
+                avtVector pt(0,0,0);
+                vtkDataSet *ds = GetDomain(dom, pt);
                 SetupLocator(dom, ds);
             } 
         }
@@ -1920,10 +1831,6 @@ avtPICSFilter::UpdateDataObjectInfo(void)
 //   Hank Childs, Sun Nov 28 12:39:26 PST 2010
 //   Make cell locator be reference counted so it can be cached at the database
 //   level.
-//
-//   Hank Childs, Mon Mar  4 15:18:25 PST 2013
-//   Re-use locators between time slices if we are doing CONN_CMFE and 
-//   pathlines.
 //
 // ****************************************************************************
 
@@ -2016,60 +1923,54 @@ avtPICSFilter::SetupLocator( const BlockIDType &domain, vtkDataSet *ds )
 // ****************************************************************************
 
 avtIVPField* 
-avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
+avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 {
-    avtCellLocator_p locator = SetupLocator( domain, ds );
+    avtCellLocator_p locator = SetupLocator(domain, ds);
 
     //vtkDoubleArray* offsetArray = (vtkDoubleArray*)ds->GetFieldData()->GetArray("nodeOffset");
 
     std::vector<avtVector> offsets(3);
     bool haveOffsets = false;
     vtkDataArray* velData = ds->GetPointData()->GetVectors();
-    if (!velData) {
-      velData = ds->GetCellData()->GetVectors();
+    if (!velData)
+        velData = ds->GetCellData()->GetVectors();
+    if (velData)
+    {
+        vtkInformation* info = velData->GetInformation();
+        if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_0()))
+        {
+            double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_0());
+            offsets[0].x = vals[0];
+            offsets[0].y = vals[1];
+            offsets[0].z = vals[2];
+
+            if ((vals[0] != 0) || (vals[1] != 0) || (vals[2] != 0))
+                haveOffsets = true;
+        }
+
+        if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_1()))
+        {
+            double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_1());
+            offsets[1].x = vals[0];
+            offsets[1].y = vals[1];
+            offsets[1].z = vals[2];
+
+            if ((vals[0] !=0) || (vals[1] !=0) || (vals[2] !=0))
+                haveOffsets = true;
+        } 
+        
+        if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_2()))
+        {
+            double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_2());
+            offsets[2].x = vals[0];
+            offsets[2].y = vals[1];
+            offsets[2].z = vals[2];
+            
+            if ((vals[0] !=0) || (vals[1] !=0) || (vals[2] !=0))
+                haveOffsets = true;
+        }
     }
-    if (velData) {
-      vtkInformation* info = velData->GetInformation();
-      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_0())) {
-        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_0());
-        offsets[0].x = vals[0];
-        offsets[0].y = vals[1];
-        offsets[0].z = vals[2];
-
-        if ((vals[0] != 0) ||
-            (vals[1] != 0) ||
-            (vals[2] != 0)) {
-          haveOffsets = true;
-        }
-      }
-
-      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_1())) {
-        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_1());
-        offsets[1].x = vals[0];
-        offsets[1].y = vals[1];
-        offsets[1].z = vals[2];
-
-        if ((vals[0] !=0) ||
-            (vals[1] !=0) ||
-            (vals[2] !=0)) {
-          haveOffsets = true;
-        }
-      } 
-
-      if (info->Has(avtVariableCache::OFFSET_3_COMPONENT_2())) {
-        double* vals = info->Get(avtVariableCache::OFFSET_3_COMPONENT_2());
-        offsets[2].x = vals[0];
-        offsets[2].y = vals[1];
-        offsets[2].z = vals[2];
-
-        if ((vals[0] !=0) ||
-            (vals[1] !=0) ||
-            (vals[2] !=0)) {
-          haveOffsets = true;
-        }
-      }
-    }
-
+    
     if (doPathlines)
     {
         if (integrationDirection == VTK_INTEGRATE_BACKWARD)
@@ -2117,10 +2018,10 @@ avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
 }
 
 // ****************************************************************************
-//  Method: avtPICSFilter::PointInDomain
+//  Method: avtPICSFilter::ICInBlock
 //
 //  Purpose:
-//      Determine if a point lies in a domain.
+//      Determine if a point lies in a block.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
@@ -2171,67 +2072,46 @@ avtPICSFilter::GetFieldForDomain( const BlockIDType &domain, vtkDataSet *ds )
 // ****************************************************************************
 
 bool
-avtPICSFilter::PointInDomain(avtVector &pt, BlockIDType &domain)
+avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
 {
-    int t1 = visitTimer->StartTimer();
+    avtVector pt = ic->CurrentLocation();
+    double t = ic->CurrentTime();
+    
+    vtkDataSet *ds = GetDomain(block, pt);
 
-    if (DebugStream::Level5())
-        debug5<< "avtPICSFilter::PointInDomain("<<pt<<", dom= "<<domain<<") = ";
-
-    vtkDataSet *ds = GetDomain(domain, pt.x, pt.y, pt.z);
-
-    if (ds == NULL)
+    debug1<<"ICInBlock("<<pt<<" "<<block<<") = ";
+    if (ds == NULL || ds->GetNumberOfCells() == 0)
     {
-        if (DebugStream::Level5())
-            debug5<<"Get DS failed for domain= "<<domain<<endl;
-        visitTimer->StopTimer( t1, "PointInDomain" );
+        debug1<<"0"<<endl;
         return false;
     }
 
-    if (ds->GetNumberOfCells() == 0)
-    {
-        visitTimer->StopTimer( t1, "PointInDomain" );
-        return false;
-    }
-
-    // If it's rectilinear, we can do bbox test...
+    double bbox[6];
+    
+    //Rectilinear dataset.
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        double bbox[6];
-        intervalTree->GetElementExtents(domain.domain, bbox);
-        if (pt.x < bbox[0] || pt.x > bbox[1] ||
-            pt.y < bbox[2] || pt.y > bbox[3])
-        {
-            if (DebugStream::Level5()) debug5<<"FALSE bboxXY"<<endl;
-            visitTimer->StopTimer( t1, "PointInDomain" );
+        intervalTree->GetElementExtents(block.domain, bbox);
+        if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3])
             return false;
-        }
         
-        if(dataSpatialDimension == 3 &&
-           (pt.z < bbox[4] || pt.z > bbox[5]))
-        {
-            if (DebugStream::Level5()) debug5<<"FALSE bboxZ"<<endl;
-            visitTimer->StopTimer( t1, "PointInDomain" );
+        if (dataSpatialDimension == 3 && (pt.z < bbox[4] || pt.z > bbox[5]))
             return false;
-        }
 
-        //If we don't have ghost zones, then we can rest assured that the
-        //point is in this domain. For ghost zones, we have to check cells.
+        /*
+        if (PtOnBlockFaceAndPushedOut(pt, t, block, ds, bbox))
+            return false;
+        */
+        
+        // If no ghost zones, the pt is in dataset.
         if (ds->GetCellData()->GetArray("avtGhostZones") == NULL)
-        {
-            if (DebugStream::Level5()) debug5<<"TRUE noGhosts"<<endl;
-            visitTimer->StopTimer( t1, "PointInDomain" );
             return true;
-        }
     }
 
     // check if we have a locator
-    std::map<BlockIDType,avtCellLocator_p>::iterator cli = 
-        domainToCellLocatorMap.find( domain );
-
-    if( cli != domainToCellLocatorMap.end() && specifyPoint )
+    std::map<BlockIDType,avtCellLocator_p>::iterator cli = domainToCellLocatorMap.find(block);
+    if (cli != domainToCellLocatorMap.end() && specifyPoint)
     {
-        double bbox[6];
         cli->second->GetDataSet()->GetBounds(bbox);
 
         if (pt.x < bbox[0] || pt.x > bbox[1] ||
@@ -2242,41 +2122,28 @@ avtPICSFilter::PointInDomain(avtVector &pt, BlockIDType &domain)
             // and now we have a new "domain 0".  Remove the locator for the
             // old one.
             cli->second = NULL;
-            domainToCellLocatorMap.erase( domain );
+            domainToCellLocatorMap.erase(block);
         }
     }
 
-    avtCellLocator_p locator = SetupLocator( domain, ds );
-    
-    vtkIdType cell = locator->FindCell( &pt.x, NULL, true );
+    avtCellLocator_p locator = SetupLocator(block, ds);
+    vtkIdType cell = locator->FindCell(&pt.x, NULL, true);
 
-    if( cell != -1 )
+    if (cell != -1)
     {
         // check if this is perchance a ghost cell; 
         // if it is, we do not want this domain
         if (vtkDataArray* ghosts = ds->GetCellData()->GetArray("avtGhostZones"))
         {
-            int gflags = ghosts->GetComponent( cell, 0 );
-            
-            debug5 << "avtPICSFilter::PointInDomain(): GHOST flags = " << gflags << "\n";
-            
+            int gflags = ghosts->GetComponent(cell, 0);
             if( gflags )
-            {
-                debug5 << "avtPICSFilter::PointInDomain(): INSIDE but GHOST\n";
                 cell = -1;
-            }
         }
     }
-    
-    if (DebugStream::Level5())
-        debug5 << "avtPICSFilter::PointInDomain( " << pt << " ) returns " 
-               << (cell == -1 ? "false" : "true") << endl;
 
-    visitTimer->StopTimer( t1, "PointInDomain" );
-
-    return cell != -1;
+    debug1<<(cell != -1)<<endl;
+    return (cell != -1);
 }
-
 
 // ****************************************************************************
 //  Method: avtPICSFilter::OwnDomain
@@ -2402,159 +2269,6 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
     return domainToRank[domain.domain];
 }
 
-// ****************************************************************************
-//  Method: avtPICSFilter::AdvectParticle
-//
-//  Purpose:
-//      Do an integration inside a domain.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   March 4, 2008
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Jun 12 15:06:08 PDT 2008
-//    Detect whether or not we have ghost data.
-//
-//   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
-//   Add accurate distance calculate option.
-//
-//   Dave Pugmire, Tue Aug 19 17:13:04EST 2008
-//   Remove accurate distance calculate option.
-//
-//   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
-//   Added termination by number of steps. Cleanup of other term types. 
-//
-//   Dave Pugmire (on behalf of Hank Childs), Tue Feb 24 09:39:17 EST 2009
-//   Initial implemenation of pathlines.
-//
-//   Dave Pugmire, Tue Mar 10 12:41:11 EDT 2009
-//   Generalized domain to include domain/time. Pathine cleanup.
-//
-//   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
-//   Fix memory leak.
-//
-//   Hank Childs, Thu Apr  2 17:58:09 CDT 2009
-//   Do our own interpolation.  The previous one we used was too buggy for ugrids.
-//
-//   Hank Childs, Mon Apr  6 19:05:08 PDT 2009
-//   Change the estimation of the extents to be the size of the current 
-//   domain (not the whole problem).  This will make the leap size better.
-//
-//   Hank Childs, Tue Apr  7 08:52:59 CDT 2009
-//   Use a single vtkVisItInterpolatedVelocity for pathlines, which means
-//   that cell locations are done once, not twice.
-//
-//   Hank Childs, Fri Apr 10 23:10:06 CDT 2009
-//   Correctly tell avtStreamline the end time.  It was giving correct
-//   results before, but it was doing many iterations to determine the end
-//   time, when it was possible to just specify the end time.
-//
-//   Hank Childs, Sun Apr 12 17:32:31 PDT 2009
-//   Fix problem with streamlines not getting communicated to the right
-//   processor in parallel.
-//
-//   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
-//   Changed interface to DebugStream to obtain current debug level.
-//
-//   Dave Pugmire, Mon Jun 8 2009, 11:44:01 EDT 2009
-//   Added color by secondary variable. Remove vorticity/ghostzones flags.
-//
-//   Dave Pugmire, Tue Aug 11 10:25:45 EDT 2009
-//   Add new termination criterion: Number of intersections with an object.
-//
-//   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//   Add ability to restart integration of streamlines.
-//
-//   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
-//   Bug fix. Out-of-bounds SLs were being set to terminated.
-//
-//   Hank Childs, Sat Feb 20 05:12:45 PST 2010
-//   Send the SL filter's instance of a locator to the interpolated velocity
-//   field.
-//
-//   Dave Pugmire, Tue Feb 23 09:42:25 EST 2010
-//   Use domainToCellLocatorMap.find() instead of [] accessor. It will actually
-//   add an entry for the key if doesn't already exist.
-//
-//   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
-//   Change ".size() == 0" test with empty, as empty has much better 
-//   performance.
-//
-//   Dave Pugmire, Tue Mar 23 11:11:11 EDT 2010
-//   Moved zone-to-node centering to the streamline plot.
-//
-//   Dave Pugmire, Wed May 26 13:48:24 EDT 2010
-//   New return type from avtPICS::Advance()
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Christoph Garth, Thu Aug 5 16:38:21 PDT 2010
-//   Moved avtIVPField construction to GetFieldForDomain function.
-//
-//   Dave Pugmire, Thu Dec  2 11:32:08 EST 2010
-//   Set IC status appropiately for pathlines.
-//
-// ****************************************************************************
-
-void
-avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps)
-{
-    int t0 = visitTimer->StartTimer();
-
-    if (DebugStream::Level4())
-        debug4<<"avtPICSFilter::AdvectParticle(id="<<ic->id<<" dom= "<<ic->domain<<")"<<endl;
-
-    if (ic->status == avtIntegralCurve::STATUS_OK)
-    {
-        avtIVPField* field = GetFieldForDomain(ic->domain, ds);
-
-        if (field->GetOrder() > solver->order)
-          EXCEPTION1(ImproperUseException, "The selected integrator does not support field order. Choose another integrator. ");
-        
-        //pcFilter = this;
-        //ic->SetPostStepCallback(&PostStepCB);
-        ic->Advance(field);
-        delete field;
-    }
-
-    //Particle exited this domain.
-    if (ic->status == avtIntegralCurve::STATUS_OK)
-    {
-        BlockIDType oldDomain = ic->domain;
-        SetDomain(ic);
-        int domCnt = ic->seedPtDomainList.size();
-        
-        //If we land in none, or the same domain, we're done.
-        if (domCnt == 0 || (domCnt == 1 && ic->domain == oldDomain))
-        {
-            if( DebugStream::Level5() )
-                debug5 << "avtPICSFilter::AdvectParticle(): same domain, finishing\n";
-
-            ic->status = avtIntegralCurve::STATUS_FINISHED;
-        }
-        else 
-        {
-            if (integrationDirection == VTK_INTEGRATE_BACKWARD)
-            {
-                if (GetTimeStep(ic->CurrentTime()) < curTimeSlice)
-                    ic->status = avtIntegralCurve::STATUS_FINISHED;
-            }
-            else
-            {
-                if (GetTimeStep(ic->CurrentTime()) > curTimeSlice)
-                    ic->status = avtIntegralCurve::STATUS_FINISHED;
-            }
-        }
-    }
-    
-    if (DebugStream::Level4())
-        debug4<<"avtPICSFilter::AdvectParticle(): status = " << ic->status << endl;
-
-    visitTimer->StopTimer(t0, "AdvectParticle");
-}
-
 
 // ****************************************************************************
 //  Method: avtPICSFilter::AdvectParticle
@@ -2595,45 +2309,53 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds, int maxSteps
 // ****************************************************************************
 
 void
-avtPICSFilter::AdvectParticle(avtIntegralCurve *ic, int maxSteps)
+avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 {
-    if (ic->status != avtIntegralCurve::STATUS_OK)
+    //If no blockList, see if we can set it.
+    if (ic->blockList.empty())
+        FindCandidateBlocks(ic);
+    
+    if (!ic->status.Integrateable())
         return;
 
-    // Get the required domain.
-    avtVector pt;
-    ic->CurrentLocation(pt);
-
-    vtkDataSet *ds = GetDomain(ic->domain, pt.x, pt.y, pt.z);
-    
-    if (ds == NULL) // No domain? curve is done.
+    bool haveBlock = false;
+    BlockIDType blk;
+    avtIVPField *field = NULL;
+    while (!ic->blockList.empty())
     {
-        bool shouldMarkFinished = false;
-        if (ic->domain.domain < 0)
-            shouldMarkFinished = true; // This is how it has always worked,
-                                       // but it is possible we want this to be
-                                       // false.
-        if (ic->domain.domain >= 0 && OwnDomain(ic->domain))
+        avtVector pt = ic->CurrentLocation();
+        blk = ic->blockList.front();
+        ic->blockList.pop_front();
+        vtkDataSet *ds = GetDomain(blk, pt);
+        field = GetFieldForDomain(blk, ds);
+        if (field->IsInside(ic->CurrentTime(), ic->CurrentLocation()) == avtIVPField::OK)
         {
-            // we have the domain and can assess that this particle is not in it.
-            shouldMarkFinished = true;
-        }
-
-        if (shouldMarkFinished)
-        {
-            ic->status = avtIntegralCurve::STATUS_FINISHED;
+            haveBlock = true;
+            break;
         }
         else
-        {
-            // we do not have the domain, which probably means POD.  we want the
-            // particle to get sent to the correct MPI task.  all we need to do
-            // is not marked finished.
-            ;
-        }
+            delete field;
     }
-    else
-        AdvectParticle(ic, ds, maxSteps);
+
+    if (!haveBlock)
+    {
+        ic->status.ClearTemporalBoundary();
+        ic->status.ClearSpatialBoundary();
+
+        if (ic->blockList.empty())
+            ic->status.SetExitSpatialBoundary();
+        else
+            ic->status.SetAtSpatialBoundary();
+        return;
+    }
+
+    ic->Advance(field);
+    delete field;
+    
+    if (!ic->status.Terminated())
+        FindCandidateBlocks(ic, &blk);
 }
+
 
 // ****************************************************************************
 //  Method: avtPICSFilter::GetLengthScale
@@ -3034,21 +2756,13 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         }
         else
           seedPt = pts[i];
-
-
-        double xyz[3] = {seedPt.x, seedPt.y, seedPt.z};
-        vector<int> dl;
-        
-        intervalTree->GetElementsListFromRange(xyz, xyz, dl);
         
         vector<int> seedPtIds;
-
         // Need a single ID for the IC even if there are many domains.
         int currentID = i;
         int nextID = -1;
 
         currentID = GetNextCurveID();
-
         if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
         {
             currentID = 2*i;
@@ -3057,67 +2771,49 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             nextID = GetNextCurveID();
         }
 
-        for (int j = 0; j < dl.size(); j++)
+        if (integrationDirection == VTK_INTEGRATE_FORWARD)
         {
-            BlockIDType dom(dl[j], seedTimeStep0);
-
-            // This logic assumes we have identical point lists
-            // on every MPI task.  We may need to add an OwnDomain
-            // call before continuing if there is a different
-            // point list on each MPI task.  (It is correct
-            // to continue otherwise.)
-            if (!PointInDomain(seedPt, dom))
-            {
-                continue;
-            }
-
-            if (integrationDirection == VTK_INTEGRATE_FORWARD)
-            {
-                avtIntegralCurve *ic =
-                  CreateIntegralCurve(solver,
-                                      avtIntegralCurve::DIRECTION_FORWARD,
-                                      seedTime0, seedPt, seedVel, 
-                                      currentID);
-                ic->domain = dom;
-                curves.push_back(ic);
-                seedPtIds.push_back(ic->id);
-                break;
-            }
-            else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
-            {
-                avtIntegralCurve *ic =
-                  CreateIntegralCurve(solver,
-                                      avtIntegralCurve::DIRECTION_BACKWARD,
-                                      seedTime0, seedPt, seedVel,
-                                      currentID);
-                ic->domain = dom;
-                curves.push_back(ic);
-                seedPtIds.push_back(ic->id);
-                break;
-            }
-            else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
-            {
-                avtIntegralCurve *ic0 =
-                  CreateIntegralCurve(solver,
-                                      avtIntegralCurve::DIRECTION_FORWARD,
-                                      seedTime0, seedPt, seedVel,
-                                      currentID);
-                ic0->domain = dom;
-                curves.push_back(ic0);
-                seedPtIds.push_back(ic0->id);
-
-                avtIntegralCurve *ic1 =
-                  CreateIntegralCurve(solver,
-                                      avtIntegralCurve::DIRECTION_BACKWARD,
-                                      seedTime0, seedPt, seedVel,
-                                      nextID);
-                ic1->domain = dom;
-                curves.push_back(ic1);
-                seedPtIds.push_back(ic1->id);
-
-                fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
-                break;
-            }
+            avtIntegralCurve *ic =
+                CreateIntegralCurve(solver,
+                                    avtIntegralCurve::DIRECTION_FORWARD,
+                                    seedTime0, seedPt, seedVel, 
+                                    currentID);
+            FindCandidateBlocks(ic);
+            curves.push_back(ic);
+            seedPtIds.push_back(ic->id);
+        }
+        else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        {
+            avtIntegralCurve *ic =
+                CreateIntegralCurve(solver,
+                                    avtIntegralCurve::DIRECTION_BACKWARD,
+                                    seedTime0, seedPt, seedVel,
+                                    currentID);
+            FindCandidateBlocks(ic);
+            curves.push_back(ic);
+            seedPtIds.push_back(ic->id);
+        }
+        else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+        {
+            avtIntegralCurve *ic0 =
+                CreateIntegralCurve(solver,
+                                    avtIntegralCurve::DIRECTION_FORWARD,
+                                    seedTime0, seedPt, seedVel,
+                                    currentID);
+            FindCandidateBlocks(ic0);
+            curves.push_back(ic0);
+            seedPtIds.push_back(ic0->id);
+            
+            avtIntegralCurve *ic1 =
+                CreateIntegralCurve(solver,
+                                    avtIntegralCurve::DIRECTION_BACKWARD,
+                                    seedTime0, seedPt, seedVel,
+                                    nextID);
+            FindCandidateBlocks(ic1);
+            curves.push_back(ic1);
+            seedPtIds.push_back(ic1->id);
+            
+            fwdBwdICPairs.push_back(std::pair<int,int> (ic0->id, ic1->id));
         }
         
 // TODO: what happens if we get 0 domains returned. We will still add the seed point to the list.
@@ -3135,9 +2831,8 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         for (int i = 0; i < curves.size(); i++)
         {
             avtIntegralCurve *ic = curves[i];
-            avtVector loc;
-            ic->CurrentLocation(loc);
-            debug5<<"Create seed: id= "<<ic->id<<", dom= "<<ic->domain
+            avtVector loc = ic->CurrentLocation();
+            debug5<<"Create seed: id= "<<ic->id<<", dom= "<<ic->blockList
                   <<", loc= " << loc <<endl;
         }
     }
@@ -3275,8 +2970,8 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     else
         out_contract = new avtContract(in_contract);
 
-    //out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
-    out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    out_contract->GetDataRequest()->SetDesiredGhostDataType(NO_GHOST_DATA);
+    //out_contract->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
 #ifdef PARALLEL
     out_contract->SetReplicateSingleDomainOnAllProcessors(true);

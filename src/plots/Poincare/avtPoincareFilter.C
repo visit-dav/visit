@@ -353,8 +353,8 @@ avtPoincareFilter::GetIntegralCurvePoints(std::vector<avtIntegralCurve *> &ics)
                  poincare_ic->points.size() ==
                  poincare_ic->GetNumberOfSamples() )
         {
-          poincare_ic->status = avtIntegralCurve::STATUS_TERMINATED;
-          poincare_ic->properties.analysisState =
+            poincare_ic->status.SetTerminationMet();
+            poincare_ic->properties.analysisState =
             FieldlineProperties::TERMINATED;
 
 //           std::cerr << "Terminated integration for Fieldline: id = "
@@ -1783,7 +1783,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         // because it was terminated rather having a normal finish. So
         // regardless of the analysis terminate the fieldline analysis
         // because additional integration steps are not possible.
-        if( poincare_ic->status == avtIntegralCurve::STATUS_TERMINATED )
+        if( poincare_ic->status.Terminated())
         {
           poincare_ic->properties.nPuncturesNeeded = 0;
           poincare_ic->properties.analysisState =
@@ -1813,7 +1813,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
             2 * poincare_ic->properties.nPuncturesNeeded;
 
           // Change the status so more integration steps will be taken.
-          poincare_ic->status = avtIntegralCurve::STATUS_OK;
+          poincare_ic->status.SetOK();
 
           // Make more analysis is done in the poincare filter.
           analysisComplete = false;
@@ -1850,7 +1850,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
         else
         {
           // The integration status should FINSIHED but just in case.
-          poincare_ic->status = avtIntegralCurve::STATUS_FINISHED;
+          poincare_ic->status.SetTerminationMet();
 
 //           std::cerr << "Finished Fieldline: id = "
 //                     << poincare_ic->id << "  "

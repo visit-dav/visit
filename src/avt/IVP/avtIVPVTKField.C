@@ -106,9 +106,9 @@ avtIVPVTKField::avtIVPVTKField( vtkDataSet* dataset, avtCellLocator* locator )
 
 avtIVPVTKField::~avtIVPVTKField()
 {
-    if( ds )
+    if (ds)
         ds->Delete();
-    if( loc )
+    if (loc)
        loc->ReleaseDataSet();
 }
 
@@ -164,7 +164,7 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
         lastPos  = pos;
         lastCell = loc->FindCell(&pos.x, &lastWeights, false);
     }       
-
+    
     return (lastCell != -1 ? OK : OUTSIDE_SPATIAL);
 }
 
@@ -191,7 +191,7 @@ avtIVPVTKField::FindCell( const double& time, const avtVector& pos ) const
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKField::operator()( const double &t, const avtVector &p, avtVector &retV ) const
+avtIVPVTKField::operator()(const double &t, const avtVector &p, avtVector &retV) const
 {
     if (FindCell(t, p) != OK || !FindValue(velData, retV))
         return OUTSIDE_SPATIAL;
@@ -250,7 +250,7 @@ avtIVPVTKField::FindValue(vtkDataArray *vectorData, avtVector &vel) const
 avtVector 
 avtIVPVTKField::ConvertToCartesian(const avtVector& pt) const
 {
-  return pt;
+    return pt;
 }
 
 // ****************************************************************************
@@ -267,7 +267,7 @@ avtIVPVTKField::ConvertToCartesian(const avtVector& pt) const
 avtVector 
 avtIVPVTKField::ConvertToCylindrical(const avtVector& pt) const
 {
-  return pt;
+    return pt;
 }
 
 // ****************************************************************************
@@ -454,33 +454,10 @@ avtIVPVTKField::SetScalarVariable(unsigned char index, const std::string& name)
 // ****************************************************************************
 
 avtIVPField::Result
-avtIVPVTKField::IsInside( const double& t, const avtVector &pt ) const
+avtIVPVTKField::IsInside(const double &t, const avtVector &pt) const
 {
     return (loc->FindCell(&pt.x, NULL, true) >= 0 ? OK : OUTSIDE_SPATIAL);
 }
-
-// ****************************************************************************
-//  Method: avtIVPVTKField::GetDimension
-//
-//  Purpose:
-//      Gets the dimension.
-//
-//  Programmer: Christoph Garth
-//  Creation:   February 25, 2008
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Apr  2 16:40:08 PDT 2009
-//    Use vtkVisItInterpolatedVelocityField, not vtkInterpolatedVelocityField.
-//    (The old method was just returning 0 anyways...)
-//
-// ****************************************************************************
-
-unsigned int 
-avtIVPVTKField::GetDimension() const
-{
-    return 3;
-}  
 
 // ****************************************************************************
 //  Method: avtIVPVTKField::GetTimeRange
@@ -494,7 +471,7 @@ avtIVPVTKField::GetDimension() const
 // ****************************************************************************
 
 void
-avtIVPVTKField::GetTimeRange( double range[2] ) const
+avtIVPVTKField::GetTimeRange(double range[2]) const
 {
     range[0] = -std::numeric_limits<double>::infinity();
     range[1] =  std::numeric_limits<double>::infinity();

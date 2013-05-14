@@ -146,8 +146,6 @@ class avtParICAlgorithm : public avtICAlgorithm
 
     // Send/Recv Integral curves.
     void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v);
-    void                      SendICs(int dst, std::vector<avtIntegralCurve*> &v,
-                                      std::vector<int> &);
     bool                      RecvICs(std::list<ICCommData> &recvICs);
     bool                      RecvICs(std::list<avtIntegralCurve *> &recvICs);
 
@@ -186,11 +184,7 @@ class avtParICAlgorithm : public avtICAlgorithm
     void                      AddHeader(MemStream *buff);
     void                      RemoveHeader(MemStream *input, MemStream *header, MemStream *buff);
 
-    bool                      DoSendICs(int dst,
-                                        std::vector<avtIntegralCurve*> &);
-    bool                      DoSendICs(int dst,
-                                        std::vector<avtIntegralCurve*> &,
-                                        std::vector<int> &);
+    bool                      DoSendICs(int dst, std::vector<avtIntegralCurve*> &ics);
     void                      PrepareForSend(int tag, MemStream *buff, std::vector<unsigned char *> &buffList);
     static bool               PacketCompare(const unsigned char *a, const unsigned char *b);
     void                      ProcessReceivedBuffers(std::vector<unsigned char*> &incomingBuffers,

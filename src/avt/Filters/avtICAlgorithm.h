@@ -121,11 +121,13 @@ class avtICAlgorithm
     virtual ~avtICAlgorithm();
 
     //Execution of the algorithm.
+    void                      Execute();
+    bool                      CheckNextTimeStepNeeded(int curTimeSlice);
+
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              RestoreInitialize(std::vector<avtIntegralCurve *> &, int curTimeSlice) {}
-    void                      Execute();
-    virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice=-1) = 0;
-    virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) = 0;
+    virtual void              ResetIntegralCurvesForContinueExecute();
+    virtual void              ActivateICsForNextTimeStep();
     virtual void              PostExecute();
     virtual void              GetTerminatedICs(std::vector<avtIntegralCurve *> &v);
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics) = 0;
@@ -138,25 +140,27 @@ class avtICAlgorithm
     virtual void              RunAlgorithm() = 0;
     virtual void              PreRunAlgorithm() {}
     virtual void              PostRunAlgorithm() {}
+    
+    std::string               activeICInfo() const;
+    std::string               terminatedICInfo() const;
+    std::string               inactiveICInfo() const;
 
     avtPICSFilter *picsFilter;
-    std::list<avtIntegralCurve *> terminatedICs;
+    std::list<avtIntegralCurve *> terminatedICs, activeICs, inactiveICs;
     int                       numDomains, numTimeSteps, numSeedPoints;
     virtual const char*       AlgoName() const = 0;
     
     //Helper accessor funcstions to the filter.
     avtIVPSolver *            GetSolver() {return picsFilter->solver; }
-    virtual bool              PointInDomain(avtVector &pt, BlockIDType &dom)
-    { return picsFilter->avtPICSFilter::PointInDomain(pt, dom); }
+    virtual bool              ICInBlock(avtIntegralCurve *ic, BlockIDType &dom)
+    { return picsFilter->avtPICSFilter::ICInBlock(ic, dom); }
     virtual void              AdvectParticle(avtIntegralCurve *ic);
-    virtual void              AdvectParticle(avtIntegralCurve *ic, vtkDataSet *ds);
     vtkDataSet               *GetDomain(avtIntegralCurve *ic);
-    vtkDataSet               *GetDomain(const BlockIDType &dom,
-                                        double X=0, double Y=0, double Z=0);
+    vtkDataSet               *GetDomain(const BlockIDType &dom, const avtVector &pt);
     virtual bool              DomainLoaded(BlockIDType &dom) const
-    { return picsFilter->avtPICSFilter::DomainLoaded(dom); }
+    { return picsFilter->avtPICSFilter::BlockLoaded(dom); }
     void                      SetDomain(avtIntegralCurve *ic)
-    { return picsFilter->avtPICSFilter::SetDomain(ic); }
+    { return picsFilter->avtPICSFilter::FindCandidateBlocks(ic); }
     
     bool                      OwnDomain(BlockIDType &dom)
     {return picsFilter->avtPICSFilter::OwnDomain(dom); }

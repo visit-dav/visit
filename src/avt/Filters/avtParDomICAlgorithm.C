@@ -40,6 +40,8 @@
 //                              avtParDomICAlgorithm.C                       //
 // ************************************************************************* //
 
+#if 0
+
 #include <avtParDomICAlgorithm.h>
 #include <TimingsManager.h>
 
@@ -595,119 +597,6 @@ avtParDomICAlgorithm::HandleOOBIC(avtIntegralCurve *s)
     sentICCounter++;
 }
 
-// ****************************************************************************
-//  Method: avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute
-//
-//  Purpose:
-//      Reset for continued streamline integration.
-//
-//  Programmer: Dave Pugmire
-//  Creation:   Tue Aug 18 08:59:40 EDT 2009
-//
-//  Modifications:
-//
-//   Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//   Use avtStreamlines, not avtStreamlineWrappers.
-//
-//   Hank Childs, Sun Jun  6 12:21:30 CDT 2010
-//   Rename this method to reflect the new emphasis in particle advection, as
-//   opposed to streamlines.
-//
-//   Dave Pugmire, Mon Nov 29 09:28:07 EST 2010
-//   Need to synchronize to get number of total streamlines after continuation.
-//
-//   Dave Pugmire, Tue Nov 30 13:24:26 EST 2010
-//   Change IC status when ic to not-terminated.
-//
-//   David Camp, Mon Aug 15 12:55:54 PDT 2011
-//   For pathlines we need to call HandleOOBIC to handle changes to the mesh
-//   that can happen in AMR data.
-//
-// ****************************************************************************
-
-void
-avtParDomICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
-{
-    std::list<avtIntegralCurve *> saveICs;
-
-    // We may send IC to a new process, so we should just count before sending.
-    totalNumIntegralCurves = terminatedICs.size();
-    while (! terminatedICs.empty())
-    {
-        avtIntegralCurve *s = terminatedICs.front();
-        terminatedICs.pop_front();
-        
-        if( s->domain.domain == -1 )
-        {
-            saveICs.push_back(s);
-            --totalNumIntegralCurves;   // will not be processing this IC again.
-        }
-        else
-        {
-            s->status = avtIntegralCurve::STATUS_OK;
-            // The IC may need to move to another process.
-            SetDomain(s);
-            if( s->domain.domain == -1 && s->seedPtDomainList.empty() )
-            {
-                saveICs.push_back(s);
-                --totalNumIntegralCurves;   // will not be processing this IC again.
-            }
-            else
-                HandleOOBIC(s);
-        }
-    }
-
-    // Move the IC that are out of bounds to the terminated list. 
-    // No reason to process them anymore.
-    terminatedICs = saveICs;
-
-    SumIntAcrossAllProcessors(totalNumIntegralCurves);
-}
-
-// ****************************************************************************
-// Method:  avtParDomICAlgorithm::CheckNextTimeStepNeeded
-//
-// Purpose: Is the next time slice required to continue?
-//   
-//
-// Programmer:  Dave Pugmire
-// Creation:    December  2, 2010
-//
-// Modifications:
-//
-//   Hank Childs, Fri Mar  9 16:49:06 PST 2012
-//   Add support for reverse pathlines.
-//
-//   Hank Childs, Sun Apr  1 10:32:00 PDT 2012
-//   Fix recently introduced error with bad logic about what has been terminated.
-//
-//   Cyrus Harrison, Mon Apr  2 15:49:11 PDT 2012
-//   Fixed a typo (removed extra paren from next line)
-//
-// ****************************************************************************
-
-bool
-avtParDomICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
-{
-    int val = 0;
-    list<avtIntegralCurve *>::const_iterator it;
-    for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
-    {
-        bool itsDone = false;
-        if ((*it)->domain.domain == -1 || (*it)->domain.timeStep == curTimeSlice)
-            itsDone = true;
-        if ((*it)->status == avtIntegralCurve::STATUS_TERMINATED)
-            itsDone = true;
-        if (! itsDone)
-        {
-            val = 1;
-            break;
-        }
-    }
-    
-    SumIntAcrossAllProcessors(val);
-
-    return val > 0;
-}
+#endif
 
 #endif
