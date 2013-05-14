@@ -49,7 +49,7 @@ const char* vtkVisItXMLPDataReader::GetDataSetName()
   else if (strncmp(this->Extension, "pvtr", 4) == 0)
     return "PRectilinearGrid";
   else if (strncmp(this->Extension, "pvti", 4) == 0)
-    return "PImage";
+    return "PImageData";
   else if (strncmp(this->Extension, "pvtp", 4) == 0)
     return "PPolyData";
   else
