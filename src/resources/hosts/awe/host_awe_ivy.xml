@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="hostNickname" type="string">AWE Ivy</Field>
+    <Field name="host" type="string">ivy.hpcs.awe.co.uk</Field>
+    <Field name="userName" type="string">notset</Field>
+    <Field name="hostAliases" type="string">ivy ivy# ivy#.hpcs.awe.co.uk</Field>
+    <Field name="directory" type="string">/prod/codes/visit</Field>
+    <Field name="shareOneBatchJob" type="bool">false</Field>
+    <Field name="sshPortSpecified" type="bool">false</Field>
+    <Field name="sshPort" type="int">22</Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Field name="manualClientHostName" type="string"></Field>
+    <Field name="tunnelSSH" type="bool">false</Field>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-l" "sbatch/mpirun" </Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">--immediate</Field>
+        <Field name="sublaunchArgsSet" type="bool">true</Field>
+        <Field name="sublaunchArgs" type="string">--rsh=ssh</Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">parallel (8 cores per node - max 64 procs)</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">8</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-l" "sbatch/mpirun" </Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
+        <Field name="launchArgs" type="string">--immediate</Field>
+        <Field name="sublaunchArgsSet" type="bool">true</Field>
+        <Field name="sublaunchArgs" type="string">--rsh=ssh</Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">parallel (manual - max 64 procs, 4 nodes)</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-l" "sbatch" "-np" "1" "-la" "--immediate" </Field>
+        <Field name="parallel" type="bool">false</Field>
+        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgs" type="string"></Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">serial</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

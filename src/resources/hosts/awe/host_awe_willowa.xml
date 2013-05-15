@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="hostNickname" type="string">AWE WillowA</Field>
+    <Field name="host" type="string">willowa.hpcs.awe.co.uk</Field>
+    <Field name="userName" type="string">notset</Field>
+    <Field name="hostAliases" type="string">willowa willowa# willowa##</Field>
+    <Field name="directory" type="string">/prod/codes/visit</Field>
+    <Field name="shareOneBatchJob" type="bool">false</Field>
+    <Field name="sshPortSpecified" type="bool">false</Field>
+    <Field name="sshPort" type="int">22</Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Field name="manualClientHostName" type="string"></Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">viz</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">12:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">msub</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-l" "msub/mpirun"</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgs" type="string"></Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">parallel (16 ppn =\> rounds up nprocs to multiple of 16)</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">viz</Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">12:00:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">msub</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-l" "msub/mpirun"</Field>
+        <Field name="parallel" type="bool">true</Field>
+        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgs" type="string"></Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">parallel (manual - allows nnodes to be set)</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector">"-np" "1" "-nn" "1" "-l" "msub" "-p" "viz" "-t" "12:00:00" </Field>
+        <Field name="parallel" type="bool">false</Field>
+        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgs" type="string"></Field>
+        <Field name="sublaunchArgsSet" type="bool">false</Field>
+        <Field name="sublaunchArgs" type="string"></Field>
+        <Field name="sublaunchPreCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPreCmd" type="string"></Field>
+        <Field name="sublaunchPostCmdSet" type="bool">false</Field>
+        <Field name="sublaunchPostCmd" type="string"></Field>
+        <Field name="machinefileSet" type="bool">false</Field>
+        <Field name="machinefile" type="string"></Field>
+        <Field name="visitSetsUpEnv" type="bool">false</Field>
+        <Field name="canDoHWAccel" type="bool">false</Field>
+        <Field name="havePreCommand" type="bool">false</Field>
+        <Field name="hwAccelPreCommand" type="string"></Field>
+        <Field name="havePostCommand" type="bool">false</Field>
+        <Field name="hwAccelPostCommand" type="string"></Field>
+        <Field name="profileName" type="string">serial</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>
