@@ -53,9 +53,18 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #ifdef _WIN32
+#include <io.h>
 #define FSEEK _fseeki64
+#define CLOSE ::_close
+#define OPEN  ::_open
+#define READ  ::_read
+typedef __int64 off64_t; 
 #else
 #define FSEEK fseek
+#define O_BINARY 0
+#define CLOSE ::close
+#define OPEN  ::open
+#define READ  ::read
 #endif
 
 using namespace std;
@@ -189,7 +198,7 @@ avtGHOSTFileFormat::GetVar(int domain, const char *varname)
     for (int i = 0; i < vars.size(); i++)
         if (vars[i].first == varname)
         {
-            fd = open(vars[i].second.c_str(), O_RDONLY);
+            fd = OPEN(vars[i].second.c_str(), O_RDONLY|O_BINARY);
             break;
         }
     
@@ -209,9 +218,9 @@ avtGHOSTFileFormat::GetVar(int domain, const char *varname)
     arr->SetNumberOfTuples(nVals);
     
     float *out = (float *)arr->GetVoidPointer(0);
-    size_t nRead = read(fd, out, nVals*sizeof(float));
+    size_t nRead = READ(fd, out, nVals*sizeof(float));
 
-    close(fd);
+    CLOSE(fd);
     return arr;
 }
 
@@ -236,7 +245,6 @@ avtGHOSTFileFormat::ReadMetaData()
         return;
 
     char line[1024], varNm[1024], varFile[1024];
-    int x;
     ifstream ifile(metaDataFile.c_str());
     
     if (!ifile.is_open())
