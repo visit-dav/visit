@@ -334,6 +334,9 @@
 #    Brad Whitlock, Thu Mar 21 10:04:49 PDT 2013
 #    Copy frontendlauncher.py too where we copy frontendlauncher.
 #
+#    Satheesh Maheswaran, Wed May 15 11:01:15 BST 2013
+#    I added a case statement for AWE.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -399,7 +402,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics | lsu]"
+   echo "Usage: visit-install [-c anag | anl | llnl_open | llnl_open_rz | llnl_open_cz | llnl_closed | nersc | ornl | princeton | sandia | sandia_closed | tacc | umich | nics | lsu | awe]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -528,8 +531,9 @@ while [ "$config" = "prompt" ]; do
    echo "   15) NICS at University of Tennessee at Knoxville"
    echo "   16) Lousiana State University network"
    echo "   17) ETH Zurich"
+   echo "   18) AWE network"
    echo ""
-   echo "Enter (1-17):"
+   echo "Enter (1-18):"
 
    read config
    case "$config" in
@@ -584,6 +588,9 @@ while [ "$config" = "prompt" ]; do
       17)
          config=eth_zurich
          ;;
+      18)
+         config=awe
+         ;;
       *)
          config=prompt
          ;;
@@ -625,10 +632,12 @@ case "$config" in
       ;;
    eth_zurich)
       ;;
+   awe)
+      ;;
    *)
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "llnl_open, llnl_open_cz, llnl_open_rz, llnl_closed, nersc, ornl, "
-      echo "princeton, sandia, sandia_closed, tacc, umich, nics, lsu, eth_zurich."
+      echo "princeton, sandia, sandia_closed, tacc, umich, nics, lsu, eth_zurich, awe."
       exit 4
       ;;
 esac
@@ -796,6 +805,9 @@ elif [ "$config" = "lsu" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "eth_zurich" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "awe" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 fi
 
