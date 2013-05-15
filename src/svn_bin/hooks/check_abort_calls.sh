@@ -16,6 +16,9 @@
 #   Eric Brugger, Tue Mar  6 07:57:28 PST 2012
 #   Skip the data directory.
 #
+#   Satheesh Maheswaran, Wed May 15 15:19:21 BST 2013
+#   Skip customlauncher files
+#
 ##############################################################################
 REPOS="$1"
 TXN="$2"
@@ -49,6 +52,7 @@ while read fline; do
         */src/cqscore/*|\
         */src/third_party_builtin/*|\
         */src/bin/internallauncher|\
+        */src/resources/hosts/*/customlauncher|\
         */src/bin/*.py|\
         */src/svn_bin/*|\
         */windowsbuild/*)
