@@ -61,6 +61,9 @@
 #    Added case for userid "maheswar".
 #    Corrected a copy/paste error
 #
+#    Paul Selby, Thu May 16 12:15:04 BST 2013
+#    Added case for user "selby"
+#
 # *****************************************************************************
 
 
@@ -168,6 +171,10 @@ case $1 in
     # Satheesh Maheswaran, AWE UK
     "maheswar")
         emaddr=Satheesh.Maheswaran@awe.co.uk
+        ;;
+    # Paul Selby, AWE UK
+    "selby")
+        emaddr=paul.selby@awe.co.uk
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
