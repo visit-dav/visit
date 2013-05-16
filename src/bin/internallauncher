@@ -467,6 +467,9 @@ class JobSubmitter_salloc(JobSubmitter):
 #   Satheesh Maheswaran, Tue Jan 15 14:47:54 GMT 2013
 #   I added job name option to Slurm scheduler and mpirun launcher argument support 
 #
+#   Paul Selby, Thu May 16 12:06:30 BST 2013
+#   Use launchargs if supplied
+#
 ###############################################################################
 
 class JobSubmitter_sbatch(JobSubmitter):
@@ -492,6 +495,8 @@ class JobSubmitter_sbatch(JobSubmitter):
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
+        if self.parallel.launchargs != None:
+           parcmd = parcmd + self.parallel.launchargs
         if self.parallel.partition != None:
            parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
         if self.parallel.bank != None:
