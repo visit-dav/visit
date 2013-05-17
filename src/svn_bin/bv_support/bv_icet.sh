@@ -164,9 +164,14 @@ function build_icet
     if [[ "$PAR_COMPILER" != "" ]] ; then
         if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpicc" ]]; then
             PAR_INCLUDE_STRING="-I/usr/include/"
+        elif [[ "$OPSYS" == "Linux" && "$PAR_COMPILER" == "mpixlc" ]]; then
+            PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
         else
             if [[ -z "$PAR_INCLUDE_STRING" ]]; then
                 PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`
+                if [[ $? != 0 ]] ; then
+                    PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
+                fi
             fi
         fi
     fi
@@ -188,14 +193,26 @@ function build_icet
     # is certainly not ideal -- for example, it will break if the user's
     # MPI setup requires multiple include directories.
 
-    # split string at space, grab the front/first string in it.
+    # Search all of the -I directories and take the first one containing mpi.h
     PAR_INCLUDE_DIR=""
     for arg in $PAR_INCLUDE_STRING ; do
-       if [[ "$arg" != "${arg#-I}" ]] ; then
-          PAR_INCLUDE_DIR=${arg#-I}
-          break
-       fi
+        if [[ "$arg" != "${arg#-I}" ]] ; then
+            if test -e "${arg#-I}/mpi.h" ; then
+                PAR_INCLUDE_DIR=${arg#-I}
+                break
+            fi
+        fi
     done
+    # If we did not get a valid include directory, take the first -I directory.
+    if test -z "${PAR_INCLUDE_DIR}"  ; then
+        for arg in $PAR_INCLUDE_STRING ; do
+            if [[ "$arg" != "${arg#-I}" ]] ; then
+                PAR_INCLUDE_DIR=${arg#-I}
+                break
+            fi
+        done
+    fi
+
     if test -z "${PAR_INCLUDE_DIR}"  ; then
         if test -n "${PAR_INCLUDE}" ; then
             warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
@@ -234,11 +251,11 @@ function build_icet
         LIBEXT="a"
     fi
     touch fakempi.${LIBEXT}
+    rm -f CMakeCache.txt
+
     ${CMAKE_BIN} \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
         -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -248,6 +265,7 @@ function build_icet
         -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
         -DBUILD_TESTING:BOOL=OFF\
         .
+
     rm fakempi.${LIBEXT}
 
     if [[ $? != 0 ]] ; then

@@ -93,7 +93,7 @@
 #include <StackTimer.h>
 #include <Utility.h>
 #include <VisItDisplay.h>
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
 # include <XDisplay.h>
 #endif
 
@@ -3905,7 +3905,7 @@ Engine::SetupDisplay()
 #endif
     std::string X_Display = RuntimeSetting::lookups("x-display");
     std::string disp = display_format(X_Display, PAR_Rank(), display_num);
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
     // Tell the display whether or not it should start X servers.  This must be
     // done before ::Initialize!
     XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);

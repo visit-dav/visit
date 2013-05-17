@@ -310,7 +310,7 @@ bool avtGLSLProgram::IsSupported()
         return supported = 0;
         
     return supported = 
-        glewIsSupported( "GL_VERSION_2_0" ) &&
-        glewIsSupported( "GL_ARB_shading_language_100" );
+        avt::glew::supported( "GL_VERSION_2_0" ) &&
+        avt::glew::supported( "GL_ARB_shading_language_100" );
 }
 

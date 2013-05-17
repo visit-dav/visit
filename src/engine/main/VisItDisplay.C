@@ -43,7 +43,10 @@
 #include <MesaDisplay.h>
 #include <snprintf.h>
 #include <StringHelpers.h>
-#if !defined(_WIN32) && !defined(__APPLE__)
+
+#include <visit-config.h>
+
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
 #include <XDisplay.h>
 #endif
 
@@ -143,7 +146,11 @@ split(std::string str, size_t node, size_t display)
 //    Tom Fogal, Tue May 25 16:09:02 MDT 2010
 //    Rename namespace to avoid X conflict.
 //
+//    Brad Whitlock, Fri Apr 12 17:14:37 PDT 2013
+//    Make conditional on HAVE_LIBX11.
+//
 // ****************************************************************************
+
 VisItDisplay *
 VDisplay::Create(VisItDisplay::DisplayType vtype)
 {
@@ -153,7 +160,7 @@ VDisplay::Create(VisItDisplay::DisplayType vtype)
             debug3 << "Creating Mesa (SW-based) display." << std::endl;
             return new MesaDisplay();
             break;
-#if ! defined(_WIN32) && !defined(__APPLE__)
+#if ! defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
         case VisItDisplay::D_X:
             debug3 << "Creating X (HW-based) display." << std::endl;
             return new XDisplay();

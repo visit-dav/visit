@@ -57,6 +57,9 @@
 #    Call ADD_TARGET_DEFINTIONS to add "HAVE_ICET", as the function deals
 #    correctly with a target already having some COMPILE_DEFINITIONS set.
 #
+#    Brad Whitlock, Thu Apr 11 15:59:49 PDT 2013
+#    Add check for X11. Change how we get zlib.
+#
 #****************************************************************************/
 
 SET(LIBENGINE_SOURCES
@@ -76,9 +79,9 @@ IF(VISIT_STATIC)
     SET(ENGINE_STATIC_SOURCES EngineStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
 
-IF (NOT WIN32 AND NOT APPLE)
+IF (NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
     SET(LIBENGINE_SOURCES ${LIBENGINE_SOURCES} XDisplay.C)
-ENDIF (NOT WIN32 AND NOT APPLE)
+ENDIF (NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -182,7 +185,7 @@ TARGET_LINK_LIBRARIES(engine_ser_exe
     visit_verdict 
     vtkjpeg
     vtkpng
-    vtkzlib
+    ${VTKZLIB_LIB}
     ${VTK_FREETYPE_LIBRARIES}
     vtkftgl
     ${ALL_THIRDPARTY_IO_LIB}
@@ -266,8 +269,7 @@ IF(VISIT_PARALLEL)
         visit_verdict 
         vtkjpeg
         vtkpng
-        vtkzlib
-        ${Z_LIB}
+        ${VTKZLIB_LIB}
         ${VTK_FREETYPE_LIBRARIES}
         vtkftgl
         ${ALL_THIRDPARTY_IO_LIB}

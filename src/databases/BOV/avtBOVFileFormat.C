@@ -85,6 +85,9 @@
 #define FSEEK fseek
 #endif
 
+// Cast handle to gzFile.
+#define GZFILE(handle) ((gzFile)handle)
+
 static int FormatLine(char *line);
 
 
@@ -755,10 +758,10 @@ avtBOVFileFormat::ReadWholeAndExtractBrick(void *dest, bool gzipped,
     {
         // Read past the specified offset.
         if(byteOffset > 0)
-            gzseek(gz_handle, byteOffset, SEEK_SET);
+            gzseek(GZFILE(gz_handle), byteOffset, SEEK_SET);
 
         // Read the whole dataset
-        gzread(gz_handle, whole_buff, whole_nelem * unit_size);
+        gzread(GZFILE(gz_handle), whole_buff, whole_nelem * unit_size);
     }
     else
     {
@@ -1101,9 +1104,9 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
         {
             // Read past the specified offset.
             if(byteOffset > 0)
-                gzseek(gz_handle, byteOffset, SEEK_SET);
+                gzseek(GZFILE(gz_handle), byteOffset, SEEK_SET);
 
-            gzread(gz_handle, rv->GetVoidPointer(0),
+            gzread(GZFILE(gz_handle), rv->GetVoidPointer(0),
                    nvals * dataNumComponents * unit_size);
         }
         else
@@ -1247,7 +1250,7 @@ avtBOVFileFormat::GetVar(int dom, const char *var)
     // Close the file descriptors.
     //
     if (gzipped)
-        gzclose(gz_handle);
+        gzclose(GZFILE(gz_handle));
     else
         fclose(file_handle);
 
@@ -1682,6 +1685,9 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Mon Dec 10 16:06:52 PST 2012
 //    Add support for byte offsets longer than MAX_INT.
 //
+//    Brad Whitlock, Fri Apr 12 15:33:46 PDT 2013
+//    Fix cast on big endian machines.
+//
 // ****************************************************************************
 
 template <class T>
@@ -1739,7 +1745,7 @@ avtBOVFileFormat::ReadTOC(void)
             }
 #ifdef WORDS_BIGENDIAN
             unsigned short tmp;
-            int16_Reverse_Endian(headerLength, reinterpret_cast<char*>(&tmp));
+            int16_Reverse_Endian(headerLength, reinterpret_cast<unsigned char*>(&tmp));
             headerLength = tmp;
 #endif
             // headerLength is "unsigned short" and thus always less than or equal 65535

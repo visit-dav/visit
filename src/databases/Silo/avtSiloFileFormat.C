@@ -16048,7 +16048,7 @@ static DBgroupelmap *
 GetCondensedGroupelMap(DBfile *dbfile, string mrgtnm_abspath,
     DBmrgtnode *rootNode, int forceSingle, int gpel_type)
 {
-    int i,k,q,pass;
+    int i,k,q = 0,pass;
     DBgroupelmap *retval = 0;
 
     // We do this to prevent Silo for re-interpreting integer data in

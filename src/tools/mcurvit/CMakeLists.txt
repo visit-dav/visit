@@ -107,7 +107,7 @@ SET(VTK_EXTRA_LIBS
 vtktiff
 vtkjpeg
 vtkpng
-vtkzlib
+${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
 vtkftgl
 )

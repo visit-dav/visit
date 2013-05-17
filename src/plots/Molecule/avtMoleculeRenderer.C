@@ -193,10 +193,10 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
             delete rendererImplementation;
 #ifdef VISIT_MANTA
         if (avtCallback::UseManta())
-          rendererImplementation = new avtMantaMoleculeRenderer;
+            rendererImplementation = new avtMantaMoleculeRenderer;
         else
-#endif VISIT_MANTA
-          rendererImplementation = new avtOpenGLMoleculeRenderer;
+#endif
+            rendererImplementation = new avtOpenGLMoleculeRenderer;
 
         currentRendererIsValid = true;
 

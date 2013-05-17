@@ -212,8 +212,8 @@ avtOpenGL3DTextureVolumeRenderer::Render(
 {
     static bool haveIssuedWarning = false;
 
-    if(!(glewIsSupported("GL_VERSION_1_2") ||
-       glewIsSupported("GL_EXT_texture3D")))
+    if(!(avt::glew::supported("GL_VERSION_1_2") ||
+         avt::glew::supported("GL_EXT_texture3D")))
     {
         if(!haveIssuedWarning)
         {
