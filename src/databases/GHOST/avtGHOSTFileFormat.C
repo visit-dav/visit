@@ -65,6 +65,9 @@ typedef __int64 off64_t;
 #define CLOSE ::close
 #define OPEN  ::open
 #define READ  ::read
+#ifdef __APPLE__
+#define off64_t off_t 
+#endif
 #endif
 
 using namespace std;
