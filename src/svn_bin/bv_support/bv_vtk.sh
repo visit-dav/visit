@@ -41,8 +41,13 @@ function bv_vtk_depends_on
       depends_on="${depends_on} R"
  fi
 
+ # Only depend on Qt if we're not doing server-only builds.
  if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-      depends_on="${depends_on} qt"
+     if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+         if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+             depends_on="${depends_on} qt"
+         fi
+     fi
  fi
 
  echo ${depends_on}
@@ -385,29 +390,36 @@ function build_vtk
     # We need python to build the vtk python bindings.
     #
     PYTHON_INSTALL="${VISIT_PYTHON_DIR}/bin"
-    if [[ -e ${PYTHON_INSTALL}/python ]] ; then
-        info "VTK: Python found"
-    else
-        if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-            build_python
-            if [[ $? != 0 ]] ; then
-                warn "Unable to build python. Giving up"
-                return 1
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        if [[ -e ${PYTHON_INSTALL}/python ]] ; then
+            info "VTK: Python found"
+        else
+            if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+                build_python
+                if [[ $? != 0 ]] ; then
+                    warn "Unable to build python. Giving up"
+                    return 1
+                fi
             fi
         fi
     fi
 
     #
-    # We need Qt to build the vtk Qt support.
+    # We need Qt to build the vtk Qt support. Only do Qt if we're not doing
+    # a server-only build.
     #
-    if [[ -e ${QT_BIN_DIR}/qmake ]] ; then
-        info "VTK: Qt found"
-    else
-        if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-            build_qt
-            if [[ $? != 0 ]] ; then
-                warn "Unable to build Qt. Giving up"
-                return 1
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
+        if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
+                if [[ -e ${QT_BIN_DIR}/qmake ]] ; then
+                    info "VTK: Qt found"
+                else
+                    build_qt
+                    if [[ $? != 0 ]] ; then
+                        warn "Unable to build Qt. Giving up"
+                        return 1
+                    fi
+                fi
             fi
         fi
     fi
@@ -502,6 +514,12 @@ function build_vtk
         lf="${lf},-current_version,${VTK_VERSION}"
     fi
 
+    # Add some extra arguments to the VTK cmake command line via the 
+    # VTK_EXTRA_OPTIONS environment variable.
+    if test -n "$VTK_EXTRA_OPTIONS" ; then
+        vopts="${vopts} $VTK_EXTRA_OPTIONS"
+    fi
+
     # normal stuff
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${vtk_build_mode}"
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
@@ -515,8 +533,8 @@ function build_vtk
     vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=${CFLAGS}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=${CXXFLAGS}"
+    vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
@@ -554,16 +572,21 @@ function build_vtk
     vopts="${vopts} -DModule_vtkRenderingOpenGL:BOOL=true"
     vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
 
-    # Tell VTK where to locate qmake if we're building graphical support.
+    # Tell VTK where to locate qmake if we're building graphical support. We
+    # do not add graphical support for server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
-        vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
+        if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
+                vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
+                vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
+            fi
+        fi
     fi
 
     # Add python wrapping
-    if test "x${DO_DBIO_ONLY}" != "xyes" ; then
+    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         # python... but static libs and python filters are incompatible.
-        if test "x${DO_STATIC_BUILD}" != "xyes" ; then
+        if [[ "$DO_STATIC_BUILD" != "yes" ]]; then
             py="${PYTHON_COMMAND}"
             pyinc="${PYTHON_INCLUDE_DIR}"
             pylib="${PYTHON_LIBRARY}"

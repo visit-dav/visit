@@ -360,6 +360,10 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //
 //    Mark C. Miller, Sun Dec 16 17:34:17 PST 2012
 //    Fix potential leak of ptr array on early returns.
+//
+//    Brad Whitlock, Fri Apr 12 15:42:36 PDT 2013
+//    Use gzFile instead of void* for gz_handle.
+//
 // ****************************************************************************
 
 void
@@ -636,7 +640,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                         char fmt[1024];
                         sprintf(fmt, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
                         sprintf(str, fmt, brick);
-                        void *gz_handle = gzopen(str, "w");
+                        gzFile gz_handle = gzopen(str, "w");
                         gzwrite(gz_handle, samples, 
                                 vals_per_bricklet*sizeof(float));
                         gzclose(gz_handle);

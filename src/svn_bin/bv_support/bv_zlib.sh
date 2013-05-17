@@ -58,10 +58,10 @@ function bv_zlib_host_profile
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## ZLIB (commented out since VisIt does not really use it directly)" >> $HOSTCONF
+        echo "## ZLIB" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
-        "#VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
+        "VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR \${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH})" \
         >> $HOSTCONF
     fi
 }

@@ -860,7 +860,9 @@ vtkOpenGLStructuredGridMapper::BeginColorTexturing()
     // after texturing. This ensures that the specular highlights look
     // right when we're in texturing mode.
     //
+#ifdef HAVE_LIBGLEW
     if(GLEW_EXT_secondary_color)
+#endif
     {
         glEnable(GL_COLOR_SUM_EXT);
         glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
@@ -899,8 +901,12 @@ vtkOpenGLStructuredGridMapper::EndColorTexturing()
         glDisable(GL_TEXTURE_1D);
     }
 
+#ifdef HAVE_LIBGLEW
     if(GLEW_EXT_secondary_color)
         glDisable(GL_COLOR_SUM_EXT);
+#else
+    glDisable(GL_COLOR_SUM_EXT);
+#endif
 }
 
 

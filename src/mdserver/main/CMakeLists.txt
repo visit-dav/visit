@@ -119,7 +119,7 @@ TARGET_LINK_LIBRARIES(mdserver
     vtkCommonCore
     vtkIOCore 
     vtktiff
-    vtkzlib
+    ${VTKZLIB_LIB}
     vtkpng
     vtkjpeg
     ${ZLIB_LIB} 

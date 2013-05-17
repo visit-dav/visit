@@ -62,6 +62,9 @@
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
 
+/* Define if you have the X11 library */
+#cmakedefine HAVE_LIBX11
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/

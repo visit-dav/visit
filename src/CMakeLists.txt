@@ -604,9 +604,19 @@ IF(WIN32)
       SET(VISIT_APPLICATION_STYLE "WIN32")
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
+IF(VISIT_MESA_DIR)
+  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt" OFF)
+ENDIF(VISIT_MESA_DIR)
 
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
+IF(APPLE OR WIN32)
+    OPTION(VISIT_USE_X "Use X11" OFF)
+ELSE(APPLE OR WIN32)
+    OPTION(VISIT_USE_X "Use X11" ON)
+ENDIF(APPLE OR WIN32)
+OPTION(VISIT_USE_GLEW "Use GLEW to call GL functions." ON)
+OPTION(VISIT_USE_BOOST "Use system boost library." ON)
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
@@ -655,7 +665,6 @@ VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's includ
 IF(WIN32)
   VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
   VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
-  VISIT_3RDPARTY_VAR(ZLIB_DIR   "Path containing the zlib library's include and lib")
 ENDIF(WIN32)
 
 # Define the options that let us pick I/O library installation locations. When
@@ -683,6 +692,7 @@ VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
 VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
+VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
@@ -692,6 +702,8 @@ VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and
 VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
 VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
+VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
+
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
@@ -909,8 +921,23 @@ INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindBoost.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
+IF(VISIT_USE_BOOST)
+    INCLUDE(${CMAKE_ROOT}/Modules/FindBoost.cmake)
+ENDIF(VISIT_USE_BOOST)
+IF(VISIT_USE_X)
+    INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
+    IF(NOT X11_X11_LIB)
+        SET(VISIT_USE_X OFF)
+        SET(HAVE_LIBX11 0)
+    ELSE(NOT X11_X11_LIB)
+        SET(HAVE_LIBX11 1)
+    ENDIF(NOT X11_X11_LIB)
+ELSE(VISIT_USE_X)
+    SET(HAVE_LIBX11 0)
+    SET(CMAKE_X_LIBS "" CACHE INTERNAL "X11 libs.")
+    SET(CMAKE_X_CFLAGS "" CACHE INTERNAL "X11 extra flags.")
+    SET(CMAKE_HAS_X 0 CACHE INTERNAL "Is X11 around.")
+ENDIF(VISIT_USE_X)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
 # Set Boost_USABLE_PARADIS if boost 1.36.0 or later is found. ParaDIS
@@ -970,7 +997,22 @@ CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # Configure OpenGL support.
 IF(NOT VISIT_DBIO_ONLY)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+    IF(VISIT_OPENGL_DIR)
+        SET(OPENGL_FOUND ON)
+        SET(OPENGL_GLU_FOUND ON)
+        SET(OPENGL_INCLUDE_DIR ${VISIT_OPENGL_DIR}/include)
+        IF(VISIT_STATIC)
+            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGL.a)
+            SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.a)
+        ELSE(VISIT_STATIC)
+            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGL.so)
+            SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.so)
+        ENDIF(VISIT_STATIC)
+        SET(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+        MESSAGE(STATUS "Found OpenGL ${OPENGL_gl_LIBRARY}")
+    ELSE(VISIT_OPENGL_DIR)
+        INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
+    ENDIF(VISIT_OPENGL_DIR)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
 # Configure Mesa support.
@@ -1058,11 +1100,16 @@ ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                              AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Treat GLEW as a 3rd party builtin.
-SET(GLEW_FOUND 1)
-ADD_DEFINITIONS(-DHAVE_LIBGLEW)
-SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
-SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
-SET(GLEW_LIB visitGLEW)
+IF(VISIT_USE_GLEW)
+    SET(GLEW_FOUND 1)
+    ADD_DEFINITIONS(-DHAVE_LIBGLEW)
+    SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
+    SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
+    SET(GLEW_LIB visitGLEW)
+ELSE(VISIT_USE_GLEW)
+    # We're not using GLEW but we need to substitute GL
+    SET(GLEW_INCLUDE_DIR ${OPENGL_INCLUDE_DIR})
+ENDIF(VISIT_USE_GLEW)
 
 # Set up the tuvok library if it was enabled.
 IF(VISIT_TUVOK)
@@ -1101,18 +1148,19 @@ ENDIF(VISIT_PARALLEL)
 # Include TCMALLOC support if we can.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
-# zlib, szip and jpeg
-IF(CMAKE_HOST_UNIX)
-  SET(ZLIB_LIB z)
-  SET(ZLIB_FOUND 1)
-  SET(DL_LIB dl)
-  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
-ELSE(CMAKE_HOST_UNIX)
-  IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+# zlib
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+
+# szip and jpeg
+IF(WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-  ENDIF(WIN32)
+ENDIF(WIN32)
+
+# dl and large file support.
+IF(CMAKE_HOST_UNIX)
+  SET(DL_LIB dl)
+  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ENDIF(CMAKE_HOST_UNIX)
 
 IF(NOT VISIT_BUILD_MINIMAL_PLUGINS)

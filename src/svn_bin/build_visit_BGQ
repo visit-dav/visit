@@ -1,0 +1,885 @@
+#!/bin/bash
+
+VISIT_VERSION="2.6.1"
+
+################################################################################
+## DEFAULT VALUES FOR VARIABLES
+################################################################################
+
+# Global variables
+ARCH=linux-ppc64_gcc-4.4
+
+BG_CC=bgxlc
+BG_C_OPT_FLAGS=""
+BG_CXX_OPT_FLAGS=""
+BG_CXX=bgxlC
+
+# Compiler used for Mesa.
+BG_GNU_CC=powerpc64-bgq-linux-gcc
+BG_GNU_CXX=powerpc64-bgq-linux-g++
+
+BG_MPI_GNU_CC=mpicc
+BG_MPI_GNU_CXX=mpicxx
+
+BG_MPI_CC=mpixlc
+BG_MPI_C_OPT_FLAGS=""
+BG_MPI_CXX_OPT_FLAGS=""
+BG_MPI_CXX=mpixlC
+
+BUILD_MODE="Release"
+CC=gcc
+C_OPT_FLAGS=""
+CXX=g++
+CXX_OPT_FLAGS=""
+EXTRA_ARGS=""
+GROUP="visit"
+INSTALLATION_BUILD_DIR="builds_static"
+IO_PACKAGES="--szip --hdf5 --silo --netcdf --mili"
+MAKE=make
+MAKE_OPT_FLAGS=""
+NO_VISIT=""
+DO_SVN=""
+DO_SVN_ANON=""
+SVN=""
+TAR=tar
+THIRD_PARTY_PATH="thirdparty_static"
+
+export CMAKE_VERSION=2.8.10.2
+export CMAKE_SHORT_VERSION=2.8
+
+export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+export MESA_URL="ftp://ftp.freedesktop.org/pub/mesa/7.8.2/"
+
+export ZLIB_FILE=${ZLIB_FILE:-"zlib-1.2.7.tar.gz"}
+export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
+export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-1.2.7"}
+export ZLIB_URL="http://zlib.net/"
+
+export VTK_VERSION=11e3679
+
+################################################################################
+## CODE BORROWED FROM build_visit
+################################################################################
+
+#First step download the support directory from svn repository..
+bv_PATH=`dirname $0`
+
+bv_PREFIX=$bv_PATH/bv_support/
+
+function configure_support_files
+{
+    if [ ! -d $bv_PREFIX ]; then 
+        #check current directory
+        bv_PREFIX=$PWD/bv_support/
+
+        if [ ! -d $bv_PREFIX ]; then 
+
+            for choice in `echo "curl wget svn"`
+            do
+                echo "Trying to fetch support files using: $choice"
+
+                #if choice successful then exit, else try next..
+                webaddr="http://portal.nersc.gov/svn/visit/trunk/src/svn_bin/bv_support/"
+                tmp_choice=`which $choice`
+
+                if [ $? != 0 ]; then
+                    continue
+                fi
+                if [[ $choice == "curl" ]]; then
+                    tmp_curl=`curl -s ${webaddr}/ | grep 'sh\|xml' | grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g;`
+
+                    if [ $? != 0 ]; then 
+                        continue
+                    fi
+
+                    mkdir -p bv_support_tmp
+                    is_successful=1
+                    #fetch each file..
+                    for curl_files in `echo $tmp_curl`
+                    do 
+                        curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
+                        if [ $? != 0 ]; then
+                            is_successful=0
+                            break
+                        fi
+                    done
+
+                    #if not successful cleanup and try next option..
+                    if [ $is_successful == 0 ]; then 
+                        rm -fR bv_support_tmp
+                    else
+                        mv bv_support_tmp bv_support
+                    fi
+                elif [[ $choice == "wget" ]]; then
+                    wget -r -nH --cut-dirs=5 --no-parent --reject="index.html" -q ${webaddr}
+                else
+                    svn co ${webaddr} bv_support
+                fi
+
+                if [ ! -d $bv_PREFIX ]; then
+                    echo "$choice failed to retrieve support files"
+                else
+                    echo "Success. downloaded support, continuing"
+                    break
+                fi
+            done
+        fi
+
+        if [ ! -d $bv_PREFIX ]; then
+            echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
+            exit 2
+        fi
+    fi
+}
+
+#configure the support files if needed..
+configure_support_files
+
+#import initialize and run functions..
+. $bv_PREFIX/bv_main.sh
+
+#import helper functions..
+. $bv_PREFIX/helper_funcs.sh
+
+################################################################################
+## build_mesa_BGQ
+################################################################################
+
+function build_mesa_BGQ
+{
+    PF=$THIRD_PARTY_PATH/mesa/$MESA_VERSION/${ARCH}_BGQ
+
+    #
+    # Test whether Mesa has already been installed.
+    #
+    if test -d $PF ; then
+        return 0
+    fi
+
+    #
+    # Download file if needed
+    #
+    if ! test -e $MESA_FILE ; then
+        download_file $MESA_FILE $MESA_URL
+        if [[ $? == 1 ]] ; then
+            warn "Unable to download Mesa sources $MESA_FILE. Giving Up!"
+            return 1
+        fi
+    fi
+
+    #
+    # prepare build dir
+    #
+    prepare_build_dir $MESA_BUILD_DIR $MESA_FILE
+    untarred_mesa=$?
+
+    if [[ $untarred_mesa == -1 ]] ; then
+        warn "Unable to prepare Mesa build directory. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Build bluegene-visit-osmesa config.
+    #
+    info "Building Mesa . . . (~2 minutes)"
+    cd $MESA_BUILD_DIR || error "Couldn't cd to mesa build dir."
+    if test -e configs/bluegene-visit-osmesa ; then
+        rm -f configs/bluegene-visit-osmesa
+    fi
+    cat << \EOF > configs/bluegene-visit-osmesa
+include $(TOP)/configs/default
+CONFIG_NAME = bluegene-visit-osmesa
+# Compiler and flags
+APP_CC = gcc
+APP_CXX = g++
+CFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
+CXXFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
+MKLIB_OPTIONS = -static
+GL_LIB_NAME = libGL.a
+GLU_LIB_NAME = libGLU.a
+GLUT_LIB_NAME = libglut.a
+GLW_LIB_NAME = libGLw.a
+OSMESA_LIB = GL
+OSMESA_LIB_NAME = libGL.a
+# Directories
+SRC_DIRS = glsl mesa glu
+DRIVER_DIRS = osmesa
+PROGRAM_DIRS = osdemos
+# Dependencies
+GL_LIB_DEPS =
+OSMESA_LIB_DEPS = -lm
+GLU_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -l$(OSMESA_LIB)
+GLUT_LIB_DEPS =
+GLW_LIB_DEPS =
+APP_LIB_DEPS = -lOSMesa -lGLU -lm
+EOF
+
+    # Append the bluegene compilers and install location.
+    echo "CC=$BG_GNU_CC" >> configs/bluegene-visit-osmesa
+    echo "CXX=$BG_GNU_CXX" >> configs/bluegene-visit-osmesa
+    echo "INSTALL_DIR=$PF" >> configs/bluegene-visit-osmesa
+
+    sed "s/bluegene-osmesa/bluegene-osmesa bluegene-visit-osmesa/g" Makefile > Makefile.visit
+    mv Makefile.visit Makefile
+
+    cat configs/bluegene-visit-osmesa
+
+    #
+    # Build Mesa.
+    #
+    info "Building OSMesa as libGL replacement ..."
+    ${MAKE} bluegene-visit-osmesa ${MAKE_OPT_FLAGS}
+    if [[ $? != 0 ]] ; then
+        warn "Mesa: 'make bluegene-visit-osmesa' failed.  Giving up"
+        return 1
+    fi
+    info "Installing OSMesa as libGL replacement ..."
+    ${MAKE} install
+    if [[ $? != 0 ]] ; then
+        warn "Mesa: 'make install' failed.  Giving up"
+        return 1
+    fi
+
+    # VTK will later want an OSMesa, which we've called GL. Make a copy.
+    cp $PF/lib/libGL.a $PF/lib/libOSMesa.a
+
+    # Some versions of Mesa erroneously install GLEW as well.  We need to make
+    # sure we get VisIt's GLEW when we include it, so remove the ones Mesa
+    # installs.
+    rm -f $PF/include/GL/gl*ew.h
+
+    if [[ $? != 0 ]] ; then
+        warn "Mesa build failed.  Giving up"
+        return 1
+    fi
+
+    chmod -R ug+w,a+rX "$THIRD_PARTY_PATH/mesa"
+    chgrp -R ${GROUP} "$THIRD_PARTY_PATH/mesa"
+
+    info "Done with Mesa"
+    return 0
+}
+
+function write_platform_file
+{
+    # Remove the platform file if it exists.
+    if test -e $1 ; then
+        rm -f $1
+    fi
+
+    # Write boilerplate platform file.
+    cat << \EOF > $1
+# From BlueGeneP-base.cmake
+
+#
+# For BGQ builds, we're cross compiling, but we don't want to re-root things
+# (e.g. with CMAKE_FIND_ROOT_PATH) because users may have libraries anywhere on
+# the shared filesystems, and this may lie outside the root.  Instead, we set the
+# system directories so that the various system BGQ CNK library locations are
+# searched first.  This is not the clearest thing in the world, given IBM's driver
+# layout, but this should cover all the standard ones.
+#
+set(CMAKE_SYSTEM_LIBRARY_PATH
+  /bgsys/drivers/ppcfloor/comm/default/lib                # default comm layer (used by mpi compiler wrappers)
+  /bgsys/drivers/ppcfloor/comm/sys/lib                    # DCMF, other lower-level comm libraries
+  /bgsys/drivers/ppcfloor/runtime/SPI                     # other low-level stuff
+  /bgsys/drivers/ppcfloor/gnu-linux/lib                   # CNK python installation directory
+  /bgsys/drivers/ppcfloor/gnu-linux/powerpc-BGQ-linux/lib # CNK Linux image -- standard runtime libs, pthread, etc.
+)
+
+#
+# This adds directories that find commands should specifically ignore for cross compiles.
+# Most of these directories are the includeand lib directories for the frontend on BG/P systems.
+# Not ignoring these can cause things like FindX11 to find a frontend PPC version mistakenly.
+# We use this on BG instead of re-rooting because backend libraries are typically strewn about
+# the filesystem, and we can't re-root ALL backend libraries to a single place.
+#
+set(CMAKE_SYSTEM_IGNORE_PATH
+  /lib             /lib64             /include
+  /usr/lib         /usr/lib64         /usr/include
+  /usr/local/lib   /usr/local/lib64   /usr/local/include
+  /usr/X11/lib     /usr/X11/lib64     /usr/X11/include
+  /usr/lib/X11     /usr/lib64/X11     /usr/include/X11
+  /usr/X11R6/lib   /usr/X11R6/lib64   /usr/X11R6/include
+  /usr/X11R7/lib   /usr/X11R7/lib64   /usr/X11R7/include
+)
+
+#
+# Indicate that this is a unix-like system
+#
+set(UNIX 1)
+
+#
+# Library prefixes, suffixes, extra libs.
+#
+set(CMAKE_LINK_LIBRARY_SUFFIX "")
+set(CMAKE_STATIC_LIBRARY_PREFIX "lib")     # lib
+set(CMAKE_STATIC_LIBRARY_SUFFIX ".a")      # .a
+
+set(CMAKE_SHARED_LIBRARY_PREFIX "lib")     # lib
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")     # .so
+set(CMAKE_EXECUTABLE_SUFFIX "")            # .exe
+set(CMAKE_DL_LIBS "dl")
+
+#
+# This macro needs to be called for dynamic library support.  Unfortunately on BGQ,
+# We can't support both static and dynamic links in the same platform file.  The
+# dynamic link platform file needs to call this explicitly to set up dynamic linking.
+#
+macro(__BlueGeneP_set_dynamic_flags compiler_id lang)
+  if (${compiler_id} STREQUAL XL)
+    # Flags for XL compilers if we explicitly detected XL
+    set(CMAKE_${lang}_COMPILE_OPTIONS_PIC            "-qpic")
+    set(CMAKE_${lang}_COMPILE_OPTIONS_PIE            "-qpie")
+    set(CMAKE_SHARED_LIBRARY_${lang}_FLAGS           "-qpic")
+    set(CMAKE_SHARED_LIBRARY_CREATE_${lang}_FLAGS    "-qmkshrobj -qnostaticlink")
+    set(BGQ_${lang}_DYNAMIC_EXE_FLAGS                "-qnostaticlink -qnostaticlink=libgcc")
+  else()
+    # Assume flags for GNU compilers (if the ID is GNU *or* anything else).
+    set(CMAKE_${lang}_COMPILE_OPTIONS_PIC            "-fPIC")
+    set(CMAKE_${lang}_COMPILE_OPTIONS_PIE            "-fPIE")
+    set(CMAKE_SHARED_LIBRARY_${lang}_FLAGS           "-fPIC")
+    set(CMAKE_SHARED_LIBRARY_CREATE_${lang}_FLAGS    "-shared")
+    set(BGQ_${lang}_DYNAMIC_EXE_FLAGS                "-dynamic")
+  endif()
+
+  # Both toolchains use the GNU linker on BG/P, so these options are shared.
+  set(CMAKE_SHARED_LIBRARY_RUNTIME_${lang}_FLAG      "-Wl,-rpath,")
+  set(CMAKE_SHARED_LIBRARY_RPATH_LINK_${lang}_FLAG   "-Wl,-rpath-link,")
+  set(CMAKE_SHARED_LIBRARY_SONAME_${lang}_FLAG       "-Wl,-soname,")
+  set(CMAKE_EXE_EXPORTS_${lang}_FLAG                 "-Wl,--export-dynamic")
+  set(CMAKE_SHARED_LIBRARY_LINK_${lang}_FLAGS        "")  # +s, flag for exe link to use shared lib
+  set(CMAKE_SHARED_LIBRARY_RUNTIME_${lang}_FLAG_SEP  ":") # : or empty
+
+  set(BGQ_${lang}_DEFAULT_EXE_FLAGS
+    "<FLAGS> <CMAKE_${lang}_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>")
+  set(CMAKE_${lang}_LINK_EXECUTABLE
+    "<CMAKE_${lang}_COMPILER> -Wl,-relax ${BGQ_${lang}_DYNAMIC_EXE_FLAGS} ${BGQ_${lang}_DEFAULT_EXE_FLAGS}")
+endmacro()
+
+#
+# This macro needs to be called for static builds.  Right now it just adds -Wl,-relax
+# to the link line.
+#
+macro(__BlueGeneQ_set_static_flags compiler_id lang)
+  set(BGQ_${lang}_DEFAULT_EXE_FLAGS
+    "<FLAGS> <CMAKE_${lang}_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>")
+  set(CMAKE_${lang}_LINK_EXECUTABLE
+    "<CMAKE_${lang}_COMPILER> -Wl,-relax ${BGQ_${lang}_DEFAULT_EXE_FLAGS}")
+endmacro()
+
+# From BlueGeneP-static.cmake, which has a broken include
+set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS FALSE)
+set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
+# Use the XL compilers
+__BlueGeneQ_set_static_flags(XL CXX)
+EOF
+  
+    return 0
+}
+
+#
+# Build cmake with the regular compiler. Make a link to the regular version
+# so we can have a "BGQ" version too.
+#
+function build_cmake
+{
+    if test -d $THIRD_PARTY_PATH/cmake/$CMAKE_VERSION/${ARCH}_BGQ ; then
+        info "CMake is already installed."
+        return 0
+    fi
+
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflags \"$C_OPT_FLAGS\""
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflags \"$CXX_OPT_FLAGS\""
+    fi
+
+    $bv_PATH/build_visit --console --static $NO_VISIT $SVN \
+        --no-thirdparty --cmake\
+        --log-file building_cmake.txt \
+        --arch "${ARCH}" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}" \
+        --cc $CC $CFLAGSARGS \
+        --cxx $CXX $CXXFLAGSARGS $MAKEARGS
+
+   # Create a symlink to make a "BGQ" version of the login node cmake.
+   STARTDIR=`pwd`
+   cd $THIRD_PARTY_PATH/cmake/$CMAKE_VERSION
+   if ! test -e "${ARCH}_BGQ" ; then
+       ln -s $ARCH "${ARCH}_BGQ"
+   fi
+   cd $STARTDIR
+
+   # The BlueGeneP-static-XL-CXX platform files are hosed in cmake's install.
+   # Overwrite.
+   TOOLCHAIN="$THIRD_PARTY_PATH/cmake/$CMAKE_VERSION/$ARCH/share/cmake-$CMAKE_SHORT_VERSION/Modules/Platform/BlueGeneP-static-XL-CXX.cmake"
+   write_platform_file "$TOOLCHAIN"
+
+   cd $STARTDIR
+
+   return 0
+}
+
+function build_zlib_BGQ
+{
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$BG_C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$BG_CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+    fi
+
+    # Build some packages that require GNU compilers.
+    $bv_PATH/build_visit \
+        --console --static --no-visit $SVN --engine-only \
+        --log-file compute_node.txt \
+        --arch "${ARCH}_BGQ" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
+        --cc $BG_CC $CFLAGSARGS \
+        --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
+        --no-thirdparty --zlib
+    if [[ $? != 0 ]] ; then
+        warn "ZLIB build failed.  Giving up"
+        return 1
+    fi
+
+    return 0
+}
+
+function build_vtk_BGQ
+{
+    # Come up with some extra arguments for VTK's cmake line.
+    MESADIR="$THIRD_PARTY_PATH/mesa/$MESA_VERSION/${ARCH}_BGQ"
+    ZLIBDIR="$THIRD_PARTY_PATH/zlib/$ZLIB_VERSION/${ARCH}_BGQ"
+    VTKDIR="$THIRD_PARTY_PATH/vtk/$VTK_VERSION/${ARCH}_BGQ"
+    VTK_BUILD_DIR="${INSTALLATION_BUILD_DIR}_BGQ/VTK-${VTK_VERSION}-build"
+
+    # If the VTK installation directory already exists, return.
+    if test -d $VTKDIR ; then
+        info "VTK is already installed."
+        return 0
+    fi
+
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$BG_C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$BG_CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+    fi
+
+    # Form extra arguments that we'll pass to cmake for VTK.
+    vopts="-DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+    vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=$MESADIR/include"
+    vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=$MESADIR/lib/libGL.a"
+    vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=$MESADIR/lib/libGLU.a"
+    vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+    vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=$MESADIR/lib/libGL.a"
+    vopts="${vopts} -DOSMESA_INCLUDE_DIR:FILEPATH=$MESADIR/include"
+
+    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=$ZLIBDIR/include"
+    vopts="${vopts} -DZLIB_LIBRARY:FILEPATH=$ZLIBDIR/lib/libz.a"
+
+    vopts="${vopts} -DCMAKE_REQUIRE_LARGE_FILE_SUPPORT:INTERNAL=1"
+    vopts="${vopts} -DVTK_TYPE_CHAR_IS_SIGNED:INTERNAL=1"
+    vopts="${vopts} -DVTK_ANSI_STREAM_EOF_RESULT:INTERNAL=0"
+    vopts="${vopts} -DKWSYS_LFS_WORKS:INTERNAL=0"
+    vopts="${vopts} -DKWSYS_CHAR_IS_SIGNED:INTERNAL=0"
+
+    # Delete the old cache file if there is one.
+    if test -e $VTK_BUILD_DIR/CMakeCache.txt ; then
+        rm -f $VTK_BUILD_DIR/CMakeCache.txt
+    fi
+
+    # Create the VTKCompileTools file if one does not exist.
+    if ! test -e ${INSTALLATION_BUILD_DIR}_BGQ/VTKCompileToolsConfig.cmake ; then
+        echo "MESSAGE(STATUS \"Fake VTKCompileToolsConfig.cmake\")" > ${INSTALLATION_BUILD_DIR}_BGQ/VTKCompileToolsConfig.cmake
+    fi
+
+    # Call build_visit.
+    env VTK_EXTRA_OPTIONS="${vopts}" $bv_PATH/build_visit \
+        --console --static --no-visit $SVN --engine-only \
+        --no-thirdparty --cmake --vtk \
+        --log-file compute_node.txt \
+        --arch "${ARCH}_BGQ" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
+        --cc $BG_CC $CFLAGSARGS \
+        --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS
+
+    return $?
+}
+
+function build_icet_BGQ
+{
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$BG_C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$BG_CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+    fi
+
+    # Call build_visit just to build Ice-T. Use the gnu compilers to build
+    # it but use the XL/MPI compilers to detect MPI.
+    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC  $bv_PATH/build_visit \
+        --console --static --no-visit $SVN --engine-only \
+        --no-thirdparty --icet \
+        --log-file compute_node.txt \
+        --arch "${ARCH}_BGQ" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
+        --cc $BG_GNU_CC $CFLAGSARGS \
+        --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS
+
+    return $?
+}
+
+# 0 on success, Non-zero on failure.
+function build_for_compute_node
+{
+    info "********************************************************************"
+    info "                   BUILDING FOR COMPUTE NODE "
+    info "********************************************************************"
+
+    # We need to build Mesa with a special config file.
+    STARTDIR=`pwd`
+    build_mesa_BGQ
+    if [[ $? != 0 ]] ; then
+        warn "Mesa build failed.  Giving up"
+        return 1
+    fi
+    cd $STARTDIR
+
+    # We need to build zlib
+    build_zlib_BGQ
+    if [[ $? != 0 ]] ; then
+        warn "ZLIB build failed.  Giving up"
+        return 1
+    fi
+    cd $STARTDIR
+
+    # We need to build VTK
+    build_vtk_BGQ
+    if [[ $? != 0 ]] ; then
+        warn "VTK build failed.  Giving up"
+        return 1
+    fi
+    cd $STARTDIR
+
+    # We need to build Ice-T
+    build_icet_BGQ
+    if [[ $? != 0 ]] ; then
+        warn "Ice-T build failed.  Giving up"
+        return 1
+    fi
+    cd $STARTDIR
+
+    # Build the other packages (and VisIt) that don't need special treatment. 
+
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$BG_C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$BG_CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+    fi
+
+    # Build some packages that require GNU compilers.
+    env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" $bv_PATH/build_visit \
+        --console --static --no-visit $SVN --engine-only \
+        --log-file compute_node.txt \
+        --arch "${ARCH}_BGQ" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
+        --cc $BG_GNU_CC $CFLAGSARGS \
+        --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
+        --no-thirdparty --szip --hdf5 --zlib --silo
+    if [[ $? != 0 ]] ; then
+        warn "3rd party I/O build failed.  Giving up"
+        return 1
+    fi
+
+    # Call build_visit to build the I/O libraries and VisIt, etc.
+    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC $bv_PATH/build_visit \
+        --console --static $NO_VISIT $SVN --engine-only\
+        --log-file compute_node.txt \
+        --arch "${ARCH}_BGQ" \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
+        --cc $BG_CC $CFLAGSARGS \
+        --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
+        --no-thirdparty --szip --hdf5 --zlib --silo \
+        --parallel --icet
+    if [[ $? != 0 ]] ; then
+        warn "VisIt build failed.  Giving up"
+        return 1
+    fi
+
+    return 0
+}
+
+function build_for_login_node
+{
+    info "********************************************************************"
+    info "                   BUILDING FOR LOGIN NODE "
+    info "********************************************************************"
+
+    MAKEARGS=""
+    if test -n "$MAKE_OPT_FLAGS" ; then
+        MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
+    fi
+    CFLAGSARGS=""
+    if test -n "$C_OPT_FLAGS" ; then
+        CFLAGSARGS="--cflag \"$C_OPT_FLAGS\""
+    fi
+    CXXFLAGSARGS=""
+    if test -n "$CXX_OPT_FLAGS" ; then
+        CXXFLAGSARGS="--cxxflag \"$CXX_OPT_FLAGS\""
+    fi
+
+    $bv_PATH/build_visit --console --static $NO_VISIT $SVN --server-components-only \
+        --log-file login_node.txt \
+        --arch $ARCH \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir $INSTALLATION_BUILD_DIR \
+        --cc $CC $CFLAGSARGS \
+        --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
+        --no-thirdparty --cmake --vtk $IO_PACKAGES --python
+    if [[ $? != 0 ]] ; then
+        warn "VisIt build failed.  Giving up"
+        return 1
+    fi
+
+    # Install into the $ARCH directory.
+    if test "$NO_VISIT" = "" ; then
+        cd visit${VISIT_VERSION}/src
+        make install
+        cd ../..
+    fi
+
+    return 0
+}
+
+
+function printvars
+{
+    echo "ARCH=$ARCH"
+    echo "BG_CC=$BG_CC"
+    echo "BG_C_OPT_FLAGS=$BG_C_OPT_FLAGS"
+    echo "BG_CXX_OPT_FLAGS=$BG_CXX_OPT_FLAGS"
+    echo "BG_CXX=$BG_CXX"
+
+    echo "BG_GNU_CC=$BG_GNU_CC"
+    echo "BG_GNU_CXX=$BG_GNU_CXX"
+
+    echo "BG_MPI_CC=$BG_MPI_CC"
+    echo "BG_MPI_C_OPT_FLAGS=$BG_MPI_C_OPT_FLAGS"
+    echo "BG_MPI_CXX_OPT_FLAGS=$BG_MPI_CXX_OPT_FLAGS"
+    echo "BG_MPI_CXX=$BG_MPI_CXX"
+
+    echo "BUILD_MODE=$BUILD_MODE"
+    echo "CC=$CC"
+    echo "C_OPT_FLAGS=$C_OPT_FLAGS"
+    echo "CXX=$CXX"
+    echo "CXX_OPT_FLAGS=$CXX_OPT_FLAGS"
+    echo "EXTRA_ARGS=$EXTRA_ARGS"
+    echo "GROUP=$GROUP"
+    echo "INSTALLATION_BUILD_DIR=$INSTALLATION_BUILD_DIR"
+    echo "IO_PACKAGES=$IO_PACKAGES"
+    echo "MAKE_OPT_FLAGS=$MAKE_OPT_FLAGS"
+    echo "NO_VISIT=$NO_VISIT"
+    echo "SVN=$SVN"
+    echo "THIRD_PARTY_PATH=$THIRD_PARTY_PATH"
+
+    return 0
+}
+
+function usage
+{
+    echo "Usage: build_visit_BGQ [arguments]"
+    echo ""
+    echo "This script builds statically-linked VisIt server components for BlueGene-Q "
+    echo "computers. The parallel compute engine is built for the compute nodes and the"
+    echo "mdserver, vcl, and engine_ser components are built for the login nodes."
+    echo ""
+    echo "Argument       Description"
+    echo "-------------- ------------------------------------------------------------------"
+    echo "--bgcc         The C compiler to use for compute node cross-compilation."
+    echo "--cc           the C compiler to use for login node compilation."
+    return 0
+}
+
+function main
+{
+    next_action=""
+    next_arg=""
+    for arg in "$@" ; do
+        # Was the last option something that took an argument?
+        if test -n "$next_arg" ; then
+            # Yep.  Which option was it?
+            case $next_arg in
+                installation-build-dir) INSTALLATION_BUILD_DIR="$arg";;
+                build-mode) BUILD_MODE="${arg}";;
+
+                append-cflags) C_OPT_FLAGS="${C_OPT_FLAGS} ${arg}";;
+                append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
+                cflags) C_OPT_FLAGS="${arg}";;
+                cxxflags) CXX_OPT_FLAGS="${arg}";;
+                cc) C_COMPILER="${arg}";;
+                cxx) CXX_COMPILER="${arg}";;
+
+                append-bgcflags) BG_C_OPT_FLAGS="${BG_C_OPT_FLAGS} ${arg}";;
+                append-bgcxxflags) BG_CXX_OPT_FLAGS="${BG_CXX_OPT_FLAGS} ${arg}";;
+                bgcflags) BG_C_OPT_FLAGS="${arg}";;
+                bgcxxflags) BG_CXX_OPT_FLAGS="${arg}";;
+                bgcc) BG_C_COMPILER="${arg}";;
+                bgcxx) BG_CXX_COMPILER="${arg}";;
+
+                append-bgmpicflags) BG_C_OPT_FLAGS="${BG_MPI_C_OPT_FLAGS} ${arg}";;
+                append-bgmpicxxflags) BG_CXX_OPT_FLAGS="${BG_MPI_CXX_OPT_FLAGS} ${arg}";;
+                bgmpicflags) BG_MPI_C_OPT_FLAGS="${arg}";;
+                bgmpicxxflags) BG_MPI_CXX_OPT_FLAGS="${arg}";;
+                bgmpicc) BG_MPI_C_COMPILER="${arg}";;
+                bgmpicxx) BG_MPI_CXX_COMPILER="${arg}";;
+
+                makeflags) MAKE_OPT_FLAGS="${arg}";;
+                thirdparty-path) THIRD_PARTY_PATH="${arg}";;
+                *) error "Unknown next_arg value '$next_arg'!"
+            esac
+            # Make sure we process the next option as an option and not an
+            # argument to an option.
+            next_arg=""
+            continue
+        fi
+        case $arg in
+            --installation-build-dir) next_arg="installation-build-dir";;
+            --build-mode) next_arg="build-mode";;
+
+            --cflag) next_arg="append-cflags";;
+            --cflags) next_arg="cflags";;
+            --cxxflag) next_arg="append-cxxflags";;
+            --cxxflags) next_arg="cxxflags";;
+            --cc) next_arg="cc";;
+            --cxx) next_arg="cxx";;
+
+            --bgcflag) next_arg="append-bgcflags";;
+            --bgcflags) next_arg="bgcflags";;
+            --bgcxxflag) next_arg="append-bgcxxflags";;
+            --bgcxxflags) next_arg="bgcxxflags";;
+            --bgcc) next_arg="bgcc";;
+            --bgcxx) next_arg="bgcxx";;
+
+            --bgmpicflag) next_arg="append-bgmpicflags";;
+            --bgmpicflags) next_arg="bgmpicflags";;
+            --bgmpicxxflag) next_arg="append-bgmpicxxflags";;
+            --bgmpicxxflags) next_arg="bgmpicxxflags";;
+            --bgmpicc) next_arg="bgmpicc";;
+            --bgmpicxx) next_arg="bgmpicxx";;
+
+            --group) next_arg="group";;
+            -h|--help) next_action="help";;
+            --print) next_action="printvars";;
+            --makeflags) next_arg="makeflags";;
+            --no-visit) NO_VISIT="--no-visit";;
+            --svn) SVN="--svn" ; DO_SVN="yes";;
+            --svn-anonymous) SVN="--svn-anonymous"; DO_SVN_ANON="yes";;
+            --thirdparty-path) next_arg="thirdparty-path";;
+        esac
+    done
+
+    if test -n "${next_action}" ; then
+        case ${next_action} in
+            printvars) printvars; exit 2;;
+            help) usage; exit 2;;
+        esac
+    fi
+
+    # Make an installation directory.
+    if ! test -d $ARCH ; then
+        mkdir $ARCH
+    else
+        echo "$ARCH already exists."
+    fi
+
+    # We build cmake specially so we can share the build between the login
+    # node and compute node build stages.
+    build_cmake
+
+    # We build the compute node version first so the engine_ser will be 
+    # overwritten by the login node version during installation.
+    build_for_compute_node
+    if [[ $? != 0 ]] ; then
+        warn "Compute node build failed.  Giving up"
+        return 1
+    fi
+
+    build_for_login_node
+    if [[ $? != 0 ]] ; then
+        warn "Login node build failed.  Giving up"
+        return 1
+    fi
+
+    # We installed VisIt so tar up the binary distribution since it contains
+    # binaries for both the login nodes and the compute nodes.
+    if test "$NO_VISIT" = "" ; then
+        cd visit${VISIT_VERSION}/src
+        make install
+        cd ../..
+    fi
+
+    return 0
+}
+
+main $@
+exit 0

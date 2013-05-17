@@ -93,7 +93,7 @@ static bool initialized = false;
 
 bool initialize(bool force)
 {
-
+#ifdef HAVE_LIBGLEW
     if(initialized && !force) // Bail early if we've already been here.
     {
         return true;
@@ -197,8 +197,18 @@ bool initialize(bool force)
              << "or using the " << cmd_line << " command line option.";
         EXCEPTION1(LibraryNotFoundException, noGL.str());
     }
-
+#endif
     return initialized;
+}
+
+bool
+supported(const char *key)
+{
+#ifdef HAVE_LIBGLEW
+    return glewIsSupported(key);
+#else
+    return true;
+#endif
 }
 
 }; /* glew */ }; /* avt */

@@ -43,10 +43,16 @@
 #define VISIT_GLEW_INITIALIZER_H
 #include <plotter_exports.h>
 
+#ifdef HAVE_LIBGLEW
 // We don't need it in this header, but include GLEW here for ease of use.
 // GLEW must be included before any OpenGL headers, and if clients want this
 // file then *not* including GLEW wouldn't make any sense!
 #include <GL/glew.h>
+#else
+// We're not using GLEW for OpenGL. Use straight OpenGL.
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#endif
 
 namespace avt {
 namespace glew {
@@ -64,6 +70,8 @@ namespace glew {
     //
     // ****************************************************************************
     bool PLOTTER_API initialize(bool force=false);
+
+    bool PLOTTER_API supported(const char *);
 };
 };
 #endif
