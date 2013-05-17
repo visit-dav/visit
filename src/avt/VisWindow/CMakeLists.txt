@@ -40,6 +40,9 @@
 #   files when building without Mesa. This caused a compile failure on some
 #   systems because the include path was blank.
 #
+#   Brad Whitlock, Fri May 17 11:12:55 PDT 2013
+#   Link with Objective C library on Mac.
+#
 #****************************************************************************/
 
 SET(COLLEAGUES_SOURCES
@@ -73,6 +76,7 @@ Colleagues/avtTimeSliderColleague.C
 )
 IF(APPLE)
     SET(COLLEAGUES_SOURCES ${COLLEAGUES_SOURCES} Colleagues/VisWinRenderingCocoaHideWindow.mm)
+    SET(OBJC_LIBS objC)
 ENDIF(APPLE)
 
 IF (NOT WIN32)
@@ -197,12 +201,12 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtviswindow_ser ${AVTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle)
+TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle ${OBJC_LIBS})
 VISIT_INSTALL_TARGETS(avtviswindow_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtviswindow_par ${AVTVISWINDOW_SOURCES})
-    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle)
+    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle ${OBJC_LIBS})
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 ENDIF(VISIT_PARALLEL)
