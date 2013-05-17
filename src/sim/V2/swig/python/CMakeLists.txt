@@ -42,23 +42,27 @@
 #  Eric BRugger, Wed Dec 26 15:33:28 PST 2012
 #  Link against symV2dyn instead of symV2.
 #
+#  Brad Whitlock, Fri May 17 13:42:43 PDT 2013
+#  Build in the libsim sources directly.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
 ${VISIT_SOURCE_DIR}/sim/V2/lib
+${VISIT_BINARY_DIR}/include
 ${PYTHON_INCLUDE_PATH}
 )
 
 PYTHON_ADD_MODULE(pysimV2
     simV2_wrap.c
     simV2_custom.c
+    ${LIBSIM_SOURCES}
 )
 # We pick "pysimV2" as the target name because "simV2" is already taken by
 # libsimV2. We then reset its output name to _simV2 since that's what SWIG
 # wants us to call it.
 SET_TARGET_PROPERTIES(pysimV2 PROPERTIES PREFIX "" OUTPUT_NAME _simV2)
 TARGET_LINK_LIBRARIES(pysimV2 
-    simV2dyn
     ${PYTHON_LIBRARIES}
 )
 IF(NOT APPLE)
