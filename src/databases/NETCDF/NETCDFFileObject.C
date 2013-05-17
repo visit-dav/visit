@@ -1097,6 +1097,9 @@ NETCDFFileObject::HandleError(int status) const
 //   Brad Whitlock, Thu Jan  5 17:13:01 PST 2012
 //   Add short support.
 //
+//   Kathleen Biagas, Thu May 16 17:05:57 PDT 2013
+//   Pass the varid to PRINT_ATTR_VALUES function.
+//
 // ****************************************************************************
 
 void
@@ -1158,10 +1161,10 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                    debug4 << "NC_DOUBLE";
                 debug4 << ", size=" << attsize;
 
-#define PRINT_ATTR_VALUES(T, FUNC, var) \
+#define PRINT_ATTR_VALUES(T, FUNC, varid) \
                         {\
                             T *value = new T[attsize];\
-                            FUNC(GetFileHandle(), var, attname, value);\
+                            FUNC(GetFileHandle(), varid, attname, value);\
                             if(attsize > 1)\
                             {\
                                 debug4 << ", value={";\
