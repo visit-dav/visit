@@ -1158,10 +1158,10 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                    debug4 << "NC_DOUBLE";
                 debug4 << ", size=" << attsize;
 
-#define PRINT_ATTR_VALUES(T, FUNC) \
+#define PRINT_ATTR_VALUES(T, FUNC, var) \
                         {\
                             T *value = new T[attsize];\
-                            FUNC(GetFileHandle(), i, attname, value);\
+                            FUNC(GetFileHandle(), var, attname, value);\
                             if(attsize > 1)\
                             {\
                                 debug4 << ", value={";\
@@ -1191,13 +1191,13 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                     delete [] value;
                 }
                 else if(atttype == NC_SHORT)
-                    PRINT_ATTR_VALUES(short, nc_get_att_short)
+                    PRINT_ATTR_VALUES(short, nc_get_att_short, NC_GLOBAL)
                 else if(atttype == NC_INT)
-                    PRINT_ATTR_VALUES(int, nc_get_att_int)
+                    PRINT_ATTR_VALUES(int, nc_get_att_int, NC_GLOBAL)
                 else if(atttype == NC_FLOAT)
-                    PRINT_ATTR_VALUES(float, nc_get_att_float)
+                    PRINT_ATTR_VALUES(float, nc_get_att_float, NC_GLOBAL)
                 else if(atttype == NC_DOUBLE)
-                    PRINT_ATTR_VALUES(double, nc_get_att_double)
+                    PRINT_ATTR_VALUES(double, nc_get_att_double, NC_GLOBAL)
             }
             else
                 HandleError(status);
@@ -1296,13 +1296,13 @@ NETCDFFileObject::PrintFileContents(ostream &os)
                             delete [] value;
                         }
                         else if(atttype == NC_SHORT)
-                            PRINT_ATTR_VALUES(short, nc_get_att_short)
+                            PRINT_ATTR_VALUES(short, nc_get_att_short, i)
                         else if(atttype == NC_INT)
-                            PRINT_ATTR_VALUES(int, nc_get_att_int)
+                            PRINT_ATTR_VALUES(int, nc_get_att_int, i)
                         else if(atttype == NC_FLOAT)
-                            PRINT_ATTR_VALUES(float, nc_get_att_float)
+                            PRINT_ATTR_VALUES(float, nc_get_att_float, i)
                         else if(atttype == NC_DOUBLE)
-                            PRINT_ATTR_VALUES(double, nc_get_att_double)
+                            PRINT_ATTR_VALUES(double, nc_get_att_double, i)
                     }
                     else
                         HandleError(status);

@@ -190,7 +190,7 @@ avtNETCDFReaderBase::GetTimeDimension(NETCDFFileObject *fileObject, int &ncdim, 
 }
 
 // ****************************************************************************
-//  Method: avtEMSTDFileFormat::GetNTimesteps
+//  Method: avtNETCDFReaderBase::GetNTimesteps
 //
 //  Purpose:
 //      Tells the rest of the code how many timesteps there are in this file.
@@ -257,7 +257,7 @@ avtNETCDFReaderBase::GetTimes(std::vector<double> &times)
 }
 
 // ****************************************************************************
-// Method: avtCCSMReader::ReadTimeAttribute
+// Method: avtNETCDFReaderBase::ReadTimeAttribute
 //
 // Purpose: 
 //   Reads the global attribute Time into a float array.
@@ -313,7 +313,7 @@ avtNETCDFReaderBase::ReadTimeAttribute()
 }
 
 // ****************************************************************************
-// Method: avtCCSMReader::ReadCycleAttribute
+// Method: avtNETCDFReaderBase::ReadCycleAttribute
 //
 // Purpose: 
 //   Returns the global attribute Cycle as an int.
@@ -358,7 +358,7 @@ avtNETCDFReaderBase::ReadCycleAttribute()
 }
 
 // ****************************************************************************
-// Method: avtCCSMReader::ReadArray
+// Method: avtNETCDFReaderBase::ReadArray
 //
 // Purpose: 
 //   Reads a variable into a float array.
@@ -380,7 +380,7 @@ avtNETCDFReaderBase::ReadCycleAttribute()
 float *
 avtNETCDFReaderBase::ReadArray(const char *varname)
 {
-    const char *mName = "avtCCSMReader::ReadArray: ";
+    const char *mName = "avtNETCDFReaderBase::ReadArray: ";
     TypeEnum t;
     int ndims, *dims = 0;
     float *arr = 0;
