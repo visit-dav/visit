@@ -160,6 +160,7 @@ avtICAlgorithm::GetDomain(avtIntegralCurve *ic)
     vtkDataSet *ds = GetDomain(ic->blockList.front(), pt);
     if (ds)
         ic->status.ClearSpatialBoundary();
+    return ds;
 }
 
 // ****************************************************************************
@@ -181,7 +182,6 @@ avtICAlgorithm::GetDomain(const BlockIDType &dom, const avtVector &pt)
     IOTime.value += visitTimer->StopTimer(timerHandle, "GetDomain()");
     
     return ds;
-    
 }
 
 // ****************************************************************************
