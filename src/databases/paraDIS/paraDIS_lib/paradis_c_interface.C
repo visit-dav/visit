@@ -8,12 +8,9 @@ extern "C" {
   static paraDIS::DataSet *pci_gDataSet = NULL; 
 
 #define MAX_METAARM_NODES 2048
-  static float gNodeLocationBuffer[MAX_METAARM_NODES*3+20]; 
-#define NO_NODES 72443884; 
+  static float gNodeLocationBuffer[MAX_METAARM_NODES*3+20];   
 
-  
-
-  inline void paraDIS_init(void *ds) {
+  void paraDIS_init(void *ds) {
     if (ds) pci_gDataSet = reinterpret_cast<paraDIS::DataSet *>(ds); 
     if (!pci_gDataSet)  pci_gDataSet = new paraDIS::DataSet;
   }
