@@ -56,6 +56,10 @@
 #
 #   Kathleen Biagas, Thu June 14 13:52:53 MST 2012
 #   Use GET_FILENAME_SHORTEXT on Windows, too.
+#
+#   Kathleen Biagas, Mon May 20 14:37:19 MST 2013
+#   On Windows, look for dll's in 'bin' directory if not found in 'lib'.
+#
 #****************************************************************************/
 
 #
@@ -89,7 +93,6 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
         GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
         STRING(REPLACE ${LIBEXT} "" curNAMEWE ${realNAME})
-
         SET(curNAME "${curPATH}/${curNAMEWE}")
         SET(dllNAME "${curNAME}.dll")
         SET(libNAME "${curNAME}.lib")
@@ -106,6 +109,25 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                             ${dllNAME}
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        ELSE() # try 'bin' directory
+            SET(dll_path "${curPATH}/../bin/${curNAMEWE}")
+            GET_FILENAME_COMPONENT(dll_path ${dll_path} ABSOLUTE)
+            
+            SET(newdllNAME "${dll_path}.dll")
+            IF(EXISTS ${newdllNAME})
+                INSTALL(FILES ${newdllNAME} 
+                    DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+                                WORLD_READ WORLD_EXECUTE
+                    CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
+                    )
+                # On Windows, we also need to copy the file to the 
+                # binary dir so our out of source builds can run.
+                EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${newdllNAME}
+                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            ENDIF(EXISTS ${newdllNAME})
         ENDIF(EXISTS ${dllNAME})
 
         IF(VISIT_INSTALL_THIRD_PARTY AND EXISTS ${libNAME})
