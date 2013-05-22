@@ -65,7 +65,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
 
     def CreateFilename(self, root):
-        if  self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "hopper":
+        if  self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
             tdate = time.asctime()[11:19]
             tuser = self.launcher.username()
             return os.path.join(GETENV("HOME"), "%s.%s.%s" % (root, tuser, tdate))
@@ -76,7 +76,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             return ["/usr/syscom/opt/torque/default/bin/qsub"]
         elif self.launcher.nersc_host == "edison":
             return ["/opt/torque/4.1.4/bin/qsub"] # FIXME?
-        elif self.launcher.nersc_host == "hopper":
+        elif self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
             return ["/usr/common/nsg/bin/qsub"]
         else:
             print "Error: unknown NERSC host '%s'. Using default qsub executable." % self.launcher.nersc_host
@@ -95,7 +95,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def TFileSetup(self, tfile):
         tfile.write("cd %s\n" % os.path.abspath(os.curdir))
         tfile.write("ulimit -c 0\n")
-        if self.launcher.nersc_host == "hopper":
+        if self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
             tfile.write("MOM_HOST=$(hostname)\n")
             relay = os.path.join(self.launcher.visitbindir, "visit_socket_relay")
             cmd = "%s %s %s > %s.port\n" % (relay, self.launcher.loginnodehost, self.launcher.loginnodeport, self.tfilename)
@@ -105,7 +105,7 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
             tfile.write("eval $(modulecmd sh unload xt-shmem)\n")
 
     def SetupPPN(self, nodes, procs, ppn, use_vis):
-        if self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "hopper":
+        if self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
             args = []
             if self.parallel.workingdir != None:
                 args = args + ["-d", self.parallel.workingdir]
@@ -209,7 +209,7 @@ class NERSCLauncher(MainLauncher):
 #
 #                if self.generalArgs.exe_name == "engine" and not self.parallelArgs.parallel:
 #                    exit("The VisIt install on Hopper does not support running a serial engine!", 1)
-       elif self.nersc_host == "hopper":
+       elif self.nersc_host == "grace" or self.nersc_host == "hopper":
         # ----
         # Hopper @ NERSC
         # ----
@@ -219,7 +219,7 @@ class NERSCLauncher(MainLauncher):
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Set up VisIt socket relay on MOM node for parallel engine
-            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel:
+            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel and (self.sectorname() == "grace" or self.sectorname() == "hopper"):
                  self.loginnodeport = self.generalArgs.port
                  self.generalArgs.port = "$MOM_PORT"
                  self.loginnodehost = self.generalArgs.host
@@ -227,7 +227,7 @@ class NERSCLauncher(MainLauncher):
                  self.generalArgs.noloopback = 1
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
-            if self.sectorname() == "hopper":
+            if self.sectorname() == "grace" or self.sectorname() == "hopper":
                 if not self.generalArgs.env and self.generalArgs.exe_name == "gui" and not self.visitver[-1] =="b":
                     msg = """
 Do not run the VisIt GUI on Hopper. Run it on you local workstation (preferred/best performance) or Euclid!
