@@ -1,0 +1,12 @@
+{ "skip_list":[
+ {"mode":"serial","tests":[
+                    {"category":"databases","file":"claw.py"},
+                    {"category":"databases","file":"itaps.py"},
+                    {"category":"databases","file":"rect.py"},
+                    {"category":"databases","file":"vista.py"},
+                    {"category":"unit","file":"launcher.py"},
+                    {"category":"unit","file":"mrucache.py"},
+                    {"category":"unit","file":"namescheme.py"},
+                    {"category":"unit","file":"stringhelpers.py"}
+                  ]}
+]}

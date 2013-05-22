@@ -173,6 +173,7 @@ def run_visit_test(args):
     tparams["result_dir"]     = opts.resultdir
     tparams["fuzzy_match"]    = fuzzy
     tparams["skip_file"]      = None
+    tparams["skip_file_win"]  = None
     tparams["interactive"]    = opts.interactive
     tparams["use_pil"]        = opts.use_pil
     tparams["pixdiff"]        = opts.pixdiff
@@ -183,9 +184,17 @@ def run_visit_test(args):
     tparams["baseline_dir"]   = opts.baselinedir
     tparams["tests_dir"]      = opts.testsdir
     tparams["visit_bin"]      = opts.executable
+
     if not opts.noskip:
         tparams["skip_file"]  = opts.skipfile
-    skip  =  check_skip(opts.skiplist,modes,test_cat,test_file)
+        tparams["skip_file_win"] = opts.skipfilewin
+        if not sys.platform.startswith("win"):
+            skip = check_skip(opts.skiplist,modes,test_cat,test_file)
+        else:
+            skip = check_skip(opts.skiplistwin,modes,test_cat,test_file)
+            if not skip:
+                skip = check_skip(opts.skiplist,modes,test_cat,test_file)
+
     if skip:
         Log("[Skipping: %s/%s (found in skip list)]" % (test_cat,test_file))
         result = TestScriptResult(idx,
@@ -319,6 +328,7 @@ def parse_args():
     tests_dir_def   = abs_path(visit_root(),"test","tests")
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
     skip_def        = pjoin(test_path(),"skip.json")
+    skip_def_win    = pjoin(test_path(),"skipwin.json")
     nprocs_def      = multiprocessing.cpu_count()
     parser.add_option("-r",
                       "--run-only",
@@ -394,6 +404,10 @@ def parse_args():
                       dest="skipfile",
                       default=skip_def,
                       help="specify a skip list file [default=%s]" % skip_def)
+    parser.add_option( "--skiplistwin",
+                      dest="skipfilewin",
+                      default=skip_def_win,
+                      help="specify a skip list file for windows [default=%s]" % skip_def_win)
     parser.add_option("--no-skiplist",
                       dest="noskip",
                       default=False,
@@ -475,12 +489,22 @@ def parse_args():
     opts.baselinedir = abs_path(opts.baselinedir)
     opts.classes     = opts.classes.split(",")
     opts.skiplist    = None
+    opts.skiplistwin = None
     if os.path.isfile(opts.skipfile):
         try:
             if opts.noskip == False:
                 opts.skiplist = json_load(opts.skipfile)
         except:
             opts.skiplist = None
+
+    if sys.platform.startswith("win"):
+        if os.path.isfile(opts.skipfilewin):
+            try:
+                if opts.noskip == False:
+                    opts.skiplistwin = json_load(opts.skipfilewin)
+            except:
+                opts.skiplistwin = None
+
     tests           = [ abs_path(t) for t in args]
     return opts, tests
 
@@ -613,6 +637,9 @@ def launch_tests(opts,tests):
         Log("[Running %d test cases]" % ntests)
     if opts.noskip == False and os.path.isfile(opts.skipfile):
         Log("[Using skip list file: '%s']" % opts.skipfile)
+    if sys.platform.startswith("win"):
+        if opts.noskip == False and os.path.isfile(opts.skipfilewin):
+            Log("[Using skip list file: '%s']" % opts.skipfilewin)
     test_args = [(idx,tests[idx],opts) for idx in range(ntests)]
     # save the input list
     test_list = json_dumps([(idx,tests[idx]) for idx in range(ntests)])
