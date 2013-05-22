@@ -1523,6 +1523,11 @@ class TestEnv(object):
             cls.skiplist = json_load(cls.params["skip_file"])
         else:
             cls.skiplist = None
+        if sys.platform.startswith("win"):
+            if not cls.params["skip_file_win"] is None and os.path.isfile(cls.params["skip_file_win"]):
+                cls.skiplistwin = json_load(cls.params["skip_file_win"])
+            else:
+                cls.skiplistwin = None
         # parse modes for various possible modes
         for mode in string.split(cls.params["modes"],","):
             if mode == "scalable":
@@ -1544,6 +1549,21 @@ class TestEnv(object):
         cls.SILO_MODE = cls.params["silo_mode"]
     @classmethod
     def check_skip(cls,case_name):
+        if sys.platform.startswith("win"):
+            if not cls.skiplistwin is None:
+                # look for modes that match
+                for v in cls.skiplistwin['skip_list']:
+                    if v['mode'] ==cls.params["modes"]:
+                        for test in v['tests']:
+                            if test['category'] == cls.params["category"]:
+                                # see if the file matches
+                                if test['file'] == cls.params["file"]:
+                                    if not test.has_key("cases"):
+                                        return True
+                                    else:
+                                        if case_name in test['cases']:
+                                            return True
+
         if cls.skiplist is None:
             return False
         # look for modes that match
