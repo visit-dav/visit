@@ -91,6 +91,7 @@ ${engine_ser_exe_IOperator}
 ${engine_ser_exe_EOperator_ser}
 ${engine_ser_exe_IPlot}
 ${engine_ser_exe_EPlot_ser}
+avtdatabase_ser
 viewerrpc
 viewerproxy
 enginerpc

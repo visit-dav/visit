@@ -83,6 +83,7 @@ ${cli_IOperator}
 ${cli_SOperator}
 ${cli_IPlot}
 ${cli_SPlot}
+avtdatabase_ser
 viewerrpc
 viewerproxy
 enginerpc
