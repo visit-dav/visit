@@ -69,6 +69,10 @@
 #    Mark C. Miller, Tue Feb 28 00:36:09 PST 2012
 #    Added a slew of tests for hybrid zoo and arbitrary polygonal/polyhedral
 #    meshes and variables defined upon them.
+# 
+#    Kathleen Biagas, Thurs May 23 14:09:15 MST 2013 
+#    Don't run certain tests on Windows that cause a crash.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -291,16 +295,19 @@ Test("silo_25")
 DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
-(err, dbname) = FindAndOpenDatabase("largefile.silo")
-AddPlot("Curve","sincurve")
-AddPlot("Curve","coscurve")
-DrawPlots()
-if (err != 1):
-    global skipCases
-    skipCases.append("silo_26")
-Test("silo_26")
-DeleteAllPlots()
-CloseDatabase(dbname)
+# this crashes on windows, so don't try to run it.
+if not sys.platform.startswith("win"):
+    (err, dbname) = FindAndOpenDatabase("largefile.silo")
+    if (err != 1):
+        global skipCases
+        skipCases.append("silo_26")
+    else:
+        AddPlot("Curve","sincurve")
+        AddPlot("Curve","coscurve")
+        DrawPlots()
+        Test("silo_26")
+        DeleteAllPlots()
+        CloseDatabase(dbname)
 
 #
 # Test time invariant mesh
@@ -402,12 +409,11 @@ TimeSliderPreviousState()
 TimeSliderPreviousState()
 Test("silo_39")
 
-
-TestSection("Silo AMR w/Mrgtrees")
-TurnOffAllAnnotations()
 DeleteAllPlots()
 CloseDatabase(silo_data_path("wave_1file.visit"))
 
+TestSection("Silo AMR w/Mrgtrees")
+TurnOffAllAnnotations()
 OpenDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
 
 AddPlot("Mesh","amr_mesh_wmrgtree")
@@ -420,10 +426,14 @@ Test("silo_40")
 AddPlot("Pseudocolor","Density_wmrgtree")
 DrawPlots()
 Test("silo_41")
-silr=SILRestriction()
-TurnOffSetsByName(silr, "levels", "level2")
-SetPlotSILRestriction(silr)
-Test("silo_42")
+
+# on Windows, no 'levels', so this code causes a crash, so disable for now.
+if not sys.platform.startswith("win"):
+    silr=SILRestriction()
+    s = silr.SetsInCategory("levels")
+    TurnOffSetsByName(silr, "levels", "level2")
+    SetPlotSILRestriction(silr)
+    Test("silo_42")
 
 DeleteAllPlots()
 CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
@@ -442,13 +452,16 @@ v.imagePan = (0.2066, 0.104372)
 v.imageZoom = 6.03355
 SetView3D(v)
 Test("silo_43")
-silr=SILRestriction()
-TurnOffSetsByName(silr, "levels", "level2")
-SetPlotSILRestriction(silr)
-Test("silo_44")
-TurnOffSetsByName(silr, "levels", "level1")
-SetPlotSILRestriction(silr)
-Test("silo_45")
+
+# on Windows, no 'levels', so this code causes a crash, so disable for now.
+if not sys.platform.startswith("win"):
+    silr=SILRestriction()
+    TurnOffSetsByName(silr, "levels", "level2")
+    SetPlotSILRestriction(silr)
+    Test("silo_44")
+    TurnOffSetsByName(silr, "levels", "level1")
+    SetPlotSILRestriction(silr)
+    Test("silo_45")
 
 DeleteAllPlots()
 CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
