@@ -45,10 +45,11 @@
 #include <avtCallback.h>
 #include <avtOriginatingSource.h>
 #include <avtParallel.h>
-
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
 #include <DebugStream.h>
 #include <UnexpectedValueException.h>
-
+#include <InvalidFilesException.h>
 #include <math.h>
 
 
@@ -149,6 +150,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Set attributes to prevent exception when merging objects with time
 //    parallelization.
 //
+//   Dave Pugmire, Thu May 23 10:56:50 EDT 2013
+//   Rename the loop initialization method. Add RankOwnsSlice()
+//
 // ****************************************************************************
 
 bool
@@ -166,9 +170,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     // derived filters can use it for setting the start and stop
     // times.
     currentTime = spec->GetDataRequest()->GetTimestep();
-    //cout<<"avtTimeLoopFilter::Update() currentTime= "<<currentTime<<endl<<endl;
 
-    FinalizeTimeLoop();
+    InitializeTimeLoop();
 
     int numTimeLoopIterations = GetNumberOfIterations();
 
@@ -182,25 +185,19 @@ avtTimeLoopFilter::Update(avtContract_p spec)
 
     for (int currentLoopIter=0; currentLoopIter<numTimeLoopIterations; ++currentLoopIter)
     {
-        debug4 << "Time loop filter updating with iteration # "
-               << currentLoopIter << endl;
-
+        debug4 << "Time loop filter updating with iteration # "<<currentLoopIter<<endl;
         int curIter = 0;
 
         BeginIteration(currentLoopIter);
-
+        
         for (i=0, currentTime=startTime; i<nFrames; ++i, currentTime+=stride)
         {
-            bool shouldDoThisTimeSlice = true;
+            bool shouldDoThisTimeSlice = parallelizingOverTime && RankOwnsTimeSlice(i);
 
-            if (parallelizingOverTime)
-                if ((curIter % PAR_Size()) != PAR_Rank())
-                    shouldDoThisTimeSlice = false;
             curIter++;
-
             if (!shouldDoThisTimeSlice)
                 continue;
-
+            
             // Depending on the stride the last frame may be before
             // the end.
             if (currentTime > endTime)
@@ -290,7 +287,6 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     GetOutput()->GetInfo().GetAttributes().SetTimeIndex(
                              GetInput()->GetInfo().GetAttributes().GetTimeIndex());
 
-    //cout<<"avtTimeLoopFilter::Update()  DONE"<<endl<<endl;
     return modified;
 }
 
@@ -335,9 +331,133 @@ avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
     return false;
 }
 
+//****************************************************************************
+// Method:  avtTimeLoopFilter::RankOwnsTimeSlice
+//
+// Purpose:
+//   Determines if rank will load this time slice
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 20, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtTimeLoopFilter::RankOwnsTimeSlice(int t)
+{
+#ifdef PARALLEL
+    return (t % PAR_Size() == PAR_Rank());
+#else
+    return true;
+#endif
+}
+
+//****************************************************************************
+// Method:  avtTimeLoopFilter::GetTotalNumberOfTimeSlicesForRank
+//
+// Purpose:
+//   Return total number of times slices that will be loaded by this rank.
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 20, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+int
+avtTimeLoopFilter::GetTotalNumberOfTimeSlicesForRank()
+{
+    if (!CanDoTimeParallelization())
+        return 1;
+    
+#ifdef PARALLEL
+    int totalNumTimes = 0;
+    for (int i = startTime; i < actualEnd; i+= stride)
+        if (RankOwnsTimeSlice(i))
+            totalNumTimes++;
+    
+    return totalNumTimes;
+#else
+    return ((actualEnd-startTime)/stride+1);
+#endif
+}
+
+//****************************************************************************
+// Method:  avtTimeLoopFilter::GetCyclesForRank
+//
+// Purpose:
+//   Return cycles that will be loaded by this rank.
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 20, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+std::vector<int>
+avtTimeLoopFilter::GetCyclesForRank()
+{
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+        EXCEPTION1(InvalidFilesException, db.c_str());
+    avtDatabaseMetaData *md = dbp->GetMetaData(0);//,true,true,false);
+    intVector c = md->GetCycles();
+
+    std::vector<int> cycles;
+#ifdef PARALLEL
+    for (int i = startTime; i < actualEnd; i+= stride)
+        if (RankOwnsTimeSlice(i))
+            cycles.push_back(c[i]);
+#else
+    cycles = c;
+#endif
+    return cycles;
+}
+
+//****************************************************************************
+// Method:  avtTimeLoopFilter::GetTimesForRank
+//
+// Purpose:
+//   Return times that will be loaded by this rank.
+//
+// Programmer:  Dave Pugmire
+// Creation:    March 20, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+
+std::vector<double>
+avtTimeLoopFilter::GetTimesForRank()
+{
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+        EXCEPTION1(InvalidFilesException, db.c_str());
+    avtDatabaseMetaData *md = dbp->GetMetaData(0);//,true,true,false);
+    doubleVector t = md->GetTimes();
+
+    std::vector<double> times;
+#ifdef PARALLEL
+    for (int i = startTime; i < actualEnd; i+= stride)
+        if (RankOwnsTimeSlice(i))
+            times.push_back(t[i]);
+#else
+    times = t;
+#endif
+    
+    return times;
+}
+
 
 // ****************************************************************************
-//  Method: avtTimeLoopFilter::FinalizeTimeLoop
+//  Method: avtTimeLoopFilter::InitializeTimeLoop
 //
 //  Purpose:  Sets the begin and end frames for the time loop.  Peforms error
 //            checking on the values.
@@ -356,27 +476,24 @@ avtTimeLoopFilter::DataCanBeParallelizedOverTime(void)
 //    will not exit. Clamp endTime if >= numStates, just like listed in the 
 //    issued warning.
 //
+//   Dave Pugmire, Thu May 23 10:56:50 EDT 2013
+//   Rename the loop initialization method.
+//
 // ****************************************************************************
 
 void
-avtTimeLoopFilter::FinalizeTimeLoop()
+avtTimeLoopFilter::InitializeTimeLoop()
 {
-    // Hook for derived types to set the start, stop, and stride
-    // possibly using the currentTime. Not always needed.
-    InitializeTimeLoop();
-
     int numStates = GetInput()->GetInfo().GetAttributes().GetNumStates();
     
     if (startTime < 0)
     {
         startTime = 0;
     }
-
     if (endTime < 0)
     {
         endTime = numStates - 1;
     }
-
     if (stride < 0)
     {
         stride = 1;
@@ -393,7 +510,6 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         std::string msg(oss.str());
         avtCallback::IssueWarning(msg.c_str());
     }
-
     if (startTime > endTime)
     {
         std::ostringstream oss;
@@ -410,7 +526,6 @@ avtTimeLoopFilter::FinalizeTimeLoop()
       nFrames = (int) ceil(((float) endTime - startTime) / (float) stride) + 1; 
     else
       nFrames = (endTime - startTime) / stride + 1; 
-
     if (nFrames < 1)
     {
         std::ostringstream oss1, oss2;
@@ -421,6 +536,10 @@ avtTimeLoopFilter::FinalizeTimeLoop()
         std::string got(oss2.str());
         EXCEPTION2(UnexpectedValueException, expected, got);
     }
+    
+    // Hook for derived types to set the start, stop, and stride
+    // possibly using the currentTime. Not always needed.
+    PreLoopInitialize();
 }
 
 
