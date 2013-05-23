@@ -48,6 +48,7 @@
 #include <avtFilter.h>
 
 
+
 // ****************************************************************************
 //  Method: avtTimeLoopFilter
 //
@@ -76,6 +77,9 @@
 //    Dave Pugmire, Tue Jul 17 11:52:34 EDT 2012
 //    Added ability to make multiple passes over the time series.
 //
+//   Dave Pugmire, Thu May 23 10:56:50 EDT 2013
+//   Rename the loop initialization method. Add Cycle/Times queries.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
@@ -97,24 +101,30 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
                                             { endTime = e; };
     void                                SetStride(int s)
                                             { stride = s; };
-    void                                SetIncludeLastTime(bool val) { includeLastTime = val;};
+    void                                SetIncludeLastTime(bool val) { includeLastTime = val;}
     int                                 GetStartTime() const {return startTime;}
     int                                 GetEndTime() const {return endTime;}
     int                                 GetNFrames() const {return nFrames;}
-    bool                                GetIncludeLastTime() const { return includeLastTime;};
+    bool                                GetIncludeLastTime() const { return includeLastTime;}
+
 
   protected:
     intVector                           validTimes;
     intVector                           skippedTimes;
-    int                                 currentTime, currentLoopIter;
+    int                                 currentTime;
     avtSILRestriction_p                 currentSILR;
     std::string                         errorMessage;
 
-    virtual void                        BeginIteration(int i) { iteration = i; }
+    virtual void                        BeginIteration(int i) {iteration=i;}
     virtual void                        EndIteration(int i) {}
     virtual void                        SetNumberOfIterations( int i) {nIterations = i;}
     virtual int                         GetNumberOfIterations() {return nIterations;}
     virtual int                         GetIteration() {return iteration;}
+
+    virtual int                         GetTotalNumberOfTimeSlicesForRank();
+    virtual std::vector<int>            GetCyclesForRank();
+    virtual std::vector<double>         GetTimesForRank();
+
     virtual bool                        NeedCurrentTimeSlice() {return true;}
     virtual void                        CreateFinalOutput(void) = 0;
     virtual bool                        ExecutionSuccessful(void) = 0;
@@ -131,8 +141,9 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     bool                                includeLastTime;
     bool                                parallelizingOverTime;
 
-    virtual void                        InitializeTimeLoop(void) {};
-    void                                FinalizeTimeLoop(void);
+    virtual bool                        RankOwnsTimeSlice(int t);
+    virtual void                        PreLoopInitialize(void) {}
+    void                                InitializeTimeLoop(void);
 
   protected:
     // Asks whether we have decided to do time parallelization.  This 
@@ -161,6 +172,8 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
     bool                                CanDoTimeParallelization(void);
 
 };
+
+
 #endif
 
 
