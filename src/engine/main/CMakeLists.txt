@@ -132,6 +132,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
+${OPENGL_INCLUDE_DIR}
 )
 
 # Add link directories
