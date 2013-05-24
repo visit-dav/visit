@@ -18,7 +18,7 @@ BG_CXX=bgxlC
 BG_GNU_CC=powerpc64-bgq-linux-gcc
 BG_GNU_CXX=powerpc64-bgq-linux-g++
 
-BG_MPI_GNU_CC=mpicc
+BG_MPI_GNU_CC=mpicc # not used
 BG_MPI_GNU_CXX=mpicxx
 
 BG_MPI_CC=mpixlc
@@ -57,7 +57,7 @@ export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
 export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-1.2.7"}
 export ZLIB_URL="http://zlib.net/"
 
-export VTK_VERSION=11e3679
+export VTK_VERSION=12fca6b
 
 ################################################################################
 ## CODE BORROWED FROM build_visit
@@ -178,6 +178,15 @@ function build_mesa_BGQ
     if [[ $untarred_mesa == -1 ]] ; then
         warn "Unable to prepare Mesa build directory. Giving Up!"
         return 1
+    fi
+
+    if test -e $MESA_BUILD_DIR ; then
+        echo "Moving $MESA_BUILD_DIR into ${INSTALLATION_BUILD_DIR}_BGQ"
+        if test -e ${INSTALLATION_BUILD_DIR}_BGQ/$MESA_BUILD_DIR ; then
+            rm -rf ${INSTALLATION_BUILD_DIR}_BGQ/$MESA_BUILD_DIR
+        fi
+        mv $MESA_BUILD_DIR ${INSTALLATION_BUILD_DIR}_BGQ/$MESA_BUILD_DIR
+        cd ${INSTALLATION_BUILD_DIR}_BGQ
     fi
 
     #
@@ -406,6 +415,7 @@ function build_cmake
         CXXFLAGSARGS="--cxxflags \"$CXX_OPT_FLAGS\""
     fi
 
+    echo "***Building CMake"
     $bv_PATH/build_visit --console --static $NO_VISIT $SVN \
         --no-thirdparty --cmake\
         --log-file building_cmake.txt \
@@ -415,7 +425,8 @@ function build_cmake
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}" \
         --cc $CC $CFLAGSARGS \
-        --cxx $CXX $CXXFLAGSARGS $MAKEARGS
+        --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
+        --group $GROUP
 
    # Create a symlink to make a "BGQ" version of the login node cmake.
    STARTDIR=`pwd`
@@ -451,6 +462,7 @@ function build_zlib_BGQ
     fi
 
     # Build some packages that require GNU compilers.
+    echo "***Building zlib"
     $bv_PATH/build_visit \
         --console --static --no-visit $SVN --engine-only \
         --log-file compute_node.txt \
@@ -461,7 +473,8 @@ function build_zlib_BGQ
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --zlib
+        --no-thirdparty --zlib \
+        --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "ZLIB build failed.  Giving up"
         return 1
@@ -476,6 +489,7 @@ function build_vtk_BGQ
     MESADIR="$THIRD_PARTY_PATH/mesa/$MESA_VERSION/${ARCH}_BGQ"
     ZLIBDIR="$THIRD_PARTY_PATH/zlib/$ZLIB_VERSION/${ARCH}_BGQ"
     VTKDIR="$THIRD_PARTY_PATH/vtk/$VTK_VERSION/${ARCH}_BGQ"
+    VTK_SRC_DIR="${INSTALLATION_BUILD_DIR}_BGQ/VTK-${VTK_VERSION}"
     VTK_BUILD_DIR="${INSTALLATION_BUILD_DIR}_BGQ/VTK-${VTK_VERSION}-build"
 
     # If the VTK installation directory already exists, return.
@@ -490,15 +504,15 @@ function build_vtk_BGQ
     fi
     CFLAGSARGS=""
     if test -n "$BG_C_OPT_FLAGS" ; then
-        CFLAGSARGS="--cflag $BG_C_OPT_FLAGS"
+        CFLAGSARGS="--cflags $BG_C_OPT_FLAGS"
     fi
     CXXFLAGSARGS=""
     if test -n "$BG_CXX_OPT_FLAGS" ; then
-        CXXFLAGSARGS="--cxxflag $BG_CXX_OPT_FLAGS"
+        CXXFLAGSARGS="--cxxflags $BG_CXX_OPT_FLAGS"
     fi
 
     # Form extra arguments that we'll pass to cmake for VTK.
-    vopts="-DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+    vopts="-DCMAKE_CROSSCOMPILING:BOOL=ON -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
     vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=$MESADIR/include"
     vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=$MESADIR/lib/libGL.a"
     vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=$MESADIR/lib/libGLU.a"
@@ -521,23 +535,22 @@ function build_vtk_BGQ
         rm -f $VTK_BUILD_DIR/CMakeCache.txt
     fi
 
-    # Create the VTKCompileTools file if one does not exist.
-    if ! test -e ${INSTALLATION_BUILD_DIR}_BGQ/VTKCompileToolsConfig.cmake ; then
-        echo "MESSAGE(STATUS \"Fake VTKCompileToolsConfig.cmake\")" > ${INSTALLATION_BUILD_DIR}_BGQ/VTKCompileToolsConfig.cmake
-    fi
-
     # Call build_visit.
-    env VTK_EXTRA_OPTIONS="${vopts}" $bv_PATH/build_visit \
+    echo "***Building VTK"
+    env VTK_EXTRA_OPTIONS="${vopts}" C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --console --static --no-visit $SVN --engine-only \
         --no-thirdparty --cmake --vtk \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
-        --prefix $ARCH \
         --build-mode $BUILD_MODE \
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
-        --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS
+        --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
+        --group $GROUP
+
+    rm -rf $VTK_SRC_DIR
+    rm -rf $VTK_BUILD_DIR
 
     return $?
 }
@@ -559,6 +572,7 @@ function build_icet_BGQ
 
     # Call build_visit just to build Ice-T. Use the gnu compilers to build
     # it but use the XL/MPI compilers to detect MPI.
+    echo "***Building Ice-T"
     env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC  $bv_PATH/build_visit \
         --console --static --no-visit $SVN --engine-only \
         --no-thirdparty --icet \
@@ -569,7 +583,10 @@ function build_icet_BGQ
         --thirdparty-path $THIRD_PARTY_PATH \
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_GNU_CC $CFLAGSARGS \
-        --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS
+        --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
+        --group $GROUP
+
+    rm -rf ${INSTALLATION_BUILD_DIR}_BGQ/IceT-1-0-0
 
     return $?
 }
@@ -630,6 +647,7 @@ function build_for_compute_node
     fi
 
     # Build some packages that require GNU compilers.
+    echo "***Building I/O libraries"
     env SILO_EXTRA_OPTIONS="--disable-browser --disable-hzip --disable-fpzip" $bv_PATH/build_visit \
         --console --static --no-visit $SVN --engine-only \
         --log-file compute_node.txt \
@@ -640,14 +658,17 @@ function build_for_compute_node
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_GNU_CC $CFLAGSARGS \
         --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --szip --hdf5 --zlib --silo
+        --no-thirdparty --szip --hdf5 --zlib --silo \
+        --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "3rd party I/O build failed.  Giving up"
         return 1
     fi
 
-    # Call build_visit to build the I/O libraries and VisIt, etc.
-    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC $bv_PATH/build_visit \
+    # Call build_visit to build VisIt itself. Note that we set PAR_COMPILER, 
+    # C_COMPILER, BUILD_VISIT_BGQ to trigger special behaviors in build_visit.
+    echo "***Building VisIt"
+    env PAR_COMPILER=$BG_MPI_CC C_COMPILER=$BG_CC BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit \
         --console --static $NO_VISIT $SVN --engine-only\
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -658,7 +679,8 @@ function build_for_compute_node
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
         --no-thirdparty --szip --hdf5 --zlib --silo \
-        --parallel --icet
+        --parallel --icet \
+        --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
@@ -695,7 +717,8 @@ function build_for_login_node
         --installation-build-dir $INSTALLATION_BUILD_DIR \
         --cc $CC $CFLAGSARGS \
         --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --cmake --vtk $IO_PACKAGES --python
+        --no-thirdparty --cmake --vtk $IO_PACKAGES --python \
+        --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
@@ -714,33 +737,44 @@ function build_for_login_node
 
 function printvars
 {
+    echo "========================================================================"
+    echo "The following variables will be used during the build process:"
+    echo ""
+    echo "Build Settings"
+    echo "==============="
     echo "ARCH=$ARCH"
-    echo "BG_CC=$BG_CC"
-    echo "BG_C_OPT_FLAGS=$BG_C_OPT_FLAGS"
-    echo "BG_CXX_OPT_FLAGS=$BG_CXX_OPT_FLAGS"
-    echo "BG_CXX=$BG_CXX"
-
-    echo "BG_GNU_CC=$BG_GNU_CC"
-    echo "BG_GNU_CXX=$BG_GNU_CXX"
-
-    echo "BG_MPI_CC=$BG_MPI_CC"
-    echo "BG_MPI_C_OPT_FLAGS=$BG_MPI_C_OPT_FLAGS"
-    echo "BG_MPI_CXX_OPT_FLAGS=$BG_MPI_CXX_OPT_FLAGS"
-    echo "BG_MPI_CXX=$BG_MPI_CXX"
-
     echo "BUILD_MODE=$BUILD_MODE"
-    echo "CC=$CC"
-    echo "C_OPT_FLAGS=$C_OPT_FLAGS"
-    echo "CXX=$CXX"
-    echo "CXX_OPT_FLAGS=$CXX_OPT_FLAGS"
+    echo "THIRD_PARTY_PATH=$THIRD_PARTY_PATH"
+    echo "INSTALLATION_BUILD_DIR=$INSTALLATION_BUILD_DIR"
     echo "EXTRA_ARGS=$EXTRA_ARGS"
     echo "GROUP=$GROUP"
-    echo "INSTALLATION_BUILD_DIR=$INSTALLATION_BUILD_DIR"
     echo "IO_PACKAGES=$IO_PACKAGES"
     echo "MAKE_OPT_FLAGS=$MAKE_OPT_FLAGS"
     echo "NO_VISIT=$NO_VISIT"
     echo "SVN=$SVN"
-    echo "THIRD_PARTY_PATH=$THIRD_PARTY_PATH"
+    echo ""
+    echo "Login Node"
+    echo "==========="
+    echo "CC=$CC"
+    echo "C_OPT_FLAGS=$C_OPT_FLAGS"
+    echo "CXX=$CXX"
+    echo "CXX_OPT_FLAGS=$CXX_OPT_FLAGS"
+    echo ""
+    echo "Compute Node"
+    echo "============="
+    echo "BG_CC=$BG_CC"
+    echo "BG_C_OPT_FLAGS=$BG_C_OPT_FLAGS"
+    echo "BG_CXX=$BG_CXX"
+    echo "BG_CXX_OPT_FLAGS=$BG_CXX_OPT_FLAGS"
+    echo ""
+    echo "BG_GNU_CC=$BG_GNU_CC"
+    echo "BG_GNU_CXX=$BG_GNU_CXX"
+    echo ""
+    echo "BG_MPI_CC=$BG_MPI_CC"
+    echo "BG_MPI_C_OPT_FLAGS=$BG_MPI_C_OPT_FLAGS"
+    echo "BG_MPI_CXX=$BG_MPI_CXX"
+    echo "BG_MPI_CXX_OPT_FLAGS=$BG_MPI_CXX_OPT_FLAGS"
+    echo "========================================================================"
 
     return 0
 }
@@ -753,10 +787,52 @@ function usage
     echo "computers. The parallel compute engine is built for the compute nodes and the"
     echo "mdserver, vcl, and engine_ser components are built for the login nodes."
     echo ""
-    echo "Argument       Description"
-    echo "-------------- ------------------------------------------------------------------"
-    echo "--bgcc         The C compiler to use for compute node cross-compilation."
-    echo "--cc           the C compiler to use for login node compilation."
+    echo "Argument                      Description"
+    echo "============================= =========================================================="
+    echo "--installation-build-dir dir  The build directory to be used to build the code."
+    echo "--thirdparty-path path        The directory where 3rd party libraries will be installed."
+    echo "--build-mode mode             The build mode: Debug or Release"
+    echo "--group group                 Set the group for installed 3rd party libraries."
+    echo "-h/--help                     Print the help and exit."
+    echo "--print                       Print the variables that will be used for the build."
+    echo "--makeflags flags             Build the code, passing flags to make."
+    echo "--no-visit                    Do not build the VisIt sources."
+    echo "--svn                         Download sources from svn."
+    echo "--svn-anonymous               Download sources from anonymous svn."
+    echo ""
+    echo "Login Node"
+    echo "==========="
+    echo "--cc path                     The C compiler to use for login node compilation."
+    echo "--cflag flag                  Append a flag to the CFLAGS used with the --cc compiler."
+    echo "--cflags flags                Set the CFLAGS used with the --cc compiler."
+    echo "--cxx path                    The C++ compiler to use for login node compilation."
+    echo "--cxxflag flag                Append a flag to the CXXFLAGS used with the --cxx compiler."
+    echo "--cxxflags flags              Set the CXXFLAGS used with the --cxx compiler."
+    echo ""
+    echo ""
+    echo "Compute Node"
+    echo "============="
+    echo "--bgcc path                   The serial C compiler to use for compute node compilation."
+    echo "--bgcflag flag                Append a flag to the CFLAGS used with the --bgcc/--bggnucc compilers."
+    echo "--bgcflags flags              Set the CFLAGS used with the --bgcc/--bggnucc compilers."
+    echo "--bgcxx path                  The serial C++ compiler to use for compute node compilation."
+    echo "--bgcxxflag flag              Append a flag to the CXXFLAGS used with the --bgcxx/--bggnucxx compilers."
+    echo "--bgcxxflags flags            Set the CXXFLAGS used with the --bgcxx/--bggnucxx compilers."
+    echo ""
+    echo "--bggnucc path                The serial GNU C compiler to use for compute node compilation."
+    echo "                              This compiler is used for 3rd party packages that have autoconf"
+    echo "                              build systems: Mesa, Silo, ... The CFLAGS specified using "
+    echo "                              --bgcflag/--bgcflags are used."
+    echo "--bggnucxx path               The serial GNU C++ compiler to use for compute node compilation."
+    echo "                              The CXXFLAGS specified using --bgcxxflag/--bgcxxflags are used."
+    echo
+    echo "--bgmpicc path                The parallel C compiler to use for compute node compilation."
+    echo "--bgmpicflag flag             Append a flag to the CFLAGS used with the --bgmpicc compiler."
+    echo "--bgmpicflags flags           Set the CFLAGS used with the --bgmpicc compiler."
+    echo "--bgmpicxx path               The parallel C++ compiler to use for compute node compilation."
+    echo "--bgmpicxxflag flag           Append a flag to the CXXFLAGS used with the --bgmpicxx compiler."
+    echo "--bgmpicxxflags flags         Set the CXXFLAGS used with the --bgmpicxx compiler."
+
     return 0
 }
 
@@ -776,23 +852,26 @@ function main
                 append-cxxflags) CXX_OPT_FLAGS="${CXX_OPT_FLAGS} ${arg}";;
                 cflags) C_OPT_FLAGS="${arg}";;
                 cxxflags) CXX_OPT_FLAGS="${arg}";;
-                cc) C_COMPILER="${arg}";;
-                cxx) CXX_COMPILER="${arg}";;
+                cc) CC="${arg}";;
+                cxx) CXX="${arg}";;
 
                 append-bgcflags) BG_C_OPT_FLAGS="${BG_C_OPT_FLAGS} ${arg}";;
                 append-bgcxxflags) BG_CXX_OPT_FLAGS="${BG_CXX_OPT_FLAGS} ${arg}";;
                 bgcflags) BG_C_OPT_FLAGS="${arg}";;
                 bgcxxflags) BG_CXX_OPT_FLAGS="${arg}";;
-                bgcc) BG_C_COMPILER="${arg}";;
-                bgcxx) BG_CXX_COMPILER="${arg}";;
+                bgcc) BG_CC="${arg}";;
+                bgcxx) BG_CXX="${arg}";;
+                bggnucc) BG_GNU_CC="${arg}";;
+                bggnucxx) BG_GNU_CXX="${arg}";;
 
                 append-bgmpicflags) BG_C_OPT_FLAGS="${BG_MPI_C_OPT_FLAGS} ${arg}";;
                 append-bgmpicxxflags) BG_CXX_OPT_FLAGS="${BG_MPI_CXX_OPT_FLAGS} ${arg}";;
                 bgmpicflags) BG_MPI_C_OPT_FLAGS="${arg}";;
                 bgmpicxxflags) BG_MPI_CXX_OPT_FLAGS="${arg}";;
-                bgmpicc) BG_MPI_C_COMPILER="${arg}";;
-                bgmpicxx) BG_MPI_CXX_COMPILER="${arg}";;
+                bgmpicc) BG_MPI_CC="${arg}";;
+                bgmpicxx) BG_MPI_CXX="${arg}";;
 
+                group) GROUP="${arg}";;
                 makeflags) MAKE_OPT_FLAGS="${arg}";;
                 thirdparty-path) THIRD_PARTY_PATH="${arg}";;
                 *) error "Unknown next_arg value '$next_arg'!"
@@ -819,6 +898,8 @@ function main
             --bgcxxflags) next_arg="bgcxxflags";;
             --bgcc) next_arg="bgcc";;
             --bgcxx) next_arg="bgcxx";;
+            --bggnucc) next_arg="bggnucc";;
+            --bggnucxx) next_arg="bggnucxx";;
 
             --bgmpicflag) next_arg="append-bgmpicflags";;
             --bgmpicflags) next_arg="bgmpicflags";;
@@ -843,6 +924,17 @@ function main
             printvars) printvars; exit 2;;
             help) usage; exit 2;;
         esac
+    fi
+
+    # Print the settings we're using for the build
+    printvars
+
+    # Make build directories.
+    if ! test -d $INSTALLATION_BUILD_DIR ; then
+        mkdir $INSTALLATION_BUILD_DIR
+    fi
+    if ! test -d ${INSTALLATION_BUILD_DIR}_BGQ ; then
+        mkdir ${INSTALLATION_BUILD_DIR}_BGQ
     fi
 
     # Make an installation directory.

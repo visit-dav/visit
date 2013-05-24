@@ -96,9 +96,6 @@ elif [[ "$OPSYS" == "Linux" ]]; then
           export MESA_TARGET=${MESA_TARGET-"linux"}
           QT_PLATFORM="linux-xlc" #aix-xlc"
       elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
-          #CFLAGS="$CFLAGS -qpic"
-          #FCFLAGS="$FCFLAGS -qpic"
-          #CXXFLAGS="$CXXFLAGS -qpic"
           export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
       else
           CFLAGS="$CFLAGS -fPIC"

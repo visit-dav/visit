@@ -502,7 +502,7 @@ function build_vtk
     fi
 
     vopts=""
-    vtk_build_mode="Debug" # "Release"
+    vtk_build_mode="Release" #"Debug"
     vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
     vtk_debug_leaks="true" # "false"
 
@@ -615,9 +615,18 @@ function build_vtk
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
-    issue_command "${CMAKE_BIN}" \
-      ${vopts} \
-      ../${VTK_SRC_DIR} || error "VTK configuration failed."
+    if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
+        if test -e bv_run_cmake.sh ; then
+            rm -f bv_run_cmake.sh
+        fi
+        echo "${CMAKE_BIN}" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
+        cat bv_run_cmake.sh
+        issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
+    else
+        issue_command "${CMAKE_BIN}" \
+            ${vopts} \
+            ../${VTK_SRC_DIR} || error "VTK configuration failed."
+    fi
 
     #
     # Now build VTK.
