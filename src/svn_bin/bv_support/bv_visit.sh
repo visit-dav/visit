@@ -148,6 +148,112 @@ function bv_visit_print_build_command
    echo "visit has no build commands set"
 }
 
+# Modify the makefiles that cmake generated.
+function bv_visit_modify_makefiles
+{
+    # NOTE: We are inside the VisIt src directory when this function is called.
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Check for version < 8.0.0 (MacOS 10.4, Tiger) for gcc < 4.x
+        VER=$(uname -r)
+        if (( ${VER%%.*} > 8 )) ; then
+           cat databases/Shapefile/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
+           mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
+           mv -f Make.tmp databases/Shapefile/Makefile
+           if [[ "$DO_CCMIO" == "yes" ]] ; then
+              cat databases/CCM/Makefile | \
+                 sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
+              mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
+              mv -f Make.tmp databases/CCM/Makefile
+           fi
+        fi 
+        if (( ${VER%%.*} < 8 )) ; then
+           info "Patching VisIt . . ."
+           cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+           mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+           mv -f Make.tmp databases/Fluent/Makefile
+           cat avt/Pipeline/Data/avtCommonDataFunctions.C | \
+              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+           mv -f avt/Pipeline/Data/avtCommonDataFunctions.C \
+              avt/Pipeline/Data/avtCommonDataFunctions.C.orig
+           mv -f C.tmp avt/Pipeline/Data/avtCommonDataFunctions.C
+           cat avt/Expressions/Abstract/avtExpressionFilter.C | \
+              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
+           mv -f avt/Expressions/Abstract/avtExpressionFilter.C \
+              avt/Expressions/Abstract/avtExpressionFilter.C.orig
+           mv -f C.tmp avt/Expressions/Abstract/avtExpressionFilter.C
+        fi
+        if (( ${VER%%.*} < 7 )) ; then
+           cat third_party_builtin/mesa_stub/Makefile | \
+              sed 's/glx.c glxext.c//' > Make.tmp
+           mv -f third_party_builtin/mesa_stub/Makefile \
+              third_party_builtin/mesa_stub/Makefile.orig
+           mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
+        fi
+        if (( ${VER%%.*} > 6 )) ; then
+           cat databases/SimV1/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+           mv -f Make.tmp databases/SimV1/Makefile
+           cat databases/SimV1Writer/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f databases/SimV1Writer/Makefile \
+             databases/SimV1Writer/Makefile.orig
+           mv -f Make.tmp databases/SimV1Writer/Makefile
+           cat avt/Expressions/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f avt/Expressions/Makefile \
+             avt/Expressions/Makefile.orig
+           mv -f Make.tmp avt/Expressions/Makefile
+        else
+           cat databases/SimV1/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+           mv -f Make.tmp databases/SimV1/Makefile
+           cat databases/SimV1Writer/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f databases/SimV1Writer/Makefile \
+             databases/SimV1Writer/Makefile.orig
+           mv -f Make.tmp databases/SimV1Writer/Makefile
+           cat avt/Expressions/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f avt/Expressions/Makefile \
+             avt/Expressions/Makefile.orig
+           mv -f Make.tmp avt/Expressions/Makefile
+        fi
+    elif [[ "$OPSYS" == "SunOS" ]]; then
+        # Some Solaris systems hang when compiling Fluent when optimizations
+        # are on.  Turn optimizations off.
+        info "Patching VisIt . . ."
+        cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+        mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+        mv -f Make.tmp databases/Fluent/Makefile
+    fi
+
+    if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
+        # Filter the engine link line so it will not include X11 libraries. CMake is adding
+        # them even though we don't want them.
+        for target in engine_ser_exe.dir engine_par_exe.dir
+        do
+            edir="engine/main/CMakeFiles/$target"
+            if test -e "$edir/link.txt" ; then
+                sed "s/-lX11//g" $edir/link.txt > $edir/link1.txt
+                sed "s/-lXext//g" $edir/link1.txt > $edir/link2.txt
+                rm -f $edir/link1.txt
+                mv $edir/link2.txt $edir/link.txt
+            else
+                echo "***** DID NOT SEE: $edir/link.txt   pwd=`pwd`"
+            fi
+        done
+    fi
+
+    return 0
+}
+
 # *************************************************************************** #
 #                          Function 9.1, build_visit                          #
 # *************************************************************************** #
@@ -244,13 +350,16 @@ EOF
     FEATURES="${FEATURES} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
     FEATURES="${FEATURES} -DVISIT_C_COMPILER:FILEPATH=${C_COMPILER}"
     FEATURES="${FEATURES} -DVISIT_CXX_COMPILER:FILEPATH=${CXX_COMPILER}"
-    
-    FEATURES="${FEATURES} -DVISIT_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    if test -n "${CFLAGS}" || test -n "${C_OPT_FLAGS}" ; then
+        FEATURES="${FEATURES} -DVISIT_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+    fi
     if [[ "$parallel" == "yes" ]] ; then
         CXXFLAGS="$CXXFLAGS $PAR_INCLUDE"
     fi
-    FEATURES="${FEATURES} -DVISIT_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
-
+    if test -n "${CXXFLAGS}" || test -n "${CXX_OPT_FLAGS}" ; then
+        FEATURES="${FEATURES} -DVISIT_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    fi
     if [[ "${DO_MODULE}" == "yes" ]] ; then
        FEATURES="${FEATURES} -DVISIT_PYTHON_MODULE:BOOL=ON"
     fi
@@ -281,86 +390,10 @@ EOF
        return 1
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Check for version < 8.0.0 (MacOS 10.4, Tiger) for gcc < 4.x
-        VER=$(uname -r)
-        if (( ${VER%%.*} > 8 )) ; then
-           cat databases/Shapefile/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-           mv -f databases/Shapefile/Makefile databases/Shapefile/Makefile.orig
-           mv -f Make.tmp databases/Shapefile/Makefile
-           if [[ "$DO_CCMIO" == "yes" ]] ; then
-              cat databases/CCM/Makefile | \
-                 sed '/LDFLAGS/s/$/ -Wl,-dylib_file,\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib:\/System\/Library\/Frameworks\/OpenGL.framework\/Versions\/A\/Libraries\/libGLU.dylib/' > Make.tmp
-              mv -f databases/CCM/Makefile databases/CCM/Makefile.orig
-              mv -f Make.tmp databases/CCM/Makefile
-           fi
-        fi 
-        if (( ${VER%%.*} < 8 )) ; then
-           info "Patching VisIt . . ."
-           cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
-           mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
-           mv -f Make.tmp databases/Fluent/Makefile
-           cat avt/Pipeline/Data/avtCommonDataFunctions.C | \
-              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
-           mv -f avt/Pipeline/Data/avtCommonDataFunctions.C \
-              avt/Pipeline/Data/avtCommonDataFunctions.C.orig
-           mv -f C.tmp avt/Pipeline/Data/avtCommonDataFunctions.C
-           cat avt/Expressions/Abstract/avtExpressionFilter.C | \
-              sed '/isfinite/s/isfinite/__isfinited/g' > C.tmp
-           mv -f avt/Expressions/Abstract/avtExpressionFilter.C \
-              avt/Expressions/Abstract/avtExpressionFilter.C.orig
-           mv -f C.tmp avt/Expressions/Abstract/avtExpressionFilter.C
-        fi
-        if (( ${VER%%.*} < 7 )) ; then
-           cat third_party_builtin/mesa_stub/Makefile | \
-              sed 's/glx.c glxext.c//' > Make.tmp
-           mv -f third_party_builtin/mesa_stub/Makefile \
-              third_party_builtin/mesa_stub/Makefile.orig
-           mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
-        fi
-        if (( ${VER%%.*} > 6 )) ; then
-           cat databases/SimV1/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-           mv -f Make.tmp databases/SimV1/Makefile
-           cat databases/SimV1Writer/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f databases/SimV1Writer/Makefile \
-             databases/SimV1Writer/Makefile.orig
-           mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat avt/Expressions/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-           mv -f avt/Expressions/Makefile \
-             avt/Expressions/Makefile.orig
-           mv -f Make.tmp avt/Expressions/Makefile
-        else
-           cat databases/SimV1/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-           mv -f Make.tmp databases/SimV1/Makefile
-           cat databases/SimV1Writer/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f databases/SimV1Writer/Makefile \
-             databases/SimV1Writer/Makefile.orig
-           mv -f Make.tmp databases/SimV1Writer/Makefile
-           cat avt/Expressions/Makefile | \
-              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-              Make.tmp
-           mv -f avt/Expressions/Makefile \
-             avt/Expressions/Makefile.orig
-           mv -f Make.tmp avt/Expressions/Makefile
-        fi
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        # Some Solaris systems hang when compiling Fluent when optimizations
-        # are on.  Turn optimizations off.
-        info "Patching VisIt . . ."
-        cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
-        mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
-        mv -f Make.tmp databases/Fluent/Makefile
-    fi
+    #
+    # Some platforms like to modify the generated Makefiles.
+    #
+    bv_visit_modify_makefiles
 
     #
     # Build VisIt

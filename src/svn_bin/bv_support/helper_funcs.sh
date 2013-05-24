@@ -1268,12 +1268,32 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
     else
-        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\" TYPE STRING)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
+        if test -n "$CFLAGS" ; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\" TYPE STRING)" >> $HOSTCONF
+        fi
+        if test -n "$CXXFLAGS" ; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
+        fi
     fi
 
     if [[ "${DO_JAVA}" == "yes" ]] ; then
         echo "VISIT_OPTION_DEFAULT(VISIT_JAVA ON TYPE BOOL)" >> $HOSTCONF
+    fi
+
+    if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## BG/Q-specific settings" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "SET(CMAKE_CROSSCOMPILING    ON)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_X            OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR            OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_BOOST        OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo >> $HOSTCONF
     fi
 
     if [[ "$parallel" == "yes" ]] ; then
@@ -1284,11 +1304,21 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
         # we either set an mpi wrapper compiler in the host conf
         if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
-            echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER $VISIT_MPI_COMPILER TYPE FILEPATH)"  >> $HOSTCONF
+            if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
+                echo "## (inserted by build_visit for BG/Q. Some adjustment may be needed)" >> $HOSTCONF
+                echo "SET(BLUEGENEQ /bgsys/drivers/V1R2M0/ppc64)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"-I\${BLUEGENEQ} -I\${BLUEGENEQ}/comm/sys/include -I\${BLUEGENEQ}/spi/include -I\${BLUEGENEQ}/spi/include/kernel/cnk -I\${BLUEGENEQ}/comm/xl/include\" TYPE STRING)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   \"-I\${BLUEGENEQ} -I\${BLUEGENEQ}/comm/sys/include -I\${BLUEGENEQ}/spi/include -I\${BLUEGENEQ}/spi/include/kernel/cnk -I\${BLUEGENEQ}/comm/xl/include\" TYPE STRING)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"-L\${BLUEGENEQ}/spi/lib -L\${BLUEGENEQ}/comm/sys/lib -L\${BLUEGENEQ}/spi/lib -L\${BLUEGENEQ}/comm/sys/lib -L\${BLUEGENEQ}/spi/lib -L\${BLUEGENEQ}/comm/xl/lib\" TYPE STRING)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich opa mpl pami SPI SPI_cnk rt pthread stdc++ pthread TYPE STRING)" >> $HOSTCONF
+            else
+                echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER $VISIT_MPI_COMPILER TYPE FILEPATH)"  >> $HOSTCONF
+            fi
         else
             # or we just set the flags.
-            echo "## (configued w/ user provided CXX (PAR_INCLUDE) & LDFLAGS (PAR_LIBS) flags)" \
+            echo "## (configured w/ user provided CXX (PAR_INCLUDE) & LDFLAGS (PAR_LIBS) flags)" \
              >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"$PAR_INCLUDE\" TYPE STRING)"     >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"$PAR_LINKER_FLAGS\" TYPE STRING)" >> $HOSTCONF
