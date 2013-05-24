@@ -153,6 +153,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //   Dave Pugmire, Thu May 23 10:56:50 EDT 2013
 //   Rename the loop initialization method. Add RankOwnsSlice()
 //
+//   Dave Pugmire, Fri May 24 14:36:29 EDT 2013
+//   Bug fix in merge from just above.
+//
 // ****************************************************************************
 
 bool
@@ -192,7 +195,9 @@ avtTimeLoopFilter::Update(avtContract_p spec)
         
         for (i=0, currentTime=startTime; i<nFrames; ++i, currentTime+=stride)
         {
-            bool shouldDoThisTimeSlice = parallelizingOverTime && RankOwnsTimeSlice(i);
+            bool shouldDoThisTimeSlice = true;
+            if (parallelizingOverTime)
+                shouldDoThisTimeSlice = RankOwnsTimeSlice(i);
 
             curIter++;
             if (!shouldDoThisTimeSlice)
@@ -405,7 +410,7 @@ avtTimeLoopFilter::GetCyclesForRank()
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
     if (*dbp == NULL)
         EXCEPTION1(InvalidFilesException, db.c_str());
-    avtDatabaseMetaData *md = dbp->GetMetaData(0);//,true,true,false);
+    avtDatabaseMetaData *md = dbp->GetMetaData(0,true,true,false);
     intVector c = md->GetCycles();
 
     std::vector<int> cycles;
@@ -440,7 +445,7 @@ avtTimeLoopFilter::GetTimesForRank()
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
     if (*dbp == NULL)
         EXCEPTION1(InvalidFilesException, db.c_str());
-    avtDatabaseMetaData *md = dbp->GetMetaData(0);//,true,true,false);
+    avtDatabaseMetaData *md = dbp->GetMetaData(0,true,true,false);
     doubleVector t = md->GetTimes();
 
     std::vector<double> times;
