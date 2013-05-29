@@ -48,6 +48,9 @@
 #   Hank Childs, Tue Mar 13 12:59:07 PDT 2012
 #   Move avtDatasetOnDemandFilter to Filters directory.
 #
+#   Kathleen Biagas, Tue May 28 17:02:54 MST 2013
+#   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter to Filters directory.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -170,8 +173,6 @@ AbstractFilters/avtStructuredChunkDataTreeIterator.C
 AbstractFilters/avtStructuredMeshChunker.C
 AbstractFilters/avtStructuredMeshPartitionStrategy.C
 AbstractFilters/avtSweepPlanePartitionStrategy.C
-AbstractFilters/avtTimeLoopCollectorFilter.C
-AbstractFilters/avtTimeLoopFilter.C
 )
 
 SET(SINKS_SOURCES
@@ -234,7 +235,6 @@ ${VTK_INCLUDE_DIRS}
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
-
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 IF(NOT VISIT_DBIO_ONLY)

@@ -60,6 +60,10 @@
 #   Hank Childs, Tue Mar 13 12:59:07 PDT 2012
 #   Move avtDatasetOnDemandFilter from Pipeline/AbstractFilters directory.
 #
+#   Kathleen Biagas, Tue May 28 17:02:23 MST 2013 
+#   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter from 
+#   Pipeline/AbstractFilters directory.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -112,6 +116,8 @@ avtSummationFilter.C
 avtSurfaceFilter.C
 avtThresholdFilter.C
 avtTiledImageCompositor.C
+avtTimeLoopCollectorFilter.C
+avtTimeLoopFilter.C
 avtTransform.C
 avtVertexNormalsFilter.C
 avtWarpFilter.C
@@ -121,15 +127,8 @@ avtWorldSpaceToImageSpaceTransform.C
 avtXRayFilter.C
 )
 
-#IF(HAVE_LIB_R)
-#  LIST(APPEND AVTFILTERS_SOURCES avtRExtremesFilter.C)
-#ENDIF(HAVE_LIB_R)
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-IF(HAVE_LIB_R)
-${R_INCLUDE_DIR}
-ENDIF(HAVE_LIB_R)
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight

@@ -43,7 +43,7 @@
 #ifndef AVT_TIME_LOOP_FILTER_H
 #define AVT_TIME_LOOP_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 #include <vectortypes.h>
 #include <avtFilter.h>
 
@@ -82,7 +82,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
+class AVTFILTERS_API avtTimeLoopFilter : virtual public avtFilter
 {
   public:
                                         avtTimeLoopFilter();
