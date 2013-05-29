@@ -43,7 +43,7 @@
 #ifndef AVT_TIME_LOOP_COLLETOR_FILTER_H
 #define AVT_TIME_LOOP_COLLETOR_FILTER_H
 
-#include <pipeline_exports.h>
+#include <filters_exports.h>
 
 #include <vector>
 
@@ -66,7 +66,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTimeLoopCollectorFilter 
+class AVTFILTERS_API avtTimeLoopCollectorFilter 
     : virtual public avtTimeLoopFilter,virtual public avtDatasetToDatasetFilter
 {
   public:
