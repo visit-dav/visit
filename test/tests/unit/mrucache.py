@@ -10,6 +10,6 @@
 import os
 
 tapp = visit_bin_path("..","exe","MRUCache_test")
-rcode, outdata = sexe(tapp,ret_output=True)
-TestText("mrucache", outdata)
+res = sexe(tapp,ret_output=True)
+TestText("mrucache", res["output"])
 Exit()

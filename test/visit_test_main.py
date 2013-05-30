@@ -180,6 +180,22 @@ def test_root_path(*args):
 
 
 # ----------------------------------------------------------------------------
+#  Method: test_module_path
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 9 2013
+# ----------------------------------------------------------------------------
+def test_module_path(*args):
+    """
+    Generates proper absolute path relative to the directory containing
+    the test python scripts.
+    """
+    rargs = [os.path.split(__visit_script_file__)[0]]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
+
+# ----------------------------------------------------------------------------
 #  Method: tests_path
 #
 #  Programmer: Cyrus Harrison
@@ -538,7 +554,7 @@ def LogTextTestResult(case_name,nchanges,nlines,failed,skip):
 # ----------------------------------------------------------------------------
 def JSONTextTestResult(case_name,status,nchanges,nlines,failed,skip):
     res = json_results_load()
-    t_res = {'case':     case_name,
+    t_res = {'name':     case_name,
              'status':   status,
              'nchanges': nchanges,
              'nlines':   nlines}
@@ -622,7 +638,7 @@ def JSONImageTestResult(case_name, status,
                         diffState, modeSpecific,
                         dpix, tPixs, pPixs, dPixs, davg):
     res = json_results_load()
-    t_res = {'case':          case_name,
+    t_res = {'name':          case_name,
              'status':        status,
              'diff_state':    diffState,
              'mode_specific': modeSpecific,
@@ -963,10 +979,10 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
                 oldimg = oldimg.resize(size, Image.BICUBIC)
         else:
             Log("Warning: No baseline image: %s" % baseline)
-            oldimg = Image.open(test_root_path('nobaseline.pnm'))
+            oldimg = Image.open(test_module_path('nobaseline.pnm'))
             oldimg = oldimg.resize(size, Image.BICUBIC)
     except:
-        oldimg = Image.open('nobaseline.pnm')
+        oldimg = Image.open(test_module_path('nobaseline.pnm'))
         Log("Warning: Defective baseline image: %s" % baseline)
         oldimg = oldimg.resize(size, Image.BICUBIC)
 
@@ -1278,7 +1294,7 @@ def TestText(case_name, inText):
         baseText = open(base).read()
     else:
         Log("Warning: No baseline text file: %s" % base)
-        base = "notext.txt"
+        base = test_module_path("notext.txt")
         baseText = "notext"
 
     # Filter out unwanted text
@@ -1301,9 +1317,9 @@ def TestText(case_name, inText):
     # TODO_WINDOWS THIS WONT WORK ON WINDOWS
     # we can use difflib
     diff_cmd = "diff " + base + " " + cur
-    r,diff_out = sexe(diff_cmd,ret_output = True)
+    res = sexe(diff_cmd,ret_output = True)
     fout = open(diff, 'w')
-    fout.write(diff_out)
+    fout.write(res["output"])
     fout.close()
 
     # did the test fail?
@@ -1523,11 +1539,6 @@ class TestEnv(object):
             cls.skiplist = json_load(cls.params["skip_file"])
         else:
             cls.skiplist = None
-        if sys.platform.startswith("win"):
-            if not cls.params["skip_file_win"] is None and os.path.isfile(cls.params["skip_file_win"]):
-                cls.skiplistwin = json_load(cls.params["skip_file_win"])
-            else:
-                cls.skiplistwin = None
         # parse modes for various possible modes
         for mode in string.split(cls.params["modes"],","):
             if mode == "scalable":
@@ -1549,27 +1560,21 @@ class TestEnv(object):
         cls.SILO_MODE = cls.params["silo_mode"]
     @classmethod
     def check_skip(cls,case_name):
-        if sys.platform.startswith("win"):
-            if not cls.skiplistwin is None:
-                # look for modes that match
-                for v in cls.skiplistwin['skip_list']:
-                    if v['mode'] ==cls.params["modes"]:
-                        for test in v['tests']:
-                            if test['category'] == cls.params["category"]:
-                                # see if the file matches
-                                if test['file'] == cls.params["file"]:
-                                    if not test.has_key("cases"):
-                                        return True
-                                    else:
-                                        if case_name in test['cases']:
-                                            return True
-
         if cls.skiplist is None:
             return False
         # look for modes that match
         for v in cls.skiplist['skip_list']:
             if v['mode'] ==cls.params["modes"]:
                 for test in v['tests']:
+                    # check for platform restrictions
+                    if test.has_key("platform"):
+                        tplat = test["platform"].lower()
+                        splat = sys.platform.lower()
+                        # win,linux,osx
+                        # ignore this entry if we are on the wrong platform
+                        # else, use std logic
+                        if not splat.startswith(tplat):
+                            continue
                     if test['category'] == cls.params["category"]:
                         # see if the file matches
                         if test['file'] == cls.params["file"]:
@@ -1629,7 +1634,7 @@ def InitTestEnv():
     if not os.path.isdir(out_path("html")):
         os.mkdir(out_path("html"))
     # colorize the source file, and write to an html file
-    HtmlPython.ColorizePython(tests_path(),
+    HtmlPython.ColorizePython(TestEnv.params["script"],
                               out_path(),
                               TestEnv.params["category"],
                               TestEnv.params["file"],

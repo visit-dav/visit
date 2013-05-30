@@ -141,11 +141,11 @@ class HTMLIndex(object):
         # processes, make sure to lock access to avoid
         # corruption
         lsec = 20
-        rcode = result.returncode
+        rcode = result.return_code
         mapping = {"category":result.category,
                    "base":result.base,
                    "name":result.file,
-                   "result_code": result.returncode,
+                   "result_code": result.return_code,
                    "details": "%s_%s" % (result.category,result.base),
                    "run_time": result.runtime,
                    "test_idx": str(result.index),
@@ -228,14 +228,23 @@ class HTMLIndex(object):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-class TestScriptResult(namedtuple('TestScriptResult',
-                                  ['index',
-                                   'category',
-                                   'base',
-                                   'file',
-                                   'returncode',
-                                   'numcores',
-                                   'runtime'])):
+class TestScriptResult(object):
+    def __init__(self,index,
+                      category,
+                      base,
+                      file,
+                      return_code,
+                      num_cores,
+                      runtime):
+        self.index        = index
+        self.category     = category
+        self.base         = base
+        self.file         = file
+        self.return_code  = return_code
+        self.num_cores    = num_cores
+        self.runtime      = runtime
+    def to_dict(self):
+        return dict(self.__dict__)
     @classmethod
     def from_dict(cls,vals):
         v = dict(vals)
@@ -243,9 +252,24 @@ class TestScriptResult(namedtuple('TestScriptResult',
             del v["details"]
         return TestScriptResult(**v)
     def error(self):
-        return not self.returncode in [111,112,116,119,120,121]
+        return not self.return_code in [111,112,116,119,120,121]
     def skip(self):
-        return self.returncode == 116
+        return self.return_code == 116
+    def status(self):
+        codes = { 111:"succeeded",
+                  112:"acceptable",
+                  113:"unacceptable",
+                  114:"unknown",
+                  116:"killed",
+                  118:"skipped",
+                  119:"succeeded with skips",
+                  120:"acceptable with skips",
+                  121:"na",
+                   -1:"failed"}
+        rcode = self.return_code
+        if not rcode in codes.keys():
+            rcode = -1
+        return codes[rcode]
     def message(self):
         codes = { 111:"+ Passed with zero differences in test file:",
                   112:"- Acceptable differences found in test file:",
@@ -257,7 +281,7 @@ class TestScriptResult(namedtuple('TestScriptResult',
                   120:"- Acceptable with partial skips in test file:",
                   121:"> Not applicable in this mode for test file:",
                    -1:"! ERROR: Missing Exit() when running test file:"}
-        rcode = self.returncode
+        rcode =self.return_code
         if not rcode in codes.keys():
             rcode = -1
         return codes[rcode] + " %s/%s" % (self.category,self.file)
@@ -282,18 +306,24 @@ class TestCaseResult:
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-TestCaseImageResultKeys =['case',
-                          'status',
-                          'diff_state',
-                          'mode_specific',
-                          'total_pixels',
-                          'non_bg_pixels',
-                          'diff_pixels',
-                          'diff_percent',
-                          'avg_pixels']
-
-class TestCaseImageResult(namedtuple('TestCaseImageResult',
-                                     TestCaseImageResultKeys)):
+class TestCaseImageResult(object):
+    def __init__(self,name,
+                      status,
+                      diff_state,
+                      mode_specific,
+                      total_pixels,
+                      non_bg_pixels,
+                      diff_pixels,
+                      avg_pixels):
+        self.name         = name
+        self.status       = status
+        self.diff_state   = mode_specific
+        self.total_pixels = total_pixels
+        self.no_bg_pixels = non_bg_pixels
+        self.diff_pixels  = diff_pixels
+        self.avg_pixels   = avg_pixels
+    def to_dict(self):
+        return dict(self.__dict__)
     @classmethod
     def from_dict(cls,vals):
         return TestCaseImageResult(**vals)
@@ -303,9 +333,16 @@ class TestCaseImageResult(namedtuple('TestCaseImageResult',
         return self.status == "skipped"
     def message(self):
         res = ""
-        for i in range(len(TestCaseImageResultKeys)):
-            key = TestCaseImageResultKeys[i]
-            res += "%s: %s " % (key,self[i])
+        for key in ['name',
+                    'status',
+                    'diff_state',
+                    'mode_specific',
+                    'total_pixels',
+                    'non_bg_pixels',
+                    'diff_pixels',
+                    'diff_percent',
+                    'avg_pixels']:
+            res += "%s: %s " % (key,self.__dict__[key])
         return res
 
 # ----------------------------------------------------------------------------
@@ -314,13 +351,14 @@ class TestCaseImageResult(namedtuple('TestCaseImageResult',
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-TestCaseTextResultKeys =['case',
-                         'status',
-                         'nchanges',
-                         'nlines']
-
-class TestCaseTextResult(namedtuple('TestCaseTextResult',
-                                     TestCaseTextResultKeys)):
+class TestCaseTextResult(object):
+    def __init__(self,name,status,nchanges,nlines):
+        self.name     = name
+        self.status   = status
+        self.nchanges = nchanges
+        self.nllines  = nlines
+    def to_dict(self):
+        return dict(self.__dict__)
     @classmethod
     def from_dict(cls,vals):
         return TestCaseTextResult(**vals)
@@ -330,9 +368,11 @@ class TestCaseTextResult(namedtuple('TestCaseTextResult',
         return self.status == "skipped"
     def message(self):
         res = ""
-        for i in range(len(TestCaseTextResultKeys)):
-            key = TestCaseTextResultKeys[i]
-            res += "%s: %s " % (key,self[i])
+        for key in ['name',
+                    'status',
+                    'nchanges',
+                    'nlines']:
+            res += "%s: %s " % (key,self.__dict__[key])
         return res
 
 
@@ -346,11 +386,12 @@ class TestCaseTextResult(namedtuple('TestCaseTextResult',
 class JSONIndex(object):
     def __init__(self,ofile=None):
         self.ofile = ofile
-    def write_header(self,opts,ststamp):
+    def write_header(self,opts,tests,ststamp):
         res = {}
         res["info"]    = {"start_timestamp":ststamp,
                           "host": hostname(False)}
-        res["options"] = vars(opts)
+        res["options"] = opts
+        res["tests"]   = tests
         res["results"] = []
         json_dump(res,self.ofile)
     def add_result(self,result):
@@ -382,18 +423,16 @@ class JSONIndex(object):
     def load_cases(cls,fname,res):
         index_base     = os.path.split(os.path.abspath(fname))[0]
         for script_res in res["results"]:
-          try:
             if not "details" in script_res.keys():
-                tsr = TestScriptResult(**script_res )
+                tsr = TestScriptResult(**script_res)
                 cases_results =  pjoin(index_base,
-                                       "json","%s_%s.json" % (tsr.category,tsr.base))
+                                        "json","%s_%s.json" % (tsr.category,tsr.base))
                 if os.path.isfile(cases_results):
                     case_vals = json_load(cases_results)
                     script_res["details"] = case_vals
+                    script_res["status"]  = tsr.status()
                 else:
                     script_res["details"] = {}
-          except AttributeError:
-              pass
 def text_summary(json_res,errors_only=False):
     rtxt  = ""
     for r in json_res["results"]:

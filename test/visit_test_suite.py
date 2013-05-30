@@ -87,14 +87,28 @@ def test_path():
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+# Modifications:
+#  Cyrus Harrison, Tue May 28 12:05:45 PDT 2013
+#  Add support for platform based skips.
+#
 # ----------------------------------------------------------------------------
-def check_skip(skiplist,test_modes,test_cat,test_file):
-    if skiplist is None:
+def check_skip(skip_list,test_modes,test_cat,test_file):
+    if skip_list is None:
         return False
     # look for modes that match
-    for v in skiplist['skip_list']:
+    for v in skip_list['skip_list']:
         if v['mode'] == test_modes:
             for test in v['tests']:
+                # check for platform restrictions
+                if test.has_key("platform"):
+                    tplat = test["platform"].lower()
+                    splat = sys.platform.lower()
+                    # win,linux,osx
+                    # ignore this entry if we are on the wrong platform
+                    # else, use std logic
+                    if not splat.startswith(tplat):
+                        continue
                 if test['category'] == test_cat:
                     if test['file'] == test_file:
                         if not test.has_key("cases"):
@@ -105,12 +119,12 @@ def check_skip(skiplist,test_modes,test_cat,test_file):
 
 
 # ----------------------------------------------------------------------------
-#  Method: run_visit_test
+#  Method: launch_visit_test
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def run_visit_test(args):
+def launch_visit_test(args):
     """
     Runs a single VisIt test.
     """
@@ -122,12 +136,13 @@ def run_visit_test(args):
     test_dir, test_file = os.path.split(test)
     test_cat  = os.path.split(test_dir)[1]
     test_base = os.path.splitext(test_file)[0]
-    rcmd  =  opts.executable + " "
-    rcmd +=  opts.vargs + " "
-    rcmd +=  "-exec-timeout %d -idle-timeout %d " % (opts.limit,opts.limit)
-    if not opts.interactive:
+    rcmd  =  opts["executable"] + " "
+    rcmd +=  opts["vargs"] + " "
+    rcmd +=  "-exec-timeout %d -idle-timeout %d " % (opts["limit"],opts["limit"])
+    rcmd +=  "-numrestarts 0 "
+    if not opts["interactive"]:
         rcmd +=  "-nowin "
-    if not opts.use_pil:
+    if not opts["use_pil"]:
         rcmd +=  "-noPIL "
     rcmd +=  "-timing -cli "
     cfile = pjoin(test_dir,test_base + ".config")
@@ -135,23 +150,23 @@ def run_visit_test(args):
         rcmd += "-config " + cfile + " "
     else:
         rcmd += "-noconfig "
-    rcmd += "-geometry %dx%d+32+32 " % (opts.width,opts.height)
-    rcmd += " -s %s < %s" % (os.path.abspath(test_script),os.path.abspath(test))
-    modes_list = opts.modes.split(",")
+    rcmd += "-geometry %dx%d+32+32 " % (opts["width"],opts["height"])
+    rcmd += " -s %s " % os.path.abspath(test_script)
+    modes_list = opts["modes"].split(",")
     if "dlb" in modes_list:
         rcmd += " -allowdynamic "
     if "icet" in modes_list:
         rcmd += " -icet "
     modes = ""
-    if opts.verbose:
+    if opts["verbose"]:
         rcmd += " -verbose "
-    fuzzy = opts.fuzzy
+    fuzzy = opts["fuzzy"]
     if "serial" in modes_list:
         modes = "serial"
     else:
         if "scalable" in modes_list:
             modes = "scalable"
-            if not opts.nofuzzy:
+            if not opts["no_fuzzy"]:
                 fuzzy = True
         if "parallel" in modes_list:
             if len(modes) > 0:
@@ -161,40 +176,31 @@ def run_visit_test(args):
             if len(modes) > 0:
                 modes +=","
             modes +="icet"
-    run_dir = pjoin(opts.resultdir,"_run","_%s_%s" % (test_cat, test_base))
+    run_dir = pjoin(opts["result_dir"],"_run","_%s_%s" % (test_cat, test_base))
     # set opts vars
-    run_dir = pjoin(opts.resultdir,"_run","_%s_%s" % (test_cat, test_base))
     tparams = {}
+    tparams["script"]         = test
     tparams["category"]       = test_cat
     tparams["name"]           = test_base
     tparams["file"]           = test_file
     tparams["modes"]          = modes
     tparams["run_dir"]        = run_dir
-    tparams["result_dir"]     = opts.resultdir
+    tparams["result_dir"]     = opts["result_dir"]
     tparams["fuzzy_match"]    = fuzzy
     tparams["skip_file"]      = None
-    tparams["skip_file_win"]  = None
-    tparams["interactive"]    = opts.interactive
-    tparams["use_pil"]        = opts.use_pil
-    tparams["pixdiff"]        = opts.pixdiff
-    tparams["avgdiff"]        = opts.avgdiff
-    tparams["numdiff"]        = opts.numdiff
+    tparams["interactive"]    = opts["interactive"]
+    tparams["use_pil"]        = opts["use_pil"]
+    tparams["pixdiff"]        = opts["pixdiff"]
+    tparams["avgdiff"]        = opts["avgdiff"]
+    tparams["numdiff"]        = opts["numdiff"]
     tparams["top_dir"]        = top_dir
-    tparams["data_dir"]       = opts.datadir
-    tparams["baseline_dir"]   = opts.baselinedir
-    tparams["tests_dir"]      = opts.testsdir
-    tparams["visit_bin"]      = opts.executable
-
-    if not opts.noskip:
-        tparams["skip_file"]  = opts.skipfile
-        tparams["skip_file_win"] = opts.skipfilewin
-        if not sys.platform.startswith("win"):
-            skip = check_skip(opts.skiplist,modes,test_cat,test_file)
-        else:
-            skip = check_skip(opts.skiplistwin,modes,test_cat,test_file)
-            if not skip:
-                skip = check_skip(opts.skiplist,modes,test_cat,test_file)
-
+    tparams["data_dir"]       = opts["data_dir"]
+    tparams["baseline_dir"]   = opts["baseline_dir"]
+    tparams["tests_dir"]      = opts["tests_dir"]
+    tparams["visit_bin"]      = opts["executable"]
+    if not opts["no_skip"]:
+        tparams["skip_file"]  = opts["skip_file"]
+    skip  =  check_skip(opts["skip_list"],modes,test_cat,test_file)
     if skip:
         Log("[Skipping: %s/%s (found in skip list)]" % (test_cat,test_file))
         result = TestScriptResult(idx,
@@ -208,7 +214,10 @@ def run_visit_test(args):
         Log("[Launching: %s/%s]" % (test_cat,test_file))
         # run the test in a unique sub dir
         if os.path.isdir(run_dir):
-            shutil.rmtree(run_dir)
+            try:
+                shutil.rmtree(run_dir)
+            except OSError as e:
+                Log("<Error Cleaning up Script Run Directory before launch> %s" % run_dir)
         os.mkdir(run_dir)
         pfile = open(pjoin(run_dir,"params.json"),"w")
         pfile.write("%s" % json_dumps(tparams))
@@ -219,15 +228,22 @@ def run_visit_test(args):
         # change to working dir to our run dir
         curr_dir = os.getcwd()
         os.chdir(run_dir)
-        rcode = 0      
-        sexe(rcmd,
-             suppress_output=(not (opts.verbose or opts.lessverbose)),
-             echo=False)
-        json_res_file = pjoin(opts.resultdir,"json","%s_%s.json" %(test_cat,test_base))
-        if os.path.isfile(json_res_file ):
+        rcode = 0
+        sexe_res = sexe(rcmd,
+                        suppress_output=(not (opts["verbose"] or opts["less_verbose"])),
+                        echo=opts["verbose"],
+                        file_stdin=os.path.abspath(test), # pass the test file as stdin
+                        timeout=opts["limit"] * 1.1) # proc kill swtich at 110% of the selected timeout
+        json_res_file = pjoin(opts["result_dir"],"json","%s_%s.json" %(test_cat,test_base))
+        if os.path.isfile(json_res_file):
             results = json_load(json_res_file)
             if results.has_key("result_code"):
                 rcode = results["result_code"]
+            # os.mkdir(run_dir)
+        if sexe_res["killed"]:
+            Log("<Limit killed> %s" % os.path.abspath(test))
+            # wait for process chain to die
+            time.sleep(1)
         # get end timestamp
         etime = time.time()
         dtime = math.ceil(etime - stime)
@@ -236,9 +252,9 @@ def run_visit_test(args):
         # change back to prev working dir
         os.chdir(curr_dir)
         # check for core files
-        ncores_files = process_cores(run_dir,opts.resultdir,test_cat,test_base)
+        ncores_files = process_cores(run_dir,opts["result_dir"],test_cat,test_base)
         # move logs and timings to the html output dir
-        process_runtime_logs(run_dir,opts.resultdir,test_cat,test_base)
+        process_runtime_logs(run_dir,opts["result_dir"],test_cat,test_base)
         # parse any output files
         result = TestScriptResult(idx,
                                   test_cat,
@@ -247,9 +263,12 @@ def run_visit_test(args):
                                   rcode,
                                   ncores_files,
                                   dtime)
-        if opts.cleanup:
-            shutil.rmtree(run_dir)
-    log_test_result(opts.resultdir,result)
+        if opts["cleanup"]:
+            try:
+                shutil.rmtree(run_dir)
+            except OSError as e:
+                Log("<Error Removing Script Run Directory> %s" % run_dir)
+    log_test_result(opts["result_dir"],result)
     return result
 
 
@@ -307,10 +326,74 @@ def process_runtime_logs(run_dir,res_dir,test_cat,test_name):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def log_test_result(resultdir,result):
+def log_test_result(result_dir,result):
     Log(result.message())
-    HTMLIndex(resultdir).add_result(result)
-    JSONIndex(pjoin(opts.resultdir,"results.json")).add_result(result)
+    HTMLIndex(result_dir).add_result(result)
+    JSONIndex(pjoin(result_dir,"results.json")).add_result(result.to_dict())
+
+
+# ----------------------------------------------------------------------------
+#  Method: default_suite_options
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 8 2013
+# ----------------------------------------------------------------------------
+def default_suite_options():
+    data_dir_def    = abs_path(visit_root(),"data")
+    base_dir_def    = abs_path(visit_root(),"test","baseline")
+    tests_dir_def   = abs_path(visit_root(),"test","tests")
+    visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
+    skip_def        = pjoin(test_path(),"skip.json")
+    nprocs_def      = multiprocessing.cpu_count()
+    opts_full_defs = {
+                      "use_pil":True,
+                      "data_dir":     data_dir_def,
+                      "baseline_dir": base_dir_def,
+                      "tests_dir":    tests_dir_def,
+                      "result_dir":   test_path(),
+                      "post":False,
+                      "verbose":False,
+                      "less_verbose":False,
+                      "quiet":False,
+                      "width": 300,
+                      "height":300,
+                      "modes":"serial",
+                      "classes":"nightly",
+                      "limit":600,
+                      "skip_file":skip_def,
+                      "no_skip":False,
+                      "check_data":True,
+                      "fuzzy":False,
+                      "no_fuzzy":False,
+                      "cleanup":True,
+                      "cleanup_delay":10,
+                      "executable":visit_exe_def,
+                      "interactive":False,
+                      "pixdiff":0,
+                      "avgdiff":0,
+                      "numdiff":0,
+                      "vargs": "",
+                      "retry":False,
+                      "index":None,
+                      "timeout":3600,
+                      "nprocs":nprocs_def}
+    return opts_full_defs
+
+def finalize_options(opts):
+    opts["executable"]   = abs_path(opts["executable"])
+    opts["result_dir"]   = abs_path(opts["result_dir"])
+    opts["data_dir"]     = abs_path(opts["data_dir"])
+    opts["tests_dir"]    = abs_path(opts["tests_dir"])
+    opts["baseline_dir"] = abs_path(opts["baseline_dir"])
+    if isinstance(opts["classes"],basestring):
+        opts["classes"]  = opts["classes"].split(",")
+    opts["skip_list"]    = None
+    if not opts["skip_file"] is None and os.path.isfile(opts["skip_file"]):
+        try:
+            if opts["no_skip"] == False:
+                opts["skip_list"] = json_load(opts["skip_file"])
+        except:
+            opts["skip_list"] = None
 
 # ----------------------------------------------------------------------------
 #  Method: parse_args
@@ -323,13 +406,7 @@ def parse_args():
     Parses arguments to runtest.
     """
     parser = OptionParser()
-    data_dir_def    = abs_path(visit_root(),"data")
-    base_dir_def    = abs_path(visit_root(),"test","baseline")
-    tests_dir_def   = abs_path(visit_root(),"test","tests")
-    visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
-    skip_def        = pjoin(test_path(),"skip.json")
-    skip_def_win    = pjoin(test_path(),"skipwin.json")
-    nprocs_def      = multiprocessing.cpu_count()
+    defs = default_suite_options()
     parser.add_option("-r",
                       "--run-only",
                       dest="use_pil",
@@ -338,174 +415,156 @@ def parse_args():
                       help="no image differencing (no PIL)")
     parser.add_option("-d",
                       "--data-dir",
-                      dest="datadir",
-                      default=data_dir_def,
-                      help="path to data directory [default=%s]" % data_dir_def)
+                      dest="data_dir",
+                      default=defs["data_dir"],
+                      help="path to data directory [default=%s]" % defs["data_dir"])
     parser.add_option("-b",
                       "--baseline-dir",
-                      dest="baselinedir",
-                      default=base_dir_def,
-                      help="path to baseline directory [default=%s]" % base_dir_def)
+                      dest="baseline_dir",
+                      default=defs["baseline_dir"],
+                      help="path to baseline directory [default=%s]" % defs["baseline_dir"])
     parser.add_option("-t",
                       "--tests-dir",
-                      dest="testsdir",
-                      default=tests_dir_def,
-                      help="path to tests directory [default=%s]" % tests_dir_def)
+                      dest="tests_dir",
+                      default=defs["tests_dir"],
+                      help="path to tests directory [default=%s]" % defs["tests_dir"])
     parser.add_option("-o",
                       "--output-dir",
-                      dest="resultdir",
-                      default=test_path(),
-                      help="path to output directory [default=%s]" % test_path())
+                      dest="result_dir",
+                      default=defs["result_dir"],
+                      help="path to output directory [default=%s]" % defs["result_dir"])
     parser.add_option("-p",
                       "--post",
-                      default=False,
+                      default=defs["post"],
                       action="store_true",
                       help="post results to web")
     parser.add_option("-q",
                       "--quiet",
-                      default=False,
+                      default=defs["quiet"],
                       action="store_true",
                       help="suppress all text output")
     parser.add_option("-v",
                       "--verbose",
-                      default=False,
+                      default=defs["verbose"],
                       action="store_true",
                       help="extra test output")
     parser.add_option("--lessverbose",
-                      default=False,
+                      default=defs["less_verbose"],
+                      dest="less_verbose",
                       action="store_true",
                       help="extra test output without progress messages")
     parser.add_option("--width",
                       type="int",
-                      default=300,
+                      default=defs["width"],
                       help="set image width")
     parser.add_option("--height",
                       type="int",
-                      default=300,
+                      default=defs["height"],
                       help="set image height")
     parser.add_option("-m",
                       "--modes",
-                      default="serial",
+                      default=defs["modes"],
                       help="specify mode in which to run tests"
                            " [choose from 'parallel','serial','scalable', "
                            " 'dlb','hdf5', 'icet', and combinations such as"
                            " 'scalable,parallel']")
     parser.add_option("-c",
                       "--classes",
-                      default="nightly",
+                      default=defs["classes"],
                       help="list of classes [choose from 'nightly']")
     parser.add_option("-l",
                       "--limit",
                       type="int",
-                      default=600,
+                      default=defs["limit"],
                       help="set maximum elapsed run-time for each test")
     parser.add_option("-s",
                       "--skiplist",
-                      dest="skipfile",
-                      default=skip_def,
-                      help="specify a skip list file [default=%s]" % skip_def)
-    parser.add_option( "--skiplistwin",
-                      dest="skipfilewin",
-                      default=skip_def_win,
-                      help="specify a skip list file for windows [default=%s]" % skip_def_win)
+                      dest="skip_file",
+                      default=defs["skip_file"],
+                      help="specify a skip list file [default=%s]" % defs["skip_file"])
     parser.add_option("--no-skiplist",
-                      dest="noskip",
-                      default=False,
+                      dest="no_skip",
+                      default=defs["no_skip"],
                       action = "store_true",
                       help="Do not use a skip list file")
     parser.add_option("--no-data-check",
-                      dest="checkdata",
-                      default=True,
+                      dest="check_data",
+                      default=defs["check_data"],
                       action = "store_false",
                       help="Skip build sanity check on input data files")
     parser.add_option("--fuzzy",
                       dest="fuzzy",
-                      default=False,
+                      default=defs["fuzzy"],
                       action = "store_true",
                       help="Use fuzzy image matching [default=False]")
     parser.add_option("--no-fuzzy",
-                      dest="nofuzzy",
-                      default=False,
+                      dest="no_fuzzy",
+                      default=defs["no_fuzzy"],
                       action = "store_true",
                       help="Do not use fuzzy image matching for scalable mode"),
     parser.add_option("--no-cleanup",
                       dest="cleanup",
-                      default=True,
+                      default=defs["cleanup"],
                       action = "store_false",
                       help="Do not remove the _run directory"),
+    parser.add_option("--cleanup-delay",
+                      dest="cleanup_delay",
+                      default=defs["cleanup_delay"],
+                      type="int",
+                      help="# of seconds to wait for processes to finish "
+                           "before cleaning up. [default=%d]" % defs["cleanup_delay"]),
     parser.add_option("-e",
                       "--executable",
-                      default=visit_exe_def,
+                      default=defs["executable"],
                       help="specify executable version of visit to run. "
                            "For example, use \"-e '/usr/gapps/visit/bin/visit -v "
-                           " [default = %s]" % visit_exe_def)
+                           " [default = %s]" % defs["executable"])
     parser.add_option("-i",
                       "--interactive",
                       action = "store_true",
-                      default=False,
+                      default=defs["interactive"],
                       help="don't redirect test .py file into visit."
                            "Just bring up CLI and let user Source() "
                            "the .py file explicitly.")
     parser.add_option("--pixdiff",
                       type="int",
-                      default=0,
+                      default=defs["pixdiff"],
                       help="allowed % of pixels different [default = 0%]")
     parser.add_option("--avgdiff",
                       type="int",
-                      default=0,
+                      default=defs["avgdiff"],
                       help="if pixdiff exceeded, allowed mean grayscale diff "
                            "[default = 0]")
     parser.add_option("--numdiff",
                       type="int",
-                      default=0,
+                      default=defs["numdiff"],
                       help="allowed relative numerical difference in text "
                            "results [default = 0]")
     parser.add_option("--vargs",
-                      default="",
+                      default=defs["vargs"],
                       help="arguments to pass directly to VisIt "
                            "(surround them \" or ')")
     parser.add_option("--retry",
-                      default=False,
+                      default=defs["retry"],
                       action="store_true",
                       help="retry failed test cases from last index file")
     parser.add_option("--index",
                       dest="index",
+                      default=defs["index"],
                       help="load test cases from a specific index file")
     parser.add_option("--timeout",
                       type="int",
-                      default=3600, # total timeout of one hour
+                      default=defs["timeout"], # total timeout of one hour
                       help="total test suite timeout in seconds [default = 3600]")
     parser.add_option("-n","--num-processes",
                       dest="nprocs",
                       type=int,
-                      default=nprocs_def,
-                      help="number of tests to launch simultaneously [default =%d]" % nprocs_def)
+                      default=defs["nprocs"],
+                      help="number of tests to launch simultaneously [default =%d]" % defs["nprocs"])
     # parse args
-    opts, args       = parser.parse_args()
-    opts.executable  = abs_path(opts.executable)
-    opts.resultdir   = abs_path(opts.resultdir)
-    opts.datadir     = abs_path(opts.datadir)
-    opts.testsdir    = abs_path(opts.testsdir)
-    opts.baselinedir = abs_path(opts.baselinedir)
-    opts.classes     = opts.classes.split(",")
-    opts.skiplist    = None
-    opts.skiplistwin = None
-    if os.path.isfile(opts.skipfile):
-        try:
-            if opts.noskip == False:
-                opts.skiplist = json_load(opts.skipfile)
-        except:
-            opts.skiplist = None
-
-    if sys.platform.startswith("win"):
-        if os.path.isfile(opts.skipfilewin):
-            try:
-                if opts.noskip == False:
-                    opts.skiplistwin = json_load(opts.skipfilewin)
-            except:
-                opts.skiplistwin = None
-
-    tests           = [ abs_path(t) for t in args]
+    opts, tests = parser.parse_args()
+    # note: we want a dict b/c the values could be passed without using optparse
+    opts = vars(opts)
     return opts, tests
 
 # ----------------------------------------------------------------------------
@@ -514,15 +573,17 @@ def parse_args():
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def find_test_cases(tests_dir):
+def find_test_cases(tests_dir,test_classes):
     """
     Finds test suite scripts.
     """
     Log("[Finding test scripts]")
+    if len(test_classes)> 0:
+        Log("[Test Classes: %s]" % str(test_classes))
     res    = []
     tfiles = glob.glob(pjoin(tests_dir,"*","*.py"))
     tfiles = [ os.path.abspath(tf) for tf in tfiles]
-    if len(opts.classes) == 0:
+    if len(test_classes) == 0 or test_classes == "ANY":
         res = tfiles
     else:
         for tf in tfiles:
@@ -530,7 +591,7 @@ def find_test_cases(tests_dir):
             match = False
             for l in test_lines:
                 if l.count("#  CLASSES:"):
-                    for c in opts.classes:
+                    for c in test_classes:
                         if l.count(c):
                             match = True
             if match:
@@ -603,8 +664,11 @@ def prepare_data_dir(data_dir):
             # TODO: What should we do on windows if the data doesn't exist?
             pass
         else:
-            cmd = "cd  %s && make test" % data_dir
+            cwd = os.getcwd()
+            os.chdir(data_dir)
+            cmd = "make test"
             sexe(cmd)
+            os.chdir(cwd)
     else:
         Log("[Test data file '%s' exists.]" % dfile)
 
@@ -614,12 +678,15 @@ def prepare_data_dir(data_dir):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def cleanup(res_dir):
+def cleanup(res_dir,delay):
     Log("[Cleanup: Waiting for delayed writes]")
-    time.sleep(10)
+    time.sleep(delay)
     Log("[Cleanup: Removing _run directory]")
     run_dir = pjoin(res_dir,"_run")
-    shutil.rmtree(run_dir)
+    try:
+        shutil.rmtree(run_dir)
+    except OSError as e:
+        Log("<Error Removing Suite _run Directory> %s" % run_dir)
 
 # ----------------------------------------------------------------------------
 #  Method: launch_tests
@@ -635,28 +702,25 @@ def launch_tests(opts,tests):
         Log("[Running %d test case]" % ntests)
     else:
         Log("[Running %d test cases]" % ntests)
-    if opts.noskip == False and os.path.isfile(opts.skipfile):
-        Log("[Using skip list file: '%s']" % opts.skipfile)
-    if sys.platform.startswith("win"):
-        if opts.noskip == False and os.path.isfile(opts.skipfilewin):
-            Log("[Using skip list file: '%s']" % opts.skipfilewin)
+    if opts["no_skip"] == False and os.path.isfile(opts["skip_file"]):
+        Log("[Using skip list file: '%s']" % opts["skip_file"])
     test_args = [(idx,tests[idx],opts) for idx in range(ntests)]
     # save the input list
     test_list = json_dumps([(idx,tests[idx]) for idx in range(ntests)])
-    open(pjoin(opts.resultdir,"tests.json"),"w").write(test_list)
-    if len(test_args) < opts.nprocs:
-        opts.nprocs = len(test_args)
-    if opts.nprocs < 2:
-        Log("[Using %s test process]" % opts.nprocs)
+    open(pjoin(opts["result_dir"],"tests.json"),"w").write(test_list)
+    if len(test_args) < opts["nprocs"]:
+        opts["nprocs"] = len(test_args)
+    if opts["nprocs"] < 2:
+        Log("[Using %s test process]" % opts["nprocs"])
         for args in test_args:
-            results.append(run_visit_test(args))
+            results.append(launch_visit_test(args))
     else:
-        Log("[Using %s test processes]" % opts.nprocs)
-        pool = multiprocessing.Pool(processes=opts.nprocs)
-        p = pool.map_async(run_visit_test,test_args)
+        Log("[Using %s test processes]" % opts["nprocs"])
+        pool = multiprocessing.Pool(processes=opts["nprocs"])
+        p = pool.map_async(launch_visit_test,test_args)
         try:
             #results = p.get(0xFFFF) # used to make sure ctl-c doesn't hang
-            results = p.get(opts.timeout) # used to make sure ctl-c doesn't hang
+            results = p.get(opts["timeout"]) # used to make sure ctl-c doesn't hang
         except KeyboardInterrupt:
             Log("<Test Suite Run aborted by user keyboard interrupt.>")
             pool.terminate()
@@ -694,26 +758,28 @@ def main(opts,tests):
     """
     Main entry point for the test suite.
     """
+    finalize_options(opts)
     Log("[[VisIt Test Suite]]")
-    if opts.checkdata:
-        prepare_data_dir(opts.datadir)
-    if opts.index:
-        ridx  = opts.index
-        tests = load_test_cases_from_index(opts.testsdir,ridx)
-    elif opts.retry:
+    if opts["check_data"]:
+        prepare_data_dir(opts["data_dir"])
+    if opts["index"]:
+        ridx  = opts["index"]
+        tests = load_test_cases_from_index(opts["tests_dir"],ridx)
+    elif opts["retry"]:
         Log("[Retrying failures from previous run]")
-        ridx  = pjoin(opts.resultdir,"results.json")
-        tests = load_test_cases_from_index(opts.testsdir,ridx,True)
+        ridx  = pjoin(opts["result_dir"],"results.json")
+        tests = load_test_cases_from_index(opts["tests_dir"],ridx,True)
     elif len(tests) == 0:
-        tests = find_test_cases(opts.testsdir)
-    prepare_result_dirs(opts.resultdir)
+        tests = find_test_cases(opts["tests_dir"],opts["classes"])
+    tests = [ abs_path(t) for t in tests]
+    prepare_result_dirs(opts["result_dir"])
     ststamp = timestamp(sep=":")
     stime   = time.time()
     Log("[Starting test suite run @ %s]" % ststamp)
-    html_index = HTMLIndex(opts.resultdir)
-    html_index.write_header(opts.modes,ststamp)
-    json_index = JSONIndex(pjoin(opts.resultdir,"results.json"))
-    json_index.write_header(opts,ststamp)
+    html_index = HTMLIndex(opts["result_dir"])
+    html_index.write_header(opts["modes"],ststamp)
+    json_index = JSONIndex(pjoin(opts["result_dir"],"results.json"))
+    json_index.write_header(opts,tests,ststamp)
     error, results = launch_tests(opts,tests)
     etstamp = timestamp(sep=":")
     etime   = time.time()
@@ -732,10 +798,62 @@ def main(opts,tests):
             Log("!! Test suite run finished with %d error." % nerrors)
         else:
             Log("!! Test suite run finished with %d errors." % nerrors)
-    if opts.cleanup:
-        cleanup(opts.resultdir)
+    if opts["cleanup"]:
+        cleanup(opts["result_dir"],opts["cleanup_delay"])
+    return pjoin(opts["result_dir"],"results.json")
+
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+#  Method: run_visit_test and run_visit_tests
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Tue May 28 13:47:08 PDT 2013
+#
+#  Note: These are the two functions that comprise the module interface
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+def run_visit_test(script_file,
+             data_dir=None,
+             baseline_dir=None,
+             output_dir=None,
+             visit_bin="/usr/gapps/visit/bin/visit",
+             verbose=False):
+    tests = [script_file]
+    return run_visit_tests(tests,
+                           data_dir,
+                           baseline_dir,
+                           output_dir,
+                           visit_bin,
+                           verbose)
+
+def run_visit_tests(tests,
+                    data_dir=None,
+                    baseline_dir=None,
+                    output_dir=None,
+                    visit_bin="/usr/gapps/visit/bin/visit",
+                    verbose=False):
+    opts = default_suite_options()
+    if not data_dir is None:
+        opts["data_dir"]     = data_dir
+    if not baseline_dir is None:
+        opts["baseline_dir"] = baseline_dir
+    if not output_dir is None:
+        opts["result_dir"] = output_dir
+    opts["executable"] = visit_bin
+    # override other default options
+    opts["check_data"]    = False
+    opts["cleanup_delay"] = 1
+    if verbose:
+        opts["verbose"] = True
+    opts["test_dir"] = os.path.split(os.path.abspath(__file__))[0]
+    print opts["test_dir"]
+    res_file  = main(opts,tests)
+    return JSONIndex.load_results(res_file,True)
+
 
 if __name__ == "__main__":
-    opts, tests =parse_args()
+    opts, tests = parse_args()
     main(opts,tests)
 
