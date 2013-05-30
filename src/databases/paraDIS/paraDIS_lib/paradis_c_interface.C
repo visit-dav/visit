@@ -31,9 +31,27 @@ extern "C" {
     pci_gDataSet->SetThreshold(threshold); 
     return; 
   }
+
+  void paraDIS_SetOutputDir(const char *dir){
+    paraDIS_init(NULL);
+    pci_gDataSet->SetOutputDir(dir); 
+  }
+
   void paraDIS_EnableDebugOutput(int truth){
     paraDIS_init(NULL);
     pci_gDataSet->EnableDebugOutput(truth); 
+    return; 
+  }
+  
+  void paraDIS_EnableStatsOutput(int truth){
+    paraDIS_init(NULL);
+    pci_gDataSet->EnableStatsOutput(truth); 
+    return; 
+  }
+  
+  void paraDIS_EnableTagFileOutput(int truth){
+    paraDIS_init(NULL);
+    pci_gDataSet->EnableTagFileOutput(truth); 
     return; 
   }
   
@@ -200,11 +218,6 @@ extern "C" {
     return pci_gDataSet->GetArmSegment(segmentnum)->GetNodeIndex(endpointnum);
   }
 
-  void paraDIS_EnableMetaArmSearch(void) {
-    paraDIS_init(NULL);
-    pci_gDataSet->EnableMetaArmSearch(); 
-  }
-  
   uint32_t paraDIS_GetNumMetaArms(void) {
     paraDIS_init(NULL);
     return pci_gDataSet->GetNumMetaArms(); 

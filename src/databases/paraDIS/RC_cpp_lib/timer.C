@@ -16,7 +16,7 @@ int Progress(timer &iTimer, double iNum, double iMax,
     double remaining = (iMax-iNum)/(iNum!=0?iNum:1)*newtime;
     double persec= iNum/newtime;
     char msg[4096]; 
-    sprintf(msg, "\r%s: %g%%;  %g/%g items, %g secs, %g/sec, left: %g", /*datestring(), */iMsg.c_str(), percent, iNum, iMax, newtime, persec, remaining);
+    sprintf(msg, "\r%s: %6.5g%%, %8g/%-8g items, %6.5g secs elapsed, %8.5g/sec,%8.5g secs left", /*datestring(), */iMsg.c_str(), percent, iNum, iMax, newtime, persec, remaining, " ");
     cerr << msg << flush;
     oPercent=percent;
     oTime=newtime; 

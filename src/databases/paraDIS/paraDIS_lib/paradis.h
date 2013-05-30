@@ -47,11 +47,12 @@ using boost::uint32_t;
 #include <math.h>
 
 #include "Point.h"
-
+#include "pathutil.h"
 #include "stringutil.h" /* from RC_c_lib, is this a good idea? */ 
 #include "debugutil.h" /* from RC_c_lib, now we're committed. */ 
 
-std::string get_version(const char *progname);
+std::string GetLibraryVersionString(const char *progname);
+std::string GetLibraryVersionNumberString(void);
 
 extern std::string doctext;
 
@@ -459,6 +460,7 @@ namespace paraDIS {
       init(); 
       return; 
     }
+   
     FullNode(const FullNode &other, bool skipneighbors=false) {
       *this = other; 
       if (skipneighbors) {
@@ -487,34 +489,34 @@ namespace paraDIS {
       mInBounds = otherNode.mInBounds; 
       return *this; 
     } 
-     
-   /*!
+    
+    /*!
       Accessor function 
     */ 
     void SetInBounds(void) {
       mInBounds = rclib::InBounds(rclib::Point<float>(mLocation), mBoundsMin, mBoundsMax );
     }
-      
- 
+    
+    
     /*!
       Accessor function
     */ 
     void SetLocation(float loc[3]) {
       int i=3; while (i--) mLocation[i] = loc[i]; 
     }
-
+    
     /*!
       Accessor function
     */ 
     float GetLocation(int index) const { return mLocation[index]; }
-
+    
     /*!
       Accessor function
     */ 
     const float *GetLocation(void) const {
       return mLocation; 
     }
-
+    
     /*!
       Accessor
     */
@@ -609,9 +611,8 @@ namespace paraDIS {
       if (doall) {
         mNeighborSegments.erase(remove(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg), mNeighborSegments.end()); 
       } else {
-        vector<ArmSegment*>::iterator pos = 
-          find(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg); 
-        if (pos == mNeighborSegments.end()) {
+        mNeighborSegments.erase(find(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg)); 
+        /*  if (pos == mNeighborSegments.end()) {
           dbprintf(5, "RemoveNeighbor ERROR:  no matching neighbor found to remove!\n"); 
 
 #ifdef DEBUG
@@ -622,7 +623,7 @@ namespace paraDIS {
 #endif
 
         }
-        mNeighborSegments.erase(pos); 
+        mNeighborSegments.erase(pos); */ 
       }
       //ComputeNodeType(); 
     }
@@ -692,26 +693,29 @@ namespace paraDIS {
     // used to remove an arm which has been decomposed
     void RemoveNeighbor(struct Arm *neighbor, bool doall = false) {
       if (doall) {
-        mNeighborArms.erase(remove(mNeighborArms.begin(), mNeighborArms.end(), neighbor), mNeighborArms.end()); 
+        mNeighborArms.erase(remove(mNeighborArms.begin(), mNeighborArms.end(), neighbor), mNeighborArms.end());         
       } else {
-        vector<Arm*>::iterator pos = find(mNeighborArms.begin(), mNeighborArms.end(), neighbor); 
-        if (pos == mNeighborArms.end()) {
+        // assumes that the arm exists in mNeighborArms! 
+        mNeighborArms.erase(find(mNeighborArms.begin(), mNeighborArms.end(), neighbor)); 
+        /*if (armpos == mNeighborArms.end()) {
           dbprintf(5, "RemoveNeighbor() Error:  no matching neighbor arm found to remove!\n"); 
-
 #ifdef DEBUG
 // HOOKS_IGNORE
           abort(); 
 #else
           return;
 #endif
-
         }
-        mNeighborArms.erase(pos); 
+        mNeighborArms.erase(pos); */
       }
     }
 
+    bool HasNeighbor(struct Arm *neighbor) {
+      return (find(mNeighborArms.begin(), mNeighborArms.end(), neighbor) != mNeighborArms.end());
+    }
+
     void AddNeighbor(struct Arm *neighbor) {
-      mNeighborArms.push_back(neighbor); 
+      mNeighborArms.push_back(neighbor);       
     }
         
     /*! 
@@ -720,10 +724,19 @@ namespace paraDIS {
     const std::vector< int> GetNeighborArmIDs(void) const;
 
     /*!
+      Identify arms which cross over this node and glue them together. 
+      Simplifies decomposition of arms.  
+    */ 
+    void DetachCrossArms(void); 
+
+
+   /*!
       Accessor function
     */
     int32_t GetIndex(void) { return mNodeIndex; }
-    
+ 
+    string GetNodeIDString(void) { return GetNodeID().Stringify(0); }
+
     /*!
       Accessor
     */ 
@@ -866,6 +879,7 @@ namespace paraDIS {
       return !(*this == other); 
     }
 
+ 
     /*!      
       For each wrapped segment, there is an identical unwrapped segment with the same node ID's.  One of each such pair of segments has a ghost endpoint with ID greater than one of its nodes and equal to the other, and one has a ghost endpoint with ID less than one of its nodes and equal to the other. This function returns true for one of them and not the other.  Used in counting total segment lengths.  
     */
@@ -1028,7 +1042,7 @@ namespace paraDIS {
     }
       
     /*! 
-      This is called only for wrapped segments, when you need to replace a "real" node pointer with a pointer to a wrapped node.  We still need to keep the old pointer to the real node to notify it if we are deleted. 
+      This is called  for wrapped segments, when you need to replace a "real" node pointer with a pointer to a wrapped node.  We still need to keep the old pointer to the real node to notify it if we are deleted. 
     */     
     void ReplaceEndpoint(FullNode *oldEP, FullNode *newEP, bool doGhost) {
       if (mEndpoints[0] == oldEP) {
@@ -1199,7 +1213,7 @@ namespace paraDIS {
   private:
     uint32_t mDenominator;
   };
-   
+  
   typedef vector<FullNode*>::iterator FullNodeIterator; 
   //==============================================
   /*! 
@@ -1219,21 +1233,42 @@ namespace paraDIS {
       mSeenInMeta=false; 
       mParentMetaArm=NULL;
       mNumSegments = 0; 
+      mTerminalSegments.clear();  
+      mTerminalNodes.clear(); 
 #if LINKED_LOOPS
       mPartOfLinkedLoop=false; 
       mCheckedForLinkedLoop=false;
 #endif
     }
+    
     /*!
-      Clear all data from the Arm for reuse
+      When one arm is gobbled up by another, the gobblee becomes ancestor to the gobbler
     */ 
-    void Clear(void) { 
-      mTerminalSegments.clear();  
-      mTerminalNodes.clear(); 
-      mArmType = ARM_UNKNOWN; 
-      mNumSegments = 0; 
+    void MakeAncestor(Arm *sourceArm) {
+      mAncestorArms.push_back(sourceArm->mArmID); 
+      for  (uint32_t a = 0; a < sourceArm->mAncestorArms.size(); a++) {
+        mAncestorArms.push_back(sourceArm->mAncestorArms[a]); 
+      }
+      return;
     }
     
+    /*!
+      Helper for DetachLoopFromNode and DetachAndFuse, does the detach part
+    */ 
+    void DetachAndReplaceNode(FullNode *node, FullNode *replacement); 
+
+    /*!
+      During decomposition, cross arms are removed from terminal nodes.  
+      If the cross arm is a loop, then this is called to detach it.
+    */ 
+    void DetachLoopFromNode(FullNode *node); 
+
+     /*!
+      During decomposition, cross arms are removed from terminal nodes.  
+      This actually detaches one such cross arm from a node, emptying the other node and stealing its contents while decrementing the node neighbor count by two. 
+    */ 
+   void DetachAndFuse(FullNode *node, Arm *other); 
+
     /*!
       A helper for ExtendByArm() function.  
     */ 
@@ -1244,6 +1279,7 @@ namespace paraDIS {
     */ 
     void ExtendByArm(Arm *sourceArm, vector<ArmSegment*> &sourceSegments, FullNode *sharedNode, int numDuplicates); 
     
+
     /*!
       Merge with neighbor arms. 
     */ 
@@ -1418,7 +1454,7 @@ namespace paraDIS {
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
     */ 
-    void CheckForButterfly(void); 
+    //void CheckForButterfly(void); 
     /*! 
       This is a necessary component to CheckForButterfly, broken out for readability in the code. 
     */ 
@@ -1432,7 +1468,11 @@ namespace paraDIS {
     int8_t mMetaArmType; // of its parent if it exists
     double mArmLength; 
     static double mThreshold; // shorter than this and an arm is "short"
-    static double mDecomposedLength; // shorter than this and an arm is "short"
+    static double mDecomposedLength; // statistics
+    static vector<int32_t> mNumDecomposed; // statistics
+    static int32_t mNumDestroyedInDetachment; // statistics
+    static double mTotalArmLengthBeforeDecomposition, 
+      mTotalArmLengthAfterDecomposition;  
 #if LINKED_LOOPS
     bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
 #endif
@@ -1452,13 +1492,20 @@ namespace paraDIS {
     */ 
     static int32_t mNextID; 
 
+    /*!
+      An ancestor of this arm was one which was assimilated into this arm,
+      during decomposition.  Useful for history tracing. 
+    */ 
+    vector<int32_t> mAncestorArms; 
+
     private: 
     struct MetaArm * mParentMetaArm; 
   };
 
+    
   //=============================================
   /*!
-    Functor object for sorting the armsegment set by comparing pointers correctly (by dereferencing, not by pointer address)
+    Functor object for (BinaryPredicate) sorting the armsegment set by comparing pointers correctly (by dereferencing, not by pointer address)
   */ 
   class CompareSegPtrs {
   public:
@@ -1573,29 +1620,82 @@ namespace paraDIS {
       if this is true, then complete dumps of all data are done, 
       into files named mDebugOutputPrefix + <type> + ".debug"
     */ 
-    void EnableDebugOutput(bool tf=true) {mDoDebugOutput = tf; }
+    void EnableDebugOutput(bool tf=true) {
+      mDoDebugOutput = tf; 
+    }
     /*!
-      By default, this is "./paradis-debug".  See mDoDebugOutput.
+      if this is true, then create arm and metaarm files.  
     */ 
-    void SetDebugOutputDir(std::string dir) { 
-      if (dir != "") {
-        mDoDebugOutput =true;
-      }
-      mDebugOutputDir = dir; 
+    void EnableStatsOutput(bool tf=true) {
+      mDoStats = tf; 
+    }
+    /*!
+      if this is true, then create tag file.  
+    */ 
+    void EnableTagFileOutput(bool tf=true) {
+      mDoTagFile = tf; 
     }
 
-    void EnableMetaArmSearch (void) { 
-      mMetaArmFile = "metaArmFile.txt"; 
+    /*!
+s      Tell the data set which file to read
+    */ 
+    void SetDataFile(std::string datafile) {
+      mDataFilename = datafile;
+      if (mOutputBasename == "") {
+        string basename = Replace(mDataFilename, ".data", ""); 
+        basename = Replace(basename, ".dat", "");         
+        SetOutputBaseName(basename); 
+      }
+      SetOutputDir(); 
     }
-    void EnableMetaArmSearch (std::string filename) { 
-      mMetaArmFile = filename; 
+
+    /*! 
+      If mOutputDir is set, leave it alone.
+      If not, then set it based on the mOutputBaseName
+    */ 
+    void SetOutputDir(void) {
+      if (mOutputDir != "") {
+        return; 
+      }
+      std::string::size_type slash = mOutputBasename.rfind("/"); 
+      if (slash == 0) {
+        SetOutputDir("/"); 
+      } else if (slash != std::string::npos) {
+        SetOutputDir(mOutputBasename.substr(0, slash)); 
+      } else {
+        SetOutputDir("."); 
+      }
     }
+        
+      
+    /*!
+      By default, this is "./paradis-output".  
+    */ 
+    void SetOutputDir(std::string dir) { 
+       mOutputDir = dir;     
+       if (!Mkdir(mOutputDir.c_str())) {
+         cerr << "Warning: could not create output directory " << mOutputDir << endl; 
+       }
+       return;
+    }
+
+    /*!
+      By default, this is the datafile name without its extension.  
+    */ 
+    void SetOutputBaseName(std::string name) { 
+       mOutputBasename = name; 
+       SetOutputDir(); 
+    }
+
     /*!
       verbosity goes from 0-5, based on dbg_setverbose() from librc.a
       filename if null means stderr
     */ 
-    void SetVerbosity(int level, const string filename = "") { 
-      if (filename != "") dbg_setfile(filename.c_str()); 
+    void SetVerbosity(int level, string filename) { 
+      if (filename != "") {
+        filename = mOutputDir + "/" + filename; 
+        dbg_setfile(filename.c_str()); 
+      }
       dbg_setverbose(level); 
     }
 
@@ -1621,9 +1721,10 @@ namespace paraDIS {
     void PrintMetaArmFile(void);
 
     /*!
-      Print all arms in a simple format into a file for analysis
+      Print all arms in a simple format into a file for analysis  
+      altname provides a way to write a 2nd file for debugging arms before decomposition 
     */
-    void PrintArmFile(char*filename);
+    void PrintArmFile(char*altname = NULL);
 
     /*!
       Parse the input file just for the data bounds. 
@@ -1647,13 +1748,6 @@ namespace paraDIS {
 
 
     /*!
-s      Tell the data set which file to read
-    */ 
-    void SetDataFile(std::string datafile) {
-      mDataFilename = datafile;
-    }
-
-    /*!
       Tag all METAARM_LOOP nodes
     */
     void TagNodes(void);
@@ -1661,7 +1755,7 @@ s      Tell the data set which file to read
     /*!
       Write out a copy of the input file that has all FullNode tags in it.
     */
-    void WriteTagFile(char *outputname); 
+    void WriteTagFile(void); 
 
     /*!
       Using 3-way binary decomposition, determine our chunk of subspace based on our processor number
@@ -1820,15 +1914,13 @@ s      Tell the data set which file to read
       set<ArmSegment*, CompareSegPtrs>::iterator spos = mQuickFindArmSegments.begin(), send = mQuickFindArmSegments.end(); 
       while (spos != send) delete *(spos++); 
       mQuickFindArmSegments.clear(); 
-      /*ArmSegmentSet::iterator qfpos = mQuickFindArmSegments.begin(), qfendpos = mQuickFindArmSegments.end(); 
-      while (qfpos != qfendpos) delete **(qfpos++); 
-      mQuickFindArmSegments.clear(); 
-      */ 
       mArms.clear();      
       mProcNum = mNumProcs = mFileVersion = 0; 
       mTotalDumpNodes =0;
       mDoDebugOutput=false; 
-      mDebugOutputDir = "./paradis-debug";
+      mDoTagFile = false; 
+      mDoStats = false; 
+      mOutputDir = "./paradis-debug";
       mDataMin = mDataMax = mDataSize = mSubspaceMin = mSubspaceMax = 
         rclib::Point<float>(0.0); 
     }
@@ -1853,11 +1945,11 @@ s      Tell the data set which file to read
     /*! 
       Prints out all full nodes 
     */ 
-    void DebugPrintFullNodes(const char *name = NULL); 
+    void DebugPrintFullNodes(void); 
    /*! 
       Prints out all arms
     */ 
-    void DebugPrintArms(void);
+    void DebugPrintArms(const char *altname = NULL);
 
     /*! 
       Prints out all MetaArms
@@ -1990,14 +2082,12 @@ s      Tell the data set which file to read
     */ 
     std::vector<Arm *> mArms; 
 
-    double mTotalArmLengthBeforeDecomposition, mTotalArmLengthAfterDecomposition; // sum of all arms.  This is computed twice, once before decomposition, and once after.  
     /*!
       A MetaArm is a chain of arms with all the same Burgers vector value, but can also include 200, 020, and 002 types as "unzipped" portions along the meta-arm.  
     */  
     std::vector<boost::shared_ptr<MetaArm> > mMetaArms; 
 
-    std::string mMetaArmFile; 
-
+ 
     /*! 
       Number of nodes in full dump data
     */ 
@@ -2005,18 +2095,34 @@ s      Tell the data set which file to read
 
     /*!
       if this is true, then complete dumps of all data are done, 
-      into files named mDebugOutputPrefix + <type> + ".debug"
+      into files named mOutputPrefix + <type> + ".debug"
     */ 
     bool mDoDebugOutput; 
     /*!
-      By default, this is "./paradis-debug".  See mDoDebugOutput.
+      if this is true, then create arm and metaarm files.  
     */ 
-    std::string mDebugOutputDir; 
+    bool mDoStats; 
+    /*!
+      if this is true, then create tag file.  
+    */ 
+    bool mDoTagFile; 
+
+     /*!
+      By default, this is "./paradis-output".  See mDoOutput.
+    */ 
+    std::string mOutputDir; 
+
+    /*!
+      By default, this is mDataFilename without the extension.  
+      E.g., mDataFilename = rs0020.data ---->  mOutputBasename = rs0020
+    */ 
+    std::string mOutputBasename; 
 
     /*!
       The name of the data file that will be read.  
     */ 
     std::string mDataFilename; 
+
 
     /*!
       If set, then the file to be read is "old school" paraDIS data, of a slightly different format.  If there is a dataFileVersion string, then mFileVersion will reflect that.  Otherwise: 

@@ -84,24 +84,17 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   paraDIS_SetVerbosity(mVerbosity, mDebugFile.c_str()); 
   cerr << "PARADIS_DEBUG_FILE variable is " << cp << endl; 
 
-  paraDIS_EnableDebugOutput(rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT)); 
+  int enable = rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT); 
   cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
-  if (cp) paraDIS_EnableDebugOutput(atoi(cp)); 
+  if (cp) enable = atoi(cp); 
   else cp = (char*)"unset"; 
   cerr << "PARADIS_ENABLE_DEBUG_OUTPUT variable is " << cp << endl; 
+  
+  paraDIS_EnableDebugOutput(enable); 
+  paraDIS_EnableStatsOutput(enable); 
     
-  paraDIS_EnableMetaArmSearch(); 
-
   dbg_setverbose(mVerbosity); 
     
-  /* 
-  mMaterialSetChoice = rdatts->GetEnum(PARADIS_MATERIAL_SET_CHOICE); 
-  cp = getenv("PARADIS_USE_MN_MATERIALS"); 
-  if (cp) {
-    mMaterialSetChoice = atoi(cp); 
-  }
-  else cp = "unset"; 
-  */ 
   paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
   cp = getenv("PARADIS_NN_ARM_THRESHOLD"); 
   if (cp)  {
