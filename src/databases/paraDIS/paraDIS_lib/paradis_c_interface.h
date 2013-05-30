@@ -30,8 +30,14 @@ extern "C" {
   void paraDIS_SetThreshold(double threshold); 
   
   void paraDIS_EnableDebugOutput(int truth); 
+
+  void paraDIS_EnableStatsOutput(int truth); 
+  
+  void paraDIS_EnableTagFileOutput(int truth); 
   
   void paraDIS_SetDataFile(const char *filename); 
+  
+  void paraDIS_SetOutputDir(const char *dir); 
   
   void paraDIS_Clear(void); 
   
