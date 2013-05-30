@@ -2297,6 +2297,21 @@ IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
 ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
+
+#-----------------------------------------------------------------------------
+# Add the "test" directory if it exists
+#-----------------------------------------------------------------------------
+IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
+    IF(VISIT_OUT_OF_SOURCE_BUILD)
+        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
+                         ${CMAKE_CURRENT_BINARY_DIR}/test)
+    ELSE(VISIT_OUT_OF_SOURCE_BUILD)
+        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/../test
+                         ${VISIT_SOURCE_DIR}/../test)
+    ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
+ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../test)
+
+
 #-----------------------------------------------------------------------------
 # Create library dependencies file
 #-----------------------------------------------------------------------------
