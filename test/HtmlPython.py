@@ -100,6 +100,6 @@ class Parser:
         self.out.write(cgi.escape(toktext))
         self.out.write('</font>')
 
-def ColorizePython(tests_dir ,result_dir,category, filename, filebase):
-    source = open(pjoin(tests_dir,category,filename)).read()
+def ColorizePython(test_script ,result_dir,category, filename, filebase):
+    source = open(test_script).read()
     Parser(source, open(pjoin(result_dir,"html",'%s_%s_py.html' % (category, filebase)), 'wt')).format(None, None, "%s/%s"%(category,filename))

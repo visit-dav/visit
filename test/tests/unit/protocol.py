@@ -10,8 +10,8 @@
 import os
 
 tapp = visit_bin_path("visitprotocol")
-rcode, outdata = sexe(tapp,ret_output=True)
-if rcode == 0:
+res = sexe(tapp,ret_output=True)
+if res["return_code"] == 0:
     excode = 111
 else:
     excode = 113

@@ -49,6 +49,7 @@ import socket
 import re
 import sys
 
+from threading import Timer
 from os.path import join as pjoin
 
 # ----------------------------------------------------------------------------
@@ -100,26 +101,6 @@ def _decode_dict(data):
     return rv
 
 # ----------------------------------------------------------------------------
-#  Method: ExtendedJSONEncoder
-#
-#  Programmer: Cyrus Harrison
-#  Date:       Fri Jan 11 2013
-#
-#  Custom json encoding for namedtuple subclasses.
-#
-# Recipe from:
-#  http://stackoverflow.com/questions/5906831/serializing-a-python-namedtuple-to-json
-# ----------------------------------------------------------------------------
-class ExtendedJSONEncoder(json.JSONEncoder):
-    def _iterencode(self, obj, markers=None):
-        if isinstance(obj, tuple) and hasattr(obj, '_asdict'):
-            gen = self._iterencode_dict(obj._asdict(), markers)
-        else:
-            gen = json.JSONEncoder._iterencode(self, obj, markers)
-        for chunk in gen:
-            yield chunk
-
-# ----------------------------------------------------------------------------
 # Method: json_load
 #
 #  Programmer: Cyrus Harrison
@@ -148,7 +129,7 @@ def json_loads(val):
 # ----------------------------------------------------------------------------
 def json_dump(val,f):
     ofile = open(f,"w")
-    return json.dump(val,ofile,cls=ExtendedJSONEncoder,indent=2) 
+    return json.dump(val,ofile,indent=2)
 
 # ----------------------------------------------------------------------------
 # Method: json_dumps
@@ -157,7 +138,7 @@ def json_dump(val,f):
 #  Date:       Fri Jan 11 2013
 # ----------------------------------------------------------------------------
 def json_dumps(val):
-    return json.dumps(val,cls=ExtendedJSONEncoder,indent=2)
+    return json.dumps(val,indent=2)
 
 # ----------------------------------------------------------------------------
 #  Method: abs_path
@@ -198,6 +179,18 @@ def timestamp(t=None,sep="_"):
     sbase = "".join(["%04d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d",sep,"%02d"])
     return  sbase % sargs
 
+# ----------------------------------------------------------------------------
+#  Method: kill_sexe
+#
+#  Programmer: Cyrus Harrison
+#  Date:       Wed May 23 2013
+# ----------------------------------------------------------------------------
+def kill_sexe(proc, status):
+    """
+    Helper used to kill a process launched using sexe with a given timeout.
+    """
+    status["killed"] = True
+    proc.kill()
 
 # ----------------------------------------------------------------------------
 #  Method: sexe
@@ -205,29 +198,70 @@ def timestamp(t=None,sep="_"):
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
-def sexe(cmd,ret_output=False,suppress_output=False,echo = False):
+def sexe(cmd,
+         ret_output=False,
+         suppress_output=False,
+         file_stdin = None,
+         echo = False,
+         timeout=None):
     """
     Helper for executing shell commands.
     """
+    res = {}
+    res["killed"]       = False
+    res["output"]       = None
+    res["return_code"]  = -1
     if echo:
         Log("[exe: %s]" % cmd)
+
+    scmd = cmd
+    sexe_stdin = subprocess.PIPE
+    if not file_stdin is None:
+        sexe_stdin = open(os.path.abspath(file_stdin))
+    # to create a subprocess w/ killable children
+    # the majorty of the args are the same for all three
+    # cases, however windows and linux have a slighlty
+    # different magic to propogate signals.
+    # So, we use a kwargs strategy to create
+    # the proper arguments for subprocess.Popen
+    popen_args = {"shell":True,
+                  "stdin":sexe_stdin}
+    if sys.platform.startswith("win"):
+        popen_args["creationflags"]=0x208
+    else:
+        popen_args["preexec_fn"] = os.setsid
     if ret_output:
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        res =p.communicate()[0]
-        return p.returncode,res
+        popen_args["stdout"] = subprocess.PIPE
+        popen_args["stderr"] = subprocess.STDOUT
+        #p = subprocess.Popen(scmd,
+                             #shell=True,
+                             #stdin=sexe_stdin,
+                             #stdout=subprocess.PIPE,
+                             #stderr=subprocess.STDOUT,
+                             #preexec_fn=os.setsid)
     elif suppress_output:
         fh_dev_null = open(os.devnull,"w")
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             stdout=fh_dev_null,
-                             stderr=fh_dev_null)
-        res = p.communicate()[0]
-        return p.returncode
-    else:
-        return subprocess.call(cmd,shell=True)
+        popen_args["stdout"] = fh_dev_null
+        popen_args["stderr"] = fh_dev_null
+        #p = subprocess.Popen(scmd,
+                             #shell=True,
+                             #stdin=sexe_stdin,
+                             #stdout=fh_dev_null,
+                             #stderr=fh_dev_null,
+                             #preexec_fn=os.setsid)
+    p = subprocess.Popen(scmd,**popen_args)
+    timer = Timer(timeout, kill_sexe, [p, res])
+    timer.start()
+    try:
+        sexe_res = p.communicate()
+    except KeyboardInterrupt:
+        pass
+    timer.cancel()
+    if ret_output:
+        res["output"]  = sexe_res[0]
+    res["return_code"] = p.returncode
+    return res
+
 
 # ----------------------------------------------------------------------------
 #  Method: hostname
