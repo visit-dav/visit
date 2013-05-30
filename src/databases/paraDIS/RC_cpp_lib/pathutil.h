@@ -1,6 +1,8 @@
+#ifndef RDC_PATHUTIL_H
+#define RDC_PATHUTIL_H
 #include "stringutil.h"
 
-
+#include <linux/limits.h>
 //===============================================================
 /*!
   Returns the full path to the directory containing the given file or directory, without the trailing "/", unless the result is "/" itself.  
@@ -46,5 +48,8 @@ inline string Basename(string filename) {
   if (loc == string::npos) {
     return filename; 
   } 
-  return filename.substr(loc); 
+  string filename2 = filename.substr(loc+1); 
+  
+  return filename2; 
 }
+#endif
