@@ -430,6 +430,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Eric Brugger, Mon Oct 31 09:52:28 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Brad Whitlock, Fri Sep 28 15:03:06 PDT 2012
+//    I added a simpler version of StartNetwork.
+//
 //    Brad Whitlock, Thu Dec  6 10:52:47 PST 2012
 //    Change global cell count variables from int to long.
 //
@@ -470,6 +473,10 @@ class ENGINE_MAIN_API NetworkManager
     NetnodeDB*    GetDBFromCache(const std::string &filename, int time,
                                  const char * = NULL, bool=false,
                                  bool=false, bool=false);
+    void          StartNetwork(const std::string &format,
+                               const std::string &filename,
+                               const std::string &var,
+                               int time);
     void          StartNetwork(const std::string&, const std::string &,
                                const std::string &, int,
                                const CompactSILRestrictionAttributes &,
@@ -527,7 +534,7 @@ class ENGINE_MAIN_API NetworkManager
                                    int windowID, bool leftEye);
     avtDataObjectWriter_p CreateNullDataWriter() const;
 
-    bool          SaveWindow(const std::string &, int, int, 
+    bool          SaveWindow(const intVector &ids, const std::string &, int, int, 
                              SaveWindowAttributes::FileFormat);
 
     void          StartPickMode(const bool);

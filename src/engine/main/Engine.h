@@ -224,8 +224,11 @@ class Xfer;
 //    Brad Whitlock, Mon Nov 28 16:27:21 PST 2011
 //    I added LaunchRPC.
 //
-//   Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
-//   Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//    Dave Pugmire, Wed Apr 18 09:05:40 EDT 2012
+//    Add alarmEnabled flag. Setting alarm(0) is not disabling the alarm.
+//
+//    Brad Whitlock, Fri Sep 28 09:15:46 PDT 2012
+//    I added InitializeCompute.
 //
 // ****************************************************************************
 
@@ -237,9 +240,10 @@ class ENGINE_MAIN_API Engine
 
     // Initialization routines
     void            Initialize(int *argc, char **argv[], bool sigs);
-    void            Finalize(void);
     bool            ConnectViewer(int *argc, char **argv[]);
     void            SetUpViewerInterface(int *argc, char **argv[]);
+    void            InitializeCompute();
+    void            Finalize(void);
 
     // Needed for simulations
     void            EnableSimulationPlugins();
@@ -253,7 +257,8 @@ class ENGINE_MAIN_API Engine
     static void     DisconnectSimulation();
     void            Message(const std::string &msg);
     void            Error(const std::string &msg);
-    bool            SaveWindow(const std::string &, int, int, 
+    bool            SaveWindow(const intVector &ids, const std::string &, 
+                               int, int, 
                                SaveWindowAttributes::FileFormat);
 
     // Two event loops

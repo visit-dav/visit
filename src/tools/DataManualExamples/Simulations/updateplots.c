@@ -82,6 +82,10 @@ typedef struct
     int      done;
     int      savingFiles;
     int      saveCounter;
+    int      batch;
+
+    int      pcId;
+    int      meshId;
 } simulation_data;
 
 void
@@ -95,6 +99,10 @@ simulation_data_ctor(simulation_data *sim)
     sim->done = 0;
     sim->savingFiles = 0;
     sim->saveCounter = 0;
+    sim->batch = 0;
+
+    sim->pcId = -1;
+    sim->meshId = -1;
 }
 
 void
@@ -150,6 +158,8 @@ void simulate_one_timestep(simulation_data *sim)
             printf("The image could not be saved to %s\n", filename);
     }
 }
+
+
 
 /* Callback function for control commands, which are the buttons in the 
  * GUI's Simulation window. This type of command is handled automatically
@@ -247,6 +257,21 @@ int ProcessVisItCommand(simulation_data *sim)
     }
 }
 
+/* This function is called when we need to install callback functions.
+ */
+void
+SetupCallbacks(simulation_data *sim)
+{
+    VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
+    VisItSetSlaveProcessCallback2(SlaveProcessCallback, (void*)sim);
+
+    VisItSetGetMetaData(SimGetMetaData, (void*)sim);
+    VisItSetGetMesh(SimGetMesh, (void*)sim);
+    VisItSetGetCurve(SimGetCurve, (void*)sim);
+    VisItSetGetVariable(SimGetVariable, (void*)sim);
+    VisItSetGetDomainList(SimGetDomainList, (void*)sim);
+}
+
 /* Called to handle case 3 from VisItDetectInput where we have console
  * input that needs to be processed in order to accomplish an action.
  */
@@ -296,7 +321,45 @@ ProcessConsoleCommand(simulation_data *sim)
 
 /******************************************************************************
  *
- * Function: mainloop
+ * Function: mainloop_batch
+ *
+ * Purpose: The batch version of the main loop.
+ *
+ * Programmer: Brad Whitlock
+ * Date:      Fri Sep 28 15:35:05 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+void mainloop_batch(simulation_data *sim)
+{
+    /* Explicitly load VisIt runtime functions and install callbacks. */
+    VisItInitializeRuntime();
+    SetupCallbacks(sim);
+
+    /* Set up some plots. */
+    simulate_one_timestep(sim);
+    
+    /* Set up some plots using libsim functions. */
+    VisItAddPlot("Pseudocolor_1.0", "zonal", &sim->pcId);
+/*        VisItSetPlotOptionsS(sim->pcId, "colorTableName", "calewhite");*/
+    VisItDrawPlot(sim->pcId);
+
+    VisItAddPlot("Mesh_1.0", "mesh2d", &sim->meshId);
+    VisItDrawPlot(sim->meshId);
+
+    /* Turn in image saving. */
+    sim->savingFiles = 1;
+
+    /* Iterate over time. */
+    while(!sim->done)
+        simulate_one_timestep(sim);
+}
+
+/******************************************************************************
+ *
+ * Function: mainloop_interactive
  *
  * Purpose: Handles the program's main event loop and dispatches events to 
  *          other functions for processing.
@@ -308,7 +371,7 @@ ProcessConsoleCommand(simulation_data *sim)
  *
  *****************************************************************************/
 
-void mainloop(simulation_data *sim)
+void mainloop_interactive(simulation_data *sim)
 {
     int blocking, visitstate, err = 0;
 
@@ -348,14 +411,8 @@ void mainloop(simulation_data *sim)
             if(VisItAttemptToCompleteConnection() == VISIT_OKAY)
             {
                 fprintf(stderr, "VisIt connected\n");
-                VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
-                VisItSetSlaveProcessCallback2(SlaveProcessCallback, (void*)sim);
-
-                VisItSetGetMetaData(SimGetMetaData, (void*)sim);
-                VisItSetGetMesh(SimGetMesh, (void*)sim);
-                VisItSetGetCurve(SimGetCurve, (void*)sim);
-                VisItSetGetVariable(SimGetVariable, (void*)sim);
-                VisItSetGetDomainList(SimGetDomainList, (void*)sim);
+                /* Install callbacks */
+                SetupCallbacks(sim);
             }
             else 
             {
@@ -407,11 +464,14 @@ void mainloop(simulation_data *sim)
  *   argv : The command line arguments.
  *
  * Modifications:
+ *   Brad Whitlock, Fri Sep 28 15:28:20 PDT 2012
+ *   Add batch mode.
  *
  *****************************************************************************/
 
 int main(int argc, char **argv)
 {
+    int i;
     char *env = NULL;
     simulation_data sim;
     simulation_data_ctor(&sim);
@@ -427,6 +487,11 @@ int main(int argc, char **argv)
     MPI_Comm_rank (sim.par_comm, &sim.par_rank);
     MPI_Comm_size (sim.par_comm, &sim.par_size);
 #endif
+
+    /* Check for command line arguments. */
+    for(i = 1; i < argc; ++i)
+        if(strcmp(argv[i], "-batch") == 0)
+            sim.batch = 1;
 
     /* Initialize environment variables. */
     SimulationArguments(argc, argv);
@@ -480,7 +545,10 @@ int main(int argc, char **argv)
     read_input_deck();
 
     /* Call the main loop. */
-    mainloop(&sim);
+    if(sim.batch)
+        mainloop_batch(&sim);
+    else
+        mainloop_interactive(&sim);
 
     simulation_data_dtor(&sim);
 #ifdef PARALLEL

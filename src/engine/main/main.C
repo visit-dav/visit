@@ -314,6 +314,9 @@ EngineMain(int argc, char *argv[])
         // Do the post-connect initialization
         engine->SetUpViewerInterface(&argc, &argv);
 
+        // Do the rest of the engine initialization.
+        engine->InitializeCompute();
+
         // Begin the engine's event processing loop.
 #ifdef PARALLEL
         engine->PAR_EventLoop();
