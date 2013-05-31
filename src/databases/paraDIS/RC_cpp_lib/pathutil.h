@@ -2,7 +2,7 @@
 #define RDC_PATHUTIL_H
 #include "stringutil.h"
 
-#include <linux/limits.h>
+#include <limits.h>
 //===============================================================
 /*!
   Returns the full path to the directory containing the given file or directory, without the trailing "/", unless the result is "/" itself.  
