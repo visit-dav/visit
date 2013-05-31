@@ -1721,6 +1721,10 @@ static int LoadVisItLibrary(void)
     extern FR simv2_##N FA; \
     callbacks->control.N = simv2_##N;
 
+#define CONTROL_DLSYM_OPTIONAL(N, FR, FA) \
+    extern FR simv2_##N FA; \
+    callbacks->control.N = simv2_##N;
+
 #define DATA_DLSYM(N, FR, FA) \
     extern void simv2_set_##N(FR (*) FA, void *); \
     callbacks->data.set_##N = simv2_set_##N;
