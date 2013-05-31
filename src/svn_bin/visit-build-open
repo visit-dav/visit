@@ -682,9 +682,9 @@ then
    if [ $test = no ]
    then
       echo "Building on rzuseq"
-      scp rzuseq rzuseq:rzuseq_buildit
-      scp $dist.tar.gz rzuseq:rzuseq_$dist.tar.gz
-      ssh rzuseq "chmod 750 rzuseq_buildit;./rzuseq_buildit" &
+      scp rzuseq rzuseqlac2:rzuseq_buildit
+      scp $dist.tar.gz rzuseqlac2:rzuseq_$dist.tar.gz
+      ssh rzuseqlac2 "chmod 750 rzuseq_buildit;./rzuseq_buildit" &
    fi
 fi
 
