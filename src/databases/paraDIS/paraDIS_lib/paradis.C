@@ -611,6 +611,163 @@ namespace paraDIS {
     return mParentArm->GetMetaArmType(); 
   }
 
+  // =====================================================================
+  /*!
+     This prints out an arm and its neighboring arms using BFS order
+     to the given depth to a text file and a VTK file.  
+     File created: basename.txt, basename.vtk
+   */ 
+  void Arm::WriteTraceFiles(string basename, uint32_t neighbordepth) {
+    // first, collect the list of arms in BFS order:
+    vector<Arm *> arms(1,this); 
+    vector<uint32_t> armdepths(1,0); 
+    uint32_t armnum = 0;
+    uint32_t depth = 0; 
+    while (depth++ < neighbordepth && armnum < arms.size()) {
+      uint32_t lastInLevel = arms.size(); 
+      for (; armnum < lastInLevel; armnum++) {
+       // append arm's neighbors onto arms
+        Arm *arm = arms[armnum]; 
+        arm->mSeen = true; 
+        uint32_t numneighbors = arm->GetNumNeighborArms(); 
+        while (numneighbors--) {
+          Arm *nei = arm->GetNeighborArm(numneighbors); 
+          if (!nei->mSeen){
+            arms.push_back(nei); 
+            armdepths.push_back(depth); 
+            nei->mSeen = true; 
+          }
+        }
+      }
+    } 
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      arms[arm]->mSeen = false; 
+    }
+    // ===================================
+    // FIRST, PRINT THE TEXT FILE
+    string textfilename(str(boost::format("%s-arm_%d.txt")%basename%mArmID));
+    std::ofstream textfile(textfilename.c_str());
+    if (!textfile) {
+      string errmsg = str(boost::format("Warning:  cannot open text file %1%: %2%.")%textfilename%strerror(errno));
+      cerr << errmsg << endl; 
+      dbprintf(1, "%s\n", errmsg.c_str()); 
+      return; 
+    }
+    textfile << "Tracefile for arm " << mArmID << endl; 
+    uint32_t level = 0; 
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      if (armdepths[arm] == level) { // this is weird, don't worry
+        textfile << str(boost::format("\n****************\nARM LEVEL %1%\n****************\n\n")%level); 
+        level++; 
+       }
+      textfile << arms[arm]->Stringify(0) ; 
+    }
+    string msg = str(boost::format("Wrote text tracefile %s for arm %d\n") % textfilename % mArmID);
+    dbprintf(0, msg.c_str()); 
+    cerr << msg; 
+
+    // ===================================
+    // NEXT, PRINT THE VTK FILE
+    string vtkfilename(str(boost::format("%s-arm_%d.vtk")%basename%mArmID));
+    std::ofstream vtkfile(vtkfilename.c_str());
+    if (!vtkfile) {
+      string errmsg = str(boost::format("Warning:  cannot open vtk file %1%: %2%.")%vtkfilename%strerror(errno));
+      cerr << errmsg << endl; 
+      dbprintf(1, "%s\n", errmsg.c_str()); 
+      return; 
+    }
+    
+    // First, the header
+    vtkfile << "# vtk DataFile Version 3.0" << endl;
+    vtkfile << "vtk output" << endl;
+    vtkfile << "ASCII" << endl;
+    vtkfile << "DATASET POLYDATA" << endl;
+
+    // next, the points
+    vector<FullNode *>nodes; 
+    vector<uint32_t>numArmNodes; 
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      vector<FullNode *> armnodes = arms[arm]->GetNodes(); 
+      numArmNodes.push_back(armnodes.size()); 
+      nodes.insert(nodes.end(), armnodes.begin(), armnodes.end()); 
+    }
+    vtkfile << str(boost::format("POINTS %d float") % nodes.size()) << endl;
+    for (uint32_t point = 0; point < nodes.size(); point++) {
+      float xyz[3]; nodes[point]->GetLocation(xyz); 
+      vtkfile << str(boost::format("%1% %2% %3%") % xyz[0] % xyz[1] % xyz[2]) << endl;
+    }    
+    vtkfile << endl; 
+
+    // next the lines
+    int numlines = nodes.size() - arms.size(); 
+    vtkfile << str(boost::format("LINES %d %d") % numlines % (3*numlines)) << endl;
+    uint32_t currentIndex = 0; 
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+        vtkfile << str(boost::format("2 %d %d")% currentIndex % (currentIndex+1)) << endl;
+        currentIndex++; 
+      }
+      currentIndex ++; 
+    }
+    vtkfile << endl << endl; 
+
+   // now node vertices to allow node plotting
+   /* vtkfile << str(boost::format("VERTICES %d %d") % nodes.size() % (2*nodes.size())) << endl;
+    for (uint32_t point = 0; point < nodes.size(); point++) {
+      vtkfile << "1 " << point << endl; 
+    } 
+    vtkfile << endl; 
+   */
+    
+
+    // now node indices from analyzeParaDIS
+    vtkfile << str(boost::format("POINT_DATA %d") % nodes.size()) << endl;
+    vtkfile << "SCALARS node_index int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;
+    for (uint32_t point = 0; point < nodes.size(); point++) {
+      uint32_t nodeID = nodes[point]->GetIndex(); 
+      vtkfile <<  nodeID << " "; 
+    } 
+    vtkfile << endl << endl; 
+    
+    // next the arm numbers for each line
+    vtkfile << str(boost::format("CELL_DATA %d") % numlines) << endl;
+    vtkfile << "SCALARS armnum int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      uint32_t armnum = arms[arm]->mArmID;
+      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+        vtkfile << armnum << " " ; 
+      }
+    }
+    vtkfile << endl << endl; 
+
+    // next the burgers type for each line
+    vtkfile << "SCALARS burgers_type int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      uint32_t armtype = arms[arm]->GetBurgersType(); 
+      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+        vtkfile << armtype << " " ; 
+      }
+    }
+    vtkfile << endl << endl; 
+
+    // next the arm depths for each line
+    vtkfile << "SCALARS BFS_depth int" << endl;
+    vtkfile << "LOOKUP_TABLE default" << endl;
+    for (uint32_t arm = 0; arm < arms.size(); arm++) {
+      for (uint32_t nodenum = 0; nodenum < numArmNodes[arm]-1; nodenum++) {
+        vtkfile << armdepths[arm] << " " ; 
+      }
+    }
+    vtkfile << endl << endl; 
+
+    msg = str(boost::format("Wrote VTK tracefile %s for arm %d\n")% vtkfilename % mArmID);
+    dbprintf(0, msg.c_str()); 
+    cerr << msg; 
+  }
+
   //===========================================================================
   /* Returns true if the arm has four unique type "111" burgers vectors represented in the exterior arms, but no type "200" burgers vectors types.  Assumes arm has at least one 3-armed endpoint, and the other must be either 3 or 5 armed. */
   /* Changes:  2012-06-08 Allow 5 armed endpoints to be included in the check.  But we still do not allow type 200 arms to be included.
@@ -843,9 +1000,25 @@ namespace paraDIS {
     ArmSegment *startSegment = NULL;
     vector<FullNode*> nodes; 
     int segnum = mTerminalSegments.size(); 
+
     if (!startNode) {
-      startNode = mTerminalNodes[0]; 
+      startNode = mTerminalNodes[0];       
     }
+
+    uint32_t startnodenum = 0; 
+    for (startnodenum = 0; startnodenum < mTerminalNodes.size(); startnodenum++) {
+      if (startNode == mTerminalNodes[startnodenum]) {
+        break;
+      }
+    }
+    if (startnodenum == mTerminalNodes.size()) {
+      dbprintf(0, "ERROR: Arm::GetNodes(arm %d): start node is not in mTerminalNodes array\n\n", mArmID); 
+      return nodes; 
+    }
+    
+    FullNode *lastNode = mTerminalNodes[mTerminalNodes.size()-1-startnodenum]; 
+    
+    
     while (!startSegment && segnum--) {
       int ep = 2; 
       while (ep--) {
@@ -862,10 +1035,6 @@ namespace paraDIS {
     } 
 
     dbprintf(5, "Arm::GetNodes(arm %d): Found start segment %s and startNode %s\n", mArmID, startSegment->Stringify(0).c_str(), startNode->Stringify(0).c_str()); 
-    FullNode *lastNode = NULL; 
-    if (mTerminalNodes.size() > 1)  
-      lastNode = const_cast<FullNode*>(mTerminalNodes[1]); 
-
     if (startNode->GetNumNeighborSegments() == 1) {
       /* 
          This is a special case.  Here the initial segment is wrapped and we are starting on the non-wrapped side.  We do want to draw the wrapped double, so we will make our start node be the ghost instead. 
@@ -928,7 +1097,7 @@ namespace paraDIS {
         break; 
       } 
       else if (currentNode->GetNumNeighborSegments() > 2) {
-        dbprintf(5, "Arm::GetNodes(arm %d): currentNode->GetNumNeighborSegments() = %d,we are at the end of the arm\n", mArmID, currentNode->GetNumNeighborSegments()); 
+        dbprintf(5, "Arm::GetNodes(arm %d): currentNode has %d neighbors; we are at the end of the arm\n", mArmID, currentNode->GetNumNeighborSegments()); 
         break; 
       } 
       currentSegment = currentNode->GetOtherNeighbor(currentSegment, true);  
@@ -3823,7 +3992,22 @@ namespace paraDIS {
     return; 
   }
 
-
+  //===========================================================================
+  void DataSet::TraceArms(string basename) {
+    if (mTraceArms.size()) {      
+      for (uint32_t n = 0; n < mTraceArms.size(); n++) {
+        if (mTraceArms[n] >= mArms.size()){
+          string warning = str(boost::format("\n*******\nWARNING: DataSet::TraceArms((): requested arm ID %d does not exist\n*******\n")%mTraceArms[n]); 
+          cerr << warning; 
+          dbprintf(0, warning.c_str()); 
+        } else {
+          mArms[mTraceArms[n]]->WriteTraceFiles(basename, mTraceDepth); 
+        }
+      }
+    }
+    return; 
+  }
+  
   //===========================================================================
   void DataSet::ReadData(std::string filename){
     dbprintf(1, "ReadData called with debug level %d\n", dbg_isverbose()); 
@@ -3883,6 +4067,8 @@ namespace paraDIS {
       
       BuildArms(); 
  
+      TraceArms(mOutputDir + "/" + mOutputBasename + "-armtrace-before-decomposition-" ); 
+
       if (mDoStats && mDoDebugOutput) {
         PrintArmFile((char *)"debug-before-decomp"); 
       }
@@ -3894,6 +4080,8 @@ namespace paraDIS {
       ComputeNodeTypes(); 
  
       ClassifyArms(); // This also computes their lengths...
+
+      TraceArms(mOutputDir + "/" + mOutputBasename + "-armtrace-after-decomposition-"); 
 
 #if INSANE_DEBUG
       if (mDoDebugOutput) {

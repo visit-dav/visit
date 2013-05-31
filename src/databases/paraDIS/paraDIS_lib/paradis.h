@@ -1451,6 +1451,14 @@ namespace paraDIS {
     void SetParentMetaArm(struct MetaArm *ma) { 
      mParentMetaArm = ma; 
     }
+    
+    /*!
+      This prints out an arm and its neighboring arms using BFS order
+      to the given depth to a text file and a VTK file.  
+      File created: basename.txt, basename.vtk
+    */ 
+    void WriteTraceFiles(string basename, uint32_t neighbordepth); 
+    
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
     */ 
@@ -1699,6 +1707,15 @@ s      Tell the data set which file to read
       dbg_setverbose(level); 
     }
 
+    /*!
+      Trace the given arm to the given depth.  
+      See Arm::WriteTraceFiles()
+    */ 
+    void TraceArm(uint32_t armID, int depth){
+      mTraceArms.push_back(armID); 
+      mTraceDepth = depth; 
+    }
+
     void SetThreshold(double threshold) {
       mThreshold = threshold;
       Arm::mThreshold = threshold; 
@@ -1782,6 +1799,12 @@ s      Tell the data set which file to read
     int GetNumProcs(void) { return mNumProcs; }
 
     /*! 
+      Trace all requested arms in the data set using text and VTK files. 
+      See TraceArm() and Arm::WriteTraceFiles()
+    */ 
+    void TraceArms(string basename);
+
+   /*! 
       Parse the paradis data file and create a full set of arms and nodes
     */ 
     void ReadData(std::string datafile="");    
@@ -1892,6 +1915,8 @@ s      Tell the data set which file to read
     void init(void) {  
       mNumBins = 0; 
       mThreshold = -1.0;
+      mTraceDepth = 2; 
+      mTraceArms.clear(); 
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
       mMinimalNeighbors.clear(); 
@@ -2145,6 +2170,18 @@ s      Tell the data set which file to read
       it is part of a particular loop configuration I call a "linked loop."  
     */ 
     double mThreshold; 
+
+    /*! 
+      To trace out arms in a text and vtk file, add them to this vector
+    */ 
+    vector<uint32_t> mTraceArms; 
+
+    /*! 
+      When tracing arms, how deep to BFS for neighbors? 
+      0 is no neighbors. 1 is immediate neighbors, etc. 
+    */ 
+    uint8_t mTraceDepth; 
+
     /*!
       Moono would like to print out binned arm lengths.  He will give a number of bins and I will bin the arms into those many buckets when examining them at the end. 
     */ 
