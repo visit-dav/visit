@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VISIT_VERSION="2.6.1"
+VISIT_VERSION="2.7.0"
 
 ################################################################################
 ## DEFAULT VALUES FOR VARIABLES
@@ -57,7 +57,7 @@ export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
 export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-1.2.7"}
 export ZLIB_URL="http://zlib.net/"
 
-export VTK_VERSION=12fca6b
+export VTK_VERSION=5e3c539
 
 ################################################################################
 ## CODE BORROWED FROM build_visit

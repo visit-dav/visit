@@ -112,10 +112,13 @@
 #   since it is now a linux-x86_64 system instead of a linux-intel system.
 #
 #   Eric Brugger, Wed Nov 14 15:53:56 PST 2012
-#   I modified the euclid build to point to the new cmake.
+#   I modified the carver build to point to the new cmake.
 #
 #   Eric Brugger, Wed Nov 28 08:38:09 PST 2012
 #   I modified the ubuntu1104_64 build to point to the new cmake.
+#
+#   Brad Whitlock, Fri May 31 10:21:17 PDT 2013
+#   Replace "carver" with "carver". Add build for rzuseq.
 #
 #-----------------------------------------------------------------------
 
@@ -166,7 +169,8 @@ ubuntu1104_64=false
 aztec=true
 rzthriller=true
 rzzeus=true
-euclid=true
+rzuseq=false
+carver=true
 glory=false
 redsky=false
 
@@ -187,7 +191,7 @@ do
          aztec=false
          rzthriller=false
          rzzeus=false
-         euclid=false
+         carver=false
          glory=false
          redsky=false
          shift
@@ -240,12 +244,20 @@ do
          rzzeus=true
          shift
          ;;
-      -euclid)
-         euclid=false
+      -rzuseq)
+         rzuseq=false
          shift
          ;;
-      +euclid)
-         euclid=true
+      +rzuseq)
+         rzuseq=true
+         shift
+         ;;
+      -carver)
+         carver=false
+         shift
+         ;;
+      +carver)
+         carver=true
          shift
          ;;
       -glory)
@@ -284,7 +296,8 @@ then
    echo "    aztec (LC, Linux, x86_64),"
    echo "    rzthriller (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
-   echo "    euclid (LBNL, Linux, x86_64),"
+   echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
+   echo "    carver (LBNL, Linux, x86_64),"
    echo "    glory (Sandia, Linux)"
    echo "    redsky (Sandia, Linux)"
    exit
@@ -611,32 +624,97 @@ then
 fi
 
 #
-# Build on euclid.
+# Build on rzuseq.
 #
-rm -f euclid
-cat <<EOF > euclid
+rm -f rzuseq
+cat <<EOF > rzuseq
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/euclid; then
-   mkdir /usr/tmp/$user/euclid
+if test ! -d /usr/tmp/$user/rzuseq ; then
+   mkdir /usr/tmp/$user/rzuseq
 fi
-rm -rf /usr/tmp/$user/euclid/visitbuild
-mkdir /usr/tmp/$user/euclid/visitbuild
-mv euclid_$dist.tar.gz /usr/tmp/$user/euclid/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/euclid/visitbuild
+rm -rf /usr/tmp/$user/rzuseq/visitbuild
+mkdir /usr/tmp/$user/rzuseq/visitbuild
+mv rzuseq_$dist.tar.gz /usr/tmp/$user/rzuseq/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzuseq/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/project/projectdirs/visit/visit_3rdparty/euclid_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+cd ..
+# install dir
+mkdir visit\${ver2}.linux-ppc64
+bgqinstdir=\`pwd\`/visit\${ver2}.linux-ppc64
+# Out of source build for compute node, engine-only version
+mkdir compute_build
+cd compute_build
+/usr/gapps/visit/thirdparty_static/2.7.0/cmake/2.8.10.2/linux-ppc64_gcc-4.4_BGQ/bin/cmake -DVISIT_CONFIG_SITE_FILE:PATH=../src/config-site/rzuseqlac2.cmake -DVISIT_ENGINE_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON ../src >> ../../buildlog 2>&1
+sh ../src/svn_bin/filter_x11.sh >> ../../buildlog 2>&1
+make >> ../../buildlog 2>&1
+make install >> ../../buildlog 2>&1
+cd ..
+# Out of source build for login node, server-components-only version
+mkdir login_build
+cd login_build
+/usr/gapps/visit/thirdparty_static/2.7.0/cmake/2.8.10.2/linux-ppc64_gcc-4.4/bin/cmake -DVISIT_CONFIG_SITE_FILE:PATH=../src/config-site/rzuseqlac2-login.cmake -DVISIT_SERVER_COMPONENTS_ONLY:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=\$bgqinstdir -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON ../src >> ../../buildlog 2>&1
+make >> ../../buildlog 2>&1
+make install >> ../../buildlog 2>&1
+cd ..
+# Now, tar up the common install directory.
+tar zcf ../visit\$ver2.linux-ppc64-BGQ.tar.gz visit\${ver2}.linux-ppc64
+cd ..
+rm -f resultlog
+echo "        build of visit on rzuseq"       > resultlog 2>&1
+echo "       --------------------------"      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = (statically linked)" >> resultlog 2>&1
+echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
+echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
+mail  -s "VisIt build ($dist): rzuseq" $emailName < resultlog
+EOF
+
+if [ $rzuseq = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on rzuseq"
+      scp rzuseq rzuseq:rzuseq_buildit
+      scp $dist.tar.gz rzuseq:rzuseq_$dist.tar.gz
+      ssh rzuseq "chmod 750 rzuseq_buildit;./rzuseq_buildit" &
+   fi
+fi
+
+#
+# Build on carver.
+#
+rm -f carver
+cat <<EOF > carver
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/carver; then
+   mkdir /usr/tmp/$user/carver
+fi
+rm -rf /usr/tmp/$user/carver/visitbuild
+mkdir /usr/tmp/$user/carver/visitbuild
+mv carver_$dist.tar.gz /usr/tmp/$user/carver/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/carver/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/project/projectdirs/visit/visit_3rdparty/carver_2_6_0/cmake/2.8.8/linux-x86_64_gcc-4.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 4 >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on euclid"       > resultlog 2>&1
+echo "        build of visit on carver"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
@@ -647,17 +725,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): euclid" $emailName < resultlog
+mail  -s "VisIt build ($dist): carver" $emailName < resultlog
 EOF
 
-if [ $euclid = true ]
+if [ $carver = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on euclid"
-      scp euclid euclid.nersc.gov:euclid_buildit
-      scp $dist.tar.gz euclid.nersc.gov:euclid_$dist.tar.gz
-      ssh euclid.nersc.gov "chmod 750 euclid_buildit;./euclid_buildit" &
+      echo "Building on carver"
+      scp carver carver.nersc.gov:carver_buildit
+      scp $dist.tar.gz carver.nersc.gov:carver_$dist.tar.gz
+      ssh carver.nersc.gov "chmod 750 carver_buildit;./carver_buildit" &
    fi
 fi
 
@@ -776,5 +854,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus carver glory redsky
 fi
