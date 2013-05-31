@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PROCESSATTRIBUTES_NMETH 10
+#define PROCESSATTRIBUTES_NMETH 12
 void VISITPY_API           PyProcessAttributes_StartUp(ProcessAttributes *subj, void *data);
 void VISITPY_API           PyProcessAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyProcessAttributes_GetMethodTable(int *nMethods);

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2011, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -35,53 +35,23 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VISIT_INTERFACE_TYPES_PRIVATE_H
+#define VISIT_INTERFACE_TYPES_PRIVATE_H
 
-#ifndef VISIT_CONTROL_INTERFACE_RUNTIME_H
-#define VISIT_CONTROL_INTERFACE_RUNTIME_H
-#include <VisItSimV2Exports.h>
+#define VISIT_FIELDTYPE_CHAR                 0
+#define VISIT_FIELDTYPE_UNSIGNED_CHAR        1
+#define VISIT_FIELDTYPE_INT                  2
+#define VISIT_FIELDTYPE_LONG                 3
+#define VISIT_FIELDTYPE_FLOAT                4
+#define VISIT_FIELDTYPE_DOUBLE               5
+#define VISIT_FIELDTYPE_STRING               6
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// ****************************************************************************
-//  Library:  libsimV2runtime
-//
-//  Purpose:
-//    Wrapper for simulations to control an engine.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Fri Feb 13 16:06:04 PST 2009
-//
-//  Modifications:
-//    Brad Whitlock, Fri Aug 26 09:52:11 PDT 2011
-//    I added simv2_set_mpicomm.
-//
-// ****************************************************************************
-
-SIMV2_API void   *simv2_get_engine();
-SIMV2_API int     simv2_get_descriptor(void*);
-SIMV2_API int     simv2_initialize(void*, int argc, char *argv[]);
-SIMV2_API int     simv2_connect_viewer(void*, int argc, char *argv[]);
-SIMV2_API int     simv2_process_input(void*);
-SIMV2_API void    simv2_time_step_changed(void*);
-SIMV2_API void    simv2_execute_command(void *, const char *);
-SIMV2_API void    simv2_disconnect();
-SIMV2_API void    simv2_set_slave_process_callback(void(*)());
-SIMV2_API void    simv2_set_command_callback(void*,void(*)(const char*,const char*,void*),void*);
-SIMV2_API int     simv2_save_window(void*, const char *, int, int, int);
-SIMV2_API void    simv2_debug_logs(int level, const char *msg);
-SIMV2_API int     simv2_set_mpicomm(void *);
-
-SIMV2_API int     simv2_add_plot(void *, const char *, const char *, const char *, int *);
-SIMV2_API int     simv2_add_operator(void *, int, const char *, int *);
-SIMV2_API int     simv2_draw_plot(void *, int);
-SIMV2_API int     simv2_delete_plot(void *, int);
-SIMV2_API int     simv2_set_plot_options(void *, int, const char *, int, void *, int);
-SIMV2_API int     simv2_set_operator_options(void *, int, int, const char *, int, void *, int);
-
-#ifdef __cplusplus
-}
-#endif
+#define VISIT_FIELDTYPE_CHAR_ARRAY           107
+#define VISIT_FIELDTYPE_UNSIGNED_CHAR_ARRAY  108
+#define VISIT_FIELDTYPE_INT_ARRAY            109
+#define VISIT_FIELDTYPE_LONG_ARRAY           110
+#define VISIT_FIELDTYPE_FLOAT_ARRAY          111
+#define VISIT_FIELDTYPE_DOUBLE_ARRAY         112 
+#define VISIT_FIELDTYPE_STRING_ARRAY         113
 
 #endif

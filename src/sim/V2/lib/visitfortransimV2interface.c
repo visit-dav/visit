@@ -152,6 +152,26 @@ f_visit_internal_commandcallback(const char *cmd, const char *stringdata, void *
     FREE(realcmd);
 }
 
+static void
+f_visit_internal_InstallCallbacks(void)
+{
+    VisItSetActivateTimestep(VisItActivateTimestep, NULL);
+    VisItSetGetMetaData(VisItGetMetaData, NULL);
+    VisItSetGetMesh(VisItGetMesh, NULL);
+    VisItSetGetMaterial(VisItGetMaterial, NULL);
+    VisItSetGetVariable(VisItGetVariable, NULL);
+    VisItSetGetCurve(VisItGetCurve, NULL);
+    VisItSetGetDomainList(VisItGetDomainList, NULL);
+    VisItSetGetDomainBoundaries(VisItGetDomainBoundaries, NULL);
+    VisItSetGetDomainNesting(VisItGetDomainNesting, NULL);
+    
+    /* These functions need to be set up but they can't be set up until
+     * after the VisItAttemptToCompleteConnection function completes.
+     */
+    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
+    VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
+}
+
 /*****************************************************************************
  *****************************************************************************
  *****************************************************************************
@@ -191,6 +211,12 @@ f_visit_internal_commandcallback(const char *cmd, const char *stringdata, void *
 #define F_VISITTIMESTEPCHANGED      F77_ID(visittimestepchanged_,visittimestepchanged,VISITTIMESTEPCHANGED)
 #define F_VISITUPDATEPLOTS          F77_ID(visitupdateplots_,visitupdateplots,VISITUPDATEPLOTS)
 
+#define F_VISITINITIALIZERUNTIME    F77_ID(visitinitializeruntime_,visitinitializeruntime,VISITINITIALIZERUNTIME)
+#define F_VISITADDPLOT              F77_ID(visitaddplot_,visitaddplot,VISITADDPLOT)
+#define F_VISITADDOPERATOR          F77_ID(visitaddoperator_,visitaddoperator,VISITADDOPERATOR)
+#define F_VISITDRAWPLOT             F77_ID(visitdrawplot_,visitdrawplot,VISITDRAWPLOT)
+#define F_VISITDELETEPLOT           F77_ID(visitdeleteplot_,visitdeleteplot,VISITDELETEPLOT)
+#define F_VISITGETMEMORY            F77_ID(visitgetmemory_,visitgetmemory,VISITGETMEMORY)
 
 /******************************************************************************
  * Function: F_VISITSETDIRECTORY
@@ -539,6 +565,8 @@ F_VISITGETSOCKETS(int *lSocket, int *cSocket)
  * Date:       Thu Mar 11 11:17:51 PST 2010
  *
  * Modifications:
+ *   Brad Whitlock, Tue Oct  2 11:42:03 PDT 2012
+ *   Move callback installation to f_visit_internal_InstallCallbacks.
  *
  *****************************************************************************/
 
@@ -556,21 +584,7 @@ F_VISITATTEMPTCONNECTION(void)
     /* Hook up the VisIt callback functions if VisIt connected. */
     if(ret == 1)
     {
-        VisItSetActivateTimestep(VisItActivateTimestep, NULL);
-        VisItSetGetMetaData(VisItGetMetaData, NULL);
-        VisItSetGetMesh(VisItGetMesh, NULL);
-        VisItSetGetMaterial(VisItGetMaterial, NULL);
-        VisItSetGetVariable(VisItGetVariable, NULL);
-        VisItSetGetCurve(VisItGetCurve, NULL);
-        VisItSetGetDomainList(VisItGetDomainList, NULL);
-        VisItSetGetDomainBoundaries(VisItGetDomainBoundaries, NULL);
-        VisItSetGetDomainNesting(VisItGetDomainNesting, NULL);
-    
-        /* These functions need to be set up but they can't be set up until
-         * after the VisItAttemptToCompleteConnection function completes.
-         */
-        VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
-        VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
+        f_visit_internal_InstallCallbacks(); 
     }
 
     return ret;
@@ -741,7 +755,7 @@ F_VISITSYNCHRONIZE(void)
 
 /******************************************************************************
  * Function: F_VISITGETLASTERROR
- *
+*
  * Purpose:   Allows FORTRAN to set the synchronization mode.
  *
  * Programmer: Brad Whitlock
@@ -894,6 +908,131 @@ F_VISITSAVEWINDOW(const char *filename, int *lfilename, int *width, int *height,
     ret = VisItSaveWindow(f_filename, *width, *height, *format);
     FREE(f_filename);
     return ret;
+}
+
+/******************************************************************************
+ * Function: F_VISITINITIALIZERUNTIME
+ *
+ * Purpose:   Allows FORTRAN to force the runtime interface to load.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct  1 21:12:01 PDT 2012
+ *
+ * Modifications:
+ *   Brad Whitlock, Tue Oct  2 11:42:28 PDT 2012
+ *   Install callbacks.
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITINITIALIZERUNTIME(void)
+{
+    int ret = VisItInitializeRuntime();
+    /* Make sure that fortran callbacks are installed. */
+    f_visit_internal_InstallCallbacks();
+    return ret;
+}
+
+/******************************************************************************
+ * Function: F_VISITADDPLOT
+ *
+ * Purpose:   Allows FORTRAN to add a plot
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct  1 21:12:01 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITADDPLOT(const char *plotType, int *lplotType, const char *var, int *lvar, int *plotID)
+{
+    int ret = VISIT_ERROR;
+    char *f_plotType = NULL, *f_var = NULL;
+    COPY_FORTRAN_STRING(f_plotType, plotType, lplotType);
+    COPY_FORTRAN_STRING(f_var, var, lvar);
+    ret = VisItAddPlot(f_plotType, f_var, plotID);
+    FREE(f_plotType);
+    FREE(f_var);
+    return ret;
+}
+
+/******************************************************************************
+ * Function: F_VISITADDOPERATOR
+ *
+ * Purpose:   Allows FORTRAN to add an operator 
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct  1 21:12:01 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITADDOPERATOR(int *plotID, const char *operatorType, int *loperatorType, int *operatorID)
+{
+    int ret = VISIT_ERROR;
+    char *f_operatorType = NULL;
+    COPY_FORTRAN_STRING(f_operatorType, operatorType, loperatorType);
+    ret = VisItAddOperator(*plotID, f_operatorType, operatorID);
+    FREE(f_operatorType);
+    return ret;
+}
+
+/******************************************************************************
+ * Function: F_VISITDRAWPLOT
+ *
+ * Purpose:   Allows FORTRAN to draw a plot
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct  1 21:12:01 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITDRAWPLOT(int *plotID)
+{
+    return VisItDrawPlot(*plotID);
+}
+
+/******************************************************************************
+ * Function: F_VISITDELETEPLOT
+ *
+ * Purpose:   Allows FORTRAN to delete a plot
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Oct  1 21:12:01 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITDELETEPLOT(int *plotID)
+{
+    return VisItDeletePlot(*plotID);
+}
+
+/******************************************************************************
+ * Function: F_VISITGETMEMORY
+ *
+ * Purpose:   Allows FORTRAN to get memory of running simulation
+ *
+ * Programmer: Satheesh Maheswaran
+ * Date:       Tues Oct  2 17:04:01 PDT 2012
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITGETMEMORY(double *m_size, double *m_rss)
+{
+    return VisItGetMemory(m_size, m_rss);
 }
 
 /******************************************************************************

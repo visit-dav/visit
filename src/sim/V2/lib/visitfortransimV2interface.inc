@@ -446,6 +446,38 @@
       external visitupdateplots
       integer  visitupdateplots
 
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Prototype batch mode functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitinitializeruntime()
+      external visitinitializeruntime
+      integer  visitinitializeruntime
+
+! visitaddplot(string plotType, int lplotType, string var, 
+!              int lvar, (out)int plotID)
+      external visitaddplot
+      integer  visitaddplot
+
+! visitaddoperator(int plotID, string operatorType, int loperatorType, 
+!                  (out)int operatorID)
+      external visitaddoperator
+      integer  visitaddoperator
+
+! visitdrawplot(int plotID)
+      external visitdrawplot
+      integer  visitdrawplot
+
+! visitdeleteplot(int plotID)
+      external visitdeleteplot
+      integer  visitdeleteplot
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! Metric functions 
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! visitgetmemory(unsigned long m_size, unsigned long m_rss)
+      external visitgetmemory
+      integer  visitgetmemory
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Metadata functions

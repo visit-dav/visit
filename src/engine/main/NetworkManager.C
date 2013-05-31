@@ -283,20 +283,15 @@ NetworkManager::NetworkManager(void) : virtualDatabases()
 //    Added the call to DeleteInstance of the avtColorTables. 
 //    Help debug memory leaks.
 //
+//    Brad Whitlock, Thu Oct  4 11:45:14 PDT 2012
+//    Change how networks are deleted.
+//
 // ****************************************************************************
 
 NetworkManager::~NetworkManager(void)
 {
-    for (size_t i = 0; i < networkCache.size(); i++)
-        if (networkCache[i] != NULL)
-            delete networkCache[i];
-
-    std::map<int, EngineVisWinInfo>::iterator it;
-    for (it = viswinMap.begin(); it != viswinMap.end(); it++)
-        delete it->second.viswin;
-
-    for (size_t d = 0 ; d < dataBinnings.size() ; d++)
-        delete dataBinnings[d];
+    // Clear out networks, etc
+    ClearAllNetworks();
 
     delete databasePlugins;
     delete operatorPlugins;
@@ -747,6 +742,71 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
         RETHROW;
     }
     ENDTRY
+}
+
+// ****************************************************************************
+// Method: NetworkManager::StartNetwork
+//
+// Purpose: 
+//   Simple StartNetwork routine, passing the most common defaults to the
+//   more complex version of the routine.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Nov 10 16:34:18 PST 2011
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+NetworkManager::StartNetwork(const std::string &format,
+    const std::string &filename,
+    const std::string &var,
+    int time)
+{
+    // Arguments were we can use the defaults.
+    std::string selName;
+    MaterialAttributes matopts;
+    MeshManagementAttributes meshopts;
+    bool treatAllDBsAsTimeVarying = false;
+    bool fileMayHaveUnloadedPlugin = false;
+    bool ignoreExtents = false;
+    int windowID = 0;
+
+    // Make empty strings behave as though no format was specified.
+    const char *defaultFormat = 0;
+    if(format.size() > 0)
+        defaultFormat = format.c_str();
+
+    // This sucks.
+    if (viswinMap.find(windowID) == viswinMap.end())
+        NewVisWindow(windowID);
+
+    // Construct the silr for the variable.
+    NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
+                                      treatAllDBsAsTimeVarying, 
+                                      fileMayHaveUnloadedPlugin,
+                                      ignoreExtents);
+    if(netDB != NULL)
+    {
+        std::string leaf = ParsingExprList::GetRealVariable(var);
+        avtSILRestriction_p silr = new avtSILRestriction(netDB->GetDB()->
+            GetSIL(time, treatAllDBsAsTimeVarying));
+        std::string mesh = netDB->GetDB()->GetMetaData(time)->MeshForVar(var);
+        silr->SetTopSet(mesh.c_str());
+        CompactSILRestrictionAttributes *silrAtts = silr->MakeCompactAttributes();
+
+        StartNetwork(format, filename, var, time, *silrAtts, matopts, meshopts,
+                     treatAllDBsAsTimeVarying, ignoreExtents, selName, windowID);
+
+        delete silrAtts;
+    }
 }
 
 // ****************************************************************************
@@ -2577,8 +2637,11 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
 //   file.
 //
 // Arguments:
-//   filename : The name of the file to save.
-//   format   : The file format to use for saving the image.
+//   ids         : The ids of the networks we want to save.
+//   filename    : The name of the file to save.
+//   imageWidth  : The image width
+//   imageHeight : The image height
+//   format      : The file format to use for saving the image.
 //
 // Returns:    True on success; false on failure.
 //
@@ -2594,15 +2657,26 @@ NetworkManager::Render(bool checkThreshold, intVector plotIds, bool getZBuffer,
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Brad Whitlock, Fri Sep 28 14:47:23 PDT 2012
+//    Add the ids of the networks we want to save.
+//
+//    Brad Whitlock, Wed Oct  3 11:46:36 PDT 2012
+//    Check for valid network ids. Also copy the color tables into the new
+//    window attributes so we don't lose our color tables.
+//
 // ****************************************************************************
 
 bool
-NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imageHeight,
+NetworkManager::SaveWindow(const intVector &ids,
+    const std::string &filename, int imageWidth, int imageHeight,
     SaveWindowAttributes::FileFormat format)
 {
     const char *mName = "NetworkManager::SaveWindow: ";
     bool retval = false;
-    debug1 << mName << "arguments("
+    debug1 << mName << "arguments(ids={";
+    for(size_t i = 0; i < ids.size(); ++i)
+        debug1 << ids[i] << ", ";
+    debug1 << "}, " 
            << filename << ", "
            << imageWidth << ", "
            << imageHeight << ", "
@@ -2614,7 +2688,18 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
         std::map<int, EngineVisWinInfo>::iterator it = viswinMap.begin();
         if(it != viswinMap.end())
         {
-            intVector networkIds = it->second.plotsCurrentlyInWindow;
+#if 1
+            intVector networkIds(ids);
+#else
+            // Check the network ids for validity. See that they are in
+            // [0, networkCache.size()-1].
+            intVector networkIds;
+            for(size_t i = 0; i < ids.size(); ++i)
+            {
+                if(ids[i] >= 0 && ids[i] < int(networkCache.size()-1))
+                    networkIds.push_back(ids[i]);
+            }
+#endif
             bool getZBuffer = false;
             int annotMode = 2; // all annotations
             int windowID = it->first;
@@ -2625,15 +2710,12 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
             // to the networkIds.
             double extents[6];
             bool extentsInit = false;
-            if(networkIds.size() == 0)
+            if(networkIds.size() > 0)
             {
                 if(networkCache.size() > 0)
                 {
-                    DataNetwork *net = networkCache[networkCache.size()-1];
+                    DataNetwork *net = networkCache[networkIds[0]];
                     int id = net->GetNetID();
-                    networkIds.push_back(id);
-                    debug1 << mName << "networkIds vector was empty so add network "
-                           << id << endl;
 
                     // We need to update the view so we can see what we have. This is
                     // not quite the method I wanted to use to get the data attributes
@@ -2656,6 +2738,7 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
             // Set the new image size into the window attributes.
             if(imageWidth > 0 && imageHeight > 0)
             {
+                // Get the current window attributes.
                 WindowAttributes windowAtts(it->second.windowAttributes);
                 int newSize[2];
                 newSize[0] = imageWidth;
@@ -2663,6 +2746,12 @@ NetworkManager::SaveWindow(const std::string &filename, int imageWidth, int imag
                 windowAtts.SetSize(newSize);
                 if(!extentsInit)
                     it->second.viswin->GetBounds(extents);
+
+                // Make sure that the new window attributes preserve the current
+                // color tables.
+                windowAtts.SetColorTables(*(avtColorTables::Instance()->GetColorTables()));
+
+                // Set the new window attributes.
                 SetWindowAttributes(windowAtts,
                                     it->second.extentTypeString,
                                     extents,

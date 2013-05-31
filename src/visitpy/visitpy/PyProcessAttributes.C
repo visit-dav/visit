@@ -129,6 +129,22 @@ PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sisParallel = 0\n", prefix);
     str += tmpStr;
+    {   const intVector &memory = atts->GetMemory();
+        SNPRINTF(tmpStr, 1000, "%smemory = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < memory.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", memory[i]);
+            str += tmpStr;
+            if(i < memory.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -340,6 +356,69 @@ ProcessAttributes_GetIsParallel(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ProcessAttributes_SetMemory(PyObject *self, PyObject *args)
+{
+    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+
+    intVector  &vec = obj->data->GetMemory();
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the memory in the object as modified.
+    obj->data->SelectMemory();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ProcessAttributes_GetMemory(PyObject *self, PyObject *args)
+{
+    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the memory.
+    const intVector &memory = obj->data->GetMemory();
+    PyObject *retval = PyTuple_New(memory.size());
+    for(size_t i = 0; i < memory.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(memory[i])));
+    return retval;
+}
+
 
 
 PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
@@ -352,6 +431,8 @@ PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
     {"GetHosts", ProcessAttributes_GetHosts, METH_VARARGS},
     {"SetIsParallel", ProcessAttributes_SetIsParallel, METH_VARARGS},
     {"GetIsParallel", ProcessAttributes_GetIsParallel, METH_VARARGS},
+    {"SetMemory", ProcessAttributes_SetMemory, METH_VARARGS},
+    {"GetMemory", ProcessAttributes_GetMemory, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -388,6 +469,8 @@ PyProcessAttributes_getattr(PyObject *self, char *name)
         return ProcessAttributes_GetHosts(self, NULL);
     if(strcmp(name, "isParallel") == 0)
         return ProcessAttributes_GetIsParallel(self, NULL);
+    if(strcmp(name, "memory") == 0)
+        return ProcessAttributes_GetMemory(self, NULL);
 
     return Py_FindMethod(PyProcessAttributes_methods, self, name);
 }
@@ -410,6 +493,8 @@ PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ProcessAttributes_SetHosts(self, tuple);
     else if(strcmp(name, "isParallel") == 0)
         obj = ProcessAttributes_SetIsParallel(self, tuple);
+    else if(strcmp(name, "memory") == 0)
+        obj = ProcessAttributes_SetMemory(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

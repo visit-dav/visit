@@ -2620,6 +2620,10 @@ AttributeGroup::DeclareMapNode()
 //   Brad Whitlock, Tue Jan  6 13:31:50 PST 2009
 //   Added MapNode support.
 //
+//   Brad Whitlock, Thu Oct  4 11:40:04 PDT 2012
+//   Don't reserve space in the typemap since we're pushing onto it anyway and
+//   valgrind was reporting it as memory leaks.
+//
 // ****************************************************************************
 
 void
@@ -2638,7 +2642,6 @@ AttributeGroup::CreateTypeMap(const char *formatString)
         return;
 
     // Go through the format string and add the types.
-    typeMap.reserve(nDeclares);
     for(int i = 0; i < nDeclares; ++i)
     {
         char baseFormat = formatString[i];

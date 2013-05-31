@@ -82,6 +82,7 @@ void ProcessAttributes::Copy(const ProcessAttributes &obj)
     ppids = obj.ppids;
     hosts = obj.hosts;
     isParallel = obj.isParallel;
+    memory = obj.memory;
 
     ProcessAttributes::SelectAll();
 }
@@ -242,7 +243,8 @@ ProcessAttributes::operator == (const ProcessAttributes &obj) const
     return ((pids == obj.pids) &&
             (ppids == obj.ppids) &&
             (hosts == obj.hosts) &&
-            (isParallel == obj.isParallel));
+            (isParallel == obj.isParallel) &&
+            (memory == obj.memory));
 }
 
 // ****************************************************************************
@@ -390,6 +392,7 @@ ProcessAttributes::SelectAll()
     Select(ID_ppids,      (void *)&ppids);
     Select(ID_hosts,      (void *)&hosts);
     Select(ID_isParallel, (void *)&isParallel);
+    Select(ID_memory,     (void *)&memory);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -422,6 +425,13 @@ ProcessAttributes::SetIsParallel(bool isParallel_)
 {
     isParallel = isParallel_;
     Select(ID_isParallel, (void *)&isParallel);
+}
+
+void
+ProcessAttributes::SetMemory(const intVector &memory_)
+{
+    memory = memory_;
+    Select(ID_memory, (void *)&memory);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -470,6 +480,18 @@ ProcessAttributes::GetIsParallel() const
     return isParallel;
 }
 
+const intVector &
+ProcessAttributes::GetMemory() const
+{
+    return memory;
+}
+
+intVector &
+ProcessAttributes::GetMemory()
+{
+    return memory;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,6 +512,12 @@ void
 ProcessAttributes::SelectHosts()
 {
     Select(ID_hosts, (void *)&hosts);
+}
+
+void
+ProcessAttributes::SelectMemory()
+{
+    Select(ID_memory, (void *)&memory);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -520,6 +548,7 @@ ProcessAttributes::GetFieldName(int index) const
     case ID_ppids:      return "ppids";
     case ID_hosts:      return "hosts";
     case ID_isParallel: return "isParallel";
+    case ID_memory:     return "memory";
     default:  return "invalid index";
     }
 }
@@ -548,6 +577,7 @@ ProcessAttributes::GetFieldType(int index) const
     case ID_ppids:      return FieldType_intVector;
     case ID_hosts:      return FieldType_stringVector;
     case ID_isParallel: return FieldType_bool;
+    case ID_memory:     return FieldType_intVector;
     default:  return FieldType_unknown;
     }
 }
@@ -576,6 +606,7 @@ ProcessAttributes::GetFieldTypeName(int index) const
     case ID_ppids:      return "intVector";
     case ID_hosts:      return "stringVector";
     case ID_isParallel: return "bool";
+    case ID_memory:     return "intVector";
     default:  return "invalid index";
     }
 }
@@ -620,6 +651,11 @@ ProcessAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_isParallel:
         {  // new scope
         retval = (isParallel == obj.isParallel);
+        }
+        break;
+    case ID_memory:
+        {  // new scope
+        retval = (memory == obj.memory);
         }
         break;
     default: retval = false;
