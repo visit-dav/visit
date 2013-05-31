@@ -658,7 +658,7 @@ function build_for_compute_node
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_GNU_CC $CFLAGSARGS \
         --cxx $BG_GNU_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --szip --hdf5 --zlib --silo \
+        --no-thirdparty --zlib $IO_PACKAGES \
         --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "3rd party I/O build failed.  Giving up"
@@ -678,7 +678,7 @@ function build_for_compute_node
         --installation-build-dir "${INSTALLATION_BUILD_DIR}_BGQ" \
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
-        --no-thirdparty --szip --hdf5 --zlib --silo \
+        --no-thirdparty --zlib $IO_PACKAGES \
         --parallel --icet \
         --group $GROUP
     if [[ $? != 0 ]] ; then
@@ -699,6 +699,7 @@ function build_for_login_node
     if test -n "$MAKE_OPT_FLAGS" ; then
         MAKEARGS="--makeflags $MAKE_OPT_FLAGS"
     fi
+
     CFLAGSARGS=""
     if test -n "$C_OPT_FLAGS" ; then
         CFLAGSARGS="--cflag \"$C_OPT_FLAGS\""
@@ -708,6 +709,27 @@ function build_for_login_node
         CXXFLAGSARGS="--cxxflag \"$CXX_OPT_FLAGS\""
     fi
 
+    # Build cmake, python, VTK. We pass BUILD_VISIT_BGQ in the environment so
+    # VTK will be configured using a script. This works around a glitch in
+    # identifying the compiler.
+    env BUILD_VISIT_BGQ="yes" $bv_PATH/build_visit --console --static --no-visit $SVN --server-components-only \
+        --log-file login_node.txt \
+        --arch $ARCH \
+        --prefix $ARCH \
+        --build-mode $BUILD_MODE \
+        --thirdparty-path $THIRD_PARTY_PATH \
+        --installation-build-dir $INSTALLATION_BUILD_DIR \
+        --cc $CC $CFLAGSARGS \
+        --cxx $CXX $CXXFLAGSARGS $MAKEARGS \
+        --no-thirdparty --cmake --vtk --python \
+        --group $GROUP
+    if [[ $? != 0 ]] ; then
+        warn "VisIt build failed.  Giving up"
+        return 1
+    fi
+
+    # Do another build_visit pass with no BUILD_VISIT_BGQ since we don't want what
+    # it would do to the resulting config-site file.
     $bv_PATH/build_visit --console --static $NO_VISIT $SVN --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \

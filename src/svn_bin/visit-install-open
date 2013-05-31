@@ -111,7 +111,8 @@ ubuntu1104_64=false
 aztec=true
 rzthriller=true
 rzzeus=true
-euclid=true
+rzuseq=false
+carver=true
 glory=false
 redsky=false
 
@@ -132,7 +133,7 @@ do
          aztec=false
          rzthriller=false
          rzzeus=false
-         euclid=false
+         carver=false
          glory=false
          redsky=false
          shift
@@ -185,12 +186,20 @@ do
          rzzeus=true
          shift
          ;;
-      -euclid)
-         euclid=false
+      -rzuseq)
+         rzuseq=false
          shift
          ;;
-      +euclid)
-         euclid=true
+      +rzuseq)
+         rzuseq=true
+         shift
+         ;;
+      -carver)
+         carver=false
+         shift
+         ;;
+      +carver)
+         carver=true
          shift
          ;;
       -glory)
@@ -450,14 +459,47 @@ then
 fi
 
 #
-# Install on euclid.
+# Install on rzuseq.
 #
-rm -f euclid
-cat <<EOF > euclid
+rm -f rzuseq
+cat <<EOF > rzuseq
 #!/bin/sh
-./visit-install -private -c nersc -b bdivp $ver linux-euclid visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b bdivp -gw -l $ver linux-ppc64-BGQ /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on euclid"          > resultlog 2>&1
+echo "        install of visit on rzuseq"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-ppc64/bin       >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = (statically linked)" >> resultlog 2>&1
+echo "number of operator plugins = (statically linked)" >> resultlog 2>&1
+echo "number of plot plugins = (statically linked)" >> resultlog 2>&1
+mail -s "VisIt install ($ver): rzuseq" $emailName < resultlog
+EOF
+
+if [ $rzuseq = true ]
+then
+   if [ $test = no ]
+   then
+      scp rzuseqlac2:/usr/tmp/$user/rzuseq/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-ppc64-BGQ.tar.gz
+      scp visit$ver2.linux-ppc64-BGQ.tar.gz rzuseqlac2:
+      scp visit-install rzuseqlac2:
+      scp rzuseq rzuseqlac2:rzuseq_install
+      ssh rzuseqlac2 "chmod 750 rzuseq_install;./rzuseq_install"
+   fi
+fi
+
+#
+# Install on carver.
+#
+rm -f carver
+cat <<EOF > carver
+#!/bin/sh
+./visit-install -private -c nersc -b bdivp $ver linux-carver visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on carver"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k visit                                        >> resultlog 2>&1
@@ -470,18 +512,18 @@ echo "number of plot plugins = "\`ls visit/$ver+/linux-x86_64/plugins/plots/libI
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): euclid " $emailName < resultlog
+mail -s "VisIt install ($ver): carver " $emailName < resultlog
 EOF
 
-if [ $euclid = true ]
+if [ $carver = true ]
 then
    if [ $test = no ]
    then
-      scp euclid.nersc.gov:/usr/tmp/$user/euclid/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-euclid.tar.gz
-      scp visit$ver2.linux-euclid.tar.gz euclid.nersc.gov:
-      scp visit-install euclid.nersc.gov:
-      scp euclid euclid.nersc.gov:euclid_install
-      ssh euclid.nersc.gov "chmod 750 euclid_install;./euclid_install"
+      scp carver.nersc.gov:/usr/tmp/$user/carver/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-carver.tar.gz
+      scp visit$ver2.linux-carver.tar.gz carver.nersc.gov:
+      scp visit-install carver.nersc.gov:
+      scp carver carver.nersc.gov:carver_install
+      ssh carver.nersc.gov "chmod 750 carver_install;./carver_install"
    fi
 fi
 
@@ -558,5 +600,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus euclid glory redsky
+   rm -f kickit sidious ubuntu1104_64 aztec rzthriller rzzeus carver glory redsky
 fi

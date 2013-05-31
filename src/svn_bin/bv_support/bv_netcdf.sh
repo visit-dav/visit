@@ -37,6 +37,9 @@ function bv_netcdf_depends_on
                 depends_on="${depends_on} szip"        
             fi
         fi
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends_on="zlib"        
+        fi
         echo ${depends_on}
     fi
 }
@@ -287,16 +290,20 @@ function build_netcdf
             H5ARGS="$H5ARGS --with-szlib=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
     fi
+    ZLIBARGS=""
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+    fi
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        FC=\"\" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
+        FC=\"\" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
         --disable-dap \
         --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        FC="" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS \
+        FC="" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
         --disable-dap \
         --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
 
