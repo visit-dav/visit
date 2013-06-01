@@ -13,6 +13,14 @@ do
     else
         echo "***** DID NOT SEE: $edir/link.txt   pwd=`pwd`"
     fi
+    if test -e "$edir/relink.txt" ; then
+        sed "s/-lX11//g" $edir/relink.txt > $edir/relink1.txt
+        sed "s/-lXext//g" $edir/relink1.txt > $edir/relink2.txt
+        rm -f $edir/relink1.txt
+        mv $edir/relink2.txt $edir/relink.txt
+    else
+        echo "***** DID NOT SEE: $edir/relink.txt   pwd=`pwd`"
+    fi
 done
 
 exit 0
