@@ -124,7 +124,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff)
 # Add vtk definitions
-ADD_TARGET_DEFINITIONS(visit_vtk ${VTK_DEFINITIONS})
+ADD_TARGET_DEFINITIONS(visit_vtk "${VTK_DEFINITIONS}")
 
 
 VISIT_INSTALL_TARGETS(visit_vtk)

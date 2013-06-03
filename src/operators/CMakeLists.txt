@@ -128,6 +128,11 @@ Tube
 ZoneDump
 )
 
+#adding programmable operator only if Python is available..
+#IF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
+#    LIST(APPEND REQUIRED_OPERATOR_PLUGINS Script)
+#ENDIF(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
+
 IF(TARGET vtkGeovisCore)
     LIST(APPEND REQUIRED_OPERATOR_PLUGINS CartographicProjection)
 ELSE()
