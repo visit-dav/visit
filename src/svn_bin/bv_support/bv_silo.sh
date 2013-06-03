@@ -168,7 +168,7 @@ function build_silo
        WITHSILOQTARG="--disable-silex"
     else
        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-       WITHSILOQTARG="--with-Qt-dir=$SILOQTDIR --with-Qt-lib=QtGui"
+       WITHSILOQTARG='--with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
     fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
@@ -185,7 +185,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        \"$WITHHDF5ARG\" \"$WITHSZIPARG\" \"$WITHSILOQTARG\" \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
         --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -193,7 +193,7 @@ function build_silo
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
-        --prefix=$VISITDIR/silo/$SILO_VERSION/$VISITARCH \
+        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG \
         --enable-install-lite-headers --without-readline $ZLIBARGS $SILO_EXTRA_OPTIONS"
 
