@@ -53,7 +53,11 @@ ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
 
 # Specify the libraries to link against
 TARGET_LINK_LIBRARIES(text2polys vtkIOLegacy)
+IF(HAVE_LIB_R)
+TARGET_LINK_LIBRARIES(time_annotation vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtkFiltersStatisticsGnuR)
+ELSE(HAVE_LIB_R)
 TARGET_LINK_LIBRARIES(time_annotation vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle)
+ENDIF(HAVE_LIB_R)
 # add vtk definitions
 ADD_TARGET_DEFINITIONS(time_annotation "${VTK_DEFINITIONS}")
 
