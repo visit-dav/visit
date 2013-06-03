@@ -140,4 +140,22 @@ class IVP_API avtIVPField
     unsigned int order;
 };
 
+// ostream operators for avtICStatus
+inline std::ostream& operator<<(std::ostream& out, 
+                                avtIVPField::Result res)
+{
+    if (res == avtIVPField::OK)
+        out<<"OK";
+    else if (res == avtIVPField::OUTSIDE_SPATIAL)
+        out<<"OUTSIDE_SPATIAL";
+    else if (res == avtIVPField::OUTSIDE_TEMPORAL)
+        out<<"OUTSIDE_TEMPORAL";
+    else if (res == avtIVPField::OUTSIDE_BOTH)
+        out<<"OUTSIDE_BOTH";
+    else if (res == avtIVPField::FAIL)
+        out<<"FAIL"<<endl;
+    return out;
+}
+
+
 #endif
