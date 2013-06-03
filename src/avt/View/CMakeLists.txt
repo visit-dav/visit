@@ -59,6 +59,6 @@ ADD_LIBRARY(avtview ${AVTVIEW_SOURCES})
 TARGET_LINK_LIBRARIES(avtview visitcommon vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle)
 
 # Add vtk definitions
-ADD_TARGET_DEFINITIONS(avtview ${VTK_DEFINITIONS})
+ADD_TARGET_DEFINITIONS(avtview "${VTK_DEFINITIONS}")
 
 VISIT_INSTALL_TARGETS(avtview)

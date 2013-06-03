@@ -246,7 +246,7 @@ ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 
 TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
 # Add vtk defines
-ADD_TARGET_DEFINITIONS(avtpipeline_ser ${VTK_DEFINITIONS})
+ADD_TARGET_DEFINITIONS(avtpipeline_ser "${VTK_DEFINITIONS}")
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
@@ -254,6 +254,6 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
     TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
     # Add vtk defines
-    ADD_TARGET_DEFINITIONS(avtpipeline_par ${VTK_DEFINITIONS})
+    ADD_TARGET_DEFINITIONS(avtpipeline_par "${VTK_DEFINITIONS}")
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)
