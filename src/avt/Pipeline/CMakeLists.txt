@@ -244,7 +244,11 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 
-TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+IF(HAVE_LIB_R)
+    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB} vtkFiltersStatisticsGnuR)
+ELSE(HAVE_LIB_R)
+    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+ENDIF(HAVE_LIB_R)
 # Add vtk defines
 ADD_TARGET_DEFINITIONS(avtpipeline_ser "${VTK_DEFINITIONS}")
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
@@ -252,7 +256,11 @@ VISIT_INSTALL_TARGETS(avtpipeline_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
-    TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+    IF(HAVE_LIB_R)
+        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB} vtkFiltersStatisticsGnuR)
+    ELSE(HAVE_LIB_R)
+        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts lightweight_visit_vtk vtkCommonCore vtkFiltersGeometry vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle ${ZLIB_LIB})
+    ENDIF(HAVE_LIB_R)
     # Add vtk defines
     ADD_TARGET_DEFINITIONS(avtpipeline_par "${VTK_DEFINITIONS}")
     VISIT_INSTALL_TARGETS(avtpipeline_par)
