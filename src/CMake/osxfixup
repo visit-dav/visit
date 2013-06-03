@@ -89,7 +89,7 @@ function fixup_dylib
 
     sharedLibs=$(otool -L $3 | grep -v "/usr/lib" | grep -v "/usr/local/lib" | grep -v "/opt/local/lib" | grep -v "/opt/local/Library" | grep -v "$thisLibraryName1" | grep -v "$thisLibraryName2")
     if [[ $1 == "OFF" ]] ; then
-        sharedLibs = $(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+        sharedLibs=$(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
     fi
 #    echo "sharedLibs = $sharedLibs"
     command=""
@@ -164,7 +164,7 @@ function fixup_exe
 
     sharedLibs=$(otool -L $3 | grep -v ":" | grep "/")
     if [[ $1 == "OFF" ]] ; then
-        sharedLibs = $(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
+        sharedLibs=$(echo "$sharedLibs" | grep -v "libmpi" | grep -v "libopen-rte" | grep -v "libopen-pal")
     fi
     command=""
     for library in $sharedLibs ; do
