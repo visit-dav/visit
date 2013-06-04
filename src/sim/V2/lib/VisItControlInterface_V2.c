@@ -1074,9 +1074,10 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 
 static int CreateEngine(void)
 {
+    int status = VISIT_ERROR;
+
     LIBSIM_API_ENTER(CreateEngine);
 
-    int status = VISIT_ERROR;
     if(callbacks != NULL)
     {
         status = VISIT_OKAY;

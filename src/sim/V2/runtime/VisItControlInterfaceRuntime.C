@@ -530,6 +530,7 @@ simv2_delete_plot(void *e, int plotID)
         delete it->second.atts;
         GetPlotInformation()->erase(it);
     }
+    return VISIT_OKAY;
 }
 
 template <class T>
