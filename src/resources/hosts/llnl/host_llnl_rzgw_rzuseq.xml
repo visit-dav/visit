@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">rzuseq.llnl.gov</Field>
+    <Field name="hostAliases" type="string">rzuseqlac#.llnl.gov rzuseqlac#</Field>
+    <Field name="hostNickname" type="string">LLNL RZ uSeq</Field>
+    <Field name="directory" type="string">/g/g19/whitlocb/Development/seq/trunk/visit2_7_0.linux-ppc64</Field>
+    <Field name="useGateway" type="bool">true</Field>
+    <Field name="gatewayHost" type="string">rzgw.llnl.gov</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Field name="clientHostDetermination" type="string">MachineName</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">serial</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">0</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">false</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel 16 cores</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">science</Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel 1024 cores</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1024</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">64</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">science</Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>
