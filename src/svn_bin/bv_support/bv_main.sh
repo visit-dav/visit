@@ -295,17 +295,6 @@ export VISIT_INSTALL_PREFIX=""
 export VISIT_BUILD_MODE="Release"
 DOWNLOAD_ONLY="no"
 
-##
-## Only turn mesa on by default for OSX versions prior
-## to 10.8 (Mountian Lion)
-##
-if [[ "$OPSYS" == "Darwin" ]]; then
-    VER=$(uname -r)
-    if (( ${VER%%.*} < 12 )) ; then
-        export DO_MESA="yes"
-        export ON_MESA="on"
-    fi
-fi
 
 if [[ "$CXX_COMPILER" == "g++" ]] ; then
     VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
