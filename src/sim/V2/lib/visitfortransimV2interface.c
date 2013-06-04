@@ -369,6 +369,71 @@ F_VISITSETUPENV(void)
 }
 
 /******************************************************************************
+ * Function: F_VISITSETUPENV2
+ *
+ * Purpose:   Allows FORTRAN to setup the VisIt environment variables.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  4 09:27:04 PDT 2013
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITSETUPENV2(VISIT_F77STRING env, int *lenv)
+{
+    int ret;
+    char *f_env = NULL;
+    COPY_FORTRAN_STRING(f_env, env, lenv);
+
+    ret = VisItSetupEnvironment2(f_env);
+
+    FREE(f_env);
+
+    return ret;
+}
+
+/******************************************************************************
+ * Function: F_VISITGETENV
+ *
+ * Purpose:   Get the VisIt environment variables as a buffer that can be passed
+ *            to visitsetupenv2.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  4 09:27:04 PDT 2013
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITGETENV(VISIT_F77STRING env, int *lenv)
+{
+    char *src = VisItGetEnvironment();
+
+    if(src != NULL)
+    {
+        size_t len, sz;
+        len = strlen(src);
+        sz = (len < *lenv) ? (sz - 1) : (*lenv - 1);
+        if(sz == 0)
+            *lenv = 0;
+        else
+        {
+            memcpy(env, src, sz);
+            env[sz] = '\0';
+        }
+    }
+    else
+    {
+        *lenv = 0;
+    }
+
+    return VISIT_OKAY;
+}
+
+/******************************************************************************
  * Function: F_VISITINITIALIZESIM
  *
  * Purpose:   Allows FORTRAN to dump a sim file containing the information
