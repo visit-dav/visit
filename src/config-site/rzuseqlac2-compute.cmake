@@ -10,7 +10,8 @@
 ##
 SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.7.0)
 SET(VISITARCH linux-ppc64_gcc-4.4_BGQ)
-MESSAGE(STATUS "********** Got here too!!!")
+MESSAGE(status "************* compute node build")
+
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER bgxlc TYPE FILEPATH)

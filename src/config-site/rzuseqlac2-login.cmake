@@ -10,12 +10,12 @@
 ##
 SET(VISITHOME /usr/gapps/visit/thirdparty_static/2.7.0)
 SET(VISITARCH linux-ppc64_gcc-4.4)
-
+MESSAGE(status "************* login node build")
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-MESSAGE(STATUS "*************** got here!!!!")
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER   /usr/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/bin/g++ TYPE FILEPATH)
+
 ##
 ## Static build
 ##
