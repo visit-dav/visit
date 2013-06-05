@@ -615,18 +615,23 @@ function build_vtk
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
-    if [[ "$BUILD_VISIT_BGQ" == "yes" ]] ; then
-        if test -e bv_run_cmake.sh ; then
-            rm -f bv_run_cmake.sh
-        fi
-        echo "${CMAKE_BIN}" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
-        cat bv_run_cmake.sh
-        issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
-    else
-        issue_command "${CMAKE_BIN}" \
-            ${vopts} \
-            ../${VTK_SRC_DIR} || error "VTK configuration failed."
+
+    #
+    # Several platforms have had problems with the VTK cmake configure command
+    # issued simply via "issue_command".  This was first discovered on 
+    # BGQ and then showed up in random cases for both OSX and Linux machines. 
+    # Brad resolved this on BGQ  with a simple work around - we write a simple 
+    # script that we invoke with bash which calls cmake with all of the properly
+    # arguments. We are now using this strategy for all platforms.
+    #
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "${CMAKE_BIN}" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
+
 
     #
     # Now build VTK.
