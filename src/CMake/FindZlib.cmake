@@ -41,6 +41,9 @@
 #   Brad Whitlock, Thu Apr 18 14:38:02 PDT 2013
 #   Look for zlib on other platforms if VISIT_ZLIB_DIR is set.
 #
+#   Kathleen Biagas, Wed Jun  5 16:47:21 PDT 2013
+#   Always set VTKZLIB_LIB on windows if the vtkzlib target exists.
+#
 #****************************************************************************/
 
 # Use the ZLIB_DIR hint from the config-site .cmake file 
@@ -52,8 +55,10 @@ IF (WIN32)
     IF (ZLIB_FOUND)
         # use full path here, instead of just lib file.
         SET(ZLIB_LIB "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
-        SET(VTKZLIB_LIB vtkzlib)
     ENDIF (ZLIB_FOUND)
+    IF(TARGET vtkzlib)
+        SET(VTKZLIB_LIB vtkzlib)
+    ENDIF(TARGET vtkzlib)
 ELSE(WIN32)
     IF(VISIT_ZLIB_DIR)
         # We've told VisIt where to look for zlib. Let's also assume that by doing 
