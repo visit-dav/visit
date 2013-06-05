@@ -979,6 +979,12 @@ if test -n "${next_action}" ; then
     esac
 fi
 
+#
+# Echo the current invocation command line to the log file
+#
+info "[build_visit invocation arguments] $@"
+
+
 #write a unified file
 if [[ $WRITE_UNIFIED_FILE != "" ]] ; then
     bv_write_unified_file $WRITE_UNIFIED_FILE
