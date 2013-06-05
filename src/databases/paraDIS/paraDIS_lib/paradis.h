@@ -33,6 +33,7 @@
 using boost::int8_t;
 using boost::int16_t;
 using boost::int32_t;
+using boost::uint8_t;
 using boost::uint32_t;
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>

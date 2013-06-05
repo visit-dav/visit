@@ -9,6 +9,7 @@
 #include <boost/cstdint.hpp>
 using boost::int8_t;
 using boost::int32_t;
+using boost::uint8_t;
 using boost::uint32_t;
 
 #ifdef __cplusplus
