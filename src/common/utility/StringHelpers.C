@@ -659,6 +659,12 @@ StringHelpers::Basename(const char *path)
    return basename(path, dummy1);
 }
 
+string
+StringHelpers::Basename(string const path)
+{
+    return Basename(path.c_str());
+}
+
 // ****************************************************************************
 //  Function: Dirname
 //
@@ -711,6 +717,12 @@ StringHelpers::Dirname(const char *path)
             StaticStringBuf[i] = '\0';
         return StaticStringBuf;
     }
+}
+
+string
+StringHelpers::Dirname(string const path)
+{
+    return Dirname(path.c_str());
 }
 
 // ****************************************************************************
@@ -861,6 +873,12 @@ StringHelpers::Absname(const char *cwd_context, const char *path)
     string npath = Normalize(path2.c_str());
     strcpy(StaticStringBuf, npath.c_str());
     return StaticStringBuf;
+}
+
+string
+StringHelpers::Absname(string const cwd_context, string const path)
+{
+    return Absname(cwd_context.c_str(), path.c_str());
 }
 
 // ****************************************************************************

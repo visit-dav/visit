@@ -46,6 +46,16 @@ using namespace StringHelpers;
 using std::vector;
 using std::string;
 
+static string slash_swap_for_os(string const in)
+{
+    string out = in;
+#ifdef WIN32
+    for (i = 0; i < in.size(); i++)
+        if (in[i] == '/') out[i] = '\\';
+#endif
+    return out;
+}
+
 int main(int argc, char **argv)
 {
     vector<int> falseNegatives;
@@ -223,24 +233,45 @@ int main(int argc, char **argv)
     }
 
     //
+    // All tests involving pathnames are written using the unix slash
+    // character convention ('/') but the slash_swap_for_os func 
+    // swaps it as necessary. We should add some tests that test the
+    // "C:" leading part of windows pathnames. The utilities don't
+    // handle that yet either.
+    //
+
+    //
     // Test Basename and Dirname
     //
-#define CHECK_PATHNAMES(path,dir,base)                            \
-    if (string(Basename(path)) != string(base))                   \
-    {                                                             \
-        cerr << "Got Basename(" << #path << ") = \""              \
-             << Basename(path) << "\", expected " << #base << endl; \
-        pathname_errors++;                                        \
-    }                                                             \
-    if (string(Dirname(path)) != string(dir))                     \
-    {                                                             \
-        cerr << "Got Dirname(" << #path << ") = \""               \
-             << Dirname(path) << "\", expected " << #dir << endl; \
-        pathname_errors++;                                        \
+#define CHECK_PATHNAMES(path,dir,base)                                \
+    {                                                                 \
+        string _path = slash_swap_for_os(path);                       \
+        string _dir  = slash_swap_for_os(dir);                        \
+        string _base = slash_swap_for_os(base);                       \
+        if (string(Basename(_path)) != string(_base))                 \
+        {                                                             \
+            cerr << "Got Basename(" << _path << ") = \""              \
+                 << Basename(_path) << "\", expected " << _base << endl; \
+            pathname_errors++;                                        \
+        }                                                             \
+        if (string(Dirname(_path)) != string(_dir))                   \
+        {                                                             \
+            cerr << "Got Dirname(" << _path << ") = \""               \
+                 << Dirname(_path) << "\", expected " << _dir << endl; \
+            pathname_errors++;                                        \
+        }                                                             \
     }
 
     int pathname_errors = 0;
-    //
+#ifdef WIN32
+    CHECK_PATHNAMES("C:/usr/lib",    "C:/usr",        "lib");
+    CHECK_PATHNAMES("D:/usr/",       "D:/",           "usr");
+    CHECK_PATHNAMES("A:/usr",        "A:/",           "usr");
+    CHECK_PATHNAMES("usr",           ".",             "usr");
+    CHECK_PATHNAMES("C:/",           "C:/",           "C:/");
+    CHECK_PATHNAMES(".",             ".",             ".");
+    CHECK_PATHNAMES("..",            ".",             "..");
+#else
     //              Expected behavior as documented in
     //              section 3 of unix manual...
     //              --------------------------------------
@@ -252,14 +283,19 @@ int main(int argc, char **argv)
     CHECK_PATHNAMES("/",           "/",           "/");
     CHECK_PATHNAMES(".",           ".",           ".");
     CHECK_PATHNAMES("..",          ".",           "..");
+#endif
 
 #define CHECK_NORMALIZE(path,result)                                    \
-    if (string(Normalize(path)) != string(result))                      \
     {                                                                   \
-        cerr << "Got \"" << Normalize(path)                             \
-             << "\" normalizing " << #path << endl                      \
-             << "Expected " << #result << endl;                         \
-        pathname_errors++;                                              \
+        string _path = slash_swap_for_os(path);                         \
+        string _result = slash_swap_for_os(result);                     \
+        if (string(Normalize(_path)) != string(_result))                \
+        {                                                               \
+            cerr << "Got \"" << Normalize(_path)                        \
+                 << "\" normalizing " << _path << endl                  \
+                 << "Expected " << _result << endl;                     \
+            pathname_errors++;                                          \
+        }                                                               \
     }
 
     CHECK_NORMALIZE("./././a/b/c/d/../../e/././f////../..///", "a/b");
@@ -268,15 +304,28 @@ int main(int argc, char **argv)
     CHECK_NORMALIZE("a/b/c/../../../..", "");
 
 #define CHECK_ABSNAME(cwd,path,result)                                  \
-    if (string(Absname(cwd,path)) != string(result))                    \
     {                                                                   \
-        cerr << "Got \"" << Absname(cwd,path)                           \
-             << "\" when forming absolute path name from..." << endl    \
-             << #cwd << endl                                            \
-             << #path << endl                                           \
-             << "Expected " << #result << endl;                         \
-        pathname_errors++;                                              \
+        bool chkval;                                                    \
+        string _cwd  = slash_swap_for_os(cwd?cwd:"");                   \
+        string _path = slash_swap_for_os(path?path:"");                 \
+        string _result = slash_swap_for_os(result);                     \
+        if (cwd && path)                                                \
+            chkval = string(Absname(_cwd,_path)) != string(_result);    \
+        else if (cwd)                                                   \
+            chkval = string(Absname(_cwd.c_str(),path)) != string(_result);\
+        else                                                            \
+            chkval = string(Absname(cwd,_path.c_str())) != string(_result);\
+        if (chkval)                                                     \
+        {                                                               \
+            cerr << "Got \"" << Absname(_cwd,_path)                     \
+                 << "\" when forming absolute path name from..." << endl\
+                 << _cwd << endl                                        \
+                 << _path << endl                                       \
+                 << "Expected " << _result << endl;                     \
+            pathname_errors++;                                          \
+        }                                                               \
     }
+    
 
     CHECK_ABSNAME("/a/b/c",
                   "d/e/f",
