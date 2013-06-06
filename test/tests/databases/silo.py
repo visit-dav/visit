@@ -73,6 +73,9 @@
 #    Kathleen Biagas, Thurs May 23 14:09:15 MST 2013 
 #    Don't run certain tests on Windows that cause a crash.
 #
+#    Kathleen Biagas, Thurs Jun 6 11:04:13 PDT 2013 
+#    Re-enable tests 42,44, and 45 on Windows, now that crash has been fixed.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -427,13 +430,11 @@ AddPlot("Pseudocolor","Density_wmrgtree")
 DrawPlots()
 Test("silo_41")
 
-# on Windows, no 'levels', so this code causes a crash, so disable for now.
-if not sys.platform.startswith("win"):
-    silr=SILRestriction()
-    s = silr.SetsInCategory("levels")
-    TurnOffSetsByName(silr, "levels", "level2")
-    SetPlotSILRestriction(silr)
-    Test("silo_42")
+silr=SILRestriction()
+s = silr.SetsInCategory("levels")
+TurnOffSetsByName(silr, "levels", "level2")
+SetPlotSILRestriction(silr)
+Test("silo_42")
 
 DeleteAllPlots()
 CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
@@ -453,15 +454,13 @@ v.imageZoom = 6.03355
 SetView3D(v)
 Test("silo_43")
 
-# on Windows, no 'levels', so this code causes a crash, so disable for now.
-if not sys.platform.startswith("win"):
-    silr=SILRestriction()
-    TurnOffSetsByName(silr, "levels", "level2")
-    SetPlotSILRestriction(silr)
-    Test("silo_44")
-    TurnOffSetsByName(silr, "levels", "level1")
-    SetPlotSILRestriction(silr)
-    Test("silo_45")
+silr=SILRestriction()
+TurnOffSetsByName(silr, "levels", "level2")
+SetPlotSILRestriction(silr)
+Test("silo_44")
+TurnOffSetsByName(silr, "levels", "level1")
+SetPlotSILRestriction(silr)
+Test("silo_45")
 
 DeleteAllPlots()
 CloseDatabase(data_path("silo_amr_test_data/amr2d_wmrgtree.silo"))
