@@ -1681,7 +1681,12 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //
 //    Mark C. Miller, Tue Jul 10 19:55:37 PDT 2012
 //    Added logic to handle nodelist vars defined in MRG Trees.
+//
+//    Katheen Biagas, Thu Jun 6 13:11:27 PDT 2013
+//    Enable reading of mrgtrees on Windows.
+//
 // ****************************************************************************
+
 void
 avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile, 
     int nmultimesh, char **multimesh_names,
@@ -1970,7 +1975,6 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 vector<int> amr_group_ids;
                 vector<string> amr_block_names;
 
-#ifndef WIN32
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,2)
                 if (mm->mrgtree_name != 0)
@@ -1982,7 +1986,6 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
 
                     HandleMrgtreeNodelistVars(dbfile, name_w_dir, mm->mrgtree_name, md);
                 }
-#endif
 #endif
 #endif
 
@@ -2204,7 +2207,12 @@ avtSiloFileFormat::ReadQuadmeshes(DBfile *dbfile,
 //
 //    Mark C. Miller, Tue Jul 10 19:55:37 PDT 2012
 //    Added logic to handle nodelist vars defined in MRG Trees.
+//
+//    Katheen Biagas, Thu Jun 6 13:11:27 PDT 2013
+//    Enable reading of mrgtrees on Windows.
+//
 // ****************************************************************************
+
 void
 avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
     int nucdmesh, char **ucdmesh_names,
@@ -2258,7 +2266,6 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
                 extents_to_use = extents;
             }
 
-#ifndef WIN32
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,2)
                 if (um->mrgtree_name != 0)
@@ -2266,7 +2273,6 @@ avtSiloFileFormat::ReadUcdmeshes(DBfile *dbfile,
                     // So far, we've coded only for MRG trees representing AMR hierarchies
                     HandleMrgtreeNodelistVars(dbfile, name_w_dir, um->mrgtree_name, md);
                 }
-#endif
 #endif
 #endif
 
@@ -16782,7 +16788,12 @@ MultiMatHasAllMatInfo(const DBmultimat *const mm)
 //
 //  Creation: Mark C. Miller, Wed Jul 11 09:12:59 PDT 2012
 //
+//  Modifications:
+//    Katheen Biagas, Thu Jun 6 13:11:27 PDT 2013
+//    Pass "/" as pathSeparator to Absname.
+//
 // ****************************************************************************
+
 static string ResolveSiloIndObjAbsPath(
     DBfile *dbfile,
     string primary_objname_incl_any_abs_or_rel_path,
@@ -16797,7 +16808,7 @@ static string ResolveSiloIndObjAbsPath(
     // If primary object str is the name of an object as opposed to
     // the dir the object lives in, then compute the dirname
     string obj_abspath = Absname(dbcwd,
-        primary_objname_incl_any_abs_or_rel_path.c_str());
+        primary_objname_incl_any_abs_or_rel_path.c_str(), "/");
     int vtype = DBInqVarType(dbfile, obj_abspath.c_str());
     if (vtype >= 0 && vtype != DB_DIR)
     {
@@ -16810,7 +16821,7 @@ static string ResolveSiloIndObjAbsPath(
     }
 
     string indobj_abspath = Absname(obj_abspath.c_str(),
-        indirect_objname_incl_any_abs_or_rel_path.c_str());
+        indirect_objname_incl_any_abs_or_rel_path.c_str(), "/");
     retval = string(indobj_abspath);
     return retval;
 }

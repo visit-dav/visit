@@ -735,14 +735,21 @@ StringHelpers::Dirname(string const path)
 //
 //  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Thu June 6 09:39:25 PDT 2013
+//    Added pathSep argument that defaults to platform-specific 
+//    VISIT_SLASH_STRING.  Use of non-platform specific case my be needed if
+//    parsing internal database path-names.
+//
 // ****************************************************************************
+
 const char *
-StringHelpers::Normalize(const char *path)
+StringHelpers::Normalize(const char *path, const char *pathSep)
 {
     string retval = string(path);
 
     // First, remove any double slashes
-    string dbl_slash = VISIT_SLASH_STRING VISIT_SLASH_STRING;
+    string dbl_slash = string(pathSep) + string(pathSep);
     size_t dbl_slash_idx = retval.rfind(dbl_slash);
     while (dbl_slash_idx != std::string::npos)
     {
@@ -751,7 +758,7 @@ StringHelpers::Normalize(const char *path)
     }
 
     // Remove any terms of the form "./". These have no effect
-    string dot_slash = "." VISIT_SLASH_STRING;
+    string dot_slash = string(".") + string(pathSep);
     size_t dot_slash_idx = retval.rfind(dot_slash);
     while (dot_slash_idx != std::string::npos)
     {
@@ -771,19 +778,19 @@ StringHelpers::Normalize(const char *path)
     }
 
     // Remove any trailing slash if one exists
-    if (retval[retval.size()-1] == VISIT_SLASH_CHAR)
+    if (retval[retval.size()-1] == pathSep[0])
         retval.erase(retval.size()-1);
 
     // At this point we have a string that begins with a slash
     // and has only <path> terms or "../" terms. We need to
     // resolve any "../" terms by backing up through the <path>
     // terms that precede them.
-    string slash_dot_dot = VISIT_SLASH_STRING "..";
+    string slash_dot_dot = string(pathSep) + string("..");
     size_t slash_dot_dot_idx = retval.find(slash_dot_dot);
     bool noCharsRemainingToBackup = false;
     while (slash_dot_dot_idx != std::string::npos)
     {
-        size_t preceding_slash_idx = retval.rfind(VISIT_SLASH_STRING, slash_dot_dot_idx-1);
+        size_t preceding_slash_idx = retval.rfind(pathSep, slash_dot_dot_idx-1);
         if (preceding_slash_idx == std::string::npos)
         {
             size_t nchars = slash_dot_dot_idx + 3;
@@ -805,7 +812,7 @@ StringHelpers::Normalize(const char *path)
     }
 
     // Remove any trailing slash if one exists
-    if (retval[retval.size()-1] == VISIT_SLASH_CHAR)
+    if (retval[retval.size()-1] == pathSep[0])
         retval.erase(retval.size()-1);
 
     if (retval == "" && !noCharsRemainingToBackup) retval = ".";
@@ -816,23 +823,30 @@ StringHelpers::Normalize(const char *path)
 }
 
 string
-StringHelpers::Normalize(const string& path)
+StringHelpers::Normalize(const string& path, string const pathSep)
 {
-    return Normalize(path.c_str());
+    return Normalize(path.c_str(), pathSep.c_str());
 }
 
 // ****************************************************************************
-//  Function: Dirname
+//  Function: Absname
 //
 //  Purpose: Compute absolute path name based on cwd and a path relative to
 //  the cwd.
 //
 //  Programmer: Mark C. Miller, Mon Jul 16 21:56:03 PDT 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Thu June 6 09:39:25 PDT 2013
+//    Added pathSep argument that defaults to platform-specific 
+//    VISIT_SLASH_STRING.  Use of non-platform specific case my be needed if
+//    parsing internal database path-names.
+//
 // ****************************************************************************
 
 const char *
-StringHelpers::Absname(const char *cwd_context, const char *path)
+StringHelpers::Absname(const char *cwd_context, const char *path, 
+    const char *pathSep)
 {
     // Clear our temporary array for handling char * return values.
     StaticStringBuf[0] = '\0';
@@ -841,9 +855,9 @@ StringHelpers::Absname(const char *cwd_context, const char *path)
     if (!cwd_context || cwd_context[0] == '\0')
     {
         if (!path) return StaticStringBuf;
-        if (path[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+        if (path[0] != pathSep[0]) return StaticStringBuf;
 
-        string npath = Normalize(path);
+        string npath = Normalize(path, pathSep);
         strcpy(StaticStringBuf, npath.c_str());
         return StaticStringBuf;
     }
@@ -852,33 +866,35 @@ StringHelpers::Absname(const char *cwd_context, const char *path)
     if (!path || path[0] == '\0')
     {
         if (!cwd_context) return StaticStringBuf;
-        if (cwd_context[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+        if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
 
-        string ncwd = Normalize(cwd_context);
+        string ncwd = Normalize(cwd_context, pathSep);
         strcpy(StaticStringBuf, ncwd.c_str());
         return StaticStringBuf;
     }
 
-    if (path[0] == VISIT_SLASH_CHAR)
+    if (path[0] == pathSep[0])
     {
-        string npath = Normalize(path);
+        string npath = Normalize(path, pathSep);
         strcpy(StaticStringBuf, npath.c_str());
         return StaticStringBuf;
     }
 
-    if (cwd_context[0] != VISIT_SLASH_CHAR) return StaticStringBuf;
+    if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
 
     // Catenate path to cwd_context and then Normalize the result
-    string path2 = string(cwd_context) + "/" + string(path);
-    string npath = Normalize(path2.c_str());
+    string path2 = string(cwd_context) + string(pathSep) + string(path);
+    string npath = Normalize(path2.c_str(), pathSep);
     strcpy(StaticStringBuf, npath.c_str());
     return StaticStringBuf;
 }
 
 string
-StringHelpers::Absname(string const cwd_context, string const path)
+StringHelpers::Absname(string const cwd_context, 
+                       string const path, 
+                       string const pathSep)
 {
-    return Absname(cwd_context.c_str(), path.c_str());
+    return Absname(cwd_context.c_str(), path.c_str(), pathSep.c_str());
 }
 
 // ****************************************************************************
