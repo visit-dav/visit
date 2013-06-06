@@ -180,6 +180,9 @@ avtIVPVTKTimeVaryingField::GetExtents( double extents[6] ) const
 //   Hank Childs, Fri Mar  9 16:50:48 PST 2012
 //   Add support for reverse pathlines.
 //
+//   Dave Pugmire, Wed Jun  5 09:57:41 EDT 2013
+//   Fix for pathlines. change from >=, <= to >, < in inclusion for time.
+//
 // ****************************************************************************
 
 avtIVPField::Result
@@ -193,16 +196,16 @@ avtIVPVTKTimeVaryingField::FindCell( const double& time, const avtVector& pos ) 
         lastCell = loc->FindCell(&pos.x, &lastWeights, false);
         inside[0] = (lastCell != -1);
     }       
-
+    
     if (t0 < t1)
     {
-        if( time < t0 || time >= t1 )
+        if( time < t0 || time > t1 )
             inside[1] = false;
     }
     else
     {
         // backwards integration
-        if( time < t1 || time >= t0 )
+        if( time < t1 || time > t0 )
             inside[1] = false;
     }
 
