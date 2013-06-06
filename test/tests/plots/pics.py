@@ -47,7 +47,7 @@ for i in range(len(databases)):
      TestSection(str)
 
      for integrator_i in range(len(intg)) :
-       str="Varying integrator = %s" %(intg_strings[integrator_i])
+       str="Varying integrator = %s (%d)" %(intg_strings[integrator_i], integrator_i)
        TestSection(str)
        
        for k in range(len(time_strings)):
@@ -57,12 +57,18 @@ for i in range(len(databases)):
          s.streamlineAlgorithmType = algs[j]
          s.sourceType = s.SpecifiedPoint
          if (is2D[i]):
-           s.pointSource = (0.5, 0.1, 0)
+           if (intg[integrator_i] in [s.RK4, s.DormandPrince, s.AdamsBashforth]) :
+             s.pointSource = (0.51, 0.1, 0)
+           else:
+             s.pointSource = (0.5, 0.1, 0)
          else:
            if (isUgrid[i]):
              s.pointSource = (0.2, 0.6, 0.6)
            else:
-             s.pointSource = (0.5, 0.1, 0.1)
+             if (intg[integrator_i] in [s.RK4, s.DormandPrince, s.AdamsBashforth]) :
+               s.pointSource = (0.51, 0.1, 0.1)
+             else:
+               s.pointSource = (0.5, 0.1, 0.1)
          if (time_strings[k] == "path_forward"):
            TimeSliderSetState(0)
            s.pathlines = 1
