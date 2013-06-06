@@ -297,6 +297,11 @@ avtPICSFilter::ComputeRankList(const vector<int> &domList,
 // Programmer:  Dave Pugmire
 // Creation:    May 29, 2012
 //
+//  Modifications:
+//
+//   Dave Pugmire, Wed Jun  5 16:43:36 EDT 2013
+//   Code hardening. Better handling for rectilinear grid corner cases.
+//
 // ****************************************************************************
 
 void
@@ -320,9 +325,26 @@ avtPICSFilter::FindCandidateBlocks(avtIntegralCurve *ic,
     }
 
     avtVector pt = ic->CurrentLocation();
-    double xyz[3] = {pt.x, pt.y, pt.z};
+    double xyz0[3] = {pt.x, pt.y, pt.z};
+    double xyz1[3] = {pt.x, pt.y, pt.z};
+
+    /*
+    double eps = 1e-4;
+    avtVector v = ic->CurrentV();
+    if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
+        v = -v;
+    for (int i = 0; i < 3; i++)
+    {
+        if (v[i] > 0.0)
+            xyz1[i] += eps;
+        else if (v[i] < 0.0)
+            xyz0[i] -= eps;
+    }
+    */
+    
     std::vector<int> doms;
-    intervalTree->GetElementsListFromRange(xyz, xyz, doms);
+    intervalTree->GetElementsListFromRange(xyz0, xyz1, doms);
+    
     bool blockLoaded = false;
     for (int i = 0; i < doms.size(); i++)
     {
@@ -2069,6 +2091,9 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 //   Make cell locator be reference counted so it can be cached at the database
 //   level.
 //
+//   Dave Pugmire, Wed Jun  5 16:43:36 EDT 2013
+//   Code hardening. Better handling for rectilinear grid corner cases.
+//
 // ****************************************************************************
 
 bool
@@ -2079,39 +2104,19 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
     
     vtkDataSet *ds = GetDomain(block, pt);
 
-    debug1<<"ICInBlock("<<pt<<" "<<block<<") = ";
     if (ds == NULL || ds->GetNumberOfCells() == 0)
-    {
-        debug1<<"0"<<endl;
         return false;
-    }
 
-    double bbox[6];
-    
     //Rectilinear dataset.
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-        intervalTree->GetElementExtents(block.domain, bbox);
-        if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3])
-            return false;
-        
-        if (dataSpatialDimension == 3 && (pt.z < bbox[4] || pt.z > bbox[5]))
-            return false;
-
-        /*
-        if (PtOnBlockFaceAndPushedOut(pt, t, block, ds, bbox))
-            return false;
-        */
-        
-        // If no ghost zones, the pt is in dataset.
-        if (ds->GetCellData()->GetArray("avtGhostZones") == NULL)
-            return true;
-    }
+        return ICInRectilinearBlock(ic, block, ds);
+    
 
     // check if we have a locator
     std::map<BlockIDType,avtCellLocator_p>::iterator cli = domainToCellLocatorMap.find(block);
     if (cli != domainToCellLocatorMap.end() && specifyPoint)
     {
+        double bbox[6];
         cli->second->GetDataSet()->GetBounds(bbox);
 
         if (pt.x < bbox[0] || pt.x > bbox[1] ||
@@ -2136,14 +2141,186 @@ avtPICSFilter::ICInBlock(const avtIntegralCurve *ic, const BlockIDType &block)
         if (vtkDataArray* ghosts = ds->GetCellData()->GetArray("avtGhostZones"))
         {
             int gflags = ghosts->GetComponent(cell, 0);
-            if( gflags )
+            if (gflags)
                 cell = -1;
         }
     }
 
-    debug1<<(cell != -1)<<endl;
     return (cell != -1);
 }
+
+//****************************************************************************
+// Method:  avtPICSFilter::ICInRectilinearBlock
+//
+// Purpose:
+//   Determines if the IC is inside this rectilinear block.
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    June  5, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic, 
+                                    const BlockIDType &block,
+                                    vtkDataSet *ds)
+{
+    double bbox[6];
+    avtVector pt = ic->CurrentLocation();
+
+    intervalTree->GetElementExtents(block.domain, bbox);
+    if (pt.x < bbox[0] || pt.x > bbox[1] || pt.y < bbox[2] || pt.y > bbox[3])
+        return false;
+    
+    if (dataSpatialDimension == 3 && (pt.z < bbox[4] || pt.z > bbox[5]))
+        return false;
+
+    // If we're on a face, we want to avoid cases where the next step will move
+    // the point outside the block.
+    if (OnFaceAndPushedOut(ic, block, ds, bbox))
+        return false;
+    if (OnFaceAndPushedIn(ic, block, ds, bbox))
+        return true;
+    
+    // If no ghost zones, the pt is in dataset.
+    vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
+    if (ghosts == NULL)
+        return true;
+    else
+    {
+        avtCellLocator_p locator = SetupLocator(block, ds);
+        vtkIdType cell = locator->FindCell(&pt.x, NULL, true);
+
+        if (cell == -1)
+            return false;
+        
+        // Check if pt in a ghost cell.
+        else if (ghosts->GetComponent(cell, 0) != 0)
+            return false;
+    }
+
+    return true;
+}
+
+//****************************************************************************
+// Method:  avtPICSFilter::OnFaceAndPushedOut
+//
+// Purpose:
+//   Determines if the IC is on a rectilinear face, but is pushed out
+//   of the block.
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    June  5, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtPICSFilter::OnFaceAndPushedOut(const avtIntegralCurve *ic,
+                                  const BlockIDType &block,
+                                  vtkDataSet *ds,
+                                  double *bbox)
+{
+    avtVector pt = ic->CurrentLocation();
+    double time = ic->CurrentTime();
+    double t[3] = {(pt.x-bbox[0]) / (bbox[1]-bbox[0]),
+                   (pt.y-bbox[2]) / (bbox[3]-bbox[2]),
+                   0.0};
+    if (dataSpatialDimension == 3)
+        t[2] = (pt.z-bbox[4]) / (bbox[5]-bbox[4]);
+    
+    //avtVector v = ic->CurrentV();
+    avtIVPField *field = GetFieldForDomain(block, ds);
+    avtVector vec;
+    (*field)(time, pt, vec);
+    //vec = v;
+    if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
+        vec = -vec;
+    
+    if (t[0] < 0.01 && vec[0] < 0.0)
+        return true;
+    if (t[0] > 0.99 && vec[0] > 0.0)
+        return true;
+
+    if (t[1] < 0.01 && vec[1] < 0.0)
+        return true;
+    if (t[1] > 0.99 && vec[1] > 0.0)
+        return true;
+    
+    if (dataSpatialDimension == 3)
+    {
+        if (t[2] < 0.01 && vec[2] < 0.0)
+            return true;
+        if (t[2] > 0.99 && vec[2] > 0.0)
+            return true;
+    }
+
+    return false;
+}
+
+//****************************************************************************
+// Method:  avtPICSFilter::OnFaceAndPushedIn
+//
+// Purpose:
+//   Determines if the IC is on a rectilinear face, but is pushed out
+//   of the block.
+//
+//
+// Programmer:  Dave Pugmire
+// Creation:    June  5, 2013
+//
+// Modifications:
+//
+//****************************************************************************
+
+bool
+avtPICSFilter::OnFaceAndPushedIn(const avtIntegralCurve *ic,
+                                  const BlockIDType &block,
+                                  vtkDataSet *ds,
+                                  double *bbox)
+{
+    avtVector pt = ic->CurrentLocation();
+    double time = ic->CurrentTime();
+    double t[3] = {(pt.x-bbox[0]) / (bbox[1]-bbox[0]),
+                   (pt.y-bbox[2]) / (bbox[3]-bbox[2]),
+                   0.0};
+    if (dataSpatialDimension == 3)
+        t[2] = (pt.z-bbox[4]) / (bbox[5]-bbox[4]);
+    
+    //avtVector v = ic->CurrentV();
+    avtIVPField *field = GetFieldForDomain(block, ds);
+    avtVector vec;
+    (*field)(time, pt, vec);
+    //vec = v;
+    if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
+        vec = -vec;
+    
+    if (t[0] < 0.01 && vec[0] > 0.0)
+        return true;
+    if (t[0] > 0.99 && vec[0] < 0.0)
+        return true;
+
+    if (t[1] < 0.01 && vec[1] > 0.0)
+        return true;
+    if (t[1] > 0.99 && vec[1] < 0.0)
+        return true;
+    
+    if (dataSpatialDimension == 3)
+    {
+        if (t[2] < 0.01 && vec[2] > 0.0)
+            return true;
+        if (t[2] > 0.99 && vec[2] < 0.0)
+            return true;
+    }
+
+    return false;
+}
+
 
 // ****************************************************************************
 //  Method: avtPICSFilter::OwnDomain

@@ -1144,7 +1144,7 @@ avtICAlgorithm::CheckNextTimeStepNeeded(int curTimeSlice)
             break;
         }
     }
-    
+
 #ifdef PARALLEL
     SumIntAcrossAllProcessors(cnt);
 #endif
@@ -1175,6 +1175,7 @@ avtICAlgorithm::ActivateICsForNextTimeStep()
             ic->status.ClearAtTemporalBoundary();
             activeICs.push_back(ic);
             it = terminatedICs.erase(it);
+            picsFilter->FindCandidateBlocks(ic);
         }
         else
             it++;
@@ -1290,7 +1291,7 @@ avtICAlgorithm::terminatedICInfo() const
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
     {
         avtIntegralCurve *ic = *it;
-        str<<"("<<ic->id<<":"<<ic->CurrentLocation()<<","<<ic->CurrentTime()<<") ";
+        str<<"("<<ic->id<<":"<<ic->CurrentLocation()<<","<<ic->CurrentTime()<<" "<<ic->status<<" ) ";
     }
     str<<"]";
     return str.str();

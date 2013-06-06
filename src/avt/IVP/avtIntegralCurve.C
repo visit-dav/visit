@@ -239,6 +239,9 @@ avtIntegralCurve::~avtIntegralCurve()
 //   Hank Childs, Sat Mar 10 14:10:47 PST 2012
 //   Fix bug with supporting reverse pathlines.
 //
+//   Dave Pugmire, Wed Jun  5 14:31:18 EDT 2013
+//   Fix bug in terminating the while loop. Was checking for OK(), and not Integrateable().
+//
 // ****************************************************************************
 
 void
@@ -253,6 +256,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
     // Catch cases where the start position is outside the
     // domain of field; in this case, mark the curve 
     avtIVPField::Result fieldRes = field->IsInside(ivp->GetCurrentT(), ivp->GetCurrentY());
+
     if (fieldRes != avtIVPField::OK)
     {
         if( DebugStream::Level5() )
@@ -268,7 +272,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
     // extent and the time termination criterion (if set).
     double tfinal;
 
-    if( direction == DIRECTION_FORWARD )
+    if (direction == DIRECTION_FORWARD)
     {
         tfinal = range[1];
 
@@ -289,7 +293,6 @@ avtIntegralCurve::Advance(avtIVPField *field)
     {
         avtIVPStep           step;
         avtIVPSolver::Result result;
-
         result = ivp->Step( field, tfinal, &step );
 
         if (result == avtIVPSolver::OK || result == avtIVPSolver::TERMINATE)
@@ -324,7 +327,12 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 break;
             }
         }
-        else if( result == avtIVPSolver::OUTSIDE_SPATIAL )
+        else if (result == avtIVPSolver::OUTSIDE_TEMPORAL)
+        {
+            status.SetAtTemporalBoundary();
+            break;
+        }
+        else if (result == avtIVPSolver::OUTSIDE_SPATIAL)
         {
             // Last step took us outside the domain, see what can be done.
 
@@ -347,8 +355,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
             // Try to reduce the step size.
             double h = ivp->GetNextStepSize();
             double t = ivp->GetCurrentT();
-
-            if( h == 0.0 )
+            if (h == 0.0)
             {
                 // In the case where h = 0, the integrator's initial 
                 // guess failed; use the maximum stepsize in this case.
@@ -360,7 +367,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 // FIXME
                 // h = ivp->GetMaximumStepSize();
 
-                if( h == 0.0 )
+                if (h == 0.0)
                     h = 1.0;
 
                 if( DebugStream::Level5() )
@@ -375,7 +382,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 // next domain.
                 avtVector y = ivp->GetCurrentY();
                 avtVector v;
-                if( (*field)(t, y, v) != avtIVPField::OK )
+                if ((*field)(t, y, v) != avtIVPField::OK)
                 {
                     if( DebugStream::Level5() )
                         debug5 << "avtIntegralCurve::Advance(): bad step, "
@@ -390,18 +397,18 @@ avtIntegralCurve::Advance(avtIVPField *field)
                 // That should get the point into the next domain even
                 // if the dataset geometry is given as float data.
                 double ext[6];
-                field->GetExtents( ext );
+                field->GetExtents(ext);
 
                 avtVector dir = v / v.length();
                 const double eps = 1e-6;
 
-                ext[0] = std::abs( dir.x * eps * (ext[1] - ext[0]) );
-                ext[1] = std::abs( dir.y * eps * (ext[3] - ext[2]) );
-                ext[2] = std::abs( dir.z * eps * (ext[5] - ext[4]) );
+                ext[0] = std::abs(dir.x * eps * (ext[1] - ext[0]));
+                ext[1] = std::abs(dir.y * eps * (ext[3] - ext[2]));
+                ext[2] = std::abs(dir.z * eps * (ext[5] - ext[4]));
 
-                double hmin = std::max( ext[0], std::max( ext[1], ext[2] ) );
+                double hmin = std::max(ext[0], std::max(ext[1], ext[2]));
 
-                if( std::abs(h) < hmin )
+                if (std::abs(h) < hmin)
                     h = h < 0 ? -hmin : hmin;
 
                 if (h > 0)
@@ -423,29 +430,30 @@ avtIntegralCurve::Advance(avtIVPField *field)
                            << "stepsize reached, pushing to " << y << '\n';
                         
                 status.SetAtSpatialBoundary();
-                ivp->SetCurrentT( t );
-                ivp->SetCurrentY( y );
+                ivp->SetCurrentT(t);
+                ivp->SetCurrentY(y);
                 break;
             }
 
             // Retry with halved stepsize.
-            ivp->SetNextStepSize( h/2.0 );
+            ivp->SetNextStepSize(h/2.0);
         }
         else
         {
             // If we get here, the integration resulted in a (likely
             // numerical) error. Cannot continue the integration.
-            if( DebugStream::Level5() )
+            if (DebugStream::Level5())
                 debug5 << "avtIntegralCurve::Advance(): "
                        << "error during step, finished\n";
+
             status.SetNumericalError();
         }
     }
-    while (status.OK());
+    while (status.Integrateable());
     
     status.ClearInsideBlock();
-    
-    if( DebugStream::Level5() )
+
+    if (DebugStream::Level5())
         debug5 << "avtIntegralCurve::Advance(): done, status: "<<status<<endl;
 }
 

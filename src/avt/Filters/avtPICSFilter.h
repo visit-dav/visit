@@ -145,6 +145,10 @@ class avtICAlgorithm;
 //   David Camp, Tue May  3 06:51:37 PDT 2011
 //   Added the PurgeDomain() to be able to remove the cell locator when the
 //   avtDatasetOnDemandFilter purges a data set from it's cache.
+//
+//   Dave Pugmire, Wed Jun  5 16:43:36 EDT 2013
+//   Code hardening. Better handling for rectilinear grid corner cases.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtPICSFilter : 
@@ -274,7 +278,17 @@ class AVTFILTERS_API avtPICSFilter :
     bool                      LoadNextTimeSlice();
     virtual int               GetTimeStep(double t) const;
     virtual bool              BlockLoaded(BlockIDType &) const;
-
+    bool                      ICInRectilinearBlock(const avtIntegralCurve *ic, 
+                                                   const BlockIDType &block,
+                                                   vtkDataSet *ds);
+    bool                      OnFaceAndPushedOut(const avtIntegralCurve *ic,
+                                                 const BlockIDType &block,
+                                                 vtkDataSet *ds,
+                                                 double *bbox);
+    bool                      OnFaceAndPushedIn(const avtIntegralCurve *ic,
+                                                const BlockIDType &block,
+                                                vtkDataSet *ds,
+                                                double *bbox);
     int                       GetNextCurveID(){ int id = MaxID; MaxID++; return id;}
     void                      CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
                                                          std::vector<avtVector> &vels,
@@ -296,7 +310,6 @@ class AVTFILTERS_API avtPICSFilter :
     virtual void              PurgeDomain( const int domain, const int timeStep );
 
     // Helper functions.
-    bool                      PointInDomain(avtVector &pt, BlockIDType &domain);
     int                       DomainToRank(BlockIDType &domain);
     void                      ComputeDomainToRankMapping();
     bool                      OwnDomain(BlockIDType &domain);
