@@ -37,11 +37,24 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 #   version on some machines. Those machines are either retired or have been
 #   upgraded to chaos 5.
 #
+#   Brad Whitlock, Wed Jun  5 16:24:26 PDT 2013
+#   Special handling of networking arguments for BG/Q.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
     def __init__(self):
         super(LLNLLauncher, self).__init__()
+
+    # Get the IP address for eth0.
+    def GetIPAddress(self):
+        p = subprocess.Popen(["/sbin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        output = p.communicate()
+        iplines = [x for x in string.split(output[0], "\n") if string.find(x, "inet addr") != -1]
+        start = string.find(iplines[0], "inet addr")
+        end = string.find(iplines[0], "Bcast:")
+        IP = string.replace(iplines[0][start + 10:end], " ", "")
+        return IP
 
     def Customize(self):
         # ----
@@ -50,6 +63,19 @@ class LLNLLauncher(MainLauncher):
         if self.nodename() == "hoth" and self.domainname() == "llnl.gov":
             SETENV("LIBGL_ALWAYS_INDIRECT", "1")
 
+        #
+        # BG/Q networking changes for parallel engine. We override the host
+        # with an IP address.
+        #
+        if self.parallelArgs.parallel and \
+           (string.find(self.generalArgs.exe_name, "_par") != -1 or \
+            string.find(self.generalArgs.exe_name, "_ser") != -1):
+            if self.sectorname() == "rzuseqlac" or \
+               self.sectorname() == "vulcan":
+                self.generalArgs.host = self.GetIPAddress()
+                self.generalArgs.guesshost = 0
+                self.generalArgs.sshtunneling = 0
+                self.generalArgs.noloopback = 1
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
     # be returned.
