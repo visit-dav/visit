@@ -1,9 +1,5 @@
 { "skip_list":[
  {"mode":"serial","tests":[
-                    {"category":"plots","file":"pics.py","cases":["pics_MB_3D_ugrid_POS_RK4_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Euler_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Leapfrog_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_DormandPrince_path_backward"]},
                     {"category":"plots","file": "sl_termination.py"},
                     {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
@@ -43,10 +39,6 @@
                     {"category":"unit","file":"stringhelpers.py","platform":"win"}
                   ]},
  {"mode":"parallel","tests":[
-                    {"category":"plots","file":"pics.py","cases":["pics_MB_3D_ugrid_POS_RK4_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Euler_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Leapfrog_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_DormandPrince_path_backward"]},
                     {"category":"plots","file": "sl_termination.py"},
                     {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
@@ -76,10 +68,6 @@
                     {"category":"queries","file":"conncomp.py"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
-                    {"category":"plots","file":"pics.py","cases":["pics_MB_3D_ugrid_POS_RK4_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Euler_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_Leapfrog_path_backward",
-                                                                  "pics_MB_3D_ugrid_POS_DormandPrince_path_backward"]},
                     {"category":"plots","file": "sl_termination.py"},
                     {"category":"plots","file": "mesh.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
                     {"category":"plots","file": "mesh_c.py","cases":["mesh_opaque_06","mesh_opaque_07","mesh_opaque_08"]},
