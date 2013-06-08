@@ -685,6 +685,7 @@ int vtkOSMesaGLExtensionManager::SafeLoadExtension(const char *name)
   return result;
 }
 
+#ifndef VISIT_STATIC
 // Those two functions are part of OpenGL2.0 but don't have direct
 // translation in the GL_ARB_shader_objects extension
 GLboolean IsProgramFromARBToPromoted(GLuint program)
@@ -1336,3 +1337,4 @@ int vtkgl::LoadAsARBExtension(const char *name,
     }
   return 0;
 }
+#endif

@@ -50,6 +50,9 @@
 #   Eric Brugger, Wed Apr 17 12:02:02 PDT 2013
 #   Create a linux version of qtssh.
 #
+#   Brad Whitlock, Fri Jun  7 22:03:52 PDT 2013
+#   Static build fixes.
+#
 #****************************************************************************/
 
 # All of the platform independent plink sources.
@@ -191,8 +194,21 @@ IF(WIN32)
 ADD_DEFINITIONS(-DSECURITY_WIN32)
 ENDIF(WIN32)
 
+SET(RELEVANT_QT_LIBS 
+${QT_QTGUI_LIBRARY}
+${QT_QTCORE_LIBRARY}
+)
+IF(VISIT_STATIC)
+    MAC_NIB_INSTALL(qtssh)
+    SET(RELEVANT_QT_LIBS
+        ${RELEVANT_QT_LIBS}
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+    )
+ENDIF(VISIT_STATIC)
+
 ADD_EXECUTABLE(qtssh ${QTSSH_SOURCES} ${PLINK_SOURCES})
-TARGET_LINK_LIBRARIES(qtssh ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+TARGET_LINK_LIBRARIES(qtssh ${RELEVANT_QT_LIBS})
 
 VISIT_INSTALL_TARGETS(qtssh)
 VISIT_TOOLS_ADD_FOLDER(qtssh)
