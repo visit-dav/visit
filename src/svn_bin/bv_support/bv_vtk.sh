@@ -502,7 +502,7 @@ function build_vtk
     fi
 
     vopts=""
-    vtk_build_mode="Release" #"Debug"
+    vtk_build_mode="${VISIT_BUILD_MODE}"
     vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
     vtk_debug_leaks="true" # "false"
 

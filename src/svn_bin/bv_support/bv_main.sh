@@ -885,7 +885,8 @@ for arg in "${arguments[@]}" ; do
         --cxx) next_arg="cxx";;
         --log-file) next_arg="log-file";;
         --console) GRAPHICAL="no"; ON_GRAPHICAL="off";;
-        --debug) set -vx;;
+        --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
+        --bv-debug) set -vx;;
         --download-only) DOWNLOAD_ONLY="yes";;
         --engine-only) DO_ENGINE_ONLY="yes";;
         --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
