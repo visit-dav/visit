@@ -275,7 +275,7 @@ function build_vtk
     fi
 
     vopts=""
-    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
     vopts="${vopts} -D${VTK_PREFIX}_DEBUG_LEAKS:BOOL=OFF"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
