@@ -995,17 +995,32 @@ CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
 CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
+# Configure Mesa support.
+IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
+    IF(MESA_FOUND)
+        SET(HAVE_OSMESA 1)
+    ENDIF(MESA_FOUND)
+ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
+
 # Configure OpenGL support.
 IF(NOT VISIT_DBIO_ONLY)
     IF(VISIT_OPENGL_DIR)
         SET(OPENGL_FOUND ON)
         SET(OPENGL_GLU_FOUND ON)
         SET(OPENGL_INCLUDE_DIR ${VISIT_OPENGL_DIR}/include)
+        # Hack for BG/Q. Assume if Mesa has been set and we're telling
+        # VisIt where to look for GL that we're using Mesa for GL.
+        IF(HAVE_OSMESA)
+            SET(LIBGL OSMesa)
+        ELSE(HAVE_OSMESA)
+            SET(LIBGL GL)
+        ENDIF(HAVE_OSMESA)
         IF(VISIT_STATIC)
-            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGL.a)
+            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/lib${LIBGL}.a)
             SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.a)
         ELSE(VISIT_STATIC)
-            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGL.so)
+            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/lib${LIBGL}.so)
             SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.so)
         ENDIF(VISIT_STATIC)
         SET(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
@@ -1014,14 +1029,6 @@ IF(NOT VISIT_DBIO_ONLY)
         INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
     ENDIF(VISIT_OPENGL_DIR)
 ENDIF(NOT VISIT_DBIO_ONLY)
-
-# Configure Mesa support.
-IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-    IF(MESA_FOUND)
-        SET(HAVE_OSMESA 1)
-    ENDIF(MESA_FOUND)
-ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
 
 IF(VISIT_R_DIR)
     # Configure R support.
