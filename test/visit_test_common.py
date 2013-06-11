@@ -197,6 +197,11 @@ def kill_sexe(proc, status):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Kathleen Biagas, Tue June 11, 12:14:27 MST 2013
+#    Change creationflags to use only CREATE_NEW_PROCESS_GROUP, as that works
+#    whether VisIt was built as a Windows app or a Console app.
 # ----------------------------------------------------------------------------
 def sexe(cmd,
          ret_output=False,
@@ -227,7 +232,12 @@ def sexe(cmd,
     popen_args = {"shell":True,
                   "stdin":sexe_stdin}
     if sys.platform.startswith("win"):
-        popen_args["creationflags"]=0x208
+        # 0x8   = DETACHED_PROCESS
+        # 0x200 = CREATE_NEW_PROCESS_GROUP 
+        #         (available via subprocess for python 2.7+)
+        # 0x208 (both) does not work if VisIt built as a console app
+        # so use the one flag that works for both Console app and Windows app.
+        popen_args["creationflags"]=0x200 #subprocess.CREATE_NEW_PROCESS_GROUP
     else:
         popen_args["preexec_fn"] = os.setsid
     if ret_output:
