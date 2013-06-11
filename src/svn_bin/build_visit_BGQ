@@ -42,7 +42,7 @@ DO_SVN=""
 DO_SVN_ANON=""
 SVN=""
 TAR=tar
-THIRD_PARTY_PATH="thirdparty_static"
+THIRD_PARTY_PATH="`pwd`/thirdparty_static"
 
 export CMAKE_VERSION=2.8.10.2
 export CMAKE_SHORT_VERSION=2.8
@@ -206,12 +206,12 @@ APP_CXX = g++
 CFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
 CXXFLAGS = -O3 -pedantic -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE -D_BSD_SOURCE
 MKLIB_OPTIONS = -static
-GL_LIB_NAME = libGL.a
+GL_LIB_NAME = libUsedToBeCalledGL.a
 GLU_LIB_NAME = libGLU.a
 GLUT_LIB_NAME = libglut.a
 GLW_LIB_NAME = libGLw.a
-OSMESA_LIB = GL
-OSMESA_LIB_NAME = libGL.a
+OSMESA_LIB = OSMesa
+OSMESA_LIB_NAME = libOSMesa.a
 # Directories
 SRC_DIRS = glsl mesa glu
 DRIVER_DIRS = osmesa
@@ -250,9 +250,6 @@ EOF
         warn "Mesa: 'make install' failed.  Giving up"
         return 1
     fi
-
-    # VTK will later want an OSMesa, which we've called GL. Make a copy.
-    cp $PF/lib/libGL.a $PF/lib/libOSMesa.a
 
     # Some versions of Mesa erroneously install GLEW as well.  We need to make
     # sure we get VisIt's GLEW when we include it, so remove the ones Mesa
@@ -514,10 +511,10 @@ function build_vtk_BGQ
     # Form extra arguments that we'll pass to cmake for VTK.
     vopts="-DCMAKE_CROSSCOMPILING:BOOL=ON -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
     vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=$MESADIR/include"
-    vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=$MESADIR/lib/libGL.a"
+    vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=$MESADIR/lib/libOSMesa.a"
     vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=$MESADIR/lib/libGLU.a"
     vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
-    vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=$MESADIR/lib/libGL.a"
+    vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=$MESADIR/lib/libOSMesa.a"
     vopts="${vopts} -DOSMESA_INCLUDE_DIR:FILEPATH=$MESADIR/include"
 
     vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
@@ -679,7 +676,7 @@ function build_for_compute_node
         --cc $BG_CC $CFLAGSARGS \
         --cxx $BG_CXX $CXXFLAGSARGS $MAKEARGS \
         --no-thirdparty --zlib $IO_PACKAGES \
-        --parallel --icet \
+        --parallel --icet --mesa\
         --group $GROUP
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
@@ -960,10 +957,10 @@ function main
     fi
 
     # Make an installation directory.
-    if ! test -d $ARCH ; then
-        mkdir $ARCH
+    if ! test -d $THIRD_PARTY_PATH ; then
+        mkdir $THIRD_PARTY_PATH
     else
-        echo "$ARCH already exists."
+        echo "$THIRD_PARTY_PATH already exists."
     fi
 
     # We build cmake specially so we can share the build between the login
