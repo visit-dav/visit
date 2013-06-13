@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">rzuseq.llnl.gov</Field>
+    <Field name="host" type="string">rzuseq</Field>
     <Field name="hostAliases" type="string">rzuseqlac#.llnl.gov rzuseqlac#</Field>
     <Field name="hostNickname" type="string">LLNL RZ uSeq</Field>
     <Field name="directory" type="string">/g/g19/whitlocb/Development/seq/trunk/visit2_7_0.linux-ppc64</Field>
