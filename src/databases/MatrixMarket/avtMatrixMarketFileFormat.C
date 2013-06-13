@@ -239,6 +239,12 @@ avtMatrixMarketFileFormat::GetVar(const char *varname)
 //
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
+//
+//   Jeremy Meredith, Thu Jun 13 15:13:02 EDT 2013
+//   Added symmetric support.  For dense arrays, the file only contains
+//   values at or below the diagonal.  For sparse, we just write to 
+//   both i,j and j,i.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -274,9 +280,11 @@ avtMatrixMarketFileFormat::ReadData()
                 (mm_is_real(matcode) ||
                  mm_is_integer(matcode)) &&
                 mm_is_array(matcode) &&
-                mm_is_general(matcode))
+                (mm_is_symmetric(matcode) ||
+                 mm_is_general(matcode)))
             {
-                // Dense, real-valued, general array
+                bool symm = mm_is_symmetric(matcode);
+                // Dense, real-valued, general/symmetric array
                 mm_read_mtx_array_size(f, &height, &width);
                 int size = width*height;
                 matrix = vtkDoubleArray::New();
@@ -287,10 +295,17 @@ avtMatrixMarketFileFormat::ReadData()
                 {
                     for (int i=0; i<height; i++)
                     {
-                        int nread = fscanf(f, "%lg\n", &val);
-                        if (nread != 1)
-                            EXCEPTION2(InvalidFilesException, filename,
-                                       "Premature EOF.");
+                        if (symm && i<j)
+                        {
+                            val = matrix->GetComponent(j*width+i, 0);
+                        }
+                        else
+                        {
+                            int nread = fscanf(f, "%lg\n", &val);
+                            if (nread != 1)
+                                EXCEPTION2(InvalidFilesException, filename,
+                                           "Premature EOF.");
+                        }
                         matrix->SetComponent(i*width+j, 0, val);
                     }
                 }
@@ -299,9 +314,11 @@ avtMatrixMarketFileFormat::ReadData()
                      (mm_is_real(matcode) ||
                       mm_is_integer(matcode)) &&
                      mm_is_coordinate(matcode) &&
-                     mm_is_general(matcode))
+                     (mm_is_symmetric(matcode) ||
+                      mm_is_general(matcode)))
             {
-                // Sparse, real-valued, general array
+                bool symm = mm_is_symmetric(matcode);
+                // Sparse, real-valued, general/symmetric array
                 int nvals;
                 mm_read_mtx_crd_size(f, &height, &width, &nvals);
                 int size = width*height;
@@ -321,6 +338,8 @@ avtMatrixMarketFileFormat::ReadData()
                         EXCEPTION2(InvalidFilesException, filename,
                                    "Premature EOF.");
                     matrix->SetComponent(width*i+j, 0, val);
+                    if (symm)
+                        matrix->SetComponent(width*j+i, 0, val);
                 }
             }
             else
