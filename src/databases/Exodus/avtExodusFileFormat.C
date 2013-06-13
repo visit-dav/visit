@@ -610,6 +610,7 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
     return NULL;
 }
 
+
 static vector<int>
 GetExodusSetIDs(int exncfid, string stype)
 {
