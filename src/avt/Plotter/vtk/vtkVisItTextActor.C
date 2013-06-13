@@ -77,6 +77,9 @@ vtkVisItTextActor::SetTextHeight(float val)
     // Just put a value into the text properties too since that will fool
     // the actor into changing when we render it later.
     this->TextProperty->SetFontSize(int(val * 100));
+    // some changes in vtkTextActor require the call to 'Modified' to preserve
+    // our expected behavior.
+    this->TextProperty->Modified();
 }
 
 // ****************************************************************************
