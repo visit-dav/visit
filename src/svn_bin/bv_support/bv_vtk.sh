@@ -63,11 +63,11 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-export VTK_FILE=${VTK_FILE:-"VTK-5e3c539.tar.gz"}  ##vtk-6.0.0.tar.gz"}
+export VTK_FILE=${VTK_FILE:-"vtk-6.0.0.rc3.tar.gz"}  ##vtk-6.0.0.tar.gz"}
 export VTK_VERSION=${VTK_VERSION:-"6.0.0"}
 export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.0"}
 export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-5e3c539"} #vtk-6.0.0"}
+export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK6.0.0.rc3"} #vtk-6.0.0"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
 export VTK_MD5_CHECKSUM=""
 export VTK_SHA256_CHECKSUM=""
@@ -504,7 +504,7 @@ function build_vtk
     vopts=""
     vtk_build_mode="${VISIT_BUILD_MODE}"
     vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
-    vtk_debug_leaks="true" # "false"
+    vtk_debug_leaks="false"
 
     # Some linker flags.
     lf=""
