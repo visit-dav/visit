@@ -4,10 +4,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 #include <time.h>
 #include <assert.h>
+
+#if defined(_WIN32)
+#include <windows.h>
+#include <direct.h>
+#include <shlobj.h>
+#include <shlwapi.h>
+#endif
 
 #include "putty.h"
 
@@ -22,6 +30,52 @@ struct LogContext {
 };
 
 static void xlatlognam(Filename *d, Filename s, char *hostname, struct tm *tm);
+
+/*
+ * Function to get the visit directory name.
+ */
+static char uservisitdirectory[FILENAME_MAX];
+
+static char * getuservisitdirectory()
+{
+#if defined(_WIN32)
+    const char *home = getenv("VISITUSERHOME");
+    if(home)
+    {
+        strncpy(uservisitdirectory, home, FILENAME_MAX);
+    }
+    else
+    {
+        char visituserpath[FILENAME_MAX], expvisituserpath[FILENAME_MAX];
+        TCHAR szPath[FILENAME_MAX];
+        struct _stat fs;
+        if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
+                                     SHGFP_TYPE_CURRENT, szPath)))
+        {
+            snprintf(visituserpath, FILENAME_MAX, "%s\\VisIt", szPath);
+
+            ExpandEnvironmentStrings(visituserpath, expvisituserpath, FILENAME_MAX);
+            if (_stat(expvisituserpath, &fs) == -1)
+            {
+                _mkdir(expvisituserpath);
+            }
+            strncpy(uservisitdirectory, expvisituserpath, FILENAME_MAX);
+        }
+        else
+        {
+            uservisitdirectory[0] = '\0';
+        }
+    }
+#else
+    const char *home = getenv("HOME");
+    if(home)
+        snprintf(uservisitdirectory, FILENAME_MAX, "%s/.visit/", home);
+    else
+        uservisitdirectory[0] = '\0';
+#endif
+
+    return &(uservisitdirectory[0]);
+}
 
 /*
  * Internal wrapper function which must be called for _all_ output
@@ -153,8 +207,14 @@ void logfopen(void *handle)
 
     tm = ltime();
 
-    /* substitute special codes in file name */
-    xlatlognam(&ctx->currlogfilename, ctx->cfg.logfilename,ctx->cfg.host, &tm);
+    /*
+     * Substitute special codes in the file name and prepend the user
+     * visit directory.
+     */
+    Filename tmpfilename;
+    xlatlognam(&tmpfilename, ctx->cfg.logfilename,ctx->cfg.host, &tm);
+    snprintf(ctx->currlogfilename.path, FILENAME_MAX, "%s%s",
+             getuservisitdirectory(), tmpfilename.path);
 
     ctx->lgfp = f_open(ctx->currlogfilename, "r", FALSE);  /* file already present? */
     if (ctx->lgfp) {
