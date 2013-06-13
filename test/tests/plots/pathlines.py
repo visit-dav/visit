@@ -12,7 +12,7 @@
 #  Date:       March 11, 2012
 # ----------------------------------------------------------------------------
 
-OpenDatabase(data_path("pathline_test.pics"))
+OpenDatabase(data_path("pics_test_data/pathline_test.pics"))
 
 
 AddPlot("Streamline", "velocity", 1, 0)
