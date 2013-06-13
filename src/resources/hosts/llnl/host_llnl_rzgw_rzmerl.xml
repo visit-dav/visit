@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">rzmerl.llnl.gov</Field>
+    <Field name="host" type="string">rzmerl</Field>
     <Field name="hostAliases" type="string">rzmerl#.llnl.gov rzmerl##.llnl.gov rzmerl###.llnl.gov rzmerl# rzmerl## rzmerl###</Field>
     <Field name="hostNickname" type="string">LLNL RZ Merl</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
