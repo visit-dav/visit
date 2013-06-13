@@ -912,6 +912,14 @@ avtGradientExpression_CalcRectGrad(bool isNodal, int dims[3], XT *x,
         delete [] z_div;
 }
 
+// ****************************************************************************
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Jun 13 09:58:06 PDT 2013
+//    Handle non-float/double scalars.
+//
+// ****************************************************************************
+
 vtkDataArray *
 avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg, 
                                            const char *outputVariableName)
@@ -929,10 +937,7 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
 
          isNodal = false;
     }
-    vtkDataArray *out_array = s->NewInstance();
-    out_array->SetNumberOfComponents(3);
-    out_array->SetNumberOfTuples(s->GetNumberOfTuples());
-
+    bool sNeedsDeleting = false;
     vtkDataArray *xc = rg->GetXCoordinates();
     vtkDataArray *yc = rg->GetYCoordinates();
     vtkDataArray *zc = rg->GetZCoordinates();
@@ -941,6 +946,18 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     int yt = yc->GetDataType();
     int zt = zc->GetDataType();
     int ot = s->GetDataType();
+
+    if (ot != VTK_DOUBLE && ot != VTK_FLOAT)
+    {
+       vtkDataArray *tmp = vtkDataArray::CreateDataArray(xt);
+       tmp->DeepCopy(s);
+       s = tmp;
+       sNeedsDeleting = true;
+       ot = xt;
+    }
+    vtkDataArray *out_array = s->NewInstance();
+    out_array->SetNumberOfComponents(3);
+    out_array->SetNumberOfTuples(s->GetNumberOfTuples());
 
     int dims[3];
     rg->GetDimensions(dims);
@@ -991,15 +1008,17 @@ avtGradientExpression::RectilinearGradient(vtkRectilinearGrid *rg,
     } \
 }
 
-     if (xt == VTK_DOUBLE)
-     {
-         typeY(double);
-     }
-     else
-     {
-         typeY(float);
-     }
+    if (xt == VTK_DOUBLE)
+    {
+        typeY(double);
+    }
+    else
+    {
+        typeY(float);
+    }
 
+    if (sNeedsDeleting)
+       s->Delete();
 
     return out_array;
 }
