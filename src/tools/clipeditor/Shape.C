@@ -61,6 +61,11 @@
 //    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
 //    Added 5- thru 8-sided polygon shapes.
 //
+//    Jeremy Meredith, Fri Jun 14 15:09:40 EDT 2013
+//    Removed the triangle faces for the 5-8 sided polygons.  We only used
+//    those when drawing output shapes, and these are not output shapes.
+//    Plus, one had a typo.
+//
 // ----------------------------------------------------------------------------
 
 #include "Shape.h"
@@ -84,11 +89,6 @@ bool Shape::numbering = true;
 int triangleFaces[1][3] = {{0,1,2}};
 int quadFaces[1][4] = {{0,1,2,3}};
 int pixelFaces[1][4] = {{0,1,3,2}};
-
-int poly5TriFaces[3][3] = {{0,1,2},{0,2,3},{0,3,4}};
-int poly6TriFaces[4][3] = {{0,1,2},{0,2,3},{0,3,4},{0,4,5}};
-int poly7TriFaces[5][3] = {{0,1,2},{0,2,3},{0,3,4},{0,4,5},{0,5,6}};
-int poly8TriFaces[6][3] = {{0,1,2},{0,2,3},{0,3,4},{0,4,5},{0,5,6},{0,5,7}};
 
 void
 DrawFuzzyPoint(float x,float y,float z,float d)
@@ -324,8 +324,9 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         nedges = 5;
         edges = poly5VerticesFromEdges;
 
-        ntris = 3;
-        tris = poly5TriFaces;
+        // don't need tris; a poly5 is not a possible shape
+        ntris = 0;
+        tris = NULL;
 
         nquads = 0;
         quads = NULL;
@@ -339,8 +340,9 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         nedges = 6;
         edges = poly6VerticesFromEdges;
 
-        ntris = 4;
-        tris = poly6TriFaces;
+        // don't need tris; a poly6 is not a possible shape
+        ntris = 0;
+        tris = NULL;
 
         nquads = 0;
         quads = NULL;
@@ -354,8 +356,9 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         nedges = 7;
         edges = poly7VerticesFromEdges;
 
-        ntris = 5;
-        tris = poly7TriFaces;
+        // don't need tris; a poly7 is not a possible shape
+        ntris = 0;
+        tris = NULL;
 
         nquads = 0;
         quads = NULL;
@@ -369,8 +372,9 @@ Shape::Shape(ShapeType st, int sc, DataSet *ds)
         nedges = 8;
         edges = poly8VerticesFromEdges;
 
-        ntris = 6;
-        tris = poly8TriFaces;
+        // don't need tris; a poly8 is not a possible shape
+        ntris = 0;
+        tris = NULL;
 
         nquads = 0;
         quads = NULL;
