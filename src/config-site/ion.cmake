@@ -1,8 +1,8 @@
-#/apps/visit/cmake/2.8.8/linux-x86_64_gcc-4.6/bin/cmake
+#/apps/visit/cmake/2.8.10.2/linux-x86_64_gcc-4.6/bin/cmake
 ##
 ## ../svn_bin/build_visit generated host.cmake
-## created: Mon Jul  9 11:44:02 EDT 2012
-## system: Linux ion 3.2.0-24-generic #39-Ubuntu SMP Mon May 21 16:52:17 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Jun 14 14:33:59 EDT 2013
+## system: Linux ion 3.2.0-26-generic #41-Ubuntu SMP Thu Jun 14 17:49:24 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
 ## by: js9
 
 ##
@@ -52,14 +52,9 @@ VISIT_OPTION_DEFAULT(PYTHON_LIBRARY_DIR /usr/lib/x86_64-linux-gnu)
 VISIT_OPTION_DEFAULT(PYTHON_VERSION 2.7)
 
 ##
-## Mesa
-##
-VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.8.2/${VISITARCH})
-
-##
 ## VTK
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/5.8.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/6.0.0/${VISITARCH})
 
 ##
 ## Qt
@@ -137,10 +132,16 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ## Xdmf
 ##
 VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR ${VISITHOME}/Xdmf/2.1.1/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5   VTK_LIBRARY_DIRS vtklibxml2  TYPE STRING)
-##
+VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5  VTK_LIBRARY_DIRS vtklibxml2-6.0  TYPE STRING)
 
 ##
 ## PySide
 ##
 #VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.0.7/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/1.1.1/${VISITARCH}/)
+
+## ITAPS_MOAB (manually configured)
+ITAPS_INCLUDE_DIRECTORIES(MOAB /home/js9/moab/460install/include)
+ITAPS_FILE_PATTERNS(MOAB *.cub)
+ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf)
+ITAPS_LINK_DIRECTORIES(MOAB  /home/js9/moab/460install/lib  ${VISITHOME}/hdf5/1.8.7/${VISITARCH}/lib  ${VISITHOME}/szip/2.1/${VISITARCH}/lib  ${VISITHOME}/netcdf/4.1.1/${VISITARCH}/lib)
