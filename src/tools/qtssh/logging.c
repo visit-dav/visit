@@ -16,7 +16,6 @@
 #include <direct.h>
 #include <shlobj.h>
 #include <sys/stat.h>
-#define snprintf _snprintf
 #endif
 
 /* log session to file stuff ... */
@@ -52,7 +51,7 @@ static char * getuservisitdirectory()
         if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
                                      SHGFP_TYPE_CURRENT, szPath)))
         {
-            snprintf(visituserpath, FILENAME_MAX, "%s\\VisIt", szPath);
+            _snprintf(visituserpath, FILENAME_MAX, "%s\\VisIt", szPath);
 
             ExpandEnvironmentStrings(visituserpath, expvisituserpath, FILENAME_MAX);
             if (_stat(expvisituserpath, &fs) == -1)
@@ -213,8 +212,13 @@ void logfopen(void *handle)
      * visit directory.
      */
     xlatlognam(&tmpfilename, ctx->cfg.logfilename,ctx->cfg.host, &tm);
+#ifdef _WIN32
+    _snprintf(ctx->currlogfilename.path, FILENAME_MAX, "%s\\%s",
+             getuservisitdirectory(), tmpfilename.path);
+#else
     snprintf(ctx->currlogfilename.path, FILENAME_MAX, "%s%s",
              getuservisitdirectory(), tmpfilename.path);
+#endif
 
     ctx->lgfp = f_open(ctx->currlogfilename, "r", FALSE);  /* file already present? */
     if (ctx->lgfp) {
