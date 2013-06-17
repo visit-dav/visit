@@ -1,7 +1,7 @@
 #/Users/miller86/visit/visit/cmake/2.8.10.2/i386-apple-darwin12_gcc-4.2/bin/cmake
 ##
 ## ./trunk_svn_bin/build_visit generated host.cmake
-## created: Thu Jun  6 18:24:00 PDT 2013
+## created: Thu Jun 13 19:52:58 PDT 2013
 ## system: Darwin scratlantis 12.3.0 Darwin Kernel Version 12.3.0: Sun Jan  6 22:37:10 PST 2013; root:xnu-2050.22.13~1/RELEASE_X86_64 x86_64
 ## by: miller86
 
@@ -69,6 +69,12 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 ## Ice-T
 ##
 VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/1.0.0/${VISITARCH})
+
+##
+## NetCDF
+##
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_DIR ${VISITHOME}/netcdf/4.1.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
 ## PySide
