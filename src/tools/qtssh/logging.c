@@ -10,14 +10,14 @@
 #include <time.h>
 #include <assert.h>
 
-#if defined(_WIN32)
-#include <windows.h>
+#include "putty.h"
+
+#ifdef _WIN32
 #include <direct.h>
 #include <shlobj.h>
-#include <shlwapi.h>
+#include <sys/stat.h>
+#define snprintf _snprintf
 #endif
-
-#include "putty.h"
 
 /* log session to file stuff ... */
 struct LogContext {
@@ -197,6 +197,7 @@ void logfopen(void *handle)
     struct LogContext *ctx = (struct LogContext *)handle;
     struct tm tm;
     int mode;
+    Filename tmpfilename;
 
     /* Prevent repeat calls */
     if (ctx->state != L_CLOSED)
@@ -211,7 +212,6 @@ void logfopen(void *handle)
      * Substitute special codes in the file name and prepend the user
      * visit directory.
      */
-    Filename tmpfilename;
     xlatlognam(&tmpfilename, ctx->cfg.logfilename,ctx->cfg.host, &tm);
     snprintf(ctx->currlogfilename.path, FILENAME_MAX, "%s%s",
              getuservisitdirectory(), tmpfilename.path);
