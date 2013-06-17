@@ -130,7 +130,7 @@ def UpdateGalleryLinks(presentation):
     out.write('</table>\n')
     out.write('<!-- InstanceEndEditable -->\n')
     out.write('<div align="center"> \n')
-    out.write('  <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>\n')
+    out.write('  <p><a href="mailto:brugger1@llnl.gov" class="links">VisIt Webmaster</a><br>\n')
     out.write('    <span class="body_text">Updated: \n')
     out.write('    <!-- #BeginDate format:Am1 -->March 25, 2013<!-- #EndDate -->\n')
     out.write('    </span></p>\n')
