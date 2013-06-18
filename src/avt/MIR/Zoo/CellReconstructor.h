@@ -67,6 +67,10 @@
 //    desired, output the volume fractions for the reconstructed materials.
 //    Also, added helper function to calculate volume or area.
 //
+//    Jeremy Meredith, Tue Jun 18 11:56:22 EDT 2013
+//    Output actual volumes/areas, not VF's, and return total vol/area, 
+//    in ReconstructCell.
+//
 // ****************************************************************************
 class CellReconstructor
 {
@@ -74,7 +78,7 @@ class CellReconstructor
     CellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&, int, int, bool,
                       MIRConnectivity&, ZooMIR&);
     virtual ~CellReconstructor();
-    virtual void ReconstructCell(int, int, int, vtkIdType*, double*) = 0;
+    virtual double ReconstructCell(int, int, int, vtkIdType*, double*) = 0;
 
   protected:
     vtkDataSet                             *mesh;

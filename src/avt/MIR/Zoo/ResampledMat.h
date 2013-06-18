@@ -111,7 +111,7 @@ struct ResampledMat
     }
 
   public:
-    // number of bytes per element  (i.e. nmats / 8)
+    // number of bytes per element  (i.e. ceil(nmats / 8))
     int               nBPE;
 
     // array of length nBPE * nCells

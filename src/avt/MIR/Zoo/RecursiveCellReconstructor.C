@@ -118,11 +118,14 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 //    Jeremy Meredith, Mon Jul  9 16:53:41 EDT 2012
 //    Added support for 5- through 8-sided polygons.
 //
+//    Jeremy Meredith, Tue Jun 18 11:56:22 EDT 2013
+//    Output actual volumes/areas, not VF's, and return total vol/area.
+//
 // ****************************************************************************
-void
+double
 RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
                                             int nids_, vtkIdType *ids_,
-                                            double *outputvfs)
+                                            double *outputvols)
 {
     cellid = cellid_;
     celltype = celltype_;
@@ -473,11 +476,11 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
     // If we're going to calculate actual volume fractions, first
     // zero them out, then accumulate the output cell partial contributions.
     double totalvol = 0;
-    if (outputvfs)
+    if (outputvols)
     {
         for (int matno=0; matno < nMaterials; matno++)
         {
-            outputvfs[matno] = 0.0;
+            outputvols[matno] = 0.0;
         }
     }
 
@@ -499,7 +502,7 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
             mir.indexList.push_back(outcell.ids[n]);
 
         
-        if (outputvfs)
+        if (outputvols)
         {
             double coords[MAX_NODES_PER_ZONE][3];
             for (int n=0; n<outcell.nnodes; n++)
@@ -520,17 +523,10 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
             }
             double vol = CalculateVolumeOrAreaHelper(outcell.celltype, coords);
             totalvol += vol;
-            outputvfs[outcell.mat] += vol;
+            outputvols[outcell.mat] += vol;
         }
     }
 
-    // And finally, normalize by the total volume
-    if (outputvfs)
-    {
-        for (int matno=0; matno < nMaterials; matno++)
-        {
-            outputvfs[matno] /= totalvol;
-        }
-    }
+    return totalvol;
 }
 

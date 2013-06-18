@@ -56,6 +56,9 @@
 //    Jeremy Meredith, Fri Feb 13 11:05:06 EST 2009
 //    Added calculation of output vf's per material, if requested.
 //
+//    Jeremy Meredith, Tue Jun 18 11:56:22 EDT 2013
+//    Output actual volumes/areas, not VF's, and return total vol/area.
+//
 // ****************************************************************************
 
 class IsovolumeCellReconstructor : public CellReconstructor
@@ -64,7 +67,7 @@ class IsovolumeCellReconstructor : public CellReconstructor
     IsovolumeCellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&,
                                int, int, MIRConnectivity&, ZooMIR&);
 
-    void ReconstructCell(int, int, int, vtkIdType*, double*);
+    double ReconstructCell(int, int, int, vtkIdType*, double*);
 };
 
 #endif
