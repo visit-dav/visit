@@ -263,8 +263,13 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         }
 
         vtkIdType *conn_ptr = conn.connectivity;
-        double *actualVFStorage = new double[nMaterials];
-        double *actualVFs = (options.numIterations>0) ? actualVFStorage : NULL;
+        // actualVols contains reconstructed volume/areas per material
+        double *actualVolStorage = new double[nMaterials];
+        double *actualVols = (options.numIterations>0) ? actualVolStorage : NULL;
+        // tmpVols is like actualVols, but for tessellated sub-cells
+        double *tmpVolStorage = new double[nMaterials];
+        double *tmpVols = (options.numIterations>0) ? tmpVolStorage : NULL;
+
         double maxdiff = 0;
         for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
         {
@@ -272,7 +277,41 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
             vtkIdType *ids = conn_ptr+1;
             int nids       = (int)*conn_ptr;
 
-            cr->ReconstructCell(c, celltype, nids, ids, actualVFs);
+            if (nids > MAX_NODES_PER_ZONE)
+                continue;
+
+            double totalvolume = 0;
+            if (nids > MAX_NODES_PER_ZONE)
+            {
+                // No zoo shape has more than 8 nodes/zone except for
+                // polygons. We have tables up to octagons. To support
+                // 9-sided and larger polygons, we just tessellate
+                // into triangles. Note that for iteration, we need
+                // to carefully accumulate reconstructed areas.
+                if (actualVols)
+                    for (int m=0; m<nMaterials; ++m)
+                        actualVols[m] = 0;
+
+                vtkIdType tmpids[3];
+                for (int i=1; i<nids-1; i++)
+                {
+                    tmpids[0] = ids[0];
+                    tmpids[1] = ids[i];
+                    tmpids[2] = ids[i+1];
+                    // accumulate total volume from sub-cells
+                    totalvolume += cr->ReconstructCell(c, VTK_TRIANGLE, 3,
+                                                       tmpids, tmpVols);
+                    // accumulate sub-cell per-mat vol/areas into whole-cell
+                    if (actualVols)
+                        for (int m=0; m<nMaterials; ++m)
+                            actualVols[m] += tmpVols[m];
+                }
+            }
+            else
+            {
+                totalvolume = cr->ReconstructCell(c, celltype, nids, ids,
+                                                  actualVols);
+            }
 
             if (options.numIterations > 0 &&
                 iter < options.numIterations)
@@ -284,7 +323,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
                 {
                     float wanted = neededVFs[m];
                     float tried  = triedVFs[m];
-                    float got    = actualVFs[m];
+                    float got    = actualVols[m] / totalvolume;
                     float diff   = wanted - got;
                 
                     if (diff != 0)
@@ -299,7 +338,8 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         }
 
         visitTimer->StopTimer(timerHandle2, "MIR: Cell clipping");
-        delete [] actualVFStorage;
+        delete [] actualVolStorage;
+        delete [] tmpVolStorage;
         delete cr;
     }
 
