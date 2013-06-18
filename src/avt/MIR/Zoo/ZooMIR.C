@@ -277,9 +277,6 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
             vtkIdType *ids = conn_ptr+1;
             int nids       = (int)*conn_ptr;
 
-            if (nids > MAX_NODES_PER_ZONE)
-                continue;
-
             double totalvolume = 0;
             if (nids > MAX_NODES_PER_ZONE)
             {
