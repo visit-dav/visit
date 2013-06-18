@@ -423,7 +423,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
     int sType = scalars->GetDataType();
     int dType = VTK_FLOAT;
     if(ptsType == VTK_DOUBLE || sType == VTK_DOUBLE)
-        dType == VTK_DOUBLE;
+        dType = VTK_DOUBLE;
     vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
     vtkDataArray *outXC = rgrid->GetXCoordinates();
     vtkDataArray *outVal = outXC->NewInstance(); 
@@ -971,7 +971,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     int sType = scalars->GetDataType();
     int dType = VTK_FLOAT;
     if(ptsType == VTK_DOUBLE || sType == VTK_DOUBLE)
-        dType == VTK_DOUBLE;
+        dType = VTK_DOUBLE;
     vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
 
     vtkDataArray *outXC = rgrid->GetXCoordinates();
