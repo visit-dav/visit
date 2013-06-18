@@ -521,7 +521,6 @@ avtIVPDopri5::Step(avtIVPField* field, double t_max,
                    avtIVPStep* ivpstep) 
 {    
     const double direction = sign( 1.0, t_max - t );
-    avtIVPSolver::Result res;
     avtIVPField::Result fieldResult;
 
     // compute maximum stepsize

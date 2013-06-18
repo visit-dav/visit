@@ -227,6 +227,7 @@ vtkTensorReduceFilter::RequestData(
     onevertex[0] = i;
     output->InsertNextCell(VTK_VERTEX, 1, onevertex);
     }
+  return 1;
 }
 
 // ****************************************************************************

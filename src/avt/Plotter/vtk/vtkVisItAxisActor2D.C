@@ -514,11 +514,11 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 {
   int i, *x;
   vtkIdType ptIds[2];
-  double p1[3], p2[3], offset;
+  double p1[3], p2[3];
   int numLabels, labelCount = 0;
   double outRange[2], deltaX, deltaY, xTick[3];
   double theta, val;
-  int *size, stringSize[2];
+  int *size;
   char string[64];
   double  proportion[VTK_MAX_LABELS];
   double  ticksize[VTK_MAX_LABELS];
@@ -764,7 +764,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           if (fabs(error) < 0.01) // < less than 1%
               break;
           bool foundDot = false;
-          for (int c = 0 ; c < strlen(format) ; c++)
+          for (size_t c = 0 ; c < strlen(format) ; c++)
           {
               if (format[c] == '.')
                   foundDot = true;

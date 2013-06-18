@@ -1084,7 +1084,7 @@ avtConnComponentsExpression::GlobalLabelShift
 
 #ifdef PARALLEL
     // loop indices
-    int i,j;
+    int i;
 
     // get the processor id and # of processors
     int procid = PAR_Rank();
