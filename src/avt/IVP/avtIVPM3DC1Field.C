@@ -113,8 +113,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   }
 
   // Dummy variable to the template class
-  int   *intPtr, intVar = 0;
-  float *fltPtr, fltVar = 0;
+  float fltVar = 0;
     
   // The mesh elements.
   elements =
@@ -413,7 +412,7 @@ void avtIVPM3DC1Field::findElementNeighbors()
 
   float   *ptr;
   double  x[3], y[3], co, sn;
-  int     el, vert, tri[3], vlen;
+  int     el, vert, tri[3];
 
   /* Allocate, initialize neighbor table */
   neighbors = (int *) malloc(3 * tElements * sizeof(int));
@@ -1271,7 +1270,6 @@ void avtIVPM3DC1Field::interpdX2(float *var, int el, double *lcoords,
 {
   float *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
-  int index;
 
   if( element_dimension == 2 )
   {

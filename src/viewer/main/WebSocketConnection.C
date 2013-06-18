@@ -346,7 +346,6 @@ void QWsSocket::close( QString reason )
     // Compose and send close frame
     quint64 messageSize = reason.size();
     QByteArray BA;
-    quint8 byte;
 
     QByteArray header = QWsSocket::composeHeader( true, OpClose, 0 );
     BA.append( header );

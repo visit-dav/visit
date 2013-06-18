@@ -123,7 +123,6 @@ avtIVPFlashField::operator()( const double &t,
     if (FindCell(t, p) != OK)
         return OUTSIDE_SPATIAL;
 
-  Result result;
   avtVector B, E;
   if (FindValue(B_vtkDataArray, B) && FindValue(E_vtkDataArray, E))
   {

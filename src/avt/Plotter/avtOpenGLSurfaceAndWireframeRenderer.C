@@ -945,7 +945,6 @@ avtOpenGLSurfaceAndWireframeRenderer::GenericDrawPolygons(
 {
     vtkIdType *pts = 0;
     vtkIdType npts = 0;
-    double polyNorm[3];
     for (ca->InitTraversal(); ca->GetNextCell(npts,pts); )
     { 
         glBegin(rep);
@@ -2009,7 +2008,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
 {
     int rep;
     vtkPoints *p;
-    vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
     vtkDataArray *n;
     vtkDataArray *t;

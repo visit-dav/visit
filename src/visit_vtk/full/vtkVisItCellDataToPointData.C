@@ -88,7 +88,7 @@ int vtkVisItCellDataToPointData::RequestData(
   vtkDataSet *output = vtkDataSet::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkIdType cellId, ptId, i, j, k, l, m;
+  vtkIdType cellId, ptId, i, j, k, l;
   vtkIdType numCells, numPts;
   vtkCellData *inPD=input->GetCellData();
   vtkPointData *outPD=output->GetPointData();

@@ -765,7 +765,6 @@ avtParICAlgorithm::RecvAny(vector<MsgCommData> *msgs,
         else if (buffers[i].first == avtParICAlgorithm::DATASET_TAG)
         {
             BlockIDType dom;
-            int dsLen;
             buffers[i].second->read(dom);
 
             vtkDataSet *d;
