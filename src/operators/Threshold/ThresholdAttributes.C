@@ -586,10 +586,7 @@ ThresholdAttributes::SetFromNode(DataNode *parentNode)
 std::string
 ThresholdAttributes::GetFieldName(int index) const
 {
-    switch (index)
-    {
-    default:  return ThresholdOpAttributes::GetFieldName(index);
-    }
+    return ThresholdOpAttributes::GetFieldName(index);
 }
 
 // ****************************************************************************
@@ -610,10 +607,7 @@ ThresholdAttributes::GetFieldName(int index) const
 AttributeGroup::FieldType
 ThresholdAttributes::GetFieldType(int index) const
 {
-    switch (index)
-    {
-    default:  return ThresholdOpAttributes::GetFieldType(index);
-    }
+    return ThresholdOpAttributes::GetFieldType(index);
 }
 
 // ****************************************************************************
@@ -634,10 +628,7 @@ ThresholdAttributes::GetFieldType(int index) const
 std::string
 ThresholdAttributes::GetFieldTypeName(int index) const
 {
-    switch (index)
-    {
-    default:  return ThresholdOpAttributes::GetFieldTypeName(index);
-    }
+    return ThresholdOpAttributes::GetFieldTypeName(index);
 }
 
 // ****************************************************************************
@@ -658,14 +649,7 @@ ThresholdAttributes::GetFieldTypeName(int index) const
 bool
 ThresholdAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 {
-    const ThresholdAttributes &obj = *((const ThresholdAttributes*)rhs);
-    bool retval = false;
-    switch (index_)
-    {
-    default: retval = ThresholdOpAttributes::FieldsEqual(index_, rhs);
-    }
-
-    return retval;
+    return ThresholdOpAttributes::FieldsEqual(index_, rhs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
