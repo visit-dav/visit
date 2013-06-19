@@ -139,6 +139,9 @@
 #    Added code to only build the paraDIS reader if boost 1.36.0 or later
 #    was installed on the system.
 #
+#    Kathleen Biagas, Tue Jun 18 16:58:43 PDT 2013
+#    Skip paraDIS reader on Windows.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -327,12 +330,12 @@ volimage
 unv
 )
 
-IF (Boost_USABLE_PARADIS)
+IF (Boost_USABLE_PARADIS AND NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
         paraDIS
         paraDIS_tecplot
     )
-ENDIF (Boost_USABLE_PARADIS)
+ENDIF (Boost_USABLE_PARADIS AND NOT WIN32)
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
