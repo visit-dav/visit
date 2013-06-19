@@ -160,9 +160,11 @@ Zoom2D::~Zoom2D()
 //  Method: Zoom2D::OnTimer
 //
 //  Purpose:
-//    Handles the timer event.  For Navigate2D, this means the user has
-//    pressed a mouse key and that it is time to sample the mouse position
-//    to see if the view should be panned or zoomed.
+//    Handles the timer event.  For Zoom2D, this means the user has either
+//    pressed the ctrl key along with the left mouse button to pan the
+//    image or has pressed the middle mouse button to zoom or de-zoom the
+//    image. In either case the mouse position must be sampled to handle
+//    the mouse motion and take the appropriate pan or zoom action.
 //
 //  Programmer: Eric Brugger
 //  Creation:   October 10, 2003
@@ -172,32 +174,39 @@ Zoom2D::~Zoom2D()
 //    Use current event position instead of Last, appears to work better with
 //    new vtk.
 //
+//    Eric Brugger, Wed Jun 19 16:40:25 PDT 2013
+//    I corrected the logic so that zooming or de-zooming with the middle
+//    mouse button worked.
+//
 // ****************************************************************************
 
 void
 Zoom2D::OnTimer(void)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
-
-    int Pos[2];
-    rwi->GetEventPosition(Pos);
-
-    switch (State)
+    if (!rubberBandMode)
     {
-      case VTKIS_PAN:
-        PanCamera(Pos[0], Pos[1]);
+        vtkRenderWindowInteractor *rwi = Interactor;
 
-        rwi->CreateTimer(VTKI_TIMER_UPDATE);
-        break;
+        int Pos[2];
+        rwi->GetEventPosition(Pos);
 
-      case VTKIS_DOLLY:
-        ZoomCamera(Pos[0], Pos[1]);
+        switch (State)
+        {
+          case VTKIS_PAN:
+            PanCamera(Pos[0], Pos[1]);
 
-        rwi->CreateTimer(VTKI_TIMER_UPDATE);
-        break;
+            rwi->CreateTimer(VTKI_TIMER_UPDATE);
+            break;
 
-      default:
-        break;
+          case VTKIS_ZOOM:
+            ZoomCamera(Pos[0], Pos[1]);
+
+            rwi->CreateTimer(VTKI_TIMER_UPDATE);
+            break;
+
+          default:
+            break;
+        }
     }
 }
 
