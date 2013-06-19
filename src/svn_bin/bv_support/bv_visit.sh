@@ -374,8 +374,8 @@ EOF
     if [[ "${DO_JAVA}" == "yes" ]] ; then
        FEATURES="${FEATURES} -DVISIT_JAVA:BOOL=ON"
     fi
-    if [[ "${DO_SLIVR}" == "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_SLIVR:BOOL=ON"
+    if [[ "${DO_SLIVR}" == "no" ]] ; then
+       FEATURES="${FEATURES} -DVISIT_SLIVR:BOOL=OFF"
     fi
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
        FEATURES="${FEATURES} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
