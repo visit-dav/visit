@@ -398,7 +398,8 @@ QvisCMFEWizard::validateCurrentPage()
           // Check for multiple donors.
           if( (decision_donorType == DONOR_SINGLE_DATABASE ||
                decision_donorType == DONOR_MULTIPLE_DATABASES) &&
-              donorList->count() > 1 ||
+              donorList->count() > 1 || // Multiple donors
+              // One donor in the list and one ready to be added
               (donorList->count() == 1 &&
                decision_donorDatabase != "" && decision_variable != "" ) )
           {
@@ -550,7 +551,8 @@ QvisCMFEWizard::initializePage(int pageId)
         // Multiple donors
         if( (decision_donorType == DONOR_SINGLE_DATABASE ||
              decision_donorType == DONOR_MULTIPLE_DATABASES) &&
-            donorList->count() > 1 ||
+            donorList->count() > 1 || // Multiple donors
+            // One donor in the list and one ready to be added
             (donorList->count() == 1 &&
              decision_donorDatabase != "" && decision_variable != "" ) )
         {
@@ -604,11 +606,11 @@ QvisCMFEWizard::initializePage(int pageId)
             exprDiffTypeSelect->button(2)->setEnabled(true);
             exprDiffTypeSelect->button(3)->setEnabled(true);
             exprDiffTypeSelect->button(4)->setEnabled(true);
-            exprDiffTypeSelect->button(5)->setEnabled(singleDonor);
+            exprDiffTypeSelect->button(5)->setEnabled(true);
             exprDiffTypeSelect->button(6)->setEnabled(singleDonor);
             exprDiffTypeSelect->button(7)->setEnabled(singleDonor);
 
-            if (decision_exprtype >= EXPRESSION_ABS_DIFF)
+            if (!singleDonor && decision_exprtype >= EXPRESSION_DIFF_FIRST)
               decision_exprtype = EXPRESSION_SUM;
 
             if (decision_exprtype == EXPRESSION_MINIMUM)
@@ -1329,7 +1331,7 @@ QvisCMFEWizard::UpdateDonorField(void)
     donorFieldVar->setText(tr("<Select>"));
     decision_variable = "";
 
-    donorList->clear();
+//    donorList->clear();
 }
 
 
@@ -1685,7 +1687,7 @@ QvisCMFEWizard::AddCMFEExpression(void)
           }
         }
 
-        // Add the plus (+) or comma (,)
+        // Add the plus (+), minus (-), or comma (,)
         if( i < donorList->count() - 1 )
         {
           if (decision_exprtype == EXPRESSION_MINIMUM ||
@@ -1696,6 +1698,9 @@ QvisCMFEWizard::AddCMFEExpression(void)
                    decision_exprtype == EXPRESSION_AVERAGE ||
                    decision_exprtype == EXPRESSION_VARIANCE)
             SNPRINTF(cmfe_part_tmp, 1024, "%s + ", cmfe_part);
+
+          else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+            SNPRINTF(cmfe_part_tmp, 1024, "%s - ", cmfe_part);
 
           if(decision_exprtype == EXPRESSION_VARIANCE)
             SNPRINTF(cmfe_part_tmp_var, 1024, "%s + ", cmfe_part_var);
@@ -1711,6 +1716,8 @@ QvisCMFEWizard::AddCMFEExpression(void)
         SNPRINTF(defn, 1024, "max(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_SUM)
         SNPRINTF(defn, 1024, "(%s)", cmfe_part);
+      else if (decision_exprtype == EXPRESSION_ABS_DIFF)
+        SNPRINTF(defn, 1024, "abs(%s)", cmfe_part);
       else if (decision_exprtype == EXPRESSION_AVERAGE ||
                decision_exprtype == EXPRESSION_VARIANCE)
         SNPRINTF(defn, 1024, "(%s) / %d", cmfe_part, donorList->count() );
@@ -1791,7 +1798,7 @@ QvisCMFEWizard::donorTypeChanged(int val)
     decision_donorType = DONOR_SINGLE_DATABASE;
   else if( val == 1 )
     decision_donorType = DONOR_TIME_SLICES;
-  else if( val == 2 )
+  else //if( val == 2 )
     decision_donorType = DONOR_MULTIPLE_DATABASES;
 
   initializePage(Page_DonorAndTargetSpecification);
@@ -1935,7 +1942,7 @@ QvisCMFEWizard::timeTypeChanged(int val)
         decision_timeType = TIME_TYPE_SIMTIME;
     else if (val == 1)
         decision_timeType = TIME_TYPE_SIMCYCLE;
-    else 
+    else //if( val == 2 )
         decision_timeType = TIME_TYPE_INDEX;
 
     initializePage(Page_TimeSpecification);
@@ -2213,7 +2220,8 @@ QvisCMFEWizard::exprTypeChanged(int v)
         // Single donor or multiple donors
         if( (decision_donorType == DONOR_SINGLE_DATABASE ||
              decision_donorType == DONOR_MULTIPLE_DATABASES) &&
-            donorList->count() > 1 ||
+            donorList->count() > 1 || // Multiple donors
+            // One donor in the list and one ready to be added
             (donorList->count() == 1 &&
              decision_donorDatabase != "" && decision_variable != "" ) )
         {
