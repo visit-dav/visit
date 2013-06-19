@@ -2586,6 +2586,11 @@ class MakeMovie:
     #   Kathleen Bonnell, Tue Nov  2 12:20:11 PDT 2010 
     #   Executable is mpeg2encode.exe on Windows (since CMake overhaul). 
     # 
+    #   Eric Brugger, Wed Jun 19 09:31:41 PDT 2013
+    #   I modified the ffmpeg command to work with newer versions of ffmpeg.
+    #   This consisted of changing "-mbd rd -flags +mv4+aic" to "-mbd 2" and
+    #   changing "-b" to "-b:v".
+    #
     ###########################################################################
 
     def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
@@ -2634,7 +2639,7 @@ class MakeMovie:
                     bitrate = 100000000
                 # Use the user's ffmpeg encoder program.
                 framePattern = self.tmpDir+self.slash+linkbase+"%04d"+formatExt
-                command = "ffmpeg -f image2 -i %s -mbd rd -flags +mv4+aic -trellis 1 -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b %s %s\n" % (framePattern, bitrate, absMovieName)
+                command = "ffmpeg -f image2 -i %s -mbd 2 -trellis 1 -flags qprd -bf 2 -cmp 2 -g 25 -pass 1 -y -b:v %s %s\n" % (framePattern, bitrate, absMovieName)
                 def print_ffmpeg_line_cb(line, this):
                     print line
                     this.Debug(5, line)
