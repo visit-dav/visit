@@ -149,6 +149,9 @@
 #    Only build the EnSight reader if vtkIOEnSight, upon which it depends,
 #    is available.
 #
+#    Kathleen Biagas, Tue Jun 18 16:58:43 PDT 2013
+#    Skip paraDIS reader on Windows.
+#
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -346,12 +349,12 @@ ELSE()
     MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
 ENDIF(TARGET vtkIOEnSight)
 
-IF (Boost_USABLE_PARADIS)
+IF (Boost_USABLE_PARADIS AND NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS
         paraDIS
         paraDIS_tecplot
     )
-ENDIF (Boost_USABLE_PARADIS)
+ENDIF (Boost_USABLE_PARADIS AND NOT WIN32)
 
 IF (NOT WIN32)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS 
