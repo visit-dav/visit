@@ -18,7 +18,21 @@ ON_ITAPS="off"
 
 function bv_itaps_depends_on
 {
-echo ""
+    local depends_on=""
+
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="hdf5"
+    fi
+
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        depends_on="$depends_on szip"
+    fi
+
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+        depends_on="$depends_on netcdf"    
+    fi
+
+    echo $depends_on
 }
 
 function bv_itaps_print
@@ -59,24 +73,42 @@ function bv_itaps_host_profile
         echo "ITAPS_INCLUDE_DIRECTORIES(MOAB \${VISITHOME}/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(MOAB *.cub)" >> $HOSTCONF
-        echo "ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB hdf5_hl hdf5 sz z netcdf_c++ netcdf vtkGraphics)" \
+        local hdf5_libs=""
+        local hdf5_libdir=""
+        local szip_libs=""
+        local szip_libdir=""
+        local netcdf_libs=""
+        local netcdf_libdir=""
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            hdf5_libs="hdf5_hl hdf5"
+            hdf5_libdir="\${VISITHOME}/hdf5/${HDF5_VERSION}/\${VISITARCH}/lib "
+        fi
+        if [[ "$DO_SZIP" == "yes" ]] ; then
+            szip_libs="sz"
+            szip_libdir="\${VISITHOME}/szip/${SZIP_VERSION}/\${VISITARCH}/lib "
+        fi
+        if [[ "$DO_NETCDF" == "yes" ]] ; then
+            netcdf_libs="netcdf_c++ netcdf"
+            netcdf_libdir="\${VISITHOME}/netcdf/${NETCDF_VERSION}/\${VISITARCH}/lib "
+        fi
+        echo "ITAPS_LINK_LIBRARIES(MOAB iMesh MOAB $hdf5_libs $szip_libs z $netcdf_libs )" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(MOAB " \
              "\${VISITHOME}/itaps/$ITAPS_VERSION/MOAB/$ITAPS_MOAB_VERSION/\${VISITARCH}/lib " \
-             "\${VISITHOME}/hdf5/${HDF5_VERSION}/\${VISITARCH}/lib " \
-             "\${VISITHOME}/szip/${SZIP_VERSION}/\${VISITARCH}/lib " \
-             "\${VISITHOME}/netcdf/${NETCDF_VERSION}/\${VISITARCH}/lib)" >> $HOSTCONF
+             "$hdf5_libdir" \
+             "$szip_libdir" \
+             "$netcdf_libdir)" >> $HOSTCONF
         echo "## FMDB implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(FMDB \${VISITHOME}/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(FMDB *.sms)" >> $HOSTCONF
-        echo "ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil vtkGraphics)" >> $HOSTCONF
+        echo "ITAPS_LINK_LIBRARIES(FMDB FMDB SCORECModel SCORECUtil )" >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(FMDB \${VISITHOME}/itaps/$ITAPS_VERSION/FMDB/$ITAPS_FMDB_VERSION/\${VISITARCH}/lib)" >> $HOSTCONF
         echo "## GRUMMP implementation" >> $HOSTCONF
         echo "ITAPS_INCLUDE_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/include)" \
         >> $HOSTCONF
         echo "ITAPS_FILE_PATTERNS(GRUMMP *.bdry *.smesh *.vmesh)" >> $HOSTCONF
-        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS vtkGraphics cgm dl)" \
+        echo "ITAPS_LINK_LIBRARIES(GRUMMP iMesh_GRUMMP GR_3D GR_surf GR_2D GR_geom GR_base SUMAAlog_lite OptMS cgm dl)" \
         >> $HOSTCONF
         echo "ITAPS_LINK_DIRECTORIES(GRUMMP \${VISITHOME}/itaps/$ITAPS_VERSION/GRUMMP/$ITAPS_GRUMMP_VERSION/\${VISITARCH}/lib)" \
         >> $HOSTCONF
@@ -175,7 +207,7 @@ function build_itaps_moab
     cd $ITAPS_MOAB_BUILD_DIR || error "Cannot cd to $ITAPS_MOAB_BUILD_DIR build dir."
     info "Invoking command to configure ITAPS_MOAB"
     if [[ "$DO_HDF5" == "yes" ]] ; then
-       WITHHDF5ARG="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH --with-hdf5-ldflags=-lz"
+       WITHHDF5ARG="--with-hdf5=$HDF5_INSTALL_DIR --with-hdf5-ldflags=-lz"
     else
        WITHHDF5ARG="--without-hdf5"
     fi
@@ -185,7 +217,7 @@ function build_itaps_moab
        WITHSZIPARG="--without-szip"
     fi
     if [[ "$DO_NETCDF" == "yes" ]] ; then
-       WITHNETCDFARG="--with-netcdf=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+       WITHNETCDFARG="--with-netcdf=$NETCDF_INSTALL_DIR"
     else
        WITHNETCDFARG="--without-netcdf"
     fi
