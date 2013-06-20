@@ -44,6 +44,10 @@
 #include <netcdf.h>
 
 #include <algorithm>
+#include <map>
+#include <string>
+#include <utility.h>
+#include <vector>
 
 #include <vtkBitArray.h>
 #include <vtkCellData.h>
@@ -749,6 +753,86 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
     return retval;
 }
 
+template <class T>
+static void ReadBlockIds(int fid, int vid, int numBlocks, vector<int>& blockId, int (*NcRdFunc)(int,int,int*))
+{
+    int ncerr;
+    T *buf = new T [numBlocks];
+    ncerr = NcRdFunc(fid, vid, buf);
+    CheckNCError2(ncerr, nc_get_var, __LINE__, __FILE__);
+    for (int k = 0; k < numBlocks; k++)
+    {
+        if (ncerr == NC_NOERR)
+            blockId[k] = (int) buf[k];
+        else
+            blockId[k] = k;
+    }
+    delete [] buf;
+}
+#define READ_BLOCK_IDS(F,V,N,BIDS,TYPE) ReadBlockIds<TYPE>(F,V,N,BIDS,nc_get_var_ ## TYPE);
+
+static void
+GetElementBlockNamesAndIds(int ncExIIId, int numBlocks,
+    vector<string>& blockName, vector<int>& blockId)
+{
+    int ncerr;
+
+    blockId.clear();
+    blockId.resize(numBlocks);
+    for (int i = 0; i < numBlocks; i++) blockId[i] = i;
+    blockName.clear();
+    blockName.resize(numBlocks);
+    char **element_block_names = GetStringListFromExodusIINCvar(ncExIIId, "eb_names");
+    if (element_block_names)
+    {
+        int i = 0;
+        while (element_block_names[i])
+        {
+            blockName[i] = string(element_block_names[i]);
+            i++;
+        }
+        FreeStringListFromExodusIINCvar(element_block_names);
+    }
+
+    int num_vars = 0;
+    ncerr = nc_inq(ncExIIId, 0, &num_vars, 0, 0);
+    if (ncerr != NC_NOERR) return;
+
+    int eb_blockid_varid = -1;
+    for (int i = 0; i < num_vars && eb_blockid_varid == -1; i++)
+    {
+        char tmpvname[NC_MAX_NAME+1];
+        ncerr = nc_inq_varname(ncExIIId, i, tmpvname);
+        if (ncerr != NC_NOERR) continue;
+        if (strncmp(tmpvname, "eb_prop", 7)) continue;
+
+        int natts = 0;
+        ncerr = nc_inq_varnatts(ncExIIId, i, &natts);
+        if (ncerr != NC_NOERR) continue; // loop over vars
+        for (int j = 0; j < natts; j++)
+        {
+            char tmpattname[NC_MAX_NAME+1];
+            ncerr = nc_inq_attname(ncExIIId, i, j, tmpattname);
+            if (ncerr != NC_NOERR) continue; // loop over atts
+            if (strncmp(tmpattname, "name", 4)) continue;
+            eb_blockid_varid = i;
+            break;
+        }
+    }
+    if (eb_blockid_varid == -1)
+    {
+       return;
+    }
+
+    nc_type vtype;
+    nc_inq_vartype(ncExIIId, eb_blockid_varid, &vtype);
+    switch (vtype)
+    {
+        case NC_INT:   READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int); break;
+//        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int64_t); break;
+    }
+}
+
 // ****************************************************************************
 //  Method: avtExodusFileFormat::RegisterFileList
 //
@@ -1385,16 +1469,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // element blocks are homogeneous in material and mesh properties so no
     // need to worry about 'mixed' materials in this context.
     //
-    blockName.clear();
-    blockName.resize(numBlocks);
-    i = 0;
-    char **element_block_names = GetStringListFromExodusIINCvar(ncExIIId, "eb_names");
-    while (element_block_names[i])
-    {
-        blockName[i] = string(element_block_names[i]);
-        i++;
-    }
-    FreeStringListFromExodusIINCvar(element_block_names);
+    GetElementBlockNamesAndIds(ncExIIId, numBlocks, blockName, blockId);
 
     string materialName = "ElementBlock";
     vector<string> matNames;
@@ -1403,9 +1478,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         for (i = 0 ; i < numBlocks ; i++)
         {
             char name[128];
-            //sprintf(name, "%d", blockId[i]);
-//warning FIXME
-            sprintf(name, "%d", i);
+            sprintf(name, "%d", blockId[i]);
             matNames.push_back(name);
         }
     }
@@ -1718,6 +1791,8 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         CheckNCError(nc_inq_dimlen);
         int num_nodes_per_elem = (int) num_nod_per_len;
 
+        blockIdToMatMap[i+1] = num_elems_in_blk;
+
         vtkIdType verts[16];
         switch (connect_vartype)
         {
@@ -1902,8 +1977,6 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
                                       const char * type, void *,
                                       DestructorFunction &df)
 {
-    return 0;
-
     int i;
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
@@ -1911,24 +1984,30 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         if (strstr(var, "ElementBlock") != var)
             EXCEPTION1(InvalidVariableException, var);
 
-        vtkDataSet *ds = NULL;
-        if (ds == NULL)
-            return NULL;
-        vtkDataArray *arr = ds->GetCellData()->GetArray("BlockId");
-        if (arr == NULL)
-            return NULL;
+        int nzones = 0;
+        for (map<int,int>::const_iterator
+            it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
+            nzones += it->second;
 
-        int nzones = ds->GetNumberOfCells();
+        int *matlist = new int[nzones];
+        int zone = 0;
+        for (map<int,int>::const_iterator
+            it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
+        {
+            for (int j = 0; j < it->second; j++, zone++)
+                matlist[zone] = it->first;
+        }
 
-        std::vector<std::string> mats(numBlocks);
+        if (blockName.size() == 0 && blockId.size() == 0)
+            GetElementBlockNamesAndIds(ncExIIId, numBlocks, blockName, blockId);
+
+        vector<string> mats(numBlocks);
         if (numBlocks > 0 && blockName[0] == "")
         {
             for (i = 0 ; i < numBlocks ; i++)
             {
                 char num[1024];
-                //sprintf(num, "%d", blockId[i]);
-//warning FIXME
-                sprintf(num, "%d", i);
+                sprintf(num, "%d", blockId[i]);
                 mats[i] = num;
             }
         }
@@ -1940,33 +2019,9 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
             }
         }
 
-        int *mat_0 = new int[nzones];
-        int *ptr = (int *) arr->GetVoidPointer(0);
-        bool issuedDebug = false;
-        for (i = 0 ; i < nzones ; i++)
-        {
-            mat_0[i] = -1; // in case it didn't find a match.
-            for (int j = 0 ; j < numBlocks ; j++)
-                //if (ptr[i] == blockId[j])
-//warning FIXME
-                if (ptr[i] == j)
-                    mat_0[i] = j;
-            if (mat_0[i] == -1)
-            {
-                mat_0[i] = 0;
-                if (!issuedDebug)
-                {
-                    avtCallback::IssueWarning("Some of the materials in your file "
-                      "could not be matched up with an element block ID.  These "
-                      "elements will be assigned to the first element block.");
-                     issuedDebug = true;
-                 }
-            }
-        }
-
-        avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, mat_0,
+        avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, matlist,
                                            0, NULL, NULL, NULL, NULL);
-        delete [] mat_0;
+        delete [] matlist;
         df = avtMaterial::Destruct;
         return (void*) mat;
     }
