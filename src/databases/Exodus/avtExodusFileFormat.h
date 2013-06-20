@@ -46,8 +46,9 @@
 #include <avtMTSDFileFormat.h>
 #include <avtTypes.h>
 
-#include <vector>
+#include <map>
 #include <string>
+#include <vector>
 
 
 class     avtVariableCache;
@@ -118,22 +119,14 @@ class avtExodusFileFormat : public avtMTSDFileFormat
     void                        AddVar(avtDatabaseMetaData *md, char const *vname,
                                     int topo_dim, int ncomps, avtCentering centering);
 
-    typedef struct blkinfo_t
-    {
-        std::string name;
-        int gid;
-        int lid;
-        int num_elem;
-
-    } blkinfo_t;
-
     int                         numBlocks;
     int                         numNodes; // this 'domain'
     int                         numElems; // this 'domain'
+    std::vector<int>            blockId;
     std::vector<std::string>    blockName;
     int                         fileList;
     int                         ncExIIId;
-    std::vector<blkinfo_t>      blockInfos;
+    std::map<int, int>          blockIdToMatMap;
 
     // Note: this needs to be a pointer because there are issues with 
     // constructors being called in shared libraries for static objects.
