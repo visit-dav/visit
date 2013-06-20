@@ -117,7 +117,7 @@ avtBinExpression::~avtBinExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtBinExpression::DeriveVariable(vtkDataSet *in_ds)
+avtBinExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     std::ostringstream oss;
 

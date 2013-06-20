@@ -197,7 +197,7 @@ avtRecenterExpression::ProcessArguments(ArgsExpr *args,
 // ****************************************************************************
 
 vtkDataArray *
-avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds)
+avtRecenterExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (activeVariable == NULL)
     {

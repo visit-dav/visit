@@ -89,16 +89,11 @@ class avtTensorFilter : public avtDataTreeIterator
     int                       stride;
     int                       nTensors;
 
-    vtkVertexFilter          *vertex;
-    vtkTensorReduceFilter    *reduce;
-
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 };
 
-
 #endif
-
 

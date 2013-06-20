@@ -106,7 +106,7 @@ avtDominantMaterialExpression::~avtDominantMaterialExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds)
+avtDominantMaterialExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType ncells = in_ds->GetNumberOfCells();
 

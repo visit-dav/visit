@@ -79,7 +79,7 @@ avtEdgeLength::avtEdgeLength()
 // ****************************************************************************
 
 vtkDataArray *
-avtEdgeLength::DeriveVariable(vtkDataSet *in_ds)
+avtEdgeLength::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *arr = CreateArrayFromMesh(in_ds);
     vtkIdType ncells = in_ds->GetNumberOfCells();

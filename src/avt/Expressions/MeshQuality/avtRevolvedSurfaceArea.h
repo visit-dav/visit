@@ -84,7 +84,7 @@ class EXPRESSION_API avtRevolvedSurfaceArea
     bool                        haveIssuedWarning;
     bool                        revolveAboutX;
 
-    virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray       *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };

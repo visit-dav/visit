@@ -117,7 +117,7 @@ avtMeshCoordinateExpression::~avtMeshCoordinateExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtMeshCoordinateExpression::DeriveVariable(vtkDataSet *in_ds)
+avtMeshCoordinateExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *rv = NULL;
 

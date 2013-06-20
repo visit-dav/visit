@@ -139,8 +139,10 @@ avtFilter::~avtFilter()
 void
 avtFilter::UpdateProgress(int current, int total)
 {
+#ifndef VISIT_THREADS
     avtDataObjectSource::UpdateProgress(current, total, GetType(),
                                         GetDescription());
+#endif // VISIT_THREADS
 }
 
 

@@ -83,7 +83,7 @@ class EXPRESSION_API avtMagnitudeExpression : public avtSingleInputExpressionFil
     virtual const char       *GetDescription(void)
                               {return "Calculating Magnitude of Each Vector";};
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension(void) { return 1; };
     virtual bool              CanHandleSingletonConstants(void) {return true;};
 };

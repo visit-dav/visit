@@ -103,7 +103,7 @@ avtCylindricalCoordinatesExpression::~avtCylindricalCoordinatesExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtCylindricalCoordinatesExpression::DeriveVariable(vtkDataSet *in_ds)
+avtCylindricalCoordinatesExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType npts = in_ds->GetNumberOfPoints();
     vtkDataArray *rv = CreateArrayFromMesh(in_ds);

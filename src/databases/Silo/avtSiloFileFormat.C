@@ -103,6 +103,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidZoneTypeException.h>
 #include <SiloException.h>
+#include <avtExecutionManager.h>
 
 #include <avtStructuredDomainBoundaries.h>
 
@@ -13524,7 +13525,9 @@ avtSiloFileFormat::AllocAndDetermineMeshnameForUcdmesh(int dom, const char *mesh
     // Silo can't accept consts, so cast it away.
     //
     char *m = const_cast< char * >(mesh);
+    VisitMutexLock("avtSiloFileFormat");
     int type = DBInqVarType(dbfile, m);
+    VisitMutexUnlock("avtSiloFileFormat");
 
     if (type != DB_MULTIMESH && type != DB_UCDMESH)
     {
@@ -14060,7 +14063,9 @@ avtMaterial *
 avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char *tmn,
     int dom)
 {
+    VisitMutexLock("avtSiloFileFormat");
     DBmaterial *silomat = DBGetMaterial(dbfile, matname);
+    VisitMutexUnlock("avtSiloFileFormat");
     if (silomat == NULL)
     {
         EXCEPTION1(InvalidVariableException, matname);
@@ -14369,10 +14374,12 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
 
     // We want to get just the facelist.  So we need to get the ReadMask,
     // set it to read facelists, then set it back.
+    VisitMutexLock("avtSiloFileFormat::CalcExternalFacelist");
     long mask = DBGetDataReadMask();
     DBSetDataReadMask(DBUMFacelist | DBFacelistInfo);
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
     DBSetDataReadMask(mask);
+    VisitMutexUnlock("avtSiloFileFormat::CalcExternalFacelist");
     if (um == NULL)
         EXCEPTION1(InvalidVariableException, mesh);
     DBfacelist *fl = um->faces;

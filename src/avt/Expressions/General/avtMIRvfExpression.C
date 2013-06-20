@@ -136,7 +136,7 @@ avtMIRvfExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
+avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *volume = in_ds->GetCellData()->GetArray(volume_name.c_str());
     vtkDataArray *zoneid = in_ds->GetCellData()->GetArray(zoneid_name.c_str());
@@ -179,7 +179,7 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // the materials specified.
     // 
     std::vector<bool> useMat;
-    GetMaterialList(useMat);
+    GetMaterialList(useMat, currentDomainsIndex);
     for (vtkIdType i = 0 ; i < ncells ; i++)
     {
         int z = (int) zoneid->GetTuple1(i);
@@ -227,7 +227,7 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds)
 // ****************************************************************************
 
 void
-avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat)
+avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomainsIndex)
 {
     int    i, j;
 

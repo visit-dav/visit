@@ -102,7 +102,7 @@ avtStrainRateExpression::~avtStrainRateExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtStrainRateExpression::DeriveVariable(vtkDataSet *in_ds)
+avtStrainRateExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     char msg[1024];
     double vals[3];

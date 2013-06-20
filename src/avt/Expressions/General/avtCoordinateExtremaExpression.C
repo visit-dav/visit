@@ -120,7 +120,7 @@ avtCoordinateExtremaExpression::~avtCoordinateExtremaExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds)
+avtCoordinateExtremaExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType ncells = in_ds->GetNumberOfCells();
 

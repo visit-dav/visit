@@ -108,7 +108,7 @@ avtNormalizeExpression::~avtNormalizeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtNormalizeExpression::DeriveVariable(vtkDataSet *in)
+avtNormalizeExpression::DeriveVariable(vtkDataSet *in, int currentDomainsIndex)
 {
     // The base class will set the variable of interest to be the
     // 'activeVariable'.  This is a by-product of how the base class sets its

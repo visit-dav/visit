@@ -125,7 +125,7 @@ avtDataIdExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds)
+avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType nvals = 0;
     if (doZoneIds)

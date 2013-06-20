@@ -73,7 +73,7 @@ class EXPRESSION_API avtZoneTypeExpression : public avtSingleInputExpressionFilt
                                            {return "Finding ZoneType";};
   protected:
     virtual void              UpdateDataObjectInfo(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
 };
 

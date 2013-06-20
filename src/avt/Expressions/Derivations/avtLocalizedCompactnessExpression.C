@@ -111,7 +111,7 @@ avtLocalizedCompactnessExpression::~avtLocalizedCompactnessExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
+avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     int   i, j, k, ii, jj, kk;
 

@@ -84,7 +84,7 @@ class EXPRESSION_API avtNodeDegreeExpression : public avtSingleInputExpressionFi
   protected:
     virtual bool              IsPointVariable(void) { return true; };
     virtual int               GetVariableDimension()   { return 1; };
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
 };
 
 

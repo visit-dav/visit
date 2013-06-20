@@ -83,6 +83,7 @@
 #include <avtMinMaxExpression.h>
 #include <avtPerformColorTableLookupExpression.h>
 #include <avtProcessorIdExpression.h>
+#include <avtThreadIdExpression.h>
 #include <avtRecenterExpression.h>
 #include <avtRectilinearLaplacianExpression.h>
 #include <avtRelativeDifferenceExpression.h>
@@ -539,6 +540,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtCylindricalCoordinatesExpression();
     if (functionName == "procid")
         return new avtProcessorIdExpression();
+    if (functionName == "threadid")
+        return new avtThreadIdExpression();
     if (functionName == "python" || functionName == "py")
 #ifdef VISIT_PYTHON_FILTERS
         return new avtPythonExpression();

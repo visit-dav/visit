@@ -40,6 +40,7 @@
 #define ARRAY_REF_PTR_H
 
 #include <visitstream.h>
+#include "VisItAtomic.h"
 
 // ****************************************************************************
 //  Class: array_ref_ptr
@@ -65,7 +66,7 @@ class array_ref_ptr
 {
  public:
     array_ref_ptr();
-    array_ref_ptr(T *p_, int * = NULL);
+    array_ref_ptr(T *p_, VISIT_ATOMIC_TYPE * = NULL);
     array_ref_ptr(const array_ref_ptr<T> &rhs);
     ~array_ref_ptr();
     void operator=(T *rhs);
@@ -79,10 +80,10 @@ class array_ref_ptr
     template <class S>  void CopyTo(array_ref_ptr<S> &);
     void Print(ostream&);
  private:
-    T    *p;
-    int  *n;
+    T                 *p;
+    VISIT_ATOMIC_TYPE *n;
 
-    void   AddReference(T *, int *);
+    void   AddReference(T *, VISIT_ATOMIC_TYPE *);
     void   RemoveReference(void);
 };
 
@@ -98,7 +99,7 @@ array_ref_ptr<T>::array_ref_ptr()
 
 template <class T>
 inline
-array_ref_ptr<T>::array_ref_ptr(T *p_, int *n_)
+array_ref_ptr<T>::array_ref_ptr(T *p_, VISIT_ATOMIC_TYPE *n_)
 {
     AddReference(p_, n_);
 }
@@ -179,19 +180,19 @@ array_ref_ptr<T>::operator[](size_t idx) const
 
 template <class T>
 void
-array_ref_ptr<T>::AddReference(T *p_, int *n_)
+array_ref_ptr<T>::AddReference(T *p_, VISIT_ATOMIC_TYPE *n_)
 {
     p = p_;
     if (p != NULL)
     {
         if (n_ == NULL)
         {
-            n = new int(1); 
+            n = new VISIT_ATOMIC_TYPE(1); 
         }
         else
         {
             n = n_;
-            (*n)++;
+            AtomicInc(*n);
         }
     }
     else
@@ -206,8 +207,8 @@ array_ref_ptr<T>::RemoveReference(void)
 {
     if (p)
     {
-        (*n)--;
-        if (*n == 0)
+        VISIT_ATOMIC_TYPE a = AtomicDec(*n);
+        if (a == 0)
         {
             delete [] p;
             delete n;
@@ -237,5 +238,5 @@ array_ref_ptr<T>::Print(ostream &out)
 
 typedef array_ref_ptr<char> CharStrRef;
 
-
 #endif
+

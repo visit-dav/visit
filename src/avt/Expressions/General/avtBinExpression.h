@@ -81,7 +81,7 @@ class EXPRESSION_API avtBinExpression
     virtual int               NumVariableArguments(void) { return 1; };
 
   protected:
-    virtual vtkDataArray         *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray         *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtVarType            GetVariableType(void) { return AVT_SCALAR_VAR;};
   private:
     std::vector<double>           bins;

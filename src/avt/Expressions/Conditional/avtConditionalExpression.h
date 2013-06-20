@@ -82,7 +82,7 @@ class EXPRESSION_API avtConditionalExpression
     virtual int               NumVariableArguments() { return 3; }
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
 
     virtual bool              FilterUnderstandsTransformedRectMesh();
 };

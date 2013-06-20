@@ -1336,6 +1336,16 @@ function build_hostconf
     fi
 
     echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## VisIt Thread Option" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_THREAD_BUILD" == "yes" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_THREAD ON TYPE BOOL)" >> $HOSTCONF
+    else
+        echo "VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)" >> $HOSTCONF
+    fi
+
+    echo >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
     echo "##" >> $HOSTCONF

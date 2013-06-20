@@ -85,7 +85,7 @@ class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
     bool                      doGlobalNumbering;
     bool                      haveIssuedWarning;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return (!doZoneIds); };
 
     virtual avtContract_p

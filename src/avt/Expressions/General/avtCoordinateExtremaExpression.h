@@ -94,7 +94,7 @@ class EXPRESSION_API avtCoordinateExtremaExpression
     bool                      getMinimum;
     CoordinateType            coordinateType;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension() { return 1; }
     virtual bool              IsPointVariable()      { return false; }
 };

@@ -81,7 +81,7 @@ class EXPRESSION_API avtRevolvedVolume : public avtSingleInputExpressionFilter
     bool                        haveIssuedWarning;
     bool                        revolveAboutX;
 
-    virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray       *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void                PreExecute(void);
 
     virtual bool                IsPointVariable(void)  { return false; };

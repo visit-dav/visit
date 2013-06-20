@@ -82,7 +82,7 @@ class EXPRESSION_API avtArrayComposeWithBinsExpression
     std::vector<double>       binRanges;
 
     virtual void              UpdateDataObjectInfo(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtVarType        GetVariableType(void) { return AVT_ARRAY_VAR; };
 };
 

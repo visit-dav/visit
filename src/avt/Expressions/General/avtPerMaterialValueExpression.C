@@ -141,7 +141,7 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds)
+avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     int    i;
 

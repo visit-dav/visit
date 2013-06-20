@@ -95,7 +95,7 @@ avtViscousStressExpression::~avtViscousStressExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtViscousStressExpression::DeriveVariable(vtkDataSet *in_ds)
+avtViscousStressExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     // get dim and rz_mesh
     int  topo_dim = -1;

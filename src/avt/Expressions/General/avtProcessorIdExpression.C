@@ -102,7 +102,7 @@ avtProcessorIdExpression::~avtProcessorIdExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtProcessorIdExpression::DeriveVariable(vtkDataSet *in_ds)
+avtProcessorIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     int procId = PAR_Rank();
     vtkIdType npts   = in_ds->GetNumberOfPoints();

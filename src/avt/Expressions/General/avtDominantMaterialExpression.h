@@ -70,7 +70,7 @@ class EXPRESSION_API avtDominantMaterialExpression
     virtual const char       *GetDescription(void)
                                            {return "Finding dominant material";};
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
 
     virtual avtContract_p     ModifyContract(avtContract_p);

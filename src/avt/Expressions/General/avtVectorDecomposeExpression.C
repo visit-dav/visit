@@ -163,7 +163,7 @@ avtVectorDecomposeExpression::GetVariableDimension(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *arr = NULL;
 

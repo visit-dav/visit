@@ -119,7 +119,7 @@ avtArrayDecomposeExpression::~avtArrayDecomposeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (activeVariable == NULL)
         EXCEPTION2(ExpressionException, outputVariableName, 

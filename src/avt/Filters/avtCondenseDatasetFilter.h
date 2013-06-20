@@ -102,9 +102,6 @@ class AVTFILTERS_API avtCondenseDatasetFilter : public avtDataTreeIterator
     void                 BypassHeuristic(bool val) {bypassHeuristic = val; };
 
   protected:
-    vtkPolyDataRelevantPointsFilter         *rpfPD;
-    vtkUnstructuredGridRelevantPointsFilter *rpfUG;
-
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
     virtual bool         FilterUnderstandsTransformedRectMesh();
 

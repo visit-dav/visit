@@ -109,7 +109,7 @@ avtRectilinearLaplacianExpression::~avtRectilinearLaplacianExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtRectilinearLaplacianExpression::DeriveVariable(vtkDataSet *in_ds)
+avtRectilinearLaplacianExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {

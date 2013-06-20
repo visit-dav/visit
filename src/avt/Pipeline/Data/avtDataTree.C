@@ -573,7 +573,13 @@ avtDataTree::~avtDataTree()
 avtDataTree&
 avtDataTree::operator=(const avtDataTree &rhs)
 {
-    if (this != &rhs)
+    return( this->operator=(&rhs) );
+}
+
+avtDataTree&
+avtDataTree::operator=(const avtDataTree *rhs)
+{
+    if (this != rhs)
     {
         if (dataRep != NULL) 
         {
@@ -591,16 +597,16 @@ avtDataTree::operator=(const avtDataTree &rhs)
             children = NULL;
         }
 
-        nChildren = rhs.nChildren;
+        nChildren = rhs->nChildren;
         if (nChildren > 0)
         {
             children = new avtDataTree_p [nChildren];
             for (int i = 0; i < nChildren; i++)
-               children[i] = rhs.children[i];
+               children[i] = rhs->children[i];
         } 
         else
         {
-            dataRep = new avtDataRepresentation(*(rhs.dataRep)); 
+            dataRep = new avtDataRepresentation(*(rhs->dataRep)); 
         } 
     }
     return *this;

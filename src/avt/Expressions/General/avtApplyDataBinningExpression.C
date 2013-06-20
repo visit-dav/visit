@@ -240,7 +240,7 @@ avtApplyDataBinningExpression::ModifyContract(avtContract_p spec)
 // ****************************************************************************
 
 vtkDataArray *
-avtApplyDataBinningExpression::DeriveVariable(vtkDataSet *in_ds)
+avtApplyDataBinningExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (theDataBinning == NULL)
     {

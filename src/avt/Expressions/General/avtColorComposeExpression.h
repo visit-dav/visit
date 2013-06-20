@@ -74,7 +74,7 @@ class EXPRESSION_API avtColorComposeExpression
 
   protected:
     int ncomp;
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension(void) { return 3; }
 };
 

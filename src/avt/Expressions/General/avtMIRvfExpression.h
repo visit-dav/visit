@@ -84,13 +84,13 @@ class EXPRESSION_API avtMIRvfExpression : public avtSingleInputExpressionFilter
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
     virtual void              PreExecute(void);
     virtual void              UpdateDataObjectInfo(void);
 
     void                      AddMaterial(ConstExpr *);
-    void                      GetMaterialList(std::vector<bool> &);
+    void                      GetMaterialList(std::vector<bool> &, int);
 };
 
 

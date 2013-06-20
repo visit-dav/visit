@@ -290,6 +290,7 @@ export DO_DBIO_ONLY="no"
 export DO_ENGINE_ONLY="no"
 export DO_SERVER_COMPONENTS_ONLY="no"
 export DO_STATIC_BUILD="no"
+export DO_THREAD_BUILD="no"
 export USE_VISIBILITY_HIDDEN="no"
 export VISIT_INSTALL_PREFIX=""
 export VISIT_BUILD_MODE="Release"
@@ -904,6 +905,7 @@ for arg in "${arguments[@]}" ; do
         --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --static) DO_STATIC_BUILD="yes"; USE_VISIBILIITY_HIDDEN="no";;
+        --thread) DO_THREAD_BUILD="yes";;
         --stdout) LOG_FILE="/dev/tty";;
         --svn) DO_SVN="yes"; export SVN_ROOT_PATH=$SVN_REPO_ROOT_PATH;;
         --svn-anon) DO_SVN="yes"; DO_SVN_ANON="yes" ; export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH ;;

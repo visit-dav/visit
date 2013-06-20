@@ -107,8 +107,8 @@ class avtHistogramFilter : public avtDataTreeIterator
     virtual void              UpdateDataObjectInfo(void);
     virtual void              PreExecute();
     virtual void              PostExecute();
-    virtual avtContract_p
-                              ModifyContract(avtContract_p);
+    virtual avtContract_p     ModifyContract(avtContract_p);
+    virtual bool              ThreadSafe(void);
 
     virtual void              FreqzExecute(vtkDataSet *);
     virtual void              WeightedExecute(vtkDataSet *);

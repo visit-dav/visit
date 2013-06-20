@@ -169,7 +169,7 @@ avtMatvfExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
+avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     int    i, j;
 

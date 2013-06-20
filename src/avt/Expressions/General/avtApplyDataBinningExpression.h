@@ -96,7 +96,7 @@ class EXPRESSION_API avtApplyDataBinningExpression
     static  GetDataBinningCallback    getDataBinningCallback;
     static  void                     *getDataBinningCallbackArgs;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension(void) { return 1; };
 };
 

@@ -509,10 +509,12 @@ Buffer::PickleInit()
         return;
 
     pickleModule = PyImport_ImportModule("pickle");  // new ref
-    pickleDict   = PyModule_GetDict(pickleModule); // borrowed ref
-    pickleDumps  = PyDict_GetItemString(pickleDict, "dumps"); // borrowed ref
-    pickleLoads  = PyDict_GetItemString(pickleDict, "loads"); // borrowed ref
-
+    if( pickleModule )
+    {
+        pickleDict   = PyModule_GetDict(pickleModule); // borrowed ref
+        pickleDumps  = PyDict_GetItemString(pickleDict, "dumps"); // borrowed ref
+        pickleLoads  = PyDict_GetItemString(pickleDict, "loads"); // borrowed ref
+    }
 }
 
 /*****************************************************************************

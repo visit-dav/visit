@@ -171,7 +171,7 @@ void GlobalPointAssign2(vtkCell *cell, int adj[], int _a, int _b)
 // ****************************************************************************
 
 vtkDataArray *
-avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType nPoints = in_ds->GetNumberOfPoints();
     

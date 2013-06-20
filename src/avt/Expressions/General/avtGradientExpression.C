@@ -326,7 +326,7 @@ avtGradientExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtGradientExpression::DeriveVariable(vtkDataSet *in_ds)
+avtGradientExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {

@@ -111,7 +111,7 @@ avtRandomExpression::~avtRandomExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtRandomExpression::DeriveVariable(vtkDataSet *in_ds)
+avtRandomExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     srand(currentDomainsIndex);
 

@@ -140,7 +140,7 @@ avtSpecMFExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds)
+avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType ncells = in_ds->GetNumberOfCells();
 

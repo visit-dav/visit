@@ -96,7 +96,7 @@ class EXPRESSION_API avtUnaryMathExpression : public avtSingleInputExpressionFil
     virtual bool              NullInputIsExpected(void) { return false; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
                                           int ncomponents, int ntuples) = 0;
     virtual vtkDataArray     *CreateArray(vtkDataArray *);

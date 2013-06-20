@@ -81,7 +81,7 @@ class EXPRESSION_API avtApplyEnumerationExpression
     std::vector<double>       enumeratedValues;
 
     virtual void              UpdateDataObjectInfo(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtVarType        GetVariableType(void) { return AVT_SCALAR_VAR; };
 };
 

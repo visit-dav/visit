@@ -107,12 +107,14 @@ using std::string;
 //    Hank Childs, Sun Mar  6 08:18:53 PST 2005
 //    Removed cd2pd.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed cf variable for thread safety.
+//
 // ****************************************************************************
 
 avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 {
     atts   = a;
-    cf     = vtkVisItContourFilter::New();
     stillNeedExtents = true;
     shouldCreateLabels = true;
     timeslice_index = 0;
@@ -170,15 +172,13 @@ avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 //    Hank Childs, Sun Mar  6 08:18:53 PST 2005
 //    Removed cd2pd.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed cf variable for thread safety.
+//
 // ****************************************************************************
 
 avtContourFilter::~avtContourFilter()
 {
-    if (cf != NULL)
-    {
-        cf->Delete();
-        cf = NULL;
-    }
 }
 
 
@@ -683,7 +683,12 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     //
     int nLevels = isoValues.size();
     int total = 4*nLevels+2;
+
+    #ifndef VISIT_THREADS
+    // TODO for now I will if def this out for threading, but I think we need a global
+    // mutex on all update progress or a new way to update the progress bar.
     UpdateProgress(current_node*total + nLevels+1, total*nnodes);
+    #endif // VISIT_THREADS
 
     //bool useScalarTree = (nLevels > 1);
     bool useScalarTree = true; // now use scalar tree in all occasions, since we
@@ -709,12 +714,15 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
              tree->Register(NULL); // to account for later dereference
     }
 
+    #ifndef VISIT_THREADS
     UpdateProgress(current_node*total + 2*nLevels+2, total*nnodes);
+    #endif // VISIT_THREADS
 
     //
     // Do the actual contouring.  Split each isolevel into its own dataset.
     //
     vtkDataSet **out_ds = new vtkDataSet*[isoValues.size()];
+    vtkVisItContourFilter *cf = vtkVisItContourFilter::New();
     cf->SetInputData(toBeContoured);
     vtkPolyData *output = cf->GetOutput();
     for (size_t i = 0 ; i < isoValues.size() ; i++)
@@ -750,7 +758,10 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
             out_ds[i]->GetPointData()->RemoveArray("avtGhostNodes");
         }
         visitTimer->StopTimer(id2, "Calculating isosurface");
+
+        #ifndef VISIT_THREADS
         UpdateProgress(current_node*total + 2*nLevels+2+2*i, total*nnodes);
+        #endif // VISIT_THREADS
     }
 
     //
@@ -781,8 +792,17 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     if (tree != NULL)
         tree->Delete();
 
+    cf->Delete();
+
     visitTimer->StopTimer(tt1, "avtContourFilter::ExecuteData");
+
+    #ifndef VISIT_THREADS
+    // TODO race to inc. This is part of the progress update.
+    // We can do an atomic incr, but I don't want the time hit 
+    // just for the progress update. Maybe a better way to do this.
     current_node++;
+    #endif // VISIT_THREADS
+
     return outDT;
 }
 
@@ -1165,17 +1185,14 @@ avtContourFilter::CreateLabels()
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed cf variable for thread safety.
+//
 // ****************************************************************************
 
 void
 avtContourFilter::ReleaseData(void)
 {
     avtSIMODataTreeIterator::ReleaseData();
-
-    cf->SetInputData(NULL);
-    vtkPolyData *p = vtkPolyData::New();
-    cf->SetOutput(p);
-    p->Delete();
 }
-
 

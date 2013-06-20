@@ -119,7 +119,7 @@ avtGeodesicVectorQuantizeExpression::~avtGeodesicVectorQuantizeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtGeodesicVectorQuantizeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *var;
     const char *varname = varnames[0];

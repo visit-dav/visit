@@ -73,7 +73,7 @@ class EXPRESSION_API avtNormalizeExpression : public avtSingleInputExpressionFil
     virtual const char       *GetDescription(void) { return "Normalizing Vector"; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension() { return 3; }
     virtual bool              CanHandleSingletonConstants(void) {return true;};
 };

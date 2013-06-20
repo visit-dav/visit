@@ -45,8 +45,7 @@
 #include <BadIndexException.h>
 #include <ImproperUseException.h>
 
-
-using     std::vector;
+#include <avtExecutionManager.h>
 
 
 avtFileDescriptorManager   *avtFileDescriptorManager::instance = NULL;
@@ -266,8 +265,12 @@ avtFileDescriptorManager::UsedFile(int index)
         EXCEPTION2(BadIndexException, index, fileIsOpen.size());
     }
 
+    VisitMutexLock("avtFileDescriptorManagerFileTimestamp");
+
     fileTimestamp[index] = timestamp;
     timestamp++;
+
+    VisitMutexUnlock("avtFileDescriptorManagerFileTimestamp");
 }
 
 

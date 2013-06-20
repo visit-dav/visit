@@ -122,7 +122,6 @@ class AVTFILTERS_API avtSurfaceFilter : public avtDataTreeIterator
 
   protected:
     SurfaceFilterAttributes    atts;
-    vtkSurfaceFilter          *filter;
     double                     min;
     double                     max;
     double                     Ms;

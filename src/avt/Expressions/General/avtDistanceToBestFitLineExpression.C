@@ -136,6 +136,11 @@ avtDistanceToBestFitLineExpression::PreExecute(void)
 //
 // Modifications:
 //   
+//  David Camp, Thu May 23 12:52:53 PDT 2013
+//   Changed the avtSIMODataTreeIterator::Execute call to support the new
+//   threading changes. Now the data tree is not returned, but passed in as an
+//   argument. Also you need to make sure all execution has completed before
+//   continuing. This occured twice in this function.
 // ****************************************************************************
 
 void
@@ -147,7 +152,9 @@ avtDistanceToBestFitLineExpression::Execute(void)
     pass = 1;
     avtDataTree_p tree    = GetInputDataTree();
     totalNodes = 2 * tree->GetNumberOfLeaves();
-    avtDataTree_p newTree = avtSIMODataTreeIterator::Execute(tree);
+    avtDataTree_p newTree;
+    avtSIMODataTreeIterator::Execute(tree, newTree);
+    avtSIMODataTreeIterator::FinishExecute();
     newTree = 0;
 
     // Sum the array values over all processors, making sure each processor
@@ -161,7 +168,9 @@ avtDistanceToBestFitLineExpression::Execute(void)
     // Make it perform the expression.
     //
     pass = 2;
-    avtDataTree_p newTree2 = avtSIMODataTreeIterator::Execute(tree);
+    avtDataTree_p newTree2;
+    avtSIMODataTreeIterator::Execute(tree, newTree2);
+    avtSIMODataTreeIterator::FinishExecute();
 
     SetOutputDataTree(newTree2);
 }

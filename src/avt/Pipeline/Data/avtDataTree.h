@@ -145,6 +145,7 @@ class PIPELINE_API avtDataTree
     virtual                 ~avtDataTree();
 
     avtDataTree             &operator=(const avtDataTree&);
+    avtDataTree             &operator=(const avtDataTree*);
 
     avtDataTree_p            GetChild(int);
     avtDataRepresentation   &GetDataRepresentation(void); 

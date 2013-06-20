@@ -120,7 +120,7 @@ avtRevolvedVolume::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds)
+avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *arr = CreateArrayFromMesh(in_ds);
     vtkIdType ncells = in_ds->GetNumberOfCells();

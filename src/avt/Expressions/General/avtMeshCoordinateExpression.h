@@ -85,7 +85,7 @@ class EXPRESSION_API avtMeshCoordinateExpression
                                              "of the mesh."; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension() { return 3; }
     virtual bool              IsPointVariable()      { return true; }
 };

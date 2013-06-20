@@ -96,7 +96,7 @@ avtStrainGreenLagrangeExpression::~avtStrainGreenLagrangeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds)
+avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int currentDomainsIndex)
 {
     char msg[1024];
     double vals[3];

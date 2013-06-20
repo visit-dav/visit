@@ -65,6 +65,7 @@
 
 #include <string>
 #include <vector>
+#include <avtExecutionManager.h>
 
 using std::string;
 using std::vector;
@@ -95,6 +96,8 @@ avtHistogramFilter::~avtHistogramFilter()
 {
     if (bins != NULL)
         delete [] bins;
+
+    VisitMutexDestroy("avtHistogramFilter");
 }
 
 
@@ -528,6 +531,27 @@ avtHistogramFilter::PostExecute(void)
 
 
 // ****************************************************************************
+//  Method: avtHistogramFilter::ThreadSafe
+//
+//  Purpose:
+//      Returns if this filter is thread safe. There is one mode that we
+//  are not thread safe.
+//
+//  Programmer: David Camp
+//  Creation:   March 11 2013
+//
+// ****************************************************************************
+bool
+avtHistogramFilter::ThreadSafe(void)
+{
+    if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
+    {
+        return( false );
+    }
+    return( true );
+}
+
+// ****************************************************************************
 //  Method: avtHistogramFilter::ExecuteData
 //
 //  Purpose:
@@ -606,6 +630,9 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, string)
 //    Hank Childs, Wed Mar  5 10:17:00 PST 2008
 //    Don't recenter nodal data to be zonal.
 //
+//    David Camp, Tue Mar 12 13:19:37 PDT 2013
+//    Made function thread safe.
+//
 // ****************************************************************************
 
 void
@@ -630,6 +657,14 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
             ghosts = g->GetPointer(0);
     }
 
+    float *threadBins;
+#if defined(VISIT_THREADS)
+    threadBins = new float[workingNumBins];
+    memset( threadBins, 0, sizeof(float)*workingNumBins );
+#else
+    threadBins = bins;
+#endif // VISIT_THREADS
+
     //
     // Now we will walk through each value and sort them into bins.
     //
@@ -645,8 +680,18 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 
         if (index >= workingNumBins)
             index = workingNumBins-1;
-        bins[index] += 1;
+        threadBins[index]++;
     }
+
+#if defined(VISIT_THREADS)
+    VisitMutexLock("avtHistogramFilter");
+    for (int i = 0 ; i < workingNumBins ; i++)
+    {
+        bins[i] += threadBins[i];
+    }
+    VisitMutexUnlock("avtHistogramFilter");
+    delete [] threadBins;
+#endif // VISIT_THREADS
 }
 
 
@@ -668,6 +713,9 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 //
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.    
+//
+//    David Camp, Tue Mar 12 13:19:37 PDT 2013
+//    Made function thread safe.
 //
 // ****************************************************************************
 
@@ -735,6 +783,14 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     //
     int nvals = bin_arr->GetNumberOfTuples();
     
+    float *threadBins;
+#if defined(VISIT_THREADS)
+    threadBins = new float[workingNumBins];
+    memset( threadBins, 0, sizeof(float)*workingNumBins );
+#else
+    threadBins = bins;
+#endif // VISIT_THREADS
+
     for (int i = 0 ; i < nvals ; i++)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
@@ -746,11 +802,21 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
         if (index >= workingNumBins)
             index = workingNumBins-1;
         float amount = amount_arr->GetTuple1(i);
-        bins[index] += amount;
+        threadBins[index] += amount;
     }
 
     if (ownBinArr)
         bin_arr->Delete();
+
+#if defined(VISIT_THREADS)
+    VisitMutexLock("avtHistogramFilter");
+    for (int i = 0 ; i < workingNumBins ; i++)
+    {
+        bins[i] += threadBins[i];
+    }
+    VisitMutexUnlock("avtHistogramFilter");
+    delete [] threadBins;
+#endif // VISIT_THREADS
 }
 
 
@@ -762,6 +828,11 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
 //
 //  Programmer: Hank Childs
 //  Creation:   December 11, 2007
+//
+//  Modifications:
+//
+//    David Camp, Tue Mar 12 13:19:37 PDT 2013
+//    Made function thread safe.
 //
 // ****************************************************************************
 
@@ -854,6 +925,14 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
             ghosts = g->GetPointer(0);
     }
 
+    float *threadBins;
+#if defined(VISIT_THREADS)
+    threadBins = new float[workingNumBins];
+    memset( threadBins, 0, sizeof(float)*workingNumBins );
+#else
+    threadBins = bins;
+#endif // VISIT_THREADS
+
     //
     // Now we will walk through each value and sort them into bins.
     //
@@ -868,11 +947,21 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
         if (index >= workingNumBins)
             index = workingNumBins-1;
         float amount = weightVar->GetTuple1(i);
-        bins[index] += amount;
+        threadBins[index] += amount;
     }
 
     if (ownWeightVar)
         weightVar->Delete();
+
+#if defined(VISIT_THREADS)
+    VisitMutexLock("avtHistogramFilter");
+    for (int i = 0 ; i < workingNumBins ; i++)
+    {
+        bins[i] += threadBins[i];
+    }
+    VisitMutexUnlock("avtHistogramFilter");
+    delete [] threadBins;
+#endif // VISIT_THREADS
 }
 
 
@@ -886,6 +975,12 @@ avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
 //  Programmer: Hank Childs
 //  Creation:   May 24, 2006
 //
+//  Modifications:
+//
+//    David Camp, Tue Mar 12 13:19:37 PDT 2013
+//    Hank and I look at this function. It should be thread safe because only
+//    one data block should have the zone in it.
+//    
 // ****************************************************************************
 
 void
@@ -1116,7 +1211,7 @@ avtHistogramFilter::ScaleBins()
     {
         for ( int i = 0; i < workingNumBins; i++ )
             bins[i] = sqrt( bins[i] );
-    }    
+    }   
 }
 
 // ****************************************************************************

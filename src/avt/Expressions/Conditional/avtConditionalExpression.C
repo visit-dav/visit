@@ -120,7 +120,7 @@ avtConditionalExpression::~avtConditionalExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds)
+avtConditionalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     // Our first operand is in the active variable.  We don't know if it's
     // point data or cell data, so check which one is non-NULL.

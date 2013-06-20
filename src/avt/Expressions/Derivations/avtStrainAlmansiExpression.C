@@ -96,7 +96,7 @@ avtStrainAlmansiExpression::~avtStrainAlmansiExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds)
+avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     char msg[1024];
     double vals[3];
