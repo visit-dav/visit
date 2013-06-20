@@ -107,7 +107,6 @@
 avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 {
     atts = *(SurfaceFilterAttributes*)a;
-    filter       = vtkSurfaceFilter::New();
     stillNeedExtents = true;
     min = -1;
     max = -1;
@@ -140,8 +139,6 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
 
 avtSurfaceFilter::~avtSurfaceFilter()
 {
-    filter->Delete();
-    filter = NULL;
 }
 
 
@@ -433,6 +430,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkUnstructuredGrid *outUG = vtkUnstructuredGrid::New(); 
 
     // call the vtk filter to create the output dataset.
+    vtkSurfaceFilter *filter = vtkSurfaceFilter::New();
     filter->SetInputData(inDS);
     filter->SetinScalars(outScalars);
     filter->SetOutput(outUG);
@@ -447,6 +445,8 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
     ManageMemory(outUG);
     outUG->Delete();
+
+    filter->Delete();
 
     return (vtkDataSet*) outUG;
 }
@@ -837,12 +837,6 @@ void
 avtSurfaceFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
-
-    filter->SetInputData(NULL);
-    vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
-    filter->SetOutput(u);
-    u->Delete();
-    filter->SetinScalars(NULL);
 }
 
 

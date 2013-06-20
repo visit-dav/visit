@@ -154,7 +154,7 @@ avtUnaryMathExpression::~avtUnaryMathExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds)
+avtUnaryMathExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     int  i;
 

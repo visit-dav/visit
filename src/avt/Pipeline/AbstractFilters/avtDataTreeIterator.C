@@ -103,6 +103,10 @@ avtDataTreeIterator::~avtDataTreeIterator()
 void
 avtDataTreeIterator::ManageMemory(vtkDataSet *ds)
 {
+#ifdef VISIT_THREADS
+    if (ds != NULL)
+        ds->Register(NULL);
+#else
     if (ds == lastDataset)
         return;
 
@@ -116,6 +120,7 @@ avtDataTreeIterator::ManageMemory(vtkDataSet *ds)
     {
         lastDataset->Register(NULL);
     }
+#endif // VISIT_THREADS
 }
 
 

@@ -118,7 +118,7 @@ ClampColor(const double c)
 }
 
 vtkDataArray *
-avtColorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtColorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     size_t numinputs = varnames.size();
 

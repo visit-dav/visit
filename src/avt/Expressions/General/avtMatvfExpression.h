@@ -103,7 +103,7 @@ class EXPRESSION_API avtMatvfExpression : public avtSingleInputExpressionFilter
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
     virtual void              PreExecute(void);
 

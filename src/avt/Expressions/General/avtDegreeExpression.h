@@ -78,7 +78,7 @@ class EXPRESSION_API avtDegreeExpression : public avtSingleInputExpressionFilter
                                  { return "Calculating Degree of Each Node"; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
 };
 
 

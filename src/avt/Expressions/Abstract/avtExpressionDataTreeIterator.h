@@ -65,6 +65,17 @@
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    David Camp, Tue May 21 13:56:12 PDT 2013
+//    Remove these variables because the worker threads will call
+//    the ExecuteData function and they all can not share these variables.
+//    I will change the code to pass the currentDomainsIndex into the
+//    DeriveVariable function. I have found that no one uses the 
+//    currentDomainsLabel variable, so I am not going to pass it.
+//     std::string              currentDomainsLabel;
+//     int                      currentDomainsIndex;
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionDataTreeIterator 
@@ -76,14 +87,9 @@ class EXPRESSION_API avtExpressionDataTreeIterator
     virtual                 ~avtExpressionDataTreeIterator();
 
   protected:
-    std::string              currentDomainsLabel;
-    int                      currentDomainsIndex;
-
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-    virtual vtkDataArray    *DeriveVariable(vtkDataSet *) = 0;
+    virtual vtkDataArray    *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
 };
 
-
 #endif
-
 

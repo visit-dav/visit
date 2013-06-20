@@ -40,6 +40,7 @@
 #define REF_PTR_H
 
 #include <visitstream.h>
+#include "VisItAtomic.h"
 
 // ****************************************************************************
 //  Class: ref_ptr
@@ -75,6 +76,9 @@
 //    Tom Fogal, Tue Jun 23 20:05:12 MDT 2009
 //    Made `source' argument in CopyTo const.
 //
+//    David Camp, Tue Mar 12 13:19:37 PDT 2013
+//    Made the code thread safe. Changed the int to be an atomic type.
+//
 // ****************************************************************************
 
 template <class T>
@@ -82,7 +86,7 @@ class ref_ptr
 {
  public:
     ref_ptr();
-    ref_ptr(T *p_, int * = NULL);
+    ref_ptr(T *p_, VISIT_ATOMIC_TYPE * = NULL);
     ref_ptr(const ref_ptr<T> &rhs);
     ~ref_ptr();
     void operator=(T *rhs);
@@ -91,13 +95,18 @@ class ref_ptr
     const T *operator*() const;
     T *operator->();
     const T *operator->() const;
-    int *GetN() const;
+    VISIT_ATOMIC_TYPE *GetN() const;
     void Print(ostream&);
+    void   SetReference(T *p_)
+    {
+        RemoveReference();
+        AddReference(p_, NULL);
+    }
  private:
-    T    *p;
-    int  *n;
+    T                 *p;
+    VISIT_ATOMIC_TYPE *n;
 
-    void   AddReference(T *, int *);
+    void   AddReference(T *, VISIT_ATOMIC_TYPE *);
     void   RemoveReference(void);
 };
 
@@ -113,7 +122,7 @@ ref_ptr<T>::ref_ptr()
 
 template <class T>
 inline
-ref_ptr<T>::ref_ptr(T *p_, int *n_)
+ref_ptr<T>::ref_ptr(T *p_, VISIT_ATOMIC_TYPE *n_)
 {
     AddReference(p_, n_);
 }
@@ -179,7 +188,7 @@ ref_ptr<T>::operator->() const
 }
 
 template <class T>
-inline int *
+inline VISIT_ATOMIC_TYPE *
 ref_ptr<T>::GetN() const
 {
     return n;
@@ -187,19 +196,19 @@ ref_ptr<T>::GetN() const
 
 template <class T>
 void
-ref_ptr<T>::AddReference(T *p_, int *n_)
+ref_ptr<T>::AddReference(T *p_, VISIT_ATOMIC_TYPE *n_)
 {
     p = p_;
     if (p != NULL)
     {
         if (n_ == NULL)
         {
-            n = new int(1); 
+            n = new VISIT_ATOMIC_TYPE(1); 
         }
         else
         {
             n = n_;
-            (*n)++;
+            AtomicInc(*n);
         }
     }
     else
@@ -214,8 +223,8 @@ ref_ptr<T>::RemoveReference(void)
 {
     if (p)
     {
-        (*n)--;
-        if (*n == 0)
+        VISIT_ATOMIC_TYPE a = AtomicDec(*n);
+        if (a == 0)
         {
             delete p;
             delete n;

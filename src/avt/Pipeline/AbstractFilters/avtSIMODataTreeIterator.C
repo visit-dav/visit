@@ -52,6 +52,7 @@
 #include <DebugStream.h>
 
 #include <string>
+#include "avtExecutionManager.h"
 
 
 // ****************************************************************************
@@ -68,8 +69,6 @@ avtSIMODataTreeIterator::avtSIMODataTreeIterator()
     totalNodes  = 0;
     overrideOriginalSpatialExtents = false;
     overrideOriginalDataExtents    = false;
-    originalSpatialExtents = NULL;
-    originalDataExtents    = NULL;
 }
 
 
@@ -83,16 +82,25 @@ avtSIMODataTreeIterator::avtSIMODataTreeIterator()
 
 avtSIMODataTreeIterator::~avtSIMODataTreeIterator()
 {
-    if (originalSpatialExtents != NULL)
-    {
-        delete originalSpatialExtents;
-        originalSpatialExtents = NULL;
-    }
-    if (originalDataExtents != NULL)
-    {
-        delete originalDataExtents;
-        originalDataExtents = NULL;
-    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSIMODataTreeIterator::FinishExecute
+//
+//  Purpose:
+//      If in threaded mode, we need to wait until all work is done.
+//
+//  Programmer: David Camp
+//  Creation:   March 11, 2013
+//
+// ****************************************************************************
+
+void
+avtSIMODataTreeIterator::FinishExecute(void)
+{
+    // Wait for all work in the queue to finish.
+    avtExecutionManagerFinishWork();
 }
 
 
@@ -133,6 +141,10 @@ avtSIMODataTreeIterator::~avtSIMODataTreeIterator()
 //    Hank Childs, Tue Apr 10 17:26:52 PDT 2012
 //    Check for NULL input trees.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Changed Execute into two parts for threaded mode. We execute all data
+//    blocks and then wait in FinishExecute to complete work.
+//
 // ****************************************************************************
 
 void
@@ -146,7 +158,10 @@ avtSIMODataTreeIterator::Execute(void)
     if (*tree != NULL)
     {
         totalNodes = tree->GetNumberOfLeaves();
-        newTree = Execute(tree);
+        Execute(tree, newTree);
+
+        // If in threaded mode wait until Execute has completed.
+        FinishExecute();
     }
     else
     {
@@ -169,6 +184,54 @@ avtSIMODataTreeIterator::Execute(void)
     SetOutputDataTree(newTree);
 }
 
+// ****************************************************************************
+//  Method: avtSIMODataTreeIterator::ExecuteDataTreeOnThread
+//
+//  Purpose:
+//  This function is used to call the execute data tree method on the data
+//  leaves. This may be done in parallel or serial depending on VisIt build.
+//  Also it depends if the filter will can run in parallel.
+//
+//  Programmer: David Camp
+//  Creation:   May 2, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+typedef struct StructSIMOWorkItem 
+{
+    avtSIMODataTreeIterator *This;
+    avtDataTree_p            inDT;
+    avtDataTree_p            outDT;
+} SIMOWorkItem;
+
+void 
+avtSIMODataTreeIterator::ExecuteDataTreeOnThread(void *cbdata)
+{
+    SIMOWorkItem *work = (SIMOWorkItem *)cbdata;
+
+    vtkDataSet *in_ds = work->inDT->GetDataRepresentation().GetDataVTK();
+    int dom           = work->inDT->GetDataRepresentation().GetDomain();
+    std::string label = work->inDT->GetDataRepresentation().GetLabel();
+  
+    //
+    // We own the returned dataset because you cannot delete it if
+    // it only has one reference and you want to return it.
+    //
+    avtDataTree_p retDT = work->This->ExecuteDataTree(in_ds, dom, label);
+    if( *(retDT) )
+        work->outDT->operator=( *(retDT) );
+
+    work->This->UpdateExtents(work->outDT);
+
+/* This looks to confilict with the main thread. Not sure how as the main thread should be waiting.
+    VisitMutexLock("currentNode");
+        work->This->currentNode++;
+        work->This->UpdateProgress(work->This->currentNode, work->This->totalNodes);
+    VisitMutexUnlock("currentNode");
+*/
+}
 
 // ****************************************************************************
 //  Method: avtSIMODataTreeIterator::Execute
@@ -202,50 +265,50 @@ avtSIMODataTreeIterator::Execute(void)
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
 //    necessary information from the dataset. 
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed the return argument and now pass in a variable to be returned.
+//    This was done to support threading of the execute mode. The work is now
+//    sent to the execution manager to schedule the work. This maybe done in
+//    parallel or serial depending on VisIt build or on filter.
+//
 // ****************************************************************************
 
-avtDataTree_p
-avtSIMODataTreeIterator::Execute(avtDataTree_p inDT)
+void
+avtSIMODataTreeIterator::Execute(avtDataTree_p inDT, avtDataTree_p &outDT)
 {
     CheckAbort();
 
     if (*inDT == NULL)
     {
-        return NULL;
+        return;
     }
 
     int nc = inDT->GetNChildren();
 
     if (nc <= 0 && !inDT->HasData())
     {
-        return NULL;
+        return;
     }
 
-    if ( nc == 0 )
+    if (nc == 0)
     {
-        //
-        // there is only one dataset to process
-        //
-        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
-        int dom = inDT->GetDataRepresentation().GetDomain();
-        std::string label = inDT->GetDataRepresentation().GetLabel();
-  
-        //
-        // Setting the source to NULL for the input will break the 
-        // pipeline.
-        //
-        // NO LONGER A GOOD IDEA
-        //in_ds->SetSource(NULL);
-
-        //
-        // We own the returned dataset because you cannot delete it if
-        // it only has one reference and you want to return it.
-        //
-        avtDataTree_p rv = ExecuteDataTree(in_ds, dom, label);
-        UpdateExtents(rv);
-        currentNode++;
-        UpdateProgress(currentNode, totalNodes);
-        return rv;
+        SIMOWorkItem *work = new SIMOWorkItem;
+        work->This  = this;
+        work->inDT  = inDT;
+        work->outDT = outDT;
+ 
+        if( *outDT )
+        {
+            // Schedule the work to be done.
+            avtExecutionManagerScheduleWork(ExecuteDataTreeOnThread, (void *)work);
+        }
+        else
+        {
+            // There is only one dataset to process, so do it now.
+            outDT = new avtDataTree();
+            work->outDT = outDT;
+            ExecuteDataTreeOnThread(work);
+        }
     }
     else
     {
@@ -253,21 +316,21 @@ avtSIMODataTreeIterator::Execute(avtDataTree_p inDT)
         // there is more than one input dataset to process
         // and we need an output datatree for each
         //
-        avtDataTree_p *outDT = new avtDataTree_p[nc];
+        avtDataTree_p *localOutDT = new avtDataTree_p[nc];
         for (int j = 0; j < nc; j++)
         {
             if (inDT->ChildIsPresent(j))
             {
-                outDT[j] = Execute(inDT->GetChild(j));
+                localOutDT[j].SetReference( new avtDataTree );
+                Execute(inDT->GetChild(j), localOutDT[j]);
             }
             else
             {
-                outDT[j] = NULL;
+                localOutDT[j] = NULL;
             }
         }
-        avtDataTree_p rv = new avtDataTree(nc, outDT);
-        delete [] outDT;
-        return (rv);
+        outDT = new avtDataTree(nc, localOutDT);
+        delete [] localOutDT;
     }
 }
 
@@ -291,6 +354,10 @@ avtSIMODataTreeIterator::Execute(avtDataTree_p inDT)
 //    Jeremy Meredith, Tue Feb 20 11:04:44 PST 2007
 //    Add support for transformed rectilinear grids.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Changed function to be thread safe. Needed to protect the changing of 
+//    the outAtts variable.
+//
 // ****************************************************************************
 
 void
@@ -304,42 +371,57 @@ avtSIMODataTreeIterator::UpdateExtents(avtDataTree_p tree)
     if (overrideOriginalSpatialExtents)
     {
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-        if (originalSpatialExtents == NULL)
-        {
-            avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-            avtExtents        *exts = atts.GetThisProcsOriginalSpatialExtents();
-            originalSpatialExtents = new avtExtents(exts->GetDimension());
-        }
+
         double bounds[6];
         bool gotBounds = false;
-        struct {double *se; const double *xform;} info = {bounds,NULL};
+        struct {double *se; const double *xform;} info = {bounds, NULL};
         tree->Traverse(CGetSpatialExtents, (void *)&info, gotBounds);
         if (gotBounds)
         {
-            originalSpatialExtents->Merge(bounds);
-            avtExtents *exts = outAtts.GetThisProcsOriginalSpatialExtents();
-            *exts = *originalSpatialExtents;
+            avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+            avtExtents        *exts = atts.GetThisProcsOriginalSpatialExtents();
+            avtExtents originalSpatialExtents(exts->GetDimension());
+
+            originalSpatialExtents.Merge(bounds);
+            exts = outAtts.GetThisProcsOriginalSpatialExtents();
+
+            VisitMutexLock("SIMOSpatial");
+            *exts = originalSpatialExtents;
+            outAtts.GetOriginalSpatialExtents()->Clear();
+            VisitMutexUnlock("SIMOSpatial");
         }
-        outAtts.GetOriginalSpatialExtents()->Clear();
+        else
+        {
+            VisitMutexLock("SIMOSpatial");
+            outAtts.GetOriginalSpatialExtents()->Clear();
+            VisitMutexUnlock("SIMOSpatial");
+        }
     }
 
     if (overrideOriginalDataExtents)
     {
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-        if (originalDataExtents == NULL)
-        {
-            originalDataExtents = new avtExtents(1);
-        }
+
         double range[2];  // who has more than 25 vars?
         bool gotBounds = false;
-        tree->Traverse(CGetDataExtents, (void *) range, gotBounds);
+        tree->Traverse(CGetDataExtents, (void *)range, gotBounds);
         if (gotBounds)
         {
-            originalDataExtents->Merge(range);
+            avtExtents originalDataExtents(1);
+            originalDataExtents.Merge(range);
             avtExtents *exts = outAtts.GetThisProcsOriginalDataExtents();
-            *exts = *originalDataExtents;
+
+            VisitMutexLock("SIMOData");
+            *exts = originalDataExtents;
+            outAtts.GetOriginalDataExtents()->Clear();
+            VisitMutexUnlock("SIMOData");
         }
-        outAtts.GetOriginalDataExtents()->Clear();
+        else
+        {
+            VisitMutexLock("SIMOData");
+            outAtts.GetOriginalDataExtents()->Clear();
+            VisitMutexUnlock("SIMOData");
+        }
     }
 }
 

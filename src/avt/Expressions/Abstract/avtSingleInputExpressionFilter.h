@@ -84,7 +84,7 @@ class EXPRESSION_API avtSingleInputExpressionFilter
     virtual int               NumVariableArguments() { return 1; }
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *) = 0;
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
 };
 
 #endif

@@ -83,7 +83,7 @@ class EXPRESSION_API avtPerMaterialValueExpression
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
     
     bool                      doPostGhost;

@@ -50,8 +50,6 @@
 #include <string>
 #include <vector>
 
-class vtkCellDataToPointData;
-class vtkVisItContourFilter;
 class vtkDataSet;
 
 
@@ -111,8 +109,6 @@ class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
     virtual void               ReleaseData(void);
 
   protected:
-    vtkVisItContourFilter     *cf;
-
     bool                       stillNeedExtents;
     bool                       shouldCreateLabels;
 

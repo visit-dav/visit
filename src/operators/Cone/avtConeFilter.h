@@ -76,6 +76,11 @@ class vtkPolarTransformFilter;
 //    Use vtkVisItCutter instead of vtkCutter, since it has logic to correctly
 //    handle CellData.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Moved the VTK pointers into a struct to allocate the destroy them for
+//    changes to the code for threading. Also added functions to create and
+//    destroy the VTK objects.
+//
 // ****************************************************************************
 
 class avtConeFilter : public avtPluginDataTreeIterator
@@ -96,25 +101,32 @@ class avtConeFilter : public avtPluginDataTreeIterator
 
   protected:
     ConeAttributes               atts;
-    vtkCone                     *cone;
-    vtkVisItCutter              *cutter;
-    vtkImplicitBoolean          *allFunctions;
-    vtkPlane                    *plane;
-    vtkPolarTransformFilter     *polar;
-    vtkTransformPolyDataFilter  *transform;
-    vtkClipPolyData             *clipOffSides;
-    vtkClipPolyData             *clipBottom;
-    vtkPlane                    *planeToClipBottom;
-    vtkClipPolyData             *clipByLength;
-    vtkPlane                    *planeToClipByLength;
+
+    typedef struct AvtConeFilterVTKObjects
+    {
+        vtkCone                     *cone;
+        vtkVisItCutter              *cutter;
+        vtkImplicitBoolean          *allFunctions;
+        vtkPlane                    *plane;
+        vtkPolarTransformFilter     *polar;
+        vtkTransformPolyDataFilter  *transform;
+        vtkClipPolyData             *clipOffSides;
+        vtkClipPolyData             *clipBottom;
+        vtkPlane                    *planeToClipBottom;
+        vtkClipPolyData             *clipByLength;
+        vtkPlane                    *planeToClipByLength;
+    } avtConeFilterVTKObjects;
 
     virtual vtkDataSet          *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                 UpdateDataObjectInfo(void);
-    void                         SetUpClipping(void);
-    void                         SetUpCone(void);
-    void                         SetUpProjection(void);
-    avtContract_p   ModifyContract(avtContract_p);
+    void                         SetUpClipping(avtConeFilterVTKObjects &obj);
+    void                         SetUpCone(avtConeFilterVTKObjects &obj);
+    void                         SetUpProjection(avtConeFilterVTKObjects &obj);
+    avtContract_p                ModifyContract(avtContract_p);
+
+    void                         CreateVTKObjects(avtConeFilterVTKObjects &obj);
+    void                         DestroyVTKObjects(avtConeFilterVTKObjects &obj);
 };
 
-
 #endif
+

@@ -121,6 +121,9 @@ class   avtMultiFacelist;
 //    Hank Childs, Fri Feb  4 13:43:38 PST 2011
 //    Make the method to take external faces for a domain be a static method.
 //  
+//    David Camp, Tue May 21 13:56:12 PDT 2013
+//    Removed the static method for the threading code.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
@@ -141,7 +144,7 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
     void                                 SetMustCreatePolyData(bool val)
                                               { mustCreatePolyData = val; };
 
-    static avtDataTree_p                 FindFaces(vtkDataSet *, int, 
+    avtDataTree_p                        FindFaces(vtkDataSet *, int, 
                                                    std::string, 
                                                    avtDataObjectInformation &,
                                                    bool = false, bool = false, 
@@ -156,13 +159,13 @@ class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
 
     virtual avtDataTree_p                ExecuteDataTree(vtkDataSet *, int,
                                                      std::string);
-    static vtkDataSet                   *Take2DFaces(vtkDataSet *, bool, bool);
-    static vtkDataSet                   *FindEdges(vtkDataSet *);
-    static avtDataTree_p                 Take3DFaces(vtkDataSet *, int,
+    vtkDataSet                           *Take2DFaces(vtkDataSet *, bool, bool);
+    vtkDataSet                           *FindEdges(vtkDataSet *);
+    avtDataTree_p                        Take3DFaces(vtkDataSet *, int,
                                                      std::string, bool, bool,
                                                      avtDataObjectInformation&,
                                                      avtFacelist *fl);
-    static vtkDataSet                   *ConvertToPolys(vtkDataSet *, int);
+    vtkDataSet                           *ConvertToPolys(vtkDataSet *, int);
 
     virtual void                         UpdateDataObjectInfo(void);
     virtual avtContract_p                ModifyContract(avtContract_p);

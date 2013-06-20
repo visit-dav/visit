@@ -92,7 +92,7 @@ class EXPRESSION_API avtNeighborEvaluatorExpression
     EvaluationType            evaluationType;
     bool                      haveIssuedWarning;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 

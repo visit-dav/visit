@@ -115,7 +115,7 @@ avtCylindricalRadiusExpression::~avtCylindricalRadiusExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds)
+avtCylindricalRadiusExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType npts = in_ds->GetNumberOfPoints();
     vtkDataArray *rv = CreateArrayFromMesh(in_ds);

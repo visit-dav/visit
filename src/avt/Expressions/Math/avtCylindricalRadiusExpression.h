@@ -79,7 +79,7 @@ class EXPRESSION_API avtCylindricalRadiusExpression
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return true; };  
     virtual int               GetVariableDimension() { return 1; }
 

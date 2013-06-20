@@ -90,7 +90,7 @@ class EXPRESSION_API avtRecenterExpression : public avtSingleInputExpressionFilt
     } RecenterType;
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void);
     virtual int               GetVariableDimension(void);
     virtual bool              CanHandleSingletonConstants(void) {return true;}

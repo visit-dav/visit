@@ -82,7 +82,7 @@ class EXPRESSION_API avtArrayComposeExpression
     int                       nargs;
 
     virtual void              UpdateDataObjectInfo(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtVarType        GetVariableType(void) { return AVT_ARRAY_VAR; };
 };
 

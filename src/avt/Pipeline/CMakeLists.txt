@@ -141,6 +141,8 @@ Pipeline/avtNullDataReader.C
 Pipeline/avtNullDataWriter.C
 Pipeline/avtParallel.C
 Pipeline/avtWebpage.C
+Pipeline/avtExecutionManager.C
+Pipeline/ThreadPool.C
 )
 
 SET(ABSTRACTFILTERS_SOURCES

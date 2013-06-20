@@ -46,6 +46,7 @@
 #include <utility_exports.h>
 
 #include <visitstream.h>
+#include "VisItAtomic.h"
 
 // ****************************************************************************
 //  Class: void_ref_ptr
@@ -70,21 +71,21 @@ class UTILITY_API void_ref_ptr
 {
  public:
     void_ref_ptr();
-    void_ref_ptr(void *p_, DestructorFunction, int * = NULL);
+    void_ref_ptr(void *p_, DestructorFunction, VISIT_ATOMIC_TYPE * = NULL);
     void_ref_ptr(const void_ref_ptr &rhs);
     ~void_ref_ptr();
     void Assign(void *rhs, DestructorFunction);
     void operator=(const void_ref_ptr &rhs);
     bool operator==(const void_ref_ptr &rhs) const;
     void *operator*();
-    int *GetN() const;
+    VISIT_ATOMIC_TYPE *GetN() const;
     void Print(ostream&);
  private:
     void    *p;
-    int     *n;
+    VISIT_ATOMIC_TYPE     *n;
     DestructorFunction destruct;
 
-    void   AddReference(void *, int *);
+    void   AddReference(void *, VISIT_ATOMIC_TYPE *);
     void   RemoveReference(void);
 };
 
@@ -103,19 +104,19 @@ struct UTILITY_API VoidRefList
 //  Inline Methods
 // ****************************************************************************
 inline void
-void_ref_ptr::AddReference(void *p_, int *n_)
+void_ref_ptr::AddReference(void *p_, VISIT_ATOMIC_TYPE *n_)
 {
     p = p_;
     if (p != NULL)
     {
         if (n_ == NULL)
         {
-            n = new int(1); 
+            n = new VISIT_ATOMIC_TYPE(1); 
         }
         else
         {
             n = n_;
-            (*n)++;
+            AtomicInc(*n);
         }
     }
     else
@@ -129,8 +130,8 @@ void_ref_ptr::RemoveReference(void)
 {
     if (p)
     {
-        (*n)--;
-        if (*n == 0)
+        VISIT_ATOMIC_TYPE a = AtomicDec(*n);
+        if (a == 0)
         {
             if (destruct != NULL)
             {
@@ -149,7 +150,7 @@ void_ref_ptr::void_ref_ptr()
 }
 
 inline
-void_ref_ptr::void_ref_ptr(void *p_, DestructorFunction df, int *n_)
+void_ref_ptr::void_ref_ptr(void *p_, DestructorFunction df, VISIT_ATOMIC_TYPE *n_)
 {
     AddReference(p_, n_);
     destruct = df;
@@ -198,7 +199,7 @@ void_ref_ptr::operator==(const void_ref_ptr &rhs) const
     return (p == rhs.p);
 }
 
-inline int *
+inline VISIT_ATOMIC_TYPE *
 void_ref_ptr::GetN() const
 {
     return n;

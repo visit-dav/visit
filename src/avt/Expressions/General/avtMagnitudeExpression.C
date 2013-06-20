@@ -124,7 +124,7 @@ avtMagnitudeExpression::~avtMagnitudeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtMagnitudeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtMagnitudeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     //
     // The base class will set the variable of interest to be the 

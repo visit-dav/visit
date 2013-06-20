@@ -1231,6 +1231,7 @@ class GeneralArguments(object):
         self.quiet = 0
         self.setupenv = 0
         self.nowin = 0
+        self.threads = 0
 
     def ParseArguments(self, i, args):
         if i >= len(args):
@@ -1303,6 +1304,11 @@ class GeneralArguments(object):
             self.quiet = 1
         elif args[i] == "-setupenv":
             self.setupenv = 1
+        elif args[i] == "-threads":
+            # Number of threads. Some launchers want to know this number, ie depth.
+            self.threads = args[i+1]
+            self.arguments = self.arguments + [args[i]]
+            n = 2
         else:
             self.arguments = self.arguments + [args[i]]
         return n

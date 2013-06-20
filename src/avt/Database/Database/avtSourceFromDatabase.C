@@ -903,6 +903,8 @@ avtSourceFromDatabase::ManageExpressions(const char *name)
     if (curList->operator[](name) == NULL)
         return std::string(name);
  
+    // TODO. If we thread safe the cache we can add back. DC
+#ifndef VISIT_THREADS
     if (lastExprList == NULL)
         lastExprList = new ExpressionList(*curList);
 
@@ -914,6 +916,7 @@ avtSourceFromDatabase::ManageExpressions(const char *name)
         cache->ClearVariablesWithString("__AVT_EXPR__");
         *lastExprList = *curList;
     }
+#endif // VISIT_THREADS
 
     // mangle in a prefix to say this is an expression.
     char str[1024];

@@ -105,7 +105,7 @@ avtZoneTypeExpression::~avtZoneTypeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtZoneTypeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType ncells = in_ds->GetNumberOfCells();
 

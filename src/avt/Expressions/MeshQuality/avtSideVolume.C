@@ -114,7 +114,7 @@ avtSideVolume::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtSideVolume::DeriveVariable(vtkDataSet *in_ds)
+avtSideVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkDataArray *arr = CreateArrayFromMesh(in_ds);
     vtkIdType ncells = in_ds->GetNumberOfCells();

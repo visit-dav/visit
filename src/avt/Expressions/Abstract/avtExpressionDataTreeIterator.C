@@ -179,6 +179,10 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 //    with ncells and npts.  (The old way would do the wrong thing
 //    for single-cell data sets.)
 //
+//    David Camp, Tue May 21 13:56:12 PDT 2013
+//    Removed the currentDomainsLabel and currentDomainsIndex variables.
+//    This was done to thread the code.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -204,11 +208,9 @@ avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
     //
     // Start off by having the derived type calculate the derived variable.
     //
-    currentDomainsLabel = label;
-    currentDomainsIndex = index;
     if (dat == NULL)
     {
-        dat = DeriveVariable(in_ds);
+        dat = DeriveVariable(in_ds, index);
         if (dat == NULL)
         {
             EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 

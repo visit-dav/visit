@@ -72,7 +72,7 @@ class EXPRESSION_API avtCylindricalCoordinatesExpression
                            { return "Calculating cylindrical coordinates."; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return true; };  
     virtual int               GetVariableDimension() { return 3; }
 };

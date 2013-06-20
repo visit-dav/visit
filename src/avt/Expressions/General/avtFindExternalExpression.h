@@ -83,7 +83,7 @@ class EXPRESSION_API avtFindExternalExpression
 
   protected:
     bool                      doCells;
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return !doCells; };
     virtual int               GetVariableDimension() { return 1; }
 };

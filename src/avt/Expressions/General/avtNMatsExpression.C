@@ -118,7 +118,7 @@ avtNMatsExpression::~avtNMatsExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
+avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType ncells = in_ds->GetNumberOfCells();
 

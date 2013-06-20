@@ -82,7 +82,7 @@ class EXPRESSION_API avtArrayDecomposeExpression
     bool issuedWarning;
     int  index;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void              PreExecute(void);
     virtual int               GetVariableDimension(void) { return 1; };
     virtual avtVarType        GetVariableType(void) { return AVT_SCALAR_VAR; };

@@ -83,7 +83,7 @@ class EXPRESSION_API avtLocalizedCompactnessExpression
                                       {return "Calculating localized compactness"; };
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return true; };
     virtual int               GetVariableDimension(void) { return 1; };
 };

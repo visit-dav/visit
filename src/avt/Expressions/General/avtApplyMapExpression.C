@@ -122,7 +122,7 @@ avtApplyMapExpression::~avtApplyMapExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtApplyMapExpression::DeriveVariable(vtkDataSet *in_ds)
+avtApplyMapExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     ostringstream oss;
 

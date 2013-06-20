@@ -157,7 +157,7 @@ avtRevolvedSurfaceArea::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds)
+avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     //
     // Create a copy of the input with each zone's id number.  This will be 

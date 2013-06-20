@@ -103,7 +103,7 @@ avtDegreeExpression::~avtDegreeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtDegreeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     //
     // Set up an array that we can do bookkeepping in.  Entry i will be the

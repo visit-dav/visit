@@ -66,6 +66,52 @@ static char StaticStringBuf[STATIC_BUF_SIZE];
 
 bool has_nonspace_chars(const std::string &s);
 
+#include <stdint.h>    // uintptr_t
+#include <stdio.h>
+#include <unistd.h>     // getpid...
+
+extern int etext;
+
+#define MAXRNGS 100
+
+static struct rng { uintptr_t alpha, omega; } rngv[MAXRNGS], *rend = NULL;
+
+void maccess_init()
+{
+    uintptr_t       brk = (uintptr_t)sbrk(0);
+    char            buf[99];
+    sprintf(buf, "/proc/%d/maps", getpid());
+    FILE            *fp = fopen(buf, "re");
+    rend = rngv;
+    while (0 < fscanf(fp, "%x-%x %4s %*[^\n]",
+                          &rend->alpha, &rend->omega, buf)) {
+        if (buf[1] == '-' || rend->alpha < brk)
+            continue;
+        else if (rend > rngv && rend->alpha == rend[-1].omega)
+            rend[-1].omega = rend->omega;
+        else if (++rend == rngv+MAXRNGS)
+            break;
+    }
+    fclose(fp);
+}
+
+// On my home system, "sbrk(0)" takes about .015 usec.
+int maccess(void const *mem, int len)
+{
+    if ((intptr_t)mem < 0 && (intptr_t)mem + len >= 0)
+        return 0;
+    if ((char const*)mem + len < (char const*)sbrk(0))
+        return mem > (void*)&etext;
+    if (!rend)
+        maccess_init();
+    struct rng *p;
+    for (p = rngv; p != rend; ++p)
+        if ((uintptr_t)mem + len <= p->omega)
+            return (uintptr_t)mem >= p->alpha;
+    return 0;
+}
+
+
 // ****************************************************************************
 //  Function: RelevantString
 //
@@ -1033,6 +1079,8 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
+        if( maccess(currentArgTypeName, 1) == 0 )
+            break;
         if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
             break;
         re += typeNameToFmtREMap[string(currentArgTypeName)];

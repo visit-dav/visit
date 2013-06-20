@@ -80,7 +80,7 @@ class EXPRESSION_API avtVectorDecomposeExpression
   protected:
     int                       which_comp;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension();
 };
 

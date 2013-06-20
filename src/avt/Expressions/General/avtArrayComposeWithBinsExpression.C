@@ -112,7 +112,7 @@ avtArrayComposeWithBinsExpression::~avtArrayComposeWithBinsExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtArrayComposeWithBinsExpression::DeriveVariable(vtkDataSet *in_ds)
+avtArrayComposeWithBinsExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);

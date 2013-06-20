@@ -79,7 +79,7 @@ class EXPRESSION_API avtCornerAngle : public avtSingleInputExpressionFilter
   protected:
     bool                        takeMin;
 
-    virtual vtkDataArray       *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray       *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool                IsPointVariable(void)  { return false; };
     virtual int                 GetVariableDimension()   { return 1; };
 

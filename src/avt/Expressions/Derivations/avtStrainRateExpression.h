@@ -72,7 +72,7 @@ class EXPRESSION_API avtStrainRateExpression
     virtual int               NumVariableArguments() { return 2; }
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *in);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *in, int currentDomainsIndex);
     virtual avtVarType        GetVariableType(void) { return AVT_TENSOR_VAR; };
     virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,
                                                             int ncompsIn2)

@@ -96,7 +96,7 @@ class EXPRESSION_API avtVerdictExpression : public avtSingleInputExpressionFilte
     virtual void              MetricForWholeMesh(vtkDataSet *, vtkDataArray *);
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
 
     virtual double            Metric(double coordinates[][3], int type) = 0;
 

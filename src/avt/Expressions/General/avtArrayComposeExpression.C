@@ -116,7 +116,7 @@ avtArrayComposeExpression::~avtArrayComposeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);

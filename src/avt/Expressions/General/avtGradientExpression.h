@@ -124,7 +124,7 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
   protected:
     GradientAlgorithmType     gradientAlgo;
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension() { return 3; }
     virtual bool              IsPointVariable(void);
     

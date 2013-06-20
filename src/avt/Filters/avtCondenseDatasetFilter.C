@@ -65,12 +65,13 @@
 //    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
 //    Initialize bypassHeuristic.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed the rpfPD and rpfUG variables for thread safety.
+//
 // ****************************************************************************
 
 avtCondenseDatasetFilter::avtCondenseDatasetFilter()
 {
-    rpfPD = vtkPolyDataRelevantPointsFilter::New();
-    rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
     keepAVTandVTK = false;
     bypassHeuristic = false;
 }
@@ -84,14 +85,13 @@ avtCondenseDatasetFilter::avtCondenseDatasetFilter()
 //
 //  Modifications:
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed the rpfPD and rpfUG variables for thread safety.
+//
 // ****************************************************************************
 
 avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 {
-    rpfPD->Delete();
-    rpfPD = NULL;
-    rpfUG->Delete();
-    rpfUG = NULL;
 }
 
 
@@ -147,6 +147,10 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //
 //    Hank Childs, Wed Dec 27 10:27:48 PST 2006
 //    Allow ghost data to pass through for structured grids.
+//
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Changed function to be thread safe. I remove the class variable rpfPD
+//    and rpfUG. Now I allocate the needed VTK object during execution.
 //
 // ****************************************************************************
 
@@ -302,22 +306,28 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
             switch(no_vars->GetDataObjectType())
             {
                 case VTK_POLY_DATA:
+                {
+                    vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
                     rpfPD->SetInputData((vtkPolyData*)no_vars);
                     out_pd = vtkPolyData::New();
                     rpfPD->SetOutput(out_pd);
-                    out_pd->Delete();
                     rpfPD->Update();
+                    rpfPD->Delete();
                     out_ds = (vtkDataSet*)out_pd;
                     break;
+                }
     
                 case VTK_UNSTRUCTURED_GRID:
+                {
+                    vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
                     rpfUG->SetInputData((vtkUnstructuredGrid*)no_vars);
                     out_ug = vtkUnstructuredGrid::New();
                     rpfUG->SetOutput(out_ug);
-                    out_ug->Delete();
                     rpfUG->Update();
+                    rpfUG->Delete();
                     out_ds = (vtkDataSet*)out_ug;
                     break;
+                }
     
                 default :
                 // We don't know what type this is.  It is probably a mistake that
@@ -359,22 +369,15 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Removed the rpfPD and rpfUG variables for thread safety.
+//
 // ****************************************************************************
 
 void
 avtCondenseDatasetFilter::ReleaseData(void)
 {
     avtDataTreeIterator::ReleaseData();
-
-    rpfPD->SetInputData(NULL);
-    vtkPolyData *p = vtkPolyData::New();
-    rpfPD->SetOutput(p);
-    p->Delete();
-
-    rpfUG->SetInputData(NULL);
-    vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
-    rpfUG->SetOutput(u);
-    u->Delete();
 }
 
 

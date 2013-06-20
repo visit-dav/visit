@@ -113,7 +113,7 @@ avtConstantFunctionExpression::~avtConstantFunctionExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtConstantFunctionExpression::DeriveVariable(vtkDataSet *in_ds)
+avtConstantFunctionExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType nvals = nodal ? in_ds->GetNumberOfPoints() : 
                       in_ds->GetNumberOfCells();

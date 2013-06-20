@@ -164,6 +164,7 @@ General/avtNormalizeExpression.C
 General/avtPerMaterialValueExpression.C
 General/avtPerformColorTableLookupExpression.C
 General/avtProcessorIdExpression.C
+General/avtThreadIdExpression.C
 General/avtRandomExpression.C
 General/avtRecenterExpression.C
 General/avtRectilinearLaplacianExpression.C

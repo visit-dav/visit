@@ -98,7 +98,7 @@ avtStrainInfinitesimalExpression::~avtStrainInfinitesimalExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds)
+avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     char msg[1024];
     double vals[3];

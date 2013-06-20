@@ -111,7 +111,7 @@ avtCurvatureExpression::~avtCurvatureExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds)
+avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {

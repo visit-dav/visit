@@ -618,6 +618,8 @@ ENDIF(APPLE OR WIN32)
 OPTION(VISIT_USE_GLEW "Use GLEW to call GL functions." ON)
 OPTION(VISIT_USE_BOOST "Use system boost library." ON)
 
+OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
+
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
@@ -1037,6 +1039,15 @@ ENDIF(VISIT_R_DIR)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
+
+# Enable thread build of VisIt
+IF(VISIT_THREAD)
+    ADD_DEFINITIONS(-DVISIT_ATOMIC_USE_GCC_ATOMIC)
+    ADD_DEFINITIONS(-DVISIT_THREADS)
+    MESSAGE(STATUS "Threading for VisIt: ON")
+ELSE(VISIT_THREAD)
+    MESSAGE(STATUS "Threading for VisIt: OFF")
+ENDIF(VISIT_THREAD)
 
 #-----------------------------------------------------------------------------
 # If we are doing a static build or the VTK Python wrappers do not exist:

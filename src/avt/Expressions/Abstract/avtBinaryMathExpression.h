@@ -95,7 +95,7 @@ class EXPRESSION_API avtBinaryMathExpression
     virtual int               NumVariableArguments() { return 2; }
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual vtkDataArray     *CreateArray(vtkDataArray *, vtkDataArray *);
     virtual void              DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                           vtkDataArray *out, int, int) = 0;

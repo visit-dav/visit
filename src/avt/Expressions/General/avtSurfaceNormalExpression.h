@@ -80,7 +80,7 @@ class EXPRESSION_API avtSurfaceNormalExpression
 
   protected:
     bool                      isPoint;
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return isPoint; };
     virtual int               GetVariableDimension(void) { return 3; };
     vtkDataArray             *RectilinearDeriveVariable(vtkRectilinearGrid *);

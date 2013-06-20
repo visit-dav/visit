@@ -379,6 +379,7 @@ SET(MINIMAL_DATABASE_PLUGINS
 Curve2D
 RAW
 VTK
+PICS_Tester
 )
 
 # Select the plugins to build

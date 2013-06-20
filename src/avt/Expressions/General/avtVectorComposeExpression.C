@@ -163,7 +163,7 @@ avtVectorComposeExpression::GetVariableDimension(void)
 //    domain to address confusion in creating color vectors.
 // ****************************************************************************
 vtkDataArray *
-avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds)
+avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     size_t numinputs = varnames.size();
 

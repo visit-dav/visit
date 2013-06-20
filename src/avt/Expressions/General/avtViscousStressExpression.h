@@ -75,7 +75,7 @@ class EXPRESSION_API avtViscousStressExpression
                              { return "Calculating viscous stress";};
 
   protected:
-    virtual vtkDataArray    *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray    *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtVarType       GetVariableType(void) { return AVT_TENSOR_VAR; };
     virtual bool             IsPointVariable(void) { return false; };
     virtual void             CalculateVStress2D(vtkDataSet *ds,

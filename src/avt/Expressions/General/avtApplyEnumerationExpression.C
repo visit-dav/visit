@@ -116,7 +116,7 @@ avtApplyEnumerationExpression::~avtApplyEnumerationExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds)
+avtApplyEnumerationExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);

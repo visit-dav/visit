@@ -174,7 +174,7 @@ avtVerdictExpression::~avtVerdictExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds)
+avtVerdictExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
     vtkIdType nCells = in_ds->GetNumberOfCells();
 

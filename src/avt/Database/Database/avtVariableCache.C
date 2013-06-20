@@ -51,6 +51,7 @@
 
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
+#include "avtExecutionManager.h"
 
 using std::string;
 using std::vector;
@@ -252,6 +253,10 @@ avtVariableCache::GetVTKObject(const char *var, const char *type, int timestep,
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added RemoveObjectPointerPair to ensure we don't have a pair with obj
 //    already recorded
+//
+//    David Camp, Mon May 20 07:45:08 PDT 2013
+//    Added code to lock the push of the cache var. This is only done in 
+//    thread mode.
 // ****************************************************************************
 
 void
@@ -274,7 +279,9 @@ avtVariableCache::CacheVTKObject(const char *name, const char *type,
     if (v == NULL)
     {
         v = new OneVar(name, type);
+        VisitMutexLock( "avtVariableCache::vtkVars" );
         vtkVars.push_back(v);
+        VisitMutexUnlock( "avtVariableCache::vtkVars" );
     }
 
     RemoveObjectPointerPair(obj);
@@ -665,6 +672,9 @@ avtVariableCache::GetVoidRef(const char *var, const char *type, int timestep,
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2001
 //
+//    David Camp, Mon May 20 07:45:08 PDT 2013
+//    Added code to lock the push of the cache var. This is only done in
+//    thread mode.
 // ****************************************************************************
 
 void
@@ -686,7 +696,9 @@ avtVariableCache::CacheVoidRef(const char *name, const char *type,
     if (v == NULL)
     {
         v = new OneVar(name, type);
+        VisitMutexLock( "avtVariableCache::voidRefVars" );
         voidRefVars.push_back(v);
+        VisitMutexUnlock( "avtVariableCache::voidRefVars" );
     }
 
     avtCachedVoidRef *cvr = new avtCachedVoidRef(vr);
@@ -1148,6 +1160,9 @@ avtVariableCache::OneMat::~OneMat()
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2001
 //
+//    David Camp, Mon May 20 07:45:08 PDT 2013
+//    Added code to lock the push of the cache var. This is only done in
+//    thread mode.
 // ****************************************************************************
 
 void
@@ -1169,7 +1184,9 @@ avtVariableCache::OneMat::CacheItem(int timestep, int domain,
     if (t == NULL)
     {
         t = new OneTimestep(timestep);
+        VisitMutexLock( "avtVariableCache::OneMat::timesteps" );
         timesteps.push_back(t);
+        VisitMutexUnlock( "avtVariableCache::OneMat::timesteps" );
     }
 
     t->CacheItem(domain, im);

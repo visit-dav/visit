@@ -74,7 +74,7 @@ class EXPRESSION_API avtNMatsExpression : public avtSingleInputExpressionFilter
     virtual const char       *GetDescription(void)
                                            {return "Finding NMats";};
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return false; };
 
     virtual avtContract_p

@@ -80,7 +80,7 @@ class EXPRESSION_API avtConstantFunctionExpression
     virtual const char   *GetDescription() { return "Assigning constant."; }
     virtual void          ProcessArguments(ArgsExpr*, ExprPipelineState *);
   protected:
-    virtual vtkDataArray *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool          IsPointVariable()  { return nodal; }
     virtual int           GetVariableDimension() { return 1; }
     virtual int           NumVariableArguments(void) { return 2; }

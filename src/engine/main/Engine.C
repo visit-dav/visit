@@ -113,6 +113,7 @@
 #include <avtVariableCache.h>
 #include <Environment.h>
 #include <avtStructuredDomainBoundaries.h>
+#include <avtExecutionManager.h>
 
 #include <visit-config.h>
 #ifdef HAVE_OSMESA
@@ -570,6 +571,10 @@ Engine *Engine::Instance()
 //    Tom Fogal, Mon May 24 19:36:40 MDT 2010
 //    Avoid an Open MPI warning when starting X servers.
 //
+//    David Camp, Thu May 23 12:52:53 PDT 2013
+//    Add a call to set the number of threads used if thread mode it on.
+//    The number is a command line argument. The default is 4.
+//
 // ****************************************************************************
 
 void
@@ -607,6 +612,8 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     // Configure external options.
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     this->X_Args = RuntimeSetting::lookups("x-args");
+
+    VisitSetNumberOfThreads( RuntimeSetting::lookupi("threads") );
 
     //
     // Set a different new handler for the engine

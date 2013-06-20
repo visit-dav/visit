@@ -72,7 +72,7 @@ class EXPRESSION_API avtRectilinearLaplacianExpression
     virtual const char       *GetDescription(void)
                                              {return "Calculating Laplacian";};
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension(void) { return 1; };
 };
 
