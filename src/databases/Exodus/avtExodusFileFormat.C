@@ -46,7 +46,6 @@
 #include <algorithm>
 #include <map>
 #include <string>
-#include <utility.h>
 #include <vector>
 
 #include <vtkBitArray.h>
