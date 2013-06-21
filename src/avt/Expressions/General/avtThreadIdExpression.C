@@ -104,7 +104,7 @@ avtThreadIdExpression::~avtThreadIdExpression()
 vtkDataArray *
 avtThreadIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    int threadId = pthread_self();
+    pthread_t threadId = pthread_self();
     vtkIdType npts   = in_ds->GetNumberOfPoints();
 
     vtkIntArray *rv = vtkIntArray::New();
