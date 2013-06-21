@@ -1,6 +1,8 @@
 /***********************************************************************
     ThreadPool.cpp
 */
+#if defined(VISIT_THREADS)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -479,3 +481,6 @@ void *ThreadPoolWorker::GetWorkItem( ThreadPool *tpool )
 
     return( rnt );
 }
+
+#endif // VISIT_THREADS
+
