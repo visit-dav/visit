@@ -294,7 +294,8 @@ avtStatisticalTrendsFilter::UpdateDataObjectInfo(void)
 void
 avtStatisticalTrendsFilter::InitializeTimeLoop(void)
 {
-
+  std:: cerr << __FILE__ << "  " << __LINE__ << std::endl;
+  
     if( atts.GetStatisticType() == StatisticalTrendsAttributes::Sum)
       SetNumberOfIterations(1);
     else if( atts.GetStatisticType() == StatisticalTrendsAttributes::Mean)
@@ -368,6 +369,10 @@ avtStatisticalTrendsFilter::InitializeTimeLoop(void)
     SetEndFrame(stopTimeSlice);
     SetStride( atts.GetStride() );
 
+    std::cerr << "start " << startTimeSlice << "  "
+              << "stop " << stopTimeSlice << "  "
+              << atts.GetStride() << std::endl;
+
     // Clean-up the current output dataset if necessary
     if( trend_ds.size() )
     {
@@ -376,6 +381,8 @@ avtStatisticalTrendsFilter::InitializeTimeLoop(void)
       
       trend_ds.clear();
     }
+
+    avtTimeLoopFilter::InitializeTimeLoop();
 }
 
 
