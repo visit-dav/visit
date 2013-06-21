@@ -104,7 +104,16 @@ avtThreadIdExpression::~avtThreadIdExpression()
 vtkDataArray *
 avtThreadIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
-    pthread_t threadId = pthread_self();
+#if defined(VISIT_THREADS)
+   #if defined(__APPLE__)
+
+      int threadId = *((int*) pthread_self());
+   #else
+      int threadId = pthread_self();
+   #endif
+#else
+   int threadId = 0;
+#endif
     vtkIdType npts   = in_ds->GetNumberOfPoints();
 
     vtkIntArray *rv = vtkIntArray::New();
