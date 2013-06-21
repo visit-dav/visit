@@ -6,6 +6,8 @@ ThreadPool.h
 #ifndef _THREAD_POOL_H_
 #define _THREAD_POOL_H_
 
+#if defined(VISIT_THREADS)
+
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
@@ -164,5 +166,6 @@ inline void PthreadCondWait( pthread_cond_t &cond, pthread_mutex_t &lock )
     }
 }
 
+#endif // VISIT_THREADS
 #endif // _THREAD_POOL_H_
 
