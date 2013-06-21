@@ -143,9 +143,9 @@ class AVTFILTERS_API avtTimeLoopFilter : virtual public avtFilter
 
     virtual bool                        RankOwnsTimeSlice(int t);
     virtual void                        PreLoopInitialize(void) {}
-    void                                InitializeTimeLoop(void);
-
   protected:
+    virtual void                        InitializeTimeLoop(void);
+
     // Asks whether we have decided to do time parallelization.  This 
     // is for derived types to understand what mode we're in.
     bool                                ParallelizingOverTime(void)

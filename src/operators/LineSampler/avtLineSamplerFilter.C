@@ -282,6 +282,8 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
         composite_ds->Delete();
         composite_ds = NULL;
     }
+
+    avtTimeLoopFilter::InitializeTimeLoop();
 }
 
 
