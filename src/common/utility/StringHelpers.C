@@ -66,6 +66,12 @@ static char StaticStringBuf[STATIC_BUF_SIZE];
 
 bool has_nonspace_chars(const std::string &s);
 
+#if defined(_WIN32) || defined(__APPLE__)
+
+#define MACCESS(...)
+
+#else
+
 #include <stdint.h>    // uintptr_t
 #include <stdio.h>
 #include <unistd.h>     // getpid...
@@ -111,6 +117,9 @@ int maccess(void const *mem, int len)
     return 0;
 }
 
+#define MACCESS(curArgTypeName, num) if( maccess(curArgTypeName, num) == 0 ) break;
+
+#endif
 
 // ****************************************************************************
 //  Function: RelevantString
@@ -1079,8 +1088,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
-        if( maccess(currentArgTypeName, 1) == 0 )
-            break;
+        MACCESS(currentArgTypeName, 1);
         if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
             break;
         re += typeNameToFmtREMap[string(currentArgTypeName)];
