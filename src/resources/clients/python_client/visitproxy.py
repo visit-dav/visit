@@ -50,7 +50,7 @@ class ViewerProxy:
     #    self.state.data(2)["syncTag"] = -1
     #    self.event.wait()
 
-    def handshake(self,host,port,password):
+    def handshake(self,host,port,password,visType):
         # connect to visit given host, port, and password
         # VisIt must be listener mode for this to work
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -61,7 +61,7 @@ class ViewerProxy:
         # VisIt expects password to continue
         header = {}
         header["password"] = password
-        header["canRender"] = True
+        header["canRender"] = visType
         s.send(json.dumps(header))
 
         data = s.recv(ViewerProxy.BUFSIZE) # read handshake message
@@ -119,11 +119,11 @@ class ViewerProxy:
             if self.count == 3:
                 LastEvent = True
 
-    def connect(self,host,port,password):
+    def connect(self,host,port,password,visType):
         global LastEvent
 
         # attempt handshake
-        if not self.handshake(host,port,password):
+        if not self.handshake(host,port,password,visType):
             print "HandShake failed: unable to connect"
             return False
 

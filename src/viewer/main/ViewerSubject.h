@@ -626,6 +626,7 @@ private:
 
     void PrintWindow();
     void SaveWindow();
+    void ExportWindow();
     void UpdateColorTable();
     void ExportColorTable();
     void WriteConfigFile();
@@ -819,6 +820,7 @@ private:
     std::vector<std::string> unknownArguments;
     std::vector<std::string> clientArguments;
     SharedDaemon             *shared_viewer_daemon;
+    size_t                   clientIds;
 };
 
 #endif

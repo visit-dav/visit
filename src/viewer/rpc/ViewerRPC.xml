@@ -199,6 +199,7 @@
       DDTConnectRPC
       DDTFocusRPC
       ReleaseToDDTRPC
+      ExportRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

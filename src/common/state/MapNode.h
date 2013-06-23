@@ -70,8 +70,10 @@ class STATE_API MapNode : public Variant
     MapNode(const MapNode&);
     MapNode(const XMLNode&,bool decodeString = true);
     MapNode(const XMLNode*,bool decodeString = true);
-    MapNode(const JSONNode&,bool decodeString = true);
-    MapNode(const JSONNode*,bool decodeString = true);
+    explicit MapNode(const JSONNode&, bool decodeString = true);
+    explicit MapNode(const JSONNode*, bool decodeString = true);
+    explicit MapNode(const JSONNode&, const JSONNode& metadata, bool decodeString = true);
+    explicit MapNode(const JSONNode*,const JSONNode *metadata, bool decodeString = true);
     MapNode  &operator=(const MapNode&);
     MapNode  &operator=(bool);
     MapNode  &operator=(char);
@@ -116,9 +118,12 @@ class STATE_API MapNode : public Variant
     virtual JSONNode     ToJSONNode(bool encodeString = true, bool id = true) const;
 
     int                  CalculateMessageSize(Connection &conn) const;
+    int                  CalculateMessageSize(Connection *conn) const;
     void                 Write(Connection &conn) const;
+    void                 Write(Connection *conn) const;
     void                 Read(Connection &conn);
 
+    static int MapNodeType;
  private:
     virtual JSONNode ToJSONNodeData(bool encodeString) const;
     virtual JSONNode ToJSONNodeMetaData(bool id) const;

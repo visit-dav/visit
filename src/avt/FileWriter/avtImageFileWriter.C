@@ -53,7 +53,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkBase64Utilities.h>
 #include <DebugStream.h>
-
+#include <vtkImageResample.h>
 
 // This array contains strings that correspond to the file types that are 
 // enumerated in the ImageFileFormat enum.
@@ -397,6 +397,64 @@ avtImageFileWriter::WriteToByteArray(avtImageRepresentation &imagerep,
         }
     }
 
+    writer->Delete();
+
+    return result;
+}
+
+
+const char*
+avtImageFileWriter::WriteToByteArray(avtImageRepresentation &imagerep,
+                                    int quality,
+                                    bool progressive,
+                                    size_t& len,
+                                    int outputWidth,
+                                    int outputHeight)
+{
+
+
+    vtkImageData* imagedata = imagerep.GetImageVTK();
+
+    vtkImageResample* reslice = vtkImageResample::New();
+
+    int extents[6];
+    imagedata->GetExtent(extents);
+
+    reslice->SetOutputSpacing(((double)extents[1])/outputWidth,
+                              ((double)extents[3])/outputHeight,
+                              0);
+
+    reslice->SetInputData(imagedata);
+    reslice->Update();
+
+    vtkJPEGWriter* writer = vtkJPEGWriter::New();
+
+
+    writer->SetWriteToMemory(true);
+    writer->SetInputData(reslice->GetOutput());
+    writer->SetQuality(quality);
+    writer->SetProgressive(progressive?1:0);
+
+    writer->Write();
+
+    vtkUnsignedCharArray* array = writer->GetResult();
+
+    char * result = NULL;
+    len = 0;
+
+    if(array)
+    {
+
+        vtkIdType size = array->GetSize();
+        if(size > 0)
+        {
+            len = size;
+            result = new char [len];
+            memcpy(result,array->GetVoidPointer(0),sizeof(char)*len);
+        }
+    }
+
+    reslice->Delete();
     writer->Delete();
 
     return result;

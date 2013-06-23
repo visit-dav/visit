@@ -172,10 +172,7 @@ class VIEWER_SUBJECT_PROXY_API ViewerSubjectProxy : public QObject, public Viewe
     virtual void SetPlotSILRestriction();
     virtual void Update(Subject *subj);
 
-
-
-    ViewerSubjectProxy();
-
+    ViewerSubjectProxy(int argc,char* argv[]);
     ViewerSubjectProxy(ViewerSubjectProxy* proxy);
 
     virtual ~ViewerSubjectProxy();

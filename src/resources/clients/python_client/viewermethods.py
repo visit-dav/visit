@@ -1,5 +1,7 @@
 import sys
 import inspect
+import base64
+import cStringIO
 from viewerstate import *
 from visitstate import RPCType as RPC
 
@@ -20,6 +22,7 @@ class ViewerMethods:
         gmap["DeleteActivePlots"] = self.DeleteActivePlots
         gmap["SaveImageWindow"] = self.SaveImageWindow
         gmap["ShowImageWindow"] = self.ShowImageWindow
+        gmap["SaveWindow"] = self.SaveWindow
 
     def find(self,val,lst):
         index = -1
@@ -32,7 +35,7 @@ class ViewerMethods:
         return index
     
     def getKey(self,index,key):
-        return str(self.state.api(index)[key])
+        return int(self.state.api(index)[key])
 
     def getContents(self,index,key):
         return self.state.data(index)[self.getKey(index,key)]
@@ -178,7 +181,7 @@ class ViewerMethods:
 
     def SaveImageWindow(self,filename):
         try:
-            import PIL,cStringIO,base64
+            import PIL
             import PIL.Image
 
             queryAttr = self.state.data(38)["12"]
@@ -186,7 +189,31 @@ class ViewerMethods:
             for (i,attr) in enumerate(queryAttr):
                 data = cStringIO.StringIO(base64.b64decode(attr))
                 im = PIL.Image.open(data)
-                im.save(filename + "_" + i + ".jpg")
+                im.save(filename + "_" + str(i) + ".jpg")
         except:
             print "Saving Window Failed..."
+
+    def decode_base64(self,data):
+        """Decode base64, padding being optional.
+
+        :param data: Base64 data as an ASCII byte string
+        :returns: The decoded byte string.
+
+        """
+        missing_padding = 4 - len(data) % 4
+        if missing_padding:
+            data += b'='* missing_padding
+        return base64.decodestring(data)
+
+    def SaveWindow(self,filename):
+        try:
+
+            queryAttr = self.state.data(38)["12"]
+            for (i,attr) in enumerate(queryAttr):
+                data = base64.b64decode(attr)
+                f = open(filename + "_" + str(i) + ".vtk","w")
+                f.write(data)
+                f.close()
+        except:
+            print "Saving VTK File Failed..."
 

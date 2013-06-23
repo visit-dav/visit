@@ -6,7 +6,6 @@ package visitclient;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import java.util.ArrayList;
 
 /**
@@ -24,51 +23,31 @@ public class ViewerMethods
     
     public synchronized void InvertBackgroundColor()
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.InvertBackgroundRPC.ordinal());
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.InvertBackgroundRPC.ordinal());
         m_state.notify(0);
     }
     
     public synchronized void AddWindow()
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.AddWindowRPC.ordinal());
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.AddWindowRPC.ordinal());
         m_state.notify(0);
     }
     
     public synchronized void DrawPlots()
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.DrawPlotsRPC.ordinal());
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.DrawPlotsRPC.ordinal());
         m_state.notify(0);
     }
     
     public synchronized void DeleteActivePlots()
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.DeleteActivePlotsRPC.ordinal());
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.DeleteActivePlotsRPC.ordinal());
         m_state.notify(0);
     }
 
     public synchronized void HideActivePlots()
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.HideActivePlotsRPC.ordinal());
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.HideActivePlotsRPC.ordinal());
         m_state.notify(0);
     }
     
@@ -81,17 +60,9 @@ public class ViewerMethods
     }
     
     public synchronized void SetActivePlots(ArrayList<Integer> index)
-    {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.DeleteActivePlotsRPC.ordinal());
-        
-        System.out.println( (new Gson()).toJsonTree(index).toString());
-        
-        JsonArray array = jo.getAsJsonArray(m_state.api(0).get("activePlotIds").getAsString());
-        array.add((new Gson()).toJsonTree(index));
-        
+    {   
+        m_state.set(0, "RPCType", ViewerState.RPCType.SetActivePlotsRPC.ordinal());
+        m_state.set(0, "activePlotIds", (new Gson()).toJsonTree(index));
         m_state.notify(0);
     }
         
@@ -118,30 +89,20 @@ public class ViewerMethods
                                           boolean addDefaultPlots, 
                                           String forcedFileType)
     {
-        JsonObject jo = m_state.data(0);
+        m_state.set(0, "RPCType", ViewerState.RPCType.OpenDatabaseRPC.ordinal());
+        m_state.set(0, "database", filename);
+        m_state.set(0, "intArg1", timeState);
+        m_state.set(0, "boolFlag", addDefaultPlots);
+        m_state.set(0, "stringArg1", forcedFileType);
         
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.OpenDatabaseRPC.ordinal());
-        
-        jo.addProperty(m_state.api(0).get("database").getAsString(), 
-                filename);
-        
-        jo.addProperty(m_state.api(0).get("intArg1").getAsString(), 
-                timeState);
-        
-        jo.addProperty(m_state.api(0).get("boolFlag").getAsString(), 
-                addDefaultPlots);
-
-        jo.addProperty(m_state.api(0).get("stringArg1").getAsString(), 
-                forcedFileType);        
         m_state.notify(0);
     }
     
     private synchronized int GetEnabledID(String plot_type, String name)
     {
-        JsonArray names = m_state.data(14).get(m_state.api(14).get("name").getAsString()).getAsJsonArray();
-        JsonArray types = m_state.data(14).get(m_state.api(14).get("type").getAsString()).getAsJsonArray();
-        JsonArray enabled = m_state.data(14).get(m_state.api(14).get("enabled").getAsString()).getAsJsonArray();
+        JsonArray names = m_state.get(14, "name").getAsJsonArray();
+        JsonArray types = m_state.get(14, "type").getAsJsonArray();
+        JsonArray enabled = m_state.get(14, "enabled").getAsJsonArray();
         
         ArrayList<String> mapper = new ArrayList<String>();
         
@@ -173,17 +134,9 @@ public class ViewerMethods
     
     private synchronized void AddPlotByID(int plot_type, String plot_var)
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.AddPlotRPC.ordinal());
-        
-        jo.addProperty(m_state.api(0).get("plotType").getAsString(), 
-                plot_type);
-        
-        jo.addProperty(m_state.api(0).get("variable").getAsString(), 
-                plot_var);
-        
+       m_state.set(0, "RPCType", ViewerState.RPCType.AddPlotRPC.ordinal());
+       m_state.set(0, "plotType", plot_type);
+       m_state.set(0, "variable", plot_var);
        m_state.notify(0);
     }
     
@@ -196,16 +149,10 @@ public class ViewerMethods
             AddPlotByID(index,plot_var);
     }
     
-    private synchronized void AddOperatorByID(int plot_type)
+    private synchronized void AddOperatorByID(int op_type)
     {
-        JsonObject jo = m_state.data(0);
-        
-        jo.addProperty(m_state.api(0).get("RPCType").getAsString(), 
-                ViewerState.RPCType.AddOperatorRPC.ordinal());
-        
-        jo.addProperty(m_state.api(0).get("operatorType").getAsString(), 
-                plot_type);
-        
+        m_state.set(0, "RPCType", ViewerState.RPCType.AddOperatorRPC.ordinal());
+        m_state.set(0, "operatorType", op_type);
         m_state.notify(0);
     }
     

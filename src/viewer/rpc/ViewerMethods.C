@@ -5433,3 +5433,22 @@ ViewerMethods::DDTFocus(int domain)
     state->GetViewerRPC()->SetIntArg1(domain);
     state->GetViewerRPC()->Notify();
 }
+
+// ****************************************************************************
+//  Method: ViewerMethods::DDTFocus
+//
+//  Purpose: Instructs DDT to focus on a specific domain
+//
+//  Programmer:
+//  Creation:   December 18, 2011
+//
+// ****************************************************************************
+
+void
+ViewerMethods::ExportWindows(const intVector &windowIds, const std::string &format)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetActivePlotIds(windowIds);
+    state->GetViewerRPC()->SetStringArg1(format);
+    state->GetViewerRPC()->Notify();
+}

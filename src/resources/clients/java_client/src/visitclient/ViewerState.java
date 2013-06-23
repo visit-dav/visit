@@ -6,6 +6,7 @@ package visitclient;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
@@ -53,35 +54,39 @@ public class ViewerState
         return null;
     }
     
-    synchronized JsonObject data(int index)
+    synchronized JsonElement get(int index, String key)
     {
         if(index >= 0 && index < states.size())
-            return states.get(index).getData();
+            return states.get(index).get(key);
         return null;
     }
     
-    synchronized JsonObject api(int index)
+    synchronized void set(int index, String key, Boolean value)
+    {
+        set(index, key, new JsonPrimitive(value));
+    }
+    
+    synchronized void set(int index, String key, Number value)
+    {
+        set(index, key, new JsonPrimitive(value));
+    }
+    
+    
+    synchronized void set(int index, String key, String value)
+    {
+        set(index, key, new JsonPrimitive(value));
+    }
+    
+    synchronized void set(int index, String key, JsonElement value)
     {
         if(index >= 0 && index < states.size())
-            return states.get(index).getApi();
-        return null;
+            states.get(index).set(key, value);
     }
 
     synchronized void notify(int index)
     {
         if(index >= 0 && index < states.size())
-        {
-            try
-            {
-                output.write(states.get(index).data.toString());
-                output.flush();
-            }
-            catch(Exception e)
-            {
-                System.out.println("Unable to write data to VisIt");
-            }
-        }
-        
+            states.get(index).notify(output);
     }
         
     synchronized void setConnection(OutputStreamWriter o)
@@ -289,6 +294,7 @@ public class ViewerState
         DDTConnectRPC,
         DDTFocusRPC,
         ReleaseToDDTRPC,
+        ExportRPC,
         MaxRPC
     }
     

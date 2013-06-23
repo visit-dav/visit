@@ -90,7 +90,7 @@ std::map<int,vtkQtRenderWindow*> ViewerSubjectProxy::viswindows;
 bool 
 ViewerSubjectProxy::TestConnection::NeedsRead(bool blocking) const
 {
-    //does this logic because visitModule calls NeedsRead once
+    //HACK: does this logic because visitModule calls NeedsRead once
     //before entering loop and expects to get false..
 #ifdef _WIN32
     //Sleep(1);
@@ -114,21 +114,12 @@ void ViewerSubjectProxy::InitializePlugins(PluginManager::PluginCategory t, cons
 
 void ViewerSubjectProxy::LoadPlugins()
 {
-    //std::cout << "Loading plugins" << std::endl;
-
-    //ViewerState* state = vissubject->GetViewerState();
     ViewerState* state = gstate;
     PlotPluginManager* plotPlugins = plotplugin;
     OperatorPluginManager* operatorPlugins = operatorplugin;
 
     int nPlots = state->GetNumPlotStateObjects();
     int nOperators = state->GetNumOperatorStateObjects();
-
-    if (nPlots > 0 || nOperators > 0)
-    {
-        //std::cout << "path has stuff" << " " << nPlots << " " << nOperators << std::endl;
-        //return;
-    }
 
     if(plotPlugins == 0 || operatorPlugins == 0)
     {
@@ -218,48 +209,31 @@ void ViewerSubjectProxy::LoadPlugins()
         //std::cout << obj->TypeName() << std::endl;
         state->RegisterOperatorAttributes(obj);
     }
-
-    //std::cout << "ending" << std::endl;
 }
 
 //return the new cli plot and operator manager so that the visit cli works like normal..
 PlotPluginManager* ViewerSubjectProxy::GetPlotPluginManager() const
 {
-    //std::cout << "Getting plot plugins" << std::endl;
-    //return vissubject->GetPlotPluginManager();
     return plotplugin;
 }
 
 OperatorPluginManager *ViewerSubjectProxy::GetOperatorPluginManager() const
 {
-    //std::cout << "operator plugins" << std::endl;
-    //return vissubject->GetOperatorPluginManager();
     return operatorplugin;
 }
 
 ViewerState   *ViewerSubjectProxy::GetViewerState() const
 {
-   //std::cout << "Getting viewer State" << " " << gstate << std::endl;
-   //return vissubject->GetViewerState();
    return gstate;
 }
 
 ViewerMethods *ViewerSubjectProxy::GetViewerMethods() const
 {
-    //std::cout << "Getting viewer Methods" << std::endl;
-    //return vissubject->GetViewerMethods();
     return gmethods;
 }
 
 void ViewerSubjectProxy::Initialize(int argc,char* argv[])
 {
-    //std::cout << "initializing" << std::endl;
-    //do not initialize if gstate or gmethods have already been set..
-//    if(gstate || gmethods)
-//    {
-//        std::cout << "Already Initialized" << std::endl;
-//        return;
-//    }
     vissubject = new ViewerSubject();
     testconn = new TestConnection();
     plotplugin = new PlotPluginManager();
@@ -267,13 +241,6 @@ void ViewerSubjectProxy::Initialize(int argc,char* argv[])
 
     gstate = vissubject->GetViewerState();
     gmethods = vissubject->GetViewerMethods();
-
-    //std::cout << "here" << std::endl;
-    //std::string hostname = "localhost";
-    //stringVector args;
-    //GetViewerMethods()->ConnectToMetaDataServer(hostname,args);
-    //ViewerFileServer::Instance()->ConnectServer(hostname,args);
-    //std::cout << "and now here" << std::endl;
 
     try
     {
@@ -292,7 +259,6 @@ void ViewerSubjectProxy::Initialize(int argc,char* argv[])
     {
         std::cout << e.Message() << std::endl;
     }
-    //std::cout << "blah" << std::endl;
 }
 
 
@@ -345,7 +311,6 @@ void ViewerSubjectProxy::windowDeleted(QObject * obj)
 
 QList<int> ViewerSubjectProxy::GetRenderWindowIDs()
 {
-
     QList<int> windowIDs;
 
     std::map<int,vtkQtRenderWindow*>::iterator itr = viswindows.begin();
@@ -359,7 +324,7 @@ QList<int> ViewerSubjectProxy::GetRenderWindowIDs()
 }
 
 // Constructor
-ViewerSubjectProxy::ViewerSubjectProxy():ViewerProxy()
+ViewerSubjectProxy::ViewerSubjectProxy(int argc, char *argv[]):ViewerProxy()
 {
     //reset VTK logs..
     InitVTK::Initialize();
@@ -376,8 +341,8 @@ ViewerSubjectProxy::ViewerSubjectProxy():ViewerProxy()
     internalSILRestriction = new avtSILRestriction(
         *gstate->GetSILRestrictionAttributes());
     gstate->GetSILRestrictionAttributes()->Attach(this);
-    //gstate->GetSyncAttributes()->Attach(this);
-    //ViewerProxy::CreateViewerProxy(this);
+
+    Initialize(argc,argv);
 }
 
 // This constructor emulates as if it has already been started..
@@ -395,8 +360,6 @@ ViewerSubjectProxy::ViewerSubjectProxy(ViewerSubjectProxy* proxy):ViewerProxy()
     internalSILRestriction = new avtSILRestriction(
         *gstate->GetSILRestrictionAttributes());
     gstate->GetSILRestrictionAttributes()->Attach(this);
-    //gstate->GetSyncAttributes()->Attach(this);
-    //ViewerProxy::CreateViewerProxy(this);
 }
 
 // Destructor (free allocated memory)
@@ -424,7 +387,6 @@ ViewerSubjectProxy::GetPlotSILRestriction() const
 void 
 ViewerSubjectProxy::SetPlotSILRestriction(avtSILRestriction_p newRestriction)
 {
-
     // Copy the new SIL restriction into the internal SIL restriction object.
     internalSILRestriction = newRestriction;
 
@@ -538,15 +500,15 @@ ViewerSubjectProxy::eventFilter(QObject *o, QEvent *e)
             ViewerWindow* vw = ViewerWindowManager::Instance()->GetWindow(id-1);
             if(vw)
             {
-                if (vw->GetRealized() == true)
-                    vw->Show();
-                else
+                if (!vw->GetRealized())
                     vw->Realize();
+                //else
+                //    vw->Show();
             }
             return true;
         }
     }
-    else if(e->type() == QEvent::Hide && !e->spontaneous())
+/*    else if(e->type() == QEvent::Hide && !e->spontaneous())
     {
         QMainWindow* renwin = dynamic_cast<QMainWindow*>(o);
         if(renwin)
@@ -558,6 +520,7 @@ ViewerSubjectProxy::eventFilter(QObject *o, QEvent *e)
             return true;
         }
     }
+*/
     return false;
 }
 

@@ -39,8 +39,10 @@
 #include <MapNode.h>
 #include <Connection.h>
 #include <visitstream.h>
+#include <cstdlib>
 
 using namespace std;
+int MapNode::MapNodeType = Variant::STRING_VECTOR_TYPE + 1000;
 
 // ****************************************************************************
 //  Method:  MapNode::MapNode
@@ -72,14 +74,24 @@ MapNode::MapNode(const XMLNode *node, bool decodeString)
     SetValue(*node,decodeString);
 }
 
-MapNode::MapNode(const JSONNode &node,bool decodeString)
+MapNode::MapNode(const JSONNode &node, bool decodeString)
 {
-    SetValue(node,decodeString);
+    SetValue(node, decodeString);
 }
 
 MapNode::MapNode(const JSONNode *node, bool decodeString)
 {
     SetValue(*node,decodeString);
+}
+
+MapNode::MapNode(const JSONNode &node,const JSONNode &metadata, bool decodeString)
+{
+    SetValue(node, metadata, decodeString);
+}
+
+MapNode::MapNode(const JSONNode *node, const JSONNode* metadata, bool decodeString)
+{
+    SetValue(*node,*metadata,decodeString);
 }
 
 // ****************************************************************************
@@ -619,7 +631,20 @@ MapNode::SetValue(const JSONNode &node,bool decodeString)
 void
 MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeString)
 {
-    if(data.GetType() == JSONNode::JSONOBJECT)
+    int data_type = 0;
+
+    if(metadata.GetType() == JSONNode::JSONINTEGER){
+        data_type = metadata.GetInt();
+    }
+    else
+    {
+        const string name = metadata.GetString();
+
+        data_type = isdigit(name[0]) ? atoi(name.c_str()) :
+                                       NameToTypeID(name);
+    }
+
+    if(data_type == 0 && data.GetType() == JSONNode::JSONOBJECT)
     {
         const JSONNode::JSONObject& object = data.GetJsonObject();
         const JSONNode::JSONObject& mobject = metadata.GetJsonObject();
@@ -631,10 +656,27 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
             entries[itr->first] = MapNode();
             entries[itr->first].SetValue(itr->second,mitr->second,decodeString);
         }
-    } /// There should not be any JSONArrays for MapNode (yet)...
+    }
+    else if(data_type == 0 && data.GetType() == JSONNode::JSONARRAY)
+    {
+        const JSONNode::JSONArray& array = data.GetArray();
+        const JSONNode::JSONArray& marray = metadata.GetArray();
+        char buffer[1024];
+
+        for(int i = 0; i < array.size(); ++i) {
+            sprintf(buffer, "%d", i);
+            entries[buffer] = MapNode();
+            entries[buffer].SetValue(array[i], marray[i], decodeString);
+        }
+    }
     else
     {
-        Variant::SetValue(data,metadata,decodeString);
+        if(data_type == MapNodeType) {
+            SetValue(data);
+        }
+        else {
+            Variant::SetValue(data,metadata,decodeString);
+        }
     }
 }
 
@@ -715,20 +757,25 @@ MapNode::operator ==(const MapNode &obj) const
 // Modifications:
 //   
 // ****************************************************************************
-
 int
 MapNode::CalculateMessageSize(Connection &conn) const
 {
-    int messageSize = conn.IntSize(conn.DEST);
+    CalculateMessageSize(&conn);
+}
+
+int
+MapNode::CalculateMessageSize(Connection *conn) const
+{
+    int messageSize = conn->IntSize(conn->DEST);
 
     if(Type() == EMPTY_TYPE)
     {
-        messageSize += conn.IntSize(conn.DEST);
+        messageSize += conn->IntSize(conn->DEST);
 
         map<string,MapNode>::const_iterator itr;
         for(itr = entries.begin(); itr != entries.end(); ++itr)
         {
-            messageSize += conn.CharSize(conn.DEST) * (itr->first.size() + 1);
+            messageSize += conn->CharSize(conn->DEST) * (itr->first.size() + 1);
             messageSize += itr->second.CalculateMessageSize(conn);
         }
     }
@@ -753,22 +800,27 @@ MapNode::CalculateMessageSize(Connection &conn) const
 // Modifications:
 //   
 // ****************************************************************************
-
 void
 MapNode::Write(Connection &conn) const
 {
-    conn.WriteInt(Type());
+    Write(&conn);
+}
+
+void
+MapNode::Write(Connection *conn) const
+{
+    conn->WriteInt(Type());
 
     if(Type() == EMPTY_TYPE)
     {
         // Write the number of entries
-        conn.WriteInt(entries.size());
+        conn->WriteInt(entries.size());
 
         map<string,MapNode>::const_iterator itr;
         for(itr = entries.begin(); itr != entries.end(); ++itr)
         {
             // Write the name of the item
-            conn.WriteString(itr->first);
+            conn->WriteString(itr->first);
 
             // Write the item data.
             itr->second.Write(conn);

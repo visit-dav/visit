@@ -103,6 +103,7 @@ protected:
 
 protected slots:
     void dataReceived();
+    void dataReceivedAll();
 
 private slots:
     // private func
@@ -179,6 +180,8 @@ private slots:
     void closeConnection();
 private:
     QWsSocket                 *socket;
+    QString messageRead;
+    std::vector<QString> messages;
 };
 
 #endif

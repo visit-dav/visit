@@ -193,8 +193,8 @@ class STATE_API Variant
     void                      SetValue(const Variant&);
     void                      SetValue(const XMLNode&,bool decodeString = true);
     void                      SetValue(const XMLNode*,bool decodeString = true);
-    void                      SetValue(const JSONNode&,const JSONNode&, bool decodeString = true);
-    void                      SetValue(const JSONNode*,const JSONNode* meta, bool decodeString = true);
+    virtual void              SetValue(const JSONNode&,const JSONNode&, bool decodeString = true);
+    virtual void              SetValue(const JSONNode*,const JSONNode* meta, bool decodeString = true);
     void                      SetValue(bool);
     void                      SetValue(char);
     void                      SetValue(unsigned char);
@@ -222,13 +222,15 @@ class STATE_API Variant
 
  protected:
     void                      Write(Connection &conn) const;
+    void                      Write(Connection *conn) const;
     void                      Read(Connection &conn);
     int                       CalculateMessageSize(Connection &conn) const;
+    int                       CalculateMessageSize(Connection *conn) const;
     void                      Init(int);
     virtual JSONNode          ToJSONNodeMetaData(bool id) const;
- private:
     static std::string        TypeIDToName(int);
     static int                 NameToTypeID(const std::string &);
+private:
     static void               Tokenize(const std::string&,
                                        stringVector &tokens);
     static void               TokenizeQuotedString(const std::string&,

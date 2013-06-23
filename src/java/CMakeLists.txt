@@ -161,6 +161,9 @@ Variant.java
 View2DAttributes.java 
 View3DAttributes.java 
 ViewAxisArrayAttributes.java 
+ViewerClientAttributes.java
+ViewerClientInformation.java
+ViewerClientInformationElement.java
 ViewCurveAttributes.java 
 ViewerRPC.java 
 WindowInformation.java

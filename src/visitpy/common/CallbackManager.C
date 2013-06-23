@@ -500,17 +500,28 @@ CallbackManager::Work()
 // ****************************************************************************
 
 void 
-CallbackManager::RegisterHandler(Subject *subj, const std::string &cbName, 
+CallbackManager::RegisterHandler(Subject *subj, const std::string &cbName,
     ObserverCallback *handler, void *handler_data,
     AddWorkCallback  *addwork, void *addwork_data)
 {
+
     threading->MUTEX_LOCK();
 
+    /// if name already exists then skip
+    /// TODO: Hari (Hack): For PySide both cli and viewer register, this 
+    /// structure does not correctly handle this registration properly.
+    /// I am temporarily making the first one cbName the only attachment.
+    /// Note: I don't believe this changes the traditional execution of VisIt.
+    if(nameToSubject.count(cbName) > 0)
+    {
+        threading->MUTEX_UNLOCK();
+        return;
+    }
     // Attach the subject. It will only happen once, even if we call this
     // routine multiple times.
     subj->Attach(this);
 
-    CallbackData entry;   
+    CallbackData entry;
     entry.name = cbName;
     entry.handler = handler;
     entry.handler_data = handler_data;

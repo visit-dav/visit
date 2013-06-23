@@ -12,7 +12,7 @@ class Struct(object):
         #TODO: handle recursive objects
         self.__dict__[str(k)] = Struct(str(k),v)
       else:
-        self.__dict__[str(k)] = self.__values__[str(v)]
+        self.__dict__[str(k)] = self.__values__[v]
 
   def __repr__(self):
     return '{%s}' % str(', '.join('%s : %s' % (k, repr(v)) for
@@ -84,7 +84,7 @@ class AttributeSubject:
             else:
                 self.data.update(updateState)
         except:
-            print self.typename, "failed to parse", updateState["contents"]["data"]
+            print self.typename, "failed to parse", updateState["contents"]
 
         # tell all listeners of update
         try:
@@ -95,11 +95,9 @@ class AttributeSubject:
 
     def sync(self):
         if self.obj is None:
-            #self.obj = self.dict2obj(self.typename,self.data["contents"]["data"])
-            #self.obj = Struct(self.typename,self.api["api"]["data"],self.data["contents"]["data"])
             self.obj = type(str(self.typename),(Struct,),{}) #self.api["api"])
-            self.obj.__data__ = self.api["api"]["data"]
-            self.obj.__values__ = self.data["contents"]["data"]
+            self.obj.__data__ = self.api["api"]
+            self.obj.__values__ = self.data["contents"]
         return self.obj
 
 class ViewerState:
@@ -114,13 +112,14 @@ class ViewerState:
         return None
 
     def data(self,index):
+        #print "m: ", self.states[index].data["contents"]
         if index >= 0 and index < len(self.states):
-            return self.states[index].data["contents"]["data"]
+            return self.states[index].data["contents"]
         return None
 
     def api(self,index):
         if index >= 0 and index < len(self.states):
-            return self.states[index].api["api"]["data"]
+            return self.states[index].api["api"]
         return None
 
     def setConnection(self,connection):

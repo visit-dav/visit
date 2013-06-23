@@ -20,6 +20,12 @@ public class VisItProxy
 {
 
     public static final int BUFSIZE = 4096;
+    
+    class Header
+    {
+        public String password;
+        public String canRender;
+    }
         
     class VisItThread implements Runnable
     {
@@ -119,8 +125,8 @@ public class VisItProxy
                     {
                         try {
                             partial_entry.setLength(0);
-                            tmp=tmp.replace("\n","");
-                            tmp=tmp.replace("\\\"","");
+                            //tmp=tmp.replace("\n","");
+                            //tmp=tmp.replace("\\\"","");
                             JsonElement el = gson.fromJson(tmp,JsonElement.class);
                             JsonObject jo = el.getAsJsonObject();
 
@@ -146,28 +152,35 @@ public class VisItProxy
     private boolean handshake(String host, int port, String password)
     {
         try {
+            Gson gson = new Gson();
+            
             Socket socket = new Socket(host,port);
             OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream());
             InputStreamReader reader = new InputStreamReader(socket.getInputStream());
+           
+            Header header = new Header();
+            header.password = password;
+            header.canRender = "data";
             
-            System.out.println("Writing password: " + password);
+            String headerstr = gson.toJson(header);
+//            System.out.println("Writing message: " + headerstr);
             
-            writer.write(password);
+            writer.write(headerstr);
             writer.flush();
             
-            System.out.println("Reading");
+//            System.out.println("Reading...");
             char [] cbuf = new char [ 1024 ];
             int len = reader.read(cbuf);
-            String message = new String(cbuf);
+            String message = new String(cbuf,0,len);
+           
+            JsonElement e = gson.fromJson(message,JsonElement.class);
+            JsonObject jo = e.getAsJsonObject();
+ 
+            visit_host = jo.get("host").getAsString();
+            visit_port = jo.get("port").getAsString();
+            visit_security_key = jo.get("securityKey").getAsString();
             
-            String[] results = message.split(",");
-            
-            visit_host = results[5];
-            visit_port = results[7];
-            visit_security_key = results[9];
-            
-            System.out.println(message);
-            
+            //System.out.println(visit_host + " " + visit_port + " " + visit_security_key);
             socket.close();
             
             return true;
@@ -205,7 +218,7 @@ public class VisItProxy
             isr.read(cbuf);
             
             //extract socket key
-            visit_socket_key = new String(cbuf,5+1+10+21, 21);
+            //visit_socket_key = new String(cbuf,5+1+10+21, 21);
             
             cbuf[0] = ASCIIFORMAT;
             
@@ -216,14 +229,15 @@ public class VisItProxy
             osw.write(cbuf);
             osw.flush();
         
-            System.out.println("wrote: " + new String(cbuf));
+            //System.out.println("wrote: " + new String(cbuf));
             // End - Handle initial connection
             
             state.setConnection(outputConnection);
             
             thread = new Thread(new VisItThread(inputConnection));
-            thread.start();
             
+            thread.setDaemon(true);
+            thread.start();
             
             //Hackish sync state..
             while(state.states.size() < 135)
@@ -257,9 +271,9 @@ public class VisItProxy
         return methods;
     }
     
-    
-    private String visit_host, visit_port; 
-    private String visit_security_key, visit_socket_key;
+    private String visit_host, visit_port;
+    //private String visit_socket_key;
+    private String visit_security_key;
     private InputStreamReader inputConnection;
     private OutputStreamWriter outputConnection;
     private Socket inputSocket, outputSocket;
@@ -270,5 +284,4 @@ public class VisItProxy
 
     private ViewerState state;
     private ViewerMethods methods;
-  
 }

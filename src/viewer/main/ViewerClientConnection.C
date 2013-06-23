@@ -97,8 +97,8 @@ ViewerClientConnection::ViewerClientConnection(const ViewerState *s,
     }
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
-    advancedRendering = false;
-    externalClient = false;
+    /// the local attributes are clones, so copy the guido
+    clientAtts.SetGuido(viewerState->GetViewerClientAttributes()->GetGuido());
 }
 
 // ****************************************************************************
@@ -159,8 +159,8 @@ ViewerClientConnection::ViewerClientConnection(ParentProcess *p,
     }
     xfer->CreateNewSpecialOpcode(); // animationStopOpcode
     xfer->CreateNewSpecialOpcode(); // iconifyOpcode
-    advancedRendering = false;
-    externalClient = false;
+    /// the local attributes are clones, so copy the guido
+    clientAtts.SetGuido(viewerState->GetViewerClientAttributes()->GetGuido());
 }
 
 // ****************************************************************************
@@ -437,6 +437,11 @@ ViewerClientConnection::Update(Subject *subj)
             }
             emit DisconnectClient(this);
         }
+
+        if(rpc->GetRPCType() == ViewerRPC::ExportRPC) {
+            /// embed the response to the specific client..
+            rpc->SetIntArg1(clientAtts.GetId());
+        }
     }
     
     if(doEmit)
@@ -475,31 +480,34 @@ ViewerClientConnection::BroadcastToClient(AttributeSubject *src)
     {
         AttributeSubject *dest = viewerState->GetStateObject(index);
 
-        //
-        // If the object is eligible for partial sends, figure out which
-        // fields should be sent to the client so we can reduce the amount
-        // of network traffic to the client.
-        //
-        intVector fieldsToSelect;
-        if(viewerState->GetPartialSendFlag(index))
+        if(dest != src) // dest and src pointers are the same.
         {
-            for(int f = 0; f < dest->NumAttributes(); ++f)
+            //
+            // If the object is eligible for partial sends, figure out which
+            // fields should be sent to the client so we can reduce the amount
+            // of network traffic to the client.
+            //
+            intVector fieldsToSelect;
+            if(viewerState->GetPartialSendFlag(index))
             {
-                if(src->IsSelected(f) ||
-                   !dest->FieldsEqual(f, src))
+                for(int f = 0; f < dest->NumAttributes(); ++f)
                 {
-                    fieldsToSelect.push_back(f);
+                    if(src->IsSelected(f) ||
+                       !dest->FieldsEqual(f, src))
+                    {
+                        fieldsToSelect.push_back(f);
+                    }
                 }
             }
+
+            // Copy all attributes into the destination state object.
+            dest->CopyAttributes(src);
+
+            // If the object is eligible for partial sends, select the right
+            // fields now.
+            if(viewerState->GetPartialSendFlag(index))
+                dest->SelectFields(fieldsToSelect);
         }
-
-        // Copy all attributes into the destination state object.
-        dest->CopyAttributes(src);
-
-        // If the object is eligible for partial sends, select the right
-        // fields now.
-        if(viewerState->GetPartialSendFlag(index))
-            dest->SelectFields(fieldsToSelect);
 
         // Send the state object to the client.
         SetUpdate(false);

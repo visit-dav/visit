@@ -65,16 +65,16 @@ class STATE_API JSONNode
 
     enum JSONType
     {
-        JSONNUMBER,
-        JSONINTEGER,
-        JSONLONG,
-        JSONFLOAT,
-        JSONDOUBLE,
-        JSONSTRING,
-        JSONARRAY,
-        JSONOBJECT,
-        JSONBOOL,
-        JSONNULLVALUE
+        JSONLONG = 0x1,
+        JSONDOUBLE = 0x2,
+        JSONSTRING = 0x4,
+        JSONARRAY = 0x8,
+        JSONOBJECT = 0x10,
+        JSONBOOL = 0x20,
+        JSONNULLVALUE = 0x40,
+        JSONINTEGER = JSONLONG,
+        JSONFLOAT = JSONDOUBLE,
+        JSONNUMBER = JSONLONG | JSONDOUBLE
     };
 
     union number
@@ -112,16 +112,23 @@ class STATE_API JSONNode
     JSONNode(const double& v);
     JSONNode(const JSONNode::JSONArray& array);
     JSONNode(const JSONNode::JSONObject& obj);
-
+    JSONNode(const boolVector& v);
+    JSONNode(const charVector& v);
+    JSONNode(const unsignedCharVector& v);
+    JSONNode(const intVector& v);
+    JSONNode(const longVector& v);
+    JSONNode(const floatVector& v);
+    JSONNode(const doubleVector& v);
+    JSONNode(const stringVector& v);
     virtual  ~JSONNode();
 
-    JSONType GetType()   const { return type; }
+    JSONType GetType() const { return type; } const
 
     bool isNullValue()   const { return json.num.nullValue; }
-    bool   GetBool()     const { return json.num.boolValue; }
-    int    GetInt()      const { return (int)GetLong(); }
-    long   GetLong()     const { return json.num.lnumber; }
-    float  GetFloat()    const { return (float)GetDouble(); }
+    bool   GetBool()    const { return json.num.boolValue; }
+    int    GetInt()       const { return (int)GetLong(); }
+    long   GetLong()      const { return json.num.lnumber; }
+    float  GetFloat()     const { return (float)GetDouble(); }
     double GetDouble() const { return type == JSONINTEGER || type == JSONLONG ?
                                         (double)json.num.lnumber :
                                                 json.num.dnumber; }
@@ -129,6 +136,23 @@ class STATE_API JSONNode
     std::string GetString() const { return json.str; }
     JSONArray& GetArray() { return json.array; }
     JSONObject& GetJsonObject() { return json.object; }
+
+    bool               AsBool()               const;
+    char               AsChar()               const;
+    unsigned char      AsUnsignedChar()       const;
+    int                AsInt()                const;
+    long               AsLong()               const;
+    float              AsFloat()              const;
+    double             AsDouble()             const;
+    std::string        AsString()             const;
+    boolVector         AsBoolVector()         const;
+    charVector         AsCharVector()         const;
+    unsignedCharVector AsUnsignedCharVector() const;
+    intVector          AsIntVector()          const;
+    longVector         AsLongVector()         const;
+    floatVector        AsFloatVector()        const;
+    doubleVector       AsDoubleVector()       const;
+    stringVector       AsStringVector()       const;
 
 //    bool isNullValue()  { return json.num.nullValue; }
 //    bool   GetBool()     { return json.num.boolValue; }
@@ -152,6 +176,14 @@ class STATE_API JSONNode
     JSONNode  &operator=(const JSONArray& v);
     JSONNode  &operator=(const JSONObject& v);
     JSONNode  &operator=(const JSONNode& v);
+    JSONNode  &operator=(const boolVector& v);
+    JSONNode  &operator=(const charVector& v);
+    JSONNode  &operator=(const unsignedCharVector& v);
+    JSONNode  &operator=(const intVector& v);
+    JSONNode  &operator=(const longVector& v);
+    JSONNode  &operator=(const floatVector& v);
+    JSONNode  &operator=(const doubleVector& v);
+    JSONNode  &operator=(const stringVector& v);
 
     /// for JSONArray
     JSONNode  &operator[](int index);
@@ -183,6 +215,9 @@ class STATE_API JSONNode
 
 private:
     std::string EscapeString(const std::string &val) const;
+    template<typename T>
+    JSONNode& convertArray(const T& v);
+
     // init & destroy helpers
     void    Init(const JSONNode&);
     void    Cleanup();

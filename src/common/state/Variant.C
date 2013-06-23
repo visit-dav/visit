@@ -2050,7 +2050,7 @@ Variant::SetValue(const XMLNode &node, bool decodeString)
         else
         {   float tmp;
             sscanf(txt_val,"%f",&tmp);
-            val = (double)tmp; //HKTODO: CHANGE THIS
+            val = (double)tmp;
         }
         SetValue(val);
     }
@@ -2159,14 +2159,20 @@ void
 Variant::SetValue(const JSONNode &data, const JSONNode &meta, bool)
 {
     /// metadata information tells the Variant how to cast..
-    const string name = meta.GetString();
     int data_type = 0;
-    /// remove quotes..
 
-    if(isdigit(name[0])) //if it has digits then id else name
-        data_type = atoi(name.c_str());
+    if(meta.GetType() == JSONNode::JSONINTEGER)
+        data_type = meta.GetInt();
     else
-        NameToTypeID(name);
+    {
+        const string name = meta.GetString();
+
+        if(isdigit(name[0])) //if it has digits then id else name
+            data_type = atoi(name.c_str());
+        else
+            data_type = NameToTypeID(name);
+    }
+
     if(data_type == BOOL_TYPE)
     {
         SetValue(data.GetBool());
@@ -2818,45 +2824,31 @@ Variant::ToJSONNode(bool encodeString) const
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
-        const charVector &vec = AsCharVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsCharVector();
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
-        const unsignedCharVector &vec = AsUnsignedCharVector();
-        for(size_t i=0;i<vec.size();i++)
-            node[i] = (int)vec[i];
+        node = AsUnsignedCharVector();
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
-        const intVector &vec = AsIntVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsIntVector();
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
-        const longVector &vec = AsLongVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsLongVector();
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
-        const floatVector &vec = AsFloatVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsFloatVector();
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
-        const doubleVector &vec = AsDoubleVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsDoubleVector();
     }
     else if(dataType == STRING_VECTOR_TYPE)
     {
-        const stringVector &vec = AsStringVector();
-        for(size_t i=0;i<vec.size();++i)
-            node[i] = vec[i];
+        node = AsStringVector();
     }
     return node;
 }
@@ -3320,51 +3312,57 @@ Variant::operator ==(const Variant &obj) const
 int
 Variant::CalculateMessageSize(Connection &conn) const
 {
+    return CalculateMessageSize(&conn);
+}
+
+int
+Variant::CalculateMessageSize(Connection *conn) const
+{
     int messageSize = 0;
 
     if(dataType == BOOL_TYPE)
-        messageSize = conn.CharSize(conn.DEST);
+        messageSize = conn->CharSize(conn->DEST);
     else if(dataType == CHAR_TYPE)
-        messageSize = conn.CharSize(conn.DEST);
+        messageSize = conn->CharSize(conn->DEST);
     else if(dataType == UNSIGNED_CHAR_TYPE)
-        messageSize = conn.CharSize(conn.DEST);
+        messageSize = conn->CharSize(conn->DEST);
     else if(dataType == INT_TYPE)
-        messageSize = conn.IntSize(conn.DEST);
+        messageSize = conn->IntSize(conn->DEST);
     else if(dataType == LONG_TYPE)
-        messageSize = conn.LongSize(conn.DEST);
+        messageSize = conn->LongSize(conn->DEST);
     else if(dataType == FLOAT_TYPE)
-        messageSize = conn.FloatSize(conn.DEST);
+        messageSize = conn->FloatSize(conn->DEST);
     else if(dataType == DOUBLE_TYPE)
-        messageSize = conn.DoubleSize(conn.DEST);
+        messageSize = conn->DoubleSize(conn->DEST);
     else if(dataType == STRING_TYPE)
-        messageSize = conn.CharSize(conn.DEST) * (AsString().size() + 1);
+        messageSize = conn->CharSize(conn->DEST) * (AsString().size() + 1);
     else if(dataType == BOOL_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.CharSize(conn.DEST) * AsBoolVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->CharSize(conn->DEST) * AsBoolVector().size();
     else if(dataType == CHAR_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.CharSize(conn.DEST) * AsCharVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->CharSize(conn->DEST) * AsCharVector().size();
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.CharSize(conn.DEST) * AsUnsignedCharVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->CharSize(conn->DEST) * AsUnsignedCharVector().size();
     else if(dataType == INT_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.IntSize(conn.DEST) * AsIntVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->IntSize(conn->DEST) * AsIntVector().size();
     else if(dataType == LONG_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.LongSize(conn.DEST) * AsLongVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->LongSize(conn->DEST) * AsLongVector().size();
     else if(dataType == FLOAT_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.FloatSize(conn.DEST) * AsFloatVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->FloatSize(conn->DEST) * AsFloatVector().size();
     else if(dataType == DOUBLE_VECTOR_TYPE)
-        messageSize = conn.IntSize(conn.DEST) +
-                      conn.DoubleSize(conn.DEST) * AsDoubleVector().size();
+        messageSize = conn->IntSize(conn->DEST) +
+                      conn->DoubleSize(conn->DEST) * AsDoubleVector().size();
     else if(dataType == STRING_VECTOR_TYPE)
     {
-        messageSize = conn.IntSize(conn.DEST);
+        messageSize = conn->IntSize(conn->DEST);
         const stringVector &vec = AsStringVector();
         for(size_t i = 0; i < vec.size(); ++i)
-            messageSize += (conn.CharSize(conn.DEST) * (vec[i].size() + 1));
+            messageSize += (conn->CharSize(conn->DEST) * (vec[i].size() + 1));
     }
 
     return messageSize;
@@ -3389,87 +3387,93 @@ Variant::CalculateMessageSize(Connection &conn) const
 void
 Variant::Write(Connection &conn) const
 {
+    Write(&conn);
+}
+
+void
+Variant::Write(Connection *conn) const
+{
     if(dataType == BOOL_TYPE)
     {
         bool value = *((bool *)dataValue);
-        conn.WriteChar(value ? 1 : 0);
+        conn->WriteChar(value ? 1 : 0);
     }
     else if(dataType == CHAR_TYPE)
-        conn.WriteChar(*((char *)dataValue));
+        conn->WriteChar(*((char *)dataValue));
     else if(dataType == UNSIGNED_CHAR_TYPE)
-        conn.WriteUnsignedChar(*((unsigned char *)dataValue));
+        conn->WriteUnsignedChar(*((unsigned char *)dataValue));
     else if(dataType == INT_TYPE)
-        conn.WriteInt(*((int *)dataValue));
+        conn->WriteInt(*((int *)dataValue));
     else if(dataType == LONG_TYPE)
-        conn.WriteLong(*((long *)dataValue));
+        conn->WriteLong(*((long *)dataValue));
     else if(dataType == FLOAT_TYPE)
-        conn.WriteFloat(*((float *)dataValue));
+        conn->WriteFloat(*((float *)dataValue));
     else if(dataType == DOUBLE_TYPE)
-        conn.WriteDouble(*((double *)dataValue));
+        conn->WriteDouble(*((double *)dataValue));
     else if(dataType == STRING_TYPE)
     {
         string *sptr = (string *)dataValue;
         for(size_t i = 0; i < sptr->size(); ++i)
-            conn.WriteChar(sptr->at(i));
-        conn.WriteChar(0);
+            conn->WriteChar(sptr->at(i));
+        conn->WriteChar(0);
     }
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteChar(vec[i]?1:0);
+            conn->WriteChar(vec[i]?1:0);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteChar(vec[i]);
+            conn->WriteChar(vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteUnsignedChar(vec[i]);
+            conn->WriteUnsignedChar(vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteInt(vec[i]);
+            conn->WriteInt(vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteLong(vec[i]);
+            conn->WriteLong(vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteFloat(vec[i]);
+            conn->WriteFloat(vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(size_t i=0;i<vec.size();i++)
-            conn.WriteDouble(vec[i]);
+            conn->WriteDouble(vec[i]);
     }
     else if(dataType == STRING_VECTOR_TYPE)
     {
         const stringVector &vec = AsStringVector();
         stringVector::const_iterator spos;
 
-        conn.WriteInt(vec.size());
+        conn->WriteInt(vec.size());
         for(spos = vec.begin(); spos != vec.end(); ++spos)
-            conn.WriteString(*spos);
+            conn->WriteString(*spos);
     }
 }
 

@@ -528,7 +528,7 @@ static pthread_mutex_t       mutex;
 static pthread_cond_t        received_sync_from_viewer;
 static bool waitingForViewer = false;
 static ObserverToCallback   *synchronizeCallback = 0;
-#define THREAD_INIT()        pthread_attr_init(&thread_atts)
+#define THREAD_INIT()        { pthread_attr_init(&thread_atts); }
 #define MUTEX_CREATE()       pthread_mutex_init(&mutex, NULL)
 #define MUTEX_DESTROY()      pthread_mutex_destroy(&mutex)
 #define MUTEX_LOCK()         pthread_mutex_lock(&mutex)
@@ -1129,7 +1129,7 @@ visit_AddArgument(PyObject *self, PyObject *args)
         if(!PyArg_ParseTuple(args, "s", &arg))
             return NULL;
 
-        if(strcmp(arg,"-pyuiembedded") == 0 || strcmp(arg,"-uifile") == 0 )
+        if(strcmp(arg,"-pyuiembedded") == 0)
             viewerEmbedded = true;
 
         //GetViewerProxy()->AddArgument(arg);
@@ -15797,7 +15797,18 @@ visit_exec_client_method(void *data)
         keepGoing = false;
         // Make the interpreter quit.
         viewerInitiatedQuit = true;
+        if(acquireLock)
+            VisItUnlockPythonInterpreter(myThreadState);
+
+        PyGILState_STATE state = PyGILState_Ensure();
+        if(PyOS_ReadlineFunctionPointer || _PyOS_ReadlineTState)
+        {
+            PyOS_Readline(0,0,0);
+            PyOS_ReadlineFunctionPointer = NULL;
+            PyThreadState_Delete(_PyOS_ReadlineTState);
+        }
         PyRun_SimpleString("import sys; sys.exit(0)");
+        PyGILState_Release(state);
     }
     else if(m->GetMethodName() == "Interpret")
     {
@@ -17646,7 +17657,7 @@ InitializeViewerProxy(ViewerProxy* proxy)
     //
     for(int i = 1; i < cli_argc; ++i)
     {
-        if(strcmp(cli_argv[i],"-pyuiembedded") == 0 || strcmp(cli_argv[i],"-uifile") == 0)
+        if(strcmp(cli_argv[i],"-pyuiembedded") == 0)
             viewerEmbedded = true; //do not show window if it is embedded..
         GetViewerProxy()->AddArgument(cli_argv[i]);
     }
@@ -18413,6 +18424,7 @@ static void *
 visit_eventloop(void *)
 #endif
 {
+    bool viewerQuit = false;
     // This is the event loop for the messaging thread. If it needs to read
     // input from the viewer, it does so and executes the Notify method of
     // all subjects that changed.
@@ -18444,6 +18456,7 @@ visit_eventloop(void *)
                 // Indicate that there is no viewer.
                 //
                 noViewer = true;
+                viewerQuit = true;
 
 #ifndef POLLING_SYNCHRONIZE
                 SYNC_WAKE_MAIN_THREAD();
@@ -18458,6 +18471,20 @@ visit_eventloop(void *)
     }
 
     viewerBlockingRead = false;
+
+    /// HKTODO: should the python client quit if the viewer is killed?
+    if(viewerQuit)
+    {
+        PyGILState_STATE state = PyGILState_Ensure();
+        if(PyOS_ReadlineFunctionPointer || _PyOS_ReadlineTState)
+        {
+            PyOS_Readline(0,0,0);
+            PyOS_ReadlineFunctionPointer = NULL;
+            PyThreadState_Delete(_PyOS_ReadlineTState);
+        }
+        PyRun_SimpleString("import sys; sys.exit(0)");
+        PyGILState_Release(state);
+    }
 
     return NULL;
 }
@@ -18503,7 +18530,7 @@ visit_eventloop(void *)
 //   the macro allows us to put it where we want.
 //
 //   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
-//   Do not synchronize when using embedded viewer. It would cause deadlock.
+//   Do not synchronize when using embedded viewer. It will cause deadlock.
 //
 // ****************************************************************************
 
@@ -18516,6 +18543,7 @@ Synchronize()
     messageObserver->ClearError();
 
     // Return if the thread initialization failed.
+    // or if viewer is embedded
     if(!moduleUseThreads || viewerEmbedded)
         return 0;
 

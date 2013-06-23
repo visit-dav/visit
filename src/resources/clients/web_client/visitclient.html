@@ -7,55 +7,186 @@
             <col width="35%"/>
             <tr>
                 <td valign="top">
-                    <p>
-                        <input type="text" name="host" id="host" value="localhost" size=10 />
+		    <table border=1>
+                    <tr><td>
+                        <input type="text" name="host" id="host" value="starsky.lbl.gov" size=14 />
                         <input type="text" name="port" id="port" value="9002" size=5 />
-                        <input type="password" name="password" id="password" value="bob" size=10 /><br>
+                        <input type="password" name="password" id="password" value="bob" size=5 /><br>
+		    </tr></td>
+		    <tr><td>
+			Username:
+                        <input type="text" name="userName" id="userName" value="" size=20 /><br>
+			Window Id: (-1 for new):
+                        <input type="text" name="windowId" id="windowId" value="1" size=5 /><br>
+                    </td></tr>
+                    <tr><td>
+                        Dimensions: <input type="text" name="windowWidth" id="windowWidth" value="600" size=5 />
+                        <input type="text" name="windowHeight" id="windowHeight" value="600" size=5 /><br>
                         <button onClick="connect();">Connect</button>
                         <button onClick="vp.stopWebSocket();">Disconnect</button>
-                    </p>
+                    </td></tr>
                     <!-- VisIt Methods -->
-                    <p>
+		    </table>
+		    <table>
+                    <tr><td>
                         Database:
                         <input type="text" name="database" id="database" size=15 />
-                        <button onClick="vp.OpenDatabase();">Load</button><br>
-                        <button onClick="vp.InvertBackgroundColor();">InvertBGColor</button>
-                        <button onClick="vp.DeleteActivePlots();">DeleteActivePlot</button>
-                    </p>
-                    <p>
+                        <button onClick="OpenDatabase();">Load</button><br>
+                        <button onClick="vp.GetViewerMethods().InvertBackgroundColor();">InvertBGColor</button>
+                        <button onClick="vp.GetViewerMethods().DeleteActivePlots();">DeleteActivePlot</button>
+                    </td></tr>
+                    <tr><td>
                         Variable:
                         <input type="text" name="variable" id="variable" size=15 />
-                        <button onClick="vp.DrawPlots();">Draw</button><br>
-                        <button onClick="vp.AddPseudocolorPlot();">Pseudocolor</button>
-                        <button onClick="vp.AddContourPlot();">Contour</button>
-                    </p>
-                    <p>
+                        <button onClick="vp.GetViewerMethods().DrawPlots();">Draw</button><br>
+                        <button onClick="AddPseudocolorPlot();">Pseudocolor</button>
+                        <button onClick="AddContourPlot();">Contour</button>
+                    </td></tr>
+                    <tr><td>
                         Inspect:
                         <input type="text" name="inspect" id="inspect" size=5></input>
-                        <button onClick="vp.inspectClass();">Inspect</button>
-                        <button onClick="vp.showAllClasses();">Show All</button>
-                        <button onClick="vp.clearScreen();">Clear Screen</button>
-                        <textarea id="debugTextArea" style="width:250;height:100;"></textarea>
-                    </p>
+                        <button onClick="inspectClass();">Inspect</button>
+                        <button onClick="howAllClasses();">Show All</button>
+                        <button onClick="clearScreen();">Clear Screen</button><br>
+                        <!-- <canvas id="myCanvas" width="200" height="200" style="border:1px solid"></canvas><br> -->
+			Output:<br>
+                        <textarea id="debugTextArea" style="width:250;height:100;"></textarea><br>
+			Message:<br>
+                        <textarea id="messageTextArea" style="width:250;height:50;"></textarea><br>
+                        <button onClick="sendMessage();">Send</button>
+                    </td></tr>
+		</table>
                 </td>
                 <td valign="top">
+                    <div id="container"></div><br>
                     <img src="" id="visitImage" />
                 </td>
             </tr>
         </table>
 
+        <script src="js/jquery.min.js"> </script>
         <script src="js/visit.js"> </script>
-    
+        <script src="js/sylvester.js"> </script>
+        <script src="js/trackball.js"> </script>
+   	    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.4.0.min.js"></script>
+     
         <script>
-            vp = new VisItProxy();
+
+        var stage, layer, imageObj, kineticImage;
+
+        vp = new VisItProxy();
+
         function connect()
         {
             var hostname = document.getElementById("host").value;
             var port = document.getElementById("port").value;
             var password = document.getElementById("password").value;
+	        var userName = document.getElementById("userName").value;
+	        var windowId = document.getElementById("windowId").value;
+	        var windowWidth = document.getElementById("windowWidth").value;
+	        var windowHeight = document.getElementById("windowHeight").value;
+
+	        stage = new Kinetic.Stage({
+                    container: 'container',
+                    width: windowWidth,
+                    height: windowHeight
+                    });
+                layer = new Kinetic.Layer();
+                imageObj = new Image();
+                
+                imageObj.onload = function() {
+                layer.removeChildren();
+
+                kineticImage = new Kinetic.Image({
+                x: 0, y: 0,
+                image: imageObj,
+                width: stage.getWidth(),
+                height: stage.getHeight()
+                });
+
+                kineticImage.setListening(false);
     
-            vp.connect(hostname,port,password);
-        }
+                layer.add(kineticImage);
+                stage.add(layer);
+                };
+
+	            trackball.init(stage); 
+                vp.connect(hostname, port, password,
+                           userName, windowId, windowWidth, 
+                           windowHeight, visitInitialized);
+            }
+
+            function visitInitialized(){
+                vp.GetViewerState().registerCallback("ViewerClientInformation",
+                                                      updateViewerClientInformation);
+            }
+
+	        function sendMessage()
+	        {
+                message = document.getElementById("messageTextArea").value;
+	            vp.SendMessage(message);
+                document.getElementById("messageTextArea").value = "";
+	        }
+
+            function AddPseudocolorPlot()
+            {
+                var variable = document.getElementById("variable").value;
+
+                if(variable === "")
+                {
+                    alert("please add variable");
+                    return;
+                }
+
+                vp.GetViewerMethods().AddPseudocolorPlot(variable);
+            }
+
+            function AddContourPlot()
+            {
+                var variable = document.getElementById("variable").value;
+
+                if(variable === "")
+                {
+                    alert("please add variable");
+                    return;
+                }
+
+                vp.GetViewerMethods().AddContourPlot(variable);
+            }
+
+            function OpenDatabase()
+            {
+                var filename = document.getElementById("database").value;
+
+                if(filename !== "")
+                {
+                    debug("loading filename: " + filename);
+                    //viewerMethods.SetActiveWindow(windowId);
+                    vp.GetViewerMethods().OpenDatabase(filename);
+                }
+            }
+
+            function updateViewerClientInformation(obj) 
+            {
+                var vars = obj.get("vars");
+                var supportedFormats = obj.get("supportedFormats");
+
+                //debug(vars[0][2]);
+                //debug(supportedFormats);
+
+                if(vars[0][2] === supportedFormats.indexOf("Image")) 
+                {
+                    var image  = "data:image/jpeg;base64,";
+                    image += vars[0][0];
+                    imageObj.src = image;
+                }
+            }
+
+            function updateViewerClientAttributes(obj) 
+            {
+                var state = obj.get("state");                
+                if(state === "message") debug(obj.get("message"));
+            }
         </script>
     </body>
 </html>
