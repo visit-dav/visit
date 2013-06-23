@@ -41,21 +41,22 @@
 #include <ViewerClientConnection.h>
 #include <ViewerSubject.h>
 
+#include <QMap>
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QTimer>
-
+#include <QEventLoop>
+#include <QMessageBox>
+#include <QHostInfo>
+#include <QNetworkInterface>
+#include <JSONNode.h>
 #include <SocketConnection.h>
 #include <RemoteProcess.h>
+#include <WebSocketConnection.h>
+#include <CouldNotConnectException.h>
 
 #include <iostream>
 #include <string>
-
-#include <WebSocketConnection.h>
-
-#include <QEventLoop>
-
-#include <JSONNode.h>
 
 #ifdef _WIN32
 #include <win32commhelpers.h>
@@ -79,15 +80,22 @@
 // Modifications:
 //
 // ****************************************************************************
+/// global variables to handle static callbacks..
+QMap<QString,QString> hostMap;
 
 SharedDaemon::SharedDaemon(ViewerSubject *lsubject, const int &lport,
     const std::string &lpassword): QTcpServer()
 {
     subject = lsubject;
     listen_port = lport;
-    password = lpassword;
+    password = lpassword.c_str();
+    matched_input = "";
 
     connect(this,SIGNAL(newConnection()),this,SLOT(handleConnection()));
+
+    QList<QHostAddress> entries = QNetworkInterface::allAddresses();
+    foreach(const QHostAddress& entry, entries)
+        hostMap.insert(entry.toString(), QHostInfo::fromName(entry.toString()).hostName());
 }
 
 // ****************************************************************************
@@ -189,8 +197,6 @@ void SharedDaemon::incomingConnection( int sd )
 //
 // ****************************************************************************
 
-/// TODO: remove the external dependency all together..
-QString matched_input = "";
 void SharedDaemon::getPasswordMessage(QString message)
 {
     //std::cout << "password " << message.toStdString() << std::endl;
@@ -218,24 +224,20 @@ void SharedDaemon::getPasswordMessage(QString message)
 //
 // ****************************************************************************
 bool
-SharedDaemon::ParseInput(const QString& input, std::string& lpasswd, bool& canRender)
+SharedDaemon::ParseInput(const QString& input, JSONNode& output)
 {
     if(input.startsWith("{"))
     {
         JSONNode node;
         node.Parse(input.toStdString());
-
+        //std::cout << node.ToString() << std::endl;
+        /// also check to make sure password is coorect..
         if(node.GetType() != JSONNode::JSONOBJECT ||
            !node.HasKey("password") ||
-            node.GetJsonObject()["password"].GetString() != password)
+            node.GetJsonObject()["password"].GetString() != password.toStdString())
             return false;
 
-        lpasswd = node.GetJsonObject()["password"].GetString();
-
-        if(node.HasKey("canRender") == true &&
-           node.GetJsonObject()["canRender"].GetType() == JSONNode::JSONBOOL)
-            canRender = node.GetJsonObject()["canRender"].GetBool();
-
+        output = node;
         return true;
     }
 
@@ -258,6 +260,9 @@ void SharedDaemon::handleConnection()
         socket->close();
         return;
     }
+    std::cout << "user: " 
+              << socket->peerAddress().toString().toStdString()
+              << " is attempting to connect" << std::endl;
 
     QAbstractSocket* finalSocket = NULL;
     ConnectionType typeOfConnection = TcpConnection;
@@ -267,13 +272,11 @@ void SharedDaemon::handleConnection()
 
     /// initial connection must pass password, but can optionally pass
     /// whether the client canRender and what the threshold value should be..
-    std::string lpasswd = "";
-    bool canRender = false;
+    JSONNode output;
 
     /// check if this is a WebSocketConnection
     QString response = "";
-
-    if(input.startsWith("{") && ParseInput(input,lpasswd,canRender))
+    if(input.startsWith("{") && ParseInput(input,output))
     {
         finalSocket = socket;
         typeOfConnection = TcpConnection;
@@ -308,16 +311,16 @@ void SharedDaemon::handleConnection()
 
         //std::cout << matched_input.toStdString() << std::endl;
 
-        if( !ParseInput(matched_input,lpasswd,canRender) )
+        if( !ParseInput(matched_input,output) )
         {
             //std::cout << "passwords do not match: "
             //          << matched_password.toStdString()
             //          << " " << password << std::endl;
 
-            disconnect(wssocket,SIGNAL(frameReceived(QString)),
-                    this,SLOT(getPasswordMessage(QString)));
             wssocket->close("passwords do not match or operation timed out");
-            socket->waitForDisconnected();
+
+            if(socket->state() != QAbstractSocket::UnconnectedState)
+                socket->waitForDisconnected();
 
             wssocket->deleteLater();
             return;
@@ -348,23 +351,101 @@ void SharedDaemon::handleConnection()
                                    clientName.c_str(),
                                    true);
 
-    newClient->SetExternalClient(true);
-    newClient->SetAdvancedRendering(canRender);
+    ViewerClientAttributes& clientAtts = newClient->GetViewerClientAttributes();
+    JSONNode::JSONObject jo = output.GetJsonObject();
+
+    clientAtts.SetExternalClient(true);
+
+    if(jo.count("name") == 0 || jo["name"].GetString().size() == 0)
+        clientAtts.SetTitle(socket->peerAddress().toString().toStdString());
+    else
+        clientAtts.SetTitle(jo["name"].GetString());
+
+    if(jo.count("windowIds") > 0 && jo["windowIds"].GetType() == JSONNode::JSONARRAY)
+    {
+        const JSONNode::JSONArray& array = jo["windowIds"].GetArray();
+
+        for(int i = 0; i < array.size(); ++i)
+        {
+            const JSONNode& node = array[i];
+
+            if(node.GetType() != JSONNode::JSONINTEGER)
+                continue;
+
+            std::cout << clientAtts.GetTitle() <<  " requesting window: " << node.GetInt() << " " << std::endl;
+            clientAtts.GetWindowIds().push_back(node.GetInt());
+        }
+    }
+
+    if(jo.count("geometry") > 0)
+    {
+        std::string geometry = jo["geometry"].GetString();
+
+        /// split into width & height...
+        size_t index = geometry.find("x");
+        if(index != std::string::npos && index != 0 && index != geometry.size()-1)
+        {
+            int geometryWidth = atoi(geometry.substr(0,index).c_str());
+            int geometryHeight = atoi(geometry.substr(index+1).c_str());
+
+            clientAtts.SetImageWidth(geometryWidth);
+            clientAtts.SetImageHeight(geometryHeight);
+            //std::cout << "geometry: " << clientAtts.clientWidth << " " << clientAtts.clientHeight << std::endl;
+        }
+    }
+
+    /// advanced rendering can be true or false (image only), or string none,image,data
+    if(jo.count("canRender") == 0)
+        clientAtts.SetRenderingType(ViewerClientAttributes::None);
+    else
+    {
+        const JSONNode& node = jo["canRender"];
+
+        /// TODO: remove the boolean check and make all current clients comply..
+        if(node.GetType() == JSONNode::JSONBOOL)
+            clientAtts.SetRenderingType( node.GetBool() ? ViewerClientAttributes::Image :
+                                                          ViewerClientAttributes::None);
+        else if(node.GetType() == JSONNode::JSONSTRING)
+        {
+            if(node.GetString() == "image") clientAtts.SetRenderingType(ViewerClientAttributes::Image);
+            else if(node.GetString() == "data") clientAtts.SetRenderingType(ViewerClientAttributes::Data);
+            else clientAtts.SetRenderingType(ViewerClientAttributes::None);
+        }
+        else
+        {
+            clientAtts.SetRenderingType(ViewerClientAttributes::None);
+        }
+    }
     stringVector args;
 
     /// assign whether connection is of type WebSocket or TCPConnection
     /// Register Type & Register Callback
     RemoteProcess::SetCustomConnectionCallback(createCustomConnection,&typeOfConnection);
 
-    void* data[2];
-    data[0] = &typeOfConnection;
-    data[1] = (void*)finalSocket;
-    newClient->LaunchClient(program,args,AddNewClient,data,0,0);
+    TRY
+    {
+        void* data[2];
+        data[0] = &typeOfConnection;
+        data[1] = (void*)finalSocket;
+
+        newClient->LaunchClient(program,args,AddNewClient,data,0,0);
+
+        /// Now that client has launched RemoveCallback..
+        subject->AddNewViewerClientConnection(newClient);
+        std::cout << "user: " 
+                  << socket->peerAddress().toString().toStdString()
+                  << " successfully connected" << std::endl;
+    }
+    CATCHALL
+    {
+        std::cout << "user: " 
+                  << socket->peerAddress().toString().toStdString()
+                  << " failed to connected" << std::endl;
+        delete newClient;
+    }
+    ENDTRY
 
     RemoteProcess::SetCustomConnectionCallback(0,0); /// reset connection..
-
-    /// Now that client has launched RemoveCallback..
-    subject->AddNewViewerClientConnection(newClient);
 }
 
 // ****************************************************************************
@@ -395,7 +476,12 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 
     JSONNode node;
 
-    node["host"] = args[5]; //host
+    QString hostname = typeOfConnection == TcpConnection ? socket->localAddress().toString():
+                        dynamic_cast<QWsSocket*>(socket)->internalSocket()->localAddress().toString();
+
+    if(hostMap.contains(hostname)) hostname = hostMap[hostname];
+
+    node["host"] = hostname.toStdString(); //host
     node["port"]  = args[7]; //port
     node["version"] = args[2]; //version
     node["securityKey"] = args[9]; //key
@@ -406,9 +492,12 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 
         std::string message = node.ToString();
         tsocket->write(message.c_str(),message.length());
-        tsocket->waitForBytesWritten();
+
+        if(tsocket->state() != QAbstractSocket::UnconnectedState)
+            tsocket->waitForBytesWritten();
         tsocket->disconnectFromHost();
-        tsocket->waitForDisconnected();
+        if(tsocket->state() != QAbstractSocket::UnconnectedState)
+            tsocket->waitForDisconnected();
         tsocket->deleteLater();
     }
     else
@@ -417,11 +506,13 @@ void SharedDaemon::AddNewClient(const std::string &host, const stringVector &arg
 
         wsocket->write(QString(node.ToString().c_str()));
         wsocket->flush();
-        wsocket->internalSocket()->waitForBytesWritten();
+        if(wsocket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
+            wsocket->internalSocket()->waitForBytesWritten();
 
         wsocket->close();
         wsocket->internalSocket()->disconnectFromHost();
-        wsocket->internalSocket()->waitForDisconnected();
+        if(wsocket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
+            wsocket->internalSocket()->waitForDisconnected();
         wsocket->deleteLater();
     }
 }
@@ -453,7 +544,19 @@ SingleThreadedAcceptSocket(int listenSocketNum)
     int desc = -1;
 
     // Wait for the socket to become available on the other side.
-    do
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+
+    if (setsockopt (listenSocketNum, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                sizeof(timeout)) < 0)
+        printf("setsockopt failed\n");
+
+    if (setsockopt (listenSocketNum, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+                sizeof(timeout)) < 0)
+        printf("setsockopt failed\n");
+
+    //do
     {
 #ifdef HAVE_SOCKLEN_T
         socklen_t len;
@@ -468,7 +571,13 @@ SingleThreadedAcceptSocket(int listenSocketNum)
             LogWindowsSocketError(mName, "accept");
 #endif
     }
-    while (desc == -1);
+    //while (desc == -1);
+
+    if(desc == -1)
+    {
+        std::cerr << "Client failed to connect in time" << std::endl;
+        EXCEPTION0(CouldNotConnectException);
+    }
 
     return desc;
 }
@@ -510,7 +619,8 @@ Connection* SharedDaemon::createCustomConnection(int listenSocketNum, void *data
         {
             tcpSocket->close();
             tcpSocket->disconnectFromHost();
-            tcpSocket->waitForDisconnected();
+            if(tcpSocket->state() != QAbstractSocket::UnconnectedState)
+                tcpSocket->waitForDisconnected();
             tcpSocket->deleteLater();
 
             descriptor = SingleThreadedAcceptSocket(listenSocketNum);

@@ -437,6 +437,8 @@ public:
 
     void DDTConnect(bool connect);
     void DDTFocus(int domain);
+
+    void ExportWindows(const intVector &windowIds, const std::string& format);
 private:
     ViewerState *state;
 };

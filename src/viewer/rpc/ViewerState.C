@@ -88,6 +88,8 @@
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
 #include <WindowInformation.h>
+#include <ViewerClientAttributes.h>
+#include <ViewerClientInformation.h>
 
 //
 // Undefine the macro so we can redefine it for various purposes in this file.

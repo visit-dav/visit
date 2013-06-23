@@ -162,6 +162,9 @@ visitpy/PyView2DAttributes.C
 visitpy/PyView3DAttributes.C 
 visitpy/PyViewAttributes.C 
 visitpy/PyViewAxisArrayAttributes.C 
+visitpy/PyViewerClientAttributes.C 
+visitpy/PyViewerClientInformation.C 
+visitpy/PyViewerClientInformationElement.C 
 visitpy/PyViewCurveAttributes.C 
 visitpy/PyViewerRPC.C 
 visitpy/PyWindowInformation.C

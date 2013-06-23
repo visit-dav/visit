@@ -105,7 +105,9 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(LogRPC                  , ViewerRPC, true)\
     VIEWER_REGISTER_OBJECT(FileOpenOptions,          FileOpenOptions, false)\
     VIEWER_REGISTER_OBJECT(SelectionProperties,      SelectionProperties, false)\
-    VIEWER_REGISTER_OBJECT(SelectionList,            SelectionList, false)
+    VIEWER_REGISTER_OBJECT(SelectionList,            SelectionList, false)\
+    VIEWER_REGISTER_OBJECT(ViewerClientAttributes,   ViewerClientAttributes, false)\
+    VIEWER_REGISTER_OBJECT(ViewerClientInformation,  ViewerClientInformation, false)
 
 //
 // Do forward class declarations

@@ -299,6 +299,9 @@ state/View3DAttributes.C
 state/ViewAttributes.C
 state/ViewAxisArrayAttributes.C
 state/ViewCurveAttributes.C
+state/ViewerClientAttributes.C
+state/ViewerClientInformation.C
+state/ViewerClientInformationElement.C
 state/VisItRPC.C
 state/VisualCueInfo.C
 state/VisualCueList.C

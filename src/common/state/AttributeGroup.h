@@ -45,6 +45,7 @@
 #include <vectortypes.h>
 #include <VisItException.h>
 #include <MapNode.h>
+#include <JSONNode.h>
 
 // Forward declaration
 class AttributeGroup;
@@ -170,8 +171,14 @@ public:
     int  CalculateMessageSize(Connection &conn);
 
     void Write(MapNode& map);
-    void WriteMeta(MapNode& map);
-    void Read(MapNode& map);
+    void WriteAPI(MapNode& map);
+    void WriteMetaData(MapNode& map);
+    //void Read(MapNode& map);
+
+    void Write(JSONNode& map);
+    void WriteAPI(JSONNode& map);
+    void WriteMetaData(JSONNode& map);
+    //void Read(JSONNode& map);
 
     void SetSendMetaInformation(bool send) { sendMetaInformation = send; }
     bool GetSendMetaInformation() { return sendMetaInformation; }
@@ -330,9 +337,14 @@ private:
     void WriteType(Connection &conn, typeInfo &info);
     void ReadType(Connection &conn, int attrId, typeInfo &info);
     void WriteType(MapNode &map, int attrId, typeInfo &info);
-    void WriteTypeMeta(MapNode &map, int attrId,typeInfo &info);
+    void WriteAPI(MapNode &map, int attrId,typeInfo &info);
+    //void ReadType(MapNode &map, int attrId, typeInfo &info);
+    void WriteMetaData(MapNode &map, int attrId,typeInfo &info);
 
-    void ReadType(MapNode &map, int attrId, typeInfo &info);
+    void WriteType(JSONNode &map, int attrId, typeInfo &info);
+    void WriteAPI(JSONNode &map, int attrId,typeInfo &info);
+    //void ReadType(JSONNode &map, int attrId, typeInfo &info);
+    void WriteMetaData(JSONNode &map, int attrId,typeInfo &info);
 private:
     typeInfoVector typeMap;  // Holds typemap for the whole class
     int guido;

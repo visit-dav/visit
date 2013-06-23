@@ -261,6 +261,7 @@ public:
         DDTConnectRPC,
         DDTFocusRPC,
         ReleaseToDDTRPC,
+        ExportRPC,
         MaxRPC
     };
 

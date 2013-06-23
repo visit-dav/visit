@@ -75,7 +75,15 @@
 #endif
 
 
-
+void replace(std::string& str, const std::string& oldStr, const std::string& newStr)
+{
+  size_t pos = 0;
+  while((pos = str.find(oldStr, pos)) != std::string::npos)
+  {
+     str.replace(pos, oldStr.length(), newStr);
+     pos += newStr.length();
+  }
+}
 
 enum EOpcode
 {
@@ -110,6 +118,7 @@ QWsSocket::QWsSocket( QTcpSocket * socket, QObject * parent, quint8 protVers ) :
     setSocketState( socket->state() );
 
     connect( tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceived()) );
+    //connect( tcpSocket, SIGNAL(readyRead()), this, SLOT(dataReceivedAll()) );
     connect( tcpSocket, SIGNAL(disconnected()), this, SLOT(tcpSocketDisconnected()) );
     connect( tcpSocket, SIGNAL(aboutToClose()), this, SLOT(tcpSocketAboutToClose()) );
 }
@@ -213,6 +222,105 @@ void QWsSocket::dataReceived()
     if ( tcpSocket->bytesAvailable() )
         dataReceived();
 }
+
+void QWsSocket::dataReceivedAll()
+{
+
+    QByteArray data = tcpSocket->readAll();
+
+    QByteArray BA; // ReadBuffer
+    quint8 byte; // currentByteBuffer
+
+    size_t offset = 0;
+
+    while(offset < data.size())
+    {
+        // FIN, RSV1-3, Opcode
+        BA = data.mid(offset,1); offset += 1;
+        byte = BA[0];
+        quint8 FIN = (byte >> 7);
+//        quint8 RSV1 = ((byte & 0x7F) >> 6);
+//        quint8 RSV2 = ((byte & 0x3F) >> 5);
+//        quint8 RSV3 = ((byte & 0x1F) >> 4);
+        EOpcode Opcode = (EOpcode)(byte & 0x0F);
+
+        // Mask, PayloadLength
+        BA = data.mid(offset,1); offset += 1;
+        byte = BA[0];
+        quint8 Mask = (byte >> 7);
+        quint64 PayloadLength = (byte & 0x7F);
+        // Extended PayloadLength
+        if ( PayloadLength == 126 )
+        {
+            BA = data.mid(offset,2); offset += 2; //tcpSocket->read(2);
+            PayloadLength = ((quint8)BA[0] << 8) + (quint8)BA[1];
+        }
+        else if ( PayloadLength == 127 )
+        {
+            BA = data.mid(offset,8); offset += 8; //tcpSocket->read(8);
+            PayloadLength = 0;
+            quint64 plbyte;
+            for ( int i=0 ; i<8 ; i++ )
+            {
+                plbyte = (quint8)BA[i];
+                PayloadLength += ( plbyte << (7-i)*8 );
+            }
+        }
+
+        // MaskingKey
+        QByteArray MaskingKey;
+        if ( Mask )
+        {
+            MaskingKey = data.mid(offset,4); offset += 4; //tcpSocket->read(4);
+        }
+
+        // Extension // UNSUPPORTED FOR NOW
+
+        // ApplicationData
+        if ( PayloadLength )
+        {
+            QByteArray ApplicationData = data.mid(offset, PayloadLength); offset += PayloadLength; //tcpSocket->read( PayloadLength );
+            if ( Mask )
+                ApplicationData = QWsSocket::mask( ApplicationData, MaskingKey );
+            currentFrame.append( ApplicationData );
+        }
+
+        if ( FIN )
+        {
+            if ( Opcode == OpBinary )
+            {
+                emit frameReceived( currentFrame );
+            }
+            else if ( Opcode == OpText )
+            {
+                QString byteString;
+                byteString.reserve(currentFrame.size());
+                for (int i=0 ; i<currentFrame.size() ; i++)
+                    byteString[i] = currentFrame[i];
+                emit frameReceived( byteString );
+            }
+            else if ( Opcode == OpPing )
+            {
+                QByteArray pongRequest = QWsSocket::composeHeader( true, OpPong, 0 );
+                write( pongRequest );
+            }
+            else if ( Opcode == OpPong )
+            {
+                quint64 ms = pingTimer.elapsed();
+                emit pong(ms);
+            }
+            else if ( Opcode == OpClose )
+            {
+                tcpSocket->close();
+            }
+            currentFrame.clear();
+        }
+    }
+
+//    if(tcpSocket->bytesAvailable())
+//        dataReceivedAll();
+}
+
 
 void QWsSocket::dataReceivedV0()
 {
@@ -681,15 +789,16 @@ QWsSocket::initializeWebSocket(const QString &request, QString &response)
 
 //    std::cout << "hostaddr: " << hostAddress.toStdString() << " "
 //              << "resource: " << resourceName.toStdString() << " "
-//              << "key: " << key.toStdString() << " -- " << key1.toStdString() << std::endl;
+//              << "key: " << key.toStdString() << " -- 1: "
+//              << key1.toStdString() << "2: "
+//              << key2.toStdString() << "3: "
+//              << key3.toStdString() << std::endl;
+
     // If the mandatory params are not set, we abort the connection to the Websocket server
-    if ( hostAddress.isEmpty()
-        || resourceName.isEmpty()
-        || ( key.isEmpty() && ( key1.isEmpty() || key2.isEmpty() || key3.isEmpty() ) )
-       )
-    {
+    if ( hostAddress.isEmpty() || resourceName.isEmpty()) return false;
+    if( key.isEmpty() && ( key1.isEmpty() || key2.isEmpty() || key3.isEmpty() ) )
         return false;
-    }
+
     ////////////////////////////////////////////////////////////////////
 
     // Compose handshake answer
@@ -778,10 +887,6 @@ WebSocketConnection::closeConnection()
     QObject::disconnect(socket,SIGNAL(aboutToClose()),this, SLOT(closeConnection()));
     socket->close();
     socket->internalSocket()->close();
-
-    //tell VisIt to terminate connection with client..
-//     {"contents":{"data":{"RPCType":91,"activeOperatorIds":null,"activePlotIds":null,"boolFlag":false,"colorTableName":"","database":"","expandedPlotIds":null,"frame":0,"frameRange":[0,0],"intArg1":0,"intArg2":0,"intArg3":0,"nFrames":0,"operatorType":0,"plotType":0,"programHost":"","programOptions":null,"programSim":"","queryName":"","queryParams":null,"queryPoint1":[0,0,0],"stateNumber":0,"stringArg1":"","stringArg2":"","toolId":0,"toolUpdateMode":1,"variable":"","windowArea":"","windowId":0,"windowLayout":1,"windowMode":0},"metadata":{"RPCType":"int","activeOperatorIds":"intVector","activePlotIds":"intVector","boolFlag":"bool","colorTableName":"string","database":"string","expandedPlotIds":"intVector","frame":"int","frameRange":"intVector","intArg1":"int","intArg2":"int","intArg3":"int","nFrames":"int","operatorType":"int","plotType":"int","programHost":"string","programOptions":"stringVector","programSim":"string","queryName":"string","queryParams":"empty","queryPoint1":"doubleVector","stateNumber":"int","stringArg1":"string","stringArg2":"string","toolId":"int","toolUpdateMode":"int","variable":"string","windowArea":"string","windowId":"int","windowLayout":"int","windowMode":"int"}},"id":0,"typeinfo":{"data":{"RPCType":0,"activeOperatorIds":17,"activePlotIds":16,"boolFlag":23,"colorTableName":19,"database":5,"expandedPlotIds":18,"frame":12,"frameRange":11,"intArg1":24,"intArg2":25,"intArg3":26,"nFrames":9,"operatorType":14,"plotType":13,"programHost":6,"programOptions":8,"programSim":7,"queryName":20,"queryParams":30,"queryPoint1":21,"stateNumber":10,"stringArg1":27,"stringArg2":28,"toolId":22,"toolUpdateMode":29,"variable":15,"windowArea":4,"windowId":2,"windowLayout":1,"windowMode":3},"metadata":{"RPCType":"int","activeOperatorIds":"int","activePlotIds":"int","boolFlag":"int","colorTableName":"int","database":"int","expandedPlotIds":"int","frame":"int","frameRange":"int","intArg1":"int","intArg2":"int","intArg3":"int","nFrames":"int","operatorType":"int","plotType":"int","programHost":"int","programOptions":"int","programSim":"int","queryName":"int","queryParams":"int","queryPoint1":"int","stateNumber":"int","stringArg1":"int","stringArg2":"int","toolId":"int","toolUpdateMode":"int","variable":"int","windowArea":"int","windowId":"int","windowLayout":"int","windowMode":"int"}},"typename":"ViewerRPC"}
-
 }
 
 void
@@ -790,13 +895,20 @@ WebSocketConnection::ReadFrame(QByteArray &array)
     std::cout << "binary" << std::endl;
 }
 
-QString messageRead = "";
-
 void
 WebSocketConnection::ReadFrame(const QString &str)
 {
-    //std::cout << str.toStdString() << std::endl;
+    //test if object..
+    if(!str.startsWith("{") || !str.endsWith("}"))
+    {
+        std::cout << "Incomplete Object..:" << str.toStdString() << std::endl;
+        while(socket->internalSocket()->bytesAvailable())
+            socket->internalSocket()->readAll();
+        return;
+    }
+
     messageRead = str;
+    messages.push_back(str);
 }
 
 // ****************************************************************************
@@ -897,7 +1009,8 @@ WebSocketConnection::WriteHeader(const unsigned char *buf, long len)
     socket->flush();
 
     /// wait for bytes written
-    socket->internalSocket()->waitForBytesWritten();
+    if(socket->state() != QAbstractSocket::UnconnectedState)
+        socket->internalSocket()->waitForBytesWritten();
 
     return len;
 }
@@ -924,37 +1037,54 @@ WebSocketConnection::Fill()
     //if not connected then sending a message would be useless
     if(socket->state() != QAbstractSocket::ConnectedState) return 0;
 
-    if(messageRead.size() == 0)
+    if(messages.size() == 0)
         socket->internalSocket()->waitForReadyRead();
-    if(messageRead.size() > 0)
-    {
+
+    //std::cout << "message: " << messageRead.toStdString() << std::endl;
+
+    int res = 0;
+    buffer.clear();
+
+    for(size_t i = 0; i < messages.size(); ++i)
+    {  
+        QString messageRead = messages[i];
+        //std::cout << messageRead.toStdString() << std::endl;
+        if(messageRead.size() == 0 || !messageRead.startsWith("{") || !messageRead.endsWith("}"))
+            continue;
+
         //std::cout << messageRead.toStdString() << std::endl;
         std::string message = messageRead.toStdString();
         messageRead = "";
 
         JSONNode node;
+        try{
         node.Parse(message);
+        }
+        catch(...)
+        {
+            std::cerr << "Exception caught while parsing JSON object" << std::endl;
+            std::cerr << "message: " << message << std::endl;
+            continue;
+        }
 
         int guido = node["id"].GetInt();
         JSONNode contents = node["contents"];
-        //JSONNode metadata = node["typeinfo"];
+        JSONNode metadata = node["metadata"];
 
         /// With the information I have I could probably
         /// just use JSONNode to convert completely..
         /// but that would leave MapNode incomplete..
 
-        MapNode mapnode(contents,false);
+        //MapNode mapnode(contents, metadata, false);
 
+        //std::cout << mapnode.ToXML(false) << std::endl;
+        //std::cout << mapnode.ToJSON(false) << std::endl;
 
-//        std::cout << mapnode.ToXML(false) << std::endl;
-//        std::cout << mapnode.ToJSON(false) << std::endl;
-
-        buffer.clear();
-//        return SocketConnection::Write(guido,&mapnode,&metadata["data"]);
-        return SocketConnection::Write(guido,&mapnode);
+        res += SocketConnection::Write(guido, contents, metadata); //Write(guido,&mapnode);
     }
 
-    return 0;
+    messages.clear();
+    return res;
 }
 
 
@@ -991,36 +1121,49 @@ WebSocketConnection::Flush(AttributeSubject *subject)
     //if not connected then sending a message would be useless
     if(socket->state() != QAbstractSocket::ConnectedState) return;
     /// write meta object..
-    if(subject->GetSendMetaInformation())
-    {
-        MapNode meta;
+    try{
+        if(subject->GetSendMetaInformation())
+        {
+            JSONNode meta;
+            JSONNode node;
+
+            subject->WriteAPI(meta);
+
+            node["id"] = subject->GetGuido();
+            node["typename"] = subject->TypeName();
+            node["api"] = meta; //.ToJSONNode(false,false);
+
+            std::string output = node.ToString();
+
+            QString qoutput = output.c_str();
+            socket->write(qoutput);
+
+            if(socket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
+                socket->internalSocket()->waitForBytesWritten();
+        }
+
+        JSONNode child, metadata;
         JSONNode node;
 
-        subject->WriteMeta(meta);
-
+        subject->Write(child);
+        subject->WriteMetaData(metadata);
         node["id"] = subject->GetGuido();
         node["typename"] = subject->TypeName();
-        node["api"] = meta.ToJSONNode(false,false);
+        node["contents"] = child; //.ToJSONNode(false,true);
+        node["metadata"] = metadata;
 
-        QString output = node.ToString().c_str();
+        std::string output = node.ToString();
 
-        socket->write(output);
-        socket->internalSocket()->waitForBytesWritten();
+        QString qoutput = output.c_str();
+        socket->write(qoutput);
+
+        if(socket->internalSocket()->state() != QAbstractSocket::UnconnectedState)
+            socket->internalSocket()->waitForBytesWritten();
     }
-
-    MapNode child;
-    JSONNode node;
-
-    subject->Write(child);
-
-    node["id"] = subject->GetGuido();
-    node["typename"] = subject->TypeName();
-    node["contents"] = child.ToJSONNode(false,true);
-
-    QString output = node.ToString().c_str();
-
-    socket->write(output);
-    socket->internalSocket()->waitForBytesWritten();
+    catch(...)
+    {
+        std::cerr << "Exception occurred in Write out.." << subject->TypeName() << std::endl;
+    }
     buffer.clear();
 }
 

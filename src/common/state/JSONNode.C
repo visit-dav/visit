@@ -41,6 +41,9 @@
 #include <visitstream.h>
 #include <stack>
 #include <cstdlib>
+#include <limits>
+
+#include <VisItException.h>
 
 // ****************************************************************************
 //  Method:  JSONNode::JSONNode
@@ -83,6 +86,7 @@ JSONNode::JSONNode():type(JSONNULLVALUE)
 // ****************************************************************************
 JSONNode::JSONNode(istream &iss):type(JSONNULLVALUE)
 {
+    iss >> std::noskipws; /// don't skip white spaces..
     Parse(iss);
 }
 
@@ -152,6 +156,46 @@ JSONNode::JSONNode(const JSONNode::JSONObject& obj)
     *this = obj;
 }
 
+JSONNode::JSONNode(const boolVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const charVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const unsignedCharVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const intVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const longVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const floatVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const doubleVector& v)
+{
+    *this = v;
+}
+
+JSONNode::JSONNode(const stringVector& v)
+{
+    *this = v;
+}
+
 // ****************************************************************************
 //  Method:  JSONNode::operator=
 //
@@ -200,13 +244,13 @@ JSONNode::~JSONNode()
 std::string
 JSONNode::ToString(const std::string &indent) const
 {
-    char buf[1024];
-
+    //char buf[1024];
+    std::ostringstream ostr;
     if(type == JSONNULLVALUE)
         return "null";
 
     if(type == JSONBOOL)
-        return json.num.boolValue ? "true" : "false";
+        return GetBool() ? "true" : "false";
 
     if(type == JSONSTRING)
     {
@@ -214,33 +258,30 @@ JSONNode::ToString(const std::string &indent) const
         return str;
     }
 
-    if(type == JSONINTEGER)
-    {
-        sprintf(buf,"%d",(int)json.num.lnumber);
-        return buf;
-    }
-
+//    if(type == JSONINTEGER)
+//    {
+//        ostr << GetInt();
+//        return ostr.str();
+//    }
     if(type == JSONLONG)
     {
-        sprintf(buf,"%ld",json.num.lnumber);
-        return buf;
+        ostr << GetLong();
+        return ostr.str();
     }
-
-    if(type == JSONFLOAT)
-    {
-        sprintf(buf,"%f",(float)json.num.dnumber);
-        return buf;
-    }
-
+//    if(type == JSONFLOAT)
+//    {
+//        ostr << GetFloat();
+//        return ostr.str();
+//    }
     if(type == JSONDOUBLE)
     {
-        sprintf(buf,"%f",json.num.dnumber);
-        return buf;
+        ostr << GetDouble();
+        return ostr.str();
     }
 
     if(type == JSONARRAY)
     {
-        std::string output = "[ ";
+        std::string output = "[";
         for(int i = 0; i < json.array.size(); ++i)
         {
             output += json.array[i].ToString();
@@ -299,6 +340,7 @@ JSONNode::Parse(const std::string &JSON_data)
     if(JSON_data == "")
         return;
     std::istringstream iss;
+    iss >> std::noskipws; /// don't skip white spaces..
     iss.str(JSON_data);
     Parse(iss);
 }
@@ -370,6 +412,7 @@ JSONNode::ParseObject(std::istream &iss)
     if(os != '}')
     {
         std::cout << "JSON ParseObject Failed " << os << std::endl;
+        throw VisItException("JSON ParseObject Failed");
     }
 
     iss >> std::ws;
@@ -387,17 +430,32 @@ JSONNode::ParseKey(std::istream & iss)
     char os;
     iss >> os; /// eat quote..
 
+    iss >> os; /// read first character..
     std::string key = "";
     //read values as long as '"' is not found and if it is
     //found then it cannot be preceded by '\'
-    while(!iss.eof() && ((char)iss.peek()) != '\"' && os != '\\')
-    {
-        iss >> os; /// eat char
-        key += os;
-    }
-    iss >> std::ws;
-    iss >> os; /// eat end quote..
 
+    while(!iss.eof())
+    {
+        if(os == '\\')
+        {
+            key += os; /// store backslash
+            iss >> os;
+
+            key += os; /// consume the backslashed character..
+            iss >> os; /// eat char
+        }
+        else
+        {
+            if(os == '"')
+                break;
+
+            key += os;
+            iss >> os; /// eat char
+        }
+    }
+
+    //std::cout << key << " " << os << " " << std::endl;
     return key;
 }
 
@@ -415,7 +473,11 @@ JSONNode::ParseArray(std::istream &iss)
     iss >> std::ws;
 
     /// check for empty array..
-    if( ((char)iss.peek()) != ']' )
+    if( ((char)iss.peek()) == ']' )
+    {
+        iss >> os; // consume end bracket..
+    }
+    else
     {
         do
         {
@@ -429,6 +491,7 @@ JSONNode::ParseArray(std::istream &iss)
     if(os != ']')
     {
         std::cout << "JSON ParseArray Failed " << os << std::endl;
+        throw VisItException("JSON ParseObject Failed");
     }
     iss >> std::ws;
     type = JSONARRAY;
@@ -443,7 +506,7 @@ JSONNode::ParseVariant(std::istream &iss)
     iss >> std::ws;
 
     /// if string
-    if(((char)iss.peek()) == '\"')
+    if(((char)iss.peek()) == '"')
     {
         json.str = ParseKey(iss);
         //std::cout << "Got Value: " << json.str << std::endl;
@@ -521,7 +584,21 @@ JSONNode::EscapeString(const std::string &val) const
     for(int i=0;i<ssize;i++)
     {
         if(val[i] == '"')
-        {res += std::string("\\\"");}
+        {res += std::string("");}
+        else if(val[i] == '\\')
+        {res += std::string("\\");}
+        //if(val[i] == '/')
+        //{res += std::string("\\/");}
+        else if(val[i] == '\b')
+        {res += std::string("\\b");}
+        else if(val[i] == '\f')
+        {res += std::string("\\f");}
+        else if(val[i] == '\n')
+        {res += std::string("\\n");}
+        else if(val[i] == '\r')
+        {res += std::string("\\r");}
+        else if(val[i] == '\t')
+        {res += std::string("\\t");}
         else
         {res.push_back(val[i]);} 
     }
@@ -687,9 +764,9 @@ JSONNode::operator=(const std::string& v)
 //    return *this;
 //}
 
+template<typename T>
 JSONNode&
-JSONNode::operator=(const JSONArray& v)
-{
+JSONNode::convertArray(const T& v) {
     Cleanup();
     type = JSONARRAY;
 
@@ -702,6 +779,60 @@ JSONNode::operator=(const JSONArray& v)
         json.array[i] = v[i];
 
     return *this;
+}
+
+JSONNode&
+JSONNode::operator=(const JSONArray& v)
+{
+    return convertArray<JSONArray>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const boolVector& v)
+{
+    return convertArray<boolVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const charVector& v)
+{
+    return convertArray<charVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const unsignedCharVector& v)
+{
+    return convertArray<unsignedCharVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const intVector& v)
+{
+    return convertArray<intVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const longVector& v)
+{
+    return convertArray<longVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const floatVector& v)
+{
+    return convertArray<floatVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const doubleVector& v)
+{
+    return convertArray<doubleVector>(v);
+}
+
+JSONNode&
+JSONNode::operator=(const stringVector& v)
+{
+    return convertArray<stringVector>(v);
 }
 
 JSONNode&
@@ -807,3 +938,250 @@ JSONNode::Length()
     return len;
 }
 
+bool
+JSONNode::AsBool() const{
+    bool res;
+
+    JSONType type = GetType();
+    if(type == JSONBOOL)
+        res = GetBool();
+    else if(type == JSONNUMBER)
+        res = (bool) GetInt();
+    else if(type == JSONSTRING)
+        res = GetString().size() == 0;
+    else /// array or object is true..
+        res = false;
+
+    return res;
+}
+
+char
+JSONNode::AsChar() const{
+    return (char) AsUnsignedChar();
+}
+
+unsigned char
+JSONNode::AsUnsignedChar() const{
+    unsigned char res;
+
+    JSONType type = GetType();
+
+    if(type == JSONBOOL)
+        res = (unsigned char)GetBool();
+    else if(type == JSONNULLVALUE)
+        res = ' ';
+    else if(type == JSONNUMBER)
+        res = (unsigned char) GetInt();
+    else if(type == JSONSTRING)
+        res = GetString().size() == 0 ? ' ' : GetString()[0];
+    else
+        res = ' ';
+
+    return res;
+}
+
+int
+JSONNode::AsInt() const{
+    return (int)AsLong();
+}
+
+long
+JSONNode::AsLong() const{
+    long res;
+
+    JSONType type = GetType();
+
+    if(type == JSONBOOL)
+        res = (long)GetBool();
+    else if(type == JSONINTEGER)
+        res = GetLong();
+    else if(type == JSONDOUBLE)
+        res = (long) GetDouble();
+    else if(type == JSONSTRING)
+        res = atol(GetString().c_str());
+    else
+        res = 0;
+
+    return res;
+}
+
+float
+JSONNode::AsFloat() const{
+    return (float) AsDouble();
+}
+
+double
+JSONNode::AsDouble() const{
+    double res;
+
+    JSONType type = GetType();
+
+    if(type == JSONBOOL)
+        res = (double)GetBool();
+    else if(type == JSONINTEGER)
+        res = (double) GetLong();
+    else if(type == JSONDOUBLE)
+        res = (double) GetDouble();
+    else if(type == JSONSTRING)
+        res = (double)atof(GetString().c_str());
+    else
+        res = 0;
+
+    return res;
+}
+
+std::string
+JSONNode::AsString() const{
+    std::ostringstream res;
+
+    JSONType type = GetType();
+
+    if(type == JSONBOOL)
+        res << GetBool() ? "true" : "false";
+    else if(type == JSONINTEGER)
+        res << (double) GetLong();
+    else if(type == JSONDOUBLE)
+        res << (double) GetDouble();
+    else if(type == JSONSTRING)
+        res << GetString();
+    else
+        res << "";
+
+    return res.str();
+}
+
+boolVector
+JSONNode::AsBoolVector() const{
+    boolVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsBool();
+    }
+    else {
+        v.push_back(AsBool());
+    }
+    return v;
+}
+
+charVector
+JSONNode::AsCharVector() const{
+    charVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsChar();
+    }
+    else {
+        v.push_back(AsChar());
+    }
+    return v;
+}
+
+unsignedCharVector
+JSONNode::AsUnsignedCharVector() const{
+    unsignedCharVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsUnsignedChar();
+    }
+    else {
+        v.push_back(AsUnsignedChar());
+    }
+    return v;
+}
+
+intVector
+JSONNode::AsIntVector() const{
+    intVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsInt();
+    }
+    else {
+        v.push_back(AsInt());
+    }
+    return v;
+}
+
+longVector
+JSONNode::AsLongVector() const{
+    longVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsLong();
+    }
+    else {
+        v.push_back(AsLong());
+    }
+    return v;
+}
+
+floatVector
+JSONNode::AsFloatVector() const{
+    floatVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsFloat();
+    }
+    else {
+        v.push_back(AsFloat());
+    }
+    return v;
+}
+
+doubleVector
+JSONNode::AsDoubleVector() const{
+    doubleVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsDouble();
+    }
+    else {
+        v.push_back(AsDouble());
+    }
+    return v;
+}
+
+stringVector
+JSONNode::AsStringVector() const{
+    stringVector v;
+
+    if(GetType() == JSONARRAY)
+    {
+        v.resize(json.array.size());
+
+        for(size_t i = 0; i < json.array.size(); ++i)
+            v[i] = json.array[i].AsString();
+    }
+    else {
+        v.push_back(AsString());
+    }
+    return v;
+}
