@@ -593,6 +593,14 @@ VisitInteractor::OnChar()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
 //    Removed arguments to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Mon Jun 24 13:34:32 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button. 
+//
 // ****************************************************************************
 
 void
@@ -614,9 +622,9 @@ VisitInteractor::NewButtonPress()
 
     if (rightButtonDown)
     {
-        debug1 << "Aborting right button action in response to new "
-               << "button press." << endl;
-        AbortRightButtonAction();
+        // Don't do anything since clicking anywhere outside the popup
+        // window with any button will cause the popup window to disappear
+        // and we will never see an event from it.
     }
 
     leftButtonDown   = false;

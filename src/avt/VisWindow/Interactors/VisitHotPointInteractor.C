@@ -1172,6 +1172,57 @@ VisitHotPointInteractor::AbortMiddleButtonAction()
 }
 
 // ****************************************************************************
+// Method: VisitHotPointInteractor::StartRightButtonAction
+//
+// Purpose: 
+//   This method is called when the right mouse button is pressed.
+//
+// Programmer: Eric Brugger
+// Creation:   June 24, 2013
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::StartRightButtonAction()
+{
+    currentInteractor->OnRightButtonDown();
+}
+
+// ****************************************************************************
+// Method: VisitHotPointInteractor::EndRightButtonAction
+//
+// Purpose: 
+//   This method is called when the right mouse button is released.
+//
+// Programmer: Eric Brugger
+// Creation:   June 24, 2013
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::EndRightButtonAction()
+{
+    currentInteractor->EndRightButtonAction();
+}
+
+// ****************************************************************************
+// Method: VisitHotPointInteractor::AbortRightButtonAction
+//
+// Purpose:
+//   This method is called when inconsistent button clicks are received.
+//
+// Programmer: Eric Brugger
+// Creation:   June 24, 2013
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::AbortRightButtonAction()
+{
+    currentInteractor->AbortRightButtonAction();
+}
+
+// ****************************************************************************
 // Method: VisitHotPointInteractor::OnMouseMove
 //
 // Purpose: 
@@ -1266,12 +1317,18 @@ VisitHotPointInteractor::OnTimer()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Eric Brugger, Mon Jun 24 14:33:29 PDT 2013
+//    I modified the interactor to ignore wheel movement while any of the
+//    mouse buttons are pressed to avoid strange behavior in some situations.
+//
 // ****************************************************************************
 
 void
 VisitHotPointInteractor::OnMouseWheelForward()
 {
-    currentInteractor->OnMouseWheelForward();
+    if (!leftButtonDown && !middleButtonDown && !rightButtonDown)
+        currentInteractor->OnMouseWheelForward();
 }
 
 
@@ -1286,12 +1343,18 @@ VisitHotPointInteractor::OnMouseWheelForward()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Eric Brugger, Mon Jun 24 14:33:29 PDT 2013
+//    I modified the interactor to ignore wheel movement while any of the
+//    mouse buttons are pressed to avoid strange behavior in some situations.
+//
 // ****************************************************************************
 
 void
 VisitHotPointInteractor::OnMouseWheelBackward()
 {
-    currentInteractor->OnMouseWheelBackward();
+    if (!leftButtonDown && !middleButtonDown && !rightButtonDown)
+        currentInteractor->OnMouseWheelBackward();
 }
 
 // ****************************************************************************
