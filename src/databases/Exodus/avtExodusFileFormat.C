@@ -1484,9 +1484,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     else
     {
         for (i = 0 ; i < numBlocks ; i++)
-        {
             matNames.push_back(blockName[i]);
-        }
     }
     AddMaterialToMetaData(md, materialName, meshName, numBlocks, matNames);
 
@@ -1969,6 +1967,9 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 //    conventions and we were following the wrong one.  I confirmed with Greg
 //    Sjaardema of Sandia that this new code follows the correct convention.
 //
+//    Mark C. Miller, Mon Jun 24 14:33:54 PDT 2013
+//    Fixed off-by-one error in matlist entries. The should start from zero
+//    for the avtMaterial constructor being used here.
 // ****************************************************************************
 
 void *
@@ -1994,7 +1995,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
             it = blockIdToMatMap.begin(); it != blockIdToMatMap.end(); it++)
         {
             for (int j = 0; j < it->second; j++, zone++)
-                matlist[zone] = it->first;
+                matlist[zone] = it->first-1;
         }
 
         if (blockName.size() == 0 && blockId.size() == 0)
@@ -2013,9 +2014,7 @@ avtExodusFileFormat::GetAuxiliaryData(const char *var, int ts,
         else
         {
             for (i = 0 ; i < numBlocks ; i++)
-            {
                 mats[i] = blockName[i];
-            }
         }
 
         avtMaterial *mat = new avtMaterial(numBlocks, mats, nzones, matlist,
