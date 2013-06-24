@@ -69,6 +69,7 @@ export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.0"}
 export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
 export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK6.0.0"}
 export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
+export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.0"}
 export VTK_MD5_CHECKSUM=""
 export VTK_SHA256_CHECKSUM=""
 }
@@ -118,7 +119,7 @@ function bv_vtk_initialize_vars
 function bv_vtk_ensure
 {
     if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
-        ensure_built_or_ready $VTK_INSTALL_DIR $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE
+        ensure_built_or_ready $VTK_INSTALL_DIR $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
