@@ -80,6 +80,14 @@ class VisWindowInteractorProxy;
 //    Akira Haddox, Thu Jul  3 13:58:11 PDT 2003
 //    Added drawing of guidelines.
 //
+//    Eric Brugger, Mon Jun 24 13:24:51 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Zoom2D : public ZoomInteractor
@@ -120,7 +128,7 @@ class VISWINDOW_API Zoom2D : public ZoomInteractor
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 
-    bool                ctrlOrShiftPushed;
+    bool                ctrlPushed;
 };
 
 

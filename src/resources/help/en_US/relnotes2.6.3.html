@@ -34,6 +34,9 @@ list of changes in release 2.6.</p>
 <li>Material interface reconstruction now correctly handles polygons of arbitrary size.</li>
 <li>The encoding of mpeg movies was updated to work with the newer version of ffmpeg.</li>
 <li>Pressing the middle mouse button and moving the mouse up and down once again zooms and de-zooms the image while in 2d zoom mode.</li>
+<li>The 2d and 3d zoom interactors once again constrain the zoom rectangle to a 1:1 ratio when zooming with the shift key and left mouse button pressed. Pressing the ctrl key and the left mouse button still pans the image.</li>
+<li>Releasing the shift key before the left mouse button no longer results in the window being stuck in pan mode when panning with the shift key and left mouse button pressed while in 2d or 3d zoom mode.</li>
+<li>The 2d and 3d interactors now ignore mouse wheel movements when any mouse keys are pressed to avoid strange behaviors in some situations.</li>
 </ul>
 
 <p><b><font size="4">Enhancements in version 2.6.3</font></b></p>
