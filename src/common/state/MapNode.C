@@ -760,7 +760,7 @@ MapNode::operator ==(const MapNode &obj) const
 int
 MapNode::CalculateMessageSize(Connection &conn) const
 {
-    CalculateMessageSize(&conn);
+    return CalculateMessageSize(&conn);
 }
 
 int
