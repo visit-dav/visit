@@ -72,12 +72,11 @@ class ZoomAxisArray;
 // Creation:   Tue Oct 2 13:57:17 PST 2001
 //
 // Modifications:
+//    Hank Childs, Mon Mar 18 13:47:00 PST 2002
+//    Comply with new interface from base class for better buttonpress control.
 //
-//   Hank Childs, Mon Mar 18 13:47:00 PST 2002
-//   Comply with new interface from base class for better buttonpress control.
-//
-//   Kathleen Bonnell, Tue Apr 16 15:07:38 PDT 2002  
-//   Added Lineout2D, ZoomCurve and Start/Stop CurveMode.
+//    Kathleen Bonnell, Tue Apr 16 15:07:38 PDT 2002  
+//    Added Lineout2D, ZoomCurve and Start/Stop CurveMode.
 //   
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments from all ButtonAction methods and OnMouseMove, 
@@ -104,6 +103,14 @@ class ZoomAxisArray;
 //    Eric Brugger, Tue Dec  9 14:44:12 PST 2008
 //    Added the ParallelAxes window mode.
 //
+//    Eric Brugger, Mon Jun 24 13:36:10 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitHotPointInteractor : public VisitInteractor
@@ -120,6 +127,9 @@ public:
     virtual void      StartMiddleButtonAction();
     virtual void      EndMiddleButtonAction();
     virtual void      AbortMiddleButtonAction();
+    virtual void      StartRightButtonAction();
+    virtual void      EndRightButtonAction();
+    virtual void      AbortRightButtonAction();
 
     virtual void      OnMouseMove();
     virtual void      OnTimer();

@@ -51,11 +51,20 @@
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
 //
+//  Modifications:
+//    Eric Brugger, Mon Jun 24 13:02:21 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
-    ctrlOrShiftPushed = false;
+    ctrlPushed = false;
     shouldSpin = false;    
 }
 
@@ -149,13 +158,12 @@ Zoom3D::OnTimer(void)
 //
 //  Purpose:
 //      Handles the left button being pushed down.  For Zoom3D, this means
-//      a rubber band zoom mode.
+//      a rubber band zoom mode or pan mode.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Fri Dec 21 08:35:12 PST 2001
 //    Update for VTK magic to make zoom work.
 //
@@ -165,6 +173,14 @@ Zoom3D::OnTimer(void)
 //    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //    Removed arguments in order to comply with vtk's new interactor interface.
 //
+//    Eric Brugger, Mon Jun 24 13:02:21 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 void
@@ -173,15 +189,14 @@ Zoom3D::StartLeftButtonAction()
     DisableSpinMode();
 
     //
-    // If ctrl or shift is pushed, pan, otherwise zoom.  Save which one we
-    // did so we can issue the proper "End.." statement when the button is
-    // released.
+    // If ctrl is pushed, pan, otherwise zoom.  Save which one we did so we
+    // can issue the proper "End.." statement when the button is released.
     //
-    if (Interactor->GetControlKey() || Interactor->GetShiftKey())
+    if (Interactor->GetControlKey())
     {
         StartBoundingBox();
         StartPan();
-        ctrlOrShiftPushed = true;
+        ctrlPushed = true;
     }
     else
     {
@@ -189,7 +204,7 @@ Zoom3D::StartLeftButtonAction()
         Interactor->GetEventPosition(x, y);
         StartZoom();
         StartRubberBand(x, y);
-        ctrlOrShiftPushed = false;
+        ctrlPushed = false;
     }
 }
 
@@ -199,13 +214,12 @@ Zoom3D::StartLeftButtonAction()
 //
 //  Purpose:
 //      Handles the left button being pushed up.  For Zoom3D, this means
-//      a rubber band zoom mode.
+//      a rubber band zoom mode or pan mode.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Jun 26 17:09:25 PDT 2000
 //    Removed arguments to EndRubberBand.
 //
@@ -221,6 +235,14 @@ Zoom3D::StartLeftButtonAction()
 //    Eric Brugger, Fri Nov 21 08:03:45 PST 2003
 //    Added code to call the view callback.
 //
+//    Eric Brugger, Mon Jun 24 13:02:21 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 void
@@ -230,7 +252,7 @@ Zoom3D::EndLeftButtonAction()
     // We must issue the proper end state for either pan or rotate depending
     // on whether the shift or ctrl button was pushed.
     //
-    if (ctrlOrShiftPushed)
+    if (ctrlPushed)
     {
         EndBoundingBox();
         EndPan();
@@ -245,6 +267,8 @@ Zoom3D::EndLeftButtonAction()
     EnableSpinMode();
 
     IssueViewCallback();
+
+    ctrlPushed = false;
 }
 
 
@@ -258,12 +282,21 @@ Zoom3D::EndLeftButtonAction()
 //  Programmer: Hank Childs
 //  Creation:   March 18, 2002
 //
+//  Modifications:
+//    Eric Brugger, Mon Jun 24 13:02:21 PDT 2013
+//    I modified the 2d and 3d zoom interactors to once again constrain the
+//    zoom rectangle to a 1:1 ratio when zooming with the shift key and left
+//    mouse button pressed. Pressing the ctrl key and the left mouse button
+//    still pans the image. I corrected a bug where pressing the ctrl key and
+//    the left mouse button would result in the window being stuck in pan mode
+//    if the shift key was released before the left mouse button.
+//
 // ****************************************************************************
 
 void
 Zoom3D::AbortLeftButtonAction()
 {
-    if (ctrlOrShiftPushed)
+    if (ctrlPushed)
     {
         EndBoundingBox();
         EndPan();
@@ -287,7 +320,6 @@ Zoom3D::AbortLeftButtonAction()
 //  Creation:   May 22, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:48:55 PST 2002
 //    Renamed from OnMiddlettonDown.
 //
@@ -319,7 +351,6 @@ Zoom3D::StartMiddleButtonAction()
 //  Creation:   May 22, 2000
 //
 //  Modifications:
-//
 //    Hank Childs, Mon Mar 18 13:48:55 PST 2002
 //    Renamed from OnMiddleButtonUp.
 //
@@ -561,8 +592,6 @@ Zoom3D::OnMouseWheelBackward()
 //
 //  Programmer: Hank Childs
 //  Creation:   May 29, 2002
-//
-//  Modifications:
 //
 // ****************************************************************************
 
