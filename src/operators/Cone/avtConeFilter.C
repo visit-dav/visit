@@ -969,6 +969,125 @@ avtConeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtConeFilter::UpdateDataObjectInfo(void)
 {
+    avtConeFilterVTKObjects obj;
+    CreateVTKObjects(obj);
+
+    avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
+    avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
+
+    outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
+    outValidity.InvalidateZones();
+    outValidity.ZonesSplit();
+
+    double angle = atts.GetAngle();
+    double length = atts.GetLength();
+    angle = vtkMath::RadiansFromDegrees(angle);
+
+    //
+    //             |------/
+    //             |     /|
+    // length=====>|    / |
+    //             |   /<==== side of cone
+    //             |  /   |
+    //             | /    |
+    //             |/-----|
+    //                ^-------projected to 2D.
+    //
+    double effLength = length / cos(angle); // the length along the cone.
+    effLength *= sin(angle); // projected to 2D.
+
+    if (atts.GetRepresentation() == ConeAttributes::Flattened)
+    {
+        outAtts.SetSpatialDimension(2);
+        outValidity.InvalidateSpatialMetaData();
+        outValidity.SetPointsWereTransformed(true);
+        outAtts.SetCanUseInvTransform(false);
+        outAtts.SetCanUseTransform(false);
+
+        double b[6];
+
+        if (inAtts.GetOriginalSpatialExtents()->HasExtents())
+        {
+            inAtts.GetOriginalSpatialExtents()->CopyTo(b);
+            ProjectExtents(b,obj.transform,obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetOriginalSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
+        {
+            inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(b);
+            ProjectExtents(b,obj.transform,obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetDesiredSpatialExtents()->HasExtents())
+        {
+            inAtts.GetDesiredSpatialExtents()->CopyTo(b);
+            ProjectExtents(b,obj.transform,obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetDesiredSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetActualSpatialExtents()->HasExtents())
+        {
+            inAtts.GetActualSpatialExtents()->CopyTo(b);
+            ProjectExtents(b,obj.transform,obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetActualSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetThisProcsActualSpatialExtents()->HasExtents())
+        {
+            inAtts.GetThisProcsActualSpatialExtents()->CopyTo(b);
+            ProjectExtents(b,obj.transform,obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetThisProcsActualSpatialExtents()->Set(b);
+        }
+    }
+    if (atts.GetRepresentation() == ConeAttributes::R_Theta)
+    {
+        outAtts.SetSpatialDimension(2);
+        outValidity.InvalidateSpatialMetaData();
+        outValidity.SetPointsWereTransformed(true);
+        outAtts.SetCanUseInvTransform(false);
+        outAtts.SetCanUseTransform(false);
+
+        double b[6];
+        if (inAtts.GetOriginalSpatialExtents()->HasExtents())
+        {
+            inAtts.GetOriginalSpatialExtents()->CopyTo(b);
+            PolarExtents(b, obj.transform, obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetOriginalSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetThisProcsOriginalSpatialExtents()->HasExtents())
+        {
+            inAtts.GetThisProcsOriginalSpatialExtents()->CopyTo(b);
+            PolarExtents(b, obj.transform, obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetThisProcsOriginalSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetDesiredSpatialExtents()->HasExtents())
+        {
+            inAtts.GetDesiredSpatialExtents()->CopyTo(b);
+            PolarExtents(b, obj.transform, obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetDesiredSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetActualSpatialExtents()->HasExtents())
+        {
+            inAtts.GetActualSpatialExtents()->CopyTo(b);
+            PolarExtents(b, obj.transform, obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetActualSpatialExtents()->Set(b);
+        }
+
+        if (inAtts.GetThisProcsActualSpatialExtents()->HasExtents())
+        {
+            inAtts.GetThisProcsActualSpatialExtents()->CopyTo(b);
+            PolarExtents(b, obj.transform, obj.cutter,atts.GetCutByLength(),effLength);
+            outAtts.GetThisProcsActualSpatialExtents()->Set(b);
+        }
+    }
+
+    DestroyVTKObjects(obj);
 }
 
 
