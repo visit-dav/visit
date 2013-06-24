@@ -2,6 +2,8 @@ function bv_szip_initialize
 {
 export DO_SZIP="no"
 export ON_SZIP="off"
+export USE_SYSTEM_SZIP="no"
+add_extra_commandline_args "szip" "alt-szip-dir" 1 "Use alternative directory for szip"
 }
 
 function bv_szip_enable
@@ -16,9 +18,23 @@ DO_SZIP="no"
 ON_SZIP="off"
 }
 
+function bv_szip_alt_szip_dir
+{
+    bv_szip_enable
+    USE_SYSTEM_SZIP="yes"
+    SZIP_INSTALL_DIR="$1"
+}
+
 function bv_szip_depends_on
 {
 echo ""
+}
+
+function bv_szip_initialize_vars
+{
+  if [[ "$USE_SYSTEM_SZIP" == "no" ]]; then
+      SZIP_INSTALL_DIR="${VISITDIR}/szip/$SZIP_VERSION/${VISITARCH})"
+  fi
 }
 
 function bv_szip_info
@@ -57,15 +73,21 @@ function bv_szip_host_profile
         echo "##" >> $HOSTCONF
         echo "## SZIP" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-        "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH})" \
-        >> $HOSTCONF
+        if [[ "$USE_SYSTEM_SZIP" == "yes" ]]; then
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR $SZIP_INSTALL_DIR)" \
+            >> $HOSTCONF
+        else
+            echo \
+            "VISIT_OPTION_DEFAULT(VISIT_SZIP_DIR \${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH})" \
+            >> $HOSTCONF
+        fi
     fi
 }
 
 function bv_szip_ensure
 {    
-    if [[ "$DO_SZIP" == "yes" ]] ; then
+    if [[ "$DO_SZIP" == "yes" && "$USE_SYSTEM_SZIP" == "no"]] ; then
         ensure_built_or_ready "szip" $SZIP_VERSION $SZIP_BUILD_DIR $SZIP_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
