@@ -4,6 +4,9 @@
 ## created: Tue Apr 16 19:45:26 EDT 2013
 ## system: Linux lens6 2.6.18-194.32.1.el5.perfctr #1 SMP Wed Apr 27 14:12:03 EDT 2011 x86_64 x86_64 x86_64 GNU/Linux
 ## by: pugmire
+#
+#
+# ./build_visit --cc mpicc --cxx mpiCC --console --parallel --all-io
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
