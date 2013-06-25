@@ -970,6 +970,11 @@ avtMFIXFileFormat::ReadInformation()
 // several unstructured meshes; it has been modified to produce a
 // structured mesh plus VisIt-style subsetting information.
 //
+// Modifications:
+//   Kathleen Biagas, Mon Jun 24 13:45:00 PDT 2013
+//   Added fix from Terry Jordan which allows reading of MFiX version
+//   1.8 files.
+//
 // ******************************************************************
 
 void avtMFIXFileFormat::ReadRestartFile()
@@ -1582,6 +1587,14 @@ void avtMFIXFileFormat::ReadRestartFile()
         if (tmp != 0)
         {
             this->BkEpsilon = true;
+        }
+    }
+
+    if (this->VersionNumber >= 1.7999)
+    {
+        for( int i = 0; i < this->MMAX; ++i)
+        {
+            this->SkipBytes(in,512);
         }
     }
 }
