@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class ProcessAttributes extends AttributeSubject
 {
-    private static int ProcessAttributes_numAdditionalAtts = 4;
+    private static int ProcessAttributes_numAdditionalAtts = 5;
 
     public ProcessAttributes()
     {
@@ -68,6 +68,7 @@ public class ProcessAttributes extends AttributeSubject
         ppids = new Vector();
         hosts = new Vector();
         isParallel = false;
+        memory = new Vector();
     }
 
     public ProcessAttributes(int nMoreFields)
@@ -78,6 +79,7 @@ public class ProcessAttributes extends AttributeSubject
         ppids = new Vector();
         hosts = new Vector();
         isParallel = false;
+        memory = new Vector();
     }
 
     public ProcessAttributes(ProcessAttributes obj)
@@ -103,6 +105,12 @@ public class ProcessAttributes extends AttributeSubject
             hosts.addElement(new String((String)obj.hosts.elementAt(i)));
 
         isParallel = obj.isParallel;
+        memory = new Vector();
+        for(i = 0; i < obj.memory.size(); ++i)
+        {
+            Integer iv = (Integer)obj.memory.elementAt(i);
+            memory.addElement(new Integer(iv.intValue()));
+        }
 
         SelectAll();
     }
@@ -148,11 +156,21 @@ public class ProcessAttributes extends AttributeSubject
             String hosts2 = (String)obj.hosts.elementAt(i);
             hosts_equal = hosts1.equals(hosts2);
         }
+        // Compare the elements in the memory vector.
+        boolean memory_equal = (obj.memory.size() == memory.size());
+        for(i = 0; (i < memory.size()) && memory_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer memory1 = (Integer)memory.elementAt(i);
+            Integer memory2 = (Integer)obj.memory.elementAt(i);
+            memory_equal = memory1.equals(memory2);
+        }
         // Create the return value
         return (pids_equal &&
                 ppids_equal &&
                 hosts_equal &&
-                (isParallel == obj.isParallel));
+                (isParallel == obj.isParallel) &&
+                memory_equal);
     }
 
     // Property setting methods
@@ -180,11 +198,18 @@ public class ProcessAttributes extends AttributeSubject
         Select(3);
     }
 
+    public void SetMemory(Vector memory_)
+    {
+        memory = memory_;
+        Select(4);
+    }
+
     // Property getting methods
     public Vector  GetPids() { return pids; }
     public Vector  GetPpids() { return ppids; }
     public Vector  GetHosts() { return hosts; }
     public boolean GetIsParallel() { return isParallel; }
+    public Vector  GetMemory() { return memory; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -197,6 +222,8 @@ public class ProcessAttributes extends AttributeSubject
             buf.WriteStringVector(hosts);
         if(WriteSelect(3, buf))
             buf.WriteBool(isParallel);
+        if(WriteSelect(4, buf))
+            buf.WriteIntVector(memory);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -215,6 +242,9 @@ public class ProcessAttributes extends AttributeSubject
         case 3:
             SetIsParallel(buf.ReadBool());
             break;
+        case 4:
+            SetMemory(buf.ReadIntVector());
+            break;
         }
     }
 
@@ -225,6 +255,7 @@ public class ProcessAttributes extends AttributeSubject
         str = str + intVectorToString("ppids", ppids, indent) + "\n";
         str = str + stringVectorToString("hosts", hosts, indent) + "\n";
         str = str + boolToString("isParallel", isParallel, indent) + "\n";
+        str = str + intVectorToString("memory", memory, indent) + "\n";
         return str;
     }
 
@@ -234,5 +265,6 @@ public class ProcessAttributes extends AttributeSubject
     private Vector  ppids; // vector of Integer objects
     private Vector  hosts; // vector of String objects
     private boolean isParallel;
+    private Vector  memory; // vector of Integer objects
 }
 
