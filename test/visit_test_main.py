@@ -722,7 +722,6 @@ def Test(case_name, altSWA=0, alreadySaved=0):
         sa.family   = 0
         sa.fileName = cur
         sa.format   = sa.PNG
-        sa
         SetSaveWindowAttributes(sa)
         SaveWindow()
 
