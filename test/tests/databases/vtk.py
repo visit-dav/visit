@@ -20,6 +20,9 @@
 #    Brad Whitlock, Tue Oct 23 11:18:12 PDT 2012
 #    I added tests for NBLOCKS .visit files, cycle & time, and PVTU files.
 #
+#    Eric Brugger, Tue Jun 25 18:20:31 PDT 2013
+#    I added a test for PVTI files.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -235,10 +238,20 @@ def TestPVTU():
     Test("vtk_34")
     DeleteAllPlots()
 
+def TestPVTI():
+    TestSection("PVTI files")
+    OpenDatabase(data_path("vtk_xml_test_data/earth.pvti"))
+    AddPlot("Truecolor", "PNGImage")
+    DrawPlots()
+    ResetView()
+    Test("vtk_35")
+    DeleteAllPlots()
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
 TestNBLOCKS()
 TestPVTU()
+TestPVTI()
 
 Exit()
