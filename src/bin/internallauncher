@@ -1903,6 +1903,9 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Eric Brugger, Wed Jun 26 14:49:49 PDT 2013
+    #   I corrected a bug that incorrectly identified the machine architecture
+    #   on some Mac systems.
     #
     ############################################################################
 
@@ -1934,8 +1937,9 @@ class MainLauncher(object):
                     arch = arch + "-" + compiler
             supportedarches.append(arch)
         elif self.os == "darwin":
-            all_uname = string.split(self.uname("-a"))
-            version = [int(x) for x in string.split(all_uname[2], ".")]
+            mach = self.uname("-m")
+            release = self.uname("-r")
+            version = [int(x) for x in string.split(release, ".")]
             self.osver = version[0]
             if version[0] >= 11:
                 if all_uname[-1] == "x86_64":
