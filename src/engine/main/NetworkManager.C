@@ -123,6 +123,8 @@
 #include <PlotPluginManager.h>
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
+#include <FileFunctions.h> // for ReadAndProcessDirectory
+#include <Utility.h>       // for WildcardStringMatch
 
 #include <vtkImageData.h>
 
@@ -138,6 +140,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#include <direct.h>  // for _getcwd, _chdir
+#endif
 
 // Programmer: Brad Whitlock, Wed Jan 18 11:38:42 PST 2012
 //
@@ -168,6 +173,7 @@ static void BroadcastImage(avtImage_p &, bool, int);
 static bool IsBlankImage(avtImage_p img);
 static std::vector<int> BuildBlankImageVector(avtImage_p img);
 #endif
+static void FileMatchesPatternCB(void *, const std::string &, bool, bool, long);
 
 //
 // Static data members of the NetworkManager class.
@@ -589,6 +595,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Brad Whitlock, Tue Jun 24 15:45:43 PDT 2008
 //    Pass the database plugin manager to the factory.
 //
+//    Kathleen Biagas, Thu June 27 10:38:54 MST 2013
+//    If passed a virtual Database, expand it to the actual files.
+//
 // ****************************************************************************
 
 NetnodeDB *
@@ -663,13 +672,81 @@ NetworkManager::GetDBFromCache(const std::string &filename, int time,
         }
         else
         {
-            db = avtDatabaseFactory::FileList(
-                GetDatabasePluginManager(),
-                &filename_c,
-                1,
-                time,
-                plugins, 
-                format);
+            if (filename.find("*") != std::string::npos)
+            {
+                debug3 << "  " << filename
+                       << " is virtual need to expand it." << endl;
+                char tmpcwd[1024];
+#if defined(_WIN32)
+                _getcwd(tmpcwd, 1023);
+#else
+                getcwd(tmpcwd, 1023);
+#endif
+                tmpcwd[1023] = '\0';
+
+                std::string oldPath(tmpcwd);
+                char slash = '/';
+                size_t pathIndex = filename.rfind(slash);
+                if (pathIndex == std::string::npos)
+                {
+                    char slash = '\\';
+                    pathIndex = filename.rfind(slash);
+                }
+                std::string path(filename.substr(0, pathIndex));
+                size_t dbIndex = filename.rfind(" database");
+                std::string pattern(filename.substr(pathIndex+1, dbIndex - pathIndex - 1));
+                if (pathIndex != std::string::npos)
+                {
+#if defined(_WIN32)
+                    _chdir(path.c_str());
+#else
+                    chdir(path.c_str());
+#endif
+                }
+                // look for files that match pattern
+                std::vector< std::string > fileNames;
+                void *cb_data[2];
+                cb_data[0] = (void *)&fileNames;
+                cb_data[1] =  (void *)&pattern;
+                ReadAndProcessDirectory(path, FileMatchesPatternCB, (void*) cb_data, false);
+                char **names = new char *[fileNames.size()];
+                for (size_t i = 0; i < fileNames.size(); ++i)
+                {
+                    char *charName = new char[fileNames[i].size() +1];
+                    strcpy(charName, fileNames[i].c_str());
+                    names[i] = charName;
+                }
+                if (pathIndex != std::string::npos)
+                {
+#if defined(_WIN32)
+                    _chdir(oldPath.c_str());
+#else
+                    chdir(oldPath.c_str());
+#endif
+                }
+            
+                db = avtDatabaseFactory::FileList(
+                    GetDatabasePluginManager(),
+                    names,
+                    (int)fileNames.size(),
+                    time,
+                    plugins,
+                    format);
+
+                for (size_t i = 0; i < fileNames.size(); ++i)
+                    delete [] names[i];
+                delete [] names; 
+            }
+            else
+            {
+                db = avtDatabaseFactory::FileList(
+                    GetDatabasePluginManager(),
+                    &filename_c,
+                    1,
+                    time,
+                    plugins, 
+                    format);
+            }
         }
 
         db->SetFullDBName(filename);
@@ -4012,7 +4089,7 @@ NetworkManager::CreateNamedSelection(int id, const SelectionProperties &props)
             // Work off of the source file instead of the plot.
             source = networkCache[id]->GetNetDB()->GetFilename();
             debug1 << mName << "Do not use the plot's intermediate data object "
-                               "for selection. Use its database source: " << source << endl;
+                   "for selection. Use its database source: " << source << endl;
             // Do not allow use of the plot's output.
             id = -1;
         }
@@ -6856,4 +6933,37 @@ std::string
 NetworkManager::GetQueryParameters(const std::string &qName)
 {
     return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
+}
+
+// ****************************************************************************
+//  Method: FileMatchesPatternCB
+//
+//  Purpose:
+//    This function is a callback to the method ReadAndProcessDirectory,
+//    located in Utility.h.  It is called for each file in a give directory.
+//    Once it receives a file, it feeds that file to NetworkManager which then
+//    determines if the filename matches the requested pattern.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Jun 26, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+static void
+FileMatchesPatternCB(void *cbdata, const std::string &filename, bool isDir, bool canAccess, long size)
+{
+    if (!isDir)
+    {
+        void **arr = (void **)cbdata;
+        std::vector< std::string > *fl = (std::vector< std::string > *)arr[0];
+        std::string *pattern = (std::string*)arr[1];
+        std::string name(filename);
+        size_t index  = filename.rfind(VISIT_SLASH_CHAR);
+        if(index != std::string::npos)
+            name = name.substr(index+1);
+        if (WildcardStringMatch(*pattern, name))
+           fl->push_back(filename);
+    }
 }
