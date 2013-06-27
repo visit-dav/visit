@@ -1652,6 +1652,8 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    Mark C. Miller, Thu Aug  5 14:17:36 PDT 2004
 //    Moved whole of implementation to ReadMesh
 //
+//    Mark C. Miller, Thu Jun 27 10:13:46 PDT 2013
+//    Removed logic to automagically add displacements.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1698,6 +1700,18 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         coords = newcoords;
     }
 
+    //
+    // I removed this becuase it appears Exodus users are more accustomed to having
+    // to manually displace their mesh instead of having it happen automagically when
+    // it is read from the file. What this block does is simply add displacements to
+    // the mesh coordinates before handing it back up to VisIt. In fact, I don't think
+    // we're being too smart about Exodus' mesh in the case where we are not adding
+    // displacements here because it is the same (e.g. constant) from timestep to
+    // timestep (unless there are topological changes (e.g. zones are added or removed)
+    // and so we could do things better by just return the mesh from the variable
+    // cache.
+    //
+#if 0
     // Not all Exodus' files have displacements
     TRY
     {
@@ -1730,6 +1744,7 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
     {
     }
     ENDTRY
+#endif
 
     vtkPoints *points = vtkPoints::New();
     points->SetData(coords);
