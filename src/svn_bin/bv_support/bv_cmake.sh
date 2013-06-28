@@ -162,6 +162,44 @@ function bv_cmake_dry_run
 #                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
+function apply_cmake_patch_2
+{
+   patch -p0 <<\EOF
+*** cmake-2.8.10.2/Modules/Platform/Darwin.cmake
+--- cmake-2.8.10.2/Modules/Platform/Darwin.cmake.patched
+***************
+*** 180,187 ****
+    endif()
+  endif()
+  
+  # Make sure the combination of SDK and Deployment Target are allowed
+! if(CMAKE_OSX_DEPLOYMENT_TARGET)
+    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
+      set(_sdk_ver "${CMAKE_MATCH_1}")
+    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
+--- 180,192 ----
+    endif()
+  endif()
+  
++ #
++ # This sanity check fails on OS X 10.8 regardless of how values are
++ # set. It has been disabled for this installation of VisIt by using
++ # 'FALSE' as the triggering condition.
++ #
+  # Make sure the combination of SDK and Deployment Target are allowed
+! if(FALSE)
+    if("${_CMAKE_OSX_SYSROOT_PATH}" MATCHES "^.*/MacOSX([0-9]+\\.[0-9]+)[^/]*\\.sdk")
+      set(_sdk_ver "${CMAKE_MATCH_1}")
+    elseif("${_CMAKE_OSX_SYSROOT_ORIG}" MATCHES "^macosx([0-9]+\\.[0-9]+)$")
+EOF
+   if [[ $? != 0 ]] ; then
+        warn "Unable to apply patch 2 to cmake."
+        return 1
+   else
+        return 0
+   fi
+}
+
 function apply_cmake_patch_1
 {
    patch -p0 <<\EOF
@@ -213,6 +251,13 @@ function apply_cmake_patch
        fi
    fi
 
+   if [[ "${CMAKE_VERSION}" == "2.8.10.2" ]]; then
+       apply_cmake_patch_2
+       if [[ $? != 0 ]] ; then
+          return 1
+       fi
+   fi
+
    return 0
 }
 
@@ -243,16 +288,6 @@ function build_cmake
                "already been patched ... that is, that the patch is\n"\
                "failing harmlessly on a second application."
        fi
-    fi
-
-    #
-    # There is a bug in CMake 2.8.10.2 that prevents it from working correclty
-    # on Darwin if this variable is set to anything. We undo this after the
-    # build of CMake finishes.
-    #
-    saved_MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        unset MACOSX_DEPLOYMENT_TARGET
     fi
 
     #
@@ -291,10 +326,6 @@ function build_cmake
     fi
     cd "$START_DIR"
     info "Done with CMake"
-
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=${saved_MACOSX_DEPLOYMENT_TARGET}
-    fi
 }
 
 function bv_cmake_is_enabled
