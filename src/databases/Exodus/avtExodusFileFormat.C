@@ -271,12 +271,19 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
 
     if (isCoord)
     {
-        int num_dim_dimid;
-        size_t dlen;
-        exvaridx = 0;
-        nc_inq_dimid(exncfid, "num_dim", &num_dim_dimid);
-        nc_inq_dimlen(exncfid, num_dim_dimid, &dlen);
-        num_comps = (int) dlen;
+        if (!strncmp(visit_varname, "coordx", 6) ||
+            !strncmp(visit_varname, "coordy", 6) ||
+            !strncmp(visit_varname, "coordz", 6))
+            num_comps = 1;
+        else
+        {
+            int num_dim_dimid;
+            size_t dlen;
+            exvaridx = 0;
+            nc_inq_dimid(exncfid, "num_dim", &num_dim_dimid);
+            nc_inq_dimlen(exncfid, num_dim_dimid, &dlen);
+            num_comps = (int) dlen;
+        }
     }
     else
     {
@@ -380,8 +387,15 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
             num_vals = num_nodes;
             if (isCoord)
             {
-                starts[0] = 0;       counts[0] = num_comps;
-                starts[1] = 0;       counts[1] = num_nodes;
+                if (num_comps == 1)
+                {
+                    starts[0] = 0;       counts[0] = num_nodes;
+                }
+                else
+                {
+                    starts[0] = 0;       counts[0] = num_comps;
+                    starts[1] = 0;       counts[1] = num_nodes;
+                }
             }
             else
             {
