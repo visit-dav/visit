@@ -43,6 +43,10 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    export SO_EXT="dylib"
    VER=$(uname -r)
 # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will default to 10.1
+# Used http://en.wikipedia.org/wiki/Darwin_(operating_system) to map Darwin
+# Kernel versions to OSX version numbers.
+# Other options for dealing with MACOSX_DEPLOYMENT_TARGET didn't work
+# See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
    if (( ${VER%%.*} < 8 )) ; then
       export MACOSX_DEPLOYMENT_TARGET=10.3
    elif [[ ${VER%%.*} == 8 ]] ; then
@@ -51,8 +55,12 @@ if [[ "$OPSYS" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET=10.5
    elif [[ ${VER%%.*} == 10 ]] ; then
       export MACOSX_DEPLOYMENT_TARGET=10.6
+   elif [[ ${VER%%.*} == 11 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.7
+   elif [[ ${VER%%.*} == 12 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.8
    else
-      export MACOSX_DEPLOYMENT_TARGET=10.6
+      export MACOSX_DEPLOYMENT_TARGET=10.8
    fi
    export C_COMPILER=${C_COMPILER:-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER:-"g++"}

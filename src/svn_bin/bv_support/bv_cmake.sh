@@ -246,6 +246,16 @@ function build_cmake
     fi
 
     #
+    # There is a bug in CMake 2.8.10.2 that prevents it from working correclty
+    # on Darwin if this variable is set to anything. We undo this after the
+    # build of CMake finishes.
+    #
+    saved_MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        unset MACOSX_DEPLOYMENT_TARGET
+    fi
+
+    #
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
     info "Bootstrapping CMake . . ."
@@ -281,6 +291,10 @@ function build_cmake
     fi
     cd "$START_DIR"
     info "Done with CMake"
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        export MACOSX_DEPLOYMENT_TARGET=${saved_MACOSX_DEPLOYMENT_TARGET}
+    fi
 }
 
 function bv_cmake_is_enabled
