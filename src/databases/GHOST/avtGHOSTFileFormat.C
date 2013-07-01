@@ -60,6 +60,7 @@
 #define READ  ::_read
 typedef __int64 off64_t; 
 #else
+#include <unistd.h>
 #define FSEEK fseek
 #define O_BINARY 0
 #define CLOSE ::close
