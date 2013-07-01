@@ -152,6 +152,10 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     ncerr = nc_inq_dimid(exfid, "len_string", &len_string_dimid);
     if (ncerr != NC_NOERR) return retval;
 
+    int len_name_dimid;
+    ncerr = nc_inq_dimid(exfid, "len_name", &len_name_dimid);
+    if (ncerr != NC_NOERR) return retval;
+
     int varid;
     ncerr = nc_inq_varid(exfid, var_name, &varid);
     if (ncerr != NC_NOERR) return retval;
@@ -170,12 +174,12 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
 
     int nstrings;
     int len_string;
-    if (dimids[0] == len_string_dimid)
+    if (dimids[0] == len_string_dimid || dimids[0] == len_name_dimid)
     {
         nstrings = (int) dlen1;
         len_string = (int) dlen0;
     }
-    else if (dimids[1] == len_string_dimid)
+    else if (dimids[1] == len_string_dimid || dimids[1] == len_name_dimid)
     {
         nstrings = (int) dlen0;
         len_string = (int) dlen1;
@@ -216,7 +220,7 @@ static int AreSuccessiveStringsRelatedComponentNames(char const * const *list, i
         if (!strncmp(list[i],list[i+1],maxlen)) break;
         maxlen--;
     }
-    if (maxlen < 5) return 0;
+    if (maxlen < 2) return 0;
     *ncomps = 1;
     while (list[i+1])
     {
@@ -291,7 +295,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
         char **node_var_names = GetStringListFromExodusIINCvar(exncfid, "name_nod_var");
         i = 0;
         num_comps = 0;
-        while (node_var_names[i] && num_comps <= 9)
+        while (node_var_names[i])
         {
             if (!strncmp(visit_varname, node_var_names[i], len))
             {
@@ -314,7 +318,7 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
             cent = AVT_ZONECENT;
             char **elem_var_names = GetStringListFromExodusIINCvar(exncfid, "name_elem_var");
             i = 0;
-            while (elem_var_names[i] && num_comps <= 9)
+            while (elem_var_names[i])
             {
                 if (!strncmp(visit_varname, elem_var_names[i], len))
                 {
@@ -1566,6 +1570,8 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         int vndims, vdimids[NC_MAX_VAR_DIMS], nvatts;
         nc_inq_var(ncExIIId, i, vname, &vtype, &vndims, vdimids, &nvatts);
         //if (!strcmp(vname, "coord")) continue;
+        if (!strncmp(vname, "vals_nod_var", 12)) continue;
+        if (!strncmp(vname, "vals_elem_var", 13)) continue;
         avtCentering centering = AVT_UNKNOWN_CENT;
         int ncomps = 1;
         for (int j = 0; j < vndims; j++)
