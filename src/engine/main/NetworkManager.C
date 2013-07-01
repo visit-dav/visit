@@ -142,6 +142,8 @@
 #include <vector>
 #ifdef _WIN32
 #include <direct.h>  // for _getcwd, _chdir
+#else
+#include <unistd.h>
 #endif
 
 // Programmer: Brad Whitlock, Wed Jan 18 11:38:42 PST 2012
