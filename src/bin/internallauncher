@@ -1942,7 +1942,7 @@ class MainLauncher(object):
             version = [int(x) for x in string.split(release, ".")]
             self.osver = version[0]
             if version[0] >= 11:
-                if all_uname[-1] == "x86_64":
+                if mach == "x86_64":
                     supportedarches.append("darwin-x86_64")
                     supportedarches.append("darwin-i386")
                 else:
