@@ -152,9 +152,9 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     ncerr = nc_inq_dimid(exfid, "len_string", &len_string_dimid);
     if (ncerr != NC_NOERR) return retval;
 
-    int len_name_dimid;
+    int len_name_dimid = -1;
     ncerr = nc_inq_dimid(exfid, "len_name", &len_name_dimid);
-    if (ncerr != NC_NOERR) return retval;
+    if (ncerr != NC_NOERR) len_name_dimid = -1;
 
     int varid;
     ncerr = nc_inq_varid(exfid, var_name, &varid);
