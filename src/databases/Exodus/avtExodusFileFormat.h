@@ -44,15 +44,14 @@
 #define AVT_EXODUS_FILE_FORMAT_H
 
 #include <avtMTSDFileFormat.h>
+#include <avtTypes.h>
 
-#include <vector>
+#include <map>
 #include <string>
+#include <vector>
 
-
-class     vtkVisItExodusReader;
 
 class     avtVariableCache;
-
 
 // ****************************************************************************
 //  Class: avtExodusFileFormat
@@ -94,14 +93,12 @@ class avtExodusFileFormat : public avtMTSDFileFormat
                                 avtExodusFileFormat(const char *);
     virtual                    ~avtExodusFileFormat();
  
-    static int                  RegisterFileList(const char *const *, int);
-    void                        SetFileList(int fl) { fileList = fl; };
-
     virtual void                FreeUpResources(void);
     const char                 *GetType(void) { return "Exodus File Format"; };
 
     virtual void                GetTimes(std::vector<double> &);
     virtual int                 GetNTimesteps(void);
+    void                        SetTimestep(int ts);
  
     virtual vtkDataSet         *GetMesh(int, const char *);
     virtual vtkDataArray       *GetVar(int, const char *);
@@ -109,32 +106,32 @@ class avtExodusFileFormat : public avtMTSDFileFormat
 
     virtual void                PopulateDatabaseMetaData(avtDatabaseMetaData*, int);
 
-    virtual void         *GetAuxiliaryData(const char *var, int, 
-                                           const char *type, void *args,
-                                           DestructorFunction &);
+    virtual void               *GetAuxiliaryData(const char *var, int, 
+                                    const char *type, void *args,
+                                    DestructorFunction &);
 
-  protected:
-    vtkVisItExodusReader            *reader;
+    static int                  RegisterFileList(const char *const *, int);
+    void                        SetFileList(int fl) { fileList = fl; };
+
+  private:
+    int                         GetFileHandle();
+    void                        GetTimesteps(int *ntimes, std::vector<double> *times);
+    void                        AddVar(avtDatabaseMetaData *md, char const *vname,
+                                    int topo_dim, int ncomps, avtCentering centering);
+
     int                         numBlocks;
-    std::vector<bool>           validBlock;
+    int                         numNodes; // this 'domain'
+    int                         numElems; // this 'domain'
     std::vector<int>            blockId;
     std::vector<std::string>    blockName;
-    std::vector<std::string>    pointVars;
-    std::vector<std::string>    cellVars;
-    avtVariableCache           *exodusCache;
-    bool                        readInFile;
     int                         fileList;
+    int                         ncExIIId;
+    std::map<int, int>          blockIdToMatMap;
 
     // Note: this needs to be a pointer because there are issues with 
     // constructors being called in shared libraries for static objects.
     static std::vector< std::vector<std::string> > *globalFileLists;
 
-    vtkVisItExodusReader            *GetReader(void);
-    void                        SetTimestep(int);
-    void                        LoadVariable(vtkVisItExodusReader *, const char *);
-    vtkDataSet                 *ForceRead(const char *);
-    void                        ReadInFile(void);
-    vtkDataSet                 *ReadMesh(int, const char *, bool);
 };
 
 

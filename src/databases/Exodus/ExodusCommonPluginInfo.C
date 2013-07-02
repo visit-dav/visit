@@ -149,7 +149,13 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
     }
 
     int nTimestepGroups = 1;
-    nBlock = nList;
+    if(nBlock == -1)
+    {
+        // If nBlock == -1 then we're in here recursively and we're dealing
+        // with a list of domains.
+        nBlock = nList;
+    }
+    nTimestepGroups = nList / nBlock;
 
     avtMTSDFileFormat ***ffl = new avtMTSDFileFormat**[nTimestepGroups];
     for (int i = 0 ; i < nTimestepGroups ; i++)
@@ -167,4 +173,3 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
-
