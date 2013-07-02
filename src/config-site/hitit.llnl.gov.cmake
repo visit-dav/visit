@@ -1,4 +1,4 @@
-#/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-i686_gcc-4.1/bin/cmake
+#/usr/gapps/visit/thirdparty_shared_2_5_1/cmake/2.8.8/linux-x86_64_gcc-4.4/bin/cmake
 ##
 ## ./build_visit2_5_1 generated host.cmake
 ## created: Thu Jun 22 09:36:31 PDT 2012
@@ -9,14 +9,14 @@
 ## Setup VISITHOME & VISITARCH variables.
 ##
 SET(VISITHOME /misc/gapps/visit/thirdparty_shared_2_5_1)
-SET(VISITARCH linux-i686_gcc-4.1)
+SET(VISITARCH linux-x86_64_gcc-4.4)
 
 ## Compiler flags.
 ##
 VISIT_OPTION_DEFAULT(VISIT_C_COMPILER gcc TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##############################################################
 ##
@@ -34,7 +34,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -fvisibility=hidden" TYPE STRING)
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /misc/gapps/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-i686_gcc-4.1)
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR /misc/gapps/visit/thirdparty_shared_2_5_1/python/2.6.4/linux-x86_64_gcc-4.4)
 
 ##
 ## VTK
