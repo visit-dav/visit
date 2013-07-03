@@ -4580,7 +4580,10 @@ ViewerPlotList::SetPlotOperatorAtts(const int operatorType,
 // Modifications:
 //    Jeremy Meredith, Tue Mar 30 16:18:00 PST 2004
 //    Added code to set the engine key upon changing sources.
-//   
+//
+//    Kathleen Biagas, Wed Jul 3 11:42:39 MST 2013
+//    Update the expression list.
+//
 // ****************************************************************************
 
 void
@@ -4656,6 +4659,8 @@ ViewerPlotList::ActivateSource(const std::string &source, const EngineKey &ek)
             }
         }
     } // end numstates > 1
+
+    UpdateExpressionList(true);
 
     //
     // Update the window information since the source and active time
