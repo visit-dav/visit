@@ -94,7 +94,7 @@ cleanPluginDir () {
     find . -type d -name .svn -exec rm -rf {} \;
     rm -f *.d .depend .pardepend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f cmake_install.cmake
-    rm -rf CMakeFiles
+    rm -rf CMakeCache.txt CMakeFiles
     rm -f *.contrib* *.keep*
     chmod -R a+rX,g+w
     chgrp -R visit
@@ -148,8 +148,9 @@ cat >> $1 <<- EOF
 
     Manual commands for installing and UNinstalling
     (Note: Ensure you have a new enough version of cmake, 2.8 or
-    later, in your path or use the version of cmake that is part
-    of the VisIt installation.)
+    later, in your path. It may be necessary to use the version of
+    cmake that is part of the VisIt installation you are building
+    this plugin for.)
     ----------------------------------------------------------------
     To untar the plugin...
         % gunzip < $pluginName.tar.gz | tar xvf -
@@ -214,6 +215,7 @@ testBuildPluginTarball () {
     elif test -e .REQUIRED_VISIT_VERSION; then
         vers="-v `cat .REQUIRED_VISIT_VERSION`"
     fi
+    rm -f CMakeLists.txt
     which xml2cmake 1>/dev/null 2>&1
     if test "$?" = "0"; then
         xml2cmake $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
@@ -225,7 +227,7 @@ testBuildPluginTarball () {
 	    return
 	fi
     fi
-    cmake .
+    cmake . 1>$oldDir/visit_plugin_${thePluginName}_make.log 2>&1
     make 1>$oldDir/visit_plugin_${thePluginName}_make.log 2>&1
     hadError=$?
     if test -z "$deleteIt" || test "$deleteIt" != "0"; then
@@ -499,8 +501,12 @@ fi
 # Setup path to this script (and other visit tools) 
 #
 scriptPath="`dirname $0`"
-if test -n "`echo $path | grep $scriptPath`"; then
+if test -n "`echo $path | tr ' ' '\n' | grep ^$scriptPath`"; then
     scriptPath=""
+else
+   pushd $scriptPath 1>/dev/null 2>&1
+   scriptPath="`pwd`"
+   popd 1>/dev/null 2>&1
 fi
 
 #
@@ -597,7 +603,7 @@ if test $action = pack; then
         makeInstructionsFile mutt.msg 1>/dev/null 2>&1
 	muttAttempts=1
 	while true; do
-            env EMAIL="$meEmail" REPLYTO="$meEmail" mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg 1>$TMPDIR/mutt.errors 2>&1
+            env EMAIL="$meEmail" REPLYTO="$meEmail" mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz -- $emailRecipients < mutt.msg 1>$TMPDIR/mutt.errors 2>&1
 	    if test "$?" != "0"; then
 	        sleep 1
 	    elif test -z "`cat $TMPDIR/mutt.errors`"; then
