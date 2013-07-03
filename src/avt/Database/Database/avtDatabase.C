@@ -1542,6 +1542,11 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //    Mark C. Miller, Thu Feb 12 11:33:59 PST 2009
 //    Removed std:: qualification on some STL classes due to use of using
 //    statements at top 
+//
+//    Kathleen Biagas, Wed Jul  3 14:25:43 PDT 2013
+//    Variable names may be compound (eg "mesh/ireg") so make sure they are
+//    enclosed in angle-brackets at the beginning of the created expression.
+//
 // ****************************************************************************
 
 void
@@ -1669,7 +1674,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "(%s - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
+                     SNPRINTF(buff, 1024, "(<%s> - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
                          smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1688,7 +1693,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                           time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1716,7 +1721,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
+                     SNPRINTF(buff, 1024, "<%s> - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
@@ -1735,7 +1740,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                                    + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                     SNPRINTF(buff, 1024, "<%s> - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
                                 smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
                          time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
