@@ -375,6 +375,10 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Add support for only reading necessary domains to evaluate CMFE.
 //    (specifically for pos_cmfe + PICS/parallelize over seeds)
 //
+//    Kathleen Biagas, Tue Jul  2 16:44:43 MST 2013
+//    CMFE may contain expressions, but the ParsingExprList won't contain them,
+//    so add any Expression from the donor's MetaData to the new_list.
+//
 // ****************************************************************************
 
 void
@@ -387,10 +391,16 @@ avtCMFEExpression::Execute()
         EXCEPTION1(InvalidFilesException, db.c_str());
 
     int actualTimestep = GetTimestate(dbp);
-
+    avtDatabaseMetaData *md = dbp->GetMetaData(actualTimestep);
     ParsingExprList *pel = ParsingExprList::Instance();
     ExpressionList original_list = *(pel->GetList());
+    ExpressionList db_list = md->GetExprList();
     ExpressionList new_list = original_list;
+    if (db_list != original_list)
+    {
+        for (int i = 0; i < db_list.GetNumExpressions(); ++i)
+            new_list.AddExpressions(db_list.GetExpressions(i));
+    }
     Expression exp2;
     exp2.SetName("_avt_internal_cmfe_expr");
     std::string var_wo_quotes = var;
