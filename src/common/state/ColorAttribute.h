@@ -125,6 +125,7 @@ public:
     const char *GetByName() const;
     static bool RgbStrToRgb(const char *const s, unsigned char rgb[3]);
     static void RgbToRgbStr(unsigned char rgb[3], char *s);
+    static ColorAttribute Blend(const ColorAttribute &a, const ColorAttribute &b, double t);
 
     // IDs that can be used to identify fields in case statements
     enum {

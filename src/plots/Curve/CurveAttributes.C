@@ -153,6 +153,44 @@ CurveAttributes::SymbolTypes_FromString(const std::string &s, CurveAttributes::S
     return false;
 }
 
+//
+// Enum conversion methods for CurveAttributes::CurveFillMode
+//
+
+static const char *CurveFillMode_strings[] = {
+"NoFill", "Solid", "HorizontalGradient", 
+"VerticalGradient"};
+
+std::string
+CurveAttributes::CurveFillMode_ToString(CurveAttributes::CurveFillMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return CurveFillMode_strings[index];
+}
+
+std::string
+CurveAttributes::CurveFillMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return CurveFillMode_strings[index];
+}
+
+bool
+CurveAttributes::CurveFillMode_FromString(const std::string &s, CurveAttributes::CurveFillMode &val)
+{
+    val = CurveAttributes::NoFill;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == CurveFillMode_strings[i])
+        {
+            val = (CurveFillMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: CurveAttributes::CurveAttributes
 //
@@ -188,6 +226,7 @@ void CurveAttributes::Init()
     lineTimeCueWidth = 0;
     doCropTimeCue = false;
     timeForTimeCue = 0;
+    fillMode = NoFill;
 
     CurveAttributes::SelectAll();
 }
@@ -231,6 +270,9 @@ void CurveAttributes::Copy(const CurveAttributes &obj)
     lineTimeCueWidth = obj.lineTimeCueWidth;
     doCropTimeCue = obj.doCropTimeCue;
     timeForTimeCue = obj.timeForTimeCue;
+    fillMode = obj.fillMode;
+    fillColor1 = obj.fillColor1;
+    fillColor2 = obj.fillColor2;
 
     CurveAttributes::SelectAll();
 }
@@ -258,7 +300,8 @@ const AttributeGroup::private_tmfs_t CurveAttributes::TmfsStruct = {CURVEATTRIBU
 CurveAttributes::CurveAttributes() : 
     AttributeSubject(CurveAttributes::TypeMapFormatString),
     curveColor(0, 0, 0), ballTimeCueColor(0, 0, 0), 
-    lineTimeCueColor(0, 0, 0)
+    lineTimeCueColor(0, 0, 0), fillColor1(255, 0, 0), 
+    fillColor2(255, 100, 100)
 {
     CurveAttributes::Init();
 }
@@ -281,7 +324,8 @@ CurveAttributes::CurveAttributes() :
 CurveAttributes::CurveAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
     curveColor(0, 0, 0), ballTimeCueColor(0, 0, 0), 
-    lineTimeCueColor(0, 0, 0)
+    lineTimeCueColor(0, 0, 0), fillColor1(255, 0, 0), 
+    fillColor2(255, 100, 100)
 {
     CurveAttributes::Init();
 }
@@ -413,7 +457,10 @@ CurveAttributes::operator == (const CurveAttributes &obj) const
             (lineTimeCueColor == obj.lineTimeCueColor) &&
             (lineTimeCueWidth == obj.lineTimeCueWidth) &&
             (doCropTimeCue == obj.doCropTimeCue) &&
-            (timeForTimeCue == obj.timeForTimeCue));
+            (timeForTimeCue == obj.timeForTimeCue) &&
+            (fillMode == obj.fillMode) &&
+            (fillColor1 == obj.fillColor1) &&
+            (fillColor2 == obj.fillColor2));
 }
 
 // ****************************************************************************
@@ -570,6 +617,9 @@ CurveAttributes::SelectAll()
     Select(ID_lineTimeCueWidth, (void *)&lineTimeCueWidth);
     Select(ID_doCropTimeCue,    (void *)&doCropTimeCue);
     Select(ID_timeForTimeCue,   (void *)&timeForTimeCue);
+    Select(ID_fillMode,         (void *)&fillMode);
+    Select(ID_fillColor1,       (void *)&fillColor1);
+    Select(ID_fillColor2,       (void *)&fillColor2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -740,6 +790,28 @@ CurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("timeForTimeCue", timeForTimeCue));
     }
 
+    if(completeSave || !FieldsEqual(ID_fillMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fillMode", CurveFillMode_ToString(fillMode)));
+    }
+
+        DataNode *fillColor1Node = new DataNode("fillColor1");
+        if(fillColor1.CreateNode(fillColor1Node, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(fillColor1Node);
+        }
+        else
+            delete fillColor1Node;
+        DataNode *fillColor2Node = new DataNode("fillColor2");
+        if(fillColor2.CreateNode(fillColor2Node, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(fillColor2Node);
+        }
+        else
+            delete fillColor2Node;
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -862,6 +934,26 @@ CurveAttributes::SetFromNode(DataNode *parentNode)
         SetDoCropTimeCue(node->AsBool());
     if((node = searchNode->GetNode("timeForTimeCue")) != 0)
         SetTimeForTimeCue(node->AsDouble());
+    if((node = searchNode->GetNode("fillMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetFillMode(CurveFillMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            CurveFillMode value;
+            if(CurveFillMode_FromString(node->AsString(), value))
+                SetFillMode(value);
+        }
+    }
+    if((node = searchNode->GetNode("fillColor1")) != 0)
+        fillColor1.SetFromNode(node);
+    if((node = searchNode->GetNode("fillColor2")) != 0)
+        fillColor2.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1020,6 +1112,27 @@ CurveAttributes::SetTimeForTimeCue(double timeForTimeCue_)
 {
     timeForTimeCue = timeForTimeCue_;
     Select(ID_timeForTimeCue, (void *)&timeForTimeCue);
+}
+
+void
+CurveAttributes::SetFillMode(CurveAttributes::CurveFillMode fillMode_)
+{
+    fillMode = fillMode_;
+    Select(ID_fillMode, (void *)&fillMode);
+}
+
+void
+CurveAttributes::SetFillColor1(const ColorAttribute &fillColor1_)
+{
+    fillColor1 = fillColor1_;
+    Select(ID_fillColor1, (void *)&fillColor1);
+}
+
+void
+CurveAttributes::SetFillColor2(const ColorAttribute &fillColor2_)
+{
+    fillColor2 = fillColor2_;
+    Select(ID_fillColor2, (void *)&fillColor2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1182,6 +1295,36 @@ CurveAttributes::GetTimeForTimeCue() const
     return timeForTimeCue;
 }
 
+CurveAttributes::CurveFillMode
+CurveAttributes::GetFillMode() const
+{
+    return CurveFillMode(fillMode);
+}
+
+const ColorAttribute &
+CurveAttributes::GetFillColor1() const
+{
+    return fillColor1;
+}
+
+ColorAttribute &
+CurveAttributes::GetFillColor1()
+{
+    return fillColor1;
+}
+
+const ColorAttribute &
+CurveAttributes::GetFillColor2() const
+{
+    return fillColor2;
+}
+
+ColorAttribute &
+CurveAttributes::GetFillColor2()
+{
+    return fillColor2;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1208,6 +1351,18 @@ void
 CurveAttributes::SelectLineTimeCueColor()
 {
     Select(ID_lineTimeCueColor, (void *)&lineTimeCueColor);
+}
+
+void
+CurveAttributes::SelectFillColor1()
+{
+    Select(ID_fillColor1, (void *)&fillColor1);
+}
+
+void
+CurveAttributes::SelectFillColor2()
+{
+    Select(ID_fillColor2, (void *)&fillColor2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1256,6 +1411,9 @@ CurveAttributes::GetFieldName(int index) const
     case ID_lineTimeCueWidth: return "lineTimeCueWidth";
     case ID_doCropTimeCue:    return "doCropTimeCue";
     case ID_timeForTimeCue:   return "timeForTimeCue";
+    case ID_fillMode:         return "fillMode";
+    case ID_fillColor1:       return "fillColor1";
+    case ID_fillColor2:       return "fillColor2";
     default:  return "invalid index";
     }
 }
@@ -1302,6 +1460,9 @@ CurveAttributes::GetFieldType(int index) const
     case ID_lineTimeCueWidth: return FieldType_int;
     case ID_doCropTimeCue:    return FieldType_bool;
     case ID_timeForTimeCue:   return FieldType_double;
+    case ID_fillMode:         return FieldType_enum;
+    case ID_fillColor1:       return FieldType_color;
+    case ID_fillColor2:       return FieldType_color;
     default:  return FieldType_unknown;
     }
 }
@@ -1348,6 +1509,9 @@ CurveAttributes::GetFieldTypeName(int index) const
     case ID_lineTimeCueWidth: return "int";
     case ID_doCropTimeCue:    return "bool";
     case ID_timeForTimeCue:   return "double";
+    case ID_fillMode:         return "enum";
+    case ID_fillColor1:       return "color";
+    case ID_fillColor2:       return "color";
     default:  return "invalid index";
     }
 }
@@ -1482,6 +1646,21 @@ CurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_timeForTimeCue:
         {  // new scope
         retval = (timeForTimeCue == obj.timeForTimeCue);
+        }
+        break;
+    case ID_fillMode:
+        {  // new scope
+        retval = (fillMode == obj.fillMode);
+        }
+        break;
+    case ID_fillColor1:
+        {  // new scope
+        retval = (fillColor1 == obj.fillColor1);
+        }
+        break;
+    case ID_fillColor2:
+        {  // new scope
+        retval = (fillColor2 == obj.fillColor2);
         }
         break;
     default: retval = false;

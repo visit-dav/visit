@@ -1811,3 +1811,22 @@ ColorAttribute::RgbToRgbStr(unsigned char rgb[3], char *s)
     }
 }
 
+// **************************************************************************
+// Function: Blend
+//
+// Purpose: Blend 2 colors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul  5 22:10:35 PDT 2013
+// **************************************************************************
+
+ColorAttribute
+ColorAttribute::Blend(const ColorAttribute &a, const ColorAttribute &b, double t)
+{
+    int newR = ((1. - t) * double(a.Red())   + t * double(b.Red()));
+    int newG = ((1. - t) * double(a.Green()) + t * double(b.Green()));
+    int newB = ((1. - t) * double(a.Blue())  + t * double(b.Blue()));
+    int newA = ((1. - t) * double(a.Alpha()) + t * double(b.Alpha()));
+    return ColorAttribute(newR, newG, newB, newA);
+}
+

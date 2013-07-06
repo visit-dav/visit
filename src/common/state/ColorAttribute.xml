@@ -46,6 +46,8 @@
     </Function>
     <Function name="RgbToRgbStr" user="true" member="true">
     </Function>
+    <Function name="Blend" user="true" member="true">
+    </Function>
     <Constant name="namedColors" member="false">
     </Constant>
     <Include file="source" quoted="false">

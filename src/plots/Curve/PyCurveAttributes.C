@@ -43,6 +43,8 @@
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
+#include <ColorAttribute.h>
+#include <ColorAttribute.h>
 
 // ****************************************************************************
 // Module: PyCurveAttributes
@@ -207,6 +209,35 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, "%sdoCropTimeCue = 0\n", prefix);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%stimeForTimeCue = %g\n", prefix, atts->GetTimeForTimeCue());
+    str += tmpStr;
+    const char *fillMode_names = "NoFill, Solid, HorizontalGradient, VerticalGradient";
+    switch (atts->GetFillMode())
+    {
+      case CurveAttributes::NoFill:
+          SNPRINTF(tmpStr, 1000, "%sfillMode = %sNoFill  # %s\n", prefix, prefix, fillMode_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::Solid:
+          SNPRINTF(tmpStr, 1000, "%sfillMode = %sSolid  # %s\n", prefix, prefix, fillMode_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::HorizontalGradient:
+          SNPRINTF(tmpStr, 1000, "%sfillMode = %sHorizontalGradient  # %s\n", prefix, prefix, fillMode_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::VerticalGradient:
+          SNPRINTF(tmpStr, 1000, "%sfillMode = %sVerticalGradient  # %s\n", prefix, prefix, fillMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const unsigned char *fillColor1 = atts->GetFillColor1().GetColor();
+    SNPRINTF(tmpStr, 1000, "%sfillColor1 = (%d, %d, %d, %d)\n", prefix, int(fillColor1[0]), int(fillColor1[1]), int(fillColor1[2]), int(fillColor1[3]));
+    str += tmpStr;
+    const unsigned char *fillColor2 = atts->GetFillColor2().GetColor();
+    SNPRINTF(tmpStr, 1000, "%sfillColor2 = (%d, %d, %d, %d)\n", prefix, int(fillColor2[0]), int(fillColor2[1]), int(fillColor2[2]), int(fillColor2[3]));
     str += tmpStr;
     return str;
 }
@@ -944,6 +975,193 @@ CurveAttributes_GetTimeForTimeCue(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the fillMode in the object.
+    if(ival >= 0 && ival < 4)
+        obj->data->SetFillMode(CurveAttributes::CurveFillMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid fillMode value was given. "
+                        "Valid values are in the range of [0,3]. "
+                        "You can also use the following names: "
+                        "NoFill, Solid, HorizontalGradient, VerticalGradient.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetFillMode(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetFillMode()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetFillColor1(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the fillColor1 in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetFillColor1(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetFillColor1(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the fillColor1.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *fillColor1 = obj->data->GetFillColor1().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(fillColor1[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(fillColor1[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(fillColor1[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(fillColor1[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetFillColor2(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the fillColor2 in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetFillColor2(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetFillColor2(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the fillColor2.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *fillColor2 = obj->data->GetFillColor2().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(fillColor2[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(fillColor2[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(fillColor2[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(fillColor2[3])));
+    return retval;
+}
+
 
 
 PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
@@ -992,6 +1210,12 @@ PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
     {"GetDoCropTimeCue", CurveAttributes_GetDoCropTimeCue, METH_VARARGS},
     {"SetTimeForTimeCue", CurveAttributes_SetTimeForTimeCue, METH_VARARGS},
     {"GetTimeForTimeCue", CurveAttributes_GetTimeForTimeCue, METH_VARARGS},
+    {"SetFillMode", CurveAttributes_SetFillMode, METH_VARARGS},
+    {"GetFillMode", CurveAttributes_GetFillMode, METH_VARARGS},
+    {"SetFillColor1", CurveAttributes_SetFillColor1, METH_VARARGS},
+    {"GetFillColor1", CurveAttributes_GetFillColor1, METH_VARARGS},
+    {"SetFillColor2", CurveAttributes_SetFillColor2, METH_VARARGS},
+    {"GetFillColor2", CurveAttributes_GetFillColor2, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1098,6 +1322,21 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return CurveAttributes_GetDoCropTimeCue(self, NULL);
     if(strcmp(name, "timeForTimeCue") == 0)
         return CurveAttributes_GetTimeForTimeCue(self, NULL);
+    if(strcmp(name, "fillMode") == 0)
+        return CurveAttributes_GetFillMode(self, NULL);
+    if(strcmp(name, "NoFill") == 0)
+        return PyInt_FromLong(long(CurveAttributes::NoFill));
+    if(strcmp(name, "Solid") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Solid));
+    if(strcmp(name, "HorizontalGradient") == 0)
+        return PyInt_FromLong(long(CurveAttributes::HorizontalGradient));
+    if(strcmp(name, "VerticalGradient") == 0)
+        return PyInt_FromLong(long(CurveAttributes::VerticalGradient));
+
+    if(strcmp(name, "fillColor1") == 0)
+        return CurveAttributes_GetFillColor1(self, NULL);
+    if(strcmp(name, "fillColor2") == 0)
+        return CurveAttributes_GetFillColor2(self, NULL);
 
     // Try and handle legacy fields in CurveAttributes
     if(strcmp(name, "cycleColors") == 0)
@@ -1176,6 +1415,12 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CurveAttributes_SetDoCropTimeCue(self, tuple);
     else if(strcmp(name, "timeForTimeCue") == 0)
         obj = CurveAttributes_SetTimeForTimeCue(self, tuple);
+    else if(strcmp(name, "fillMode") == 0)
+        obj = CurveAttributes_SetFillMode(self, tuple);
+    else if(strcmp(name, "fillColor1") == 0)
+        obj = CurveAttributes_SetFillColor1(self, tuple);
+    else if(strcmp(name, "fillColor2") == 0)
+        obj = CurveAttributes_SetFillColor2(self, tuple);
 
    // Try and handle legacy fields in CurveAttributes
     if(obj == NULL)

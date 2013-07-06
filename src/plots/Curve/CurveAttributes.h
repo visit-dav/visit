@@ -82,6 +82,13 @@ public:
         Plus,
         X
     };
+    enum CurveFillMode
+    {
+        NoFill,
+        Solid,
+        HorizontalGradient,
+        VerticalGradient
+    };
 
     // These constructors are for objects of this class
     CurveAttributes();
@@ -112,6 +119,8 @@ public:
     void SelectDesignator();
     void SelectBallTimeCueColor();
     void SelectLineTimeCueColor();
+    void SelectFillColor1();
+    void SelectFillColor2();
 
     // Property setting methods
     void SetShowLines(bool showLines_);
@@ -136,6 +145,9 @@ public:
     void SetLineTimeCueWidth(int lineTimeCueWidth_);
     void SetDoCropTimeCue(bool doCropTimeCue_);
     void SetTimeForTimeCue(double timeForTimeCue_);
+    void SetFillMode(CurveFillMode fillMode_);
+    void SetFillColor1(const ColorAttribute &fillColor1_);
+    void SetFillColor2(const ColorAttribute &fillColor2_);
 
     // Property getting methods
     bool                 GetShowLines() const;
@@ -164,6 +176,11 @@ public:
     int                  GetLineTimeCueWidth() const;
     bool                 GetDoCropTimeCue() const;
     double               GetTimeForTimeCue() const;
+    CurveFillMode        GetFillMode() const;
+    const ColorAttribute &GetFillColor1() const;
+          ColorAttribute &GetFillColor1();
+    const ColorAttribute &GetFillColor2() const;
+          ColorAttribute &GetFillColor2();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -184,6 +201,11 @@ public:
     static bool SymbolTypes_FromString(const std::string &, SymbolTypes &);
 protected:
     static std::string SymbolTypes_ToString(int);
+public:
+    static std::string CurveFillMode_ToString(CurveFillMode);
+    static bool CurveFillMode_FromString(const std::string &, CurveFillMode &);
+protected:
+    static std::string CurveFillMode_ToString(int);
 public:
 
     // Keyframing methods
@@ -220,6 +242,9 @@ public:
         ID_lineTimeCueWidth,
         ID_doCropTimeCue,
         ID_timeForTimeCue,
+        ID_fillMode,
+        ID_fillColor1,
+        ID_fillColor2,
         ID__LAST
     };
 
@@ -246,11 +271,14 @@ private:
     int            lineTimeCueWidth;
     bool           doCropTimeCue;
     double         timeForTimeCue;
+    int            fillMode;
+    ColorAttribute fillColor1;
+    ColorAttribute fillColor2;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CURVEATTRIBUTES_TMFS "biibidiiiiabbsbadbaibd"
+#define CURVEATTRIBUTES_TMFS "biibidiiiiabbsbadbaibdiaa"
 
 #endif

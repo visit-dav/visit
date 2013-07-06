@@ -135,9 +135,11 @@ avtOpenGLCurveRenderer::SetupGraphicsLibrary()
 // Creation:   Mon Oct 25 09:18:49 PDT 2004
 //
 // Modifications:
-//
 //   Hank Childs, Thu Jul 15 18:20:26 PDT 2010
 //   Add support for plotting cues for the current location.
+//
+//   Brad Whitlock, Fri Jul  5 16:46:04 PDT 2013
+//   Fill in area under the curve.
 //
 // ****************************************************************************
 
@@ -164,6 +166,9 @@ avtOpenGLCurveRenderer::RenderCurves()
     glGetBooleanv(GL_DEPTH_TEST, &enableDepthTest);
     if(enableDepthTest)
         glDisable(GL_DEPTH_TEST);
+
+    if(atts.GetFillMode() != CurveAttributes::NoFill)
+        DrawCurveFill();
 
     if (atts.GetShowLines())
         DrawCurveAsLines();
@@ -381,6 +386,150 @@ avtOpenGLCurveRenderer::DrawCurveAsLines()
         glDisable(GL_LINE_STIPPLE);
 }
 
+// ****************************************************************************
+// Method: avtOpenGLCurveRenderer::SetColor
+//
+// Purpose: 
+//   Set the color based on the x,y location within the specified box.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul  5 21:35:42 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtOpenGLCurveRenderer::SetColor(double x, double y, double minX, double maxX, double minY, double maxY) const
+{
+    if(atts.GetFillMode() == CurveAttributes::VerticalGradient)
+    {
+        double dY = maxY - minY;
+        double t = 1. - ((dY > 0.) ? ((y - minY) / dY) : 0.);
+        glColor4ubv(ColorAttribute::Blend(atts.GetFillColor1(), atts.GetFillColor2(), t).GetColor());
+    }
+    else if(atts.GetFillMode() == CurveAttributes::HorizontalGradient)
+    {
+        double dX = maxX - minX;
+        double t = (dX > 0.) ? ((x - minX) / dX) : 0.;
+        glColor4ubv(ColorAttribute::Blend(atts.GetFillColor1(), atts.GetFillColor2(), t).GetColor());
+    }
+}
+
+// ****************************************************************************
+// Method: avtOpenGLCurveRenderer::DrawCurveFill
+//
+// Purpose: 
+//   Draw in the filled area under the curve.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul  5 16:44:22 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtOpenGLCurveRenderer::DrawCurveFill()
+{
+    // Set the curve fill color.
+    ColorAttribute fillColor(atts.GetFillColor1());
+    glColor4ubv(fillColor.GetColor());
+
+    // Draw the curve.
+    glBegin(GL_QUAD_STRIP);
+    bool lastWasGood = false;
+    vtkIdType npts = input->GetPoints()->GetNumberOfPoints();
+
+    // Figure out X and Y extents
+    double minX = 0., maxX = 0.;
+    double minY = -1.e30, maxY = 0.;
+    if(atts.GetFillMode() == CurveAttributes::HorizontalGradient ||
+       atts.GetFillMode() == CurveAttributes::VerticalGradient)
+    {
+        for(vtkIdType i = 0; i < npts ; i++)
+        {
+            double pt[3];
+            input->GetPoints()->GetPoint(i, pt);
+
+            if(i == 0 || pt[0] < minX)
+                minX = pt[0];
+            if(i == 0 || pt[0] > maxX)
+                maxX = pt[0];
+            if(atts.GetFillMode() == CurveAttributes::VerticalGradient)
+            {
+                if(i == 0 || pt[1] < minY)
+                    minY = pt[1];
+            }
+            if(i == 0 || pt[1] > maxY)
+                maxY = pt[1];
+        }
+    }
+
+    double clipX = maxX;
+    for(vtkIdType i = 0; i < npts ; i++)
+    {
+        double pt[3];
+        input->GetPoints()->GetPoint(i, pt);
+
+        if (atts.GetDoCropTimeCue() && atts.GetTimeForTimeCue() < pt[0])
+        {
+            if (lastWasGood)
+            {
+                double prev[3];
+                input->GetPoints()->GetPoint(i-1, prev);
+
+                double p2[3];
+                p2[0] = atts.GetTimeForTimeCue();
+                p2[1] = (p2[0]-prev[0])/(pt[0]-prev[0])*(pt[1]-prev[1]) + prev[1];
+                p2[2] = 0.;
+
+                clipX = atts.GetTimeForTimeCue();
+
+                SetColor(p2[0], p2[1], minX, maxX, minY, maxY);
+                glVertex3dv(p2);
+
+                p2[1] = minY;
+                SetColor(p2[0], p2[1], minX, maxX, minY, maxY);
+                glVertex3dv(p2);
+            }
+            input->GetPoints()->GetPoint(i+1, pt);
+            lastWasGood = false;
+            continue;
+        }
+        lastWasGood = true;
+        SetColor(pt[0], pt[1], minX, maxX, minY, maxY);
+        glVertex3dv(pt);
+
+        pt[1] = minY;
+        SetColor(pt[0], pt[1], minX, maxX, minY, maxY);
+        glVertex3dv(pt);
+    }
+    glEnd();
+
+    if(atts.GetFillMode() == CurveAttributes::VerticalGradient)
+    {
+        glColor4ubv(atts.GetFillColor2().GetColor());
+        glBegin(GL_QUADS);
+        glVertex2d(minX, minY);
+        glVertex2d(minX, -1.e30);
+        glVertex2d(clipX, -1.e30);
+        glVertex2d(clipX, minY);
+        glEnd();
+    }
+}
 
 // ****************************************************************************
 //  Method: avtOpenGLCurveRenderer::GetAspect
