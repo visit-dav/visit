@@ -31,6 +31,12 @@
         Plus
         X
       </Enum>
+      <Enum name="CurveFillMode">
+        NoFill
+        Solid
+        HorizontalGradient
+        VerticalGradient
+      </Enum>
       <Field name="showLines" label="showLines" type="bool">
         true
       </Field>
@@ -104,6 +110,21 @@
       </Field>
       <Field name="timeForTimeCue" label="timeForTimeCue" type="double">
         0.000000
+      </Field>
+      <Field name="fillMode" label="Fill Mode" type="enum" subtype="CurveFillMode">
+        NoFill
+      </Field>
+      <Field name="fillColor1" label="Color" type="color" length="4">
+        255
+        0
+        0
+        255
+      </Field>
+      <Field name="fillColor2" label="Color" type="color" length="4">
+        255
+        100
+        100
+        255
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

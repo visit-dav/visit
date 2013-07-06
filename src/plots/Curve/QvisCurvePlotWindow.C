@@ -56,6 +56,7 @@
 #include <QvisColorButton.h>
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
+#include <QvisOpacitySlider.h>
 #include <QNarrowLineEdit.h>
 #include <stdio.h>
 #include <string>
@@ -152,6 +153,9 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Kathleen Bonnell, Wed Aug 11 09:34:41 PDT 2010
 //   Modified layout of geometry group.  Symbols/Points can now be drawn
 //   same time as lines. Added pointStride for Static symbols.
+//
+//   Brad Whitlock, Fri Jul  5 17:18:48 PDT 2013
+//   Added fill color.
 //
 // ****************************************************************************
 
@@ -280,7 +284,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     fillModeGroup = new QButtonGroup(geometryGroup);
 
     connect(fillModeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(fillModeChanged(int)));
+            this, SLOT(symbolFillModeChanged(int)));
 
     staticButton = new QRadioButton(tr("Static"), geometryGroup);
     staticButton->setChecked(true);
@@ -353,6 +357,58 @@ QvisCurvePlotWindow::CreateWindowContents()
     connect(curveColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(curveColorChanged(const QColor &)));
     colorLayout->addWidget(curveColor, 0, 3);
+
+    //
+    // Fill color widgets
+    //
+    QGroupBox *fillGroup = new QGroupBox(central);
+    fillGroup->setTitle(tr("Fill"));
+    colorLayout->addWidget(fillGroup, 1, 0, 1, 4);
+
+    QGridLayout *fillLayout = new QGridLayout(fillGroup);
+    fillLayout->setMargin(5);
+    fillLayout->setSpacing(10);
+
+    fillLayout->addWidget(new QLabel(tr("Fill mode"), central), 0, 0);
+
+    fillMode = new QComboBox(central);
+    fillMode->addItem(tr("No Fill"));
+    fillMode->addItem(tr("Solid"));
+    fillMode->addItem(tr("Horizontal Gradient"));
+    fillMode->addItem(tr("Vertical Gradient"));
+    connect(fillMode, SIGNAL(activated(int)),
+            this, SLOT(fillModeChanged(int))); 
+    fillLayout->addWidget(fillMode, 0, 1, 1, 2);
+
+    fillLabel1 = new QLabel(tr("Color 1"), central);
+    fillLayout->addWidget(fillLabel1, 1, 0);
+
+    fillColor1 = new QvisColorButton(central);
+    connect(fillColor1, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(fillColor1Changed(const QColor &)));
+    fillLayout->addWidget(fillColor1, 1, 1);
+
+    fillOpacity1 = new QvisOpacitySlider(0, 255, 25, 255, central);
+    fillOpacity1->setTickInterval(64);
+    fillOpacity1->setGradientColor(QColor(255, 0, 0));
+    connect(fillOpacity1, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(fillColor1OpacityChanged(int, const void*)));
+    fillLayout->addWidget(fillOpacity1, 1, 2);
+
+    fillLabel2 = new QLabel(tr("Color 2"), central);
+    fillLayout->addWidget(fillLabel2, 2, 0);
+
+    fillColor2 = new QvisColorButton(central);
+    connect(fillColor2, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(fillColor2Changed(const QColor &)));
+    fillLayout->addWidget(fillColor2, 2, 1);
+
+    fillOpacity2 = new QvisOpacitySlider(0, 255, 25, 255, central);
+    fillOpacity2->setTickInterval(64);
+    fillOpacity2->setGradientColor(QColor(255, 40, 40));
+    connect(fillOpacity2, SIGNAL(valueChanged(int, const void*)),
+            this, SLOT(fillColor2OpacityChanged(int, const void*)));
+    fillLayout->addWidget(fillOpacity2, 2, 2);
 
     //
     // Create the time cue stuff
@@ -473,6 +529,9 @@ QvisCurvePlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Wed Aug 11 09:34:41 PDT 2010
 //   Added pointStride, PointFillMode.  Updated widget 'enabled' dependencies.
+//
+//   Brad Whitlock, Fri Jul  5 17:19:40 PDT 2013
+//   Add fill color.
 //
 // ****************************************************************************
 
@@ -676,6 +735,53 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case CurveAttributes::ID_timeForTimeCue:
             timeForTimeCue->setText(DoubleToQString(atts->GetTimeForTimeCue()));
+            break;
+          case CurveAttributes::ID_fillMode:
+            { // new scope
+            bool enabled = atts->GetFillMode() != CurveAttributes::NoFill;
+            fillLabel1->setEnabled(enabled);
+            fillColor1->setEnabled(enabled);
+            fillOpacity1->setEnabled(enabled);
+
+            enabled = atts->GetFillMode() == CurveAttributes::HorizontalGradient ||
+                      atts->GetFillMode() == CurveAttributes::VerticalGradient;
+            fillLabel2->setEnabled(enabled);
+            fillColor2->setEnabled(enabled);
+            fillOpacity2->setEnabled(enabled);
+
+            fillMode->blockSignals(true);
+            fillMode->setCurrentIndex((int)atts->GetFillMode());
+            fillMode->blockSignals(false);
+            }
+            break;
+          case CurveAttributes::ID_fillColor1:
+            { // new scope
+                QColor c = QColor(atts->GetFillColor1().Red(),
+                                  atts->GetFillColor1().Green(),
+                                  atts->GetFillColor1().Blue());
+                fillColor1->blockSignals(true);
+                fillColor1->setButtonColor(c);
+                fillColor1->blockSignals(false);
+
+                fillOpacity1->blockSignals(true);
+                fillOpacity1->setValue(atts->GetFillColor1().Alpha());
+                fillOpacity1->setGradientColor(c);
+                fillOpacity1->blockSignals(false);
+            }
+          case CurveAttributes::ID_fillColor2:
+            { // new scope
+                QColor c = QColor(atts->GetFillColor2().Red(),
+                                  atts->GetFillColor2().Green(),
+                                  atts->GetFillColor2().Blue());
+                fillColor2->blockSignals(true);
+                fillColor2->setButtonColor(c);
+                fillColor2->blockSignals(false);
+
+                fillOpacity2->blockSignals(true);
+                fillOpacity2->setValue(atts->GetFillColor2().Alpha());
+                fillOpacity2->setGradientColor(c);
+                fillOpacity2->blockSignals(false);
+            }
             break;
         }
     }
@@ -968,7 +1074,7 @@ QvisCurvePlotWindow::symbolDensityChanged(int val)
 
 
 void
-QvisCurvePlotWindow::fillModeChanged(int val)
+QvisCurvePlotWindow::symbolFillModeChanged(int val)
 {
     switch(val)
     {
@@ -1055,4 +1161,54 @@ QvisCurvePlotWindow::timeForTimeCueProcessText()
     Apply();
 }
 
+void
+QvisCurvePlotWindow::fillModeChanged(int val)
+{
+    if(val == 0)
+        atts->SetFillMode(CurveAttributes::NoFill);
+    else if(val == 1)
+        atts->SetFillMode(CurveAttributes::Solid);
+    else if(val == 2)
+        atts->SetFillMode(CurveAttributes::HorizontalGradient);
+    else if(val == 3)
+        atts->SetFillMode(CurveAttributes::VerticalGradient);
+    Apply();
+}
 
+void
+QvisCurvePlotWindow::fillColor1Changed(const QColor &color)
+{
+    int a = atts->GetFillColor1().Alpha();
+    ColorAttribute c(color.red(), color.green(), color.blue(), a);
+    atts->SetFillColor1(c);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::fillColor1OpacityChanged(int opacity, const void*)
+{
+    ColorAttribute c(atts->GetFillColor1());
+    c.SetAlpha(opacity);
+    atts->SetFillColor1(c);
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::fillColor2Changed(const QColor &color)
+{
+    int a = atts->GetFillColor2().Alpha();
+    ColorAttribute c(color.red(), color.green(), color.blue(), a);
+    atts->SetFillColor2(c);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::fillColor2OpacityChanged(int opacity, const void*)
+{
+    ColorAttribute c(atts->GetFillColor2());
+    c.SetAlpha(opacity);
+    atts->SetFillColor2(c);
+    SetUpdate(false);
+    Apply();
+}

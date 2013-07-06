@@ -61,7 +61,10 @@
 //   Add support for cues to show the current location.
 //
 //    Kathleen Bonnell, Wed Aug 11 09:15:26 PDT 2010
-//    Remove 'Dyanmic' from DrawCurveAsSymbols method.
+//    Remove 'Dynamic' from DrawCurveAsSymbols method.
+//
+//    Brad Whitlock, Fri Jul  5 16:47:56 PDT 2013
+//    Add DrawCurveFill.
 //
 // ****************************************************************************
 
@@ -78,6 +81,8 @@ protected:
 
     void DrawCurveAsSymbols();
     void DrawCurveAsLines();
+    void DrawCurveFill();
+    void SetColor(double x, double y, double minX, double maxX, double minY, double maxY) const;
 
     void GetAspect(int &bin_x_n, double &bin_x_size, double &bin_x_offset,
                    int &bin_y_n, double &bin_y_size, double &bin_y_offset);
