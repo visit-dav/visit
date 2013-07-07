@@ -50,7 +50,6 @@
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
 #include <vtkTubeFilter.h>
-
 // ----------------------------------------------------------------------------
 //                            class PointSequence
 // ----------------------------------------------------------------------------
@@ -493,6 +492,11 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
 //    I modified the calls to GetPoint() to use the other variant of the call
 //    with two arguments. The previous version would fail getting the right values.
 //    Used vtkIdType where needed
+//
+//    Jean Favre, Tue May 28 13:28:41 CEST 2013
+//    I added a quaternion interpolation to smoothly interpolate the direction vectors
+//    used to construct the tube. This eliminates abrupt twists along the tube
+//
 // ****************************************************************************
 int vtkConnectedTubeFilter::RequestData(
     vtkInformation *vtkNotUsed(request),
@@ -585,6 +589,7 @@ int vtkConnectedTubeFilter::RequestData(
 
             // Use a centered difference approximation for direction
             double v0[3], v1[3], v2[3], dir[3], pt[3];
+            double prev_dir[3], prev_v1[3], prev_v2[3];
             inPts->GetPoint(ix2, v2);
             inPts->GetPoint(ix1, v1);
             vtkMath::Subtract(v2, v1, dir);
@@ -597,12 +602,56 @@ int vtkConnectedTubeFilter::RequestData(
                inPts->GetPoint(ix, v0);
                vtkMath::Subtract(v2, v0, dir);
             }
-
-            // Get a couple vectors orthogonal to our direction
-            //double v1[3], v2[3];
-            vtkMath::Perpendiculars(dir, v1,v2, 0.0);
-            vtkMath::Normalize(v1);
+            //inNormals->GetTuple(i, v1);
+            vtkMath::Cross(dir, v1, v2);
             vtkMath::Normalize(v2);
+
+            if(firstPoint)
+            {
+              // Get a couple vectors orthogonal to our direction
+              //double v1[3], v2[3];
+              vtkMath::Perpendiculars(dir, v1,v2, 0.0);
+              vtkMath::Normalize(v1);
+              vtkMath::Normalize(v2);
+            }
+            else
+            {
+              // we can't just get two new orthogonal vectors each time because of abrupt changes
+              // We will construct the matrix which xforms the "previous dir" vector
+              // into this new dir vector, and then use this rigid body motion to
+              // xform v1 and v2 from the previous point
+              double Xform[3][3];
+              double vec[3];
+              vtkMath::Cross(prev_dir, dir, vec);
+              double costheta = vtkMath::Dot(prev_dir, dir);
+              double sintheta = vtkMath::Norm(vec);
+              double theta = atan2(sintheta, costheta);
+              if (sintheta != 0)
+                {
+                vec[0] /= sintheta;
+                vec[1] /= sintheta;
+                vec[2] /= sintheta;
+                }
+              // convert to quaternion
+              costheta = cos(0.5*theta);
+              sintheta = sin(0.5*theta);
+              double quat[4];
+              quat[0] = costheta;
+              quat[1] = vec[0]*sintheta;
+              quat[2] = vec[1]*sintheta;
+              quat[3] = vec[2]*sintheta;
+              // convert to matrix
+              vtkMath::QuaternionToMatrix3x3(quat, Xform); // Xform will xform prev_dir into dir
+              // now use it
+              vtkMath::Multiply3x3 (Xform, prev_v1, v1);
+              vtkMath::Multiply3x3 (Xform, prev_v2, v2);
+              vtkMath::Normalize(v1);
+              vtkMath::Normalize(v2);
+            }
+
+            prev_dir[0] = dir[0]; prev_dir[1] = dir[1]; prev_dir[2] = dir[2];
+            prev_v1[0]  = v1[0];  prev_v1[1]  = v1[1];  prev_v1[2]  = v1[2];
+            prev_v2[0]  = v2[0];  prev_v2[1]  = v2[1];  prev_v2[2]  = v2[2];
 
             // Hang on to the first point index we create; we need it 
             // to create the cells
