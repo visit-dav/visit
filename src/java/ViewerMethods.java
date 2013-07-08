@@ -184,7 +184,6 @@ public class ViewerMethods
      * Show the viewer windows. You must call this method to make the viewer
      * show its windows after being launched or no windows will be shown.
      *
-     * @return true on success; false otherwise.
      */
     public void ShowAllWindows()
     {
@@ -666,7 +665,6 @@ public class ViewerMethods
      * the compute engine from completing its work and the plot is put into the 
      * error state. DrawPlots() must be called for the plot to be processed again.
      *
-     * @return true on success; false otherwise.
      */
     public void InterruptComputeEngine()
     {
@@ -1111,7 +1109,7 @@ public class ViewerMethods
      * If a plot does not follow time then it is disconnected from its time slider
      * and updating the time slider will not have any effect on the plot.
      *
-     * @param Whether the plot should follow the time slider.
+     * @param val Whether the plot should follow the time slider.
      * @return true on success; false otherwise.
      */
     public boolean SetPlotFollowsTime(boolean val)
@@ -2796,7 +2794,6 @@ public class ViewerMethods
      * @param y The y location of the upper left corner of the window area.
      * @param w The width of the window area.
      * @param h The height of the window area.
-     * @return true on success; false otherwise.
      */
     public void SetWindowArea(int x, int y, int w, int h)
     {
@@ -2859,7 +2856,7 @@ public class ViewerMethods
      * @param x0 The global X coordinate of the line start point.
      * @param y0 The global Y coordinate of the line start point.
      * @param x1 The global X coordinate of the line end point.
-     * @param y2 The global Y coordinate of the line end point.
+     * @param y1 The global Y coordinate of the line end point.
      * @param vars A vector of String containing the variables we'll pick.
      */
     public boolean Lineout(double x0, double y0, double x1, double y1, Vector vars)

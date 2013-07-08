@@ -189,7 +189,7 @@ public abstract class AttributeSubject extends java.lang.Object
 
     /**
      * Returns whether the specified attribute is selected.
-     * @param The index of the attribute to check.
+     * @param index The index of the attribute to check.
      * @return true if the attribute is selected; false otherwise.
      */
     public boolean IsSelected(int index)
