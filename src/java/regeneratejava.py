@@ -54,17 +54,6 @@ def main(exeDir):
         command = "%s/xml2java -clobber %s" % (exeDir, f)
         systemCommand(command)
 
-
-    # regenerate the java files
-    for f in files:
-        command = "../../Build/exe/xml2java -noprint -clobber %s" % f
-        systemCommand(command)
-
-    # right now, this automatic process generates some java files that it
-    # shouldn't, until such time as that is fixed (#1518), delete them now:
-    command = "rm SurfaceFilterAttributes.java InternalResampleAttributes.java SphereAttributes.java AxisRestrictionAttributes.java DatabaseAttributes.java SimulationCommand.java TimeFormat.java LinearTransformAttributes.java Line.java PlotQueryInfo.java ViewAttributes.java SimilarityTransformAttributes.java CompactSILRestrictionAttributes.java ContourOpAttributes.java PointAttributes.java ThresholdOpAttributes.java PlaneAttributes.java WindowAttributes.java"
-    systemCommand(command)
-
     return 0
 
 #
