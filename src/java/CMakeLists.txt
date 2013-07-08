@@ -51,6 +51,9 @@
 #   Brad Whitlock, Thu Feb  2 10:48:50 PST 2012
 #   Adding in initial Variant, MapNode classes to rehab the Java client.
 #
+#   Kathleen Biagas, Mon Jul  8 12:11:38 PDT 2013
+#   Added ThresholdOpAttributes.java.
+#
 #****************************************************************************/
 
 PROJECT(JavaClient Java)
@@ -157,6 +160,7 @@ SelectionSummary.java
 SelectionVariableSummary.java
 StatusAttributes.java 
 SyncAttributes.java 
+ThresholdOpAttributes.java 
 Variant.java
 View2DAttributes.java 
 View3DAttributes.java 
