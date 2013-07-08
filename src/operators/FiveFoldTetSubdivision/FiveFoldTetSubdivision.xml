@@ -17,6 +17,7 @@
       <Field name="contourTreeFilename" label="Contour Tree Filename" type="string" enabler="addComponentInformation:true">
       </Field>
       <Field name="isovalue" label="Isovalue" type="double" enabler="addComponentInformation:true">
+       0.0
       </Field>
       <Field name="selectedIds" label="Selected IDs" type="intVector" enabler="addComponentInformation:true">
       </Field>

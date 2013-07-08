@@ -58,6 +58,7 @@ void FiveFoldTetSubdivisionAttributes::Init()
 {
     oddParityHasSixNeighborhood = true;
     addComponentInformation = false;
+    isovalue = 0;
 
     FiveFoldTetSubdivisionAttributes::SelectAll();
 }

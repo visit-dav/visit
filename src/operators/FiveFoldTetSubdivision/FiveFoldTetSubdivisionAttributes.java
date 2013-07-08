@@ -72,7 +72,7 @@ public class FiveFoldTetSubdivisionAttributes extends AttributeSubject implement
         idVar = new String("");
         valueVar = new String("");
         contourTreeFilename = new String("");
-        isovalue = 1.85846e-316;
+        isovalue = 0;
         selectedIds = new Vector();
         highlightedIds = new Vector();
     }
@@ -86,7 +86,7 @@ public class FiveFoldTetSubdivisionAttributes extends AttributeSubject implement
         idVar = new String("");
         valueVar = new String("");
         contourTreeFilename = new String("");
-        isovalue = 1.85846e-316;
+        isovalue = 0;
         selectedIds = new Vector();
         highlightedIds = new Vector();
     }
