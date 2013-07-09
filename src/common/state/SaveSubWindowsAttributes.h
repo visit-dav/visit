@@ -168,7 +168,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    SaveSubWindowAttributes &GetAttsForWindow(int);
+    SaveSubWindowAttributes &GetAttsForWindow(int win);
 
     // IDs that can be used to identify fields in case statements
     enum {
