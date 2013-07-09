@@ -95,7 +95,7 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
           break;
     }
 
-    const char *idVariableType_names = "UseZoneIDForID, UseGlobalZoneIDForID, UseVariableForID";
+    const char *idVariableType_names = "UseZoneIDForID, UseGlobalZoneIDForID, UseLocationsForID, UseVariableForID";
     switch (atts->GetIdVariableType())
     {
       case SelectionProperties::UseZoneIDForID:
@@ -104,6 +104,10 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
           break;
       case SelectionProperties::UseGlobalZoneIDForID:
           SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseGlobalZoneIDForID  # %s\n", prefix, prefix, idVariableType_names);
+          str += tmpStr;
+          break;
+      case SelectionProperties::UseLocationsForID:
+          SNPRINTF(tmpStr, 1000, "%sidVariableType = %sUseLocationsForID  # %s\n", prefix, prefix, idVariableType_names);
           str += tmpStr;
           break;
       case SelectionProperties::UseVariableForID:
@@ -319,14 +323,14 @@ SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the idVariableType in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetIdVariableType(SelectionProperties::IDVariableType(ival));
     else
     {
         fprintf(stderr, "An invalid idVariableType value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "UseZoneIDForID, UseGlobalZoneIDForID, UseVariableForID.");
+                        "UseZoneIDForID, UseGlobalZoneIDForID, UseLocationsForID, UseVariableForID.");
         return NULL;
     }
 
@@ -858,6 +862,8 @@ PySelectionProperties_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(SelectionProperties::UseZoneIDForID));
     if(strcmp(name, "UseGlobalZoneIDForID") == 0)
         return PyInt_FromLong(long(SelectionProperties::UseGlobalZoneIDForID));
+    if(strcmp(name, "UseLocationsForID") == 0)
+        return PyInt_FromLong(long(SelectionProperties::UseLocationsForID));
     if(strcmp(name, "UseVariableForID") == 0)
         return PyInt_FromLong(long(SelectionProperties::UseVariableForID));
 

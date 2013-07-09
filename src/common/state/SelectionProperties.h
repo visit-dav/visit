@@ -55,9 +55,6 @@
 // Creation:   omitted
 //
 // Modifications:
-//
-//   Dave Pugmire, Thu Mar 15 11:21:59 EDT 2012
-//   Add location named selection.
 //   
 // ****************************************************************************
 

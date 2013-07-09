@@ -161,21 +161,21 @@ SelectionProperties::HistogramType_FromString(const std::string &s, SelectionPro
 //
 
 static const char *IDVariableType_strings[] = {
-"UseZoneIDForID", "UseGlobalZoneIDForID", "UseVariableForID"
-};
+"UseZoneIDForID", "UseGlobalZoneIDForID", "UseLocationsForID", 
+"UseVariableForID"};
 
 std::string
 SelectionProperties::IDVariableType_ToString(SelectionProperties::IDVariableType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return IDVariableType_strings[index];
 }
 
 std::string
 SelectionProperties::IDVariableType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return IDVariableType_strings[index];
 }
 
@@ -183,7 +183,7 @@ bool
 SelectionProperties::IDVariableType_FromString(const std::string &s, SelectionProperties::IDVariableType &val)
 {
     val = SelectionProperties::UseZoneIDForID;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == IDVariableType_strings[i])
         {
@@ -789,7 +789,7 @@ SelectionProperties::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetIdVariableType(IDVariableType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
