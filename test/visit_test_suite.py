@@ -371,7 +371,7 @@ def default_suite_options():
                       "interactive":False,
                       "pixdiff":0,
                       "avgdiff":0,
-                      "numdiff":0,
+                      "numdiff":0.0,
                       "vargs": "",
                       "retry":False,
                       "index":None,
@@ -536,10 +536,10 @@ def parse_args():
                       help="if pixdiff exceeded, allowed mean grayscale diff "
                            "[default = 0]")
     parser.add_option("--numdiff",
-                      type="int",
+                      type="float",
                       default=defs["numdiff"],
                       help="allowed relative numerical difference in text "
-                           "results [default = 0]")
+                           "results [default = 0.0]")
     parser.add_option("--vargs",
                       default=defs["vargs"],
                       help="arguments to pass directly to VisIt "
