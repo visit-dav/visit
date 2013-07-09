@@ -74,7 +74,8 @@ public class SelectionProperties extends AttributeSubject
 
     public final static int IDVARIABLETYPE_USEZONEIDFORID = 0;
     public final static int IDVARIABLETYPE_USEGLOBALZONEIDFORID = 1;
-    public final static int IDVARIABLETYPE_USEVARIABLEFORID = 2;
+    public final static int IDVARIABLETYPE_USELOCATIONSFORID = 2;
+    public final static int IDVARIABLETYPE_USEVARIABLEFORID = 3;
 
 
     public SelectionProperties()
@@ -461,6 +462,8 @@ public class SelectionProperties extends AttributeSubject
             str = str + "IDVARIABLETYPE_USEZONEIDFORID";
         if(idVariableType == IDVARIABLETYPE_USEGLOBALZONEIDFORID)
             str = str + "IDVARIABLETYPE_USEGLOBALZONEIDFORID";
+        if(idVariableType == IDVARIABLETYPE_USELOCATIONSFORID)
+            str = str + "IDVARIABLETYPE_USELOCATIONSFORID";
         if(idVariableType == IDVARIABLETYPE_USEVARIABLEFORID)
             str = str + "IDVARIABLETYPE_USEVARIABLEFORID";
         str = str + "\n";
