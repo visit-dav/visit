@@ -63,6 +63,9 @@
 #   I modified the hitit build since it is now an x86_64 system instead
 #   of an i686 system.
 #
+#   Eric Brugger, Tue Jul  9 11:23:43 PDT 2013
+#   I changed the gateway node to login to cielo.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -289,9 +292,9 @@ then
    if [ $test = no ]
    then
       echo "Building on cielo"
-      scp cielo red-fta05.lanl.gov:cielo_buildit
-      scp $dist.tar.gz red-fta05.lanl.gov:cielo_$dist.tar.gz
-      ssh red-fta05.lanl.gov "ssh ci-fe2 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;./cielo_buildit'" &
+      scp cielo rfta15.lanl.gov:cielo_buildit
+      scp $dist.tar.gz rfta15.lanl.gov:cielo_$dist.tar.gz
+      ssh rfta15.lanl.gov "ssh ci-fe2 'chmod 750 cielo_buildit;module swap PrgEnv-pgi PrgEnv-gnu;./cielo_buildit'" &
    fi
 fi
 
