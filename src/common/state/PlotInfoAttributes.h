@@ -40,6 +40,7 @@
 #define PLOTINFOATTRIBUTES_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+
 #include <visitstream.h>
 
 // ****************************************************************************
@@ -60,13 +61,23 @@
 class STATE_API PlotInfoAttributes : public AttributeSubject
 {
 public:
+    // These constructors are for objects of this class
     PlotInfoAttributes();
     PlotInfoAttributes(const PlotInfoAttributes &obj);
+protected:
+    // These constructors are for objects derived from this class
+    PlotInfoAttributes(private_tmfs_t tmfs);
+    PlotInfoAttributes(const PlotInfoAttributes &obj, private_tmfs_t tmfs);
+public:
     virtual ~PlotInfoAttributes();
 
     virtual PlotInfoAttributes& operator = (const PlotInfoAttributes &obj);
     virtual bool operator == (const PlotInfoAttributes &obj) const;
     virtual bool operator != (const PlotInfoAttributes &obj) const;
+private:
+    void Init();
+    void Copy(const PlotInfoAttributes &obj);
+public:
 
     virtual const std::string TypeName() const;
     virtual bool CopyAttributes(const AttributeGroup *);
@@ -98,7 +109,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_data = 0
+        ID_data = 0,
+        ID__LAST
     };
 
 private:
@@ -106,6 +118,8 @@ private:
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
+    static const private_tmfs_t TmfsStruct;
 };
+#define PLOTINFOATTRIBUTES_TMFS "m"
 
 #endif

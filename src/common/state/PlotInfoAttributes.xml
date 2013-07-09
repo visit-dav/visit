@@ -6,6 +6,8 @@
     </Function>
     <Function name="Reset" user="true" member="true">
     </Function>
+    <Function name="Merge" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false"> 
       visitstream.h
     </Include>
