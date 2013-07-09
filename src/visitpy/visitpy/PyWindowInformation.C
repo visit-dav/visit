@@ -230,6 +230,16 @@ PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
     }
     SNPRINTF(tmpStr, 1000, "%swinMode = %d\n", prefix, atts->GetWinMode());
     str += tmpStr;
+    if(atts->GetDDTSim())
+        SNPRINTF(tmpStr, 1000, "%sDDTSim = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sDDTSim = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetDDTConnected())
+        SNPRINTF(tmpStr, 1000, "%sDDTConnected = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sDDTConnected = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -1053,6 +1063,54 @@ WindowInformation_GetWinMode(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+WindowInformation_SetDDTSim(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the DDTSim in the object.
+    obj->data->SetDDTSim(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+WindowInformation_GetDDTSim(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDDTSim()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+WindowInformation_SetDDTConnected(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the DDTConnected in the object.
+    obj->data->SetDDTConnected(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+WindowInformation_GetDDTConnected(PyObject *self, PyObject *args)
+{
+    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetDDTConnected()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH] = {
@@ -1111,6 +1169,10 @@ PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH] = {
     {"GetWindowSize", WindowInformation_GetWindowSize, METH_VARARGS},
     {"SetWinMode", WindowInformation_SetWinMode, METH_VARARGS},
     {"GetWinMode", WindowInformation_GetWinMode, METH_VARARGS},
+    {"SetDDTSim", WindowInformation_SetDDTSim, METH_VARARGS},
+    {"GetDDTSim", WindowInformation_GetDDTSim, METH_VARARGS},
+    {"SetDDTConnected", WindowInformation_SetDDTConnected, METH_VARARGS},
+    {"GetDDTConnected", WindowInformation_GetDDTConnected, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1193,6 +1255,10 @@ PyWindowInformation_getattr(PyObject *self, char *name)
         return WindowInformation_GetWindowSize(self, NULL);
     if(strcmp(name, "winMode") == 0)
         return WindowInformation_GetWinMode(self, NULL);
+    if(strcmp(name, "DDTSim") == 0)
+        return WindowInformation_GetDDTSim(self, NULL);
+    if(strcmp(name, "DDTConnected") == 0)
+        return WindowInformation_GetDDTConnected(self, NULL);
 
     return Py_FindMethod(PyWindowInformation_methods, self, name);
 }
@@ -1261,6 +1327,10 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         obj = WindowInformation_SetWindowSize(self, tuple);
     else if(strcmp(name, "winMode") == 0)
         obj = WindowInformation_SetWinMode(self, tuple);
+    else if(strcmp(name, "DDTSim") == 0)
+        obj = WindowInformation_SetDDTSim(self, tuple);
+    else if(strcmp(name, "DDTConnected") == 0)
+        obj = WindowInformation_SetDDTConnected(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
