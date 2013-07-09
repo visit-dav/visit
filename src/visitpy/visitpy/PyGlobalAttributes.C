@@ -130,6 +130,16 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sapplyOperator = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetApplySelection())
+        SNPRINTF(tmpStr, 1000, "%sapplySelection = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sapplySelection = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetApplyWindow())
+        SNPRINTF(tmpStr, 1000, "%sapplyWindow = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sapplyWindow = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetExecuting())
         SNPRINTF(tmpStr, 1000, "%sexecuting = 1\n", prefix);
     else
@@ -191,11 +201,6 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, "%ssaveCrashRecoveryFile = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%ssaveCrashRecoveryFile = 0\n", prefix);
-    str += tmpStr;
-    if(atts->GetApplySelection())
-        SNPRINTF(tmpStr, 1000, "%sapplySelection = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sapplySelection = 0\n", prefix);
     str += tmpStr;
     if(atts->GetIgnoreExtentsFromDbs())
         SNPRINTF(tmpStr, 1000, "%signoreExtentsFromDbs = 1\n", prefix);
@@ -448,6 +453,54 @@ GlobalAttributes_GetApplyOperator(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetApplyOperator()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the applySelection in the object.
+    obj->data->SetApplySelection(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetApplySelection(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetApplySelection()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_SetApplyWindow(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the applyWindow in the object.
+    obj->data->SetApplyWindow(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetApplyWindow(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetApplyWindow()?1L:0L);
     return retval;
 }
 
@@ -764,30 +817,6 @@ GlobalAttributes_GetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the applySelection in the object.
-    obj->data->SetApplySelection(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-GlobalAttributes_GetApplySelection(PyObject *self, PyObject *args)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetApplySelection()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 GlobalAttributes_SetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
@@ -853,6 +882,10 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetReplacePlots", GlobalAttributes_GetReplacePlots, METH_VARARGS},
     {"SetApplyOperator", GlobalAttributes_SetApplyOperator, METH_VARARGS},
     {"GetApplyOperator", GlobalAttributes_GetApplyOperator, METH_VARARGS},
+    {"SetApplySelection", GlobalAttributes_SetApplySelection, METH_VARARGS},
+    {"GetApplySelection", GlobalAttributes_GetApplySelection, METH_VARARGS},
+    {"SetApplyWindow", GlobalAttributes_SetApplyWindow, METH_VARARGS},
+    {"GetApplyWindow", GlobalAttributes_GetApplyWindow, METH_VARARGS},
     {"SetExecuting", GlobalAttributes_SetExecuting, METH_VARARGS},
     {"GetExecuting", GlobalAttributes_GetExecuting, METH_VARARGS},
     {"SetWindowLayout", GlobalAttributes_SetWindowLayout, METH_VARARGS},
@@ -879,8 +912,6 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetUserDirForSessionFiles", GlobalAttributes_GetUserDirForSessionFiles, METH_VARARGS},
     {"SetSaveCrashRecoveryFile", GlobalAttributes_SetSaveCrashRecoveryFile, METH_VARARGS},
     {"GetSaveCrashRecoveryFile", GlobalAttributes_GetSaveCrashRecoveryFile, METH_VARARGS},
-    {"SetApplySelection", GlobalAttributes_SetApplySelection, METH_VARARGS},
-    {"GetApplySelection", GlobalAttributes_GetApplySelection, METH_VARARGS},
     {"SetIgnoreExtentsFromDbs", GlobalAttributes_SetIgnoreExtentsFromDbs, METH_VARARGS},
     {"GetIgnoreExtentsFromDbs", GlobalAttributes_GetIgnoreExtentsFromDbs, METH_VARARGS},
     {"SetExpandNewPlots", GlobalAttributes_SetExpandNewPlots, METH_VARARGS},
@@ -927,6 +958,10 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetReplacePlots(self, NULL);
     if(strcmp(name, "applyOperator") == 0)
         return GlobalAttributes_GetApplyOperator(self, NULL);
+    if(strcmp(name, "applySelection") == 0)
+        return GlobalAttributes_GetApplySelection(self, NULL);
+    if(strcmp(name, "applyWindow") == 0)
+        return GlobalAttributes_GetApplyWindow(self, NULL);
     if(strcmp(name, "executing") == 0)
         return GlobalAttributes_GetExecuting(self, NULL);
     if(strcmp(name, "windowLayout") == 0)
@@ -953,8 +988,6 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetUserDirForSessionFiles(self, NULL);
     if(strcmp(name, "saveCrashRecoveryFile") == 0)
         return GlobalAttributes_GetSaveCrashRecoveryFile(self, NULL);
-    if(strcmp(name, "applySelection") == 0)
-        return GlobalAttributes_GetApplySelection(self, NULL);
     if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         return GlobalAttributes_GetIgnoreExtentsFromDbs(self, NULL);
     if(strcmp(name, "expandNewPlots") == 0)
@@ -987,6 +1020,10 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetReplacePlots(self, tuple);
     else if(strcmp(name, "applyOperator") == 0)
         obj = GlobalAttributes_SetApplyOperator(self, tuple);
+    else if(strcmp(name, "applySelection") == 0)
+        obj = GlobalAttributes_SetApplySelection(self, tuple);
+    else if(strcmp(name, "applyWindow") == 0)
+        obj = GlobalAttributes_SetApplyWindow(self, tuple);
     else if(strcmp(name, "executing") == 0)
         obj = GlobalAttributes_SetExecuting(self, tuple);
     else if(strcmp(name, "windowLayout") == 0)
@@ -1013,8 +1050,6 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetUserDirForSessionFiles(self, tuple);
     else if(strcmp(name, "saveCrashRecoveryFile") == 0)
         obj = GlobalAttributes_SetSaveCrashRecoveryFile(self, tuple);
-    else if(strcmp(name, "applySelection") == 0)
-        obj = GlobalAttributes_SetApplySelection(self, tuple);
     else if(strcmp(name, "ignoreExtentsFromDbs") == 0)
         obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
     else if(strcmp(name, "expandNewPlots") == 0)
