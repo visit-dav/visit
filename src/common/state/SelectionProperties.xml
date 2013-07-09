@@ -17,6 +17,7 @@
     <Enum name="IDVariableType">
       UseZoneIDForID
       UseGlobalZoneIDForID
+      UseLocationsForID
       UseVariableForID
     </Enum>
     <Field name="name" label="Name of the selection" type="string">
