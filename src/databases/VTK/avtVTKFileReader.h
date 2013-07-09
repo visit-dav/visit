@@ -103,6 +103,10 @@ class DBOptionsAttributes;
 //    Brad Whitlock, Mon Oct 22 16:35:15 PDT 2012
 //    Make it a helper class for the real readers.
 //
+//    Eric Brugger, Tue Jul  9 09:33:28 PDT 2013
+//    I modified the reading of pvti, pvtr and pvts files to handle the case
+//    where the piece extent was a subset of the whole extent.
+//
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -137,6 +141,7 @@ class avtVTKFileReader
     int                   nblocks;
     char                **pieceFileNames;
     vtkDataSet          **pieceDatasets;
+    int                 **pieceExtents;
 
     static const char    *MESHNAME;
     static const char    *VARNAME;
@@ -153,7 +158,8 @@ class avtVTKFileReader
 
     void                  ReadInFile(void);
     void                  ReadInDataset(int);
-    vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *);
+    vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *,
+                                                         int *);
     void                  CreateCurves(vtkRectilinearGrid *rgrid);
 
     // Borrowed from avtFileFormat.
