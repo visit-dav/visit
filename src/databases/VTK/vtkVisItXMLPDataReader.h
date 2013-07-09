@@ -65,6 +65,10 @@ public:
   // Get the name of the specified piece file.
   char* GetPieceFileName(int);
 
+  // Description:
+  // Get the extent of the specified piece file.
+  int* GetExtent(int);
+
   // For the specified port, copy the information this reader sets up in
   // SetupOutputInformation to outInfo
   virtual void CopyOutputInformation(vtkInformation *outInfo, int port);
@@ -122,6 +126,9 @@ protected:
   // The names of the piece files.
   char** PieceFileNames;
 
+  // The extents of the piece files.
+  int** Extents;
+ 
   // Information per-piece.
   vtkXMLDataElement** PieceElements;
   
