@@ -129,6 +129,8 @@ PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttribut
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%scentralMeridian = %g\n", prefix, atts->GetCentralMeridian());
+    str += tmpStr;
     return str;
 }
 
@@ -176,12 +178,38 @@ CartographicProjectionAttributes_GetProjectionID(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+CartographicProjectionAttributes_SetCentralMeridian(PyObject *self, PyObject *args)
+{
+    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the centralMeridian in the object.
+    obj->data->SetCentralMeridian(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CartographicProjectionAttributes_GetCentralMeridian(PyObject *self, PyObject *args)
+{
+    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetCentralMeridian());
+    return retval;
+}
+
 
 
 PyMethodDef PyCartographicProjectionAttributes_methods[CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH] = {
     {"Notify", CartographicProjectionAttributes_Notify, METH_VARARGS},
     {"SetProjectionID", CartographicProjectionAttributes_SetProjectionID, METH_VARARGS},
     {"GetProjectionID", CartographicProjectionAttributes_GetProjectionID, METH_VARARGS},
+    {"SetCentralMeridian", CartographicProjectionAttributes_SetCentralMeridian, METH_VARARGS},
+    {"GetCentralMeridian", CartographicProjectionAttributes_GetCentralMeridian, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -235,6 +263,8 @@ PyCartographicProjectionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wink2") == 0)
         return PyInt_FromLong(long(CartographicProjectionAttributes::wink2));
 
+    if(strcmp(name, "centralMeridian") == 0)
+        return CartographicProjectionAttributes_GetCentralMeridian(self, NULL);
 
     return Py_FindMethod(PyCartographicProjectionAttributes_methods, self, name);
 }
@@ -251,6 +281,8 @@ PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject 
 
     if(strcmp(name, "projectionID") == 0)
         obj = CartographicProjectionAttributes_SetProjectionID(self, tuple);
+    else if(strcmp(name, "centralMeridian") == 0)
+        obj = CartographicProjectionAttributes_SetCentralMeridian(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
