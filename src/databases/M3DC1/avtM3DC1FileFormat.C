@@ -68,8 +68,6 @@
 #include <visit-hdf5.h>
 
 
-using namespace std;
-
 #define ELEMENT_SIZE_2D 7
 #define SCALAR_SIZE_2D 20
 
@@ -377,24 +375,24 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // refined mesh.
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
-      string varname = "equilibrium/" + m_fieldVarNames[i];
-      string meshname = string("equilibrium/mesh") + string(level);
+      std::string varname = "equilibrium/" + m_fieldVarNames[i];
+      std::string meshname = std::string("equilibrium/mesh") + std::string(level);
       
       AddScalarVarToMetaData( md, varname, meshname, m_dataLocation );
       
-      meshname = string("mesh") + string(level);
+      meshname = std::string("mesh") + std::string(level);
       AddScalarVarToMetaData( md, m_fieldVarNames[i], meshname, m_dataLocation );
     }
 
     // For now the mesh is the same mesh as the original mesh because
     // of needing it for the integration.
     AddVectorVarToMetaData( md, "B_C1_Elements",
-                            string("mesh"),
+                            std::string("mesh"),
                             AVT_ZONECENT, 3);
     
     // Interpolated on to a mesh for visualization only.
     AddVectorVarToMetaData( md, "B_Interpolated",
-                            string("mesh") + string(level),
+                            std::string("mesh") + std::string(level),
                             m_dataLocation, 3 );
     
     // Hidden refined meshes for working with the interpolated data
@@ -405,7 +403,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       nblocks = nelms * nLevels * nLevels;
 
       mmd =
-        new avtMeshMetaData(string("equilibrium/mesh") + string(level),
+        new avtMeshMetaData(std::string("equilibrium/mesh") + std::string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
                             spatial_dimension, topological_dimension, meshType);
@@ -413,7 +411,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       md->Add(mmd);
 
       mmd =
-        new avtMeshMetaData(string("mesh") + string(level),
+        new avtMeshMetaData(std::string("mesh") + std::string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
                             spatial_dimension, topological_dimension, meshType);
@@ -467,7 +465,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->Add(amd);
 
     // Hidden array field vars so we have access to them for the interpolation
-    string varname;
+    std::string varname;
 
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
@@ -524,13 +522,13 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
     sprintf( meshStr, "/time_%03d/mesh", timestate );
   } else
     EXCEPTION2( NonCompliantException, "M3DC1 Element Name Lookup",
-                "Element '" + string(meshStr) + "' was not found." );
+                "Element '" + std::string(meshStr) + "' was not found." );
 
   // Open the group.
   hid_t meshId = H5Gopen( m_fileID, meshStr, H5P_DEFAULT);
   if ( meshId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                "Group '" + string(meshStr) + "' was not found." );
+                "Group '" + std::string(meshStr) + "' was not found." );
   
   // Read in the mesh information.
   int nElements;
@@ -918,7 +916,7 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   }
   else
     EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
-                "Can not find '" + string(meshnamePtr) + "'" );
+                "Can not find '" + std::string(meshnamePtr) + "'" );
 
   bool refinedMesh = strlen(meshnamePtr);
   
@@ -1117,7 +1115,7 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
 
   // Everything is converted to floats by visit so might as well do it
   // here and save the copying time and memory.
-  string variable(varname);
+  std::string variable(varname);
 
   // Read in 3D flag and nplanes an an int
   if( variable == "nplanes" )
@@ -1272,13 +1270,13 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   hid_t groupId = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
   if ( groupId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                "Group '" + string(groupStr) + "' was not found" );
+                "Group '" + std::string(groupStr) + "' was not found" );
 
   // Open the field dataset
   hid_t datasetId = H5Dopen(groupId, varStr, H5P_DEFAULT);
   if ( datasetId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Open",
-                "Dataset '" + string(varStr) + "' was not found" );
+                "Dataset '" + std::string(varStr) + "' was not found" );
   
   // Read in the dataset information.
   hid_t spaceId = H5Dget_space(datasetId);
@@ -1289,7 +1287,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   if( rank != 2 || sdim[0] != nelms || sdim[1] != nComponents )
     EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
                 "Dataset '" +
-                string(groupStr) + string("/") + string(varStr) +
+                std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' the number of elements or the component size does not match" );
 
   hid_t type = H5Dget_type(datasetId);
@@ -1329,7 +1327,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   {
     EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
                 "Dataset '" +
-                string(groupStr) + string("/") + string(varStr) +
+                std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' is not of native float or double type" );
   }
 
@@ -1352,7 +1350,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
 //   if( H5Dread( datasetId,
 //             type, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
 //     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
-//              "Dataset '" + string(groupStr) + string("/") + string(varStr) +
+//              "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
 //              "' can not be read" );
 
 //  var->SetNumberOfValues( sdim[0]*sdim[1] );
@@ -1368,7 +1366,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   if( H5Dread( datasetId,
                nativeType, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
-                "Dataset '" + string(groupStr) + string("/") + string(varStr) +
+                "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' can not be read" );
 
   int ncomponents = sdim[1];
@@ -1512,6 +1510,12 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
         avtCallback::IssueWarning( buf );
 
+        // Really do not want either of these but there is no
+        // warning at this point.
+        debug1 << buf << std::endl;
+        
+        std::cerr << buf << std::endl;
+
         *varPtr++ = 0;
       }
 
@@ -1555,6 +1559,12 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
         
         avtCallback::IssueWarning( buf );
         
+        // Really do not want either of these but there is no
+        // warning at this point.
+        debug1 << buf << std::endl;
+        
+        std::cerr << buf << std::endl;
+
         *varPtr++ = 0;
       }
       
@@ -1792,6 +1802,12 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
           avtCallback::IssueWarning( buf );
 
+          // Really do not want either of these but there is no
+          // warning at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
+
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
         
@@ -1836,6 +1852,12 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
                    centroid[0], centroid[1], centroid[2] );
 
           avtCallback::IssueWarning( buf );
+
+          // Really do not want either of these but there is no
+          // warning at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
 
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
@@ -1965,7 +1987,7 @@ avtM3DC1FileFormat::NormalizeH5Type( hid_t type )
 bool
 avtM3DC1FileFormat::ReadStringAttribute( hid_t parentID,
                                          const char *attr,
-                                         string *value )
+                                         std::string *value )
 {
     hid_t attrID = H5Aopen_name( parentID, attr );
     if ( attrID <= 0 )
@@ -2200,7 +2222,7 @@ avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
           sdim[1] != M3DC1FF->scalar_size )
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                    "Dataset '" + string(name) +
+                    "Dataset '" + std::string(name) +
                     "' is of the wrong rank or dimensions" );
 
         return -1;
@@ -2235,7 +2257,7 @@ avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
 void
 avtM3DC1FileFormat::LoadFile()
 {
-    debug1 << "Attempting to open M3D C1 file " << m_filename << endl;
+    debug1 << "Attempting to open M3D C1 file " << m_filename << std::endl;
 
     // Init HDF5 and turn off error message printing.
     H5open();
@@ -2429,9 +2451,25 @@ avtM3DC1FileFormat::LoadFile()
 
         hid_t groupID = H5Gopen( m_fileID, timeStep, H5P_DEFAULT);
         if ( groupID < 0 )
+        {
+          char buf[1024];
+
+          sprintf( buf, "avtM3DC1FileFormat::LoadFile - M3DC1 Group Open - timeStep %s was not found", timeStep );
+
+          avtCallback::IssueWarning( buf );
+
+          // Really do not want either of these but there is no
+          // warning at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
+
+          continue;
+
           EXCEPTION1( InvalidVariableException,
-                      "M3DC1 Group Open - timeStep " + string(timeStep) +
-                      " was not found" );
+                   "M3DC1 Group Open - timeStep " + std::string(timeStep) +
+                   " was not found" );
+        }
 
         // Read the time value
         double time;
@@ -2490,7 +2528,7 @@ avtM3DC1FileFormat::LoadFile()
             hid_t datasetId =
               H5Dopen(fieldID, m_fieldVarNames[i].c_str(), H5P_DEFAULT);
             if ( datasetId < 0 )
-              EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + string(timeStep) + string("/fields/") +
+              EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + std::string(timeStep) + std::string("/fields/") +
                           m_fieldVarNames[i] + "' was not found" );
 
 
@@ -2507,7 +2545,7 @@ avtM3DC1FileFormat::LoadFile()
                 sdim[1] != scalar_size )
               {
                 EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Dataset '" +
-                            string(timeStep) + string("/fields/") + m_fieldVarNames[i] +
+                            std::string(timeStep) + std::string("/fields/") + m_fieldVarNames[i] +
                             "' the number of elements or the element size does not match" );
               }
         }
@@ -2515,7 +2553,7 @@ avtM3DC1FileFormat::LoadFile()
         H5Gclose( fieldID );
     }
 
-    debug1 << "SUCCESS in opening M3D C1 file " << m_filename << endl;
+    debug1 << "SUCCESS in opening M3D C1 file " << m_filename << std::endl;
 }
 
 
