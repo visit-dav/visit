@@ -1551,6 +1551,8 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
         sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f", 
                  centroid[0], centroid[1], centroid[2] );
         
+        avtCallback::IssueWarning( buf );
+
         *varPtr++ = 0;
       }
       
@@ -1786,6 +1788,8 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
           sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for point %10.6f %10.6f %10.6f", 
                    pt[0], pt[1], pt[2] );
 
+          avtCallback::IssueWarning( buf );
+
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
         
@@ -1828,6 +1832,8 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
           sprintf( buf, "avtM3DC1FileFormat::GetVar - Get Triangle Coords 2d can not find element for centroid %10.6f %10.6f %10.6f",
                    centroid[0], centroid[1], centroid[2] );
+
+          avtCallback::IssueWarning( buf );
 
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
