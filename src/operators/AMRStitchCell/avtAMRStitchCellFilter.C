@@ -286,7 +286,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     for (size_t l=1; l<nLevels; ++l)
     {
         const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios(l);
-        if (refRatio.size() != 3)
+        if (refRatio.size() != topologicalDimension)
             EXCEPTION1(ImproperUseException,
                     "Refinement ratio provided by database via domain nesting is invalid. "
                     "Expected a vector of length three.");
