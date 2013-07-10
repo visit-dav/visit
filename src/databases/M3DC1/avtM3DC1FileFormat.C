@@ -1394,6 +1394,12 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
         avtCallback::IssueWarning( buf );
 
+        // Really do not want either of these but the
+        // avtCallback::IssueWarning does nothing at this point.
+        debug1 << buf << std::endl;
+        
+        std::cerr << buf << std::endl;
+
         *varPtr++ = 0;
       }
 
@@ -1437,6 +1443,12 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
         
         avtCallback::IssueWarning( buf );
         
+        // Really do not want either of these but the
+        // avtCallback::IssueWarning does nothing at this point.
+        debug1 << buf << std::endl;
+        
+        std::cerr << buf << std::endl;
+
         *varPtr++ = 0;
       }
       
@@ -1674,6 +1686,12 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
           avtCallback::IssueWarning( buf );
 
+          // Really do not want either of these but the
+          // avtCallback::IssueWarning does nothing at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
+
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
         
@@ -1718,6 +1736,12 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
                    centroid[0], centroid[1], centroid[2] );
 
           avtCallback::IssueWarning( buf );
+
+          // Really do not want either of these but the
+          // avtCallback::IssueWarning does nothing at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
 
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
@@ -2311,9 +2335,25 @@ avtM3DC1FileFormat::LoadFile()
 
         hid_t groupID = H5Gopen( m_fileID, timeStep, H5P_DEFAULT);
         if ( groupID < 0 )
+        {
+          char buf[1024];
+
+          sprintf( buf, "avtM3DC1FileFormat::LoadFile - M3DC1 Group Open - timeStep %s was not found", timeStep );
+
+          avtCallback::IssueWarning( buf );
+
+          // Really do not want either of these but the
+          // avtCallback::IssueWarning does nothing at this point.
+          debug1 << buf << std::endl;
+
+          std::cerr << buf << std::endl;
+
+          continue;
+
           EXCEPTION1( InvalidVariableException,
                       "M3DC1 Group Open - timeStep " + string(timeStep) +
                       " was not found" );
+        }
 
         // Read the time value
         double time;
