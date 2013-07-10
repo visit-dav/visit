@@ -60,7 +60,7 @@ inline char toupper(char c)
 }
 
 // ****************************************************************************
-//  File:  GenerateAtts
+//  File:  GeneratePython
 //
 //  Purpose:
 //    Contains a set of classes which override the default implementation
@@ -2161,6 +2161,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
 
     virtual void WriteAdditionalMethods(QTextStream &c, const QString &className)
     {
+        QString plural("");
+        if (Name.right(1) != "s")
+            plural = "s";
         c << "PyObject *" << Endl;
         c << className << "_GetNum" << Name << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
@@ -2241,7 +2244,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         if(accessType == Field::AccessPublic)
             c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << Endl;
         else
-            c << "    if(index < 0 || index >= obj->data->GetNum" << Name << "())" << Endl;
+            c << "    if(index < 0 || index >= obj->data->GetNum" << Name << plural << "())" << Endl;
         c << "    {" << Endl;
         c << "        PyErr_SetString(PyExc_IndexError, \"Index out of range\");" << Endl;
         c << "        return NULL;" << Endl;
@@ -2258,7 +2261,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         if(accessType == Field::AccessPublic)
             c << "    int n = obj->data->" << name << ".size();" << Endl;
         else
-            c << "    int n = obj->data->GetNum" << Name << "();" << Endl; 
+            c << "    int n = obj->data->GetNum" << Name << plural << "();" << Endl; 
         c << "    for(int i = 0; i < n; ++i)" << Endl;
         c << "    {" << Endl;
         c << "        " << className << "_Remove_One_" << Name << "(self, 0);" << Endl;
