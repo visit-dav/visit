@@ -1621,15 +1621,15 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
             int zoneExtents[6];
             zoneExtents[0] = extents[0];
             zoneExtents[1] = extents[0] + pieceZonalDims[0];
-            zoneExtents[2] = extents[1];
-            zoneExtents[3] = extents[1] + pieceZonalDims[1];
-            zoneExtents[4] = extents[2];
-            zoneExtents[5] = extents[2] + pieceZonalDims[2];
+            zoneExtents[2] = extents[2];
+            zoneExtents[3] = extents[2] + pieceZonalDims[1];
+            zoneExtents[4] = extents[4];
+            zoneExtents[5] = extents[4] + pieceZonalDims[2];
             for (int iZ = zoneExtents[4]; iZ < zoneExtents[5]; iZ++) 
             {
                 for (int iY = zoneExtents[2]; iY < zoneExtents[3]; iY++) 
                 {
-                    for (int iX = zoneExtents[0]; iX < zoneExtents[0]; iX++) 
+                    for (int iX = zoneExtents[0]; iX < zoneExtents[1]; iX++) 
                     {
                         vtkIdType inIndex = iZ * nXY + iY * nX + iX;
                         out->SetTuple(outIndex, inIndex, in);
