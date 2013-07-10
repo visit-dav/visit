@@ -177,6 +177,9 @@
 //    Eric Brugger, Wed Jan 23 09:06:55 PST 2013
 //    Changed the date on the splash screen to January 2013.
 //
+//    Eric Brugger, Wed Jul 10 10:56:47 PDT 2013
+//    Changed the date on the splash screen to July 2013.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) 
