@@ -1048,7 +1048,7 @@ AnnotationAttributes_GetAxesArray(PyObject *self, PyObject *args)
 
 
 
-static struct PyMethodDef AnnotationAttributes_methods[] = {
+PyMethodDef PyAnnotationAttributes_methods[ANNOTATIONATTRIBUTES_NMETH] = {
     {"Notify", AnnotationAttributes_Notify, METH_VARARGS},
     {"SetAxes2D", AnnotationAttributes_SetAxes2D, METH_VARARGS},
     {"GetAxes2D", AnnotationAttributes_GetAxes2D, METH_VARARGS},
@@ -1118,7 +1118,7 @@ AnnotationAttributes_compare(PyObject *v, PyObject *w)
 }
 
 PyObject *
-AnnotationAttributes_getattr(PyObject *self, char *name)
+PyAnnotationAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "axes2D") == 0)
         return AnnotationAttributes_GetAxes2D(self, NULL);
@@ -1200,11 +1200,11 @@ AnnotationAttributes_getattr(PyObject *self, char *name)
     retval = AnnotationAttributes_Legacy_getattr(self, name);
     if(retval != NULL)
         return retval;
-    return Py_FindMethod(AnnotationAttributes_methods, self, name);
+    return Py_FindMethod(PyAnnotationAttributes_methods, self, name);
 }
 
-static int
-AnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
+int
+PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
@@ -1265,6 +1265,8 @@ AnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1310,8 +1312,8 @@ static PyTypeObject AnnotationAttributesType =
     //
     (destructor)AnnotationAttributes_dealloc,  // tp_dealloc
     (printfunc)AnnotationAttributes_print,     // tp_print
-    (getattrfunc)AnnotationAttributes_getattr, // tp_getattr
-    (setattrfunc)AnnotationAttributes_setattr, // tp_setattr
+    (getattrfunc)PyAnnotationAttributes_getattr, // tp_getattr
+    (setattrfunc)PyAnnotationAttributes_setattr, // tp_setattr
     (cmpfunc)AnnotationAttributes_compare,     // tp_compare
     (reprfunc)0,                         // tp_repr
     //
