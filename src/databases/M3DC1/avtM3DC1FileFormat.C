@@ -1394,12 +1394,6 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
 
         avtCallback::IssueWarning( buf );
 
-        // Really do not want either of these but the
-        // avtCallback::IssueWarning does nothing at this point.
-        debug1 << buf << std::endl;
-        
-        std::cerr << buf << std::endl;
-
         *varPtr++ = 0;
       }
 
@@ -1442,12 +1436,6 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
                  centroid[0], centroid[1], centroid[2] );
         
         avtCallback::IssueWarning( buf );
-        
-        // Really do not want either of these but the
-        // avtCallback::IssueWarning does nothing at this point.
-        debug1 << buf << std::endl;
-        
-        std::cerr << buf << std::endl;
 
         *varPtr++ = 0;
       }
@@ -1686,12 +1674,6 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
 
           avtCallback::IssueWarning( buf );
 
-          // Really do not want either of these but the
-          // avtCallback::IssueWarning does nothing at this point.
-          debug1 << buf << std::endl;
-
-          std::cerr << buf << std::endl;
-
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
         
@@ -1736,12 +1718,6 @@ avtM3DC1FileFormat::GetVectorVar(int timestate, const char *varname)
                    centroid[0], centroid[1], centroid[2] );
 
           avtCallback::IssueWarning( buf );
-
-          // Really do not want either of these but the
-          // avtCallback::IssueWarning does nothing at this point.
-          debug1 << buf << std::endl;
-
-          std::cerr << buf << std::endl;
 
           *varPtr++ = 0; *varPtr++ = 0; *varPtr++ = 0;
         }
