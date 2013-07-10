@@ -1,5 +1,5 @@
 Target: xml2python
-Code: AnnotationAttributes_getattr
+Code: PyAnnotationAttributes_getattr
 Prefix:
 Postfix:
     // Try and handle legacy AnnotationAttributes
@@ -9,7 +9,7 @@ Postfix:
     if(retval != NULL)
         return retval;
 
-Code: AnnotationAttributes_setattr
+Code: PyAnnotationAttributes_setattr
 Prefix:
 Postfix:
     if(obj == NULL)
