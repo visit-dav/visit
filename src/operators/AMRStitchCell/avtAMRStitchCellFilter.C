@@ -894,6 +894,10 @@ avtAMRStitchCellFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //  Programmer: Gunther H. Weber
 //  Creation:   Thu Jul 8 15:14:01 PST 2010
 //
+//  Modifications:
+//    Gunther H. Weber, Wed Jul 10 14:54:09 PDT 2013
+//    Add updating centering
+//
 // ****************************************************************************
 
 void
@@ -901,6 +905,15 @@ avtAMRStitchCellFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
+    avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
+    // Change centering for all variables from zone to node centered
+    for (int varNo = 0; varNo < out_atts.GetNumberOfVariables(); ++varNo)
+    {
+        std::string varname = out_atts.GetVariableName(varNo);
+        if (out_atts.GetCentering(varname.c_str()) == AVT_ZONECENT)
+            out_atts.SetCentering(AVT_NODECENT, varname.c_str());
+    }
+    //GetOutput()->GetInfo().GetAttributes().SetCentering(AVT_NODECENT);
 }
  
 // ****************************************************************************

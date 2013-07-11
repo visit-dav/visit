@@ -15,16 +15,21 @@
         StitchCells
       </Enum>
       <Field name="CreateCellsOfType" label="Create cells of type" type="enum" subtype="CreateType">
+        DualGridAndStitchCells
       </Field>
       <Field name="AddCaseNo" label="Add case number" type="bool">
+        false
       </Field>
       <Field name="OnlyProcessListedDomains" label="Only process listed domains" type="bool">
+        false
       </Field>
       <Field name="Domains" label="Domains" type="intVector">
       </Field>
       <Field name="OnlyProcessLevel" label="Only process level" type="bool">
+        false
       </Field>
       <Field name="Level" label="Level" type="int">
+        0
       </Field>
     </Attribute>
   </Plugin>
