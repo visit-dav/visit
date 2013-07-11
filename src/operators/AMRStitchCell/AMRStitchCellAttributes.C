@@ -94,6 +94,11 @@ AMRStitchCellAttributes::CreateType_FromString(const std::string &s, AMRStitchCe
 
 void AMRStitchCellAttributes::Init()
 {
+    CreateCellsOfType = DualGridAndStitchCells;
+    AddCaseNo = false;
+    OnlyProcessListedDomains = false;
+    OnlyProcessLevel = false;
+    Level = 0;
 
     AMRStitchCellAttributes::SelectAll();
 }
