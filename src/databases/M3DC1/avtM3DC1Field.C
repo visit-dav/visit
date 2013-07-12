@@ -48,6 +48,7 @@
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
 
+#include <avtCallback.h>
 #include <InvalidVariableException.h>
 
 #define ELEMENT_SIZE_2D 7
@@ -92,12 +93,6 @@ avtM3DC1Field::avtM3DC1Field( float *elementsPtr,
   tElements = nelms / nplanes;
 
   findElementNeighbors();
-
-//   int el = 1280;
-
-//   cerr << "Neighbors " << neighbors[3*el + 0] << "  "
-//        << neighbors[3*el + 1] << "  "
-//        << neighbors[3*el + 2] << endl;
 }
 
 
@@ -178,24 +173,24 @@ void avtM3DC1Field::findElementNeighbors()
       ptr = elements + element_size*el;
       trigtable[2*el]     = cos(ptr[3]);
       trigtable[2*el + 1] = sin(ptr[3]);
-      
-      co = trigtable[2*el];
-      sn = trigtable[2*el + 1];
 
-      x[0] = ptr[4];
-      y[0] = ptr[5];
+      // co = trigtable[2*el];
+      // sn = trigtable[2*el + 1];
+
+      // x[0] = ptr[4];
+      // y[0] = ptr[5];
       
-      x[1] = x[0] + (ptr[0] + ptr[1])*co;
-      y[1] = y[0] + (ptr[0] + ptr[1])*sn;
+      // x[1] = x[0] + (ptr[0] + ptr[1])*co;
+      // y[1] = y[0] + (ptr[0] + ptr[1])*sn;
       
-      x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
-      y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
+      // x[2] = x[0] + ptr[1]*co - ptr[2]*sn;
+      // y[2] = y[0] + ptr[1]*sn + ptr[2]*co;
       
-      for (vert=0; vert<3; vert++)
-        tri[vert] = register_vert(vertexList, x[vert], y[vert]);
+      // for (vert=0; vert<3; vert++)
+      //   tri[vert] = register_vert(vertexList, x[vert], y[vert]);
       
-      for (vert=0; vert<3; vert++)
-        add_edge(edgeListMap, tri, vert, el, neighbors);
+      // for (vert=0; vert<3; vert++)
+      //   add_edge(edgeListMap, tri, vert, el, neighbors);
 
     } /* end loop el */
   }
@@ -348,13 +343,17 @@ int avtM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
   {
     float phi = xin[1];
 
-    while( phi < 0 )
-      phi += 2.0*M_PI;
-
-    while( phi >= 2.0*M_PI )
-      phi -= 2.0*M_PI;
-
     xout[2] = phi - tri[8]; // tri[8] = phi0
+
+    if( xout[2] < -1.0e8 || tri[7] + 1.0e8 < xout[2] )
+    {
+      char buf[1024];
+
+      sprintf( buf, "avtM3DC1Field::get_tri_coords2D - Get Triangle Coords 2d an element was specified but the point is outside the phi tollerance", 
+               xin[0], xin[1], xin[2] );
+
+      avtCallback::IssueWarning( buf );   
+    }
   }
 
   return el;

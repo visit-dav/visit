@@ -588,53 +588,6 @@ void avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
 //  Creation:   20 November 2009
 //
 // ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
-{
-  float  *tri;
-  double co, sn, rrel, zrel;
-  int    index;
-
-  tri = elements + element_size*el;
-
-  /* Compute coordinates local to the current element */
-//   if( element_dimension == 2 )
-    index = 2 * el;
-//   else //if( element_dimension == 3 )
-//     index = 2*(el%tElements);
-
-  co = trigtable[index];
-  sn = trigtable[index + 1];
-
-  rrel = xin[0] - (tri[4] + tri[1]*co);
-  zrel = xin[2] - (tri[5] + tri[1]*sn);
-  
-  xout[0] = rrel*co + zrel*sn;  /* = xi */
-  xout[1] = zrel*co - rrel*sn;  /* = eta */
-
-  if( element_dimension == 3 )  /* = zi */
-  {
-    float phi = xin[1];
-
-    while( phi < 0 )
-      phi += 2.0*M_PI;
-
-    while( phi >= 2.0*M_PI )
-      phi -= 2.0*M_PI;
-
-    xout[2] = phi - tri[8]; // tri[8] = phi0
-  }
-
-  return el;
-}
-
-
-// ****************************************************************************
-//  Method: get_tri_coords2D
-//
-//  Creationist: Joshua Breslau
-//  Creation:   20 November 2009
-//
-// ****************************************************************************
 int avtIVPM3DC1Field::get_tri_coords2D(double *xin, double *xout) const
 {
   static int el=0;  /* Needs to be static so the method is a const. */
