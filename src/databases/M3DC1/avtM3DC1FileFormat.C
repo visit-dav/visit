@@ -564,7 +564,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
   H5Dread( datasetId,
            H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, elements );
 
-  H5Dclose(spaceId);
+  H5Sclose(spaceId);
   H5Dclose(datasetId);
   H5Gclose( meshId );
 
@@ -1292,7 +1292,7 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
 
   hid_t type = H5Dget_type(datasetId);
 
-  vtkDataArray *var;
+  vtkDataArray *vtkVar;
   hid_t nativeType;
 
   // Create the VTK structure to hold the field variable.
@@ -1303,14 +1303,16 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
     // For now type cast everything to floats as that is the storage
     // and what is assumed down stream.
     vtkFloatArray *varFloat = vtkFloatArray::New();
-    var = varFloat;
+    //varFloat->SetNumberOfValues( sdim[0]*sdim[1] );
+    vtkVar = varFloat;
 
     nativeType = H5T_NATIVE_FLOAT;
 
     // if( size == 4 )
     // {
     //   vtkFloatArray *varFloat = vtkFloatArray::New();
-    //   var = varFloat;
+    //   varFloat->SetNumberOfValues( sdim[0]*sdim[1] );
+    //   vtkVar = varFloat;
 
     //   nativeType = H5T_NATIVE_FLOAT;
 
@@ -1318,7 +1320,8 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
     // else if( size == 8 )
     // {
     //   vtkDoubleArray *varDouble = vtkDoubleArray::New();
-    //   var = varDouble;
+    //   varDouble->SetNumberOfValues( sdim[0]*sdim[1] );
+    //   vtkVar = varDouble;
       
     //   nativeType = H5T_NATIVE_DOUBLE;
     // }
@@ -1331,35 +1334,32 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
                 "' is not of native float or double type" );
   }
 
-  // Set the number of components before setting the number of tuples
-  // for proper memory allocation.
-  var->SetNumberOfComponents( sdim[1] );
-  var->SetNumberOfTuples( sdim[0] );
-
-
   // Normally an array would be created but instead use the VTK memory
   // directly - this usage works because the vtk and hdf5 memory
   // layout are the same.
 
   // void *vals;
-  // if( type == H5T_NATIVE_FLOAT )
+  // if( nativeType == H5T_NATIVE_FLOAT )
   //   vals = (void *) new float[sdim[0]*sdim[1]];
-  // else if( type == H5T_NATIVE_DOUBLE )
+  // else if( nativeType == H5T_NATIVE_DOUBLE )
   //   vals = (void *) new double[sdim[0]*sdim[1]];
 
-//   if( H5Dread( datasetId,
-//             type, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
-//     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
-//              "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
-//              "' can not be read" );
-
-//  var->SetNumberOfValues( sdim[0]*sdim[1] );
-//  var->SetArray( vals, sdim[0]*sdim[1], 0, // ); delete[]( void *) );
-//  delete [] vals;
+  // if( H5Dread( datasetId,
+  //           nativeType, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
+  //   EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
+  //            "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
+  //            "' can not be read" );
+  //  ((vtkFloatArray*)vtkVar)->SetArray( ((float*)vals), sdim[0]*sdim[1], 0 ); //, operator delete[]( void* ) );
+  //delete [] vals;
   
 
+  // Set the number of components before setting the number of tuples
+  // for proper memory allocation.
+  vtkVar->SetNumberOfComponents( sdim[1] );
+  vtkVar->SetNumberOfTuples( sdim[0] );
+
   // Pointer to the vtk memory.
-  void* values = (void*) var->GetVoidPointer(0);
+  void* values = (void*) vtkVar->GetVoidPointer(0);
   
   // Read the data directly into the vtk memory - this call assume
   // that the hdfd5 and vtk memory layout are the same.
@@ -1369,19 +1369,11 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
                 "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' can not be read" );
 
-  int ncomponents = sdim[1];
-
-//   std::cerr << "READ " << varname << std::endl;
-//     for( int j=0; j<ncomponents; ++j )
-//       std::cerr << values[0*ncomponents+j]  << "  ";
-//     std::cerr << std::endl;
-//     std::cerr << std::endl;
-
-  H5Dclose(spaceId);
+  H5Sclose(spaceId);
   H5Dclose(datasetId);
   H5Gclose( groupId );
   
-  return var;
+  return vtkVar;
 }
 
 
@@ -2440,6 +2432,9 @@ avtM3DC1FileFormat::LoadFile()
 
           std::cerr << buf << std::endl;
 
+          m_times.push_back( -1 );
+          m_cycles.push_back( t );
+
           continue;
 
           EXCEPTION1( InvalidVariableException,
@@ -2455,7 +2450,6 @@ avtM3DC1FileFormat::LoadFile()
 
         m_times.push_back( time );
         m_cycles.push_back( t );
-
 
         // Read in the mesh information.
         hid_t meshId = H5Gopen( groupID, "mesh", H5P_DEFAULT);
