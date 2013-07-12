@@ -74,6 +74,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   eqsubtract(0), linflag(0), tmode(0), bzero(0), rzero(0), F0(0), factor(fact),
   nelms(0), element_dimension(0), nplanes(0), reparameterize(false)
 {
+  vtkFieldData *fieldData = dataset->GetFieldData();
+
   // Pick off all of the data stored with the vtk field.
   // Get the numver of elements for checking the validity of the data.
 
@@ -89,7 +91,7 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
     element_size =
       ds->GetPointData()->GetArray("hidden/elements")->GetNumberOfComponents();
   }
-  // 2.0 Change data is at the cells for POINCARE
+  // 2.0 Change data is now at the cells for POINCARE
   else
   {
     nelms =
@@ -111,17 +113,15 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   }
 
   // Dummy variable to the template class
-  int   *intPtr, intVar = 0;
-  float *fltPtr, fltVar = 0;
+  float fltVar = 0;
     
   // The mesh elements.
   elements =
     SetDataPointer( ds, fltVar, "hidden/elements", element_size );
 
   // Equalibrium field
-  intPtr = SetDataPointer( ds, intVar, "hidden/header/eqsubtract", 1 );
-  eqsubtract = intPtr[0];
-  delete [] intPtr;
+  eqsubtract =
+      ((int *) fieldData->GetAbstractArray("eqsubtract")->GetVoidPointer(0))[0];
 
   if( eqsubtract )
   {
@@ -135,23 +135,19 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
 
   if( element_size == ELEMENT_SIZE_2D )
   {
+    linflag =
+      ((int *) fieldData->GetAbstractArray("linear")->GetVoidPointer(0))[0];
+
+    tmode =
+      ((int *) fieldData->GetAbstractArray("ntor")->GetVoidPointer(0))[0];
+
+    bzero =
+      ((double *) fieldData->GetAbstractArray("bzero")->GetVoidPointer(0))[0];
+
+    rzero =
+      ((double *) fieldData->GetAbstractArray("rzero")->GetVoidPointer(0))[0];
+
     nplanes = 1;
-
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/linear", 1 );
-    linflag = intPtr[0];
-    delete [] intPtr;
-
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/ntor", 1 );
-    tmode = intPtr[0];
-    delete [] intPtr;
-
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/bzero", 1 );
-    bzero = fltPtr[0];
-    delete [] fltPtr;
-
-    fltPtr = SetDataPointer( ds, fltVar, "hidden/header/rzero", 1 );
-    rzero = fltPtr[0];
-    delete [] fltPtr;
 
     // Now set some values using the above data.
     F0 = -bzero * rzero;
@@ -168,9 +164,8 @@ avtIVPM3DC1Field::avtIVPM3DC1Field( vtkDataSet* dataset,
   else //if( element_size == ELEMENT_SIZE_3D )
   {
     // Single values from the header attributes.
-    intPtr = SetDataPointer( ds, intVar, "hidden/header/nplanes", 1 );
-    nplanes = intPtr[0];
-    delete [] intPtr;
+    nplanes =
+      ((int *) fieldData->GetAbstractArray("nplanes")->GetVoidPointer(0))[0];
 
     f   = SetDataPointer( ds, fltVar, "hidden/f",   scalar_size, factor );
     psi = SetDataPointer( ds, fltVar, "hidden/psi", scalar_size, factor );
@@ -281,7 +276,7 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     array = ds->GetPointData()->GetArray(varname);
     XX = 3;
   }
-  // 2.0 Change data is at the cells for POINCARE
+  // 2.0 Change data is now at the cells for POINCARE
   else
   {
     array = ds->GetCellData()->GetArray(varname);
@@ -347,12 +342,6 @@ type* avtIVPM3DC1Field::SetDataPointer( vtkDataSet *ds,
     for( int i=0; i<ntuples; ++i )
       for( int j=0; j<ncomponents; ++j )
         newptr[i*ncomponents+j] = (type) (factor * ptr[i*XX*ncomponents+j]);
-
-//     std::cerr << varname << std::endl;
-//     for( int j=0; j<ncomponents; ++j )
-//       std::cerr << newptr[106795*ncomponents+j]  << "  ";
-//     std::cerr << std::endl;
-//     std::cerr << std::endl;
 
     return newptr;
   }
@@ -423,7 +412,7 @@ void avtIVPM3DC1Field::findElementNeighbors()
 
   float   *ptr;
   double  x[3], y[3], co, sn;
-  int     el, vert, tri[3], vlen;
+  int     el, vert, tri[3];
 
   /* Allocate, initialize neighbor table */
   neighbors = (int *) malloc(3 * tElements * sizeof(int));
@@ -589,53 +578,6 @@ void avtIVPM3DC1Field::add_edge(std::multimap< int, edge > &edgeListMap,
   newEdge.element = element;
   
   edgeListMap.insert( std::pair< int, edge >( key, newEdge ) );
-}
-
-
-// ****************************************************************************
-//  Method: get_tri_coords2D
-//
-//  Creationist: Joshua Breslau
-//  Creation:   20 November 2009
-//
-// ****************************************************************************
-int avtIVPM3DC1Field::get_tri_coords2D(double *xin, int el, double *xout) const
-{
-  float  *tri;
-  double co, sn, rrel, zrel;
-  int    index;
-
-  tri = elements + element_size*el;
-
-  /* Compute coordinates local to the current element */
-//   if( element_dimension == 2 )
-    index = 2 * el;
-//   else //if( element_dimension == 3 )
-//     index = 2*(el%tElements);
-
-  co = trigtable[index];
-  sn = trigtable[index + 1];
-
-  rrel = xin[0] - (tri[4] + tri[1]*co);
-  zrel = xin[2] - (tri[5] + tri[1]*sn);
-  
-  xout[0] = rrel*co + zrel*sn;  /* = xi */
-  xout[1] = zrel*co - rrel*sn;  /* = eta */
-
-  if( element_dimension == 3 )  /* = zi */
-  {
-    float phi = xin[1];
-
-    while( phi < 0 )
-      phi += 2.0*M_PI;
-
-    while( phi >= 2.0*M_PI )
-      phi -= 2.0*M_PI;
-
-    xout[2] = phi - tri[8]; // tri[8] = phi0
-  }
-
-  return el;
 }
 
 
@@ -1281,7 +1223,6 @@ void avtIVPM3DC1Field::interpdX2(float *var, int el, double *lcoords,
 {
   float *a = var + scalar_size*el;
   double xi = lcoords[0], eta = lcoords[1];
-  int index;
 
   if( element_dimension == 2 )
   {

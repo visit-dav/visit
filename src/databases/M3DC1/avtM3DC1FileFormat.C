@@ -68,8 +68,6 @@
 #include <visit-hdf5.h>
 
 
-using namespace std;
-
 #define ELEMENT_SIZE_2D 7
 #define SCALAR_SIZE_2D 20
 
@@ -377,24 +375,24 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     // refined mesh.
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
-      string varname = "equilibrium/" + m_fieldVarNames[i];
-      string meshname = string("equilibrium/mesh") + string(level);
+      std::string varname = "equilibrium/" + m_fieldVarNames[i];
+      std::string meshname = std::string("equilibrium/mesh") + std::string(level);
       
       AddScalarVarToMetaData( md, varname, meshname, m_dataLocation );
       
-      meshname = string("mesh") + string(level);
+      meshname = std::string("mesh") + std::string(level);
       AddScalarVarToMetaData( md, m_fieldVarNames[i], meshname, m_dataLocation );
     }
 
     // For now the mesh is the same mesh as the original mesh because
     // of needing it for the integration.
     AddVectorVarToMetaData( md, "B_C1_Elements",
-                            string("mesh"),
+                            std::string("mesh"),
                             AVT_ZONECENT, 3);
     
     // Interpolated on to a mesh for visualization only.
     AddVectorVarToMetaData( md, "B_Interpolated",
-                            string("mesh") + string(level),
+                            std::string("mesh") + std::string(level),
                             m_dataLocation, 3 );
     
     // Hidden refined meshes for working with the interpolated data
@@ -405,7 +403,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       nblocks = nelms * nLevels * nLevels;
 
       mmd =
-        new avtMeshMetaData(string("equilibrium/mesh") + string(level),
+        new avtMeshMetaData(std::string("equilibrium/mesh") + std::string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
                             spatial_dimension, topological_dimension, meshType);
@@ -413,7 +411,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       md->Add(mmd);
 
       mmd =
-        new avtMeshMetaData(string("mesh") + string(level),
+        new avtMeshMetaData(std::string("mesh") + std::string(level),
                             nblocks, block_origin,
                             cell_origin, group_origin,
                             spatial_dimension, topological_dimension, meshType);
@@ -467,7 +465,7 @@ avtM3DC1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     md->Add(amd);
 
     // Hidden array field vars so we have access to them for the interpolation
-    string varname;
+    std::string varname;
 
     for ( int i = 0; i < m_fieldVarNames.size(); ++i )
     {
@@ -524,13 +522,13 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
     sprintf( meshStr, "/time_%03d/mesh", timestate );
   } else
     EXCEPTION2( NonCompliantException, "M3DC1 Element Name Lookup",
-                "Element '" + string(meshStr) + "' was not found." );
+                "Element '" + std::string(meshStr) + "' was not found." );
 
   // Open the group.
   hid_t meshId = H5Gopen( m_fileID, meshStr, H5P_DEFAULT);
   if ( meshId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                "Group '" + string(meshStr) + "' was not found." );
+                "Group '" + std::string(meshStr) + "' was not found." );
   
   // Read in the mesh information.
   int nElements;
@@ -566,7 +564,7 @@ avtM3DC1FileFormat::GetElements(int timestate, const char *meshname)
   H5Dread( datasetId,
            H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, elements );
 
-  H5Dclose(spaceId);
+  H5Sclose(spaceId);
   H5Dclose(datasetId);
   H5Gclose( meshId );
 
@@ -918,12 +916,14 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
   }
   else
     EXCEPTION2( NonCompliantException, "M3DC1 Mesh Name",
-                "Can not find '" + string(meshnamePtr) + "'" );
+                "Can not find '" + std::string(meshnamePtr) + "'" );
 
+  bool refinedMesh = strlen(meshnamePtr);
+  
   // Parse the mesh variable name to get the refinement level.
   int refinement;
 
-  if( strlen(meshnamePtr) && atoi(&(meshnamePtr[1])) == m_refinement )
+  if( refinedMesh && atoi(&(meshnamePtr[1])) == m_refinement )
       refinement = m_refinement;
   else
     refinement = 0;
@@ -1040,6 +1040,45 @@ avtM3DC1FileFormat::GetMesh(int timestate, const char *meshname)
     wedge->Delete();
   }
 
+
+  // Retrieving the base mesh so add in the scalar global values
+  // needed for the interpolation of the magnetic field.
+  if( !refinedMesh )
+  {
+    // Create a new vtkFieldData which gets added to the vtkDataObject.
+    vtkFieldData *fieldData = vtkFieldData::New();
+    grid->SetFieldData(fieldData);
+
+    // Save the number of elements to create a field with a single tuple.
+    int tmp_nelms = nelms;
+    nelms = 1;
+
+    vtkDataArray *eqsubtractVar = GetHeaderVar( timestate, "eqsubtract");
+    fieldData->AddArray( eqsubtractVar );
+
+    if( element_dimension == 2 )
+    {
+      vtkDataArray *linearVar = GetHeaderVar( timestate, "linear");
+      fieldData->AddArray( linearVar );
+
+      vtkDataArray *ntorVar = GetHeaderVar( timestate, "ntor");
+      fieldData->AddArray( ntorVar );
+
+      vtkDataArray *bzeroVar = GetHeaderVar( timestate, "bzero");
+      fieldData->AddArray( bzeroVar );
+
+      vtkDataArray *rzeroVar = GetHeaderVar( timestate, "rzero");
+      fieldData->AddArray( rzeroVar );
+    }
+    else // if( element_dimension == 3 )
+    {
+      vtkDataArray *nplanesVar = GetHeaderVar( timestate, "nplanes");
+      fieldData->AddArray( nplanesVar );
+    }
+
+    nelms = tmp_nelms;
+  }
+
   return grid;
 }
 
@@ -1066,6 +1105,7 @@ vtkDataArray *
 avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
 {
   // Get the header variable
+  vtkDataArray * dataArray;
 
   // Header variables are at the top level group.
   hid_t rootID = H5Gopen( m_fileID, "/", H5P_DEFAULT);
@@ -1075,8 +1115,7 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
 
   // Everything is converted to floats by visit so might as well do it
   // here and save the copying time and memory.
-  string variable(&(varname[7]));
-  float value;
+  std::string variable(varname);
 
   // Read in 3D flag and nplanes an an int
   if( variable == "nplanes" )
@@ -1089,17 +1128,31 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       if ( ! ReadAttribute( rootID, "nplanes", &intVal ) )
       {
         EXCEPTION1( InvalidVariableException, "M3DC1 Attribute Reader - 'nplanes' was not found or was the wrong type." );
+
+        intVal = 0;
       }
-      else
-        value = intVal;
     }  
     else
     {
-      value = 1;
-    }  
+      intVal = 1;
+    }
+
+    vtkIntArray *var = vtkIntArray::New();
+
+    dataArray = var;
+
+    // Set the number of components before setting the number of tuples
+    // for proper memory allocation.
+    var->SetNumberOfComponents( 1 );
+    var->SetNumberOfTuples( nelms );
+    
+    int* varPtr = (int *) var->GetVoidPointer(0);
+    
+    for( int i=0; i<nelms; ++i)
+      *varPtr++ = intVal;
   }
 
-  // Read in linear flag and ntor an an int
+  // Read in eqsubtract, linear flag and ntor as an int
   else if( variable == "eqsubtract" ||
            variable == "linear" ||
            variable == "ntor"   )
@@ -1109,9 +1162,22 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute '" + variable + "' was not found or was the wrong type." );
+
+        intVal = 0;
       }
-      else
-        value = intVal;
+
+      vtkIntArray *var = vtkIntArray::New();
+      dataArray = var;
+
+      // Set the number of components before setting the number of tuples
+      // for proper memory allocation.
+      var->SetNumberOfComponents( 1 );
+      var->SetNumberOfTuples( nelms );
+    
+      int* varPtr = (int *) var->GetVoidPointer(0);
+    
+      for( int i=0; i<nelms; ++i)
+        *varPtr++ = intVal;
   }
     
   // Read in bzero and rzero as a double
@@ -1122,26 +1188,29 @@ avtM3DC1FileFormat::GetHeaderVar(int timestate, const char *varname)
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Attribute Reader",
                     "Attribute '" + variable + "' was not found or was the wrong type." );
+
+        dblVal = 0;
       }
-      else
-        value = dblVal;
+
+      vtkDoubleArray *var = vtkDoubleArray::New();
+      dataArray = var;
+
+      // Set the number of components before setting the number of tuples
+      // for proper memory allocation.
+      var->SetNumberOfComponents( 1 );
+      var->SetNumberOfTuples( nelms );
+    
+      double* varPtr = (double *) var->GetVoidPointer(0);
+    
+      for( int i=0; i<nelms; ++i)
+        *varPtr++ = dblVal;
   }
 
-  vtkFloatArray *var = vtkFloatArray::New();
-
-  // Set the number of components before setting the number of tuples
-  // for proper memory allocation.
-  var->SetNumberOfComponents( 1 );
-  var->SetNumberOfTuples( nelms );
-    
-  float* varPtr = (float *) var->GetVoidPointer(0);
-    
-  for( int i=0; i<nelms; ++i)
-    *varPtr++ = value;
-    
   H5Gclose( rootID );
-    
-  return var;
+
+  dataArray->SetName(varname);
+
+  return dataArray;
 }
 
 
@@ -1198,16 +1267,16 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   }
 
   // Open the group.
-  hid_t groupID = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
-  if ( groupID < 0 )
+  hid_t groupId = H5Gopen( m_fileID, groupStr, H5P_DEFAULT);
+  if ( groupId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Group Open",
-                "Group '" + string(groupStr) + "' was not found" );
+                "Group '" + std::string(groupStr) + "' was not found" );
 
   // Open the field dataset
-  hid_t datasetId = H5Dopen(groupID, varStr, H5P_DEFAULT);
+  hid_t datasetId = H5Dopen(groupId, varStr, H5P_DEFAULT);
   if ( datasetId < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Open",
-                "Dataset '" + string(varStr) + "' was not found" );
+                "Dataset '" + std::string(varStr) + "' was not found" );
   
   // Read in the dataset information.
   hid_t spaceId = H5Dget_space(datasetId);
@@ -1218,58 +1287,93 @@ avtM3DC1FileFormat::GetFieldVar(int timestate, const char *varname)
   if( rank != 2 || sdim[0] != nelms || sdim[1] != nComponents )
     EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
                 "Dataset '" +
-                string(groupStr) + string("/") + string(varStr) +
+                std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' the number of elements or the component size does not match" );
 
-  // Create the VTK structure to hole the field variable.
-  vtkFloatArray *var = vtkFloatArray::New();
+  hid_t type = H5Dget_type(datasetId);
 
-  // Set the number of components before setting the number of tuples
-  // for proper memory allocation.
-  var->SetNumberOfComponents( sdim[1] );
-  var->SetNumberOfTuples( sdim[0] );
+  vtkDataArray *vtkVar;
+  hid_t nativeType;
 
+  // Create the VTK structure to hold the field variable.
+  if( H5Tget_class (type) == H5T_FLOAT )
+  {
+    int size = H5Tget_size (type);
+
+    // For now type cast everything to floats as that is the storage
+    // and what is assumed down stream.
+    vtkFloatArray *varFloat = vtkFloatArray::New();
+    //varFloat->SetNumberOfValues( sdim[0]*sdim[1] );
+    vtkVar = varFloat;
+
+    nativeType = H5T_NATIVE_FLOAT;
+
+    // if( size == 4 )
+    // {
+    //   vtkFloatArray *varFloat = vtkFloatArray::New();
+    //   varFloat->SetNumberOfValues( sdim[0]*sdim[1] );
+    //   vtkVar = varFloat;
+
+    //   nativeType = H5T_NATIVE_FLOAT;
+
+    // }
+    // else if( size == 8 )
+    // {
+    //   vtkDoubleArray *varDouble = vtkDoubleArray::New();
+    //   varDouble->SetNumberOfValues( sdim[0]*sdim[1] );
+    //   vtkVar = varDouble;
+      
+    //   nativeType = H5T_NATIVE_DOUBLE;
+    // }
+  }
+  else
+  {
+    EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
+                "Dataset '" +
+                std::string(groupStr) + std::string("/") + std::string(varStr) +
+                "' is not of native float or double type" );
+  }
 
   // Normally an array would be created but instead use the VTK memory
   // directly - this usage works because the vtk and hdf5 memory
   // layout are the same.
 
-//   float *vals = new float[sdim[0]*sdim[1]];
-//   if( H5Dread( datasetId,
-//             H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
-//     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
-//              "Dataset '" + string(groupStr) + string("/") + string(varStr) +
-//              "' can not be read" );
+  // void *vals;
+  // if( nativeType == H5T_NATIVE_FLOAT )
+  //   vals = (void *) new float[sdim[0]*sdim[1]];
+  // else if( nativeType == H5T_NATIVE_DOUBLE )
+  //   vals = (void *) new double[sdim[0]*sdim[1]];
 
-//  var->SetNumberOfValues( sdim[0]*sdim[1] );
-//  var->SetArray( vals, sdim[0]*sdim[1], 0, // ); delete[]( void *) );
-//  delete [] vals;
+  // if( H5Dread( datasetId,
+  //           nativeType, H5S_ALL, spaceId, H5P_DEFAULT, vals ) < 0 )
+  //   EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
+  //            "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
+  //            "' can not be read" );
+  //  ((vtkFloatArray*)vtkVar)->SetArray( ((float*)vals), sdim[0]*sdim[1], 0 ); //, operator delete[]( void* ) );
+  //delete [] vals;
   
 
+  // Set the number of components before setting the number of tuples
+  // for proper memory allocation.
+  vtkVar->SetNumberOfComponents( sdim[1] );
+  vtkVar->SetNumberOfTuples( sdim[0] );
+
   // Pointer to the vtk memory.
-  float* values = (float*) var->GetVoidPointer(0);
+  void* values = (void*) vtkVar->GetVoidPointer(0);
   
   // Read the data directly into the vtk memory - this call assume
   // that the hdfd5 and vtk memory layout are the same.
   if( H5Dread( datasetId,
-              H5T_NATIVE_FLOAT, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
+               nativeType, H5S_ALL, spaceId, H5P_DEFAULT, values ) < 0 )
     EXCEPTION2( NonCompliantException, "M3DC1 Dataset Read",
-                "Dataset '" + string(groupStr) + string("/") + string(varStr) +
+                "Dataset '" + std::string(groupStr) + std::string("/") + std::string(varStr) +
                 "' can not be read" );
 
-  int ncomponents = sdim[1];
-
-//   std::cerr << "READ " << varname << std::endl;
-//     for( int j=0; j<ncomponents; ++j )
-//       std::cerr << values[0*ncomponents+j]  << "  ";
-//     std::cerr << std::endl;
-//     std::cerr << std::endl;
-
-  H5Dclose(spaceId);
+  H5Sclose(spaceId);
   H5Dclose(datasetId);
-  H5Gclose( groupID );
+  H5Gclose( groupId );
   
-  return var;
+  return vtkVar;
 }
 
 
@@ -1298,11 +1402,15 @@ avtM3DC1FileFormat::GetVar(int timestate, const char *varname)
   // C1 mesh.
   if( strncmp(varname, "hidden/", 7) == 0 )
   {
-    char varStr[64];
+    char *varStr = (char *) malloc( strlen(varname) );
     strcpy( varStr, &(varname[7]) );
 
-    if( strncmp(varStr, "header", 6) == 0 )
+    if( strncmp(varStr, "header/", 7) == 0 )
+    {
+      strcpy( varStr, &(varname[14]) );
+
       return GetHeaderVar( timestate, varStr);
+    }
     else
       return 0;
   }
@@ -1847,7 +1955,7 @@ avtM3DC1FileFormat::NormalizeH5Type( hid_t type )
 bool
 avtM3DC1FileFormat::ReadStringAttribute( hid_t parentID,
                                          const char *attr,
-                                         string *value )
+                                         std::string *value )
 {
     hid_t attrID = H5Aopen_name( parentID, attr );
     if ( attrID <= 0 )
@@ -2082,7 +2190,7 @@ avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
           sdim[1] != M3DC1FF->scalar_size )
       {
         EXCEPTION2( NonCompliantException, "M3DC1 Element Check",
-                    "Dataset '" + string(name) +
+                    "Dataset '" + std::string(name) +
                     "' is of the wrong rank or dimensions" );
 
         return -1;
@@ -2117,7 +2225,7 @@ avtM3DC1FileFormat::groupIterator(hid_t locId, const char* name, void* opdata) {
 void
 avtM3DC1FileFormat::LoadFile()
 {
-    debug1 << "Attempting to open M3D C1 file " << m_filename << endl;
+    debug1 << "Attempting to open M3D C1 file " << m_filename << std::endl;
 
     // Init HDF5 and turn off error message printing.
     H5open();
@@ -2318,17 +2426,20 @@ avtM3DC1FileFormat::LoadFile()
 
           avtCallback::IssueWarning( buf );
 
-          // Really do not want either of these but the
-          // avtCallback::IssueWarning does nothing at this point.
+          // Really do not want either of these but there is no
+          // warning at this point.
           debug1 << buf << std::endl;
 
           std::cerr << buf << std::endl;
 
+          m_times.push_back( -1 );
+          m_cycles.push_back( t );
+
           continue;
 
           EXCEPTION1( InvalidVariableException,
-                      "M3DC1 Group Open - timeStep " + string(timeStep) +
-                      " was not found" );
+                   "M3DC1 Group Open - timeStep " + std::string(timeStep) +
+                   " was not found" );
         }
 
         // Read the time value
@@ -2339,7 +2450,6 @@ avtM3DC1FileFormat::LoadFile()
 
         m_times.push_back( time );
         m_cycles.push_back( t );
-
 
         // Read in the mesh information.
         hid_t meshId = H5Gopen( groupID, "mesh", H5P_DEFAULT);
@@ -2388,7 +2498,7 @@ avtM3DC1FileFormat::LoadFile()
             hid_t datasetId =
               H5Dopen(fieldID, m_fieldVarNames[i].c_str(), H5P_DEFAULT);
             if ( datasetId < 0 )
-              EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + string(timeStep) + string("/fields/") +
+              EXCEPTION1( InvalidVariableException, "M3DC1 Dataset Open - '" + std::string(timeStep) + std::string("/fields/") +
                           m_fieldVarNames[i] + "' was not found" );
 
 
@@ -2405,7 +2515,7 @@ avtM3DC1FileFormat::LoadFile()
                 sdim[1] != scalar_size )
               {
                 EXCEPTION1( InvalidVariableException, "M3DC1 Element Check - Dataset '" +
-                            string(timeStep) + string("/fields/") + m_fieldVarNames[i] +
+                            std::string(timeStep) + std::string("/fields/") + m_fieldVarNames[i] +
                             "' the number of elements or the element size does not match" );
               }
         }
@@ -2413,7 +2523,7 @@ avtM3DC1FileFormat::LoadFile()
         H5Gclose( fieldID );
     }
 
-    debug1 << "SUCCESS in opening M3D C1 file " << m_filename << endl;
+    debug1 << "SUCCESS in opening M3D C1 file " << m_filename << std::endl;
 }
 
 
