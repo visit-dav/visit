@@ -151,11 +151,25 @@ else
     push @files, get_svn_recursive    "./src/third_party_builtin";
     push @files, get_svn_recursive    "./src/resources";
     push @files, get_norecursive      "./src/SVN_REVISION";
+
     if  (-d "data")
     {
         push @files, get_norecursive      "./data/CMakeLists.txt";
         push @files, get_norecursive      "./data/*.C";
         push @files, get_norecursive      "./data/*.h";
+    }
+
+    # add source files for the visit test module
+    if  (-d "test")
+    {
+        push @files, get_svn_recursive   "./test/CMakeLists.txt";
+        push @files, get_svn_recursive   "./test/setup.py";
+        push @files, get_svn_recursive   "./test/HtmlDiff.py";
+        push @files, get_svn_recursive   "./test/HtmlPython.py";
+        push @files, get_svn_recursive   "./test/visit_test_*py";
+        push @files, get_svn_recursive   "./test/nobaseline.pnm";
+        push @files, get_svn_recursive   "./test/notext.txt";
+        push @files, get_svn_recursive   "./test/report_templates";
     }
 }
 
