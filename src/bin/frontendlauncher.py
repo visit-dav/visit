@@ -57,7 +57,7 @@ def SETENV(var, value):
 
 def UNSETENV(var):
     try:
-        delete os.environ[var]
+        del os.environ[var]
     except:
         pass
 
