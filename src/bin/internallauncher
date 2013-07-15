@@ -2182,6 +2182,9 @@ class MainLauncher(object):
     #   Removed /usr/local/lib from the LD_LIBRARY_PATH since it was an old fix
     #   for Suns that caused problems on Linux.
     #
+    #   Kathleen Biagas, Mon Jul 15 11:31:27 PDT 2013
+    #   Unset QT_PLUGIN_PATH.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2251,6 +2254,9 @@ class MainLauncher(object):
         visitlibdir_python = os.path.join(self.visitlibdir, "python")
         if self.generalArgs.exe_name == "cli":
             SETENV("PYTHONHOME", visitlibdir_python)
+
+        # Unset QT_PLUGIN_PATH
+        UNSETENV("QT_PLUGIN_PATH")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")
