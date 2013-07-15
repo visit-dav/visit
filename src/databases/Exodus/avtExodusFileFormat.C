@@ -370,8 +370,14 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
             {
                 SNPRINTF(ex_var_name, sizeof(ex_var_name), "vals_nod_var%d", exvaridx+1+i);
                 nc_inq_varid(exncfid, ex_var_name, &varid);
-                char *p = (char *) buf + num_nodes * SizeOfNCType(type);
-                nc_get_vara(exncfid, varid, starts, counts, p);
+                char *p = (char *) buf + i * num_nodes * SizeOfNCType(type);
+                ncerr = nc_get_vara(exncfid, varid, starts, counts, p);
+                CheckNCError2(ncerr, nc_get_vara, __LINE__, __FILE__)      
+                if (ncerr != NC_NOERR)
+                {
+                    free(buf);
+                    EXCEPTION1(InvalidVariableException, visit_varname);
+                }
             }
         }
         else
