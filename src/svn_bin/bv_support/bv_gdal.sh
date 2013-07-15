@@ -23,11 +23,12 @@ echo ""
 
 function bv_gdal_info
 {
-export GDAL_FILE=${GDAL_FILE:-"gdal-1.7.1.tar.gz"}
-export GDAL_VERSION=${GDAL_VERSION:-"1.7.1"}
-export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.7"}
-export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.7.1"}
-export GDAL_MD5_CHECKSUM="5a90be385613730cc12fcf3f59b89de6"
+export GDAL_FILE=${GDAL_FILE:-"gdal-1.10.0.tar.gz"}
+export GDAL_VERSION=${GDAL_VERSION:-"1.10.0"}
+export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.10"}
+export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.10.0"}
+export GDAL_URL=${GDAL_URL:-"http://download.osgeo.org/gdal/${GDAL_VERSION}"}
+export GDAL_MD5_CHECKSUM="a2062d6ad09250e2ade40064bcd1a384"
 export GDAL_SHA256_CHECKSUM=""
 }
 
@@ -67,7 +68,7 @@ function bv_gdal_host_profile
 function bv_gdal_ensure
 {
     if [[ "$DO_GDAL" == "yes" ]] ; then
-        ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE http://dl.maptools.org/dl/gdal
+        ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE $GDAL_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_GDAL="no"
@@ -190,7 +191,7 @@ function build_gdal
        --with-libz=internal --with-netcdf=no \
        --with-hdf5=no --with-pg=no --with-curl=no \
        --without-jasper --without-python \
-       --without-sqlite3
+       --without-sqlite3 --without-xml2
     if [[ $? != 0 ]] ; then
        warn "GDAL configure failed.  Giving up"
        return 1
