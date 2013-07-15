@@ -34,6 +34,9 @@ import os, string, sys, subprocess
 #   Brad Whitlock, Mon Mar 11 11:49:37 PDT 2013
 #   Apply Ilja Honkonen's fix for determining path to frontendlauncher.
 #
+#   Kathleen Biagas, Mon Jul 15 11:32:00 PDT 2013
+#   Added UNSETENV.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -49,6 +52,12 @@ def GETENV(var):
 def SETENV(var, value):
     try:
         os.environ[var] = value
+    except:
+        pass
+
+def UNSETENV(var):
+    try:
+        delete os.environ[var]
     except:
         pass
 
