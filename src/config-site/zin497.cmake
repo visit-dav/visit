@@ -28,6 +28,11 @@ VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich-gnu/lib/sha
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich-gnu/lib/shared")
 
+##
+## Turn on DDT support.
+##
+VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries
