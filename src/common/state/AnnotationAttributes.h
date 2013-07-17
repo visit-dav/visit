@@ -211,7 +211,6 @@ public:
 
     // User-defined methods
     const ColorAttribute GetDiscernibleBackgroundColor() const;
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

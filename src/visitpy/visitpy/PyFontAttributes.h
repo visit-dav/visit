@@ -45,17 +45,21 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define FONTATTRIBUTES_NMETH 14
 void VISITPY_API           PyFontAttributes_StartUp(FontAttributes *subj, void *data);
 void VISITPY_API           PyFontAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyFontAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *  PyFontAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyFontAttributes_Check(PyObject *obj);
 VISITPY_API FontAttributes *  PyFontAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyFontAttributes_New();
-VISITPY_API PyObject *      PyFontAttributes_Wrap(const FontAttributes *attr);
+VISITPY_API PyObject *     PyFontAttributes_New();
+VISITPY_API PyObject *     PyFontAttributes_Wrap(const FontAttributes *attr);
 void VISITPY_API           PyFontAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyFontAttributes_SetDefaults(const FontAttributes *atts);
 std::string VISITPY_API    PyFontAttributes_GetLogString();
 std::string VISITPY_API    PyFontAttributes_ToString(const FontAttributes *, const char *);
+VISITPY_API PyObject *     PyFontAttributes_getattr(PyObject *self, char *name);
+int VISITPY_API            PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API extern PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH];
 
 #endif
 
