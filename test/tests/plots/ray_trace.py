@@ -39,7 +39,7 @@ TurnOffAllAnnotations(a)
 # - interaction with geometry
 # - that image based plots still get added to the vis window, causing a 
 #   bounding box to get generated.
-a.bboxFlag = 1
+a.axes3D.bboxFlag = 1
 SetAnnotationAttributes(a)
 
 

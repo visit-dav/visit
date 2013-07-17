@@ -44,6 +44,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 11 08:20:24 PDT 2013
+#    Removed legacy style annotation setting.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -119,8 +123,8 @@ Test("ops_transform03")
 
 DeleteAllPlots()
 
-a.axesFlag = 1
-a.bboxFlag = 1
+a.axes3D.visible = 1
+a.axes3D.bboxFlag = 1
 SetAnnotationAttributes(a)
 
 AddPlot("Contour", "d")

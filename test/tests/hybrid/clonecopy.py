@@ -19,6 +19,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 11 08:16:36 PDT 2013
+#    Removed legacy style annotation settings.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off annotation
@@ -28,14 +32,14 @@ SetDefaultAnnotationAttributes(a)
 
 # Set up a non-default annotation object.
 a1 = AnnotationAttributes()
-a1.axesFlag2D = 1
-a1.xAxisLabels2D = 0
-a1.yAxisLabels2D = 0
-a1.xAxisTitle2D = 0
-a1.yAxisTitle2D = 0
-a1.axesFlag = 0
-a1.triadFlag = 0
-a1.bboxFlag = 0
+a1.axes2D.visible = 1
+a1.axes2D.xAxis.label.visible = 0
+a1.axes2D.yAxis.label.visible = 0
+a1.axes2D.xAxis.title.visible = 0
+a1.axes2D.yAxis.title.visible = 0
+a1.axes3D.visible = 0
+a1.axes3D.triadFlag = 0
+a1.axes3D.bboxFlag = 0
 a1.userInfoFlag = 0
 a1.databaseInfoFlag = 0
 a1.legendInfoFlag = 0

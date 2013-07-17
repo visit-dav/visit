@@ -29,6 +29,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 11 08:18:42 PDT 2013
+#    Removed legacy sytle annotation setting.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -40,7 +44,7 @@ def InitAnnotation():
     a.axes2D.yAxis.label.visible = 0
     a.axes2D.xAxis.title.visible = 0
     a.axes2D.yAxis.title.visible = 0
-    a.bboxFlag = 1
+    a.axes3D.bboxFlag = 1
     SetAnnotationAttributes(a)
 
 def InitDefaults():

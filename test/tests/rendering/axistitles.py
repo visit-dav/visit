@@ -15,6 +15,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Thu Jul 11 08:36:38 PDT 2013
+#    Remove legacy style annotation settings.
+#
 # ----------------------------------------------------------------------------
 
 def SaveTestImage(name):
@@ -46,28 +50,28 @@ def Test2D():
     a.axes2D.yAxis.label.visible = 0
     a.axes2D.xAxis.title.visible = 1
     a.axes2D.yAxis.title.visible = 1
-    a.xTitleFontHeight2D = 0.04
-    a.yTitleFontHeight2D = 0.04
+    a.axes2D.xAxis.title.font.scale = 2 #TitleFontHeight2D = 0.04
+    a.axes2D.yAxis.title.font.scale = 2 #TitleFontHeight2D = 0.04
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_00")
 
-    a.xAxisUserTitle2D = "New X Title"
-    a.xAxisUserTitleFlag2D = 1
+    a.axes2D.xAxis.title.title = "New X Title"
+    a.axes2D.xAxis.title.userTitle = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_01")
 
-    a.yAxisUserTitle2D = "New Y Title"
-    a.yAxisUserTitleFlag2D = 1
+    a.axes2D.yAxis.title.title = "New Y Title"
+    a.axes2D.yAxis.title.userTitle = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_02")
 
-    a.xAxisUserUnits2D = "New X Units"
-    a.xAxisUserUnitsFlag2D = 1
+    a.axes2D.xAxis.title.units = "New X Units"
+    a.axes2D.xAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_03")
 
-    a.yAxisUserUnits2D = "New Y Units"
-    a.yAxisUserUnitsFlag2D = 1
+    a.axes2D.yAxis.title.units = "New Y Units"
+    a.axes2D.yAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_0_04")
     DeleteAllPlots()
@@ -104,39 +108,39 @@ def Test3D():
     a.axes3D.xAxis.title.visible = 1
     a.axes3D.yAxis.title.visible = 1
     a.axes3D.zAxis.title.visible = 1
-    a.xTitleFontHeight = 0.04 # 2x scale
-    a.yTitleFontHeight = 0.04
-    a.zTitleFontHeight = 0.04
+    a.axes3D.xAxis.title.font.scale = 2
+    a.axes3D.yAxis.title.font.scale = 2
+    a.axes3D.zAxis.title.font.scale = 2
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_00")
 
-    a.xAxisUserTitle = "New X Title"
-    a.xAxisUserTitleFlag = 1
+    a.axes3D.xAxis.title.title = "New X Title"
+    a.axes3D.xAxis.title.userTitle = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_01")
 
-    a.yAxisUserTitle = "New Y Title"
-    a.yAxisUserTitleFlag = 1
+    a.axes3D.yAxis.title.title = "New Y Title"
+    a.axes3D.yAxis.title.userTitle = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_02")
 
-    a.zAxisUserTitle = "New Z Title"
-    a.zAxisUserTitleFlag = 1
+    a.axes3D.zAxis.title.title = "New Z Title"
+    a.axes3D.zAxis.title.userTitle = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_03")
 
-    a.xAxisUserUnits = "New X Units"
-    a.xAxisUserUnitsFlag = 1
+    a.axes3D.xAxis.title.units = "New X Units"
+    a.axes3D.xAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_04")
 
-    a.yAxisUserUnits = "New Y Units"
-    a.yAxisUserUnitsFlag = 1
+    a.axes3D.yAxis.title.units = "New Y Units"
+    a.axes3D.yAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_05")
 
-    a.zAxisUserUnits = "New Z Units"
-    a.zAxisUserUnitsFlag = 1
+    a.axes3D.zAxis.title.units = "New Z Units"
+    a.axes3D.zAxis.title.userUnits = 1
     SetAnnotationAttributes(a)
     SaveTestImage("axistitles_1_06")
     DeleteAllPlots()
