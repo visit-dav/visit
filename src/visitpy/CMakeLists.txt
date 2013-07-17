@@ -109,7 +109,6 @@ visitpy/PyavtVectorMetaData.C
 SET(GENERATED_PY_SOURCES
 visitpy/PyAnimationAttributes.C 
 visitpy/PyAnnotationAttributes.C 
-visitpy/PyAnnotationAttributes_Legacy.C 
 visitpy/PyAxes2D.C 
 visitpy/PyAxes3D.C 
 visitpy/PyAxesArray.C 

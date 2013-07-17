@@ -1194,12 +1194,6 @@ PyAnnotationAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "axesArray") == 0)
         return AnnotationAttributes_GetAxesArray(self, NULL);
 
-    // Try and handle legacy AnnotationAttributes
-    extern PyObject *AnnotationAttributes_Legacy_getattr(PyObject *, const char *);
-    PyObject *retval = NULL;
-    retval = AnnotationAttributes_Legacy_getattr(self, name);
-    if(retval != NULL)
-        return retval;
     return Py_FindMethod(PyAnnotationAttributes_methods, self, name);
 }
 
@@ -1256,11 +1250,6 @@ PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "axesArray") == 0)
         obj = AnnotationAttributes_SetAxesArray(self, tuple);
 
-    if(obj == NULL)
-    {
-        extern PyObject *AnnotationAttributes_Legacy_setattr(PyObject *, const char *, PyObject *);
-        obj = AnnotationAttributes_Legacy_setattr(self, name, tuple);
-    }
     if(obj != NULL)
         Py_DECREF(obj);
 
