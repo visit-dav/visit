@@ -62,33 +62,51 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   // DebugStream::GetLevel doesn't exist in 1.12RC, so turning off
   // debugging as a work around.  It does exist in the trunk, so 
   // leave as follows in trunk.  Sigh.  
-  // mVerbosity = DebugStream::GetLevel(); 
   /*!
     Write out files
   */ 
-  dbprintf(5, "Dumpfile::Dumpfile(%s, rdatts)\n", filename.c_str()); 
 
   mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
   char *cp = getenv("PARADIS_VERBOSITY"); 
   if (cp) mVerbosity=atoi(cp); 
   else cp = (char*)"unset"; 
-  cerr << "PARADIS_VERBOSITY variable is " << cp << ", verbosity of dumpfile reader set to " << mVerbosity << endl; 
+  dbprintf(1, "PARADIS_VERBOSITY variable is %s, verbosity of dumpfile reader set to %d\n", cp, mVerbosity); 
 
+  if (DebugStream::GetLevel() > mVerbosity) {
+    mVerbosity = DebugStream::GetLevel(); 
+    dbprintf(1, "User set -debug to %d\n", mVerbosity); 
+  } 
+   
+  dbprintf(2, "Dumpfile::Dumpfile(%s, rdatts)\n", filename.c_str()); 
   if (mVerbosity) {
     mDebugFile = rdatts->GetString(PARADIS_DEBUG_FILE);
   }
   cp = getenv("PARADIS_DEBUG_FILE");
   if (cp) mDebugFile = cp; 
-  else cp = (char*)"unset"; 
-
+  else {
+    if (mVerbosity < 2) {
+      cp = (char*)"unset"; 
+    }
+    else {
+      cp = (char*)"paradis_debug.out"; 
+    }
+  }
   paraDIS_SetVerbosity(mVerbosity, mDebugFile.c_str()); 
-  cerr << "PARADIS_DEBUG_FILE variable is " << cp << endl; 
+  dbprintf(1, "PARADIS_DEBUG_FILE variable is %s\n", cp); 
 
   int enable = rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT); 
   cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
   if (cp) enable = atoi(cp); 
-  else cp = (char*)"unset"; 
-  cerr << "PARADIS_ENABLE_DEBUG_OUTPUT variable is " << cp << endl; 
+  else  {
+    if (mVerbosity < 2) {
+      cp = (char*)"unset"; 
+    }
+    else {
+      cp = (char*)"1"; 
+      enable = atoi(cp); 
+    }
+  }
+  dbprintf(1, "PARADIS_ENABLE_DEBUG_OUTPUT variable is %s, so enable is %d\n", cp, enable); 
   
   paraDIS_EnableDebugOutput(enable); 
   paraDIS_EnableStatsOutput(enable); 
@@ -101,7 +119,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
     paraDIS_SetThreshold(atof(cp));
   }
   else cp = (char*)"unset"; 
-  cerr << "PARADIS_NN_ARM_THRESHOLD variable is " << cp << endl; 
+  dbprintf(1, "PARADIS_NN_ARM_THRESHOLD variable is %s\n", cp); 
 
  // Adding a material to the mesh, allows subsetting and discrete colors:
   int numtypes = sizeof(burgersTypes)/sizeof(burgersTypes[0]); 
