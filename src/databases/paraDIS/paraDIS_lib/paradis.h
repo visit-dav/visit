@@ -55,7 +55,6 @@ using boost::uint32_t;
 std::string GetLibraryVersionString(const char *progname);
 std::string GetLibraryVersionNumberString(void);
 
-extern std::string doctext;
 
 string BurgersTypeNames(int btype);
 string ArmTypeNames(int atype);
@@ -118,6 +117,8 @@ std::string INDENT(int i);
 
 //=============================================================================
 namespace paraDIS {
+  extern std::string doctext;
+
   class FullNode; 
 
   //============================================================
@@ -492,6 +493,21 @@ namespace paraDIS {
     } 
     
     /*!
+      Add the given arm to the list of arms to trace. 
+      See WriteTraceFiles()
+    */ 
+    static void TraceNode(int32_t nodeID){
+      mTraceNodes.push_back(nodeID);       
+    }
+
+    /*!
+      Give a name to distinguish tracefiles from files from other runs.
+    */ 
+    static void SetTraceFileBasename(string basename) {
+      mTraceFileBasename = basename; 
+    }
+    
+   /*!
       Accessor function 
     */ 
     void SetInBounds(void) {
@@ -613,21 +629,19 @@ namespace paraDIS {
         mNeighborSegments.erase(remove(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg), mNeighborSegments.end()); 
       } else {
         mNeighborSegments.erase(find(mNeighborSegments.begin(), mNeighborSegments.end(), oldseg)); 
-        /*  if (pos == mNeighborSegments.end()) {
-          dbprintf(5, "RemoveNeighbor ERROR:  no matching neighbor found to remove!\n"); 
-
-#ifdef DEBUG
-// HOOKS_IGNORE
-          abort(); 
-#else
-          return;
-#endif
-
-        }
-        mNeighborSegments.erase(pos); */ 
-      }
+     }
       //ComputeNodeType(); 
     }
+    
+    /*!
+      Handy wrapper
+    */ 
+    static void PrintAllNodeTraces(string stepname); 
+
+  /* 
+     For each node that we want to trace, we write one set of files out before any decompositions, then one for decomposition step of each arm containing this node.
+   */ 
+    void WriteTraceFiles(string stepname);
 
     /*!
       Replace a neighbor of this node with a new neighbor -- done when wrapping nodes
@@ -698,16 +712,6 @@ namespace paraDIS {
       } else {
         // assumes that the arm exists in mNeighborArms! 
         mNeighborArms.erase(find(mNeighborArms.begin(), mNeighborArms.end(), neighbor)); 
-        /*if (armpos == mNeighborArms.end()) {
-          dbprintf(5, "RemoveNeighbor() Error:  no matching neighbor arm found to remove!\n"); 
-#ifdef DEBUG
-// HOOKS_IGNORE
-          abort(); 
-#else
-          return;
-#endif
-        }
-        mNeighborArms.erase(pos); */
       }
     }
 
@@ -723,6 +727,13 @@ namespace paraDIS {
       Accessor function
     */ 
     const std::vector< int> GetNeighborArmIDs(void) const;
+
+
+    /*!
+      Identify arms which cross over this node for  DetachCrossArms(); 
+      Broken out separately to enable query and debug output
+    */ 
+    vector<vector<Arm *> >IdentifyCrossArms(void); 
 
     /*!
       Identify arms which cross over this node and glue them together. 
@@ -801,6 +812,8 @@ namespace paraDIS {
       Static member to keep track of subspace bounds for checking if we are in bounds or not
     */ 
     static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
+    static string mTraceFileBasename; 
+    static vector<uint32_t> mTraceNodes; 
 
   }; /* end FullNode */  
   
@@ -991,7 +1004,9 @@ namespace paraDIS {
         mEndpoints[1] = node1; 
         mEndpoints[0] = node2; 
       } else {
-        throw string("Error in SetEndpoints -- endpoints are identical!");
+        string err = str(boost::format("Error in SetEndpoints -- endpoints are identical!  Endpoints are %1% and %2%")%node1->Stringify(0)%node2->Stringify(0)); 
+        dbprintf(0, (err + "\n").c_str()); 
+        throw err;
       }
     
       return; 
@@ -1236,10 +1251,14 @@ namespace paraDIS {
       mNumSegments = 0; 
       mTerminalSegments.clear();  
       mTerminalNodes.clear(); 
+      mDecomposing = false; 
+      mExtendOrDetach = false; 
 #if LINKED_LOOPS
       mPartOfLinkedLoop=false; 
       mCheckedForLinkedLoop=false;
 #endif
+      //mTraceArms.clear(); 
+      //mTraceDepth = 2; 
     }
     
     /*!
@@ -1296,7 +1315,7 @@ namespace paraDIS {
       Return 0 is no terminal segments. 
     */
     int8_t GetBurgersType(void) const {
-      if (!mTerminalSegments.size())  {
+      if (!mTerminalSegments.size() || !mTerminalSegments[0])  {        
         return BURGERS_UNKNOWN; 
       }
       return mTerminalSegments[0]->GetBurgersType(); 
@@ -1409,34 +1428,37 @@ namespace paraDIS {
       return NULL; 
     }
 
-      
-
+    /*!
+      Return number of neighbor arms, not including this arm, but including duplicates
+    */ 
     uint32_t GetNumNeighborArms(void) {
-      uint32_t num = 0; 
-      uint32_t tnode = mTerminalNodes.size(); 
-      while (tnode--) {
-        num += (mTerminalNodes[tnode]->mNeighborArms.size() - 1); 
+      uint num = 0; 
+      for  (uint node = 0; node < mTerminalNodes.size(); node++) {
+        for (uint arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
+          if (mTerminalNodes[node]->mNeighborArms[arm] != this) {
+            num++;
+          }
+        }
       }
       return num; 
     }
 
+    /*! 
+      Return nth neighbor arm, not including this but including duplicates
+    */ 
     Arm *GetNeighborArm (int num) {
-      uint32_t n = num; 
-      uint32_t tnode = 0; 
-      while (tnode < mTerminalNodes.size()) {
-        uint32_t tnodeNumNeighbors = mTerminalNodes[tnode]->mNeighborArms.size();  
-        if (n < tnodeNumNeighbors-1) {
-          uint8_t i = 0; 
-          for (i=0; i <= n; i++) {
-            if (mTerminalNodes[tnode]->mNeighborArms[i] == this) n++; 
+      for  (uint node = 0; node < mTerminalNodes.size(); node++) {
+        for (uint arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
+          if (mTerminalNodes[node]->mNeighborArms[arm] != this) {
+            if (!num)
+              return mTerminalNodes[node]->mNeighborArms[arm]; 
+            else
+              num--; 
           }
-          return mTerminalNodes[tnode]->mNeighborArms[n]; 
         }
-        n -= (tnodeNumNeighbors-1); // cannot be negative, which is good, (uint32_t)
-        tnode ++; 
       }
-      return NULL; // no such neighbor
-    }
+      return NULL; 
+   }
 
     /*! 
       Return the sum of the length of all segments in the arm
@@ -1453,13 +1475,41 @@ namespace paraDIS {
      mParentMetaArm = ma; 
     }
     
-    /*!
+   /*!
       This prints out an arm and its neighboring arms using BFS order
       to the given depth to a text file and a VTK file.  
       File created: basename.txt, basename.vtk
     */ 
-    void WriteTraceFiles(string basename, uint32_t neighbordepth); 
+     void WriteTraceFiles(string stepname); 
     
+    /*! 
+      Helper function for Arm::WriteTraceFiles and FullNode::WriteTraceFiles
+    */ 
+    void FindBFSNeighbors(vector<Arm *> &arms, vector<uint32_t> &armdepths, vector<int> &action);
+
+    /*!
+      Add the given arm to the list of arms to trace. 
+      See WriteTraceFiles()
+    */ 
+    static void TraceArm(int32_t armID){
+      mTraceArms.push_back(armID);       
+    }
+
+    /*!
+      Set the tracing depth for all traced arms.  
+      See WriteTraceFiles()
+    */ 
+    static void SetTraceDepth(uint32_t depth) {
+      mTraceDepth = depth; 
+    }
+
+    /*!
+      Give a name to distinguish tracefiles from files from other runs.
+    */ 
+    static void SetTraceFileBasename(string basename) {
+      mTraceFileBasename = basename; 
+    }
+
     /*! 
       Check to see if this is the body of a "butterfly," which is two three armed nodes connected by a type 200 arm, and which have four uniquely valued type 111 exterior arms ("exterior" means the arms not connecting the two).  If so, mark each terminal node as -3 (normal butterfly.  If one of the terminal nodes is a type -44 "special monster" node, then mark the other terminal node as being type -34 ("special butterfly"). Finally, could be a -35 connected to a -5 node, which is means, a 3 armed connected to 5 armed, such that exterior arms include all four 111 arm types.  
     */ 
@@ -1473,6 +1523,7 @@ namespace paraDIS {
 
     vector < ArmSegment *> mTerminalSegments; // At least one, but not more than two
     vector <FullNode *> mTerminalNodes;  // At least one, but not more than two
+
     int8_t mArmType;
     int8_t mMetaArmType; // of its parent if it exists
     double mArmLength; 
@@ -1482,6 +1533,7 @@ namespace paraDIS {
     static int32_t mNumDestroyedInDetachment; // statistics
     static double mTotalArmLengthBeforeDecomposition, 
       mTotalArmLengthAfterDecomposition;  
+    bool mDecomposing, mExtendOrDetach; 
 #if LINKED_LOOPS
     bool mPartOfLinkedLoop, mCheckedForLinkedLoop; 
 #endif
@@ -1506,6 +1558,22 @@ namespace paraDIS {
       during decomposition.  Useful for history tracing. 
     */ 
     vector<int32_t> mAncestorArms; 
+
+    /*! 
+      To trace out arms in a text and vtk file, add them to this vector
+    */ 
+    static vector<int32_t> mTraceArms; 
+
+    /*!
+      uniquify files from this run
+    */ 
+    static string mTraceFileBasename; 
+
+    /*! 
+      When tracing arms, how deep to BFS for neighbors? 
+      0 is no neighbors. 1 is immediate neighbors, etc. 
+    */ 
+    static uint8_t mTraceDepth; 
 
     private: 
     struct MetaArm * mParentMetaArm; 
@@ -1694,13 +1762,15 @@ s      Tell the data set which file to read
     void SetOutputBaseName(std::string name) { 
        mOutputBasename = name; 
        SetOutputDir(); 
+       FullNode::SetTraceFileBasename(mOutputDir + "/" + mOutputBasename);   
+       Arm::SetTraceFileBasename(mOutputDir + "/" + mOutputBasename);   
     }
 
     /*!
       verbosity goes from 0-5, based on dbg_setverbose() from librc.a
       filename if null means stderr
     */ 
-    void SetVerbosity(int level, string filename) { 
+    void SetVerbosity(int level, string filename = "") { 
       if (filename != "") {
         filename = mOutputDir + "/" + filename; 
         dbg_setfile(filename.c_str()); 
@@ -1709,14 +1779,27 @@ s      Tell the data set which file to read
     }
 
     /*!
-      Trace the given arm to the given depth.  
-      See Arm::WriteTraceFiles()
+      Trace decomposition of the given arm to the given depth.  
     */ 
-    void TraceArm(uint32_t armID, int depth){
-      mTraceArms.push_back(armID); 
-      mTraceDepth = depth; 
+    void TraceNode(int32_t nodeID){
+      FullNode::TraceNode(nodeID); 
+    }
+    
+    /*!
+      Trace decomposition of the given arm to the given depth.  
+    */ 
+    void TraceArm(int32_t armID){
+      Arm::TraceArm(armID);
+    }
+    
+    /*! 
+      Set trace depth for arm tracing
+    */ 
+    void SetTraceDepth(uint32_t depth) {
+      Arm::SetTraceDepth(depth); 
     }
 
+    
     void SetThreshold(double threshold) {
       mThreshold = threshold;
       Arm::mThreshold = threshold; 
@@ -1798,12 +1881,6 @@ s      Tell the data set which file to read
       Accessor -- number of procs in parallel
     */ 
     int GetNumProcs(void) { return mNumProcs; }
-
-    /*! 
-      Trace all requested arms in the data set using text and VTK files. 
-      See TraceArm() and Arm::WriteTraceFiles()
-    */ 
-    void TraceArms(string basename);
 
    /*! 
       Parse the paradis data file and create a full set of arms and nodes
@@ -1916,8 +1993,6 @@ s      Tell the data set which file to read
     void init(void) {  
       mNumBins = 0; 
       mThreshold = -1.0;
-      mTraceDepth = 2; 
-      mTraceArms.clear(); 
       mFileVersion = 0; 
       mMinimalNodes.clear(); 
       mMinimalNeighbors.clear(); 
@@ -2171,17 +2246,6 @@ s      Tell the data set which file to read
       it is part of a particular loop configuration I call a "linked loop."  
     */ 
     double mThreshold; 
-
-    /*! 
-      To trace out arms in a text and vtk file, add them to this vector
-    */ 
-    vector<uint32_t> mTraceArms; 
-
-    /*! 
-      When tracing arms, how deep to BFS for neighbors? 
-      0 is no neighbors. 1 is immediate neighbors, etc. 
-    */ 
-    uint8_t mTraceDepth; 
 
     /*!
       Moono would like to print out binned arm lengths.  He will give a number of bins and I will bin the arms into those many buckets when examining them at the end. 

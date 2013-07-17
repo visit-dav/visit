@@ -95,7 +95,7 @@ paraDISGeneralPluginInfo::GetName() const
 const char *
 paraDISGeneralPluginInfo::GetVersion() const
 {
-    return "3.0";
+    return "2.3.3";
 }
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ paraDISGeneralPluginInfo::GetVersion() const
 const char *
 paraDISGeneralPluginInfo::GetID() const
 {
-    return "paraDIS_3.0";
+    return "paraDIS_2.3.3";
 }
 // ****************************************************************************
 //  Method: paraDISGeneralPluginInfo::EnabledByDefault
