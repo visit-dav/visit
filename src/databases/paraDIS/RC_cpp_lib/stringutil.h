@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdio.h>
 #include <algorithm>
+#include "boost/format.hpp"
 //#include <inttypes.h>
 //#include "RCDebugStream.h"
 
@@ -145,11 +146,6 @@ inline std::string doubleToString(double d, int precision=-1){
 inline std::string intToString(double i) {
   return doubleToString(i, 0); 
 
-  /*  char buf[128] = "";
-  sprintf(buf, "%d", i);    
-  std::string s(buf);
-  return s; 
-  */
 }
 
 inline std::string pointerToString(const void *ptr) {
@@ -158,54 +154,6 @@ inline std::string pointerToString(const void *ptr) {
   return std::string(buf);
 }
 
-inline std::string operator +(std::string s , int d){
-  return s+doubleToString(d);
-}
-
-inline std::string operator +(int d, std::string s ){
-  return s+doubleToString(d);
-}
-
-inline std::string operator +(std::string s , double d){
-  return std::string(s+doubleToString(d));
-}
-
-inline std::string operator +(double d, std::string s){
-  return std::string(doubleToString(d)+s);
-} 
-
-//=====================================================
-template <class T> 
-string doubleArrayToString(const vector<T>  &array, int precision = -1) {
-  if (!array.size()) return string("<empty>"); 
-
-  string value("<");
-  typename vector<T>::const_iterator pos = array.begin(), endpos = array.end();
-  while (pos != endpos) {
-    string ds = doubleToString(*pos++, precision); 
-    value += ds; 
-    if (pos != endpos) value += ", "; 
-    else value += ">"; 
-  }
-  return value; 
-}
-
-//=====================================================
-template <class T> 
-string intArrayToString(const vector<T>  &array) { 
-  if (!array.size()) return string("<empty>"); 
-
-  string value("<");
-  typename vector<T>::const_iterator pos = array.begin(), endpos = array.end();
-  while (pos != endpos) {
-    string ds = doubleToString(*pos++, 0); 
-    value += ds; 
-    if (pos != endpos) value += ", "; 
-    else value += ">"; 
-  }
-  return value; 
-  
-}
 
 //=====================================================
 template <class T> 
@@ -215,7 +163,7 @@ string arrayToString(const vector<T>  &array) {
   string value("<");
   typename vector<T>::const_iterator pos = array.begin(), endpos = array.end(); 
   while (pos != endpos) {
-    value += (string(*pos++));
+    value += str(boost::format("%1%")%(*pos++));
     if (pos == endpos) value += ", "; 
     else value += ">"; 
   }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="3.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
+  <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="2.3.4" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
     <Files components="M">
       avtparaDISFileFormat.C      
       avtparaDISOptions.C     
