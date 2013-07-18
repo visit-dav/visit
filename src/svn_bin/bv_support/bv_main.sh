@@ -273,8 +273,6 @@ export DO_PATH="no"
 export ON_PATH="off"
 export DO_VERSION="no"
 export ON_VERSION="off"
-export DO_MODULE="no"
-export ON_MODULE="off"
 export DO_VERBOSE="no"
 export ON_VERBOSE="off"
 export DO_JAVA="no"
@@ -909,7 +907,6 @@ for arg in "${arguments[@]}" ; do
         --parallel) parallel="yes"; DO_ICET="yes"; ON_ICET="on"; ON_parallel="on";;
         --prefix) next_arg="prefix";;
         --print-vars) next_action="print-vars";;
-        --python-module) DO_MODULE="yes"; ON_MODULE="on";;
         --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
         --slivr) DO_SLIVR="yes"; ON_SLIVR="on";;
         --static) DO_STATIC_BUILD="yes"; USE_VISIBILIITY_HIDDEN="no";;
@@ -1077,7 +1074,6 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "SVN"        "get sources from SVN server"     $ON_SVN\
            "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE\
            "Parallel"   "specify parallel build flags"    $ON_parallel\
-           "Python"     "enable VisIt python module"      $ON_MODULE\
            "Java"       "enable java client library"      $ON_JAVA\
            "Fortran"    "enable fortran in third party libraries"  $ON_FORTRAN\
            "SLIVR"      "enable SLIVR volume rendering library"  $ON_SLIVR\
@@ -1095,7 +1091,6 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         DO_SVN="no"
         USE_VISIT_FILE="no"
         parallel="no"
-        DO_MODULE="no"
         DO_JAVA="no"
         DO_FORTRAN="no"
         DO_SLIVR="no"
@@ -1118,8 +1113,6 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  USE_VISIT_FILE="yes";;
               Parallel)
                  parallel="yes"; DO_ICET="yes"; ON_ICET="on";;
-              PythonModule)
-                 DO_MODULE="yes";;
               Java)
                  DO_JAVA="yes";;
               Fortran)

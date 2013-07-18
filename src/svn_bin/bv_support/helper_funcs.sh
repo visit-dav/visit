@@ -1453,7 +1453,6 @@ function usage
   printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
   printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
   printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
-  printf "%-15s %s [%s]\n" "--python-module" "Build with the VisIt Python module" "$DO_MODULE"
   printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
   printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
   printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"

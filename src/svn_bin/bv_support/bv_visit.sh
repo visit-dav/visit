@@ -368,9 +368,6 @@ EOF
     if test -n "${CXXFLAGS}" || test -n "${CXX_OPT_FLAGS}" ; then
         FEATURES="${FEATURES} -DVISIT_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
     fi
-    if [[ "${DO_MODULE}" == "yes" ]] ; then
-       FEATURES="${FEATURES} -DVISIT_PYTHON_MODULE:BOOL=ON"
-    fi
     if [[ "${DO_JAVA}" == "yes" ]] ; then
        FEATURES="${FEATURES} -DVISIT_JAVA:BOOL=ON"
     fi
