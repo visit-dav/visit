@@ -64,6 +64,8 @@
 #    Paul Selby, Thu May 16 12:15:04 BST 2013
 #    Added case for user "selby"
 #
+#    Kevin Bensema, Wed Jul 17 17:30 PDT 2013
+#    Added case for user "kbensema"
 # *****************************************************************************
 
 
@@ -175,6 +177,10 @@ case $1 in
     # Paul Selby, AWE UK
     "selby")
         emaddr=paul.selby@awe.co.uk
+        ;;
+    # Kevin Bensema, UC Davis
+    "kbensema")
+        emaddr=kbensema@ucdavis.edu
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov

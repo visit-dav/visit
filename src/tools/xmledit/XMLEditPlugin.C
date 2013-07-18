@@ -848,6 +848,10 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Replaced "Extensions" and "Filenames" with "FilePatterns".  Removed
 //    specifiedFilenames.  Added filePatternsStrict and opensWholeDirectory.
 //
+//    Kevin Bensema, Wed Jul 17 17:30 PDT 2013
+//    Added createExpressions to the list of widgets affected by 
+//    BlockAllSignals
+//
 // ****************************************************************************
 
 void
@@ -877,6 +881,7 @@ XMLEditPlugin::BlockAllSignals(bool block)
     hasWriter->blockSignals(block);
     hasOptions->blockSignals(block);
     enabledByDefault->blockSignals(block);
+    createExpressions->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
