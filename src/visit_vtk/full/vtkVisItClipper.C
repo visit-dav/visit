@@ -1360,6 +1360,10 @@ vtkVisItClipper_Execute(Bridge bridge,
 //    Brad Whitlock, Mon Mar 26 13:26:44 PDT 2012
 //    Massive refactor to support float/double values and coordinates.
 //
+//    Eric Brugger, Thu Jul 18 17:03:54 PDT 2013
+//    I corrected a bug that caused the clipping of double precision
+//    structured grids to return zero cells.
+//
 // ****************************************************************************
 
 int
@@ -1432,7 +1436,7 @@ vtkVisItClipper::RequestData(
                 vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
                     stuff_I_cant_clip, this);
             }
-            else if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+            else if(sg->GetPoints()->GetDataType() == VTK_DOUBLE)
             {
                 ClipperBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
                 vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
