@@ -337,6 +337,12 @@
 #    Satheesh Maheswaran, Wed May 15 11:01:15 BST 2013
 #    I added a case statement for AWE.
 #
+#    Eric Brugger, Mon Jul 22 12:10:17 PDT 2013
+#    I modified the command that removes an existing .visit directory
+#    to do so recursively. I modified a couple of loops that change the
+#    mode to executable for all the files in the directories of the form
+#    "archicture_name/bin" to exclude "usagelog".
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -740,9 +746,9 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 #
 # Use the appropriate configuration file, setting the bank to the right value.
 #
-rm -f "$dir"/$version+/.visit
-mkdir "$dir"/$version+/.visit
-mkdir "$dir"/$version+/.visit/hosts
+rm -rf "$dir"/$version+/.visit
+mkdir  "$dir"/$version+/.visit
+mkdir  "$dir"/$version+/.visit/hosts
 if [ "$config" = "anl" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
@@ -870,7 +876,9 @@ find "$dir"/$version+ -type f -exec chmod $file_permission {} \;
 
 for arch in `ls "$dir"/$version+`; do
     if [ "$arch" != "bin" ]; then
-        find "$dir"/$version+/$arch/bin -exec chmod $dir_permission {} \;
+        if [ "$arch" != "usagelog" ]; then
+            find "$dir"/$version+/$arch/bin -exec chmod $dir_permission {} \;
+        fi
     fi
 done
 find "$dir"/$version+/bin -exec chmod $dir_permission {} \;
@@ -878,9 +886,11 @@ find "$dir"/$version+/bin -exec chmod $dir_permission {} \;
 if [ "$os" = "darwin" ]; then
     for arch in `ls "$dir"/$version+`; do
         if [ "$arch" != "bin" ]; then
-            for app in `find "$dir"/$version+/$arch/bin -name "*.app" -print`; do
-                find $app/Contents/MacOS -exec chmod $dir_permission {} \;
-            done
+            if [ "$arch" != "usagelog" ]; then
+                for app in `find "$dir"/$version+/$arch/bin -name "*.app" -print`; do
+                    find $app/Contents/MacOS -exec chmod $dir_permission {} \;
+                done
+            fi
         fi
     done
 fi
