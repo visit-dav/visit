@@ -1512,6 +1512,10 @@ def FindAndOpenDatabase(dbname, extraPaths=()):
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#    Kathleen Biagas, Tue Jul 23 10:51:37 PDT 2013
+#    Added class method "add_skip_case".
 # ----------------------------------------------------------------------------
 class TestEnv(object):
     """
@@ -1583,7 +1587,38 @@ class TestEnv(object):
                                 if case_name in test['cases']:
                                     return True
         return False
+    @classmethod
+    def add_skip_case(cls,case_name):
+        if cls.skiplist is None:
+            return
+        # look for modes that match
+        for v in cls.skiplist['skip_list']:
+            if v['mode'] ==cls.params["modes"]:
+                for test in v['tests']:
+                    # check for platform restrictions
+                    if test.has_key("platform"):
+                        tplat = test["platform"].lower()
+                        splat = sys.platform.lower()
+                        # win,linux,osx
+                        # ignore this entry if we are on the wrong platform
+                        # else, use std logic
+                        if not splat.startswith(tplat):
+                            continue
+                    if test['category'] == cls.params["category"]:
+                        # see if the file matches
+                        if test['file'] == cls.params["file"]:
+                            if not test.has_key("cases"):
+                                test['cases'] = case_name
+                                return
+                            else:
+                                if case_name in test['cases']:
+                                    return
+                                else: 
+                                    test['cases'].append(case_name)
+                                    return
 
+def AddSkipCase(case_name):
+    TestEnv.add_skip_case(case_name)
 
 # ----------------------------------------------------------------------------
 #  Class: InitTestEnv

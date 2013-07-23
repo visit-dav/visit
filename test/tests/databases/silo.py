@@ -302,8 +302,8 @@ CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 if not sys.platform.startswith("win"):
     (err, dbname) = FindAndOpenDatabase("largefile.silo")
     if (err != 1):
-        global skipCases
-        skipCases.append("silo_26")
+        AddSkipCase("silo_26")
+        Test("silo_26")
     else:
         AddPlot("Curve","sincurve")
         AddPlot("Curve","coscurve")
