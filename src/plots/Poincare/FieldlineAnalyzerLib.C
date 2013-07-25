@@ -2074,10 +2074,10 @@ FieldlineLib::getFieldlineBaseValues( std::vector< Point > &ptList,
   double rotationalSum = 0;
   double ridgelineRotationalSum = 0;
 
-  double nextR, currR, deltaR;
-  double nextZ, currZ, deltaZ;
+  double nextR, currR, deltaR = 0;
+  double nextZ, currZ, deltaZ = 0;
 
-  double prevTheta=0, currTheta = atan2(deltaZ, deltaR), nextTheta=0;
+  double prevTheta=0, currTheta=0, nextTheta=0;
         
   bool zeroAngle = false;
   
@@ -2761,7 +2761,7 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
 
   rationalSurfaceTolerance *= rationalSurfaceFactor;
 
-  bool helicity = ccw( ptList[1] - ptList[0], ptList[1] - ptList[2] );
+  int helicity = ccw( ptList[1] - ptList[0], ptList[1] - ptList[2] );
 
   // Get the safety factor.
 //   for( unsigned int i=0; i<poloidal_puncture_pts.size(); ++i )
