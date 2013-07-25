@@ -1142,7 +1142,36 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           if( atts.GetBoundary() == LineSamplerAttributes::Wall )
           {
-            checkWall(  startPoint, stopPoint );
+            checkBounds( in_ds, startPoint, stopPoint );
+
+            switch ( checkWall( startPoint, stopPoint ) )
+            {
+            case 0:
+              {
+                std::string msg;
+                msg += "Tried to clip a chord against the wall but failed. " +
+                  std::string("The cord probably lies outside of the wall ") +
+                  std::string("and will be skipped.");
+                
+                avtCallback::IssueWarning(msg.c_str());
+              }
+              continue;
+
+            case 1:
+            case 2:
+              break;
+
+            default:
+              {
+                std::string msg;
+                msg += "Tried to clip a chord against the wall but found more than two clip operations were required. " +
+                  std::string("The cord probably traverses the wall multiple times ") +
+                  std::string("as such the sampling for this chord may not be correct.");
+                
+                avtCallback::IssueWarning(msg.c_str());
+              }
+              break;
+            }
 
             if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
                 (rTilt != 0.0 || zTilt != 0.0) )
@@ -1183,7 +1212,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               applyTransform( transform, stopPoint );
           }
 
-          checkBounds( in_ds, startPoint, stopPoint );
+          if( atts.GetBoundary() == LineSamplerAttributes::Data )
+            checkBounds( in_ds, startPoint, stopPoint );
 
           // Toroidal translation.
           if( (atts.GetMeshGeometry() == LineSamplerAttributes::Cartesian ||
@@ -1482,7 +1512,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               for( unsigned int i=0; i<nChannelSamples; ++i )
                 sum += sampleVolume * *out_data++;
 
-              scalars->InsertTuple1(0, sum / (float) nChannelSamples);
+//              scalars->InsertTuple1(0, sum / (float) nChannelSamples);
+              scalars->InsertTuple1(0, sum );
 
               vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
               vtkIdType vertex = 0;
@@ -2342,7 +2373,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
 //  Creation:   May 07, 2011
 //
 // ****************************************************************************
-void
+unsigned int
 avtLineSamplerFilter::checkWall( avtVector &startPoint,
                                  avtVector &stopPoint )
 {
@@ -2355,7 +2386,9 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
   // same.
   if( npts <= 4 ||
       wallList[0] != wallList[npts*2-2] || wallList[1] != wallList[npts*2-1] )
-    return;
+    return 0;
+
+  unsigned int nClips = 0;
 
   // Assume both the start and stop points are OUTSIDE the wall.
   double  x1 = startPoint.x;
@@ -2369,7 +2402,7 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
   // Find the frist two intersecting points, assume the startPoint is
   // outside the wall. The first clipped point will be intering point
   // and the second will be the exiting point.
-  for( int i=0,j=1; j<npts; ++i, ++j )
+  for( unsigned int i=0, j=1; j<npts; ++i, ++j )
   {
     double  x3 = wallList[2*i];
     double  z3 = wallList[2*i+1];
@@ -2390,6 +2423,8 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
     {
       testPoint.x = startPoint.x + u1 * (stopPoint.x-startPoint.x);
       testPoint.z = startPoint.z + u1 * (stopPoint.z-startPoint.z);
+
+      ++nClips;
 
       // Test for a new enterance point.
       if( (startPoint - clippedPoint0).length() >
@@ -2415,6 +2450,10 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
     startPoint = clippedPoint0;
   if( clippedPoint1 != stopPoint)
     stopPoint = clippedPoint1;
+
+  // The line should be clipped at least at one end otherwise it is
+  // outside of the wall.
+  return nClips;
 }
 
 

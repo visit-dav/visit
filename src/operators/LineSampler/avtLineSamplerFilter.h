@@ -125,7 +125,7 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     void checkBounds( vtkDataSet *in_ds,
                       avtVector &startPoint, avtVector &stopPoint );
 
-    void checkWall( avtVector &startPoint, avtVector &stopPoint );
+    unsigned int checkWall( avtVector &startPoint, avtVector &stopPoint );
 
     vtkDataSet *composite_ds;
 
