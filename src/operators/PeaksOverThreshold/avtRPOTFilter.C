@@ -809,7 +809,8 @@ avtRPOTFilter::CreateFinalOutput()
 
     RI->Delete();
 
-    avtCallback::ResetTimeout(5*60);
+    //avtCallback::ResetTimeout(5*60);
+    avtCallback::ResetTimeout(0);
 }
 
 #if 0
