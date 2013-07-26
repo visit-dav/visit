@@ -77,21 +77,36 @@ using     rclib::Point;
  
 avtparaDISFileFormat::avtparaDISFileFormat(const char *filename,
                                            DBOptionsAttributes *rdatts)
-  : avtSTSDFileFormat(filename), 
-    mFilename(filename), mFormat(PARADIS_NO_FORMAT), 
-    mParallelData(filename), mDumpfile(filename, rdatts) {
+  : avtSTSDFileFormat(filename), mDumpfile(filename, rdatts),mParallelData(filename) {
+
+  cerr << "using avtparaDISFileFormat::avtparaDISFileFormat version 2.3.4" << endl; 
+  if (filename) {
+    mFilename = filename; 
+  }
+  mFormat = PARADIS_NO_FORMAT;
+  mVerbosity = 0; 
 
   if (mParallelData.ParseMetaDataFile()) {  
-     mFormat = PARADIS_PARALLEL_FORMAT;
+    mFormat = PARADIS_PARALLEL_FORMAT;
   } else if (mDumpfile.FileIsValid()) {
     mFormat = PARADIS_DUMPFILE_FORMAT; 
   }
   debug1 << "avtparaDISFileFormat, filename="<<filename<<";  development code" << endl;
+
   return; 
 }
 
 
+void avtparaDISFileFormat::Clear(void) {
+  mFilename = ""; 
+  mFormat = PARADIS_NO_FORMAT;
+  mVerbosity = 0; 
+  mDumpfile.Clear(); 
+  mParallelData.Clear(); 
 
+    
+  return; 
+}
 
 // ****************************************************************************
 //  Method: avtparaDISFileFormat::FreeUpResources
@@ -110,6 +125,7 @@ avtparaDISFileFormat::avtparaDISFileFormat(const char *filename,
 void
 avtparaDISFileFormat::FreeUpResources(void)
 {
+  debug1 << "avtparaDISFileFormat::FreeUpResources(void)" << endl; 
   return; 
 }
 
@@ -398,10 +414,10 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtparaDISFileFormat::GetMesh(const char *meshname)
 {  
-    
-  debug2 << "avtparaDISFileFormat::GetMesh("<<meshname<<") from file "<<mFilename<<endl;
+   
+  debug2 << "avtparaDISFileFormat 2.3.4::GetMesh("<<meshname<<") from file "<<mFilename<<endl;
   vtkDataSet *mesh = NULL; 
-    
+  
   if (mFormat == PARADIS_DUMPFILE_FORMAT) {
     mesh = mDumpfile.GetMesh(meshname); 
   }  else {

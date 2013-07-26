@@ -52,6 +52,11 @@ using boost::uint32_t;
 #include "stringutil.h" /* from RC_c_lib, is this a good idea? */ 
 #include "debugutil.h" /* from RC_c_lib, now we're committed. */ 
 
+#ifdef RC_CPP_VISIT_BUILD
+#define dbprintf dbstream_printf
+void dbstream_printf(int level, const char *fmt, ...);
+#endif
+
 std::string GetLibraryVersionString(const char *progname);
 std::string GetLibraryVersionNumberString(void);
 
@@ -236,7 +241,7 @@ namespace paraDIS {
    /*!
       Accessor function 
     */ 
-    void SetID(const NodeID &id) {
+    void SetNodeID(const NodeID &id) {
       mID = id; 
       return ;
     }
@@ -362,6 +367,13 @@ namespace paraDIS {
     bool GetKeep(void) const {
       return mKeep; 
     }
+
+    // Bookkeeping for timestep changes etc.  
+    static void Clear(void) {
+      mMinimalNodes.clear(); 
+      return;
+    }
+
     /*!
       Accessor function -- mark node to keep (or not) later when culling
     */
@@ -435,6 +447,11 @@ namespace paraDIS {
       mNeighbors.push_back(n); 
     }
 
+    /*! 
+      can modify but must sort and insert/delete are slow
+    */ 
+    static std::vector<MinimalNode> mMinimalNodes; 
+
   private:
     /*!
       if mKeep is false, full node info is not needed for any reason
@@ -458,32 +475,79 @@ namespace paraDIS {
   */ 
   class FullNode: public Node {
   public:
+    /*!
+      ===========================================
+      destructor
+    */ 
+    ~FullNode()  {
+      mFullNodes[mNodeIndex] = NULL; 
+      mNumFullNodes--; 
+      return; 
+    }
+
+    /*!
+      ===========================================
+      constructor
+    */ 
     FullNode() : Node() {
       init(); 
       return; 
     }
    
+    /*!
+      ===========================================
+      constructor
+    */ 
     FullNode(const FullNode &other, bool skipneighbors=false) {
+      init(); 
+      uint32_t saved = mNodeIndex; 
       *this = other; 
+      mNodeIndex = saved; 
       if (skipneighbors) {
-        mNeighborSegments.clear(); 
+        mNeighborSegments.clear();         
         mNeighborArms.clear(); 
       }
       return;
     }
+    /*!
+      ===========================================
+      constructor
+    */ 
     FullNode(int16_t domain, int32_t nodeID) {
       init(); 
       mID = NodeID(domain, nodeID); 
     }
+    /*!
+      ===========================================
+      Clear all nodes
+    */ 
+    static void Clear(void) {
+      for (vector<FullNode *>::iterator nodepos = mFullNodes.begin(); nodepos != mFullNodes.end(); nodepos++) {
+        if (*nodepos) delete *nodepos;
+      }
+      mFullNodes.clear(); 
+      mTraceFileBasename = "";
+      mTraceNodes.clear(); 
+      mNumFullNodes = 0; 
+    }
+    
+    /*!
+      ===========================================
+      initializer
+    */
     void init(void) {
+      mNumFullNodes++; 
+      mNodeIndex = mFullNodes.size(); 
+      mFullNodes.push_back(this); 
       mInBounds = false; 
-      float location[3] = {0,0,0}; 
-      SetLocation(location); 
+      mLocation.resize(3,0); 
       mNodeType = 0; 
       mIsLoopNode = false;
       mWrappedCopy = false; 
+      mSeen = false; 
     }
     /*!
+      ===========================================
       Full nodes are first copied from MinimalNodes.  This is just a member-wise "shallow" copy.  
     */       
     const FullNode &operator =(Node &otherNode) {
@@ -493,6 +557,15 @@ namespace paraDIS {
     } 
     
     /*!
+      ===========================================
+      Check to see if the node's internal structures make sense.
+      Assumes all data has been parsed.
+    */       
+    bool Test(void);
+       
+      
+    /*!
+      ===========================================
       Add the given arm to the list of arms to trace. 
       See WriteTraceFiles()
     */ 
@@ -501,6 +574,7 @@ namespace paraDIS {
     }
 
     /*!
+      ===========================================
       Give a name to distinguish tracefiles from files from other runs.
     */ 
     static void SetTraceFileBasename(string basename) {
@@ -508,6 +582,7 @@ namespace paraDIS {
     }
     
    /*!
+      ===========================================
       Accessor function 
     */ 
     void SetInBounds(void) {
@@ -516,6 +591,7 @@ namespace paraDIS {
     
     
     /*!
+      ===========================================
       Accessor function
     */ 
     void SetLocation(float loc[3]) {
@@ -527,12 +603,11 @@ namespace paraDIS {
     */ 
     float GetLocation(int index) const { return mLocation[index]; }
     
+
     /*!
       Accessor function
     */ 
-    const float *GetLocation(void) const {
-      return mLocation; 
-    }
+    vector<float> GetLocation(void) const { return mLocation; }
     
     /*!
       Accessor
@@ -752,17 +827,19 @@ namespace paraDIS {
     /*!
       Accessor
     */ 
-    void SetIndex(int32_t index=-1) { 
-      if (index == -1) {
-        mNodeIndex = mFullNodes.size(); 
-      } else {
-        mNodeIndex = index; 
-      }
+    void SetIndex(int32_t index) { 
+      mNodeIndex = index; 
     }
-
+    
     bool IsWrappedCopy(void) { return mWrappedCopy; }
     
     void SetWrappedCopy(bool tf) { mWrappedCopy = tf; }
+
+    /*!
+      for debugging
+    */ 
+    bool mSeen; 
+
 
     /*!
       Connectivity to our neighboring arms.
@@ -774,12 +851,13 @@ namespace paraDIS {
       all fullnodes in the data set.  DO NOT SORT THIS -- each node has an Index which is its position in this array when created -- used to find its counterpart in the wrapped nodes for tracing along arms to find their endpoints and lengths.  
     */ 
     static std::vector<FullNode *> mFullNodes; 
+
+    static uint32_t mNumFullNodes; 
     
     /*!
-      to avoid memory leaks, track all these in one place
+      Static member to keep track of subspace bounds for checking if we are in bounds or not
     */ 
-    static std::vector<FullNode *> mWrappedNodes; 
-
+    static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
     //===============================================================
     // PRIVATE
     //===============================================================
@@ -787,7 +865,7 @@ namespace paraDIS {
     /*! 
       Absolute location in global space
     */ 
-    float mLocation[3]; 
+    vector<float> mLocation; 
     /*!
       Node Type is whether we are a butterfly, monster, or normal node (or a placeholder in a segment)
     */ 
@@ -801,19 +879,17 @@ namespace paraDIS {
       This is needed for things like Visit, where nodes are accessed by node ID, whereas this library uses pointers.  Since it is also our index inthe global array of nodes, it turns out to be a good way to get the "real" counterpart of a wrapped node.  
     */ 
     int32_t mNodeIndex; 
+
     /*!
       Connectivity to our neighboring nodes encapsulated in ArmSegments
     */ 
     std::vector< ArmSegment *> mNeighborSegments; 
 
-    // statistics:
-    std::vector<uint32_t> mNumMonsterNodes; 
-    /*!
-      Static member to keep track of subspace bounds for checking if we are in bounds or not
-    */ 
-    static rclib::Point<float> mBoundsMin, mBoundsMax, mBoundsSize; 
     static string mTraceFileBasename; 
     static vector<uint32_t> mTraceNodes; 
+
+    // statistics:
+    std::vector<uint32_t> mNumMonsterNodes; 
 
   }; /* end FullNode */  
   
@@ -831,18 +907,22 @@ namespace paraDIS {
     }
     ArmSegment(const ArmSegment &other){
       init(); 
+      uint32_t saved = mSegmentID; 
       *this = other; 
+      mSegmentID = saved; 
     }
 
     void init(void) {
-      //mMNType = ARM_UNKNOWN; 
+      mSegmentID = mArmSegments.size();
+      mArmSegments.push_back(this); 
+      mNumArmSegments++; 
+
       mBurgersType = 0; 
       mSeen = false; 
       int i=2; while (i--) {
         mEndpoints[i] = NULL; 
       }
       mGhostEndpoints.clear(); 
-      mSegmentID = -1; 
       mWrapped = false; 
       mNumDuplicates = 0; 
     }
@@ -850,25 +930,57 @@ namespace paraDIS {
       Destructor
     */ 
     ~ArmSegment() {
-
-      int nodenum=2; 
-      while (nodenum--) {
-        FullNode *epnode = mEndpoints[nodenum]; 
-        if (epnode && epnode->GetNodeType() == PLACEHOLDER_NODE) {
-          delete epnode; 
-          epnode = NULL; 
+      mArmSegments[mSegmentID] = NULL; 
+      mNumArmSegments--; 
+     int i=2; while (i--) {
+        if (mEndpoints[i] && mEndpoints[i]->GetNodeType() == PLACEHOLDER_NODE) {
+          delete mEndpoints[i]; // memory leak fix
         }
-        if (epnode  != NULL) {
-          epnode->NullifyNeighborReference(this); 
-        }
-      }
-      nodenum = mGhostEndpoints.size(); 
-      while (nodenum--) {
-        mGhostEndpoints[nodenum]->NullifyNeighborReference(this); 
       }
       return; 
-    }/* end destructor */ 
+    }
     
+    static void Clear(void) {
+
+      for (vector<ArmSegment *>::iterator pos = mArmSegments.begin(); pos != mArmSegments.end(); ++pos) {
+        if (*pos) delete *pos; 
+      }
+      mArmSegments.clear(); 
+
+      mSegLen = 0; 
+      mNumClassified = 0; 
+      mNumWrapped = 0; 
+      mNumArmSegmentsMeasured = 0; 
+      mNumArmSegments = 0; 
+    }
+
+    /*!
+      Accessor returns begin of arm vector. 
+    */ 
+    static vector<ArmSegment *>::const_iterator GetArmSegmentsBegin(void) { 
+      return mArmSegments.begin(); 
+    }
+    /*!
+      Accessor returns end of arm vector. 
+    */ 
+    static vector<ArmSegment *>::const_iterator GetArmSegmentsEnd(void) {
+      return mArmSegments.end(); 
+    }
+
+    /*!
+      Accessor function
+    */
+    static ArmSegment *GetArmSegment(uint32_t segnum) { 
+      return mArmSegments[segnum]; 
+    }
+
+    /*! 
+      Accessor function. 
+    */ 
+    static uint32_t GetNumArmSegments(void)  { 
+      return mArmSegments.size(); 
+    }
+
     /*!
       operator <() is required for set ordering.  All it requires is it be consistent, so we'll just see if our first node is less than the other's first node, if so, then yay, else if it is equal, then check the other endpoint.  Otherwise, it's false.  Pretty standard stuff. Important thing is this is all done by ID, not by pointer values.  
     */ 
@@ -926,8 +1038,8 @@ namespace paraDIS {
     /*! 
       Set the segment id to the next available global ID
     */ 
-    void SetID(void) {
-      mSegmentID = mNextID++; 
+    void SetIndex(uint32_t id) {
+      mSegmentID = id; 
       return; 
     }
     /*!
@@ -988,7 +1100,6 @@ namespace paraDIS {
     void SetEndpoints(FullNode *actualNode, int16_t neighborDomain, int32_t neighborNodeID) {
       FullNode *placeholder = new FullNode(neighborDomain, neighborNodeID); 
       placeholder->SetNodeType(PLACEHOLDER_NODE); //mark as a dummy node; 
-      placeholder->SetIndex(-42); 
       SetEndpoints(actualNode, placeholder); 
       return ;
     }
@@ -1120,10 +1231,6 @@ namespace paraDIS {
     */ 
     int32_t mSegmentID; 
 
-    /*! 
-      Used by SetID() to determine the next available segment ID:
-    */ 
-    static int32_t mNextID; 
     /*!
       to find out if wrapped
     */
@@ -1134,11 +1241,10 @@ namespace paraDIS {
     */ 
     int mNumDuplicates; 
 
-    /*!
-      A bucket for new segments:  "extended" segments from arm decomposition
-    */ 
-    static std::vector<ArmSegment *> mExtendedArmSegments; 
 
+    static double mSegLen;
+    static uint32_t mNumClassified, mNumWrapped, mNumArmSegmentsMeasured; 
+    static uint32_t mNumArmSegments; 
 
   protected:
 
@@ -1167,6 +1273,11 @@ namespace paraDIS {
 
 
   public:
+    /*!
+      The global list of valid arm segments
+    */ 
+    static std::vector<ArmSegment *> mArmSegments; 
+
     struct Arm *mParentArm; 
     /*!
       We usually need two slots for endpoints, but may need extra slots for "ghost endpoints" created when nodes are wrapped.  When this segment is deleted, it goes through its endpoints and tells all of them they are gone.  But wrapping causes some segments to be the neighbor of 3 or even (very rarely) more nodes. So we need to track those special cases. 
@@ -1241,6 +1352,9 @@ namespace paraDIS {
       this->init();
     }
 
+    ~Arm() {
+      mArms[mArmID] = NULL; 
+    }
 
     void init(void) {
       mArmType = ARM_UNKNOWN;
@@ -1249,10 +1363,14 @@ namespace paraDIS {
       mSeenInMeta=false; 
       mParentMetaArm=NULL;
       mNumSegments = 0; 
+      mNumWrappedSegments = 0; 
       mTerminalSegments.clear();  
       mTerminalNodes.clear(); 
       mDecomposing = false; 
       mExtendOrDetach = false; 
+      mArmID = mArms.size();
+      mArms.push_back(this); 
+
 #if LINKED_LOOPS
       mPartOfLinkedLoop=false; 
       mCheckedForLinkedLoop=false;
@@ -1261,6 +1379,24 @@ namespace paraDIS {
       //mTraceDepth = 2; 
     }
     
+    // bookkeeping for e.g. timestep changes. 
+    static void Clear(void) {
+      for (vector<Arm*>::iterator arm = mArms.begin(); arm != mArms.end(); arm++) {
+        if (*arm) delete *arm; 
+      }
+      mArms.clear(); 
+      mTraceArms.clear(); 
+      mTraceDepth = 2; 
+      mTraceFileBasename = ""; 
+      mLongestLength = 0.0; 
+      mDecomposedLength = 0.0; 
+      mNumDecomposed.resize(7,0);
+      mNumDestroyedInDetachment = 0; 
+      mTotalArmLengthBeforeDecomposition = 0.0;
+      mTotalArmLengthAfterDecomposition = 0.0;  
+      mThreshold = -1; 
+    }
+
     /*!
       When one arm is gobbled up by another, the gobblee becomes ancestor to the gobbler
     */ 
@@ -1321,13 +1457,6 @@ namespace paraDIS {
       return mTerminalSegments[0]->GetBurgersType(); 
     }
 
-    /*!
-      to set the arm ID for debugging.  In Debug code, this will do nothing
-    */ 
-    void SetID(void) { 
-      mArmID = mNextID++; 
-      return; 
-    }
 
     /* Get the metaarm ID for the parent of this arm */ 
     uint32_t GetMetaArmID(void);
@@ -1350,8 +1479,15 @@ namespace paraDIS {
       computed in order from end to end.  In a loop, the startNode is 
       repeated as first and last node.  This ensures that the number of nodes
       returned is always numSegments + 1
+      keepclose parameter:  If false, output nodes in their natural state.  If true, then output nodes such that neighbors never are far apart by adding mbounds components to their coordinates as needed. This is useful when outputting a single arm to prevent long straight interior segments.   
     */ 
     vector<FullNode*> GetNodes(FullNode *startNode = NULL) const;
+
+    uint GetNumNodes(void) { 
+      // The math here is a bit odd, due to wrapping: 
+      if (!mNumSegments) return 0; 
+      return mNumSegments + 1 + mNumWrappedSegments; 
+    }
 
     // same as GetNodes(mTerminalNodes[1]); If only one terminal node, issue warning and just call GetNodes().  Returns empty vector if only no terminal node.
     vector<FullNode*> GetNodesReversed(void) {
@@ -1527,6 +1663,10 @@ namespace paraDIS {
     int8_t mArmType;
     int8_t mMetaArmType; // of its parent if it exists
     double mArmLength; 
+    /*!
+      This is useless to the user, only used for classification 
+    */ 
+    static std::vector<Arm *> mArms; 
     static double mThreshold; // shorter than this and an arm is "short"
     static double mDecomposedLength; // statistics
     static vector<int32_t> mNumDecomposed; // statistics
@@ -1543,15 +1683,15 @@ namespace paraDIS {
       number of segments in arm
     */ 
     uint32_t mNumSegments; 
+   /*!
+      number of segments that got wrapped (affects node and segments counts)
+    */ 
+    uint8_t mNumWrappedSegments; 
     /*! 
       purely for debugging
     */ 
     int32_t mArmID; 
 
-     /*! 
-      purely for debugging
-    */ 
-    static int32_t mNextID; 
 
     /*!
       An ancestor of this arm was one which was assimilated into this arm,
@@ -1602,6 +1742,8 @@ namespace paraDIS {
     MetaArm(): mLength(0.0),  mMetaArmType(METAARM_UNKNOWN),  mNumSegments(0) , mCombo(false) , mFound111(false)
     {return;}
     ~MetaArm() {}
+
+ 
 
     std::string Stringify(int indent); 
     // vector<ArmSegment*> GetArmSegments(void);
@@ -1674,7 +1816,8 @@ namespace paraDIS {
     int8_t GetMetaArmType(void) { return mMetaArmType; }
     int32_t GetMetaArmID(void) { return mMetaArmID; }
 
-    vector<FullNode *>mTerminalNodes; // 
+     
+   vector<FullNode *>mTerminalNodes; // 
     vector<Arm*> mTerminalArms; // one or two arms
     double mLength; 
     int8_t mMetaArmType; 
@@ -1693,6 +1836,11 @@ namespace paraDIS {
   class DataSet {
   public: 
     DataSet() { init(); }
+
+    ~DataSet() { 
+      return; 
+    }
+
     /*!
       if this is true, then complete dumps of all data are done, 
       into files named mDebugOutputPrefix + <type> + ".debug"
@@ -1714,13 +1862,19 @@ namespace paraDIS {
     }
 
     /*!
+      if this is true, then create tag file.  
+    */ 
+    void EnableVTKFileOutput(bool tf=true) {
+      mDoVTKFile = tf; 
+    }
+    /*!
 s      Tell the data set which file to read
     */ 
     void SetDataFile(std::string datafile) {
       mDataFilename = datafile;
       if (mOutputBasename == "") {
         string basename = Replace(mDataFilename, ".data", ""); 
-        basename = Replace(basename, ".dat", "");         
+        basename = Basename(Replace(basename, ".dat", ""));         
         SetOutputBaseName(basename); 
       }
       SetOutputDir(); 
@@ -1772,7 +1926,12 @@ s      Tell the data set which file to read
     */ 
     void SetVerbosity(int level, string filename = "") { 
       if (filename != "") {
-        filename = mOutputDir + "/" + filename; 
+        if (filename[0] != '/') {
+          filename = mOutputDir + "/" + filename; 
+        }
+        if (!Mkdir(Dirname(filename).c_str())) {
+          cerr << "Warning: could not create output directory " << Dirname(filename) << endl; 
+        }        
         dbg_setfile(filename.c_str()); 
       }
       dbg_setverbose(level); 
@@ -1842,12 +2001,7 @@ s      Tell the data set which file to read
       return; 
     }
 
-    /*!
-      For debugging, force the subspace max to be half the max of the bounds.  E.g. if data max is (100,100,100), then this causes subspace max to be (50,50,50).
-    */ 
-    void TestRestrictSubspace(void);
-
-
+ 
     /*!
       Tag all METAARM_LOOP nodes
     */
@@ -1857,6 +2011,13 @@ s      Tell the data set which file to read
       Write out a copy of the input file that has all FullNode tags in it.
     */
     void WriteTagFile(void); 
+
+    /*!
+      Write out a vtk fileset containing all nodes and segments. 
+      Also writes a .visit file identifying each file as a separate block. 
+      There is no ordering intentionally in the file.  
+    */
+    void WriteVTKFiles(void); 
 
     /*!
       Using 3-way binary decomposition, determine our chunk of subspace based on our processor number
@@ -1882,15 +2043,27 @@ s      Tell the data set which file to read
     */ 
     int GetNumProcs(void) { return mNumProcs; }
 
+    /*!
+      Run a self-diagnostic.  used by paradisTest
+    */ 
+    bool Test(void); 
+
    /*! 
       Parse the paradis data file and create a full set of arms and nodes
+      renumberNodes is a memory optimization that makes debugging harder, so 
+      I've made it optional.  
     */ 
-    void ReadData(std::string datafile="");    
+    void ReadData(std::string datafile="", bool renumberNodes = true);    
  
+
     /* Starting from the given arm, trace out the containing meta arm and return a shared_ptr to the result */
     boost::shared_ptr<MetaArm> TraceMetaArm(vector<Arm>::const_iterator arm); 
 
     
+    bool TestNode(uint32_t nodenum) {
+      return FullNode::mFullNodes[nodenum]->Test(); 
+    }
+
     /*!
       Accessor function.
     */ 
@@ -1913,42 +2086,6 @@ s      Tell the data set which file to read
     */ 
     FullNode * GetNode(uint32_t nodenum) { return FullNode::mFullNodes[nodenum]; }
 
-   /*! 
-      Accessor function. 
-    */ 
-    uint32_t GetNumArmSegments(void) const { return mFinalArmSegments.size(); }
-
-    /*!
-      Accessor returns begin of arm vector. 
-    */ 
-    vector<ArmSegment *>::const_iterator GetArmSegmentsBegin(void) { 
-      return mFinalArmSegments.begin(); 
-    }
-    /*!
-      Accessor returns end of arm vector. 
-    */ 
-    vector<ArmSegment *>::const_iterator GetArmSegmentsEnd(void) {
-      return mFinalArmSegments.end(); 
-    }
-
-    /*!
-      Accessor function
-    */
-    ArmSegment *GetArmSegment(uint32_t segnum) { 
-      return mFinalArmSegments[segnum]; 
-    }
-
-    /*!
-      Accessor function
-    */
-    uint32_t GetNumMetaArms(void) { return mMetaArms.size(); }
-
-    /*!
-      Accessor function
-    */
-    boost::shared_ptr<MetaArm> GetMetaArm(uint32_t metaArmNum) {
-      return mMetaArms[metaArmNum]; 
-    }
 
     /*!
       Set the bounds for our chunk of space 
@@ -1979,6 +2116,32 @@ s      Tell the data set which file to read
     */ 
     void FindMetaArms(void);    
 
+     /*!
+      Accessor function
+    */
+    uint32_t GetNumMetaArms(void) { return mMetaArms.size(); }
+    
+    /*!
+      Accessor function
+    */
+    boost::shared_ptr<MetaArm> GetMetaArm(uint32_t metaArmNum) {
+      return mMetaArms[metaArmNum]; 
+    }
+
+    /*!
+      Accessor function
+    */
+    ArmSegment *GetArmSegment(uint32_t segnum) { 
+      return ArmSegment::GetArmSegment(segnum); 
+    }
+
+    /*! 
+      Accessor function. 
+    */ 
+    uint32_t GetNumArmSegments(void)  { 
+      return  ArmSegment::GetNumArmSegments(); 
+    }
+
     /*!
       set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
     */ 
@@ -1994,32 +2157,20 @@ s      Tell the data set which file to read
       mNumBins = 0; 
       mThreshold = -1.0;
       mFileVersion = 0; 
-      mMinimalNodes.clear(); 
-      mMinimalNeighbors.clear(); 
-      vector<FullNode *>::iterator nodepos = FullNode::mFullNodes.begin(), nodeend = FullNode::mFullNodes.end(); 
-      while (nodepos != nodeend) delete *nodepos++; 
-      FullNode::mFullNodes.clear(); 
-      
-      nodepos = FullNode::mWrappedNodes.begin(), nodeend = FullNode::mWrappedNodes.end(); 
-      while (nodepos != nodeend) delete *nodepos++; 
-      FullNode::mWrappedNodes.clear(); 
-      
-      vector<ArmSegment *>::iterator pos = mFinalArmSegments.begin(), endpos = mFinalArmSegments.end(); 
-      while (pos != endpos)  delete *(pos++);  //delete internal pointers. 
-      mFinalArmSegments.clear(); 
-      
-      pos = mWrappedArmSegments.begin();  
-      while (pos != mWrappedArmSegments.end()) delete *(pos++); 
+      Arm::Clear(); 
+      ArmSegment::Clear(); 
+      mMinimalNeighbors.clear();
+      FullNode::Clear(); 
+      MinimalNode::Clear();           
+      // Note:  There is no MetaArm::Clear(); 
 
-
-      set<ArmSegment*, CompareSegPtrs>::iterator spos = mQuickFindArmSegments.begin(), send = mQuickFindArmSegments.end(); 
-      while (spos != send) delete *(spos++); 
-      mQuickFindArmSegments.clear(); 
-      mArms.clear();      
+       // mQuickFindArmSegments is cleared in CollectAllArmSegments()
       mProcNum = mNumProcs = mFileVersion = 0; 
       mTotalDumpNodes =0;
+      mElementsPerVTKFile = 50*1000; 
       mDoDebugOutput=false; 
-      mDoTagFile = false; 
+      mDoTagFile = false;
+      mDoVTKFile = false; 
       mDoStats = false; 
       mOutputDir = "./paradis-debug";
       mDataMin = mDataMax = mDataSize = mSubspaceMin = mSubspaceMax = 
@@ -2127,8 +2278,8 @@ s      Tell the data set which file to read
     */ 
      void DecomposeArms(void);
 
-     /* put all arm segments into mFinalArmSegments */ 
-     void CollectAllArmSegments(void);
+     /* put all arm segments into mArmSegments */ 
+     // void CollectAllArmSegments(void);
 
     /*!
       Makethe final classification on arms as ARM_XX_YYY.  
@@ -2144,12 +2295,17 @@ s      Tell the data set which file to read
 
  
     /*!
-      Go through and renumber the nodes so that their index is the same as their position in the vector
+      Go through and renumber the nodes and segments so that their index is the same as their position in the global vector
     */ 
-    void RenumberNodes(void); 
+    void RenumberNodesAndSegments(void); 
 
 
-    
+
+    /*!
+      A MetaArm is a chain of arms with all the same Burgers vector value, but can also include 200, 020, and 002 types as "unzipped" portions along the meta-arm.  
+    */  
+     std::vector<boost::shared_ptr<MetaArm> > mMetaArms; 
+
     /*!
       Extents of the full data set: 
     */ 
@@ -2159,36 +2315,19 @@ s      Tell the data set which file to read
     */ 
     rclib::Point<float> mSubspaceMin, mSubspaceMax; 
 
-    /*! 
-      can modify but must sort and insert/delete are slow
-    */ 
-    std::vector<MinimalNode> mMinimalNodes; 
     /*!
       cannot modify but always sorted so fast
     */ 
     std::set<Neighbor> mMinimalNeighbors; 
 
 
-    /*!
-      The QuickFind array does not allow duplicates, so put wrapped arm segments here 
-    */ 
-    std::vector<ArmSegment *> mWrappedArmSegments; 
-    /*!
-      The actual final arm segments to hand out 
-    */ 
-    std::vector<ArmSegment *> mFinalArmSegments; 
-
-    /*!
-      This is useless to the user, only used for classification 
-    */ 
-    std::vector<Arm *> mArms; 
-
-    /*!
-      A MetaArm is a chain of arms with all the same Burgers vector value, but can also include 200, 020, and 002 types as "unzipped" portions along the meta-arm.  
-    */  
-    std::vector<boost::shared_ptr<MetaArm> > mMetaArms; 
-
  
+    /*!
+      When writing out VTK files, this is how many to put per block max.
+      Aids in speedy visualization. 
+    */ 
+    uint32_t mElementsPerVTKFile; 
+
     /*! 
       Number of nodes in full dump data
     */ 
@@ -2207,6 +2346,11 @@ s      Tell the data set which file to read
       if this is true, then create tag file.  
     */ 
     bool mDoTagFile; 
+
+    /*!
+      if this is true, then create VTK file at end of analysis.  
+    */ 
+    bool mDoVTKFile; 
 
      /*!
       By default, this is "./paradis-output".  See mDoOutput.
