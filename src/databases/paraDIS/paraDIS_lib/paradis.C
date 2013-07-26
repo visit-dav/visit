@@ -42,7 +42,6 @@ using namespace RC_Math;
 using namespace std; 
   
 #ifdef RC_CPP_VISIT_BUILD
-#warning RC_CPP_VISIT_BUILD  build detected
 void dbstream_printf(int level, const char *fmt, ...) {
   char buf[4096]; 
   va_list ap;                                   
