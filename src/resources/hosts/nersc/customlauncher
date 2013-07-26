@@ -63,6 +63,12 @@ class JobSubmitter_mpirun_NERSC(JobSubmitter_mpirun):
 class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_NERSC, self).__init__(launcher)
+        # FIXME: HACK: Set up VisIt socket relay on MOM node for parallel engine by overriding settings in launcher class
+        launcher.loginnodeport = launcher.generalArgs.port
+        launcher.generalArgs.port = "$MOM_PORT"
+        launcher.loginnodehost = launcher.generalArgs.host
+        launcher.generalArgs.host = "$MOM_HOST"
+        launcher.generalArgs.noloopback = 1
 
     def CreateFilename(self, root):
         if  self.launcher.nersc_host == "edison" or self.launcher.nersc_host == "grace" or self.launcher.nersc_host == "hopper":
@@ -190,14 +196,6 @@ class NERSCLauncher(MainLauncher):
             added_python_paths = [self.visitlibdir + "/python/lib/python2.6/lib-dynload"]
             SETENV("PYTHONPATH", self.joinpaths(added_python_paths + python_path))
 
-            # Set up VisIt socket relay on MOM node for parallel engine
-            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel:
-                 self.loginnodeport = self.generalArgs.port
-                 self.generalArgs.port = "$MOM_PORT"
-                 self.loginnodehost = self.generalArgs.host
-                 self.generalArgs.host = "$MOM_HOST"
-                 self.generalArgs.noloopback = 1
-
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
 #            if self.sectorname() == "edison":
 #                if not self.generalArgs.env and self.generalArgs.exe_name == "gui":
@@ -219,14 +217,6 @@ class NERSCLauncher(MainLauncher):
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
             added_ld_library_paths = ["/opt/gcc/4.6.3/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
-
-            # Set up VisIt socket relay on MOM node for parallel engine
-            if self.generalArgs.exe_name == "engine_par" and self.parallelArgs.parallel and (self.sectorname() == "grace" or self.sectorname() == "hopper"):
-                 self.loginnodeport = self.generalArgs.port
-                 self.generalArgs.port = "$MOM_PORT"
-                 self.loginnodehost = self.generalArgs.host
-                 self.generalArgs.host = "$MOM_HOST"
-                 self.generalArgs.noloopback = 1
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
             if self.sectorname() == "grace" or self.sectorname() == "hopper":
