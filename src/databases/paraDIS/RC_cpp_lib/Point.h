@@ -25,13 +25,20 @@ namespace rclib {
         default constructor
       */ 
       Point() {
-          int i=3; 
-          while (i--) mXYZ[i] = 0; 
+        Init(); 
         }
-      /*! 
+      /*!
+        default constructor
+      */ 
+      Point(vector<T> t) {
+        Init(); 
+        mXYZ = t; 
+        }
+       /*! 
         construct from three elements
       */ 
       Point(T t1, T t2, T t3) {
+        Init(); 
         mXYZ[0] = t1; 
         mXYZ[1] = t2; 
         mXYZ[2] = t3; 
@@ -39,20 +46,32 @@ namespace rclib {
       /*! 
         Yet another constructor
       */ 
-      Point(const T t[3]) { int i=3;   while (i--) mXYZ[i] = t[i];  }      
+      Point(const T t[3]) {  
+        Init(); 
+        int i=3;   
+        while (i--) mXYZ[i] = t[i]; 
+      }      
  
  
      /*! 
         Yet another constructor -- e.g. to allow Point<float>(100).  Hopefully, does not cause problems with accidental construction per Effective C++.  
       */ 
       Point(T t) {
+        Init(); 
         int i=3; while (i--) mXYZ[i] = t; 
       } 
       /*! 
         Copy constructor
       */ 
       Point(const Point<T>&p) {
+        Init(); 
         *this = p; 
+      }
+      /*!
+        necessary bookkeeping for vectors
+      */ 
+      void Init(void) {
+        mXYZ.resize(3,0); 
       }
       /*!
         Accessor -- assumes xyz is allocated
@@ -63,6 +82,7 @@ namespace rclib {
         }
         return;
       }
+
 
       /*!
         Assignment
@@ -235,7 +255,7 @@ namespace rclib {
       /*!
         The meat of the matter -- kept public for ease of use.  
       */ 
-      T mXYZ[3]; 
+      vector<T> mXYZ; 
     }; // end template struct Point
   template <class T> 
     const Point<T> operator +(const Point<T>&lhs, const Point<T>&rhs) {

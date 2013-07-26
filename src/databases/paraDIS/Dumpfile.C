@@ -56,17 +56,17 @@ using namespace std;
 
 int burgersTypes[18] = {-2,-1, 0, 10,11,12,13, 20,21,22, 30,31,32, 40,41,42, 50, 60};
 
-Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts): 
-  mVerbosity(0), /* mMaterialSetChoice(0), */ mFilename(filename), mNumMetaArmSegments(0) {
-  paraDIS_init(); 
-  // DebugStream::GetLevel doesn't exist in 1.12RC, so turning off
-  // debugging as a work around.  It does exist in the trunk, so 
-  // leave as follows in trunk.  Sigh.  
+Dumpfile::Dumpfile(const char* filename, DBOptionsAttributes *rdatts) {
+
+  this->Clear(); 
+
+  mFilename = filename; 
+
+  paraDIS::DataSet * ds = reinterpret_cast<paraDIS::DataSet *>(paraDIS_init());
   /*!
     Write out files
   */ 
-
-  mVerbosity = rdatts->GetInt(PARADIS_VERBOSITY); 
+  mVerbosity = (rdatts == NULL) ? 0: rdatts->GetInt(PARADIS_VERBOSITY); 
   char *cp = getenv("PARADIS_VERBOSITY"); 
   if (cp) mVerbosity=atoi(cp); 
   else cp = (char*)"unset"; 
@@ -76,10 +76,10 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
     mVerbosity = DebugStream::GetLevel(); 
     dbprintf(1, "User set -debug to %d\n", mVerbosity); 
   } 
-   
-  dbprintf(2, "Dumpfile::Dumpfile(%s, rdatts)\n", filename.c_str()); 
+  
+  dbprintf(2, "Dumpfile::Dumpfile(%s, rdatts)\n", mFilename.c_str()); 
   if (mVerbosity) {
-    mDebugFile = rdatts->GetString(PARADIS_DEBUG_FILE);
+    mDebugFile = (rdatts == NULL) ? string("") : rdatts->GetString(PARADIS_DEBUG_FILE);
   }
   cp = getenv("PARADIS_DEBUG_FILE");
   if (cp) mDebugFile = cp; 
@@ -90,11 +90,11 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
     else {
       cp = (char*)"paradis_debug.out"; 
     }
-  }
+  } 
   paraDIS_SetVerbosity(mVerbosity, mDebugFile.c_str()); 
   dbprintf(1, "PARADIS_DEBUG_FILE variable is %s\n", cp); 
-
-  int enable = rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT); 
+  
+  int enable = (rdatts == NULL) ? 0 : rdatts->GetBool(PARADIS_ENABLE_DEBUG_OUTPUT); 
   cp = getenv("PARADIS_ENABLE_DEBUG_OUTPUT"); 
   if (cp) enable = atoi(cp); 
   else  {
@@ -110,18 +110,19 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   
   paraDIS_EnableDebugOutput(enable); 
   paraDIS_EnableStatsOutput(enable); 
-    
+  
   dbg_setverbose(mVerbosity); 
-    
-  paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
+  
+  if (rdatts) 
+    paraDIS_SetThreshold(rdatts->GetDouble(PARADIS_NN_ARM_THRESHOLD)); 
   cp = getenv("PARADIS_NN_ARM_THRESHOLD"); 
   if (cp)  {
     paraDIS_SetThreshold(atof(cp));
   }
   else cp = (char*)"unset"; 
   dbprintf(1, "PARADIS_NN_ARM_THRESHOLD variable is %s\n", cp); 
-
- // Adding a material to the mesh, allows subsetting and discrete colors:
+  
+  // Adding a material to the mesh, allows subsetting and discrete colors:
   int numtypes = sizeof(burgersTypes)/sizeof(burgersTypes[0]); 
   mSegmentBurgerTypes = vector<int> (burgersTypes, burgersTypes + numtypes); 
   int t = 0; 
@@ -129,7 +130,7 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
     mSegmentBurgerTypeNames.push_back(BurgersTypeNames(mSegmentBurgerTypes[t])); 
     ++t; 
   }
- 
+  
   mNodeNeighborValues.clear(); 
   mNodeNeighborValues.push_back(string("0 neighbors"));    
   mNodeNeighborValues.push_back(string("1 neighbor"));    
@@ -147,18 +148,30 @@ Dumpfile::Dumpfile(string filename, DBOptionsAttributes *rdatts):
   mMetaArmTypes.push_back("METAARM_111"); 
   mMetaArmTypes.push_back("METAARM_LOOP_111"); 
   mMetaArmTypes.push_back("METAARM_LOOP_HIGH_ENERGY"); 
-
+  
   // PARADIS METADATA
   paraDIS_SetDataFile(mFilename.c_str());    
   paraDIS_SetProcNum(0, 1); // always serial; processor 0 of 1
   paraDIS_GetBounds(mExtents); 
-
+  
   return; 
 }
 
+
+// ****************************************************************************
+void Dumpfile::Clear(void) {
+  mVerbosity = 0; 
+  mNumMetaArmSegments = 0; 
+  mFilename = ""; 
+
+  paraDIS_close(); 
+  return; 
+}
+
+// ****************************************************************************
 Dumpfile::~Dumpfile() {
   debug2 << "Dumpfile::~Dumpfile()" << endl;
-  paraDIS_Clear(); 
+  Clear(); 
   return; 
 }
 
@@ -178,11 +191,11 @@ Dumpfile::~Dumpfile() {
 bool Dumpfile::FileIsValid(void) { 
   double fextents[6] = {0}; 
   if ( ! paraDIS_GetBounds(fextents)) {
-    debug1 <<"Could not get bounds.  The file is not a ParaDIS-style file" <<endl; 
+    debug1 <<"Dumpfile::FileIsValid(): Could not get bounds.  The file is not a ParaDIS-style file" <<endl; 
     return false; 
   }
-  debug1 <<"The file is a ParaDIS-style file" <<endl; 
- 
+  debug1 <<"Dumpfile::FileIsValid(): The file is a ParaDIS-style file" <<endl; 
+  
   return true; 
 }
 
@@ -202,6 +215,7 @@ bool Dumpfile::FileIsValid(void) {
 //  Creation:   Tue Jan 30 14:56:34 PST 2007
 //
 // ****************************************************************************
+
 vtkDataSet *
 Dumpfile::GetMesh(std::string meshname) {
   debug2 << "Dumpfile::GetMesh("<<meshname<<")"<<endl;
@@ -211,15 +225,8 @@ Dumpfile::GetMesh(std::string meshname) {
       Nodes, segments or metaarms
     */ 
     debug1 << "Starting Dumpfile::GetMesh(" <<meshname<<")"<< endl; 
-    //return TestGetMesh(); 
     if (paraDIS_GetNumNodes() == 0) {
       paraDIS_SetDataFile(mFilename.c_str()); 
-#ifdef TEST_SUBSPACE
-      /*! 
-        Set a subspace to exercise culling code
-      */       
-      paraDIS_TestRestrictSubspace(); 
-#endif
       paraDIS_ReadData();
       if (dbg_isverbose() > 1) {
         paraDIS_PrintArmStats(); 
@@ -440,13 +447,6 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
       scalars->InsertTuple(index,&f);
     }
   }
-  /* else if (varname == "Segment-Burgers-Type") {
-     for (index=0; index<numsegs; index++) {
-     f= paraDIS_GetSegmentBurgersType(index); 
-     scalars->InsertTuple(index,&f);
-     }
-     } 
-  */
   else if (varname == "Segment-Duplicates") {
     for (index=0; index<numsegs; index++) {
       f = paraDIS_GetSegmentDuplicates(index); 

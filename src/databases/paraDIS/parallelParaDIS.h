@@ -58,7 +58,18 @@
  */ 
 struct FileSet {
   //===============================================
-  FileSet();
+  FileSet() { Clear(); }
+  //===============================================
+  void Clear(void) {
+    mNumFiles = 0; 
+    mFileNames.clear(); 
+    mElemsPerFile.clear(); 
+    mBytesPerElem = 0; 
+    mFilesAreBinary = false; 
+    mDataTypeSizes[0] = mDataTypeSizes[2] = 8; // doubles and longs
+    mDataTypeSizes[1] = mDataTypeSizes[3] = 4; //floats and ints
+    return; 
+  }
   //===============================================
   void AddVar(std::string varname, std::string vartype, int components);
   //===============================================
@@ -189,8 +200,17 @@ class VarElementFetcher: public ElementFetcher {
 
 struct ParallelData: public ParaDISFileSet {
  public: 
-  ParallelData(std::string filename);
+ ParallelData(const char *filename = NULL) {
+   this->Clear(); 
+   if (filename)
+     mMetaDataFileName = filename;
+   else 
+     mMetaDataFileName = "";
+   return;
+ }
   ~ParallelData();
+
+  void Clear(void); 
 
   bool ParseMetaDataFile(void); 
   bool ParseFormatString(std::string formatString, FileSet *fileset);

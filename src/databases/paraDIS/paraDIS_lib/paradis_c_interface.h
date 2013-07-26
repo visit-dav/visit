@@ -17,12 +17,8 @@ extern "C" {
 #endif  
   static uint32_t WRAPPED_NODE = -42424242; 
   static uint32_t END_OF_NODELIST = 42424242; 
-  /*! 
-    purely for testing -- reduce the datamax by 0.5
-  */ 
-  void paraDIS_TestRestrictSubspace(void);
   
-  void paraDIS_init(void *ds=NULL); 
+  void *paraDIS_init(void *ds=NULL); 
   
   void paraDIS_close(void); 
 
@@ -36,11 +32,11 @@ extern "C" {
   
   void paraDIS_EnableTagFileOutput(int truth); 
   
+  void paraDIS_EnableVTKFileOutput(int truth); 
+  
   void paraDIS_SetDataFile(const char *filename); 
   
   void paraDIS_SetOutputDir(const char *dir); 
-  
-  void paraDIS_Clear(void); 
   
   /*!
     read the head of the data and return the bounding box. return 0 on failure, 1 on success
@@ -54,12 +50,14 @@ extern "C" {
   */ 
   void paraDIS_SetProcNum(int procnum, int numprocs);
   
-  void paraDIS_ReadData(void);
+  void paraDIS_ReadData(int renumber=true);
   
   void paraDIS_PrintArmStats(void); 
 
   uint32_t paraDIS_GetNumNodes(void);
   
+  int paraDIS_TestNode(uint32_t nodenum);
+
   void paraDIS_printNodeVerbose(uint32_t nodenum);
 
   void paraDIS_GetNodeLocation(uint32_t nodenum, float loc[3]);
@@ -86,6 +84,8 @@ extern "C" {
   
   uint32_t paraDIS_GetNumArmSegments(void);
   
+  int paraDIS_TestSegment(uint32_t segnum);
+
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum);
   
   int8_t paraDIS_GetSegmentBurgersType(uint32_t segmentnum);
