@@ -10,9 +10,14 @@ extern "C" {
 #define MAX_METAARM_NODES 2048
   static float gNodeLocationBuffer[MAX_METAARM_NODES*3+20];   
 
-  void paraDIS_init(void *ds) {
-    if (ds) pci_gDataSet = reinterpret_cast<paraDIS::DataSet *>(ds); 
-    if (!pci_gDataSet)  pci_gDataSet = new paraDIS::DataSet;
+  void *paraDIS_init(void *ds) {
+    if (ds) {
+      pci_gDataSet = reinterpret_cast<paraDIS::DataSet *>(ds); 
+    }
+    if (!pci_gDataSet)  {
+      pci_gDataSet = new paraDIS::DataSet;
+    }
+    return (void*)pci_gDataSet; 
   }
 
   void paraDIS_close(void) {
@@ -55,18 +60,18 @@ extern "C" {
     return; 
   }
   
+  void paraDIS_EnableVTKFileOutput(int truth){
+    paraDIS_init(NULL);
+    pci_gDataSet->EnableVTKFileOutput(truth); 
+    return; 
+  }
+  
   void paraDIS_SetDataFile(const char *filename){
     paraDIS_init(NULL);
     pci_gDataSet->SetDataFile(filename);    
     return; 
   } 
   
-  void paraDIS_Clear(void){
-    paraDIS_init(NULL);
-    pci_gDataSet->Clear(); 
-    return; 
-  }
-   
    int paraDIS_GetBounds(double xxyyzz[6]){
     paraDIS_init(NULL);
     rclib::Point<float> datamin, datamax;   
@@ -95,11 +100,6 @@ extern "C" {
     return; 
   }
    
-  void paraDIS_TestRestrictSubspace(void) {
-    pci_gDataSet->TestRestrictSubspace(); 
-    return; 
-  } 
-     
   
   void paraDIS_SetProcNum(int procnum, int numprocs){
     paraDIS_init(NULL);
@@ -108,9 +108,9 @@ extern "C" {
   }
   
   
-  void paraDIS_ReadData(void){
+  void paraDIS_ReadData(int renumber){
     paraDIS_init(NULL);
-    pci_gDataSet->ReadData(); 
+    pci_gDataSet->ReadData("", renumber); 
     return; 
   }
   
@@ -124,6 +124,19 @@ extern "C" {
     return pci_gDataSet->GetNumNodes();  
   }
   
+  int paraDIS_TestNode(uint32_t nodenum) {
+    float location[3] ; 
+    paraDIS_GetNodeLocation(nodenum, location); 
+    float f = location[2]; 
+    location[0] = f; // look for segfaults
+    f=paraDIS_GetNodeSimulationID(nodenum); 
+    f=paraDIS_GetNodeType(nodenum); 
+    f=paraDIS_NodeIsLoop(nodenum); 
+    f=paraDIS_NodeIsTypeM(nodenum); 
+    f=paraDIS_NodeIsTypeN(nodenum); 
+    return pci_gDataSet->TestNode(nodenum);      
+  }
+
   void paraDIS_printNodeVerbose(uint32_t nodenum){
     paraDIS_init(NULL);
     cout << pci_gDataSet->GetNode(nodenum)->Stringify(0) << endl; 
@@ -213,6 +226,14 @@ extern "C" {
     return pci_gDataSet->GetArmSegment(segmentnum)->mNumDuplicates;
   }
 
+  int paraDIS_TestSegment(uint32_t segnum) {
+    int index0, index1;
+    index0 = paraDIS_GetEndpointIndex(segnum, 0); 
+    index1 = paraDIS_GetEndpointIndex(segnum, 1); 
+    
+    return true; 
+  }
+
   int32_t paraDIS_GetEndpointIndex(uint32_t segmentnum, int endpointnum){
     paraDIS_init(NULL);
     return pci_gDataSet->GetArmSegment(segmentnum)->GetNodeIndex(endpointnum);
@@ -234,7 +255,7 @@ extern "C" {
   }  
   
   uint32_t paraDIS_GetMetaArmNumSegments(uint32_t metaArmNum, bool wrapEndpoints) {
-    return pci_gDataSet->GetMetaArm(metaArmNum)->GetNumSegments(wrapEndpoints); 
+    return pci_gDataSet->GetMetaArm(metaArmNum)->GetNumSegments(wrapEndpoints);
   }
 
   /*!

@@ -105,7 +105,7 @@ GetparaDISReadOptions(void)
     rv->SetInt(PARADIS_VERBOSITY, debug);
     
     cp = getenv("PARADIS_DEBUG_FILE");
-    if (!cp) cp ="paradis_debug_output.log";
+    if (!cp) cp = (char*)"paradis_debug_output.log";
     rv->SetString(PARADIS_DEBUG_FILE, cp);
     
     debug = 0; 

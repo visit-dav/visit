@@ -47,9 +47,12 @@
 
 struct Dumpfile: public ParaDISFileSet {
  public:
-  Dumpfile(std::string filename, DBOptionsAttributes *rdatts); 
+ 
+  Dumpfile(const char *filename, DBOptionsAttributes *rdatts); 
   ~Dumpfile(); 
 
+  void Clear(void); 
+  //void Init(std::string filename, DBOptionsAttributes *rdatts); 
   bool FileIsValid(void);
   virtual vtkDataSet *GetMesh(std::string meshname);
   virtual vtkDataArray *GetVar(std::string varname); 

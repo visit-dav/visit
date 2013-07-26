@@ -99,6 +99,7 @@ class avtparaDISFileFormat : public avtSTSDFileFormat
     virtual const char    *GetType(void)   { return "paraDIS"; };
     virtual void           FreeUpResources(void); 
     
+    void Clear(void); 
     
     // These would tell the parent class to call PopulateDatabaseMetadata() for each timestep.  I decided against it. 
     //  virtual bool HasInvariantMetaData(void) const { return false; };

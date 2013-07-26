@@ -122,13 +122,6 @@ parse_dirname(char *wholePath)
 
 
 //===============================================
-FileSet::FileSet(): mNumFiles(0), mBytesPerElem(0), mFilesAreBinary(false) {
-  mDataTypeSizes[0] = mDataTypeSizes[2] = 8; // doubles and longs
-  mDataTypeSizes[1] = mDataTypeSizes[3] = 4; //floats and ints
-  return; 
-}
-
-//===============================================
 void FileSet::AddVar(string varname, string vartype, int components) {
   mDataArrayNames.push_back(varname); 
   mDataArrayTypes.push_back(vartype); 
@@ -640,14 +633,18 @@ inline void VarElementFetcher::InterpretBinaryElement(char *elementData){
   return; 
 }
 
+
 //=============================================================
 /*
-  ParallelData constructor
+  ParallelData initializer
  */
-ParallelData::ParallelData(string filename): mMetaDataFileName(filename) {
+void ParallelData::Clear(void) {
+  mMetaDataFileName = "";
+  mDataDescription = ""; 
+  mNodeFiles.Clear(); 
+  mSegmentFiles.Clear(); 
   return; 
 }
-
 //=============================================================
 /*
   ParallelData destructor
