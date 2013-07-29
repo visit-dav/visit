@@ -252,8 +252,7 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // use a material for the node types 
     AddMaterialToMetaData(md, "Node-Num-Neighbors", "nodes", mDumpfile.mNodeNeighborValues.size(), mDumpfile.mNodeNeighborValues);
     
-    AddScalarVarToMetaData(md, "Node-Simulation-Domain", "nodes", AVT_NODECENT); 
-    AddScalarVarToMetaData(md, "Node-Simulation-ID", "nodes", AVT_NODECENT); 
+    AddScalarVarToMetaData(md, "Node-ID-Hash", "nodes", AVT_NODECENT); 
     AddScalarVarToMetaData(md, "Node-Index", "nodes", AVT_NODECENT); 
 
     // Can't use enumerated scalar here because nodes can have almost arbitrary types.  
