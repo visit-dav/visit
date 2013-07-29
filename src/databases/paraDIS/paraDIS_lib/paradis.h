@@ -41,6 +41,7 @@ using boost::uint32_t;
 #include <stdio.h>
 #include <vector>
 #include <set>
+#include <map>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -124,110 +125,86 @@ std::string INDENT(int i);
 namespace paraDIS {
   extern std::string doctext;
 
-  class FullNode; 
-
-  //============================================================
-  class NodeID {  
-  public: 
-    NodeID() {mDomainID = -1; mNodeID = -1; }
+  //===========================================================================
+  class Neighbor; // forward declaration
+  
+  struct NodeID {
+    // -------------------------------------------------
+    NodeID() {
+      mDomainID = -1; mNodeID = -1; 
+    }
+    // -------------------------------------------------
     NodeID(const NodeID &other) {
       mDomainID = other.mDomainID;
       mNodeID = other.mNodeID;
     }
+    // -------------------------------------------------
     NodeID(int16_t domain, int32_t node) {
       mDomainID = domain; 
       mNodeID = node; 
     }
-    /*! 
-      for ordering sets and hash lookups 
-    */ 
-    bool operator == (const NodeID &other) const {
-      return (mDomainID == other.mDomainID && mNodeID == other.mNodeID);
+    // -------------------------------------------------
+    uint64_t Hash(void) const {
+      if (mNodeID >= 1000*1000) {
+        cerr << "Warning: Hash() is no longer unique" << endl; 
+      }
+      return mDomainID * 1000*1000 + mNodeID; 
     }
-
-    /*!
-      Some nodes are created with negative Node IDs, and it's useful to negate them for comparison.  The const return type should allow a compiler return optimization. 
-    */ 
-    const NodeID operator -() {
-      return NodeID(-mDomainID, -mNodeID); 
-    }
-
-    /*! 
-      for ordering sets of MinimalNodes.  Since MinimalNodes have no negative node IDs, we do not check absolute values here.  
-    */ 
-    bool operator <(const NodeID &other) const {
-      return (mDomainID < other.mDomainID ||
-              (mDomainID == other.mDomainID && 
-               mNodeID < other.mNodeID));
-    }
-    /*!
-      Accessor function 
-    */ 
-    void Set(int16_t domain, int32_t node) {
-      mDomainID = domain; 
-      mNodeID = node; 
-      return ; 
-    }
-
-    /*!
-      Accessor function 
-    */ 
-    int16_t GetDomainID(void) const { return mDomainID; }
-    /*!
-      Accessor function 
-    */ 
-    int32_t GetNodeID(void) const {return mNodeID; }
-
-    /*!
-      Convert NodeID to string, defining this gives me << for freee
-    */ 
-    std::string Stringify(int indent) const {
-      
+    // -------------------------------------------------
+    std::string Stringify(int indent) const {      
       return INDENT(indent) + str(boost::format("NodeID: (%1%,%2%)")% mDomainID % mNodeID);
     }
-
-  private:
-    int16_t mDomainID;      
-    int32_t mNodeID; 
-  };    
-
-
-  //===========================================================================
-  class Neighbor; // forward declaration
+    
+    uint32_t mDomainID; 
+    uint64_t mNodeID; 
+  };
   
-  /*! class Node
+  /*! 
+    class Node
     \brief Abstract base class
   */
+  
   class Node { 
-   //-----------------------------------------------------
+    //-----------------------------------------------------
     // public API
   public: 
-    Node() :mInBounds(false) { }
-    Node(const NodeID &id):mID(id), mInBounds(false) { }
+    Node() :mInBounds(false) { 
+      return; 
+    }
+      // 
+    Node(const NodeID &id):mID(id), mInBounds(false) { 
+      return; 
+    }
+    
     /*! 
       virtual destructor assures proper deletion
     */ 
     virtual ~Node() {}
-
-    /*!
-      Used in comparing data read from the file with the current Node. 
-    */ 
-    bool operator ==(const NodeID &compare) const {
-      return this->mID == compare; 
+      
+        /*!
+          Used in comparing data read from the file with the current Node. 
+        */ 
+        bool operator ==(const NodeID &compare) const {
+      return this->mID.Hash() == compare.Hash(); 
     }
     /*!
       Used for ordering sets?  Might not be needed. 
     */ 
     bool operator ==(const Node &other) const {
-      return this->mID == other.GetNodeID(); 
+      return this->mID.Hash() == other.GetNodeID().Hash(); 
     }
     /*!
       Used for ordering vectors, etc. 
     */ 
     bool operator <(const Node &other) const {
-      return this->mID < other.GetNodeID(); 
+      return this->mID.Hash() < other.GetNodeID().Hash(); 
     }
     
+    // return a hash based on NodeID
+    uint64_t Hash(void) const {
+      return mID.Hash(); 
+    }
+
    /*!
       Accessor function 
     */ 
@@ -250,9 +227,9 @@ namespace paraDIS {
     */ 
     const NodeID &GetNodeID(void) const  { return mID; }
 
-    int32_t GetNodeSimulationDomain(void) const { return mID.GetDomainID(); }
+    int32_t GetNodeSimulationDomain(void) const { return mID.mDomainID; }
 
-    int32_t GetNodeSimulationID(void) const { return mID.GetNodeID(); }
+    int32_t GetNodeSimulationID(void) const { return mID.mNodeID; }
 
     /*! 
       conversion of Node to string
@@ -262,7 +239,7 @@ namespace paraDIS {
     //-----------------------------------------------------   
   protected:
     /*!
-      needed to find a node in a set<MinimalNode>
+      needed for hashing
     */ 
     NodeID mID; 
     
@@ -290,10 +267,10 @@ namespace paraDIS {
       Accessor to set endpoints in proper order so that mEndpoints[0] < mEndpoints[1]
     */ 
     void SetEndpoints(const NodeID &ep1, const NodeID &ep2) {
-      if (ep1 == ep2) {
+      if (ep1.Hash() == ep2.Hash()) {
         throw std::string("Error in Neighbor::SetEndpoints: both endpoints are the same!"); 
       }
-      if (ep1 < ep2) {
+      if (ep1.Hash() < ep2.Hash()) {
         mEndpoints[0] = ep1; 
         mEndpoints[1] = ep2; 
       } else {
@@ -306,7 +283,7 @@ namespace paraDIS {
       Common operation: we have one node ID, but we're looking to see what the other end of the segment is -- we cannot operate on nodes, because we don't have the global node list, so we use NodeID. 
     */ 
     NodeID GetOtherEndpoint(const NodeID &id) const {
-      if (mEndpoints[0] == id) return mEndpoints[1]; 
+      if (mEndpoints[0].Hash() == id.Hash()) return mEndpoints[1]; 
       return mEndpoints[0]; 
     }
 
@@ -320,17 +297,14 @@ namespace paraDIS {
       Accessor -- not needed?  
     */ 
     bool operator == (const Neighbor&other) const {      
-      return mEndpoints[0] == other.mEndpoints[0];
+      return mEndpoints[0].Hash() == other.mEndpoints[0].Hash();
     }
      
     /*!
       for sorting
     */ 
-    bool operator <(const Neighbor&other) const {
-      
-      return mEndpoints[0] < other.mEndpoints[0] ||
-        (mEndpoints[0] == other.mEndpoints[0] && 
-         mEndpoints[1] < other.mEndpoints[1]); 
+    bool operator <(const Neighbor&other) const {      
+      return mEndpoints[0].Hash() < other.mEndpoints[0].Hash(); 
     }
     /*! 
       conversion of Neighbor to string
@@ -477,16 +451,6 @@ namespace paraDIS {
   public:
     /*!
       ===========================================
-      destructor
-    */ 
-    ~FullNode()  {
-      mFullNodes[mNodeIndex] = NULL; 
-      mNumFullNodes--; 
-      return; 
-    }
-
-    /*!
-      ===========================================
       constructor
     */ 
     FullNode() : Node() {
@@ -511,6 +475,17 @@ namespace paraDIS {
     }
     /*!
       ===========================================
+      destructor
+    */ 
+    ~FullNode()  {
+      if (mFullNodes.find(mNodeIndex) != mFullNodes.end()){
+        mFullNodes.erase(mNodeIndex); // mFullNodes[mNodeIndex] = NULL; 
+      }
+      return; 
+    }
+    
+    /*!
+      ===========================================
       constructor
     */ 
     FullNode(int16_t domain, int32_t nodeID) {
@@ -522,13 +497,14 @@ namespace paraDIS {
       Clear all nodes
     */ 
     static void Clear(void) {
-      for (vector<FullNode *>::iterator nodepos = mFullNodes.begin(); nodepos != mFullNodes.end(); nodepos++) {
-        if (*nodepos) delete *nodepos;
+      for (map<uint32_t, FullNode *>::iterator nodepos = mFullNodes.begin(); nodepos != mFullNodes.end(); nodepos++) {
+        delete nodepos->second;
       }
       mFullNodes.clear(); 
+      mFullNodeVector.clear(); 
       mTraceFileBasename = "";
       mTraceNodes.clear(); 
-      mNumFullNodes = 0; 
+      mNextNodeID = 0; 
     }
     
     /*!
@@ -536,9 +512,9 @@ namespace paraDIS {
       initializer
     */
     void init(void) {
-      mNumFullNodes++; 
-      mNodeIndex = mFullNodes.size(); 
-      mFullNodes.push_back(this); 
+      mNodeIndex = mNextNodeID; 
+      mNextNodeID++;       
+      mFullNodes[mNodeIndex] = this; 
       mInBounds = false; 
       mLocation.resize(3,0); 
       mNodeType = 0; 
@@ -563,7 +539,7 @@ namespace paraDIS {
     */       
     bool Test(void);
        
-      
+       
     /*!
       ===========================================
       Add the given arm to the list of arms to trace. 
@@ -850,9 +826,10 @@ namespace paraDIS {
     /*! 
       all fullnodes in the data set.  DO NOT SORT THIS -- each node has an Index which is its position in this array when created -- used to find its counterpart in the wrapped nodes for tracing along arms to find their endpoints and lengths.  
     */ 
-    static std::vector<FullNode *> mFullNodes; 
+    static std::map<uint32_t, FullNode *> mFullNodes; 
+    static std::vector<FullNode *> mFullNodeVector; 
 
-    static uint32_t mNumFullNodes; 
+    static uint32_t mNextNodeID; 
     
     /*!
       Static member to keep track of subspace bounds for checking if we are in bounds or not
@@ -913,9 +890,9 @@ namespace paraDIS {
     }
 
     void init(void) {
-      mSegmentID = mArmSegments.size();
-      mArmSegments.push_back(this); 
-      mNumArmSegments++; 
+      mSegmentID = mNextSegmentID; // mArmSegments.size();
+      mArmSegments[mSegmentID] = this; //.push_back(this); 
+      mNextSegmentID++; // mNumArmSegments++; 
 
       mBurgersType = 0; 
       mSeen = false; 
@@ -930,8 +907,8 @@ namespace paraDIS {
       Destructor
     */ 
     ~ArmSegment() {
-      mArmSegments[mSegmentID] = NULL; 
-      mNumArmSegments--; 
+      mArmSegments.erase(mSegmentID); // mArmSegments[mSegmentID] = NULL; 
+      //mNumArmSegments--; 
      int i=2; while (i--) {
         if (mEndpoints[i] && mEndpoints[i]->GetNodeType() == PLACEHOLDER_NODE) {
           delete mEndpoints[i]; // memory leak fix
@@ -942,45 +919,48 @@ namespace paraDIS {
     
     static void Clear(void) {
 
-      for (vector<ArmSegment *>::iterator pos = mArmSegments.begin(); pos != mArmSegments.end(); ++pos) {
-        if (*pos) delete *pos; 
+      for (map<uint32_t, ArmSegment *>::iterator pos = mArmSegments.begin(); pos != mArmSegments.end(); ++pos) {
+        delete pos->second; 
       }
       mArmSegments.clear(); 
-
+      mArmSegmentVector.clear();
+      
       mSegLen = 0; 
       mNumClassified = 0; 
       mNumWrapped = 0; 
       mNumArmSegmentsMeasured = 0; 
-      mNumArmSegments = 0; 
+      mNextSegmentID = 0; 
     }
 
     /*!
       Accessor returns begin of arm vector. 
     */ 
-    static vector<ArmSegment *>::const_iterator GetArmSegmentsBegin(void) { 
+    /* static vector<ArmSegment *>::const_iterator GetArmSegmentsBegin(void) { 
       return mArmSegments.begin(); 
-    }
+      }*/
     /*!
       Accessor returns end of arm vector. 
     */ 
+    /*
     static vector<ArmSegment *>::const_iterator GetArmSegmentsEnd(void) {
       return mArmSegments.end(); 
     }
+    */
 
     /*!
       Accessor function
     */
-    static ArmSegment *GetArmSegment(uint32_t segnum) { 
+    /*static ArmSegment *GetArmSegment(uint32_t segnum) { 
       return mArmSegments[segnum]; 
-    }
+      }*/ 
 
     /*! 
       Accessor function. 
     */ 
-    static uint32_t GetNumArmSegments(void)  { 
+    /* static uint32_t GetNumArmSegments(void)  { 
       return mArmSegments.size(); 
     }
-
+    */
     /*!
       operator <() is required for set ordering.  All it requires is it be consistent, so we'll just see if our first node is less than the other's first node, if so, then yay, else if it is equal, then check the other endpoint.  Otherwise, it's false.  Pretty standard stuff. Important thing is this is all done by ID, not by pointer values.  
     */ 
@@ -1244,7 +1224,7 @@ namespace paraDIS {
 
     static double mSegLen;
     static uint32_t mNumClassified, mNumWrapped, mNumArmSegmentsMeasured; 
-    static uint32_t mNumArmSegments; 
+    static uint32_t mNextSegmentID; 
 
   protected:
 
@@ -1276,7 +1256,8 @@ namespace paraDIS {
     /*!
       The global list of valid arm segments
     */ 
-    static std::vector<ArmSegment *> mArmSegments; 
+    static std::map<uint32_t, ArmSegment *> mArmSegments; 
+    static vector<ArmSegment *> mArmSegmentVector; 
 
     struct Arm *mParentArm; 
     /*!
@@ -1327,7 +1308,7 @@ namespace paraDIS {
   /*!
     This is a unary function object to be used with the hash in the DataSet.  operator () must return a size_t... 
   */ 
-  class ArmSegmentHash {
+  /*  class ArmSegmentHash {
   public: 
     ArmSegmentHash() {
       mDenominator = 1 << (8*sizeof(size_t)/2 - 2) ; 
@@ -1340,8 +1321,7 @@ namespace paraDIS {
   private:
     uint32_t mDenominator;
   };
-  
-  typedef vector<FullNode*>::iterator FullNodeIterator; 
+  */
   //==============================================
   /*! 
     Arms are conceptually a list of segments, but all we need to store is the two (or one, for a cycle) terminal ArmSegments for the arm, and the two (or one) terminal Nodes.  This allows us to recreate the arm for drawing or analysis, but saves lots of memory. (Tradeoff of speed to get memory). The assumption is that traversing the arm will be fast enough and not done very often.  If it starts using lots of time, we can always store more information if it makes it faster later.  
@@ -1483,7 +1463,7 @@ namespace paraDIS {
     */ 
     vector<FullNode*> GetNodes(FullNode *startNode = NULL) const;
 
-    uint GetNumNodes(void) { 
+    uint32_t GetNumNodes(void) { 
       // The math here is a bit odd, due to wrapping: 
       if (!mNumSegments) return 0; 
       return mNumSegments + 1 + mNumWrappedSegments; 
@@ -1568,9 +1548,9 @@ namespace paraDIS {
       Return number of neighbor arms, not including this arm, but including duplicates
     */ 
     uint32_t GetNumNeighborArms(void) {
-      uint num = 0; 
-      for  (uint node = 0; node < mTerminalNodes.size(); node++) {
-        for (uint arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
+      uint32_t num = 0; 
+      for  (uint32_t node = 0; node < mTerminalNodes.size(); node++) {
+        for (uint32_t arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
           if (mTerminalNodes[node]->mNeighborArms[arm] != this) {
             num++;
           }
@@ -1583,8 +1563,8 @@ namespace paraDIS {
       Return nth neighbor arm, not including this but including duplicates
     */ 
     Arm *GetNeighborArm (int num) {
-      for  (uint node = 0; node < mTerminalNodes.size(); node++) {
-        for (uint arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
+      for  (uint32_t node = 0; node < mTerminalNodes.size(); node++) {
+        for (uint32_t arm=0; arm < mTerminalNodes[node]->mNeighborArms.size(); arm++) {
           if (mTerminalNodes[node]->mNeighborArms[arm] != this) {
             if (!num)
               return mTerminalNodes[node]->mNeighborArms[arm]; 
@@ -2050,41 +2030,44 @@ s      Tell the data set which file to read
 
    /*! 
       Parse the paradis data file and create a full set of arms and nodes
-      renumberNodes is a memory optimization that makes debugging harder, so 
       I've made it optional.  
     */ 
-    void ReadData(std::string datafile="", bool renumberNodes = true);    
+    void ReadData(std::string datafile="", bool createVectors=false);    
  
 
     /* Starting from the given arm, trace out the containing meta arm and return a shared_ptr to the result */
     boost::shared_ptr<MetaArm> TraceMetaArm(vector<Arm>::const_iterator arm); 
 
     
-    bool TestNode(uint32_t nodenum) {
-      return FullNode::mFullNodes[nodenum]->Test(); 
-    }
-
     /*!
       Accessor function.
     */ 
-    uint32_t GetNumNodes(void) { return FullNode::mFullNodes.size(); }
+    uint32_t GetNumNodes(void) { return FullNode::mFullNodeVector.size(); }
     /*!
       Accessor returns begin of node vector. 
     */ 
-    vector<FullNode *>::const_iterator GetNodesBegin(void) { 
+    /* vector<FullNode *>::const_iterator GetNodesBegin(void) { 
       return FullNode::mFullNodes.begin(); 
-    }
+      }*/
     /*!
       Accessor returns end of node vector. 
     */ 
+    /*
     vector<FullNode *>::const_iterator GetNodesEnd(void) {
       return FullNode::mFullNodes.end(); 
     }
+    */
 
    /*! 
       Accessor function. 
     */ 
-    FullNode * GetNode(uint32_t nodenum) { return FullNode::mFullNodes[nodenum]; }
+    FullNode * GetNode(uint32_t nodenum) { 
+      if (nodenum >= FullNode::mFullNodeVector.size()) {
+        cerr << "ERROR: GetNode() -- out of bounds index" << endl; 
+        return NULL; 
+      }
+      return FullNode::mFullNodeVector[nodenum]; 
+    }
 
 
     /*!
@@ -2132,18 +2115,22 @@ s      Tell the data set which file to read
       Accessor function
     */
     ArmSegment *GetArmSegment(uint32_t segnum) { 
-      return ArmSegment::GetArmSegment(segnum); 
+      if (segnum >= ArmSegment::mArmSegmentVector.size()) {
+        cerr << "" << endl; 
+        return NULL; 
+      }
+      return ArmSegment::mArmSegmentVector[segnum]; 
     }
 
     /*! 
       Accessor function. 
     */ 
     uint32_t GetNumArmSegments(void)  { 
-      return  ArmSegment::GetNumArmSegments(); 
+      return  ArmSegment::mArmSegmentVector.size(); 
     }
 
     /*!
-      set:  always sorted so fast, but in order to modify, must remove an element, modify it, and reinsert it... or use const_cast<> 
+      This is a redundant data structure that allows us to find arm segments that have the same endpoints during the initial reading of the dump file. 
     */ 
     static set<ArmSegment *, CompareSegPtrs> mQuickFindArmSegments; 
     //=======================================================================
@@ -2211,7 +2198,7 @@ s      Tell the data set which file to read
     /*!
       Read a node from the input file and write it out with its tag to the tagfile
     */
-    void CopyNodeFromFile(uint32_t &lineno, uint32_t &fullNodeNum, std::ifstream &datafile, std::ofstream &tagfile);
+    void CopyNodeFromFile(uint32_t &lineno, map<uint64_t, FullNode*> &nodehash, std::ifstream &datafile, std::ofstream &tagfile);
     /*! 
       Read a node and its neighbors from a file.  This has to be done in DataSet because we avoid duplicate neighbor structs by using pointers into a global neighbor array.
     */ 
@@ -2260,7 +2247,7 @@ s      Tell the data set which file to read
     Starting at the given first node and heading out in the direction of the given first segment in an arm, trace along the arm until you find its other endpoint (terminal segment and node).  When wrapped nodes are found, use their real counterparts instead.  
     This will be where we actually discriminate between node types, etc.  But as mentioned for BuildArms, we don't do that yet.  
   */ 
-    void FindEndOfArm(FullNodeIterator &firstNode, FullNode **oFoundEndNode, 
+    void FindEndOfArm(FullNode *firstNode, FullNode **oFoundEndNode, 
                       ArmSegment *firstSegment,  ArmSegment *&foundEndSegment, Arm *theArm);
     /*! 
       Create all arms for our region. This function is a bit long because we are avoiding recursion by using loops.  Recursion for these arms would get pretty deep. 
@@ -2295,9 +2282,11 @@ s      Tell the data set which file to read
 
  
     /*!
-      Go through and renumber the nodes and segments so that their index is the same as their position in the global vector
+      Create two vectors that VisIt can read sequentially.  
+      For memory efficiency, we could simply rehash them, but I don't
+      think these global arrays are that big. 
     */ 
-    void RenumberNodesAndSegments(void); 
+    void CreateNodeSegmentVectors(void); 
 
 
 

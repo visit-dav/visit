@@ -50,7 +50,7 @@ extern "C" {
   */ 
   void paraDIS_SetProcNum(int procnum, int numprocs);
   
-  void paraDIS_ReadData(int renumber=true);
+  void paraDIS_ReadData(void);
   
   void paraDIS_PrintArmStats(void); 
 
@@ -73,15 +73,12 @@ extern "C" {
   int8_t paraDIS_GetNumNodeNeighbors(uint32_t nodenum);
 
   /*!
-    The domain refers to the simulation domain
+    The hash function is simple and readable:  
+    domain * 1000,000 + nodeID so (3,32) -->  3000032
   */ 
-  int32_t  paraDIS_GetNodeSimulationDomain(uint32_t nodenum);
+  int64_t  paraDIS_GetNodeHash(uint32_t nodenum);
   
-  /*! 
-    Return the ID within the simulation ID for the node (not the index into the readers node array)
-  */ 
-  int32_t  paraDIS_GetNodeSimulationID(uint32_t nodenum);
-  
+   
   uint32_t paraDIS_GetNumArmSegments(void);
   
   int paraDIS_TestSegment(uint32_t segnum);

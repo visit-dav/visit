@@ -391,14 +391,9 @@ vtkDataArray *Dumpfile::GetVar(std::string varname) {
   int numsegs = paraDIS_GetNumArmSegments(), 
     numnodes = paraDIS_GetNumNodes();
   debug4 << "Dumpfile::GetVar: numsegs is " << numsegs << " and numnodes is " << numnodes << endl;
-  if (varname == "Node-Simulation-Domain") {
+  if (varname == "Node-ID-Hash") {
     for (index=0; index<numnodes; index++) {
-      f=paraDIS_GetNodeSimulationDomain(index); 
-      scalars->InsertTuple(index,&f); 
-    }
-  }   else if (varname == "Node-Simulation-ID") {
-    for (index=0; index<numnodes; index++) {
-      f=paraDIS_GetNodeSimulationID(index); 
+      f=paraDIS_GetNodeHash(index); 
       scalars->InsertTuple(index,&f); 
     }
   }  else if (varname == "Node-Engine") {
