@@ -108,9 +108,9 @@ extern "C" {
   }
   
   
-  void paraDIS_ReadData(int renumber){
+  void paraDIS_ReadData(void){
     paraDIS_init(NULL);
-    pci_gDataSet->ReadData("", renumber); 
+    pci_gDataSet->ReadData("", true); 
     return; 
   }
   
@@ -129,12 +129,12 @@ extern "C" {
     paraDIS_GetNodeLocation(nodenum, location); 
     float f = location[2]; 
     location[0] = f; // look for segfaults
-    f=paraDIS_GetNodeSimulationID(nodenum); 
+    f=paraDIS_GetNodeHash(nodenum); 
     f=paraDIS_GetNodeType(nodenum); 
     f=paraDIS_NodeIsLoop(nodenum); 
     f=paraDIS_NodeIsTypeM(nodenum); 
     f=paraDIS_NodeIsTypeN(nodenum); 
-    return pci_gDataSet->TestNode(nodenum);      
+    return pci_gDataSet->GetNode(nodenum)->Test();       
   }
 
   void paraDIS_printNodeVerbose(uint32_t nodenum){
@@ -173,14 +173,9 @@ extern "C" {
     return pci_gDataSet->GetNode(nodenum)->GetNumNeighborSegments(); 
   }  
 
-  int32_t  paraDIS_GetNodeSimulationDomain(uint32_t nodenum){
+  int64_t  paraDIS_GetNodeHash(uint32_t nodenum){
     paraDIS_init(NULL);
-    return pci_gDataSet->GetNode(nodenum)->GetNodeSimulationDomain(); 
-  }
-  
-  int32_t  paraDIS_GetNodeSimulationID(uint32_t nodenum){
-    paraDIS_init(NULL);
-    return pci_gDataSet->GetNode(nodenum)->GetNodeSimulationID(); 
+    return pci_gDataSet->GetNode(nodenum)->Hash(); 
   }  
   
   uint32_t paraDIS_GetNumArmSegments(void){
