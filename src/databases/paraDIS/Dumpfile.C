@@ -504,7 +504,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
                             numsegs, matId, 0, NULL, NULL, NULL, NULL);
       //---------------------------------------------      
     }     
-    /*   else if (string(var) == "Segment-MN-Type")  {
+    /*else if (string(var) == "Segment-MN-Type")  {
       //---------------------------------------------      
       for (index=0; index<numsegs; index++) {
         *(matptr++)=paraDIS_GetSegmentMNType(index); 
@@ -512,7 +512,7 @@ Dumpfile::GetAuxiliaryData(const char *var, const char *type,
       mat = new avtMaterial(mSegmentMNTypes.size(), mSegmentMNTypes, 
                             numsegs, matId, 0, NULL, NULL, NULL, NULL);
       //---------------------------------------------
-      } */ 
+      }  */
     else {
       string err = string("Error: unknown variable: ") + var; 
       EXCEPTION1(VisItException, err.c_str());
