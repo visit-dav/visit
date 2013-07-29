@@ -331,21 +331,6 @@ avtparaDISFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     md->Add(matype_smd);    
     
-    avtScalarMetaData *mn_smd =
-      new avtScalarMetaData("Segment-MN-Type", "segments", AVT_ZONECENT);
-    mn_smd->SetEnumerationType(avtScalarMetaData::ByValue);
-    for (int i=-1; i<11; i++) {
-      mn_smd->AddEnumNameValue(ArmTypeNames(i), i);
-    }
-    md->Add(mn_smd);
-
-    /* avtScalarMetaData *segment_dup =
-       new avtScalarMetaData("Segment-Duplicates", "segments", AVT_ZONECENT);
-       segment_dup->SetEnumerationType(avtScalarMetaData::ByValue);
-       segment_dup->AddEnumNameValue("NOT DUPLICATED", 0);
-       segment_dup->AddEnumNameValue("DUPLICATE", 1);
-       md->Add(segment_dup);
-    */ 
     /*! 
       ==============================================
       Add a mesh for the meta-arms for dumpfile (serial) 
