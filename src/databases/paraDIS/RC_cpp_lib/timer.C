@@ -225,7 +225,7 @@ bool GetTimeFromString(string s, struct tm &tms) {
                 timestrings.push_back(str(boost::format("%1% %2% %3% %4% %5%")%(*weekday)%(*dateformat)%(*timeformat)%(*de2)%(*yearformat))); 
               }
             }
-            for (uint i = 0; i < timestrings.size(); i++) {
+            for (uint32_t i = 0; i < timestrings.size(); i++) {
               numattempts++; 
               tms.tm_year = localtime(&now)->tm_year;
               tms.tm_hour = tms.tm_min = tms.tm_sec = 0; 
@@ -254,7 +254,7 @@ bool GetTimeFromString(string s, struct tm &tms) {
   time_t now = time(NULL); 
   boost::trim(s);
   char *m = 0; 
-  for (uint i = 0; i < timestrings.size(); i++) {
+  for (uint32_t i = 0; i < timestrings.size(); i++) {
     tms.tm_year = localtime(&now)->tm_year; 
     const char *sp = s.c_str(); 
     m = strptime(sp, timestrings[i].c_str(), &tms);

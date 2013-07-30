@@ -3841,7 +3841,7 @@ namespace paraDIS {
         numnodes += Arm::mArms[armnum+firstarm]->GetNumNodes(); 
       }
       fprintf(segfile, "\nPOINTS %d float\n", numnodes);
-      vector<uint> nodecounts; 
+      vector<uint32_t> nodecounts; 
       for (uint32_t armnum = 0; armnum < numarms; armnum++) {
         vector<FullNode*> nodes = Arm::mArms[armnum+firstarm]->GetNodes(); 
         nodecounts.push_back(0); 
