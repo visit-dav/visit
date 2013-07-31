@@ -606,7 +606,7 @@ avtRPOTFilter::Execute()
 void
 avtRPOTFilter::CreateFinalOutput()
 {
-    avtCallback::ResetTimeout(0);
+    //avtCallback::ResetTimeout(0);
 
     //Exchange data....
 #ifdef PARALLEL
@@ -810,7 +810,7 @@ avtRPOTFilter::CreateFinalOutput()
     RI->Delete();
 
     //avtCallback::ResetTimeout(5*60);
-    avtCallback::ResetTimeout(0);
+    //avtCallback::ResetTimeout(0);
 }
 
 #if 0
