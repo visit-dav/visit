@@ -227,6 +227,8 @@ avtRPOTFilter::CalculateThresholds(int loc)
     
     thresholds.resize(nArrs);
     vtkRInterface *RI = vtkRInterface::New();
+
+    cout<<"CalculateThresholds("<<loc<<") nArrs= "<<nArrs<<endl;
     
     for (int i = 0; i < nArrs; i++)
     {
@@ -305,6 +307,11 @@ avtRPOTFilter::ExecutionSuccessful()
 // Programmer:  Dave Pugmire
 // Creation:    May 22, 2012
 //
+// Modifications:
+//
+//   Dave Pugmire, Wed Jul 31 14:44:32 EDT 2013
+//   Indexing for seasonal analysis was wrong.
+//
 // ****************************************************************************
 
 string
@@ -315,13 +322,28 @@ avtRPOTFilter::CreateQuantileCommand(const char *var, const char *in, int aggreg
     if (atts.GetAggregation() == PeaksOverThresholdAttributes::MONTHLY)
         percentile = atts.GetMonthlyPercentile()[aggregationIdx];
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::SEASONAL)
-        percentile = atts.GetSeasonalPercentile()[aggregationIdx];
+    {
+        //Winter
+        if (aggregationIdx == 11 || aggregationIdx == 0 || aggregationIdx == 1)
+            percentile = atts.GetSeasonalPercentile()[0];
+        //Spring
+        else if (aggregationIdx == 2 || aggregationIdx == 3 || aggregationIdx == 4)
+            percentile = atts.GetSeasonalPercentile()[1];
+        //Summer
+        else if (aggregationIdx == 5 || aggregationIdx == 6 || aggregationIdx == 7)
+            percentile = atts.GetSeasonalPercentile()[2];
+        //Fall
+        else if (aggregationIdx == 8 || aggregationIdx == 9 || aggregationIdx == 10)
+            percentile = atts.GetSeasonalPercentile()[3];
+    }
     else if (atts.GetAggregation() == PeaksOverThresholdAttributes::ANNUAL)
         percentile = atts.GetAnnualPercentile();
 
     char str[128];
     sprintf(str, "%s = quantile(%s, %f)\n", var, in, percentile);
     string cmd = str;
+    cout<<"   CreateQuantile: "<<aggregationIdx<<" "<<cmd<<endl;
+
     return cmd;
 }
 
