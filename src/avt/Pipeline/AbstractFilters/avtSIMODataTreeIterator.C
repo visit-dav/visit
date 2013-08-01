@@ -196,6 +196,8 @@ avtSIMODataTreeIterator::Execute(void)
 //  Creation:   May 2, 2013
 //
 //  Modifications:
+//    Kevin Bensema, Thu 1 August 12:39 PDT 2013
+//    Fixed memory leak by deleting SIMOWorkItem pointer passed in.
 //
 // ****************************************************************************
 
@@ -231,6 +233,9 @@ avtSIMODataTreeIterator::ExecuteDataTreeOnThread(void *cbdata)
         work->This->UpdateProgress(work->This->currentNode, work->This->totalNodes);
     VisitMutexUnlock("currentNode");
 */
+
+  // delete the work item pointer.
+  delete work;
 }
 
 // ****************************************************************************
