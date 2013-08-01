@@ -177,6 +177,10 @@ avtCMFEExpression::PreExecute(void)
 //    Hank Childs, Thu Jan  5 16:33:39 PST 2006
 //    Add support for a third variable to set up default values.
 //
+//    Hank Childs, Thu Aug  1 09:33:48 PDT 2013
+//    Push the variable name on the stack, to prevent name collision with
+//    multiple CMFEs in one pipeline.
+//
 // ****************************************************************************
 
 void
@@ -224,6 +228,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     // Pull off the first argument and see if it's a string or a list.
     ArgExpr *firstarg = (*arguments)[0];
     argument_expression = firstarg->GetText();
+    state->PushName(argument_expression);
     ExprParseTreeNode *firstTree = firstarg->GetExpr();
     bool oldVal = VarExpr::GetVarLeavesRequiresCurrentDB();
     VarExpr::SetGetVarLeavesRequiresCurrentDB(false);

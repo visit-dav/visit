@@ -92,6 +92,10 @@ class     avtDatabase;
 //    Hank Chids, Tue Mar 13 08:26:09 PDT 2012
 //    Add method "OnlyRequiresSpatiallyOverlappingData".
 //
+//    Hank Childs, Thu Aug  1 09:33:48 PDT 2013
+//    Increase the number of variable arguments, to make CMFE names more
+//    distinct and less likely to collide.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
@@ -105,7 +109,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
                                            {return "Evaluating field";};
     virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
     virtual int               NumVariableArguments()
-                                    { return (HasDefaultVariable() ? 2 : 1); };
+                                    { return (HasDefaultVariable() ? 3 : 2); };
     virtual int               GetVariableDimension() { return varDim; };
     virtual bool              IsPointVariable(void) { return isNodal; };
     virtual void              AddInputVariableName(const char *);
