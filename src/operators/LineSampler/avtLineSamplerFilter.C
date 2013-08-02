@@ -50,6 +50,7 @@
 #include <avtExtents.h>
 
 #include <vtkAppendFilter.h>
+#include <vtkAppendPolyData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
@@ -235,7 +236,6 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
         EXCEPTION1(ImproperUseException, msg);
       }
 
-
       SetStartFrame( atts.GetTimeStepStart() );
       SetEndFrame( atts.GetTimeStepStop() );
       SetStride( atts.GetTimeStepStride() );
@@ -415,12 +415,14 @@ avtLineSamplerFilter::Execute()
 
     // Storage for when the samples are integrated on a toriodal basis.
     std::vector< double > ToroidalIntegrationSum;
-    float nSamples = 0;
+    int nAngleSamples = (stopAngle-startAngle) / deltaAngle;
+
+    int angleCount = 0;
 
     // Embed the sample toroidally as time in an outer loop.
     for( cachedAngle=startAngle;
          cachedAngle<stopAngle;
-         cachedAngle+=deltaAngle, ++nSamples )
+         cachedAngle+=deltaAngle, ++angleCount )
     {
       vtkDataSet *tmp_ds = ExecuteChannelData(currDs, 0, "");
 
@@ -463,26 +465,92 @@ avtLineSamplerFilter::Execute()
         double channelPlotOffset = atts.GetChannelPlotOffset();
         double heightPlotScale = atts.GetHeightPlotScale();
 
-        vtkUnstructuredGrid *uGrid;
+        // Create groups that represent each channel.
+        vtkPoints *points;
+        vtkCellArray *lines;
+    
+        // Create a new VTK polydata.
+        vtkPolyData *polydata;
+
+        // Each point becomes a line
+        int nPts, tPts;
+        int nLines = tmp_ds->GetNumberOfPoints();
 
         // First time through, create a dataset for the collating.
-        if( composite_ds == NULL )
-        {
-          //Create and initalize the new dataset
-          uGrid = vtkUnstructuredGrid::New();
-          uGrid->SetPoints( vtkPoints::New() );
-          
-          uGrid->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
-          uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
-          
-          composite_ds = uGrid;
+        if( lineSamples.size() == 0 )
+        {         
+          lineSamples.resize( nLines );
+
+          for( int i=0; i<nLines; ++i )
+            lineSamples[i].reserve( nPts );
         }
-        else
-        {
-          uGrid = vtkUnstructuredGrid::SafeDownCast(composite_ds);
-        }
+
+        // if( composite_ds == NULL )
+        // {
+        //   // Create groups that represent each channel.
+        //   points = vtkPoints::New();
+        //   lines = vtkCellArray::New();
+
+        //   if( atts.GetToroidalIntegration() ==
+        //       LineSamplerAttributes::IntegrateToroidally )
+        //     nPts = nTimeSteps;
+        //   else
+        //     nPts = nTimeSteps * nAngleSamples;;
+
+        //   tPts = nPts * nLines;
+
+        //   points->Allocate(tPts);
+        //   lines->Allocate(nLines);
+
+        //   // Create a new VTK polydata.
+        //   polydata = vtkPolyData::New();
+        //   polydata->SetPoints(points);
+        //   polydata->SetLines(lines);
+    
+        //   for( int i=0; i<lineSamples.size(); ++i )
+        //   {
+        //     // Create a new VTK polyline.
+        //     vtkPolyLine *line = vtkPolyLine::New();
+        //     line->GetPointIds()->SetNumberOfIds(nPts);
+            
+        //     for( unsigned int j=0; j<lineSamples[i].size(); ++j )
+        //     {
+        //       points->InsertPoint(i*nPts+j, 0, 0, 0 );
+        //       line->GetPointIds()->SetId(j, i*nPts+j);
+        //     }
+
+        //     // Add the line to line array
+        //     lines->InsertNextCell(line);
+        //     line->Delete();
+        //   }
+
+        //   lines->Delete();
+        //   points->Delete();
+
+        //   polydata->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
+        //   polydata->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
+          
+        //   composite_ds = polydata;
+
+          // //Create and initalize the new dataset
+          // uGrid = vtkPolyData::New();
+          // uGrid->SetPoints( vtkPoints::New() );
+          
+          // uGrid->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
+          // uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
+          
+          // composite_ds = uGrid;
+//         }
+// //        else
+//         {
+//           polydata = vtkPolyData::SafeDownCast(composite_ds);
+//        points = polydata->GetPoints();
+//        lines = polydata->GetLines();
+
+//           // uGrid = vtkPolyData::SafeDownCast(composite_ds);
+//         }
         
-        int tPoints = composite_ds->GetNumberOfPoints();
+        // int tPoints = composite_ds->GetNumberOfPoints();
         int nPoints = tmp_ds->GetNumberOfPoints();
         
         // Sanity check.
@@ -568,7 +636,7 @@ avtLineSamplerFilter::Execute()
               // Last sample so set the value as it is used below.
               if( cachedAngle+deltaAngle>=stopAngle )
               {
-                val = ToroidalIntegrationSum[i] / nSamples;
+                val = ToroidalIntegrationSum[i];
               }
             }
           }
@@ -596,86 +664,128 @@ avtLineSamplerFilter::Execute()
               tmp_ds->GetPoint(i, nextPathPoint);
             }
 
-            // Insert the new point into the list.
-            vtkPoints* pathPoints = uGrid->GetPoints();
-            pathPoints->InsertNextPoint( nextPathPoint );
+            lineSamples[i].push_back( std::pair< avtVector, float >
+                                      (avtVector( nextPathPoint ), val) );
+;
+
+            // int pIndex = GetFrame() * nAngleSamples + angleCount;
+
+            // vtkIdType npts;
+            // vtkIdType *pts;
+            // vtkIdType line = i;
+
+            // lines->GetCell(line, npts, pts);
+
+            // // Insert the new point into the list.
+            // vtkIdType newPointIndex = points->InsertNextPoint( nextPathPoint );
+            // pts[pIndex] = newPointIndex;
+
+            // lines->ReplaceCell( line, npts, pts );
+
+            // // Copy the pointdata from the input mesh to the output mesh
+            // vtkPointData* allData  = polydata->GetPointData();
+            // vtkPointData* currData = tmp_ds->GetPointData();
+
+            // std::cerr << __LINE__ << "  " << i << "  "
+            //        << line << "  " << pIndex << "  " << npts << std::endl;
+
+            // for( unsigned int j=0; j<currData->GetNumberOfArrays(); ++j)
+            // {
+            //   allData->GetArray(j)->
+            //     InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
+            // }
+
+            // std::cerr << __LINE__ << "  " << i << "  "
+            //        << line << "  " << pIndex << "  " << npts << std::endl;
+
+
+
+
+
+
+
+
+
+            // // Insert the new point into the list.
+            // vtkPoints* pathPoints = uGrid->GetPoints();
+            // pathPoints->InsertNextPoint( nextPathPoint );
             
-            // The index of the new point
-            int newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
-            int newCellIndex = uGrid->GetNumberOfCells()-1;
+            // // The index of the new point
+            // int newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
+            // int newCellIndex = uGrid->GetNumberOfCells()-1;
         
-            // Copy the pointdata from the input mesh to the output mesh
-            vtkPointData* allData  = uGrid->GetPointData();
-            vtkPointData* currData = tmp_ds->GetPointData();
+            // // Copy the pointdata from the input mesh to the output mesh
+            // vtkPointData* allData  = uGrid->GetPointData();
+            // vtkPointData* currData = tmp_ds->GetPointData();
 
-            for( unsigned int j=0; j<currData->GetNumberOfArrays(); j++)
-            {
-              allData->GetArray(j)->
-                InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
-            }
+            // for( unsigned int j=0; j<currData->GetNumberOfArrays(); j++)
+            // {
+            //   allData->GetArray(j)->
+            //     InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
+            // }
           
-            vtkCellData* allCellData = uGrid->GetCellData();
-            vtkCellData* currCellData = tmp_ds->GetCellData();
+            // vtkCellData* allCellData = uGrid->GetCellData();
+            // vtkCellData* currCellData = tmp_ds->GetCellData();
           
-            for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
-            {
-              allCellData->GetArray(j)->
-                InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
-            }
+            // for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
+            // {
+            //   allCellData->GetArray(j)->
+            //     InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+            // }
         
-            newCellIndex++;
+            // newCellIndex++;
 
-            // If the geometry is not points but only a single time
-            // step use points anyways so something gets displayed.
-            if( atts.GetViewGeometry() == LineSamplerAttributes::Points ||
+            // // If the geometry is not points but only a single time
+            // // step use points anyways so something gets displayed.
+            // if( atts.GetViewGeometry() == LineSamplerAttributes::Points ||
 
-                (atts.GetToroidalIntegration() ==
-                 LineSamplerAttributes::IntegrateToroidally && 
-                 atts.GetTimeSampling() ==
-                 LineSamplerAttributes::CurrentTimeStep) ||
+            //     (atts.GetToroidalIntegration() ==
+            //      LineSamplerAttributes::IntegrateToroidally && 
+            //      atts.GetTimeSampling() ==
+            //      LineSamplerAttributes::CurrentTimeStep) ||
 
-                (atts.GetViewDimension() == LineSamplerAttributes::One &&
-                 atts.GetTimeSampling() ==
-                 LineSamplerAttributes::MultipleTimeSteps && nTimeSteps == 1) ||
+            //     (atts.GetViewDimension() == LineSamplerAttributes::One &&
+            //      atts.GetTimeSampling() ==
+            //      LineSamplerAttributes::MultipleTimeSteps && nTimeSteps == 1) ||
 
-                (atts.GetViewDimension() == LineSamplerAttributes::Three &&
-                 (stopAngle-startAngle)/deltaAngle <= 1.0) )
-            {
-              vtkIdType* pointList = new vtkIdType[1];
-              pointList[0] = newPointIndex;
+            //     (atts.GetViewDimension() == LineSamplerAttributes::Three &&
+            //      (stopAngle-startAngle)/deltaAngle <= 1.0) )
+            // {
+            //   vtkIdType* pointList = new vtkIdType[1];
+            //   pointList[0] = newPointIndex;
 
-              uGrid->InsertNextCell(VTK_VERTEX, 1, pointList);
+            //   uGrid->InsertNextCell(VTK_VERTEX, 1, pointList);
 
-              for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
-              {
-                allCellData->GetArray(j)->
-                  InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
-              }
+            //   for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
+            //   {
+            //     allCellData->GetArray(j)->
+            //    InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+            //   }
           
-              newCellIndex++;
-              delete[] pointList;
-            }
+            //   newCellIndex++;
+            //   delete[] pointList;
+            // }
 
-            // Add a new line segment
-            else if( tPoints )
-            {
-              //define the points of the lines
-              vtkIdType* pointList = new vtkIdType[2];
-              pointList[0]   = newPointIndex - nPoints;
-              pointList[1]   = newPointIndex;
+            // // Add a new line segment
+            // else if( tPoints )
+            // {
+            //   //define the points of the lines
+            //   vtkIdType* pointList = new vtkIdType[2];
+            //   pointList[0]   = newPointIndex - nPoints;
+            //   pointList[1]   = newPointIndex;
 
-              // Add a new line segment
-              uGrid->InsertNextCell( VTK_LINE, 2, pointList );
+            //   // Add a new line segment
+            //   uGrid->InsertNextCell( VTK_LINE, 2, pointList );
 
-              for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
-              {
-                allCellData->GetArray(j)->
-                  InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
-              }
+            //   for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
+            //   {
+            //     allCellData->GetArray(j)->
+            //       InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
+            //   }
               
-              newCellIndex++;
-              delete[] pointList;
-            }
+            //   newCellIndex++;
+            //   delete[] pointList;
+            // }
           }
         }
       }
@@ -713,6 +823,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     vtkDataSet *out_ds = NULL;
 
     vtkAppendFilter *appendFilter = vtkAppendFilter::New();
+    vtkAppendPolyData *appendPolyData = vtkAppendPolyData::New();
 
     vtkTransformFilter *transformFilter = vtkTransformFilter::New();
     vtkTransform *transform = vtkTransform::New();
@@ -1472,27 +1583,13 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             }
             else //if( atts.GetViewDimension() == LineSamplerAttributes::One )
             {
-              vtkPoints *points = vtkPoints::New();
-              vtkFloatArray *scalars = vtkFloatArray::New();
-    
-              points->SetNumberOfPoints(1);
-              scalars->Allocate(1);
-
-              float *points_ptr = (float *) points->GetVoidPointer(0);
-
               double pts[3];
               out_ds->GetPoint(0, pts);
-
-              points_ptr[0] = pts[0];
-              points_ptr[1] = pts[1];
-              points_ptr[2] = pts[2];
 
               int nChannelSamples = out_ds->GetPointData()->GetNumberOfTuples();
 
               float* out_data =
                 (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-
-              float sum = 0;
 
               double sampleDistance = atts.GetSampleDistance();
               double sampleVolume = atts.GetSampleVolume();
@@ -1508,28 +1605,46 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 return NULL;
               }
 
+              float sum = 0;
+
               // Do the summation for each channel
               for( unsigned int i=0; i<nChannelSamples; ++i )
                 sum += sampleVolume * *out_data++;
 
-//              scalars->InsertTuple1(0, sum / (float) nChannelSamples);
-              scalars->InsertTuple1(0, sum );
+              // Create groups that represent each channel.
+              vtkPoints *points = vtkPoints::New();
+              vtkCellArray *vertices = vtkCellArray::New();
+              vtkFloatArray *scalars = vtkFloatArray::New();
 
-              vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
-              vtkIdType vertex = 0;
+              int nSamples = 1;
 
-              uGrid->SetPoints(points);
-              uGrid->Allocate(1);
-              uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
+              points->Allocate(nSamples);
+              vertices->Allocate(nSamples);
+  
+              // Create a new VTK polydata.
+              vtkPolyData *polydata = vtkPolyData::New();
+              polydata->SetPoints(points);
+              polydata->SetVerts(vertices);
+
+              scalars->Allocate(nSamples);
               scalars->SetName(pipelineVariable);
-              uGrid->GetPointData()->SetScalars(scalars);
-              uGrid->GetPointData()->SetActiveScalars(pipelineVariable);
+              polydata->GetPointData()->SetScalars(scalars);
+  
+              vtkIdType pid[1] = {0};
+  
+              points->InsertPoint(0, pts[0], pts[1], pts[2]);
+
+              // Create a vertex cell on the point that was just added.
+              vertices->InsertNextCell( 0, pid );
+  
+              scalars->InsertTuple1( 0, sum );
 
               points->Delete();
+              vertices->Delete();
               scalars->Delete();
 
               out_ds->Delete();
-              out_ds = uGrid;
+              out_ds = polydata;
             }
           }
 
@@ -1707,16 +1822,23 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           // Merge all of the datasets together
-          appendFilter->AddInputData(out_ds);
-          appendFilter->Update();
+          // appendFilter->AddInputData(out_ds);
+          // appendFilter->Update();
+
+          appendPolyData->AddInputData( vtkPolyData::SafeDownCast(out_ds) );
+          appendPolyData->Update();
           out_ds->Delete();
       }
     }
 
     // Get the appended datasets.
-    appendFilter->Update();
-    out_ds = appendFilter->GetOutput()->NewInstance();
-    out_ds->ShallowCopy(appendFilter->GetOutput());
+    // appendFilter->Update();
+    // out_ds = appendFilter->GetOutput()->NewInstance();
+    // out_ds->ShallowCopy(appendFilter->GetOutput());
+
+    appendPolyData->Update();
+    out_ds = appendPolyData->GetOutput()->NewInstance();
+    out_ds->ShallowCopy(appendPolyData->GetOutput());
 
     // out_ds = appendFilter->GetOutput();
     // out_ds->Register(NULL);    // Up the reference count as the filter
@@ -1728,7 +1850,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     //                           // been deleted).
 
     // Nuke all the vtk filters
-    appendFilter->Delete();    
+    appendFilter->Delete();
+    appendPolyData->Delete();
     probeFilter->Delete();
 
     transform->Delete();
@@ -1747,7 +1870,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //  Creation:   May 07, 2011
 //
 // ****************************************************************************
-vtkDataSet*
+vtkPolyData*
 avtLineSamplerFilter::createPoint( avtVector startPoint,
                                    avtVector stopPoint,
                                    bool allocateScalars )
@@ -1768,6 +1891,8 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
     return NULL;
   }
 
+  int nSamples = 1;
+
   axis.normalize();
   avtVector delta = axis * sampleDistance;
 
@@ -1780,36 +1905,40 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
     
   // Create groups that represent each channel.
   vtkPoints *points = vtkPoints::New();
-
-  points->InsertPoint(0, basePoint.x, basePoint.y, basePoint.z);
-
+  vtkCellArray *vertices = vtkCellArray::New();
   vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
 
-  if( allocateScalars && scalars )
-  {
-    scalars->Allocate(1);
-    scalars->InsertTuple1(0, 0.0);
-  }
-         
-  // Create a new VTK unstructured grid.
-  vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
-  vtkIdType vertex = 0;
-
-  uGrid->SetPoints(points);
-  uGrid->Allocate(1);
-  uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
+  points->Allocate(nSamples);
+  vertices->Allocate(nSamples);
+  
+  // Create a new VTK polydata.
+  vtkPolyData *polydata = vtkPolyData::New();
+  polydata->SetPoints(points);
+  polydata->SetVerts(vertices);
 
   if( allocateScalars && scalars )
   {
+    scalars->Allocate(nSamples);
     scalars->SetName(pipelineVariable);
-    uGrid->GetPointData()->SetScalars(scalars);
+    polydata->GetPointData()->SetScalars(scalars);
   }
+  
+  vtkIdType pid[1] = {0};
+  
+  points->InsertPoint( 0, basePoint.x, basePoint.y, basePoint.z );
+  
+  // Create a vertex cell on the point that was just added.
+  vertices->InsertNextCell( 0, pid );
+  
+  if( allocateScalars && scalars )
+    scalars->InsertTuple1( 0, 0.0 );
 
   points->Delete();
+  vertices->Delete();
   if( allocateScalars && scalars )
     scalars->Delete();
 
-  return uGrid;
+  return polydata;
 }
 
 
@@ -1822,7 +1951,7 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
 //  Creation:   May 07, 2011
 //
 // ****************************************************************************
-vtkDataSet*
+vtkPolyData*
 avtLineSamplerFilter::createLine( avtVector startPoint,
                                   avtVector stopPoint,
                                   bool allocateScalars)
@@ -1873,100 +2002,102 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 
   if( atts.GetViewGeometry() == LineSamplerAttributes::Points )
   {
-    if( delta.length() > (stopPoint - startPoint).length() )
-      basePoint = stopPoint;
-    else
-      basePoint = startPoint + delta;
-    
     // Create groups that represent each channel.
     vtkPoints *points = vtkPoints::New();
-
-    points->InsertPoint(0, basePoint.x, basePoint.y, basePoint.z);
-
+    vtkCellArray *vertices = vtkCellArray::New();
     vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
 
-    if( allocateScalars && scalars )
-      scalars->Allocate(nSamples);
-         
-    // Create the points for sampling
-    for( unsigned int i=0; i<nSamples; ++i )
-    {
-      if( (double) i * delta.length() > (stopPoint - startPoint).length() )
-        basePoint = stopPoint;
-      else
-        basePoint = startPoint + (double) i * delta;
-    
-      points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
-    
-      if( allocateScalars && scalars )
-        scalars->InsertTuple1(i, 0.0);
-    }
+    points->Allocate(nSamples);
+    vertices->Allocate(nSamples);
 
-    // Create a new VTK unstructured grid.
-    vtkUnstructuredGrid *uGrid = vtkUnstructuredGrid::New();
-    vtkIdType vertex = 0;
-
-    uGrid->SetPoints(points);
-    uGrid->Allocate(nSamples);
-
-    for( unsigned int i=0; i<nSamples; ++i )
-    {
-      vertex = i;
-      uGrid->InsertNextCell(VTK_VERTEX, 1, &vertex);
-    }
-
-    if( allocateScalars && scalars )
-    {
-      scalars->SetName(pipelineVariable);
-      uGrid->GetPointData()->SetScalars(scalars);
-    }
-
-    points->Delete();
-    if( allocateScalars && scalars )
-      scalars->Delete();
-
-    return uGrid;
-  }
-
-  else
-  {
-    //Create groups that represent each channel.
-    vtkPoints *points = vtkPoints::New();
-    vtkCellArray *cells = vtkCellArray::New();
-    vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
-    
-    cells->InsertNextCell(nSamples);
-    if( allocateScalars && scalars )
-      scalars->Allocate(nSamples);
-    
-    // Create the points for sampling
-    for( unsigned int i=0; i<nSamples; ++i )
-    {
-      if( (double) i * delta.length() > (stopPoint - startPoint).length() )
-        basePoint = stopPoint;
-      else
-        basePoint = startPoint + (double) i * delta;
-
-      points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
-    
-      cells->InsertCellPoint(i);
-
-      if( allocateScalars && scalars )
-        scalars->InsertTuple1(i, 0.0);
-    }
-         
-    // Create a new VTK polyline.
+    // Create a new VTK polydata.
     vtkPolyData *polydata = vtkPolyData::New();
     polydata->SetPoints(points);
-    polydata->SetLines(cells);
+    polydata->SetVerts(vertices);
+
     if( allocateScalars && scalars )
     {
+      scalars->Allocate(nSamples);
       scalars->SetName(pipelineVariable);
       polydata->GetPointData()->SetScalars(scalars);
     }
 
+    // Create the points for sampling
+    for( unsigned int i=0; i<nSamples; ++i )
+    {
+      if( (double) i * delta.length() > (stopPoint - startPoint).length() )
+        basePoint = stopPoint;
+      else
+        basePoint = startPoint + (double) i * delta;
+    
+      vtkIdType pid[1];
+ 
+      pid[0] = i;
+
+      points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
+
+      // Create a vertex cell on the point that was just added.
+      vertices->InsertNextCell ( 1, pid );
+
+      if( allocateScalars && scalars )
+        scalars->InsertTuple1(i, 0.0);
+    }
+
     points->Delete();
-    cells->Delete();
+    vertices->Delete();
+    if( allocateScalars && scalars )
+      scalars->Delete();
+
+    return polydata;
+  }
+
+  else
+  {
+    // Create groups that represent each channel.
+    vtkPoints *points = vtkPoints::New();
+    vtkCellArray *lines = vtkCellArray::New();
+    vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
+    
+    points->Allocate(nSamples);
+    lines->Allocate(1);
+
+    // Create a new VTK polydata.
+    vtkPolyData *polydata = vtkPolyData::New();
+    polydata->SetPoints(points);
+    polydata->SetLines(lines);
+
+    if( allocateScalars && scalars )
+    {
+      scalars->Allocate(nSamples);
+      scalars->SetName(pipelineVariable);
+      polydata->GetPointData()->SetScalars(scalars);
+    }
+
+    // Create a new VTK polyline.
+    vtkPolyLine *line = vtkPolyLine::New();
+    line->GetPointIds()->SetNumberOfIds(nSamples);
+
+    // Create the points for sampling
+    for( unsigned int i=0; i<nSamples; ++i )
+    {
+      if( (double) i * delta.length() > (stopPoint - startPoint).length() )
+        basePoint = stopPoint;
+      else
+        basePoint = startPoint + (double) i * delta;
+
+      line->GetPointIds()->SetId(i, i);
+      points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
+    
+      if( allocateScalars && scalars )
+        scalars->InsertTuple1(i, 0.0);
+    }
+         
+    // Add the line to line array
+    lines->InsertNextCell(line);
+    line->Delete();
+
+    lines->Delete();
+    points->Delete();
     if( allocateScalars && scalars )
       scalars->Delete();
 
@@ -2510,6 +2641,103 @@ avtLineSamplerFilter::CreateFinalOutput(void)
       std::string("Try using another value for the displaying the time axis.");
                        
     avtCallback::IssueWarning(msg.c_str());
+  }
+
+  if( lineSamples.size() )
+  {
+    if( composite_ds ) composite_ds->Delete();
+
+    int nPts = lineSamples[0].size(), tPts = 0, nLines = lineSamples.size();
+
+    for( int i=0; i<nLines; ++i )
+      tPts += lineSamples[i].size();
+
+    if( tPts != nPts * nLines )
+    {
+      std::string msg;
+      msg += std::string("Not all line samples have the same number of samples");                       
+      avtCallback::IssueWarning(msg.c_str());
+    }
+
+    // Create groups that represent each channel.
+    vtkPoints *points = vtkPoints::New();
+    vtkCellArray *vertices = (nPts == 1 ? vtkCellArray::New() : 0);
+    vtkCellArray *lines = (nPts > 1 ? vtkCellArray::New() : 0);
+    vtkFloatArray *scalars = vtkFloatArray::New();
+        
+    points->Allocate(tPts);
+    if( nPts == 1 )
+      vertices->Allocate(nLines);
+    else // if( nPts > 1 )
+      lines->Allocate(nLines);
+    scalars->Allocate(tPts);
+    scalars->SetName(pipelineVariable);
+
+    // Create a new VTK polydata.
+    vtkPolyData *polydata = vtkPolyData::New();
+    polydata->SetPoints(points);
+    if( nPts == 1 )
+      polydata->SetVerts(vertices);
+    else // if( nPts > 1 )
+      polydata->SetLines(lines);
+    polydata->GetPointData()->SetScalars(scalars);
+
+    vtkIdType pIdx = 0;
+
+    for( int i=0; i<lineSamples.size(); ++i )
+    {
+      if( nPts == 1 )
+      {
+        vtkIdType pid[1];
+ 
+        pid[0] = pIdx;
+
+        points->InsertPoint(pIdx,
+                            lineSamples[i][0].first[0],
+                            lineSamples[i][0].first[1],
+                            lineSamples[i][0].first[2] );
+          
+        scalars->InsertTuple1(pIdx, lineSamples[i][0].second );
+        
+        // Create a vertex cell on the point that was just added.
+        vertices->InsertNextCell( 1, pid );
+        
+        ++pIdx;
+      }
+      else // if( nPts > 1 )
+      {
+        // Create a new VTK polyline.
+        vtkPolyLine *line = vtkPolyLine::New();
+        line->GetPointIds()->SetNumberOfIds(nPts);
+            
+        for( unsigned int j=0; j<lineSamples[i].size(); ++j )
+        {
+          points->InsertPoint(pIdx,
+                              lineSamples[i][j].first[0],
+                              lineSamples[i][j].first[1],
+                              lineSamples[i][j].first[2] );
+          
+          scalars->InsertTuple1(pIdx, lineSamples[i][j].second );
+          
+          line->GetPointIds()->SetId(j, pIdx);
+          
+          ++pIdx;
+        }
+
+        // Add the line to line array
+        lines->InsertNextCell(line);
+        line->Delete();
+      }
+    }
+
+    if( nPts == 1 )
+      vertices->Delete();
+    else // if( nPts > 1 )
+      lines->Delete();
+
+    points->Delete();
+
+    composite_ds = polydata;
   }
 
   if( composite_ds )

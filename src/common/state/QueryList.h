@@ -82,6 +82,7 @@ public:
         ConnCompSummary,
         ShapeletsDecomp,
         XRayImage,
+        LineSamplerInfo,
         StreamlineInfo,
         Pick,
         Lineout

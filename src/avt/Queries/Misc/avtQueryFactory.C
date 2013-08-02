@@ -103,6 +103,7 @@
 #include <avtXRayImageQuery.h>
 #include <avtZoneCenterQuery.h>
 #include <avtStreamlineInfoQuery.h>
+#include <avtLineSamplerInfoQuery.h>
 
 #include <visit-python-config.h>
 #ifdef VISIT_PYTHON_FILTERS
@@ -657,6 +658,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         query = new avtStreamlineInfoQuery();
     }
 
+    else if (CaseInsenstiveEqual(qname,"Line Sampler Info"))
+    {
+        query = new avtLineSamplerInfoQuery();
+    }
+
     if (query == NULL && !foundAQuery)
     {
         EXCEPTION1(VisItException, "No query to execute was found. "
@@ -757,6 +763,11 @@ avtQueryFactory::GetDefaultInputParams(const string &qname)
     else if (CaseInsenstiveEqual(qname,"Streamline Info"))
     {
         avtStreamlineInfoQuery::GetDefaultInputParams(params);
+        retval = params.ToXML();
+    }
+    else if (CaseInsenstiveEqual(qname,"Line Sampler Info"))
+    {
+        avtLineSamplerInfoQuery::GetDefaultInputParams(params);
         retval = params.ToXML();
     }
     else if (CaseInsenstiveEqual(qname,"Min") ||

@@ -390,6 +390,18 @@ QvisQueryWindow::CreateStandardQueryWidget()
     dumpSteps->hide();
     sLayout->addWidget(dumpSteps, 13, 0, 1, 2);
 
+    dumpCoordinates = new QCheckBox(tr("Dump Coordinates"), argPanel);
+    connect(dumpCoordinates, SIGNAL(toggled(bool)), this, 
+            SLOT(dumpCoordinatesToggled(bool)));
+    dumpCoordinates->hide();
+    sLayout->addWidget(dumpCoordinates, 13, 0, 1, 2);
+
+    dumpValues = new QCheckBox(tr("Dump Values"), argPanel);
+    connect(dumpValues, SIGNAL(toggled(bool)), this, 
+            SLOT(dumpValuesToggled(bool)));
+    dumpValues->hide();
+    sLayout->addWidget(dumpValues, 14, 0, 1, 2);
+
     // only one of these will be shown at a time, so they can be added
     // to the same location in the layout
 
@@ -956,6 +968,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     dataOpts->button(0)->setChecked(true);
     useGlobal->setChecked(0);
     dumpSteps->setChecked(0);
+    dumpCoordinates->setChecked(0);
+    dumpValues->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
 
@@ -975,6 +989,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showDataOptions = false;
         bool showGlobal = false;
         bool showDumpSteps = false;
+        bool showDumpCoordinates = false;
+        bool showDumpValues = false;
         QueryList::WindowType winT   = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool timeOnly = queryMode[index] == QueryList::TimeOnly;
@@ -1105,6 +1121,11 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             showDumpSteps = true;
         }
+        else if (winT == QueryList::LineSamplerInfo)
+        {
+            showDumpCoordinates = true;
+            showDumpValues = true;
+        }
 
         // hide and show the right text widgets.
         for(int i = 0; i < 6; ++i)
@@ -1142,6 +1163,16 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             dumpSteps->show();
         else
             dumpSteps->hide();
+
+        if (showDumpCoordinates)
+            dumpCoordinates->show();
+        else
+            dumpCoordinates->hide();
+
+        if (showDumpValues)
+            dumpValues->show();
+        else
+            dumpValues->hide();
 
         if (showDataOptions)
         {
@@ -1535,6 +1566,14 @@ QvisQueryWindow::ExecuteStandardQuery()
                 queryParams["dump_steps"] = (int)dumpSteps->isChecked();
             }
         }
+        else if (winT == QueryList::LineSamplerInfo)
+        {
+            if(noErrors)
+            {
+                queryParams["dump_coordinates"] = (int)dumpCoordinates->isChecked();
+                queryParams["dump_values"] = (int)dumpValues->isChecked();
+            }
+        }
         else if(winT == QueryList::Pick)
         {
             if (!pickQueryWidget->GetQueryParameters(queryParams))
@@ -1906,6 +1945,36 @@ void
 QvisQueryWindow::dumpStepsToggled(bool val)
 {
     dumpSteps->setChecked(val);
+}
+
+
+// ****************************************************************************
+// Method:  QvisQueryWindow::dumpCoordinatesToggled
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  9, 2010
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::dumpCoordinatesToggled(bool val)
+{
+    dumpCoordinates->setChecked(val);
+}
+
+
+// ****************************************************************************
+// Method:  QvisQueryWindow::dumpValuesToggled
+//
+// Programmer:  Dave Pugmire
+// Creation:    November  9, 2010
+//
+// ****************************************************************************
+
+void
+QvisQueryWindow::dumpValuesToggled(bool val)
+{
+    dumpValues->setChecked(val);
 }
 
 

@@ -49,6 +49,7 @@
 #include <avtTimeLoopFilter.h>
 #include <avtDatasetToDatasetFilter.h>
 
+#include <avtVector.h>
 #include <avtExtents.h>
 
 #include <LineSamplerAttributes.h>
@@ -100,11 +101,11 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual vtkDataSet *ExecuteChannelData(vtkDataSet *, int, std::string);
 //  virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
 
-    virtual vtkDataSet* createPoint( avtVector startPoint,
+    virtual vtkPolyData* createPoint( avtVector startPoint,
                                      avtVector stopPoint,
                                      bool allocateScalars );
   
-    virtual vtkDataSet *createLine( avtVector startPoint,
+    virtual vtkPolyData* createLine( avtVector startPoint,
                                     avtVector stopPoint,
                                     bool allocateScalars );
   
@@ -126,6 +127,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
                       avtVector &startPoint, avtVector &stopPoint );
 
     unsigned int checkWall( avtVector &startPoint, avtVector &stopPoint );
+
+    std::vector< std::vector< std::pair< avtVector, float > > > lineSamples;
 
     vtkDataSet *composite_ds;
 
