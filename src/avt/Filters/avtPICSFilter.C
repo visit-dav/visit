@@ -2217,6 +2217,8 @@ avtPICSFilter::ICInRectilinearBlock(const avtIntegralCurve *ic,
 // Creation:    June  5, 2013
 //
 // Modifications:
+//  Kevin Bensema Thu Aug 1 20:51 PDT 
+//  freed avtIVPField* field pointer to fix memory leak.
 //
 //****************************************************************************
 
@@ -2241,7 +2243,9 @@ avtPICSFilter::OnFaceAndPushedOut(const avtIntegralCurve *ic,
     //vec = v;
     if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
         vec = -vec;
-    
+
+    delete field;
+
     if (t[0] < 0.01 && vec[0] < 0.0)
         return true;
     if (t[0] > 0.99 && vec[0] > 0.0)
@@ -2275,6 +2279,9 @@ avtPICSFilter::OnFaceAndPushedOut(const avtIntegralCurve *ic,
 // Creation:    June  5, 2013
 //
 // Modifications:
+//  Kevin Bensema Thu Aug 1 20:51 PDT 
+//  freed avtIVPField* field pointer to fix memory leak.
+//
 //
 //****************************************************************************
 
@@ -2300,6 +2307,8 @@ avtPICSFilter::OnFaceAndPushedIn(const avtIntegralCurve *ic,
     if (ic->direction == avtIntegralCurve::DIRECTION_BACKWARD)
         vec = -vec;
     
+    delete field;
+
     if (t[0] < 0.01 && vec[0] > 0.0)
         return true;
     if (t[0] > 0.99 && vec[0] < 0.0)
