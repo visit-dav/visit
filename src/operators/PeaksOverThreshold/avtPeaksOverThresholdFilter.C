@@ -54,6 +54,7 @@
 #include <InstallationFunctions.h>
 #include <string>
 #include <InvalidFilesException.h>
+#include <TimingsManager.h>
 
 // ****************************************************************************
 //  Method: avtPeaksOverThresholdFilter constructor
@@ -178,6 +179,7 @@ avtPeaksOverThresholdFilter::Execute()
         }
     }
     
+    int t1 = visitTimer->StartTimer();
     avtRPOTFilter *f = new avtRPOTFilter();
 
     std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
@@ -192,6 +194,8 @@ avtPeaksOverThresholdFilter::Execute()
 
     dob->Update(spec);
     avtDataTree_p tree = f->GetTypedOutput()->GetDataTree();
+
+    visitTimer->StopTimer(t1, "avtPeaksOverThreshold: call avtRPOTFilter");
 
     //Set the output variable properly.
     int nleaves;
