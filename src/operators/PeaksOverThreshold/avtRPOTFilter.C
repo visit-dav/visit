@@ -59,6 +59,7 @@
 #include <vtkRectilinearGrid.h>
 #include <InvalidFilesException.h>
 #include <FileWriter.h>
+#include <TimingsManager.h>
 
 #ifdef PARALLEL
   #include <mpi.h>
@@ -342,7 +343,7 @@ avtRPOTFilter::CreateQuantileCommand(const char *var, const char *in, int aggreg
     char str[128];
     sprintf(str, "%s = quantile(%s, %f)\n", var, in, percentile);
     string cmd = str;
-    cout<<"   CreateQuantile: "<<aggregationIdx<<" "<<cmd<<endl;
+    //cout<<"   CreateQuantile: "<<aggregationIdx<<" "<<cmd<<endl;
 
     return cmd;
 }
@@ -554,6 +555,7 @@ avtRPOTFilter::Execute()
 {
     debug1<<"avtRPOTFilter::Execute() time= "<<currentTime<<endl;
     Initialize();
+    int t1 = visitTimer->StartTimer();
 
     if (!atts.GetEnsemble() && atts.GetDataAnalysisYearRangeEnabled())
     {
@@ -610,6 +612,8 @@ avtRPOTFilter::Execute()
                 values[i][index].push_back(sample(v,timeNow)); //currentTime, dsTime));
         }
     }
+
+    visitTimer->StopTimer(t1, "RPOT::Execute");
 }
 
 // ****************************************************************************
@@ -630,6 +634,7 @@ avtRPOTFilter::CreateFinalOutput()
 {
     //avtCallback::ResetTimeout(0);
 
+    int t1 = visitTimer->StartTimer();
     //Exchange data....
 #ifdef PARALLEL
     float *tmp = new float[numTimes];
@@ -683,7 +688,10 @@ avtRPOTFilter::CreateFinalOutput()
     delete [] flags;
     delete [] flagsRes;
 #endif
+    visitTimer->StopTimer(t1, "RPOT::FinalOutput exchange data 1");
 
+
+    int t2 = visitTimer->StartTimer();
     vtkRInterface *RI = vtkRInterface::New();
 
     double *outputData = new double[(idxN-idx0)*outputValsPerLoc];
@@ -737,6 +745,10 @@ avtRPOTFilter::CreateFinalOutput()
         }
     }
 
+    visitTimer->StopTimer(t2, "RPOT::FinalOutput Run Rcode");
+
+
+    int t3 = visitTimer->StartTimer();
 #if PARALLEL
     int sz = numTuples*outputValsPerLoc;
     
@@ -830,6 +842,7 @@ avtRPOTFilter::CreateFinalOutput()
         SetOutputDataTree(new avtDataTree());
 
     RI->Delete();
+    visitTimer->StopTimer(t3, "RPOT::FinalOutput exchange data 2");
 
     //avtCallback::ResetTimeout(5*60);
     //avtCallback::ResetTimeout(0);
