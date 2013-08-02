@@ -115,12 +115,10 @@ class AVTFILTERS_API avtTimeLoopFilter : virtual public avtFilter
     avtSILRestriction_p                 currentSILR;
     std::string                         errorMessage;
 
-    virtual void                        BeginIteration(int i) {iteration=i;}
-    virtual void                        EndIteration(int i) {}
     virtual void                        SetNumberOfIterations( int i) {nIterations = i;}
     virtual int                         GetNumberOfIterations() {return nIterations;}
-    virtual int                         GetIteration() {return iteration;}
-
+    virtual int                         GetIteration() {return timeLoopIter;}
+    virtual int                         GetFrame() {return frameIter;}
     virtual int                         GetTotalNumberOfTimeSlicesForRank();
     virtual std::vector<int>            GetCyclesForRank();
     virtual std::vector<double>         GetTimesForRank();
@@ -135,9 +133,10 @@ class AVTFILTERS_API avtTimeLoopFilter : virtual public avtFilter
     int                                 endTime;
     int                                 stride;
     int                                 nFrames;
+    int                                 frameIter;
     int                                 actualEnd;
     int                                 nIterations;
-    int                                 iteration;
+    int                                 timeLoopIter;
     bool                                includeLastTime;
     bool                                parallelizingOverTime;
 

@@ -186,20 +186,17 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
-    for (int currentLoopIter=0; currentLoopIter<numTimeLoopIterations; ++currentLoopIter)
+    for (timeLoopIter=0; timeLoopIter<numTimeLoopIterations; ++timeLoopIter)
     {
-        debug4 << "Time loop filter updating with iteration # "<<currentLoopIter<<endl;
-        int curIter = 0;
+        debug4 << "Time loop filter updating with iteration # "
+               << timeLoopIter << endl;
 
-        BeginIteration(currentLoopIter);
-        
-        for (i=0, currentTime=startTime; i<nFrames; ++i, currentTime+=stride)
+        for (frameIter=0, currentTime=startTime; frameIter<nFrames; ++frameIter, currentTime+=stride)
         {
             bool shouldDoThisTimeSlice = true;
             if (parallelizingOverTime)
                 shouldDoThisTimeSlice = RankOwnsTimeSlice(i);
 
-            curIter++;
             if (!shouldDoThisTimeSlice)
                 continue;
             
@@ -255,7 +252,6 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             }
             avtCallback::ResetTimeout(5*60);
         }
-        EndIteration(currentLoopIter);
     }
 
     //
