@@ -672,9 +672,9 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelGeometryButtonGroup->addButton(channelGeometryLine,1);
     channelGeometryLayout->addWidget(channelGeometryLine);
 
-    QRadioButton *channelGeometryCylinder = new QRadioButton(tr("Cylinder"), channelGeometry);
-    channelGeometryButtonGroup->addButton(channelGeometryCylinder,2);
-    channelGeometryLayout->addWidget(channelGeometryCylinder);
+    // QRadioButton *channelGeometryCylinder = new QRadioButton(tr("Cylinder"), channelGeometry);
+    // channelGeometryButtonGroup->addButton(channelGeometryCylinder,2);
+    // channelGeometryLayout->addWidget(channelGeometryCylinder);
 
 //     QRadioButton *channelGeometryCone = new QRadioButton(tr("Cone"), channelGeometry);
 //     channelGeometryButtonGroup->addButton(channelGeometryCone,3);
@@ -1240,6 +1240,17 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             viewDimensionButtonGroup->blockSignals(false);
 
             oneDPlotGroup->setEnabled( (int)atts->GetViewDimension() == 0 );
+
+            if( atts->GetViewDimension() == 0 )
+            {
+              displayTimeLabel->
+                setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                            (int)atts->GetToroidalIntegration() != 1);
+              
+              displayTime->setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                                       (int)atts->GetToroidalIntegration() != 1 );
+            }
+
             break;
           case LineSamplerAttributes::ID_donotApplyToAll:
             donotApplyToAll->blockSignals(true);
@@ -1315,11 +1326,11 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                                        (int)atts->GetToroidalIntegration() == 2 );
 
             displayTimeLabel->
-              setEnabled( (int)atts->GetTimeSampling()==1 &&
-                          (int)atts->GetToroidalIntegration()!=1);
+              setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                          (int)atts->GetToroidalIntegration() != 1);
 
-            displayTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                     (int)atts->GetToroidalIntegration()!=1);
+            displayTime->setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                                     (int)atts->GetToroidalIntegration() != 1);
             break;
           case LineSamplerAttributes::ID_toroidalAngleSampling:
             toroidalAngleSamplingButtonGroup->blockSignals(true);
@@ -1342,11 +1353,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 timeSamplingButtonGroup->button((int)atts->GetTimeSampling())->setChecked(true);
             timeSamplingButtonGroup->blockSignals(false);
             
-            displayTimeLabel->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                          (int)atts->GetToroidalIntegration()==0);
+            displayTimeLabel->
+              setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                          (int)atts->GetToroidalIntegration() != 1);
 
-            displayTime->setEnabled( (int)atts->GetTimeSampling()==1 &&
-                                     (int)atts->GetToroidalIntegration()==0);
+            displayTime->setEnabled( (int)atts->GetTimeSampling() == 1 &&
+                                     (int)atts->GetToroidalIntegration() != 1);
 
             timeStepLabel->setEnabled((int)atts->GetTimeSampling()==1);
             timeStepStartLabel->setEnabled((int)atts->GetTimeSampling()==1);

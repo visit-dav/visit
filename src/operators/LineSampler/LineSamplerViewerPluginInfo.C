@@ -218,12 +218,11 @@ LineSamplerViewerPluginInfo::GetClientAtts(AttributeSubject *atts,
         ViewerBase vb;
 
         QString msg("You are attemping to change the 'View dimension' "
-                    "or the 'View geometry' "
-                    "while the 'Apply to all windows' and/or the "
-                    "'Apply operators to all plots' and the "
+                    "or the 'View geometry' while the 'Apply to all windows' "
+                    "and/or the 'Apply operators to all plots' and the "
                     "'Do not apply to all' are all checked. This setting "
-                    "is a conflict. The 'View dimension' will not be "
-                    "changed.");
+                    "is a conflict. The 'View dimension' and  'View geometry' "
+                    "will not be changed.");
 
         vb.Warning(msg);
       }

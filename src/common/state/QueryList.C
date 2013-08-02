@@ -86,7 +86,7 @@ static const char *WindowType_strings[] = {
 "DomainZone", "DomainZoneVars", "ActualData", 
 "ActualDataVars", "LineDistribution", "HohlraumFlux", 
 "ConnCompSummary", "ShapeletsDecomp", "XRayImage", 
-"StreamlineInfo", "Pick", "Lineout"
+"LineSamplerInfo", "StreamlineInfo", "Pick", "Lineout"
 };
 
 std::string
