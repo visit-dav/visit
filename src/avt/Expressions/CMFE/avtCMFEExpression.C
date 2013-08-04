@@ -127,12 +127,25 @@ avtCMFEExpression::~avtCMFEExpression()
 //  Programmer: Hank Childs
 //  Creation:   January 5, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Aug  4 11:35:08 PDT 2013
+//    Tell the base class infrastructure about secondary variables.
+//
 // ****************************************************************************
 
 void
 avtCMFEExpression::AddInputVariableName(const char *vname)
 {
     avtExpressionFilter::AddInputVariableName(vname);
+    if (varnames.size() > 0)
+    {
+        // Every time we get a new variable, let's declare the previous
+        // one as secondary.  This particularly works well, since the
+        // module that calls AddInputVariableName is also making the variable
+        // that gets passed in the active variable automatically.
+        AddSecondaryVariable(varnames[varnames.size()-1].c_str());
+    }
     varnames.push_back(vname);
 }
 
