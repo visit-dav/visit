@@ -2264,6 +2264,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
 void
 Engine::AlarmHandler(int signal)
 {
+    //DRP --REMOVE THIS HACK
+    return;
+
+    
     Engine *e = Engine::Instance();
     if (!e->alarmEnabled)
         return;
