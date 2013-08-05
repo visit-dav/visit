@@ -255,7 +255,7 @@ avtLineSamplerInfoQuery::PostExecute()
                   msg += str;
                 }
 
-                sprintf(str, "\n", lsData[i] );
+                sprintf(str, "\n" );
                 msg += str;
             }
         }
