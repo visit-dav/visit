@@ -469,21 +469,42 @@ def ffmpeg_version():
     0.10.3     would be returned as 0.1003
     1.2        would be returned as 1.02
     SVN-r24044 would be returned as -1.
+    N-55356-gb11b7ce would be returned as 1.0
+
+
+    Note: This was created b/c the admissible command line syntax 
+    changed between versions of ffmpeg, and we wanted to support both 
+    the old and new way of doing things.
     """
+    ret = -1.0
     res = sexe("ffmpeg -version",ret_output=True)[1].strip()
     idx = res.find("version ")
-    ret = -1.
-    if idx != -1 and res[idx+8:idx+8+3] != "SVN":
-        idx2 = res[idx+8:].find(" ")
-        idx3 = res[idx+8:].find("\n")
-        if idx3 > -1 and idx3 < idx2:
-            idx2 = idx3
-        version = res[idx+8:idx+8+idx2+1]
-        points = [float(x) for x in string.split(version, ".")]
-        ver = 0.
-        mult = 1.
-        for p in points:
-            ver = ver + mult * p
-            mult = mult / 100.
-        ret = ver
+    # if no "version" text, return old style args
+    if idx == -1:
+        return res
+    res = res[idx+len("version "):]
+    res = res.replace("\n"," ")
+    try:
+        # github version
+        if res.startswith("N-"):
+            # assume github version supports "new" cmd line syntax (return 1.0)
+            res =  1.0 
+        # svn version
+        if res.startswith("SVN"):
+            # assume svn version supports old version (return -1.0)
+            res = -1.0
+        else: #try to actually parse the version #
+            version = res.split(" ")[0].strip()
+            points  = [float(x) for x in version.split(".")]
+            ver  = 0.0
+            mult = 1.0
+            for p in points:
+                ver = ver + mult * p
+                mult = mult / 100.0
+            ret = ver
+    except: 
+        # fallback, assume this is a new(er) format, that will adhere to the
+        # new style command line options
+        ret = 1.0
     return ret
+
