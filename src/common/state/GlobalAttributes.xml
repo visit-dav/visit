@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
   <Attribute name="GlobalAttributes" purpose="This class contains attributes associated with the main window." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalAttributes.code">
+    <Enum name="PrecisionType">
+      Float
+      Native
+      Double
+    </Enum>
     <Field name="sources" label="Sources" type="stringVector">
     </Field>
     <Field name="windows" label="windows" type="intVector">
@@ -69,6 +74,9 @@
     </Field>
     <Field name="expandNewPlots" label="Expand New Plots" type="bool">
       false
+    </Field>
+    <Field name="precisionType" label="precision" type="enum" subtype="PrecisionType">
+      Native
     </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>

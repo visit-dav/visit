@@ -225,6 +225,7 @@ extern const char *visit_SetPlotOrderToFirst_doc;
 extern const char *visit_SetPlotOrderToLast_doc; 
 extern const char *visit_SetPlotSILRestriction_doc;
 extern const char *visit_SetPreferredFileFormats_doc;
+extern const char *visit_SetPrecisionType_doc;
 extern const char *visit_SetPrinterAttributes_doc;
 extern const char *visit_SetQueryFloatFormat_doc;
 extern const char *visit_SetQueryOverTimeAttributes_doc;

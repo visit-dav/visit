@@ -119,13 +119,13 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, "
         "MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, "
         "RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, "
-        "SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, "
-        "SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, "
-        "DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, "
-        "UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-        "RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, "
-        "ReleaseToDDTRPC, ExportRPC, MaxRPC";
+        "SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
+        "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
+        "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
+        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
+        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
+        "SetPlotOrderToLastRPC, RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, "
+        "DDTFocusRPC, ReleaseToDDTRPC, ExportRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -824,6 +824,10 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetCreateVectorMagnitudeExpressionsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::SetPrecisionTypeRPC:
+          SNPRINTF(tmpStr, 1000, "%sRPCType = %sSetPrecisionTypeRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::CopyActivePlotsRPC:
           SNPRINTF(tmpStr, 1000, "%sRPCType = %sCopyActivePlotsRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1100,12 +1104,12 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 200)
+    if(ival >= 0 && ival < 201)
         obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
     else
     {
         fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,199]. "
+                        "Valid values are in the range of [0,200]. "
                         "You can also use the following names: "
                         "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
                         "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
@@ -1150,13 +1154,14 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, "
                         "MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, "
                         "RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, "
-                        "SetCreateVectorMagnitudeExpressionsRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, "
-                        "SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, "
-                        "DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, "
-                        "UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-                        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-                        "RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, "
-                        "ReleaseToDDTRPC, ExportRPC, MaxRPC.");
+                        "SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, "
+                        "TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, "
+                        "CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, "
+                        "SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, "
+                        "SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, "
+                        "SetPlotOrderToLastRPC, RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, "
+                        "DDTFocusRPC, ReleaseToDDTRPC, ExportRPC, MaxRPC"
+                        ".");
         return NULL;
     }
 
@@ -2536,6 +2541,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::SetCreateTimeDerivativeExpressionsRPC));
     if(strcmp(name, "SetCreateVectorMagnitudeExpressionsRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC));
+    if(strcmp(name, "SetPrecisionTypeRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::SetPrecisionTypeRPC));
     if(strcmp(name, "CopyActivePlotsRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::CopyActivePlotsRPC));
     if(strcmp(name, "SetPlotFollowsTimeRPC") == 0)

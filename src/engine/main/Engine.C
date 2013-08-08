@@ -1058,6 +1058,9 @@ Engine::InitializeCompute()
 //    Eric Brugger, Fri May 10 14:41:08 PDT 2013
 //    I removed support for mangled mesa.
 //
+//    Kathleen Biagas, Wed Aug  7 15:50:49 PDT 2013
+//    Added SetPrecisionTypeRPC.
+//
 // ****************************************************************************
 
 void
@@ -1135,6 +1138,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<ConstructDataBinningRPC>(&enginestate->GetConstructDataBinningRPC()));
     rpcExecutors.push_back(new RPCExecutor<NamedSelectionRPC>(&enginestate->GetNamedSelectionRPC()));
     rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(&enginestate->GetSetEFileOpenOptionsRPC()));
+    rpcExecutors.push_back(new RPCExecutor<SetPrecisionTypeRPC>(&enginestate->GetSetPrecisionTypeRPC()));
     rpcExecutors.push_back(new RPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
     rpcExecutors.push_back(new RPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
   

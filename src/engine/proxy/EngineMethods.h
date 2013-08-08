@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              EngineMethods.h                            //
+//                              EngineMethods.h                              //
 // ************************************************************************* //
 
 #ifndef ENGINE_METHODS_H
@@ -132,6 +132,7 @@ public:
                                              const int winID);
 
     void                     SetDefaultFileOpenOptions(const FileOpenOptions&);
+    void                     SetPrecisionType(const int);
 
     avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);

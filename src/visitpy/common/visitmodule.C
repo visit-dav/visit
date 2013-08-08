@@ -5261,6 +5261,69 @@ visit_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetPrecisionType
+//
+// Purpose:
+//   Sets the precision type for the pipeline.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   July 29, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#ifdef WIN32
+#define strcasecmp stricmp
+#endif
+STATIC PyObject *
+visit_SetPrecisionType(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag = -1;
+    char *sflag = NULL;
+
+    if (!PyArg_ParseTuple(args, "i", &flag))
+    {
+        if (!PyArg_ParseTuple(args, "s",&sflag))
+        {
+            VisItErrorFunc("SetPrecisionType: Cannot parse object!");
+            return NULL;
+        }
+        else
+        {
+            if (strcasecmp(sflag, "float") == 0)
+                flag = 0;
+            else if (strcasecmp(sflag, "native") == 0)
+                flag = 1;
+            else if (strcasecmp(sflag, "double") == 0)
+                flag = 2;
+            else
+            {
+                VisItErrorFunc("usage: SetPrecisionType(\"float | native | double\"");
+                return NULL;
+            }
+        }
+        PyErr_Clear();
+    }
+    if (flag < 0 || flag > 2)
+    {
+        VisItErrorFunc("usage: SetPrecisionType(0 | 1 | 2");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetPrecisionType(flag);
+    MUTEX_UNLOCK();
+    int errorFlag = Synchronize();
+
+    // Return the success value.
+    return PyLong_FromLong(long(errorFlag == 0));
+}
+
+// ****************************************************************************
 // Function: visit_SetDefaultAnnotationAttributes
 //
 // Purpose:
@@ -16807,6 +16870,7 @@ AddProxyMethods()
     AddMethod("SetPlotOrderToLast", visit_SetPlotOrderToLast, visit_SetPlotOrderToLast_doc);
     AddMethod("SetPlotSILRestriction", visit_SetPlotSILRestriction,
                                               visit_SetPlotSILRestriction_doc);
+    AddMethod("SetPrecisionType", visit_SetPrecisionType, visit_SetPrecisionType_doc);
     AddMethod("SetPreferredFileFormats", visit_SetPreferredFileFormats,
               visit_SetPreferredFileFormats_doc);
     AddMethod("SetPrinterAttributes", visit_SetPrinterAttributes,

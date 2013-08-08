@@ -50,6 +50,7 @@
 #include <vector>
 
 #include <FileOpenOptions.h>
+#include <avtTypes.h>
 
 class avtDatabase;
 class CommonDatabasePluginInfo;
@@ -124,8 +125,11 @@ class DatabasePluginManager;
 //    Hank Childs, Sun Sep 19 09:07:09 PDT 2010
 //    Add argument to SetupDatabase for setting times explicitly.
 //
-//   Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
-//   Added support for ensemble databases. (multiple time values)
+//    Dave Pugmire, Fri Feb  8 17:22:01 EST 2013
+//    Added support for ensemble databases. (multiple time values)
+//
+//    Kathleen Biagas, Wed Aug  7 12:44:37 PDT 2013
+//    Add methods for setting/getting precision type specified by user.
 //
 // ****************************************************************************
 
@@ -162,6 +166,9 @@ class DATABASE_API avtDatabaseFactory
     static bool                  GetCreateVectorMagnitudeExpressions(void)
                                   {return createVectorMagnitudeExpressions;}
 
+    static void                  SetPrecisionType(const int pType);
+    static avtPrecisionType      GetPrecisionType()
+                                     { return precisionType;}
   protected:
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
                                                const char * const *, int,
@@ -173,5 +180,6 @@ class DATABASE_API avtDatabaseFactory
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;
     static FileOpenOptions       defaultFileOpenOptions;
+    static avtPrecisionType      precisionType;
 };
 #endif

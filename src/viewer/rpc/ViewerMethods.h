@@ -170,6 +170,9 @@ class ViewerState;
 //   Added methods for connecting/disconnecting with DDT and for
 //   instructing DDT to focus on a specific domain
 //
+//   Kathleen Biagas, Wed Aug  7 13:05:32 PDT 2013
+//   Added SetPrecisionType.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -393,6 +396,7 @@ public:
     void SetCreateMeshQualityExpressions(int flag);
     void SetCreateTimeDerivativeExpressions(int flag);
     void SetCreateVectorMagnitudeExpressions(int flag);
+    void SetPrecisionType(int flag);
     
     void SetSuppressMessages(int flag);
 

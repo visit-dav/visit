@@ -133,6 +133,13 @@ enum avtMeshCoordType
     AVT_ZR     /* 2 */
 };
 
+enum avtPrecisionType
+{
+    AVT_PRECISION_FLOAT     = 0,
+    AVT_PRECISION_NATIVE,  /* 1 */
+    AVT_PRECISION_DOUBLE   /* 2 */
+};
+
 enum SetState
 {
     NoneUsed            = 0,
@@ -178,6 +185,7 @@ DBATTS_API std::string avtExtentType_ToString(int);
 DBATTS_API bool avtExtentType_FromString(const std::string &, avtExtentType &);
 
 DBATTS_API std::string avtVarTypeToString(avtVarType);
+DBATTS_API std::string avtPrecisionTypeToString(avtPrecisionType);
 
 DBATTS_API std::string LoadBalanceSchemeToString(LoadBalanceScheme);
 

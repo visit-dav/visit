@@ -88,6 +88,9 @@ Definition:
 //   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
 //   Removed maintainData, moved maintainView to view settings, not global.
 //
+//   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
+//   Add precision.
+//
 // ****************************************************************************
 
 bool
@@ -215,6 +218,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       applySelection));
     }
 
+    if(completeSave || !FieldsEqual(ID_precisionType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("precisionType",
+                      precisionType));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -293,6 +303,9 @@ Definition:
 //   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
 //   Removed maintainData, moved maintainView to view settings, not global.
 //
+//   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
+//   Add precision.
+//
 // ****************************************************************************
 
 void
@@ -340,5 +353,20 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetSaveCrashRecoveryFile(node->AsBool());
     if((node = searchNode->GetNode("applySelection")) != 0)
         SetApplySelection(node->AsBool());
+    if((node = searchNode->GetNode("precisionType")) != 0)
+    {
+        if (node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if (ival >= 0 && ival < 3)
+                SetPrecisionType(PrecisionType(ival));
+        }
+        else if (node->GetNodeType() == STRING_NODE)
+        {
+            PrecisionType value;
+            if (PrecisionType_FromString(node->AsString(), value))
+                SetPrecisionType(value);
+        }
+    }
 }
 

@@ -104,6 +104,9 @@ class avtSourceFromDatabase;
 //    I modified the multi-pass discretizion of CSG meshes to only process
 //    a portion of the mesh on each processor instead of the entire mesh.
 //
+//    Kathleen Biagas, Wed Aug  7 15:42:57 PDT 2013
+//    Add methods that test for insufficient precision.
+//
 // ****************************************************************************
 
 class DATABASE_API avtTransformManager
@@ -127,9 +130,14 @@ class DATABASE_API avtTransformManager
 
   private:
     bool                       CoordinatesHaveExcessPrecision(vtkDataSet *ds,
-                                                              bool needNativePrecision) const;
+                                   bool needNativePrecision) const;
     bool                       DataHasExcessPrecision(vtkDataArray *da, 
-                                                      bool needNativePrecision) const;
+                                   bool needNativePrecision) const;
+    bool                       CoordinatesHaveInsufficientPrecision(
+                                   vtkDataSet *ds,
+                                   bool needNativePrecision) const;
+    bool                       DataHasInsufficientPrecision(vtkDataArray *da,
+                                   bool needNativePrecision) const;
 
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
                                              const avtDataRequest_p &spec,

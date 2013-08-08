@@ -61,6 +61,13 @@
 class STATE_API GlobalAttributes : public AttributeSubject
 {
 public:
+    enum PrecisionType
+    {
+        Float,
+        Native,
+        Double
+    };
+
     // These constructors are for objects of this class
     GlobalAttributes();
     GlobalAttributes(const GlobalAttributes &obj);
@@ -114,6 +121,7 @@ public:
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
     void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
     void SetExpandNewPlots(bool expandNewPlots_);
+    void SetPrecisionType(PrecisionType precisionType_);
 
     // Property getting methods
     const stringVector &GetSources() const;
@@ -142,11 +150,18 @@ public:
     bool               GetSaveCrashRecoveryFile() const;
     bool               GetIgnoreExtentsFromDbs() const;
     bool               GetExpandNewPlots() const;
+    PrecisionType      GetPrecisionType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string PrecisionType_ToString(PrecisionType);
+    static bool PrecisionType_FromString(const std::string &, PrecisionType &);
+protected:
+    static std::string PrecisionType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -181,6 +196,7 @@ public:
         ID_saveCrashRecoveryFile,
         ID_ignoreExtentsFromDbs,
         ID_expandNewPlots,
+        ID_precisionType,
         ID__LAST
     };
 
@@ -209,11 +225,12 @@ private:
     bool         saveCrashRecoveryFile;
     bool         ignoreExtentsFromDbs;
     bool         expandNewPlots;
+    int          precisionType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbb"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbbi"
 
 #endif

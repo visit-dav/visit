@@ -110,6 +110,9 @@ class QSpinBox;
 //   Eric Brugger, Tue Aug 24 12:18:44 PDT 2010
 //   I added a preference to enable warning message popups.
 //
+//   Kathleen Biagas, Wed Aug  7 13:07:12 PDT 2013
+//   Added a preference for floating point precision.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -158,6 +161,7 @@ private slots:
     void ignoreDbExtentsToggled(bool val);
     void replacePlotsToggled(bool);
     void enableWarningPopupsToggled(bool);
+    void precisionTypeChanged(int);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -179,6 +183,7 @@ private:
     QCheckBox        *ignoreDbExtentsToggle;
     QCheckBox        *replacePlotsToggle;
     QCheckBox        *enableWarningPopupsToggle;
+    QButtonGroup     *precisionType;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

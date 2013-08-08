@@ -127,7 +127,7 @@ void XDMF_WRITER_API HdfPutCoords(HDFFile *hdfFile, const char *coordName,
     int coordDataType, float *coords, int nCoords);
 void XDMF_WRITER_API HdfPutConnectivity(HDFFile *hdfFile,
     const char *connectivityName, int connectivityDataType,
-    float *connectivity, int connectivityLength);
+    void *connectivity, int connectivityLength);
 void XDMF_WRITER_API HdfPutCurvVar(HDFFile *hdfFile, const char *varName,
     int varType, int varCentering, int varDataType, void *var,
     int nDims, int *dims);
