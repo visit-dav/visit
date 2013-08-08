@@ -58,7 +58,7 @@ import java.lang.Integer;
 
 public class GlobalAttributes extends AttributeSubject
 {
-    private static int GlobalAttributes_numAdditionalAtts = 25;
+    private static int GlobalAttributes_numAdditionalAtts = 26;
 
     // Enum values
     public final static int PRECISIONTYPE_FLOAT = 0;
@@ -94,6 +94,7 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = true;
         ignoreExtentsFromDbs = false;
         expandNewPlots = false;
+        userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
     }
 
@@ -125,6 +126,7 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = true;
         ignoreExtentsFromDbs = false;
         expandNewPlots = false;
+        userRestoreSessionFile = false;
         precisionType = PRECISIONTYPE_NATIVE;
     }
 
@@ -166,6 +168,7 @@ public class GlobalAttributes extends AttributeSubject
         saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
         ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
         expandNewPlots = obj.expandNewPlots;
+        userRestoreSessionFile = obj.userRestoreSessionFile;
         precisionType = obj.precisionType;
 
         SelectAll();
@@ -228,6 +231,7 @@ public class GlobalAttributes extends AttributeSubject
                 (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
                 (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
                 (expandNewPlots == obj.expandNewPlots) &&
+                (userRestoreSessionFile == obj.userRestoreSessionFile) &&
                 (precisionType == obj.precisionType));
     }
 
@@ -376,10 +380,16 @@ public class GlobalAttributes extends AttributeSubject
         Select(23);
     }
 
+    public void SetUserRestoreSessionFile(boolean userRestoreSessionFile_)
+    {
+        userRestoreSessionFile = userRestoreSessionFile_;
+        Select(24);
+    }
+
     public void SetPrecisionType(int precisionType_)
     {
         precisionType = precisionType_;
-        Select(24);
+        Select(25);
     }
 
     // Property getting methods
@@ -407,6 +417,7 @@ public class GlobalAttributes extends AttributeSubject
     public boolean GetSaveCrashRecoveryFile() { return saveCrashRecoveryFile; }
     public boolean GetIgnoreExtentsFromDbs() { return ignoreExtentsFromDbs; }
     public boolean GetExpandNewPlots() { return expandNewPlots; }
+    public boolean GetUserRestoreSessionFile() { return userRestoreSessionFile; }
     public int     GetPrecisionType() { return precisionType; }
 
     // Write and read methods.
@@ -461,6 +472,8 @@ public class GlobalAttributes extends AttributeSubject
         if(WriteSelect(23, buf))
             buf.WriteBool(expandNewPlots);
         if(WriteSelect(24, buf))
+            buf.WriteBool(userRestoreSessionFile);
+        if(WriteSelect(25, buf))
             buf.WriteInt(precisionType);
     }
 
@@ -541,6 +554,9 @@ public class GlobalAttributes extends AttributeSubject
             SetExpandNewPlots(buf.ReadBool());
             break;
         case 24:
+            SetUserRestoreSessionFile(buf.ReadBool());
+            break;
+        case 25:
             SetPrecisionType(buf.ReadInt());
             break;
         }
@@ -573,6 +589,7 @@ public class GlobalAttributes extends AttributeSubject
         str = str + boolToString("saveCrashRecoveryFile", saveCrashRecoveryFile, indent) + "\n";
         str = str + boolToString("ignoreExtentsFromDbs", ignoreExtentsFromDbs, indent) + "\n";
         str = str + boolToString("expandNewPlots", expandNewPlots, indent) + "\n";
+        str = str + boolToString("userRestoreSessionFile", userRestoreSessionFile, indent) + "\n";
         str = str + indent + "precisionType = ";
         if(precisionType == PRECISIONTYPE_FLOAT)
             str = str + "PRECISIONTYPE_FLOAT";
@@ -610,6 +627,7 @@ public class GlobalAttributes extends AttributeSubject
     private boolean saveCrashRecoveryFile;
     private boolean ignoreExtentsFromDbs;
     private boolean expandNewPlots;
+    private boolean userRestoreSessionFile;
     private int     precisionType;
 }
 

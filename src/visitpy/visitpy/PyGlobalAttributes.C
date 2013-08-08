@@ -212,6 +212,11 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetUserRestoreSessionFile())
+        SNPRINTF(tmpStr, 1000, "%suserRestoreSessionFile = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suserRestoreSessionFile = 0\n", prefix);
+    str += tmpStr;
     const char *precisionType_names = "Float, Native, Double";
     switch (atts->GetPrecisionType())
     {
@@ -884,6 +889,30 @@ GlobalAttributes_GetExpandNewPlots(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+GlobalAttributes_SetUserRestoreSessionFile(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the userRestoreSessionFile in the object.
+    obj->data->SetUserRestoreSessionFile(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetUserRestoreSessionFile(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUserRestoreSessionFile()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
@@ -968,6 +997,8 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetIgnoreExtentsFromDbs", GlobalAttributes_GetIgnoreExtentsFromDbs, METH_VARARGS},
     {"SetExpandNewPlots", GlobalAttributes_SetExpandNewPlots, METH_VARARGS},
     {"GetExpandNewPlots", GlobalAttributes_GetExpandNewPlots, METH_VARARGS},
+    {"SetUserRestoreSessionFile", GlobalAttributes_SetUserRestoreSessionFile, METH_VARARGS},
+    {"GetUserRestoreSessionFile", GlobalAttributes_GetUserRestoreSessionFile, METH_VARARGS},
     {"SetPrecisionType", GlobalAttributes_SetPrecisionType, METH_VARARGS},
     {"GetPrecisionType", GlobalAttributes_GetPrecisionType, METH_VARARGS},
     {NULL, NULL}
@@ -1046,6 +1077,8 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetIgnoreExtentsFromDbs(self, NULL);
     if(strcmp(name, "expandNewPlots") == 0)
         return GlobalAttributes_GetExpandNewPlots(self, NULL);
+    if(strcmp(name, "userRestoreSessionFile") == 0)
+        return GlobalAttributes_GetUserRestoreSessionFile(self, NULL);
     if(strcmp(name, "precisionType") == 0)
         return GlobalAttributes_GetPrecisionType(self, NULL);
     if(strcmp(name, "Float") == 0)
@@ -1117,6 +1150,8 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
     else if(strcmp(name, "expandNewPlots") == 0)
         obj = GlobalAttributes_SetExpandNewPlots(self, tuple);
+    else if(strcmp(name, "userRestoreSessionFile") == 0)
+        obj = GlobalAttributes_SetUserRestoreSessionFile(self, tuple);
     else if(strcmp(name, "precisionType") == 0)
         obj = GlobalAttributes_SetPrecisionType(self, tuple);
 
