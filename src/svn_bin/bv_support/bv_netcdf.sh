@@ -47,7 +47,7 @@ function bv_netcdf_depends_on
 function bv_netcdf_initialize_vars
 {
     if [[ "$USE_SYSTEM_NETCDF" == "no" ]]; then
-            NETCDF_INSTALL_DIR="${VISITDIR}/netcdf/$NETCDF_VERSION/${VISITARCH})"
+            NETCDF_INSTALL_DIR="${VISITDIR}/netcdf/$NETCDF_VERSION/${VISITARCH}"
     fi
 }
 
