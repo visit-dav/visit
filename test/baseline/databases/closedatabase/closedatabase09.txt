@@ -23,3 +23,4 @@ userDirForSessionFiles = 0
 saveCrashRecoveryFile = 1
 ignoreExtentsFromDbs = 0
 expandNewPlots = 0
+precisionType = Native  # Float, Native, Double
