@@ -113,6 +113,9 @@ class QSpinBox;
 //   Kathleen Biagas, Wed Aug  7 13:07:12 PDT 2013
 //   Added a preference for floating point precision.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -161,6 +164,7 @@ private slots:
     void ignoreDbExtentsToggled(bool val);
     void replacePlotsToggled(bool);
     void enableWarningPopupsToggled(bool);
+    void userRestoreSessionFileToggled(bool);
     void precisionTypeChanged(int);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
@@ -183,6 +187,7 @@ private:
     QCheckBox        *ignoreDbExtentsToggle;
     QCheckBox        *replacePlotsToggle;
     QCheckBox        *enableWarningPopupsToggle;
+    QCheckBox        *userRestoreSessionFileToggle;
     QButtonGroup     *precisionType;
     GlobalAttributes *atts;
 

@@ -91,6 +91,9 @@ Definition:
 //   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
 //   Add precision.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 bool
@@ -218,6 +221,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       applySelection));
     }
 
+    if(completeSave || !FieldsEqual(ID_userRestoreSessionFile, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("userRestoreSessionFile",
+                      userRestoreSessionFile));
+    }
+
     if(completeSave || !FieldsEqual(ID_precisionType, &defaultObject))
     {
         addToParent = true;
@@ -306,6 +316,9 @@ Definition:
 //   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
 //   Add precision.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 void
@@ -353,6 +366,8 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetSaveCrashRecoveryFile(node->AsBool());
     if((node = searchNode->GetNode("applySelection")) != 0)
         SetApplySelection(node->AsBool());
+    if((node = searchNode->GetNode("userRestoreSessionFile")) != 0)
+        SetUserRestoreSessionFile(node->AsBool());
     if((node = searchNode->GetNode("precisionType")) != 0)
     {
         if (node->GetNodeType() == INT_NODE)

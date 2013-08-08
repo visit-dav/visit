@@ -34,7 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt's movie scripting has been updated to use the movie encoder logic present in the visit_utiles module. This brings support for additional movie formats.</li>
   <li>An option was added allowing specification of floating point precision to be used by the execution pipeline. Accessible in GUI via <i>Controls->Preferences</i>.  From the cli, <i>SetPrecisionType(arg)</i> where 'arg' is one of: 0 or "float", 1 or "native", 2 or "double".  The default is 'native', meaning VisIt will attempt to use the same precision that the reader serves up.</li>
-  <li></li>
+  <li>An option was added to save the current session at exit and restore that session on start up. This needs to be enabled in the GUI via <i>Controls->Preferences</i> and checking the "Restore session on startup" option under the "Session files" section. The default is not to restore the last session.</li>
   <li></li>
   <li></li>
 </ul>

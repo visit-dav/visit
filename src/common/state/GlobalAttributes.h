@@ -121,6 +121,7 @@ public:
     void SetSaveCrashRecoveryFile(bool saveCrashRecoveryFile_);
     void SetIgnoreExtentsFromDbs(bool ignoreExtentsFromDbs_);
     void SetExpandNewPlots(bool expandNewPlots_);
+    void SetUserRestoreSessionFile(bool userRestoreSessionFile_);
     void SetPrecisionType(PrecisionType precisionType_);
 
     // Property getting methods
@@ -150,6 +151,7 @@ public:
     bool               GetSaveCrashRecoveryFile() const;
     bool               GetIgnoreExtentsFromDbs() const;
     bool               GetExpandNewPlots() const;
+    bool               GetUserRestoreSessionFile() const;
     PrecisionType      GetPrecisionType() const;
 
     // Persistence methods
@@ -196,6 +198,7 @@ public:
         ID_saveCrashRecoveryFile,
         ID_ignoreExtentsFromDbs,
         ID_expandNewPlots,
+        ID_userRestoreSessionFile,
         ID_precisionType,
         ID__LAST
     };
@@ -225,12 +228,13 @@ private:
     bool         saveCrashRecoveryFile;
     bool         ignoreExtentsFromDbs;
     bool         expandNewPlots;
+    bool         userRestoreSessionFile;
     int          precisionType;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbbi"
+#define GLOBALATTRIBUTES_TMFS "s*i*ibbbbbbbibbbbbbbbbbbbbbi"
 
 #endif
