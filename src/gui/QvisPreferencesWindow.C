@@ -194,6 +194,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Kathleen Biagas, Wed Aug  7 13:07:54 PDT 2013
 //   Added controls for precision type.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 void
@@ -335,6 +338,13 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(saveCrashRecoveryFileToggle, SIGNAL(toggled(bool)),
             this, SLOT(saveCrashRecoveryFileToggled(bool)));
     sessionOptionsLayout->addWidget(saveCrashRecoveryFileToggle);
+
+    userRestoreSessionFileToggle =
+        new QCheckBox(tr("Restore session on startup"),
+                      sessionControlsGroup);
+    connect(userRestoreSessionFileToggle, SIGNAL(toggled(bool)),
+            this, SLOT(userRestoreSessionFileToggled(bool)));
+    sessionOptionsLayout->addWidget(userRestoreSessionFileToggle);
 
     //
     // Create group box for time controls.
@@ -505,6 +515,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Kathleen Biagas, Wed Aug  7 13:08:23 PDT 2013
 //   Handle precisionType.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 void
@@ -632,6 +645,14 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         saveCrashRecoveryFileToggle->setChecked(
             atts->GetSaveCrashRecoveryFile());
         saveCrashRecoveryFileToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_userRestoreSessionFile))
+    {
+        userRestoreSessionFileToggle->blockSignals(true);
+        userRestoreSessionFileToggle->setChecked(
+            atts->GetUserRestoreSessionFile());
+        userRestoreSessionFileToggle->blockSignals(false);
     }
 
     if(doAll || atts->IsSelected(GlobalAttributes::ID_replacePlots))
@@ -1280,6 +1301,34 @@ QvisPreferencesWindow::enableWarningPopupsToggled(bool val)
 {
     enableWarnPopups = val;
     emit enableWarningPopups(val);
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::userRestoreSessionFileToggle
+//
+// Purpose: 
+//   This is a Qt slot function called when userRestoreSessionFileToggle is toggled.
+//
+// Arguments:
+//   val : The new value.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: David Camp
+// Creation:   Tue Jul 30 08:34:16 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::userRestoreSessionFileToggled(bool val)
+{
+    atts->SetUserRestoreSessionFile(val);
+    SetUpdate(false);
+    atts->Notify();
 }
 
 // ****************************************************************************

@@ -75,6 +75,9 @@
     <Field name="expandNewPlots" label="Expand New Plots" type="bool">
       false
     </Field>
+    <Field name="userRestoreSessionFile" label="Restore Last Session" type="bool">
+      false
+    </Field>
     <Field name="precisionType" label="precision" type="enum" subtype="PrecisionType">
       Native
     </Field>

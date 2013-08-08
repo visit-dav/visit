@@ -120,6 +120,7 @@ void GlobalAttributes::Init()
     saveCrashRecoveryFile = true;
     ignoreExtentsFromDbs = false;
     expandNewPlots = false;
+    userRestoreSessionFile = false;
     precisionType = Native;
 
     GlobalAttributes::SelectAll();
@@ -166,6 +167,7 @@ void GlobalAttributes::Copy(const GlobalAttributes &obj)
     saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
     ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
     expandNewPlots = obj.expandNewPlots;
+    userRestoreSessionFile = obj.userRestoreSessionFile;
     precisionType = obj.precisionType;
 
     GlobalAttributes::SelectAll();
@@ -348,6 +350,8 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
             (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
             (expandNewPlots == obj.expandNewPlots) &&
+            (userRestoreSessionFile == obj.userRestoreSessionFile) &&
+            (expandNewPlots == obj.expandNewPlots) &&
             (precisionType == obj.precisionType));
 }
 
@@ -516,6 +520,7 @@ GlobalAttributes::SelectAll()
     Select(ID_saveCrashRecoveryFile,            (void *)&saveCrashRecoveryFile);
     Select(ID_ignoreExtentsFromDbs,             (void *)&ignoreExtentsFromDbs);
     Select(ID_expandNewPlots,                   (void *)&expandNewPlots);
+    Select(ID_userRestoreSessionFile,           (void *)&userRestoreSessionFile);
     Select(ID_precisionType,                    (void *)&precisionType);
 }
 
@@ -733,6 +738,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       applySelection));
     }
 
+    if(completeSave || !FieldsEqual(ID_userRestoreSessionFile, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("userRestoreSessionFile",
+                      userRestoreSessionFile));
+    }
+
     if(completeSave || !FieldsEqual(ID_precisionType, &defaultObject))
     {
         addToParent = true;
@@ -864,6 +876,8 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetSaveCrashRecoveryFile(node->AsBool());
     if((node = searchNode->GetNode("applySelection")) != 0)
         SetApplySelection(node->AsBool());
+    if((node = searchNode->GetNode("userRestoreSessionFile")) != 0)
+        SetUserRestoreSessionFile(node->AsBool());
     if((node = searchNode->GetNode("precisionType")) != 0)
     {
         if (node->GetNodeType() == INT_NODE)
@@ -1053,6 +1067,13 @@ GlobalAttributes::SetExpandNewPlots(bool expandNewPlots_)
 }
 
 void
+GlobalAttributes::SetUserRestoreSessionFile(bool userRestoreSessionFile_)
+{
+    userRestoreSessionFile = userRestoreSessionFile_;
+    Select(ID_userRestoreSessionFile, (void *)&userRestoreSessionFile);
+}
+
+void
 GlobalAttributes::SetPrecisionType(GlobalAttributes::PrecisionType precisionType_)
 {
     precisionType = precisionType_;
@@ -1219,6 +1240,12 @@ GlobalAttributes::GetExpandNewPlots() const
     return expandNewPlots;
 }
 
+bool
+GlobalAttributes::GetUserRestoreSessionFile() const
+{
+    return userRestoreSessionFile;
+}
+
 GlobalAttributes::PrecisionType
 GlobalAttributes::GetPrecisionType() const
 {
@@ -1289,6 +1316,7 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_saveCrashRecoveryFile:            return "saveCrashRecoveryFile";
     case ID_ignoreExtentsFromDbs:             return "ignoreExtentsFromDbs";
     case ID_expandNewPlots:                   return "expandNewPlots";
+    case ID_userRestoreSessionFile:           return "userRestoreSessionFile";
     case ID_precisionType:                    return "precisionType";
     default:  return "invalid index";
     }
@@ -1338,6 +1366,7 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_saveCrashRecoveryFile:            return FieldType_bool;
     case ID_ignoreExtentsFromDbs:             return FieldType_bool;
     case ID_expandNewPlots:                   return FieldType_bool;
+    case ID_userRestoreSessionFile:           return FieldType_bool;
     case ID_precisionType:                    return FieldType_enum;
     default:  return FieldType_unknown;
     }
@@ -1387,6 +1416,7 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_saveCrashRecoveryFile:            return "bool";
     case ID_ignoreExtentsFromDbs:             return "bool";
     case ID_expandNewPlots:                   return "bool";
+    case ID_userRestoreSessionFile:           return "bool";
     case ID_precisionType:                    return "enum";
     default:  return "invalid index";
     }
@@ -1532,6 +1562,11 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_expandNewPlots:
         {  // new scope
         retval = (expandNewPlots == obj.expandNewPlots);
+        }
+        break;
+    case ID_userRestoreSessionFile:
+        {  // new scope
+        retval = (userRestoreSessionFile == obj.userRestoreSessionFile);
         }
         break;
     case ID_precisionType:

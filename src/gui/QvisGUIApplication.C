@@ -1594,6 +1594,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Emit FireInit signal instead of using QTimer::singleShot to
 //   work around a Qt/Glib init problem in linux.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 void
@@ -1696,6 +1699,19 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 7:
         {
+        // Check if user has restore set and no session or data file commandline option.
+        if(GetViewerState()->GetGlobalAttributes()->GetUserRestoreSessionFile()
+            && sessionFile.isEmpty() && loadFile.Empty())
+        {
+            QDir dir(GetUserVisItDirectory().c_str());
+            QString restoreFile = "default_restore.session";
+            if(dir.exists() && dir.exists(restoreFile))
+            {
+                sessionFile = GetUserVisItDirectory().c_str();
+                sessionFile += restoreFile;
+            }
+        }
+
         stringVector noFiles;
         // Load the initial session file.
         RestoreSessionFile(sessionFile, noFiles);
@@ -1966,6 +1982,9 @@ QvisGUIApplication::Exec()
 //    Don't prompt the user for whether they want to exit if we launched
 //    the CLI ourselves.
 //
+//    David Camp, Thu Aug  8 08:50:06 PDT 2013
+//    Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 void
@@ -2021,6 +2040,14 @@ QvisGUIApplication::Quit()
     // in determining whether we have a crash recovery file and it makes
     // sense for the viewer to remove its file.
     RemoveCrashRecoveryFile(false);
+
+    // Save default restore session file.
+    if(GetViewerState()->GetGlobalAttributes()->GetUserRestoreSessionFile())
+    {
+        QString restoreFile = GetUserVisItDirectory().c_str();
+        restoreFile += "default_restore.session";
+        SaveSessionFile(restoreFile);
+    }
 
     mainApp->quit();
 }
@@ -5049,7 +5076,7 @@ QvisGUIApplication::RestoreSessionFile(const QString &s,
         // Set the name of the session file that we loaded.
         SetSessionNameInWindowTitle(sessionFile);
 
-    restoringSession = false;
+        restoringSession = false;
     }
 }
 
