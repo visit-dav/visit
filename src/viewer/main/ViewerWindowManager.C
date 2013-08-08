@@ -10559,4 +10559,21 @@ bool ViewerWindowManager::SetCreateVectorMagnitudeExpressions(bool newVal)
     return oldVal;
 }
 
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetPrecisionType
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 7, 2013
+//
+// ****************************************************************************
+
+void ViewerWindowManager::SetPrecisionType(int newVal)
+{
+    if (clientAtts->GetPrecisionType() != newVal)
+    {
+        clientAtts->SetPrecisionType(GlobalAttributes::PrecisionType(newVal));
+        ViewerEngineManager::Instance()->UpdatePrecisionType(newVal);
+        clientAtts->Notify();
+    }
+}
 

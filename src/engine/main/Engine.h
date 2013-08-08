@@ -68,6 +68,7 @@ class UseNetworkRPC;
 class ProcInfoRPC;
 class SimulationCommandRPC;
 class SetEFileOpenOptionsRPC;
+class SetPrecisionTypeRPC;
 class LaunchRPC;
 class EngineState;
 

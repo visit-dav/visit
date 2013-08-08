@@ -490,6 +490,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Brad Whitlock, Tue Jun  5 17:11:18 PDT 2012
 //    Pass MachineProfile down into Create.
 //
+//    Kathleen Biagas, Wed Aug  7 13:02:34 PDT 2013
+//    Send precision type to newly created engine.
+//
 // ****************************************************************************
 
 bool
@@ -690,6 +693,11 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
 
         // Tell the new engine what the default file open options are.
         newEngine.proxy->GetEngineMethods()->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
+
+        // Tell the new engine the requested floating point precision
+        newEngine.proxy->GetEngineMethods()->SetPrecisionType(
+            ViewerWindowManager::Instance()->GetClientAtts()->
+                    GetPrecisionType());
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -3320,6 +3328,27 @@ ViewerEngineManager::UpdateDefaultFileOpenOptions(FileOpenOptions *opts)
     {
         it->second.proxy->GetEngineMethods()->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
     }    
+}
+
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::UpdatePrecisionType
+//
+//  Purpose:
+//      Sets the precision type.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 1, 2013
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::UpdatePrecisionType(const int pType)
+{
+    for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
+    {
+        it->second.proxy->GetEngineMethods()->SetPrecisionType(pType);
+    }
 }
 
 

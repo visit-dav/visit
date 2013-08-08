@@ -36,30 +36,51 @@
 *
 *****************************************************************************/
 
-#ifndef PY_GLOBALATTRIBUTES_H
-#define PY_GLOBALATTRIBUTES_H
-#include <Python.h>
-#include <GlobalAttributes.h>
-#include <visitpy_exports.h>
+#ifndef SET_PRECISION_TYPE_RPC_H
+#define SET_PRECISION_TYPE_RPC_H
+#include <engine_rpc_exports.h>
 
+#include <VisItRPC.h>
+#include <string>
+
+// ****************************************************************************
+// Class: SetPrecisionTypeRPC
 //
-// Functions exposed to the VisIt module.
+// Purpose:
+//   This RPC sets the default precision type.
 //
-#define GLOBALATTRIBUTES_NMETH 52
-void VISITPY_API           PyGlobalAttributes_StartUp(GlobalAttributes *subj, void *data);
-void VISITPY_API           PyGlobalAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyGlobalAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyGlobalAttributes_Check(PyObject *obj);
-VISITPY_API GlobalAttributes *  PyGlobalAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyGlobalAttributes_New();
-VISITPY_API PyObject *     PyGlobalAttributes_Wrap(const GlobalAttributes *attr);
-void VISITPY_API           PyGlobalAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyGlobalAttributes_SetDefaults(const GlobalAttributes *atts);
-std::string VISITPY_API    PyGlobalAttributes_GetLogString();
-std::string VISITPY_API    PyGlobalAttributes_ToString(const GlobalAttributes *, const char *);
-VISITPY_API PyObject *     PyGlobalAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH];
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 1, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class ENGINE_RPC_API SetPrecisionTypeRPC : public BlockingRPC
+{
+public:
+    SetPrecisionTypeRPC();
+    virtual ~SetPrecisionTypeRPC();
+
+    // Invocation method
+    void operator()(const int);
+
+    // Property selection methods
+    virtual void SelectAll();
+
+    // Property setting methods
+    void SetPrecisionType(const int);
+
+    // Property getting methods
+    const int GetPrecisionType() const;
+
+    // Return name of object.
+    virtual const std::string TypeName() const;
+private:
+    int precisionType;
+};
+
 
 #endif
-

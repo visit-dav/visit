@@ -168,6 +168,35 @@ avtVarTypeToString(avtVarType v)
 
 
 // ****************************************************************************
+//  Function: avtPrecisionTypeToString
+//
+//  Purpose:
+//      Creates a string from an avtPrecisionType.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 29, 2013
+//
+// ****************************************************************************
+
+std::string
+avtPrecisionTypeToString(avtPrecisionType v)
+{
+    switch (v)
+    {
+      case AVT_PRECISION_FLOAT:
+        return "float";
+      case AVT_PRECISION_NATIVE:
+        return "native";
+      case AVT_PRECISION_DOUBLE:
+        return "double";
+      default:
+        break;
+    }
+    return "unknown";
+}
+
+
+// ****************************************************************************
 // Function: GuessVarTypeFromNumDimsAndComps
 //
 // Purpose:

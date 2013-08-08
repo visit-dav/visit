@@ -237,6 +237,7 @@ public:
         SetCreateMeshQualityExpressionsRPC,
         SetCreateTimeDerivativeExpressionsRPC,
         SetCreateVectorMagnitudeExpressionsRPC,
+        SetPrecisionTypeRPC,
         CopyActivePlotsRPC,
         SetPlotFollowsTimeRPC,
         TurnOffAllLocksRPC,

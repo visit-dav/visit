@@ -92,6 +92,7 @@ bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
 FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
+avtPrecisionType avtDatabaseFactory::precisionType = AVT_PRECISION_NATIVE;
 
 //
 // Function Prototypes
@@ -118,6 +119,28 @@ void
 avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 {
     defaultFileOpenOptions = opts;
+}
+
+// ****************************************************************************
+//  Method:  avtDatabaseFactory::SetPrecisionType
+//
+//  Purpose:
+//    Store off the precisionType.  We use this when XForm Manager decides
+//    whether or not to tranform data.
+//
+//  Arguments:
+//    pType      the new precision type.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    August 1, 2013
+//
+// ****************************************************************************
+
+void
+avtDatabaseFactory::SetPrecisionType(const int pType)
+{
+    if (pType >= 0 && pType < 3)
+        precisionType = avtPrecisionType(pType);
 }
 
 // ****************************************************************************

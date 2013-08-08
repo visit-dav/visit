@@ -8351,7 +8351,10 @@ ViewerSubject::HandleViewerRPC()
 //
 //    Kathleen Biagas, Fri Oct 19 13:55:00 PDT 2012
 //    Reorderd DDT entries, made MaxRPC the last case before default.
-//  
+//
+//    Kathleen Biagas, Wed Aug  7 13:00:17 PDT 2013
+//    Added SetPrecisionTypeRPC.
+//
 // ****************************************************************************
 
 void
@@ -8713,6 +8716,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
         SetCreateVectorMagnitudeExpressions();
+        break;
+    case ViewerRPC::SetPrecisionTypeRPC:
+        SetPrecisionType();
         break;
     case ViewerRPC::SetDefaultFileOpenOptionsRPC:
         SetDefaultFileOpenOptions();
@@ -10619,6 +10625,26 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
 {
     ViewerWindowManager *wM = ViewerWindowManager::Instance();
     wM->SetCreateVectorMagnitudeExpressions(
+        GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetPrecisionType
+//
+//  Purpose: Handle a SetPrecisionType RPC
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    August 7, 2013
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+ViewerSubject::SetPrecisionType()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetPrecisionType(
         GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 

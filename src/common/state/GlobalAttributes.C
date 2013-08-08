@@ -39,6 +39,44 @@
 #include <GlobalAttributes.h>
 #include <DataNode.h>
 
+//
+// Enum conversion methods for GlobalAttributes::PrecisionType
+//
+
+static const char *PrecisionType_strings[] = {
+"Float", "Native", "Double"
+};
+
+std::string
+GlobalAttributes::PrecisionType_ToString(GlobalAttributes::PrecisionType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return PrecisionType_strings[index];
+}
+
+std::string
+GlobalAttributes::PrecisionType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return PrecisionType_strings[index];
+}
+
+bool
+GlobalAttributes::PrecisionType_FromString(const std::string &s, GlobalAttributes::PrecisionType &val)
+{
+    val = GlobalAttributes::Float;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == PrecisionType_strings[i])
+        {
+            val = (PrecisionType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: GlobalAttributes::GlobalAttributes
 //
@@ -82,6 +120,7 @@ void GlobalAttributes::Init()
     saveCrashRecoveryFile = true;
     ignoreExtentsFromDbs = false;
     expandNewPlots = false;
+    precisionType = Native;
 
     GlobalAttributes::SelectAll();
 }
@@ -127,6 +166,7 @@ void GlobalAttributes::Copy(const GlobalAttributes &obj)
     saveCrashRecoveryFile = obj.saveCrashRecoveryFile;
     ignoreExtentsFromDbs = obj.ignoreExtentsFromDbs;
     expandNewPlots = obj.expandNewPlots;
+    precisionType = obj.precisionType;
 
     GlobalAttributes::SelectAll();
 }
@@ -307,7 +347,8 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (userDirForSessionFiles == obj.userDirForSessionFiles) &&
             (saveCrashRecoveryFile == obj.saveCrashRecoveryFile) &&
             (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
-            (expandNewPlots == obj.expandNewPlots));
+            (expandNewPlots == obj.expandNewPlots) &&
+            (precisionType == obj.precisionType));
 }
 
 // ****************************************************************************
@@ -475,6 +516,7 @@ GlobalAttributes::SelectAll()
     Select(ID_saveCrashRecoveryFile,            (void *)&saveCrashRecoveryFile);
     Select(ID_ignoreExtentsFromDbs,             (void *)&ignoreExtentsFromDbs);
     Select(ID_expandNewPlots,                   (void *)&expandNewPlots);
+    Select(ID_precisionType,                    (void *)&precisionType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -560,6 +602,9 @@ GlobalAttributes::SelectAll()
 //
 //   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
 //   Removed maintainData, moved maintainView to view settings, not global.
+//
+//   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
+//   Add precision.
 //
 // ****************************************************************************
 
@@ -688,6 +733,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       applySelection));
     }
 
+    if(completeSave || !FieldsEqual(ID_precisionType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("precisionType",
+                      precisionType));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -762,6 +814,9 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
 //   Jeremy Meredith, Wed Feb  3 14:54:47 EST 2010
 //   Removed maintainData, moved maintainView to view settings, not global.
 //
+//   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
+//   Add precision.
+//
 // ****************************************************************************
 
 void
@@ -809,6 +864,21 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetSaveCrashRecoveryFile(node->AsBool());
     if((node = searchNode->GetNode("applySelection")) != 0)
         SetApplySelection(node->AsBool());
+    if((node = searchNode->GetNode("precisionType")) != 0)
+    {
+        if (node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if (ival >= 0 && ival < 3)
+                SetPrecisionType(PrecisionType(ival));
+        }
+        else if (node->GetNodeType() == STRING_NODE)
+        {
+            PrecisionType value;
+            if (PrecisionType_FromString(node->AsString(), value))
+                SetPrecisionType(value);
+        }
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -982,6 +1052,13 @@ GlobalAttributes::SetExpandNewPlots(bool expandNewPlots_)
     Select(ID_expandNewPlots, (void *)&expandNewPlots);
 }
 
+void
+GlobalAttributes::SetPrecisionType(GlobalAttributes::PrecisionType precisionType_)
+{
+    precisionType = precisionType_;
+    Select(ID_precisionType, (void *)&precisionType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1142,6 +1219,12 @@ GlobalAttributes::GetExpandNewPlots() const
     return expandNewPlots;
 }
 
+GlobalAttributes::PrecisionType
+GlobalAttributes::GetPrecisionType() const
+{
+    return PrecisionType(precisionType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1206,6 +1289,7 @@ GlobalAttributes::GetFieldName(int index) const
     case ID_saveCrashRecoveryFile:            return "saveCrashRecoveryFile";
     case ID_ignoreExtentsFromDbs:             return "ignoreExtentsFromDbs";
     case ID_expandNewPlots:                   return "expandNewPlots";
+    case ID_precisionType:                    return "precisionType";
     default:  return "invalid index";
     }
 }
@@ -1254,6 +1338,7 @@ GlobalAttributes::GetFieldType(int index) const
     case ID_saveCrashRecoveryFile:            return FieldType_bool;
     case ID_ignoreExtentsFromDbs:             return FieldType_bool;
     case ID_expandNewPlots:                   return FieldType_bool;
+    case ID_precisionType:                    return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1302,6 +1387,7 @@ GlobalAttributes::GetFieldTypeName(int index) const
     case ID_saveCrashRecoveryFile:            return "bool";
     case ID_ignoreExtentsFromDbs:             return "bool";
     case ID_expandNewPlots:                   return "bool";
+    case ID_precisionType:                    return "enum";
     default:  return "invalid index";
     }
 }
@@ -1446,6 +1532,11 @@ GlobalAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_expandNewPlots:
         {  // new scope
         retval = (expandNewPlots == obj.expandNewPlots);
+        }
+        break;
+    case ID_precisionType:
+        {  // new scope
+        retval = (precisionType == obj.precisionType);
         }
         break;
     default: retval = false;

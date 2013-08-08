@@ -499,7 +499,10 @@ class SharedDaemon;
 //
 //    Jonathan Byrd (Allinea Software), Sun Dec 18 2011
 //    Added methods for connecting/disconnecting the viewer with DDT,
-///   and to instruct DDT to focus on a specific domain.
+//    and to instruct DDT to focus on a specific domain.
+//
+//    Kathleen Biagas, Wed Aug  7 12:59:21 PDT 2013
+//    Add SetPrecisionType.
 //
 // ****************************************************************************
 
@@ -704,6 +707,7 @@ private:
     void SetCreateMeshQualityExpressions();
     void SetCreateTimeDerivativeExpressions();
     void SetCreateVectorMagnitudeExpressions();
+    void SetPrecisionType();
 
     void MoveWindow();
     void MoveAndResizeWindow();

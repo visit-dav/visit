@@ -70,6 +70,7 @@
 #include <vtkVisItUtility.h>
 
 #include <avtDatabase.h>
+#include <avtDatabaseFactory.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtParallel.h>
@@ -353,8 +354,114 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
                 ConvertToType(newBuf, (vtkIdType*) oldBuf, numValues);
                 break;
             default:
-                {   char msg[256];
-                    SNPRINTF(msg, sizeof(msg), "Cannot convert from type \"%s\" to float",
+                {
+                   char msg[256];
+                    SNPRINTF(msg, sizeof(msg),
+                        "Cannot convert from type \"%s\" to float",
+                        DataArrayTypeName(oldArr));
+                    EXCEPTION1(ImproperUseException, msg);
+                }
+        }
+    }
+
+    if (newArr)
+        newArr->SetName(oldArr->GetName());
+
+    vtkInformation* info = oldArr->GetInformation();
+    if (info && info->Has(avtVariableCache::OFFSET_3())) {
+        double* vals = info->Get(avtVariableCache::OFFSET_3());
+        vtkInformation* newInfo = newArr->GetInformation();
+        newInfo->Set(avtVariableCache::OFFSET_3(), vals[0], vals[1], vals[2]);
+    }
+
+    return newArr;
+}
+
+
+// ****************************************************************************
+//  Function: ConvertDataArrayToDouble
+//
+//  Purpose: Given a vtk data array, make a copy of it that is converted
+//  to double
+//
+//  Notes:  copied form ConvertDataArrayToFloat
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 29, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+static vtkDataArray *
+ConvertDataArrayToDouble(vtkDataArray *oldArr)
+{
+    vtkDataArray *newArr = 0;
+
+    if (oldArr->GetDataType() != VTK_DOUBLE)
+    {
+        newArr = vtkDoubleArray::New();
+
+        size_t numTuples = oldArr->GetNumberOfTuples();
+        size_t numComponents = oldArr->GetNumberOfComponents();
+
+        newArr->SetNumberOfComponents(numComponents);
+        newArr->SetNumberOfTuples(numTuples);
+
+        double *newBuf = (double*) newArr->GetVoidPointer(0);
+        void *oldBuf = oldArr->GetVoidPointer(0);
+
+        debug1 << "avtTransformManager: Converting vktDataArray, ";
+        if (oldArr->GetName() != NULL)
+               debug1 << "\"" << oldArr->GetName() << "\", ";
+        debug1 << "with " << numTuples << " tuples and "
+               << numComponents << " components from type \""
+               << DataArrayTypeName(oldArr) << "\" to \"double\"" << endl;
+
+        size_t numValues = numTuples * numComponents;
+        switch (oldArr->GetDataType())
+        {
+            case VTK_CHAR:
+                ConvertToType(newBuf, (char*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_CHAR:
+                ConvertToType(newBuf, (unsigned char*) oldBuf, numValues);
+                break;
+            case VTK_SHORT:
+                ConvertToType(newBuf, (short*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_SHORT:
+                ConvertToType(newBuf, (unsigned short*) oldBuf, numValues);
+                break;
+            case VTK_INT:
+                ConvertToType(newBuf, (int*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_INT:
+                ConvertToType(newBuf, (unsigned int*) oldBuf, numValues);
+                break;
+            case VTK_LONG:
+                ConvertToType(newBuf, (long*) oldBuf, numValues);
+                break;
+            case VTK_LONG_LONG:
+                ConvertToType(newBuf, (long long*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_LONG:
+                ConvertToType(newBuf, (unsigned long*) oldBuf, numValues);
+                break;
+            case VTK_UNSIGNED_LONG_LONG:
+                ConvertToType(newBuf, (unsigned long long*) oldBuf, numValues);
+                break;
+            case VTK_FLOAT:
+                ConvertToType(newBuf, (float*) oldBuf, numValues);
+                break;
+            case VTK_ID_TYPE:
+                ConvertToType(newBuf, (vtkIdType*) oldBuf, numValues);
+                break;
+            default:
+                {
+                    char msg[256];
+                    SNPRINTF(msg, sizeof(msg),
+                        "Cannot convert from type \"%s\" to double",
                         DataArrayTypeName(oldArr));
                     EXCEPTION1(ImproperUseException, msg); 
                 }
@@ -435,9 +542,12 @@ GetCoordDataType(vtkDataSet *ds)
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
+//    Kathleen Biagas, Wed Aug  7 12:47:47 PDT 2013
+//    Added toFloat argument.
+//
 // ****************************************************************************
 static vtkDataSet * 
-ConvertDataSetToFloat(vtkDataSet *oldds)
+ConvertDataSet(vtkDataSet *oldds, bool toFloat)
 {
     vtkDataSet *newds = 0;
 
@@ -451,7 +561,11 @@ ConvertDataSetToFloat(vtkDataSet *oldds)
                 if (oldps != 0)
                 {
                     vtkDataArray *oldArr = oldps->GetPoints()->GetData();
-                    vtkDataArray *newArr = ConvertDataArrayToFloat(oldArr);
+                    vtkDataArray *newArr = NULL;
+                    if (toFloat)
+                        newArr = ConvertDataArrayToFloat(oldArr);
+                    else
+                        newArr = ConvertDataArrayToDouble(oldArr);
 
                     if (newArr != 0)
                     {
@@ -479,11 +593,23 @@ ConvertDataSetToFloat(vtkDataSet *oldds)
                 if (oldrg != 0)
                 {
                     vtkDataArray *oldX = oldrg->GetXCoordinates();
-                    vtkDataArray *newX = ConvertDataArrayToFloat(oldX);
+                    vtkDataArray *newX = NULL;
                     vtkDataArray *oldY = oldrg->GetYCoordinates();
-                    vtkDataArray *newY = ConvertDataArrayToFloat(oldY);
+                    vtkDataArray *newY = NULL;
                     vtkDataArray *oldZ = oldrg->GetZCoordinates();
-                    vtkDataArray *newZ = ConvertDataArrayToFloat(oldZ);
+                    vtkDataArray *newZ = NULL;
+                    if (toFloat)
+                    {
+                        newX = ConvertDataArrayToFloat(oldX);
+                        newY = ConvertDataArrayToFloat(oldY);
+                        newZ = ConvertDataArrayToFloat(oldZ);
+                    }
+                    else
+                    {
+                        newX = ConvertDataArrayToDouble(oldX);
+                        newY = ConvertDataArrayToDouble(oldY);
+                        newZ = ConvertDataArrayToDouble(oldZ);
+                    }
 
                     if (newX != 0 && newY != 0 && newZ != 0)
                     {
@@ -725,66 +851,109 @@ avtTransformManager::FreeUpResources(int lastts)
 // Creation:   Sat Apr 21 23:53:45 PDT 2012
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Aug  7 12:48:50 PDT 2013
+//    Take into consideration the precision set by user, as specifed in
+//    avtDatabaseFactory.
+//
 // ****************************************************************************
 
 bool
 avtTransformManager::CoordinatesHaveExcessPrecision(vtkDataSet *ds, 
     bool needNativePrecision) const
 {
-    // This needs to be a knob available to the user. Rather, we need to expose
-    // the choice to the user and set the contract's needNativePrecision 
-    // accordingly.
-    bool userWantsFullPrecision = true;
-
     bool excessPrecision;
-    if(userWantsFullPrecision)
+    avtPrecisionType pType = avtDatabaseFactory::GetPrecisionType();
+    if(pType == AVT_PRECISION_DOUBLE)
         excessPrecision = false;
     else
     {
         // The transform manager makes a decision here that since we don't
         // need native precision (according to the contract) that it's okay
         // to lose some precision.
-        excessPrecision = !needNativePrecision && 
+        excessPrecision = !needNativePrecision  &&
+            pType != AVT_PRECISION_NATIVE &&
             (PrecisionInBytes(GetCoordDataType(ds)) > sizeof(float));
     }
 
     return excessPrecision;
 }
 
+
+// ****************************************************************************
+// Method: avtTransformManager::CoordinatesHaveInsufficientPrecision
+//
+// Purpose:
+//   Determines whether the input dataset's coordinates have insufficient
+//   precision based on user request.
+//
+// Arguments:
+//   ds                  : The input dataset.
+//   needNativePrecision : Whether the contract says we need native precision.
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   July 29, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtTransformManager::CoordinatesHaveInsufficientPrecision(vtkDataSet *ds,
+    bool needNativePrecision) const
+{
+    bool insufficientPrecision;
+    avtPrecisionType pType = avtDatabaseFactory::GetPrecisionType();
+    if(pType == AVT_PRECISION_FLOAT)
+        insufficientPrecision = false;
+    else
+    {
+        // The transform manager makes a decision here that since we don't
+        // need native precision (according to the contract) that it's okay
+        // to increase precision.
+        insufficientPrecision = !needNativePrecision &&
+            pType != AVT_PRECISION_NATIVE  &&
+            (PrecisionInBytes(GetCoordDataType(ds)) < sizeof(double));
+    }
+
+    return insufficientPrecision;
+}
+
 // ****************************************************************************
 // Method: avtTransformManager::DataHasExcessPrecision
 //
-// Purpose: 
-//   Determines whether the input data array has excess precision that we can 
+// Purpose:
+//   Determines whether the input data array has excess precision that we can
 //   forfeit in the interest of using float for lower memory usage.
 //
 // Arguments:
 //   da                  : The input data array.
 //   needNativePrecision : Whether the contract says we need native precision.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Apr 21 23:53:45 PDT 2012
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Aug  7 12:48:50 PDT 2013
+//    Take into consideration the precision set by user, as specifed in
+//    avtDatabaseFactory.
+//
 // ****************************************************************************
 
 bool
 avtTransformManager::DataHasExcessPrecision(vtkDataArray *da,
     bool needNativePrecision) const
 {
-     // This needs to be a knob available to the user. Rather, we need to expose
-    // the choice to the user and set the contract's needNativePrecision 
-    // accordingly.
-    bool userWantsFullPrecision = true;
-
     bool excessPrecision;
-    if(userWantsFullPrecision)
+    avtPrecisionType pType = avtDatabaseFactory::GetPrecisionType();
+    if(pType == AVT_PRECISION_DOUBLE)
         excessPrecision = false;
     else
     {
@@ -792,17 +961,61 @@ avtTransformManager::DataHasExcessPrecision(vtkDataArray *da,
         // need native precision (according to the contract) that it's okay
         // to lose some precision.
         excessPrecision = !needNativePrecision && 
+            pType != AVT_PRECISION_NATIVE &&
             (PrecisionInBytes(da) > sizeof(float));
     }
 
     return excessPrecision;
 }
 
+
+// ****************************************************************************
+// Method: avtTransformManager::DataHasInsufficientPrecision
+//
+// Purpose:
+//   Determines whether the input data array has insufficient precision.
+//
+// Arguments:
+//   da                  : The input data array.
+//   needNativePrecision : Whether the contract says we need native precision.
+//
+// Returns:
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   July 29, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtTransformManager::DataHasInsufficientPrecision(vtkDataArray *da,
+    bool needNativePrecision) const
+{
+    bool insufficientPrecision;
+    avtPrecisionType pType = avtDatabaseFactory::GetPrecisionType();
+    if(pType == AVT_PRECISION_FLOAT)
+        insufficientPrecision = false;
+    else
+    {
+        // The transform manager makes a decision here that since we don't
+        // need native precision (according to the contract) that it's okay
+        // to lose some precision.
+        insufficientPrecision = !needNativePrecision &&
+             pType != AVT_PRECISION_NATIVE &&
+            (PrecisionInBytes(da) < sizeof(double));
+    }
+
+    return insufficientPrecision;
+}
+
 // ****************************************************************************
 //  Method: NativeToFloat transformation
 //
 //  Purpose: Convert dataset and/or data arrays defined on it to from their
-//  native type to float
+//  native type to float or double
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
@@ -833,8 +1046,12 @@ avtTransformManager::DataHasExcessPrecision(vtkDataArray *da,
 //    Call some helper functions to help determine whether there is 
 //    excess precision. Print the reason for conversion to the logs.
 //
+//    Kathleen Biagas, Wed Aug  7 12:51:33 PDT 2013
+//    Added 'InsufficientPrecision' methods that help determine if conversion
+//    to double should be utilized.
+//
 // ****************************************************************************
-
+//#define DEBUG_DOUBLE_PIPELINE
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
     const avtDataRequest_p &dataRequest, vtkDataSet *ds, int dom)
@@ -861,6 +1078,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
     }
     debug4 << mName << "needNativePrecision=" << (needNativePrecision?"true":"false")
            << ", admissibleDataTypes={";
+    bool doubleAllowed = false;
     for(size_t q = 0; q < admissibleDataTypes.size(); ++q)
     {
         switch (admissibleDataTypes[q])
@@ -876,7 +1094,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         case VTK_UNSIGNED_LONG:      debug4 << "VTK_UNSIGNED_LONG"; break;
         case VTK_UNSIGNED_LONG_LONG: debug4 << "VTK_UNSIGNED_LONG_LONG"; break;
         case VTK_FLOAT:              debug4 << "VTK_FLOAT"; break;
-        case VTK_DOUBLE:             debug4 << "VTK_DOUBLE"; break;
+        case VTK_DOUBLE:             debug4 << "VTK_DOUBLE"; doubleAllowed = true; break;
         case VTK_ID_TYPE:            debug4 << "VTK_ID_TYPE"; break;
         default:                     debug4 << admissibleDataTypes[q]; break;                
         }
@@ -896,23 +1114,48 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
     {
         if (pass == 1)
         {
-            debug1 << mName << "Applying NativeToFloat transform" << endl;
+            debug1 << mName << "Applying transform" << endl;
         }
 
         //
         // Deal with mesh first 
         //
-        bool disallowedType = !IsAdmissibleDataType(admissibleDataTypes, GetCoordDataType(ds));
-        bool excessPrecision = CoordinatesHaveExcessPrecision(ds, needNativePrecision);
-        if(disallowedType || excessPrecision)
+        bool disallowedType =
+             !IsAdmissibleDataType(admissibleDataTypes, GetCoordDataType(ds));
+        bool excessPrecision =
+             CoordinatesHaveExcessPrecision(ds, needNativePrecision);
+        bool insufficientPrecision =
+             CoordinatesHaveInsufficientPrecision(ds, needNativePrecision);
+
+#ifndef DEBUG_DOUBLE_PIPELINE
+        if (insufficientPrecision && !doubleAllowed)
+        {
+            debug1 << "User requested increased precision, but the pipeline has disallowed "
+                   << "VTK_DOUBLE" << endl;
+            insufficientPrecision = false;
+        }
+#endif
+
+        if(disallowedType || excessPrecision || insufficientPrecision)
         {
             anyConversionNeeded = true;
             if (pass == 1)
             {
                 if(disallowedType)
-                    debug1 << mName << "Convert coordinates due to disallowed type." << endl;
+                {
+                    debug1 << mName << "Convert coordinates due to disallowed"
+                           << " type." << endl;
+                }
                 if(excessPrecision)
-                    debug1 << mName << "Convert coordinates due to excess precision." << endl;
+                {
+                    debug1 << mName << "Convert coordinates due to excess "
+                           << "precision." << endl;
+                }
+                if(insufficientPrecision)
+                {
+                    debug1 << mName << "Convert coordinates due to "
+                           << "insufficient precision." << endl;
+                }
 
                 // look up this vtk object's "key" in GenericDb's cache
                 objectWasCachedInGenericDB[ds] =
@@ -932,8 +1175,18 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                 bool needDelete = false;
                 if (!rv)
                 {
-                    debug1 << mName << "Converting data set from native to float" << endl;
-                    rv = ConvertDataSetToFloat(ds);
+                    if (disallowedType || excessPrecision)
+                    {
+                        debug1 << mName << "Converting data set from native"
+                               << " to float" << endl;
+                        rv = ConvertDataSet(ds, true);
+                    }
+                    else
+                    {
+                        debug1 << mName << "Converting data set from native"
+                               << " to double" << endl;
+                        rv = ConvertDataSet(ds, false);
+                    }
                     needDelete = true;
                     if (objectWasCachedInGenericDB[ds])
                     {
@@ -966,17 +1219,48 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         {
             vtkDataArray *da = cd->GetArray(i);
             bool eligible = !ShouldIgnoreVariableForConversions(da, md, dataRequest);
-            disallowedType = eligible && !IsAdmissibleDataType(admissibleDataTypes, da->GetDataType());
-            excessPrecision = eligible && DataHasExcessPrecision(da, needNativePrecision);
-            if(disallowedType || excessPrecision)
+            disallowedType = eligible &&
+                !IsAdmissibleDataType(admissibleDataTypes, da->GetDataType());
+            excessPrecision = eligible &&
+                DataHasExcessPrecision(da, needNativePrecision);
+            insufficientPrecision = eligible &&
+                DataHasInsufficientPrecision(da, needNativePrecision);
+#ifndef DEBUG_DOUBLE_PIPELINE
+            if (insufficientPrecision && !doubleAllowed)
+            {
+                debug1 << "User requested increased precision, but the pipeline has disallowed"
+                       << " VTK_DOUBLE" << endl;
+                insufficientPrecision = false;
+            }
+#endif
+            bool ignore = false;
+            if (insufficientPrecision)
+            {
+                avtVarType vt = md->DetermineVarType(da->GetName());
+                ignore = (vt == AVT_MATERIAL || vt == AVT_MATSPECIES);
+                if (ignore)
+                    debug4 << "Conversion to double ignored for " << "da->GetName()" << endl;
+            }
+            if(!ignore && (disallowedType || excessPrecision || insufficientPrecision))
             {
                 anyConversionNeeded = true;
                 if (pass == 1)
                 {
                     if(disallowedType)
-                        debug1 << mName << "Convert \"" << da->GetName() << "\" array due to disallowed type." << endl;
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to disallowed type." << endl;
+                    }
                     if(excessPrecision)
-                        debug1 << mName << "Convert \"" << da->GetName() << "\" array due to excess precision." << endl;
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to excess precision." << endl;
+                    }
+                    if(insufficientPrecision)
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to insufficient precision." << endl;
+                    }
 
                     // look up this vtk object's "key" in GenericDb's cache
                     objectWasCachedInGenericDB[da] =
@@ -984,15 +1268,28 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 
                     vtkDataArray *newda = 0;
                     if (objectWasCachedInGenericDB[da])
+                    {
                         newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                    }
                     else
-                        debug1 << mName << "Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+                    {
+                        debug1 << mName << "Array \"" << da->GetName()
+                               << "\" was not in generic db's cache" << endl;
+                    }
 
                     bool needDelete = false;
                     if (!newda)
                     {
-                        debug1 << mName << "Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
-                        newda = ConvertDataArrayToFloat(da);
+                        debug1 << mName << "Array \"" << da->GetName()
+                               << "\" was not in tmngr's cache" << endl;
+                        if (disallowedType || excessPrecision)
+                        {
+                            newda = ConvertDataArrayToFloat(da);
+                        }
+                        else // insufficientPrecision
+                        {
+                            newda = ConvertDataArrayToDouble(da);
+                        }
                         needDelete = true;
                         if (objectWasCachedInGenericDB[da])
                         {
@@ -1038,17 +1335,40 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         {
             vtkDataArray *da = pd->GetArray(i);
             bool eligible = !ShouldIgnoreVariableForConversions(da, md, dataRequest);
-            disallowedType = eligible && !IsAdmissibleDataType(admissibleDataTypes, da->GetDataType());
-            excessPrecision = eligible && DataHasExcessPrecision(da, needNativePrecision);
-            if(disallowedType || excessPrecision)
+            disallowedType = eligible &&
+                !IsAdmissibleDataType(admissibleDataTypes, da->GetDataType());
+            excessPrecision = eligible &&
+                DataHasExcessPrecision(da, needNativePrecision);
+            insufficientPrecision = eligible &&
+                DataHasInsufficientPrecision(da, needNativePrecision);
+#ifndef DEBUG_DOUBLE_PIPELINE
+            if (insufficientPrecision && !doubleAllowed)
+            {
+                debug1 << "User requested increased precision, but the pipeline has "
+                       << "disallowed VTK_DOUBLE" << endl;
+                insufficientPrecision = false;
+            }
+#endif
+            if(disallowedType || excessPrecision || insufficientPrecision)
             {
                 anyConversionNeeded = true;
                 if (pass == 1)
                 {
                     if(disallowedType)
-                        debug1 << mName << "Convert \"" << da->GetName() << "\" array due to disallowed type." << endl;
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to disallowed type." << endl;
+                    }
                     if(excessPrecision)
-                        debug1 << mName << "Convert \"" << da->GetName() << "\" array due to excess precision." << endl;
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to excess precision." << endl;
+                    }
+                    if(insufficientPrecision)
+                    {
+                        debug1 << mName << "Convert \"" << da->GetName()
+                               << "\" array due to insufficient precision." << endl;
+                    }
 
                     // look up this vtk object's "key" in GenericDb's cache
                     objectWasCachedInGenericDB[da] = 
@@ -1056,15 +1376,27 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 
                     vtkDataArray *newda = 0;
                     if (objectWasCachedInGenericDB[da])
-                        newda = (vtkDataArray *) cache.GetVTKObject(vname, type, ts, dom, mat);
+                        newda = (vtkDataArray *)
+                              cache.GetVTKObject(vname, type, ts, dom, mat);
                     else
-                        debug1 << mName << "Array \"" << da->GetName() << "\" was not in generic db's cache" << endl;
+                    {
+                        debug1 << mName << "Array \"" << da->GetName()
+                               << "\" was not in generic db's cache" << endl;
+                    }
 
                     bool needDelete = false;
                     if (!newda)
                     {
-                        debug1 << mName << "Array \"" << da->GetName() << "\" was not in tmngr's cache" << endl;
-                        newda = ConvertDataArrayToFloat(da);
+                        debug1 << mName << "Array \"" << da->GetName()
+                               << "\" was not in tmngr's cache" << endl;
+                        if (disallowedType || excessPrecision)
+                        {
+                            newda = ConvertDataArrayToFloat(da);
+                        }
+                        else // insufficientPrecision
+                        {
+                            newda = ConvertDataArrayToDouble(da);
+                        }
                         needDelete = true;
                         if (objectWasCachedInGenericDB[da])
                         {

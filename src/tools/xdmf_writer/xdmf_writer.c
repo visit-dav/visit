@@ -3858,7 +3858,7 @@ HdfPutCoords(HDFFile *hdfFileIn, const char *coordName,
 
 void
 HdfPutConnectivity(HDFFile *hdfFileIn, const char *connectivityName,
-    int connectivityDataType, float *connectivity, int connectivityLength)
+    int connectivityDataType, void *connectivity, int connectivityLength)
 {
     HDFFileSerial *hdfFile = (HDFFileSerial *) hdfFileIn;
 

@@ -212,6 +212,25 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%sexpandNewPlots = 0\n", prefix);
     str += tmpStr;
+    const char *precisionType_names = "Float, Native, Double";
+    switch (atts->GetPrecisionType())
+    {
+      case GlobalAttributes::Float:
+          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sFloat  # %s\n", prefix, prefix, precisionType_names);
+          str += tmpStr;
+          break;
+      case GlobalAttributes::Native:
+          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sNative  # %s\n", prefix, prefix, precisionType_names);
+          str += tmpStr;
+          break;
+      case GlobalAttributes::Double:
+          SNPRINTF(tmpStr, 1000, "%sprecisionType = %sDouble  # %s\n", prefix, prefix, precisionType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -864,6 +883,39 @@ GlobalAttributes_GetExpandNewPlots(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the precisionType in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetPrecisionType(GlobalAttributes::PrecisionType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid precisionType value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "Float, Native, Double.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+GlobalAttributes_GetPrecisionType(PyObject *self, PyObject *args)
+{
+    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPrecisionType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
@@ -916,6 +968,8 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
     {"GetIgnoreExtentsFromDbs", GlobalAttributes_GetIgnoreExtentsFromDbs, METH_VARARGS},
     {"SetExpandNewPlots", GlobalAttributes_SetExpandNewPlots, METH_VARARGS},
     {"GetExpandNewPlots", GlobalAttributes_GetExpandNewPlots, METH_VARARGS},
+    {"SetPrecisionType", GlobalAttributes_SetPrecisionType, METH_VARARGS},
+    {"GetPrecisionType", GlobalAttributes_GetPrecisionType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -992,6 +1046,15 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
         return GlobalAttributes_GetIgnoreExtentsFromDbs(self, NULL);
     if(strcmp(name, "expandNewPlots") == 0)
         return GlobalAttributes_GetExpandNewPlots(self, NULL);
+    if(strcmp(name, "precisionType") == 0)
+        return GlobalAttributes_GetPrecisionType(self, NULL);
+    if(strcmp(name, "Float") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::Float));
+    if(strcmp(name, "Native") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::Native));
+    if(strcmp(name, "Double") == 0)
+        return PyInt_FromLong(long(GlobalAttributes::Double));
+
 
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
@@ -1054,6 +1117,8 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
     else if(strcmp(name, "expandNewPlots") == 0)
         obj = GlobalAttributes_SetExpandNewPlots(self, tuple);
+    else if(strcmp(name, "precisionType") == 0)
+        obj = GlobalAttributes_SetPrecisionType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

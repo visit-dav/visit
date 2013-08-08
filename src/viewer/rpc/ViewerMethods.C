@@ -5382,6 +5382,25 @@ ViewerMethods::SetCreateVectorMagnitudeExpressions(int flag)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::SetPrecisionType
+//
+//  Purpose: Tells viewer to set the precision type used in the pipeline.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 7, 2013
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetPrecisionType(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetPrecisionTypeRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::SetSuppressMessages
 //
 //  Purpose: Tells viewer to turn on/off message suppression.

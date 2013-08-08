@@ -1481,6 +1481,26 @@ EngineMethods::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
 }
 
 // ****************************************************************************
+//  Method:  EngineMethods::SetPrecisionType
+//
+//  Purpose:
+//    Tells the engine about the latest user-requested precision.
+//
+//  Arguments:
+//    pType      The new precision.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    August 7, 2013
+//
+// ****************************************************************************
+
+void
+EngineMethods::SetPrecisionType(const int pType)
+{
+    state->setPrecisionTypeRPC(pType);
+}
+
+// ****************************************************************************
 // Method: EngineMethods::GetEngineProperties
 //
 // Purpose:
