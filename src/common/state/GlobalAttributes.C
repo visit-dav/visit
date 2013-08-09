@@ -351,7 +351,6 @@ GlobalAttributes::operator == (const GlobalAttributes &obj) const
             (ignoreExtentsFromDbs == obj.ignoreExtentsFromDbs) &&
             (expandNewPlots == obj.expandNewPlots) &&
             (userRestoreSessionFile == obj.userRestoreSessionFile) &&
-            (expandNewPlots == obj.expandNewPlots) &&
             (precisionType == obj.precisionType));
 }
 
@@ -611,6 +610,9 @@ GlobalAttributes::SelectAll()
 //   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
 //   Add precision.
 //
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
+//
 // ****************************************************************************
 
 bool
@@ -828,6 +830,9 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
 //
 //   Kathleen Biagas, Thu Jul 25 13:47:07 PDT 2013
 //   Add precision.
+//
+//   David Camp, Thu Aug  8 08:50:06 PDT 2013
+//   Added the restore from last session feature. 
 //
 // ****************************************************************************
 
