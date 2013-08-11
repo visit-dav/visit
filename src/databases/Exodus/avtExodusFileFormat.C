@@ -638,24 +638,23 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
 }
 
 
-static vector<int>
-GetExodusSetIDs(int exncfid, string stype)
+static void
+GetExodusSetIDs(int exncfid, string stype, vector<int>& retval)
 {
     int ncerr;
     int num_set = 0;
-    vector<int> retval;
 
     if (stype != "elblk")
     {
         int num_set_dimid;
         ncerr = nc_inq_dimid(exncfid, string("num_" + stype + "_sets").c_str(), &num_set_dimid);
-        if (ncerr != NC_NOERR) return retval;
+        if (ncerr != NC_NOERR) return;
 
         size_t dlen = 0;
         ncerr = nc_inq_dimlen(exncfid, num_set_dimid, &dlen);
-        if (ncerr != NC_NOERR) return retval;
+        if (ncerr != NC_NOERR) return;
         num_set = (int) dlen;
-        if (!num_set) return retval;
+        if (!num_set) return;
     }
 
     // Populate retval with default ids (1...num_sets)
@@ -668,21 +667,19 @@ GetExodusSetIDs(int exncfid, string stype)
     else if (stype == "elblk") pnm = "eb";
     int prop1_varid;
     ncerr = nc_inq_varid(exncfid, string(pnm + "_prop1").c_str(), &prop1_varid);
-    if (ncerr != NC_NOERR) return retval;
+    if (ncerr != NC_NOERR) return;
 
     nc_type type;
     int ndims, dimids[NC_MAX_VAR_DIMS], natts;
     ncerr = nc_inq_var(exncfid, prop1_varid, 0, &type, &ndims, dimids, &natts);
-    if (ncerr != NC_NOERR) return retval;
+    if (ncerr != NC_NOERR) return;
 //warning WHAT ABOUT 64-BIT INTEGER TYPE
-    if (type != NC_INT || ndims != 1 || natts != 1) return retval;
-    ncerr = nc_inq_att(exncfid, prop1_varid, "ID", 0, 0);
-    if (ncerr != NC_NOERR) return retval;
+    if (type != NC_INT || ndims != 1 || natts != 1) return;
+    ncerr = nc_inq_att(exncfid, prop1_varid, "name", 0, 0);
+    if (ncerr != NC_NOERR) return;
 
     // Read integer data directly into STL vector obj's buffer
     ncerr = nc_get_var_int(exncfid, prop1_varid, &retval[0]);
-
-    return retval;
 }
 
 static vtkBitArray*
@@ -770,8 +767,6 @@ GetExodusSetsVar(int exncfid, int ts, char const *var, int numNodes, int numElem
     }
 
     delete [] status;
-
-    retval->Print(cerr);
 
     return retval;
 }
@@ -1616,7 +1611,8 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //
     // Add exodus nodsets, if any exist, as enumerated scalars
     //
-    vector<int> nsids = GetExodusSetIDs(ncExIIId, "node");
+    vector<int> nsids;
+    GetExodusSetIDs(ncExIIId, "node", nsids);
     if (nsids.size())
     {
         avtScalarMetaData *smd = new avtScalarMetaData("Nodesets", "Mesh", AVT_NODECENT);
@@ -1635,10 +1631,11 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //
     // Add exodus sidesets, if any exist, as enumerated scalars
     //
-    vector<int> ssids = GetExodusSetIDs(ncExIIId, "side");
+    vector<int> ssids;
+    GetExodusSetIDs(ncExIIId, "side", ssids);
     if (ssids.size())
     {
-        avtScalarMetaData *smd = new avtScalarMetaData("Sidesets", "Mesh", AVT_ZONECENT);
+        avtScalarMetaData *smd = new avtScalarMetaData("Sidesets", "Mesh", AVT_NODECENT);
         for (int i = 0; i < ssids.size(); i++)
         {
             char tmp[32];
