@@ -52,10 +52,6 @@ case $user in
         userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
-    whitlocb)
-        userNersc=whitlocb
-        userEmail=whitlock2@llnl.gov
-        ;;
 esac
 
 if test "$userEmail" = "unknown" ; then

@@ -97,9 +97,6 @@ case $user in
    miller)
       emailName=miller86@llnl.gov
       ;;
-   whitlocb)
-      emailName=whitlock2@llnl.gov
-      ;;
 esac
 
 #

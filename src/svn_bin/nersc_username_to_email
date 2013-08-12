@@ -66,6 +66,10 @@
 #
 #    Kevin Bensema, Wed Jul 17 17:30 PDT 2013
 #    Added case for user "kbensema"
+#
+#    Brad Whitlock, Mon Aug 12 12:01:32 PDT 2013
+#    Changed me from LLNL to Intelligent Light.
+#
 # *****************************************************************************
 
 
@@ -86,9 +90,9 @@ case $1 in
     "miller86")
         emaddr=miller86@llnl.gov
         ;;
-    # Brad Whitlock, Lawrence Livermore National Laboratory
+    # Brad Whitlock, Intelligent Light
     "whitlocb")
-        emaddr=whitlock2@llnl.gov
+        emaddr=bjw@ilight.com
         ;;
     # Cyrus Harrison, Lawrence Livermore National Laboratory
     "cyrush")
