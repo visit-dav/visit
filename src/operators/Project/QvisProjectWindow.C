@@ -119,7 +119,9 @@ QvisProjectWindow::~QvisProjectWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon Aug 12 16:17:34 PDT 2013
+//   Change notation that shows coordinate mapping.
+//
 // ****************************************************************************
 
 void
@@ -133,12 +135,12 @@ QvisProjectWindow::CreateWindowContents()
 
     projectionTypeCombo = new QComboBox(central);
 
-    projectionTypeCombo->addItem(tr("X-Axis Cartesian (x <= z, y <= y)"));
-    projectionTypeCombo->addItem(tr("Y-Axis Cartesian (x <= x, y <= z)"));
-    projectionTypeCombo->addItem(tr("Z-Axis Cartesian (x <= x, y <= y)"));
-    projectionTypeCombo->addItem(tr("X-Axis Cylindrical (x <= x, y <= r)"));
-    projectionTypeCombo->addItem(tr("Y-Axis Cylindrical (x <= y, y <= r)"));
-    projectionTypeCombo->addItem(tr("Z-Axis Cylindrical (x <= z, y <= r)"));
+    projectionTypeCombo->addItem(tr("X-Axis Cartesian (x' = z, y' = y)"));
+    projectionTypeCombo->addItem(tr("Y-Axis Cartesian (x' = x, y' = z)"));
+    projectionTypeCombo->addItem(tr("Z-Axis Cartesian (x' = x, y' = y)"));
+    projectionTypeCombo->addItem(tr("X-Axis Cylindrical (x' = x, y' = r)"));
+    projectionTypeCombo->addItem(tr("Y-Axis Cylindrical (x' = y, y' = r)"));
+    projectionTypeCombo->addItem(tr("Z-Axis Cylindrical (x' = z, y' = r)"));
     connect(projectionTypeCombo, SIGNAL(activated(int)),
             this, SLOT(projectionTypeChanged(int)));
     mainLayout->addWidget(projectionTypeCombo, 0,1);
