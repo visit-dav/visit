@@ -465,17 +465,16 @@ avtLineSamplerFilter::Execute()
         double channelPlotOffset = atts.GetChannelPlotOffset();
         double heightPlotScale = atts.GetHeightPlotScale();
 
-        // Create groups that represent each channel.
-        vtkPoints *points;
-        vtkCellArray *lines;
-    
-        // Create a new VTK polydata.
-        vtkPolyData *polydata;
-
         // Each point becomes a line
-        int nPts, tPts;
         int nLines = tmp_ds->GetNumberOfPoints();
+        int nPts;
 
+        if( atts.GetToroidalIntegration() ==
+            LineSamplerAttributes::IntegrateToroidally )
+          nPts = nTimeSteps;
+        else
+          nPts = nTimeSteps * nAngleSamples;
+        
         // First time through, create a dataset for the collating.
         if( lineSamples.size() == 0 )
         {         
@@ -485,19 +484,21 @@ avtLineSamplerFilter::Execute()
             lineSamples[i].reserve( nPts );
         }
 
+        // // Create groups that represent each channel.
+        // vtkPoints *points;
+        // vtkCellArray *lines;
+    
+        // // Create a new VTK polydata.
+        // vtkPolyData *polydata;
+
+
         // if( composite_ds == NULL )
         // {
+        //   int tPts = nPts * nLines;
+
         //   // Create groups that represent each channel.
         //   points = vtkPoints::New();
         //   lines = vtkCellArray::New();
-
-        //   if( atts.GetToroidalIntegration() ==
-        //       LineSamplerAttributes::IntegrateToroidally )
-        //     nPts = nTimeSteps;
-        //   else
-        //     nPts = nTimeSteps * nAngleSamples;;
-
-        //   tPts = nPts * nLines;
 
         //   points->Allocate(tPts);
         //   lines->Allocate(nLines);
@@ -2633,7 +2634,6 @@ avtLineSamplerFilter::CreateFinalOutput(void)
       msg += "The cycle. ";
     else 
       msg += "The time step ";
-
 
     msg += std::string("axis values are present but not valid ") +
       std::string("(not in increasing order). ") +

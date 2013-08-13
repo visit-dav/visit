@@ -98,8 +98,8 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
     virtual void CreateFinalOutput(void);
     virtual bool ExecutionSuccessful(void);
 
-    virtual vtkDataSet *ExecuteChannelData(vtkDataSet *, int, std::string);
-//  virtual vtkDataSet *ExecuteChannelList(vtkDataSet *, int, std::string);
+    virtual vtkDataSet* ExecuteChannelData(vtkDataSet *, int, std::string);
+//  virtual vtkDataSet* ExecuteChannelList(vtkDataSet *, int, std::string);
 
     virtual vtkPolyData* createPoint( avtVector startPoint,
                                      avtVector stopPoint,
@@ -109,7 +109,7 @@ class avtLineSamplerFilter : virtual public avtPluginFilter,
                                     avtVector stopPoint,
                                     bool allocateScalars );
   
-    virtual vtkDataSet *createCone( avtVector startPoint,
+    virtual vtkDataSet* createCone( avtVector startPoint,
                                     avtVector stopPoint,
                                     avtVector normal,
                                     double radius,
