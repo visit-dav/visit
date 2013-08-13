@@ -156,6 +156,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //   Dave Pugmire, Fri May 24 14:36:29 EDT 2013
 //   Bug fix in merge from just above.
 //
+//   Dave Pugmire, Tue Aug 13 11:55:59 EDT 2013
+//   Fix error in determing which slice is owned by a rank.
+//
 // ****************************************************************************
 
 bool
@@ -195,8 +198,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
         {
             bool shouldDoThisTimeSlice = true;
             if (parallelizingOverTime)
-                shouldDoThisTimeSlice = RankOwnsTimeSlice(i);
-
+                shouldDoThisTimeSlice = RankOwnsTimeSlice(currentTime);
+         
             if (!shouldDoThisTimeSlice)
                 continue;
             
