@@ -505,7 +505,6 @@ HostProfileList::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    DataNode *node;
     DataNode **children;
 
     // Clear all the MachineProfiles if we got any.

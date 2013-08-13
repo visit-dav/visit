@@ -2270,6 +2270,15 @@ private:
         }
         return false;
     }
+    bool HavePersistentAGVectors()
+    {
+        for (size_t i=0; i<fields.size(); i++)
+        {
+            if (fields[i]->type=="attVector" && fields[i]->persistent)
+                return true;
+        }
+        return false;
+    }
     bool HaveSoloAGVector()
     {
         int count = 0;
@@ -2936,8 +2945,9 @@ private:
         c << "    if(searchNode == 0)" << Endl;
         c << "        return;" << Endl;
         c << Endl;
-        c << "    DataNode *node;" << Endl;
-        if (HaveAGVectors())
+        if (!(fields.size() == 1 && fields[0]->type=="attVector"))
+            c << "    DataNode *node;" << Endl;
+        if (HavePersistentAGVectors())
             c << "    DataNode **children;" << Endl;
         
         if(HasCode(mName, 0))
