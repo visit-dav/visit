@@ -511,7 +511,6 @@ ExpressionList::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    DataNode *node;
     DataNode **children;
 
     // Clear all the Expressions if we got any.

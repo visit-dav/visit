@@ -1081,7 +1081,6 @@ PickAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    DataNode **children;
     if((node = searchNode->GetNode("variables")) != 0)
         SetVariables(node->AsStringVector());
     if((node = searchNode->GetNode("showIncidentElements")) != 0)

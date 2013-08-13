@@ -505,7 +505,6 @@ GaussianControlPointList::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    DataNode *node;
     DataNode **children;
 
     // Clear all the GaussianControlPoints if we got any.

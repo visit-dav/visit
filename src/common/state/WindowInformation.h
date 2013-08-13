@@ -55,7 +55,7 @@
 // Creation:   omitted
 //
 // Modifications:
-//
+//   
 // ****************************************************************************
 
 class STATE_API WindowInformation : public AttributeSubject
