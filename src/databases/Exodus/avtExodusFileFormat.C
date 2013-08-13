@@ -430,11 +430,12 @@ GetData(int exncfid, int ts, const char *visit_varname, int numBlocks, nc_type *
         // double vals_elem_var1eb1(time_step, num_el_in_blk1) ;
         // double vals_elem_var2eb1(time_step, num_el_in_blk1) ;
         int num_elem = 0;
+        buf = 0;
         for (int pass = 0; pass < 2; pass++)
         {
             int ndims, dimids[NC_MAX_VAR_DIMS];
             size_t dlen;
-            char *p = (char *) buf;  // buf is unitialized at this point!!!!! VC compiler issues warning
+            char *p = (char *) buf; // p not relevant on first pass
             for (int i = 0; i < numBlocks; i++)
             {
                 int elem_varid;
