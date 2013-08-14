@@ -70,13 +70,26 @@ class TestQuery(unittest.TestCase):
         visit.AddPlot("Pseudocolor","d")
         visit.DrawPlots()
     @visit_test
-    def test_query(self):
+    def test_query_01_std(self):
         res_v = query("Min")
         res_s = query("Min",rmode="string").strip()
         self.assertTrue( (res_v - 0.02357020415365696) < 1e-5 )
         self.assertEqual(res_s,"d -- Min = 0.0235702 (zone 44 in domain 5 at coord <0.483333, 0.483333>)")
     @visit_test
-    def test_py_query(self):
+    def test_query_02_kwargs(self):
+        #add a threshold 
+        visit.AddOperator("Isovolume")
+        iatts = visit.IsovolumeAttributes()
+        iatts.lbound = 0.4
+        iatts.ubound = 1e+37
+        visit.SetOperatorOptions(iatts)
+        visit.DrawPlots()
+        res_v = query("Min",use_actual_data=True)
+        self.assertTrue( (res_v - 0.3778594434261322) < 1e-5 )
+        res_v = query("Min",use_actual_data=False)
+        self.assertTrue( (res_v - 0.02357020415365696) < 1e-5 )
+    @visit_test
+    def test_query_03_py_query(self):
         res_a = python_query(file=vpq_file,msg_lvl=4)
         res_b = python_query(source=open(vpq_file).read(),msg_lvl=4)
         res_c = python_query(file=vpq_file,rmode="string",msg_lvl=4).strip()
