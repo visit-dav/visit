@@ -95,11 +95,12 @@ public:
     avtStreamlineIC( const avtStreamlineIC& );
     avtStreamlineIC& operator=( const avtStreamlineIC& );
     
-  public:
     virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
 
     unsigned int     numSteps;
+  public:
     unsigned int     maxSteps;
+  protected:
     bool             doDistance;
     double           maxDistance;
     bool             doTime;
