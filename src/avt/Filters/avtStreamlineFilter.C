@@ -537,7 +537,7 @@ avtStreamlineFilter::SetDisplayMethod(int d)
 // Method: avtStreamlineFilter::SetVelocitySource
 //
 // Purpose: 
-//   Sets the streamline point source.
+//   Sets the streamline velocity source.
 //
 // Arguments:
 //   vel : The velocity of the point.
@@ -1022,10 +1022,10 @@ randMinus1_1()
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::GetInitialLocations
+//  Method: avtStreamlineFilter::GetInitialVelocities
 //
 //  Purpose:
-//      Get the seed points out of the attributes.
+//      Get the seed velocities out of the attributes.
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2008
@@ -1043,7 +1043,7 @@ avtStreamlineFilter::GetInitialVelocities(void)
 }
 
 
- // ****************************************************************************
+// ****************************************************************************
 //  Method: avtStreamlineFilter::GetInitialLocations
 //
 //  Purpose:
