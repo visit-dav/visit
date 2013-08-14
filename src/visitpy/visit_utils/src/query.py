@@ -61,22 +61,22 @@ except:
 # Query Helpers
 #
 @require_visit
-def query(qname,args=[],rmode="value",echo = False, msg_lvl = 2):
+def query(qname,args=None,rmode="value",echo = False, msg_lvl = 2,**kwargs):
     """
     Executes a query and returns result based on 'rmode'.
      rmode={'value','string',object'}
-     Rasies an exception if an error occurs.
+     Raises an exception if an error occurs.
     """
     if echo:
         print "[Query: %s(%s)]" % (qname,str(args))
     prev_lvl = visit.SuppressMessages(msg_lvl)
-    if len(args) == 0:
-        qres = visit.Query(qname)
+    if args is None:
+        qres = visit.Query(qname,**kwargs)
     else:
-        # call w/ args
+        # call w/ args + kwargs
         cargs = [qname]
         cargs.extend(args)
-        qres = visit.Query(*cargs)
+        qres = visit.Query(*cargs,**kwargs)
     if qres == 0:
         visit.SuppressMessages(prev_lvl)
         raise VisItException("Execution of query: '%s' failed." % qname)
