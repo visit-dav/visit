@@ -42,6 +42,7 @@
 
 #ifndef VISIT_HDF5_H 
 #define VISIT_HDF5_H 
+#include <string.h>
 
 //
 // Useful macro for comparing HDF5 versions
@@ -130,6 +131,44 @@ static hid_t VisIt_H5Fopen(const char *name, int flags, hid_t fapl)
 
 static herr_t VisIt_H5Fclose(hid_t fid)
 {
+#ifndef VISIT_DONT_CHECK_H5OPENOBJECTS
+    static bool haveIssuedOpenObjectsWarning = false;
+    const unsigned int obj_flags = H5F_OBJ_LOCAL | H5F_OBJ_DATASET |
+        H5F_OBJ_GROUP | H5F_OBJ_DATATYPE | H5F_OBJ_ATTR;
+
+    /* Check for any open objects in this file */
+    int noo = H5Fget_obj_count(fid, obj_flags);
+    if (noo > 0 && !haveIssuedOpenObjectsWarning)
+    {
+        int n;
+        char msg[4096];
+        char msg2[8192];
+        hid_t *ooids = (hid_t *) malloc(noo * sizeof(hid_t));
+        SNPRINTF(msg, sizeof(msg), "Internal plugin error: %d objects left open in file: ", noo);
+#if HDF5_VERSION_GE(1,6,5)
+        H5Fget_obj_ids(fid, obj_flags, noo, ooids);
+#else
+        H5Fget_obj_ids(fid, obj_flags, noo, ooids);
+#endif
+        n = strlen(msg);
+        for (int i = 0; i < noo && n < sizeof(msg); i++)
+        {
+            char name[256], tmp[256];
+            H5Iget_name(ooids[i], name, sizeof(name));
+            SNPRINTF(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, ooids[i]);
+            if ((strlen(msg) + strlen(tmp) + 1) >= sizeof(msg))
+                break;
+            strcat(msg, tmp);
+            n += strlen(tmp);
+        }
+        free(ooids);
+        SNPRINTF(msg2, sizeof(msg2), "The HDF5 library indicates the plugin has left the following "
+            "objects in the file open...%s", msg);
+        if (!avtCallback::IssueWarning(msg2))
+           cerr << msg2 << endl;
+        haveIssuedOpenObjectsWarning = true;
+    }
+#endif
     herr_t err = H5Fclose(fid);
     if (err < 0)
         VisIt_IssueH5Warning(1);

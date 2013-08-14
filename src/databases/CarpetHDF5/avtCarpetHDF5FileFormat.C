@@ -41,6 +41,10 @@
 
 #include <avtCarpetHDF5FileFormat.h>
 
+//#define H5_USE_16_API 1
+#include <hdf5.h>
+#include <visit-hdf5.h>
+
 #include <string>
 #include <map>
 #include <set>

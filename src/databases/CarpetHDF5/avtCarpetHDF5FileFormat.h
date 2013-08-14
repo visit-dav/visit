@@ -45,15 +45,13 @@
 #include <avtMTMDFileFormat.h>
 #include <avtSpatialBoxSelection.h>
 
+#include <hdf5.h>
+
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
 #include <math.h>
-
-//#define H5_USE_16_API 1
-#include <hdf5.h>
-
 
 // ****************************************************************************
 //  Class: avtCarpetHDF5FileFormat
