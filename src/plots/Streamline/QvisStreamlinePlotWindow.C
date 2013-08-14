@@ -668,19 +668,19 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(maxStepsProcessText()));
     terminationLayout->addWidget(maxSteps, 0,1);
 
-    limitMaxDistance = new QCheckBox(tr("Limit maximum distance traveled by particles"), terminationGroup);
-    connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
-    terminationLayout->addWidget(limitMaxDistance, 1,0);
-    maxDistance = new QLineEdit(central);
-    connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
-    terminationLayout->addWidget(maxDistance, 1,1);
-
     limitMaxTime = new QCheckBox(tr("Limit maximum time elapsed for particles"), terminationGroup);
     connect(limitMaxTime, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeChanged(bool)));
-    terminationLayout->addWidget(limitMaxTime, 2,0);
+    terminationLayout->addWidget(limitMaxTime, 1,0);
     maxTime = new QLineEdit(central);
     connect(maxTime, SIGNAL(returnPressed()), this, SLOT(maxTimeProcessText()));
-    terminationLayout->addWidget(maxTime, 2,1);
+    terminationLayout->addWidget(maxTime, 1,1);
+
+    limitMaxDistance = new QCheckBox(tr("Limit maximum distance traveled by particles"), terminationGroup);
+    connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
+    terminationLayout->addWidget(limitMaxDistance, 2,0);
+    maxDistance = new QLineEdit(central);
+    connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
+    terminationLayout->addWidget(maxDistance, 2,1);
 
 // ----------------------------------------------------------------------
     // Appearance tab
