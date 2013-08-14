@@ -1147,7 +1147,7 @@ SILAttributes::RemoveNspace(int index)
 int
 SILAttributes::GetNumNspaces() const
 {
-    return nspace.size();
+    return (int)nspace.size();
 }
 
 // ****************************************************************************
@@ -1298,7 +1298,7 @@ SILAttributes::RemoveMatrices(int index)
 int
 SILAttributes::GetNumMatrices() const
 {
-    return matrices.size();
+    return (int)matrices.size();
 }
 
 // ****************************************************************************
@@ -1449,7 +1449,7 @@ SILAttributes::RemoveArrays(int index)
 int
 SILAttributes::GetNumArrays() const
 {
-    return arrays.size();
+    return (int)arrays.size();
 }
 
 // ****************************************************************************

@@ -1254,7 +1254,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "int" << Endl;
         c << classname << "::" << methodName << "() const" << Endl;
         c << "{" << Endl;
-        c << "    return " << name << ".size();" << Endl;
+        c << "    return (int)" << name << ".size();" << Endl;
         c << "}" << Endl << Endl;
 
         // Write the Get method

@@ -760,7 +760,7 @@ ViewerClientInformation::RemoveVars(int index)
 int
 ViewerClientInformation::GetNumVars() const
 {
-    return vars.size();
+    return (int)vars.size();
 }
 
 // ****************************************************************************

@@ -780,7 +780,7 @@ DatabaseCorrelationList::RemoveCorrelations(int index)
 int
 DatabaseCorrelationList::GetNumCorrelations() const
 {
-    return correlations.size();
+    return (int)correlations.size();
 }
 
 // ****************************************************************************

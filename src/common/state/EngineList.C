@@ -745,7 +745,7 @@ EngineList::RemoveProperties(int index)
 int
 EngineList::GetNumProperties() const
 {
-    return properties.size();
+    return (int)properties.size();
 }
 
 // ****************************************************************************

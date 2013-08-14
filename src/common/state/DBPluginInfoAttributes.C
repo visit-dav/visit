@@ -908,7 +908,7 @@ DBPluginInfoAttributes::RemoveDbReadOptions(int index)
 int
 DBPluginInfoAttributes::GetNumDbReadOptions() const
 {
-    return dbReadOptions.size();
+    return (int)dbReadOptions.size();
 }
 
 // ****************************************************************************
@@ -1059,7 +1059,7 @@ DBPluginInfoAttributes::RemoveDbWriteOptions(int index)
 int
 DBPluginInfoAttributes::GetNumDbWriteOptions() const
 {
-    return dbWriteOptions.size();
+    return (int)dbWriteOptions.size();
 }
 
 // ****************************************************************************

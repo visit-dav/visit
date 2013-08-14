@@ -672,7 +672,7 @@ HostProfileList::RemoveMachines(int index)
 int
 HostProfileList::GetNumMachines() const
 {
-    return machines.size();
+    return (int)machines.size();
 }
 
 // ****************************************************************************

@@ -678,7 +678,7 @@ ExpressionList::RemoveExpressions(int index)
 int
 ExpressionList::GetNumExpressions() const
 {
-    return expressions.size();
+    return (int)expressions.size();
 }
 
 // ****************************************************************************

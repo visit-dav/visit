@@ -875,7 +875,7 @@ ColorTableAttributes::RemoveColorTables(int index)
 int
 ColorTableAttributes::GetNumColorTables() const
 {
-    return colorTables.size();
+    return (int)colorTables.size();
 }
 
 // ****************************************************************************

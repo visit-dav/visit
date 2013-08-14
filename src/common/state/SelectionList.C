@@ -760,7 +760,7 @@ SelectionList::RemoveSelections(int index)
 int
 SelectionList::GetNumSelections() const
 {
-    return selections.size();
+    return (int)selections.size();
 }
 
 // ****************************************************************************
@@ -911,7 +911,7 @@ SelectionList::RemoveSelectionSummary(int index)
 int
 SelectionList::GetNumSelectionSummarys() const
 {
-    return selectionSummary.size();
+    return (int)selectionSummary.size();
 }
 
 // ****************************************************************************

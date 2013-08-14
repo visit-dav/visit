@@ -857,7 +857,7 @@ ColorControlPointList::RemoveControlPoints(int index)
 int
 ColorControlPointList::GetNumControlPoints() const
 {
-    return controlPoints.size();
+    return (int)controlPoints.size();
 }
 
 // ****************************************************************************
@@ -1130,10 +1130,8 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 float
 ColorControlPointList::EvalCubicSpline(float t, const float *allX, const float *allY, int n) const
 {
-    if(t <= allX[0]) 
-        return allY[0];
-    if(t >= allX[n-1])
-        return allY[n-1];
+    if((allX[0] > t) || (allX[n-1] < t))
+        return 0.f;
     int i = 0;
     for(i = 0; i < n; ++i)
         if(allX[i] >= t)

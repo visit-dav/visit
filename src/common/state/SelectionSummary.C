@@ -845,7 +845,7 @@ SelectionSummary::RemoveVariables(int index)
 int
 SelectionSummary::GetNumVariables() const
 {
-    return variables.size();
+    return (int)variables.size();
 }
 
 // ****************************************************************************

@@ -1951,7 +1951,7 @@ VolumeAttributes::RemoveTransferFunction2DWidgets(int index)
 int
 VolumeAttributes::GetNumTransferFunction2DWidgets() const
 {
-    return transferFunction2DWidgets.size();
+    return (int)transferFunction2DWidgets.size();
 }
 
 // ****************************************************************************
