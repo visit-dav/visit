@@ -3812,7 +3812,8 @@ PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes 
             sourcePointsDiffer ||
             sourceLineDiffers ||
 
-            POINT_DIFFERS(velocitySource, obj.velocitySource) ||
+            (fieldType == FlashField &&
+             POINT_DIFFERS(velocitySource, obj.velocitySource)) ||
 
             densityMatters ||
 
