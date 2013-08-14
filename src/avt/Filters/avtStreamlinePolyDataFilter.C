@@ -292,7 +292,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     if ( !scaleTubeRadiusVariable.empty())
         ProcessVaryTubeRadiusByScalar(ics);
 
-    vtkIdType pIdx = 0, idx = 0;
+    vtkIdType pIdx = 0;
     for (int i = 0; i < numICs; i++)
     {
         avtStateRecorderIntegralCurve *ic = dynamic_cast<avtStateRecorderIntegralCurve*>(ics[i]);
@@ -406,7 +406,6 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
 
         lines->InsertNextCell(line);
         line->Delete();
-        idx++;
     }
     
     points->Delete();
