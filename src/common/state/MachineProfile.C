@@ -1339,7 +1339,7 @@ MachineProfile::RemoveLaunchProfiles(int index)
 int
 MachineProfile::GetNumLaunchProfiles() const
 {
-    return launchProfiles.size();
+    return (int)launchProfiles.size();
 }
 
 // ****************************************************************************

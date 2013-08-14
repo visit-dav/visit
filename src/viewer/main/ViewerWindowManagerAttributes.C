@@ -731,7 +731,7 @@ ViewerWindowManagerAttributes::RemoveActionConfigurations(int index)
 int
 ViewerWindowManagerAttributes::GetNumActionConfigurations() const
 {
-    return actionConfigurations.size();
+    return (int)actionConfigurations.size();
 }
 
 // ****************************************************************************

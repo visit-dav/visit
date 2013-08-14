@@ -573,7 +573,7 @@ VisualCueList::RemoveCues(int index)
 int
 VisualCueList::GetNumCues() const
 {
-    return cues.size();
+    return (int)cues.size();
 }
 
 // ****************************************************************************

@@ -2554,7 +2554,7 @@ PickAttributes::RemoveVarInfo(int index)
 int
 PickAttributes::GetNumVarInfos() const
 {
-    return varInfo.size();
+    return (int)varInfo.size();
 }
 
 // ****************************************************************************

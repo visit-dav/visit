@@ -672,7 +672,7 @@ PlotList::RemovePlots(int index)
 int
 PlotList::GetNumPlots() const
 {
-    return plots.size();
+    return (int)plots.size();
 }
 
 // ****************************************************************************

@@ -672,7 +672,7 @@ ColorAttributeList::RemoveColors(int index)
 int
 ColorAttributeList::GetNumColors() const
 {
-    return colors.size();
+    return (int)colors.size();
 }
 
 // ****************************************************************************

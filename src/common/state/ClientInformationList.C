@@ -573,7 +573,7 @@ ClientInformationList::RemoveClients(int index)
 int
 ClientInformationList::GetNumClients() const
 {
-    return clients.size();
+    return (int)clients.size();
 }
 
 // ****************************************************************************

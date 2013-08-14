@@ -818,7 +818,7 @@ FileOpenOptions::RemoveOpenOptions(int index)
 int
 FileOpenOptions::GetNumOpenOptions() const
 {
-    return openOptions.size();
+    return (int)openOptions.size();
 }
 
 // ****************************************************************************

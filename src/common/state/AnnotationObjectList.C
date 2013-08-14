@@ -673,7 +673,7 @@ AnnotationObjectList::RemoveAnnotation(int index)
 int
 AnnotationObjectList::GetNumAnnotations() const
 {
-    return annotation.size();
+    return (int)annotation.size();
 }
 
 // ****************************************************************************
