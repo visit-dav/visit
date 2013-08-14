@@ -5456,7 +5456,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     if (lightingFlag != obj.lightingFlag && obj.lightingFlag == true)
         return true;
 
-    if (POINT_DIFFERS(velocitySource, obj.velocitySource))
+    if (fieldType == FlashField &&
+        POINT_DIFFERS(velocitySource, obj.velocitySource))
     {
         return true;
     }

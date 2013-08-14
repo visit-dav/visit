@@ -446,8 +446,6 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     //
     // Set the filter's attributes based on the plot attributes.
     //
-    streamlineFilter->SetVelocitySource(atts.GetVelocitySource());
-
     switch (atts.GetSourceType())
     {
       case StreamlineAttributes::SpecifiedPoint:
@@ -503,10 +501,17 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
 
     int CMFEType = (atts.GetPathlinesCMFE() == StreamlineAttributes::CONN_CMFE
                     ? PICS_CONN_CMFE : PICS_POS_CMFE);
-    streamlineFilter->SetPathlines(atts.GetPathlines(), atts.GetPathlinesOverrideStartingTimeFlag(), atts.GetPathlinesOverrideStartingTime(), CMFEType);
+
+    streamlineFilter->SetPathlines(atts.GetPathlines(),
+                                   atts.GetPathlinesOverrideStartingTimeFlag(),
+                                   atts.GetPathlinesOverrideStartingTime(),
+                                   CMFEType);
+
+    streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
 
     streamlineFilter->SetFieldType(atts.GetFieldType());
     streamlineFilter->SetFieldConstant(atts.GetFieldConstant());
+    streamlineFilter->SetVelocitySource(atts.GetVelocitySource());
 
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
     streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
@@ -540,8 +545,6 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     streamlineFilter->IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
     streamlineFilter->IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(), atts.GetCriticalPointThreshold());
-
-    streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
 
     streamlineFilter->SetColoringMethod(int(atts.GetColoringMethod()),
                                         atts.GetColoringVariable());
@@ -766,5 +769,3 @@ avtStreamlinePlot::ReleaseData(void)
     if(removeGhostZonesFilter != NULL)
         removeGhostZonesFilter->ReleaseData();
 }
-
-
