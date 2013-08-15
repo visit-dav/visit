@@ -48,7 +48,6 @@
 #include <string>
 #include <vector>
 #include <avtVector.h>
-#include <strstream>
 
 //IC state tracking support.
 //#define USE_IC_STATE_TRACKING

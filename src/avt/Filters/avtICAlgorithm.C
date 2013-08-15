@@ -1229,7 +1229,7 @@ avtICAlgorithm::ResetIntegralCurvesForContinueExecute()
 string
 avtICAlgorithm::activeICInfo() const
 {
-    strstream str;
+    std::ostringstream str;
     str<<"[";
     list<avtIntegralCurve *>::const_iterator it;
     for (it = activeICs.begin(); it != activeICs.end(); it++)
@@ -1257,7 +1257,7 @@ avtICAlgorithm::activeICInfo() const
 string
 avtICAlgorithm::inactiveICInfo() const
 {
-    strstream str;
+    std::ostringstream str;
     str<<"[";
     list<avtIntegralCurve *>::const_iterator it;
     for (it = inactiveICs.begin(); it != inactiveICs.end(); it++)
@@ -1285,7 +1285,7 @@ avtICAlgorithm::inactiveICInfo() const
 string
 avtICAlgorithm::terminatedICInfo() const
 {
-    strstream str;
+    std::ostringstream str;
     str<<"[";
     list<avtIntegralCurve *>::const_iterator it;
     for (it = terminatedICs.begin(); it != terminatedICs.end(); it++)
