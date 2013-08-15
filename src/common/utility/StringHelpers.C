@@ -1088,7 +1088,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
-        MACCESS(currentArgTypeName, 1);
+        //MACCESS(currentArgTypeName, 1);
         if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
             break;
         re += typeNameToFmtREMap[string(currentArgTypeName)];
