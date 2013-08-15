@@ -60,20 +60,56 @@
 class FTLEAttributes : public AttributeSubject
 {
 public:
-    enum Region
+    enum SourceType
     {
         NativeResolutionOfMesh,
         RegularGrid
     };
-    enum Direction
+    enum IntegrationDirection
     {
         Forward,
-        Backward
+        Backward,
+        Both
     };
-    enum FlowType
+    enum FieldType
     {
-        Unsteady,
-        Steady
+        Default,
+        FlashField,
+        M3DC12DField,
+        M3DC13DField,
+        Nek5000Field,
+        NIMRODField
+    };
+    enum IntegrationType
+    {
+        Euler,
+        Leapfrog,
+        DormandPrince,
+        AdamsBashforth,
+        RK4,
+        M3DC12DIntegrator
+    };
+    enum SizeType
+    {
+        Absolute,
+        FractionOfBBox
+    };
+    enum StreamlineAlgorithmType
+    {
+        LoadOnDemand,
+        ParallelStaticDomains,
+        MasterSlave,
+        VisItSelects
+    };
+    enum TerminationType
+    {
+        Time,
+        Distance
+    };
+    enum PathlinesCMFE
+    {
+        CONN_CMFE,
+        POS_CMFE
     };
 
     // These constructors are for objects of this class
@@ -104,51 +140,146 @@ public:
     void SelectResolution();
     void SelectStartPosition();
     void SelectEndPosition();
+    void SelectVelocitySource();
+    void SelectSelection();
 
     // Property setting methods
-    void SetIntegrationTime(double integrationTime_);
-    void SetRegionType(Region regionType_);
+    void SetSourceType(SourceType sourceType_);
     void SetResolution(const int *Resolution_);
     void SetUseDataSetStart(bool UseDataSetStart_);
     void SetStartPosition(const double *StartPosition_);
     void SetUseDataSetEnd(bool UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
-    void SetDirection(Direction direction_);
-    void SetFlowType(FlowType flowType_);
+    void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
+    void SetMaxSteps(int maxSteps_);
+    void SetTerminationType(TerminationType terminationType_);
+    void SetTerminateByDistance(bool terminateByDistance_);
+    void SetTermDistance(double termDistance_);
+    void SetTerminateByTime(bool terminateByTime_);
+    void SetTermTime(double termTime_);
+    void SetMaxStepLength(double maxStepLength_);
+    void SetLimitMaximumTimestep(bool limitMaximumTimestep_);
+    void SetMaxTimeStep(double maxTimeStep_);
+    void SetRelTol(double relTol_);
+    void SetAbsTolSizeType(SizeType absTolSizeType_);
+    void SetAbsTolAbsolute(double absTolAbsolute_);
+    void SetAbsTolBBox(double absTolBBox_);
+    void SetFieldType(FieldType fieldType_);
+    void SetFieldConstant(double fieldConstant_);
+    void SetVelocitySource(const double *velocitySource_);
+    void SetIntegrationType(IntegrationType integrationType_);
+    void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
+    void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
+    void SetMaxDomainCacheSize(int maxDomainCacheSize_);
+    void SetWorkGroupSize(int workGroupSize_);
+    void SetPathlines(bool pathlines_);
+    void SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_);
+    void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_);
+    void SetPathlinesCMFE(PathlinesCMFE pathlinesCMFE_);
+    void SetForceNodeCenteredData(bool forceNodeCenteredData_);
+    void SetIssueTerminationWarnings(bool issueTerminationWarnings_);
+    void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
+    void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
+    void SetCriticalPointThreshold(double criticalPointThreshold_);
+    void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_);
+    void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_);
+    void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_);
+    void SetCorrelationDistanceMinDistType(SizeType correlationDistanceMinDistType_);
+    void SetSelection(const std::string &selection_);
 
     // Property getting methods
-    double       GetIntegrationTime() const;
-    Region       GetRegionType() const;
-    const int    *GetResolution() const;
-          int    *GetResolution();
-    bool         GetUseDataSetStart() const;
-    const double *GetStartPosition() const;
-          double *GetStartPosition();
-    bool         GetUseDataSetEnd() const;
-    const double *GetEndPosition() const;
-          double *GetEndPosition();
-    Direction    GetDirection() const;
-    FlowType     GetFlowType() const;
+    SourceType        GetSourceType() const;
+    const int         *GetResolution() const;
+          int         *GetResolution();
+    bool              GetUseDataSetStart() const;
+    const double      *GetStartPosition() const;
+          double      *GetStartPosition();
+    bool              GetUseDataSetEnd() const;
+    const double      *GetEndPosition() const;
+          double      *GetEndPosition();
+    IntegrationDirection GetStreamlineDirection() const;
+    int               GetMaxSteps() const;
+    TerminationType   GetTerminationType() const;
+    bool              GetTerminateByDistance() const;
+    double            GetTermDistance() const;
+    bool              GetTerminateByTime() const;
+    double            GetTermTime() const;
+    double            GetMaxStepLength() const;
+    bool              GetLimitMaximumTimestep() const;
+    double            GetMaxTimeStep() const;
+    double            GetRelTol() const;
+    SizeType          GetAbsTolSizeType() const;
+    double            GetAbsTolAbsolute() const;
+    double            GetAbsTolBBox() const;
+    FieldType         GetFieldType() const;
+    double            GetFieldConstant() const;
+    const double      *GetVelocitySource() const;
+          double      *GetVelocitySource();
+    IntegrationType   GetIntegrationType() const;
+    StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
+    int               GetMaxStreamlineProcessCount() const;
+    int               GetMaxDomainCacheSize() const;
+    int               GetWorkGroupSize() const;
+    bool              GetPathlines() const;
+    bool              GetPathlinesOverrideStartingTimeFlag() const;
+    double            GetPathlinesOverrideStartingTime() const;
+    PathlinesCMFE     GetPathlinesCMFE() const;
+    bool              GetForceNodeCenteredData() const;
+    bool              GetIssueTerminationWarnings() const;
+    bool              GetIssueStiffnessWarnings() const;
+    bool              GetIssueCriticalPointsWarnings() const;
+    double            GetCriticalPointThreshold() const;
+    double            GetCorrelationDistanceAngTol() const;
+    double            GetCorrelationDistanceMinDistAbsolute() const;
+    double            GetCorrelationDistanceMinDistBBox() const;
+    SizeType          GetCorrelationDistanceMinDistType() const;
+    const std::string &GetSelection() const;
+          std::string &GetSelection();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string Region_ToString(Region);
-    static bool Region_FromString(const std::string &, Region &);
+    static std::string SourceType_ToString(SourceType);
+    static bool SourceType_FromString(const std::string &, SourceType &);
 protected:
-    static std::string Region_ToString(int);
+    static std::string SourceType_ToString(int);
 public:
-    static std::string Direction_ToString(Direction);
-    static bool Direction_FromString(const std::string &, Direction &);
+    static std::string IntegrationDirection_ToString(IntegrationDirection);
+    static bool IntegrationDirection_FromString(const std::string &, IntegrationDirection &);
 protected:
-    static std::string Direction_ToString(int);
+    static std::string IntegrationDirection_ToString(int);
 public:
-    static std::string FlowType_ToString(FlowType);
-    static bool FlowType_FromString(const std::string &, FlowType &);
+    static std::string FieldType_ToString(FieldType);
+    static bool FieldType_FromString(const std::string &, FieldType &);
 protected:
-    static std::string FlowType_ToString(int);
+    static std::string FieldType_ToString(int);
+public:
+    static std::string IntegrationType_ToString(IntegrationType);
+    static bool IntegrationType_FromString(const std::string &, IntegrationType &);
+protected:
+    static std::string IntegrationType_ToString(int);
+public:
+    static std::string SizeType_ToString(SizeType);
+    static bool SizeType_FromString(const std::string &, SizeType &);
+protected:
+    static std::string SizeType_ToString(int);
+public:
+    static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
+    static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
+protected:
+    static std::string StreamlineAlgorithmType_ToString(int);
+public:
+    static std::string TerminationType_ToString(TerminationType);
+    static bool TerminationType_FromString(const std::string &, TerminationType &);
+protected:
+    static std::string TerminationType_ToString(int);
+public:
+    static std::string PathlinesCMFE_ToString(PathlinesCMFE);
+    static bool PathlinesCMFE_FromString(const std::string &, PathlinesCMFE &);
+protected:
+    static std::string PathlinesCMFE_ToString(int);
 public:
 
     // Keyframing methods
@@ -157,36 +288,104 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    bool ChangesRequireRecalculation(const FTLEAttributes &) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_integrationTime = 0,
-        ID_regionType,
+        ID_sourceType = 0,
         ID_Resolution,
         ID_UseDataSetStart,
         ID_StartPosition,
         ID_UseDataSetEnd,
         ID_EndPosition,
-        ID_direction,
-        ID_flowType,
+        ID_streamlineDirection,
+        ID_maxSteps,
+        ID_terminationType,
+        ID_terminateByDistance,
+        ID_termDistance,
+        ID_terminateByTime,
+        ID_termTime,
+        ID_maxStepLength,
+        ID_limitMaximumTimestep,
+        ID_maxTimeStep,
+        ID_relTol,
+        ID_absTolSizeType,
+        ID_absTolAbsolute,
+        ID_absTolBBox,
+        ID_fieldType,
+        ID_fieldConstant,
+        ID_velocitySource,
+        ID_integrationType,
+        ID_streamlineAlgorithmType,
+        ID_maxStreamlineProcessCount,
+        ID_maxDomainCacheSize,
+        ID_workGroupSize,
+        ID_pathlines,
+        ID_pathlinesOverrideStartingTimeFlag,
+        ID_pathlinesOverrideStartingTime,
+        ID_pathlinesCMFE,
+        ID_forceNodeCenteredData,
+        ID_issueTerminationWarnings,
+        ID_issueStiffnessWarnings,
+        ID_issueCriticalPointsWarnings,
+        ID_criticalPointThreshold,
+        ID_correlationDistanceAngTol,
+        ID_correlationDistanceMinDistAbsolute,
+        ID_correlationDistanceMinDistBBox,
+        ID_correlationDistanceMinDistType,
+        ID_selection,
         ID__LAST
     };
 
 private:
-    double integrationTime;
-    int    regionType;
-    int    Resolution[3];
-    bool   UseDataSetStart;
-    double StartPosition[3];
-    bool   UseDataSetEnd;
-    double EndPosition[3];
-    int    direction;
-    int    flowType;
+    int         sourceType;
+    int         Resolution[3];
+    bool        UseDataSetStart;
+    double      StartPosition[3];
+    bool        UseDataSetEnd;
+    double      EndPosition[3];
+    int         streamlineDirection;
+    int         maxSteps;
+    int         terminationType;
+    bool        terminateByDistance;
+    double      termDistance;
+    bool        terminateByTime;
+    double      termTime;
+    double      maxStepLength;
+    bool        limitMaximumTimestep;
+    double      maxTimeStep;
+    double      relTol;
+    int         absTolSizeType;
+    double      absTolAbsolute;
+    double      absTolBBox;
+    int         fieldType;
+    double      fieldConstant;
+    double      velocitySource[3];
+    int         integrationType;
+    int         streamlineAlgorithmType;
+    int         maxStreamlineProcessCount;
+    int         maxDomainCacheSize;
+    int         workGroupSize;
+    bool        pathlines;
+    bool        pathlinesOverrideStartingTimeFlag;
+    double      pathlinesOverrideStartingTime;
+    int         pathlinesCMFE;
+    bool        forceNodeCenteredData;
+    bool        issueTerminationWarnings;
+    bool        issueStiffnessWarnings;
+    bool        issueCriticalPointsWarnings;
+    double      criticalPointThreshold;
+    double      correlationDistanceAngTol;
+    double      correlationDistanceMinDistAbsolute;
+    double      correlationDistanceMinDistBBox;
+    int         correlationDistanceMinDistType;
+    std::string selection;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FTLEATTRIBUTES_TMFS "diIbDbDii"
+#define FTLEATTRIBUTES_TMFS "iIbDbDiiibdbddbddiddidDiiiiibbdibbbbddddis"
 
 #endif

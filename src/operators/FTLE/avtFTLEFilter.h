@@ -96,8 +96,8 @@ class avtFTLEFilter : public virtual avtPluginFilter,
 
     /** Construct the initial locations to emanate integral curves */
     virtual std::vector<avtVector> GetInitialLocations();
-    virtual std::vector<avtVector> GetInitialVelocities() { return std::vector<avtVector>(); }
-
+    virtual std::vector<avtVector> GetInitialVelocities();
+ 
     /** type of communication between processors
       options include: RestoreSequence,LeaveOnCurrentProcessor, and 
              ReturnToOriginatingProcessor(NOT IMPLEMENTED) */
@@ -144,12 +144,42 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     void                 ComputeFtle(vtkDataArray* jacobian[3], 
                                      vtkDataArray* result);
 
+
+    void                 SetTermination(int maxSteps, 
+                                        bool doDistance, double maxDistance, 
+                                        bool doTime, double maxTime);
+
+    void                 SetVelocitySource(const double *v);
+
+    void                 IssueWarningForMaxStepsTermination(bool v) 
+                                  { issueWarningForMaxStepsTermination = v; };
+    void                 IssueWarningForStiffness(bool v) 
+                                  { issueWarningForStiffness = v; };
+    void                 IssueWarningForCriticalPoints(bool v, double speed) 
+                                  { issueWarningForCriticalPoints = v;
+                                    criticalPointThreshold = speed; };
+
   protected:
     FTLEAttributes     atts;
+    bool               needsRecalculation;
     std::string        outVarName;
     double             global_bounds[6];
     int                global_resolution[3];
     int                timeState;
+
+
+    int      maxSteps;
+    bool     doDistance;
+    double   maxDistance;
+    bool     doTime;
+    double   maxTime;
+
+    bool      issueWarningForMaxStepsTermination;
+    bool      issueWarningForStiffness;
+    bool      issueWarningForCriticalPoints;
+    double    criticalPointThreshold;
+
+    avtVector seedVelocity;
 
     //input seed points..
     std::vector<avtVector> seedPoints;

@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FTLEATTRIBUTES_NMETH 20
+#define FTLEATTRIBUTES_NMETH 86
 void           PyFTLEAttributes_StartUp(FTLEAttributes *subj, void *data);
 void           PyFTLEAttributes_CloseDown();
 PyMethodDef *  PyFTLEAttributes_GetMethodTable(int *nMethods);
