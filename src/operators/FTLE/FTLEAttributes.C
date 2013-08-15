@@ -40,36 +40,36 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for FTLEAttributes::Region
+// Enum conversion methods for FTLEAttributes::SourceType
 //
 
-static const char *Region_strings[] = {
+static const char *SourceType_strings[] = {
 "NativeResolutionOfMesh", "RegularGrid"};
 
 std::string
-FTLEAttributes::Region_ToString(FTLEAttributes::Region t)
+FTLEAttributes::SourceType_ToString(FTLEAttributes::SourceType t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return Region_strings[index];
+    return SourceType_strings[index];
 }
 
 std::string
-FTLEAttributes::Region_ToString(int t)
+FTLEAttributes::SourceType_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return Region_strings[index];
+    return SourceType_strings[index];
 }
 
 bool
-FTLEAttributes::Region_FromString(const std::string &s, FTLEAttributes::Region &val)
+FTLEAttributes::SourceType_FromString(const std::string &s, FTLEAttributes::SourceType &val)
 {
     val = FTLEAttributes::NativeResolutionOfMesh;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == Region_strings[i])
+        if(s == SourceType_strings[i])
         {
-            val = (Region)i;
+            val = (SourceType)i;
             return true;
         }
     }
@@ -77,36 +77,37 @@ FTLEAttributes::Region_FromString(const std::string &s, FTLEAttributes::Region &
 }
 
 //
-// Enum conversion methods for FTLEAttributes::Direction
+// Enum conversion methods for FTLEAttributes::IntegrationDirection
 //
 
-static const char *Direction_strings[] = {
-"Forward", "Backward"};
+static const char *IntegrationDirection_strings[] = {
+"Forward", "Backward", "Both"
+};
 
 std::string
-FTLEAttributes::Direction_ToString(FTLEAttributes::Direction t)
+FTLEAttributes::IntegrationDirection_ToString(FTLEAttributes::IntegrationDirection t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return Direction_strings[index];
+    if(index < 0 || index >= 3) index = 0;
+    return IntegrationDirection_strings[index];
 }
 
 std::string
-FTLEAttributes::Direction_ToString(int t)
+FTLEAttributes::IntegrationDirection_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return Direction_strings[index];
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return IntegrationDirection_strings[index];
 }
 
 bool
-FTLEAttributes::Direction_FromString(const std::string &s, FTLEAttributes::Direction &val)
+FTLEAttributes::IntegrationDirection_FromString(const std::string &s, FTLEAttributes::IntegrationDirection &val)
 {
     val = FTLEAttributes::Forward;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
-        if(s == Direction_strings[i])
+        if(s == IntegrationDirection_strings[i])
         {
-            val = (Direction)i;
+            val = (IntegrationDirection)i;
             return true;
         }
     }
@@ -114,36 +115,226 @@ FTLEAttributes::Direction_FromString(const std::string &s, FTLEAttributes::Direc
 }
 
 //
-// Enum conversion methods for FTLEAttributes::FlowType
+// Enum conversion methods for FTLEAttributes::FieldType
 //
 
-static const char *FlowType_strings[] = {
-"Unsteady", "Steady"};
+static const char *FieldType_strings[] = {
+"Default", "FlashField", "M3DC12DField", 
+"M3DC13DField", "Nek5000Field", "NIMRODField"
+};
 
 std::string
-FTLEAttributes::FlowType_ToString(FTLEAttributes::FlowType t)
+FTLEAttributes::FieldType_ToString(FTLEAttributes::FieldType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return FlowType_strings[index];
+    if(index < 0 || index >= 6) index = 0;
+    return FieldType_strings[index];
 }
 
 std::string
-FTLEAttributes::FlowType_ToString(int t)
+FTLEAttributes::FieldType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return FlowType_strings[index];
+    int index = (t < 0 || t >= 6) ? 0 : t;
+    return FieldType_strings[index];
 }
 
 bool
-FTLEAttributes::FlowType_FromString(const std::string &s, FTLEAttributes::FlowType &val)
+FTLEAttributes::FieldType_FromString(const std::string &s, FTLEAttributes::FieldType &val)
 {
-    val = FTLEAttributes::Unsteady;
+    val = FTLEAttributes::Default;
+    for(int i = 0; i < 6; ++i)
+    {
+        if(s == FieldType_strings[i])
+        {
+            val = (FieldType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::IntegrationType
+//
+
+static const char *IntegrationType_strings[] = {
+"Euler", "Leapfrog", "DormandPrince", 
+"AdamsBashforth", "RK4", "M3DC12DIntegrator"
+};
+
+std::string
+FTLEAttributes::IntegrationType_ToString(FTLEAttributes::IntegrationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 6) index = 0;
+    return IntegrationType_strings[index];
+}
+
+std::string
+FTLEAttributes::IntegrationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 6) ? 0 : t;
+    return IntegrationType_strings[index];
+}
+
+bool
+FTLEAttributes::IntegrationType_FromString(const std::string &s, FTLEAttributes::IntegrationType &val)
+{
+    val = FTLEAttributes::Euler;
+    for(int i = 0; i < 6; ++i)
+    {
+        if(s == IntegrationType_strings[i])
+        {
+            val = (IntegrationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::SizeType
+//
+
+static const char *SizeType_strings[] = {
+"Absolute", "FractionOfBBox"};
+
+std::string
+FTLEAttributes::SizeType_ToString(FTLEAttributes::SizeType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return SizeType_strings[index];
+}
+
+std::string
+FTLEAttributes::SizeType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return SizeType_strings[index];
+}
+
+bool
+FTLEAttributes::SizeType_FromString(const std::string &s, FTLEAttributes::SizeType &val)
+{
+    val = FTLEAttributes::Absolute;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == FlowType_strings[i])
+        if(s == SizeType_strings[i])
         {
-            val = (FlowType)i;
+            val = (SizeType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::StreamlineAlgorithmType
+//
+
+static const char *StreamlineAlgorithmType_strings[] = {
+"LoadOnDemand", "ParallelStaticDomains", "MasterSlave", 
+"VisItSelects"};
+
+std::string
+FTLEAttributes::StreamlineAlgorithmType_ToString(FTLEAttributes::StreamlineAlgorithmType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return StreamlineAlgorithmType_strings[index];
+}
+
+std::string
+FTLEAttributes::StreamlineAlgorithmType_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return StreamlineAlgorithmType_strings[index];
+}
+
+bool
+FTLEAttributes::StreamlineAlgorithmType_FromString(const std::string &s, FTLEAttributes::StreamlineAlgorithmType &val)
+{
+    val = FTLEAttributes::LoadOnDemand;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == StreamlineAlgorithmType_strings[i])
+        {
+            val = (StreamlineAlgorithmType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::TerminationType
+//
+
+static const char *TerminationType_strings[] = {
+"Time", "Distance"};
+
+std::string
+FTLEAttributes::TerminationType_ToString(FTLEAttributes::TerminationType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return TerminationType_strings[index];
+}
+
+std::string
+FTLEAttributes::TerminationType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return TerminationType_strings[index];
+}
+
+bool
+FTLEAttributes::TerminationType_FromString(const std::string &s, FTLEAttributes::TerminationType &val)
+{
+    val = FTLEAttributes::Time;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == TerminationType_strings[i])
+        {
+            val = (TerminationType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for FTLEAttributes::PathlinesCMFE
+//
+
+static const char *PathlinesCMFE_strings[] = {
+"CONN_CMFE", "POS_CMFE"};
+
+std::string
+FTLEAttributes::PathlinesCMFE_ToString(FTLEAttributes::PathlinesCMFE t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return PathlinesCMFE_strings[index];
+}
+
+std::string
+FTLEAttributes::PathlinesCMFE_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return PathlinesCMFE_strings[index];
+}
+
+bool
+FTLEAttributes::PathlinesCMFE_FromString(const std::string &s, FTLEAttributes::PathlinesCMFE &val)
+{
+    val = FTLEAttributes::CONN_CMFE;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == PathlinesCMFE_strings[i])
+        {
+            val = (PathlinesCMFE)i;
             return true;
         }
     }
@@ -167,8 +358,7 @@ FTLEAttributes::FlowType_FromString(const std::string &s, FTLEAttributes::FlowTy
 
 void FTLEAttributes::Init()
 {
-    integrationTime = 1;
-    regionType = RegularGrid;
+    sourceType = NativeResolutionOfMesh;
     Resolution[0] = 10;
     Resolution[1] = 10;
     Resolution[2] = 10;
@@ -180,8 +370,43 @@ void FTLEAttributes::Init()
     EndPosition[0] = 1;
     EndPosition[1] = 1;
     EndPosition[2] = 1;
-    direction = Forward;
-    flowType = Unsteady;
+    streamlineDirection = Forward;
+    maxSteps = 1000;
+    terminationType = Time;
+    terminateByDistance = false;
+    termDistance = 10;
+    terminateByTime = false;
+    termTime = 10;
+    maxStepLength = 0.1;
+    limitMaximumTimestep = false;
+    maxTimeStep = 0.1;
+    relTol = 0.0001;
+    absTolSizeType = FractionOfBBox;
+    absTolAbsolute = 1e-06;
+    absTolBBox = 1e-06;
+    fieldType = Default;
+    fieldConstant = 1;
+    velocitySource[0] = 0;
+    velocitySource[1] = 0;
+    velocitySource[2] = 0;
+    integrationType = DormandPrince;
+    streamlineAlgorithmType = VisItSelects;
+    maxStreamlineProcessCount = 10;
+    maxDomainCacheSize = 3;
+    workGroupSize = 32;
+    pathlines = false;
+    pathlinesOverrideStartingTimeFlag = false;
+    pathlinesOverrideStartingTime = 0;
+    pathlinesCMFE = POS_CMFE;
+    forceNodeCenteredData = false;
+    issueTerminationWarnings = true;
+    issueStiffnessWarnings = true;
+    issueCriticalPointsWarnings = true;
+    criticalPointThreshold = 0.001;
+    correlationDistanceAngTol = 5;
+    correlationDistanceMinDistAbsolute = 1;
+    correlationDistanceMinDistBBox = 0.005;
+    correlationDistanceMinDistType = FractionOfBBox;
 
     FTLEAttributes::SelectAll();
 }
@@ -203,8 +428,7 @@ void FTLEAttributes::Init()
 
 void FTLEAttributes::Copy(const FTLEAttributes &obj)
 {
-    integrationTime = obj.integrationTime;
-    regionType = obj.regionType;
+    sourceType = obj.sourceType;
     Resolution[0] = obj.Resolution[0];
     Resolution[1] = obj.Resolution[1];
     Resolution[2] = obj.Resolution[2];
@@ -219,8 +443,45 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     EndPosition[1] = obj.EndPosition[1];
     EndPosition[2] = obj.EndPosition[2];
 
-    direction = obj.direction;
-    flowType = obj.flowType;
+    streamlineDirection = obj.streamlineDirection;
+    maxSteps = obj.maxSteps;
+    terminationType = obj.terminationType;
+    terminateByDistance = obj.terminateByDistance;
+    termDistance = obj.termDistance;
+    terminateByTime = obj.terminateByTime;
+    termTime = obj.termTime;
+    maxStepLength = obj.maxStepLength;
+    limitMaximumTimestep = obj.limitMaximumTimestep;
+    maxTimeStep = obj.maxTimeStep;
+    relTol = obj.relTol;
+    absTolSizeType = obj.absTolSizeType;
+    absTolAbsolute = obj.absTolAbsolute;
+    absTolBBox = obj.absTolBBox;
+    fieldType = obj.fieldType;
+    fieldConstant = obj.fieldConstant;
+    velocitySource[0] = obj.velocitySource[0];
+    velocitySource[1] = obj.velocitySource[1];
+    velocitySource[2] = obj.velocitySource[2];
+
+    integrationType = obj.integrationType;
+    streamlineAlgorithmType = obj.streamlineAlgorithmType;
+    maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+    maxDomainCacheSize = obj.maxDomainCacheSize;
+    workGroupSize = obj.workGroupSize;
+    pathlines = obj.pathlines;
+    pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
+    pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
+    pathlinesCMFE = obj.pathlinesCMFE;
+    forceNodeCenteredData = obj.forceNodeCenteredData;
+    issueTerminationWarnings = obj.issueTerminationWarnings;
+    issueStiffnessWarnings = obj.issueStiffnessWarnings;
+    issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
+    criticalPointThreshold = obj.criticalPointThreshold;
+    correlationDistanceAngTol = obj.correlationDistanceAngTol;
+    correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
+    correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
+    correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
+    selection = obj.selection;
 
     FTLEAttributes::SelectAll();
 }
@@ -392,16 +653,54 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
     for(int i = 0; i < 3 && EndPosition_equal; ++i)
         EndPosition_equal = (EndPosition[i] == obj.EndPosition[i]);
 
+    // Compare the velocitySource arrays.
+    bool velocitySource_equal = true;
+    for(int i = 0; i < 3 && velocitySource_equal; ++i)
+        velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
     // Create the return value
-    return ((integrationTime == obj.integrationTime) &&
-            (regionType == obj.regionType) &&
+    return ((sourceType == obj.sourceType) &&
             Resolution_equal &&
             (UseDataSetStart == obj.UseDataSetStart) &&
             StartPosition_equal &&
             (UseDataSetEnd == obj.UseDataSetEnd) &&
             EndPosition_equal &&
-            (direction == obj.direction) &&
-            (flowType == obj.flowType));
+            (streamlineDirection == obj.streamlineDirection) &&
+            (maxSteps == obj.maxSteps) &&
+            (terminationType == obj.terminationType) &&
+            (terminateByDistance == obj.terminateByDistance) &&
+            (termDistance == obj.termDistance) &&
+            (terminateByTime == obj.terminateByTime) &&
+            (termTime == obj.termTime) &&
+            (maxStepLength == obj.maxStepLength) &&
+            (limitMaximumTimestep == obj.limitMaximumTimestep) &&
+            (maxTimeStep == obj.maxTimeStep) &&
+            (relTol == obj.relTol) &&
+            (absTolSizeType == obj.absTolSizeType) &&
+            (absTolAbsolute == obj.absTolAbsolute) &&
+            (absTolBBox == obj.absTolBBox) &&
+            (fieldType == obj.fieldType) &&
+            (fieldConstant == obj.fieldConstant) &&
+            velocitySource_equal &&
+            (integrationType == obj.integrationType) &&
+            (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
+            (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+            (maxDomainCacheSize == obj.maxDomainCacheSize) &&
+            (workGroupSize == obj.workGroupSize) &&
+            (pathlines == obj.pathlines) &&
+            (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
+            (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
+            (pathlinesCMFE == obj.pathlinesCMFE) &&
+            (forceNodeCenteredData == obj.forceNodeCenteredData) &&
+            (issueTerminationWarnings == obj.issueTerminationWarnings) &&
+            (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
+            (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
+            (criticalPointThreshold == obj.criticalPointThreshold) &&
+            (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
+            (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
+            (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
+            (correlationDistanceMinDistType == obj.correlationDistanceMinDistType) &&
+            (selection == obj.selection));
 }
 
 // ****************************************************************************
@@ -452,50 +751,64 @@ FTLEAttributes::TypeName() const
 // Purpose: 
 //   CopyAttributes method for the FTLEAttributes class.
 //
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 // Modifications:
-//   
+//    Brad Whitlock, Wed Dec 22 12:57:53 PDT 2004
+//    I added code to support the point tool.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Disable useWholeBox if we are copying box extents.
+//
+//    Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//    New seed sources.
+//
 // ****************************************************************************
 
 bool
 FTLEAttributes::CopyAttributes(const AttributeGroup *atts)
 {
-    if(TypeName() != atts->TypeName())
-        return false;
+    bool retval = false;
 
-    // Call assignment operator.
-    const FTLEAttributes *tmp = (const FTLEAttributes *)atts;
-    *this = *tmp;
-
-    return true;
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const FTLEAttributes *tmp = (const FTLEAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    return retval;
 }
 
 // ****************************************************************************
-// Method: FTLEAttributes::CreateCompatible
+//  Method: FTLEAttributes::CreateCompatible
 //
-// Purpose: 
-//   CreateCompatible method for the FTLEAttributes class.
+//  Purpose:
+//     Creates a new state object of the desired type.
 //
-// Note:       Autogenerated by xml2atts.
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
-// Programmer: xml2atts
-// Creation:   omitted
+//  Modifications:
+//    Brad Whitlock, Tue Jan 21 12:33:04 PDT 2003
+//    I added code to set the "have radius" flag to true so the plane tool
+//    resizes properly when resizing the plane radius.
 //
-// Modifications:
-//   
+//    Brad Whitlock, Wed Dec 22 12:54:43 PDT 2004
+//    I added code to support the point tool.
+//
 // ****************************************************************************
 
 AttributeSubject *
 FTLEAttributes::CreateCompatible(const std::string &tname) const
 {
     AttributeSubject *retval = 0;
+
     if(TypeName() == tname)
+    {
         retval = new FTLEAttributes(*this);
-    // Other cases could go here too. 
+    }
 
     return retval;
 }
@@ -545,15 +858,48 @@ FTLEAttributes::NewInstance(bool copy) const
 void
 FTLEAttributes::SelectAll()
 {
-    Select(ID_integrationTime, (void *)&integrationTime);
-    Select(ID_regionType,      (void *)&regionType);
-    Select(ID_Resolution,      (void *)Resolution, 3);
-    Select(ID_UseDataSetStart, (void *)&UseDataSetStart);
-    Select(ID_StartPosition,   (void *)StartPosition, 3);
-    Select(ID_UseDataSetEnd,   (void *)&UseDataSetEnd);
-    Select(ID_EndPosition,     (void *)EndPosition, 3);
-    Select(ID_direction,       (void *)&direction);
-    Select(ID_flowType,        (void *)&flowType);
+    Select(ID_sourceType,                         (void *)&sourceType);
+    Select(ID_Resolution,                         (void *)Resolution, 3);
+    Select(ID_UseDataSetStart,                    (void *)&UseDataSetStart);
+    Select(ID_StartPosition,                      (void *)StartPosition, 3);
+    Select(ID_UseDataSetEnd,                      (void *)&UseDataSetEnd);
+    Select(ID_EndPosition,                        (void *)EndPosition, 3);
+    Select(ID_streamlineDirection,                (void *)&streamlineDirection);
+    Select(ID_maxSteps,                           (void *)&maxSteps);
+    Select(ID_terminationType,                    (void *)&terminationType);
+    Select(ID_terminateByDistance,                (void *)&terminateByDistance);
+    Select(ID_termDistance,                       (void *)&termDistance);
+    Select(ID_terminateByTime,                    (void *)&terminateByTime);
+    Select(ID_termTime,                           (void *)&termTime);
+    Select(ID_maxStepLength,                      (void *)&maxStepLength);
+    Select(ID_limitMaximumTimestep,               (void *)&limitMaximumTimestep);
+    Select(ID_maxTimeStep,                        (void *)&maxTimeStep);
+    Select(ID_relTol,                             (void *)&relTol);
+    Select(ID_absTolSizeType,                     (void *)&absTolSizeType);
+    Select(ID_absTolAbsolute,                     (void *)&absTolAbsolute);
+    Select(ID_absTolBBox,                         (void *)&absTolBBox);
+    Select(ID_fieldType,                          (void *)&fieldType);
+    Select(ID_fieldConstant,                      (void *)&fieldConstant);
+    Select(ID_velocitySource,                     (void *)velocitySource, 3);
+    Select(ID_integrationType,                    (void *)&integrationType);
+    Select(ID_streamlineAlgorithmType,            (void *)&streamlineAlgorithmType);
+    Select(ID_maxStreamlineProcessCount,          (void *)&maxStreamlineProcessCount);
+    Select(ID_maxDomainCacheSize,                 (void *)&maxDomainCacheSize);
+    Select(ID_workGroupSize,                      (void *)&workGroupSize);
+    Select(ID_pathlines,                          (void *)&pathlines);
+    Select(ID_pathlinesOverrideStartingTimeFlag,  (void *)&pathlinesOverrideStartingTimeFlag);
+    Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
+    Select(ID_forceNodeCenteredData,              (void *)&forceNodeCenteredData);
+    Select(ID_issueTerminationWarnings,           (void *)&issueTerminationWarnings);
+    Select(ID_issueStiffnessWarnings,             (void *)&issueStiffnessWarnings);
+    Select(ID_issueCriticalPointsWarnings,        (void *)&issueCriticalPointsWarnings);
+    Select(ID_criticalPointThreshold,             (void *)&criticalPointThreshold);
+    Select(ID_correlationDistanceAngTol,          (void *)&correlationDistanceAngTol);
+    Select(ID_correlationDistanceMinDistAbsolute, (void *)&correlationDistanceMinDistAbsolute);
+    Select(ID_correlationDistanceMinDistBBox,     (void *)&correlationDistanceMinDistBBox);
+    Select(ID_correlationDistanceMinDistType,     (void *)&correlationDistanceMinDistType);
+    Select(ID_selection,                          (void *)&selection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -586,16 +932,10 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // Create a node for FTLEAttributes.
     DataNode *node = new DataNode("FTLEAttributes");
 
-    if(completeSave || !FieldsEqual(ID_integrationTime, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_sourceType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("integrationTime", integrationTime));
-    }
-
-    if(completeSave || !FieldsEqual(ID_regionType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("regionType", Region_ToString(regionType)));
+        node->AddNode(new DataNode("sourceType", SourceType_ToString(sourceType)));
     }
 
     if(completeSave || !FieldsEqual(ID_Resolution, &defaultObject))
@@ -628,16 +968,220 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("EndPosition", EndPosition, 3));
     }
 
-    if(completeSave || !FieldsEqual(ID_direction, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_streamlineDirection, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("direction", Direction_ToString(direction)));
+        node->AddNode(new DataNode("streamlineDirection", IntegrationDirection_ToString(streamlineDirection)));
     }
 
-    if(completeSave || !FieldsEqual(ID_flowType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxSteps, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("flowType", FlowType_ToString(flowType)));
+        node->AddNode(new DataNode("maxSteps", maxSteps));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminationType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminationType", TerminationType_ToString(terminationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminateByDistance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminateByDistance", terminateByDistance));
+    }
+
+    if(completeSave || !FieldsEqual(ID_termDistance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("termDistance", termDistance));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminateByTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminateByTime", terminateByTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_termTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("termTime", termTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxStepLength, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxStepLength", maxStepLength));
+    }
+
+    if(completeSave || !FieldsEqual(ID_limitMaximumTimestep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("limitMaximumTimestep", limitMaximumTimestep));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxTimeStep, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxTimeStep", maxTimeStep));
+    }
+
+    if(completeSave || !FieldsEqual(ID_relTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("relTol", relTol));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTolSizeType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTolSizeType", SizeType_ToString(absTolSizeType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTolAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTolAbsolute", absTolAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_absTolBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("absTolBBox", absTolBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_fieldType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fieldType", FieldType_ToString(fieldType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_fieldConstant, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fieldConstant", fieldConstant));
+    }
+
+    if(completeSave || !FieldsEqual(ID_velocitySource, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("velocitySource", velocitySource, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_integrationType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("integrationType", IntegrationType_ToString(integrationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_streamlineAlgorithmType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("streamlineAlgorithmType", StreamlineAlgorithmType_ToString(streamlineAlgorithmType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxStreamlineProcessCount, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxStreamlineProcessCount", maxStreamlineProcessCount));
+    }
+
+    if(completeSave || !FieldsEqual(ID_maxDomainCacheSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("maxDomainCacheSize", maxDomainCacheSize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_workGroupSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("workGroupSize", workGroupSize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlines, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlines", pathlines));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesOverrideStartingTimeFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesOverrideStartingTimeFlag", pathlinesOverrideStartingTimeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesOverrideStartingTime, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesOverrideStartingTime", pathlinesOverrideStartingTime));
+    }
+
+    if(completeSave || !FieldsEqual(ID_pathlinesCMFE, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pathlinesCMFE", PathlinesCMFE_ToString(pathlinesCMFE)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_forceNodeCenteredData, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forceNodeCenteredData", forceNodeCenteredData));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueTerminationWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueTerminationWarnings", issueTerminationWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueStiffnessWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueStiffnessWarnings", issueStiffnessWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_issueCriticalPointsWarnings, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("issueCriticalPointsWarnings", issueCriticalPointsWarnings));
+    }
+
+    if(completeSave || !FieldsEqual(ID_criticalPointThreshold, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("criticalPointThreshold", criticalPointThreshold));
+    }
+
+    if(completeSave || !FieldsEqual(ID_correlationDistanceAngTol, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("correlationDistanceAngTol", correlationDistanceAngTol));
+    }
+
+    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistAbsolute, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("correlationDistanceMinDistAbsolute", correlationDistanceMinDistAbsolute));
+    }
+
+    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistBBox, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("correlationDistanceMinDistBBox", correlationDistanceMinDistBBox));
+    }
+
+    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("correlationDistanceMinDistType", SizeType_ToString(correlationDistanceMinDistType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_selection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("selection", selection));
     }
 
 
@@ -676,22 +1220,20 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("integrationTime")) != 0)
-        SetIntegrationTime(node->AsDouble());
-    if((node = searchNode->GetNode("regionType")) != 0)
+    if((node = searchNode->GetNode("sourceType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetRegionType(Region(ival));
+                SetSourceType(SourceType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            Region value;
-            if(Region_FromString(node->AsString(), value))
-                SetRegionType(value);
+            SourceType value;
+            if(SourceType_FromString(node->AsString(), value))
+                SetSourceType(value);
         }
     }
     if((node = searchNode->GetNode("Resolution")) != 0)
@@ -704,38 +1246,190 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         SetUseDataSetEnd(node->AsBool());
     if((node = searchNode->GetNode("EndPosition")) != 0)
         SetEndPosition(node->AsDoubleArray());
-    if((node = searchNode->GetNode("direction")) != 0)
+    if((node = searchNode->GetNode("streamlineDirection")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetStreamlineDirection(IntegrationDirection(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            IntegrationDirection value;
+            if(IntegrationDirection_FromString(node->AsString(), value))
+                SetStreamlineDirection(value);
+        }
+    }
+    if((node = searchNode->GetNode("maxSteps")) != 0)
+        SetMaxSteps(node->AsInt());
+    if((node = searchNode->GetNode("terminationType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetDirection(Direction(ival));
+                SetTerminationType(TerminationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            Direction value;
-            if(Direction_FromString(node->AsString(), value))
-                SetDirection(value);
+            TerminationType value;
+            if(TerminationType_FromString(node->AsString(), value))
+                SetTerminationType(value);
         }
     }
-    if((node = searchNode->GetNode("flowType")) != 0)
+    if((node = searchNode->GetNode("terminateByDistance")) != 0)
+        SetTerminateByDistance(node->AsBool());
+    if((node = searchNode->GetNode("termDistance")) != 0)
+        SetTermDistance(node->AsDouble());
+    if((node = searchNode->GetNode("terminateByTime")) != 0)
+        SetTerminateByTime(node->AsBool());
+    if((node = searchNode->GetNode("termTime")) != 0)
+        SetTermTime(node->AsDouble());
+    if((node = searchNode->GetNode("maxStepLength")) != 0)
+        SetMaxStepLength(node->AsDouble());
+    if((node = searchNode->GetNode("limitMaximumTimestep")) != 0)
+        SetLimitMaximumTimestep(node->AsBool());
+    if((node = searchNode->GetNode("maxTimeStep")) != 0)
+        SetMaxTimeStep(node->AsDouble());
+    if((node = searchNode->GetNode("relTol")) != 0)
+        SetRelTol(node->AsDouble());
+    if((node = searchNode->GetNode("absTolSizeType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetFlowType(FlowType(ival));
+                SetAbsTolSizeType(SizeType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            FlowType value;
-            if(FlowType_FromString(node->AsString(), value))
-                SetFlowType(value);
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetAbsTolSizeType(value);
         }
     }
+    if((node = searchNode->GetNode("absTolAbsolute")) != 0)
+        SetAbsTolAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("absTolBBox")) != 0)
+        SetAbsTolBBox(node->AsDouble());
+    if((node = searchNode->GetNode("fieldType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 6)
+                SetFieldType(FieldType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            FieldType value;
+            if(FieldType_FromString(node->AsString(), value))
+                SetFieldType(value);
+        }
+    }
+    if((node = searchNode->GetNode("fieldConstant")) != 0)
+        SetFieldConstant(node->AsDouble());
+    if((node = searchNode->GetNode("velocitySource")) != 0)
+        SetVelocitySource(node->AsDoubleArray());
+    if((node = searchNode->GetNode("integrationType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 6)
+                SetIntegrationType(IntegrationType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            IntegrationType value;
+            if(IntegrationType_FromString(node->AsString(), value))
+                SetIntegrationType(value);
+        }
+    }
+    if((node = searchNode->GetNode("streamlineAlgorithmType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetStreamlineAlgorithmType(StreamlineAlgorithmType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            StreamlineAlgorithmType value;
+            if(StreamlineAlgorithmType_FromString(node->AsString(), value))
+                SetStreamlineAlgorithmType(value);
+        }
+    }
+    if((node = searchNode->GetNode("maxStreamlineProcessCount")) != 0)
+        SetMaxStreamlineProcessCount(node->AsInt());
+    if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
+        SetMaxDomainCacheSize(node->AsInt());
+    if((node = searchNode->GetNode("workGroupSize")) != 0)
+        SetWorkGroupSize(node->AsInt());
+    if((node = searchNode->GetNode("pathlines")) != 0)
+        SetPathlines(node->AsBool());
+    if((node = searchNode->GetNode("pathlinesOverrideStartingTimeFlag")) != 0)
+        SetPathlinesOverrideStartingTimeFlag(node->AsBool());
+    if((node = searchNode->GetNode("pathlinesOverrideStartingTime")) != 0)
+        SetPathlinesOverrideStartingTime(node->AsDouble());
+    if((node = searchNode->GetNode("pathlinesCMFE")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetPathlinesCMFE(PathlinesCMFE(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            PathlinesCMFE value;
+            if(PathlinesCMFE_FromString(node->AsString(), value))
+                SetPathlinesCMFE(value);
+        }
+    }
+    if((node = searchNode->GetNode("forceNodeCenteredData")) != 0)
+        SetForceNodeCenteredData(node->AsBool());
+    if((node = searchNode->GetNode("issueTerminationWarnings")) != 0)
+        SetIssueTerminationWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueStiffnessWarnings")) != 0)
+        SetIssueStiffnessWarnings(node->AsBool());
+    if((node = searchNode->GetNode("issueCriticalPointsWarnings")) != 0)
+        SetIssueCriticalPointsWarnings(node->AsBool());
+    if((node = searchNode->GetNode("criticalPointThreshold")) != 0)
+        SetCriticalPointThreshold(node->AsDouble());
+    if((node = searchNode->GetNode("correlationDistanceAngTol")) != 0)
+        SetCorrelationDistanceAngTol(node->AsDouble());
+    if((node = searchNode->GetNode("correlationDistanceMinDistAbsolute")) != 0)
+        SetCorrelationDistanceMinDistAbsolute(node->AsDouble());
+    if((node = searchNode->GetNode("correlationDistanceMinDistBBox")) != 0)
+        SetCorrelationDistanceMinDistBBox(node->AsDouble());
+    if((node = searchNode->GetNode("correlationDistanceMinDistType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetCorrelationDistanceMinDistType(SizeType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            SizeType value;
+            if(SizeType_FromString(node->AsString(), value))
+                SetCorrelationDistanceMinDistType(value);
+        }
+    }
+    if((node = searchNode->GetNode("selection")) != 0)
+        SetSelection(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -743,17 +1437,10 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-FTLEAttributes::SetIntegrationTime(double integrationTime_)
+FTLEAttributes::SetSourceType(FTLEAttributes::SourceType sourceType_)
 {
-    integrationTime = integrationTime_;
-    Select(ID_integrationTime, (void *)&integrationTime);
-}
-
-void
-FTLEAttributes::SetRegionType(FTLEAttributes::Region regionType_)
-{
-    regionType = regionType_;
-    Select(ID_regionType, (void *)&regionType);
+    sourceType = sourceType_;
+    Select(ID_sourceType, (void *)&sourceType);
 }
 
 void
@@ -798,33 +1485,267 @@ FTLEAttributes::SetEndPosition(const double *EndPosition_)
 }
 
 void
-FTLEAttributes::SetDirection(FTLEAttributes::Direction direction_)
+FTLEAttributes::SetStreamlineDirection(FTLEAttributes::IntegrationDirection streamlineDirection_)
 {
-    direction = direction_;
-    Select(ID_direction, (void *)&direction);
+    streamlineDirection = streamlineDirection_;
+    Select(ID_streamlineDirection, (void *)&streamlineDirection);
 }
 
 void
-FTLEAttributes::SetFlowType(FTLEAttributes::FlowType flowType_)
+FTLEAttributes::SetMaxSteps(int maxSteps_)
 {
-    flowType = flowType_;
-    Select(ID_flowType, (void *)&flowType);
+    maxSteps = maxSteps_;
+    Select(ID_maxSteps, (void *)&maxSteps);
+}
+
+void
+FTLEAttributes::SetTerminationType(FTLEAttributes::TerminationType terminationType_)
+{
+    terminationType = terminationType_;
+    Select(ID_terminationType, (void *)&terminationType);
+}
+
+void
+FTLEAttributes::SetTerminateByDistance(bool terminateByDistance_)
+{
+    terminateByDistance = terminateByDistance_;
+    Select(ID_terminateByDistance, (void *)&terminateByDistance);
+}
+
+void
+FTLEAttributes::SetTermDistance(double termDistance_)
+{
+    termDistance = termDistance_;
+    Select(ID_termDistance, (void *)&termDistance);
+}
+
+void
+FTLEAttributes::SetTerminateByTime(bool terminateByTime_)
+{
+    terminateByTime = terminateByTime_;
+    Select(ID_terminateByTime, (void *)&terminateByTime);
+}
+
+void
+FTLEAttributes::SetTermTime(double termTime_)
+{
+    termTime = termTime_;
+    Select(ID_termTime, (void *)&termTime);
+}
+
+void
+FTLEAttributes::SetMaxStepLength(double maxStepLength_)
+{
+    maxStepLength = maxStepLength_;
+    Select(ID_maxStepLength, (void *)&maxStepLength);
+}
+
+void
+FTLEAttributes::SetLimitMaximumTimestep(bool limitMaximumTimestep_)
+{
+    limitMaximumTimestep = limitMaximumTimestep_;
+    Select(ID_limitMaximumTimestep, (void *)&limitMaximumTimestep);
+}
+
+void
+FTLEAttributes::SetMaxTimeStep(double maxTimeStep_)
+{
+    maxTimeStep = maxTimeStep_;
+    Select(ID_maxTimeStep, (void *)&maxTimeStep);
+}
+
+void
+FTLEAttributes::SetRelTol(double relTol_)
+{
+    relTol = relTol_;
+    Select(ID_relTol, (void *)&relTol);
+}
+
+void
+FTLEAttributes::SetAbsTolSizeType(FTLEAttributes::SizeType absTolSizeType_)
+{
+    absTolSizeType = absTolSizeType_;
+    Select(ID_absTolSizeType, (void *)&absTolSizeType);
+}
+
+void
+FTLEAttributes::SetAbsTolAbsolute(double absTolAbsolute_)
+{
+    absTolAbsolute = absTolAbsolute_;
+    Select(ID_absTolAbsolute, (void *)&absTolAbsolute);
+}
+
+void
+FTLEAttributes::SetAbsTolBBox(double absTolBBox_)
+{
+    absTolBBox = absTolBBox_;
+    Select(ID_absTolBBox, (void *)&absTolBBox);
+}
+
+void
+FTLEAttributes::SetFieldType(FTLEAttributes::FieldType fieldType_)
+{
+    fieldType = fieldType_;
+    Select(ID_fieldType, (void *)&fieldType);
+}
+
+void
+FTLEAttributes::SetFieldConstant(double fieldConstant_)
+{
+    fieldConstant = fieldConstant_;
+    Select(ID_fieldConstant, (void *)&fieldConstant);
+}
+
+void
+FTLEAttributes::SetVelocitySource(const double *velocitySource_)
+{
+    velocitySource[0] = velocitySource_[0];
+    velocitySource[1] = velocitySource_[1];
+    velocitySource[2] = velocitySource_[2];
+    Select(ID_velocitySource, (void *)velocitySource, 3);
+}
+
+void
+FTLEAttributes::SetIntegrationType(FTLEAttributes::IntegrationType integrationType_)
+{
+    integrationType = integrationType_;
+    Select(ID_integrationType, (void *)&integrationType);
+}
+
+void
+FTLEAttributes::SetStreamlineAlgorithmType(FTLEAttributes::StreamlineAlgorithmType streamlineAlgorithmType_)
+{
+    streamlineAlgorithmType = streamlineAlgorithmType_;
+    Select(ID_streamlineAlgorithmType, (void *)&streamlineAlgorithmType);
+}
+
+void
+FTLEAttributes::SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+{
+    maxStreamlineProcessCount = maxStreamlineProcessCount_;
+    Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
+}
+
+void
+FTLEAttributes::SetMaxDomainCacheSize(int maxDomainCacheSize_)
+{
+    maxDomainCacheSize = maxDomainCacheSize_;
+    Select(ID_maxDomainCacheSize, (void *)&maxDomainCacheSize);
+}
+
+void
+FTLEAttributes::SetWorkGroupSize(int workGroupSize_)
+{
+    workGroupSize = workGroupSize_;
+    Select(ID_workGroupSize, (void *)&workGroupSize);
+}
+
+void
+FTLEAttributes::SetPathlines(bool pathlines_)
+{
+    pathlines = pathlines_;
+    Select(ID_pathlines, (void *)&pathlines);
+}
+
+void
+FTLEAttributes::SetPathlinesOverrideStartingTimeFlag(bool pathlinesOverrideStartingTimeFlag_)
+{
+    pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
+    Select(ID_pathlinesOverrideStartingTimeFlag, (void *)&pathlinesOverrideStartingTimeFlag);
+}
+
+void
+FTLEAttributes::SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
+{
+    pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
+    Select(ID_pathlinesOverrideStartingTime, (void *)&pathlinesOverrideStartingTime);
+}
+
+void
+FTLEAttributes::SetPathlinesCMFE(FTLEAttributes::PathlinesCMFE pathlinesCMFE_)
+{
+    pathlinesCMFE = pathlinesCMFE_;
+    Select(ID_pathlinesCMFE, (void *)&pathlinesCMFE);
+}
+
+void
+FTLEAttributes::SetForceNodeCenteredData(bool forceNodeCenteredData_)
+{
+    forceNodeCenteredData = forceNodeCenteredData_;
+    Select(ID_forceNodeCenteredData, (void *)&forceNodeCenteredData);
+}
+
+void
+FTLEAttributes::SetIssueTerminationWarnings(bool issueTerminationWarnings_)
+{
+    issueTerminationWarnings = issueTerminationWarnings_;
+    Select(ID_issueTerminationWarnings, (void *)&issueTerminationWarnings);
+}
+
+void
+FTLEAttributes::SetIssueStiffnessWarnings(bool issueStiffnessWarnings_)
+{
+    issueStiffnessWarnings = issueStiffnessWarnings_;
+    Select(ID_issueStiffnessWarnings, (void *)&issueStiffnessWarnings);
+}
+
+void
+FTLEAttributes::SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_)
+{
+    issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
+    Select(ID_issueCriticalPointsWarnings, (void *)&issueCriticalPointsWarnings);
+}
+
+void
+FTLEAttributes::SetCriticalPointThreshold(double criticalPointThreshold_)
+{
+    criticalPointThreshold = criticalPointThreshold_;
+    Select(ID_criticalPointThreshold, (void *)&criticalPointThreshold);
+}
+
+void
+FTLEAttributes::SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
+{
+    correlationDistanceAngTol = correlationDistanceAngTol_;
+    Select(ID_correlationDistanceAngTol, (void *)&correlationDistanceAngTol);
+}
+
+void
+FTLEAttributes::SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
+{
+    correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
+    Select(ID_correlationDistanceMinDistAbsolute, (void *)&correlationDistanceMinDistAbsolute);
+}
+
+void
+FTLEAttributes::SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
+{
+    correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
+    Select(ID_correlationDistanceMinDistBBox, (void *)&correlationDistanceMinDistBBox);
+}
+
+void
+FTLEAttributes::SetCorrelationDistanceMinDistType(FTLEAttributes::SizeType correlationDistanceMinDistType_)
+{
+    correlationDistanceMinDistType = correlationDistanceMinDistType_;
+    Select(ID_correlationDistanceMinDistType, (void *)&correlationDistanceMinDistType);
+}
+
+void
+FTLEAttributes::SetSelection(const std::string &selection_)
+{
+    selection = selection_;
+    Select(ID_selection, (void *)&selection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-double
-FTLEAttributes::GetIntegrationTime() const
+FTLEAttributes::SourceType
+FTLEAttributes::GetSourceType() const
 {
-    return integrationTime;
-}
-
-FTLEAttributes::Region
-FTLEAttributes::GetRegionType() const
-{
-    return Region(regionType);
+    return SourceType(sourceType);
 }
 
 const int *
@@ -875,16 +1796,232 @@ FTLEAttributes::GetEndPosition()
     return EndPosition;
 }
 
-FTLEAttributes::Direction
-FTLEAttributes::GetDirection() const
+FTLEAttributes::IntegrationDirection
+FTLEAttributes::GetStreamlineDirection() const
 {
-    return Direction(direction);
+    return IntegrationDirection(streamlineDirection);
 }
 
-FTLEAttributes::FlowType
-FTLEAttributes::GetFlowType() const
+int
+FTLEAttributes::GetMaxSteps() const
 {
-    return FlowType(flowType);
+    return maxSteps;
+}
+
+FTLEAttributes::TerminationType
+FTLEAttributes::GetTerminationType() const
+{
+    return TerminationType(terminationType);
+}
+
+bool
+FTLEAttributes::GetTerminateByDistance() const
+{
+    return terminateByDistance;
+}
+
+double
+FTLEAttributes::GetTermDistance() const
+{
+    return termDistance;
+}
+
+bool
+FTLEAttributes::GetTerminateByTime() const
+{
+    return terminateByTime;
+}
+
+double
+FTLEAttributes::GetTermTime() const
+{
+    return termTime;
+}
+
+double
+FTLEAttributes::GetMaxStepLength() const
+{
+    return maxStepLength;
+}
+
+bool
+FTLEAttributes::GetLimitMaximumTimestep() const
+{
+    return limitMaximumTimestep;
+}
+
+double
+FTLEAttributes::GetMaxTimeStep() const
+{
+    return maxTimeStep;
+}
+
+double
+FTLEAttributes::GetRelTol() const
+{
+    return relTol;
+}
+
+FTLEAttributes::SizeType
+FTLEAttributes::GetAbsTolSizeType() const
+{
+    return SizeType(absTolSizeType);
+}
+
+double
+FTLEAttributes::GetAbsTolAbsolute() const
+{
+    return absTolAbsolute;
+}
+
+double
+FTLEAttributes::GetAbsTolBBox() const
+{
+    return absTolBBox;
+}
+
+FTLEAttributes::FieldType
+FTLEAttributes::GetFieldType() const
+{
+    return FieldType(fieldType);
+}
+
+double
+FTLEAttributes::GetFieldConstant() const
+{
+    return fieldConstant;
+}
+
+const double *
+FTLEAttributes::GetVelocitySource() const
+{
+    return velocitySource;
+}
+
+double *
+FTLEAttributes::GetVelocitySource()
+{
+    return velocitySource;
+}
+
+FTLEAttributes::IntegrationType
+FTLEAttributes::GetIntegrationType() const
+{
+    return IntegrationType(integrationType);
+}
+
+FTLEAttributes::StreamlineAlgorithmType
+FTLEAttributes::GetStreamlineAlgorithmType() const
+{
+    return StreamlineAlgorithmType(streamlineAlgorithmType);
+}
+
+int
+FTLEAttributes::GetMaxStreamlineProcessCount() const
+{
+    return maxStreamlineProcessCount;
+}
+
+int
+FTLEAttributes::GetMaxDomainCacheSize() const
+{
+    return maxDomainCacheSize;
+}
+
+int
+FTLEAttributes::GetWorkGroupSize() const
+{
+    return workGroupSize;
+}
+
+bool
+FTLEAttributes::GetPathlines() const
+{
+    return pathlines;
+}
+
+bool
+FTLEAttributes::GetPathlinesOverrideStartingTimeFlag() const
+{
+    return pathlinesOverrideStartingTimeFlag;
+}
+
+double
+FTLEAttributes::GetPathlinesOverrideStartingTime() const
+{
+    return pathlinesOverrideStartingTime;
+}
+
+FTLEAttributes::PathlinesCMFE
+FTLEAttributes::GetPathlinesCMFE() const
+{
+    return PathlinesCMFE(pathlinesCMFE);
+}
+
+bool
+FTLEAttributes::GetForceNodeCenteredData() const
+{
+    return forceNodeCenteredData;
+}
+
+bool
+FTLEAttributes::GetIssueTerminationWarnings() const
+{
+    return issueTerminationWarnings;
+}
+
+bool
+FTLEAttributes::GetIssueStiffnessWarnings() const
+{
+    return issueStiffnessWarnings;
+}
+
+bool
+FTLEAttributes::GetIssueCriticalPointsWarnings() const
+{
+    return issueCriticalPointsWarnings;
+}
+
+double
+FTLEAttributes::GetCriticalPointThreshold() const
+{
+    return criticalPointThreshold;
+}
+
+double
+FTLEAttributes::GetCorrelationDistanceAngTol() const
+{
+    return correlationDistanceAngTol;
+}
+
+double
+FTLEAttributes::GetCorrelationDistanceMinDistAbsolute() const
+{
+    return correlationDistanceMinDistAbsolute;
+}
+
+double
+FTLEAttributes::GetCorrelationDistanceMinDistBBox() const
+{
+    return correlationDistanceMinDistBBox;
+}
+
+FTLEAttributes::SizeType
+FTLEAttributes::GetCorrelationDistanceMinDistType() const
+{
+    return SizeType(correlationDistanceMinDistType);
+}
+
+const std::string &
+FTLEAttributes::GetSelection() const
+{
+    return selection;
+}
+
+std::string &
+FTLEAttributes::GetSelection()
+{
+    return selection;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -907,6 +2044,18 @@ void
 FTLEAttributes::SelectEndPosition()
 {
     Select(ID_EndPosition, (void *)EndPosition, 3);
+}
+
+void
+FTLEAttributes::SelectVelocitySource()
+{
+    Select(ID_velocitySource, (void *)velocitySource, 3);
+}
+
+void
+FTLEAttributes::SelectSelection()
+{
+    Select(ID_selection, (void *)&selection);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -933,15 +2082,48 @@ FTLEAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_integrationTime: return "integrationTime";
-    case ID_regionType:      return "regionType";
-    case ID_Resolution:      return "Resolution";
-    case ID_UseDataSetStart: return "UseDataSetStart";
-    case ID_StartPosition:   return "StartPosition";
-    case ID_UseDataSetEnd:   return "UseDataSetEnd";
-    case ID_EndPosition:     return "EndPosition";
-    case ID_direction:       return "direction";
-    case ID_flowType:        return "flowType";
+    case ID_sourceType:                         return "sourceType";
+    case ID_Resolution:                         return "Resolution";
+    case ID_UseDataSetStart:                    return "UseDataSetStart";
+    case ID_StartPosition:                      return "StartPosition";
+    case ID_UseDataSetEnd:                      return "UseDataSetEnd";
+    case ID_EndPosition:                        return "EndPosition";
+    case ID_streamlineDirection:                return "streamlineDirection";
+    case ID_maxSteps:                           return "maxSteps";
+    case ID_terminationType:                    return "terminationType";
+    case ID_terminateByDistance:                return "terminateByDistance";
+    case ID_termDistance:                       return "termDistance";
+    case ID_terminateByTime:                    return "terminateByTime";
+    case ID_termTime:                           return "termTime";
+    case ID_maxStepLength:                      return "maxStepLength";
+    case ID_limitMaximumTimestep:               return "limitMaximumTimestep";
+    case ID_maxTimeStep:                        return "maxTimeStep";
+    case ID_relTol:                             return "relTol";
+    case ID_absTolSizeType:                     return "absTolSizeType";
+    case ID_absTolAbsolute:                     return "absTolAbsolute";
+    case ID_absTolBBox:                         return "absTolBBox";
+    case ID_fieldType:                          return "fieldType";
+    case ID_fieldConstant:                      return "fieldConstant";
+    case ID_velocitySource:                     return "velocitySource";
+    case ID_integrationType:                    return "integrationType";
+    case ID_streamlineAlgorithmType:            return "streamlineAlgorithmType";
+    case ID_maxStreamlineProcessCount:          return "maxStreamlineProcessCount";
+    case ID_maxDomainCacheSize:                 return "maxDomainCacheSize";
+    case ID_workGroupSize:                      return "workGroupSize";
+    case ID_pathlines:                          return "pathlines";
+    case ID_pathlinesOverrideStartingTimeFlag:  return "pathlinesOverrideStartingTimeFlag";
+    case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
+    case ID_pathlinesCMFE:                      return "pathlinesCMFE";
+    case ID_forceNodeCenteredData:              return "forceNodeCenteredData";
+    case ID_issueTerminationWarnings:           return "issueTerminationWarnings";
+    case ID_issueStiffnessWarnings:             return "issueStiffnessWarnings";
+    case ID_issueCriticalPointsWarnings:        return "issueCriticalPointsWarnings";
+    case ID_criticalPointThreshold:             return "criticalPointThreshold";
+    case ID_correlationDistanceAngTol:          return "correlationDistanceAngTol";
+    case ID_correlationDistanceMinDistAbsolute: return "correlationDistanceMinDistAbsolute";
+    case ID_correlationDistanceMinDistBBox:     return "correlationDistanceMinDistBBox";
+    case ID_correlationDistanceMinDistType:     return "correlationDistanceMinDistType";
+    case ID_selection:                          return "selection";
     default:  return "invalid index";
     }
 }
@@ -966,15 +2148,48 @@ FTLEAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_integrationTime: return FieldType_double;
-    case ID_regionType:      return FieldType_enum;
-    case ID_Resolution:      return FieldType_intArray;
-    case ID_UseDataSetStart: return FieldType_bool;
-    case ID_StartPosition:   return FieldType_doubleArray;
-    case ID_UseDataSetEnd:   return FieldType_bool;
-    case ID_EndPosition:     return FieldType_doubleArray;
-    case ID_direction:       return FieldType_enum;
-    case ID_flowType:        return FieldType_enum;
+    case ID_sourceType:                         return FieldType_enum;
+    case ID_Resolution:                         return FieldType_intArray;
+    case ID_UseDataSetStart:                    return FieldType_bool;
+    case ID_StartPosition:                      return FieldType_doubleArray;
+    case ID_UseDataSetEnd:                      return FieldType_bool;
+    case ID_EndPosition:                        return FieldType_doubleArray;
+    case ID_streamlineDirection:                return FieldType_enum;
+    case ID_maxSteps:                           return FieldType_int;
+    case ID_terminationType:                    return FieldType_enum;
+    case ID_terminateByDistance:                return FieldType_bool;
+    case ID_termDistance:                       return FieldType_double;
+    case ID_terminateByTime:                    return FieldType_bool;
+    case ID_termTime:                           return FieldType_double;
+    case ID_maxStepLength:                      return FieldType_double;
+    case ID_limitMaximumTimestep:               return FieldType_bool;
+    case ID_maxTimeStep:                        return FieldType_double;
+    case ID_relTol:                             return FieldType_double;
+    case ID_absTolSizeType:                     return FieldType_enum;
+    case ID_absTolAbsolute:                     return FieldType_double;
+    case ID_absTolBBox:                         return FieldType_double;
+    case ID_fieldType:                          return FieldType_enum;
+    case ID_fieldConstant:                      return FieldType_double;
+    case ID_velocitySource:                     return FieldType_doubleArray;
+    case ID_integrationType:                    return FieldType_enum;
+    case ID_streamlineAlgorithmType:            return FieldType_enum;
+    case ID_maxStreamlineProcessCount:          return FieldType_int;
+    case ID_maxDomainCacheSize:                 return FieldType_int;
+    case ID_workGroupSize:                      return FieldType_int;
+    case ID_pathlines:                          return FieldType_bool;
+    case ID_pathlinesOverrideStartingTimeFlag:  return FieldType_bool;
+    case ID_pathlinesOverrideStartingTime:      return FieldType_double;
+    case ID_pathlinesCMFE:                      return FieldType_enum;
+    case ID_forceNodeCenteredData:              return FieldType_bool;
+    case ID_issueTerminationWarnings:           return FieldType_bool;
+    case ID_issueStiffnessWarnings:             return FieldType_bool;
+    case ID_issueCriticalPointsWarnings:        return FieldType_bool;
+    case ID_criticalPointThreshold:             return FieldType_double;
+    case ID_correlationDistanceAngTol:          return FieldType_double;
+    case ID_correlationDistanceMinDistAbsolute: return FieldType_double;
+    case ID_correlationDistanceMinDistBBox:     return FieldType_double;
+    case ID_correlationDistanceMinDistType:     return FieldType_enum;
+    case ID_selection:                          return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -999,15 +2214,48 @@ FTLEAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_integrationTime: return "double";
-    case ID_regionType:      return "enum";
-    case ID_Resolution:      return "intArray";
-    case ID_UseDataSetStart: return "bool";
-    case ID_StartPosition:   return "doubleArray";
-    case ID_UseDataSetEnd:   return "bool";
-    case ID_EndPosition:     return "doubleArray";
-    case ID_direction:       return "enum";
-    case ID_flowType:        return "enum";
+    case ID_sourceType:                         return "enum";
+    case ID_Resolution:                         return "intArray";
+    case ID_UseDataSetStart:                    return "bool";
+    case ID_StartPosition:                      return "doubleArray";
+    case ID_UseDataSetEnd:                      return "bool";
+    case ID_EndPosition:                        return "doubleArray";
+    case ID_streamlineDirection:                return "enum";
+    case ID_maxSteps:                           return "int";
+    case ID_terminationType:                    return "enum";
+    case ID_terminateByDistance:                return "bool";
+    case ID_termDistance:                       return "double";
+    case ID_terminateByTime:                    return "bool";
+    case ID_termTime:                           return "double";
+    case ID_maxStepLength:                      return "double";
+    case ID_limitMaximumTimestep:               return "bool";
+    case ID_maxTimeStep:                        return "double";
+    case ID_relTol:                             return "double";
+    case ID_absTolSizeType:                     return "enum";
+    case ID_absTolAbsolute:                     return "double";
+    case ID_absTolBBox:                         return "double";
+    case ID_fieldType:                          return "enum";
+    case ID_fieldConstant:                      return "double";
+    case ID_velocitySource:                     return "doubleArray";
+    case ID_integrationType:                    return "enum";
+    case ID_streamlineAlgorithmType:            return "enum";
+    case ID_maxStreamlineProcessCount:          return "int";
+    case ID_maxDomainCacheSize:                 return "int";
+    case ID_workGroupSize:                      return "int";
+    case ID_pathlines:                          return "bool";
+    case ID_pathlinesOverrideStartingTimeFlag:  return "bool";
+    case ID_pathlinesOverrideStartingTime:      return "double";
+    case ID_pathlinesCMFE:                      return "enum";
+    case ID_forceNodeCenteredData:              return "bool";
+    case ID_issueTerminationWarnings:           return "bool";
+    case ID_issueStiffnessWarnings:             return "bool";
+    case ID_issueCriticalPointsWarnings:        return "bool";
+    case ID_criticalPointThreshold:             return "double";
+    case ID_correlationDistanceAngTol:          return "double";
+    case ID_correlationDistanceMinDistAbsolute: return "double";
+    case ID_correlationDistanceMinDistBBox:     return "double";
+    case ID_correlationDistanceMinDistType:     return "enum";
+    case ID_selection:                          return "string";
     default:  return "invalid index";
     }
 }
@@ -1034,14 +2282,9 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    case ID_integrationTime:
+    case ID_sourceType:
         {  // new scope
-        retval = (integrationTime == obj.integrationTime);
-        }
-        break;
-    case ID_regionType:
-        {  // new scope
-        retval = (regionType == obj.regionType);
+        retval = (sourceType == obj.sourceType);
         }
         break;
     case ID_Resolution:
@@ -1084,14 +2327,189 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = EndPosition_equal;
         }
         break;
-    case ID_direction:
+    case ID_streamlineDirection:
         {  // new scope
-        retval = (direction == obj.direction);
+        retval = (streamlineDirection == obj.streamlineDirection);
         }
         break;
-    case ID_flowType:
+    case ID_maxSteps:
         {  // new scope
-        retval = (flowType == obj.flowType);
+        retval = (maxSteps == obj.maxSteps);
+        }
+        break;
+    case ID_terminationType:
+        {  // new scope
+        retval = (terminationType == obj.terminationType);
+        }
+        break;
+    case ID_terminateByDistance:
+        {  // new scope
+        retval = (terminateByDistance == obj.terminateByDistance);
+        }
+        break;
+    case ID_termDistance:
+        {  // new scope
+        retval = (termDistance == obj.termDistance);
+        }
+        break;
+    case ID_terminateByTime:
+        {  // new scope
+        retval = (terminateByTime == obj.terminateByTime);
+        }
+        break;
+    case ID_termTime:
+        {  // new scope
+        retval = (termTime == obj.termTime);
+        }
+        break;
+    case ID_maxStepLength:
+        {  // new scope
+        retval = (maxStepLength == obj.maxStepLength);
+        }
+        break;
+    case ID_limitMaximumTimestep:
+        {  // new scope
+        retval = (limitMaximumTimestep == obj.limitMaximumTimestep);
+        }
+        break;
+    case ID_maxTimeStep:
+        {  // new scope
+        retval = (maxTimeStep == obj.maxTimeStep);
+        }
+        break;
+    case ID_relTol:
+        {  // new scope
+        retval = (relTol == obj.relTol);
+        }
+        break;
+    case ID_absTolSizeType:
+        {  // new scope
+        retval = (absTolSizeType == obj.absTolSizeType);
+        }
+        break;
+    case ID_absTolAbsolute:
+        {  // new scope
+        retval = (absTolAbsolute == obj.absTolAbsolute);
+        }
+        break;
+    case ID_absTolBBox:
+        {  // new scope
+        retval = (absTolBBox == obj.absTolBBox);
+        }
+        break;
+    case ID_fieldType:
+        {  // new scope
+        retval = (fieldType == obj.fieldType);
+        }
+        break;
+    case ID_fieldConstant:
+        {  // new scope
+        retval = (fieldConstant == obj.fieldConstant);
+        }
+        break;
+    case ID_velocitySource:
+        {  // new scope
+        // Compare the velocitySource arrays.
+        bool velocitySource_equal = true;
+        for(int i = 0; i < 3 && velocitySource_equal; ++i)
+            velocitySource_equal = (velocitySource[i] == obj.velocitySource[i]);
+
+        retval = velocitySource_equal;
+        }
+        break;
+    case ID_integrationType:
+        {  // new scope
+        retval = (integrationType == obj.integrationType);
+        }
+        break;
+    case ID_streamlineAlgorithmType:
+        {  // new scope
+        retval = (streamlineAlgorithmType == obj.streamlineAlgorithmType);
+        }
+        break;
+    case ID_maxStreamlineProcessCount:
+        {  // new scope
+        retval = (maxStreamlineProcessCount == obj.maxStreamlineProcessCount);
+        }
+        break;
+    case ID_maxDomainCacheSize:
+        {  // new scope
+        retval = (maxDomainCacheSize == obj.maxDomainCacheSize);
+        }
+        break;
+    case ID_workGroupSize:
+        {  // new scope
+        retval = (workGroupSize == obj.workGroupSize);
+        }
+        break;
+    case ID_pathlines:
+        {  // new scope
+        retval = (pathlines == obj.pathlines);
+        }
+        break;
+    case ID_pathlinesOverrideStartingTimeFlag:
+        {  // new scope
+        retval = (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag);
+        }
+        break;
+    case ID_pathlinesOverrideStartingTime:
+        {  // new scope
+        retval = (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime);
+        }
+        break;
+    case ID_pathlinesCMFE:
+        {  // new scope
+        retval = (pathlinesCMFE == obj.pathlinesCMFE);
+        }
+        break;
+    case ID_forceNodeCenteredData:
+        {  // new scope
+        retval = (forceNodeCenteredData == obj.forceNodeCenteredData);
+        }
+        break;
+    case ID_issueTerminationWarnings:
+        {  // new scope
+        retval = (issueTerminationWarnings == obj.issueTerminationWarnings);
+        }
+        break;
+    case ID_issueStiffnessWarnings:
+        {  // new scope
+        retval = (issueStiffnessWarnings == obj.issueStiffnessWarnings);
+        }
+        break;
+    case ID_issueCriticalPointsWarnings:
+        {  // new scope
+        retval = (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings);
+        }
+        break;
+    case ID_criticalPointThreshold:
+        {  // new scope
+        retval = (criticalPointThreshold == obj.criticalPointThreshold);
+        }
+        break;
+    case ID_correlationDistanceAngTol:
+        {  // new scope
+        retval = (correlationDistanceAngTol == obj.correlationDistanceAngTol);
+        }
+        break;
+    case ID_correlationDistanceMinDistAbsolute:
+        {  // new scope
+        retval = (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute);
+        }
+        break;
+    case ID_correlationDistanceMinDistBBox:
+        {  // new scope
+        retval = (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox);
+        }
+        break;
+    case ID_correlationDistanceMinDistType:
+        {  // new scope
+        retval = (correlationDistanceMinDistType == obj.correlationDistanceMinDistType);
+        }
+        break;
+    case ID_selection:
+        {  // new scope
+        retval = (selection == obj.selection);
         }
         break;
     default: retval = false;
@@ -1103,4 +2521,117 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+//  Method: FTLEAttributes::ChangesRequireRecalculation
+//
+//  Purpose:
+//     Determines whether or not the plot must be recalculated based on the
+//     new attributes.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Fri Oct 4 15:22:57 PST 2002
+//
+//  Notes:  Most attributes cause the FTLE to change.
+//
+//  Modifications:
+//    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
+//    I made the coloring method matter when comparing FTLE attributes
+//    and I added support for ribbons.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Add support for useWholeBox.
+//
+//    Hank Childs, Sun May  3 11:49:31 CDT 2009
+//    Add support for point lists.
+//
+//   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
+//   Add custom renderer and lots of appearance options to the FTLEs plots.
+//
+//   Christoph Garth, Wed Jan 13 17:14:21 PST 2010 
+//   Add support for circle source.
+//
+//   Hank Childs, Fri Oct  1 20:43:34 PDT 2010
+//   Add support for absTol that is fraction of the bounding box.
+//
+//   Hank Childs, Mon Oct  4 14:32:06 PDT 2010
+//   Add support for having multiple termination criterias.
+//
+//   Dave Pugmire, Fri Jan 28 14:49:50 EST 2011
+//   Add vary tube radius by variable.
+//
+//   Dave Pugmire, Thu Mar 15 11:23:18 EDT 2012
+//   Add named selections as a seed source.
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
+{
+    //Check the general stuff first...
+    if (sourceType != obj.sourceType ||
+        maxSteps != obj.maxSteps ||
+        terminateByDistance != obj.terminateByDistance ||
+        termDistance != obj.termDistance ||
+        terminateByTime != obj.terminateByTime ||
+        termTime != obj.termTime ||
+        streamlineDirection != obj.streamlineDirection ||
+        fieldType != obj.fieldType ||
+        fieldConstant != obj.fieldConstant ||
+        integrationType != obj.integrationType ||
+        maxStepLength != obj.maxStepLength ||
+        maxTimeStep != obj.maxTimeStep ||
+        limitMaximumTimestep != obj.limitMaximumTimestep ||
+        relTol != obj.relTol ||
+        absTolAbsolute != obj.absTolAbsolute ||
+        absTolBBox != obj.absTolBBox ||
+        absTolSizeType != obj.absTolSizeType ||
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
+        pathlines != obj.pathlines ||
+        pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
+        pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
+        pathlinesCMFE != obj.pathlinesCMFE ||
+        1)
+    {
+        return true;
+    }
+         
+    // If they say they don't want warnings, then don't re-execute. If
+    // they do, then re-execute so we can give them that warning.
+    if (issueTerminationWarnings != obj.issueTerminationWarnings &&
+        obj.issueTerminationWarnings == true)
+        return true;
+
+    if (fieldType == FlashField &&
+        POINT_DIFFERS(velocitySource, obj.velocitySource))
+    {
+        return true;
+    }
+
+    //Check by source type.
+    if ((sourceType == RegularGrid) &&
+         POINT_DIFFERS(Resolution, obj.Resolution))
+    {
+        return true;
+    }
+
+    if ((sourceType == RegularGrid) &&
+         UseDataSetStart == true &&
+         POINT_DIFFERS(StartPosition, obj.StartPosition))
+    {
+        return true;
+    }
+
+    if ((sourceType == RegularGrid) &&
+         UseDataSetEnd == true &&
+         POINT_DIFFERS(EndPosition, obj.EndPosition))
+    {
+        return true;
+    }
+
+    return false;
+}
 
