@@ -234,7 +234,7 @@ Connection::WriteDouble(double val)
 void
 Connection::WriteString(const std::string &s)
 {
-    Append((unsigned char *)s.c_str(), s.size() + 1);
+    Append((unsigned char *)s.c_str(), (int)s.size() + 1);
 }
 
 // *******************************************************************

@@ -285,7 +285,7 @@ avtEulerianQuery::Execute(vtkDataSet *in_ds, const int dom)
             ++numUsedPoints;
 
     // Now for the magic: Euler-Descartes formula
-    Eulerian = numUsedPoints - edges.size() + nCells;
+    Eulerian = numUsedPoints - (int)edges.size() + nCells;
 
     domToEulerMap.insert(DomainToEulerMap::value_type(dom, Eulerian));
     ghost_remover->Delete();

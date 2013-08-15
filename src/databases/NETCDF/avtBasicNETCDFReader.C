@@ -368,7 +368,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                         {
                             int d;
                             if(vardims[dim] != timedim)
-                                d = dimSizes[vardims[dim]];
+                                d = (int)dimSizes[vardims[dim]];
                             else
                                 d = TIME_DIMENSION;
                             vDims.push_back(d);
@@ -412,7 +412,7 @@ avtBasicNETCDFReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaDat
                     if(vardims[dim] != timedim)
                     {
                         vDims.push_back(vardims[dim]);
-                        d = dimSizes[vardims[dim]];
+                        d = (int)dimSizes[vardims[dim]];
                         elems *= d;
                     }
                     else

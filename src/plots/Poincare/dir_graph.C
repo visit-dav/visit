@@ -57,14 +57,14 @@ DIR_Graph::~DIR_Graph()
 
 void DIR_Graph::add_one_node(GraphNode &node)
 {
-  node.node_id = nlist.size();
+  node.node_id = (int)nlist.size();
   node.edges.clear();
   nlist.push_back(node);
 }
   
 void DIR_Graph::add_one_edge(GraphEdge &e)
 {
-  e.edge_id=elist.size();
+  e.edge_id=(int)elist.size();
   elist.push_back(e);
                 
   // remember to udpate the edge lists of the two nodes connected by e
@@ -151,7 +151,7 @@ void DIR_Graph::trim_leafs()
     if (add)
     {
       tmp_nlist.push_back(nlist[e.node1]);
-      tmp_nlist[tmp_nlist.size()-1].node_id = tmp_nlist.size()-1;
+      tmp_nlist[tmp_nlist.size()-1].node_id = (int)tmp_nlist.size()-1;
       tmp_nlist[tmp_nlist.size()-1].edges.clear();
     }
     
@@ -168,7 +168,7 @@ void DIR_Graph::trim_leafs()
     if (add)
     {
       tmp_nlist.push_back(nlist[e.node2]);
-      tmp_nlist[tmp_nlist.size()-1].node_id = tmp_nlist.size()-1;
+      tmp_nlist[tmp_nlist.size()-1].node_id = (int)tmp_nlist.size()-1;
       tmp_nlist[tmp_nlist.size()-1].edges.clear();
     }
   }
@@ -233,7 +233,7 @@ int DIR_Graph::Min_Distance(const std::vector<double>& D, std::vector<bool>& F)
             
   F[j] = false;
 
-  return j;    
+  return (int)j;    
 }  
 
 void DIR_Graph::Dijkstra_path_between(int n1, int n2, std::vector<int> &path)

@@ -241,7 +241,7 @@ vtkMultiSplitter::RequestData(
         // Create the array of the clip values for the current boundary.
         //
         clipFunction->SetCoefficients(&bounds[iBnd*10]);
-        npts = pts.size() / 3;
+        npts = (int)pts.size() / 3;
         float *clipArray = new float[npts];
         for (int i = 0; i < npts; i++)
         {
@@ -516,7 +516,7 @@ vtkMultiSplitter::RequestData(
         vfv.UpdatePoints(pts);
     }
 
-    vfv.ConstructDataSet(inCD, output, &pts[0], pts.size()/3, newTags);
+    vfv.ConstructDataSet(inCD, output, &pts[0], (int)pts.size()/3, newTags);
 
     return 1;
 }

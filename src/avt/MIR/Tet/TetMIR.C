@@ -911,7 +911,7 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
         zone.mat        = matlist[c];
         zone.celltype   = conn.celltype[c];
         zone.nnodes     = nIds;
-        zone.startindex = indexList.size();
+        zone.startindex = (int)indexList.size();
         zone.mix_index  = -1;
 
         for (int n=0; n<nIds; n++)
@@ -1273,7 +1273,7 @@ TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const vtkIdType *c_ptr,
     }
     else
     {
-        index = coordsList.size();
+        index = (int)coordsList.size();
         coord.origzone = c;
         coordsHash->Insert(index);
         coordsList.push_back(coord);
@@ -1354,7 +1354,7 @@ TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const vtkIdType *c_ptr,
     }
     else
     {
-        index = coordsList.size();
+        index = (int)coordsList.size();
         coord.origzone = c;
         coordsHash->Insert(index);
         coordsList.push_back(coord);
@@ -1392,7 +1392,7 @@ TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const vtkIdType *ids,
     zone.mat        = matno;
     zone.celltype   = celltype;
     zone.nnodes     = nIds;
-    zone.startindex = indexList.size();
+    zone.startindex = (int)indexList.size();
     zone.mix_index  = -1;
         
     zonesList.push_back(zone);
@@ -1590,7 +1590,7 @@ TetMIR::ReconstructTet(int c, int npts, const vtkIdType *c_ptr,
         ReconstructedZone zone;
         zone.celltype   = VTK_WEDGE;
         zone.nnodes     = 6;
-        zone.startindex = indexList.size();
+        zone.startindex = (int)indexList.size();
         zone.mat        = wedgelist[t].mat;
         zone.origzone   = c;
         zone.mix_index  = mix_index[zone.mat];
@@ -1659,7 +1659,7 @@ TetMIR::ReconstructTet(int c, int npts, const vtkIdType *c_ptr,
         ReconstructedZone zone;
         zone.celltype   = VTK_TETRA;
         zone.nnodes     = 4;
-        zone.startindex = indexList.size();
+        zone.startindex = (int)indexList.size();
         zone.mat        = tetlist[t].mat;
         zone.origzone   = c;
         zone.mix_index  = mix_index[zone.mat];
@@ -1712,7 +1712,7 @@ TetMIR::ReconstructCleanTet(int matno, int c, int npts, const vtkIdType *c_ptr,
     ReconstructedZone zone;
     zone.celltype   = VTK_TETRA;
     zone.nnodes     = 4;
-    zone.startindex = indexList.size();
+    zone.startindex = (int)indexList.size();
     zone.mat        = matno;
     zone.origzone   = c;
     zone.mix_index  = -1;
@@ -1891,7 +1891,7 @@ TetMIR::ReconstructTri(int c, int npts, const vtkIdType *c_ptr,
         ReconstructedZone zone;
         zone.celltype   = VTK_TRIANGLE;
         zone.nnodes     = 3;
-        zone.startindex = indexList.size();
+        zone.startindex = (int)indexList.size();
         zone.mat        = trilist[t].mat;
         zone.origzone   = c;
         zone.mix_index  = mix_index[zone.mat];
@@ -1946,7 +1946,7 @@ TetMIR::ReconstructCleanTri(int matno, int c, int npts, const vtkIdType *c_ptr,
     ReconstructedZone zone;
     zone.celltype   = VTK_TRIANGLE;
     zone.nnodes     = 3;
-    zone.startindex = indexList.size();
+    zone.startindex = (int)indexList.size();
     zone.mat        = matno;
     zone.origzone   = c;
     zone.mix_index  = -1;

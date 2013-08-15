@@ -219,7 +219,7 @@ avtDataSetWriter::WriteDataTree(avtDataTree_p tree, avtDataObjectString &str)
 
         if (label.size() > 0)
         {
-            str.Append((char *) label.c_str(), label.size(), 
+            str.Append((char *) label.c_str(), (int)label.size(), 
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
         }
 

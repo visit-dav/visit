@@ -133,9 +133,9 @@ avtLinesFileFormat::GetMesh(int dom, const char *name)
         ReadFile();
     }
 
-    if (dom < 0 || dom >= lines.size())
+    if (dom < 0 || dom >= (int)lines.size())
     {
-        EXCEPTION2(BadIndexException, dom, lines.size());
+        EXCEPTION2(BadIndexException, dom, (int)lines.size());
     }
 
     if (strcmp(name, "Lines") != 0)
@@ -223,7 +223,7 @@ avtLinesFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Lines";
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = lines.size();
+    mesh->numBlocks = (int)lines.size();
     mesh->blockOrigin = 0;
     mesh->spatialDimension = 3;
     mesh->topologicalDimension = 1;
@@ -315,7 +315,7 @@ avtLinesFileFormat::ReadFile(void)
             {
                 headerName = lineName;
             }
-            cutoff.push_back(xl.size());
+            cutoff.push_back((int)xl.size());
         }
     }  
 
@@ -323,7 +323,7 @@ avtLinesFileFormat::ReadFile(void)
     // Now we can construct the lines as vtkPolyData.
     //
     int start = 0;
-    cutoff.push_back(xl.size());  // Make logic easier.
+    cutoff.push_back((int)xl.size());  // Make logic easier.
     for (int i = 0 ; i < cutoff.size() ; i++)
     {
         if (start == cutoff[i])

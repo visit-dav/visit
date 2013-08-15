@@ -109,7 +109,7 @@ VIntFind(const std::vector<int>&v, int val)
 {
     for (size_t i = 0; i < v.size(); i++)
         if (v[i] == val)
-            return i;
+            return (int)i;
     return -1;
 }
 
@@ -317,7 +317,7 @@ avtNodeDegreeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
     dv->SetNumberOfValues(nPoints);
     for(vtkIdType i = 0 ; i < nPoints ; i++)
     {
-        dv->SetValue(i, connectivity[i].size());
+        dv->SetValue(i, (int)connectivity[i].size());
     }
 
     return dv;

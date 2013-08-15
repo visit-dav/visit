@@ -288,7 +288,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
     if(have_mixed)
     {
         retval = new avtMaterial(
-            matNames.size(),
+            (int)matNames.size(),
             matnos,
             names,
             ndims,
@@ -305,7 +305,7 @@ MaterialEncoder::CreateMaterial(const int *dims, int ndims) const
     else
     {
         retval = new avtMaterial(
-            matNames.size(),
+            (int)matNames.size(),
             matnos,
             names,
             ndims,

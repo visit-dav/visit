@@ -170,7 +170,7 @@ avtTetradFileFormat::GetCycles(vector<int> &c)
 int
 avtTetradFileFormat::GetNTimesteps(void)
 {
-    return timesteps.size();
+    return (int)timesteps.size();
 }
 
 

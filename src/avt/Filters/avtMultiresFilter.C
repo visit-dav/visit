@@ -190,8 +190,8 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
     int minTopLogicalExtents[3] = {INT_MAX, INT_MAX, INT_MAX};
     int maxTopLogicalExtents[3] = {INT_MIN, INT_MIN, INT_MIN};
 
-    size_t max_domain = sdn->GetNumberOfDomains();
-    for(size_t dom=0; dom < max_domain; ++dom)
+    int max_domain = (int)sdn->GetNumberOfDomains();
+    for(int dom=0; dom < max_domain; ++dom)
     {
         maxLevel = sdn->GetDomainLevel(dom) > maxLevel ?
             sdn->GetDomainLevel(dom) : maxLevel;
@@ -224,7 +224,7 @@ avtContract_p avtMultiresFilter::ModifyContract(avtContract_p contract)
 
     double maxPatchDiag = 0.;
     int nVisible = 0;
-    for(size_t dom=0; dom < max_domain; ++dom)
+    for(int dom=0; dom < max_domain; ++dom)
     {
         int level = sdn->GetDomainLevel(dom);
         std::vector<int> ratios = sdn->GetRatiosForLevel(0, dom);

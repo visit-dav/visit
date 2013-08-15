@@ -175,7 +175,7 @@ void
 Grammar::AddRule(const Rule &r_, int prec)
 {
     Rule *r = new Rule(r_);
-    r->SetIndex(rules.size());
+    r->SetIndex((int)rules.size());
     if (prec != -1)
         r->SetPrec(prec);
     rules.push_back(r);
@@ -323,7 +323,7 @@ Grammar::Configure()
             {
                 sets.push_back(cs);
             }
-            sets[j].SetShiftTransition(ssym, match);
+            sets[j].SetShiftTransition(ssym, (int)match);
         }
 
         // Add the reduce rules for the current state, looking for 

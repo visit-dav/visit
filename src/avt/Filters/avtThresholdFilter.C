@@ -868,7 +868,7 @@ avtThresholdFilter::PreExecute(void)
             inputVarNames.push_back(inputVarName);
     }
     
-    inputVarCount = inputVarNames.size();
+    inputVarCount = (int)inputVarNames.size();
     bool allScalars = true;
     stringVector curListedVarNames = atts.GetListedVarNames();
     for (int i = 0 ; i < curListedVarNames.size() ; i++)

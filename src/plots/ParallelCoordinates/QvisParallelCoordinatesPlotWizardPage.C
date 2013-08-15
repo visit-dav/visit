@@ -695,7 +695,7 @@ QvisParallelCoordinatesPlotWizardPage::UpdatePreview
     while(axisVars.size() < 2)
         axisVars.push_back("?");
 
-    preview->setNumberOfAxes(axisVars.size());
+    preview->setNumberOfAxes((int)axisVars.size());
     preview->setAxisTitles(axisVars);
     preview->redrawAllAxes(true);
 }

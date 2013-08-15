@@ -514,7 +514,7 @@ avtNek5000FileFormat::ParseMetaDataFile(const char *filename)
     // into an absolute path
     if (fileTemplate[0] != '/')
     {
-        for (ii = strlen(filename)-1 ; ii >= 0 ; ii--)
+        for (ii = (int)strlen(filename)-1 ; ii >= 0 ; ii--)
         {
             if (filename[ii] == '/' || filename[ii] == '\\')
             {
@@ -595,7 +595,7 @@ avtNek5000FileFormat::ParseNekFileHeader()
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
 
-    GetFileName(0, 0, blockfilename, fileTemplate.size() + 64);
+    GetFileName(0, 0, blockfilename, (int)fileTemplate.size() + 64);
     ifstream  f(blockfilename);
 
     if (!f.is_open())
@@ -923,7 +923,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     for (ii = iRank; ii < iNumOutputDirs; ii+=nProcs)
     {
         int t0 = visitTimer->StartTimer();
-        GetFileName(0, ii, blockfilename, fileTemplate.size() + 64);
+        GetFileName(0, ii, blockfilename, (int)fileTemplate.size() + 64);
         f.open(blockfilename);
         visitTimer->StopTimer(t0, "avtNek5000FileFormat constructor, time to open a file");
         if (!f.is_open())
@@ -964,7 +964,7 @@ avtNek5000FileFormat::ReadBlockLocations()
     badFile = UnifyMinimumValue(badFile);
     if (badFile < iNumBlocks)
     {
-        GetFileName(0, badFile, blockfilename, fileTemplate.size() + 64);
+        GetFileName(0, badFile, blockfilename, (int)fileTemplate.size() + 64);
         char msg[1024];
         SNPRINTF(msg, 1024, "Could not open file \"%s\" to read block "
                             "locations.", blockfilename);
@@ -1286,7 +1286,7 @@ avtNek5000FileFormat::GetMesh(int /* timestate */, int domain, const char * /*me
     int  i;
 
     int t1 = visitTimer->StartTimer();
-    const int num_elements = myElementList.size();
+    const int num_elements = (int)myElementList.size();
     vector<float *> ptlist(num_elements);
     vector<bool> shouldDelete(num_elements, false);
     for (i = 0 ; i < num_elements ; i++)
@@ -1499,7 +1499,7 @@ avtNek5000FileFormat::ReadPoints(int element, int timestep)
             iCurrMeshProc = aBlockLocs[element*2];
 
         GetFileName(timestepToUseForMesh, iCurrMeshProc, 
-                    meshfilename, fileTemplate.size() + 64);
+                    meshfilename, (int)fileTemplate.size() + 64);
 
         if (curOpenMeshFile != meshfilename)
         {
@@ -1637,7 +1637,7 @@ avtNek5000FileFormat::GetVar(int timestep, int domain, const char *varname)
 
     int t1 = visitTimer->StartTimer();
 
-    const int num_elements = myElementList.size();
+    const int num_elements = (int)myElementList.size();
     int pts_per_element = iBlockSize[0]*iBlockSize[1];
     if (iDim == 3)
         pts_per_element *= iBlockSize[2];
@@ -1769,7 +1769,7 @@ avtNek5000FileFormat::ReadVar(int timestate, int element, const char *varname)
             iCurrVarProc = aBlockLocs[element*2];
 
         GetFileName(timestate, iCurrVarProc, 
-                    filename, fileTemplate.size() + 64);
+                    filename, (int)fileTemplate.size() + 64);
 
         fdVar = fopen(filename, "rb");
         if (!fdVar)
@@ -1888,7 +1888,7 @@ avtNek5000FileFormat::GetVectorVar(int timestep, int domain, const char *varname
 
     int t1 = visitTimer->StartTimer();
 
-    const int num_elements = myElementList.size();
+    const int num_elements = (int)myElementList.size();
     int pts_per_element = iBlockSize[0]*iBlockSize[1];
     if (iDim == 3)
         pts_per_element *= iBlockSize[2];
@@ -2010,7 +2010,7 @@ avtNek5000FileFormat::ReadVelocity(int timestate, int element)
             iCurrVarProc = aBlockLocs[element*2];
 
         GetFileName(timestate, iCurrVarProc, 
-                    filename, fileTemplate.size() + 64);
+                    filename, (int)fileTemplate.size() + 64);
 
         fdVar = fopen(filename, "rb");
         if (!fdVar)
@@ -2339,7 +2339,7 @@ avtNek5000FileFormat::UpdateCyclesAndTimes()
     t = 0.0;
     c = 0;
 
-    GetFileName(curTimestep, 0, meshfilename, fileTemplate.size() + 64);
+    GetFileName(curTimestep, 0, meshfilename, (int)fileTemplate.size() + 64);
     f.open(meshfilename);
 
     if (!bParFormat)
@@ -2768,7 +2768,7 @@ avtNek5000FileFormat::GetBoundingBoxIntervalTree(int timestep)
         int64_t iMDSize = (nFloatsPerDomain * 2 * sizeof(float) * aBlocksPerFile[ii]) / 
                     (iBlockSize[0]*iBlockSize[1]*iBlockSize[2]);
 
-        GetFileName(timestep, ii, blockfilename, fileTemplate.size() + 64);
+        GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
         f.open(blockfilename);
         if (!f.is_open())
         {
@@ -3008,7 +3008,7 @@ avtNek5000FileFormat::GetDataExtentsIntervalTree(int timestep, const char *var)
         int64_t iDESize = 2 * sizeof(float) * aBlocksPerFile[ii] * numVars;
         int64_t iMDSize = iBBSize + iDESize;
 
-        GetFileName(timestep, ii, blockfilename, fileTemplate.size() + 64);
+        GetFileName(timestep, ii, blockfilename, (int)fileTemplate.size() + 64);
         f.open(blockfilename);
         if (!f.is_open())
         {

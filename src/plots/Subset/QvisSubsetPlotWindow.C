@@ -637,7 +637,7 @@ QvisSubsetPlotWindow::UpdateMultipleArea()
 
         // Remove excess entries
         int numEntries = multipleColorList->count();
-        for(i = matNames.size(); i < numEntries; ++i)
+        for(i = (int)matNames.size(); i < numEntries; ++i)
         {
             QListWidgetItem *item = multipleColorList->takeItem(multipleColorList->count() - 1);
             if(item != 0)

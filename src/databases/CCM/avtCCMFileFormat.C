@@ -912,7 +912,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                         break;
                     case 5 :
                         {
-                        int nNodes = 0;
+                        size_t nNodes = 0;
                         for (size_t j = 0; j < ci.faces.size(); j++)
                         {
                             nNodes += ci.faces[j].nodes.size();
@@ -1892,7 +1892,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
 
         oc[1] = ci.id;
         int nFaces  = ci.faces.size();
-        int nPts = 0;
+        size_t nPts = 0;
         doubleVector fbounds;
         for (j = 0; j < nFaces; ++j)
         {
@@ -2853,7 +2853,7 @@ avtCCMFileFormat::IDMap::IDMap()
 void
 avtCCMFileFormat::IDMap::SetIDs(const intVector &v)
 {
-    numIDs = v.size();
+    numIDs = (int)v.size();
 
     bSequential = true;
     bReverseMap = false;
@@ -2862,7 +2862,7 @@ avtCCMFileFormat::IDMap::SetIDs(const intVector &v)
     int min = v[0], max = v[0];
 
     int ii;
-    for (ii = 1; ii < v.size(); ii++)
+    for (ii = 1; ii < numIDs; ii++)
     {
         if (v[ii-1]+1 != v[ii])
             bSequential = false;
@@ -2876,13 +2876,13 @@ avtCCMFileFormat::IDMap::SetIDs(const intVector &v)
     if (bSequential)
         return;
 
-    if (max-min+1 <= v.size()*2)
+    if (max-min+1 <= numIDs*2)
     {
         bReverseMap = true;
         iFirstElem = min;
 
         ids.resize(max-min+1, -1);
-        for (ii = 0; ii < v.size(); ii++)
+        for (ii = 0; ii < numIDs; ii++)
         {
             ids[v[ii]-iFirstElem] = ii;
         }
@@ -2893,7 +2893,7 @@ avtCCMFileFormat::IDMap::SetIDs(const intVector &v)
 
         ids.resize(v.size()*2);
 
-        for (ii = 0; ii < v.size(); ii++)
+        for (ii = 0; ii < numIDs; ii++)
         {
             ids[ii*2]   = v[ii];
             ids[ii*2+1] = ii;

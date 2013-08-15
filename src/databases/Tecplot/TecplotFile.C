@@ -493,7 +493,7 @@ TecplotTitleAndVariables::Write(FILE *f)
 {
     WriteInt(f, fileType);
     WriteString(f, title);
-    WriteInt(f, varNames.size());
+    WriteInt(f, (int)varNames.size());
     for(size_t i = 0; i < varNames.size(); ++i)
     {
         if(varUnits[i].size() > 0)
@@ -1463,7 +1463,7 @@ TecplotLineData::Write(FILE *f)
     bool writeFloat = info.polyLineFieldType==1;
     bool writeZ = info.positionCoordSys == TecplotGrid3D;
 
-    WriteInt(f, polyLines.size());
+    WriteInt(f, (int)polyLines.size());
     for(size_t i = 0; i < polyLines.size(); ++i)
         polyLines[i].Write(f, writeFloat, writeZ);
     return true;
@@ -1742,7 +1742,7 @@ TecplotCustomLabel::Read(FILE *f)
 bool
 TecplotCustomLabel::Write(FILE *f)
 {
-    WriteInt(f, labels.size());
+    WriteInt(f, (int)labels.size());
     for(size_t i = 0; i < labels.size(); ++i)
         WriteString(f, labels[i]);
     return true;
@@ -2455,7 +2455,7 @@ TecplotFile::Read(FILE *f)
 
         if(recordType == 299.0f)
         {
-            TecplotZone rec(titleAndVars.varNames.size());
+            TecplotZone rec((int)titleAndVars.varNames.size());
             rec.Read(f);
             zones.push_back(rec);
             debug4 << mName << "zone = " << endl << rec << endl;
@@ -2672,7 +2672,7 @@ TecplotFile::EnsureUniqueZoneNames()
 {
     std::map<std::string, std::vector<int> > zoneNames;
     for(size_t i = 0; i < zones.size(); ++i)
-        zoneNames[zones[i].zoneName].push_back(i);
+        zoneNames[zones[i].zoneName].push_back((int)i);
 
     std::map<std::string, std::vector<int> >::iterator pos;
     for(pos = zoneNames.begin(); pos != zoneNames.end(); ++pos)
@@ -2979,7 +2979,7 @@ TecplotFile::ZoneNameToIndex(const std::string &zName) const
     {
         if(zones[i].zoneName == zName)
         {
-            retval = i;
+            retval = (int)i;
             break;
         }
     }
@@ -3015,7 +3015,7 @@ TecplotFile::VarNameToIndex(const std::string &varName) const
     {
         if(titleAndVars.varNames[i] == varName)
         {
-            retval = i;
+            retval = (int)i;
             break;
         }
     }

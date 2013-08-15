@@ -369,8 +369,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteChar( vec[i]? 1 : 0);
                 }
                 else
@@ -389,8 +389,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteChar( vec[i] );
                 }
                 else
@@ -409,8 +409,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteUnsignedChar( vec[i] );
                 }
                 else
@@ -429,8 +429,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteInt( vec[i] );
                 }
                 else
@@ -449,8 +449,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteFloat( vec[i] );
                 }
                 else
@@ -469,8 +469,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteDouble( vec[i] );
                 }
                 else
@@ -489,8 +489,8 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteLong( vec[i] );
                 }
                 else
@@ -509,15 +509,15 @@ SocketConnection::WriteToBuffer(MapNode *mapnode,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteString( vec[i] );
                 }
                 else
                 {
                     //std::cout << mapnode->TypeName() << " " << str << std::endl;
                     totalSize += srcFormat.IntSize();
-                    for(int i = 0; i < vec.size(); ++i)
+                    for(size_t i = 0; i < vec.size(); ++i)
                         totalSize += (vec[i].size() + 1)*srcFormat.CharSize();
                 }
             }
@@ -681,8 +681,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteChar( vec[i]? 1 : 0);
                 }
                 else
@@ -701,8 +701,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteChar( vec[i] );
                 }
                 else
@@ -721,8 +721,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteUnsignedChar( vec[i] );
                 }
                 else
@@ -741,8 +741,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteInt( vec[i] );
                 }
                 else
@@ -761,8 +761,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteFloat( vec[i] );
                 }
                 else
@@ -781,8 +781,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteDouble( vec[i] );
                 }
                 else
@@ -801,8 +801,8 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteLong( vec[i] );
                 }
                 else
@@ -821,15 +821,15 @@ SocketConnection::WriteToBuffer(const JSONNode &node,
             {
                 if(write)
                 {
-                    WriteInt(vec.size());
-                    for(int i = 0; i < vec.size(); ++i)
+                    WriteInt((int)vec.size());
+                    for(size_t i = 0; i < vec.size(); ++i)
                         WriteString( vec[i] );
                 }
                 else
                 {
                     //std::cout << mapnode->TypeName() << " " << str << std::endl;
                     totalSize += srcFormat.IntSize();
-                    for(int i = 0; i < vec.size(); ++i)
+                    for(size_t i = 0; i < vec.size(); ++i)
                         totalSize += (vec[i].size() + 1)*srcFormat.CharSize();
                 }
             }

@@ -188,7 +188,7 @@ avtDyna3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             materialNames.push_back(materialCards[i].materialName);
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
-            "mesh", materialNames.size(), materialNames);
+            "mesh", (int)materialNames.size(), materialNames);
         md->Add(mmd);
 
         // We had material names so advertise a density field.
@@ -403,7 +403,7 @@ avtDyna3DFileFormat::GetAuxiliaryData(const char *var, const char *type,
             dims[1] = 1;
             dims[2] = 1;
             retval = new avtMaterial(
-                materialCards.size(),
+                (int)materialCards.size(),
                 matnos,
                 names,
                 3,

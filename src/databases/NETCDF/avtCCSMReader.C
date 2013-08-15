@@ -245,7 +245,7 @@ avtCCSMReader::PopulateDatabaseMetaData(int timeState, avtDatabaseMetaData *md)
                 if(vardims[dim] != timedim)
                 {
                     vDims.push_back(vardims[dim]);
-                    d = dimSizes[vardims[dim]];
+                    d = (int)dimSizes[vardims[dim]];
                     elems *= d;
                 }
                 else

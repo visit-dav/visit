@@ -76,10 +76,10 @@ VisWinPathTracker *VisWinPathTracker::instance=0;
 int
 FindLastSlash(const string &subject)
 {
-    int idx = subject.rfind("/");
+    size_t idx = subject.rfind("/");
     if (idx == string::npos)
         idx = subject.rfind("\\");
-    return idx;
+    return (int)idx;
 }
 
 

@@ -167,7 +167,7 @@ LongestCommonSuffixLength(const char * const *list, int listN)
     int   min_length = 1000;
     for (i = 0 ; i < listN ; i++)
     {
-        lengths[i] = strlen(list[i]);
+        lengths[i] = (int)strlen(list[i]);
         if (lengths[i] < min_length)
         {
             min_length = lengths[i];

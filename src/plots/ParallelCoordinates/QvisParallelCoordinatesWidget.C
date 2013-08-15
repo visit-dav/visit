@@ -413,7 +413,8 @@ QvisParallelCoordinatesWidget::drawAxisTitles(QPainter *painter)
 {
     int charSpacing = (fontMetrics().height() * 2) / 3;
     int maxTitleChars = (int)((double)height()*AXIS_BOTTOM_MARGIN) / charSpacing;
-    int axisNum, axisX, slashIndex, titleCharCount, charNum, charXPos, charYPos;
+    int axisNum, axisX, titleCharCount, charNum, charXPos, charYPos;
+    size_t slashIndex;
     std::string axisTitle, titleChar;
 
     painter->setPen(QPen(QColor(0,80,255), AXIS_AND_TICK_WIDTH));
@@ -432,7 +433,7 @@ QvisParallelCoordinatesWidget::drawAxisTitles(QPainter *painter)
             if ((slashIndex = axisTitle.find_first_of("/")) != std::string::npos)
                 axisTitle = axisTitle.substr(slashIndex+1);
             titleCharCount =
-            (axisTitle.length() > maxTitleChars) ? maxTitleChars : axisTitle.length();
+            ((int)axisTitle.length() > maxTitleChars) ? maxTitleChars : (int) axisTitle.length();
         }
         
         axisX = axesXPos[axisNum];

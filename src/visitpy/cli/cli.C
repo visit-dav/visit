@@ -252,7 +252,7 @@ main(int argc, char *argv[])
             {
                 strcpy(tmpArg, argv[i]);
                 int nArgsSkip = 1;
-                int tmplen = strlen(argv[i]);
+                size_t tmplen = strlen(argv[i]);
                 for (int j = i+1; j < argc; j++)
                 {
                     nArgsSkip++;

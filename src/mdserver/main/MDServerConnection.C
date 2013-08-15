@@ -2063,13 +2063,12 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
     // filters to see if it is an acceptable filename.
     //
     int stage1 = visitTimer->StartTimer();
-    int i;
     const stringVector &names = currentFileList.names;
     std::string pattern;
     VirtualFileInformationMap newVirtualFiles;
     VirtualFileInformationMap::iterator pos;
 
-    for(i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < names.size(); ++i)
     {
         if(currentFileList.types[i] == GetFileListRPC::REG ||
            currentFileList.types[i] == GetFileListRPC::UNCHECKED)
@@ -2124,8 +2123,8 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                         // then assume we have an abort file and the file should
                         // be grouped with the pattern that we found.
                         // 
-                        int apos;
-                        if((apos = pattern.find("_abort_")) != -1)
+                        size_t apos;
+                        if((apos = pattern.find("_abort_")) != std::string::npos)
                         {
                             std::string pattern2(pattern);
                             pattern2.replace(apos, 7, "_");
@@ -2372,9 +2371,9 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 
                 // Add the timestep names to the file list's virtual files list.
 
-                for(i = 0; i < pos->second.files.size(); ++i)
+                for(size_t i = 0; i < pos->second.files.size(); ++i)
                     files.virtualNames.push_back(pos->second.files[i]);
-                files.numVirtualFiles.push_back(pos->second.files.size());
+                files.numVirtualFiles.push_back((int)pos->second.files.size());
 
                 // Create a good path.
                 std::string path(currentWorkingDirectory);
@@ -2921,26 +2920,26 @@ MDServerConnection::GetDatabase(std::string file, int timeState,
                 // when we reopen a virtual database after files have
                 // disappeared, we should clamp the desired time state.
                 //
-                if(timeState >= fileNames.size())
+                if(timeState >= (int)fileNames.size())
                 {
                     debug2 << "The desired time state is larger than the "
                               "number of time states in the virtual database "
                               "so the time state is being clamped to "
                            << fileNames.size() - 1 << endl;
-                    timeState = fileNames.size() - 1;
+                    timeState = (int)fileNames.size() - 1;
                 }
 
                 // Try and make a database out of the filenames.
                 currentDatabase = avtDatabaseFactory::FileList(
                     app->GetDatabasePluginManager(),
                     names,
-                    fileNames.size(), timeState, plugins,
+                    (int)fileNames.size(), timeState, plugins,
                     forcedFileType=="" ? NULL : forcedFileType.c_str(),
                     forceReadAllCyclesAndTimes,
                     treatAllDBsAsTimeVarying);
 
                 // Free the memory that we used.
-                for(i = 0; i < fileNames.size(); ++i)
+                for(size_t i = 0; i < fileNames.size(); ++i)
                     delete [] names[i];
                 delete [] names;
 

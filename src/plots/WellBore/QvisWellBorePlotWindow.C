@@ -586,10 +586,10 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
         int index = wellListBox->currentRow();
         if (index < 0)
             index = 0;
-        if (index >= wellNames.size())
-            index = wellNames.size() - 1;
+        if (index >= (int)wellNames.size())
+            index = (int)wellNames.size() - 1;
         wellListBox->clear();
-        for (int i = 0; i < wellNames.size(); i++)
+        for (size_t i = 0; i < wellNames.size(); i++)
             wellListBox->addItem(QString(wellNames[i].c_str()));
         QListWidgetItem *item = wellListBox->item(index);
         if(item != 0)
@@ -1399,7 +1399,7 @@ QvisWellBorePlotWindow::readWellBoresButtonPressed()
 
             fclose (file);
 
-            atts->SetNWellBores(wellNames.size());
+            atts->SetNWellBores((int)wellNames.size());
             atts->SetWellBores(wellBores);
             atts->SetWellNames(wellNames);
         }

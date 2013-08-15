@@ -119,7 +119,7 @@ class avtKullLiteFileFormat : public avtSTMDFileFormat
     std::map<int, std::vector<std::string> > m_names_per_domain;
 
     // m_names is loaded at construction, so this will always be right
-    inline int NumberOfMaterials()  { return m_names.size(); }
+    inline int NumberOfMaterials()  { return (int)m_names.size(); }
 
     // Returns true if the string holds to the material string standard:
     // Must start with mat_, and must have one other underscore. 

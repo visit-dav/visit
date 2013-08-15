@@ -409,7 +409,7 @@ WriteObjectDefinitions(FILE *f, StateObjectMap &attributes)
     {
         fprintf(f, "%s\n", pos->second->TypeName().c_str());
         stringVector tNames;
-        int maxNameLen = 0;
+        size_t maxNameLen = 0;
         for(int attr = 0; attr < pos->second->NumAttributes(); ++attr)
         {
             std::string typeName(pos->second->GetFieldTypeName(attr));

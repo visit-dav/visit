@@ -1619,7 +1619,7 @@ FileServerList::ClearFile(const QualifiedFilename &filename,
                           bool forgetPlugin)
 {
     const string& fullName = filename.FullName();
-    const int n = fullName.size();
+    const int n = (int)fullName.size();
     vector<string> keysToRemove;
     size_t i;
 
@@ -3397,10 +3397,10 @@ FileServerList::EncodePath(const string &path)
 string
 FileServerList::DecodePath(const string &path)
 {
-    int index = 0;
+    size_t index = 0;
     string retval(path);
 
-    while((index = retval.find("%32", index)) != -1)
+    while((index = retval.find("%32", index)) != std::string::npos)
         retval.replace(index, 3, " ");
 
     return retval;

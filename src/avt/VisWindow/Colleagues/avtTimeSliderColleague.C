@@ -757,14 +757,14 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
     // Save the format string. Don't do it in the case that the formatString
     // pointer is the same as textFormatString, which is how we get here from
     // UpdatePlotList.
-    int len = strlen(formatString);
+    size_t len = strlen(formatString);
     if(textFormatString != formatString)
     {
         delete [] textFormatString;
         textFormatString = new char[len + 1];
         strcpy(textFormatString, formatString);
     }
-    int tf_len = strlen(timeFormat);
+    size_t tf_len = strlen(timeFormat);
     if(timeFormatString != timeFormat)
     {
         delete [] timeFormatString;
@@ -778,7 +778,7 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
     std::string::size_type pos;
     if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
     {
-        int tlen = strlen(TIME_IDENTIFIER);
+        size_t tlen = strlen(TIME_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
@@ -790,7 +790,7 @@ avtTimeSliderColleague::SetText(const char *formatString, const char *timeFormat
     }
     else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
     {
-        int tlen = strlen(CYCLE_IDENTIFIER);
+        size_t tlen = strlen(CYCLE_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];

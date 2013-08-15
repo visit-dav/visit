@@ -93,12 +93,12 @@ BigEntier memory_size(const ArrOfBit & tab)
 
 void split_path_filename(const char *s, Nom & path, Nom & filename)
 {
-  int i;
+  size_t i;
   for (i=strlen(s)-1;i>=0;i--)
     if ((s[i]==PATH_SEPARATOR) || (s[i]=='\\'))
       break;
   path = "";
-  int j;
+  size_t j;
   for (j = 0; j <= i; j++)
     path += Nom(s[j]);
   

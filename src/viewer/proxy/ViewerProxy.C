@@ -511,7 +511,7 @@ bool ViewerProxy::ConnectToExistingViewer(const std::string& host, const int& po
 #ifndef _WIN32
     int nwrite = write(testSocket,handshake.str().c_str(),handshake.str().length());
 #else
-    int nwrite = _write(testSocket,handshake.str().c_str(),handshake.str().length());
+    int nwrite = _write(testSocket,handshake.str().c_str(),(unsigned int)handshake.str().length());
 #endif
     if(nwrite < 0)
     {

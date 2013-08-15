@@ -177,8 +177,6 @@ avtModelFitFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkDataArray *darray;
     char secVarName[1024];
      
-    float *scalars;
-
     //outer loop grabs first correctly specified variable
     //innards for determining centering
     for(int i = 0; i < num_relats; i++)
@@ -292,8 +290,6 @@ avtModelFitFilter::PostExecute()
     int tup_index, var_index;
     vtkDataArray *darray;
     char secVarName[1024];
-
-    int l;
     int numValues;
     int varFinder;
 
@@ -605,7 +601,7 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
     avtDatabaseMetaData *md = dbp->GetMetaData(0);
 
-    numTimesteps = md->GetTimes().size();
+    numTimesteps = (int)md->GetTimes().size();
     activeTs = in_spec->GetDataRequest()->GetTimestep();
 
     std::string meshName = GetInput()->GetInfo().GetAttributes().GetMeshname();
@@ -638,10 +634,6 @@ avtModelFitFilter::ModifyContract(avtContract_p in_spec){
     std::vector<CharStrRef> curSecondaryVars = outSpec->GetDataRequest()->GetSecondaryVariables();
     int listedVarNum, secVarNum;
     char secVarName[1024];
-    char defn[1024];
-
-    bool needExpr;
-    Expression *e;
 
     for(listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++){
         curListedVar = curListedVars[listedVarNum].c_str();
@@ -734,7 +726,6 @@ avtModelFitFilter::createVS(char *secVarName)
 void
 avtModelFitFilter::calculateVariableStats()
 {
-    int varFinder;
     int numValues;
     int single_count;
     int single_mod_number;
@@ -828,7 +819,7 @@ avtModelFitFilter::calculateVariableStats()
         
             qsort(merged_ranges, out_ds.size()*BINS, sizeof(double), compare_doubles);
         
-            for(int i = 0, j = 0; i < out_ds.size()*BINS; i+= out_ds.size(), j++)
+            for(size_t i = 0, j = 0; i < out_ds.size()*BINS; i+= out_ds.size(), j++)
                 VS[varFinder]->hist.range_ends[j] = merged_ranges[i];
         }
         delete merged_ranges;

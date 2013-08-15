@@ -647,7 +647,7 @@ LoadBalancer::Reduce(avtContract_p input)
             new_data->GetRestriction()
                                    ->RestrictDomainsForLoadBalance(domainList);
             UpdateProgress(pipelineInfo[input->GetPipelineIndex()].current,
-                           list.size());
+                           (int)list.size());
             pipelineInfo[input->GetPipelineIndex()].current++;
             if (pipelineInfo[input->GetPipelineIndex()].current == list.size())
                 pipelineInfo[input->GetPipelineIndex()].complete = true;

@@ -334,7 +334,7 @@ QvisModelFitWindow::UpdateWindow(bool doAll)
 {
     numVars.clear();
     numVars   = atts->GetNumVars();
-    num_relats = numVars.size();
+    num_relats = (int)numVars.size();
     numPoints.clear();
     numPoints = atts->GetNumTups(); 
     modelNumbers = atts->GetModelNums();
@@ -416,7 +416,7 @@ QvisModelFitWindow::GetCurrentValues(int which_widget)
     int table_start;
 
     std::string inTable;
-    int found;
+    size_t found;
     std::string snum1, snum2;
     float num1, num2;
 
@@ -862,7 +862,7 @@ QvisModelFitWindow::prepareTable(int row, int col, int na1, int na2)
         ncols++;
     }
 
-    models->setRowCount(modelNames.size());
+    models->setRowCount((int)modelNames.size());
     ModelFit->setColumnCount(ncols);
     ModelFit->setHorizontalHeaderLabels(hHeaderLbls);
     

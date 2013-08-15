@@ -1276,7 +1276,7 @@ visit_Launch(PyObject *self, PyObject *args)
     // Execute any client methods that came in during the Synchronize.
     //
     debug1 << "Launch: 8, executing cached client methods." << endl;
-    int size = 0;
+    size_t size = 0;
     do
     {
         ClientMethod *m = 0;
@@ -7297,7 +7297,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
         if(info != 0)
         {
              char tmpStr[2048];
-             int  strLen = 0;
+             size_t  strLen = 0;
 
              int j;
              SNPRINTF(tmpStr, sizeof(tmpStr),
@@ -14255,7 +14255,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
             AnnotationObjectRef ref;
             ref.object = localCopy;
             ref.refCount = 1;
-            ref.index = localObjectMap.size();
+            ref.index = (int)localObjectMap.size();
           
             localObjectMap[newObject.GetObjectName()] = ref;
 
@@ -14353,7 +14353,7 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
                 AnnotationObjectRef ref;
                 ref.object = localCopy;
                 ref.refCount = 1;
-                ref.index = localObjectMap.size();
+                ref.index = (int)localObjectMap.size();
 
                 localObjectMap[newObject.GetObjectName()] = ref;
             }
@@ -17806,7 +17806,7 @@ ReadVisItPluginDir(const char *visitProgram)
     char *VISITPLUGINDIR = NULL;
     char line[2000];
     char *command =  NULL;
-    int vpdLen = 0;
+    size_t vpdLen = 0;
     const char *vpd = "VISITPLUGINDIR=";
     vpdLen = strlen(vpd);
 
@@ -17831,7 +17831,7 @@ ReadVisItPluginDir(const char *visitProgram)
         if(strncmp(line, vpd, vpdLen) == 0)
         {
             char *value = NULL, *end = NULL;
-            int len;
+            size_t len;
             value = line + vpdLen + 1;
             len = strlen(value);
             /* Trim off the newlines at the end.*/

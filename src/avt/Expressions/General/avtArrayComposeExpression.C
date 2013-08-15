@@ -121,11 +121,11 @@ avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     if (varnames.size() == 0)
         EXCEPTION0(ImproperUseException);
 
-    size_t nvars = varnames.size();
+    int nvars = (int)varnames.size();
     vtkDataArray **vars = new vtkDataArray*[nvars];
     avtCentering  *centering = new avtCentering[nvars];
 
-    for (size_t i = 0 ; i < nvars ; i++)
+    for (int i = 0 ; i < nvars ; i++)
     {
         vars[i] = in_ds->GetPointData()->GetArray(varnames[i]);
         centering[i] = AVT_NODECENT;
@@ -137,7 +137,7 @@ avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     }
 
     int outType = VTK_FLOAT;
-    for (size_t i = 0 ; i < nvars ; i++)
+    for (int i = 0 ; i < nvars ; i++)
     {
         if (vars[i] == NULL)
             EXCEPTION2(ExpressionException, outputVariableName,
@@ -158,7 +158,7 @@ avtArrayComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     vtkIdType nvals = vars[0]->GetNumberOfTuples();
     rv->SetNumberOfTuples(nvals);
     for (vtkIdType i = 0 ; i < nvals ; i++)
-        for (size_t j = 0 ; j < nvars ; j++)
+        for (int j = 0 ; j < nvars ; j++)
             rv->SetComponent(i, j, vars[j]->GetTuple1(i));
 
     delete [] vars;
@@ -191,7 +191,7 @@ avtArrayComposeExpression::ProcessArguments(ArgsExpr *args,
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    nargs = arguments->size();
+    nargs = (int)arguments->size();
 
     // Let the base class do this processing.  We only had to over-ride this
     // function to determine the number of arguments.
@@ -226,11 +226,11 @@ avtArrayComposeExpression::UpdateDataObjectInfo(void)
         return;
 
     std::vector<std::string> subnames(varnames.size());
-    for (int i = 0 ; i < varnames.size() ; i++)
+    for (size_t i = 0 ; i < varnames.size() ; i++)
         subnames[i] = varnames[i];
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetVariableDimension(varnames.size(), outputVariableName);
+    outAtts.SetVariableDimension((int)varnames.size(), outputVariableName);
     outAtts.SetVariableSubnames(subnames, outputVariableName);
 }
 

@@ -158,7 +158,7 @@ NameSimplifier::UniqueFileName::UniqueFileName(const QualifiedFilename &qfn)
     separator = qfn.separator;
     leadingSlash = (qfn.path.size() > 0 && qfn.path[0] == separator);
     path = SplitValues(qfn.path, separator);
-    pathLen = path.size();
+    pathLen = (int)path.size();
 }
 
 

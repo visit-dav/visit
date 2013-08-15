@@ -151,7 +151,7 @@ avtNETCDFReaderBase::GetTimeDimension(NETCDFFileObject *fileObject, int &ncdim, 
         if((status = nc_inq_dim(fileObject->GetFileHandle(), unlimitedDimension, dimName,
             &sz)) == NC_NOERR)
         {
-            nts = sz;
+            nts = (int)sz;
             name = dimName;
             retval = true;
             debug4 << mName << "unlimitedDimension name=" << name << ", size=" << nts << endl;
@@ -177,7 +177,7 @@ avtNETCDFReaderBase::GetTimeDimension(NETCDFFileObject *fileObject, int &ncdim, 
                     }
                 }
 
-                nts = sz;
+                nts = (int)sz;
                 name = timedims[i];
                 retval = true;
                 debug4 << mName << timedims[i] << " dimension size=" << nts << endl;

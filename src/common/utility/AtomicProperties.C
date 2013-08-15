@@ -1451,7 +1451,7 @@ int ResidueLongnameMaxlen()
 {
     InitializeAtomicPropertyMaps();
 
-    unsigned int m = 0;
+    size_t m = 0;
     for(std::map<std::string, std::string>::const_iterator i =
         residuename_to_longname.begin();
         i != residuename_to_longname.end(); ++i)
@@ -1460,7 +1460,7 @@ int ResidueLongnameMaxlen()
             m = i->second.size();
     }
 
-    return m;
+    return (int)m;
 }
 
 //    Jeremy Meredith, Wed May 20 11:49:18 EDT 2009

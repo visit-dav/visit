@@ -115,11 +115,11 @@ protected:
                              EnhanceSpecification(avtContract_p);
 
 
-    void SetScaling(int mode, float skew);
+    void SetScaling(int mode, double skew);
     void SetLimitsMode();
     void GetColorInformation(std::string &colorString,
-                             int &mode, float &skew, bool &minFlag,
-                             float &minVal, bool &maxFlag, float &maxVal);
+                             int &mode, double &skew, bool &minFlag,
+                             double &minVal, bool &maxFlag, double &maxVal);
     void SetPointGlyphSize();
 };
 

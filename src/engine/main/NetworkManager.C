@@ -495,7 +495,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
     //
-    for (size_t i = 0; i < networkCache.size(); i++)
+    for (int i = 0; i < (int)networkCache.size(); i++)
     {
         if (networkCache[i] != NULL)
         {
@@ -1340,10 +1340,10 @@ NetworkManager::DefineDB(const std::string &dbName, const std::string &dbPath,
             // factory so we can create a database based on a virtual
             // file.
             names = new const char *[filesWithPath.size()];
-            for(int i = 0; i < filesWithPath.size(); ++i)
+            for(size_t i = 0; i < filesWithPath.size(); ++i)
                 names[i] = filesWithPath[i].c_str();
             db = avtDatabaseFactory::FileList(GetDatabasePluginManager(),
-                  names, filesWithPath.size(), time, plugins, defaultFormat);
+                  names, (int)filesWithPath.size(), time, plugins, defaultFormat);
             delete [] names;
             names = 0;
 
@@ -6069,7 +6069,7 @@ NetworkManager::RenderSetup(intVector& plotIds, bool getZBuffer,
         for (size_t i = 0; i < plotIds.size(); i++)
         {
             if (this->r_mgmt.cellCounts[i] == 0)
-                networksWithNoData.push_back(i);
+                networksWithNoData.push_back((int)i);
         }
         // issue warning messages for plots with no data
         if (networksWithNoData.size() > 0)

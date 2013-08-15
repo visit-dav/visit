@@ -218,8 +218,8 @@ avtCurveCMFEExpression::HasDupX(vtkRectilinearGrid *rgrid)
 vtkRectilinearGrid *
 avtCurveCMFEExpression::RemoveDuplicateX(vtkRectilinearGrid *rgrid)
 {
-    size_t i, j, k, nDups = 1;
-    size_t ny = rgrid->GetPointData()->GetNumberOfArrays();
+    int i, j, k, nDups = 1;
+    int ny = rgrid->GetPointData()->GetNumberOfArrays();
     double *sum = new double[ny];
     vtkDataArray **y = new vtkDataArray*[ny];
     vtkDataArray **Y = new vtkDataArray*[ny];
@@ -239,7 +239,7 @@ avtCurveCMFEExpression::RemoveDuplicateX(vtkRectilinearGrid *rgrid)
     X->SetNumberOfComponents(1);
     X->Allocate(x->GetNumberOfTuples());
 
-    size_t n = x->GetNumberOfTuples();
+    vtkIdType n = x->GetNumberOfTuples();
     for (i = 0; i < n; i+= nDups)
     {
         if (i < n-1)
@@ -393,7 +393,7 @@ avtCurveCMFEExpression::MergeCurvesToSameXIntervals(vtkRectilinearGrid *in_r1,
              unique_x.push_back(all_xs[i]);
     }
     delete [] all_xs;
-    total_n_pts = unique_x.size();
+    total_n_pts = (int)unique_x.size();
 
     // Grab current arrays and set up new arrays for curve1
     int ny1 = r1->GetPointData()->GetNumberOfArrays();

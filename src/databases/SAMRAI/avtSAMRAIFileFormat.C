@@ -1606,7 +1606,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     // one material
     if ((oneMat == true) && (matList.size() > 1))
     {
-        EXCEPTION2(UnexpectedValueException, 1, matList.size());
+        EXCEPTION2(UnexpectedValueException, 1, (int)matList.size());
     }
 
     // compute logical size in each dimension of this patch
@@ -2452,8 +2452,8 @@ avtSAMRAIFileFormat::GetCycleFromFilename(const char *f) const
 {
     if (f)
     {
-        const int len1 = strlen("00000/summary.samrai");
-        const int len2 = strlen(f);
+        const size_t len1 = strlen("00000/summary.samrai");
+        const size_t len2 = strlen(f);
         if (len2 > len1)
         {
             int cycle;

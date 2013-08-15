@@ -174,7 +174,7 @@ FichierU::FichierU(const string& fileName, ifstream* istr, long offset, long tai
                        }
                        else { BAD_FIELD(" in object list"); }                    
                     }
-                    if(_nbMat==-1) _nbMat = _matNames.size();
+                    if(_nbMat==-1) _nbMat = (int)_matNames.size();
                     else if( _nbMat!=_matNames.size() )
                     {
                        cerr<<"Attention! "<<_nbMat<<"materiaux annoncés, mais seulement "<<_matNames.size()<<" décris"<<endl;

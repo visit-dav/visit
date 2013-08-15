@@ -164,7 +164,6 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 bool
 avtTimeLoopFilter::Update(avtContract_p spec)
 {
-    int i;
     bool modified = false;
 
     avtDataRequest_p orig_DS = spec->GetDataRequest();

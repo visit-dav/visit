@@ -1431,7 +1431,8 @@ avtCaleFileFormat::GetCycle(void)
 int
 avtCaleFileFormat::GetCycleFromFilename(const char *f) const
 {
-    int i,j,n,c;
+    size_t i,j,n;
+    int c;
     char cycstr[10];
 
     n = strlen(f) - 4; // To get here there had to be a ".pdb" on the file

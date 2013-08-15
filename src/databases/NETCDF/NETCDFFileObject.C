@@ -583,7 +583,7 @@ NETCDFFileObject::ReadAttribute(const char *varname, const char *attname,
                 *type = t;
                 *ndims = 1;
                 int *d = new int[1];
-                d[0] = attsize;
+                d[0] = (int)attsize;
                 *dims = d;
                 *value = val;
             }
@@ -732,7 +732,7 @@ NETCDFFileObject::InqVariable(const char *varname, TypeEnum *type, int *ndims,
                 size_t realSize;
                 status = nc_inq_dimlen(GetFileHandle(), vardims[i], &realSize);
                 if(status == NC_NOERR)
-                    vardims[i] = realSize;
+                    vardims[i] = (int)realSize;
                 else
                     HandleError(status);
             }

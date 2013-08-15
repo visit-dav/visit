@@ -252,7 +252,7 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
     //
     int t2 = visitTimer->StartTimer();
     avtDataTree_p *leaves = new avtDataTree_p[output_list.datasets.size()];
-    for (size_t i = 0 ; i < output_list.datasets.size() ; i++)
+    for (int i = 0 ; i < (int)output_list.datasets.size() ; i++)
     {
         vtkDataSet *in_ds1 = output_list.datasets[i];
         vtkDataArray *defaultVar = NULL;
@@ -309,7 +309,7 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
     }
     avtDataTree_p rv;
     if (output_list.datasets.size() > 0)
-        rv = new avtDataTree(output_list.datasets.size(), leaves);
+        rv = new avtDataTree((int)output_list.datasets.size(), leaves);
     else
         rv = new avtDataTree();
     delete [] leaves;
@@ -1440,7 +1440,7 @@ avtPosCMFEAlgorithm::FastLookupGrouping::Finalize(void)
             cell->GetBounds(bounds);
             itree->AddElement(index, bounds);
 
-            map_to_ds[index] = i;
+            map_to_ds[index] = (int)i;
             index++;
         }
     }

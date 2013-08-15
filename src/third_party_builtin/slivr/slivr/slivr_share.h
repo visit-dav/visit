@@ -30,6 +30,7 @@
 #undef SLIVRSHARE
 
 #if defined(_WIN32) 
+#  pragma warning(disable:4251)
 #  if defined(slivrV_EXPORTS) || defined(slivrG_EXPORTS) 
 #    define SLIVRSHARE __declspec(dllexport)
 #  else

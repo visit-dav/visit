@@ -117,13 +117,13 @@ EqualVal<T>::EqualVector(void *a1_, void *a2_)
        return true;
     std::vector<T> &a1  = *(std::vector<T>*)a1_;
     std::vector<T> &a2  = *(std::vector<T>*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 != l2)
         return false;
     else
     {
-        for (int i=0; i<l1; i++)
+        for (size_t i=0; i<l1; i++)
         {
            if (a1[i] != a2[i])
               return false;
@@ -154,11 +154,11 @@ EqualVal<AttributeGroup*>::EqualVector(void *a1_, void *a2_)
        return true;
     AttributeGroupVector &a1 = *(AttributeGroupVector*)a1_;
     AttributeGroupVector &a2 = *(AttributeGroupVector*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 != l2)
        return false;
-    for (int i=0; i<l1; i++)
+    for (size_t i=0; i<l1; i++)
     {
         if (!a1[i]->EqualTo(a2[i]))
            return false;

@@ -163,7 +163,7 @@ void vtkVisItScalarBarWithOpacityActor::BuildColorBar(vtkViewport *viewport)
   int numColors, numLabels; 
   if ( this->Type == VTK_DISCRETE && !this->definedLabels.empty() )
     {
-    numColors = this->definedLabels.size();
+    numColors = (int)this->definedLabels.size();
     if (Orientation == VERTICAL_TEXT_ON_RIGHT || 
         Orientation == VERTICAL_TEXT_ON_LEFT)
       {

@@ -253,7 +253,7 @@ int avtM3DC1Field::register_vert(std::vector< vertex > &vlist,
 
   vlist.push_back( vert );
 
-  return vlist.size() - 1;
+  return (int)vlist.size() - 1;
 }
 
 

@@ -653,7 +653,7 @@ RemovePrependedDirs(const char *path, char *name)
     //
     // Find the last slash by going to the end and working backwards.
     //
-    int  len = strlen(path);
+    int  len = (int)strlen(path);
     int lastSlash;
     for (lastSlash=len ; lastSlash>=0 && path[lastSlash]!=visitcommon::SlashChar() ; lastSlash--)
     {

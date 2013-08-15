@@ -677,7 +677,7 @@ avtText3DColleague::SetText(const char *formatString)
     // Save the format string. Don't do it in the case that the formatString
     // pointer is the same as textFormatString, which is how we get here from
     // UpdatePlotList.
-    int len = strlen(formatString);
+    size_t len = strlen(formatString);
     if(info->textFormatString != formatString)
     {
         if(info->textFormatString != 0)
@@ -693,7 +693,7 @@ avtText3DColleague::SetText(const char *formatString)
     std::string::size_type pos;
     if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
     {
-        int tlen = strlen(TIME_IDENTIFIER);
+        size_t tlen = strlen(TIME_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];
@@ -704,7 +704,7 @@ avtText3DColleague::SetText(const char *formatString)
     }
     else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
     {
-        int tlen = strlen(CYCLE_IDENTIFIER);
+        size_t tlen = strlen(CYCLE_IDENTIFIER);
         std::string left(fmtStr.substr(0, pos));
         std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
         char tmp[100];

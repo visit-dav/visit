@@ -382,7 +382,7 @@ avtHistogramSpecification::SpecifyHistogram(int                      timestep,
     for (size_t i=0 ; i<bounds.size() ; ++i )
     {
         valid = valid && bounds[i].size() > 1;
-        cm_NumberOfBins.push_back(bounds[i].size() - 1);        
+        cm_NumberOfBins.push_back((int)bounds[i].size() - 1);        
     }
     SetBoundsSpecified();
     return valid;
@@ -604,7 +604,7 @@ avtHistogramSpecification::SetBoundsSpecified()
       cm_BoundsSpecified = true;
       //TODO remove later
       for( size_t i=0 ; i<cm_NumberOfBins.size() ; i++){
-            cm_NumberOfBins[i] = cm_Bounds[i].size()-1;
+            cm_NumberOfBins[i] = (int)cm_Bounds[i].size()-1;
       }
 }
 

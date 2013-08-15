@@ -523,7 +523,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 
     // Add each file that is a library to the list.
     string ext(VISIT_PLUGIN_EXTENSION);
-    int extLen = ext.size();
+    int extLen = (int)ext.size();
 #ifdef _WIN32
     int prefixLen = 1;
 #else
@@ -774,11 +774,11 @@ PluginManager::ReadPluginInfo()
         {
             string pluginFile(pluginsWithWrongVersion[i]);
             string ext(VISIT_PLUGIN_EXTENSION);
-            int slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
+            size_t slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
             string dirname = pluginFile.substr(0, slashPos);
-            int suffixLen = (pluginFile.substr(slashPos).find("_ser") != -1 ||
-                             pluginFile.substr(slashPos).find("_par") != -1) ? 4 : 0;
-            int len = pluginFile.size() - slashPos - suffixLen - (1 + prefixLen) -
+            size_t suffixLen = (pluginFile.substr(slashPos).find("_ser") != string::npos ||
+                             pluginFile.substr(slashPos).find("_par") != string::npos) ? 4 : 0;
+            size_t len = pluginFile.size() - slashPos - suffixLen - (1 + prefixLen) -
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + (1 + prefixLen), len));
             string pluginlib(pluginFile.substr(slashPos + 1, 
@@ -808,11 +808,11 @@ PluginManager::ReadPluginInfo()
         {
             string pluginFile(pluginsWithNoVersion[i]);
             string ext(VISIT_PLUGIN_EXTENSION);
-            int slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
+            size_t slashPos = pluginFile.rfind(VISIT_SLASH_CHAR);
             string dirname = pluginFile.substr(0, slashPos);
-            int suffixLen = (pluginFile.substr(slashPos).find("_ser") != -1 ||
-                             pluginFile.substr(slashPos).find("_par") != -1) ? 4 : 0;
-            int len = pluginFile.size() - slashPos - suffixLen - (1 + prefixLen) -
+            size_t suffixLen = (pluginFile.substr(slashPos).find("_ser") != string::npos ||
+                             pluginFile.substr(slashPos).find("_par") != string::npos) ? 4 : 0;
+            size_t len = pluginFile.size() - slashPos - suffixLen - (1 + prefixLen) -
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + (1 + prefixLen), len));
 
@@ -964,7 +964,7 @@ PluginManager::LoadPluginsNow()
 {
     for (size_t i=0; i<libfiles.size(); i++)
     {
-        LoadSinglePlugin(i);
+        LoadSinglePlugin((int)i);
     }
 }
 
@@ -1065,7 +1065,7 @@ PluginManager::LoadSinglePlugin(int index)
     ENDTRY
 
     // Success so far -- add the handle and the info to the list
-    int loadedindex = loadedhandles.size();
+    int loadedindex = (int)loadedhandles.size();
     loadedindexmap[ids[index]] = loadedindex;
     loadedhandles.push_back(handle);
     loadedids.push_back(ids[index]);
@@ -1124,8 +1124,7 @@ PluginManager::LoadPluginsOnDemand()
 
     // If we are loading plugins on demand, there is no
     // reason to leave any plugin disabled.
-    int nAllPlugins = ids.size();
-    for (int i=0; i<nAllPlugins; i++)
+    for (size_t i=0; i<ids.size(); i++)
     {
         EnablePlugin(ids[i]);
     }
@@ -1652,10 +1651,10 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
         int prefixLen = 4;
 #endif
         string ext(VISIT_PLUGIN_EXTENSION);
-        int slashPos = openPlugin.rfind(VISIT_SLASH_CHAR);
-        int suffixLen = (openPlugin.substr(slashPos).find("_ser") != -1 ||
-                         openPlugin.substr(slashPos).find("_par") != -1) ? 4 : 0;
-        int len = openPlugin.size() - slashPos - suffixLen - (1 + prefixLen) -
+        size_t slashPos = openPlugin.rfind(VISIT_SLASH_CHAR);
+        size_t suffixLen = (openPlugin.substr(slashPos).find("_ser") != string::npos ||
+                         openPlugin.substr(slashPos).find("_par") != string::npos) ? 4 : 0;
+        size_t len = openPlugin.size() - slashPos - suffixLen - (1 + prefixLen) -
                   managerName.size() - ext.size();
         string pluginPrefix(openPlugin.substr(slashPos + (1 + prefixLen), len));
         //  debug4 << "PluginSymbol: prefix: " << pluginPrefix << endl;

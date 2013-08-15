@@ -2642,9 +2642,9 @@ ViewerFileServer::DeclineCorrelationCreation(const stringVector &dbs)
 {
     if(dbs.size() > 0)
     {
-        for(int i = 0; i < dbs.size(); ++i)
+        for(size_t i = 0; i < dbs.size(); ++i)
             declinedFiles.push_back(dbs[i]);
-        declinedFilesLength.push_back(dbs.size());
+        declinedFilesLength.push_back((int)dbs.size());
     }
 }
 

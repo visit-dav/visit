@@ -444,7 +444,7 @@ avtRAWFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->meshType = AVT_SURFACE_MESH;
     mmd->spatialDimension = 3;
     mmd->topologicalDimension = 2;
-    mmd->numBlocks = meshes.size();
+    mmd->numBlocks = (int)meshes.size();
     stringVector names;
     for(int i = 0; i < meshes.size(); ++i)
         names.push_back(meshes[i].domainName);

@@ -140,14 +140,14 @@ ConstInterp<T>::InterpVector(void *out_, void *a1_, void *a2_, double f)
     std::vector<T> &out = *(std::vector<T>*)out_;
     std::vector<T> &a1  = *(std::vector<T>*)a1_;
     std::vector<T> &a2  = *(std::vector<T>*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 > l2)
         out = a1;
     else
         out = a2;
-    int l = (l1 < l2) ? l1 : l2;
-    for (int i=0; i<l; i++)
+    size_t l = (l1 < l2) ? l1 : l2;
+    for (size_t i=0; i<l; i++)
     {
         if (f < .5)
             out[i] = a1[i];
@@ -187,21 +187,21 @@ ConstInterp<AttributeGroup*>::InterpVector(void *out_, void *a1_, void *a2_, dou
     AttributeGroupVector &out= *(AttributeGroupVector*)out_;
     AttributeGroupVector &a1 = *(AttributeGroupVector*)a1_;
     AttributeGroupVector &a2 = *(AttributeGroupVector*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 > l2)
     {
-        for (int i=l2; i<l1; i++)
+        for (size_t i=l2; i<l1; i++)
             out[i]->CopyAttributes(a1[i]);
     }
     else
     {
-        for (int i=l1; i<l2; i++)
+        for (size_t i=l1; i<l2; i++)
             out[i]->CopyAttributes(a2[i]);
     }
 
-    int l = (l1 < l2) ? l1 : l2;
-    for (int i=0; i<l; i++)
+    size_t l = (l1 < l2) ? l1 : l2;
+    for (size_t i=0; i<l; i++)
     {
         if (f < .5)
             out[i]->CopyAttributes(a1[i]);
@@ -257,14 +257,14 @@ LinInterp<T>::InterpVector(void *out_, void *a1_, void *a2_, double f)
     std::vector<T> &out = *(std::vector<T>*)out_;
     std::vector<T> &a1  = *(std::vector<T>*)a1_;
     std::vector<T> &a2  = *(std::vector<T>*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 > l2)
         out = a1;
     else
         out = a2;
-    int l = (l1 < l2) ? l1 : l2;
-    for (int i=0; i<l; i++)
+    size_t l = (l1 < l2) ? l1 : l2;
+    for (size_t i=0; i<l; i++)
         out[i] = T((1.0 - f) * (a1[i])  +  f * (a2[i]));
 }
 
@@ -318,14 +318,14 @@ LinInterp<int>::InterpVector(void *out_, void *a1_, void *a2_, double f)
     std::vector<int> &out = *(std::vector<int>*)out_;
     std::vector<int> &a1  = *(std::vector<int>*)a1_;
     std::vector<int> &a2  = *(std::vector<int>*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 > l2)
         out = a1;
     else
         out = a2;
-    int l = (l1 < l2) ? l1 : l2;
-    for (int i=0; i<l; i++)
+    size_t l = (l1 < l2) ? l1 : l2;
+    for (size_t i=0; i<l; i++)
         out[i] = int((1.0 - f) * (a1[i])  +  f * (a2[i]));
 }
 
@@ -360,21 +360,21 @@ LinInterp<AttributeGroup*>::InterpVector(void *out_, void *a1_, void *a2_, doubl
     AttributeGroupVector &out= *(AttributeGroupVector*)out_;
     AttributeGroupVector &a1 = *(AttributeGroupVector*)a1_;
     AttributeGroupVector &a2 = *(AttributeGroupVector*)a2_;
-    int l1 = a1.size();
-    int l2 = a2.size();
+    size_t l1 = a1.size();
+    size_t l2 = a2.size();
     if (l1 > l2)
     {
-        for (int i=l2; i<l1; i++)
+        for (size_t i=l2; i<l1; i++)
             out[i]->CopyAttributes(a1[i]);
     }
     else
     {
-        for (int i=l1; i<l2; i++)
+        for (size_t i=l1; i<l2; i++)
             out[i]->CopyAttributes(a2[i]);
     }
 
-    int l = (l1 < l2) ? l1 : l2;
-    for (int i=0; i<l; i++)
+    size_t l = (l1 < l2) ? l1 : l2;
+    for (size_t i=0; i<l; i++)
     {
         out[i]->InterpolateLinear(a1[i],a2[i],f);
     }

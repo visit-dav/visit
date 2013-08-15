@@ -580,8 +580,8 @@ JSONNode::EscapeString(const std::string &val) const
     // \u four-hex-digits
     
     std::string res="";
-    int ssize = val.size();
-    for(int i=0;i<ssize;i++)
+    size_t ssize = val.size();
+    for(size_t i=0;i<ssize;i++)
     {
         if(val[i] == '"')
         {res += std::string("");}
@@ -861,7 +861,7 @@ JSONNode::operator[](int index)
     {
         if(index < 0)
         {
-            index = json.array.size() - index;
+            index = (int)json.array.size() - index;
             /// if index is still less than 0..
             if(index < 0) index = 0;
         }

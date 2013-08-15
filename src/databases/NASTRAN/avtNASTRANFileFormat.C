@@ -917,7 +917,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #endif
 
     if (matCountOpt == -1)
-        matCountOpt = uniqMatIds.size();
+        matCountOpt = (int)uniqMatIds.size();
 
     visitTimer->StopTimer(total, "Loading NASTRAN file");
 

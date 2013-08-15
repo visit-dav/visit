@@ -1017,7 +1017,7 @@ QvisSelectionsWindow::UpdateHistogram()
           UpdateHistogram(0,0,0,0,false,0,0);
         else
         {
-            UpdateHistogram(&hist[0], hist.size(), 
+            UpdateHistogram(&hist[0], (int)hist.size(), 
                             selectionProps.GetHistogramStartBin(),
                             selectionProps.GetHistogramEndBin(),
                             true,

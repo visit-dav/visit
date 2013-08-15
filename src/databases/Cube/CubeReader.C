@@ -108,7 +108,6 @@ void CubeReader::readMetaData(bool keepFileOpen) {
       << endl;
 
   //4. line: Read the x grid
-  float t1, t2;
   getline( file , header);
   tokens.clear();
   iss.clear();
@@ -193,7 +192,6 @@ void CubeReader::readMetaData(bool keepFileOpen) {
   atom_locations.clear();
 
   for (int i=0; i<natoms; i++) {
-    float x,y,z;
     float isotope;
     
     getline( file , header);
@@ -348,7 +346,7 @@ void CubeReader::GetShearedGridLocations2(float* xyz) {
       }  
 }
 int CubeReader::GetNumOrbitals() {
-  return orbitals.size();
+  return (int)orbitals.size();
 }
 
 int CubeReader::GetOrbitalNumber(int i) {

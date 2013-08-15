@@ -205,7 +205,7 @@ avtCGNSFileFormat::GetNTimesteps(void)
 {
     ReadTimes();
 
-    return times.size();
+    return (int)times.size();
 }
 
 // ****************************************************************************
@@ -1151,7 +1151,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //
         std::map<intVector, std::string> meshDef;
         intVector allDomains;
-        for(size_t i = 0; i < baseInfo[bi].zoneNames.size(); ++i)
+        for(int i = 0; i < (int)baseInfo[bi].zoneNames.size(); ++i)
             allDomains.push_back(i+1);
         meshDef[allDomains] = meshName;
         debug4 << mName << "Step 2: Need mesh " << meshName.c_str() << endl;
@@ -1197,7 +1197,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 domainNames.push_back(baseInfo[bi].zoneNames[idx]);
             }
             mmd->blockNames = domainNames;
-            mmd->numBlocks = domainNames.size();
+            mmd->numBlocks = (int)domainNames.size();
             mmd->blockOrigin = 1;
             mmd->groupOrigin = 1;
             mmd->cellOrigin = 1;
@@ -1210,7 +1210,7 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             // Remember the list of zones that make up the mesh so we can use it
             // later in GetMesh.
             BaseAndZoneList bzl;
-            bzl.base = bi+1;
+            bzl.base = (int)bi+1;
             bzl.zones = it->first;
             MeshDomainMapping[it->second] = bzl;
 
@@ -1283,13 +1283,13 @@ avtCGNSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         //
         // STEP 5: Create Velocity and Momentum vectors if present.
         //
-        AddVectorExpressions(md, haveVelocity, haveMomentum, baseInfo.size(), 
+        AddVectorExpressions(md, haveVelocity, haveMomentum, (int)baseInfo.size(), 
             baseName);
 
         //
         // STEP 6: Create expressions for reference state variables.
         //
-        AddReferenceStateExpressions(md, bi+1, baseInfo.size(), 
+        AddReferenceStateExpressions(md, (int)bi+1, (int)baseInfo.size(), 
             baseName, meshName);
     }
 

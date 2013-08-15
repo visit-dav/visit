@@ -173,7 +173,7 @@ SurfaceRenderer::draw_surface()
   int blend_mode = 0;
   shader = vol_shader_factory_->shader(use_cmap2 ? 2 : 1, nb0, tex_->nc(),
                                        false, true,
-                                       use_fog, blend_mode, cmap2_.size());
+                                       use_fog, blend_mode, (int)cmap2_.size());
 
   if(shader) {
     if(!shader->valid()) {

@@ -1484,7 +1484,7 @@ avtPICSFilter::Initialize()
             ds->Register(NULL);
             dataSets[ ds_list.domains[i] ] = ds;
         }
-        InitialDomLoads = ds_list.domains.size();
+        InitialDomLoads = (int)ds_list.domains.size();
     }
 
 #ifdef PARALLEL
@@ -1592,7 +1592,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         if (DebugStream::Level5())
             debug5<<"]"<<endl;
         
-        numTimeSteps = domainTimeIntervals.size();
+        numTimeSteps = (int)domainTimeIntervals.size();
 
         if (! pathlineOverrideTime)
             seedTime0 = md->GetTimes()[currentTimeSliderIndex];

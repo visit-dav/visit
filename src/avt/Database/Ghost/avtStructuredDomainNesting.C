@@ -225,7 +225,7 @@ DetectBoundaryGhostLayers(int numDims, unsigned char *ghostData, int numCells,
 
     if (ghostCases.size() != 3)
     {
-        EXCEPTION2(UnexpectedValueException, 3, ghostCases.size());
+        EXCEPTION2(UnexpectedValueException, 3, (int)ghostCases.size());
     }
 
     ghostLayers[0] = ghostCases[0];
@@ -703,10 +703,10 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
 vector<int>
 avtStructuredDomainNesting::GetRatiosForLevel(int level, int dom)
 {
-    if (level < 0 || level >= levelRatios.size())
-        EXCEPTION2(BadIndexException, level, levelRatios.size());
+    if (level < 0 || level >= (int)levelRatios.size())
+        EXCEPTION2(BadIndexException, level, (int)levelRatios.size());
     if (dom < 0 || dom >= domainNesting.size())
-        EXCEPTION2(BadIndexException, dom, domainNesting.size());
+        EXCEPTION2(BadIndexException, dom, (int)domainNesting.size());
 
     int myLevel        = domainNesting[dom].level;
     vector<int> rv;
@@ -773,9 +773,9 @@ void
 avtStructuredDomainNesting::GetNestingForDomain(int domain,
               vector<int> &exts, vector<int> &children, vector<int> &childExts)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     avtNestedDomainInfo_t &info = domainNesting[domain];
@@ -818,9 +818,9 @@ avtStructuredDomainNesting::GetChildrenForLogicalIndex(int domain, int ijk[3],
                                                        vector<int> &children,
                                                        vector<int> &chExts)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     if ((domainNesting[domain].logicalExtents[0] > ijk[0]) ||
@@ -896,9 +896,9 @@ avtStructuredDomainNesting::GetChildrenForLogicalRange(int domain, int ijk[6],
                                                        vector<int> &children,
                                                        vector<int> &chExts)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-      EXCEPTION2(BadIndexException, domain, domainNesting.size());
+      EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     if(domainNesting[domain].childDomains.size() == 0)
@@ -907,7 +907,7 @@ avtStructuredDomainNesting::GetChildrenForLogicalRange(int domain, int ijk[6],
     int child_ext[6];
     vector<int> ratios;
 
-    for(unsigned int i=0; i<domainNesting[domain].childDomains.size(); i++)
+    for(size_t i=0; i<domainNesting[domain].childDomains.size(); i++)
     {
         ratios = GetRatiosForLevel(domainNesting[domain].level,
                                    domainNesting[domain].childDomains[i]);
@@ -950,9 +950,9 @@ avtStructuredDomainNesting::GetChildrenForLogicalRange(int domain, int ijk[6],
 // ****************************************************************************
 int avtStructuredDomainNesting::GetDomainLevel(int domain)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     return domainNesting[domain].level;
@@ -973,9 +973,9 @@ int avtStructuredDomainNesting::GetDomainLevel(int domain)
 // ****************************************************************************
 vector<int> avtStructuredDomainNesting::GetDomainLogicalExtents(int domain)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     return domainNesting[domain].logicalExtents;
@@ -996,9 +996,9 @@ vector<int> avtStructuredDomainNesting::GetDomainLogicalExtents(int domain)
 // ****************************************************************************
 vector<int> avtStructuredDomainNesting::GetDomainChildren(int domain)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     return domainNesting[domain].childDomains;
@@ -1019,9 +1019,9 @@ vector<int> avtStructuredDomainNesting::GetDomainChildren(int domain)
 // ****************************************************************************
 int avtStructuredDomainNesting::GetNumberOfChildren(int domain)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     return domainNesting[domain].childDomains.size();
@@ -1057,9 +1057,9 @@ size_t avtStructuredDomainNesting::GetNumberOfDomains() const
 // ****************************************************************************
 void avtStructuredDomainNesting::ComputeChildBoundingBox(int domain)
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+        EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     domainNesting[domain].childBoundingBox[0] = -1;
@@ -1139,9 +1139,9 @@ void avtStructuredDomainNesting::ComputeChildBoundingBox(int domain)
 // ****************************************************************************
 bool avtStructuredDomainNesting::InsideChildBoundingBox(int domain, int ijk[6])
 {
-    if (domain < 0 || domain >= domainNesting.size())
+    if (domain < 0 || domain >= (int)domainNesting.size())
     {
-      EXCEPTION2(BadIndexException, domain, domainNesting.size());
+      EXCEPTION2(BadIndexException, domain, (int)domainNesting.size());
     }
 
     if(domainNesting[domain].childDomains.size() == 0)

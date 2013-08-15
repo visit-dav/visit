@@ -414,7 +414,7 @@ avtEnzoFileFormat::ReadHierachyFile()
 
             grids.push_back(g);
             grids[parent].childrenID.push_back(g.ID);
-            numGrids = grids.size()-1;
+            numGrids = (int)grids.size()-1;
         }
         else if (buff == "Pointer:")
         {

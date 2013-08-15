@@ -366,14 +366,14 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
                 AttributeGroupVector &out=*(AttributeGroupVector*)addrOut;
                 AttributeGroupVector &a1 =*(AttributeGroupVector*)addr1;
                 AttributeGroupVector &a2 =*(AttributeGroupVector*)addr2;
-                int l0 = out.size();
-                int l1 = a1.size();
-                int l2 = a2.size();
-                int lmax = (l1 > l2) ? l1 : l2;
+                size_t l0 = out.size();
+                size_t l1 = a1.size();
+                size_t l2 = a2.size();
+                size_t lmax = (l1 > l2) ? l1 : l2;
                 out.resize(lmax);
                 if (lmax > l0)
                 {
-                    for (int j=l0; j<lmax; j++)
+                    for (size_t j=l0; j<lmax; j++)
                     {
                         out[j] = CreateSubAttributeGroup(i);
                     }
@@ -534,8 +534,8 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
                 AttributeGroupVector &out=*(AttributeGroupVector*)addrOut;
                 AttributeGroupVector &a1 =*(AttributeGroupVector*)addr1;
                 AttributeGroupVector &a2 =*(AttributeGroupVector*)addr2;
-                int l0 = out.size();
-                int l1 = a1.size();
+                size_t l0 = out.size();
+                size_t l1 = a1.size();
                 int l2 = a2.size();
                 int lmax = (l1 > l2) ? l1 : l2;
                 out.resize(lmax);
@@ -1838,7 +1838,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           boolVector *vb = (boolVector *)(info.address);
           boolVector::iterator bpos;
 
-          conn.WriteInt(vb->size());
+          conn.WriteInt((int)vb->size());
           for(bpos = vb->begin(); bpos != vb->end(); ++bpos)
           {
               if (*bpos)
@@ -1853,7 +1853,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           charVector *vc = (charVector *)(info.address);
           charVector::iterator cpos;
 
-          conn.WriteInt(vc->size());
+          conn.WriteInt((int)vc->size());
           for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
               conn.WriteChar(*cpos);
         }
@@ -1863,7 +1863,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           unsignedCharVector *vc = (unsignedCharVector *)(info.address);
           unsignedCharVector::iterator cpos;
 
-          conn.WriteInt(vc->size());
+          conn.WriteInt((int)vc->size());
           for(cpos = vc->begin(); cpos != vc->end(); ++cpos)
               conn.WriteUnsignedChar(*cpos);
         }
@@ -1872,7 +1872,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
         { // new scope
           intVector *vi = (intVector *)(info.address);
           intVector::iterator ipos;
-          conn.WriteInt(vi->size());
+          conn.WriteInt((int)vi->size());
           for(ipos = vi->begin(); ipos != vi->end(); ++ipos)
               conn.WriteInt(*ipos);
         }
@@ -1882,7 +1882,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           longVector *vl = (longVector *)(info.address);
           longVector::iterator lpos;
 
-          conn.WriteInt(vl->size());
+          conn.WriteInt((int)vl->size());
           for(lpos = vl->begin(); lpos != vl->end(); ++lpos)
               conn.WriteLong(*lpos);
         }
@@ -1892,7 +1892,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           floatVector *vf = (floatVector *)(info.address);
           floatVector::iterator fpos;
 
-          conn.WriteInt(vf->size());
+          conn.WriteInt((int)vf->size());
           for(fpos = vf->begin(); fpos != vf->end(); ++fpos)
               conn.WriteFloat(*fpos);
         }
@@ -1902,7 +1902,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           doubleVector *vd = (doubleVector *)(info.address);
           doubleVector::iterator dpos;
 
-          conn.WriteInt(vd->size());
+          conn.WriteInt((int)vd->size());
           for(dpos = vd->begin(); dpos != vd->end(); ++dpos)
               conn.WriteDouble(*dpos);
         }
@@ -1912,7 +1912,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           stringVector *vs = (stringVector *)(info.address);
           stringVector::iterator spos;
 
-          conn.WriteInt(vs->size());
+          conn.WriteInt((int)vs->size());
           // Write the strings out as C strings.
           for(spos = vs->begin(); spos != vs->end(); ++spos)
               conn.WriteString(*spos);
@@ -1923,7 +1923,7 @@ AttributeGroup::WriteType(Connection &conn, AttributeGroup::typeInfo &info)
           AttributeGroupVector *va = (AttributeGroupVector *)(info.address);
           AttributeGroupVector::iterator apos;
 
-          conn.WriteInt(va->size());
+          conn.WriteInt((int)va->size());
           // Write out the AttributeGroups
           for(apos = va->begin(); apos != va->end(); ++apos)
           {
@@ -2636,7 +2636,7 @@ AttributeGroup::Write(JSONNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteType(map, i, typeMap[i]);
+            WriteType(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2654,7 +2654,7 @@ AttributeGroup::WriteMetaData(JSONNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteMetaData(map, i, typeMap[i]);
+            WriteMetaData(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2672,7 +2672,7 @@ AttributeGroup::WriteAPI(JSONNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteAPI(map, i, typeMap[i]);
+            WriteAPI(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2690,7 +2690,7 @@ AttributeGroup::Write(MapNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteType(map, i, typeMap[i]);
+            WriteType(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2708,7 +2708,7 @@ AttributeGroup::WriteMetaData(MapNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteMetaData(map, i, typeMap[i]);
+            WriteMetaData(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2726,7 +2726,7 @@ AttributeGroup::WriteAPI(MapNode &map)
         if(typeMap[i].selected)
         {
             // Write the attribute's data
-            WriteAPI(map, i, typeMap[i]);
+            WriteAPI(map, (int)i, typeMap[i]);
         }
     }
 }
@@ -2753,7 +2753,7 @@ AttributeGroup::Write(Connection &conn)
             if(typeMap.size() < 256)
                 conn.WriteUnsignedChar((unsigned char)i);
             else
-                conn.WriteInt(i);
+                conn.WriteInt((int)i);
 
             // Write the attribute's data
             WriteType(conn, typeMap[i]);

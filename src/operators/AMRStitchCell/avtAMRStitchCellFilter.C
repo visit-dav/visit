@@ -262,7 +262,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     logicalDomainBoundingBox[0][5] = std::numeric_limits<int>::min();
  
     std::vector<int> le;
-    for (size_t dom = 0; dom < domainNesting->GetNumberOfDomains(); ++dom)
+    for (int dom = 0; dom < (int)domainNesting->GetNumberOfDomains(); ++dom)
     {
         if (domainNesting->GetDomainLevel(dom) == 0)
         {
@@ -285,7 +285,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     // Compute logical bounding box in index space of each level
     for (size_t l=1; l<nLevels; ++l)
     {
-        const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios(l);
+        const std::vector<int>& refRatio = domainNesting->GetLevelRefinementRatios((int)l);
         if (refRatio.size() != topologicalDimension)
             EXCEPTION1(ImproperUseException,
                     "Refinement ratio provided by database via domain nesting is invalid. "
@@ -318,7 +318,7 @@ avtAMRStitchCellFilter::PreExecute(void)
     cellSize.resize(nLevels);
     for (size_t l=0; l<nLevels; ++l)
     {
-        cellSize[l] = domainNesting->GetLevelCellSizes(l);
+        cellSize[l] = domainNesting->GetLevelCellSizes((int)l);
         if (cellSize[l].size() != spatialDimension)
         {
             EXCEPTION1(ImproperUseException,

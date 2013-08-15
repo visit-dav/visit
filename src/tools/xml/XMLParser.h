@@ -255,7 +255,7 @@ class XMLParser : public QXmlDefaultHandler
             if (currentTag == "Enum")
                 currentEnum->AddValue(strings[i]);
             else if (currentTag == "Field")
-                currentField->SetValue(strings[i], i);
+                currentField->SetValue(strings[i], (int)i);
             else if (currentTag == "Include")
                 currentInclude->SetInclude(strings[i]);
             else if (currentTag == "Files")

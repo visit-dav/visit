@@ -797,7 +797,7 @@ int avtXdmfFileFormat::GetMeshDataType(XdmfGrid* grid)
 
 int avtXdmfFileFormat::GetNTimesteps(void)
 {
-    return timesteps.size();
+    return (int)timesteps.size();
 }
 
 // ****************************************************************************

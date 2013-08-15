@@ -513,7 +513,7 @@ avtSpheralFileFormat::ParseField(char *line, int nwords,
         }
         if (fieldIndex < 0)
         {
-            fieldIndex = fields.size();
+            fieldIndex = (int)fields.size();
             fields.push_back(fieldName);
             fieldType.push_back(AVT_UNKNOWN_TYPE);
             fieldDim1.push_back(-1);
@@ -1025,7 +1025,7 @@ avtSpheralFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     md->Add(mesh);
 
     avtMaterialMetaData *mmd = new avtMaterialMetaData("Materials",
-                                    "Node List", nodeLists.size(), nodeLists);
+                                    "Node List", (int)nodeLists.size(), nodeLists);
     md->Add(mmd);
 
     for (int i = 0 ; i < fields.size() ; i++)

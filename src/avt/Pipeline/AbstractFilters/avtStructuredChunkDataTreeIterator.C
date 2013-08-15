@@ -160,7 +160,7 @@ avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domai
     for (int i = 0 ; i < grids.size() ; i++)
         out_ds[i] = grids[i];
     out_ds[grids.size()] = out_ugrid;
-    avtDataTree_p rv = new avtDataTree(grids.size()+1, out_ds, domain, label);
+    avtDataTree_p rv = new avtDataTree((int)grids.size()+1, out_ds, domain, label);
     delete [] out_ds;
     if (out_ugrid != NULL)
         out_ugrid->Delete();

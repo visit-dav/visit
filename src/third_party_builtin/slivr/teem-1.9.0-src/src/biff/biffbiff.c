@@ -237,7 +237,7 @@ _biffAddKey(const char *key) {
 void
 _biffAddErr(_biffEntry *e, const char *err) {
   char *buf, me[]="_biffAddErr";
-  int ii, len;
+  size_t ii, len;
 
   /* printf("%s: HEY(before): err[%s]->num = %d\n", me, e->key, e->num); */
   airArrayLenIncr(e->AA, 1);

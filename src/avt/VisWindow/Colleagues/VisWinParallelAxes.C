@@ -499,7 +499,7 @@ VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
         if ((int)labels.size() > naxes)
         {
             actorIndex = i;
-            naxes = labels.size();
+            naxes = (int)labels.size();
         }
     }
 

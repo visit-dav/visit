@@ -311,7 +311,7 @@ void avtCurveConstructorFilter::Execute()
                 return; 
             }
         }
-        outTree = new avtDataTree(labels.size(), ds, -1, labels);
+        outTree = new avtDataTree((int)labels.size(), ds, -1, labels);
     }
 
     SetOutputDataTree(outTree);

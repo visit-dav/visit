@@ -1687,7 +1687,7 @@ CQDomainZoneIdSelection::CreateNamedSelection(const std::string &name) const
         zones[i] = it->first.second;
     }
     avtZoneIdNamedSelection *ns = new avtZoneIdNamedSelection(name);
-    ns->SetIdentifiers(size(), doms, zones);
+    ns->SetIdentifiers((int)size(), doms, zones);
     delete [] doms;
     delete [] zones;
     return ns;
@@ -1719,7 +1719,7 @@ CQDomainZoneIdSelection::CreateSelectedDataset(const std::string &idVariable) co
 {
     // Create a dummy dataset.
     int dims[] = {1,1,1};
-    dims[0] = size()+1;
+    dims[0] = (int)size()+1;
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(dims);
     vtkFloatArray *x = vtkFloatArray::New();
@@ -1928,7 +1928,7 @@ CQVariableIdSelection::CreateSelectedDataset(const std::string &idVariable) cons
 {
     // Create a dummy dataset
     int dims[] = {1,1,1};
-    dims[0] = size()+1;
+    dims[0] = (int)size()+1;
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(dims);
     vtkFloatArray *x = vtkFloatArray::New();

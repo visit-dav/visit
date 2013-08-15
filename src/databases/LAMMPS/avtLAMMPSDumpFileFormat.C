@@ -615,18 +615,18 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
                 while (sin >> varName)
                 {
                     if (varName == "id")
-                        idIndex = varNames.size();
+                        idIndex = (int)varNames.size();
                     else if (varName == "type")
-                        speciesIndex = varNames.size();
+                        speciesIndex = (int)varNames.size();
                     else if (varName == "x" || varName == "xs" || 
                                varName == "xu" || varName == "xsu" )
-                        xIndex = varNames.size();
+                        xIndex = (int)varNames.size();
                     else if (varName == "y" || varName == "ys" ||
                                varName == "yu" || varName == "ysu" )
-                        yIndex = varNames.size();
+                        yIndex = (int)varNames.size();
                     else if (varName == "z" || varName == "zs" ||
                                varName == "zu" || varName == "zsu" )
-                        zIndex = varNames.size();
+                        zIndex = (int)varNames.size();
 
                     if (varName == "xs" || "xsu")
                         xScaled = true;
@@ -638,7 +638,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
                     varNames.push_back(varName);
 
                 }
-                nVars = varNames.size();
+                nVars = (int)varNames.size();
                 if (nVars == 0)
                 {
                     // OLD FORMAT: Assume "id type x y z"
@@ -652,7 +652,7 @@ avtLAMMPSDumpFileFormat::ReadAllMetaData()
                     xIndex = 2; xScaled = false;
                     yIndex = 3; yScaled = false;
                     zIndex = 4; zScaled = false;
-                    nVars = varNames.size();
+                    nVars = (int)varNames.size();
                 }
                 vars.resize(nVars);
             }

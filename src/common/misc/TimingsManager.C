@@ -614,9 +614,9 @@ TimingsManager::LookupTimer(const std::string &nm)
 
     if (enabled)
     {
-        int numT = times.size();
+        size_t numT = times.size();
         debug1<<"numT= "<<numT<<endl;
-        for (int i = 0 ; i < numT ; i++)
+        for (size_t i = 0 ; i < numT ; i++)
         {
             debug1<<i<<": "<<summaries[i]<<endl;
             if (summaries[i].find(nm,0) != std::string::npos)
@@ -783,8 +783,8 @@ TimingsManager::DumpTimings(ostream &out)
     if (neverOutput)
         return;
 
-    int numT = times.size();
-    for (int i = 0 ; i < numT ; i++)
+    size_t numT = times.size();
+    for (size_t i = 0 ; i < numT ; i++)
     {
         out << "Timing for " << summaries[i].c_str() << " took " << times[i] << endl;
     }

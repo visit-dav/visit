@@ -1238,7 +1238,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
       else
         {
         double fuzzFactor = 0.9; // <1 allows a little font squeezing
-        numColors = this->definedLabels.size();
+        numColors = (int)this->definedLabels.size();
         if (this->Orientation == VERTICAL_TEXT_ON_RIGHT || 
             this->Orientation == VERTICAL_TEXT_ON_LEFT)
           {
@@ -1254,7 +1254,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
       if (this->UseSuppliedLabels)
         {
         numColors = this->MaximumNumberOfColors;
-        numLabels = this->suppliedValues.size();
+        numLabels = (int)this->suppliedValues.size();
         }
       else
         {

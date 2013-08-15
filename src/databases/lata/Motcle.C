@@ -75,14 +75,14 @@ int Motcle::strcmp_uppercase(const char *n1, const char *n2, int opt)
 int Nom::debute_par(const char * s) const
 {
   const int l1 = longueur()-1;
-  const int l2 = strlen(s);
+  const int l2 = (int)strlen(s);
   return (l1>=l2) ? (strncmp(s_.c_str(), s, l2) == 0) : 0;
 }
 
 int Nom::finit_par(const char * s) const
 {
   const int l1 = longueur()-1;
-  const int l2 = strlen(s);
+  const int l2 = (int)strlen(s);
   return (l1>=l2) ? (strncmp(s_.c_str()+(l1-l2), s, l2) == 0) : 0;
 }
 
@@ -110,7 +110,7 @@ int Motcle::debute_par(const char * s) const
 int Motcle::finit_par(const char * s) const
 {
   const int l1 = longueur()-1;
-  const int l2 = strlen(s);
+  const int l2 = (int)strlen(s);
   return (l1>=l2) ? (strcmp_uppercase(s_.c_str()+(l1-l2), s) == 0) : 0;
 }
 

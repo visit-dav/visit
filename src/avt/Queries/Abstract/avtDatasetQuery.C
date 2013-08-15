@@ -410,8 +410,8 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 void
 avtDatasetQuery::SetResultValue(const double &d, const int i)
 {
-    if (i < 0 || i >= resValue.size())
-        EXCEPTION2(BadIndexException, i, resValue.size()-1)
+    if (i < 0 || i >= (int)resValue.size())
+        EXCEPTION2(BadIndexException, i, (int)resValue.size()-1)
 
     resValue[i] = d;
 }
@@ -431,8 +431,8 @@ avtDatasetQuery::SetResultValue(const double &d, const int i)
 double
 avtDatasetQuery::GetResultValue(const int i)
 {
-    if (i < 0 || i >= resValue.size())
-        EXCEPTION2(BadIndexException,i, resValue.size()-1)
+    if (i < 0 || i >= (int)resValue.size())
+        EXCEPTION2(BadIndexException,i, (int)resValue.size()-1)
 
     return resValue[i];
 }

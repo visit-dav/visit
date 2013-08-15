@@ -425,7 +425,7 @@ avtImageFileFormat::CreateCacheNameIncludingSelections(std::string s)
 
     char str[1024];
     strcpy(str, s.c_str());
-    int amt = strlen(str);
+    size_t amt = strlen(str);
     for (size_t i = 0 ; i < selList.size() ; i++)
     {
         if ((*selsApplied)[i])

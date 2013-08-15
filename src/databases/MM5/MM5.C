@@ -706,7 +706,7 @@ int mm5_file_read_field(mm5_file_t *f, const char *varname, int ts, float *dest)
     field = mm5_file_find_field(f, varname, ts);
     if(field != 0)
     {
-        size_t n_elements = field->header.end_index[0] *
+        int n_elements = field->header.end_index[0] *
             field->header.end_index[1] *
             field->header.end_index[2] *
             field->header.end_index[3];

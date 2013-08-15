@@ -186,7 +186,7 @@ Parser::Reduce(int r)
     int i;
     for (i=0; i<len; i++)
     {
-        int index = elems.size() - len + i;
+        int index = (int)elems.size() - len + i;
         E.push_back(elems[index].node);
         T.push_back(elems[index].token);
         p.Join(elems[index].pos);

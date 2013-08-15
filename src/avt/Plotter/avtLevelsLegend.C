@@ -588,7 +588,7 @@ avtLevelsLegend::SetRange(double nmin, double nmax)
 void
 avtLevelsLegend::SetLevels(const std::vector<double> &levels)
 {
-    nLevels = levels.size();
+    nLevels = (int)levels.size();
     sBar->SetDefinedLabels(levels);
 }
 
@@ -614,7 +614,7 @@ avtLevelsLegend::SetLevels(const std::vector<double> &levels)
 void
 avtLevelsLegend::SetLevels(const std::vector<std::string> &levels)
 {
-    nLevels = levels.size();
+    nLevels = (int)levels.size();
     sBar->SetDefinedLabels(levels);
 }
 

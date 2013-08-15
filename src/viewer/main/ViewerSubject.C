@@ -444,7 +444,7 @@ ViewerSubject::AddNewViewerClientConnection(ViewerClientConnection* newClient)
             this,      SLOT(DisconnectClient(ViewerClientConnection *)));
 
     /// assign unique id to the client..
-    newClient->GetViewerClientAttributes().SetId(clientIds++);
+    newClient->GetViewerClientAttributes().SetId((int)clientIds++);
 
     clients.push_back(newClient);
 
@@ -3558,7 +3558,7 @@ void GetSerializedData(int windowIndex,
             result = avtImageFileWriter::WriteToByteArray(image->GetImage(),resolution,1,len,width, height);
 
         if(len > 0){
-            QByteArray data(result,len);
+            QByteArray data(result,(int)len);
 
             element.SetData(QString(data.toBase64()).toStdString());
             element.SetFormat(ViewerClientInformation::Image);
@@ -3591,7 +3591,7 @@ void GetSerializedData(int windowIndex,
                 else
                     result = avtImageFileWriter::WriteToByteArray(image->GetImage(),resolution,1,len, width, height);
                 if(len > 0){
-                    QByteArray data(result,len);
+                    QByteArray data(result,(int)len);
                     ViewerClientInformationElement element;
                     element.SetData(QString(data.toBase64()).toStdString());
                     element.SetFormat(ViewerClientInformation::Image);
@@ -3606,7 +3606,7 @@ void GetSerializedData(int windowIndex,
                 std::string res = dataset->GetDatasetAsString();
 
                 if(res.size() > 0) {
-                    QByteArray data(res.c_str(),res.size());
+                    QByteArray data(res.c_str(),(int)res.size());
                     ViewerClientInformationElement element;
                     element.SetData(QString(data.toBase64()).toStdString());
                     element.SetFormat(ViewerClientInformation::Data);
@@ -3900,7 +3900,7 @@ int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int node
     if (tokens.size() != length)
         tokens.clear();
 
-    return tokens.size();
+    return (int)tokens.size();
 }
 
 

@@ -283,7 +283,7 @@ bool avtCellLocator::TestCell( vtkIdType cellid, const double pos[3],
 void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids, 
                                double pts[][3] ) const
 {
-    unsigned int npts = 0;
+    vtkIdType npts = 0;
 
     // copy cell indices
 
@@ -293,7 +293,7 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
 
         npts = *(direct++);
 
-        for( unsigned int i=0; i<npts; ++i )
+        for( vtkIdType i=0; i<npts; ++i )
             ids[i] = direct[i];
     }
     else if( strDimPtr )
@@ -370,7 +370,7 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
         
         npts = tmp->GetNumberOfIds();
 
-        for( int i=0; i<npts; ++i )
+        for( vtkIdType i=0; i<npts; ++i )
             ids[i] = tmp->GetId(i);
 
         tmp->Delete();
@@ -380,19 +380,19 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
 
     if( fCoordPtr )
     {
-        for( unsigned int i=0; i<npts; ++i )
-            for( unsigned int j=0; j<3; ++j )
+        for( vtkIdType i=0; i<npts; ++i )
+            for( vtkIdType j=0; j<3; ++j )
                 pts[i][j] = fCoordPtr[3*ids[i]+j];
     }
     else if( dCoordPtr )
     {
-        for( unsigned int i=0; i<npts; ++i )
-            for( unsigned int j=0; j<3; ++j )
+        for( vtkIdType i=0; i<npts; ++i )
+            for( vtkIdType j=0; j<3; ++j )
                 pts[i][j] = dCoordPtr[3*ids[i]+j];
     }
     else
     {
-        for( int i=0; i<npts; ++i )
+        for( vtkIdType i=0; i<npts; ++i )
             dataSet->GetPoint( ids[i], pts[i] );
     }
 }

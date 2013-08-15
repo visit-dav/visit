@@ -269,7 +269,7 @@ avtTecplotBinaryFileFormat::Initialize(TecplotFile *f, avtDatabaseMetaData *md,
 {
     std::map<std::vector<int>, std::vector<int> > zoneGroups;
 
-    for(size_t z = 0; z < f->zones.size(); ++z)
+    for(int z = 0; z < (int)f->zones.size(); ++z)
     {
         // Based on the zone type, figure out the spatial dims
         int sdim = f->GetNumSpatialDimensions(z);
@@ -335,7 +335,7 @@ avtTecplotBinaryFileFormat::Initialize(TecplotFile *f, avtDatabaseMetaData *md,
             mmd->spatialDimension = pos->first[1];
             mmd->blockTitle = "Zones";
             mmd->blockPieceName = "zone";
-            mmd->numBlocks = pos->second.size();
+            mmd->numBlocks = (int)pos->second.size();
             for(size_t i = 0; i < pos->second.size(); ++i)
                 mmd->blockNames.push_back(f->zones[pos->second[i]].zoneName);
             md->Add(mmd);

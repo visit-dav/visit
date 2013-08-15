@@ -432,8 +432,6 @@ QvisDataBinningWindow::CreateWindowContents()
 void
 QvisDataBinningWindow::UpdateWindow(bool doAll)
 {
-    int button;
-
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
         if(!doAll)

@@ -954,7 +954,7 @@ avtCarpetHDF5FileFormat::multi_file::multi_file(const char* fname) : refcount(1)
          }
       }
    }
-   n_timesteps = cycles.size();
+   n_timesteps = (int)cycles.size();
    
    
    sort(cycles.begin(), cycles.end());

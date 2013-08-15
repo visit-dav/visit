@@ -8118,7 +8118,7 @@ QvisGUIApplication::GetNumMovieFrames()
 void
 QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 {
-    int idx = sessionFileName.rfind("/");
+    size_t idx = sessionFileName.rfind("/");
     if (idx < 0)
         idx = sessionFileName.rfind("\\");
     if ( idx > 0 )

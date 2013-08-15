@@ -440,8 +440,8 @@ VisitAxisRestrictionTool::UpdateText()
 void
 VisitAxisRestrictionTool::CallCallback()
 {
-    Interface.ResetNumberOfAxes(axesMin.size());
-    for (int ax=0; ax<axesMin.size(); ax++)
+    Interface.ResetNumberOfAxes((int)axesMin.size());
+    for (int ax=0; ax<(int)axesMin.size(); ax++)
     {
         Interface.SetAxisName(ax, axesNames[ax]);
 
@@ -836,7 +836,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
         h.callback = MoveCallback;
         h.pt = avtVector(axesXPos[i],1.,0);
 
-        h.data = origHotPoints.size();
+        h.data = (int)origHotPoints.size();
         h.shape = 1;
         if (axesMin[i] == axesMax[i])
             h.pt.y = 1;
@@ -844,7 +844,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
             h.pt.y = (maxval-axesMin[i])/(axesMax[i]-axesMin[i]);
         origHotPoints.push_back(h);
 
-        h.data = origHotPoints.size();
+        h.data = (int)origHotPoints.size();
         h.shape = 2;
         if (axesMin[i] == axesMax[i])
             h.pt.y = 0;

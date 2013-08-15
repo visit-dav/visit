@@ -6474,13 +6474,11 @@ avtDatabaseMetaData::IssueWarning(const char *msg)
 bool
 avtDatabaseMetaData::VarIsCompound(const std::string &v) const
 {
-    int beg = -1, end = -1;
-
     // find the mesh name enclosed in parentheses
-    beg = v.find('(');
-    end = v.find(')');
+    size_t beg = v.find('(');
+    size_t end = v.find(')');
 
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         return false;
     }
@@ -6563,13 +6561,11 @@ void
 avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
       std::string &outVar) const
 {
-    int beg = -1, end = -1;
- 
     // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
+    size_t beg = inVar.find('(');
+    size_t end = inVar.find(')');
  
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         // this is not a parseable variable.
         outVar = inVar;
@@ -6605,13 +6601,11 @@ void
 avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
       std::string &outVar) const
 {
-    int end = -1, beg = -1;
- 
     // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
+    size_t beg = inVar.find('(');
+    size_t end = inVar.find(')');
 
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         // this is not a compound variable.
         outVar = inVar;
