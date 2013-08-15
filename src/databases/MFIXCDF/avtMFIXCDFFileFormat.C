@@ -488,7 +488,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
             retval = (void *)mat;
             df = avtMaterial::Destruct;
         }
-        CATCH2(InvalidFilesException)
+        CATCH(InvalidFilesException)
         {
             // Clean up.
             delete meshFile;
