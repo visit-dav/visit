@@ -64,6 +64,7 @@ avtIVPFlashField.C
 avtIVPVTKField.C
 avtIVPVTKOffsetField.C
 avtIVPVTKTimeVaryingField.C
+avtFTLEIC.C
 avtPoincareIC.C
 avtStateRecorderIntegralCurve.C
 avtStreamlineIC.C
