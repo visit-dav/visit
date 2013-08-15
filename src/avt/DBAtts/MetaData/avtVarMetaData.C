@@ -635,7 +635,7 @@ avtVarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "Restricted to material indices: " << matRestricted[0];
-        for (int i = 1; i < matRestricted.size(); i++)
+        for (size_t i = 1; i < matRestricted.size(); i++)
         {
             out << ", " << matRestricted[i];
             if (i%20 == 0)

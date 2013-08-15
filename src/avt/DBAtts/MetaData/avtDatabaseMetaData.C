@@ -1739,7 +1739,7 @@ avtDatabaseMetaData::RemoveMeshes(int index)
 int
 avtDatabaseMetaData::GetNumMeshes() const
 {
-    return meshes.size();
+    return (int)meshes.size();
 }
 
 // ****************************************************************************
@@ -1890,7 +1890,7 @@ avtDatabaseMetaData::RemoveSubsets(int index)
 int
 avtDatabaseMetaData::GetNumSubsets() const
 {
-    return subsets.size();
+    return (int)subsets.size();
 }
 
 // ****************************************************************************
@@ -2041,7 +2041,7 @@ avtDatabaseMetaData::RemoveScalars(int index)
 int
 avtDatabaseMetaData::GetNumScalars() const
 {
-    return scalars.size();
+    return (int)scalars.size();
 }
 
 // ****************************************************************************
@@ -2192,7 +2192,7 @@ avtDatabaseMetaData::RemoveVectors(int index)
 int
 avtDatabaseMetaData::GetNumVectors() const
 {
-    return vectors.size();
+    return (int)vectors.size();
 }
 
 // ****************************************************************************
@@ -2343,7 +2343,7 @@ avtDatabaseMetaData::RemoveTensors(int index)
 int
 avtDatabaseMetaData::GetNumTensors() const
 {
-    return tensors.size();
+    return (int)tensors.size();
 }
 
 // ****************************************************************************
@@ -2494,7 +2494,7 @@ avtDatabaseMetaData::RemoveSymmTensors(int index)
 int
 avtDatabaseMetaData::GetNumSymmTensors() const
 {
-    return symmTensors.size();
+    return (int)symmTensors.size();
 }
 
 // ****************************************************************************
@@ -2645,7 +2645,7 @@ avtDatabaseMetaData::RemoveArrays(int index)
 int
 avtDatabaseMetaData::GetNumArrays() const
 {
-    return arrays.size();
+    return (int)arrays.size();
 }
 
 // ****************************************************************************
@@ -2796,7 +2796,7 @@ avtDatabaseMetaData::RemoveMaterials(int index)
 int
 avtDatabaseMetaData::GetNumMaterials() const
 {
-    return materials.size();
+    return (int)materials.size();
 }
 
 // ****************************************************************************
@@ -2947,7 +2947,7 @@ avtDatabaseMetaData::RemoveSpecies(int index)
 int
 avtDatabaseMetaData::GetNumSpecies() const
 {
-    return species.size();
+    return (int)species.size();
 }
 
 // ****************************************************************************
@@ -3098,7 +3098,7 @@ avtDatabaseMetaData::RemoveCurves(int index)
 int
 avtDatabaseMetaData::GetNumCurves() const
 {
-    return curves.size();
+    return (int)curves.size();
 }
 
 // ****************************************************************************
@@ -3249,7 +3249,7 @@ avtDatabaseMetaData::RemoveLabels(int index)
 int
 avtDatabaseMetaData::GetNumLabels() const
 {
-    return labels.size();
+    return (int)labels.size();
 }
 
 // ****************************************************************************
@@ -3400,7 +3400,7 @@ avtDatabaseMetaData::RemoveDefaultPlots(int index)
 int
 avtDatabaseMetaData::GetNumDefaultPlots() const
 {
-    return defaultPlots.size();
+    return (int)defaultPlots.size();
 }
 
 // ****************************************************************************
@@ -3494,7 +3494,7 @@ avtDatabaseMetaData::SetTemporalExtents(double min, double max)
 void
 avtDatabaseMetaData::SetCycle(int ts, int c)
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
     {
         cycles[ts] = c;
         cyclesAreAccurate[ts] = true;
@@ -3519,7 +3519,7 @@ avtDatabaseMetaData::SetCycle(int ts, int c)
 void
 avtDatabaseMetaData::SetCycleIsAccurate(bool b, int ts)
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
         cyclesAreAccurate[ts] = (b ? 1 : 0);
 }
 
@@ -3565,7 +3565,7 @@ avtDatabaseMetaData::SetCyclesAreAccurate(bool b)
 bool
 avtDatabaseMetaData::IsCycleAccurate(int ts) const
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
         return (cyclesAreAccurate[ts] != 0 ? true : false);
     return false;
 }
@@ -3592,7 +3592,7 @@ avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
 {
     int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
 
-    if (cyclesAreAccurate.size() != useNumStates)
+    if ((int)cyclesAreAccurate.size() != useNumStates)
         return false;
 
     if (cyclesAreAccurate.size() != cycles.size())
@@ -3625,7 +3625,7 @@ avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
 void
 avtDatabaseMetaData::SetTime(int ts, double t)
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
     {
         times[ts] = t;
         timesAreAccurate[ts] = true;
@@ -3650,7 +3650,7 @@ avtDatabaseMetaData::SetTime(int ts, double t)
 void
 avtDatabaseMetaData::SetTimeIsAccurate(bool b, int ts)
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
         timesAreAccurate[ts] = (b ? 1 : 0);
 }
 
@@ -3696,7 +3696,7 @@ avtDatabaseMetaData::SetTimesAreAccurate(bool b)
 bool
 avtDatabaseMetaData::IsTimeAccurate(int ts) const
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
         return timesAreAccurate[ts] != 0;
     return false;
 }
@@ -3722,7 +3722,7 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
 {
     int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
 
-    if (timesAreAccurate.size() != useNumStates) 
+    if ((int)timesAreAccurate.size() != useNumStates) 
         return false;
 
     if (timesAreAccurate.size() != times.size())
@@ -3778,9 +3778,9 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     bool shouldReplace = false;
     char new_name[1024];
     const char *orig_name = origName.c_str();
-    int len = strlen(orig_name);
-    int cur = 0;
-    for (int i = 0 ; i < len ; i++)
+    size_t len = strlen(orig_name);
+    size_t cur = 0;
+    for (size_t i = 0 ; i < len ; i++)
     {
         bool hadBadChar = false;
         for (size_t j = 0 ; j < badChars.size() ; j++)
@@ -3789,8 +3789,8 @@ static bool IsForbidden(std::string &origName, std::string &newName,
             {
                 hadBadChar = true;
                 const char *replacement = newStr[j].c_str();
-                int len2 = strlen(replacement);
-                for (int k = 0 ; k < len2 ; k++)
+                size_t len2 = strlen(replacement);
+                for (size_t k = 0 ; k < len2 ; k++)
                 {
                     new_name[cur++] = replacement[k];
                 }
@@ -5194,7 +5194,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
     if (mmd && mmd->meshType == AVT_CSG_MESH)
     {
         const intVector& groupIds = mmd->groupIds;
-        if (groupIds.size() > domainAsVisItSeesIt)
+        if ((int)groupIds.size() > domainAsVisItSeesIt)
         {
             int i, j = groupIds[domainAsVisItSeesIt];
             for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)

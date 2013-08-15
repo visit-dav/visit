@@ -135,7 +135,7 @@ Definition:
 void
 avtDatabaseMetaData::SetCycle(int ts, int c)
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
     {
         cycles[ts] = c;
         cyclesAreAccurate[ts] = true;
@@ -163,7 +163,7 @@ Definition:
 void
 avtDatabaseMetaData::SetCycleIsAccurate(bool b, int ts)
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
         cyclesAreAccurate[ts] = (b ? 1 : 0);
 }
 
@@ -215,7 +215,7 @@ Definition:
 bool
 avtDatabaseMetaData::IsCycleAccurate(int ts) const
 {
-    if(ts >= 0 && ts < cyclesAreAccurate.size())
+    if(ts >= 0 && ts < (int)cyclesAreAccurate.size())
         return (cyclesAreAccurate[ts] != 0 ? true : false);
     return false;
 }
@@ -245,7 +245,7 @@ avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
 {
     int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
 
-    if (cyclesAreAccurate.size() != useNumStates)
+    if ((int)cyclesAreAccurate.size() != useNumStates)
         return false;
 
     if (cyclesAreAccurate.size() != cycles.size())
@@ -281,7 +281,7 @@ Definition:
 void
 avtDatabaseMetaData::SetTime(int ts, double t)
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
     {
         times[ts] = t;
         timesAreAccurate[ts] = true;
@@ -309,7 +309,7 @@ Definition:
 void
 avtDatabaseMetaData::SetTimeIsAccurate(bool b, int ts)
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
         timesAreAccurate[ts] = (b ? 1 : 0);
 }
 
@@ -361,7 +361,7 @@ Definition:
 bool
 avtDatabaseMetaData::IsTimeAccurate(int ts) const
 {
-    if(ts >= 0 && ts < timesAreAccurate.size())
+    if(ts >= 0 && ts < (int)timesAreAccurate.size())
         return timesAreAccurate[ts] != 0;
     return false;
 }
@@ -390,7 +390,7 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
 {
     int useNumStates = expectedNumStates == -1 ? numStates : expectedNumStates;
 
-    if (timesAreAccurate.size() != useNumStates) 
+    if ((int)timesAreAccurate.size() != useNumStates) 
         return false;
 
     if (timesAreAccurate.size() != times.size())
@@ -449,9 +449,9 @@ static bool IsForbidden(std::string &origName, std::string &newName,
     bool shouldReplace = false;
     char new_name[1024];
     const char *orig_name = origName.c_str();
-    int len = strlen(orig_name);
-    int cur = 0;
-    for (int i = 0 ; i < len ; i++)
+    size_t len = strlen(orig_name);
+    size_t cur = 0;
+    for (size_t i = 0 ; i < len ; i++)
     {
         bool hadBadChar = false;
         for (size_t j = 0 ; j < badChars.size() ; j++)
@@ -460,8 +460,8 @@ static bool IsForbidden(std::string &origName, std::string &newName,
             {
                 hadBadChar = true;
                 const char *replacement = newStr[j].c_str();
-                int len2 = strlen(replacement);
-                for (int k = 0 ; k < len2 ; k++)
+                size_t len2 = strlen(replacement);
+                for (size_t k = 0 ; k < len2 ; k++)
                 {
                     new_name[cur++] = replacement[k];
                 }
@@ -2000,7 +2000,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
     if (mmd && mmd->meshType == AVT_CSG_MESH)
     {
         const intVector& groupIds = mmd->groupIds;
-        if (groupIds.size() > domainAsVisItSeesIt)
+        if ((int)groupIds.size() > domainAsVisItSeesIt)
         {
             int i, j = groupIds[domainAsVisItSeesIt];
             for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)
@@ -3328,13 +3328,11 @@ Definition:
 bool
 avtDatabaseMetaData::VarIsCompound(const std::string &v) const
 {
-    int beg = -1, end = -1;
-
     // find the mesh name enclosed in parentheses
-    beg = v.find('(');
-    end = v.find(')');
+    size_t beg = v.find('(');
+    size_t end = v.find(')');
 
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         return false;
     }
@@ -3423,13 +3421,11 @@ void
 avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
       std::string &outVar) const
 {
-    int beg = -1, end = -1;
- 
     // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
+    size_t beg = inVar.find('(');
+    size_t end = inVar.find(')');
  
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         // this is not a parseable variable.
         outVar = inVar;
@@ -3468,13 +3464,11 @@ void
 avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
       std::string &outVar) const
 {
-    int end = -1, beg = -1;
- 
     // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
+    size_t beg = inVar.find('(');
+    size_t end = inVar.find(')');
 
-    if (beg == -1 || end == -1)
+    if (beg == std::string::npos || end == std::string::npos)
     {
         // this is not a compound variable.
         outVar = inVar;

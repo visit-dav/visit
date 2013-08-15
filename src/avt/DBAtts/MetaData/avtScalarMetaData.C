@@ -868,7 +868,7 @@ avtScalarMetaData::AddEnumNameValue(std::string name, double val)
     enumRanges.push_back(val);
     enumRanges.push_back(val);
 
-    return enumNames.size() - 1;
+    return (int)enumNames.size() - 1;
 }
 
 // ****************************************************************************
@@ -891,7 +891,7 @@ avtScalarMetaData::AddEnumNameRange(std::string name, double min, double max)
     enumRanges.push_back(min);
     enumRanges.push_back(max);
 
-    return enumNames.size() - 1;
+    return (int)enumNames.size() - 1;
 }
 
 // ****************************************************************************

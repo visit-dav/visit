@@ -651,7 +651,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     }
 
 
-    if (blockNames.size() == numBlocks)
+    if ((int)blockNames.size() == numBlocks)
     {
         Indent(out, indent);
         out << "Block names: " << std::endl;
@@ -783,7 +783,7 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
                             const std::vector<int> &patchesPerLevel)
 {
     int  i;
-    int  nlevels = patchesPerLevel.size();
+    int  nlevels = (int)patchesPerLevel.size();
 
     // Basic setup stuff
     int  numBlocks = 0;

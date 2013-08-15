@@ -665,7 +665,7 @@ avtSubsetsMetaData::GetFieldName(int index) const
     case ID_hasPartialCells:  return "hasPartialCells";
     case ID_decompMode:       return "decompMode";
     case ID_maxTopoDim:       return "maxTopoDim";
-    default:  return "invalid index";
+    default:  return avtVarMetaData::GetFieldName(index);
     }
 }
 
@@ -701,7 +701,7 @@ avtSubsetsMetaData::GetFieldType(int index) const
     case ID_hasPartialCells:  return FieldType_bool;
     case ID_decompMode:       return FieldType_enum;
     case ID_maxTopoDim:       return FieldType_int;
-    default:  return FieldType_unknown;
+    default:  return avtVarMetaData::GetFieldType(index);
     }
 }
 
@@ -737,7 +737,7 @@ avtSubsetsMetaData::GetFieldTypeName(int index) const
     case ID_hasPartialCells:  return "bool";
     case ID_decompMode:       return "enum";
     case ID_maxTopoDim:       return "int";
-    default:  return "invalid index";
+    default:  return avtVarMetaData::GetFieldTypeName(index);
     }
 }
 
@@ -823,7 +823,7 @@ avtSubsetsMetaData::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (maxTopoDim == obj.maxTopoDim);
         }
         break;
-    default: retval = false;
+    default: retval = avtVarMetaData::FieldsEqual(index_, rhs);
     }
 
     return retval;
@@ -853,8 +853,6 @@ Indent(ostream &out, int indent)
 void
 avtSubsetsMetaData::Print(ostream &out, int indent) const
 {
-    size_t i;
-
     avtVarMetaData::Print(out, indent);
 
     Indent(out, indent);
@@ -891,11 +889,11 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "nameScheme = ..." << endl;
-        for (i = 0; i < 50 && i < catCount; i++)
+        for (int i = 0; i < 50 && i < catCount; i++)
         {
             Indent(out, indent+1);
             out << "set[" << i << "] has name \"" << nameScheme[i] << "\"";
-            if (i < colorScheme.size())
+            if (i < (int)colorScheme.size())
                 out << " and color \"" << colorScheme[i] << "\"";
             out << endl;
         }
@@ -916,11 +914,11 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
                 Indent(out, indent+1); 
                 out << "." << endl;
             }
-            for (i = catCount-50; i < catCount; i++)
+            for (int i = catCount-50; i < catCount; i++)
             {
                 Indent(out, indent+1);
                 out << "set[" << i << "] has name \"" << nameScheme[i] << "\"";
-                if (i < colorScheme.size())
+                if (i < (int)colorScheme.size())
                     out << " and color \"" << colorScheme[i] << "\"";
                 out << endl;
             }
@@ -930,7 +928,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
 
     if (setsToChunksMaps.size())
     {
-        i = 0;
+        size_t i = 0;
         while (i < setsToChunksMaps.size())
         {
             Indent(out, indent);
@@ -953,7 +951,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "graphEdges..." << endl;
-        for (i = 0; i < 100 && i < graphEdges.size(); i += 2)
+        for (size_t i = 0; i < 100 && i < graphEdges.size(); i += 2)
         {
             Indent(out, indent+1);
             out << "set[" << graphEdges[2*i  ] << "] is parent of "
@@ -976,7 +974,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
                Indent(out, indent+1); 
                out << "." << endl;
             }
-            for (i = graphEdges.size() - 100; i < graphEdges.size(); i += 2)
+            for (size_t i = graphEdges.size() - 100; i < graphEdges.size(); i += 2)
             {
                 Indent(out, indent+1);
                 out << "set[" << graphEdges[2*i  ] << "] is parent of "
