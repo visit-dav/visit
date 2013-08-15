@@ -1216,7 +1216,7 @@ FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
 {
     // for each format, prepend it; visit them in reverse order
     // so the first one given winds up first in the new list
-    for (size_t i=given.size()-1; i>=0; i--)
+    for (int i=(int)given.size()-1; i>=0; i--)
     {
         // get its actual ID
         std::string id = "";
