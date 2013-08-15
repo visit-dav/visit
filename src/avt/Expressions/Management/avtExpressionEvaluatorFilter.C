@@ -674,7 +674,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     }
 
     // Do these in the order the pipeline would.
-    for (size_t i = filters.size()-1 ; i >= 0 ; i--)
+    for (int i = (int)filters.size()-1 ; i >= 0 ; i--)
     {
         rv = filters[i]->ModifyContract(rv);
     }
