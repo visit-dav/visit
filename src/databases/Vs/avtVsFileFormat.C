@@ -236,7 +236,7 @@ avtVsFileFormat::CreateCacheNameIncludingSelections(std::string s)
 
   char str[1024];
   strcpy(str, s.c_str());
-  int amt = strlen(str);
+  size_t amt = strlen(str);
   for (size_t i = 0 ; i < selList.size() ; i++)
     {
       if ((*selsApplied)[i])
@@ -679,7 +679,7 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( (int)numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -842,7 +842,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( (int)numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -1018,7 +1018,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
       // true. Calculate the points and return a Structured mesh instead
       // of a Rectilinear mesh
       //
-      float temp, tempk, tempj, tempi;
+      float tempk, tempj, tempi;
       vtkPoints* vpoints = vtkPoints::New();
       if (isDouble) {
        vpoints->SetDataTypeToDouble();
@@ -1189,7 +1189,7 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( (int)numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -2166,7 +2166,7 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( (int)numTopologicalDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections, false );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -2870,7 +2870,7 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numVars, vdims,
+    GetSelectionBounds( (int)numTopologicalDims, numVars, vdims,
                         mins, maxs, strides, haveDataSelections, !isZonal );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
@@ -3440,7 +3440,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
           for (size_t i = 0; i < numComps; ++i) {
             //First we look for a match in the component registry
             //using var name and component index to search
-            std::string componentName = registry->getComponentName(*it, i);
+            std::string componentName = registry->getComponentName(*it, (int)i);
   
             if (!componentName.empty()) {
               VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3473,7 +3473,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         for (size_t i = 0; i < numComps; ++i) {
           //First we look for a match in the component registry
           //using var name and component index to search
-          std::string componentName = registry->getComponentName(*it, i);
+          std::string componentName = registry->getComponentName(*it, (int)i);
 
           if (!componentName.empty()) {
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -3484,7 +3484,7 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
             
             if (vMeta->hasTransform()) {
               std::string transformVarName = vMeta->getFullTransformedName();
-              std::string transformComponentName = registry->getComponentName(transformVarName, i);
+              std::string transformComponentName = registry->getComponentName(transformVarName, (int)i);
               if (!transformComponentName.empty()) {
                 VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
                 << "Registering transformed component: " <<transformVarName <<std::endl;
@@ -3893,7 +3893,7 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
       if (numComps > 1) {
         for (size_t i = 0; i<numComps; ++i) {
           //first, get a unique name for this component
-          std::string compName = registry->getComponentName(*it, i);
+          std::string compName = registry->getComponentName(*it, (int)i);
           
           if (!compName.empty()) {
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")" << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -4078,7 +4078,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
       //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
       for (size_t i = 0; i < lastDim; ++i) {
         //first, get a unique name for this component
-        std::string compName = registry->getComponentName(*it, i);
+        std::string compName = registry->getComponentName(*it, (int)i);
         
         if (!compName.empty()) {
           //register with VisIt
@@ -4092,7 +4092,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
           if (vMeta->hasTransform()) {
             std::string transformMeshName = vMeta->getTransformedMeshName();
             std::string transformVarName = vMeta->getFullTransformedName();
-            std::string transformComponentName = registry->getComponentName(transformVarName, i);
+            std::string transformComponentName = registry->getComponentName(transformVarName, (int)i);
             VsLog::debugLog() << __CLASS__ <<"(" <<instanceCounter <<")"
                               << __FUNCTION__ << "  " << __LINE__ << "  "
                               << "Registering a transformed component: "

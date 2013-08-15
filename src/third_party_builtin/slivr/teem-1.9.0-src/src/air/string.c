@@ -141,7 +141,7 @@ airStrntok(const char *_s, const char *ct) {
 
 char *
 airStrtrans(char *s, char from, char to) {
-  int i, l;
+  size_t i, l;
   
   if (s) {
     l = strlen(s);
@@ -178,7 +178,7 @@ airEndsWith(const char *s, const char *suff) {
 */
 char *
 airUnescape(char *s) {
-  int i, j, len, found=0;
+  size_t i, j, len, found=0;
 
   len = airStrlen(s);
   if (!len) 
@@ -213,7 +213,7 @@ airUnescape(char *s) {
 */
 char *
 airOneLinify(char *s) {
-  int i, j, len;
+  size_t i, j, len;
 
   len = airStrlen(s);
   if (!len) 

@@ -615,7 +615,7 @@ void avtvolimageFileFormat::Initialize()
     m_nk.resize(m_nblocks);
     m_offset.resize(m_nblocks);
     m_gridoffset.resize(m_nblocks);
-    size_t header_offset = 3*sizeof(int)+sizeof(double)+nchars*sizeof(char);
+    off_t header_offset = 3*sizeof(int)+sizeof(double)+nchars*sizeof(char);
     int dims[6];
     debug5 << "reading block headers " << endl;
     for( int b=0 ; b < m_nblocks ; b++ )

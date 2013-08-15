@@ -1229,7 +1229,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the sets.
     //
-    size_t nSets = sets.size();
+    int nSets = (int)sets.size();
     rv->SetNSets(nSets);
     vector<string> names;
     vector<int>    ids;
@@ -1245,7 +1245,7 @@ avtSIL::MakeSILAttributes(void) const
     //
     // Add the collections.
     //
-    size_t nCols = collections.size();
+    int nCols = (int)collections.size();
     rv->SetNCollections(nCols);
     vector<string> cats;
     vector<int> roles;

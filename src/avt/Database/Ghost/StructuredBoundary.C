@@ -273,7 +273,7 @@ Boundary::DeleteNeighbor(int d, std::vector<Boundary> &wholelist)
     std::vector<int> delete_list;
     for (size_t i=0; i<neighbors.size(); i++)
         if (neighbors[i].domain == d)
-            delete_list.push_back(i);
+            delete_list.push_back((int)i);
 
     if (delete_list.size() == 0)
     {

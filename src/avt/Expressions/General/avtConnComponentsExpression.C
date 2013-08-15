@@ -2046,7 +2046,7 @@ avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
     ub[2] = isect_bounds[5];
 
     src_itree->GetElementsListFromRange(lb,ub,src_isect_cells);
-    nsrc_isect_cells = src_isect_cells.size();
+    nsrc_isect_cells = (int)src_isect_cells.size();
 
     // if there are no source cells in this range, we are done
     if (nsrc_isect_cells == 0)
@@ -2072,7 +2072,7 @@ avtConnComponentsExpression::BoundarySet::GetIntersectionSet(
         ub[2] = src_cell_bounds[5];
 
         can_itree->GetElementsListFromRange(lb,ub,can_isect_cells);
-        ncan_isect_cells = can_isect_cells.size();
+        ncan_isect_cells = (int)can_isect_cells.size();
         // if there are no source cells in this range, check next source cell
         if (ncan_isect_cells == 0)
             continue;

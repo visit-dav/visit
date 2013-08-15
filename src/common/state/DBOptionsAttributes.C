@@ -1440,7 +1440,7 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     if (eIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
 
-    int numEnums = optEnums.size();
+    int numEnums = (int)optEnums.size();
     std::vector<std::string> newList;
     int idx = 0;
     for (int i = 0 ; i < numEnums ; i++)

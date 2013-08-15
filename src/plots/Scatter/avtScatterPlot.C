@@ -159,7 +159,7 @@ avtScatterPlot::Create()
 // ****************************************************************************
 
 void
-avtScatterPlot::SetScaling(int mode, float skew)
+avtScatterPlot::SetScaling(int mode, double skew)
 {
     varLegend->SetLookupTable(avtLUT->GetLookupTable());
     varLegend->SetScaling(mode, skew);
@@ -198,9 +198,9 @@ avtScatterPlot::SetLimitsMode()
     // Get color information.
     std::string colorString;
     int mode = 0;
-    float skew = 1.f;
+    double skew = 1.;
     bool minFlag = false, maxFlag = false;
-    float minVal, maxVal;
+    double minVal, maxVal;
     GetColorInformation(colorString, mode, skew, minFlag, minVal,
         maxFlag, maxVal);
 
@@ -209,8 +209,8 @@ avtScatterPlot::SetLimitsMode()
     //
     double min, max;
     glyphMapper->GetVarRange(min, max);
-    float userMin = minFlag ? minVal : min;
-    float userMax = maxFlag ? maxVal : max;
+    double userMin = minFlag ? minVal : min;
+    double userMax = maxFlag ? maxVal : max;
 
 #define LM_ORIGINAL_DATA_LIMITS 0
 #define LM_CURRENT_PLOT_LIMITS  1
@@ -309,8 +309,8 @@ avtScatterPlot::SetLimitsMode()
 
 void
 avtScatterPlot::GetColorInformation(std::string &colorString,
-    int &mode, float &skew, bool &minFlag, float &minVal,
-    bool &maxFlag, float &maxVal)
+    int &mode, double &skew, bool &minFlag, double &minVal,
+    bool &maxFlag, double &maxVal)
 {
     bool printIt = false;
 
@@ -449,9 +449,9 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
     // Get color information.
     std::string colorString;
     int mode = 0;
-    float skew = 1.f;
+    double skew = 1.;
     bool minFlag = false, maxFlag = false;
-    float minVal, maxVal;
+    double minVal, maxVal;
     GetColorInformation(colorString, mode, skew, minFlag, minVal,
         maxFlag, maxVal);
 

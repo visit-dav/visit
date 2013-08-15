@@ -315,7 +315,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 QComboBox *cbox;
                 for (varNum = 0; varNum < curZonePortions.size(); varNum++ )
                 {
-                    cbox=(QComboBox*)threshVars->cellWidget(varNum,3);
+                    cbox=(QComboBox*)threshVars->cellWidget((int)varNum,3);
                     cbox->setCurrentIndex(curZonePortions[varNum]);
                 }
                 
@@ -333,7 +333,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                     else
                         fieldString.setNum(curBounds[varNum]);
 
-                    threshVars->item(varNum, 1)->setText(fieldString);
+                    threshVars->item((int)varNum, 1)->setText(fieldString);
                 }
 
                 break;
@@ -348,7 +348,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                     else
                         fieldString.setNum(curBounds[varNum]);
 
-                    threshVars->item(varNum, 2)->setText(fieldString);
+                    threshVars->item((int)varNum, 2)->setText(fieldString);
                 }
 
                 break;

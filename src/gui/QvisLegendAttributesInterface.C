@@ -533,15 +533,15 @@ QvisLegendAttributesInterface::UpdateControls()
     minMaxCheckBox->blockSignals(false);
 
     QString temp;
-    size_t size;
+    int size;
     if (type == LEGEND_TYPE_VARIABLE)
     {
         doubleVector sv = annot->GetDoubleVector1();
-        size = sv.size();
+        size = (int)sv.size();
         ResizeSuppliedLabelsList(size);
         QString fmt(formatString->text());
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Values"));
-        for (size_t i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
             temp.sprintf(fmt.toStdString().c_str(), sv[i]);
             suppliedLabels->item(i, 0)->setText(temp.simplified());
@@ -552,11 +552,11 @@ QvisLegendAttributesInterface::UpdateControls()
     else 
     {
         stringVector sv = annot->GetStringVector2();
-        size = sv.size();
+        size = (int)sv.size();
         ResizeSuppliedLabelsList(size);
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Computed values"));
         suppliedLabels->resizeColumnToContents(0);
-        for (size_t i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
             suppliedLabels->item(i, 0)->setText(sv[i].c_str());
             suppliedLabels->item(i, 0)->setFlags(Qt::NoItemFlags);
@@ -564,8 +564,8 @@ QvisLegendAttributesInterface::UpdateControls()
     }
  
     stringVector sl = annot->GetStringVector1();
-    size = sl.size();
-    for (size_t i = 0; i < suppliedLabels->rowCount(); ++i)
+    size = (int)sl.size();
+    for (int i = 0; i < suppliedLabels->rowCount(); ++i)
     {
         if (i < size)
             suppliedLabels->item(i, 1)->setText(sl[i].c_str());

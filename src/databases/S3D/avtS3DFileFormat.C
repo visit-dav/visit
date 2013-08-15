@@ -93,10 +93,10 @@ parse_dirname(char *wholePath)
     return string(dirname(wholePath));
 #else
     string wholePathString(wholePath);
-    int len = wholePathString.size();
+    size_t len = wholePathString.size();
     if (wholePathString[len-1] == DEV_CHAR[0])
         return wholePathString;
-    int pos = len;
+    size_t pos = len;
     string es(".");
     string searchFor = (string)F_SLASH_STRING + (string)B_SLASH_STRING + (string)DEV_CHAR;
     while (pos == len)
@@ -138,7 +138,7 @@ CreateStringFromDouble(double ts)
     SNPRINTF(temp,256,"%1.3E",ts);
     string tempStr(temp);
 #ifdef WIN32
-    int off = tempStr.find("E+0");
+    size_t off = tempStr.find("E+0");
     if (off < tempStr.size())
     {
         tempStr.replace(off, 3, "E+");

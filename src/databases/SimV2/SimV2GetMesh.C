@@ -1047,7 +1047,7 @@ SimV2_Add_PolyhedralCell(vtkUnstructuredGrid *ugrid, const int **cellptr,
     // Come up with a center point and store it.
     double pt[3] = {0.,0.,0.}, center[3] = {0.,0.,0.};
     vtkPoints *points = ugrid->GetPoints();
-    polyhedralSplit->AppendPolyhedralNode(uniquePointIds.size());
+    polyhedralSplit->AppendPolyhedralNode((int)uniquePointIds.size());
     for(std::set<int>::const_iterator it = uniquePointIds.begin();
         it != uniquePointIds.end(); ++it)
     {

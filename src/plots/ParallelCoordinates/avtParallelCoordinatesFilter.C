@@ -274,7 +274,7 @@ avtParallelCoordinatesFilter::ModifyContract(avtContract_p in_contract)
             indexesIShouldProcess.push_back(PAR_Rank() == 0);
         }
 
-        axisCount = parCoordsAtts.GetScalarAxisNames().size();
+        axisCount = (int)parCoordsAtts.GetScalarAxisNames().size();
         histograms.resize(allTimeIndexes.size());
         histogramsForSelectedRegion.resize(allTimeIndexes.size());
         int nctxparts = parCoordsAtts.GetContextNumPartitions();
@@ -474,7 +474,7 @@ avtParallelCoordinatesFilter::PreExecute(void)
           
     avtDatasetToDatasetFilter::PreExecute();
 
-    axisCount = parCoordsAtts.GetScalarAxisNames().size();
+    axisCount = (int)parCoordsAtts.GetScalarAxisNames().size();
     PrepareForArrayVariable();
     if (axisCount == 0)
         EXCEPTION1(ImproperUseException, "Could not determine number of "
@@ -2071,7 +2071,7 @@ string
 avtParallelCoordinatesFilter::ConvertExtentsToCondition()
 {
     string condition;
-    axisCount = parCoordsAtts.GetScalarAxisNames().size();
+    axisCount = (int)parCoordsAtts.GetScalarAxisNames().size();
     stringVector curAxisVarNames = parCoordsAtts.GetScalarAxisNames();
     int numberOfConditions = 0;
     for (int j = 0 ; j < axisCount ; j++)
@@ -2410,7 +2410,7 @@ avtParallelCoordinatesFilter::CreateNamedSelectionThroughTraversal(
     int *numPerProc   = new int[PAR_Size()];
     for (i = 0 ; i < PAR_Size() ; i++)
         numPerProcIn[i] = 0;
-    numPerProcIn[PAR_Rank()] = doms.size();
+    numPerProcIn[PAR_Rank()] = (int)doms.size();
     SumIntArrayAcrossAllProcessors(numPerProcIn, numPerProc, PAR_Size());
     int numTotal = 0;
     for (i = 0 ; i < PAR_Size() ; i++)

@@ -895,7 +895,7 @@ vtkVisItAxisActor::SetLabels(const vector<string> &labels)
 
     this->LabelVectors[i]->SetText(labels[i].c_str());
     }
-  this->NumberOfLabelsBuilt = numLabels;
+  this->NumberOfLabelsBuilt = (int)numLabels;
   this->LabelBuildTime.Modified();
 }
 

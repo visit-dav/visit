@@ -1009,7 +1009,7 @@ vtkHighlightActor2D::RegenerateHighlight()
     for(i = 0; i < numTools; ++i)
     {
         if(tools[i]->IsEnabled())
-            numHotPoints += tools[i]->HotPoints().size();
+            numHotPoints += (int)tools[i]->HotPoints().size();
     }
 
     // Allocate some temporary arrays that we'll use to construct the

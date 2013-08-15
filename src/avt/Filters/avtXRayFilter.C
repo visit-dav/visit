@@ -1541,7 +1541,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     }
     visitTimer->StopTimer(t1, "avtXRayFilter::LoopOverLines");
 
-    nLinesPerDataset = cells_matched.size();
+    nLinesPerDataset = (int)cells_matched.size();
 
     t1 = visitTimer->StartTimer();
     //
@@ -1727,7 +1727,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
         }
     }
 
-    nLinesPerDataset = cells_matched.size();
+    nLinesPerDataset = (int)cells_matched.size();
 
     //
     // Copy the cell data.

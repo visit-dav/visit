@@ -54,7 +54,7 @@ public:
     void draw()
     {
         // Find the number of widgets
-        int nWidgets = 0;
+        size_t nWidgets = 0;
         for(size_t c = 0; c < cmap2_.size(); ++c)
         {
             std::vector<SLIVR::CM2Widget*> &widgets = cmap2_[c]->widgets();
@@ -854,7 +854,7 @@ QvisCMap2Display::numWidgets() const
     for(size_t c = 0; c < cmap2.size(); ++c)
     {
         std::vector<SLIVR::CM2Widget*> &widgets = cmap2[c]->widgets();
-        retval += widgets.size();
+        retval += (int)widgets.size();
     }
     return retval;
 }

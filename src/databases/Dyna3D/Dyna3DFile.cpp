@@ -201,7 +201,7 @@ Dyna3DFile::GetMaterials() const
 int
 Dyna3DFile::GetNumMaterials() const
 {
-    return materialCards.size();
+    return (int)materialCards.size();
 }
 
 MaterialProperties
@@ -788,7 +788,7 @@ Dyna3DFile::ReadMaterialCards(ifstream &ifile)
     {
         DEBUG_READER(debug5 << "Renumbering materials" << endl;)
         for(i = 0; i < materialCards.size(); ++i)
-            materialCards[i].materialNumber = i+1;
+            materialCards[i].materialNumber = (int)i+1;
     }
 
     DEBUG_READER(

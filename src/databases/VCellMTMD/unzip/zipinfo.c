@@ -1501,7 +1501,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                             ++num;
                         }
                         if (*ef_ptr & 2) {
-                            len = strlen(types);
+                            len = (int)strlen(types);
                             if (num)
                                 types[len++] = '/';
                             strcpy(types+len, LoadFarString(UTaccess));
@@ -1510,7 +1510,7 @@ static int zi_long(__G__ ulg *pEndprev)   /* return PK-type error code */
                                 *pEndprev += 4L;
                         }
                         if (*ef_ptr & 4) {
-                            len = strlen(types);
+                            len = (int)strlen(types);
                             if (num)
                                 types[len++] = '/';
                             strcpy(types+len, LoadFarString(UTcreation));

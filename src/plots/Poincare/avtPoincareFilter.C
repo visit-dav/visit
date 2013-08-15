@@ -1249,9 +1249,9 @@ avtPoincareFilter::ContinueExecute()
 
           std::vector<avtPoincareIC *> *children = seed->src_rational_ic->properties.children;
 
-          if(!poincare_ic->GS_x1->points.size() > 0 ||
-             !poincare_ic->GS_x2->points.size() > 0 ||
-             !poincare_ic->GS_x3->points.size() > 0)
+          if(!(poincare_ic->GS_x1->points.size() > 0) ||
+             !(poincare_ic->GS_x2->points.size() > 0) ||
+             !(poincare_ic->GS_x3->points.size() > 0))
             {
               // Have to hang out
               if (3 <= RATIONAL_DEBUG)
@@ -2167,7 +2167,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
     if( summaryFlag ) 
        std::cerr << std::endl << std::endl << "count " << ic.size() << std::endl << std::endl;
 
-    for ( int i=0; i<ic.size(); ++i )
+    for ( size_t i=0; i<ic.size(); ++i )
     {
         avtPoincareIC * poincare_ic = (avtPoincareIC *) ic[i];
 
@@ -2834,7 +2834,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
             if( show1DPlots )
               drawPeriodicity( dt, ridgelinePts,
 //                               poloidalResonance,
-                               ridgelinePts.size(),
+                               (unsigned int)ridgelinePts.size(),
                                nnodes, islands, poloidalWinding,
                                dataValue, color_value, true );
             
@@ -2844,7 +2844,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
               for( unsigned int j=0; j<toroidalWinding; ++j )
               {
                 drawPeriodicity( dt, islandPts[j],
-                                 islandPts[j].size(),
+                                 (unsigned int)islandPts[j].size(),
                                  nnodes, islands, poloidalWinding,
                                  dataValue, color_value, true );
               }
@@ -3297,7 +3297,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                 if( color == DATA_WindingGroupOrder )
                     color_value = j;
 
-                unsigned int npts;
+                size_t npts;
 
                 if( toroidalWindings > 1 )
                   npts = 1;
@@ -3305,7 +3305,7 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                   npts = nodes[p][j].size();
 
                 // Draw each point in the toroidial group
-                for( unsigned int i=0; i<npts; ++i )
+                for( size_t i=0; i<npts; ++i )
                 {      
                     double pt[3] =
                       { nodes[p][j][i].x, nodes[p][j][i].y, nodes[p][j][i].z };
@@ -3982,7 +3982,7 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
                                     bool ptFlag )
 {
   if( period <= 1 )
-    period = nodes.size();
+    period = (unsigned int)nodes.size();
 
   unsigned int colorMax = 0;
 

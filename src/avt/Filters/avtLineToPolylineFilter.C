@@ -280,7 +280,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             for(size_t i = 0; i < shape.size(); ++i)
                 pts[i] = shape[i];
             outCD->CopyData(inCD, firstCellInLine, toCellId++);
-            output->InsertNextCell(VTK_POLY_LINE, shape.size(), pts);
+            output->InsertNextCell(VTK_POLY_LINE, (int)shape.size(), pts);
             shape.clear();
         }
         else if(shape.size() == 2)
@@ -290,7 +290,7 @@ avtLineToPolylineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             pts2[0] = shape[0];
             pts2[1] = shape[1];
             outCD->CopyData(inCD, firstCellInLine, toCellId++);
-            output->InsertNextCell(VTK_LINE, shape.size(), pts2);
+            output->InsertNextCell(VTK_LINE, (int)shape.size(), pts2);
             shape.clear();
         }
     }

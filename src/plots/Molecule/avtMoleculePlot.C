@@ -780,7 +780,7 @@ avtMoleculePlot::SetLegendRange()
             }
 
             usedLabels = uLabels;
-            nlabels = usedLabels.size();
+            nlabels = (int)usedLabels.size();
 
             // Redo the colormap in case there are new restypes that we've
             // learned about.

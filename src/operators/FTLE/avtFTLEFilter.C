@@ -353,11 +353,11 @@ avtFTLEFilter::GetInitialLocationsFromMesh(avtDataTree_p inDT,
         // there is only one dataset to process
         //
         vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
-        size_t pts = in_ds->GetNumberOfPoints();
+        vtkIdType pts = in_ds->GetNumberOfPoints();
         if (setupList)
         {
             double points[3];
-            for(size_t i = 0; i < pts; ++i)
+            for(vtkIdType i = 0; i < pts; ++i)
             {
                 in_ds->GetPoint(i,points);
                 seedPoints[idx+i].set(points);
@@ -973,8 +973,8 @@ void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurv
 
     Barrier();
 
-    CollectIntArraysOnRootProc(all_indices,index_counts,&indices.front(),indices.size());
-    CollectDoubleArraysOnRootProc(all_result,result_counts,&end_results.front(),end_results.size());
+    CollectIntArraysOnRootProc(all_indices,index_counts,&indices.front(),(int)indices.size());
+    CollectDoubleArraysOnRootProc(all_result,result_counts,&end_results.front(),(int)end_results.size());
 
     Barrier();
     //root should now have index into global structure and all matching end positions..

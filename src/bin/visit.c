@@ -1281,7 +1281,7 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
            if (!skiptoken)
            {
-               int len = strlen(token);
+               size_t len = strlen(token);
                sprintf(path, ";%s", token);
                path += (len + 1);
            }

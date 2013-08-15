@@ -90,7 +90,6 @@ using std::vector;
 using std::ostringstream;
 
 void checkFile(NcFile* ncFile, const char* fname, int iSz, int jSz, int kSz)
-throw(InvalidFilesException)
 {
     NcDim* iDim= ncFile->get_dim("x");
     if (iDim->size() != iSz-1)
@@ -127,7 +126,6 @@ throw(InvalidFilesException)
 }
 
 NcFile* openFile( const char* filename )
-throw(InvalidFilesException)
 {
     NcFile* ncFile= new NcFile(filename, NcFile::ReadOnly);
     if (!ncFile->is_valid())
@@ -490,7 +488,7 @@ avtMFIXCDFFileFormat::GetAuxiliaryData(const char * var,
             retval = (void *)mat;
             df = avtMaterial::Destruct;
         }
-        CATCH2(InvalidFilesException, e)
+        CATCH2(InvalidFilesException)
         {
             // Clean up.
             delete meshFile;

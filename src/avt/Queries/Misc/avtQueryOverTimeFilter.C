@@ -543,11 +543,11 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         double *totalQRes;
         int    *qResMsgs;
         CollectDoubleArraysOnRootProc(totalQRes, qResMsgs, 
-                                      &(qRes[0]), qRes.size());
+                                      &(qRes[0]),(int) qRes.size());
         double *totalTimes;
         int    *timesMsgs;
         CollectDoubleArraysOnRootProc(totalTimes, timesMsgs, 
-                                      &(times[0]), times.size());
+                                      &(times[0]), (int)times.size());
         if (PAR_Rank() == 0)
         {
             int i;
@@ -687,12 +687,12 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
     {
        // Single curve with time for x axis.  NORMAL case.
        // Most queries currently use this option. 
-       nPts = (times.size() <= res.size() ? times.size() : res.size());
+       nPts = (int)(times.size() <= res.size() ? times.size() : res.size());
     }
     else if (!useTimeForXAxis && nResultsToStore == 2)
     {
        // Single curve, res[odd] = x, res[even] = y.
-       nPts = res.size() / 2;
+       nPts = (int)res.size() / 2;
     }
     else if (useTimeForXAxis && nResultsToStore > 1)
     {
@@ -746,7 +746,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
     else  if(doMultiCurvePlot)
     {
         // Setup for a MultiCurve plot
-        nPts = times.size();
+        nPts = (int)times.size();
   
         vtkRectilinearGrid *rgrid = 
             vtkVisItUtility::CreateEmptyRGrid(nPts, nResultsToStore, 1, VTK_FLOAT);
@@ -797,7 +797,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
     else  
     {
         // Setup for a Curve plot with multiple curves.
-        nPts = times.size();
+        nPts = (int)times.size();
         if (nPts == 0)
         {
             vtkRectilinearGrid *rgrid = 

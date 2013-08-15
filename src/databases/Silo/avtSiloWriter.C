@@ -728,7 +728,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     {
         minVals = minsMap->second;
         maxVals = dataMaxs[sname];
-        ncomps = minVals.size() / nblocks; 
+        ncomps = (int)minVals.size() / nblocks; 
         extents = new double[nblocks * ncomps * 2];
     }
 
@@ -1528,8 +1528,6 @@ void
 avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
                                     int chunk)
 {
-    int  i, j;
-
     int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
 
     //
@@ -1563,7 +1561,7 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
         EXCEPTION0(ImproperUseException);
     }
 
-    for(i = 0; i < ndims; ++i)
+    for(int i = 0; i < ndims; ++i)
     {
         spatialMins.push_back(mins[i]);
         spatialMaxs.push_back(maxs[i]);
@@ -1572,7 +1570,7 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     int dims[3];
     sg->GetDimensions(dims);
     int nzones = 1;
-    for (i = 0 ; i < ndims ; i++)
+    for (int i = 0 ; i < ndims ; i++)
         if (dims[i] > 1)
             nzones *= (dims[i]-1);
     zoneCounts.push_back(nzones);

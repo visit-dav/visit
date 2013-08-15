@@ -390,7 +390,7 @@ XMLNode::ToString(const string &indent) const
             << EscapeString(itr->second) << "\"";
     }
     oss << ">";
-    int nchildren = children.size();
+    size_t nchildren = children.size();
     if(nchildren == 0) // assume text node
     {
        // keep text nodes on a single line.
@@ -406,7 +406,7 @@ XMLNode::ToString(const string &indent) const
             oss << child_indent << "<text>" << EscapeString(text) 
                 << "</text>" <<endl;
         
-        for(int i=0;i<nchildren;i++)
+        for(size_t i=0;i<nchildren;i++)
             oss << children[i]->ToString(child_indent);
         oss << indent << "</" << esc_name << ">" << endl;
     }
@@ -507,8 +507,8 @@ bool
 XMLNode::Check(const string&str,istream &iss)
 {
     // see of first part of the string buffer == the input string
-    int i=0;
-    int str_len = str.size();
+    size_t i=0;
+    size_t str_len = str.size();
     stack<unsigned char> buff;
     while( !iss.eof() && i < str_len && str[i]==iss.peek())
     {
@@ -539,8 +539,8 @@ void
 XMLNode::Eat(const string &str,istream &iss)
 {
     // eat string from stream
-    int i=0;
-    int str_len = str.size();
+    size_t i=0;
+    size_t str_len = str.size();
     while(!iss.eof() && i < str_len && str[i]==iss.peek())
     {
         iss.get();
@@ -679,8 +679,8 @@ XMLNode::EscapeString(const string &val)
     // " $quot;
     
     string res="";
-    int ssize = val.size();
-    for(int i=0;i<ssize;i++)
+    size_t ssize = val.size();
+    for(size_t i=0;i<ssize;i++)
     {
         if(val[i] == '<')
         {res += string("&lt;");}

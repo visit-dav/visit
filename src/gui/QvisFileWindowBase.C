@@ -873,8 +873,8 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
     if(fileInfo.IsVirtual())
     {
         // Append some filenames
-        const int MAX_DISPLAYED_NAMES = 5;
-        int i;
+        const size_t MAX_DISPLAYED_NAMES = 5;
+        size_t i;
         stringVector names(fileServer->GetVirtualFileDefinition(fileInfo));
         if(names.size() > (MAX_DISPLAYED_NAMES*2))
         {

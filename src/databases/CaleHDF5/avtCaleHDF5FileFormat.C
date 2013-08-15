@@ -1561,7 +1561,8 @@ avtCaleHDF5FileFormat::GetCycle(void)
 int
 avtCaleHDF5FileFormat::GetCycleFromFilename(const char *f) const
 {
-    int i,j,n,c;
+    size_t i,j,n;
+    int c;
     char cycstr[10];
 
     n = strlen(f) ;

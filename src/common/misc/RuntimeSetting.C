@@ -190,7 +190,7 @@ find_setting(const char *key, std::string &retval)
     {
         if(strncmp(s::settings[i].key, key, len) == 0)
         {
-            retval = compile_time_default(i);
+            retval = compile_time_default((int)i);
             break;
         }
     }

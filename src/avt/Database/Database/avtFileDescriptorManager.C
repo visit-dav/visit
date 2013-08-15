@@ -226,9 +226,9 @@ avtFileDescriptorManager::RegisterFile(CloseFileCallback cback, void *args)
 void
 avtFileDescriptorManager::UnregisterFile(int index)
 {
-    if (index >= fileIsOpen.size() || index < 0)
+    if (index >= (int)fileIsOpen.size() || index < 0)
     {
-        EXCEPTION2(BadIndexException, index, fileIsOpen.size());
+        EXCEPTION2(BadIndexException, index, (int)fileIsOpen.size());
     }
 
     if (!fileIsOpen[index])
@@ -260,9 +260,9 @@ avtFileDescriptorManager::UnregisterFile(int index)
 void
 avtFileDescriptorManager::UsedFile(int index)
 {
-    if (index >= fileIsOpen.size() || index < 0)
+    if (index >= (int)fileIsOpen.size() || index < 0)
     {
-        EXCEPTION2(BadIndexException, index, fileIsOpen.size());
+        EXCEPTION2(BadIndexException, index, (int)fileIsOpen.size());
     }
 
     VisitMutexLock("avtFileDescriptorManagerFileTimestamp");

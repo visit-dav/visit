@@ -3511,7 +3511,7 @@ QvisSaveMovieWizard::AddSequencePages()
                     {
                         SequenceUI uiInfo;
                         uiInfo.page = new QvisCustomWizardPage(this);
-                        setPage(Page_Custom0 + sequencePages.size(), uiInfo.page);
+                        setPage(Page_Custom0 + (int)sequencePages.size(), uiInfo.page);
                         sequencePages.push_back(uiInfo);
                     }
 

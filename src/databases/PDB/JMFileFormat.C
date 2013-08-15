@@ -776,7 +776,7 @@ JMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
     if(materialNames.size() > 0)
     {
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
-            "mesh", materialNames.size(), materialNames);
+            "mesh", (int)materialNames.size(), materialNames);
         md->Add(mmd);
     }
 }
@@ -1171,7 +1171,7 @@ JMFileFormat::GetAuxiliaryData(const char *var, int timestep,
 
             df = avtMaterial::Destruct;
             retval = new avtMaterial(
-                materialNames.size(),
+                (int)materialNames.size(),
                 matnos,
                 names,
                 ndims,

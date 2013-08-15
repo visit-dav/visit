@@ -328,7 +328,7 @@ avtLODIFileFormat::GetNTimesteps()
     debug4 << mName << endl;
     ReadTimes();
     debug4 << mName << "returning " << times.size() << endl;
-    return times.size();
+    return (int)times.size();
 }
 
 // ****************************************************************************

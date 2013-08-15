@@ -652,7 +652,7 @@ void vtkCEAucdReader::ReadGeometry(vtkInformationVector *outputVector)
       {
          vtkDebugMacro(<<"Rebuild geometry from cache\n");
 
-         this->NumberOfMaterials = this->CachedOutputs.size();
+         this->NumberOfMaterials = (int)this->CachedOutputs.size();
          int numberOfOutputPorts = this->GetNumberOfOutputPorts ();
          this->SetNumberOfOutputPorts (this->NumberOfMaterials);
          for(i=numberOfOutputPorts; i<this->NumberOfMaterials; i++)
@@ -1613,7 +1613,8 @@ void vtkCEAucdReader::DisableAllCellArrays()
 //----------------------------------------------------------------------------
 int vtkCEAucdReader::GetLabel(char *string, int number, char *label)
 {
-   int   i, j, k, len;
+   int   i, j;
+   size_t k, len;
    char  current;
 
 

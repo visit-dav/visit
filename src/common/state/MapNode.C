@@ -814,7 +814,7 @@ MapNode::Write(Connection *conn) const
     if(Type() == EMPTY_TYPE)
     {
         // Write the number of entries
-        conn->WriteInt(entries.size());
+        conn->WriteInt((int)entries.size());
 
         map<string,MapNode>::const_iterator itr;
         for(itr = entries.begin(); itr != entries.end(); ++itr)

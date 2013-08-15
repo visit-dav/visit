@@ -5896,7 +5896,7 @@ ViewerPlotList::SetPlotSILRestriction(bool applyToAll)
         {
             activePlots.push_back(i);
             if (firstSelected == -1)
-                firstSelected = activePlots.size() - 1;
+                firstSelected = (int)activePlots.size() - 1;
         }
         else if (applyToAll)
         {

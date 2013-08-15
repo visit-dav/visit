@@ -304,8 +304,8 @@ avtCosmosFileFormat::avtCosmosFileFormat(const char *fname)
     if (coordType == cylindrical && rank == 3)
         EXCEPTION1(InvalidDBTypeException, "Bad cylindrical configuration.");
 
-    nscalars = scalarVarNames.size();
-    nvectors = vectorVarNames.size();
+    nscalars = (int)scalarVarNames.size();
+    nvectors = (int)vectorVarNames.size();
 
     meshes = new vtkDataSet *[ndomains];
     for (i = 0; i < ndomains; ++i)

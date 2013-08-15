@@ -214,7 +214,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
     int last_slash = -1;
     while (fileOpened.find(slashChar, last_slash+1) != string::npos)
     {
-        last_slash = fileOpened.find(slashChar, last_slash+1);
+        last_slash = (int)fileOpened.find(slashChar, last_slash+1);
     }
 
     dir = fileOpened.substr(0, last_slash);
@@ -229,7 +229,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
     }
     else
     {
-        underscore_pos[0] = filename.find(underscore, 0);
+        underscore_pos[0] = (int)filename.find(underscore, 0);
         if (filename.find(underscore, underscore_pos[0]+1) == string::npos)
         {
             // 1 underscore.  Either U_00000 (root file) or UCD_00000.inp
@@ -249,7 +249,7 @@ avtCEAucdFileFormat::SetUpFiles(void)
         }
         else
         {
-            underscore_pos[1]=filename.find(underscore, underscore_pos[0]+1);
+            underscore_pos[1]=(int)filename.find(underscore, underscore_pos[0]+1);
             if (filename.find(underscore, underscore_pos[1]+1) != string::npos)
             {
                 // Three underscores ... this blows the scheme ... time to
@@ -303,7 +303,7 @@ avtCEAucdFileFormat::AddFileInThisDirectory(const std::string &filenameWithDir)
     int last_slash = -1;
     while (filenameWithDir.find(slashChar, last_slash+1) != string::npos)
     {
-        last_slash = filenameWithDir.find(slashChar, last_slash+1);
+        last_slash = (int)filenameWithDir.find(slashChar, last_slash+1);
     }
 
     // Filename is filenameWithDir without the directory qualification.
@@ -317,8 +317,8 @@ avtCEAucdFileFormat::AddFileInThisDirectory(const std::string &filenameWithDir)
         char underscore = '_';
         if (filename.find(underscore, 0) == string::npos)
             return; // can't be a match.
-        int start = filename.find(underscore, 0)+1;
-        int stop = -1;
+        size_t start = filename.find(underscore, 0)+1;
+        size_t stop = string::npos;
         if (filename.find(underscore, start) == string::npos)
         {
             std::string extension = ".inp";
@@ -757,7 +757,7 @@ avtCEAucdFileFormat::GetAuxiliaryData(const char *var, int dom,
         }
 
         // For unpure materials, we need to add entries to the tables.
-        material_list[i] = -1 * (1 + mix_zone.size());
+        material_list[i] = -1 * (1 + (int)mix_zone.size());
         for (j = 0; j < nMaterials; ++j)
         {
             if (mats[j][i] <= 0)

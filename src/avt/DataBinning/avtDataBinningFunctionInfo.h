@@ -94,7 +94,7 @@ class AVTDBIN_API avtDataBinningFunctionInfo
     virtual               ~avtDataBinningFunctionInfo();
   
     int                    GetDomainNumberOfTuples(void) const
-                                { return tupleNames.size(); };
+                                { return (int)tupleNames.size(); };
     const std::string     &GetDomainTupleName(int) const;
     BinBasedOn             GetBinBasedOnType(int) const;
     const std::string     &GetCodomainName(void) const

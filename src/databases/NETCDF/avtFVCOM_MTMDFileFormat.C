@@ -543,7 +543,7 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
     for(int i = 0; i < md->GetNumMeshes(); ++i)
     {
         avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
-        mmd->numBlocks = domainFiles.size();
+        mmd->numBlocks = (int)domainFiles.size();
     }
 
 

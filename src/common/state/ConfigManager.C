@@ -776,8 +776,8 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
     // Read strings until we get a '<' character.
     stringVector  sv = ReadStringVector('<');
 
-    int minSize = (tagLength == 0) ? sv.size() :
-                  ((tagLength < sv.size()) ? tagLength : sv.size());
+    int minSize = (tagLength == 0) ? (int)sv.size() :
+                  ((tagLength < (int)sv.size()) ? tagLength : (int)sv.size());
 
     // All 20, or whatever, cases.
     switch(type)

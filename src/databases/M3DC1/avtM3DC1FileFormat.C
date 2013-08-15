@@ -138,7 +138,7 @@ avtM3DC1FileFormat::avtM3DC1FileFormat(const char *filename,
 int
 avtM3DC1FileFormat::GetNTimesteps(void)
 {
-    return m_times.size();
+    return (int)m_times.size();
 }
 
 

@@ -121,7 +121,7 @@ int
 avtFT2FileFormat::GetNTimesteps(void)
 {
     ReadAllMetaData();
-    return filePositions.size();
+    return (int)filePositions.size();
 }
 
 

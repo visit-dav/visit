@@ -100,8 +100,8 @@ avtMacroExpressionFilter::ProcessArguments(ArgsExpr *args,
                                            ExprPipelineState *state)
 {
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    int nArgs = arguments->size();
-    for (int i = 0 ; i < nArgs ; i++)
+    size_t nArgs = arguments->size();
+    for (size_t i = 0 ; i < nArgs ; i++)
     {
         expression_arguments.push_back((*arguments)[i]->GetText());
     }

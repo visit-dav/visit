@@ -450,7 +450,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
     debug5 << "bZonal is " << bZonal << endl; 
     
     // make the file template into an absolute path
-    for (ii = strlen(filename)-1 ; ii >= 0 ; ii--)
+    for (ii = (int)strlen(filename)-1 ; ii >= 0 ; ii--)
     {
         if (filename[ii] == '/' || filename[ii] == '\\')
         {
@@ -814,7 +814,7 @@ avtMirandaFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
       avtMaterialMetaData *matmd = new avtMaterialMetaData;
       matmd->name = "materialset";
       matmd->meshName = meshname;
-      matmd->numMaterials = aMatNames.size();
+      matmd->numMaterials = (int)aMatNames.size();
       matmd->materialNames = aMatNames;
       md->Add(matmd);
     }
@@ -2117,7 +2117,7 @@ avtMirandaFileFormat::ReadRawScalar(FILE *fd, int iComp, float *out, const char 
     // Fortran records have a 32 bit int that tells their length.  
     // We read that here to test endianism. 
     fread(&header, sizeof(int), 1, fd);
-    nItemsRead = fread(out, sizeof(float), nPoints, fd);
+    nItemsRead = (int)fread(out, sizeof(float), nPoints, fd);
     if (nItemsRead != nPoints)
         EXCEPTION1(InvalidFilesException, filename);
 

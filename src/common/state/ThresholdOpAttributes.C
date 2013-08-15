@@ -945,7 +945,7 @@ ThresholdOpAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 void
 ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
 {
-    int totalEntryCount = 0;
+    size_t totalEntryCount = 0;
     
     if (listedVarNames.size() > 1) return;
     totalEntryCount += listedVarNames.size();

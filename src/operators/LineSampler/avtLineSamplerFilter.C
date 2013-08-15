@@ -410,7 +410,7 @@ avtLineSamplerFilter::Execute()
       
       // Currently only one type of conf file.
       std::vector<double> listOfChannels = atts.GetChannelList();
-      nChannels = listOfChannels.size() / 4;
+      nChannels = (int)listOfChannels.size() / 4;
     }
 
     // Storage for when the samples are integrated on a toriodal basis.
@@ -865,7 +865,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
       toroidalOffsetAngle = atts.GetChannelListToroidalAngle();
       
-      nChannels = listOfChannels.size() / 4;
+      nChannels = (int)listOfChannels.size() / 4;
 
       if( nChannels < 1 )
       {
@@ -2650,7 +2650,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     int nPts = lineSamples[0].size(), tPts = 0, nLines = lineSamples.size();
 
     for( int i=0; i<nLines; ++i )
-      tPts += lineSamples[i].size();
+      tPts += (int)lineSamples[i].size();
 
     if( tPts != nPts * nLines )
     {

@@ -5142,7 +5142,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
             map<int, bool> groupMap;
             for (int i = 0; i < numEntries; i++)
                 groupMap[groupIds[i]] = true;
-            numGroups = groupMap.size();
+            numGroups = (int)groupMap.size();
         }
     }
 }
@@ -6802,7 +6802,6 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
 vtkDataArray *
 avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
 {
-    int i;
     string meshName = metadata->MeshForVar(listsname);
 
     //
@@ -7385,7 +7384,7 @@ CopyUcdVar(const DBucdvar *uv, const vector<int> &remap)
                 {
                     if (j < uv->nvals)
                     {
-                        int itmp;
+                        size_t itmp;
                         for (k = 0, itmp = i; k < cnt; k++, itmp++)
                             sum += (double) ((T**)(uv->vals))[j][remap[itmp]];
                     }
@@ -9593,7 +9592,7 @@ LookupPHZonelistFaceIdInFaceHash(const vector<int>& faceNodes,
     const map<unsigned int, vector<std::pair<int, vector<int> > > >& faceHash)
 {
     unsigned int hv = BJHash::Hash((const unsigned char*) &canonicalFaceNodes[0],
-        canonicalFaceNodes.size()*sizeof(int), 0x0);
+        (unsigned int)canonicalFaceNodes.size()*sizeof(int), 0x0);
     map<unsigned int, vector<std::pair<int, vector<int> > > >::const_iterator it
         = faceHash.find(hv);
     if (it == faceHash.end())
@@ -9660,11 +9659,11 @@ GetPHZonelistFaceId(int nnodes, const int *const nl,
 
     // If we get here, we didn't find the face in the faceHash.
     // So, we need to update everything for this new face.
-    unsigned int hv = BJHash::Hash((const unsigned char *)&faceNodesF[0], faceNodesF.size()*sizeof(int), 0x0);
+    unsigned int hv = BJHash::Hash((const unsigned char *)&faceNodesF[0], (unsigned int)faceNodesF.size()*sizeof(int), 0x0);
     int phzlFaceId = nodecnt.size();
     faceHash[hv].push_back(std::pair<int, vector<int> >(phzlFaceId, faceNodesF));
-    nodecnt.push_back(faceNodes.size());
-    for (int j = 0; j < faceNodes.size(); j++)
+    nodecnt.push_back((int)faceNodes.size());
+    for (size_t j = 0; j < faceNodes.size(); j++)
         nodelist.push_back(faceNodes[j]);
     return phzlFaceId;
 }
@@ -9709,7 +9708,7 @@ MakePHZonelistFromZonelistArbFragment(const int *nl, int shapecnt)
     // that Silo will later expect to be able to call free on.
     //
     DBphzonelist *phzl = DBAllocPHZonelist();
-    phzl->nfaces = nodecnt.size();
+    phzl->nfaces = (int)nodecnt.size();
     phzl->nodecnt = (int *) malloc(nodecnt.size() * sizeof(int));
     memcpy(phzl->nodecnt, &nodecnt[0], nodecnt.size() * sizeof(int));
     phzl->lnodelist = (int) nodelist.size();
@@ -10593,7 +10592,7 @@ ArbInsertArbitrary(vtkUnstructuredGrid *ugrid, int nsdims, DBphzonelist *phzl, i
     for (k = 0; k < 3; k++)
         coord_sum[k] /= ncnttot;
     int cmidn = ugrid->GetPoints()->InsertNextPoint(coord_sum);
-    nodeReMap->push_back(nodemap.size());
+    nodeReMap->push_back((int)nodemap.size());
     for (map<int,int>::iterator it = nodemap.begin(); it != nodemap.end(); it++)
         nodeReMap->push_back(it->first);
 
@@ -14530,7 +14529,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
                 filenames.push_back(string(filename));
                 vector<int> newvector_placeholder;
                 groups.push_back(newvector_placeholder);
-                index = filenames.size()-1;
+                index = (int)filenames.size()-1;
             }
             groups[index].push_back(i);
         }
@@ -15252,7 +15251,7 @@ PrepareDirName(const char *dirvar, const char *curdir)
     }
 
     char str[1024];
-    int dirlen = 0;
+    size_t dirlen = 0;
     if (dirvar[0] != '/')
     {
         //
@@ -15294,7 +15293,7 @@ SplitDirVarName(const char *dirvar, const char *curdir,
 {
     dir="";
     var="";
-    int len;
+    size_t len;
 
     if (!dirvar || ((len = strlen(dirvar)) == 0))
     {
@@ -15317,7 +15316,7 @@ SplitDirVarName(const char *dirvar, const char *curdir,
     }
 
     char str[1024];
-    int dirlen = 0;
+    size_t dirlen = 0;
     if (dirvar[0] != '/')
     {
         //
@@ -15935,11 +15934,11 @@ avtSiloFileFormat::AddAnnotIntNodelistEnumerations(DBfile *dbfile,
         }
 
         if (pass == 0)
-            numAnnotIntLists = smd->enumNames.size();
+            numAnnotIntLists = (int)smd->enumNames.size();
         else
         {
             if (smd->enumNames.size() > numAnnotIntLists)
-                numAnnotIntLists = smd->enumNames.size();
+                numAnnotIntLists = (int)smd->enumNames.size();
         }
 
         smd->SetEnumerationType(avtScalarMetaData::ByBitMask);
@@ -16212,7 +16211,7 @@ HandleMrgtreeAMRGroups(DBfile *dbfile, DBmultimesh *mm, const char *multimesh_na
 {
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
-    int i, j, q;
+    int i, j;
     bool probablyAnAMRMesh = true;
     DBgroupelmap *gm = 0; 
 

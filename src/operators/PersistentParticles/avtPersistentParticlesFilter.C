@@ -746,7 +746,7 @@ avtPersistentParticlesFilter::Finalize(void)
 
       //Merge the data but do not connect the traces of particles
       if( ! atts.GetConnectParticles() ){
-          avtDataTree_p newTree = new avtDataTree(trees.size(), &(trees[0]));
+          avtDataTree_p newTree = new avtDataTree((int)trees.size(), &(trees[0]));
           SetOutputDataTree(newTree);
           trees.clear();
       }

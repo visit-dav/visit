@@ -878,7 +878,7 @@ avtExodusFileFormat::RegisterFileList(const char *const *list, int nlist)
 
     globalFileLists->push_back(thisList);
 
-    return globalFileLists->size()-1;
+    return (int)globalFileLists->size()-1;
 }
 
 // ****************************************************************************

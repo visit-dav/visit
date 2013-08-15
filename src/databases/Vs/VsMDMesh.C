@@ -74,7 +74,7 @@ bool VsMDMesh::addBlock(VsMesh* newBlock) {
   }
   
   blocks.push_back(newBlock);
-  newBlock->setMDMesh(this, blocks.size() - 1);
+  newBlock->setMDMesh(this, (int)blocks.size() - 1);
   
   return true;
 }

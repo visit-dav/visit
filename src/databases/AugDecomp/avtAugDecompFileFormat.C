@@ -324,7 +324,7 @@ avtAugDecompFileFormat::GetAuxiliaryData(const char *var, int timestep,
     void *rv = NULL;
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        avtMaterial *mat = new avtMaterial(subset_names.size(), subset_names, 
+        avtMaterial *mat = new avtMaterial((int)subset_names.size(), subset_names, 
                                            zone_counts[domain], &(subset_vals[domain][0]),
                                            0, NULL, NULL, NULL, NULL);
         df = avtMaterial::Destruct;

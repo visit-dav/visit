@@ -88,7 +88,7 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     virtual void           GetCycles(std::vector<int> &c)    {c = aCycles;}
     virtual void           GetTimes(std::vector<double> &t)  {t = aSimTimes;}
 
-    virtual int            GetNTimesteps(void)  {return aCycles.size();}
+    virtual int            GetNTimesteps(void)  {return (int)aCycles.size();}
 
     virtual const char    *GetType(void)   { return "Miranda"; }
     virtual void           FreeUpResources(void); 

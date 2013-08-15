@@ -1297,7 +1297,7 @@ QvisPlotManagerWidget::AddPlotType(const QString &id,
     plotPlugins.push_back(entry);
 
     // Create the variable menu part of the plot
-    CreatePlotMenuItem(plotPlugins.size()-1);
+    CreatePlotMenuItem((int)plotPlugins.size()-1);
 }
 
 // ****************************************************************************
@@ -2550,7 +2550,7 @@ QvisPlotManagerWidget::activateOperatorWindow(QAction *action)
     {
         if(operatorPlugins[i].menuAction == action)
         {
-            emit activateOperatorWindow(i);
+            emit activateOperatorWindow((int)i);
             return;
         }
     } 
@@ -2666,7 +2666,7 @@ QvisPlotManagerWidget::operatorAction(QAction *action)
         {
             if(operatorPlugins[i].action == action)
             {
-                emit addOperator(i);
+                emit addOperator((int)i);
                 return;
             }
         }

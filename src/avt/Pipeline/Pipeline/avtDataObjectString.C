@@ -190,9 +190,9 @@ avtDataObjectString::Append(char *s, int sN, APPEND_ACTION_ITEM os)
 void
 avtDataObjectString::GetString(int n, char *&s, int &l)
 {
-    if (n < 0 || n >= strs.size())
+    if (n < 0 || n >= (int)strs.size())
     {
-        EXCEPTION2(BadIndexException, n, strs.size());
+        EXCEPTION2(BadIndexException, n, (int)strs.size());
     }
 
     s = strs[n];

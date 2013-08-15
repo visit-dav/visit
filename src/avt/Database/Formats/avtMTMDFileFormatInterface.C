@@ -704,15 +704,15 @@ int
 avtMTMDFileFormatInterface::GetTimestepGroupForTimestep(int ts)
 {
     int group = 0;
-    while (group < tsPerGroup.size() &&
+    while (group < (int)tsPerGroup.size() &&
            tsPerGroup[group] <= ts)
     {
         ts -= tsPerGroup[group];
         ++group;
     }
-    if (group >= tsPerGroup.size())
+    if (group >= (int)tsPerGroup.size())
     {
-        EXCEPTION2(BadIndexException, group, tsPerGroup.size());
+        EXCEPTION2(BadIndexException, group, (int)tsPerGroup.size());
     }
     return group;
 }

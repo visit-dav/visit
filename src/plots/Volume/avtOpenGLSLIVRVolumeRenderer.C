@@ -234,7 +234,7 @@ avtOpenGLSLIVRVolumeRenderer::CreateColormap(const VolumeAttributes &atts, bool 
     {
         // Make a ColorMap2 from the plot atts.
         SLIVR::ColorMap2* mapping = new SLIVR::ColorMap2();
-        for (size_t i = 0; i < atts.GetNumTransferFunction2DWidgets(); i++)
+        for (int i = 0; i < atts.GetNumTransferFunction2DWidgets(); i++)
         {
             const TransferFunctionWidget &widget = atts.GetTransferFunction2DWidgets(i);
             const float *color = widget.GetBaseColor();

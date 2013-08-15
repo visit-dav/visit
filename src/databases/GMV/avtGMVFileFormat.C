@@ -442,7 +442,7 @@ gmvAddGeneralCell(vtkUnstructuredGrid *ugrid, vtkPoints *points,
 #ifdef GMV_DEBUG_PRINT
     debug5 << "PH cell nodes: " << endl;
 #endif
-    polyhedralSplit->AppendPolyhedralNode(uniquePointIds.size());
+    polyhedralSplit->AppendPolyhedralNode((int)uniquePointIds.size());
     for(std::set<int>::const_iterator it = uniquePointIds.begin();
         it != uniquePointIds.end(); ++it)
     {
@@ -1395,7 +1395,7 @@ avtGMVFileFormat::ReadData()
                         names.push_back(removets(gmv_data.chardata1 + i * 33));
                     std::string matname(GetMeshName("material"));
                     avtMaterialMetaData *mmd = new avtMaterialMetaData(matname,
-                        meshname, names.size(), names);
+                        meshname, (int)names.size(), names);
                     md.Add(mmd);
                     }
                     break;
@@ -1989,7 +1989,7 @@ avtGMVFileFormat::GetAuxiliaryData(const char *var, int domain,
                                 // Just weight points equally to make a volume fraction.
                                 matvf.push_back(float(it->second) / float(npts));
                             }
-                            M.AddMixed(cellid, &matnos[0], &matvf[0], matnos.size());
+                            M.AddMixed(cellid, &matnos[0], &matvf[0], (int)matnos.size());
                         }
                     }
                     idlist->Delete();

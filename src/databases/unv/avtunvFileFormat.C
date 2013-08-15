@@ -760,21 +760,20 @@ int avtunvFileFormat::getNeighbour3D (int iel, int l1, int l2, int l3)
     itrg2 = meshUnvNodes.find(anUnvNode);
     anUnvNode.label = l3; // itre->nodes[in3-1];
     itrg3 = meshUnvNodes.find(anUnvNode);
-    int nbdav1, nbdav2, nbdav3;
-    nbdav1 = itrg1->nod2elts.size();
-    nbdav2 = itrg2->nod2elts.size();
-    nbdav3 = itrg3->nod2elts.size();
-    for (int i1=0; i1 < nbdav1; i1++ )
+    size_t nbdav1 = itrg1->nod2elts.size();
+    size_t nbdav2 = itrg2->nod2elts.size();
+    size_t nbdav3 = itrg3->nod2elts.size();
+    for (size_t i1=0; i1 < nbdav1; i1++ )
     {
         int jel = itrg1->nod2elts[i1];
         if (jel != iel)
         {
-            for (int i2=0; i2 < nbdav2; i2++ )
+            for (size_t i2=0; i2 < nbdav2; i2++ )
             {
                 int iel2 = itrg2->nod2elts[i2];
                 if (iel2 == jel)
                 {
-                    for (int i3=0; i3 < nbdav3; i3++ )
+                    for (size_t i3=0; i3 < nbdav3; i3++ )
                     {
                         int iel3 = itrg3->nod2elts[i3];
                         if (iel3 == jel)
@@ -803,15 +802,14 @@ int avtunvFileFormat::getNeighbour2D (int iel, int l1, int l2)
     itrg1 = meshUnvNodes.find(anUnvNode);
     anUnvNode.label = l2; // itre->nodes[in2-1];
     itrg2 = meshUnvNodes.find(anUnvNode);
-    int nbdav1, nbdav2;
-    nbdav1 = itrg1->nod2elts.size();
-    nbdav2 = itrg2->nod2elts.size();
-    for (int i1=0; i1 < nbdav1; i1++ )
+    size_t nbdav1 = itrg1->nod2elts.size();
+    size_t nbdav2 = itrg2->nod2elts.size();
+    for (size_t i1=0; i1 < nbdav1; i1++ )
     {
         int jel = itrg1->nod2elts[i1];
         if (jel != iel)
         {
-            for (int i2=0; i2 < nbdav2; i2++ )
+            for (size_t i2=0; i2 < nbdav2; i2++ )
             {
                 int iel2 = itrg2->nod2elts[i2];
                 if (iel2 == jel)
@@ -834,21 +832,20 @@ int
 avtunvFileFormat::getfastNeighbour3D (int iel, int l1, int l2, int l3,
                                       set<UnvNode, UnvNode::compare_UnvNode>::iterator * itrgs)
 {
-    int nbdav1, nbdav2, nbdav3;
-    nbdav1 = itrgs[l1]->nod2elts.size();
-    nbdav2 = itrgs[l2]->nod2elts.size();
-    nbdav3 = itrgs[l3]->nod2elts.size();
-    for (int i1=0; i1 < nbdav1; i1++ )
+    size_t nbdav1 = itrgs[l1]->nod2elts.size();
+    size_t nbdav2 = itrgs[l2]->nod2elts.size();
+    size_t nbdav3 = itrgs[l3]->nod2elts.size();
+    for (size_t i1=0; i1 < nbdav1; i1++ )
     {
         int jel = itrgs[l1]->nod2elts[i1];
         if (jel != iel)
         {
-            for (int i2=0; i2 < nbdav2; i2++ )
+            for (size_t i2=0; i2 < nbdav2; i2++ )
             {
                 int iel2 = itrgs[l2]->nod2elts[i2];
                 if (iel2 == jel)
                 {
-                    for (int i3=0; i3 < nbdav3; i3++ )
+                    for (size_t i3=0; i3 < nbdav3; i3++ )
                     {
                         int iel3 = itrgs[l3]->nod2elts[i3];
                         if (iel3 == jel)
@@ -873,15 +870,14 @@ int
 avtunvFileFormat::getfastNeighbour2D (int iel, int l1, int l2, set<UnvNode,
                                       UnvNode::compare_UnvNode>::iterator * itrgs)
 {
-    int nbdav1, nbdav2;
-    nbdav1 = itrgs[l1]->nod2elts.size();
-    nbdav2 = itrgs[l2]->nod2elts.size();
-    for (int i1=0; i1 < nbdav1; i1++ )
+    size_t nbdav1 = itrgs[l1]->nod2elts.size();
+    size_t nbdav2 = itrgs[l2]->nod2elts.size();
+    for (size_t i1=0; i1 < nbdav1; i1++ )
     {
         int jel = itrgs[l1]->nod2elts[i1];
         if (jel != iel)
         {
-            for (int i2=0; i2 < nbdav2; i2++ )
+            for (size_t i2=0; i2 < nbdav2; i2++ )
             {
                 int iel2 = itrgs[l2]->nod2elts[i2];
                 if (iel2 == jel)

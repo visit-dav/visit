@@ -857,7 +857,7 @@ avtPATRANFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if(componentNames.size() > 0)
     {
         avtMaterialMetaData *mmd = new avtMaterialMetaData("named_components",
-            "mesh", componentNames.size(), componentNames);
+            "mesh", (int)componentNames.size(), componentNames);
         md->Add(mmd);
     }
 
@@ -1047,7 +1047,7 @@ avtPATRANFileFormat::GetAuxiliaryData(const char *var, const char *type,
         dims[1] = 1;
         dims[2] = 1;
         retval = new avtMaterial(
-            componentNames.size(),
+            (int)componentNames.size(),
             matnos,
             names,
             3,

@@ -1307,11 +1307,11 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
         // Add material metadata to the metadata.
         //
         avtMaterialMetaData *mmd = new avtMaterialMetaData("material",
-            "mesh", materialNames.size(), materialNames);
+            "mesh", (int)materialNames.size(), materialNames);
         md->Add(mmd);
 
         mmd = new avtMaterialMetaData("material2",
-            "revolved_mesh", materialNames.size(), materialNames);
+            "revolved_mesh", (int)materialNames.size(), materialNames);
         md->Add(mmd);
 
         //

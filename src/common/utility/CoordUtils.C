@@ -89,15 +89,15 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
         const float *ox2, const float *oy2, floatVector &usedX, 
         floatVector &newCurve1Vals, floatVector &newCurve2Vals)
 {
-    int  i;
+    size_t  i;
     floatVector x1, y1, x2, y2;
 
     AverageYValsForDuplicateX(on1, ox1, oy1, x1, y1);
     AverageYValsForDuplicateX(on2, ox2, oy2, x2, y2);
    
-    int n1 = x1.size();
-    int n2 = x2.size();
-    int  total_n_pts = n1 + n2;
+    size_t n1 = x1.size();
+    size_t n2 = x2.size();
+    size_t  total_n_pts = n1 + n2;
 
     //
     // We want to put the line segments along the same x-intervals.  So we
@@ -105,7 +105,7 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
     // of the unique x-points.
     //
     float *all_xs = new float[total_n_pts];
-    int index = 0;
+    size_t index = 0;
     for (i = 0 ; i < n1 ; i++)
         all_xs[index++] = x1[i];
     for (i = 0 ; i < n2 ; i++)
@@ -127,8 +127,8 @@ PutOnSameXIntervals(int on1, const float *ox1, const float *oy1, int on2,
     delete [] all_xs;
     total_n_pts = unique_x.size();
 
-    int nextIndForCurve1 = 0;
-    int nextIndForCurve2 = 0;
+    size_t nextIndForCurve1 = 0;
+    size_t nextIndForCurve2 = 0;
     for (i = 0 ; i < total_n_pts ; i++)
     {
         // We don't want to consider points that are not valid for both curves.

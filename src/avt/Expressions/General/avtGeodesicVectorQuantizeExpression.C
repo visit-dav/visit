@@ -236,7 +236,7 @@ avtGeodesicVectorQuantizeExpression::ProcessArguments(ArgsExpr *args,
 {
     // Check the number of arguments
     std::vector<ArgExpr*> *arguments = args->GetArgs();
-    nargs = arguments->size();
+    nargs = (int)arguments->size();
 
     if (nargs > 2)
         EXCEPTION2(ExpressionException, outputVariableName,
@@ -304,7 +304,7 @@ avtGeodesicVectorQuantizeExpression::UpdateDataObjectInfo(void)
     }
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetVariableDimension(subnames.size(), outputVariableName);
+    outAtts.SetVariableDimension((int)subnames.size(), outputVariableName);
     outAtts.SetVariableSubnames(subnames, outputVariableName);
 }
 

@@ -467,22 +467,22 @@ simv2_MaterialData_getMixedMaterials(visit_handle h,
                // vectors' data will be destroyed with a destructor.
                simv2_VariableData_alloc(&obj->mix_mat);
                simv2_VariableData_setData(obj->mix_mat, VISIT_OWNER_SIM,
-                  VISIT_DATATYPE_INT, 1, obj->mix_matA.size(), 
+                  VISIT_DATATYPE_INT, 1, (int)obj->mix_matA.size(), 
                   (void *)&obj->mix_matA[0]);
 
                simv2_VariableData_alloc(&obj->mix_zone);
                simv2_VariableData_setData(obj->mix_zone, VISIT_OWNER_SIM,
-                  VISIT_DATATYPE_INT, 1, obj->mix_zoneA.size(), 
+                  VISIT_DATATYPE_INT, 1, (int)obj->mix_zoneA.size(), 
                   (void *)&obj->mix_zoneA[0]);
 
                simv2_VariableData_alloc(&obj->mix_next);
                simv2_VariableData_setData(obj->mix_next, VISIT_OWNER_SIM,
-                  VISIT_DATATYPE_INT, 1, obj->mix_nextA.size(), 
+                  VISIT_DATATYPE_INT, 1, (int)obj->mix_nextA.size(), 
                   (void *)&obj->mix_nextA[0]);
 
                simv2_VariableData_alloc(&obj->mix_vf);
                simv2_VariableData_setData(obj->mix_vf, VISIT_OWNER_SIM,
-                  VISIT_DATATYPE_FLOAT, 1, obj->mix_vfA.size(), 
+                  VISIT_DATATYPE_FLOAT, 1, (int)obj->mix_vfA.size(), 
                   (void *)&obj->mix_vfA[0]);
            }
         }

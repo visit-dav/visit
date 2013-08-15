@@ -891,7 +891,7 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
     if (pickAtts.GetFulfilled())
         numVars = pickAtts.GetNumVarInfos();
     else 
-        numVars = userVars.size();
+        numVars = (int)userVars.size();
     for (int varNum = 0; varNum < numVars; varNum++)
     {
         stringVector names; 

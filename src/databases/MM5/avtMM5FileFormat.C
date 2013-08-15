@@ -266,7 +266,7 @@ avtMM5FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
         pos != meshNames.end(); ++pos)
     {
         int sdims, tdims; 
-        sdims = tdims = pos->second.size();
+        sdims = tdims = (int)pos->second.size();
         avtMeshMetaData *mmd = new avtMeshMetaData(pos->first,
             1, 1, 1, 0, sdims, tdims,
             AVT_RECTILINEAR_MESH);

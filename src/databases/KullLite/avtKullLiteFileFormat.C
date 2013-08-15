@@ -840,8 +840,8 @@ avtKullLiteFileFormat::GetMesh(int dom, const char *mesh)
     // Do some error checking.
     //
     debug5 << "Getting mesh from KullLite file: " << my_filenames[dom].c_str() << endl;
-    if (dom < 0 || dom >= my_filenames.size())
-        EXCEPTION2(BadDomainException, dom, my_filenames.size());
+    if (dom < 0 || dom >= (int)my_filenames.size())
+        EXCEPTION2(BadDomainException, dom, (int)my_filenames.size());
 
     //
     // Whatever we do, we will need the primary mesh (even if we construct
@@ -1588,8 +1588,8 @@ avtKullLiteFileFormat::GetAuxiliaryData(const char *var, int domain,
     // Note: this check should come only once we are certain that we are 
     // looking for materials, since values like "-1" can be specified for
     // interval trees.
-    if (domain < 0 || domain >= my_filenames.size())
-        EXCEPTION2(BadDomainException, domain, my_filenames.size());
+    if (domain < 0 || domain >= (int)my_filenames.size())
+        EXCEPTION2(BadDomainException, domain, (int)my_filenames.size());
 
     void *rv = NULL;
     if (strcmp(var, "Material") == 0)
@@ -1703,7 +1703,7 @@ avtKullLiteFileFormat::GetMeshTagMaterial(const char *var, int dom)
             }
         }
     }
-    avtMaterial *mat = new avtMaterial(tag_list->size(), *tag_list, nelems,
+    avtMaterial *mat = new avtMaterial((int)tag_list->size(), *tag_list, nelems,
                                        ptr, 0, NULL, NULL, NULL, NULL);
 
     //
@@ -1898,7 +1898,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
             continue;
         
         // For unpure materials, we need to add entries to the tables.  
-        material_list[i] = -1 * (1 + mix_zone.size());
+        material_list[i] = -1 * (1 + (int)mix_zone.size());
         int numMatch = 0;
         for (j = 0; j < num_materials; ++j)
         {
@@ -1909,7 +1909,7 @@ avtKullLiteFileFormat::GetRealMaterial(int domain)
             mix_zone.push_back(i);
             mix_mat.push_back(j);
             mix_vf.push_back(values[j][i]);
-            mix_next.push_back(mix_zone.size() + 1);
+            mix_next.push_back((int)mix_zone.size() + 1);
         }
 
         if (numMatch == 0)
@@ -2010,7 +2010,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = MESHNAME;
     mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = my_filenames.size();
+    mesh->numBlocks = (int)my_filenames.size();
     mesh->blockOrigin = 0;
     mesh->spatialDimension = (is3DMesh ? 3 : 2);
     mesh->topologicalDimension = (is3DMesh ? 3 : 2);
@@ -2036,7 +2036,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh_tags/zones_mesh";
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mesh->numBlocks = my_filenames.size();
+        mesh->numBlocks = (int)my_filenames.size();
         mesh->blockOrigin = 0;
         mesh->spatialDimension = (is3DMesh ? 3 : 2);
         mesh->topologicalDimension = (is3DMesh ? 3 : 2);
@@ -2046,14 +2046,14 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
 
         AddMaterialToMetaData(md, "mesh_tags/zones", "mesh_tags/zones_mesh",
-                              zone_tags.size(), zone_tags);
+                              (int)zone_tags.size(), zone_tags);
     }
     if (face_tags.size() > 0 && is3DMesh)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh_tags/faces_mesh";
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mesh->numBlocks = my_filenames.size();
+        mesh->numBlocks = (int)my_filenames.size();
         mesh->blockOrigin = 0;
         mesh->spatialDimension = 3;
         mesh->topologicalDimension = 2;
@@ -2063,14 +2063,14 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
 
         AddMaterialToMetaData(md, "mesh_tags/faces", "mesh_tags/faces_mesh",
-                              face_tags.size(), face_tags);
+                              (int)face_tags.size(), face_tags);
     }
     if (edge_tags.size() > 0 && !is3DMesh)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh_tags/edges_mesh";
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
-        mesh->numBlocks = my_filenames.size();
+        mesh->numBlocks = (int)my_filenames.size();
         mesh->blockOrigin = 0;
         mesh->spatialDimension = 2;
         mesh->topologicalDimension = 1;
@@ -2080,14 +2080,14 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
 
         AddMaterialToMetaData(md, "mesh_tags/edges", "mesh_tags/edges_mesh",
-                              edge_tags.size(), edge_tags);
+                              (int)edge_tags.size(), edge_tags);
     }
     if (node_tags.size() > 0)
     {
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = "mesh_tags/nodes_mesh";
         mesh->meshType = AVT_POINT_MESH;
-        mesh->numBlocks = my_filenames.size();
+        mesh->numBlocks = (int)my_filenames.size();
         mesh->blockOrigin = 0;
         mesh->spatialDimension = (is3DMesh ? 3 : 2);
         mesh->topologicalDimension = 0;
@@ -2097,7 +2097,7 @@ avtKullLiteFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(mesh);
 
         AddMaterialToMetaData(md, "mesh_tags/nodes", "mesh_tags/nodes_mesh",
-                              node_tags.size(), node_tags);
+                              (int)node_tags.size(), node_tags);
     }
 
     if (hasDensities)

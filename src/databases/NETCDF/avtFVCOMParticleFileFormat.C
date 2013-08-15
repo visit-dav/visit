@@ -184,7 +184,7 @@ avtFVCOMParticleFileFormat::GetNTimesteps(void)
     status = nc_inq_dimlen(ncid, time_id, &ntimesteps);
     if (status != NC_NOERR) fileObject-> HandleError(status);
 
-    return ntimesteps;
+    return (int)ntimesteps;
 }
 
 

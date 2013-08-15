@@ -385,9 +385,9 @@ void VsVariable::createComponents() {
   //I.E. instead of a singleton named "var_0", we just call it "var"
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; ++i) {
-      registry->registerComponent(getFullName(), i, getLabel(i));
+      registry->registerComponent(getFullName(), (int)i, getLabel(i));
       if (transformExists) {
-        registry->registerComponent(getFullTransformedName(), i, getLabel(i));
+        registry->registerComponent(getFullTransformedName(), (int)i, getLabel(i));
       }
     }
   }

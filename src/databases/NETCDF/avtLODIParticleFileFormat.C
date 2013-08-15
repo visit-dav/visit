@@ -344,7 +344,7 @@ avtLODIParticleFileFormat::GetNTimesteps()
     debug4 << mName << endl;
     ReadTimes();
     debug4 << mName << "returning " << times.size() << endl;
-    return times.size();
+    return (int)times.size();
 }
 
 // ****************************************************************************
@@ -506,7 +506,7 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
             // Add the material to the metadata.
             avtMaterialMetaData *matmd = new avtMaterialMetaData("sourceid",
-                "particles", sourceids.size(), sourceids);
+                "particles", (int)sourceids.size(), sourceids);
             md->Add(matmd);
         }
 
@@ -885,9 +885,9 @@ avtLODIParticleFileFormat::GetAuxiliaryData(const char *var, int ts,
 
             // Create the avtMaterial.
             int mdims[1];
-            mdims[0] = matlist.size();
+            mdims[0] = (int)matlist.size();
             retval = new avtMaterial(
-                sourceids.size(),
+                (int)sourceids.size(),
                 matnos,
                 names,
                 1,

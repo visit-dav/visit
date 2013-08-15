@@ -486,7 +486,7 @@ VisWinPlots::CheckPlot(avtActor_p &p)
         }
 
         EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
-            p->GetWindowMode(), plots.size());
+            p->GetWindowMode(), (int)plots.size());
     }
 }
 

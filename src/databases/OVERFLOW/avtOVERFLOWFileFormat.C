@@ -113,7 +113,7 @@ avtOVERFLOWFileFormat::InitializeFile()
     // Find the last slash -- indicates the first character of the filename
     //
     int lastslash;
-    for (lastslash=origfilename.size()-2; lastslash>0; lastslash--)
+    for (lastslash=(int)origfilename.size()-2; lastslash>0; lastslash--)
     {
         if (origfilename[lastslash]=='/')
             break;

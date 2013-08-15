@@ -250,11 +250,11 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
     }
     else if (atts.GetContourMethod() == ContourAttributes::Value)
     {
-        numLevels = atts.GetContourValue().size();
+        numLevels = (int)atts.GetContourValue().size();
     }
     else 
     {
-        numLevels = atts.GetContourPercent().size();
+        numLevels = (int)atts.GetContourPercent().size();
     }
 
     SetColors();

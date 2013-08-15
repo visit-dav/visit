@@ -221,7 +221,7 @@ avtSASFileFormat::GetNTimesteps(void)
     if (aTimes.size() == 0)
         ReadTimeStepData();
 
-    return aTimes.size();
+    return (int)aTimes.size();
 }
 
 

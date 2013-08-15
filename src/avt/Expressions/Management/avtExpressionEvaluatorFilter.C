@@ -334,7 +334,7 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
 int
 avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 {
-    return pipelineState.GetFilters().size();
+    return (int)pipelineState.GetFilters().size();
 }
 
 
@@ -418,7 +418,6 @@ avtContract_p
 avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 {
     pipelineState.Clear();
-    int   i;
 
     avtContract_p rv = spec;
 
@@ -452,7 +451,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     // Insert all of the variables onto the candidates list.
     candidates.insert(ds->GetVariable());
     const vector<CharStrRef> &sv = ds->GetSecondaryVariables();
-    for (i = 0; i != sv.size(); i++)
+    for (size_t i = 0; i != sv.size(); i++)
     {
         const char *str = *(sv[i]);
         candidates.insert(str);
@@ -557,7 +556,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         modified = true;
     else
     {
-        for (int i = 0 ; i < expr_list.size() ; i++)
+        for (size_t i = 0 ; i < expr_list.size() ; i++)
             if (expr_list[i] != expr_list_fromLastTime[i])
                 modified = true;
     }
@@ -604,7 +603,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
             f = filters.back();
         }
         f->SetOutputVariableName(var.c_str());
-        numFiltersLastTime = filters.size();
+        numFiltersLastTime = (int)filters.size();
     }
 
     // Make sure we have real variables to pass to the database.
@@ -675,7 +674,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     }
 
     // Do these in the order the pipeline would.
-    for (i = filters.size()-1 ; i >= 0 ; i--)
+    for (size_t i = filters.size()-1 ; i >= 0 ; i--)
     {
         rv = filters[i]->ModifyContract(rv);
     }

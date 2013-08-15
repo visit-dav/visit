@@ -386,7 +386,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     // interface.
     //
     vector<int> list;
-    for (size_t i = 0 ; i < useList.size() ; i++)
+    for (int i = 0 ; i < (int)useList.size() ; i++)
         if (useList[i])
             list.push_back(i);
 
@@ -770,11 +770,11 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
     avtDataTree_p outDT = NULL;
     if (shouldCreateLabels)
     {   
-        outDT = new avtDataTree(isoValues.size(), out_ds, domain, isoLabels);
+        outDT = new avtDataTree((int)isoValues.size(), out_ds, domain, isoLabels);
     }
     else
     {   
-        outDT = new avtDataTree(isoValues.size(), out_ds, domain, label);
+        outDT = new avtDataTree((int)isoValues.size(), out_ds, domain, label);
     }
 
     //

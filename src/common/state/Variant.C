@@ -2961,14 +2961,14 @@ Variant::TokenizeQuotedString(const string &val,stringVector &tokens)
 {
     tokens.clear();
 
-    int ssize = val.size();
+    size_t ssize = val.size();
     if(ssize < 1 || val[0] !='\"' )
         return;
 
     string curr = "";
     bool open = true;
 
-    for(int i=1;i<ssize;i++)
+    for(size_t i=1;i<ssize;i++)
     {
         if(val[i] == '"')
         {
@@ -3014,8 +3014,8 @@ string
 Variant::EscapeQuotedString(const string &val)
 {
     string res="";
-    int ssize = val.size();
-    for(int i=0;i<ssize;i++)
+    size_t ssize = val.size();
+    for(size_t i=0;i<ssize;i++)
     {
         if(val[i] == '"')
         {
@@ -3420,49 +3420,49 @@ Variant::Write(Connection *conn) const
     else if(dataType == BOOL_VECTOR_TYPE)
     {
         const boolVector &vec = AsBoolVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteChar(vec[i]?1:0);
     }
     else if(dataType == CHAR_VECTOR_TYPE)
     {
         const charVector &vec = AsCharVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteChar(vec[i]);
     }
     else if(dataType == UNSIGNED_CHAR_VECTOR_TYPE)
     {
         const unsignedCharVector &vec = AsUnsignedCharVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteUnsignedChar(vec[i]);
     }
     else if(dataType == INT_VECTOR_TYPE)
     {
         const intVector &vec = AsIntVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteInt(vec[i]);
     }
     else if(dataType == LONG_VECTOR_TYPE)
     {
         const longVector &vec = AsLongVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteLong(vec[i]);
     }
     else if(dataType == FLOAT_VECTOR_TYPE)
     {
         const floatVector &vec = AsFloatVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteFloat(vec[i]);
     }
     else if(dataType == DOUBLE_VECTOR_TYPE)
     {
         const doubleVector &vec = AsDoubleVector();
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(size_t i=0;i<vec.size();i++)
             conn->WriteDouble(vec[i]);
     }
@@ -3471,7 +3471,7 @@ Variant::Write(Connection *conn) const
         const stringVector &vec = AsStringVector();
         stringVector::const_iterator spos;
 
-        conn->WriteInt(vec.size());
+        conn->WriteInt((int)vec.size());
         for(spos = vec.begin(); spos != vec.end(); ++spos)
             conn->WriteString(*spos);
     }

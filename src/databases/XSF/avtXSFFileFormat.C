@@ -815,5 +815,5 @@ avtXSFFileFormat::ReadAllMetaData()
         in.getline(line, 4096);
     }
 
-    ntimesteps = atom_filepos.size();
+    ntimesteps = (int)atom_filepos.size();
 }

@@ -298,8 +298,8 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
     {
         newArr = vtkFloatArray::New();
 
-        size_t numTuples = oldArr->GetNumberOfTuples();
-        size_t numComponents = oldArr->GetNumberOfComponents();
+        vtkIdType numTuples = oldArr->GetNumberOfTuples();
+        int numComponents = oldArr->GetNumberOfComponents();
 
         newArr->SetNumberOfComponents(numComponents);
         newArr->SetNumberOfTuples(numTuples);
@@ -402,8 +402,8 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
     {
         newArr = vtkDoubleArray::New();
 
-        size_t numTuples = oldArr->GetNumberOfTuples();
-        size_t numComponents = oldArr->GetNumberOfComponents();
+        vtkIdType numTuples = oldArr->GetNumberOfTuples();
+        int numComponents = oldArr->GetNumberOfComponents();
 
         newArr->SetNumberOfComponents(numComponents);
         newArr->SetNumberOfTuples(numTuples);

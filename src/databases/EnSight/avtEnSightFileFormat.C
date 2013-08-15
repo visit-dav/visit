@@ -209,7 +209,7 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
     for (size_t i = 0 ; i < model_line.size() ; i++)
     {
         if (lastWasSpace && !(isspace(model_line[i])))
-            lastword = i;
+            lastword = (int)i;
         lastWasSpace = (isspace(model_line[i]) != 0);
     }
     if (lastword <= 0)
@@ -511,7 +511,7 @@ avtEnSightFileFormat::GetNTimesteps(void)
     GetTimes(times);
 
     debug4 << mName << "end. returning " << times.size() << endl;
-    return times.size();
+    return (int)times.size();
 }
 
 // ****************************************************************************
@@ -818,7 +818,7 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         matnames.push_back(str);
         avtMaterialMetaData *mmd;
         mmd = new avtMaterialMetaData("materials", "mesh",
-                                      matnames.size(), matnames);
+                                      (int)matnames.size(), matnames);
         md->Add(mmd);
     }
 }
@@ -903,7 +903,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
         }
 
         // For unpure materials, we need to add entries to the tables.
-        material_list[i] = -1 * (1 + mix_zone.size());
+        material_list[i] = -1 * (1 + (int)mix_zone.size());
         for (j = 0; j < nMaterials; ++j)
         {
             if (mats[j][i] <= 0)
@@ -912,7 +912,7 @@ avtEnSightFileFormat::GetAuxiliaryData(const char *var, int ts, int domain,
             mix_zone.push_back(i);
             mix_mat.push_back(j);
             mix_vf.push_back(mats[j][i]);
-            mix_next.push_back(mix_zone.size() + 1);
+            mix_next.push_back((int)mix_zone.size() + 1);
         }
 
         // When we're done, the last entry is a '0' in the mix_next

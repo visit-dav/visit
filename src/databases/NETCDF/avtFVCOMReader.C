@@ -416,7 +416,7 @@ avtFVCOMReader::GetDimensions()
       size_t tSizes;
       status = nc_inq_dim(ncid, i, DimName, &tSizes);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      dimSizes[i]=tSizes;
+      dimSizes[i]=(int)tSizes;
       debug4<< dimSizes[i] << " ";
     }
   debug4<< "]" << endl;
@@ -432,7 +432,7 @@ avtFVCOMReader::GetDimensions()
   if (status != NC_NOERR) fileObject-> HandleError(status);
   status = nc_inq_dimlen(ncid, nScalarID, &tScalar);
   if (status != NC_NOERR) fileObject-> HandleError(status);
-  nScalar=tScalar;
+  nScalar=(int)tScalar;
  
 
   // NODE
@@ -442,7 +442,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nNodeID, &tNode);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nNode=tNode;
+      nNode=(int)tNode;
       nodestate=true;
     }
   
@@ -453,7 +453,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nElemID, &tElem);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nElem=tElem;
+      nElem=(int)tElem;
       elemstate=true;
     }
 
@@ -471,7 +471,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nSiglayID, &tSiglay);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nSiglay=tSiglay;
+      nSiglay=(int)tSiglay;
       siglaystate=true;
     }
 
@@ -484,7 +484,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nSiglevID, &tSiglev);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nSiglev=tSiglev;
+      nSiglev=(int)tSiglev;
       siglevstate=true;
     }
 
@@ -504,7 +504,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nThreeID, &tThree);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nThree=tThree;
+      nThree=(int)tThree;
     }
 
   //FOUR
@@ -514,7 +514,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nFourID, &tFour);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nFour=tFour;
+      nFour=(int)tFour;
     }
 
   //MAXNODE
@@ -524,7 +524,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nMaxnodeID, &tMaxnode);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nMaxnode=tMaxnode;
+      nMaxnode=(int)tMaxnode;
     }
 
   //MAXELEM
@@ -534,7 +534,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nMaxelemID, &tMaxelem);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nMaxelem=tMaxelem;
+      nMaxelem=(int)tMaxelem;
     }
 
   //TIME
@@ -550,7 +550,7 @@ avtFVCOMReader::GetDimensions()
     {
       status = nc_inq_dimlen(ncid, nTimeID, &tTime);
       if (status != NC_NOERR) fileObject-> HandleError(status);
-      nTime=tTime;
+      nTime=(int)tTime;
     }
 
 
@@ -2946,8 +2946,7 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
   else if (strncmp("CellCent_", Variable,9)==0)
     {
       std::string strvarname(Variable);
-      int namelength;
-      namelength = strlen(Variable);
+      size_t namelength = strlen(Variable);
       size_t tmplen=namelength-9;
       std::string vnm = strvarname.substr(9, tmplen);
 

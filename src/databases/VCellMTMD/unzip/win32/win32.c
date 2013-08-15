@@ -1544,7 +1544,7 @@ int mapname(__G__ int renamed)
     
     G.created_dir = FALSE;      /* not yet */    
     G.renamed_fullpath = FALSE;    
-    G.fnlen = strlen(G.filename);    
+    G.fnlen = (int)strlen(G.filename);    
     
     if (renamed) {    
         cp = G.filename;    /* point to beginning of renamed name... */    
@@ -2250,7 +2250,7 @@ int checkdir(__G__ char *pathcomp, int flag)
         }    
         if (G.rootlen > 0)      /* rootpath was already set, nothing to do */    
             return MPN_OK;    
-        if ((G.rootlen = strlen(pathcomp)) > 0) {    
+        if ((G.rootlen = (int)strlen(pathcomp)) > 0) {    
             int had_trailing_pathsep=FALSE, has_drive=FALSE, add_dot=FALSE;    
             char *tmproot;    
     

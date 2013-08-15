@@ -65,7 +65,7 @@ void trim(char *string)
     if (string == NULL) return;
     i = -1;
     while (string[++i] == ' ');
-    j = strlen(string);
+    j = (int)strlen(string);
     while (string[--j] == ' ');
     k = 0;
     for (l = i; l <= j; l++)
@@ -149,7 +149,7 @@ int object_test(OBJECT*object, char *name, char **value_ptr, int *nvalue_ptr)
         nname++;
     }
     string = object->value;
-    lstring = strlen(string) + 1;
+    lstring = (int)strlen(string) + 1;
     if (lstring > lbuff)
     {
         lbuff = lstring;
@@ -224,7 +224,7 @@ void object_compilevalue(OBJECT*object)
 {
     enum MODE
     { FIRST, LAST };
-    static int lbuff = 0;
+    static size_t lbuff = 0;
     static char *buffer = NULL;
     char *keyword, *value, *kvalue, *ptr;
         const char *op;
@@ -236,7 +236,8 @@ void object_compilevalue(OBJECT*object)
     } list[MAXKEYWORDS];
     int nlist;
     char *string, *opptr;
-    int i, j, lstring;
+    int i, j;
+    size_t lstring;
     int mode = LAST;
     string = object->value;
     lstring = strlen(string) + 1;
@@ -306,9 +307,10 @@ void object_compilevalue(OBJECT*object)
 /* Mark C. Miller, Wed Aug 22 15:27:25 PDT 2012: Fixed leak of name_save */
 FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 {
-    static int lbuff = 0, msize = 0;
+    static size_t lbuff = 0;
+    static int msize = 0;
     static char *buffer = NULL, *line = NULL, *tail;
-        static const char *sep;
+    static const char *sep;
     static union
     {
         double *d;
@@ -328,7 +330,8 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
     char *name_list[16], *name_save;
     char *string;
     FIELD f;
-    int i, lstring, nv, size, element_size, found, first, last;
+    int i, nv, size, element_size, found, first, last;
+    size_t lstring;
     char *ptr, *vptr, *eptr;
     name_save = strdup(name);
     ptr = strtok(name_save, ";");
@@ -531,7 +534,8 @@ void object_compileSectionedFile(char *filename, int section)
     OBJECT obj, obj_delim;
     char *line;
     OBJECTFILE file;
-    int rc, i, l, sec;
+    int rc, i, sec;
+    size_t l;
     obj.name = obj_delim.name = NULL;
     file = object_fopen(filename, "r");
     sec = -1;
@@ -595,7 +599,8 @@ void object_compilefilesubset(const char *filename, int first, int last)
     OBJECT obj;
     char *line;
     OBJECTFILE file;
-    int rc, i, l, n;
+    int rc, i, n;
+    size_t l;
     file = object_fopen(filename, "r");
     n=0; 
     if (file.file != NULL)
@@ -640,7 +645,7 @@ void object_compilefile(const char *filename) { object_compilefilesubset(filenam
 void object_replacekeyword(OBJECT *object,char *keyword,char* keywordvalue)
 {
     char value[1024];
-    int l; 
+    size_t l; 
     sprintf(value,"%s=%s;",keyword,keywordvalue);
     l = strlen(object->value) + strlen(value) + 1;
     object->value = (char*) realloc(object->value, l);
@@ -666,7 +671,8 @@ void object_reset(OBJECT*target)
     OBJECT obj;
     char *line;
     OBJECTFILE file;
-    int rc, l, k;
+    int rc, k;
+    size_t l;
     if (target->name == NULL || target->_class == NULL) return;
     *(target->value) = '\0';
     for (k = 0; k < nfiles; k++)
@@ -756,7 +762,8 @@ OBJECT *object_initialize(char *name, char *classIn, int size)
 OBJECT *object_find1(char *name, char *type)
 {
     OBJECTFILE file;
-    int rc, nfound, l, k;
+    int rc, nfound, k;
+    size_t l;
     OBJECT *object = NULL;
     char *line, *value;
     if (object == NULL) object = (OBJECT*) malloc(sizeof(OBJECT));
@@ -895,7 +902,7 @@ char *object_read(OBJECTFILE ofile)
                     c = (char)getc(file);
                 }
                 last = ftell(file) - 1;
-                len = strlen(ofile.name);
+                len = (int)strlen(ofile.name);
                 while (nline < n + len + 1 + 2 + 64)
                 {
                     nline += 256;
@@ -937,7 +944,8 @@ void object_free(OBJECT*object)
 int object_lineparse(char *line, OBJECT*object)
 {
     char *tok;
-    int rc, l;
+    int rc;
+    size_t l;
     trim(line);
     tok = strchr(line,'{');
     *tok = '\0';
@@ -976,8 +984,7 @@ OBJECTFILE object_fopen(const char *filename, const char *mode)
     if (file.file == NULL)
     {
         char *msg;
-        int msg_length; 
-        msg_length = strlen(filename)+256; 
+        size_t msg_length = strlen(filename)+256; 
         msg = (char*) malloc(msg_length); 
         sprintf(msg, "Error opening file=%s with mode %s from object_fopen", filename, mode);
         free(msg); 
@@ -1008,7 +1015,8 @@ int modeindex(char *mode)
 }
 void object_pack(PACKBUF *buf)
 {
-    int i,l,n;
+    int i;
+    size_t l, n;
     n=0;
     for (i=0;i<nobject;i++)
     {
@@ -1016,13 +1024,14 @@ void object_pack(PACKBUF *buf)
         n+= l =  strlen(object[i]._class)+1; buf->buffer=(char*) realloc(buf->buffer,n);memcpy(buf->buffer+n-l,object[i]._class,l); 
         n+= l =  strlen(object[i].value)+1; buf->buffer=(char*) realloc(buf->buffer,n);memcpy(buf->buffer+n-l,object[i].value,l);
     }
-    buf->n =n; 
+    buf->n = (int)n; 
     buf->nobject =nobject; 
     buf->mobject =mobject; 
 }
 void object_unpack(PACKBUF *buf)
 {
-    int i,l;
+    int i;
+    size_t l;
     char *ptr; 
     nobject=buf->nobject ; 
     mobject=buf->mobject ; 
@@ -1033,6 +1042,6 @@ void object_unpack(PACKBUF *buf)
         l = strlen(ptr)+1 ; object[i].name = strdup(ptr);ptr += l;
         l = strlen(ptr)+1 ; object[i]._class = strdup(ptr);ptr += l;
         l = strlen(ptr)+1 ; object[i].value = strdup(ptr);ptr += l;
-        object[i].valueptr = NULL;;
+        object[i].valueptr = NULL;
     }
 }

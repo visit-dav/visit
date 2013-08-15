@@ -499,7 +499,7 @@ RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
                     {
                         if(mmd->materialNames[idx] == std::string(matname))
                         {
-                            restrictedMats.push_back(idx);
+                            restrictedMats.push_back((int)idx);
                             break;
                         }
                     }

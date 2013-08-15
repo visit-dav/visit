@@ -256,8 +256,8 @@ avtCosmosPPFileFormat::avtCosmosPPFileFormat(const char *fname)
             dataset[i][j] = NULL;
         }
     }
-    nscalars = scalarVarNames.size();
-    nvectors = vectorVarNames.size();
+    nscalars = (int)scalarVarNames.size();
+    nvectors = (int)vectorVarNames.size();
 }
 
 

@@ -521,7 +521,7 @@ Streaker::FindMaterial(PDBFileObject *pdb, int *zDimensions, int zDims)
                 // Set up the material names. Try and be consistent with the
                 // PPZ reader.
                 stringVector names;
-                if(PP_ZFileReader::ReadMaterialNames(pdb, matnos.size(), names))
+                if(PP_ZFileReader::ReadMaterialNames(pdb, (int)matnos.size(), names))
                 {
                     for(size_t i = 0; i < names.size(); ++i)
                         this->matNames.push_back(names[i]);
@@ -615,7 +615,7 @@ Streaker::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             matToStreak[matName] = it->first;
 
             avtMaterialMetaData *mmd = new avtMaterialMetaData(matName,
-                meshName, matNames.size(), matNames);
+                meshName, (int)matNames.size(), matNames);
             md->Add(mmd);
         }
     }

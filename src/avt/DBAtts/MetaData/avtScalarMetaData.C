@@ -1038,7 +1038,7 @@ avtScalarMetaData::ComboValFromDigits(const std::vector<std::vector<int> > &ptMa
     int row, col;
     *id = 0.0;
     std::list<int>::const_reverse_iterator it;
-    for (col = digits.size()-1, it = digits.rbegin(); col >= 0; col--, it++)
+    for (col = (int)digits.size()-1, it = digits.rbegin(); col >= 0; col--, it++)
     {
         for (row = 0; row <= *it; row++)
             *id += ptMap[row][col];

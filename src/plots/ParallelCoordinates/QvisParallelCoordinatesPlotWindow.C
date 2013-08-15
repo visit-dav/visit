@@ -623,7 +623,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     
     // Set enabled states
     
-    nitems = atts->GetScalarAxisNames().size();
+    nitems = (int)atts->GetScalarAxisNames().size();
     axisDelButton->setEnabled( nitems > 2 &&
                               axisTree->currentItem()!= NULL);
     axisUpButton->setEnabled(nitems  > 0 &&

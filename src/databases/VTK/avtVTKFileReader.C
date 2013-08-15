@@ -738,7 +738,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             matnamestmp[i] = (char*) matnames[i].c_str();
         }
 
-        avtMaterial *mat = new avtMaterial(matnos.size(), //silomat->nmat,
+        avtMaterial *mat = new avtMaterial((int)matnos.size(), //silomat->nmat,
                                            matnostmp,     //silomat->matnos,
                                            matnamestmp,   //silomat->matnames,
                                            1,             //silomat->ndims,
@@ -1380,7 +1380,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
 
             avtMaterialMetaData *mmd = new avtMaterialMetaData("materials", MESHNAME,
-                                               valMap.size(), matnames);
+                                              (int)valMap.size(), matnames);
             md->Add(mmd);
 
             if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)

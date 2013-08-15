@@ -1407,9 +1407,9 @@ StringHelpers::IsPureASCII(const std::string &txt)
 }
 
 bool
-StringHelpers::IsPureASCII(const char *const txt, int length)
+StringHelpers::IsPureASCII(const char *const txt, size_t length)
 {
-    for (int i=0; i<length; i++)
+    for (size_t i=0; i<length; i++)
     {
         const unsigned char c = txt[i];
 

@@ -558,9 +558,9 @@ class avtCarpetHDF5FileFormat : public avtMTMDFileFormat
     int get_nblocks(const int timestep, const bool is_Cartesian)
     {
       if (is_Cartesian)
-         return data_file->timesteps[timestep].cart_comp[0].size();
+         return (int)data_file->timesteps[timestep].cart_comp[0].size();
       else
-         return data_file->timesteps[timestep].multi_comp[0].size();
+         return (int)data_file->timesteps[timestep].multi_comp[0].size();
     }
     
     int get_max_reflevels(const int timestep, const bool is_Cartesian)

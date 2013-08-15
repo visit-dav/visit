@@ -452,7 +452,7 @@ QvisWindowBase::raise()
 void
 QvisWindowBase::StringToDoubleList(const char *str, doubleVector &dv, int max)
 {
-    int length, offset = 0;
+    size_t length, offset = 0;
 
     // Clear the vector.
     dv.clear();

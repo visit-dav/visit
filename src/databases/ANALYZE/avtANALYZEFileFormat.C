@@ -341,7 +341,8 @@ avtANALYZEFileFormat::GetVar(const char *varname)
 
     if(fp != 0)
     {
-        int dims[3], nb = 0;
+        int dims[3];
+        size_t nb = 0;
         dims[0] = int(fileInformation.data.dime.dim[1]);
         dims[1] = int(fileInformation.data.dime.dim[2]);
         dims[2] = int(fileInformation.data.dime.dim[3]);

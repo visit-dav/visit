@@ -169,12 +169,13 @@ avtVCellMTMDFileFormat::~avtVCellMTMDFileFormat(){
 int
 avtVCellMTMDFileFormat::GetNTimesteps(void)
 {
-    //YOU_MUST_DECIDE;
-    return vcellLogEntryList.size();
+    return (int)vcellLogEntryList.size();
 }
 
-void avtVCellMTMDFileFormat::GetTimes(std::vector<double> & timeV){
-    for (int i=0;i<vcellLogEntryList.size();i++){
+void avtVCellMTMDFileFormat::GetTimes(std::vector<double> & timeV)
+{
+    for (size_t i=0;i<vcellLogEntryList.size();i++)
+    {
         timeV.push_back(vcellLogEntryList[i].time);
     }
 }
@@ -474,7 +475,7 @@ void *avtVCellMTMDFileFormat::GetAuxiliaryData(const char *var, int timestep,int
             dims[0] = vcellMeshInfo.numElementsXYZ[0];
             dims[1] = vcellMeshInfo.numElementsXYZ[1];
             dims[2] = vcellMeshInfo.numElementsXYZ[2];
-            nmats = vcellMeshInfo.compartmentSubdomainMap.size();
+            nmats = (int)vcellMeshInfo.compartmentSubdomainMap.size();
             matnos = new int[nmats];
             for(int i=0;i<nmats;i++){
                 matnos[i] =i+1;
@@ -504,7 +505,7 @@ void *avtVCellMTMDFileFormat::GetAuxiliaryData(const char *var, int timestep,int
             //unstructured mesh
             ndims = 1;
             dims[0] = vcellMeshInfo.numMembraneElements;
-            nmats = vcellMeshInfo.membraneSubdomainMap.size();
+            nmats = (int)vcellMeshInfo.membraneSubdomainMap.size();
             matnos = new int[nmats];
             for(int i=0;i<nmats;i++){
                 matnos[i] =i/*+1*/;
@@ -661,7 +662,7 @@ void avtVCellMTMDFileFormat::createSubDomainMaterials(avtDatabaseMetaData *md){
 
     mesh_for_mat = MEMBRMESH;
     matname = MEMBRANESUBDOMAIN_MATERIAL;
-    nmats = vcellMeshInfo.membraneSubdomainMap.size();
+    nmats = (int)vcellMeshInfo.membraneSubdomainMap.size();
     mnames.clear();
     map<string,map<string,int> >::iterator it2;
     if(nmats != 0){

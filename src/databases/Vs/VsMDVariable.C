@@ -196,7 +196,7 @@ void VsMDVariable::createComponents() {
   size_t numComps = getNumComps();
   if (numComps > 1) {
     for (size_t i = 0; i < numComps; i++) {
-      registry->registerComponent(getFullName(), i, getLabel(i));
+      registry->registerComponent(getFullName(), (int)i, getLabel(i));
     }
   }
 

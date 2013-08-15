@@ -1295,7 +1295,6 @@ avtChomboFileFormat::InitializeReader(void)
 void
 avtChomboFileFormat::CalculateDomainNesting(void)
 {
-    int j;
     int level;
 
     //
@@ -3103,7 +3102,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
         }
 
         // For unpure materials, we need to add entries to the tables.
-        material_list[i] = -1 * (1 + mix_zone.size());
+        material_list[i] = -1 * (1 + (int)mix_zone.size());
         for (j = 0; j < nMaterials; ++j)
         {
             if (mats[j][i] <= 0)
@@ -3112,7 +3111,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
             mix_zone.push_back(i);
             mix_mat.push_back(j);
             mix_vf.push_back(mats[j][i]);
-            mix_next.push_back(mix_zone.size() + 1);
+            mix_next.push_back((int)mix_zone.size() + 1);
         }
 
         // When we're done, the last entry is a '0' in the mix_next

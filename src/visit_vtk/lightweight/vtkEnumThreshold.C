@@ -509,7 +509,7 @@ int vtkEnumThreshold::RequestData(
 
     if (faceMap.size() || edgeMap.size() || nodeMap.size())
     {
-        int idCount = 0;
+        size_t idCount = 0;
         map<unsigned int, vector<vtkIdType> >::iterator it;
 
         for (it = faceMap.begin(); it != faceMap.end(); it++)
