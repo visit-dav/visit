@@ -43,6 +43,7 @@
 #ifndef VISIT_HDF5_H 
 #define VISIT_HDF5_H 
 #include <string.h>
+#include <stdlib.h>
 
 //
 // Useful macro for comparing HDF5 versions
