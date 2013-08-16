@@ -193,9 +193,9 @@ class AVTFILTERS_API avtPICSFilter :
     void SetPathlines(bool pathlines, bool overrideTime,
                       double time0, int _pathlineCMFE);
     void SetIntegrationType(int algo);
-    void SetStreamlineAlgorithm(int algo, int maxCnt,
-                                int domainCache,
-                                int workGrpSz);
+    void SetParallelizationAlgorithm(int algo, int maxCnt,
+                                     int domainCache,
+                                     int workGrpSz);
     void SetTolerances(double reltol, double abstol, bool isFraction);
 
     void SetIntegrationDirection(int dir);

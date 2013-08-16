@@ -977,10 +977,10 @@ avtPICSFilter::SetPathlines(bool pathlines, bool overrideTime, double time0, int
 
 
 // ****************************************************************************
-// Method: avtPICSFilter::SetStreamlineAlgorithm
+// Method: avtPICSFilter::SetParallelizationAlgorithm
 //
 // Purpose: 
-//   Sets the streamline algorithm and parameters.
+//   Sets the parallelization algorithm and parameters.
 //
 // Arguments:
 //   algo : Type of algorithm
@@ -997,10 +997,10 @@ avtPICSFilter::SetPathlines(bool pathlines, bool overrideTime, double time0, int
 // ****************************************************************************
 
 void
-avtPICSFilter::SetStreamlineAlgorithm(int algo,
-                                      int maxCnt,
-                                      int domCache,
-                                      int workGrpSz)
+avtPICSFilter::SetParallelizationAlgorithm(int algo,
+                                           int maxCnt,
+                                           int domCache,
+                                           int workGrpSz)
 {
     method = algo;
     maxCount = maxCnt;
@@ -2537,7 +2537,7 @@ avtPICSFilter::AdvectParticle(avtIntegralCurve *ic)
 
     ic->Advance(field);
     delete field;
-    
+
     if (!ic->status.Terminated())
         FindCandidateBlocks(ic, &blk);
 }
