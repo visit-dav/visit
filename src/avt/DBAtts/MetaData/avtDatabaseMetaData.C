@@ -5194,7 +5194,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
     if (mmd && mmd->meshType == AVT_CSG_MESH)
     {
         const intVector& groupIds = mmd->groupIds;
-        if ((int)groupIds.size() > domainAsVisItSeesIt)
+        if (groupIds.size() > domainAsVisItSeesIt)
         {
             int i, j = groupIds[domainAsVisItSeesIt];
             for (i = domainAsVisItSeesIt; i >= 0 && groupIds[i] == j; i--)
