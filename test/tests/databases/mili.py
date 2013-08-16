@@ -32,7 +32,7 @@
 # ----------------------------------------------------------------------------
 
 
-OpenDatabase(data_path("mili_test_data/m_plot.mili"))
+OpenDatabase(data_path("mili_test_data/m_plot.plt.mili"))
 
 AddPlot("FilledBoundary", "materials1_no_free_nodes(mesh1_no_free_nodes)")
 DrawPlots()
@@ -43,7 +43,7 @@ SetView3D(v)
 
 Test("mili_01")
 
-SetTimeSliderState(101)
+SetTimeSliderState(100)
 v = GetView3D()
 v.viewNormal = (0.38, 0.34, 0.85)
 v.focus = (14.1, 0, 0)
@@ -169,7 +169,7 @@ SetPlotSILRestriction(sil)
 Test("mili_30")
 
 DeleteAllPlots()
-CloseDatabase(data_path("mili_test_data/m_plot.mili"))
+CloseDatabase(data_path("mili_test_data/m_plot.plt.mili"))
 
 #
 # Test a mili database with time-invariant nodal positions
