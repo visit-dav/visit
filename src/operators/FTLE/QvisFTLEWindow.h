@@ -102,7 +102,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void fieldTypeChanged(int val);
     void fieldConstantProccessText();
     void integrationTypeChanged(int val);
-    void streamlineAlgorithmChanged(int val);
+
     void directionTypeChanged(int val);
     void maxStepLengthProcessText();
     void maxTimeStepProcessText();
@@ -117,6 +117,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void absTolSizeTypeChanged(int);
     void velocitySourceProcessText();
 
+    void parallelAlgorithmChanged(int val);
     void maxSLCountChanged(int val);
     void maxDomainCacheChanged(int val);
     void workGroupSizeChanged(int val);
@@ -126,13 +127,13 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void pathlineOverrideStartingTimeProcessText();
     void pathlineCMFEButtonGroupChanged(int val);
 
-
-    void forceNodalChanged(bool);
-    void limitMaxTimeStepChanged(bool);
     void issueWarningForMaxStepsChanged(bool);
     void issueWarningForStiffnessChanged(bool);
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
+
+    void forceNodalChanged(bool);
+    void limitMaxTimeStepChanged(bool);
 
   private:
     int plotType;
@@ -166,22 +167,10 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLineEdit *velocitySource;
     QLabel    *velocitySourceLabel;
 
-    QButtonGroup *icButtonGroup;
-    QCheckBox *pathlineOverrideStartingTimeFlag;
-    QLineEdit *pathlineOverrideStartingTime;
-    QButtonGroup *pathlineCMFEButtonGroup;
     QComboBox *fieldType;
     QLabel    *fieldConstantLabel;
     QLineEdit *fieldConstant;
     QComboBox *integrationType;
-    QLabel    *slAlgoLabel;
-    QComboBox *slAlgo;
-    QLabel    *maxSLCountLabel;
-    QSpinBox  *maxSLCount;
-    QLabel    *maxDomainCacheLabel;
-    QSpinBox  *maxDomainCache;
-    QLabel    *workGroupSizeLabel;
-    QSpinBox  *workGroupSize;
 
     QComboBox *displayReferenceType;
     QLabel    *displayLabel;
@@ -190,6 +179,19 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLineEdit *displayBeginEdit;
     QLineEdit *displayEndEdit;
 
+    QLabel    *parallelAlgoLabel;
+    QComboBox *parallelAlgo;
+    QLabel    *maxSLCountLabel;
+    QSpinBox  *maxSLCount;
+    QLabel    *maxDomainCacheLabel;
+    QSpinBox  *maxDomainCache;
+    QLabel    *workGroupSizeLabel;
+    QSpinBox  *workGroupSize;
+
+    QButtonGroup *icButtonGroup;
+    QCheckBox *pathlineOverrideStartingTimeFlag;
+    QLineEdit *pathlineOverrideStartingTime;
+    QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;
     QCheckBox *issueWarningForStiffness;

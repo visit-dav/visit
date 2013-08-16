@@ -107,7 +107,7 @@ public:
         Time,
         Step
     };
-    enum StreamlineAlgorithmType
+    enum ParallelizationAlgorithmType
     {
         LoadOnDemand,
         ParallelStaticDomains,
@@ -230,7 +230,7 @@ public:
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
-    void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
+    void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
     void SetTerminateByDistance(bool terminateByDistance_);
     void SetTermDistance(double termDistance_);
@@ -247,8 +247,8 @@ public:
     void SetFieldConstant(double fieldConstant_);
     void SetVelocitySource(const double *velocitySource_);
     void SetIntegrationType(IntegrationType integrationType_);
-    void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
-    void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
+    void SetParallelizationAlgorithmType(ParallelizationAlgorithmType parallelizationAlgorithmType_);
+    void SetMaxProcessCount(int maxProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
     void SetWorkGroupSize(int workGroupSize_);
     void SetPathlines(bool pathlines_);
@@ -348,7 +348,7 @@ public:
           ColorAttribute &GetSingleColor();
     bool                 GetLegendFlag() const;
     bool                 GetLightingFlag() const;
-    IntegrationDirection GetStreamlineDirection() const;
+    IntegrationDirection GetIntegrationDirection() const;
     int                  GetMaxSteps() const;
     bool                 GetTerminateByDistance() const;
     double               GetTermDistance() const;
@@ -366,8 +366,8 @@ public:
     const double         *GetVelocitySource() const;
           double         *GetVelocitySource();
     IntegrationType      GetIntegrationType() const;
-    StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
-    int                  GetMaxStreamlineProcessCount() const;
+    ParallelizationAlgorithmType GetParallelizationAlgorithmType() const;
+    int                  GetMaxProcessCount() const;
     int                  GetMaxDomainCacheSize() const;
     int                  GetWorkGroupSize() const;
     bool                 GetPathlines() const;
@@ -474,10 +474,10 @@ public:
 protected:
     static std::string ReferenceType_ToString(int);
 public:
-    static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
-    static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
+    static std::string ParallelizationAlgorithmType_ToString(ParallelizationAlgorithmType);
+    static bool ParallelizationAlgorithmType_FromString(const std::string &, ParallelizationAlgorithmType &);
 protected:
-    static std::string StreamlineAlgorithmType_ToString(int);
+    static std::string ParallelizationAlgorithmType_ToString(int);
 public:
     static std::string FieldType_ToString(FieldType);
     static bool FieldType_FromString(const std::string &, FieldType &);
@@ -552,7 +552,7 @@ public:
         ID_singleColor,
         ID_legendFlag,
         ID_lightingFlag,
-        ID_streamlineDirection,
+        ID_integrationDirection,
         ID_maxSteps,
         ID_terminateByDistance,
         ID_termDistance,
@@ -569,8 +569,8 @@ public:
         ID_fieldConstant,
         ID_velocitySource,
         ID_integrationType,
-        ID_streamlineAlgorithmType,
-        ID_maxStreamlineProcessCount,
+        ID_parallelizationAlgorithmType,
+        ID_maxProcessCount,
         ID_maxDomainCacheSize,
         ID_workGroupSize,
         ID_pathlines,
@@ -661,7 +661,7 @@ private:
     ColorAttribute singleColor;
     bool           legendFlag;
     bool           lightingFlag;
-    int            streamlineDirection;
+    int            integrationDirection;
     int            maxSteps;
     bool           terminateByDistance;
     double         termDistance;
@@ -678,8 +678,8 @@ private:
     double         fieldConstant;
     double         velocitySource[3];
     int            integrationType;
-    int            streamlineAlgorithmType;
-    int            maxStreamlineProcessCount;
+    int            parallelizationAlgorithmType;
+    int            maxProcessCount;
     int            maxDomainCacheSize;
     int            workGroupSize;
     bool           pathlines;

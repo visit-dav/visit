@@ -60,28 +60,6 @@ class avtPoincareIC;
 //  Creation:   Tue Oct 7 09:02:52 PDT 2008
 //
 //  Modifications:
-//    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
-//
-//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
-//    Changed color to colorBy
-//
-//    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Removed GetFieldlinePoints().
-//
-//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//    Add ability to restart fieldline integration.
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Use avtStreamlines, not avtStreamlineWrappers.
-//
-//    Hank Childs, Sun Jun  6 14:54:08 CDT 2010
-//    Convert references from avtStreamline to avtIntegralCurve, the new name
-//    for the abstract base type.
-//
-//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
-//    Change methods for setting up termination criteria to reflect refactor
-//    in integral curves.
 //
 // ****************************************************************************
 

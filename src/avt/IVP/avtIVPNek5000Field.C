@@ -67,13 +67,17 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   // Pick off all of the data stored with the vtk field.
 
   // Get the number of point per spectrial elements
-  vtkIntArray *semVTK = (vtkIntArray *) fieldData->GetAbstractArray("Nek_SpectralElementData");  
+  vtkIntArray *semVTK =
+    (vtkIntArray *) fieldData->GetAbstractArray("Nek_SpectralElementData");  
 
-  sem[0] = semVTK->GetValue(0);
-  sem[1] = semVTK->GetValue(1);
-  sem[2] = semVTK->GetValue(2);
+  if( semVTK )
+  {
+    sem[0] = semVTK->GetValue(0);
+    sem[1] = semVTK->GetValue(1);
+    sem[2] = semVTK->GetValue(2);
 
-  std::cerr << sem[0] << " " << sem[1] << " " << sem[2] << " " << std::endl;
+    std::cerr << sem[0] << " " << sem[1] << " " << sem[2] << " " << std::endl;
+  }
 
   // Get the numver of elements for checking the validity of the data.
 
@@ -257,7 +261,40 @@ avtIVPNek5000Field::operator()( const double &t,
                                 const avtVector &p,
                                 avtVector &vec ) const
 {
-  return avtIVPVTKField::operator()( t, p, vec );
+    return avtIVPVTKField::operator()( t, p, vec );
+
+
+    static int el = 0; // element
+
+    // Locate the cell that surrounds the point.
+    avtInterpolationWeights iw[8];
+
+    double xpt[3];
+
+    xpt[0] = p[0];
+    xpt[1] = p[1];
+    xpt[2] = p[2];
+
+    el = loc->FindCell( xpt, iw, false );
+
+    if( el < 0 )
+      return OUTSIDE_SPATIAL;
+
+    // The above element is based on the linear mesh not the spectral
+    // mess so find the first linear element of the spectral mesh.
+
+    // Note this is integer arthimetic. 
+    el /= sem[0] * sem[1] * sem[2];
+
+
+    double *sem_pts = new double[sem[0] * sem[1] * sem[2] * 3];
+
+    // Get the first point from each element.
+    for( unsigned int i=0; i<sem[0] * sem[1] * sem[2]; ++i )
+    {
+    }
+
+    //    interpolate( );
 
   return OK;
 }

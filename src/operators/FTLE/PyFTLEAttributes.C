@@ -149,19 +149,19 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *streamlineDirection_names = "Forward, Backward, Both";
-    switch (atts->GetStreamlineDirection())
+    const char *integrationDirection_names = "Forward, Backward, Both";
+    switch (atts->GetIntegrationDirection())
     {
       case FTLEAttributes::Forward:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sForward  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case FTLEAttributes::Backward:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sBackward  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case FTLEAttributes::Both:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sBoth  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       default:
@@ -311,30 +311,30 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *streamlineAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
-    switch (atts->GetStreamlineAlgorithmType())
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    switch (atts->GetParallelizationAlgorithmType())
     {
       case FTLEAttributes::LoadOnDemand:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case FTLEAttributes::ParallelStaticDomains:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case FTLEAttributes::MasterSlave:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case FTLEAttributes::VisItSelects:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxStreamlineProcessCount = %d\n", prefix, atts->GetMaxStreamlineProcessCount());
+    SNPRINTF(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
     str += tmpStr;
@@ -668,7 +668,7 @@ FTLEAttributes_GetEndPosition(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-FTLEAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
+FTLEAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
 
@@ -676,12 +676,12 @@ FTLEAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the streamlineDirection in the object.
+    // Set the integrationDirection in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetStreamlineDirection(FTLEAttributes::IntegrationDirection(ival));
+        obj->data->SetIntegrationDirection(FTLEAttributes::IntegrationDirection(ival));
     else
     {
-        fprintf(stderr, "An invalid streamlineDirection value was given. "
+        fprintf(stderr, "An invalid integrationDirection value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Forward, Backward, Both.");
@@ -693,10 +693,10 @@ FTLEAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-FTLEAttributes_GetStreamlineDirection(PyObject *self, PyObject *args)
+FTLEAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStreamlineDirection()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationDirection()));
     return retval;
 }
 
@@ -1177,7 +1177,7 @@ FTLEAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-FTLEAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
+FTLEAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
 
@@ -1185,12 +1185,12 @@ FTLEAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the streamlineAlgorithmType in the object.
+    // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
-        obj->data->SetStreamlineAlgorithmType(FTLEAttributes::StreamlineAlgorithmType(ival));
+        obj->data->SetParallelizationAlgorithmType(FTLEAttributes::ParallelizationAlgorithmType(ival));
     else
     {
-        fprintf(stderr, "An invalid streamlineAlgorithmType value was given. "
+        fprintf(stderr, "An invalid parallelizationAlgorithmType value was given. "
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
@@ -1202,15 +1202,15 @@ FTLEAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-FTLEAttributes_GetStreamlineAlgorithmType(PyObject *self, PyObject *args)
+FTLEAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStreamlineAlgorithmType()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
 
 /*static*/ PyObject *
-FTLEAttributes_SetMaxStreamlineProcessCount(PyObject *self, PyObject *args)
+FTLEAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
 
@@ -1218,18 +1218,18 @@ FTLEAttributes_SetMaxStreamlineProcessCount(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the maxStreamlineProcessCount in the object.
-    obj->data->SetMaxStreamlineProcessCount((int)ival);
+    // Set the maxProcessCount in the object.
+    obj->data->SetMaxProcessCount((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-FTLEAttributes_GetMaxStreamlineProcessCount(PyObject *self, PyObject *args)
+FTLEAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxStreamlineProcessCount()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
 
@@ -1651,8 +1651,8 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetUseDataSetEnd", FTLEAttributes_GetUseDataSetEnd, METH_VARARGS},
     {"SetEndPosition", FTLEAttributes_SetEndPosition, METH_VARARGS},
     {"GetEndPosition", FTLEAttributes_GetEndPosition, METH_VARARGS},
-    {"SetStreamlineDirection", FTLEAttributes_SetStreamlineDirection, METH_VARARGS},
-    {"GetStreamlineDirection", FTLEAttributes_GetStreamlineDirection, METH_VARARGS},
+    {"SetIntegrationDirection", FTLEAttributes_SetIntegrationDirection, METH_VARARGS},
+    {"GetIntegrationDirection", FTLEAttributes_GetIntegrationDirection, METH_VARARGS},
     {"SetMaxSteps", FTLEAttributes_SetMaxSteps, METH_VARARGS},
     {"GetMaxSteps", FTLEAttributes_GetMaxSteps, METH_VARARGS},
     {"SetTerminationType", FTLEAttributes_SetTerminationType, METH_VARARGS},
@@ -1687,10 +1687,10 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetVelocitySource", FTLEAttributes_GetVelocitySource, METH_VARARGS},
     {"SetIntegrationType", FTLEAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", FTLEAttributes_GetIntegrationType, METH_VARARGS},
-    {"SetStreamlineAlgorithmType", FTLEAttributes_SetStreamlineAlgorithmType, METH_VARARGS},
-    {"GetStreamlineAlgorithmType", FTLEAttributes_GetStreamlineAlgorithmType, METH_VARARGS},
-    {"SetMaxStreamlineProcessCount", FTLEAttributes_SetMaxStreamlineProcessCount, METH_VARARGS},
-    {"GetMaxStreamlineProcessCount", FTLEAttributes_GetMaxStreamlineProcessCount, METH_VARARGS},
+    {"SetParallelizationAlgorithmType", FTLEAttributes_SetParallelizationAlgorithmType, METH_VARARGS},
+    {"GetParallelizationAlgorithmType", FTLEAttributes_GetParallelizationAlgorithmType, METH_VARARGS},
+    {"SetMaxProcessCount", FTLEAttributes_SetMaxProcessCount, METH_VARARGS},
+    {"GetMaxProcessCount", FTLEAttributes_GetMaxProcessCount, METH_VARARGS},
     {"SetMaxDomainCacheSize", FTLEAttributes_SetMaxDomainCacheSize, METH_VARARGS},
     {"GetMaxDomainCacheSize", FTLEAttributes_GetMaxDomainCacheSize, METH_VARARGS},
     {"SetWorkGroupSize", FTLEAttributes_SetWorkGroupSize, METH_VARARGS},
@@ -1768,8 +1768,8 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return FTLEAttributes_GetUseDataSetEnd(self, NULL);
     if(strcmp(name, "EndPosition") == 0)
         return FTLEAttributes_GetEndPosition(self, NULL);
-    if(strcmp(name, "streamlineDirection") == 0)
-        return FTLEAttributes_GetStreamlineDirection(self, NULL);
+    if(strcmp(name, "integrationDirection") == 0)
+        return FTLEAttributes_GetIntegrationDirection(self, NULL);
     if(strcmp(name, "Forward") == 0)
         return PyInt_FromLong(long(FTLEAttributes::Forward));
     if(strcmp(name, "Backward") == 0)
@@ -1847,8 +1847,8 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "M3DC12DIntegrator") == 0)
         return PyInt_FromLong(long(FTLEAttributes::M3DC12DIntegrator));
 
-    if(strcmp(name, "streamlineAlgorithmType") == 0)
-        return FTLEAttributes_GetStreamlineAlgorithmType(self, NULL);
+    if(strcmp(name, "parallelizationAlgorithmType") == 0)
+        return FTLEAttributes_GetParallelizationAlgorithmType(self, NULL);
     if(strcmp(name, "LoadOnDemand") == 0)
         return PyInt_FromLong(long(FTLEAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
@@ -1858,8 +1858,8 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(FTLEAttributes::VisItSelects));
 
-    if(strcmp(name, "maxStreamlineProcessCount") == 0)
-        return FTLEAttributes_GetMaxStreamlineProcessCount(self, NULL);
+    if(strcmp(name, "maxProcessCount") == 0)
+        return FTLEAttributes_GetMaxProcessCount(self, NULL);
     if(strcmp(name, "maxDomainCacheSize") == 0)
         return FTLEAttributes_GetMaxDomainCacheSize(self, NULL);
     if(strcmp(name, "workGroupSize") == 0)
@@ -1928,8 +1928,8 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetUseDataSetEnd(self, tuple);
     else if(strcmp(name, "EndPosition") == 0)
         obj = FTLEAttributes_SetEndPosition(self, tuple);
-    else if(strcmp(name, "streamlineDirection") == 0)
-        obj = FTLEAttributes_SetStreamlineDirection(self, tuple);
+    else if(strcmp(name, "integrationDirection") == 0)
+        obj = FTLEAttributes_SetIntegrationDirection(self, tuple);
     else if(strcmp(name, "maxSteps") == 0)
         obj = FTLEAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "terminationType") == 0)
@@ -1964,10 +1964,10 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetVelocitySource(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = FTLEAttributes_SetIntegrationType(self, tuple);
-    else if(strcmp(name, "streamlineAlgorithmType") == 0)
-        obj = FTLEAttributes_SetStreamlineAlgorithmType(self, tuple);
-    else if(strcmp(name, "maxStreamlineProcessCount") == 0)
-        obj = FTLEAttributes_SetMaxStreamlineProcessCount(self, tuple);
+    else if(strcmp(name, "parallelizationAlgorithmType") == 0)
+        obj = FTLEAttributes_SetParallelizationAlgorithmType(self, tuple);
+    else if(strcmp(name, "maxProcessCount") == 0)
+        obj = FTLEAttributes_SetMaxProcessCount(self, tuple);
     else if(strcmp(name, "maxDomainCacheSize") == 0)
         obj = FTLEAttributes_SetMaxDomainCacheSize(self, tuple);
     else if(strcmp(name, "workGroupSize") == 0)

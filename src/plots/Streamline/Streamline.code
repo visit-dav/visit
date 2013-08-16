@@ -230,7 +230,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
         termDistance != obj.termDistance ||
         terminateByTime != obj.terminateByTime ||
         termTime != obj.termTime ||
-        streamlineDirection != obj.streamlineDirection ||
+        integrationDirection != obj.integrationDirection ||
         fieldType != obj.fieldType ||
         fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||
@@ -421,13 +421,43 @@ StreamlineAttributes::ProcessOldVersions(DataNode *parentNode,
     char num1[2] = {configVersion[0], '\0'}, num2[2] = {configVersion[2], '\0'}, num3[2] = {configVersion[4], '\0'};
     int major = atoi(num1), minor = atoi(num2), patch = atoi(num3);
     
-    DataNode *searchNode = parentNode->GetNode("StreamlineDirection");
+    DataNode *searchNode = parentNode->GetNode("streamlineAlgorithmType");
     if (searchNode)
     {
         int val = searchNode->AsInt();
         parentNode->RemoveNode(searchNode);
         
-        DataNode *newNode = new DataNode("streamlineDirection", val);
+        DataNode *newNode = new DataNode("parallelizationAlgorithmType", val);
+        parentNode->AddNode(newNode);
+    }
+
+    searchNode = parentNode->GetNode("maxStreamlineProcessCount");
+    if (searchNode)
+    {
+        int val = searchNode->AsInt();
+        parentNode->RemoveNode(searchNode);
+        
+        DataNode *newNode = new DataNode("maxProcessCount", val);
+        parentNode->AddNode(newNode);
+    }
+
+    searchNode = parentNode->GetNode("streamlineDirection");
+    if (searchNode)
+    {
+        int val = searchNode->AsInt();
+        parentNode->RemoveNode(searchNode);
+        
+        DataNode *newNode = new DataNode("integrationDirection", val);
+        parentNode->AddNode(newNode);
+    }
+
+    searchNode = parentNode->GetNode("StreamlineDirection");
+    if (searchNode)
+    {
+        int val = searchNode->AsInt();
+        parentNode->RemoveNode(searchNode);
+        
+        DataNode *newNode = new DataNode("integrationDirection", val);
         parentNode->AddNode(newNode);
     }
 

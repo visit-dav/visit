@@ -30,7 +30,7 @@
         Absolute
         FractionOfBBox
       </Enum>
-      <Enum name="StreamlineAlgorithmType">
+      <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
         MasterSlave
@@ -68,7 +68,7 @@
         1.000000
         1.000000
       </Field>
-      <Field name="streamlineDirection" label="streamlineDirection" type="enum" subtype="IntegrationDirection">
+      <Field name="integrationDirection" label="integrationDirection" type="enum" subtype="IntegrationDirection">
         Forward
       </Field>
       <Field name="maxSteps" label="Maximum number of steps" type="int">
@@ -124,10 +124,10 @@
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
       </Field>
-      <Field name="streamlineAlgorithmType" label="Streamline algorithm type" type="enum" subtype="StreamlineAlgorithmType">
+      <Field name="parallelizationAlgorithmType" label="Parallelization algorithm type" type="enum" subtype="ParallelizationAlgorithmType">
         VisItSelects
       </Field>
-      <Field name="maxStreamlineProcessCount" label="maxStreamlineProcessCount" type="int">
+      <Field name="maxProcessCount" label="maxProcessCount" type="int">
         10
       </Field>
       <Field name="maxDomainCacheSize" label="Max domain cache" type="int">

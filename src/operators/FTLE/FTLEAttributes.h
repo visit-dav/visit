@@ -94,7 +94,7 @@ public:
         Absolute,
         FractionOfBBox
     };
-    enum StreamlineAlgorithmType
+    enum ParallelizationAlgorithmType
     {
         LoadOnDemand,
         ParallelStaticDomains,
@@ -150,7 +150,7 @@ public:
     void SetStartPosition(const double *StartPosition_);
     void SetUseDataSetEnd(bool UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
-    void SetStreamlineDirection(IntegrationDirection streamlineDirection_);
+    void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
     void SetTerminationType(TerminationType terminationType_);
     void SetTerminateByDistance(bool terminateByDistance_);
@@ -168,8 +168,8 @@ public:
     void SetFieldConstant(double fieldConstant_);
     void SetVelocitySource(const double *velocitySource_);
     void SetIntegrationType(IntegrationType integrationType_);
-    void SetStreamlineAlgorithmType(StreamlineAlgorithmType streamlineAlgorithmType_);
-    void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_);
+    void SetParallelizationAlgorithmType(ParallelizationAlgorithmType parallelizationAlgorithmType_);
+    void SetMaxProcessCount(int maxProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
     void SetWorkGroupSize(int workGroupSize_);
     void SetPathlines(bool pathlines_);
@@ -197,7 +197,7 @@ public:
     bool              GetUseDataSetEnd() const;
     const double      *GetEndPosition() const;
           double      *GetEndPosition();
-    IntegrationDirection GetStreamlineDirection() const;
+    IntegrationDirection GetIntegrationDirection() const;
     int               GetMaxSteps() const;
     TerminationType   GetTerminationType() const;
     bool              GetTerminateByDistance() const;
@@ -216,8 +216,8 @@ public:
     const double      *GetVelocitySource() const;
           double      *GetVelocitySource();
     IntegrationType   GetIntegrationType() const;
-    StreamlineAlgorithmType GetStreamlineAlgorithmType() const;
-    int               GetMaxStreamlineProcessCount() const;
+    ParallelizationAlgorithmType GetParallelizationAlgorithmType() const;
+    int               GetMaxProcessCount() const;
     int               GetMaxDomainCacheSize() const;
     int               GetWorkGroupSize() const;
     bool              GetPathlines() const;
@@ -266,10 +266,10 @@ public:
 protected:
     static std::string SizeType_ToString(int);
 public:
-    static std::string StreamlineAlgorithmType_ToString(StreamlineAlgorithmType);
-    static bool StreamlineAlgorithmType_FromString(const std::string &, StreamlineAlgorithmType &);
+    static std::string ParallelizationAlgorithmType_ToString(ParallelizationAlgorithmType);
+    static bool ParallelizationAlgorithmType_FromString(const std::string &, ParallelizationAlgorithmType &);
 protected:
-    static std::string StreamlineAlgorithmType_ToString(int);
+    static std::string ParallelizationAlgorithmType_ToString(int);
 public:
     static std::string TerminationType_ToString(TerminationType);
     static bool TerminationType_FromString(const std::string &, TerminationType &);
@@ -299,7 +299,7 @@ public:
         ID_StartPosition,
         ID_UseDataSetEnd,
         ID_EndPosition,
-        ID_streamlineDirection,
+        ID_integrationDirection,
         ID_maxSteps,
         ID_terminationType,
         ID_terminateByDistance,
@@ -317,8 +317,8 @@ public:
         ID_fieldConstant,
         ID_velocitySource,
         ID_integrationType,
-        ID_streamlineAlgorithmType,
-        ID_maxStreamlineProcessCount,
+        ID_parallelizationAlgorithmType,
+        ID_maxProcessCount,
         ID_maxDomainCacheSize,
         ID_workGroupSize,
         ID_pathlines,
@@ -345,7 +345,7 @@ private:
     double      StartPosition[3];
     bool        UseDataSetEnd;
     double      EndPosition[3];
-    int         streamlineDirection;
+    int         integrationDirection;
     int         maxSteps;
     int         terminationType;
     bool        terminateByDistance;
@@ -363,8 +363,8 @@ private:
     double      fieldConstant;
     double      velocitySource[3];
     int         integrationType;
-    int         streamlineAlgorithmType;
-    int         maxStreamlineProcessCount;
+    int         parallelizationAlgorithmType;
+    int         maxProcessCount;
     int         maxDomainCacheSize;
     int         workGroupSize;
     bool        pathlines;

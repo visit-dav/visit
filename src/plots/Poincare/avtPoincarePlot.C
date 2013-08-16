@@ -319,47 +319,6 @@ avtPoincarePlot::CustomizeBehavior()
 //
 //  Modifications:
 //
-//    Dave Pugmire, Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new code.
-//
-//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
-//    Initial steps to unification with streamline attributes.
-//
-//    Dave Pugmire, Fri Apr 17 11:32:40 EDT 2009
-//    Load LUT or load single color, depending on attrs.
-//
-//    Dave Pugmire, Tue Apr 28 09:26:06 EDT 2009
-//    GUI reorganization.
-//
-//    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Call ChangesRequireRecalculation. Fix color table display.
-//
-//    Dave Pugmire, Tue Aug 11 10:33:05 EDT 2009
-//    Add number of intersections termination criterion
-//    
-//    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
-//    Change method name from streamline direction to integration direction.
-//
-//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
-//   New seed sources.
-//
-//   Dave Pugmire, Thu Jun 17 09:42:16 EDT 2010
-//   Update line width w/o an engine update.
-//
-//   Dave Pugmire, Thu Jul  1 13:55:28 EDT 2010
-//   Switch to variablePointGlyphMapper
-//
-//   Hank Childs, Sat Oct  2 21:23:41 PDT 2010
-//   Reflect new interface in absolute tolerance.  (The ones for the Poincare
-//   plots are not a fraction of the bounding box.)
-//
-//   Hank Childs, Fri Oct  8 23:30:27 PDT 2010
-//   Reflect new interface for terminations, due to refactoring of integral
-//   curves.
-//
-//   Brad Whitlock, Mon Jan  7 17:00:39 PST 2013
-//   I added some new glyph types.
-//
 // ****************************************************************************
 
 void
@@ -395,7 +354,7 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
     
     // Make the number of punctures 2x because the Poincare analysis
     // uses only the punctures in the same direction as the plane normal
-    // while the streamline uses the plane regardless of the normal.
+    // while the integral curve uses the plane regardless of the normal.
     poincareFilter->SetIntersectionCriteria(intPlane, 2*atts.GetMinPunctures());
     poincareFilter->SetIntegrationDirection(0);
 
@@ -426,11 +385,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         break;
     }
     
-    // Set the streamline attributes.
+    // Set the attributes.
     poincareFilter->SetIntegrationType(atts.GetIntegrationType());
-
-    poincareFilter->SetStreamlineAlgorithm(STREAMLINE_PARALLEL_OVER_DOMAINS,
-                                           10, 3, 1);
     poincareFilter->SetMaxStepLength(atts.GetMaxStepLength());
 
     double absTol = 0.;
@@ -442,10 +398,22 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
         absTol = atts.GetAbsTolAbsolute();
     poincareFilter->SetTolerances(atts.GetRelTol(), absTol, doBBox);
     
-    poincareFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
-                                           atts.GetMaxStreamlineProcessCount(),
-                                           atts.GetMaxDomainCacheSize(),
-                                           atts.GetWorkGroupSize());
+    poincareFilter->SetParallelizationAlgorithm(atts.GetParallelizationAlgorithmType(), 
+                                                atts.GetMaxProcessCount(),
+                                                atts.GetMaxDomainCacheSize(),
+                                                atts.GetWorkGroupSize());
+
+    int CMFEType = (atts.GetPathlinesCMFE() == PoincareAttributes::CONN_CMFE
+                    ? PICS_CONN_CMFE : PICS_POS_CMFE);
+
+    poincareFilter->SetPathlines(atts.GetPathlines(),
+                                   atts.GetPathlinesOverrideStartingTimeFlag(),
+                                   atts.GetPathlinesOverrideStartingTime(),
+                                   CMFEType);
+
+    poincareFilter->IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
+    poincareFilter->IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
+    poincareFilter->IssueWarningForCriticalPoints(atts.GetIssueCriticalPointsWarnings(), atts.GetCriticalPointThreshold());
 
     if (atts.GetFieldType() == PoincareAttributes::M3DC12DField ||
         atts.GetFieldType() == PoincareAttributes::M3DC13DField ||
@@ -689,7 +657,7 @@ avtPoincarePlot::SetScaling(int mode, double skew)
 }
 
 // ****************************************************************************
-//  Method: avtStreamlinePlot::SetLighting
+//  Method: avtPoincarePlot::SetLighting
 //
 //  Purpose:
 //      Turns the lighting on or off.

@@ -230,37 +230,37 @@ FTLEAttributes::SizeType_FromString(const std::string &s, FTLEAttributes::SizeTy
 }
 
 //
-// Enum conversion methods for FTLEAttributes::StreamlineAlgorithmType
+// Enum conversion methods for FTLEAttributes::ParallelizationAlgorithmType
 //
 
-static const char *StreamlineAlgorithmType_strings[] = {
+static const char *ParallelizationAlgorithmType_strings[] = {
 "LoadOnDemand", "ParallelStaticDomains", "MasterSlave", 
 "VisItSelects"};
 
 std::string
-FTLEAttributes::StreamlineAlgorithmType_ToString(FTLEAttributes::StreamlineAlgorithmType t)
+FTLEAttributes::ParallelizationAlgorithmType_ToString(FTLEAttributes::ParallelizationAlgorithmType t)
 {
     int index = int(t);
     if(index < 0 || index >= 4) index = 0;
-    return StreamlineAlgorithmType_strings[index];
+    return ParallelizationAlgorithmType_strings[index];
 }
 
 std::string
-FTLEAttributes::StreamlineAlgorithmType_ToString(int t)
+FTLEAttributes::ParallelizationAlgorithmType_ToString(int t)
 {
     int index = (t < 0 || t >= 4) ? 0 : t;
-    return StreamlineAlgorithmType_strings[index];
+    return ParallelizationAlgorithmType_strings[index];
 }
 
 bool
-FTLEAttributes::StreamlineAlgorithmType_FromString(const std::string &s, FTLEAttributes::StreamlineAlgorithmType &val)
+FTLEAttributes::ParallelizationAlgorithmType_FromString(const std::string &s, FTLEAttributes::ParallelizationAlgorithmType &val)
 {
     val = FTLEAttributes::LoadOnDemand;
     for(int i = 0; i < 4; ++i)
     {
-        if(s == StreamlineAlgorithmType_strings[i])
+        if(s == ParallelizationAlgorithmType_strings[i])
         {
-            val = (StreamlineAlgorithmType)i;
+            val = (ParallelizationAlgorithmType)i;
             return true;
         }
     }
@@ -370,7 +370,7 @@ void FTLEAttributes::Init()
     EndPosition[0] = 1;
     EndPosition[1] = 1;
     EndPosition[2] = 1;
-    streamlineDirection = Forward;
+    integrationDirection = Forward;
     maxSteps = 1000;
     terminationType = Time;
     terminateByDistance = false;
@@ -390,8 +390,8 @@ void FTLEAttributes::Init()
     velocitySource[1] = 0;
     velocitySource[2] = 0;
     integrationType = DormandPrince;
-    streamlineAlgorithmType = VisItSelects;
-    maxStreamlineProcessCount = 10;
+    parallelizationAlgorithmType = VisItSelects;
+    maxProcessCount = 10;
     maxDomainCacheSize = 3;
     workGroupSize = 32;
     pathlines = false;
@@ -443,7 +443,7 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     EndPosition[1] = obj.EndPosition[1];
     EndPosition[2] = obj.EndPosition[2];
 
-    streamlineDirection = obj.streamlineDirection;
+    integrationDirection = obj.integrationDirection;
     maxSteps = obj.maxSteps;
     terminationType = obj.terminationType;
     terminateByDistance = obj.terminateByDistance;
@@ -464,8 +464,8 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     velocitySource[2] = obj.velocitySource[2];
 
     integrationType = obj.integrationType;
-    streamlineAlgorithmType = obj.streamlineAlgorithmType;
-    maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+    parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
+    maxProcessCount = obj.maxProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
     workGroupSize = obj.workGroupSize;
     pathlines = obj.pathlines;
@@ -665,7 +665,7 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             StartPosition_equal &&
             (UseDataSetEnd == obj.UseDataSetEnd) &&
             EndPosition_equal &&
-            (streamlineDirection == obj.streamlineDirection) &&
+            (integrationDirection == obj.integrationDirection) &&
             (maxSteps == obj.maxSteps) &&
             (terminationType == obj.terminationType) &&
             (terminateByDistance == obj.terminateByDistance) &&
@@ -683,8 +683,8 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             (fieldConstant == obj.fieldConstant) &&
             velocitySource_equal &&
             (integrationType == obj.integrationType) &&
-            (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
-            (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+            (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
+            (maxProcessCount == obj.maxProcessCount) &&
             (maxDomainCacheSize == obj.maxDomainCacheSize) &&
             (workGroupSize == obj.workGroupSize) &&
             (pathlines == obj.pathlines) &&
@@ -864,7 +864,7 @@ FTLEAttributes::SelectAll()
     Select(ID_StartPosition,                      (void *)StartPosition, 3);
     Select(ID_UseDataSetEnd,                      (void *)&UseDataSetEnd);
     Select(ID_EndPosition,                        (void *)EndPosition, 3);
-    Select(ID_streamlineDirection,                (void *)&streamlineDirection);
+    Select(ID_integrationDirection,               (void *)&integrationDirection);
     Select(ID_maxSteps,                           (void *)&maxSteps);
     Select(ID_terminationType,                    (void *)&terminationType);
     Select(ID_terminateByDistance,                (void *)&terminateByDistance);
@@ -882,8 +882,8 @@ FTLEAttributes::SelectAll()
     Select(ID_fieldConstant,                      (void *)&fieldConstant);
     Select(ID_velocitySource,                     (void *)velocitySource, 3);
     Select(ID_integrationType,                    (void *)&integrationType);
-    Select(ID_streamlineAlgorithmType,            (void *)&streamlineAlgorithmType);
-    Select(ID_maxStreamlineProcessCount,          (void *)&maxStreamlineProcessCount);
+    Select(ID_parallelizationAlgorithmType,       (void *)&parallelizationAlgorithmType);
+    Select(ID_maxProcessCount,                    (void *)&maxProcessCount);
     Select(ID_maxDomainCacheSize,                 (void *)&maxDomainCacheSize);
     Select(ID_workGroupSize,                      (void *)&workGroupSize);
     Select(ID_pathlines,                          (void *)&pathlines);
@@ -968,10 +968,10 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("EndPosition", EndPosition, 3));
     }
 
-    if(completeSave || !FieldsEqual(ID_streamlineDirection, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_integrationDirection, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("streamlineDirection", IntegrationDirection_ToString(streamlineDirection)));
+        node->AddNode(new DataNode("integrationDirection", IntegrationDirection_ToString(integrationDirection)));
     }
 
     if(completeSave || !FieldsEqual(ID_maxSteps, &defaultObject))
@@ -1076,16 +1076,16 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("integrationType", IntegrationType_ToString(integrationType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_streamlineAlgorithmType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_parallelizationAlgorithmType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("streamlineAlgorithmType", StreamlineAlgorithmType_ToString(streamlineAlgorithmType)));
+        node->AddNode(new DataNode("parallelizationAlgorithmType", ParallelizationAlgorithmType_ToString(parallelizationAlgorithmType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_maxStreamlineProcessCount, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maxProcessCount, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("maxStreamlineProcessCount", maxStreamlineProcessCount));
+        node->AddNode(new DataNode("maxProcessCount", maxProcessCount));
     }
 
     if(completeSave || !FieldsEqual(ID_maxDomainCacheSize, &defaultObject))
@@ -1246,20 +1246,20 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         SetUseDataSetEnd(node->AsBool());
     if((node = searchNode->GetNode("EndPosition")) != 0)
         SetEndPosition(node->AsDoubleArray());
-    if((node = searchNode->GetNode("streamlineDirection")) != 0)
+    if((node = searchNode->GetNode("integrationDirection")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 3)
-                SetStreamlineDirection(IntegrationDirection(ival));
+                SetIntegrationDirection(IntegrationDirection(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
             IntegrationDirection value;
             if(IntegrationDirection_FromString(node->AsString(), value))
-                SetStreamlineDirection(value);
+                SetIntegrationDirection(value);
         }
     }
     if((node = searchNode->GetNode("maxSteps")) != 0)
@@ -1352,24 +1352,24 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
                 SetIntegrationType(value);
         }
     }
-    if((node = searchNode->GetNode("streamlineAlgorithmType")) != 0)
+    if((node = searchNode->GetNode("parallelizationAlgorithmType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 4)
-                SetStreamlineAlgorithmType(StreamlineAlgorithmType(ival));
+                SetParallelizationAlgorithmType(ParallelizationAlgorithmType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            StreamlineAlgorithmType value;
-            if(StreamlineAlgorithmType_FromString(node->AsString(), value))
-                SetStreamlineAlgorithmType(value);
+            ParallelizationAlgorithmType value;
+            if(ParallelizationAlgorithmType_FromString(node->AsString(), value))
+                SetParallelizationAlgorithmType(value);
         }
     }
-    if((node = searchNode->GetNode("maxStreamlineProcessCount")) != 0)
-        SetMaxStreamlineProcessCount(node->AsInt());
+    if((node = searchNode->GetNode("maxProcessCount")) != 0)
+        SetMaxProcessCount(node->AsInt());
     if((node = searchNode->GetNode("maxDomainCacheSize")) != 0)
         SetMaxDomainCacheSize(node->AsInt());
     if((node = searchNode->GetNode("workGroupSize")) != 0)
@@ -1485,10 +1485,10 @@ FTLEAttributes::SetEndPosition(const double *EndPosition_)
 }
 
 void
-FTLEAttributes::SetStreamlineDirection(FTLEAttributes::IntegrationDirection streamlineDirection_)
+FTLEAttributes::SetIntegrationDirection(FTLEAttributes::IntegrationDirection integrationDirection_)
 {
-    streamlineDirection = streamlineDirection_;
-    Select(ID_streamlineDirection, (void *)&streamlineDirection);
+    integrationDirection = integrationDirection_;
+    Select(ID_integrationDirection, (void *)&integrationDirection);
 }
 
 void
@@ -1613,17 +1613,17 @@ FTLEAttributes::SetIntegrationType(FTLEAttributes::IntegrationType integrationTy
 }
 
 void
-FTLEAttributes::SetStreamlineAlgorithmType(FTLEAttributes::StreamlineAlgorithmType streamlineAlgorithmType_)
+FTLEAttributes::SetParallelizationAlgorithmType(FTLEAttributes::ParallelizationAlgorithmType parallelizationAlgorithmType_)
 {
-    streamlineAlgorithmType = streamlineAlgorithmType_;
-    Select(ID_streamlineAlgorithmType, (void *)&streamlineAlgorithmType);
+    parallelizationAlgorithmType = parallelizationAlgorithmType_;
+    Select(ID_parallelizationAlgorithmType, (void *)&parallelizationAlgorithmType);
 }
 
 void
-FTLEAttributes::SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+FTLEAttributes::SetMaxProcessCount(int maxProcessCount_)
 {
-    maxStreamlineProcessCount = maxStreamlineProcessCount_;
-    Select(ID_maxStreamlineProcessCount, (void *)&maxStreamlineProcessCount);
+    maxProcessCount = maxProcessCount_;
+    Select(ID_maxProcessCount, (void *)&maxProcessCount);
 }
 
 void
@@ -1797,9 +1797,9 @@ FTLEAttributes::GetEndPosition()
 }
 
 FTLEAttributes::IntegrationDirection
-FTLEAttributes::GetStreamlineDirection() const
+FTLEAttributes::GetIntegrationDirection() const
 {
-    return IntegrationDirection(streamlineDirection);
+    return IntegrationDirection(integrationDirection);
 }
 
 int
@@ -1910,16 +1910,16 @@ FTLEAttributes::GetIntegrationType() const
     return IntegrationType(integrationType);
 }
 
-FTLEAttributes::StreamlineAlgorithmType
-FTLEAttributes::GetStreamlineAlgorithmType() const
+FTLEAttributes::ParallelizationAlgorithmType
+FTLEAttributes::GetParallelizationAlgorithmType() const
 {
-    return StreamlineAlgorithmType(streamlineAlgorithmType);
+    return ParallelizationAlgorithmType(parallelizationAlgorithmType);
 }
 
 int
-FTLEAttributes::GetMaxStreamlineProcessCount() const
+FTLEAttributes::GetMaxProcessCount() const
 {
-    return maxStreamlineProcessCount;
+    return maxProcessCount;
 }
 
 int
@@ -2088,7 +2088,7 @@ FTLEAttributes::GetFieldName(int index) const
     case ID_StartPosition:                      return "StartPosition";
     case ID_UseDataSetEnd:                      return "UseDataSetEnd";
     case ID_EndPosition:                        return "EndPosition";
-    case ID_streamlineDirection:                return "streamlineDirection";
+    case ID_integrationDirection:               return "integrationDirection";
     case ID_maxSteps:                           return "maxSteps";
     case ID_terminationType:                    return "terminationType";
     case ID_terminateByDistance:                return "terminateByDistance";
@@ -2106,8 +2106,8 @@ FTLEAttributes::GetFieldName(int index) const
     case ID_fieldConstant:                      return "fieldConstant";
     case ID_velocitySource:                     return "velocitySource";
     case ID_integrationType:                    return "integrationType";
-    case ID_streamlineAlgorithmType:            return "streamlineAlgorithmType";
-    case ID_maxStreamlineProcessCount:          return "maxStreamlineProcessCount";
+    case ID_parallelizationAlgorithmType:       return "parallelizationAlgorithmType";
+    case ID_maxProcessCount:                    return "maxProcessCount";
     case ID_maxDomainCacheSize:                 return "maxDomainCacheSize";
     case ID_workGroupSize:                      return "workGroupSize";
     case ID_pathlines:                          return "pathlines";
@@ -2154,7 +2154,7 @@ FTLEAttributes::GetFieldType(int index) const
     case ID_StartPosition:                      return FieldType_doubleArray;
     case ID_UseDataSetEnd:                      return FieldType_bool;
     case ID_EndPosition:                        return FieldType_doubleArray;
-    case ID_streamlineDirection:                return FieldType_enum;
+    case ID_integrationDirection:               return FieldType_enum;
     case ID_maxSteps:                           return FieldType_int;
     case ID_terminationType:                    return FieldType_enum;
     case ID_terminateByDistance:                return FieldType_bool;
@@ -2172,8 +2172,8 @@ FTLEAttributes::GetFieldType(int index) const
     case ID_fieldConstant:                      return FieldType_double;
     case ID_velocitySource:                     return FieldType_doubleArray;
     case ID_integrationType:                    return FieldType_enum;
-    case ID_streamlineAlgorithmType:            return FieldType_enum;
-    case ID_maxStreamlineProcessCount:          return FieldType_int;
+    case ID_parallelizationAlgorithmType:       return FieldType_enum;
+    case ID_maxProcessCount:                    return FieldType_int;
     case ID_maxDomainCacheSize:                 return FieldType_int;
     case ID_workGroupSize:                      return FieldType_int;
     case ID_pathlines:                          return FieldType_bool;
@@ -2220,7 +2220,7 @@ FTLEAttributes::GetFieldTypeName(int index) const
     case ID_StartPosition:                      return "doubleArray";
     case ID_UseDataSetEnd:                      return "bool";
     case ID_EndPosition:                        return "doubleArray";
-    case ID_streamlineDirection:                return "enum";
+    case ID_integrationDirection:               return "enum";
     case ID_maxSteps:                           return "int";
     case ID_terminationType:                    return "enum";
     case ID_terminateByDistance:                return "bool";
@@ -2238,8 +2238,8 @@ FTLEAttributes::GetFieldTypeName(int index) const
     case ID_fieldConstant:                      return "double";
     case ID_velocitySource:                     return "doubleArray";
     case ID_integrationType:                    return "enum";
-    case ID_streamlineAlgorithmType:            return "enum";
-    case ID_maxStreamlineProcessCount:          return "int";
+    case ID_parallelizationAlgorithmType:       return "enum";
+    case ID_maxProcessCount:                    return "int";
     case ID_maxDomainCacheSize:                 return "int";
     case ID_workGroupSize:                      return "int";
     case ID_pathlines:                          return "bool";
@@ -2327,9 +2327,9 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = EndPosition_equal;
         }
         break;
-    case ID_streamlineDirection:
+    case ID_integrationDirection:
         {  // new scope
-        retval = (streamlineDirection == obj.streamlineDirection);
+        retval = (integrationDirection == obj.integrationDirection);
         }
         break;
     case ID_maxSteps:
@@ -2422,14 +2422,14 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (integrationType == obj.integrationType);
         }
         break;
-    case ID_streamlineAlgorithmType:
+    case ID_parallelizationAlgorithmType:
         {  // new scope
-        retval = (streamlineAlgorithmType == obj.streamlineAlgorithmType);
+        retval = (parallelizationAlgorithmType == obj.parallelizationAlgorithmType);
         }
         break;
-    case ID_maxStreamlineProcessCount:
+    case ID_maxProcessCount:
         {  // new scope
-        retval = (maxStreamlineProcessCount == obj.maxStreamlineProcessCount);
+        retval = (maxProcessCount == obj.maxProcessCount);
         }
         break;
     case ID_maxDomainCacheSize:
@@ -2578,7 +2578,7 @@ FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
         termDistance != obj.termDistance ||
         terminateByTime != obj.terminateByTime ||
         termTime != obj.termTime ||
-        streamlineDirection != obj.streamlineDirection ||
+        integrationDirection != obj.integrationDirection ||
         fieldType != obj.fieldType ||
         fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||

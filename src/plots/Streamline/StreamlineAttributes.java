@@ -99,10 +99,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public final static int REFERENCETYPE_TIME = 1;
     public final static int REFERENCETYPE_STEP = 2;
 
-    public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
-    public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
-    public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
-    public final static int STREAMLINEALGORITHMTYPE_VISITSELECTS = 3;
+    public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
+    public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
+    public final static int PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int PARALLELIZATIONALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int FIELDTYPE_DEFAULT = 0;
     public final static int FIELDTYPE_FLASHFIELD = 1;
@@ -201,7 +201,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(0, 0, 0);
         legendFlag = true;
         lightingFlag = true;
-        streamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminateByDistance = false;
         termDistance = 10;
@@ -221,8 +221,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
-        maxStreamlineProcessCount = 10;
+        parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
+        maxProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
         pathlines = false;
@@ -351,7 +351,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(0, 0, 0);
         legendFlag = true;
         lightingFlag = true;
-        streamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminateByDistance = false;
         termDistance = 10;
@@ -371,8 +371,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
-        maxStreamlineProcessCount = 10;
+        parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
+        maxProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
         pathlines = false;
@@ -504,7 +504,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         singleColor = new ColorAttribute(obj.singleColor);
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
-        streamlineDirection = obj.streamlineDirection;
+        integrationDirection = obj.integrationDirection;
         maxSteps = obj.maxSteps;
         terminateByDistance = obj.terminateByDistance;
         termDistance = obj.termDistance;
@@ -525,8 +525,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         velocitySource[2] = obj.velocitySource[2];
 
         integrationType = obj.integrationType;
-        streamlineAlgorithmType = obj.streamlineAlgorithmType;
-        maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+        parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
+        maxProcessCount = obj.maxProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
         workGroupSize = obj.workGroupSize;
         pathlines = obj.pathlines;
@@ -686,7 +686,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (singleColor == obj.singleColor) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
-                (streamlineDirection == obj.streamlineDirection) &&
+                (integrationDirection == obj.integrationDirection) &&
                 (maxSteps == obj.maxSteps) &&
                 (terminateByDistance == obj.terminateByDistance) &&
                 (termDistance == obj.termDistance) &&
@@ -703,8 +703,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
                 (fieldConstant == obj.fieldConstant) &&
                 velocitySource_equal &&
                 (integrationType == obj.integrationType) &&
-                (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
-                (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+                (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
+                (maxProcessCount == obj.maxProcessCount) &&
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
                 (workGroupSize == obj.workGroupSize) &&
                 (pathlines == obj.pathlines) &&
@@ -968,9 +968,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(19);
     }
 
-    public void SetStreamlineDirection(int streamlineDirection_)
+    public void SetIntegrationDirection(int integrationDirection_)
     {
-        streamlineDirection = streamlineDirection_;
+        integrationDirection = integrationDirection_;
         Select(20);
     }
 
@@ -1080,15 +1080,15 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         Select(36);
     }
 
-    public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
+    public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
-        streamlineAlgorithmType = streamlineAlgorithmType_;
+        parallelizationAlgorithmType = parallelizationAlgorithmType_;
         Select(37);
     }
 
-    public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+    public void SetMaxProcessCount(int maxProcessCount_)
     {
-        maxStreamlineProcessCount = maxStreamlineProcessCount_;
+        maxProcessCount = maxProcessCount_;
         Select(38);
     }
 
@@ -1509,7 +1509,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public ColorAttribute GetSingleColor() { return singleColor; }
     public boolean        GetLegendFlag() { return legendFlag; }
     public boolean        GetLightingFlag() { return lightingFlag; }
-    public int            GetStreamlineDirection() { return streamlineDirection; }
+    public int            GetIntegrationDirection() { return integrationDirection; }
     public int            GetMaxSteps() { return maxSteps; }
     public boolean        GetTerminateByDistance() { return terminateByDistance; }
     public double         GetTermDistance() { return termDistance; }
@@ -1526,8 +1526,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     public double         GetFieldConstant() { return fieldConstant; }
     public double[]       GetVelocitySource() { return velocitySource; }
     public int            GetIntegrationType() { return integrationType; }
-    public int            GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
-    public int            GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
+    public int            GetParallelizationAlgorithmType() { return parallelizationAlgorithmType; }
+    public int            GetMaxProcessCount() { return maxProcessCount; }
     public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
     public int            GetWorkGroupSize() { return workGroupSize; }
     public boolean        GetPathlines() { return pathlines; }
@@ -1639,7 +1639,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(19, buf))
             buf.WriteBool(lightingFlag);
         if(WriteSelect(20, buf))
-            buf.WriteInt(streamlineDirection);
+            buf.WriteInt(integrationDirection);
         if(WriteSelect(21, buf))
             buf.WriteInt(maxSteps);
         if(WriteSelect(22, buf))
@@ -1673,9 +1673,9 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(36, buf))
             buf.WriteInt(integrationType);
         if(WriteSelect(37, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteInt(parallelizationAlgorithmType);
         if(WriteSelect(38, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteInt(maxProcessCount);
         if(WriteSelect(39, buf))
             buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(40, buf))
@@ -1876,7 +1876,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetLightingFlag(buf.ReadBool());
             break;
         case 20:
-            SetStreamlineDirection(buf.ReadInt());
+            SetIntegrationDirection(buf.ReadInt());
             break;
         case 21:
             SetMaxSteps(buf.ReadInt());
@@ -1927,10 +1927,10 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
             SetIntegrationType(buf.ReadInt());
             break;
         case 37:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetParallelizationAlgorithmType(buf.ReadInt());
             break;
         case 38:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetMaxProcessCount(buf.ReadInt());
             break;
         case 39:
             SetMaxDomainCacheSize(buf.ReadInt());
@@ -2190,12 +2190,12 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
-        str = str + indent + "streamlineDirection = ";
-        if(streamlineDirection == INTEGRATIONDIRECTION_FORWARD)
+        str = str + indent + "integrationDirection = ";
+        if(integrationDirection == INTEGRATIONDIRECTION_FORWARD)
             str = str + "INTEGRATIONDIRECTION_FORWARD";
-        if(streamlineDirection == INTEGRATIONDIRECTION_BACKWARD)
+        if(integrationDirection == INTEGRATIONDIRECTION_BACKWARD)
             str = str + "INTEGRATIONDIRECTION_BACKWARD";
-        if(streamlineDirection == INTEGRATIONDIRECTION_BOTH)
+        if(integrationDirection == INTEGRATIONDIRECTION_BOTH)
             str = str + "INTEGRATIONDIRECTION_BOTH";
         str = str + "\n";
         str = str + intToString("maxSteps", maxSteps, indent) + "\n";
@@ -2245,17 +2245,17 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
         if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)
             str = str + "INTEGRATIONTYPE_M3DC12DINTEGRATOR";
         str = str + "\n";
-        str = str + indent + "streamlineAlgorithmType = ";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_LOADONDEMAND)
-            str = str + "STREAMLINEALGORITHMTYPE_LOADONDEMAND";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS)
-            str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_MASTERSLAVE)
-            str = str + "STREAMLINEALGORITHMTYPE_MASTERSLAVE";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_VISITSELECTS)
-            str = str + "STREAMLINEALGORITHMTYPE_VISITSELECTS";
+        str = str + indent + "parallelizationAlgorithmType = ";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_VISITSELECTS)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";
-        str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
+        str = str + intToString("maxProcessCount", maxProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
         str = str + intToString("workGroupSize", workGroupSize, indent) + "\n";
         str = str + boolToString("pathlines", pathlines, indent) + "\n";
@@ -2426,7 +2426,7 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private ColorAttribute singleColor;
     private boolean        legendFlag;
     private boolean        lightingFlag;
-    private int            streamlineDirection;
+    private int            integrationDirection;
     private int            maxSteps;
     private boolean        terminateByDistance;
     private double         termDistance;
@@ -2443,8 +2443,8 @@ public class StreamlineAttributes extends AttributeSubject implements Plugin
     private double         fieldConstant;
     private double[]       velocitySource;
     private int            integrationType;
-    private int            streamlineAlgorithmType;
-    private int            maxStreamlineProcessCount;
+    private int            parallelizationAlgorithmType;
+    private int            maxProcessCount;
     private int            maxDomainCacheSize;
     private int            workGroupSize;
     private boolean        pathlines;

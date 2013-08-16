@@ -523,21 +523,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
     sRow++;
 
-    // Create the direction of integration. Note the location is row
-    // 100 which is silly but Qt will shrink the layout so that it is
-    // moved up appropriately.
-    sourceLayout->addWidget(new QLabel(tr("Streamline direction"), central),
-                            100, 0, Qt::AlignRight);
-    directionType = new QComboBox(central);
-    directionType->addItem(tr("Forward"));
-    directionType->addItem(tr("Backward"));
-    directionType->addItem(tr("Both"));
-    connect(directionType, SIGNAL(activated(int)),
-            this, SLOT(directionTypeChanged(int)));
-    sourceLayout->addWidget(directionType, 100, 1);
-
-
-
     // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
     fieldGroup->setTitle(tr("Field"));
@@ -579,17 +564,36 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     fieldLayout->addWidget(velocitySource, 1, 3);
 
 
+    // Create the node centering
+    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    fieldLayout->addWidget(forceNodal, 2, 0);
+
+
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));
-    mainLayout->addWidget(integrationGroup, 7, 0, 5, 2);
+    mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
     integrationLayout->setMargin(5);
     integrationLayout->setSpacing(10);
 
 
-    integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 0,0);
+    // Create the direction of integration.
+    integrationLayout->addWidget(new QLabel(tr("Integration direction"),
+                                            central), 0, 0);
+    directionType = new QComboBox(central);
+    directionType->addItem(tr("Forward"));
+    directionType->addItem(tr("Backward"));
+    directionType->addItem(tr("Both"));
+    connect(directionType, SIGNAL(activated(int)),
+            this, SLOT(directionTypeChanged(int)));
+    integrationLayout->addWidget(directionType, 0, 1);
+
+
+    // Create the type of integration.
+    integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 1,0);
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
@@ -599,29 +603,29 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
-    integrationLayout->addWidget(integrationType, 0,1);
+    integrationLayout->addWidget(integrationType, 1,1);
     
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
     connect(maxStepLength, SIGNAL(returnPressed()),
             this, SLOT(maxStepLengthProcessText()));
-    integrationLayout->addWidget(maxStepLengthLabel, 1,0);
-    integrationLayout->addWidget(maxStepLength, 1,1);
+    integrationLayout->addWidget(maxStepLengthLabel, 2,0);
+    integrationLayout->addWidget(maxStepLength, 2,1);
 
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
-    integrationLayout->addWidget(limitMaxTimeStep, 2, 0);
+    integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
     
     // Create the step length text field.
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
             this, SLOT(maxTimeStepProcessText()));
-    integrationLayout->addWidget(maxTimeStep, 2,1);
+    integrationLayout->addWidget(maxTimeStep, 3,1);
 
     QGroupBox *toleranceGroup = new QGroupBox(central);
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
-    integrationLayout->addWidget(toleranceGroup, 4, 0, 1, 3);
+    integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
     toleranceLayout->setMargin(5);
     toleranceLayout->setSpacing(10);
@@ -646,11 +650,6 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
-
-    forceNodal = new QCheckBox(tr("Force node centering"), integrationGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodal, 9, 0);
-
 
     // Create the termination group box.
     QGroupBox *terminationGroup = new QGroupBox(central);
@@ -1194,7 +1193,7 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     advGLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
-    algoGrp->setTitle(tr("Parallel streamline options"));
+    algoGrp->setTitle(tr("Parallel integration options"));
     //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
     advGLayout->addWidget(algoGrp, 0, 0);
 
@@ -1203,16 +1202,16 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     algoGLayout->setSpacing(10);
     algoGLayout->setColumnStretch(1,10);
 
-    slAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
-    slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Parallelize Over Particles"));
-    slAlgo->addItem(tr("Parallelize Over Domains"));
-    slAlgo->addItem(tr("Parallelize Over Particles and Domains"));
-    slAlgo->addItem(tr("Have VisIt select the best algorithm"));
-    connect(slAlgo, SIGNAL(activated(int)),
-            this, SLOT(streamlineAlgorithmChanged(int)));
-    algoGLayout->addWidget( slAlgoLabel, 1,0);
-    algoGLayout->addWidget( slAlgo, 1,1);
+    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
+    parallelAlgo = new QComboBox(algoGrp);
+    parallelAlgo->addItem(tr("Parallelize over curves"));
+    parallelAlgo->addItem(tr("Parallelize over domains"));
+    parallelAlgo->addItem(tr("Parallelize over curves and domains"));
+    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
+    connect(parallelAlgo, SIGNAL(activated(int)),
+            this, SLOT(parallelAlgorithmChanged(int)));
+    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
+    algoGLayout->addWidget( parallelAlgo, 1,1);
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
@@ -1244,7 +1243,7 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     // Pathline Advance Group.
     QGroupBox *icGrp = new QGroupBox(pageAdvanced);
-    icGrp->setTitle(tr("Pathlines vs Streamlines"));
+    icGrp->setTitle(tr("Streamlines vs Pathlines"));
     //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
     advGLayout->addWidget(icGrp, 1, 0);
 
@@ -1253,8 +1252,8 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     icGrpLayout->setColumnStretch(1,10);
 
     icButtonGroup = new QButtonGroup(icGrp);
-    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute particle trajectories in an (instantaneous) snapshot\n    of the vector field. Uses and loads only velocity field from current time slice."), icGrp);
-    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads velocity data from all relevant time slices"), icGrp);
+    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute trajectories in an (instantaneous) snapshot of the vector field.\n    Uses and loads vector data from only the current time slice."), icGrp);
+    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads vector data from all relevant time slices"), icGrp);
     streamlineButton->setChecked(true);
     icButtonGroup->addButton(streamlineButton, 0);
     icButtonGroup->addButton(pathlineButton, 1);
@@ -1316,14 +1315,14 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForMaxStepsChanged(bool)));
     warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
-    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached"), warningsGrp);
+    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached."), warningsGrp);
     warningsGLayout->addWidget(maxStepsLabel, 0, 1, 1, 2);
 
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
     warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
-    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected"), warningsGrp);
+    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 1, 1, 1, 2);
     QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
     warningsGLayout->addWidget(stiffnessDescLabel1, 2, 1, 1, 2);
@@ -1334,9 +1333,9 @@ QvisStreamlinePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
     warningsGLayout->addWidget(issueWarningForCriticalPoints, 4, 0);
-    QLabel *critPointLabel = new QLabel(tr("Issue warning when a particle doesn't terminate at a critical point"), warningsGrp);
+    QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
     warningsGLayout->addWidget(critPointLabel, 4, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(Meaning it circles round and round the critical point without stopping.)"), warningsGrp);
+    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
     warningsGLayout->addWidget(critPointDescLabel, 5, 1, 1, 2);
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
@@ -1993,9 +1992,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             lightingFlag->setChecked(streamAtts->GetLightingFlag());
             lightingFlag->blockSignals(false);
             break;
-        case StreamlineAttributes::ID_streamlineDirection:
+        case StreamlineAttributes::ID_integrationDirection:
             directionType->blockSignals(true);
-            directionType->setCurrentIndex(int(streamAtts->GetStreamlineDirection()) );
+            directionType->setCurrentIndex(int(streamAtts->GetIntegrationDirection()) );
             directionType->blockSignals(false);
             break;
         case StreamlineAttributes::ID_relTol:
@@ -2088,12 +2087,12 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             fieldType->blockSignals(false);
 
             break;
-        case StreamlineAttributes::ID_streamlineAlgorithmType:
+        case StreamlineAttributes::ID_parallelizationAlgorithmType:
             // Update lots of widget visibility and enabled states.
             UpdateAlgorithmAttributes();
-            slAlgo->blockSignals(true);
-            slAlgo->setCurrentIndex(streamAtts->GetStreamlineAlgorithmType());
-            slAlgo->blockSignals(false);
+            parallelAlgo->blockSignals(true);
+            parallelAlgo->setCurrentIndex(streamAtts->GetParallelizationAlgorithmType());
+            parallelAlgo->blockSignals(false);
             break;
         case StreamlineAttributes::ID_coordinateSystem:
             coordinateButtonGroup->blockSignals(true);
@@ -2110,9 +2109,9 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
         case StreamlineAttributes::ID_phiScaling:
             phiScaling->setText(DoubleToQString(streamAtts->GetPhiScaling()));
             break;
-        case StreamlineAttributes::ID_maxStreamlineProcessCount:
+        case StreamlineAttributes::ID_maxProcessCount:
             maxSLCount->blockSignals(true);
-            maxSLCount->setValue(streamAtts->GetMaxStreamlineProcessCount());
+            maxSLCount->setValue(streamAtts->GetMaxProcessCount());
             maxSLCount->blockSignals(false);
             break;
         case StreamlineAttributes::ID_maxDomainCacheSize:
@@ -2802,11 +2801,11 @@ QvisStreamlinePlotWindow::UpdateIntegrationAttributes()
 void
 QvisStreamlinePlotWindow::UpdateAlgorithmAttributes()
 {
-    bool useLoadOnDemand = (streamAtts->GetStreamlineAlgorithmType() ==
+    bool useLoadOnDemand = (streamAtts->GetParallelizationAlgorithmType() ==
                             StreamlineAttributes::LoadOnDemand);
-    bool useStaticDomains = (streamAtts->GetStreamlineAlgorithmType() ==
+    bool useStaticDomains = (streamAtts->GetParallelizationAlgorithmType() ==
                              StreamlineAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (streamAtts->GetStreamlineAlgorithmType() ==
+    bool useMasterSlave = (streamAtts->GetParallelizationAlgorithmType() ==
                            StreamlineAttributes::MasterSlave);
     
     //Turn off everything.
@@ -3293,12 +3292,12 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
     }
 
     // maxStreamlineProcessCount
-    if (which_widget == StreamlineAttributes::ID_maxStreamlineProcessCount || doAll)
+    if (which_widget == StreamlineAttributes::ID_maxProcessCount || doAll)
     {
         // This can only be an integer, so no error checking is needed.
         int val = maxSLCount->value();
         if (val >= 1)
-            streamAtts->SetMaxStreamlineProcessCount(val);
+            streamAtts->SetMaxProcessCount(val);
     }
 
     // workGroupSize
@@ -3735,9 +3734,9 @@ QvisStreamlinePlotWindow::selectionsChanged(int val)
 void
 QvisStreamlinePlotWindow::directionTypeChanged(int val)
  {
-    if(val != streamAtts->GetStreamlineDirection())
+    if(val != streamAtts->GetIntegrationDirection())
     {
-        streamAtts->SetStreamlineDirection(StreamlineAttributes::IntegrationDirection(val));
+        streamAtts->SetIntegrationDirection(StreamlineAttributes::IntegrationDirection(val));
         Apply();
     }
 }   
@@ -3770,11 +3769,11 @@ QvisStreamlinePlotWindow::integrationTypeChanged(int val)
 }   
 
 void
-QvisStreamlinePlotWindow::streamlineAlgorithmChanged(int val)
+QvisStreamlinePlotWindow::parallelAlgorithmChanged(int val)
 {
-    if(val != streamAtts->GetStreamlineAlgorithmType())
+    if(val != streamAtts->GetParallelizationAlgorithmType())
     {
-        streamAtts->SetStreamlineAlgorithmType(StreamlineAttributes::StreamlineAlgorithmType(val));
+        streamAtts->SetParallelizationAlgorithmType(StreamlineAttributes::ParallelizationAlgorithmType(val));
         Apply();
     }
 }   
@@ -3943,7 +3942,7 @@ QvisStreamlinePlotWindow::sampleDensity2Changed(int val)
 void
 QvisStreamlinePlotWindow::maxSLCountChanged(int val)
 {
-    streamAtts->SetMaxStreamlineProcessCount(val);
+    streamAtts->SetMaxProcessCount(val);
     Apply();
 }
 
@@ -4169,21 +4168,6 @@ QvisStreamlinePlotWindow::lightingFlagChanged(bool val)
 }
 
 void
-QvisStreamlinePlotWindow::icButtonGroupChanged(int val)
-{
-    switch( val )
-    {
-        case 0: // Streamline
-            streamAtts->SetPathlines(false);
-            break;
-        case 1: // Pathline
-            streamAtts->SetPathlines(true);
-            break;
-    }
-    Apply();
-}
-
-void
 QvisStreamlinePlotWindow::coordinateButtonGroupChanged(int val)
 {
     switch( val )
@@ -4206,35 +4190,6 @@ void
 QvisStreamlinePlotWindow::phiScalingToggled(bool val)
 {
     streamAtts->SetPhiScalingFlag(val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::phiScalingProcessText()
-{
-    GetCurrentValues(StreamlineAttributes::ID_phiScaling);
-    Apply();
-}
-
-
-void
-QvisStreamlinePlotWindow::pathlineOverrideStartingTimeFlagChanged(bool val)
-{
-    streamAtts->SetPathlinesOverrideStartingTimeFlag(val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::pathlineOverrideStartingTimeProcessText()
-{
-    GetCurrentValues(StreamlineAttributes::ID_pathlinesOverrideStartingTime);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::pathlineCMFEButtonGroupChanged(int val)
-{
-    streamAtts->SetPathlinesCMFE((StreamlineAttributes::PathlinesCMFE)val);
     Apply();
 }
 
@@ -4380,34 +4335,6 @@ QvisStreamlinePlotWindow::headDisplayTypeChanged(int val)
 }
 
 void
-QvisStreamlinePlotWindow::issueWarningForMaxStepsChanged(bool val)
-{
-    streamAtts->SetIssueTerminationWarnings(val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::issueWarningForStiffnessChanged(bool val)
-{
-    streamAtts->SetIssueStiffnessWarnings(val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::issueWarningForCriticalPointsChanged(bool val)
-{
-    streamAtts->SetIssueCriticalPointsWarnings(val);
-    Apply();
-}
-
-void
-QvisStreamlinePlotWindow::criticalPointThresholdProcessText(void)
-{
-    GetCurrentValues(StreamlineAttributes::ID_criticalPointThreshold);
-    Apply();
-}
-
-void
 QvisStreamlinePlotWindow::tubeDisplayDensityChanged(int val)
 {
     streamAtts->SetTubeDisplayDensity(val);
@@ -4546,6 +4473,77 @@ QvisStreamlinePlotWindow::processCorrelationDistanceMinDistEditText()
 {
     GetCurrentValues(StreamlineAttributes::ID_correlationDistanceMinDistAbsolute);
     GetCurrentValues(StreamlineAttributes::ID_correlationDistanceMinDistBBox);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::phiScalingProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_phiScaling);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::icButtonGroupChanged(int val)
+{
+    switch( val )
+    {
+        case 0: // Streamline
+            streamAtts->SetPathlines(false);
+            break;
+        case 1: // Pathline
+            streamAtts->SetPathlines(true);
+            break;
+    }
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineOverrideStartingTimeFlagChanged(bool val)
+{
+    streamAtts->SetPathlinesOverrideStartingTimeFlag(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineOverrideStartingTimeProcessText()
+{
+    GetCurrentValues(StreamlineAttributes::ID_pathlinesOverrideStartingTime);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::pathlineCMFEButtonGroupChanged(int val)
+{
+    streamAtts->SetPathlinesCMFE((StreamlineAttributes::PathlinesCMFE)val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::issueWarningForMaxStepsChanged(bool val)
+{
+    streamAtts->SetIssueTerminationWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::issueWarningForStiffnessChanged(bool val)
+{
+    streamAtts->SetIssueStiffnessWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::issueWarningForCriticalPointsChanged(bool val)
+{
+    streamAtts->SetIssueCriticalPointsWarnings(val);
+    Apply();
+}
+
+void
+QvisStreamlinePlotWindow::criticalPointThresholdProcessText(void)
+{
+    GetCurrentValues(StreamlineAttributes::ID_criticalPointThreshold);
     Apply();
 }
 

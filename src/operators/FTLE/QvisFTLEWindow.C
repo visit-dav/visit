@@ -139,12 +139,12 @@ QvisFTLEWindow::CreateWindowContents()
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // Streamline tab
+    // Integration tab
     // ----------------------------------------------------------------------
-    QWidget *streamlineTab = new QWidget(central);
-    propertyTabs->addTab(streamlineTab, tr("Integration"));
+    QWidget *integrationTab = new QWidget(central);
+    propertyTabs->addTab(integrationTab, tr("Integration"));
     
-    QGridLayout *mainLayout = new QGridLayout(streamlineTab);
+    QGridLayout *mainLayout = new QGridLayout(integrationTab);
     mainLayout->setMargin(5);
 
     // Create the source group box.
@@ -212,19 +212,6 @@ QvisFTLEWindow::CreateWindowContents()
             this, SLOT(EndPositionProcessText()));
     rgridLayout->addWidget(EndPosition, 4,1);
 
-    // Create the direction of integration. Note the location is row
-    // 100 which is silly but Qt will shrink the layout so that it is
-    // moved up appropriately.
-    sourceLayout->addWidget(new QLabel(tr("Integration direction"), central),
-                            100, 0, Qt::AlignRight);
-    directionType = new QComboBox(central);
-    directionType->addItem(tr("Forward"));
-    directionType->addItem(tr("Backward"));
-//    directionType->addItem(tr("Both"));
-    connect(directionType, SIGNAL(activated(int)),
-            this, SLOT(directionTypeChanged(int)));
-    sourceLayout->addWidget(directionType, 100, 1);
-
 
     // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
@@ -266,18 +253,33 @@ QvisFTLEWindow::CreateWindowContents()
     fieldLayout->addWidget(velocitySourceLabel, 1, 2);
     fieldLayout->addWidget(velocitySource, 1, 3);
 
+    // Create the node centering
+    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    fieldLayout->addWidget(forceNodal, 2, 0);
 
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));
-    mainLayout->addWidget(integrationGroup, 7, 0, 5, 2);
+    mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
     integrationLayout->setMargin(5);
     integrationLayout->setSpacing(10);
 
 
-    integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 0,0);
+    // Create the direction of integration.
+    integrationLayout->addWidget(new QLabel(tr("Integration direction"),
+                                            central), 0, 0);
+    directionType = new QComboBox(central);
+    directionType->addItem(tr("Forward"));
+    directionType->addItem(tr("Backward"));
+    connect(directionType, SIGNAL(activated(int)),
+            this, SLOT(directionTypeChanged(int)));
+    integrationLayout->addWidget(directionType, 0, 1);
+
+    // Create the type of integration.
+    integrationLayout->addWidget( new QLabel(tr("Integrator"), integrationGroup), 1,0);
     integrationType = new QComboBox(integrationGroup);
     integrationType->addItem(tr("Forward Euler (Single-step)"));
     integrationType->addItem(tr("Leapfrog (Single-step)"));
@@ -287,29 +289,29 @@ QvisFTLEWindow::CreateWindowContents()
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
-    integrationLayout->addWidget(integrationType, 0,1);
+    integrationLayout->addWidget(integrationType, 1,1);
     
     // Create the step length text field.
     maxStepLengthLabel = new QLabel(tr("Step length"), integrationGroup);
     maxStepLength = new QLineEdit(integrationGroup);
     connect(maxStepLength, SIGNAL(returnPressed()),
             this, SLOT(maxStepLengthProcessText()));
-    integrationLayout->addWidget(maxStepLengthLabel, 1,0);
-    integrationLayout->addWidget(maxStepLength, 1,1);
+    integrationLayout->addWidget(maxStepLengthLabel, 2,0);
+    integrationLayout->addWidget(maxStepLength, 2,1);
 
     limitMaxTimeStep = new QCheckBox(tr("Limit maximum time step"), integrationGroup);
     connect(limitMaxTimeStep, SIGNAL(toggled(bool)), this, SLOT(limitMaxTimeStepChanged(bool)));
-    integrationLayout->addWidget(limitMaxTimeStep, 2, 0);
+    integrationLayout->addWidget(limitMaxTimeStep, 3, 0);
     
     // Create the step length text field.
     maxTimeStep = new QLineEdit(integrationGroup);
     connect(maxTimeStep, SIGNAL(returnPressed()),
             this, SLOT(maxTimeStepProcessText()));
-    integrationLayout->addWidget(maxTimeStep, 2,1);
+    integrationLayout->addWidget(maxTimeStep, 3,1);
 
     QGroupBox *toleranceGroup = new QGroupBox(central);
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
-    integrationLayout->addWidget(toleranceGroup, 4, 0, 1, 3);
+    integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
     toleranceLayout->setMargin(5);
     toleranceLayout->setSpacing(10);
@@ -334,11 +336,6 @@ QvisFTLEWindow::CreateWindowContents()
     absTolSizeType->addItem(tr("Fraction of Bounding Box"), 1);
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
-
-    forceNodal = new QCheckBox(tr("Force node centering"), integrationGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodal, 9, 0);
-
 
     // Create the termination group box.
     QGroupBox *terminationGroup = new QGroupBox(central);
@@ -424,7 +421,7 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     advGLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
-    algoGrp->setTitle(tr("Parallel streamline options"));
+    algoGrp->setTitle(tr("Parallel integration options"));
     //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
     advGLayout->addWidget(algoGrp, 0, 0);
 
@@ -433,16 +430,16 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     algoGLayout->setSpacing(10);
     algoGLayout->setColumnStretch(1,10);
 
-    slAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
-    slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Parallelize Over Particles"));
-    slAlgo->addItem(tr("Parallelize Over Domains"));
-    slAlgo->addItem(tr("Parallelize Over Particles and Domains"));
-    slAlgo->addItem(tr("Have VisIt select the best algorithm"));
-    connect(slAlgo, SIGNAL(activated(int)),
-            this, SLOT(streamlineAlgorithmChanged(int)));
-    algoGLayout->addWidget( slAlgoLabel, 1,0);
-    algoGLayout->addWidget( slAlgo, 1,1);
+    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
+    parallelAlgo = new QComboBox(algoGrp);
+    parallelAlgo->addItem(tr("Parallelize over curves"));
+    parallelAlgo->addItem(tr("Parallelize over domains"));
+    parallelAlgo->addItem(tr("Parallelize over curves and domains"));
+    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
+    connect(parallelAlgo, SIGNAL(activated(int)),
+            this, SLOT(parallelAlgorithmChanged(int)));
+    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
+    algoGLayout->addWidget( parallelAlgo, 1,1);
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
@@ -474,7 +471,7 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     // Pathline Advance Group.
     QGroupBox *icGrp = new QGroupBox(pageAdvanced);
-    icGrp->setTitle(tr("Pathlines vs Streamlines"));
+    icGrp->setTitle(tr("Streamlines vs Pathlines"));
     //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
     advGLayout->addWidget(icGrp, 1, 0);
 
@@ -483,8 +480,8 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     icGrpLayout->setColumnStretch(1,10);
 
     icButtonGroup = new QButtonGroup(icGrp);
-    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute particle trajectories in an (instantaneous) snapshot\n    of the vector field. Uses and loads only velocity field from current time slice."), icGrp);
-    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads velocity data from all relevant time slices"), icGrp);
+    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute trajectories in an (instantaneous) snapshot of the vector field.\n    Uses and loads vector data from only the current time slice."), icGrp);
+    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads vector data from all relevant time slices."), icGrp);
     streamlineButton->setChecked(true);
     icButtonGroup->addButton(streamlineButton, 0);
     icButtonGroup->addButton(pathlineButton, 1);
@@ -546,14 +543,14 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForMaxStepsChanged(bool)));
     warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
-    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached"), warningsGrp);
+    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached."), warningsGrp);
     warningsGLayout->addWidget(maxStepsLabel, 0, 1, 1, 2);
 
     issueWarningForStiffness = new QCheckBox(central);
     connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForStiffnessChanged(bool)));
     warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
-    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected"), warningsGrp);
+    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected."), warningsGrp);
     warningsGLayout->addWidget(stiffnessLabel, 1, 1, 1, 2);
     QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
     warningsGLayout->addWidget(stiffnessDescLabel1, 2, 1, 1, 2);
@@ -564,9 +561,9 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
             this, SLOT(issueWarningForCriticalPointsChanged(bool)));
     warningsGLayout->addWidget(issueWarningForCriticalPoints, 4, 0);
-    QLabel *critPointLabel = new QLabel(tr("Issue warning when a particle doesn't terminate at a critical point"), warningsGrp);
+    QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
     warningsGLayout->addWidget(critPointLabel, 4, 1, 1, 2);
-    QLabel *critPointDescLabel = new QLabel(tr("(Meaning it circles round and round the critical point without stopping.)"), warningsGrp);
+    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
     warningsGLayout->addWidget(critPointDescLabel, 5, 1, 1, 2);
     criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
     criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
@@ -756,9 +753,9 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             velocitySource->setText(DoublesToQString(FTLEAtts->GetVelocitySource(),3));
             break;
 
-        case FTLEAttributes::ID_streamlineDirection:
+        case FTLEAttributes::ID_integrationDirection:
             directionType->blockSignals(true);
-            directionType->setCurrentIndex(int(FTLEAtts->GetStreamlineDirection()) );
+            directionType->setCurrentIndex(int(FTLEAtts->GetIntegrationDirection()) );
             directionType->blockSignals(false);
             break;
         case FTLEAttributes::ID_relTol:
@@ -851,17 +848,17 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             fieldType->blockSignals(false);
 
             break;
-        case FTLEAttributes::ID_streamlineAlgorithmType:
+        case FTLEAttributes::ID_parallelizationAlgorithmType:
             // Update lots of widget visibility and enabled states.
             UpdateAlgorithmAttributes();
-            slAlgo->blockSignals(true);
-            slAlgo->setCurrentIndex(FTLEAtts->GetStreamlineAlgorithmType());
-            slAlgo->blockSignals(false);
+            parallelAlgo->blockSignals(true);
+            parallelAlgo->setCurrentIndex(FTLEAtts->GetParallelizationAlgorithmType());
+            parallelAlgo->blockSignals(false);
             break;
 
-        case FTLEAttributes::ID_maxStreamlineProcessCount:
+        case FTLEAttributes::ID_maxProcessCount:
             maxSLCount->blockSignals(true);
-            maxSLCount->setValue(FTLEAtts->GetMaxStreamlineProcessCount());
+            maxSLCount->setValue(FTLEAtts->GetMaxProcessCount());
             maxSLCount->blockSignals(false);
             break;
         case FTLEAttributes::ID_maxDomainCacheSize:
@@ -1055,11 +1052,11 @@ QvisFTLEWindow::UpdateIntegrationAttributes()
 void
 QvisFTLEWindow::UpdateAlgorithmAttributes()
 {
-    bool useLoadOnDemand = (FTLEAtts->GetStreamlineAlgorithmType() ==
+    bool useLoadOnDemand = (FTLEAtts->GetParallelizationAlgorithmType() ==
                             FTLEAttributes::LoadOnDemand);
-    bool useStaticDomains = (FTLEAtts->GetStreamlineAlgorithmType() ==
+    bool useStaticDomains = (FTLEAtts->GetParallelizationAlgorithmType() ==
                              FTLEAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (FTLEAtts->GetStreamlineAlgorithmType() ==
+    bool useMasterSlave = (FTLEAtts->GetParallelizationAlgorithmType() ==
                            FTLEAttributes::MasterSlave);
     
     //Turn off everything.
@@ -1259,13 +1256,13 @@ QvisFTLEWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // maxStreamlineProcessCount
-    if (which_widget == FTLEAttributes::ID_maxStreamlineProcessCount || doAll)
+    // maxProcessCount
+    if (which_widget == FTLEAttributes::ID_maxProcessCount || doAll)
     {
         // This can only be an integer, so no error checking is needed.
         int val = maxSLCount->value();
         if (val >= 1)
-            FTLEAtts->SetMaxStreamlineProcessCount(val);
+            FTLEAtts->SetMaxProcessCount(val);
     }
 
     // workGroupSize
@@ -1347,9 +1344,9 @@ QvisFTLEWindow::EndPositionProcessText()
 void
 QvisFTLEWindow::directionTypeChanged(int val)
  {
-    if(val != FTLEAtts->GetStreamlineDirection())
+    if(val != FTLEAtts->GetIntegrationDirection())
     {
-        FTLEAtts->SetStreamlineDirection(FTLEAttributes::IntegrationDirection(val));
+        FTLEAtts->SetIntegrationDirection(FTLEAttributes::IntegrationDirection(val));
         Apply();
     }
 }   
@@ -1382,11 +1379,11 @@ QvisFTLEWindow::integrationTypeChanged(int val)
 }   
 
 void
-QvisFTLEWindow::streamlineAlgorithmChanged(int val)
+QvisFTLEWindow::parallelAlgorithmChanged(int val)
 {
-    if(val != FTLEAtts->GetStreamlineAlgorithmType())
+    if(val != FTLEAtts->GetParallelizationAlgorithmType())
     {
-        FTLEAtts->SetStreamlineAlgorithmType(FTLEAttributes::StreamlineAlgorithmType(val));
+        FTLEAtts->SetParallelizationAlgorithmType(FTLEAttributes::ParallelizationAlgorithmType(val));
         Apply();
     }
 }   
@@ -1467,7 +1464,7 @@ QvisFTLEWindow::relTolProcessText()
 void
 QvisFTLEWindow::maxSLCountChanged(int val)
 {
-    FTLEAtts->SetMaxStreamlineProcessCount(val);
+    FTLEAtts->SetMaxProcessCount(val);
     Apply();
 }
 
