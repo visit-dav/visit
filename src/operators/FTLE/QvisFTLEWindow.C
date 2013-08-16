@@ -1256,6 +1256,19 @@ QvisFTLEWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    if(which_widget == FTLEAttributes::ID_pathlinesOverrideStartingTime || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(pathlineOverrideStartingTime, val))
+            FTLEAtts->SetPathlinesOverrideStartingTime(val);
+        else
+        {
+            ResettingError(tr("Pathlines Override Starting Time"),
+                DoubleToQString(FTLEAtts->GetPathlinesOverrideStartingTime()));
+            FTLEAtts->SetPathlinesOverrideStartingTime(FTLEAtts->GetPathlinesOverrideStartingTime());
+        }
+    }
+
     // maxProcessCount
     if (which_widget == FTLEAttributes::ID_maxProcessCount || doAll)
     {

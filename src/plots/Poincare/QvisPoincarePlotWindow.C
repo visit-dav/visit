@@ -1874,6 +1874,19 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
       }
     }
 
+    if(which_widget == PoincareAttributes::ID_pathlinesOverrideStartingTime || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(pathlineOverrideStartingTime, val))
+            atts->SetPathlinesOverrideStartingTime(val);
+        else
+        {
+            ResettingError(tr("Pathlines Override Starting Time"),
+                DoubleToQString(atts->GetPathlinesOverrideStartingTime()));
+            atts->SetPathlinesOverrideStartingTime(atts->GetPathlinesOverrideStartingTime());
+        }
+    }
+
     // maxProcessCount
     if (which_widget == PoincareAttributes::ID_maxProcessCount || doAll)
     {
