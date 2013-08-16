@@ -206,9 +206,6 @@ avtPoincareFilter::avtPoincareFilter() :
 //
 //  Modifications:
 //
-//    Dave Pugmire, Wed May 27 15:03:42 EDT 2009
-//    Zero out streaminePts.
-//
 // ****************************************************************************
 
 avtPoincareFilter::~avtPoincareFilter()
@@ -316,9 +313,6 @@ avtPoincareFilter::CreateIntegralCurve( const avtIVPSolver* model,
 //  Creation:   Tue Dec  23 12:51:29 EST 2008
 //
 //  Modifications:
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Use avtStreamlines, not avtStreamlineWrappers.
 //
 // ****************************************************************************
 
@@ -1711,19 +1705,6 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
 //  Creation:   Tue Oct 7 09:02:52 PDT 2008
 //
 //  Modifications:
-//    Dave Pugmire (for Allen Sanderson), Wed Feb 25 09:52:11 EST 2009
-//    Add terminate by steps, add AdamsBashforth solver, Allen Sanderson's new 
-//    code.
-//
-//    Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//    Add ability to restart fieldline integration.
-//
-//    Hank Childs, Fri Jun  4 19:58:30 CDT 2010
-//    Use avtStreamlines, not avtStreamlineWrappers.
-//
-//    Hank Childs, Fri Oct  8 23:30:27 PDT 2010
-//    Max intersections is now represented by an explicit data member, not
-//    by generic "termination" field.
 //
 // ****************************************************************************
 
@@ -1889,7 +1870,7 @@ avtPoincareFilter::ClassifyFieldlines(std::vector<avtIntegralCurve *> &ics)
                << std::endl << std::endl;
     }
 
-    debug5 << "Classifying Streaming "
+    debug5 << "Classifying fieldlines"
          << (analysisComplete ? "Analysis completed" : "Analysis was not complete")
          << std::endl;
 

@@ -507,17 +507,17 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
                                    atts.GetPathlinesOverrideStartingTime(),
                                    CMFEType);
 
-    streamlineFilter->SetIntegrationDirection(atts.GetStreamlineDirection());
+    streamlineFilter->SetIntegrationDirection(atts.GetIntegrationDirection());
 
     streamlineFilter->SetFieldType(atts.GetFieldType());
     streamlineFilter->SetFieldConstant(atts.GetFieldConstant());
     streamlineFilter->SetVelocitySource(atts.GetVelocitySource());
 
     streamlineFilter->SetIntegrationType(atts.GetIntegrationType());
-    streamlineFilter->SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
-                                             atts.GetMaxStreamlineProcessCount(),
-                                             atts.GetMaxDomainCacheSize(),
-                                             atts.GetWorkGroupSize());
+    streamlineFilter->SetParallelizationAlgorithm(atts.GetParallelizationAlgorithmType(), 
+                                                  atts.GetMaxProcessCount(),
+                                                  atts.GetMaxDomainCacheSize(),
+                                                  atts.GetWorkGroupSize());
     if (atts.GetIntegrationType() == StreamlineAttributes::DormandPrince)
     {
         // For DoPri, the max time step is sent in to the PICS filter as the max step length.

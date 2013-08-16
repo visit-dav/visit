@@ -329,19 +329,19 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%slightingFlag = 0\n", prefix);
     str += tmpStr;
-    const char *streamlineDirection_names = "Forward, Backward, Both";
-    switch (atts->GetStreamlineDirection())
+    const char *integrationDirection_names = "Forward, Backward, Both";
+    switch (atts->GetIntegrationDirection())
     {
       case StreamlineAttributes::Forward:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sForward  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sForward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::Backward:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sBackward  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBackward  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::Both:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineDirection = %sBoth  # %s\n", prefix, prefix, streamlineDirection_names);
+          SNPRINTF(tmpStr, 1000, "%sintegrationDirection = %sBoth  # %s\n", prefix, prefix, integrationDirection_names);
           str += tmpStr;
           break;
       default:
@@ -476,30 +476,30 @@ PyStreamlineAttributes_ToString(const StreamlineAttributes *atts, const char *pr
           break;
     }
 
-    const char *streamlineAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
-    switch (atts->GetStreamlineAlgorithmType())
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    switch (atts->GetParallelizationAlgorithmType())
     {
       case StreamlineAttributes::LoadOnDemand:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sLoadOnDemand  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::ParallelStaticDomains:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::MasterSlave:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case StreamlineAttributes::VisItSelects:
-          SNPRINTF(tmpStr, 1000, "%sstreamlineAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, streamlineAlgorithmType_names);
+          SNPRINTF(tmpStr, 1000, "%sparallelizationAlgorithmType = %sVisItSelects  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%smaxStreamlineProcessCount = %d\n", prefix, atts->GetMaxStreamlineProcessCount());
+    SNPRINTF(tmpStr, 1000, "%smaxProcessCount = %d\n", prefix, atts->GetMaxProcessCount());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxDomainCacheSize = %d\n", prefix, atts->GetMaxDomainCacheSize());
     str += tmpStr;
@@ -1726,7 +1726,7 @@ StreamlineAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
+StreamlineAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -1734,12 +1734,12 @@ StreamlineAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the streamlineDirection in the object.
+    // Set the integrationDirection in the object.
     if(ival >= 0 && ival < 3)
-        obj->data->SetStreamlineDirection(StreamlineAttributes::IntegrationDirection(ival));
+        obj->data->SetIntegrationDirection(StreamlineAttributes::IntegrationDirection(ival));
     else
     {
-        fprintf(stderr, "An invalid streamlineDirection value was given. "
+        fprintf(stderr, "An invalid integrationDirection value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Forward, Backward, Both.");
@@ -1751,10 +1751,10 @@ StreamlineAttributes_SetStreamlineDirection(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetStreamlineDirection(PyObject *self, PyObject *args)
+StreamlineAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStreamlineDirection()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationDirection()));
     return retval;
 }
 
@@ -2202,7 +2202,7 @@ StreamlineAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
+StreamlineAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -2210,12 +2210,12 @@ StreamlineAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the streamlineAlgorithmType in the object.
+    // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
-        obj->data->SetStreamlineAlgorithmType(StreamlineAttributes::StreamlineAlgorithmType(ival));
+        obj->data->SetParallelizationAlgorithmType(StreamlineAttributes::ParallelizationAlgorithmType(ival));
     else
     {
-        fprintf(stderr, "An invalid streamlineAlgorithmType value was given. "
+        fprintf(stderr, "An invalid parallelizationAlgorithmType value was given. "
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
@@ -2227,15 +2227,15 @@ StreamlineAttributes_SetStreamlineAlgorithmType(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetStreamlineAlgorithmType(PyObject *self, PyObject *args)
+StreamlineAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetStreamlineAlgorithmType()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_SetMaxStreamlineProcessCount(PyObject *self, PyObject *args)
+StreamlineAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
 
@@ -2243,18 +2243,18 @@ StreamlineAttributes_SetMaxStreamlineProcessCount(PyObject *self, PyObject *args
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the maxStreamlineProcessCount in the object.
-    obj->data->SetMaxStreamlineProcessCount((int)ival);
+    // Set the maxProcessCount in the object.
+    obj->data->SetMaxProcessCount((int)ival);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-StreamlineAttributes_GetMaxStreamlineProcessCount(PyObject *self, PyObject *args)
+StreamlineAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
     StreamlineAttributesObject *obj = (StreamlineAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxStreamlineProcessCount()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
 
@@ -4003,8 +4003,8 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetLegendFlag", StreamlineAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", StreamlineAttributes_SetLightingFlag, METH_VARARGS},
     {"GetLightingFlag", StreamlineAttributes_GetLightingFlag, METH_VARARGS},
-    {"SetStreamlineDirection", StreamlineAttributes_SetStreamlineDirection, METH_VARARGS},
-    {"GetStreamlineDirection", StreamlineAttributes_GetStreamlineDirection, METH_VARARGS},
+    {"SetIntegrationDirection", StreamlineAttributes_SetIntegrationDirection, METH_VARARGS},
+    {"GetIntegrationDirection", StreamlineAttributes_GetIntegrationDirection, METH_VARARGS},
     {"SetMaxSteps", StreamlineAttributes_SetMaxSteps, METH_VARARGS},
     {"GetMaxSteps", StreamlineAttributes_GetMaxSteps, METH_VARARGS},
     {"SetTerminateByDistance", StreamlineAttributes_SetTerminateByDistance, METH_VARARGS},
@@ -4037,10 +4037,10 @@ PyMethodDef PyStreamlineAttributes_methods[STREAMLINEATTRIBUTES_NMETH] = {
     {"GetVelocitySource", StreamlineAttributes_GetVelocitySource, METH_VARARGS},
     {"SetIntegrationType", StreamlineAttributes_SetIntegrationType, METH_VARARGS},
     {"GetIntegrationType", StreamlineAttributes_GetIntegrationType, METH_VARARGS},
-    {"SetStreamlineAlgorithmType", StreamlineAttributes_SetStreamlineAlgorithmType, METH_VARARGS},
-    {"GetStreamlineAlgorithmType", StreamlineAttributes_GetStreamlineAlgorithmType, METH_VARARGS},
-    {"SetMaxStreamlineProcessCount", StreamlineAttributes_SetMaxStreamlineProcessCount, METH_VARARGS},
-    {"GetMaxStreamlineProcessCount", StreamlineAttributes_GetMaxStreamlineProcessCount, METH_VARARGS},
+    {"SetParallelizationAlgorithmType", StreamlineAttributes_SetParallelizationAlgorithmType, METH_VARARGS},
+    {"GetParallelizationAlgorithmType", StreamlineAttributes_GetParallelizationAlgorithmType, METH_VARARGS},
+    {"SetMaxProcessCount", StreamlineAttributes_SetMaxProcessCount, METH_VARARGS},
+    {"GetMaxProcessCount", StreamlineAttributes_GetMaxProcessCount, METH_VARARGS},
     {"SetMaxDomainCacheSize", StreamlineAttributes_SetMaxDomainCacheSize, METH_VARARGS},
     {"GetMaxDomainCacheSize", StreamlineAttributes_GetMaxDomainCacheSize, METH_VARARGS},
     {"SetWorkGroupSize", StreamlineAttributes_SetWorkGroupSize, METH_VARARGS},
@@ -4275,8 +4275,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
         return StreamlineAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
         return StreamlineAttributes_GetLightingFlag(self, NULL);
-    if(strcmp(name, "streamlineDirection") == 0)
-        return StreamlineAttributes_GetStreamlineDirection(self, NULL);
+    if(strcmp(name, "integrationDirection") == 0)
+        return StreamlineAttributes_GetIntegrationDirection(self, NULL);
     if(strcmp(name, "Forward") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::Forward));
     if(strcmp(name, "Backward") == 0)
@@ -4347,8 +4347,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "M3DC12DIntegrator") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::M3DC12DIntegrator));
 
-    if(strcmp(name, "streamlineAlgorithmType") == 0)
-        return StreamlineAttributes_GetStreamlineAlgorithmType(self, NULL);
+    if(strcmp(name, "parallelizationAlgorithmType") == 0)
+        return StreamlineAttributes_GetParallelizationAlgorithmType(self, NULL);
     if(strcmp(name, "LoadOnDemand") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
@@ -4358,8 +4358,8 @@ PyStreamlineAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(StreamlineAttributes::VisItSelects));
 
-    if(strcmp(name, "maxStreamlineProcessCount") == 0)
-        return StreamlineAttributes_GetMaxStreamlineProcessCount(self, NULL);
+    if(strcmp(name, "maxProcessCount") == 0)
+        return StreamlineAttributes_GetMaxProcessCount(self, NULL);
     if(strcmp(name, "maxDomainCacheSize") == 0)
         return StreamlineAttributes_GetMaxDomainCacheSize(self, NULL);
     if(strcmp(name, "workGroupSize") == 0)
@@ -4625,8 +4625,8 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetLegendFlag(self, tuple);
     else if(strcmp(name, "lightingFlag") == 0)
         obj = StreamlineAttributes_SetLightingFlag(self, tuple);
-    else if(strcmp(name, "streamlineDirection") == 0)
-        obj = StreamlineAttributes_SetStreamlineDirection(self, tuple);
+    else if(strcmp(name, "integrationDirection") == 0)
+        obj = StreamlineAttributes_SetIntegrationDirection(self, tuple);
     else if(strcmp(name, "maxSteps") == 0)
         obj = StreamlineAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "terminateByDistance") == 0)
@@ -4659,10 +4659,10 @@ PyStreamlineAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StreamlineAttributes_SetVelocitySource(self, tuple);
     else if(strcmp(name, "integrationType") == 0)
         obj = StreamlineAttributes_SetIntegrationType(self, tuple);
-    else if(strcmp(name, "streamlineAlgorithmType") == 0)
-        obj = StreamlineAttributes_SetStreamlineAlgorithmType(self, tuple);
-    else if(strcmp(name, "maxStreamlineProcessCount") == 0)
-        obj = StreamlineAttributes_SetMaxStreamlineProcessCount(self, tuple);
+    else if(strcmp(name, "parallelizationAlgorithmType") == 0)
+        obj = StreamlineAttributes_SetParallelizationAlgorithmType(self, tuple);
+    else if(strcmp(name, "maxProcessCount") == 0)
+        obj = StreamlineAttributes_SetMaxProcessCount(self, tuple);
     else if(strcmp(name, "maxDomainCacheSize") == 0)
         obj = StreamlineAttributes_SetMaxDomainCacheSize(self, tuple);
     else if(strcmp(name, "workGroupSize") == 0)

@@ -131,7 +131,7 @@ FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
         termDistance != obj.termDistance ||
         terminateByTime != obj.terminateByTime ||
         termTime != obj.termTime ||
-        streamlineDirection != obj.streamlineDirection ||
+        integrationDirection != obj.integrationDirection ||
         fieldType != obj.fieldType ||
         fieldConstant != obj.fieldConstant ||
         integrationType != obj.integrationType ||

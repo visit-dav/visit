@@ -163,17 +163,17 @@ avtFTLEFilter::SetAtts(const AttributeGroup *a)
                  atts.GetPathlinesOverrideStartingTime(),
                  CMFEType);
 
-    SetIntegrationDirection(atts.GetStreamlineDirection());
+    SetIntegrationDirection(atts.GetIntegrationDirection());
 
     SetFieldType(atts.GetFieldType());
     SetFieldConstant(atts.GetFieldConstant());
     SetVelocitySource(atts.GetVelocitySource());
 
     SetIntegrationType(atts.GetIntegrationType());
-    SetStreamlineAlgorithm(atts.GetStreamlineAlgorithmType(), 
-                           atts.GetMaxStreamlineProcessCount(),
-                           atts.GetMaxDomainCacheSize(),
-                           atts.GetWorkGroupSize());
+    SetParallelizationAlgorithm(atts.GetParallelizationAlgorithmType(), 
+                                atts.GetMaxProcessCount(),
+                                atts.GetMaxDomainCacheSize(),
+                                atts.GetWorkGroupSize());
 
     if (atts.GetIntegrationType() == FTLEAttributes::DormandPrince)
     {
@@ -403,10 +403,10 @@ avtFTLEFilter::GetInitialLocations()
 
 
 // ****************************************************************************
-//  Method: avtStreamlineFilter::SetTermination
+//  Method: avtFTLEFilter::SetTermination
 //
 //  Purpose:
-//      Sets the termination criteria for a streamline.
+//      Sets the termination criteria for an integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 5, 2010
@@ -488,10 +488,10 @@ avtFTLEFilter::CreateIntegralCurve(const avtIVPSolver* model,
 
 
 // ****************************************************************************
-// Method: avtStreamlineFilter::SetVelocitySource
+// Method: avtFTLEFilter::SetVelocitySource
 //
 // Purpose: 
-//   Sets the streamline point source.
+//   Sets the integral curve velocity source.
 //
 // Arguments:
 //   vel : The velocity of the point.
@@ -1217,8 +1217,6 @@ void
 avtFTLEFilter::PreExecute(void)
 {
     SetActiveVariable(outVarName.c_str());
-    SetStreamlineAlgorithm(STREAMLINE_VISIT_SELECTS, 10, 3, 10);
-
     GetSpatialExtents(global_bounds);
 
     if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
@@ -1400,7 +1398,7 @@ avtFTLEFilter::CreateResampledCacheString(void)
       (atts.GetPathlines() == true ? "unsteady" : "steady");
 
     const char *directionString =
-      (atts.GetStreamlineDirection() == FTLEAttributes::Forward ? "forward" : "backward");
+      (atts.GetIntegrationDirection() == FTLEAttributes::Forward ? "forward" : "backward");
 
     char str[1024];
     sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_RESOLUTION_%d_%d_%d_TERM_TYPE_%s_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",
@@ -1449,7 +1447,7 @@ avtFTLEFilter::CreateNativeResolutionCacheString(void)
       (atts.GetPathlines() == true ? "unsteady" : "steady");
 
     const char *directionString =
-      (atts.GetStreamlineDirection() == FTLEAttributes::Forward ? "forward" : "backward");
+      (atts.GetIntegrationDirection() == FTLEAttributes::Forward ? "forward" : "backward");
 
     char str[1024];
     sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_TERM_TYPE_%s_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",

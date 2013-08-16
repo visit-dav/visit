@@ -209,7 +209,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
    // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
     fieldGroup->setTitle(tr("Field"));
-    mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
+    mainLayout->addWidget(fieldGroup, 3, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
     fieldLayout->setMargin(5);
@@ -248,10 +248,16 @@ QvisPoincarePlotWindow::CreateWindowContents()
     fieldLayout->addWidget(velocitySource, 1, 3);
 
 
+    // Create the node centering
+    forceNodal = new QCheckBox(tr("Force node centering"), fieldGroup);
+    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
+    fieldLayout->addWidget(forceNodal, 2, 0);
+
+
     // Create the integration group box.
     QGroupBox *integrationGroup = new QGroupBox(central);
     integrationGroup->setTitle(tr("Integration"));
-    mainLayout->addWidget(integrationGroup, 7, 0, 5, 2);
+    mainLayout->addWidget(integrationGroup, 6, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
     integrationLayout->setMargin(5);
@@ -264,7 +270,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     integrationType->addItem(tr("Leapfrog (Single-step)"));
     integrationType->addItem(tr("Dormand-Prince (Runge-Kutta)"));
     integrationType->addItem(tr("Adams-Bashforth (Multi-step)"));
-    integrationType->addItem(tr("Unused"));
+    integrationType->addItem(tr("Runge-Kutta 4 (Single-step)"));
     integrationType->addItem(tr("M3D-C1 2D Integrator (M3D-C1 2D fields only)"));
     connect(integrationType, SIGNAL(activated(int)),
             this, SLOT(integrationTypeChanged(int)));
@@ -290,7 +296,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 
     QGroupBox *toleranceGroup = new QGroupBox(central);
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
-    integrationLayout->addWidget(toleranceGroup, 4, 0, 1, 3);
+    integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
     toleranceLayout->setMargin(5);
     toleranceLayout->setSpacing(10);
@@ -316,11 +322,6 @@ QvisPoincarePlotWindow::CreateWindowContents()
     connect(absTolSizeType, SIGNAL(activated(int)), this, SLOT(absTolSizeTypeChanged(int)));
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
 
-    forceNodal = new QCheckBox(tr("Force node centering"), integrationGroup);
-    connect(forceNodal, SIGNAL(toggled(bool)), this, SLOT(forceNodalChanged(bool)));
-    integrationLayout->addWidget(forceNodal, 9, 0);
-
-
     // Create the coordinate group
 //     QGroupBox *coordinateGroup = new QGroupBox(firstTab);
 //     coordinateGroup->setTitle(tr("Coordinate System"));
@@ -345,7 +346,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // Create the punctures group box.
     QGroupBox *puncturesGroup = new QGroupBox(firstTab);
     puncturesGroup->setTitle(tr("Punctures"));
-    mainLayout->addWidget(puncturesGroup, 3, 0);
+    mainLayout->addWidget(puncturesGroup, 10, 0);
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
 
     QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
@@ -872,28 +873,52 @@ QvisPoincarePlotWindow::CreateWindowContents()
     // Fourth tab
     // ----------------------------------------------------------------------
     fourthTab = new QWidget(central);
-    propertyTabs->addTab(fourthTab, tr("Parallel"));
-    
-    mainLayout = new QGridLayout(fourthTab);
+    propertyTabs->addTab(fourthTab, tr("Advanced"));
+    CreateAdvancedTab(fourthTab);
+}
 
-    QGroupBox *algoGrp = new QGroupBox(fourthTab);
-    algoGrp->setTitle(tr("Parallel fieldline options"));
-    mainLayout->addWidget(algoGrp, 0, 0, 1, 4);
+
+// ****************************************************************************
+// Method: QvisPoincareWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Populates the advanced tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPoincarePlotWindow::CreateAdvancedTab(QWidget *pageAdvanced)
+{
+    int row = 0;
+    QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
+    advGLayout->setMargin(5);
+    advGLayout->setSpacing(5);
+
+    QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
+    algoGrp->setTitle(tr("Parallel integration options"));
+    //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
+    advGLayout->addWidget(algoGrp, 0, 0);
 
     // Algorithm group.
     QGridLayout *algoGLayout = new QGridLayout(algoGrp);
     algoGLayout->setSpacing(10);
     algoGLayout->setColumnStretch(1,10);
 
-    slAlgoLabel = new QLabel(tr("Parallelize across"), algoGrp);
-    slAlgo = new QComboBox(algoGrp);
-    slAlgo->addItem(tr("Fieldlines"));
-    slAlgo->addItem(tr("Domains"));
-    slAlgo->addItem(tr("Fieldlines and Domains"));
-    connect(slAlgo, SIGNAL(activated(int)),
-            this, SLOT(streamlineAlgorithmChanged(int)));
-    algoGLayout->addWidget( slAlgoLabel, 1,0);
-    algoGLayout->addWidget( slAlgo, 1,1);
+    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
+    parallelAlgo = new QComboBox(algoGrp);
+    parallelAlgo->addItem(tr("Parallelize over curves"));
+    parallelAlgo->addItem(tr("Parallelize over domains"));
+    parallelAlgo->addItem(tr("Parallelize over curves and Domains"));
+    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
+    connect(parallelAlgo, SIGNAL(activated(int)),
+            this, SLOT(parallelAlgorithmChanged(int)));
+    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
+    algoGLayout->addWidget( parallelAlgo, 1,1);
     
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
@@ -921,6 +946,112 @@ QvisPoincarePlotWindow::CreateWindowContents()
             this, SLOT(workGroupSizeChanged(int)));
     algoGLayout->addWidget( workGroupSizeLabel, 4,0);
     algoGLayout->addWidget( workGroupSize, 4,1);
+
+
+    // Pathline Advance Group.
+    QGroupBox *icGrp = new QGroupBox(pageAdvanced);
+    icGrp->setTitle(tr("Streamlines vs Pathlines"));
+    //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
+    advGLayout->addWidget(icGrp, 1, 0);
+
+    QGridLayout *icGrpLayout = new QGridLayout(icGrp);
+    icGrpLayout->setSpacing(10);
+    icGrpLayout->setColumnStretch(1,10);
+
+    icButtonGroup = new QButtonGroup(icGrp);
+    QRadioButton *streamlineButton = new QRadioButton(tr("Streamline\n    Compute trajectories in an (instantaneous) snapshot of the vector field.\n    Uses and loads vector data from only the current time slice."), icGrp);
+    QRadioButton *pathlineButton = new QRadioButton(tr("Pathline    \n    Compute trajectories in the time-varying vector field.\n    Uses and loads vector data from all relevant time slices"), icGrp);
+    streamlineButton->setChecked(true);
+    icButtonGroup->addButton(streamlineButton, 0);
+    icButtonGroup->addButton(pathlineButton, 1);
+    icGrpLayout->addWidget(streamlineButton, 1, 0);
+    icGrpLayout->addWidget(pathlineButton, 2, 0);
+    connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+
+    // Pathline Options
+    QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
+    pathlineOptionsGrp->setTitle(tr("Pathlines Options"));
+    icGrpLayout->addWidget(pathlineOptionsGrp, 3, 0);
+
+    QGridLayout *pathlineOptionsGrpLayout = new QGridLayout(pathlineOptionsGrp);
+    pathlineOptionsGrpLayout->setSpacing(10);
+    pathlineOptionsGrpLayout->setColumnStretch(1,10);
+
+    pathlineOverrideStartingTimeFlag = new QCheckBox(tr("Override Starting Time"), pathlineOptionsGrp);
+    connect(pathlineOverrideStartingTimeFlag, SIGNAL(toggled(bool)),
+            this, SLOT(pathlineOverrideStartingTimeFlagChanged(bool)));
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeFlag, 1, 0);
+
+    QLabel *pathlineOverrideStartingTimeLabel = new QLabel(tr("Time"), pathlineOptionsGrp);
+    pathlineOverrideStartingTimeLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTimeLabel, 1, 1);
+    pathlineOverrideStartingTime = new QLineEdit(pathlineOptionsGrp);
+    connect(pathlineOverrideStartingTime, SIGNAL(returnPressed()),
+            this, SLOT(pathlineOverrideStartingTimeProcessText()));
+    pathlineOptionsGrpLayout->addWidget(pathlineOverrideStartingTime, 1, 2);
+
+    QGroupBox *cmfeOptionsGrp = new QGroupBox(pathlineOptionsGrp);
+    cmfeOptionsGrp->setTitle(tr("How to perform interpolation over time"));
+    pathlineOptionsGrpLayout->addWidget(cmfeOptionsGrp, 2, 0);
+
+    QGridLayout *cmfeOptionsGrpLayout = new QGridLayout(cmfeOptionsGrp);
+    cmfeOptionsGrpLayout->setSpacing(10);
+    cmfeOptionsGrpLayout->setColumnStretch(1,10);
+
+    pathlineCMFEButtonGroup = new QButtonGroup(cmfeOptionsGrp);
+    QRadioButton *connButton = new QRadioButton(tr("Mesh is static over time (fast, but special purpose)"), cmfeOptionsGrp);
+    QRadioButton *posButton = new QRadioButton(tr("Mesh changes over time (slow, but robust)"), cmfeOptionsGrp);
+    posButton->setChecked(true);
+    pathlineCMFEButtonGroup->addButton(connButton, 0);
+    pathlineCMFEButtonGroup->addButton(posButton, 1);
+    cmfeOptionsGrpLayout->addWidget(connButton, 2, 0);
+    cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
+    connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+
+    // Warnings group.
+    QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
+    warningsGrp->setTitle(tr("Warnings"));
+    //advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
+    advGLayout->addWidget(warningsGrp, 2, 0);
+
+    QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
+    warningsGLayout->setSpacing(10);
+    warningsGLayout->setColumnStretch(1,10);
+
+    issueWarningForMaxSteps = new QCheckBox(central);
+    connect(issueWarningForMaxSteps, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForMaxStepsChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForMaxSteps, 0, 0);
+    QLabel *maxStepsLabel = new QLabel(tr("Issue warning when the maximum number of steps is reached."), warningsGrp);
+    warningsGLayout->addWidget(maxStepsLabel, 0, 1, 1, 2);
+
+    issueWarningForStiffness = new QCheckBox(central);
+    connect(issueWarningForStiffness, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForStiffnessChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForStiffness, 1, 0);
+    QLabel *stiffnessLabel = new QLabel(tr("Issue warning when stiffness is detected."), warningsGrp);
+    warningsGLayout->addWidget(stiffnessLabel, 1, 1, 1, 2);
+    QLabel *stiffnessDescLabel1 = new QLabel(tr("(Stiffness refers to one vector component being so much "), warningsGrp);
+    warningsGLayout->addWidget(stiffnessDescLabel1, 2, 1, 1, 2);
+    QLabel *stiffnessDescLabel2 = new QLabel(tr("larger than another that tolerances can't be met.)"), warningsGrp);
+    warningsGLayout->addWidget(stiffnessDescLabel2, 3, 1, 1, 2);
+    
+    issueWarningForCriticalPoints = new QCheckBox(central);
+    connect(issueWarningForCriticalPoints, SIGNAL(toggled(bool)),
+            this, SLOT(issueWarningForCriticalPointsChanged(bool)));
+    warningsGLayout->addWidget(issueWarningForCriticalPoints, 4, 0);
+    QLabel *critPointLabel = new QLabel(tr("Issue warning when a curve doesn't terminate at a critical point."), warningsGrp);
+    warningsGLayout->addWidget(critPointLabel, 4, 1, 1, 2);
+    QLabel *critPointDescLabel = new QLabel(tr("(I.e. the curve circles around the critical point without stopping.)"), warningsGrp);
+    warningsGLayout->addWidget(critPointDescLabel, 5, 1, 1, 2);
+    criticalPointThresholdLabel = new QLabel(tr("Speed cutoff for critical points"), warningsGrp);
+    criticalPointThresholdLabel->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    warningsGLayout->addWidget(criticalPointThresholdLabel, 6, 1);
+    criticalPointThreshold = new QLineEdit(warningsGrp);
+    criticalPointThreshold->setAlignment(Qt::AlignLeft);
+    connect(criticalPointThreshold, SIGNAL(returnPressed()),
+            this, SLOT(criticalPointThresholdProcessText()));
+    warningsGLayout->addWidget(criticalPointThreshold, 6, 2);
 }
 
 
@@ -942,6 +1073,7 @@ QvisPoincarePlotWindow::CreateWindowContents()
 void
 QvisPoincarePlotWindow::UpdateWindow(bool doAll)
 {
+    QString       temp;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -1081,6 +1213,12 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             integrationType->blockSignals(false);
 
             break;
+        case PoincareAttributes::ID_forceNodeCenteredData:
+            forceNodal->blockSignals(true);
+            forceNodal->setChecked(atts->GetForceNodeCenteredData());
+            forceNodal->blockSignals(false);
+            break;
+
         case PoincareAttributes::ID_fieldConstant:
             fieldConstant->setText(DoubleToQString(atts->GetFieldConstant()));
             break;
@@ -1425,16 +1563,16 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             lightingToggle->blockSignals(false);
             break;
 
-        case PoincareAttributes::ID_streamlineAlgorithmType:
+        case PoincareAttributes::ID_parallelizationAlgorithmType:
             UpdateAlgorithmAttributes();
 
-            slAlgo->blockSignals(true);
-            slAlgo->setCurrentIndex(atts->GetStreamlineAlgorithmType());
-            slAlgo->blockSignals(false);
+            parallelAlgo->blockSignals(true);
+            parallelAlgo->setCurrentIndex(atts->GetParallelizationAlgorithmType());
+            parallelAlgo->blockSignals(false);
             break;
-        case PoincareAttributes::ID_maxStreamlineProcessCount:
+        case PoincareAttributes::ID_maxProcessCount:
             maxSLCount->blockSignals(true);
-            maxSLCount->setValue(atts->GetMaxStreamlineProcessCount());
+            maxSLCount->setValue(atts->GetMaxProcessCount());
             maxSLCount->blockSignals(false);
             break;
         case PoincareAttributes::ID_maxDomainCacheSize:
@@ -1448,10 +1586,55 @@ QvisPoincarePlotWindow::UpdateWindow(bool doAll)
             workGroupSize->blockSignals(false);
             break;
 
-        case PoincareAttributes::ID_forceNodeCenteredData:
-            forceNodal->blockSignals(true);
-            forceNodal->setChecked(atts->GetForceNodeCenteredData());
-            forceNodal->blockSignals(false);
+        case PoincareAttributes::ID_pathlines:
+            icButtonGroup->blockSignals(true);
+            icButtonGroup->button(atts->GetPathlines()?1:0)->setChecked(true);
+            pathlineOverrideStartingTimeFlag->setEnabled(atts->GetPathlines());
+            if( pathlineOverrideStartingTimeFlag->isChecked() && ! icButtonGroup->button(1)->isChecked() )
+                pathlineOverrideStartingTimeFlag->setChecked(false);
+            pathlineOverrideStartingTime->setEnabled(atts->GetPathlines() && atts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineCMFEButtonGroup->button(0)->setEnabled(atts->GetPathlines());
+            pathlineCMFEButtonGroup->button(1)->setEnabled(atts->GetPathlines());
+            icButtonGroup->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_pathlinesOverrideStartingTimeFlag:
+            pathlineOverrideStartingTimeFlag->blockSignals(true);
+            pathlineOverrideStartingTimeFlag->setChecked(atts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineOverrideStartingTime->setEnabled(atts->GetPathlines() && atts->GetPathlinesOverrideStartingTimeFlag());
+            pathlineOverrideStartingTimeFlag->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_pathlinesOverrideStartingTime:
+            temp.setNum(atts->GetPathlinesOverrideStartingTime(), 'g', 16);
+            pathlineOverrideStartingTime->setText(temp);
+            break;
+        case PoincareAttributes::ID_pathlinesCMFE:
+            pathlineCMFEButtonGroup->blockSignals(true);
+            pathlineCMFEButtonGroup->button(atts->GetPathlinesCMFE())->setChecked(true);
+            pathlineCMFEButtonGroup->blockSignals(false);
+            break;
+
+        case PoincareAttributes::ID_issueTerminationWarnings:
+            issueWarningForMaxSteps->blockSignals(true);
+            issueWarningForMaxSteps->setChecked(atts->GetIssueTerminationWarnings());
+            issueWarningForMaxSteps->blockSignals(false);
+            break;
+
+        case PoincareAttributes::ID_issueCriticalPointsWarnings:
+            issueWarningForCriticalPoints->blockSignals(true);
+            issueWarningForCriticalPoints->setChecked(atts->GetIssueCriticalPointsWarnings());
+            criticalPointThreshold->setEnabled(atts->GetIssueCriticalPointsWarnings());
+            criticalPointThresholdLabel->setEnabled(atts->GetIssueCriticalPointsWarnings());
+            issueWarningForCriticalPoints->blockSignals(false);
+            break;
+
+        case PoincareAttributes::ID_issueStiffnessWarnings:
+            issueWarningForStiffness->blockSignals(true);
+            issueWarningForStiffness->setChecked(atts->GetIssueStiffnessWarnings());
+            issueWarningForStiffness->blockSignals(false);
+            break;
+        case PoincareAttributes::ID_criticalPointThreshold:
+            temp.setNum(atts->GetCriticalPointThreshold());
+            criticalPointThreshold->setText(temp);
             break;
         }
     }
@@ -1691,6 +1874,38 @@ QvisPoincarePlotWindow::GetCurrentValues(int which_widget)
       }
     }
 
+    // maxProcessCount
+    if (which_widget == PoincareAttributes::ID_maxProcessCount || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = maxSLCount->value();
+        if (val >= 1)
+            atts->SetMaxProcessCount(val);
+    }
+
+    // workGroupSize
+    if (which_widget == PoincareAttributes::ID_workGroupSize || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = workGroupSize->value();
+        if (val >= 2)
+            atts->SetWorkGroupSize(val);
+    }
+    
+    // criticalPointThreshold
+    if(which_widget == PoincareAttributes::ID_criticalPointThreshold || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(criticalPointThreshold, val))
+            atts->SetCriticalPointThreshold(val);
+        else
+        {
+            ResettingError(tr("Speed cutoff for critical points"),
+                DoubleToQString(atts->GetCriticalPointThreshold()));
+            atts->SetCriticalPointThreshold(atts->GetCriticalPointThreshold());
+        }
+    }
+
     if (doAll)
     {
         atts->SetPointSize(pointControl->GetPointSize());
@@ -1813,6 +2028,7 @@ QvisPoincarePlotWindow::UpdateIntegrationAttributes()
     {
     case PoincareAttributes::Euler:
     case PoincareAttributes::Leapfrog:
+    case PoincareAttributes::RK4:
         maxStepLength->show();
         maxStepLengthLabel->show();
       break;
@@ -1864,7 +2080,7 @@ QvisPoincarePlotWindow::UpdateAlgorithmAttributes()
     workGroupSizeLabel->hide();
     workGroupSize->hide();
 
-    switch( atts->GetStreamlineAlgorithmType() )
+    switch( atts->GetParallelizationAlgorithmType() )
     {
       case PoincareAttributes::LoadOnDemand:
         maxDomainCacheLabel->show();
@@ -2501,37 +2717,6 @@ QvisPoincarePlotWindow::lightingToggled(bool val)
 }
 
 void
-QvisPoincarePlotWindow::streamlineAlgorithmChanged(int val)
-{
-    if(val != atts->GetStreamlineAlgorithmType())
-    {
-        atts->SetStreamlineAlgorithmType(PoincareAttributes::StreamlineAlgorithmType(val));
-        Apply();
-    }
-}
-
-void
-QvisPoincarePlotWindow::maxSLCountChanged(int val)
-{
-    atts->SetMaxStreamlineProcessCount(val);
-    Apply();
-}
-
-void
-QvisPoincarePlotWindow::maxDomainCacheChanged(int val)
-{
-    atts->SetMaxDomainCacheSize(val);
-    Apply();
-}
-
-void
-QvisPoincarePlotWindow::workGroupSizeChanged(int val)
-{
-    atts->SetWorkGroupSize(val);
-    Apply();
-}
-
-void
 QvisPoincarePlotWindow::pointSizePixelsChanged(int val)
 {
     atts->SetPointSizePixels(val);
@@ -2577,6 +2762,101 @@ QvisPoincarePlotWindow::forceNodalChanged(bool val)
     Apply();
 }
 
+
+void
+QvisPoincarePlotWindow::parallelAlgorithmChanged(int val)
+{
+    if(val != atts->GetParallelizationAlgorithmType())
+    {
+        atts->SetParallelizationAlgorithmType(PoincareAttributes::ParallelizationAlgorithmType(val));
+        Apply();
+    }
+}
+
+void
+QvisPoincarePlotWindow::maxSLCountChanged(int val)
+{
+    atts->SetMaxProcessCount(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::maxDomainCacheChanged(int val)
+{
+    atts->SetMaxDomainCacheSize(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::workGroupSizeChanged(int val)
+{
+    atts->SetWorkGroupSize(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::icButtonGroupChanged(int val)
+{
+    switch( val )
+    {
+        case 0: // Streamline
+            atts->SetPathlines(false);
+            break;
+        case 1: // Pathline
+            atts->SetPathlines(true);
+            break;
+    }
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::pathlineOverrideStartingTimeFlagChanged(bool val)
+{
+    atts->SetPathlinesOverrideStartingTimeFlag(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::pathlineOverrideStartingTimeProcessText()
+{
+    GetCurrentValues(PoincareAttributes::ID_pathlinesOverrideStartingTime);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::pathlineCMFEButtonGroupChanged(int val)
+{
+    atts->SetPathlinesCMFE((PoincareAttributes::PathlinesCMFE)val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::issueWarningForMaxStepsChanged(bool val)
+{
+    atts->SetIssueTerminationWarnings(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::issueWarningForStiffnessChanged(bool val)
+{
+    atts->SetIssueStiffnessWarnings(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::issueWarningForCriticalPointsChanged(bool val)
+{
+    atts->SetIssueCriticalPointsWarnings(val);
+    Apply();
+}
+
+void
+QvisPoincarePlotWindow::criticalPointThresholdProcessText(void)
+{
+    GetCurrentValues(PoincareAttributes::ID_criticalPointThreshold);
+    Apply();
+}
 
 
 static void

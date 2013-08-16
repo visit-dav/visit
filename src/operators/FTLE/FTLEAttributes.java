@@ -86,10 +86,10 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public final static int SIZETYPE_ABSOLUTE = 0;
     public final static int SIZETYPE_FRACTIONOFBBOX = 1;
 
-    public final static int STREAMLINEALGORITHMTYPE_LOADONDEMAND = 0;
-    public final static int STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
-    public final static int STREAMLINEALGORITHMTYPE_MASTERSLAVE = 2;
-    public final static int STREAMLINEALGORITHMTYPE_VISITSELECTS = 3;
+    public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
+    public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
+    public final static int PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int PARALLELIZATIONALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int TERMINATIONTYPE_TIME = 0;
     public final static int TERMINATIONTYPE_DISTANCE = 1;
@@ -117,7 +117,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
-        streamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminationType = TERMINATIONTYPE_TIME;
         terminateByDistance = false;
@@ -138,8 +138,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
-        maxStreamlineProcessCount = 10;
+        parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
+        maxProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
         pathlines = false;
@@ -177,7 +177,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[0] = 1;
         EndPosition[1] = 1;
         EndPosition[2] = 1;
-        streamlineDirection = INTEGRATIONDIRECTION_FORWARD;
+        integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminationType = TERMINATIONTYPE_TIME;
         terminateByDistance = false;
@@ -198,8 +198,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         velocitySource[1] = 0;
         velocitySource[2] = 0;
         integrationType = INTEGRATIONTYPE_DORMANDPRINCE;
-        streamlineAlgorithmType = STREAMLINEALGORITHMTYPE_VISITSELECTS;
-        maxStreamlineProcessCount = 10;
+        parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
+        maxProcessCount = 10;
         maxDomainCacheSize = 3;
         workGroupSize = 32;
         pathlines = false;
@@ -242,7 +242,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         EndPosition[1] = obj.EndPosition[1];
         EndPosition[2] = obj.EndPosition[2];
 
-        streamlineDirection = obj.streamlineDirection;
+        integrationDirection = obj.integrationDirection;
         maxSteps = obj.maxSteps;
         terminationType = obj.terminationType;
         terminateByDistance = obj.terminateByDistance;
@@ -264,8 +264,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         velocitySource[2] = obj.velocitySource[2];
 
         integrationType = obj.integrationType;
-        streamlineAlgorithmType = obj.streamlineAlgorithmType;
-        maxStreamlineProcessCount = obj.maxStreamlineProcessCount;
+        parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
+        maxProcessCount = obj.maxProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
         workGroupSize = obj.workGroupSize;
         pathlines = obj.pathlines;
@@ -327,7 +327,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 StartPosition_equal &&
                 (UseDataSetEnd == obj.UseDataSetEnd) &&
                 EndPosition_equal &&
-                (streamlineDirection == obj.streamlineDirection) &&
+                (integrationDirection == obj.integrationDirection) &&
                 (maxSteps == obj.maxSteps) &&
                 (terminationType == obj.terminationType) &&
                 (terminateByDistance == obj.terminateByDistance) &&
@@ -345,8 +345,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 (fieldConstant == obj.fieldConstant) &&
                 velocitySource_equal &&
                 (integrationType == obj.integrationType) &&
-                (streamlineAlgorithmType == obj.streamlineAlgorithmType) &&
-                (maxStreamlineProcessCount == obj.maxStreamlineProcessCount) &&
+                (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
+                (maxProcessCount == obj.maxProcessCount) &&
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
                 (workGroupSize == obj.workGroupSize) &&
                 (pathlines == obj.pathlines) &&
@@ -435,9 +435,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(5);
     }
 
-    public void SetStreamlineDirection(int streamlineDirection_)
+    public void SetIntegrationDirection(int integrationDirection_)
     {
-        streamlineDirection = streamlineDirection_;
+        integrationDirection = integrationDirection_;
         Select(6);
     }
 
@@ -553,15 +553,15 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(23);
     }
 
-    public void SetStreamlineAlgorithmType(int streamlineAlgorithmType_)
+    public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
-        streamlineAlgorithmType = streamlineAlgorithmType_;
+        parallelizationAlgorithmType = parallelizationAlgorithmType_;
         Select(24);
     }
 
-    public void SetMaxStreamlineProcessCount(int maxStreamlineProcessCount_)
+    public void SetMaxProcessCount(int maxProcessCount_)
     {
-        maxStreamlineProcessCount = maxStreamlineProcessCount_;
+        maxProcessCount = maxProcessCount_;
         Select(25);
     }
 
@@ -668,7 +668,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public double[] GetStartPosition() { return StartPosition; }
     public boolean  GetUseDataSetEnd() { return UseDataSetEnd; }
     public double[] GetEndPosition() { return EndPosition; }
-    public int      GetStreamlineDirection() { return streamlineDirection; }
+    public int      GetIntegrationDirection() { return integrationDirection; }
     public int      GetMaxSteps() { return maxSteps; }
     public int      GetTerminationType() { return terminationType; }
     public boolean  GetTerminateByDistance() { return terminateByDistance; }
@@ -686,8 +686,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public double   GetFieldConstant() { return fieldConstant; }
     public double[] GetVelocitySource() { return velocitySource; }
     public int      GetIntegrationType() { return integrationType; }
-    public int      GetStreamlineAlgorithmType() { return streamlineAlgorithmType; }
-    public int      GetMaxStreamlineProcessCount() { return maxStreamlineProcessCount; }
+    public int      GetParallelizationAlgorithmType() { return parallelizationAlgorithmType; }
+    public int      GetMaxProcessCount() { return maxProcessCount; }
     public int      GetMaxDomainCacheSize() { return maxDomainCacheSize; }
     public int      GetWorkGroupSize() { return workGroupSize; }
     public boolean  GetPathlines() { return pathlines; }
@@ -721,7 +721,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(5, buf))
             buf.WriteDoubleArray(EndPosition);
         if(WriteSelect(6, buf))
-            buf.WriteInt(streamlineDirection);
+            buf.WriteInt(integrationDirection);
         if(WriteSelect(7, buf))
             buf.WriteInt(maxSteps);
         if(WriteSelect(8, buf))
@@ -757,9 +757,9 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(23, buf))
             buf.WriteInt(integrationType);
         if(WriteSelect(24, buf))
-            buf.WriteInt(streamlineAlgorithmType);
+            buf.WriteInt(parallelizationAlgorithmType);
         if(WriteSelect(25, buf))
-            buf.WriteInt(maxStreamlineProcessCount);
+            buf.WriteInt(maxProcessCount);
         if(WriteSelect(26, buf))
             buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(27, buf))
@@ -817,7 +817,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             SetEndPosition(buf.ReadDoubleArray());
             break;
         case 6:
-            SetStreamlineDirection(buf.ReadInt());
+            SetIntegrationDirection(buf.ReadInt());
             break;
         case 7:
             SetMaxSteps(buf.ReadInt());
@@ -871,10 +871,10 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             SetIntegrationType(buf.ReadInt());
             break;
         case 24:
-            SetStreamlineAlgorithmType(buf.ReadInt());
+            SetParallelizationAlgorithmType(buf.ReadInt());
             break;
         case 25:
-            SetMaxStreamlineProcessCount(buf.ReadInt());
+            SetMaxProcessCount(buf.ReadInt());
             break;
         case 26:
             SetMaxDomainCacheSize(buf.ReadInt());
@@ -941,12 +941,12 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("StartPosition", StartPosition, indent) + "\n";
         str = str + boolToString("UseDataSetEnd", UseDataSetEnd, indent) + "\n";
         str = str + doubleArrayToString("EndPosition", EndPosition, indent) + "\n";
-        str = str + indent + "streamlineDirection = ";
-        if(streamlineDirection == INTEGRATIONDIRECTION_FORWARD)
+        str = str + indent + "integrationDirection = ";
+        if(integrationDirection == INTEGRATIONDIRECTION_FORWARD)
             str = str + "INTEGRATIONDIRECTION_FORWARD";
-        if(streamlineDirection == INTEGRATIONDIRECTION_BACKWARD)
+        if(integrationDirection == INTEGRATIONDIRECTION_BACKWARD)
             str = str + "INTEGRATIONDIRECTION_BACKWARD";
-        if(streamlineDirection == INTEGRATIONDIRECTION_BOTH)
+        if(integrationDirection == INTEGRATIONDIRECTION_BOTH)
             str = str + "INTEGRATIONDIRECTION_BOTH";
         str = str + "\n";
         str = str + intToString("maxSteps", maxSteps, indent) + "\n";
@@ -1002,17 +1002,17 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(integrationType == INTEGRATIONTYPE_M3DC12DINTEGRATOR)
             str = str + "INTEGRATIONTYPE_M3DC12DINTEGRATOR";
         str = str + "\n";
-        str = str + indent + "streamlineAlgorithmType = ";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_LOADONDEMAND)
-            str = str + "STREAMLINEALGORITHMTYPE_LOADONDEMAND";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS)
-            str = str + "STREAMLINEALGORITHMTYPE_PARALLELSTATICDOMAINS";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_MASTERSLAVE)
-            str = str + "STREAMLINEALGORITHMTYPE_MASTERSLAVE";
-        if(streamlineAlgorithmType == STREAMLINEALGORITHMTYPE_VISITSELECTS)
-            str = str + "STREAMLINEALGORITHMTYPE_VISITSELECTS";
+        str = str + indent + "parallelizationAlgorithmType = ";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_VISITSELECTS)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";
-        str = str + intToString("maxStreamlineProcessCount", maxStreamlineProcessCount, indent) + "\n";
+        str = str + intToString("maxProcessCount", maxProcessCount, indent) + "\n";
         str = str + intToString("maxDomainCacheSize", maxDomainCacheSize, indent) + "\n";
         str = str + intToString("workGroupSize", workGroupSize, indent) + "\n";
         str = str + boolToString("pathlines", pathlines, indent) + "\n";
@@ -1050,7 +1050,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private double[] StartPosition;
     private boolean  UseDataSetEnd;
     private double[] EndPosition;
-    private int      streamlineDirection;
+    private int      integrationDirection;
     private int      maxSteps;
     private int      terminationType;
     private boolean  terminateByDistance;
@@ -1068,8 +1068,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private double   fieldConstant;
     private double[] velocitySource;
     private int      integrationType;
-    private int      streamlineAlgorithmType;
-    private int      maxStreamlineProcessCount;
+    private int      parallelizationAlgorithmType;
+    private int      maxProcessCount;
     private int      maxDomainCacheSize;
     private int      workGroupSize;
     private boolean  pathlines;

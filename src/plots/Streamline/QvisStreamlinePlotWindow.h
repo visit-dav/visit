@@ -190,7 +190,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void fieldTypeChanged(int val);
     void fieldConstantProccessText();
     void integrationTypeChanged(int val);
-    void streamlineAlgorithmChanged(int val);
     void directionTypeChanged(int val);
     void maxStepLengthProcessText();
     void maxTimeStepProcessText();
@@ -222,9 +221,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void randomSeedChanged(int);
     void numberOfRandomSamplesChanged(int);
     void fillChanged(int);
-    void maxSLCountChanged(int val);
-    void maxDomainCacheChanged(int val);
-    void workGroupSizeChanged(int val);
     void displayMethodChanged(int val);
     void geomDisplayQualityChanged(int val);
     void showSeedsChanged(bool val);
@@ -240,13 +236,10 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void singleColorChanged(const QColor &color);
     void legendFlagChanged(bool val);
     void lightingFlagChanged(bool val);
-    void icButtonGroupChanged(int val);
     void coordinateButtonGroupChanged(int val);
     void phiScalingToggled(bool);
     void phiScalingProcessText();
-    void pathlineOverrideStartingTimeFlagChanged(bool val);
-    void pathlineOverrideStartingTimeProcessText();
-    void pathlineCMFEButtonGroupChanged(int val);
+
     void useWholeBoxChanged(bool val);
     void coloringVariableChanged(const QString &var);
     void opacityTypeChanged(int val);
@@ -282,9 +275,6 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void seedSizeTypeChanged(int);
     void tubeSizeTypeChanged(int);
     void ribbonSizeTypeChanged(int);
-    void issueWarningForMaxStepsChanged(bool);
-    void issueWarningForStiffnessChanged(bool);
-    void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
     void tubeRadiusVaryFactorProcessText();
     void tubeRadiusVaryVariableChanged(const QString&);
@@ -293,6 +283,20 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void processCorrelationDistanceAngTolEditText();
     void processCorrelationDistanceMinDistEditText();
     void selectionsChanged(int val);
+
+    void parallelAlgorithmChanged(int val);
+    void maxSLCountChanged(int val);
+    void maxDomainCacheChanged(int val);
+    void workGroupSizeChanged(int val);
+
+    void icButtonGroupChanged(int val);
+    void pathlineOverrideStartingTimeFlagChanged(bool val);
+    void pathlineOverrideStartingTimeProcessText();
+    void pathlineCMFEButtonGroupChanged(int val);
+
+    void issueWarningForMaxStepsChanged(bool);
+    void issueWarningForStiffnessChanged(bool);
+    void issueWarningForCriticalPointsChanged(bool);
   private:
     int plotType;
     QComboBox *sourceType;
@@ -384,25 +388,15 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QLabel    *singleColorLabel;
     QCheckBox *legendFlag;
     QCheckBox *lightingFlag;
-    QButtonGroup *icButtonGroup;
     QButtonGroup *coordinateButtonGroup;
     QLineEdit *phiScaling;
     QCheckBox *phiScalingToggle;
-    QCheckBox *pathlineOverrideStartingTimeFlag;
-    QLineEdit *pathlineOverrideStartingTime;
-    QButtonGroup *pathlineCMFEButtonGroup;
+
     QComboBox *fieldType;
     QLabel    *fieldConstantLabel;
     QLineEdit *fieldConstant;
     QComboBox *integrationType;
-    QLabel    *slAlgoLabel;
-    QComboBox *slAlgo;
-    QLabel    *maxSLCountLabel;
-    QSpinBox  *maxSLCount;
-    QLabel    *maxDomainCacheLabel;
-    QSpinBox  *maxDomainCache;
-    QLabel    *workGroupSizeLabel;
-    QSpinBox  *workGroupSize;
+
     QvisVariableButton *coloringVar;
     QLabel    *limitsLabel;
     QCheckBox *legendMaxToggle;
@@ -427,6 +421,20 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     QSpinBox  *tubeDisplayDensity;
     QLabel    *geomDisplayQualityLabel;
     QComboBox *geomDisplayQuality;
+
+    QLabel    *parallelAlgoLabel;
+    QComboBox *parallelAlgo;
+    QLabel    *maxSLCountLabel;
+    QSpinBox  *maxSLCount;
+    QLabel    *maxDomainCacheLabel;
+    QSpinBox  *maxDomainCache;
+    QLabel    *workGroupSizeLabel;
+    QSpinBox  *workGroupSize;
+
+    QButtonGroup *icButtonGroup;
+    QCheckBox *pathlineOverrideStartingTimeFlag;
+    QLineEdit *pathlineOverrideStartingTime;
+    QButtonGroup *pathlineCMFEButtonGroup;
 
     QCheckBox *issueWarningForMaxSteps;
     QCheckBox *issueWarningForStiffness;
