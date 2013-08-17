@@ -1686,6 +1686,9 @@ avtSiloFileFormat::ReadTopDirStuff(DBfile *dbfile, const char *dirname,
 //    Katheen Biagas, Thu Jun 6 13:11:27 PDT 2013
 //    Enable reading of mrgtrees on Windows.
 //
+//    Cyrus Harrison, Fri Aug 16 10:07:47 PDT 2013
+//    Added support for nodelists placed @ /Nodelists/
+//
 // ****************************************************************************
 
 void
@@ -2028,8 +2031,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                 //
                 // Handle special case for enumerated scalar rep for nodelists
                 //
-                if (codeNameGuess == "BlockStructured" &&
-                    !haveAddedNodelistEnumerations[name_w_dir])
+                if ( !haveAddedNodelistEnumerations[name_w_dir])
                 {
                     haveAddedNodelistEnumerations[name_w_dir] = true;
                     AddNodelistEnumerations(dbfile, md, name_w_dir);
@@ -6958,6 +6960,10 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
 //
 //    Mark C. Miller, Tue Jul 10 20:08:37 PDT 2012
 //    Add support for nodelist vars in MRG Trees.
+//
+//    Cyrus Harrison, Fri Aug 16 10:07:47 PDT 2013
+//    Added support for nodelists placed @ /Nodelists/
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -6970,7 +6976,7 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     //
     // Handle possible special case of nodelists spoofed as a variable
     //
-    if (codeNameGuess == "BlockStructured" && string(v) == "Nodelists")
+    if (string(v) == "Nodelists")
     {
         vtkDataArray *nlvar = GetNodelistsVar(domain);
         if (nlvar != 0)
@@ -15745,18 +15751,39 @@ AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
 //
 //    Mark C. Miller, Thu Apr 12 23:14:21 PDT 2012
 //    Replaced use of NChooseR enumeration mode with ByBitMap.
+//
+//    Cyrus Harrison, Fri Aug 16 10:07:47 PDT 2013
+//    Added support for nodelists placed @ /Nodelists/
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *md,
     string meshname)
 {
-    if (meshname != "hydro_mesh")
+    // mesh names that adhere to this nodelist format
+    if (!( meshname != "hydro_mesh" ||
+           meshname != "MMESH" ||
+           meshname != "MESH") )
         return;
 
-    if (DBInqVarType(dbfile, "/Global/Nodelists") != DB_DIR)
-        return;
+    // check for nodelists
+    ostringstream oss;
+    string nodelist_base = "/Global/Nodelists";
 
-    DBReadVar(dbfile, "/Global/Nodelists/NumberNodelists", &numNodeLists);
+    if (DBInqVarType(dbfile, nodelist_base.c_str()) != DB_DIR)
+    {
+        // it not found @ "/Global/Nodelists", check for "Nodelists" in the root of the silo file.
+        nodelist_base  = "/Nodelists";
+        if (DBInqVarType(dbfile, nodelist_base.c_str()) != DB_DIR)
+            return;
+    }
+
+    debug5 << "Adding Nodelist for mesh = " << meshname <<endl;
+    debug5 << "Nodelist silo base path = " << nodelist_base <<endl;
+
+    oss.str("");
+    oss << nodelist_base << "/NumberNodelists";
+    DBReadVar(dbfile, oss.str().c_str(), &numNodeLists);
 
     // Note, if we ever remove the restriction on meshname, above, we need
     // to make sure we don't wind up defining the same name scalar on different
@@ -15768,32 +15795,35 @@ avtSiloFileFormat::AddNodelistEnumerations(DBfile *dbfile, avtDatabaseMetaData *
     nlBlockToWindowsMap.clear();
     for (i = 0; i < numNodeLists; i++)
     {
-        char *tmpName = 0; char tmpVarName[256];
-        SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Name", i);
-        tmpName = (char*) DBGetVar(dbfile, tmpVarName);
+        oss.str("");
+        oss << nodelist_base << "/Nodelist" << i << "/Name";
+        char *tmpName = (char*) DBGetVar(dbfile, oss.str().c_str());
 
         debug5 << "For nodelist \"" << tmpName << "\", value = " << i << endl;
         smd->AddEnumNameValue(tmpName, i);
         free(tmpName);
 
-        SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/NumberWindows", i);
+        oss.str("");
+        oss << nodelist_base << "/Nodelist" << i << "/NumberWindows";
         int numWindows;
-        DBReadVar(dbfile, tmpVarName, &numWindows);
+        DBReadVar(dbfile, oss.str().c_str(), &numWindows);
 
         debug5 << "    NumberWindows = " << numWindows << endl;
         for (int j = 0; j < numWindows; j++)
         {
             debug5 << "        For Window " << j << endl;
-            SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Block%d", i, j);
+            oss.str("");
+            oss <<  nodelist_base << "/Nodelist" << i << "/Block" << j;
             int blockNum;
-            DBReadVar(dbfile, tmpVarName, &blockNum);
+            DBReadVar(dbfile, oss.str().c_str(), &blockNum);
             nlBlockToWindowsMap[blockNum].push_back(i);
             debug5 << "            Block = " << blockNum << endl;
 
             debug5 << "            Extents = ";
-            SNPRINTF(tmpVarName, sizeof(tmpVarName), "/Global/Nodelists/Nodelist%d/Extents%d", i, j);
+            oss.str("");
+            oss <<  nodelist_base << "/Nodelist" << i << "/Extents" << j;
             int extents[6];
-            DBReadVar(dbfile, tmpVarName, extents);
+            DBReadVar(dbfile, oss.str().c_str(), extents);
             for (int k = 0; k < 6; k++)
             {
                 nlBlockToWindowsMap[blockNum].push_back(extents[k]);
