@@ -3292,7 +3292,7 @@
                 </Object>
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
-                <Field name="streamlineDirection" type="string">Forward</Field>
+                <Field name="integrationDirection" type="string">Forward</Field>
                 <Field name="maxSteps" type="int">1000</Field>
                 <Field name="terminateByDistance" type="bool">false</Field>
                 <Field name="termDistance" type="double">10</Field>

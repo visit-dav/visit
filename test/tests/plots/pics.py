@@ -72,23 +72,23 @@ for i in range(len(databases)):
          if (time_strings[k] == "path_forward"):
            TimeSliderSetState(0)
            s.pathlines = 1
-           s.streamlineDirection = s.Forward
+           s.integrationDirection = s.Forward
          if (time_strings[k] == "path_backward"):
            TimeSliderSetState(TimeSliderGetNStates()-1)
            s.pathlines = 1
-           s.streamlineDirection = s.Backward
+           s.integrationDirection = s.Backward
          if (time_strings[k] == "stream_forward"):
            TimeSliderSetState(0)
            s.pathlines = 0
-           s.streamlineDirection = s.Forward
+           s.integrationDirection = s.Forward
          if (time_strings[k] == "stream_backward"):
            TimeSliderSetState(0)
            s.pathlines = 0
-           s.streamlineDirection = s.Backward
+           s.integrationDirection = s.Backward
          if (time_strings[k] == "stream_both"):
            TimeSliderSetState(0)
            s.pathlines = 0
-           s.streamlineDirection = s.Both
+           s.integrationDirection = s.Both
          s.maxStepLength = 0.01
          s.legendMinFlag = 1
          s.legendMaxFlag = 1

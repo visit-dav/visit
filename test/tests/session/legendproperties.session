@@ -2667,7 +2667,7 @@
                 </Object>
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
-                <Field name="streamlineDirection" type="string">Forward</Field>
+                <Field name="integrationDirection" type="string">Forward</Field>
                 <Field name="relTol" type="double">0.0001</Field>
                 <Field name="absTol" type="double">1e-05</Field>
                 <Field name="terminationType" type="string">Distance</Field>

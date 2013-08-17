@@ -77,7 +77,7 @@ StreamlineAtts.colorTableName = "Default"
 StreamlineAtts.singleColor = (255, 0, 0, 255)
 StreamlineAtts.legendFlag = 1
 StreamlineAtts.lightingFlag = 1
-StreamlineAtts.streamlineDirection = StreamlineAtts.Both  # Forward, Backward, Both
+StreamlineAtts.integrationDirection = StreamlineAtts.Both  # Forward, Backward, Both
 StreamlineAtts.relTol = 1e-06
 StreamlineAtts.absTolSizeType = StreamlineAtts.Absolute
 StreamlineAtts.absTolAbsolute = 1e-07
@@ -120,7 +120,7 @@ StreamlineAtts.randomSeed = 0
 StreamlineAtts.numberOfRandomSamples = 1
 StreamlineAtts.forceNodeCenteredData = 0
 
-# test coloring options
+# Test coloring options
 
 StreamlineAtts.coloringMethod = StreamlineAtts.ColorBySpeed
 SetPlotOptions(StreamlineAtts)

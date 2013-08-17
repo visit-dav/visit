@@ -57,7 +57,7 @@ TimeSliderSetState(6)
 e = GetLastError()
 TestText("pathlines_03", e)
 
-s.streamlineDirection = s.Backward
+s.integrationDirection = s.Backward
 SetPlotOptions(s)
 DrawPlots()
 Test("pathlines_04")
