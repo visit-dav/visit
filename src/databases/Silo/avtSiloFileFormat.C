@@ -3594,6 +3594,10 @@ avtSiloFileFormat::ReadMaterials(DBfile *dbfile,
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
 //
+//    Cyrus Harrison, Fri Aug 16 14:25:36 PDT 2013
+//    Improve way multimat and mat info are inspected to create material names.
+//    Avoid using using a dummy DBMaterial struct and pointer stealing.
+//
 // ****************************************************************************
 void
 avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
@@ -3629,6 +3633,11 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                 RegisterDomainDirs(mm_ent, dirname);
             }
 
+            // use these temp vars 
+            int    minfo_nmats = 0;
+            int   *minfo_matnos = NULL;
+            char **minfo_matnames = NULL;
+            char **minfo_matcolors = NULL;
 
             if (MultiMatHasAllMatInfo(mm) < 3 && mm->nmats)
             {
@@ -3683,6 +3692,12 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
                 }
                 else
                 {
+                    //Get all the info from the mat obj.
+                    minfo_nmats     = mat->nmat;
+                    minfo_matnos    = mat->matnos;
+                    minfo_matnames  = mat->matnames;
+                    minfo_matcolors = mat->matcolors;
+
                     bool invalidateVar = false;
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
@@ -3705,13 +3720,11 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             {
 #ifdef SILO_VERSION_GE
 #if SILO_VERSION_GE(4,6,3)
-                // Spoof the material object for code block below so it contains
-                // all the info from the multi-mat.
-                mat = DBAllocMaterial();
-                mat->nmat = mm->nmatnos;
-                mat->matnos = mm->matnos;
-                mat->matnames = mm->material_names;
-                mat->matcolors = mm->matcolors;
+                //Get all the info from the multi-mat.
+                minfo_nmats     = mm->nmatnos;
+                minfo_matnos    = mm->matnos;
+                minfo_matnames  = mm->material_names;
+                minfo_matcolors = mm->matcolors;
 #endif
 #endif
             }
@@ -3725,29 +3738,29 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             string meshname;
             if (valid_var)
             {
-                for (j = 0 ; j < mat->nmat ; j++)
+                for (j = 0 ; j < minfo_nmats ; j++)
                 {
                     char *num = NULL;
-                    int dlen = int(log10(float(mat->matnos[j]+1))) + 1;
-                    if (mat->matnames == NULL || mat->matnames[j] == NULL)
+                    int dlen = int(log10(float(minfo_matnos[j]+1))) + 1;
+                    if (minfo_matnames == NULL || minfo_matnames[j] == NULL)
                     {
                         num = new char[dlen + 2];
-                        sprintf(num, "%d", mat->matnos[j]);
+                        sprintf(num, "%d", minfo_matnos[j]);
                     }
                     else
                     {
-                        int len = strlen(mat->matnames[j]);
+                        int len = strlen(minfo_matnames[j]);
                         num = new char[len + 1 + dlen + 1];
-                        sprintf(num, "%d %s", mat->matnos[j], mat->matnames[j]);
+                        sprintf(num, "%d %s", minfo_matnos[j], minfo_matnames[j]);
                     }
                     matnames.push_back(num);
                     delete[] num;
 
 #ifdef DBOPT_MATCOLORS
-                    if (mat->matcolors)
+                    if (minfo_matcolors)
                     {
-                        if (mat->matcolors[j] && mat->matcolors[j][0])
-                            matcolors.push_back(mat->matcolors[j]);
+                        if (minfo_matcolors[j] && minfo_matcolors[j][0])
+                            matcolors.push_back(minfo_matcolors[j]);
                         else
                             matcolors.push_back("");
                     }
@@ -3780,26 +3793,15 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             avtMaterialMetaData *mmd;
             if (matcolors.size())
                 mmd = new avtMaterialMetaData(name_w_dir, meshname,
-                                              mat ? mat->nmat : 0, matnames,
+                                              minfo_nmats, matnames,
                                               matcolors);
             else
                 mmd = new avtMaterialMetaData(name_w_dir, meshname,
-                                              mat ? mat->nmat : 0, matnames);
+                                              minfo_nmats, matnames);
 
             mmd->validVariable = valid_var;
             mmd->hideFromGUI = mm->guihide;
             md->Add(mmd);
-
-
-            if (MultiMatHasAllMatInfo(mm) >= 2)
-            {
-                // Remove everything we stuck into the spoof'd material object
-                // before moving on to DBFreeMaterial call.
-                mat->nmat = 0;
-                mat->matnos = 0;
-                mat->matnames = 0;
-                mat->matcolors = 0;
-            }
 
         }
         CATCHALL
