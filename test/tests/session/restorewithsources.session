@@ -3173,8 +3173,8 @@
                 <Field name="pointType" type="string">Point</Field>
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
-                <Field name="streamlineAlgorithmType" type="string">LoadOnDemand</Field>
-                <Field name="maxStreamlineProcessCount" type="int">10</Field>
+                <Field name="parallelizationAlgorithmType" type="string">LoadOnDemand</Field>
+                <Field name="maxProcessCount" type="int">10</Field>
                 <Field name="maxDomainCacheSize" type="int">3</Field>
                 <Field name="workGroupSize" type="int">32</Field>
                 <Field name="forceNodeCenteredData" type="bool">false</Field>
@@ -3309,8 +3309,8 @@
                 <Field name="fieldConstant" type="double">1</Field>
                 <Field name="velocitySource" type="doubleArray" length="3">0 0 0 </Field>
                 <Field name="integrationType" type="string">DormandPrince</Field>
-                <Field name="streamlineAlgorithmType" type="string">VisItSelects</Field>
-                <Field name="maxStreamlineProcessCount" type="int">10</Field>
+                <Field name="parallelizationAlgorithmType" type="string">VisItSelects</Field>
+                <Field name="maxProcessCount" type="int">10</Field>
                 <Field name="maxDomainCacheSize" type="int">3</Field>
                 <Field name="workGroupSize" type="int">32</Field>
                 <Field name="pathlines" type="bool">false</Field>

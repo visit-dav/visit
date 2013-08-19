@@ -1182,8 +1182,8 @@
                 <Field name="absTol" type="double">1e-05</Field>
                 <Field name="terminationType" type="string">Distance</Field>
                 <Field name="integrationType" type="string">DormandPrince</Field>
-                <Field name="streamlineAlgorithmType" type="string">ParallelStaticDomains</Field>
-                <Field name="maxStreamlineProcessCount" type="int">10</Field>
+                <Field name="parallelizationAlgorithmType" type="string">ParallelStaticDomains</Field>
+                <Field name="maxProcessCount" type="int">10</Field>
                 <Field name="maxDomainCacheSize" type="int">3</Field>
             </Object>
             <Object name="SubsetAttributes">
