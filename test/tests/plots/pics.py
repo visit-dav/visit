@@ -54,7 +54,7 @@ for i in range(len(databases)):
          DeleteAllPlots()
          AddPlot("Streamline", "velocity", 1, 0)
          s = StreamlineAttributes()
-         s.streamlineAlgorithmType = algs[j]
+         s.parallelizationAlgorithmType = algs[j]
          s.sourceType = s.SpecifiedPoint
          if (is2D[i]):
            if (intg[integrator_i] in [s.RK4, s.DormandPrince, s.AdamsBashforth]) :
