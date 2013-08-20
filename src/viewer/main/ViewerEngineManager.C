@@ -855,6 +855,11 @@ ViewerEngineManager::CreateEngineEx(const EngineKey &ek,
 //    Brad Whitlock, Tue Jun  5 17:11:02 PDT 2012
 //    Use profile to launch.
 //
+//    Brad Whitlock, Tue Aug 20 11:12:34 PDT 2013
+//    Use original value for ssh tunneling to set into simData to ensure that
+//    host/port arguments are translated in SimConnectThroughLauncher when we
+//    do ssh tunneling.
+//
 // ****************************************************************************
 
 bool
@@ -913,15 +918,6 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
     {
         MachineProfile profile = GetMachineProfile(ek.HostName());
 
-        // We don't set up tunnels when connecting to a simulation,
-        // just when launching the VCL
-        profile.SetTunnelSSH(false);
-
-        // We don't use a gateway when connecting to a simulation,
-        // just when launching the VCL
-        profile.SetUseGateway(false);
-        profile.SetGatewayHost("");
-
         //
         // Launch the engine.
         //
@@ -938,6 +934,15 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.d = CreateConnectionProgressDialog(ek.HostName());
         simData.tunnel = profile.GetTunnelSSH();
         SetupConnectionProgressDialog(newEngine.proxy, simData.d);
+
+        // We don't set up tunnels when connecting to a simulation,
+        // just when launching the VCL
+        profile.SetTunnelSSH(false);
+        
+        // We don't use a gateway when connecting to a simulation,
+        // just when launching the VCL
+        profile.SetUseGateway(false);
+        profile.SetGatewayHost("");
 
         newEngine.proxy->Create(profile,
                                 SimConnectThroughLauncher, (void *)&simData,
