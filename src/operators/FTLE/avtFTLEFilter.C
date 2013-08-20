@@ -118,8 +118,7 @@ avtFTLEFilter::~avtFTLEFilter()
 //
 // ****************************************************************************
 
-avtFilter *
-        avtFTLEFilter::Create()
+avtFilter *avtFTLEFilter::Create()
 {
     return new avtFTLEFilter();
 }
