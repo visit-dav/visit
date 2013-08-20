@@ -1,0 +1,286 @@
+Target: xml2atts
+Function: CopyAttributes
+Declaration: bool CopyAttributes(const AttributeGroup *atts);
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::CopyAttributes
+//
+// Purpose: 
+//   CopyAttributes method for the PoincareAttributes class.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
+// ****************************************************************************
+
+bool
+PoincareAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const PoincareAttributes *tmp = (const PoincareAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if(atts->TypeName() == "PointAttributes")
+    {
+        const PointAttributes *p = (PointAttributes *)atts;
+        SetPointSource(p->GetPoint());
+        retval = true;
+    }
+    else if(atts->TypeName() == "Line")
+    {
+        const Line *line = (const Line *)atts;
+        SetLineStart(line->GetPoint1());
+        SetLineEnd(line->GetPoint2());
+        retval = true;
+    }
+    return retval;
+}
+
+Target: xml2atts
+Function: CreateCompatible
+Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const;
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::CreateCompatible
+//
+// Purpose: 
+//   Creates a new state object of the desired type.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//    Jeremy Meredith, Wed Apr  8 16:48:05 EDT 2009
+//    Initial steps to unification with streamline attributes.
+// ****************************************************************************
+
+AttributeSubject *
+PoincareAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+    if (TypeName() == tname)
+    {
+        retval = new PoincareAttributes(*this);
+    }
+    else if (tname == "PointAttributes")
+    {
+        PointAttributes *p = new PointAttributes;
+        p->SetPoint(GetPointSource());
+        retval = p;
+    }
+    else if (tname == "Line")
+    {
+        Line *l = new Line;
+        l->SetPoint1(GetLineStart());
+        l->SetPoint2(GetLineEnd());
+        retval = l;
+    }
+    return retval;
+}
+
+Target: xml2atts
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const PoincareAttributes &obj) const;
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::ChangesRequireRecalculation
+//
+// Purpose: 
+//   Determine if attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+PoincareAttributes::ChangesRequireRecalculation(const PoincareAttributes &obj) const
+{
+    return StreamlineAttsRequireRecalculation(obj) ||
+           PoincareAttsRequireRecalculation(obj);
+}
+
+Target: xml2atts
+Function: StreamlineAttsRequireRecalculation
+Declaration: bool StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const;
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::StreamlineAttsRequireRecalculation
+//
+// Purpose: 
+//   Determine if streamline attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+#define PDIF(p1,p2,i) ((p1)[i] != (p2)[i])
+#define POINT_DIFFERS(p1,p2) (PDIF(p1,p2,0) || PDIF(p1,p2,1) || PDIF(p1,p2,2))
+
+bool
+PoincareAttributes::StreamlineAttsRequireRecalculation(const PoincareAttributes &obj) const
+{
+    // If we're in point source mode and the points differ, sourcePointsDiffer
+    // evaluates to true.
+    bool sourcePointsDiffer = ((sourceType == SpecifiedPoint) &&
+                               POINT_DIFFERS(pointSource, obj.pointSource));
+
+    // If we're in line source mode and the line differs, sourceLineDiffers
+    // evaluates to true.
+    bool sourceLineDiffers = ((sourceType == SpecifiedLine) &&
+                              (POINT_DIFFERS(lineStart, obj.lineStart) ||
+                               POINT_DIFFERS(lineEnd, obj.lineEnd)));
+    
+    // Other things need to be true before we start paying attention to
+    // point density.
+    bool densityMatters = ((sourceType == SpecifiedLine) &&
+                           (pointDensity != obj.pointDensity));
+
+    return (sourceType != obj.sourceType ||
+            sourcePointsDiffer ||
+            sourceLineDiffers ||
+
+            (fieldType == FlashField &&
+             POINT_DIFFERS(velocitySource, obj.velocitySource)) ||
+
+            densityMatters ||
+
+            minPunctures != obj.minPunctures ||
+            maxPunctures != obj.maxPunctures ||
+
+            puncturePlane != obj.puncturePlane ||
+
+            fieldType != obj.fieldType ||
+            fieldConstant != obj.fieldConstant ||
+            integrationType != obj.integrationType ||
+            maxStepLength != obj.maxStepLength ||
+            limitMaximumTimestep != obj.limitMaximumTimestep ||
+            maxTimeStep != obj.maxTimeStep ||
+            relTol != obj.relTol ||
+            absTolSizeType != obj.absTolSizeType ||
+            absTolAbsolute != obj.absTolAbsolute ||
+            absTolBBox != obj.absTolBBox);
+}
+
+Target: xml2atts
+Function: PoincareAttsRequireRecalculation
+Declaration: bool PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const;
+Definition:
+// ****************************************************************************
+// Method: PoincareAttributes::PoincareAttsRequireRecalculation
+//
+// Purpose: 
+//   Determine if poincare attribute changes require recalculation.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tues Oct 21 14:22:17 EDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &obj) const
+{
+    return coordinateSystem != obj.coordinateSystem ||
+ 
+           analysis != obj.analysis ||
+
+           maximumToroidalWinding != obj.maximumToroidalWinding ||
+           overrideToroidalWinding != obj.overrideToroidalWinding ||
+           overridePoloidalWinding != obj.overridePoloidalWinding ||
+           windingPairConfidence != obj.windingPairConfidence ||
+           rationalSurfaceFactor != obj.rationalSurfaceFactor ||
+
+           showOPoints != obj.showOPoints ||
+           OPointMaxIterations != obj.OPointMaxIterations ||
+
+           performOLineAnalysis != obj.performOLineAnalysis ||
+           OLineToroidalWinding != obj.OLineToroidalWinding ||
+           OLineAxisFileName != obj.OLineAxisFileName ||
+
+           showXPoints != obj.showXPoints ||
+           XPointMaxIterations != obj.XPointMaxIterations ||
+
+           overlaps != obj.overlaps ||
+
+           showIslands != obj.showIslands ||
+           show1DPlots != obj.show1DPlots ||
+           showChaotic != obj.showChaotic ||
+           verboseFlag != obj.verboseFlag ||
+ 
+           dataValue != obj.dataValue ||
+
+           meshType != obj.meshType ||
+           numberPlanes != obj.numberPlanes ||
+           singlePlane != obj.singlePlane ||
+
+           adjustPlane != obj.adjustPlane ||
+
+           showLines != obj.showLines ||
+           showPoints != obj.showPoints;
+}
+
+Target: xml2info
+Function: PoincareViewerPluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Definition:
+// ****************************************************************************
+//  Method: PoincareViewerPluginInfo::GetOperatorVarDescription
+//
+//  Purpose:
+//    Return the operator variable description.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   19 August 2013
+//
+// ****************************************************************************
+
+#include <ViewerPlot.h>
+
+std::string
+PoincareViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                    const ViewerPlot *plot)
+{
+    PoincareAttributes *atts_in = (PoincareAttributes *)atts;
+
+    const char numTypes = 14;
+    const char *typeString[14] =
+      { "None", "Safety Factor Q", "Safety Factor P",
+        "Safety Factor Q != P", "Safety Factor P != Q",
+        "Toroidal Windings", "Poloidal Windings Q", "Poloidal Windings P",
+        "Fieldline Order", "Point Order","Plane Order",
+        "Winding Group Order", "Winding Point Order",
+        "Winding Point Order Modulo" };
+
+    std::string var = plot->GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/Poincare/",
+                strlen("operators/Poincare/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/Poincare/"));
+
+      var = justTheVar;
+    }
+    
+    var += std::string(" - ") +
+        std::string(typeString[atts_in->GetDataValue()]);
+
+    return var;
+}

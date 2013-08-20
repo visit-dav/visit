@@ -108,6 +108,7 @@ MultiresControl
 OnionPeel
 PDF
 PersistentParticles
+Poincare
 Project
 Reflect
 Replicate
