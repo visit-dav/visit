@@ -52,7 +52,6 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QvisColorTableButton.h>
-//#include <QvisOpacitySlider.h>
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisLineStyleWidget.h>
@@ -639,96 +638,6 @@ QvisPoincareWindow::CreateWindowContents()
 
     dataLayout->addWidget(new QLabel(tr("   "), dataGroup), 0, 2);
 
-
-    // Create the limits group box.
-    // QGroupBox *limitsGroup = new QGroupBox(thirdTab);
-    // dataLayout->addWidget(limitsGroup, 1, 0, 1, 3);
-
-    // QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    // limitsLayout->setMargin(5);
-    // limitsLayout->setSpacing(10);
-
-    // limitsLayout->addWidget(new QLabel(tr("Limits"), limitsGroup), 0, 0);
-
-    // minFlag = new QCheckBox(tr("Minimum"), limitsGroup);
-    // limitsLayout->addWidget(minFlag, 0, 1);
-    // connect(minFlag, SIGNAL(toggled(bool)),
-    //         this, SLOT(minFlagChanged(bool)));
-    // min = new QLineEdit(limitsGroup);
-    // connect(min, SIGNAL(returnPressed()),
-    //         this, SLOT(minProcessText()));
-    // limitsLayout->addWidget(min, 0, 2);
-
-    // maxFlag = new QCheckBox(tr("Maximum"), limitsGroup);
-    // connect(maxFlag, SIGNAL(toggled(bool)),
-    //         this, SLOT(maxFlagChanged(bool)));
-    // limitsLayout->addWidget(maxFlag, 0, 3);
-
-    // max = new QLineEdit(limitsGroup);
-    // connect(max, SIGNAL(returnPressed()),
-    //         this, SLOT(maxProcessText()));
-    // limitsLayout->addWidget(max, 0, 4);
-
-
-//    // Create the color group box.
-//     QGroupBox *colorGroup = new QGroupBox(thirdTab);
-//     colorGroup->setTitle(tr("Color"));
-//     mainLayout->addWidget(colorGroup, 1, 0);
-// //    mainLayout->setStretchFactor(colorGroup, 100);
-//     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-//     colorLayout->setMargin(5);
-//     colorLayout->setSpacing(10);
-// //    colorLayout->setColumnStretch(2, 10);
-
-//     singleColorLabel = new QLabel(tr("Single color"), colorGroup);
-//     singleColor = new QvisColorButton(colorGroup);
-//     connect(singleColor, SIGNAL(selectedColor(const QColor&)),
-//             this, SLOT(singleColorChanged(const QColor&)));
-//     colorLayout->addWidget(singleColorLabel, 0, 0, Qt::AlignLeft);
-//     colorLayout->addWidget(singleColor, 0, 1, Qt::AlignLeft);
-
-//     colorTableNameLabel = new QLabel(tr("Color table"), colorGroup);
-//     colorTableName = new QvisColorTableButton(colorGroup);
-//     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
-//             this, SLOT(colorTableNameChanged(bool, const QString&)));
-//     colorLayout->addWidget(colorTableNameLabel, 0, 0, Qt::AlignLeft);
-//     colorLayout->addWidget(colorTableName, 0, 1, Qt::AlignLeft);
-
-
-//     // Create the use-color-table-opacity checkbox
-
-//     // Create the radio buttons
-//     opacityButtonsLabel = new QLabel(tr("Opacity"), central);
-//     colorLayout->addWidget(opacityButtonsLabel, 0, 2, Qt::AlignRight);
-
-//     opacityButtons = new QButtonGroup(central);
-
-//     opacityButtonSetExplicit = new QRadioButton(tr("Set explicitly"), central);
-//     opacityButtonSetExplicit->setChecked(true);
-//     opacityButtons->addButton(opacityButtonSetExplicit, 0);
-//     colorLayout->addWidget(opacityButtonSetExplicit, 0, 3, Qt::AlignLeft);
-//     opacityButtonColorTable = new QRadioButton(tr("From color table"), central);
-//     opacityButtons->addButton(opacityButtonColorTable, 1);
-//     colorLayout->addWidget(opacityButtonColorTable, 0, 4);
-
-//     // Each time a radio button is clicked, call the scale clicked slot.
-//     connect(opacityButtons, SIGNAL(buttonClicked(int)),
-//             this, SLOT(setOpaacityClicked(int)));
-
-//     //
-//     // Create the opacity slider
-//     //
-// //    opacitySliderLabel = new QLabel(tr("Opacity"), central);
-// //    colorLayout->addWidget(opacitySliderLabel, 1, 2);
-
-//     opacitySlider = new QvisOpacitySlider(0, 255, 25, 255, central);
-//     opacitySlider->setTickInterval(64);
-//     opacitySlider->setGradientColor(QColor(0, 0, 0));
-//     connect(opacitySlider, SIGNAL(valueChanged(int, const void*)),
-//             this, SLOT(changedOpacity(int, const void*)));
-//     colorLayout->addWidget(opacitySlider, 1, 3, 1, 2);
-
-
     // Create the display group box.
     QGroupBox *displayGroup = new QGroupBox(thirdTab);
     displayGroup->setTitle(tr("Display"));
@@ -747,6 +656,16 @@ QvisPoincareWindow::CreateWindowContents()
     connect(meshTypeCombo, SIGNAL(activated(int)),
            this, SLOT(meshTypeChanged(int)));
     displayLayout->addWidget(meshTypeCombo, 0, 1);
+
+    showLines = new QCheckBox(tr("Show Lines"), displayGroup);
+    connect(showLines, SIGNAL(toggled(bool)),
+            this, SLOT(showLinesChanged(bool)));
+    displayLayout->addWidget(showLines, 0, 2);
+
+    showPoints = new QCheckBox(tr("Show Points"), displayGroup);
+    connect(showPoints, SIGNAL(toggled(bool)), this,
+            SLOT(showPointsChanged(bool)));
+    displayLayout->addWidget(showPoints, 0, 3);
 
     numberPlanesLabel = new QLabel(tr("Number of planes"), displayGroup);
     displayLayout->addWidget(numberPlanesLabel, 1, 0);
@@ -772,42 +691,6 @@ QvisPoincareWindow::CreateWindowContents()
     connect(adjustPlane, SIGNAL(valueChanged(int)),
             this, SLOT(adjustPlaneChanged(int)));
     displayLayout->addWidget(adjustPlane, 1, 3);
-
-
-    // Create the options group box.
-    // QGroupBox *optionsGroup = new QGroupBox(thirdTab);
-    // optionsGroup->setTitle(tr("Options"));
-    // mainLayout->addWidget(optionsGroup, 3, 0);
-
-    // QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
-    // optionsLayout->setMargin(5);
-    // optionsLayout->setSpacing(10);
-
-    showLines = new QCheckBox(tr("Show Lines"), displayGroup);
-    connect(showLines, SIGNAL(toggled(bool)),
-            this, SLOT(showLinesChanged(bool)));
-    displayLayout->addWidget(showLines, 0, 2);
-
-    // lineStyleLabel = new QLabel(tr("Line style"), central);
-    // optionsLayout->addWidget(lineStyleLabel, 1, 0, Qt::AlignRight);
-    // lineStyle = new QvisLineStyleWidget(0, central);
-    // connect(lineStyle, SIGNAL(lineStyleChanged(int)),this, SLOT(lineStyleChanged(int)));
-    // optionsLayout->addWidget(lineStyle, 1, 1);
-    
-    // lineWidthLabel = new QLabel(tr("Line width"), central);
-    // optionsLayout->addWidget(lineWidthLabel, 1, 2, Qt::AlignRight);
-    // lineWidth = new QvisLineWidthWidget(0, central);
-    // connect(lineWidth, SIGNAL(lineWidthChanged(int)), this, SLOT(lineWidthChanged(int)));
-    // optionsLayout->addWidget(lineWidth, 1, 3, Qt::AlignLeft);
-
-    showPoints = new QCheckBox(tr("Show Points"), displayGroup);
-    connect(showPoints, SIGNAL(toggled(bool)), this, SLOT(showPointsChanged(bool)));
-    displayLayout->addWidget(showPoints, 0, 3);
-    // pointControl = new QvisPointControl(central, false);
-    // connect(pointControl, SIGNAL(pointSizeChanged(double)), this, SLOT(pointSizeChanged(double)));
-    // connect(pointControl, SIGNAL(pointSizePixelsChanged(int)), this, SLOT(pointSizePixelsChanged(int)));
-    // connect(pointControl, SIGNAL(pointTypeChanged(int)), this, SLOT(pointTypeChanged(int)));
-    // optionsLayout->addWidget(pointControl, 3, 1, 1,4);
 
 
     // Create the overlaps group box.
@@ -845,30 +728,6 @@ QvisPoincareWindow::CreateWindowContents()
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(overlapsChanged(int)));
     overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
-
-
-    // //
-    // // Create the misc stuff
-    // //
-    // QGroupBox * miscGroup = new QGroupBox(thirdTab);
-    // miscGroup->setTitle(tr("Misc"));
-    // mainLayout->addWidget(miscGroup, 4, 0);
-
-    // QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    // miscLayout->setMargin(5);
-    // miscLayout->setSpacing(10);
- 
-    // // Create the legend toggle
-    // legendToggle = new QCheckBox(tr("Legend"), miscGroup);
-    // connect(legendToggle, SIGNAL(toggled(bool)),
-    //         this, SLOT(legendToggled(bool)));
-    // miscLayout->addWidget(legendToggle, 0, 0);
-
-    // // Create the lighting toggle
-    // lightingToggle = new QCheckBox(tr("Lighting"), miscGroup);
-    // connect(lightingToggle, SIGNAL(toggled(bool)),
-    //         this, SLOT(lightingToggled(bool)));
-    // miscLayout->addWidget(lightingToggle, 0, 1);
 
     // ----------------------------------------------------------------------
     // Fourth tab
@@ -1362,100 +1221,11 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
           case PoincareAttributes::ID_singlePlane:
             singlePlane->setText(DoubleToQString(atts->GetSinglePlane()));
             break;
-//           case PoincareAttributes::ID_min:
-//             min->setText(DoubleToQString(atts->GetMin()));
-//             break;
-//           case PoincareAttributes::ID_max:
-//             max->setText(DoubleToQString(atts->GetMax()));
-//             break;
-//           case PoincareAttributes::ID_minFlag:
-//             // Disconnect the slot before setting the toggle and
-//             // reconnect it after. This prevents multiple updates.
-//             disconnect(minFlag, SIGNAL(toggled(bool)),
-//                        this, SLOT(minFlagChanged(bool)));
-//             minFlag->setChecked(atts->GetMinFlag());
-//             min->setEnabled(atts->GetMinFlag());
-//             connect(minFlag, SIGNAL(toggled(bool)),
-//                     this, SLOT(minFlagChanged(bool)));
-//             break;
-//           case PoincareAttributes::ID_maxFlag:
-//             // Disconnect the slot before setting the toggle and
-//             // reconnect it after. This prevents multiple updates.
-//             disconnect(maxFlag, SIGNAL(toggled(bool)),
-//                        this, SLOT(maxFlagChanged(bool)));
-//             maxFlag->setChecked(atts->GetMaxFlag());
-//             max->setEnabled(atts->GetMaxFlag());
-//             connect(maxFlag, SIGNAL(toggled(bool)),
-//                     this, SLOT(maxFlagChanged(bool)));
-//             break;
-//           case PoincareAttributes::ID_singleColor:
-//             { // new scope
-//                 QColor tempcolor = QColor(atts->GetSingleColor().Red(),
-//                                    atts->GetSingleColor().Green(),
-//                                    atts->GetSingleColor().Blue());
-//                 singleColor->blockSignals(true);
-//                 singleColor->setButtonColor(tempcolor);
-//                 singleColor->blockSignals(false);
-//             }
-//             break;
-//           case PoincareAttributes::ID_colorTableName:
-//             colorTableName->blockSignals(true);
-//             colorTableName->setColorTable(QString(atts->GetColorTableName().c_str()));
-//             colorTableName->blockSignals(false);
-//             break;
-//           case PoincareAttributes::ID_opacity:
-//             opacitySlider->blockSignals(true);
-//             opacitySlider->setValue(int((float)atts->GetOpacity() * 255.f));
-//             opacitySlider->blockSignals(false);
-//             break;
-//           case PoincareAttributes::ID_opacityType:
-//             opacityButtons->blockSignals(true);
-//             opacityButtons->button(atts->GetOpacityType())->setChecked(true);
-//             opacitySlider->setEnabled(!atts->GetOpacityType());
-// //            opacitySliderLabel->setEnabled(!atts->GetOpacityType());
-//             opacityButtons->blockSignals(false);
-//             break;
+
            case PoincareAttributes::ID_dataValue:
             dataValueCombo->blockSignals(true);
             dataValueCombo->setCurrentIndex((int)atts->GetDataValue());
             dataValueCombo->blockSignals(false);
-
-//             if( (int) atts->GetDataValue() == 0 )
-//             {
-//               singleColorLabel->setEnabled(true);
-//               singleColorLabel->show();
-//               singleColor->setEnabled(true);
-//               singleColor->show();
-              
-//               colorTableNameLabel->setEnabled(false);
-//               colorTableNameLabel->hide();
-//               colorTableName->setEnabled(false);
-//               colorTableName->hide();
-
-//               opacityButtonsLabel->setEnabled(false);
-//               opacityButtonSetExplicit->setEnabled(false);
-//               opacityButtonColorTable->setEnabled(false);
-// //            opacitySliderLabel->setEnabled(false);
-//               opacitySlider->setEnabled(false);
-//             }
-//             else
-//             {
-//               singleColorLabel->setEnabled(false);
-//               singleColorLabel->hide();
-//               singleColor->setEnabled(false);
-//               singleColor->hide();
-              
-//               colorTableNameLabel->setEnabled(true);
-//               colorTableNameLabel->show();
-//               colorTableName->setEnabled(true);
-//               colorTableName->show();
-
-//               opacityButtonsLabel->setEnabled(true);
-//               opacityButtonSetExplicit->setEnabled(true);
-//               opacityButtonColorTable->setEnabled(true);
-// //            opacitySliderLabel->setEnabled(!atts->GetOpacityType());
-//               opacitySlider->setEnabled(!atts->GetOpacityType());
-//             }
             break;
           case PoincareAttributes::ID_showRationalSurfaces:
             showRationalSurfaces->blockSignals(true);
@@ -1510,37 +1280,13 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             }
 
             showLines->setChecked(atts->GetShowLines());
-            // lineWidthLabel->setEnabled( (atts->GetShowLines() == true ) );
-            // lineStyleLabel->setEnabled( (atts->GetShowLines() == true ) );
-            // lineWidth->setEnabled( (atts->GetShowLines() == true ) );
-            // lineStyle->setEnabled( (atts->GetShowLines() == true ) );
             showLines->blockSignals(false);
             break;
-          // case PoincareAttributes::ID_lineWidth:
-          //   lineWidth->blockSignals(true);
-          //   lineWidth->SetLineWidth(atts->GetLineWidth());
-          //   lineWidth->blockSignals(false);
         case PoincareAttributes::ID_showPoints:
             showPoints->blockSignals(true);
             showPoints->setChecked(atts->GetShowPoints());
-            // pointControl->setEnabled( (atts->GetShowPoints() == true ) );
             showPoints->blockSignals(false);
             break;
-        // case PoincareAttributes::ID_pointSize:
-        //     pointControl->blockSignals(true);
-        //     pointControl->SetPointSize(atts->GetPointSize());
-        //     pointControl->blockSignals(false);
-        //     break;
-        // case PoincareAttributes::ID_pointSizePixels:
-        //     pointControl->blockSignals(true);
-        //     pointControl->SetPointSizePixels(atts->GetPointSizePixels());
-        //     pointControl->blockSignals(false);
-        //     break;
-        //   case PoincareAttributes::ID_pointType:
-        //     pointControl->blockSignals(true);
-        //     pointControl->SetPointType(atts->GetPointType());
-        //     pointControl->blockSignals(false);
-        //     break;
           case PoincareAttributes::ID_show1DPlots:
             show1DPlots->blockSignals(true);
             show1DPlots->setChecked(atts->GetShow1DPlots());
@@ -1556,17 +1302,6 @@ QvisPoincareWindow::UpdateWindow(bool doAll)
             verboseFlag->setChecked(atts->GetVerboseFlag());
             verboseFlag->blockSignals(false);
             break;
-          // case PoincareAttributes::ID_legendFlag:
-          //   legendToggle->blockSignals(true);
-          //   legendToggle->setChecked(atts->GetLegendFlag());
-          //   legendToggle->blockSignals(false);
-          //   break;
-          // case PoincareAttributes::ID_lightingFlag:
-          //   lightingToggle->blockSignals(true);
-          //   lightingToggle->setChecked(atts->GetLightingFlag());
-          //   lightingToggle->blockSignals(false);
-          //   break;
-
         case PoincareAttributes::ID_parallelizationAlgorithmType:
             UpdateAlgorithmAttributes();
 
@@ -1833,34 +1568,6 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // // Do min
-    // if(which_widget == PoincareAttributes::ID_min || doAll)
-    // {
-    //     double val;
-    //     if(LineEditGetDouble(min, val))
-    //         atts->SetMin(val);
-    //     else
-    //     {
-    //         ResettingError(tr("min"),
-    //             DoubleToQString(atts->GetMin()));
-    //         atts->SetMin(atts->GetMin());
-    //     }
-    // }
-
-    // // Do max
-    // if(which_widget == PoincareAttributes::ID_max || doAll)
-    // {
-    //     double val;
-    //     if(LineEditGetDouble(max, val))
-    //         atts->SetMax(val);
-    //     else
-    //     {
-    //         ResettingError(tr("max"),
-    //             DoubleToQString(atts->GetMax()));
-    //         atts->SetMax(atts->GetMax());
-    //     }
-    // }
-
     // Do O-Line Axis File Name
     if(which_widget == PoincareAttributes::ID_OLineAxisFileName || doAll)
     {
@@ -1925,8 +1632,6 @@ QvisPoincareWindow::GetCurrentValues(int which_widget)
 
     if (doAll)
     {
-        // atts->SetPointSize(pointControl->GetPointSize());
-        // atts->SetPointSizePixels((int)pointControl->GetPointSizePixels());
     }
 }
 
@@ -2389,88 +2094,6 @@ QvisPoincareWindow::adjustPlaneChanged(int val)
 }
 
 
-// void
-// QvisPoincareWindow::minProcessText()
-// {
-//     GetCurrentValues(PoincareAttributes::ID_min);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::maxProcessText()
-// {
-//     GetCurrentValues(PoincareAttributes::ID_max);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::minFlagChanged(bool val)
-// {
-//     atts->SetMinFlag(val);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::maxFlagChanged(bool val)
-// {
-//     atts->SetMaxFlag(val);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::colorTypeChanged(int val)
-// {
-//     if(val != atts->GetColorType())
-//     {
-//         atts->SetColorType(PoincareAttributes::ColoringMethod(val));
-//         Apply();
-//     }
-// }
-
-
-// void
-// QvisPoincareWindow::singleColorChanged(const QColor &color)
-// {
-//     ColorAttribute temp(color.red(), color.green(), color.blue());
-//     atts->SetSingleColor(temp);
-//     SetUpdate(false);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::colorTableNameChanged(bool useDefault,
-//                                               const QString &ctName)
-// {
-//     atts->SetColorTableName(ctName.toStdString());
-//     SetUpdate(false);
-//     Apply();
-// }
-
-// void
-// QvisPoincareWindow::setOpaacityClicked(int opacity)
-// {
-//     // Only do it if it changed.
-//     if(opacity != atts->GetOpacityType())
-//     {
-//         atts->SetOpacityType(PoincareAttributes::Opacity(opacity));
-// //        opacitySliderLabel->setEnabled(!opacity);
-//         opacitySlider->setEnabled(!opacity);
-//         Apply();
-//     }
-// }
-
-// void
-// QvisPoincareWindow::changedOpacity(int opacity, const void*)
-// {
-//     atts->SetOpacity((float)opacity/255.);
-//     Apply();
-// }
-
 void
 QvisPoincareWindow::dataValueChanged(int val)
 {
@@ -2608,62 +2231,6 @@ QvisPoincareWindow::verboseFlagChanged(bool val)
     Apply();
 }
 
-
-// void
-// QvisPoincareWindow::legendToggled(bool val)
-// {
-//     atts->SetLegendFlag(val);
-//     SetUpdate(false);
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::lightingToggled(bool val)
-// {
-//     atts->SetLightingFlag(val);
-//     SetUpdate(false);
-//     Apply();
-// }
-
-// void
-// QvisPoincareWindow::pointSizePixelsChanged(int val)
-// {
-//     atts->SetPointSizePixels(val);
-//     Apply();
-// }
-
-// void
-// QvisPoincareWindow::pointTypeChanged(int val)
-// {
-//     atts->SetPointType((PoincareAttributes::PointType)val);
-//     SetUpdate(false);
-//     Apply();
-// }
-
-// void
-// QvisPoincareWindow::pointSizeChanged(double val)
-// {
-//     atts->SetPointSize(val); 
-//     Apply();
-// }
-
-
-// void
-// QvisPoincareWindow::lineWidthChanged(int val)
-// {
-//     atts->SetLineWidth(val);
-//     SetUpdate(false);
-//     Apply();
-// }
-
-// void
-// QvisPoincareWindow::lineStyleChanged(int val)
-// {
-//     atts->SetLineStyle(val);
-//     SetUpdate(false);
-//     Apply();
-// }
 
 void
 QvisPoincareWindow::forceNodalChanged(bool val)
