@@ -84,7 +84,6 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <UnexpectedValueException.h>
-#include <Utility.h> // CXX_strndup
 
 #include <string.h>
 #include <boost/cstdint.hpp>
@@ -203,7 +202,7 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     char *p;
     retval = (char**) malloc((nstrings + 1) * sizeof(char*));
     for (i = 0, p = buf; i < nstrings; i++, p += len_string)
-        retval[i] = CXX_strndup(p,len_string);
+        retval[i] = strndup(p,len_string);
     retval[i] = 0;
     free(buf);
 
@@ -1219,6 +1218,12 @@ DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_ce
         if (vtk_celltype) *vtk_celltype = VTK_TRIANGLE;
         return;
     }
+    else if (!STRNCASECMP(ex_elem_type_att, "tri", strlen("tri")))
+    {
+        if (tdim) *tdim = 2;
+        if (vtk_celltype) *vtk_celltype = VTK_TRIANGLE;
+        return;
+    }
     else if (!STRNCASECMP(ex_elem_type_att, "shell4", strlen("shell4")))
     {
         if (tdim) *tdim = 2;
@@ -1386,6 +1391,11 @@ avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
 //
 // ****************************************************************************
 
+#ifdef MAX
+#undef MAX
+#endif
+#define MAX(A,B) ((A)>(B)?(A):(B))
+
 void
 avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
@@ -1413,11 +1423,6 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     size_t num_el_blk_len;
     VisItNCErr = nc_inq_dimlen(ncExIIId, num_el_blk_dimId, &num_el_blk_len);
     CheckNCError(nc_inq_dimlen);
-
-#ifdef MAX
-#undef MAX
-#endif
-#define MAX(A,B) ((A)>(B)?(A):(B))
 
     int topologicalDimension = -1;
     numBlocks = (int) num_el_blk_len;
