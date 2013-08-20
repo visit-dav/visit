@@ -1,0 +1,371 @@
+<?xml version="1.0"?>
+  <Plugin name="Poincare" type="operator" label="Poincare" version="3.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Analysis" createExpression="true" exprInType="vector" exprOutType="scalar" iconFile="Poincare.xpm">
+    <Files components="V">
+    </Files>
+    <Files components="E">
+      avtPoincareFilter.C
+      FieldlineAnalyzerLib.C
+      RationalSurfaceLib.C
+      skelet.C
+      dir_graph.C
+    </Files>
+    <Attribute name="PoincareAttributes" purpose="Attributes for the Poincare" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Poincare.code">
+      <Enum name="SourceType">
+        SpecifiedPoint
+        SpecifiedLine
+      </Enum>
+      <Enum name="FieldType">
+        Default
+        FlashField
+        M3DC12DField
+        M3DC13DField
+        Nek5000Field
+        NIMRODField
+      </Enum>
+      <Enum name="IntegrationType">
+        Euler
+        Leapfrog
+        DormandPrince
+        AdamsBashforth
+        RK4
+        M3DC12DIntegrator
+      </Enum>
+      <Enum name="SizeType">
+        Absolute
+        FractionOfBBox
+      </Enum>
+      <Enum name="CoordinateSystem">
+        Cartesian
+        Cylindrical
+      </Enum>
+      <Enum name="OverlapType">
+        Raw
+        Remove
+        Merge
+        Smooth
+      </Enum>
+      <Enum name="ShowMeshType">
+        Curves
+        Surfaces
+      </Enum>
+      <Enum name="PuncturePlaneType">
+        Poloidal
+        Toroidal
+        Arbitrary
+      </Enum>
+      <Enum name="AnalysisType">
+        None
+        Normal
+      </Enum>
+      <Enum name="ColoringMethod">
+        ColorBySingleColor
+        ColorByColorTable
+      </Enum>
+      <Enum name="Opacity">
+        Explicit
+        ColorTable
+      </Enum>
+      <Enum name="DataValue">
+        Solid
+        SafetyFactorQ
+        SafetyFactorP
+        SafetyFactorQ_NotP
+        SafetyFactorP_NotQ
+        ToroidalWindings
+        PoloidalWindingsQ
+        PoloidalWindingsP
+        FieldlineOrder
+        PointOrder
+        PlaneOrder
+        WindingGroupOrder
+        WindingPointOrder
+        WindingPointOrderModulo
+      </Enum>
+      <Enum name="ParallelizationAlgorithmType">
+        LoadOnDemand
+        ParallelStaticDomains
+        MasterSlave
+        VisItSelects
+      </Enum>
+      <Enum name="PathlinesCMFE">
+        CONN_CMFE
+        POS_CMFE
+      </Enum>
+      <Enum name="PointType">
+        Box
+        Axis
+        Icosahedron
+        Octahedron
+        Tetrahedron
+        SphereGeometry
+        Point
+        Sphere
+      </Enum>
+      <Field name="opacityType" label="Opacity" type="enum" subtype="Opacity">
+        Explicit
+      </Field>
+      <Field name="opacity" label="Opacity" type="opacity">
+        1.000000
+      </Field>
+      <Field name="minPunctures" label="Minimum number of Punctures" type="int">
+        50
+      </Field>
+      <Field name="maxPunctures" label="Maximum number of Punctures" type="int">
+        500
+      </Field>
+      <Field name="puncturePlane" label="Puncture Plane" type="enum" subtype="PuncturePlaneType">
+        Poloidal
+      </Field>
+      <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
+        SpecifiedPoint
+      </Field>
+      <Field name="pointSource" label="Point Source" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineStart" label="Line Point Start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="lineEnd" label="Line Point End" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="pointDensity" label="Point density" type="int" enabler="sourceType:SpecifiedLine">
+        1
+      </Field>
+      <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
+        Default
+      </Field>
+      <Field name="forceNodeCenteredData" label="forceNodeCenteredData" type="bool">
+        false
+      </Field>
+      <Field name="fieldConstant" label="Constant" type="double" subtype="FieldConstant">
+        1.0
+      </Field>
+      <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
+        AdamsBashforth
+      </Field>
+      <Field name="coordinateSystem" label="coordinateSystem" type="enum" subtype="CoordinateSystem">
+        Cartesian
+      </Field>
+      <Field name="maxStepLength" label="maximum step length" type="double">
+        0.100000
+      </Field>
+      <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
+        false
+      </Field>
+      <Field name="maxTimeStep" label="maximum time step length" type="double">
+        0.100000
+      </Field>
+      <Field name="relTol" label="rel. tolerance" type="double">
+        0.000100
+      </Field>
+      <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
+        FractionOfBBox
+      </Field>
+      <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
+        0.000010
+      </Field>
+      <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
+        0.000001
+      </Field>
+      <Field name="analysis" label="Analysis" type="enum" subtype="AnalysisType">
+        Normal
+      </Field>
+      <Field name="maximumToroidalWinding" label="Maximum Toroidal Winding" type="int">
+        0
+      </Field>
+      <Field name="overrideToroidalWinding" label="Override Toroidal Winding" type="int">
+        0
+      </Field>
+      <Field name="overridePoloidalWinding" label="Override Poloidal Winding" type="int">
+        0
+      </Field>
+      <Field name="windingPairConfidence" label="Winding Pair Confidence" type="double">
+        0.900000
+      </Field>
+      <Field name="rationalSurfaceFactor" label="Rational surface factor" type="double">
+        0.100000
+      </Field>
+      <Field name="adjustPlane" label="Adjust plane" type="int">
+        -1
+      </Field>
+      <Field name="overlaps" label="Overlaps" type="enum" subtype="OverlapType">
+        Remove
+      </Field>
+      <Field name="meshType" label="Mesh Type" type="enum" subtype="ShowMeshType">
+        Curves
+      </Field>
+      <Field name="numberPlanes" label="Number of planes" type="int">
+        1
+      </Field>
+      <Field name="singlePlane" label="Single plane" type="double">
+        0.000000
+      </Field>
+      <Field name="min" label="min" type="double">
+        0.000000
+      </Field>
+      <Field name="max" label="max" type="double">
+        0.000000
+      </Field>
+      <Field name="minFlag" label="minFlag" type="bool">
+        false
+      </Field>
+      <Field name="maxFlag" label="maxFlag" type="bool">
+        false
+      </Field>
+      <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
+        ColorByColorTable
+      </Field>
+      <Field name="singleColor" label="Single color" type="color" length="4">
+        0
+        0
+        0
+        255
+      </Field>
+      <Field name="colorTableName" label="Color table" type="colortable">
+        Default
+      </Field>
+      <Field name="dataValue" label="dataValue" type="enum" subtype="DataValue">
+        SafetyFactorQ
+      </Field>
+      <Field name="showRationalSurfaces" label="Detect Rational Surfaces" type="bool">
+        false
+      </Field>
+      <Field name="RationalSurfaceMaxIterations" label="Maximum Iterations" type="int">
+        2
+      </Field>
+      <Field name="showOPoints" label="Detect O Points" type="bool">
+        false
+      </Field>
+      <Field name="OPointMaxIterations" label="Maximum Iterations" type="int">
+        2
+      </Field>
+      <Field name="showXPoints" label="Detect X Points" type="bool">
+        false
+      </Field>
+      <Field name="XPointMaxIterations" label="Maximum Iterations" type="int">
+        2
+      </Field>
+      <Field name="performOLineAnalysis" label="Perform O-Line Analysis" type="bool">
+        false
+      </Field>
+      <Field name="OLineToroidalWinding" label="O-Line Toroidal Winding" type="int">
+        1
+      </Field>
+      <Field name="OLineAxisFileName" label="O-Line Axis File Name" type="string">
+        ""
+      </Field>
+      <Field name="showChaotic" label="Show Chaotic Fieldlines" type="bool">
+        false
+      </Field>
+      <Field name="showIslands" label="Show Islands" type="bool">
+        false
+      </Field>
+      <Field name="SummaryFlag" label="Summary" type="bool">
+        true
+      </Field>
+      <Field name="verboseFlag" label="Verbose" type="bool">
+        false
+      </Field>
+      <Field name="show1DPlots" label="Show 1D Plots" type="bool">
+        false
+      </Field>
+      <Field name="showLines" label="Show Lines" type="bool">
+        true
+      </Field>
+      <Field name="lineWidth" label="Line width" type="linewidth">
+        0
+      </Field>
+      <Field name="lineStyle" label="lineStyle" type="linestyle">
+        0
+      </Field>
+      <Field name="showPoints" label="Show Points" type="bool">
+        false
+      </Field>
+      <Field name="pointSize" label="pointSize" type="double">
+        1.000000
+      </Field>
+      <Field name="pointSizePixels" label="pointSizePixels" type="int">
+        1
+      </Field>
+      <Field name="pointType" label="pointType" type="enum" subtype="PointType">
+        Point
+      </Field>
+      <Field name="legendFlag" label="Legend" type="bool">
+        true
+      </Field>
+      <Field name="lightingFlag" label="Lighting" type="bool">
+        true
+      </Field>
+      <Field name="parallelizationAlgorithmType" label="Parallelization algorithm type" type="enum" subtype="ParallelizationAlgorithmType">
+        VisItSelects
+      </Field>
+      <Field name="maxProcessCount" label="maxProcessCount" type="int">
+        10
+      </Field>
+      <Field name="maxDomainCacheSize" label="Max domain cache" type="int">
+        3
+      </Field>
+      <Field name="workGroupSize" label="Work group size" type="int">
+        32
+      </Field>
+
+
+      <Field name="pathlines" label="Do pathlines" type="bool">
+        false
+      </Field>
+      <Field name="pathlinesOverrideStartingTimeFlag" label="Override Starting Time" type="bool" enabler="pathlines:true">
+        false
+      </Field>
+      <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
+        0.000000
+      </Field>
+      <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
+        POS_CMFE
+      </Field>
+
+      <Field name="issueTerminationWarnings" label="Issue Warning When Termination Criteria Is Not Met" type="bool">
+        true
+      </Field>
+      <Field name="issueStiffnessWarnings" label="Issue warnings when stiffness is encountered" type="bool">
+        true
+      </Field>
+      <Field name="issueCriticalPointsWarnings" label="Issue warnings when critical points are reached" type="bool">
+        true
+      </Field>
+      <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
+        0.001000
+      </Field>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="StreamlineAttsRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="PoincareAttsRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="PoincareViewerPluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+      <Include file="source" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        PointAttributes.h
+      </Include>
+      <Include file="source" quoted="false">
+        Line.h
+      </Include>
+    </Attribute>
+  </Plugin>
