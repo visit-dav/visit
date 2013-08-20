@@ -4,6 +4,9 @@
 ## created: Fri Jun  7 18:54:30 PDT 2013
 ## system: Linux coruscant 3.2.0-26-generic #41-Ubuntu SMP Thu Jun 14 17:49:24 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brad
+##
+## ./build_visit --console --no-visit --thirdparty-path ~/Development/thirdparty_shared/2.7.0 --vtk --mesa --python --pyside --qt --silo --netcdf --hdf5 --szip --h5part --gdal --cgns --icet --parallel --makeflags -j12 --xdmf --hdf4
+##
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
@@ -34,6 +37,11 @@ VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON)
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/bin/mpicxx)
 VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_COMPILER /usr/bin/mpif77)
+
+##
+## VisIt Thread Option
+##
+VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
 ##############################################################
 ##
@@ -83,7 +91,7 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## GDAL
 ##
-VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.7.1/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.10.0/${VISITARCH})
 
 ##
 ## H5Part
