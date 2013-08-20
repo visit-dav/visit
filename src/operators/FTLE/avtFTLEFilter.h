@@ -68,7 +68,7 @@ class vtkRectilinearGrid;
 // ****************************************************************************
 
 class avtFTLEFilter : public virtual avtPluginFilter, 
-              public virtual avtPICSFilter
+                      public virtual avtPICSFilter
 {
   public:
     // default constructor
@@ -77,6 +77,10 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     virtual             ~avtFTLEFilter();
     // create filter
     static avtFilter    *Create();
+
+    virtual const char  *GetType(void)  { return "avtFTLEFilter"; }
+    virtual const char  *GetDescription(void)
+                             { return "Performing FTLE"; }
 
     //turn off on demand processing, I cannot handle this functionality yet..
     virtual bool OperatingOnDemand(void) const { return false; }
@@ -109,10 +113,6 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     /* Finalize The Output */
     virtual void CreateIntegralCurveOutput(
                     std::vector<avtIntegralCurve*> &);
-
-    virtual const char  *GetType(void)  { return "avtFTLEFilter"; }
-    virtual const char  *GetDescription(void)
-                             { return "FTLE"; }
 
     virtual void         PreExecute(void);
     virtual void         Execute(void);

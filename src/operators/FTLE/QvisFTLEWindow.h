@@ -59,7 +59,6 @@ class QPushButton;
 class QButtonGroup;
 class QRadioButton;
 class FTLEAttributes;
-class SelectionList;
 
 // ****************************************************************************
 // Class: QvisFTLEWindow
@@ -77,6 +76,7 @@ class SelectionList;
 class QvisFTLEWindow : public QvisOperatorWindow
 {
     Q_OBJECT
+
   public:
     QvisFTLEWindow(const int type,
                          FTLEAttributes *subj,
@@ -85,6 +85,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisFTLEWindow();
     virtual void CreateWindowContents();
+
   protected:
     void CreateAdvancedTab(QWidget *);    
     void UpdateWindow(bool doAll);
@@ -92,31 +93,36 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void UpdateAlgorithmAttributes();
     void UpdateFieldAttributes();
     void UpdateIntegrationAttributes();
+
   private slots:
+    // Integration
     void sourceTypeChanged(int val);
     void ResolutionProcessText();
     void UseDataSetStartChanged(bool val);
     void StartPositionProcessText();
     void UseDatasetEndChanged(bool val);
     void EndPositionProcessText();
+
     void fieldTypeChanged(int val);
     void fieldConstantProccessText();
-    void integrationTypeChanged(int val);
+    void velocitySourceProcessText();
+    void forceNodalChanged(bool);
 
     void directionTypeChanged(int val);
+    void integrationTypeChanged(int val);
     void maxStepLengthProcessText();
     void maxTimeStepProcessText();
     void maxStepsProcessText();
-    void limitButtonGroupChanged(int);
-//    void limitMaxTimeChanged(bool);
-    void maxTimeProcessText();
-//    void limitMaxDistanceChanged(bool);
-    void maxDistanceProcessText();
     void relTolProcessText();
     void absTolProcessText();
     void absTolSizeTypeChanged(int);
-    void velocitySourceProcessText();
 
+    void limitButtonGroupChanged(int);
+    void maxTimeProcessText();
+    void maxDistanceProcessText();
+    void limitMaxTimeStepChanged(bool);
+
+    // Advanced
     void parallelAlgorithmChanged(int val);
     void maxSLCountChanged(int val);
     void maxDomainCacheChanged(int val);
@@ -132,11 +138,10 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void issueWarningForCriticalPointsChanged(bool);
     void criticalPointThresholdProcessText();
 
-    void forceNodalChanged(bool);
-    void limitMaxTimeStepChanged(bool);
-
   private:
     int plotType;
+
+    // Integration
     QComboBox *sourceType;
     QLabel *ResolutionLabel;
     QLineEdit *Resolution;
@@ -146,39 +151,33 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLabel *EndPositionLabel;
     QCheckBox *UseDatasetEnd;
     QLineEdit *EndPosition;
+
+    QComboBox *fieldType;
+    QLabel    *fieldConstantLabel;
+    QLineEdit *fieldConstant;
+    QLineEdit *velocitySource;
+    QLabel    *velocitySourceLabel;
+    QCheckBox *forceNodal;
+
     QComboBox *directionType;
+    QComboBox *integrationType;
     QCheckBox *limitMaxTimeStep;
     QLineEdit *maxStepLength;
     QLabel    *maxStepLengthLabel;
     QLineEdit *maxTimeStep;
     QLineEdit *maxSteps;
-    QButtonGroup *limitButtonGroup;
-    QRadioButton *limitButtons[2];
-//    QCheckBox *limitMaxTime;
-    QLineEdit *maxTime;
-//    QCheckBox *limitMaxDistance;
-    QLineEdit *maxDistance;
     QLineEdit *relTol;
     QLabel    *relTolLabel;
     QLineEdit *absTol;
     QComboBox *absTolSizeType;
     QLabel    *absTolLabel;
-    QCheckBox *forceNodal;
-    QLineEdit *velocitySource;
-    QLabel    *velocitySourceLabel;
 
-    QComboBox *fieldType;
-    QLabel    *fieldConstantLabel;
-    QLineEdit *fieldConstant;
-    QComboBox *integrationType;
+    QButtonGroup *limitButtonGroup;
+    QRadioButton *limitButtons[2];
+    QLineEdit *maxTime;
+    QLineEdit *maxDistance;
 
-    QComboBox *displayReferenceType;
-    QLabel    *displayLabel;
-    QCheckBox *displayBeginToggle;
-    QCheckBox *displayEndToggle;
-    QLineEdit *displayBeginEdit;
-    QLineEdit *displayEndEdit;
-
+    // Advanced
     QLabel    *parallelAlgoLabel;
     QComboBox *parallelAlgo;
     QLabel    *maxSLCountLabel;
@@ -200,7 +199,6 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLabel    *criticalPointThresholdLabel;
 
     FTLEAttributes *FTLEAtts;
-    SelectionList *selectionList;
 };
 
 #endif

@@ -60,7 +60,6 @@
 #include <QvisVariableButton.h>
 #include <QListWidget>
 #include <QFileDialog>
-#include <SelectionList.h>
 #include <SelectionProperties.h>
 
 #include <stdio.h>
@@ -91,12 +90,13 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 // ****************************************************************************
 
 QvisFTLEWindow::QvisFTLEWindow(const int type,
-                         FTLEAttributes *subj,
-                         const QString &caption,
-                         const QString &shortName,
-                         QvisNotepadArea *notepad)
+                               FTLEAttributes *subj,
+                               const QString &caption,
+                               const QString &shortName,
+                               QvisNotepadArea *notepad)
     : QvisOperatorWindow(type, subj, caption, shortName, notepad)
 {
+    plotType = type;
     FTLEAtts = subj;
 }
 

@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: bool CopyAttributes(const AttributeGroup *atts);
 Definition:
@@ -37,6 +38,7 @@ FTLEAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
 Definition:
@@ -72,6 +74,7 @@ FTLEAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const FTLEAttributes &) const;
 Definition:
@@ -186,4 +189,50 @@ FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
     }
 
     return false;
+}
+
+Target: xml2info
+Function: FTLEViewerPluginInfo::GetOperatorVarDescription
+Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const ViewerPlot *plot);
+Definition:
+// ****************************************************************************
+//  Method: FTLEViewerPluginInfo::GetOperatorVarDescription
+//
+//  Purpose:
+//    Return the operator variable description.
+//
+//  Arguments:
+//    atts        The attribute subject to initialize.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   19 August 2013
+//
+// ****************************************************************************
+
+#include <ViewerPlot.h>
+
+std::string
+FTLEViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
+                                                const ViewerPlot *plot)
+{
+    FTLEAttributes *atts_in = (FTLEAttributes *)atts;
+
+    const char numTypes = 2;
+    const char *typeString[2] = { "FTLE", "FDLE" };
+
+    std::string var = plot->GetVariableName();
+
+    if( strncmp(var.c_str(), "operators/FTLE/",
+                strlen("operators/FTLE/")) == 0)
+    {
+      std::string justTheVar = var.substr(strlen("operators/FTLE/"));
+
+      var = justTheVar;
+    }
+    
+    var += std::string(" - ") +
+        std::string(typeString[atts_in->GetTerminationType()]);
+
+    return var;
 }
