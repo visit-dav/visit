@@ -93,6 +93,8 @@
     <Field name="groupTitle" label="Group titles" type="string" access="public">
       groups
     </Field>
+    <Field name="groupNames" label="Group names" type="stringVector" access="public">
+    </Field>
     <Field name="groupIds" label="Group ids" type="intVector" access="public">
     </Field>
     <Field name="groupIdsBasedOnRange" label="Similar to groupIds, but do it based on ranges (for smaller memory footprint)" type="intVector" access="public">
