@@ -23,7 +23,10 @@ class JobSubmitter_aprun_NERSC(JobSubmitter_aprun):
     # (Currently the path is identical on Edison and Hopper.)
     #
     def Executable(self):
-        return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+        if self.launcher.nersc_host == "edison":
+            return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/opt/cray/alps/default/bin/aprun"]
+        else:
+            return ["env", "DISPLAY=", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
 
 ###############################################################################
 # Class: JobSubmitter_mpirun_NERSC
@@ -81,11 +84,11 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
         if self.launcher.nersc_host == "carver":
             return ["/usr/syscom/opt/torque/default/bin/qsub"]
         elif self.launcher.nersc_host == "edison":
-            return ["/opt/torque/4.1.4/bin/qsub"] # FIXME?
+            return ["/opt/torque/default/bin/qsub"]
         elif self.launcher.nersc_host == "grace":
             return ["/usr/common/nsg/bin/qsub"]
         elif self.launcher.nersc_host == "hopper":
-            return ["/opt/torque/4.2.3.1/bin/qsub"]
+            return ["/opt/torque/default/bin/qsub"]
         else:
             print "Error: unknown NERSC host '%s'. Using default qsub executable." % self.launcher.nersc_host
             print "If this does not work, please contact consult@nersc.gov."
@@ -94,7 +97,10 @@ class JobSubmitter_qsub_NERSC(JobSubmitter_qsub):
     def aprun(self):
         # Currently, this method will only be called on Edison or Hopper.
         # (Currently the path to aprun is the same on Edison and Hopper.)
-        return ["env", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
+        if self.launcher.nersc_host == "edison":
+            return ["env", "CRAY_ROOTFS=DSL", "/opt/cray/alps/default/bin/aprun"]
+        else:
+            return ["env", "CRAY_ROOTFS=DSL", "/usr/common/usg/altd/1.0/bin/aprun"]
 
     def mpirun(self):
         # Currently, this method will only be called on Carver.
@@ -188,7 +194,7 @@ class NERSCLauncher(MainLauncher):
         # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.7.2/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/4.8.0/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Set Python path
@@ -215,7 +221,7 @@ class NERSCLauncher(MainLauncher):
         # ----
             # Add GCC libraries to LD_LIBRARY_PATH
             ld_library_path = self.splitpaths(GETENV("LD_LIBRARY_PATH"))
-            added_ld_library_paths = ["/opt/gcc/4.6.3/snos/lib64"]
+            added_ld_library_paths = ["/opt/gcc/4.7.2/snos/lib64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(added_ld_library_paths + ld_library_path))
 
             # Running the gui on Hopper or a serial engine on a login node are "verboten"
