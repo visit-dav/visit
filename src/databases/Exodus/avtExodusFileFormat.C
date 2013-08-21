@@ -202,7 +202,11 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     char *p;
     retval = (char**) malloc((nstrings + 1) * sizeof(char*));
     for (i = 0, p = buf; i < nstrings; i++, p += len_string)
-        retval[i] = strndup(p,len_string);
+    {
+        // retval[i] = strndup(p,len_string);
+        retval[i] = (char*) malloc((len_string + 1) * sizeof(char));
+        strncpy( retval[i], p, len_string ); 
+    }
     retval[i] = 0;
     free(buf);
 
