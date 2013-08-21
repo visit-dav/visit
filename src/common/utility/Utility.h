@@ -88,6 +88,7 @@ bool UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
 bool UTILITY_API GetSSHClient(std::string &sshClient);
 
 inline char *C_strdup(char const * const);
+inline char *C_strndup(char const * const, size_t);
 inline char *CXX_strdup(char const * const);
 inline char *CXX_strndup(char const * const, size_t);
 inline void  InlineCopy(char *&, const char * const &, const int &);
@@ -125,6 +126,15 @@ C_strdup(char const * const c)
     return p;
 }
 
+inline char *
+C_strndup(char const * const c, size_t n)
+{
+    size_t len = (strlen(c) < n) ? strlen(c) : n;
+    char *p = (char *) malloc(len+1);
+    memcpy(p, c, len);
+    p[len] = '\0';
+    return p;
+}
 
 // ****************************************************************************
 //  Method: CXX_strdup

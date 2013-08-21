@@ -3684,7 +3684,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         char msg[128];
         SNPRINTF(msg,sizeof(msg),"In domain number %d, the material object "
               "with nzones=%d and dataset object with ncells=%d do not agree.",
-               dom, mat->GetNZones(), ds->GetNumberOfCells());
+               dom, mat->GetNZones(), (int) ds->GetNumberOfCells());
         EXCEPTION1(InvalidDBTypeException, msg); 
     }
 
