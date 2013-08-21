@@ -68,7 +68,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Reading and exporting of PLY files is now supported in both serial, and parallel. Additionaly, PLY files may be exported using a colormap to export out colors.</li>
   <li>Reading GMV files that encoded polygons in a general cell now works.</li>
   <li>Added a GHOST (Geophysical High Order Suite for Turbulence) file format reader.</li>
-  <li></li>
+  <li>The OpenFOAM reader has been updated to support newer OpenFOAM conventions, including Lagrangian clouds and multi-region data. Sub-meshes are now presented separately, instead of as selectable subsets together with internalMesh, to reduce duplication of plotted data. The are three File Open options:
+  <ul>
+       <li>Case Type: <i>Reconstructed (default) or Decomposed</i></li>
+       <li>Convert Cell Data To Point Data:<i> true or false (default)</i></li>
+       <li>Read Zones: <i> true or false (default)</i></li>
+  </ul>
+   The <i>Read Zones</i> option will make available (if present in the data) <i> cellZones, faceZones</i> and <i>pointZones</i> meshes.
+  </li>
   <li></li>
 </ul>
 

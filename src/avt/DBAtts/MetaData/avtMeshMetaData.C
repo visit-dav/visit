@@ -191,6 +191,7 @@ void avtMeshMetaData::Copy(const avtMeshMetaData &obj)
     groupOrigin = obj.groupOrigin;
     groupPieceName = obj.groupPieceName;
     groupTitle = obj.groupTitle;
+    groupNames = obj.groupNames;
     groupIds = obj.groupIds;
     groupIdsBasedOnRange = obj.groupIdsBasedOnRange;
     disjointElements = obj.disjointElements;
@@ -435,6 +436,7 @@ avtMeshMetaData::operator == (const avtMeshMetaData &obj) const
             (groupOrigin == obj.groupOrigin) &&
             (groupPieceName == obj.groupPieceName) &&
             (groupTitle == obj.groupTitle) &&
+            (groupNames == obj.groupNames) &&
             (groupIds == obj.groupIds) &&
             (groupIdsBasedOnRange == obj.groupIdsBasedOnRange) &&
             (disjointElements == obj.disjointElements) &&
@@ -628,6 +630,7 @@ avtMeshMetaData::SelectAll()
     Select(ID_groupOrigin,                    (void *)&groupOrigin);
     Select(ID_groupPieceName,                 (void *)&groupPieceName);
     Select(ID_groupTitle,                     (void *)&groupTitle);
+    Select(ID_groupNames,                     (void *)&groupNames);
     Select(ID_groupIds,                       (void *)&groupIds);
     Select(ID_groupIdsBasedOnRange,           (void *)&groupIdsBasedOnRange);
     Select(ID_disjointElements,               (void *)&disjointElements);
@@ -1287,7 +1290,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     }
 
 
-    if ((int)blockNames.size() == numBlocks)
+    if (blockNames.size() == numBlocks)
     {
         Indent(out, indent);
         out << "Block names: " << std::endl;
@@ -1416,7 +1419,7 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
                             const std::vector<int> &patchesPerLevel)
 {
     int  i;
-    int  nlevels = (int)patchesPerLevel.size();
+    int  nlevels = patchesPerLevel.size();
 
     // Basic setup stuff
     int  numBlocks = 0;

@@ -16,12 +16,18 @@ SET(LIBM_SOURCES
 OpenFOAMMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtOpenFOAMFileFormat.C
+avtOpenFOAMOptions.C
+visit_vtkOpenFOAMReader.cxx
+visit_vtkPOpenFOAMReader.cxx
 )
 
 SET(LIBE_SOURCES
 OpenFOAMEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtOpenFOAMFileFormat.C
+avtOpenFOAMOptions.C
+visit_vtkOpenFOAMReader.cxx
+visit_vtkPOpenFOAMReader.cxx
 )
 
 INCLUDE_DIRECTORIES(
