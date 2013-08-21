@@ -84,6 +84,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <UnexpectedValueException.h>
+#include <Utility.h>
 
 #include <string.h>
 #include <boost/cstdint.hpp>
@@ -202,11 +203,7 @@ static char **GetStringListFromExodusIINCvar(int exfid, char const *var_name)
     char *p;
     retval = (char**) malloc((nstrings + 1) * sizeof(char*));
     for (i = 0, p = buf; i < nstrings; i++, p += len_string)
-    {
-        // retval[i] = strndup(p,len_string);
-        retval[i] = (char*) malloc((len_string + 1) * sizeof(char));
-        strncpy( retval[i], p, len_string ); 
-    }
+        retval[i] = C_strndup(p,len_string);
     retval[i] = 0;
     free(buf);
 
@@ -250,9 +247,11 @@ static int SizeOfNCType(int type)
         case NC_INT:
         case NC_UINT:
             return sizeof(int);
+#ifdef HAVE_VTK_SIZEOF___INT64
         case NC_INT64:
         case NC_UINT64:
             return sizeof(int64_t);
+#endif
         case NC_FLOAT:
             return sizeof(float);
         case NC_DOUBLE:
@@ -851,7 +850,9 @@ GetElementBlockNamesAndIds(int ncExIIId, int numBlocks,
     switch (vtype)
     {
         case NC_INT:   READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int); break;
-//        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int64_t); break;
+#ifdef HAVE_VTK_SIZEOF___INT64
+        case NC_INT64: READ_BLOCK_IDS(ncExIIId, eb_blockid_varid, numBlocks, blockId, int64_t); break;
+#endif
     }
 }
 

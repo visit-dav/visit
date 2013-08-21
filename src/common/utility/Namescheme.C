@@ -43,6 +43,7 @@
 #include <limits.h>
 #include <string.h>
 #include <Namescheme.h>
+#include <Utility.h>
 
 #define FREE(M) if(M)free(M);
 
@@ -365,9 +366,7 @@ Namescheme::Namescheme(const char *fmt, ...)
         return;
 
     // grab just the part of fmt that is the printf-style format string
-    this->fmt = (char *)calloc(n, sizeof(char));
-    strncpy(this->fmt, &fmt[1], n-1);
-
+    this->fmt = C_strndup(&fmt[1],n-1);
     this->fmtlen = n-1;
 
     // In 2 passes, count conversion specs. and then setup pointers to each 
