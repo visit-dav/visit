@@ -504,9 +504,6 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
 
     SetClipPlanes( planes );
 
-    SetDisplayMethod(PICS_DISPLAY_LINES);
-    SetColoringMethod(PICS_COLOR_SOLID);
-
     SetDataValue( atts.GetDataValue() );
 
     SetShowRationalSurfaces( atts.GetShowRationalSurfaces() );
