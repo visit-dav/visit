@@ -86,6 +86,9 @@ class     NameschemeAttributes;
 //    Hank Childs, Mon Dec  7 14:05:00 PST 2009
 //    Added various optimizations that enable the SIL object to get smaller.
 //
+//    Kathleen Biagas, Thu Aug 22 09:58:50 PDT 2013
+//    Add groupNames argment to AddGroups.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -102,7 +105,8 @@ class DATABASE_API avtSILGenerator
                                    SILCategoryRole cat = SIL_DOMAIN,
                                    bool onlyCreateSets = false);
     std::vector<int>    AddGroups(avtSIL *, int, int, int, const std::string &,
-                                  const std::string &);
+                                  const std::string &,
+                                  const std::vector< std::string > &);
     void                AddGroupCollections(avtSIL *, int, int,
                                   const std::vector<int> &,
                                   const std::vector<int>&, 
