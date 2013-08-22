@@ -1,24 +1,4 @@
 #!/usr/bin/perl
-##############################################################################
-#
-# Purpose: Subversion hook to check for files being added whose names differ
-#          either from each other or from files currently in the repository
-#          only in case. This is to ensure SVN clients can operate correctly
-#          on systems which preserve case but don't disambiguate based on
-#          case (OS X and Windows).
-#
-# Programmer: Mark C. Miller
-# Created:    August 22, 2013
-#
-# The check involves two passes. The first examines all files being added
-# in this commit and checks that there are no files whose names differ
-# only in case. However, it restricts its work to only compare files in the
-# same directory. If that first pass completes without error, then it moves
-# on to get a list of files in the repository (it does some work to try to
-# query for as small a list as possible by finding greatest common ancestor
-# directory in the commit. It then compares files being added with files in
-# the repository.
-##############################################################################
 
 use File::Basename;
 
@@ -47,9 +27,16 @@ foreach my $line (@flist) {
         $line =~ s/^A *(.*)/$1/;
         my $bname = basename($line);
         my $dname = dirname($line);
+print "adding \"$dname\"\n";
         push @{ $udirs{$dname} }, $bname;
     }
 }
+# If nothing is being added, we're done
+if (!%udirs) {
+    exit 0;
+}
+
+
 
 #
 # First pass to check that nothing *within* this commit
@@ -71,11 +58,8 @@ while (my ($k,$v)=each %udirs) {
     }
 }
 
-#
-# If clashes hash is empty, we're ok
-#
 my $msg;
-if (keys(%clashes))
+if (%clashes)
 {
     foreach $key (sort(keys %clashes)) {
         $msg = "$msg\nFile \"$key\" case-clashes with...\n";
@@ -88,15 +72,9 @@ if (keys(%clashes))
 }
 
 #
-# If we made it this far, nothing *within* this commit has a clash conflict with
-# itself. However, it maybe that something in this commit has a clash conflict
-# with the current state of the repository. So, check that next.
-#
-
-#
-# Find the shortest key in udirs. That will be the directory highest up
+# find the shortest key in udirs. That will be the directory highest up
 # in the repo under which all the commits have occured and represents the
-# smallest 'tree' query we must make on the server to check for clashes.
+# largest 'tree' query we must make on the server to check for clashes.
 #
 my $minkey;
 my $min = 1000;
@@ -109,10 +87,12 @@ foreach my $key (sort(keys %udirs)) {
 }
 # back up on more directory
 $minkey = dirname($minkey);
+print $minkey, "\n";
 
 #
-# Query the repository for the full-paths of all the files (and dirs)
-# this commit could be effecting.
+# If we made it this far, nothing *within* this commit has a clash conflict with
+# itself. However, it maybe that something in this commit has a clash conflict
+# with the current state of the repository. So, check that next.
 #
 my @treelist = `svnlook tree --full-paths $REPOS $minkey`;
 my %repodirs;
@@ -128,23 +108,18 @@ foreach my $line (@treelist) {
 # already have in the repository.
 #
 while (my ($k,$v)=each %udirs) {
-    if ($#$v > 0) {
-        foreach $fc (@{$v}) {
-            foreach $fr (@{$repodirs{$k}}) {
-                if (lc($fc) eq lc($fr)) {
-                    my $clashkey = "$k/$fc";
-                    my $clashval = "$k/$fr";
-                    push @{ $clashes{$clashkey} }, $clashval;
-                }
+    foreach $fc (@{$v}) {
+        foreach $fr (@{$repodirs{$k}}) {
+            if (lc($fc) eq lc($fr)) {
+                my $clashkey = "$k/$fc";
+                my $clashval = "$k/$fr";
+                push @{ $clashes{$clashkey} }, $clashval;
             }
         }
     }
 }
 
-#
-# If clashes hash is empty, we're ok
-#
-if (keys(%clashes))
+if (%clashes)
 {
     foreach $key (sort(keys %clashes)) {
         $msg = "$msg\nFile \"$key\" case-clashes with repository file...\n";
@@ -155,6 +130,3 @@ if (keys(%clashes))
     `log "$msg"`;
     exit 1;
 }
-
-# all is well!
-exit 0;
