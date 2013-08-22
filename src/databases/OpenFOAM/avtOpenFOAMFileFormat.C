@@ -76,8 +76,8 @@ using     std::map;
 //
 // ****************************************************************************
 
-avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, DBOptionsAttributes *readOpts)
-    : avtMTMDFileFormat(filename), timeSteps()
+avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename, 
+    DBOptionsAttributes *readOpts) : avtMTMDFileFormat(filename), timeSteps()
 {
     convertCellToPoint = false;
     readZones = false;
@@ -209,10 +209,6 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         reader->SetReadZones(1);
     }
     reader->Update();
-
-    //  vtk reader does not expose PointZones, FaceZones and CellZones
-    //  as separate entities (which the old version of this files used to do),
-    //  they can be included or not via the reader's ReadZones flag. ??? 
 
     stringVector lagrangianPatches;
     stringVector meshNames; // for non-lagrangian meshes
@@ -397,7 +393,11 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
 
     // Cell Arrays and PointArrays are associated with all PatchArrays
-    // (except lagrangian)
+    // (except lagrangian), even if they don't truly exist on all patches.
+    // I've been told this is expected behavior, but it would be nice if
+    // the vtk reader could sort that out so we only present variables for
+    // patches that truly have them.
+  
     for (int i = 0; i < reader->GetNumberOfCellArrays(); ++i)
     {
          const char *name(reader->GetCellArrayName(i));
@@ -446,7 +446,9 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //  Notes:
 //
 //  Arguments:
-//     mbds  The vtkMultiBlockDataSet to traverse.
+//     mbds       The vtkMultiBlockDataSet to traverse.
+//     matchMesh  Whether we should match mesh name before recursing with
+//                a vtkMultiBlockDataSet.
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   Thu May 30 15:18:41 MST 2013
@@ -456,11 +458,12 @@ avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 // ****************************************************************************
 
 vtkDataSet *
-avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds)
+avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds, bool matchMesh)
 {
     if (mbds == NULL)
+    {
         return NULL;
-
+    }
     vtkDataSet *rv = NULL;
     int nBlocks = mbds->GetNumberOfBlocks();
     for (int i = 0; i < nBlocks && rv == NULL; ++i)
@@ -472,9 +475,19 @@ avtOpenFOAMFileFormat::GetBlock(vtkMultiBlockDataSet *mbds)
                             vtkCompositeDataSet::NAME())); 
             if (block->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET)
             {
-                if (blockName == currentMesh ||  blockName == currentPatch || 
-                   (readZones && blockName == "Zones"))
-                  rv = GetBlock(vtkMultiBlockDataSet::SafeDownCast(block));
+                if (matchMesh)
+                {
+                    // We don't want to recurse on 'faceZones' when we
+                    // are trying to plot 'cellZones', and vice-versa.
+                    if (blockName == currentMesh || 
+                        blockName == currentPatch || 
+                       (readZones && blockName == "Zones"))
+                        rv = GetBlock(vtkMultiBlockDataSet::SafeDownCast(block),
+                                      matchMesh);
+                }
+                else
+                    rv = GetBlock(vtkMultiBlockDataSet::SafeDownCast(block),
+                                  matchMesh);
             }
             else
             {
@@ -527,15 +540,22 @@ avtOpenFOAMFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     if (reader->GetOutput() == NULL)
     {
         debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Patch "
-               << reader->GetPatchArrayName(domain) << "." << endl;
+               << reader->GetPatchArrayName(domain) << "." 
+               << "  Reader's Output is NULL." << endl;
         return NULL;
     }
 
-    vtkDataSet *block = GetBlock(reader->GetOutput());
+    bool matchMesh = (mname == "cellZones" || 
+                      mname == "faceZones" || 
+                      mname == "pointZones");
+
+    vtkDataSet *block = GetBlock(reader->GetOutput(), matchMesh);
+
     if (block == NULL)
     {
         debug1 << "avtOpenFOAMFileFormat::GetMesh, Error reading Patch "
-               << reader->GetPatchArrayName(domain) << "." << endl;
+               << reader->GetPatchArrayName(domain) << "." 
+               << "  GetBlock returned NULL." << endl;
         return NULL;
     }
 
@@ -613,8 +633,10 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
 
     reader->Update();
 
-    vtkDataArray *rv = NULL;
-    vtkDataSet *block = GetBlock(reader->GetOutput());
+    bool matchMesh = (currentMesh == "cellZones" || 
+                      currentMesh == "faceZones" ||
+                      currentMesh == "pointZones");
+    vtkDataSet *block = GetBlock(reader->GetOutput(), matchMesh);
   
     if (block == NULL)
     {
@@ -623,6 +645,7 @@ avtOpenFOAMFileFormat::ReadVar(int timestate, int domain, const char *var)
         return NULL;
     }
 
+    vtkDataArray *rv = NULL;
     if (cellData)
     {
         rv = block->GetCellData()->GetArray(varname.c_str());
@@ -698,6 +721,20 @@ avtOpenFOAMFileFormat::GetVectorVar(int timestate, int domain,
     return ReadVar(timestate, domain, varname);
 }
 
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::ActivateTimestep
+//
+//  Purpose:
+//
+//  Arguments:
+//    timestate The index of the timestate.  
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   May 21, 2013
+//
+// ****************************************************************************
+
 void
 avtOpenFOAMFileFormat::ActivateTimestep(int timestate)
 {
@@ -711,6 +748,20 @@ avtOpenFOAMFileFormat::ActivateTimestep(int timestate)
         currentTimeStep = timestate;
     }
 }
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::OpenFOAMClassNameToVarType
+//
+//  Purpose: Converts the OpenFOAM class name to an avtVarType,
+//
+//  Arguments:
+//    cn        The OpenFOAM class name.
+//
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   May 21, 2013
+//
+// ****************************************************************************
 
 avtVarType 
 avtOpenFOAMFileFormat::OpenFOAMClassNameToVarType(const vtkStdString &cn)
@@ -738,6 +789,23 @@ avtOpenFOAMFileFormat::OpenFOAMClassNameToVarType(const vtkStdString &cn)
     debug3 << "Encountered unhandled OpenFOAM class name: " << cn << endl;
     return AVT_UNKNOWN_TYPE;
 }
+
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::AddVarToMetaData
+//
+//  Purpose: Convenience method to add a new variable's meta data.
+//
+//  Arguments:
+//    varType   The variable type.
+//    md        MetaData where the varible should be stored
+//    varName   The name of the variable.
+//    meshName  The name of the mesh on which the variable lives.
+//    centering How the variable is centered. 
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   May 21, 2013
+//
+// ****************************************************************************
 
 void
 avtOpenFOAMFileFormat::AddVarToMetaData(avtVarType varType,
@@ -767,16 +835,35 @@ avtOpenFOAMFileFormat::AddVarToMetaData(avtVarType varType,
 }
 
 
+// ****************************************************************************
+//  Method: avtOpenFOAMFileFormat::SelectPatchArray
+//
+//  Purpose: Chooses the OpenFOAM patch array that should be enabled.
+//      
+//  Notes:   We disable all patch arrays except the patch we want, which we
+//           discover from the meshName and blockname that corresponds
+//           to the patch id ( if present).  Disabling/Enabling patch arrays
+//           in this manner allows the reader to only fetch the patch we
+//           are currently interested in.
+//
+//  Arguments:
+//    domain    The patch id.
+//    meshName  The name of the mesh.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   May 21, 2013
+//
+// ****************************************************************************
+
 void
 avtOpenFOAMFileFormat::SelectPatchArray(int domain, const string &meshName)
 {
-    // for some reason, looking at the 'patch array status' doesn't seem to help
-    // so we will always disableAll, and select only the one we want.
+    // Keep track of currentMesh and currentPatch to ensure extraction of
+    // the correct block from the vtkMultiBlockDataSet later.
     reader->DisableAllPatchArrays();
     reader->DisableAllLagrangianArrays();
     currentMesh = meshName;
-    if (meshName.find("internalMesh") != string::npos ||
-        meshName.find("lagrangian")   != string::npos) 
+    if ((meshName == "internalMesh")) //|| (meshName.find("lagrangian") != string::npos))
     {
         reader->SetPatchArrayStatus(meshName.c_str(), 1);
         currentPatch = meshName;
@@ -793,24 +880,35 @@ avtOpenFOAMFileFormat::SelectPatchArray(int domain, const string &meshName)
                 string region(mname.substr(0, pos));
                 string patch(mname.substr(pos+1));
                 if (region == "Patches")
+                {
                     mname = mmd->blockNames[domain];
+                    currentPatch =  mname;
+                }
                 else if (patch == "Patches")
+                {
                     mname = region + string("/") + mmd->blockNames[domain];
+                    currentPatch =  mname;
+                }
+                else
+                {
+                    currentPatch =  patch;
+                }
             }
             else  if (mname == "Patches" || mname == "cellZones" ||
                       mname == "faceZones" || mname == "pointZones" )
             {
                 mname = mmd->blockNames[domain];
+                currentPatch =  mname;
             }
             else  if (mname == "Regions")
             {
                 string region(mmd->groupNames[mmd->groupIds[domain]]);
                 // now parse out the groupName from the blockName:
                 string patch = mmd->blockNames[domain].substr(region.size()+1);
+                currentPatch =  patch;
                 mname = region + string("/") + patch;
             }
             reader->SetPatchArrayStatus(mname.c_str(), 1);
-            currentPatch =  mname;
         }
         else
             EXCEPTION1(InvalidVariableException, meshName.c_str());
