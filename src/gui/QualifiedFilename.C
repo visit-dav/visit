@@ -343,7 +343,7 @@ QualifiedFilename::DetermineSeparator(const std::string &p) const
 void
 QualifiedFilename::SetFromString(const std::string &str)
 {
-    size_t index;
+    int index;
 
     // Look for the hostname in the string.
     if((index = str.find(":")) != std::string::npos)
