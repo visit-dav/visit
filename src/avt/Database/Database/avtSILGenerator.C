@@ -118,6 +118,9 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Support selection of domains, even if we only have
 //    a single domain.
 //
+//    Kathleen Biagas, Thu Aug 22 10:00:11 PDT 2013
+//    Pass groupNames to AddGroups call.
+//
 // ****************************************************************************
 
 void
@@ -157,8 +160,9 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         vector<int> groupList;
         if (mesh->numGroups > 0)
         {
-            groupList = AddGroups(sil, topIndex, mesh->numGroups, mesh->groupOrigin,
-                        mesh->groupPieceName, mesh->groupTitle);
+            groupList = AddGroups(sil, topIndex, mesh->numGroups, 
+                        mesh->groupOrigin, mesh->groupPieceName, 
+                        mesh->groupTitle, mesh->groupNames);
         }
         int t1 = visitTimer->StartTimer();
         AddSubsets(sil, topIndex, mesh->numBlocks, mesh->blockOrigin,
@@ -412,11 +416,16 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
 //    Add flags for AMR efficiency.  Separate out the collection code to its
 //    own routine.
 //
+//    Kathleen Biagas, Thu Aug 22 10:00:35 PDT 2013
+//    Added groupNames argument. If empty or size doesn't match numGroups,
+//    names will be generated as before.
+//
 // ****************************************************************************
  
 std::vector<int>
 avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
-                           const std::string &piece, const std::string &gTitle)
+                           const std::string &piece, const std::string &gTitle,
+                           const std::vector< std::string > &gNames)
 {
     int  i;
  
@@ -427,7 +436,9 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
     for (i = 0 ; i < numGroups ; i++)
     {
         char name[1024];
-        if (strstr(piece.c_str(), "%") != NULL)
+        if (!gNames.empty() && gNames.size() == numGroups)
+            sprintf(name, gNames[i].c_str());
+        else if (strstr(piece.c_str(), "%") != NULL)
             sprintf(name, piece.c_str(), i+origin);
         else
             sprintf(name, "%s%d", piece.c_str(), i+origin);
@@ -464,10 +475,10 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
 
 void
 avtSILGenerator::AddGroupCollections(avtSIL *sil, int top, int numGroups, 
-                           const vector<int> &domList, const vector<int> &groupIds,
-                           const vector<int> &groupIdsBasedOnRange,
-                           const string &bTitle,
-                           const vector<int> &groupList)
+        const vector<int> &domList, const vector<int> &groupIds,
+        const vector<int> &groupIdsBasedOnRange,
+        const string &bTitle,
+        const vector<int> &groupList)
 {
     int  i;
     int t1 = visitTimer->StartTimer();
@@ -492,8 +503,8 @@ avtSILGenerator::AddGroupCollections(avtSIL *sil, int top, int numGroups,
      
         //
         // Things aren't very well sorted here -- we want all of the domains,
-        // sorted by groupId.  Let's try to be efficient and use the qsort routine
-        // provided by stdlib to do this.
+        // sorted by groupId.  Let's try to be efficient and use the qsort 
+        // routine provided by stdlib to do this.
         //
         int nDoms = domList.size();
         int *records = new int[2*nDoms];
@@ -522,10 +533,10 @@ avtSILGenerator::AddGroupCollections(avtSIL *sil, int top, int numGroups,
      
             if (thisGroupsList.size() > 0)
             {
-                avtSILEnumeratedNamespace *ns = new avtSILEnumeratedNamespace(
-                                                                   thisGroupsList);
-                avtSILCollection_p coll = new avtSILCollection(bTitle, SIL_DOMAIN,
-                                                               groupList[i], ns);
+                avtSILEnumeratedNamespace *ns = 
+                    new avtSILEnumeratedNamespace(thisGroupsList);
+                avtSILCollection_p coll = 
+                    new avtSILCollection(bTitle, SIL_DOMAIN, groupList[i], ns);
                 sil->AddCollection(coll);
             }
         }
