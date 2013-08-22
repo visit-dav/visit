@@ -2767,11 +2767,34 @@ ViewerWindow::SetView2D(const avtView2D &v)
 //    Eric Brugger, Thu Apr 22 15:18:37 PDT 2004
 //    I renamed haveRenderedIn3d to viewSetIn3d, since it was more accurate.
 //
+//    Jeremy Meredith, Thu Aug 22 15:27:14 EDT 2013
+//    If we've changed the axis scales, update the plot list.
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetView3D(const avtView3D &v)
 {
+    // This is our chance to redo the plots based 
+    // on axis scaling (like vector glyphs).
+    double s[3];
+    bool f = visWindow->Get3DAxisScalingFactors(s);
+    bool changed = (f != v.axis3DScaleFlag ||
+                    s[0] != v.axis3DScales[0] ||
+                    s[1] != v.axis3DScales[1] ||
+                    s[2] != v.axis3DScales[2]);
+    if (changed)
+    {
+        s[0] = v.axis3DScales[0];
+        s[1] = v.axis3DScales[1];
+        s[2] = v.axis3DScales[2];
+        if (v.axis3DScaleFlag==false || 
+            (s[0]==1. && s[1]==1. && s[2]==1.))
+            plotList->SetFullFrameScaling(false, s);
+        else
+            plotList->SetFullFrameScaling(true, s);
+    }
+
     visWindow->SetView3D(v);
 
     viewPartialSetIn3d = true;
@@ -5705,6 +5728,10 @@ ViewerWindow::UpdateView2d(const double *limits)
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Added bools to call to vwm->UpdateViewAtts
 //
+//    Jeremy Meredith, Thu Aug 22 15:27:14 EDT 2013
+//    Use full frame scaling to apply corrections to the plot list for
+//    3D axis scaling.
+//
 // ****************************************************************************
 
 void
@@ -5778,6 +5805,13 @@ ViewerWindow::UpdateView3d(const double *limits)
 
     viewSetIn3d = true;
     viewPartialSetIn3d = true;
+
+    double s[3];
+    bool f = visWindow->Get3DAxisScalingFactors(s);
+    if (f==false || (s[0]==1. && s[1]==1. && s[2]==1.))
+        plotList->SetFullFrameScaling(false, s);
+    else
+        plotList->SetFullFrameScaling(true, s);
 }
 
 // ****************************************************************************
