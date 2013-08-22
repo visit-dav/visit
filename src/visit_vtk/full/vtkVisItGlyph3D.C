@@ -128,6 +128,15 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    Eric Brugger, Thu Jan 10 13:05:08 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Jeremy Meredith, Thu Aug 22 15:07:57 EDT 2013
+//    Fix full frame correction for vector glyphs.  The old correction
+//    was applied at the wrong place in the transforms, so it was applied
+//    before the glyphs were oriented correctly.  I changed it so it
+//    would apply after the orientation -- though that has the consequence
+//    of changing the orientation -- so I also explicitly re-applied the
+//    full frame correction to the orientation.  So the shape has the
+//    distortion removed, but the orientation properly leaves it in.
+//
 // ****************************************************************************
 
 int
@@ -543,6 +552,19 @@ vtkVisItGlyph3D::RequestData(
         v[2] = 0.;
         }
       vMag = vtkMath::Norm(v);
+
+      // We're going to "undo" the full frame
+      // scaling later to remove the visual
+      // distortion, but that will distort
+      // the vector; we need to keep the
+      // full frame scaling in here somehow:
+      if (this->UseFullFrameScaling)
+        {
+        v[0] *= this->FullFrameScaling[0];
+        v[1] *= this->FullFrameScaling[1];
+        v[2] *= this->FullFrameScaling[2];
+        }
+
       if ( this->ScaleMode == VTK_SCALE_BY_VECTORCOMPONENTS )
         {
         scalex = v[0];
@@ -669,6 +691,17 @@ vtkVisItGlyph3D::RequestData(
     
     if ( haveVectors )
       {
+      // If we are using full frame scaling then add an additional
+      // transform to undo what fullframe will do.  However, it
+      // does change the angle of the vector as well, which is
+      // why we needed to modify v[] in this case above.
+      if (this->UseFullFrameScaling)
+        {
+        trans->Scale(1. / this->FullFrameScaling[0],
+                     1. / this->FullFrameScaling[1],
+                     1. / this->FullFrameScaling[2]);
+        }
+
       // Copy Input vector
       for (i=0; i < numSourcePts; i++)
         {
@@ -686,7 +719,12 @@ vtkVisItGlyph3D::RequestData(
           }
         else
           {
-          vNew[0] = (v[0]+vMag) / 2.0;
+          // In full frame mode, we changed v, but kept its 
+          // original magnitude.
+          // This specific calculation, however, is only
+          // valid if we use v's actual magnitude.
+          double realvMag = vtkMath::Norm(v);
+          vNew[0] = (v[0]+realvMag) / 2.0;
           vNew[1] = v[1] / 2.0;
           vNew[2] = v[2] / 2.0;
           trans->RotateWXYZ(180.0,vNew[0],vNew[1],vNew[2]);
@@ -766,16 +804,6 @@ vtkVisItGlyph3D::RequestData(
         }
       trans->Scale(scalex,scaley,scalez);
       }
-
-      // If we are using full frame scaling then add an additional
-      // transform to undo what fullframe will do.
-      if (this->UseFullFrameScaling)
-        {
-          trans->Scale(1. / this->FullFrameScaling[0],
-                       1. / this->FullFrameScaling[1],
-                       1. / this->FullFrameScaling[2]);
-        }
-
 
     // multiply points and normals by resulting matrix
     trans->TransformPoints(sourcePts,newPts);
