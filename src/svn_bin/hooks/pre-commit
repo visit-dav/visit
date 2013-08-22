@@ -73,6 +73,14 @@ function runhook_py()
       exit 1
    fi
 }
+function runhook_pl()
+{
+   TEST="$@"
+   perl ${REPOS}/hooks/${TEST} ${REPOS} ${TXN} ${FLIST}
+   if [ $? != 0 ]; then
+      exit 1
+   fi
+}
 
 #
 # Populate ${FLIST} file with list of files being changed (and
@@ -102,6 +110,9 @@ runhook_sh "check_abort_calls.sh"
 
 # Check for using statements in header files
 runhook_sh "check_using_stmts.sh"
+
+# Check for clases in filename case
+runhook_pl "check-case-clashes.pl"
 
 # Clean up
 rm -f ${FLIST}
