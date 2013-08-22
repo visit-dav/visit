@@ -96,7 +96,7 @@ class avtOpenFOAMFileFormat : public avtMTMDFileFormat
                                             std::string, std::string,
                                             avtCentering);
     vtkDataArray          *ReadVar(int, int, const char *);
-    vtkDataSet            *GetBlock(vtkMultiBlockDataSet *);
+    vtkDataSet            *GetBlock(vtkMultiBlockDataSet *, bool);
     visit_vtkPOpenFOAMReader    *reader;
     doubleVector           timeSteps;
     bool                   convertCellToPoint;
