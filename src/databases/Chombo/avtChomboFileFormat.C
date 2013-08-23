@@ -210,6 +210,10 @@ avtChomboFileFormat::~avtChomboFileFormat()
 //    Gunther H. Weber, Thu Oct 11 16:00:16 PDT 2007
 //    Clean up expressions from file
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 void
@@ -231,10 +235,15 @@ avtChomboFileFormat::FreeUpResources(void)
     hiJ.clear();
     lowK.clear();
     hiK.clear();
+    lowL.clear();
+    hiL.clear();
     numGhosts.clear();
     for (std::list<Expression*>::iterator it = expressions.begin(); it != expressions.end(); ++it)
         delete *it;
     expressions.clear();
+    listOfRepresentativeBoxes.clear();
+    representativeBox.clear();
+    representedBoxes.clear();
 }
 
 // ****************************************************************************
@@ -403,6 +412,10 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Jeremy Meredith, Wed Mar 30 13:30:13 EDT 2011
 //    More of the previous: close the file when returing an exception.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 extern "C"  herr_t
@@ -462,9 +475,9 @@ avtChomboFileFormat::InitializeReader(void)
                                          "not have SpaceDim in Chombo_global");
     }
     H5Aread(dim_id, H5T_NATIVE_INT, &dimension);
-    if (dimension != 2 && dimension != 3)
+    if (dimension < 2 ||  dimension > 4)
     {
-        debug1 << "ERROR: Reader only supports 2D and 3D data sets." << endl;
+        debug1 << "ERROR: Reader only supports 2D, 3D and 4D data sets." << endl;
         H5Fclose(file_handle);
         EXCEPTION1(InvalidFilesException, filenames[0]);
     }
@@ -593,6 +606,10 @@ avtChomboFileFormat::InitializeReader(void)
 
     if (hasProbLo)
     {
+        if (dimension > 3)
+        {
+            EXCEPTION1(InvalidDBTypeException, "prob_lo not yet supported for 4D data");
+        }
         hid_t probLo_id = H5Aopen_name(slash, "prob_lo");
         if (probLo_id < 0)
         {
@@ -625,6 +642,10 @@ avtChomboFileFormat::InitializeReader(void)
 
     if (hasAspectRatio)
     {
+        if (dimension > 3)
+        {
+            EXCEPTION1(InvalidDBTypeException, "aspect_ratio not yet supported for 4D data");
+        }
         hid_t aspectRatio_id = H5Aopen_name(slash, "aspect_ratio");
         if (aspectRatio_id < 0)
         {
@@ -797,6 +818,12 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tinsert (intvect3d_id, "intvectj", HOFFSET(intvect3d, j), H5T_NATIVE_INT);
     H5Tinsert (intvect3d_id, "intvectk", HOFFSET(intvect3d, k), H5T_NATIVE_INT);
 
+    hid_t intvect4d_id = H5Tcreate (H5T_COMPOUND, sizeof(intvect4d));
+    H5Tinsert (intvect4d_id, "intvecti", HOFFSET(intvect4d, i), H5T_NATIVE_INT);
+    H5Tinsert (intvect4d_id, "intvectj", HOFFSET(intvect4d, j), H5T_NATIVE_INT);
+    H5Tinsert (intvect4d_id, "intvectk", HOFFSET(intvect4d, k), H5T_NATIVE_INT);
+    H5Tinsert (intvect4d_id, "intvectl", HOFFSET(intvect4d, l), H5T_NATIVE_INT);
+
     //
     // Now iterate over each refinement level and determine how many patches
     // there are at that refinement level, what the refinement ratio is, and
@@ -839,7 +866,7 @@ avtChomboFileFormat::InitializeReader(void)
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
             }
-            else
+            else if (dimension == 3)
             {
                 doublevect3d dx_tmp;
                 H5Aread(dx_id, doublevect3d_id, &dx_tmp);
@@ -847,6 +874,11 @@ avtChomboFileFormat::InitializeReader(void)
                 dx[i].push_back(dx_tmp.y);
                 dx[i].push_back(dx_tmp.z);
             }
+            else
+            {
+                EXCEPTION1(InvalidDBTypeException, "vec_dx not yet supported for 4D data");
+            }
+ 
         }
         else
         {
@@ -894,7 +926,7 @@ avtChomboFileFormat::InitializeReader(void)
 
                 int rr_tmp;
                 H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
-                for (int d = 0; d<dimension; ++d)
+                for (int d = 0; d<std::max(dimension, 3); ++d)
                     refinement_ratio[i].push_back(rr_tmp);
             }
             H5Aclose(rr_id);
@@ -929,10 +961,16 @@ avtChomboFileFormat::InitializeReader(void)
     hiI.resize(totalPatches);
     lowJ.resize(totalPatches);
     hiJ.resize(totalPatches);
-    if (dimension == 3)
+    if (dimension >= 3)
     {
         lowK.resize(totalPatches);
         hiK.resize(totalPatches);
+
+        if (dimension == 4)
+        {
+            lowL.resize(totalPatches);
+            hiL.resize(totalPatches);
+        }
     }
 
     //
@@ -942,10 +980,16 @@ avtChomboFileFormat::InitializeReader(void)
     hiProbI.resize(num_levels);
     lowProbJ.resize(num_levels);
     hiProbJ.resize(num_levels);
-    if (dimension == 3)
+    if (dimension >= 3)
     {
         lowProbK.resize(num_levels);
         hiProbK.resize(num_levels);
+
+        if (dimension == 4)
+        {
+            lowProbL.resize(num_levels);
+            hiProbL.resize(num_levels);
+        }
     }
 
     //
@@ -965,6 +1009,16 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tinsert (box3d_id, "hi_i", HOFFSET(box3d, hi.i), H5T_NATIVE_INT);
     H5Tinsert (box3d_id, "hi_j", HOFFSET(box3d, hi.j), H5T_NATIVE_INT);
     H5Tinsert (box3d_id, "hi_k", HOFFSET(box3d, hi.k), H5T_NATIVE_INT);
+
+    hid_t box4d_id = H5Tcreate (H5T_COMPOUND, sizeof(box));
+    H5Tinsert (box4d_id, "lo_i", HOFFSET(box4d, lo.i), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "lo_j", HOFFSET(box4d, lo.j), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "lo_k", HOFFSET(box4d, lo.k), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "lo_l", HOFFSET(box4d, lo.l), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "hi_i", HOFFSET(box4d, hi.i), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "hi_j", HOFFSET(box4d, hi.j), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "hi_k", HOFFSET(box4d, hi.k), H5T_NATIVE_INT);
+    H5Tinsert (box4d_id, "hi_l", HOFFSET(box4d, hi.l), H5T_NATIVE_INT);
 
     int patchId = 0;
     for (i = 0 ; i < num_levels ; i++)
@@ -990,7 +1044,7 @@ avtChomboFileFormat::InitializeReader(void)
                 EXCEPTION1(InvalidDBTypeException, "Does not contain \"prob_domain\".");
             }
             box *probDomain_buff = new box;
-            if (H5Aread(probDomain, (dimension == 2 ? box2d_id : box3d_id), probDomain_buff) < 0)
+            if (H5Aread(probDomain, (dimension == 2 ? box2d_id : (dimension == 3 ? box3d_id : box4d_id)), probDomain_buff) < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_domain\".");
             }
@@ -1001,7 +1055,7 @@ avtChomboFileFormat::InitializeReader(void)
                 lowProbJ[0] = probDomain_buff->b2.lo.j;
                 hiProbJ[0] = probDomain_buff->b2.hi.j;
             }
-            else
+            else if (dimension == 3)
             {
                 lowProbI[0] = probDomain_buff->b3.lo.i;
                 hiProbI[0] = probDomain_buff->b3.hi.i;
@@ -1009,6 +1063,17 @@ avtChomboFileFormat::InitializeReader(void)
                 hiProbJ[0] = probDomain_buff->b3.hi.j;
                 lowProbK[0] = probDomain_buff->b3.lo.k;
                 hiProbK[0] = probDomain_buff->b3.hi.k;
+            }
+            else
+            {
+                lowProbI[0] = probDomain_buff->b4.lo.i;
+                hiProbI[0] = probDomain_buff->b4.hi.i;
+                lowProbJ[0] = probDomain_buff->b4.lo.j;
+                hiProbJ[0] = probDomain_buff->b4.hi.j;
+                lowProbK[0] = probDomain_buff->b4.lo.k;
+                hiProbK[0] = probDomain_buff->b4.hi.k;
+                lowProbL[0] = probDomain_buff->b4.lo.l;
+                hiProbL[0] = probDomain_buff->b4.hi.l;
             }
             delete probDomain_buff;
             H5Aclose(probDomain);
@@ -1021,10 +1086,16 @@ avtChomboFileFormat::InitializeReader(void)
             hiProbI[i] = refinement_ratio[i-1][0] * hiProbI[i-1];
             lowProbJ[i] = refinement_ratio[i-1][1] * lowProbJ[i-1];
             hiProbJ[i] = refinement_ratio[i-1][1] * hiProbJ[i-1];
-            if (dimension == 3)
+            if (dimension >= 3)
             {
                 lowProbK[i] = refinement_ratio[i-1][2] * lowProbK[i-1];
                 hiProbK[i] = refinement_ratio[i-1][2] * hiProbK[i-1];
+
+                if (dimension == 4)
+                {
+                    lowProbL[i] = refinement_ratio[i-1][3] * lowProbL[i-1];
+                    hiProbL[i] = refinement_ratio[i-1][3] * hiProbL[i-1];
+                }
             }
         }
 
@@ -1032,7 +1103,7 @@ avtChomboFileFormat::InitializeReader(void)
         // Read box information
         //
         box *boxes_buff = new box[dims[0]];
-        H5Dread(boxes, (dimension == 2 ? box2d_id : box3d_id), memdataspace,
+        H5Dread(boxes, dimension == 2 ? box2d_id : (dimension == 3 ? box3d_id : box4d_id), memdataspace,
                 boxspace, H5P_DEFAULT, boxes_buff);
 
         for (j = 0 ; j < patchesPerLevel[i] ; j++)
@@ -1044,7 +1115,7 @@ avtChomboFileFormat::InitializeReader(void)
                 hiI[patchId] = boxes_buff[j].b2.hi.i+1;
                 hiJ[patchId] = boxes_buff[j].b2.hi.j+1;
             }
-            else
+            else if (dimension == 3)
             {
                 lowI[patchId] = boxes_buff[j].b3.lo.i;
                 lowJ[patchId] = boxes_buff[j].b3.lo.j;
@@ -1052,6 +1123,17 @@ avtChomboFileFormat::InitializeReader(void)
                 hiI[patchId] = boxes_buff[j].b3.hi.i+1;
                 hiJ[patchId] = boxes_buff[j].b3.hi.j+1;
                 hiK[patchId] = boxes_buff[j].b3.hi.k+1;
+            }
+            else
+            {
+                lowI[patchId] = boxes_buff[j].b4.lo.i;
+                lowJ[patchId] = boxes_buff[j].b4.lo.j;
+                lowK[patchId] = boxes_buff[j].b4.lo.k;
+                lowL[patchId] = boxes_buff[j].b4.lo.l;
+                hiI[patchId] = boxes_buff[j].b4.hi.i+1;
+                hiJ[patchId] = boxes_buff[j].b4.hi.j+1;
+                hiK[patchId] = boxes_buff[j].b4.hi.k+1;
+                hiL[patchId] = boxes_buff[j].b4.hi.l+1;
             }
             patchId++;
         }
@@ -1067,10 +1149,10 @@ avtChomboFileFormat::InitializeReader(void)
                 numGhosts.push_back(0);
                 numGhosts.push_back(0);
                 numGhosts.push_back(0);
+                numGhosts.push_back(0);
             }
             else
             {
-                int g[3] = { 0, 0, 0 };
                 if (dimension == 2)
                 {
                     intvect2d g;
@@ -1080,16 +1162,29 @@ avtChomboFileFormat::InitializeReader(void)
                     if (g.i > 0 || g.j > 0)
                         fileContainsGhosts = true;
                     numGhosts.push_back(0);
+                    numGhosts.push_back(0);
                 }
-                else
+                else if (dimension == 3)
                 {
                     intvect3d g;
                     H5Aread(ghost_id, intvect3d_id, &g);
-                    if (g.i > 0 || g.j > 0 || g.k)
+                    if (g.i > 0 || g.j > 0 || g.k > 0)
                         fileContainsGhosts = true;
                     numGhosts.push_back(g.i);
                     numGhosts.push_back(g.j);
                     numGhosts.push_back(g.k);
+                    numGhosts.push_back(0);
+                }
+                else
+                {
+                    intvect4d g;
+                    H5Aread(ghost_id, intvect4d_id, &g);
+                    if (g.i > 0 || g.j > 0 || g.k > 0 || g.l > 0)
+                        fileContainsGhosts = true;
+                    numGhosts.push_back(g.i);
+                    numGhosts.push_back(g.j);
+                    numGhosts.push_back(g.k);
+                    numGhosts.push_back(g.l);
                 }
                 H5Aclose(ghost_id);
             }
@@ -1097,6 +1192,7 @@ avtChomboFileFormat::InitializeReader(void)
         }
         else
         {
+            numGhosts.push_back(0);
             numGhosts.push_back(0);
             numGhosts.push_back(0);
             numGhosts.push_back(0);
@@ -1110,8 +1206,52 @@ avtChomboFileFormat::InitializeReader(void)
 
     H5Tclose(box2d_id);
     H5Tclose(box3d_id);
+    H5Tclose(box4d_id);
     H5Tclose(intvect2d_id);
     H5Tclose(intvect3d_id);
+    H5Tclose(intvect4d_id);
+
+    if (dimension == 4)
+    {
+        if (num_levels != 1)
+            EXCEPTION1(ImproperUseException, "Chombo reader currently only supports single level 4D files.");
+
+        // FIXME: Replace inefficient order n^2 algorithm with something better
+        representativeBox.resize(patchesPerLevel[0]);
+        representedBoxes.resize(patchesPerLevel[0]);
+        for (int patchNo = 0; patchNo < patchesPerLevel[0]; ++patchNo)
+        {
+            for (int repCandidateNo = 0; repCandidateNo < patchesPerLevel[0]; ++repCandidateNo)
+            {
+                if (lowI[patchNo] == lowI[repCandidateNo] && hiI[patchNo] == hiI[repCandidateNo] &&
+                    lowJ[patchNo] == lowJ[repCandidateNo] && hiJ[patchNo] == hiJ[repCandidateNo] &&
+                    lowK[patchNo] == lowK[repCandidateNo] && hiK[patchNo] == hiK[repCandidateNo])
+                {
+                    representativeBox[patchNo] = repCandidateNo;
+                    representedBoxes[repCandidateNo].push_back(patchNo);
+                    if (patchNo == repCandidateNo) listOfRepresentativeBoxes.push_back(repCandidateNo);
+                    break;
+                }
+            }
+        }
+
+#if 1
+        // Debug output about boxes
+        for (int patchNo = 0; patchNo < patchesPerLevel[0]; ++patchNo)
+        {
+            std::cout << "Representative for box " << patchNo << " [ " << lowI[patchNo] << ", " << hiI[patchNo] << ", " << lowJ[patchNo] << ", " << hiJ[patchNo] << ", " << lowK[patchNo] << ", " << hiK[patchNo] <<  ", " << lowL[patchNo] << ", " << hiL[patchNo] << "] is " << representativeBox[patchNo] << std::endl;
+            if (representedBoxes[patchNo].size())
+            {
+                std::cout << "This box represents: ";
+                for (std::vector<int>::const_iterator it = representedBoxes[patchNo].begin(); it != representedBoxes[patchNo].end(); ++it)
+                {
+                    std::cout << *it << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+#endif
+    }
 
     //
     // Look for particles
@@ -1219,11 +1359,15 @@ avtChomboFileFormat::InitializeReader(void)
                                 mappingFileExists = true;
                                 mappingIs3D = true;
                             }
+                            else if (mapping_ncomponents == 4 && dimension == 4)
+                            {
+                                mappingFileExists = true;
+                            }
                             else
                             {
                                 debug1 << "Ignoring mapping file since it has ";
                                 debug1 << mapping_ncomponents << " instead of expected ";
-                                debug1 << "two or three components." << std::endl;
+                                debug1 << "two, three or four components." << std::endl;
                             }
                             H5Aclose(ncomponents_id);
                         }
@@ -1290,6 +1434,10 @@ avtChomboFileFormat::InitializeReader(void)
 //    Gunther H. Weber, Wed Jan 18 18:09:21 PST 2012
 //    Add setting of cell sizes.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 void
@@ -1319,20 +1467,20 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     int t1 = visitTimer->StartTimer();
     avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(
-                                          totalPatches, num_levels);
+            dimension == 3 ? totalPatches : listOfRepresentativeBoxes.size(), num_levels);
 
     //
     // Calculate what the refinement ratio is from one level to the next.
     //
-    std::vector<double> cs(dimension);
+    std::vector<double> cs(std::max(dimension, 3));
     for (level = 0 ; level < num_levels ; level++)
     {
         if (level == 0)
-            dn->SetLevelRefinementRatios(level, std::vector<int>(dimension, 1));
+            dn->SetLevelRefinementRatios(level, std::vector<int>(std::max(dimension, 3), 1));
         else
             dn->SetLevelRefinementRatios(level, refinement_ratio[level-1]);
 
-        for (int d=0; d < dimension; ++d)
+        for (int d=0; d < (std::max(dimension, 3)) ; ++d)
             cs[d] = dx[level][d]*aspectRatio[d];
         dn->SetLevelCellSizes(level, cs);
     }
@@ -1341,12 +1489,12 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // This multiplier will be needed to find out if patches are nested.
     //
     std::vector< std::vector<int> > multiplier(num_levels);
-    for (int d = 0; d < dimension; ++d)
+    for (int d = 0; d < std::max(dimension, 3); ++d)
         multiplier[num_levels-1].push_back(1);
     for (level = num_levels-2 ; level >= 0 ; level--)
     {
-        multiplier[level].resize(dimension);
-        for (int d = 0; d < dimension; ++d)
+        multiplier[level].resize(std::max(dimension, 3));
+        for (int d = 0; d < std::max(dimension, 3); ++d)
             multiplier[level][d] = multiplier[level+1][d]*refinement_ratio[level][d];
     }
     visitTimer->StopTimer(t1, "Setting up domain nesting: part 1");
@@ -1362,20 +1510,43 @@ avtChomboFileFormat::CalculateDomainNesting(void)
                                     = new avtRectilinearDomainBoundaries(true);
         rdb->SetNumDomains(totalPatches);
         rdb->SetRefinementRatios(refinement_ratio);
-        for (int patch = 0 ; patch < totalPatches ; patch++)
+        if (dimension < 4)
         {
-            int my_level, local_patch;
-            GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
+            for (int patch = 0 ; patch < totalPatches ; patch++)
+            {
+                int my_level, local_patch;
+                GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
 
-            int e[6];
-            e[0] = lowI[patch];
-            e[1] = hiI[patch];
-            e[2] = lowJ[patch];
-            e[3] = hiJ[patch];
-            e[4] = (dimension == 2 ? 0 : lowK[patch]);
-            e[5] = (dimension == 2 ? 0 : hiK[patch]);
+                int e[6];
+                e[0] = lowI[patch];
+                e[1] = hiI[patch];
+                e[2] = lowJ[patch];
+                e[3] = hiJ[patch];
+                e[4] = (dimension == 2 ? 0 : lowK[patch]);
+                e[5] = (dimension == 2 ? 0 : hiK[patch]);
 
-            rdb->SetIndicesForAMRPatch(patch, my_level, e);
+                rdb->SetIndicesForAMRPatch(patch, my_level, e);
+            }
+        }
+        else
+        {
+            for (int patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
+            {
+                int patch = listOfRepresentativeBoxes[patchNo];
+
+                int my_level, local_patch;
+                GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
+
+                int e[6];
+                e[0] = lowI[patch];
+                e[1] = hiI[patch];
+                e[2] = lowJ[patch];
+                e[3] = hiJ[patch];
+                e[4] = lowK[patch];
+                e[5] = hiK[patch];
+
+                rdb->SetIndicesForAMRPatch(patchNo, my_level, e);
+            }
         }
         rdb->CalculateBoundaries();
         void_ref_ptr vrdb = void_ref_ptr(rdb,
@@ -1388,6 +1559,8 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     // Calculate the child patches.
     //
+    // FIXME: We will need chages for 4-dimensional AMR hierarchies if/once we support them.
+    // Though at the moment they do not fit into the VisIt data model at all.
     int t3 = visitTimer->StartTimer();
     std::vector< std::vector<int> > childPatches(totalPatches);
     for (level = num_levels-1 ; level > 0 ; level--)
@@ -1461,25 +1634,48 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     // tell the structured domain boundary that information.
     //
     int t4 = visitTimer->StartTimer();
-    for (int i = 0 ; i < totalPatches ; i++)
+    if (dimension < 4)
     {
-        int my_level, local_patch;
-        GetLevelAndLocalPatchNumber(i, my_level, local_patch);
-
-        std::vector<int> logExts(6);
-        logExts[0] = lowI[i];
-        logExts[3] = hiI[i]-1;
-        logExts[1] = lowJ[i];
-        logExts[4] = hiJ[i]-1;
-        logExts[2] = 0;
-        logExts[5] = 0;
-        if (dimension == 3)
+        for (int i = 0 ; i < totalPatches ; i++)
         {
-            logExts[2] = lowK[i];
-            logExts[5] = hiK[i]-1;
-        }
+            int my_level, local_patch;
+            GetLevelAndLocalPatchNumber(i, my_level, local_patch);
 
-        dn->SetNestingForDomain(i, my_level, childPatches[i], logExts);
+            std::vector<int> logExts(6);
+            logExts[0] = lowI[i];
+            logExts[3] = hiI[i]-1;
+            logExts[1] = lowJ[i];
+            logExts[4] = hiJ[i]-1;
+            logExts[2] = 0;
+            logExts[5] = 0;
+            if (dimension == 3)
+            {
+                logExts[2] = lowK[i];
+                logExts[5] = hiK[i]-1;
+            }
+
+            dn->SetNestingForDomain(i, my_level, childPatches[i], logExts);
+        }
+    }
+    else
+    {
+        for (int patchNo = 0; patchNo < listOfRepresentativeBoxes.size(); ++patchNo)
+        {
+            int patch = listOfRepresentativeBoxes[patchNo];
+
+            int my_level, local_patch;
+            GetLevelAndLocalPatchNumber(patch, my_level, local_patch);
+
+            std::vector<int> logExts(6);
+            logExts[0] = lowI[patch];
+            logExts[3] = hiI[patch]-1;
+            logExts[1] = lowJ[patch];
+            logExts[4] = hiJ[patch]-1;
+            logExts[2] = lowK[patch];
+            logExts[5] = hiK[patch]-1;
+
+            dn->SetNestingForDomain(patchNo, my_level, childPatches[patch], logExts);
+        }
     }
 
     //
@@ -1556,6 +1752,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Tom Fogal, Thu Aug  5 20:11:04 MDT 2010
 //    Add support for resolution selection contract.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 void
@@ -1583,7 +1783,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = mesh_name;
     mesh->meshType = AVT_AMR_MESH;
-    mesh->numBlocks = totalPatches;
+    mesh->numBlocks = dimension < 4 ? totalPatches : listOfRepresentativeBoxes.size();
     mesh->blockOrigin = 0;
     mesh->spatialDimension = dimension;
     mesh->topologicalDimension = dimension;
@@ -1591,12 +1791,17 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         mesh->spatialDimension = 3;
     }
+    if (dimension == 4)
+    {
+        mesh->spatialDimension = 3;
+        mesh->topologicalDimension = 3;
+    }
     mesh->hasSpatialExtents = true;
     mesh->minSpatialExtents[0] = probLo[0] + lowProbI[0] * dx[0][0] * aspectRatio[0];
     mesh->maxSpatialExtents[0] = probLo[0] + (hiProbI[0] + 1) * dx[0][0] * aspectRatio[0];
     mesh->minSpatialExtents[1] = probLo[1] + lowProbJ[0] * dx[0][1] * aspectRatio[1];
     mesh->maxSpatialExtents[1] = probLo[1] + (hiProbJ[0] + 1) * dx[0][1] * aspectRatio[1];
-    if (dimension == 3)
+    if (dimension >= 3)
     {
         mesh->minSpatialExtents[2] = probLo[2] + lowProbK[0] * dx[0][2] * aspectRatio[2];
         mesh->maxSpatialExtents[2] = probLo[2] + (hiProbK[0] + 1) * dx[0][2] * aspectRatio[2];
@@ -1607,32 +1812,108 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->groupTitle = "levels";
     mesh->groupPieceName = "level";
     mesh->containsExteriorBoundaryGhosts = allowedToUseGhosts && fileContainsGhosts;
-    std::vector<int> groupIds(totalPatches);
-    std::vector<std::string> blockPieceNames(totalPatches);
-    int levels_of_detail = 0;
-    for (i = 0 ; i < totalPatches ; i++)
+    if (dimension < 4)
     {
-        char tmpName[128];
-        int level, local_patch;
-        GetLevelAndLocalPatchNumber(i, level, local_patch);
-        groupIds[i] = level;
-        sprintf(tmpName, "level%d,patch%d", level, local_patch);
-        blockPieceNames[i] = tmpName;
-        levels_of_detail = std::max(levels_of_detail, level);
+        std::vector<int> groupIds(totalPatches);
+        std::vector<std::string> blockPieceNames(totalPatches);
+        int levels_of_detail = 0;
+        for (i = 0 ; i < totalPatches ; ++i)
+        {
+            char tmpName[128];
+            int level, local_patch;
+            GetLevelAndLocalPatchNumber(i, level, local_patch);
+            groupIds[i] = level;
+            sprintf(tmpName, "level%d,patch%d", level, local_patch);
+            blockPieceNames[i] = tmpName;
+            levels_of_detail = std::max(levels_of_detail, level);
+        }
+        mesh->blockNames = blockPieceNames;
+        mesh->LODs = levels_of_detail;
+        this->resolution = levels_of_detail; // current acceptable res = max res.
+        md->Add(mesh);
+        md->AddGroupInformation(num_levels,totalPatches,groupIds);
+
     }
-    mesh->blockNames = blockPieceNames;
-    mesh->LODs = levels_of_detail;
-    this->resolution = levels_of_detail; // current acceptable res = max res.
-    md->Add(mesh);
-    md->AddGroupInformation(num_levels, totalPatches, groupIds);
+    else
+    {
+        std::vector<int> groupIds(listOfRepresentativeBoxes.size());
+        std::vector<std::string> blockPieceNames(listOfRepresentativeBoxes.size());
+        int levels_of_detail = 0;
+        for (i = 0; i < listOfRepresentativeBoxes.size(); ++i)
+        {
+            char tmpName[128];
+            int level, local_patch;
+            GetLevelAndLocalPatchNumber(listOfRepresentativeBoxes[i], level, local_patch);
+            groupIds[i] = level;
+            sprintf(tmpName, "level%d,patch%d", level, local_patch);
+            blockPieceNames[i] = tmpName;
+            levels_of_detail = std::max(levels_of_detail, level);
+        }
+        mesh->blockNames = blockPieceNames;
+        mesh->LODs = levels_of_detail;
+        this->resolution = levels_of_detail; // current acceptable res = max res.
+        md->Add(mesh);
+        md->AddGroupInformation(num_levels,listOfRepresentativeBoxes.size(), groupIds);
+    }
 
     //
     // Add each scalar variable.
     //
+    std::list<std::string> addedExpressionNames;
     int nVars = varnames.size();
     for (i = 0; i < nVars; i++)
     {
-        AddScalarVarToMetaData(md, varnames[i], mesh_name, nodeCentered ? AVT_NODECENT : AVT_ZONECENT);
+        if (dimension == 4)
+        {
+            int nArrayComps = nodeCentered ? hiProbL[0] - lowProbL[0] + 2 : hiProbL[0] - lowProbL[0] + 1;
+            AddArrayVarToMetaData(md, varnames[i], nArrayComps, mesh_name, nodeCentered ? AVT_NODECENT : AVT_ZONECENT);
+            int space_remaining = 4096;
+            char sum_expr[4096];
+            bool error = false;
+            int ret = SNPRINTF(sum_expr, space_remaining, "array_decompose(%s, %d)", varnames[i].c_str(), 0);
+            if (ret < 0 || ret >= space_remaining)
+            {
+                debug1 << "Error creating sum expression!" << std::endl;
+                continue;
+            }
+            space_remaining -= ret;
+            char *sum_expr_loc = sum_expr + ret;
+            for (int subComponentNo = 0; subComponentNo < nArrayComps; ++subComponentNo)
+            {
+                char buffer[1024];
+                Expression vec;
+                SNPRINTF(buffer, 1024, "%s/subcomponent_%d", varnames[i].c_str(), subComponentNo);
+                vec.SetName(buffer);
+                addedExpressionNames.push_back(buffer);
+                SNPRINTF(buffer, 1024, "array_decompose(%s, %d)", varnames[i].c_str(), subComponentNo);
+                vec.SetDefinition(buffer);
+                vec.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&vec);
+
+                ret = SNPRINTF(sum_expr_loc, space_remaining, " + array_decompose(%s, %d)", varnames[i].c_str(), subComponentNo);
+                if (ret < 0 || ret >= space_remaining)
+                {
+                    debug1 << "Error creating sum expression!" << std::endl;
+                    error = true;
+                    break;
+                }
+                space_remaining -= ret;
+                sum_expr_loc += ret;
+            }
+            if (!error)
+            {
+                Expression vec;
+                char buffer[1024];
+                SNPRINTF(buffer, 1024, "%s_sum", varnames[i].c_str());
+                vec.SetName(buffer);
+                addedExpressionNames.push_back(buffer);
+                vec.SetDefinition(sum_expr);
+                vec.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&vec);
+            }
+        }
+        else
+            AddScalarVarToMetaData(md, varnames[i], mesh_name, nodeCentered ? AVT_NODECENT : AVT_ZONECENT);
     }
 
     //
@@ -1640,7 +1921,6 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // variables that should be combined into vectors.  Identify these and
     // make expressions for the vectors.
     //
-    std::list<std::string> addedExpressionNames;
     for (i = 0; i < nVars; i++)
     {
         int id2 = -1;
@@ -1906,23 +2186,49 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
 #endif
 
-                Expression *mappingExpression = new Expression;
-                //mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
-                mappingExpression->SetName("_mapping_displacement");
-                mappingExpression->SetType(Expression::VectorMeshVar);
-                mappingExpression->SetHidden(false);
+                if (dimension < 4)
+                {
+                    Expression *mappingExpression = new Expression;
+                    //mappingExpression->SetName("_"+mappingVarPrefix+"_disp");
+                    mappingExpression->SetName("_mapping_displacement");
+                    mappingExpression->SetType(Expression::VectorMeshVar);
+                    mappingExpression->SetHidden(false);
 
-                if (dimension == 2 && !mappingIs3D)
-                    mappingExpression->SetDefinition(
-                            "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
-                            "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]}");
+                    if (dimension == 2 && !mappingIs3D)
+                        mappingExpression->SetDefinition(
+                                "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
+                                "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]}");
+                    else
+                        mappingExpression->SetDefinition(
+                                "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
+                                "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]," +
+                                "conn_cmfe(<"+mappingFilename+":z>,Mesh)-coords(Mesh)[2]}");
+
+                    md->AddExpression(mappingExpression);
+                }
                 else
-                    mappingExpression->SetDefinition(
-                            "{conn_cmfe(<"+mappingFilename+":x>,Mesh)-coords(Mesh)[0]," +
-                            "conn_cmfe(<"+mappingFilename+":y>,Mesh)-coords(Mesh)[1]," +
-                            "conn_cmfe(<"+mappingFilename+":z>,Mesh)-coords(Mesh)[2]}");
+                {
+                    char coordName[2] = { 'x', 'y'};
+                    for (int coordNo = 0; coordNo < 2; ++coordNo)
+                    {
+                        Expression *coordImportExpression = new Expression;
+                        coordImportExpression->SetName(std::string("_mapping_")+coordName[coordNo]+std::string("coord"));
+                        coordImportExpression->SetType(Expression::ScalarMeshVar);
+                        coordImportExpression->SetHidden(false);
+                        coordImportExpression->SetDefinition("conn_cmfe(<"+mappingFilename+':'+coordName[coordNo]+"/subcomponent_0>,Mesh)");
+                        md->AddExpression(coordImportExpression);
+                    }
 
-                md->AddExpression(mappingExpression);
+#if 0
+                    // No longer needed since RectilinearProject2D now handles mapping?
+                    Expression *mappingExpression = new Expression;
+                    mappingExpression->SetName("_mapping_displacement");
+                    mappingExpression->SetType(Expression::VectorMeshVar);
+                    mappingExpression->SetHidden(false);
+                    mappingExpression->SetDefinition("{ _mapping_xcoord, _mapping_ycoord } - coords(Mesh)");
+                    md->AddExpression(mappingExpression);
+#endif
+                }
             }
             else
             {
@@ -1937,7 +2243,6 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             debug1 << "Ignoring any mapping files." << endl;
         }
     }
-
 
     //
     // Add information about SIL restrictions
@@ -2055,10 +2360,14 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Gunther H. Weber, Fri Mar 25 13:20:48 PDT 2011
 //    Only add avtRealDims if file contains ghosts.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 // Comaprator class used to sort an array with integers so that the permutation
-// of integers gives an order so that all prticles belonging to a single polymer
+// of integers gives an order so that all particles belonging to a single polymer
 // are next to each other and in correct order along the polymer.
 class LookUpOrderCmp
 {
@@ -2078,6 +2387,7 @@ class LookUpOrderCmp
 vtkDataSet *
 avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 {
+    if (dimension == 4) patch = listOfRepresentativeBoxes[patch];
     int   i;
 
     if (strcmp(meshname, "Mesh") == 0)
@@ -2104,17 +2414,17 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         {
             dims[0] = hiI[patch]-lowI[patch]+1;
             dims[1] = hiJ[patch]-lowJ[patch]+1;
-            dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
+            dims[2] = (dimension >= 3 ? hiK[patch]-lowK[patch]+1 : 1);
         }
         else
         {
-            numGhostI = numGhosts[3*level];
-            numGhostJ = numGhosts[3*level+1];
-            numGhostK = numGhosts[3*level+2];
+            numGhostI = numGhosts[4*level];
+            numGhostJ = numGhosts[4*level+1];
+            numGhostK = numGhosts[4*level+2];
 
             dims[0] = hiI[patch]-lowI[patch]+1+2*numGhostI;
             dims[1] = hiJ[patch]-lowJ[patch]+1+2*numGhostJ;
-            dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
+            dims[2] = (dimension >= 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
         }
 
         vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
@@ -2146,7 +2456,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         for (i = 1; i < dims[1]; i++)
             ptr[i] = ptr[0] + i*dx[level][1]*aspectRatio[1];
 
-        if (dimension == 3)
+        if (dimension >= 3)
         {
             ptr = zcoord->GetPointer(0);
             if (!allowedToUseGhosts)
@@ -2176,10 +2486,25 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         arr->SetNumberOfTuples(3);
         arr->SetValue(0, lowI[patch]);
         arr->SetValue(1, lowJ[patch]);
-        arr->SetValue(2, (dimension == 3 ? lowK[patch] : 0));
+        arr->SetValue(2, (dimension >= 3 ? lowK[patch] : 0));
         arr->SetName("base_index");
         rg->GetFieldData()->AddArray(arr);
         arr->Delete();
+
+        if (dimension >= 4)
+        {
+            if (dx[level].size() >= 4)
+            {
+                vtkDoubleArray *dx_arr = vtkDoubleArray::New();
+                dx_arr->SetNumberOfTuples(1);
+                dx_arr->SetValue(0, dx[level][3]);
+                dx_arr->SetName("dx_array");
+                rg->GetFieldData()->AddArray(dx_arr);
+                dx_arr->Delete();
+            }
+            else
+                debug1 << "Warning: Dimension > 3 but dx[level].size() <= 3." << std::endl;
+        }
 
         if (allowedToUseGhosts && (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0))
         {
@@ -2223,7 +2548,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
             ghostCells->Allocate(rg->GetNumberOfCells());
 
-            if (dimension == 3)
+            if (dimension >= 3)
             {
                 for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
                     for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
@@ -2634,11 +2959,19 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Tom Fogal, Fri Aug  6 16:29:16 MDT 2010
 //    Add support for resolution selection contract.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtChomboFileFormat::GetVar(int patch, const char *varname)
 {
+    if (dimension == 4)
+        EXCEPTION1(InvalidVariableException,
+                "Internal error: Trying to use GetVar() an 4D Chombo file. Please contact a VisIt developer.");
+
     int   i;
 
     if (!initializedReader)
@@ -2676,9 +3009,9 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
         }
 
-        hsize_t numGhostI = numGhosts[3*level];
-        hsize_t numGhostJ = numGhosts[3*level+1];
-        hsize_t numGhostK = numGhosts[3*level+2];
+        hsize_t numGhostI = numGhosts[4*level];
+        hsize_t numGhostJ = numGhosts[4*level+1];
+        hsize_t numGhostK = numGhosts[4*level+2];
 
         //
         // Figure out how much data to read and what it's offset is into the
@@ -2695,10 +3028,12 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                 (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
                 * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
             if (dimension == 3)
+            {
                 if (nodeCentered)
                     numZones *= hsize_t(hiK[i]-lowK[i]+1)+2*numGhostK;
                 else
                     numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
+            }
             nvals += numZones*nVars;
         }
 
@@ -2713,10 +3048,12 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
             * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
         if (dimension == 3)
+        {
             if (nodeCentered)
                 amt *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
             else
                 amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+        }
 
         start += amt*varIdx;
 
@@ -2794,10 +3131,12 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                     size_t(hiI[patch]-lowI[patch])
                     * size_t(hiJ[patch]-lowJ[patch]);
                 if (dimension == 3)
+                {
                     if (nodeCentered)
                         new_amt *= (hiK[patch]-lowK[patch]+1);
                     else
                         new_amt *= (hiK[patch]-lowK[patch]);
+                }
                 new_farr->SetNumberOfTuples(new_amt);
 
                 size_t nJ = nodeCentered ? hiJ[patch] - lowJ[patch] + 1 : hiJ[patch] - lowJ[patch];
@@ -2923,11 +3262,252 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 //  Programmer: childs -- generated by xml2avt
 //  Creation:   Thu Jan 19 11:17:14 PDT 2006
 //
+//  Modifications:
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtChomboFileFormat::GetVectorVar(int domain, const char *varname)
+avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
 {
+    if (dimension == 4) patch = listOfRepresentativeBoxes[patch];
+    int   i;
+
+    if (!initializedReader)
+        InitializeReader();
+
+    int varIdx = -1;
+    int nVars = varnames.size();
+    for (i = 0 ; i < nVars ; i++)
+    {
+        if (varnames[i] == varname)
+        {
+            varIdx = i;
+            break;
+        }
+    }
+    if (varIdx >= 0)
+    {
+        int level, local_patch;
+        GetLevelAndLocalPatchNumber(patch, level, local_patch);
+
+        hsize_t numGhostI = numGhosts[4*level];
+        hsize_t numGhostJ = numGhosts[4*level+1];
+        hsize_t numGhostK = numGhosts[4*level+2];
+        hsize_t numGhostL = numGhosts[4*level+3];
+
+        if (numGhostL != 0)
+            EXCEPTION1(ImproperUseException, "Ghost zones in L dimension not yet supoorted.");
+
+        hsize_t num_tuples = nodeCentered ?
+            (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI) * (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
+            (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI) * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
+        if (dimension >= 3)
+        {
+            if (nodeCentered)
+                num_tuples *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
+            else
+                num_tuples *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+        }
+
+        if (num_tuples > std::numeric_limits<vtkIdType>::max())
+        {
+            EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
+                    "VTK can handle. Installing a VTK version with 64-bit indices "
+                    "enabled may help.");
+        }
+
+        const int num_array_comps = nodeCentered ? hiProbL[0] - lowProbL[0] + 2 : hiProbL[0] - lowProbL[0] + 1;
+        vtkDoubleArray *farr = vtkDoubleArray::New();
+        farr->SetNumberOfComponents(num_array_comps);
+        farr->SetNumberOfTuples(num_tuples);
+        //std::cout << "numTuples: " << farr->GetNumberOfTuples() << " numComponents: " << farr->GetNumberOfComponents() << std::endl;
+        double *ptr = farr->GetPointer(0);
+        size_t sz = farr->GetNumberOfComponents() * farr->GetNumberOfTuples();
+
+        for (std::vector<int>::const_iterator it = representedBoxes[patch].begin(); it != representedBoxes[patch].end(); ++it)
+        {
+            int patch = *it;
+            int level, local_patch;
+            GetLevelAndLocalPatchNumber(patch, level, local_patch);
+
+            if (level >= num_levels)
+            {
+                EXCEPTION1(InvalidVariableException, varname);
+            }
+            if (level > this->resolution)
+            {
+                std::ostringstream err;
+                err << "Level '" << level << "' exceeds current resolution, '"
+                    << this->resolution << "'.";
+                EXCEPTION1(ImproperUseException, err.str());
+            }
+
+            if (local_patch >= patchesPerLevel[level])
+            {
+                EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
+            }
+
+            //
+            // Figure out how much data to read and what it's offset is into the
+            // bigger array.  This will be needed so we can read a hyperslab from
+            // the HDF file.
+            //
+            int patchStart = patch-local_patch;
+            hsize_t nvals = 0;
+            for (i = patchStart ; i < patch ; i++)
+            {
+                hsize_t numZones = nodeCentered ?
+                    (hsize_t(hiI[i]-lowI[i]+1)+2*numGhostI)
+                    * (hsize_t(hiJ[i]-lowJ[i]+1)+2*numGhostJ) :
+                    (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
+                    * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
+                if (dimension >= 3)
+                {
+                    if (nodeCentered)
+                        numZones *= hsize_t(hiK[i]-lowK[i]+1)+2*numGhostK;
+                    else
+                        numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
+                }
+                if (dimension == 4)
+                {
+                    if (nodeCentered)
+                        numZones *= hsize_t(hiL[i]-lowL[i]+1)+2*numGhostL;
+                    else
+                        numZones *= hsize_t(hiL[i]-lowL[i])+2*numGhostL;
+                }
+                nvals += numZones*nVars;
+            }
+            hsize_t ncomps = nodeCentered ? hsize_t(hiL[i]-lowL[i]+1)+2*numGhostL : hsize_t(hiL[i]-lowL[i])+2*numGhostL;
+            //std::cout << i << " ncomps: " << ncomps << " " << lowL[i] << " - " << hiL[i] << std::endl;
+
+#if HDF5_VERSION_GE(1,6,4)
+            hsize_t start = nvals;
+#else
+            hssize_t start = nvals;
+#endif
+            hsize_t amt = nodeCentered ?
+                (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI)
+                * (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
+                (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
+                * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
+            if (dimension >= 3)
+            {
+                if (nodeCentered)
+                    amt *= hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK;
+                else
+                    amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
+            }
+            if (dimension == 4)
+            {
+                if (nodeCentered)
+                    amt *= hsize_t(hiL[patch]-lowL[patch]+1)+2*numGhostL;
+                else
+                    amt *= hsize_t(hiL[patch]-lowL[patch])+2*numGhostL;
+            }
+
+            start += amt*varIdx;
+
+            //
+            // Now do the HDF magic.  Disclosure: this code was cobbled together
+            // from examples I found on the internet.  If you think that there is a
+            // more efficient way to do this (in lines of code or in performance), you
+            // are probably right...
+            //
+            char name[1024];
+            SNPRINTF(name, 1024, "level_%d", level);
+            if (file_handle < 0)
+            {
+                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                if (file_handle < 0)
+                {
+                    EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
+                            "it is not even an HDF5 file.");
+                }
+            }
+            hid_t level_id = H5Gopen(file_handle, name);
+            if (level_id < 0)
+            {
+                EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
+            }
+
+            hid_t data = H5Dopen(level_id, "data:datatype=0");
+            if (data < 0)
+            {
+                EXCEPTION1(InvalidFilesException, "Level does not contain data.");
+            }
+
+            hid_t space_id = H5Dget_space(data);
+            hid_t rank     = H5Sget_simple_extent_ndims(space_id);
+            hsize_t dims[1];
+            int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
+            H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
+
+            hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
+
+            double *tmp = new double[amt];
+            H5Dread(data, H5T_NATIVE_DOUBLE, memdataspace, space_id, H5P_DEFAULT, tmp);
+            H5Sclose(memdataspace);
+            H5Sclose(space_id);
+            H5Dclose(data);
+            H5Gclose(level_id);
+
+            int nI = nodeCentered ? (hsize_t(hiI[patch]-lowI[patch]+1)+2*numGhostI) :
+                (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI);
+            int nJ = nodeCentered ? (hsize_t(hiJ[patch]-lowJ[patch]+1)+2*numGhostJ) :
+                (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
+            int nK = nodeCentered ? (hsize_t(hiK[patch]-lowK[patch]+1)+2*numGhostK) :
+                (hsize_t(hiK[patch]-lowK[patch])+2*numGhostK);
+            int nL = nodeCentered ? (hsize_t(hiL[patch]-lowL[patch]+1)+2*numGhostL) :
+                (hsize_t(hiL[patch]-lowL[patch])+2*numGhostL);
+            //for (int bla = 0; bla < amt; ++bla) tmp[bla] = double((bla/(nI*nJ))%nK);
+            //std::cout << "Reading box " << patch << " [ " << lowI[patch] << ", " << hiI[patch] << ", " << lowJ[patch] << ", " << hiJ[patch] << ", " << lowK[patch] << ", " << hiK[patch] <<  ", " << lowL[patch] << ", " << hiL[patch] << "] is " << representativeBox[patch] << std::endl;
+            //std::cout << "sz: " << sz << " nTuples: " << nI*nJ*nK << " nL:" << nL << " nComp:" << farr->GetNumberOfComponents() << " nTuples(arr): " << farr->GetNumberOfTuples() << std::endl;
+            for (int i = 0; i < nI; ++i)
+                for (int j = 0; j < nJ; ++j)
+                    for (int k = 0; k < nK; ++k)
+                        for (int l = 0; l < nL; ++l)
+                        {
+                            size_t from_idx = (((l*nK)+k)*nJ+j)*nI+i;
+                            if (from_idx >= amt)
+                            {
+                                std::cerr << "Invalid read: "  << i << " " << j << " " << k << " " << l << " " << from_idx << " " << amt << std::endl;
+                                continue;
+                            }
+                            size_t to_idx = ((k*nJ+j)*nI+i)*farr->GetNumberOfComponents()+l+lowL[patch]-numGhostL;
+                            if (to_idx >= sz)
+                            {
+                                std::cerr << "Invalid write:" << i << " " << j << " " << k << " " << l << " " << to_idx << " " << sz << std::endl;
+                                continue;
+                            }
+                            ptr[to_idx] = tmp[from_idx];
+                        }
+            delete[] tmp;
+
+            if (!allowedToUseGhosts)
+            {
+                //
+                // Strip out the ghost information.  Note: this is probably an inefficient
+                // path.  We would probably be better served leaving the ghost information
+                // and not creating ghost zones later in the process.  But that requires
+                // handling for external boundaries to the problem, which are not in place
+                // yet.
+                //
+                if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+                {
+                    EXCEPTION1(ImproperUseException, "Stripping ghost zones not implemented for array variables.");
+                }
+            }
+        }
+        return farr;
+    }
+    else
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
     return NULL;
 }
 
@@ -2956,6 +3536,11 @@ avtChomboFileFormat::GetVectorVar(int domain, const char *varname)
 //
 //    Gunther H. Weber, Tue Aug  7 16:01:28 PDT 2007
 //    Return material information
+//
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 void *
@@ -2973,29 +3558,53 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
         for (int level = 0 ; level < num_levels ; level++)
             totalPatches += patchesPerLevel[level];
 
-        avtIntervalTree *itree = new avtIntervalTree(totalPatches, dimension);
-
-        for (int patch = 0 ; patch < totalPatches ; patch++)
+        avtIntervalTree *itree;
+        if (dimension < 4)
         {
-            double bounds[6];
-            int level, local_patch;
+            itree = new avtIntervalTree(totalPatches, dimension);
 
-            GetLevelAndLocalPatchNumber(patch, level, local_patch);
-
-            bounds[0] = probLo[0] + lowI[patch]*dx[level][0]*aspectRatio[0];
-            bounds[1] = probLo[0] + bounds[0] + (hiI[patch]-lowI[patch])*dx[level][0]*aspectRatio[0];
-            bounds[2] = probLo[1] + lowJ[patch]*dx[level][1]*aspectRatio[1];
-            bounds[3] = probLo[1] + bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level][1]*aspectRatio[1];
-            bounds[4] = 0;
-            bounds[5] = 0;
-            if (dimension == 3)
+            for (int patch = 0 ; patch < totalPatches ; patch++)
             {
-                bounds[4] = probLo[2] + lowK[patch]*dx[level][2]*aspectRatio[2];
-                bounds[5] = probLo[2] + bounds[4] + (hiK[patch]-lowK[patch])*dx[level][2]*aspectRatio[2];
+                double bounds[6];
+                int level, local_patch;
+
+                GetLevelAndLocalPatchNumber(patch, level, local_patch);
+
+                bounds[0] = probLo[0] + lowI[patch]*dx[level][0]*aspectRatio[0];
+                bounds[1] = probLo[0] + bounds[0] + (hiI[patch]-lowI[patch])*dx[level][0]*aspectRatio[0];
+                bounds[2] = probLo[1] + lowJ[patch]*dx[level][1]*aspectRatio[1];
+                bounds[3] = probLo[1] + bounds[2] + (hiJ[patch]-lowJ[patch])*dx[level][1]*aspectRatio[1];
+                bounds[4] = 0;
+                bounds[5] = 0;
+                if (dimension == 3)
+                {
+                    bounds[4] = probLo[2] + lowK[patch]*dx[level][2]*aspectRatio[2];
+                    bounds[5] = probLo[2] + bounds[4] + (hiK[patch]-lowK[patch])*dx[level][2]*aspectRatio[2];
+                }
+                itree->AddElement(patch, bounds);
             }
-            itree->AddElement(patch, bounds);
+            itree->Calculate(true);
         }
-        itree->Calculate(true);
+        else
+        {
+            itree = new avtIntervalTree(listOfRepresentativeBoxes.size(), 3);
+            for (std::vector<int>::iterator it = listOfRepresentativeBoxes.begin(); it != listOfRepresentativeBoxes.end(); ++it)
+            {
+                double bounds[6];
+                int level, local_patch;
+
+                GetLevelAndLocalPatchNumber(*it, level, local_patch);
+
+                bounds[0] = probLo[0] + lowI[*it]*dx[level][0]*aspectRatio[0];
+                bounds[1] = probLo[0] + bounds[0] + (hiI[*it]-lowI[*it])*dx[level][0]*aspectRatio[0];
+                bounds[2] = probLo[1] + lowJ[*it]*dx[level][1]*aspectRatio[1];
+                bounds[3] = probLo[1] + bounds[2] + (hiJ[*it]-lowJ[*it])*dx[level][1]*aspectRatio[1];
+                bounds[4] = probLo[2] + lowK[*it]*dx[level][2]*aspectRatio[2];
+                bounds[5] = probLo[2] + bounds[4] + (hiK[*it]-lowK[*it])*dx[level][2]*aspectRatio[2];
+                itree->AddElement(*it, bounds);
+            }
+            itree->Calculate(true);
+        }
 
         df = avtIntervalTree::Destruct;
 

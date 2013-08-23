@@ -296,13 +296,17 @@ vtkVisItUtility::NewPoints(vtkDataSet *inDS)
 //    Kathleen Bonnell, Fri May 28 17:27:05 PDT 2004
 //    Forgot return for bad dims, and test for invalid ijk (< 0). 
 //
+//    Gunther H. Weber, Thu Aug 22 10:16:34 PDT 2013
+//    Added option to allow negative indices (false by default).
+//
 // ****************************************************************************
 
 void
-vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int ID, 
+vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int ID,
                                    int ijk[3], const bool global,
-                                   const bool adjustForGhosts)
-{ 
+                                   const bool adjustForGhosts,
+                                   const bool allowNegativeIndices)
+{
     int dimX, dimY, dims[3], base[3] = {0, 0, 0};
 
     GetDimensions(ds, dims);
@@ -359,11 +363,13 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         ijk[2] = (ID / (dimX * dimY)) + base[2];
     }
 
-    ijk[0] = ijk[0] < 0 ? 0 : ijk[0];
-    ijk[1] = ijk[1] < 0 ? 0 : ijk[1];
-    ijk[2] = ijk[2] < 0 ? 0 : ijk[2];
+    if (!allowNegativeIndices)
+    {
+        ijk[0] = ijk[0] < 0 ? 0 : ijk[0];
+        ijk[1] = ijk[1] < 0 ? 0 : ijk[1];
+        ijk[2] = ijk[2] < 0 ? 0 : ijk[2];
+    }
 }
-
 
 
 // ****************************************************************************

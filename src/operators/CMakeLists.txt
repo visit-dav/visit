@@ -90,6 +90,7 @@ DualMesh
 Edge
 Elevate
 ExternalSurface
+ExtractPointFunction2D
 Extrude
 FFT
 FiveFoldTetSubdivision
@@ -111,6 +112,7 @@ PDF
 PersistentParticles
 Poincare
 Project
+RectilinearProject2D
 Reflect
 Replicate
 Resample

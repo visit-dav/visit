@@ -69,6 +69,13 @@ struct {
 } typedef intvect3d;
 
 struct {
+  int i;
+  int j;
+  int k;
+  int l;
+} typedef intvect4d;
+
+struct {
   intvect2d lo;
   intvect2d hi;
 } typedef box2d;
@@ -78,10 +85,16 @@ struct{
   intvect3d hi;
 } typedef box3d;
 
+struct{
+  intvect4d lo;
+  intvect4d hi;
+} typedef box4d;
+
 union
 {
   box2d b2;
   box3d b3;
+  box4d b4;
 } typedef box;
 
 struct {
@@ -153,6 +166,10 @@ class DBOptionsAttributes;
 //    Tom Fogal, Fri Aug  6 16:39:18 MDT 2010
 //    Implement method to handle data selections.
 //
+//    Gunther H. Weber, Thu Aug 15 11:37:51 PDT 2013
+//    Initial bare-bones support for 4D Chombo files (fairly limited and 
+//    "hackish")
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -210,12 +227,20 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     bool                               mappingFileExists;
     bool                               mappingIs3D;
 
+    // Information to group boxes for 4D data sets to create array variable
+    // from 4th dimension
+    std::vector<int>                   listOfRepresentativeBoxes;
+    std::vector<int>                   representativeBox;
+    std::vector< std::vector<int> >    representedBoxes;
+
     std::vector<int>                   lowProbI;
     std::vector<int>                   hiProbI;
     std::vector<int>                   lowProbJ;
     std::vector<int>                   hiProbJ;
     std::vector<int>                   lowProbK;
     std::vector<int>                   hiProbK;
+    std::vector<int>                   lowProbL;
+    std::vector<int>                   hiProbL;
 
     std::vector<int>                   lowI;
     std::vector<int>                   hiI;
@@ -223,6 +248,8 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<int>                   hiJ;
     std::vector<int>                   lowK;
     std::vector<int>                   hiK;
+    std::vector<int>                   lowL;
+    std::vector<int>                   hiL;
 
     double                             probLo[3];
     double                             aspectRatio[3];
