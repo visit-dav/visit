@@ -254,11 +254,12 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
     params->SetName(paramArrayName.c_str());
     tangents->SetName(tangentsArrayName.c_str());
 
+    pd->GetPointData()->SetScalars(scalars);
     pd->GetPointData()->AddArray(scalars);
     pd->GetPointData()->AddArray(params);
     pd->GetPointData()->AddArray(tangents);
 
-    if (displayMethod == STREAMLINE_DISPLAY_RIBBONS)
+    if (displayMethod == PICS_DISPLAY_RIBBONS)
     {
         thetas = vtkFloatArray::New();
         thetas->Allocate(numPts);
@@ -282,7 +283,7 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
 
     double correlationDistMinDistToUse = correlationDistanceMinDist;
     double correlationDistAngTolToUse = 0.0;
-    if (coloringMethod == STREAMLINE_CORRELATION_DISTANCE)
+    if (coloringMethod == PICS_CORRELATION_DISTANCE)
     {
         if (correlationDistanceDoBBox)
             correlationDistMinDistToUse *= GetLengthScale();
@@ -348,28 +349,28 @@ avtStreamlinePolyDataFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCu
             // color scalars
             switch (coloringMethod)
             {
-              case STREAMLINE_COLOR_TIME:
+              case PICS_COLOR_TIME:
                 scalars->InsertTuple1(pIdx, s.time);
                 break;
-              case STREAMLINE_COLOR_SPEED:
+              case PICS_COLOR_SPEED:
                 scalars->InsertTuple1(pIdx, speed);
                 break;
-              case STREAMLINE_COLOR_VORTICITY:
+              case PICS_COLOR_VORTICITY:
                 scalars->InsertTuple1(pIdx, s.vorticity);
                 break;
-              case STREAMLINE_COLOR_ARCLENGTH:
+              case PICS_COLOR_ARCLENGTH:
                 scalars->InsertTuple1(pIdx, s.arclength);
                 break;
-              case STREAMLINE_COLOR_VARIABLE:
+              case PICS_COLOR_VARIABLE:
                 scalars->InsertTuple1(pIdx, s.scalar0);
                 break;
-              case STREAMLINE_COLOR_ID:
+              case PICS_COLOR_ID:
                 scalars->InsertTuple1(pIdx, ic->id);
                 break;
-              case STREAMLINE_COLOR_SOLID:
+              case PICS_COLOR_SOLID:
                 scalars->InsertTuple1(pIdx, 0.0f);
                 break;
-              case STREAMLINE_CORRELATION_DISTANCE:
+              case PICS_CORRELATION_DISTANCE:
                 scalars->InsertTuple1(pIdx, ComputeCorrelationDistance(j, ic, correlationDistAngTolToUse, correlationDistMinDistToUse));
                 break;
             }

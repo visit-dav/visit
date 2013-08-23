@@ -190,7 +190,7 @@ avtIntegralCurve::~avtIntegralCurve()
 //  Method: avtIntegralCurve::Advance
 //
 //  Purpose:
-//      Advances the streamline.
+//      Advances the integral curve.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
@@ -462,7 +462,7 @@ avtIntegralCurve::Advance(avtIVPField *field)
 //  Method: avtIntegralCurve::Serialize
 //
 //  Purpose:
-//      Serializes a streamline so it can be sent to another processor.
+//      Serializes an integral curve so it can be sent to another processor.
 //
 //  Programmer: Christoph Garth
 //  Creation:   February 25, 2008
