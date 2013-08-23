@@ -36,13 +36,15 @@
 *
 *****************************************************************************/
 
-#ifndef QVISPOINCAREPLOTWINDOW_H
-#define QVISPOINCAREPLOTWINDOW_H
+#ifndef QVIS_POINCARE_WINDOW_H
+#define QVIS_POINCARE_WINDOW_H
 
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
 
+// Forward declarations
 class PoincareAttributes;
+
 class QTabWidget;
 class QLabel;
 class QCheckBox;
@@ -53,13 +55,6 @@ class QButtonGroup;
 class QRadioButton;
 class QComboBox;
 class QGroupBox;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineWidthWidget;
-class QvisVariableButton;
-class QvisPointControl;
-class QvisLineStyleWidget;
 class QPushButton;
 
 // ****************************************************************************
@@ -97,7 +92,11 @@ class QvisPoincareWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateAdvancedTab(QWidget *pageAdvanced);
+    void CreateIntegrationTab(QWidget *);
+    void CreateAnalysisTab(QWidget *);
+    void CreateAppearanceTab(QWidget *);
+    void CreateAdvancedTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void UpdateFieldAttributes();
@@ -187,12 +186,6 @@ class QvisPoincareWindow : public QvisOperatorWindow
 
   private:
     int plotType;
-
-    QTabWidget *propertyTabs;
-    QWidget    *firstTab;
-    QWidget    *secondTab;
-    QWidget    *thirdTab;
-    QWidget    *fourthTab;
 
     // Fieldlines
     QWidget   *sourceType;

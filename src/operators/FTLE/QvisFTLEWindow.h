@@ -42,6 +42,8 @@
 #include <AttributeSubject.h>
 
 // Forward declarations
+class FTLEAttributes;
+
 class QLabel;
 class QGroupBox;
 class QListWidget;
@@ -58,7 +60,6 @@ class QvisOpacitySlider;
 class QPushButton;
 class QButtonGroup;
 class QRadioButton;
-class FTLEAttributes;
 
 // ****************************************************************************
 // Class: QvisFTLEWindow
@@ -87,7 +88,10 @@ class QvisFTLEWindow : public QvisOperatorWindow
     virtual void CreateWindowContents();
 
   protected:
-    void CreateAdvancedTab(QWidget *);    
+    void CreateIntegrationTab(QWidget *);
+    void CreateAppearanceTab(QWidget *);
+    void CreateAdvancedTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void UpdateAlgorithmAttributes();

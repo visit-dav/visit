@@ -45,8 +45,6 @@
 
 #include <avtPoincareFilter.h>
 
-#include <avtCallback.h>
-
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -63,9 +61,12 @@
 #include <vtkTubeFilter.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtParallel.h>
+#include <avtCallback.h>
 #include <avtDatasetExaminer.h>
-#include <avtExtents.h>
+
 #include <avtPoincareIC.h>
+
 #include <utility>
 
 #include <sys/stat.h>
@@ -97,8 +98,13 @@ static const int DATA_WindingGroupOrder = 11;
 static const int DATA_WindingPointOrder = 12;
 static const int DATA_WindingPointOrderModulo = 13;
 
+static float random01()
+{
+    return (float)rand()/(float)RAND_MAX;
+}
+
 // ****************************************************************************
-//  Method: CreateSphere
+//  Method: CreateVTKVertex
 //
 //  Programmer:
 //  Creation:   Tue Oct 7 09:02:52 PDT 2008
@@ -114,7 +120,7 @@ static const int DATA_WindingPointOrderModulo = 13;
 // ****************************************************************************
 
 static vtkPolyData *
-CreateSphere(float val, double p[3])
+CreateVTKVertex(float val, double p[3])
 {
     vtkPoints *pt = vtkPoints::New();
     pt->SetNumberOfPoints(1);
@@ -192,6 +198,21 @@ avtPoincareFilter::avtPoincareFilter() :
     verboseFlag( false ),
     pointScale(1)
 {
+    dataValue == DATA_SafetyFactorQ;
+
+    //
+    // Initialize source values.
+    //
+    sourceType = PICS_SOURCE_POINT;
+    numSamplePoints = 0;
+    randomSamples = false;
+    randomSeed = 0;
+
+    issueWarningForMaxStepsTermination = true;
+    issueWarningForStiffness = true;
+    issueWarningForCriticalPoints = true;
+    criticalPointThreshold = 1e-3;
+
     planes.resize(1);
     planes[0] = 0;
     intersectObj = NULL;
@@ -265,7 +286,7 @@ avtPoincareFilter::ExamineContract(avtContract_p in_contract)
 {
     // Call the examine contract function of the super classes first
     avtPluginFilter::ExamineContract(in_contract);
-    avtStreamlineFilter::ExamineContract(in_contract);
+    avtPICSFilter::ExamineContract(in_contract);
 }
 
 // ****************************************************************************
@@ -283,7 +304,8 @@ avtContract_p
 avtPoincareFilter::ModifyContract(avtContract_p in_contract)
 {
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    std::string var =  in_dr->GetOriginalVariable();
+    avtDataRequest_p out_dr = NULL;
+    std::string var = in_dr->GetOriginalVariable();
 
     in_dr->SetUsesAllDomains(true);
 
@@ -294,11 +316,26 @@ avtPoincareFilter::ModifyContract(avtContract_p in_contract)
 
         outVarName = justTheVar;
 
-        avtDataRequest_p out_dr = new avtDataRequest(in_dr,justTheVar.c_str());
-
-        return avtStreamlineFilter::ModifyContract( new avtContract(in_contract,out_dr) );
+        out_dr = new avtDataRequest(in_dr, justTheVar.c_str());
     }
-    return avtStreamlineFilter::ModifyContract(in_contract);
+
+    else if (strcmp(in_dr->GetVariable(), "colorVar") == 0 )
+    {
+        // The avtStreamlinePlot requested "colorVar", so remove that from the
+        // contract now.
+        out_dr = new avtDataRequest(in_dr, in_dr->GetOriginalVariable());
+    }
+    else
+        out_dr = new avtDataRequest(in_dr);
+
+    avtContract_p out_contract;
+
+    if ( *out_dr )
+        out_contract = new avtContract(in_contract, out_dr);
+    else
+        out_contract = new avtContract(in_contract);
+
+    return avtPICSFilter::ModifyContract(out_contract);
 }
 
 // ****************************************************************************
@@ -315,6 +352,11 @@ avtPoincareFilter::ModifyContract(avtContract_p in_contract)
 void
 avtPoincareFilter::UpdateDataObjectInfo(void)
 {
+    avtPluginFilter::UpdateDataObjectInfo();
+    avtPICSFilter::UpdateDataObjectInfo();
+
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &val  = GetOutput()->GetInfo().GetValidity();
@@ -346,15 +388,13 @@ avtPoincareFilter::UpdateDataObjectInfo(void)
         val.SetNormalsAreInappropriate(false);
     }
 
-    // // if (! out_atts.ValidVariable("colorVar"))
-    // // {
-    // //     out_atts.AddVariable("colorVar");
-    // //     out_atts.SetActiveVariable("colorVar");
-    // //     out_atts.SetVariableDimension(1);
-    // // }
-
-    avtPluginFilter::UpdateDataObjectInfo();
-    avtStreamlineFilter::UpdateDataObjectInfo();
+    if (! out_atts.ValidVariable("colorVar"))
+    {
+        out_atts.AddVariable("colorVar");
+        out_atts.SetActiveVariable("colorVar");
+        out_atts.SetVariableDimension(1);
+        out_atts.SetCentering(AVT_NODECENT);
+    }
 }
 
 
@@ -379,16 +419,10 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
 {
     const PoincareAttributes *newAtts = (const PoincareAttributes *)a;
 
-    // // See if the colors will need to be updated.
-    // bool updateColors = (!colorsInitialized) ||
-    //     (atts.GetColorTableName() != newAtts->GetColorTableName()) ||
-    //     (atts.GetOpacityType() != newAtts->GetOpacityType());
-
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
     needsRecalculation = atts.ChangesRequireRecalculation(*newAtts);
     atts = *newAtts;
-
 
     SetFieldType(atts.GetFieldType());
     SetFieldConstant(atts.GetFieldConstant());
@@ -458,9 +492,9 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
                     ? PICS_CONN_CMFE : PICS_POS_CMFE);
 
     SetPathlines(atts.GetPathlines(),
-                                   atts.GetPathlinesOverrideStartingTimeFlag(),
-                                   atts.GetPathlinesOverrideStartingTime(),
-                                   CMFEType);
+                 atts.GetPathlinesOverrideStartingTimeFlag(),
+                 atts.GetPathlinesOverrideStartingTime(),
+                 CMFEType);
 
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
@@ -527,57 +561,11 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     SetShow1DPlots(atts.GetShow1DPlots());
     SetSummaryFlag( atts.GetSummaryFlag() );
     SetVerboseFlag( atts.GetVerboseFlag() );
-
-
-    // Update the plot's colors if needed.
-    // // if(updateColors || atts.GetColorTableName() == "Default")
-    // // {
-    // //     colorsInitialized = true;
-    // //     SetColorTable(atts.GetColorTableName().c_str());
-    // // }
-
-    // // SetOpacityFromAtts();
-    // // SetLighting(atts.GetLightingFlag());
-    // // SetLegend(atts.GetLegendFlag());
-
-
-    // // glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    // // glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
-    // // glyphMapper->SetScale(atts.GetPointSize());
-    // // glyphMapper->DataScalingOff();
-    // // if (atts.GetPointType() == PoincareAttributes::Box)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Box);
-    // // else if (atts.GetPointType() == PoincareAttributes::Axis)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Axis);
-    // // else if (atts.GetPointType() == PoincareAttributes::Icosahedron)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Icosahedron);
-    // // else if (atts.GetPointType() == PoincareAttributes::Octahedron)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Octahedron);
-    // // else if (atts.GetPointType() == PoincareAttributes::Tetrahedron)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Tetrahedron);
-    // // else if (atts.GetPointType() == PoincareAttributes::SphereGeometry)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::SphereGeometry);
-    // // else if (atts.GetPointType() == PoincareAttributes::Point)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Point);
-    // // else if (atts.GetPointType() == PoincareAttributes::Sphere)
-    // //     glyphMapper->SetGlyphType(avtPointGlypher::Sphere);
-    // // SetPointGlyphSize();
-
-    // // if (varname != NULL)
-    // // {
-    // //     glyphMapper->ColorByScalarOn(std::string(varname));
-    // // }
-
-    // // //SetScaling(atts.GetScaling(), atts.GetSkewFactor());
-    // // SetScaling(0, 1);
-    
-    // // //SetLimitsMode(atts.GetLimitsMode());
-    // // SetLimitsMode(0);
 }
 
 
 // ****************************************************************************
-//  Method: avtPoincareFilter::PreExecute
+//  method: avtPoincareFilter::PreExecute
 //
 //  Purpose:
 //      Get the current spatial extents if necessary.
@@ -593,7 +581,7 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
 void
 avtPoincareFilter::PreExecute(void)
 {
-    avtStreamlineFilter::PreExecute();
+    avtPICSFilter::PreExecute();
 }
 
 
@@ -616,7 +604,7 @@ avtPoincareFilter::PreExecute(void)
 void
 avtPoincareFilter::PostExecute(void)
 {
-    avtStreamlineFilter::PostExecute();
+    avtPICSFilter::PostExecute();
     
     double range[2];
     avtDataset_p ds = GetTypedOutput();
@@ -628,6 +616,232 @@ avtPoincareFilter::PostExecute(void)
     e = GetOutput()->GetInfo().GetAttributes().GetThisProcsActualDataExtents();
     e->Merge(range);
 }
+
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::GetInitialLocations
+//
+//  Purpose:
+//      Get the seed points out of the attributes.
+//
+//  Programmer: Hank Childs (harvested from GetStreamlinesFromInitialSeeds by
+//                           David Pugmire)
+//  Creation:   June 5, 2008
+//
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
+//   Dave Pugmire, Wed Nov 10 09:20:06 EST 2010
+//   Handle 2D datasets better.
+//
+// ****************************************************************************
+
+std::vector<avtVector>
+avtPoincareFilter::GetInitialLocations(void)
+{
+    std::vector<avtVector> seedPts;
+    
+    if (randomSamples)
+        srand(randomSeed);
+
+    // Add seed points based on the source.
+    if(sourceType == PICS_SOURCE_POINT)
+        GenerateSeedPointsFromPoint(seedPts);
+    else if(sourceType == PICS_SOURCE_LINE)
+        GenerateSeedPointsFromLine(seedPts);
+
+    //Check for 2D input.
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+    {
+        std::vector<avtVector>::iterator it;
+        for (it = seedPts.begin(); it != seedPts.end(); it++)
+            (*it)[2] = 0.0f;
+    }
+
+    return seedPts;
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::GenerateSeedPointsFromPoint
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::GenerateSeedPointsFromPoint(std::vector<avtVector> &pts)
+{
+    pts.push_back(points[0]);
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::GenerateSeedPointsFromLine
+//
+//  Purpose:
+//      
+//
+//  Programmer: Dave Pugmire
+//  Creation:   December 3, 2009
+//
+//  Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources.
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
+{
+    avtVector v = points[1]-points[0];
+
+    if (randomSamples)
+    {
+        for (int i = 0; i < numSamplePoints; i++)
+        {
+            avtVector p = points[0] + random01()*v;
+            pts.push_back(p);
+        }
+    }
+    else
+    {
+        double t = 0.0, dt;
+        if (sampleDensity[0] == 1)
+        {
+            t = 0.5;
+            dt = 0.5;
+        }
+        else
+            dt = 1.0/(double)(sampleDensity[0]-1);
+    
+        for (int i = 0; i < sampleDensity[0]; i++)
+        {
+            avtVector p = points[0] + t*v;
+            pts.push_back(p);
+            t = t+dt;
+        }
+    }
+}
+
+
+/// ****************************************************************************
+//  Method: avtPoincareFilter::GetInitialVelocities
+//
+//  Purpose:
+//      Get the seed velocities out of the attributes.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 5, 2008
+//
+// ****************************************************************************
+
+std::vector<avtVector>
+avtPoincareFilter::GetInitialVelocities(void)
+{
+    std::vector<avtVector> seedVels;
+
+    seedVels.push_back( seedVelocity );
+
+    return seedVels;
+}
+
+
+// ****************************************************************************
+// Method: avtPoincareFilter::SetPointSource
+//
+// Purpose: 
+//   Sets the integral curve point source.
+//
+// Arguments:
+//   pt : The location of the point.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 6 12:58:36 PDT 2002
+//
+// Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//   
+// ****************************************************************************
+
+void
+avtPoincareFilter::SetPointSource(const double *p)
+{
+    sourceType = PICS_SOURCE_POINT;
+    points[0].set(p);
+}
+
+
+// ****************************************************************************
+// Method: avtPoincareFilter::SetLineSource
+//
+// Purpose: 
+//   Sets the source line endpoints.
+//
+// Arguments:
+//   pt1 : The first line endpoint.
+//   pt2 : The second line endpoint.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 6 12:58:59 PDT 2002
+//
+// Modifications:
+//
+//   Dave Pugmire, Thu Jun 10 10:44:02 EDT 2010
+//   New seed sources. 
+//   
+// ****************************************************************************
+
+void
+avtPoincareFilter::SetLineSource(const double *p0, const double *p1,
+                                 int den, bool rand, int seed, int numPts)
+{
+    sourceType = PICS_SOURCE_LINE;
+    points[0].set(p0);
+    points[1].set(p1);
+    
+    numSamplePoints = numPts;
+    sampleDensity[0] = den;
+    sampleDensity[1] = 0;
+    sampleDensity[2] = 0;
+    
+    randomSamples = rand;
+    randomSeed = seed;
+}
+
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::CreateIntegralCurve
+//
+//  Purpose:
+//      Create an uninitialized integral curve.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+avtIntegralCurve*
+avtPoincareFilter::CreateIntegralCurve(void)
+{
+    avtPoincareIC *fic = new avtPoincareIC();
+    return fic;
+}
+
 
 // ****************************************************************************
 //  Method: avtPoincareFilter::CreateIntegralCurve
@@ -786,10 +1000,12 @@ avtPoincareFilter::Execute()
         }
     }
 
-    avtStreamlineFilter::Execute();
+    avtPICSFilter::Execute();
 
     std::vector<avtIntegralCurve *> ics;
     GetTerminatedIntegralCurves(ics);
+
+    ReportWarnings(ics);
 
     avtDataTree *dt = new avtDataTree();
     
@@ -800,6 +1016,115 @@ avtPoincareFilter::Execute()
     SetOutputDataTree(dt);
 }
 
+
+// ****************************************************************************
+//  Method: avtPoincareFilter::ReportWarnings() 
+//
+//  Purpose:
+//      Reports any potential integration warnings
+//
+//  Programmer: Allen Sanderson
+//  Creation:   20 August 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
+{
+    if (ics.size() == 0)
+        return;
+
+    int numICs = ics.size();
+//    int numPts = 0;
+    int numEarlyTerminators = 0;
+    int numStiff = 0;
+    int numCritPts = 0;
+
+    if (DebugStream::Level5())
+        debug5 << "::ReportWarnings " << ics.size() << endl;
+
+    //See how many pts, ics we have so we can preallocate everything.
+    for (int i = 0; i < numICs; i++)
+    {
+        avtPoincareIC *ic = dynamic_cast<avtPoincareIC*>(ics[i]);
+
+        // NOT USED ??????????????????????????
+        // size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
+        // if (numSamps > 1)
+        //     numPts += numSamps;
+
+        // Calculated only with avtStreamlineIC
+        // if (ic->TerminatedBecauseOfMaxSteps())
+        // {
+        //     if (ic->SpeedAtTermination() <= criticalPointThreshold)
+        //         numCritPts++;
+        //     else
+        //         numEarlyTerminators++;
+        // }
+
+        if (ic->EncounteredNumericalProblems())
+            numStiff++;
+    }
+
+    if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
+    {
+        SumIntAcrossAllProcessors(numEarlyTerminators);
+        if (numEarlyTerminators > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines terminated because they "
+               "reached the maximum number of steps.  This may be indicative of your "
+               "time or distance criteria being too large or of other attributes being "
+               "set incorrectly (example: your step size is too small).  If you are "
+               "confident in your settings and want the particles to advect farther, "
+               "you should increase the maximum number of steps.  If you want to disable "
+               "this message, you can do this under the Advaced tab of the streamline plot."
+               "  Note that this message does not mean that an error has occurred; it simply "
+               "means that VisIt stopped advecting particles because it reached the maximum "
+               "number of steps. (That said, this case happens most often when other attributes "
+               "are set incorrectly.)", numEarlyTerminators);
+            avtCallback::IssueWarning(str);
+        }
+    }
+
+    if (issueWarningForCriticalPoints)
+    {
+        SumIntAcrossAllProcessors(numCritPts);
+        if (numCritPts > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines circled round and round a critical point (a zero"
+               " velocity location).  Normally, VisIt is able to advect the particle "
+               "to the critical point location and terminate.  However, VisIt was not able "
+               "to do this for these particles due to numerical issues.  In all likelihood, "
+               "additional steps will _not_ help this problem and only cause execution to "
+               "take longer.  If you want to disable this message, you can do this under "
+               "the Advanced tab of the streamline plot.", numCritPts);
+            avtCallback::IssueWarning(str);
+        }
+    }
+
+    if (issueWarningForStiffness)
+    {
+        SumIntAcrossAllProcessors(numStiff);
+        if (numStiff > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines were unable to advect because of \"stiffness\".  "
+               "When one component of a velocity field varies quickly and another stays "
+               "relatively constant, then it is not possible to choose step sizes that "
+               "remain within tolerances.  This condition is referred to as stiffness and "
+               "VisIt stops advecting in this case.  If you want to disable this message, "
+               "you can do this under the Advanced tab of the streamline plot.", numStiff);
+            avtCallback::IssueWarning(str);
+        }
+    }
+}
 
 // ****************************************************************************
 //  Method: avtPoincareFilter::ContinueExecute
@@ -2482,6 +2807,15 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           continue;
 #endif
 
+        if( poincare_ic->points.size() == 0 )
+        {
+          if( summaryFlag ) 
+            std::cerr << "Surface id = " << poincare_ic->id
+                      << "  contains no points" << std::endl;
+
+          continue;
+        }
+
         FieldlineProperties::FieldlineType type = properties.type;
         bool complete =
           (properties.analysisState == FieldlineProperties::COMPLETED);
@@ -2501,8 +2835,6 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
 
         bool completeIslands = true;
 
-        std::cerr << __LINE__ << std::endl;
-
         if( summaryFlag ) 
         {
           double safetyFactor;
@@ -2512,7 +2844,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
           else
             safetyFactor = 0;
 
-          std::cerr << "Surface id = " << poincare_ic->points.size() << "  < "
+          std::cerr << "Surface id = " << poincare_ic->id << " <  "
                     << poincare_ic->points[0].x << " "
                     << poincare_ic->points[0].y << " "
                     << poincare_ic->points[0].z << " >  "
@@ -3619,10 +3951,10 @@ avtPoincareFilter::drawRationalCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrderModulo )
                       color_value = i % nnodes;
                     
-                    vtkPolyData *ball = CreateSphere(color_value, pt);
+                    vtkPolyData *vert = CreateVTKVertex(color_value, pt);
                     
-                    append->AddInputData(ball);
-                    ball->Delete();
+                    append->AddInputData(vert);
+                    vert->Delete();
                 }
             }
         }
@@ -3956,10 +4288,10 @@ avtPoincareFilter::drawIrrationalCurve( avtDataTree *dt,
                     else if( color == DATA_WindingPointOrderModulo )
                       color_value = i % nnodes;
                     
-                    vtkPolyData *ball = CreateSphere(color_value, pt);
+                    vtkPolyData *vert = CreateVTKVertex(color_value, pt);
 
-                    append->AddInputData(ball);
-                    ball->Delete();
+                    append->AddInputData(vert);
+                    vert->Delete();
                 }
             }
 
@@ -4386,9 +4718,9 @@ avtPoincareFilter::drawPeriodicity( avtDataTree *dt,
       if( colorMax < color_value )
         colorMax = color_value;
       
-      vtkPolyData *ball = CreateSphere(color_value, pt);
-      append->AddInputData(ball);
-      ball->Delete();
+      vtkPolyData *vert = CreateVTKVertex(color_value, pt);
+      append->AddInputData(vert);
+      vert->Delete();
     }
   }
 

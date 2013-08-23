@@ -63,8 +63,6 @@
 #include <stdio.h>
 #include <string>
 
-using std::string;
-
 static void
 TurnOn(QWidget *w0, QWidget *w1=NULL);
 static void
@@ -86,10 +84,10 @@ TurnOff(QWidget *w0, QWidget *w1=NULL);
 // ****************************************************************************
 
 QvisPoincareWindow::QvisPoincareWindow(const int type,
-                         PoincareAttributes *subj,
-                         const QString &caption,
-                         const QString &shortName,
-                         QvisNotepadArea *notepad)
+                                       PoincareAttributes *subj,
+                                       const QString &caption,
+                                       const QString &shortName,
+                                       QvisNotepadArea *notepad)
     : QvisOperatorWindow(type, subj, caption, shortName, notepad)
 {
     plotType = type;
@@ -141,19 +139,60 @@ QvisPoincareWindow::~QvisPoincareWindow()
 void
 QvisPoincareWindow::CreateWindowContents()
 {
-    propertyTabs = new QTabWidget(central);
+    QTabWidget *propertyTabs = new QTabWidget(central);
     topLayout->addWidget(propertyTabs);
 
     // ----------------------------------------------------------------------
-    // First tab
+    // Integration tab
     // ----------------------------------------------------------------------
-    firstTab = new QWidget(central);
-    propertyTabs->addTab(firstTab, tr("Fieldlines"));
-    
-    QGridLayout *mainLayout = new QGridLayout(firstTab);
+    QWidget *integrationTab = new QWidget(central);
+    propertyTabs->addTab(integrationTab, tr("Integration"));
+    CreateIntegrationTab(integrationTab);
+
+    // ----------------------------------------------------------------------
+    // Analysis tab
+    // ----------------------------------------------------------------------
+    QWidget *analysisTab = new QWidget(central);
+    propertyTabs->addTab(analysisTab, tr("Analysis"));
+    CreateAnalysisTab(analysisTab);
+
+    // ----------------------------------------------------------------------
+    // Appearance tab
+    // ----------------------------------------------------------------------
+    QWidget *appearanceTab = new QWidget(central);
+    propertyTabs->addTab(appearanceTab, tr("Appearance"));
+    CreateAppearanceTab(appearanceTab);
+
+    // ----------------------------------------------------------------------
+    // Advanced tab
+    // ----------------------------------------------------------------------
+    QWidget *advancedTab = new QWidget(central);
+    propertyTabs->addTab(advancedTab, tr("Advanced"));
+    CreateAdvancedTab(advancedTab);
+}
+
+// ****************************************************************************
+// Method: QvisPoincareWindow::IntegrationTab
+//
+// Purpose: 
+//   Populates the integration tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
    // Create the source group box.
-    QGroupBox *sourceGroup = new QGroupBox(firstTab);
+    QGroupBox *sourceGroup = new QGroupBox(central);
     sourceGroup->setTitle(tr("Source"));
     mainLayout->addWidget(sourceGroup, 0, 0);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
@@ -205,7 +244,7 @@ QvisPoincareWindow::CreateWindowContents()
     sourceLayout->addWidget(pointDensity, 2, 3);
 
 
-   // Create the field group box.
+    // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
     fieldGroup->setTitle(tr("Field"));
     mainLayout->addWidget(fieldGroup, 3, 0, 1, 1);
@@ -322,7 +361,7 @@ QvisPoincareWindow::CreateWindowContents()
     toleranceLayout->addWidget(absTolSizeType, 1, 2);
 
     // Create the coordinate group
-//     QGroupBox *coordinateGroup = new QGroupBox(firstTab);
+//     QGroupBox *coordinateGroup = new QGroupBox(central);
 //     coordinateGroup->setTitle(tr("Coordinate System"));
 //     mainLayout->addWidget(coordinateGroup, 2, 0);
 
@@ -343,7 +382,7 @@ QvisPoincareWindow::CreateWindowContents()
 //          SLOT(coordinateButtonGroupChanged(int)));
 
     // Create the punctures group box.
-    QGroupBox *puncturesGroup = new QGroupBox(firstTab);
+    QGroupBox *puncturesGroup = new QGroupBox(central);
     puncturesGroup->setTitle(tr("Punctures"));
     mainLayout->addWidget(puncturesGroup, 10, 0);
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
@@ -371,9 +410,9 @@ QvisPoincareWindow::CreateWindowContents()
     puncturesLayout->addWidget(maxPunctures, 0, 3);
 
 
-    puncturePlaneLabel = new QLabel(tr("Puncture Plane"), firstTab);
+    puncturePlaneLabel = new QLabel(tr("Puncture Plane"), central);
     puncturesLayout->addWidget(puncturePlaneLabel, 1, 0);
-    puncturePlane = new QWidget(firstTab);
+    puncturePlane = new QWidget(central);
     puncturePlaneButtonGroup= new QButtonGroup(puncturePlane);
     QHBoxLayout *puncturePlaneLayout = new QHBoxLayout(puncturePlane);
     puncturePlaneLayout->setMargin(0);
@@ -389,18 +428,31 @@ QvisPoincareWindow::CreateWindowContents()
     connect(puncturePlaneButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlaneChanged(int)));
     puncturesLayout->addWidget(puncturePlane, 1, 1, 1, 2);
+}
 
-    // ----------------------------------------------------------------------
-    // Second tab
-    // ----------------------------------------------------------------------
-    secondTab = new QWidget(central);
-    propertyTabs->addTab(secondTab, tr("Analysis"));
-    
-    mainLayout = new QGridLayout(secondTab);
+// ****************************************************************************
+// Method: QvisPoincareWindow::CreateAnalysisTab
+//
+// Purpose: 
+//   Populates the analysis tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    analysisLabel = new QLabel(tr("Analysis type"), secondTab);
+void
+QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageAnalysis);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
+
+    analysisLabel = new QLabel(tr("Analysis type"), central);
     mainLayout->addWidget(analysisLabel, 0, 0, Qt::AlignTop);
-    analysis = new QWidget(secondTab);
+    analysis = new QWidget(central);
     analysisButtonGroup= new QButtonGroup(analysis);
     QHBoxLayout *analysisTypeLayout = new QHBoxLayout(analysis);
     analysisTypeLayout->setMargin(0);
@@ -419,7 +471,7 @@ QvisPoincareWindow::CreateWindowContents()
 
 
    // Create the analysis group box.
-    QGroupBox *analysisGroup = new QGroupBox(secondTab);
+    QGroupBox *analysisGroup = new QGroupBox(central);
     analysisGroup->setTitle(tr("Analysis"));
     mainLayout->addWidget(analysisGroup, 1, 0, 3, 3, Qt::AlignTop);
 
@@ -428,9 +480,9 @@ QvisPoincareWindow::CreateWindowContents()
     analysisLayout->setSpacing(10);
 
     maximumToroidalWindingLabel =
-      new QLabel(tr("Maximum toroidal winding"), secondTab);
+      new QLabel(tr("Maximum toroidal winding"), central);
     analysisLayout->addWidget(maximumToroidalWindingLabel, 0, 0);
-    maximumToroidalWinding = new QSpinBox(secondTab);
+    maximumToroidalWinding = new QSpinBox(central);
     maximumToroidalWinding->setMinimum(0);
     maximumToroidalWinding->setMaximum(1000);
     connect(maximumToroidalWinding, SIGNAL(valueChanged(int)),
@@ -438,9 +490,9 @@ QvisPoincareWindow::CreateWindowContents()
     analysisLayout->addWidget(maximumToroidalWinding, 0, 1);
 
     overrideToroidalWindingLabel =
-      new QLabel(tr("Override toroidal winding"), secondTab);
+      new QLabel(tr("Override toroidal winding"), central);
     analysisLayout->addWidget(overrideToroidalWindingLabel, 1, 0);
-    overrideToroidalWinding = new QSpinBox(secondTab);
+    overrideToroidalWinding = new QSpinBox(central);
     overrideToroidalWinding->setMinimum(0);
     overrideToroidalWinding->setMaximum(1000);
     connect(overrideToroidalWinding, SIGNAL(valueChanged(int)),
@@ -448,9 +500,9 @@ QvisPoincareWindow::CreateWindowContents()
     analysisLayout->addWidget(overrideToroidalWinding, 1, 1);
 
     overridePoloidalWindingLabel =
-      new QLabel(tr("Override poloidal winding"), secondTab);
+      new QLabel(tr("Override poloidal winding"), central);
     analysisLayout->addWidget(overridePoloidalWindingLabel, 1, 2);
-    overridePoloidalWinding = new QSpinBox(secondTab);
+    overridePoloidalWinding = new QSpinBox(central);
     overridePoloidalWinding->setMinimum(0);
     overridePoloidalWinding->setMaximum(1000);
     connect(overridePoloidalWinding, SIGNAL(valueChanged(int)),
@@ -458,24 +510,24 @@ QvisPoincareWindow::CreateWindowContents()
     analysisLayout->addWidget(overridePoloidalWinding, 1, 3);
 
     windingPairConfidenceLabel =
-      new QLabel(tr("Winding pair confidence"), secondTab);
+      new QLabel(tr("Winding pair confidence"), central);
     analysisLayout->addWidget(windingPairConfidenceLabel, 2, 0);
-    windingPairConfidence = new QLineEdit(secondTab);
+    windingPairConfidence = new QLineEdit(central);
     connect(windingPairConfidence, SIGNAL(returnPressed()),
             this, SLOT(windingPairConfidenceProcessText()));
     analysisLayout->addWidget(windingPairConfidence, 2, 1);
 
 
     rationalSurfaceFactorLabel =
-      new QLabel(tr("Rational surface factor"), secondTab);
+      new QLabel(tr("Rational surface factor"), central);
     analysisLayout->addWidget(rationalSurfaceFactorLabel, 2, 2);
-    rationalSurfaceFactor = new QLineEdit(secondTab);
+    rationalSurfaceFactor = new QLineEdit(central);
     connect(rationalSurfaceFactor, SIGNAL(returnPressed()),
             this, SLOT(rationalSurfaceFactorProcessText()));
     analysisLayout->addWidget(rationalSurfaceFactor, 2, 3);
 
     // Create the rational surface group box.
-    QGroupBox *rationalSurfaceGroup = new QGroupBox(secondTab);
+    QGroupBox *rationalSurfaceGroup = new QGroupBox(central);
     rationalSurfaceGroup->setTitle(tr("Rational Surfaces"));
     mainLayout->addWidget(rationalSurfaceGroup, 4, 0, 1, 3, Qt::AlignTop);
 
@@ -498,7 +550,7 @@ QvisPoincareWindow::CreateWindowContents()
     rationalSurfaceLayout->addWidget( rationalSurfaceMaxIterations, 0, 3);
 
     // Create the O/X Point group box.
-    QGroupBox *criticalPointGroup = new QGroupBox(secondTab);
+    QGroupBox *criticalPointGroup = new QGroupBox(central);
     criticalPointGroup->setTitle(tr("Critical Points"));
     mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
 
@@ -522,7 +574,7 @@ QvisPoincareWindow::CreateWindowContents()
 
 
     // Create the O Line analysis group box.
-    QGroupBox *OLineAnalysisGroup = new QGroupBox(secondTab);
+    QGroupBox *OLineAnalysisGroup = new QGroupBox(central);
     OLineAnalysisGroup->setTitle(tr("O-Line Analysis"));
     mainLayout->addWidget(OLineAnalysisGroup, 6, 0, 2, 3, Qt::AlignTop);
 
@@ -546,20 +598,20 @@ QvisPoincareWindow::CreateWindowContents()
     OLineAnalysisLayout->addWidget( OLineToroidalWinding, 0, 3);
 
 
-    OLineAxisFileDialogButton = new QPushButton(secondTab);
+    OLineAxisFileDialogButton = new QPushButton(central);
     OLineAxisFileDialogButton->setText("O-Line Axis Point File");
     connect(OLineAxisFileDialogButton, SIGNAL(clicked()),
             this, SLOT(OLineAxisFileDialogButtonClicked()));
     OLineAnalysisLayout->addWidget(OLineAxisFileDialogButton, 2, 0);
 
 
-    OLineAxisFileName = new QLineEdit(secondTab);
+    OLineAxisFileName = new QLineEdit(central);
     connect(OLineAxisFileName, SIGNAL(returnPressed()),
             this, SLOT(OLineAxisFileNameProcessText()));
     OLineAnalysisLayout->addWidget(OLineAxisFileName, 2, 1, 1, 3);
 
     // Create the options group box.
-    QGroupBox *analysisOptionsGroup = new QGroupBox(secondTab);
+    QGroupBox *analysisOptionsGroup = new QGroupBox(central);
     analysisOptionsGroup->setTitle(tr("Options"));
     mainLayout->addWidget(analysisOptionsGroup, 9, 0, 1, 3, Qt::AlignTop);
 
@@ -593,18 +645,30 @@ QvisPoincareWindow::CreateWindowContents()
     connect(show1DPlots, SIGNAL(toggled(bool)),
             this, SLOT(show1DPlotsChanged(bool)));
     analysisOptionsLayout->addWidget(show1DPlots, 1, 2);
+}
 
+// ****************************************************************************
+// Method: QvisPoincareWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Populates the appearance tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
 
-    // ----------------------------------------------------------------------
-    // Third tab
-    // ----------------------------------------------------------------------
-    thirdTab = new QWidget(central);
-    propertyTabs->addTab(thirdTab, tr("Appearance"));
-    
-    mainLayout = new QGridLayout(thirdTab);
+void
+QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Create the data group box.
-    QGroupBox *dataGroup = new QGroupBox(thirdTab);
+    QGroupBox *dataGroup = new QGroupBox(central);
     dataGroup->setTitle(tr("Data"));
     mainLayout->addWidget(dataGroup, 0, 0);
 
@@ -639,10 +703,10 @@ QvisPoincareWindow::CreateWindowContents()
     dataLayout->addWidget(new QLabel(tr("   "), dataGroup), 0, 2);
 
     // Create the display group box.
-    QGroupBox *displayGroup = new QGroupBox(thirdTab);
+    QGroupBox *displayGroup = new QGroupBox(central);
     displayGroup->setTitle(tr("Display"));
-    mainLayout->addWidget(displayGroup, 2, 0);
-//    mainLayout->setStretchFactor(displayGroup, 100);
+    mainLayout->addWidget(displayGroup, 1, 0);
+
     QGridLayout *displayLayout = new QGridLayout(displayGroup);
     displayLayout->setMargin(5);
     displayLayout->setSpacing(10);
@@ -694,7 +758,7 @@ QvisPoincareWindow::CreateWindowContents()
 
 
     // Create the overlaps group box.
-    QGroupBox *overlapsGroup = new QGroupBox(secondTab);
+    QGroupBox *overlapsGroup = new QGroupBox(central);
     overlapsGroup->setTitle(tr("Overlaps"));
     mainLayout->addWidget(overlapsGroup, 3, 0);
 
@@ -702,9 +766,9 @@ QvisPoincareWindow::CreateWindowContents()
     overlapsLayout->setMargin(5);
     overlapsLayout->setSpacing(10);
 
-    overlapsLabel = new QLabel(tr("Overlaping curve sections"), secondTab);
+    overlapsLabel = new QLabel(tr("Overlaping curve sections"), central);
     overlapsLayout->addWidget(overlapsLabel, 0, 0, Qt::AlignTop);
-    overlaps = new QWidget(secondTab);
+    overlaps = new QWidget(central);
     overlapsButtonGroup= new QButtonGroup(overlaps);
     QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
     overlapTypeLayout->setMargin(0);
@@ -729,90 +793,11 @@ QvisPoincareWindow::CreateWindowContents()
             this, SLOT(overlapsChanged(int)));
     overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
 
-    // ----------------------------------------------------------------------
-    // Fourth tab
-    // ----------------------------------------------------------------------
-    fourthTab = new QWidget(central);
-    propertyTabs->addTab(fourthTab, tr("Advanced"));
-    CreateAdvancedTab(fourthTab);
-}
 
-
-// ****************************************************************************
-// Method: QvisPoincareWindow::CreateAdvancedTab
-//
-// Purpose: 
-//   Populates the advanced tab.
-//
-// Programmer: Dave Pugmire
-// Creation:   Tue Dec 29 14:37:53 EST 2009
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
-{
-    int row = 0;
-    QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
-    advGLayout->setMargin(5);
-    advGLayout->setSpacing(5);
-
-    QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
-    algoGrp->setTitle(tr("Parallel integration options"));
-    //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
-    advGLayout->addWidget(algoGrp, 0, 0);
-
-    // Algorithm group.
-    QGridLayout *algoGLayout = new QGridLayout(algoGrp);
-    algoGLayout->setSpacing(10);
-    algoGLayout->setColumnStretch(1,10);
-
-    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
-    parallelAlgo = new QComboBox(algoGrp);
-    parallelAlgo->addItem(tr("Parallelize over curves"));
-    parallelAlgo->addItem(tr("Parallelize over domains"));
-    parallelAlgo->addItem(tr("Parallelize over curves and Domains"));
-    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
-    connect(parallelAlgo, SIGNAL(activated(int)),
-            this, SLOT(parallelAlgorithmChanged(int)));
-    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
-    algoGLayout->addWidget( parallelAlgo, 1,1);
-    
-    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
-    maxSLCount = new QSpinBox(algoGrp);
-    maxSLCount->setMinimum(1);
-    maxSLCount->setMaximum(100000);
-    connect(maxSLCount, SIGNAL(valueChanged(int)), 
-            this, SLOT(maxSLCountChanged(int)));
-    algoGLayout->addWidget( maxSLCountLabel, 2,0);
-    algoGLayout->addWidget( maxSLCount,2,1);
-
-    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
-    maxDomainCache = new QSpinBox(algoGrp);
-    maxDomainCache->setMinimum(1);
-    maxDomainCache->setMaximum(100000);
-    connect(maxDomainCache, SIGNAL(valueChanged(int)),
-            this, SLOT(maxDomainCacheChanged(int)));
-    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
-    algoGLayout->addWidget( maxDomainCache, 3,1);
-
-    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
-    workGroupSize = new QSpinBox(algoGrp);
-    workGroupSize->setMinimum(2);
-    workGroupSize->setMaximum(1000000);
-    connect(workGroupSize, SIGNAL(valueChanged(int)),
-            this, SLOT(workGroupSizeChanged(int)));
-    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
-    algoGLayout->addWidget( workGroupSize, 4,1);
-
-
-    // Pathline Advance Group.
-    QGroupBox *icGrp = new QGroupBox(pageAdvanced);
+    // Streamlines/Pathline Group.
+    QGroupBox *icGrp = new QGroupBox(pageAppearance);
     icGrp->setTitle(tr("Streamlines vs Pathlines"));
-    //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
-    advGLayout->addWidget(icGrp, 1, 0);
+    mainLayout->addWidget(icGrp, 4, 0);
 
     QGridLayout *icGrpLayout = new QGridLayout(icGrp);
     icGrpLayout->setSpacing(10);
@@ -867,12 +852,83 @@ QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+}
+
+
+// ****************************************************************************
+// Method: QvisPoincareWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Populates the advanced tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
+{
+    int row = 0;
+    QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(5);
+
+    QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
+    algoGrp->setTitle(tr("Parallel integration options"));
+    //mainLayout->addWidget(algoGrp, 0, 0, 1, 4);
+    mainLayout->addWidget(algoGrp, 0, 0);
+
+    // Algorithm group.
+    QGridLayout *algoGLayout = new QGridLayout(algoGrp);
+    algoGLayout->setSpacing(10);
+    algoGLayout->setColumnStretch(1,10);
+
+    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
+    parallelAlgo = new QComboBox(algoGrp);
+    parallelAlgo->addItem(tr("Parallelize over curves"));
+    parallelAlgo->addItem(tr("Parallelize over domains"));
+    parallelAlgo->addItem(tr("Parallelize over curves and Domains"));
+    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
+    connect(parallelAlgo, SIGNAL(activated(int)),
+            this, SLOT(parallelAlgorithmChanged(int)));
+    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
+    algoGLayout->addWidget( parallelAlgo, 1,1);
+    
+    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
+    maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setMinimum(1);
+    maxSLCount->setMaximum(100000);
+    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+            this, SLOT(maxSLCountChanged(int)));
+    algoGLayout->addWidget( maxSLCountLabel, 2,0);
+    algoGLayout->addWidget( maxSLCount,2,1);
+
+    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
+    maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setMinimum(1);
+    maxDomainCache->setMaximum(100000);
+    connect(maxDomainCache, SIGNAL(valueChanged(int)),
+            this, SLOT(maxDomainCacheChanged(int)));
+    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
+    algoGLayout->addWidget( maxDomainCache, 3,1);
+
+    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
+    workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setMinimum(2);
+    workGroupSize->setMaximum(1000000);
+    connect(workGroupSize, SIGNAL(valueChanged(int)),
+            this, SLOT(workGroupSizeChanged(int)));
+    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
+    algoGLayout->addWidget( workGroupSize, 4,1);
 
     // Warnings group.
     QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
     warningsGrp->setTitle(tr("Warnings"));
-    //advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
-    advGLayout->addWidget(warningsGrp, 2, 0);
+    //mainLayout->addWidget(warningsGrp, 2, 0, 1, 4);
+    mainLayout->addWidget(warningsGrp, 1, 0);
 
     QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
     warningsGLayout->setSpacing(10);
