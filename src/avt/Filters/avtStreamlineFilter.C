@@ -134,10 +134,10 @@ static float random_11()
 //    Initialized useWholeBox.
 //
 //    Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//    Initialize streamline direction option.
+//    Initialize integral curve direction option.
 //
 //    Christoph Garth, Mon Feb 25 17:12:49 PST 2008
-//    Port to new streamline infrastructure
+//    Port to new integral curve infrastructure
 //
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
 //   Add accurate distance calculate option.
@@ -197,14 +197,14 @@ static float random_11()
 
 avtStreamlineFilter::avtStreamlineFilter() : seedVelocity(0,0,0)
 {
-    coloringMethod = STREAMLINE_COLOR_SPEED;
-    displayMethod = STREAMLINE_DISPLAY_LINES;
+    coloringMethod = PICS_COLOR_SPEED;
+    displayMethod = PICS_DISPLAY_LINES;
     referenceTypeForDisplay = 0;
 
     //
     // Initialize source values.
     //
-    sourceType = STREAMLINE_SOURCE_POINT;
+    sourceType = PICS_SOURCE_POINT;
     sampleDensity[0] = sampleDensity[1] = sampleDensity[2] = 0;
     sampleDistance[0] = sampleDistance[1] = sampleDistance[2] = 0.0;
     numSamplePoints = 0;
@@ -236,7 +236,7 @@ avtStreamlineFilter::avtStreamlineFilter() : seedVelocity(0,0,0)
 //    Added ribbons.
 //
 //    Christoph Garth, Mon Feb 25 17:12:49 PST 2008
-//    Port to new streamline infrastructure
+//    Port to new integral curve infrastructure
 //
 //    Hank Childs, Fri Aug 22 09:41:02 PDT 2008
 //    Move deletion of solver to PostExecute.
@@ -306,19 +306,19 @@ avtStreamlineFilter::GenerateAttributeFields() const
     // color scalars
     switch( coloringMethod )
     {
-      case STREAMLINE_COLOR_SPEED:
+      case PICS_COLOR_SPEED:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VELOCITY;
         break;
-      case STREAMLINE_COLOR_TIME:
+      case PICS_COLOR_TIME:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
         break;
-      case STREAMLINE_COLOR_VORTICITY:
+      case PICS_COLOR_VORTICITY:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_VORTICITY;
         break;
-      case STREAMLINE_COLOR_ARCLENGTH:
+      case PICS_COLOR_ARCLENGTH:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
         break;
-      case STREAMLINE_COLOR_VARIABLE:
+      case PICS_COLOR_VARIABLE:
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR0;
         break;
     }
@@ -331,6 +331,30 @@ avtStreamlineFilter::GenerateAttributeFields() const
         attr |= avtStateRecorderIntegralCurve::SAMPLE_SCALAR2;
 
     return attr;
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::SetTermination
+//
+//  Purpose:
+//      Sets the termination criteria for a streamline.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 5, 2010
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetTermination(int maxSteps_, bool doDistance_,
+                                    double maxDistance_,
+                                    bool doTime_, double maxTime_)
+{
+    maxSteps = maxSteps_;
+    doDistance = doDistance_;
+    maxDistance = maxDistance_;
+    doTime = doTime_;
+    maxTime = maxTime_;
 }
 
 
@@ -362,30 +386,6 @@ avtStreamlineFilter::CreateIntegralCurve()
     ic->maxSteps = maxSteps;
     ic->historyMask = GenerateAttributeFields();
     return ic;
-}
-
-
-// ****************************************************************************
-//  Method: avtStreamlineFilter::SetTermination
-//
-//  Purpose:
-//      Sets the termination criteria for a streamline.
-//
-//  Programmer: Hank Childs
-//  Creation:   October 5, 2010
-//
-// ****************************************************************************
-
-void
-avtStreamlineFilter::SetTermination(int maxSteps_, bool doDistance_,
-                                    double maxDistance_,
-                                    bool doTime_, double maxTime_)
-{
-    maxSteps = maxSteps_;
-    doDistance = doDistance_;
-    maxDistance = maxDistance_;
-    doTime = doTime_;
-    maxTime = maxTime_;
 }
 
 
@@ -514,7 +514,7 @@ avtStreamlineFilter::SetScaleTubeRadiusVariable(const std::string &var)
 // Method: avtStreamlineFilter::SetDisplayMethod
 //
 // Purpose: 
-//   Sets the streamline display method.
+//   Sets theintegral curve display method.
 //
 // Arguments:
 //   d : The display method.
@@ -537,7 +537,7 @@ avtStreamlineFilter::SetDisplayMethod(int d)
 // Method: avtStreamlineFilter::SetVelocitySource
 //
 // Purpose: 
-//   Sets the streamline velocity source.
+//   Sets the integral curve velocity source.
 //
 // Arguments:
 //   vel : The velocity of the point.
@@ -558,7 +558,7 @@ avtStreamlineFilter::SetVelocitySource(const double *p)
 // Method: avtStreamlineFilter::SetPointSource
 //
 // Purpose: 
-//   Sets the streamline point source.
+//   Sets the integral curve point source.
 //
 // Arguments:
 //   pt : The location of the point.
@@ -576,7 +576,7 @@ avtStreamlineFilter::SetVelocitySource(const double *p)
 void
 avtStreamlineFilter::SetPointSource(const double *p)
 {
-    sourceType = STREAMLINE_SOURCE_POINT;
+    sourceType = PICS_SOURCE_POINT;
     points[0].set(p);
 }
 
@@ -605,7 +605,7 @@ void
 avtStreamlineFilter::SetLineSource(const double *p0, const double *p1,
                                    int den, bool rand, int seed, int numPts)
 {
-    sourceType = STREAMLINE_SOURCE_LINE;
+    sourceType = PICS_SOURCE_LINE;
     points[0].set(p0);
     points[1].set(p1);
     
@@ -647,7 +647,7 @@ avtStreamlineFilter::SetPlaneSource(double O[3], double N[3], double U[3],
                                     bool f, 
                                     bool rand, int seed, int numPts)
 {
-    sourceType = STREAMLINE_SOURCE_PLANE;
+    sourceType = PICS_SOURCE_PLANE;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -690,7 +690,7 @@ avtStreamlineFilter::SetCircleSource(double O[3], double N[3], double U[3], doub
                                      int den1, int den2,
                                      bool f, bool rand, int seed, int numPts)
 {
-    sourceType = STREAMLINE_SOURCE_CIRCLE;
+    sourceType = PICS_SOURCE_CIRCLE;
     points[0].set(O);
     vectors[0].set(N);
     vectors[1].set(U);
@@ -734,7 +734,7 @@ avtStreamlineFilter::SetSphereSource(double O[3], double R,
                                      int den1, int den2, int den3,
                                      bool f, bool rand, int seed, int numPts)
 {
-    sourceType = STREAMLINE_SOURCE_SPHERE;
+    sourceType = PICS_SOURCE_SPHERE;
     points[0].set(O);
     sampleDistance[0] = R;
     sampleDistance[1] = 0.0;
@@ -774,7 +774,7 @@ avtStreamlineFilter::SetBoxSource(double E[6], bool wholeBox,
                                   int den1, int den2, int den3,
                                   bool f, bool rand, int seed, int numPts)
 {
-    sourceType = STREAMLINE_SOURCE_BOX;
+    sourceType = PICS_SOURCE_BOX;
     points[0].set(E[0], E[2], E[4]);
     points[1].set(E[1], E[3], E[5]);
 
@@ -794,7 +794,7 @@ avtStreamlineFilter::SetBoxSource(double E[6], bool wholeBox,
 // Method: avtStreamlineFilter::SetPointListSource
 //
 // Purpose: 
-//   Sets the streamline point list source.
+//   Sets the integral curve point list source.
 //
 // Arguments:
 //   ptlist : A list of points
@@ -812,7 +812,7 @@ avtStreamlineFilter::SetBoxSource(double E[6], bool wholeBox,
 void
 avtStreamlineFilter::SetPointListSource(const std::vector<double> &ptList)
 {
-    sourceType = STREAMLINE_SOURCE_POINT_LIST;
+    sourceType = PICS_SOURCE_POINT_LIST;
     listOfPoints = ptList;
 }
 
@@ -823,7 +823,7 @@ avtStreamlineFilter::SetSelectionSource(std::string nm,
                                         bool random, int seed, int numPts)
 
 {
-    sourceType = STREAMLINE_SOURCE_SELECTION;
+    sourceType = PICS_SOURCE_SELECTION;
     sourceSelection = nm;
     sampleDensity[0] = stride;
     numSamplePoints = numPts;
@@ -860,35 +860,35 @@ std::string
 avtStreamlineFilter::SeedInfoString() const
 {
     char buff[256];
-    if (sourceType == STREAMLINE_SOURCE_POINT)
+    if (sourceType == PICS_SOURCE_POINT)
         sprintf(buff, "Point [%g %g %g]", 
                 points[0].x, points[0].y, points[0].z);
-    else if (sourceType == STREAMLINE_SOURCE_LINE)
+    else if (sourceType == PICS_SOURCE_LINE)
         sprintf(buff, "Line [%g %g %g] [%g %g %g] D: %d",
                 points[0].x, points[0].y, points[0].z,
                 points[1].x, points[1].y, points[1].z, sampleDensity[0]);
-    else if (sourceType == STREAMLINE_SOURCE_PLANE)
+    else if (sourceType == PICS_SOURCE_PLANE)
         sprintf(buff, "Plane O[%g %g %g] N[%g %g %g] D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == STREAMLINE_SOURCE_SPHERE)
+    else if (sourceType == PICS_SOURCE_SPHERE)
         sprintf(buff, "Sphere [%g %g %g] %g D: %d %d",
                 points[0].x, points[0].y, points[0].z, sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == STREAMLINE_SOURCE_BOX)
+    else if (sourceType == PICS_SOURCE_BOX)
         sprintf(buff, "Box [%g %g] [%g %g] [%g %g] D: %d %d %d",
                 points[0].x, points[1].x,
                 points[0].y, points[1].y,
                 points[0].z, points[1].z,
                 sampleDensity[0], sampleDensity[1], sampleDensity[2]);
-    else if (sourceType == STREAMLINE_SOURCE_CIRCLE)
+    else if (sourceType == PICS_SOURCE_CIRCLE)
         sprintf(buff, "Cirlce O[%g %g %g] N[%g %g %g] R: %g D: %d %d",
                 points[0].x, points[0].y, points[0].z,
                 vectors[0].x, vectors[0].y, vectors[0].z,
                 sampleDistance[0],
                 sampleDensity[0], sampleDensity[1]);
-    else if (sourceType == STREAMLINE_SOURCE_POINT_LIST)
+    else if (sourceType == PICS_SOURCE_POINT_LIST)
         strcpy(buff, "Point list [points not printed]");
     else
         sprintf(buff, "%s", "UNKNOWN");
@@ -927,12 +927,12 @@ avtStreamlineFilter::PostExecute(void)
 {
     avtPICSFilter::PostExecute();
 
-    if (coloringMethod == STREAMLINE_COLOR_VORTICITY ||
-        coloringMethod == STREAMLINE_COLOR_SPEED ||
-        coloringMethod == STREAMLINE_COLOR_ARCLENGTH ||
-        coloringMethod == STREAMLINE_COLOR_TIME ||
-        coloringMethod == STREAMLINE_COLOR_ID ||
-        coloringMethod == STREAMLINE_COLOR_VARIABLE)
+    if (coloringMethod == PICS_COLOR_VORTICITY ||
+        coloringMethod == PICS_COLOR_SPEED ||
+        coloringMethod == PICS_COLOR_ARCLENGTH ||
+        coloringMethod == PICS_COLOR_TIME ||
+        coloringMethod == PICS_COLOR_ID ||
+        coloringMethod == PICS_COLOR_VARIABLE)
     {
         double range[2];
         avtDataset_p ds = GetTypedOutput();
@@ -963,7 +963,7 @@ avtStreamlineFilter::PostExecute(void)
 //
 //    Brad Whitlock, Mon Jan 3 13:31:11 PST 2005
 //    Set the flag that prevents normals from being generated if we're
-//    displaying the streamlines as lines.
+//    displaying the integral curve as lines.
 //
 //    Hank Childs, Sat Mar  3 11:02:33 PST 2007
 //    Make sure we have a valid active variable before setting its dimension.
@@ -982,10 +982,13 @@ avtStreamlineFilter::UpdateDataObjectInfo(void)
     avtPICSFilter::UpdateDataObjectInfo();
 
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
-    if(displayMethod == STREAMLINE_DISPLAY_LINES)
+
+    if(displayMethod == PICS_DISPLAY_LINES)
         GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
+
     avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
     atts.SetTopologicalDimension(1);
+
     if (! atts.ValidVariable("colorVar"))
     {
         atts.AddVariable("colorVar");
@@ -1072,21 +1075,21 @@ avtStreamlineFilter::GetInitialLocations(void)
         srand(randomSeed);
 
     // Add seed points based on the source.
-    if(sourceType == STREAMLINE_SOURCE_POINT)
+    if(sourceType == PICS_SOURCE_POINT)
         GenerateSeedPointsFromPoint(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_LINE)
+    else if(sourceType == PICS_SOURCE_LINE)
         GenerateSeedPointsFromLine(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_PLANE)
+    else if(sourceType == PICS_SOURCE_PLANE)
         GenerateSeedPointsFromPlane(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_SPHERE)
+    else if(sourceType == PICS_SOURCE_SPHERE)
         GenerateSeedPointsFromSphere(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_BOX)
+    else if(sourceType == PICS_SOURCE_BOX)
         GenerateSeedPointsFromBox(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_CIRCLE)
+    else if(sourceType == PICS_SOURCE_CIRCLE)
         GenerateSeedPointsFromCircle(seedPts);
-    else if(sourceType == STREAMLINE_SOURCE_POINT_LIST)
+    else if(sourceType == PICS_SOURCE_POINT_LIST)
         GenerateSeedPointsFromPointList(seedPts);
-    else if (sourceType == STREAMLINE_SOURCE_SELECTION)
+    else if (sourceType == PICS_SOURCE_SELECTION)
         GenerateSeedPointsFromSelection(seedPts);
 
     //Check for 2D input.
@@ -1631,7 +1634,7 @@ avtStreamlineFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &pts
 {
     if ((listOfPoints.size() % 3) != 0)
     {
-        EXCEPTION1(VisItException, "The seed points for the streamline "
+        EXCEPTION1(VisItException, "The seed points for the integral curve "
                    "are incorrectly specified.  The number of values must be a "
                    "multiple of 3 (X, Y, Z).");
     }
@@ -1683,7 +1686,7 @@ avtStreamlineFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &pts
 //
 //    Hank Childs, Mon Jul 21 14:09:03 PDT 2008
 //    Remove "colorVar" and replace it with the gradient variable.  This is 
-//    a trick because the streamline plot requested "colorVar", which is the
+//    a trick because the integral curve requested "colorVar", which is the
 //    variable it wants to color by.
 //
 //   Dave Pugmire, Wed Aug 6 15:16:23 EST 2008
@@ -1727,7 +1730,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
     else
         out_dr = new avtDataRequest(in_dr);
 
-    if (coloringMethod == STREAMLINE_COLOR_VARIABLE)
+    if (coloringMethod == PICS_COLOR_VARIABLE)
         out_dr->AddSecondaryVariable(coloringVariable.c_str());
 
     if (!opacityVariable.empty())
@@ -1753,6 +1756,7 @@ avtStreamlineFilter::ModifyContract(avtContract_p in_contract)
 //      variables according to coloringVariable and opacityVariable.
 //
 //  Programmer: Christoph Garth
+
 //  Creation:   July 14, 2010
 //
 //  Modifications:
@@ -1767,7 +1771,7 @@ avtStreamlineFilter::GetFieldForDomain(const BlockIDType& dom, vtkDataSet* ds)
 {
     avtIVPField* field = avtPICSFilter::GetFieldForDomain( dom, ds );
 
-    if( coloringMethod == STREAMLINE_COLOR_VARIABLE && 
+    if( coloringMethod == PICS_COLOR_VARIABLE && 
         !coloringVariable.empty() )
         field->SetScalarVariable( 0, coloringVariable );
 

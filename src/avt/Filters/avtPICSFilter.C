@@ -162,12 +162,12 @@ avtPICSFilter::avtPICSFilter()
     icAlgo = NULL;
     emptyDataset = false;
 
-    fieldType = STREAMLINE_FIELD_DEFAULT;
+    fieldType = PICS_FIELD_DEFAULT;
     fieldConstant = 1.0;
 
     maxStepLength = 0.;
     integrationDirection = VTK_INTEGRATE_FORWARD;
-    integrationType = STREAMLINE_INTEGRATE_DORMAND_PRINCE;
+    integrationType = PICS_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
     absTol = 0;
     absTolIsFraction = false;
@@ -767,7 +767,7 @@ avtPICSFilter::LoadNextTimeSlice()
 //  Modifications:
 //    Gunther H. Weber, Thu Apr  2 10:59:47 PDT 2009
 //    Return activeTimeStep obtained from contract instead of 0 when doing
-//    streamlines.
+//    integral curves.
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
@@ -1043,7 +1043,7 @@ avtPICSFilter::SetTolerances(double reltol, double abstol, bool isFraction)
 // Method: avtPICSFilter::SetIntegrationDirection
 //
 // Purpose: 
-//   Sets the streamline integration direction
+//   Sets the integral cruve integration direction
 //
 // Arguments:
 //   dir : The new direction
@@ -1107,7 +1107,7 @@ bool
 avtPICSFilter::CheckOnDemandViability(void)
 {
     // If we don't want on demand, don't provide it.
-    if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
+    if (method == PICS_PARALLEL_OVER_DOMAINS)
     {
         if (DebugStream::Level1())
             debug1 << "avtPICSFilter::CheckOnDemandViability(): = 0\n";
@@ -1130,7 +1130,7 @@ avtPICSFilter::CheckOnDemandViability(void)
 //  Method: avtPICSFilter::Execute
 //
 //  Purpose:
-//      Calculates a streamline.
+//      Calculates an integral curve.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 4, 2008
@@ -1154,7 +1154,7 @@ avtPICSFilter::CheckOnDemandViability(void)
 //   Initialize the initial domain load count and timer.
 //
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//   Add ability to restart integration of streamlines.
+//   Add ability to restart integration of integral curves.
 //
 //   Dave Pugmire, Thu Dec  3 13:28:08 EST 2009
 //   New methods for seedpoint generation.
@@ -1186,7 +1186,7 @@ avtPICSFilter::Execute(void)
     Initialize();
     if (emptyDataset)
     {
-        avtCallback::IssueWarning("There was no data to advect particles over.");
+        avtCallback::IssueWarning("There was no data to advect over.");
         if (DebugStream::Level1())
             debug1 << "No data for PICS filter.  Bailing out early." << endl;
         return;
@@ -1195,14 +1195,14 @@ avtPICSFilter::Execute(void)
     SetMaxQueueLength(cacheQLen);
 
 #ifdef PARALLEL
-    if (method == STREAMLINE_SERIAL)
+    if (method == PICS_SERIAL)
         icAlgo = new avtSerialICAlgorithm(this);
-    else if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
+    else if (method == PICS_PARALLEL_OVER_DOMAINS)
         icAlgo = new avtPODICAlgorithm(this, maxCount);
     /*
-    else if (method == STREAMLINE_PARALLEL_COMM_DOMAINS)
+    else if (method == PICS_PARALLEL_COMM_DOMAINS)
         icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
-    else if (method == STREAMLINE_PARALLEL_MASTER_SLAVE)
+    else if (method == PICS_PARALLEL_MASTER_SLAVE)
     {
         icAlgo = avtMasterSlaveICAlgorithm::Create(this,
                                                    maxCount,
@@ -1286,27 +1286,27 @@ avtPICSFilter::Execute(void)
 const char *
 AlgorithmToString(int algo)
 {
-    if (algo == STREAMLINE_PARALLEL_OVER_DOMAINS)
+    if (algo == PICS_PARALLEL_OVER_DOMAINS)
     {
         static const char *s = "Parallelize over domains";
         return s;
     }
-    if (algo == STREAMLINE_PARALLEL_COMM_DOMAINS)
+    if (algo == PICS_PARALLEL_COMM_DOMAINS)
     {
         static const char *s = "Communicate domains";
         return s;
     }
-    if (algo == STREAMLINE_PARALLEL_MASTER_SLAVE)
+    if (algo == PICS_PARALLEL_MASTER_SLAVE)
     {
         static const char *s = "Master Slave";
         return s;
     }
-    if (algo == STREAMLINE_SERIAL)
+    if (algo == PICS_SERIAL)
     {
         static const char *s = "Serial";
         return s;
     }
-    if (algo == STREAMLINE_VISIT_SELECTS)
+    if (algo == PICS_VISIT_SELECTS)
     {
         static const char *s = "VisIt Selects Best Algo";
         return s;
@@ -1352,11 +1352,11 @@ AlgorithmToString(int algo)
 //   Properly bound seedTime0 search.
 //
 //   Gunther H. Weber, Fri Apr  3 16:01:48 PDT 2009
-//   Initialize seedTimeStep0 even when streamlines are computed since
+//   Initialize seedTimeStep0 even when integral curves are computed
 //   otherwise seed points get created for the wrong time step. 
 //
 //   Gunther H. Weber, Mon Apr  6 19:19:31 PDT 2009
-//   Initialize seedTime0 for streamline mode. 
+//   Initialize seedTime0 for integral curve mode. 
 //
 //   Hank Childs, Fri Apr 10 23:31:22 CDT 2009
 //   Put if statements in front of debug's.  The generation of strings to
@@ -1490,15 +1490,15 @@ avtPICSFilter::Initialize()
 #ifdef PARALLEL
     // If not operating on demand, the method *has* to be parallel static domains.
     int actualMethod = method;
-    if (actualMethod == STREAMLINE_VISIT_SELECTS)
-        actualMethod = STREAMLINE_SERIAL; // "SERIAL" means parallelize over
+    if (actualMethod == PICS_VISIT_SELECTS)
+        actualMethod = PICS_SERIAL; // "SERIAL" means parallelize over
                                           // seeds.
     
     if ( ! OperatingOnDemand() )
     {
         if (DebugStream::Level1())
             debug1 << "Can only use parallel static domains because we can't operate on demand" << endl;
-        actualMethod = STREAMLINE_PARALLEL_OVER_DOMAINS;
+        actualMethod = PICS_PARALLEL_OVER_DOMAINS;
     }
 
     // Parallel and one domains, use the serial algorithm.
@@ -1506,10 +1506,10 @@ avtPICSFilter::Initialize()
     {
         if (DebugStream::Level1())
             debug1 << "Forcing load-on-demand since there is only one domain." << endl;
-        actualMethod = STREAMLINE_SERIAL;
+        actualMethod = PICS_SERIAL;
     }
 
-    if ((method != STREAMLINE_VISIT_SELECTS) && (method != actualMethod))
+    if ((method != PICS_VISIT_SELECTS) && (method != actualMethod))
     {
         char str[1024];
         SNPRINTF(str, 1024, "Warning: you selected the algorithm \"%s\", but VisIt decided "
@@ -1520,7 +1520,7 @@ avtPICSFilter::Initialize()
     method = actualMethod;
 #else
     // for serial, it's all load on demand.
-    method = STREAMLINE_SERIAL;
+    method = PICS_SERIAL;
 #endif
 
     if (DebugStream::Level5())
@@ -2006,22 +2006,22 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
     }
     else
     {
-      if( fieldType == STREAMLINE_FIELD_FLASH )
+      if( fieldType == PICS_FIELD_FLASH )
         return new avtIVPFlashField(ds, *locator, fieldConstant );
 
-      else if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+      else if( fieldType == PICS_FIELD_M3D_C1_2D )
         return new avtIVPM3DC1Field(ds, *locator, fieldConstant );
 
-      else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
+      else if( fieldType == PICS_FIELD_M3D_C1_3D )
       {
         avtIVPM3DC1Field *field = new avtIVPM3DC1Field(ds, *locator, 1.0);
         field->reparameterize = true;
         return field;
       }
-      else if( fieldType == STREAMLINE_FIELD_NEK5000 )
+      else if( fieldType == PICS_FIELD_NEK5000 )
          return new avtIVPNek5000Field(ds, *locator);
 
-      else if( fieldType == STREAMLINE_FIELD_NIMROD )
+      else if( fieldType == PICS_FIELD_NIMROD )
          return new avtIVPNIMRODField(ds, *locator);
 
       else if (haveOffsets) {
@@ -2460,7 +2460,7 @@ avtPICSFilter::DomainToRank(BlockIDType &domain)
 //  Method: avtPICSFilter::AdvectParticle
 //
 //  Purpose:
-//      The toplevel routine that actually integrates a streamline.
+//      The toplevel routine that actually integrates an integral curve
 //
 //  Programmer: Dave Pugmire
 //  Creation:   June 16, 2008
@@ -2628,34 +2628,34 @@ avtPICSFilter::PreExecute(void)
         absTolToUse = l*absTol;
     }
     // Create the solver. --Get from user prefs.
-    if (integrationType == STREAMLINE_INTEGRATE_EULER)
+    if (integrationType == PICS_INTEGRATE_EULER)
     {
         solver = new avtIVPEuler;
         solver->SetMaximumStepSize(maxStepLength);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_RK4)
-    {
-        solver = new avtIVPRK4;
-        solver->SetMaximumStepSize(maxStepLength);
-    }
-    else if (integrationType == STREAMLINE_INTEGRATE_LEAPFROG)
+    else if (integrationType == PICS_INTEGRATE_LEAPFROG)
     {
         solver = new avtIVPLeapfrog;
         solver->SetMaximumStepSize(maxStepLength);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_DORMAND_PRINCE)
+    else if (integrationType == PICS_INTEGRATE_DORMAND_PRINCE)
     {
         solver = new avtIVPDopri5;
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_ADAMS_BASHFORTH)
+    else if (integrationType == PICS_INTEGRATE_ADAMS_BASHFORTH)
     {
         solver = new avtIVPAdamsBashforth;
         solver->SetMaximumStepSize(maxStepLength);
         solver->SetTolerances(relTol, absTolToUse);
     }
-    else if (integrationType == STREAMLINE_INTEGRATE_M3D_C1_2D)
+    else if (integrationType == PICS_INTEGRATE_RK4)
+    {
+        solver = new avtIVPRK4;
+        solver->SetMaximumStepSize(maxStepLength);
+    }
+    else if (integrationType == PICS_INTEGRATE_M3D_C1_2D)
     {
         solver = new avtIVPM3DC1Integrator;
         solver->SetMaximumStepSize(maxStepLength);
@@ -2746,7 +2746,7 @@ avtPICSFilter::PostExecute(void)
 //    seed points into domains.
 //
 //   Dave Pugmire, Fri Aug 22 14:47:11 EST 2008
-//   Add a seed point id attribute to each streamline.
+//   Add a seed point id attribute to each integral curve.
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
 //   Add 3 point density vars.
@@ -2755,7 +2755,7 @@ avtPICSFilter::PostExecute(void)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Tue Mar 31 17:01:17 EDT 2009
-//   Initialize time step in domain and start time of streamlines.
+//   Initialize time step in domain and start time of integral curves.
 //
 //   Hank Childs, Mon Apr  6 17:42:55 PDT 2009
 //   Change seedTimeStep0 to seedTime0 (integers were mistakenly being
@@ -2775,7 +2775,7 @@ avtPICSFilter::PostExecute(void)
 //   Set what scalars to compute on the avtStreamline object.
 //
 //   Dave Pugmire, Tue Aug 18 09:10:49 EDT 2009
-//   Add ability to restart integration of streamlines.
+//   Add ability to restart integration of integral curves.
 //
 //   Dave Pugmire, Tue Nov  3 09:15:41 EST 2009
 //   Bug fix. Seed points with multiple domains need to be given a separate ID.
@@ -2926,14 +2926,14 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
 
         // Transform the seed into the correct coordinate systems so
         // it passes the domain tests.
-        if( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+        if( fieldType == PICS_FIELD_M3D_C1_2D )
         {
           // Convert the seed to cylindrical coordiantes.
           seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
           seedPt.y = 0; //atan2( pts[i].y, pts[i].x );
           seedPt.z = pts[i].z;
         }
-        else if( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
+        else if( fieldType == PICS_FIELD_M3D_C1_3D )
         {
           // Convert the seed to cylindrical coordinates
           seedPt.x = sqrt(pts[i].x*pts[i].x+pts[i].y*pts[i].y);
@@ -3072,7 +3072,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
     avtDataRequest_p out_dr = new avtDataRequest(in_contract->GetDataRequest());
     out_dr->SetVelocityFieldMustBeContinuous(true);
 
-    if ( fieldType == STREAMLINE_FIELD_M3D_C1_2D )
+    if ( fieldType == PICS_FIELD_M3D_C1_2D )
     {
         // Add in the other fields that the M3D 2D Interpolation needs
         // for doing their Newton's Metod.
@@ -3093,7 +3093,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/psi");    // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/psi_i");  // /time_XXX/fields/psi_i
     }
-    else if ( fieldType == STREAMLINE_FIELD_M3D_C1_3D )
+    else if ( fieldType == PICS_FIELD_M3D_C1_3D )
     {
         // Add in the other fields that the M3D 3D Interpolation needs.
 
@@ -3112,7 +3112,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         out_dr->AddSecondaryVariable("hidden/psi");  // /time_XXX/fields/psi
         out_dr->AddSecondaryVariable("hidden/I");    // /time_XXX/fields/I
     }
-    else if ( fieldType == STREAMLINE_FIELD_NEK5000 )
+    else if ( fieldType == PICS_FIELD_NEK5000 )
     {
         // Add in the other fields that the NEK 5000 Interpolation needs
 
@@ -3123,7 +3123,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 //        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
 //        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
     }
-    else if ( fieldType == STREAMLINE_FIELD_NIMROD )
+    else if ( fieldType == PICS_FIELD_NIMROD )
     {
         // Add in the other fields that the NIMROD Interpolation needs
 
@@ -3134,7 +3134,7 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
 //        out_dr->AddSecondaryVariable("hidden/grid_fourier_series");  // grid
 //        out_dr->AddSecondaryVariable("hidden/data_fourier_series");  // data
     }
-    else if ( fieldType == STREAMLINE_FIELD_FLASH )
+    else if ( fieldType == PICS_FIELD_FLASH )
     {
         // Add in the other fields that the Flash Interpolation needs
 
@@ -3332,7 +3332,7 @@ avtPICSFilter::CacheLocators(void)
 #ifdef PARALLEL
     if (OperatingOnDemand())
         return false;
-    if (method == STREAMLINE_PARALLEL_OVER_DOMAINS)
+    if (method == PICS_PARALLEL_OVER_DOMAINS)
         return true;
 
     return false;

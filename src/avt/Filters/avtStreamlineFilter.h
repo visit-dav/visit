@@ -50,27 +50,27 @@ class vtkPolyData;
 class vtkRibbonFilter;
 class vtkAppendPolyData;
 
-#define STREAMLINE_SOURCE_POINT      0
-#define STREAMLINE_SOURCE_POINT_LIST 1
-#define STREAMLINE_SOURCE_LINE       2
-#define STREAMLINE_SOURCE_CIRCLE     3
-#define STREAMLINE_SOURCE_PLANE      4
-#define STREAMLINE_SOURCE_SPHERE     5
-#define STREAMLINE_SOURCE_BOX        6
-#define STREAMLINE_SOURCE_SELECTION  7
+#define PICS_SOURCE_POINT      0
+#define PICS_SOURCE_POINT_LIST 1
+#define PICS_SOURCE_LINE       2
+#define PICS_SOURCE_CIRCLE     3
+#define PICS_SOURCE_PLANE      4
+#define PICS_SOURCE_SPHERE     5
+#define PICS_SOURCE_BOX        6
+#define PICS_SOURCE_SELECTION  7
 
-#define STREAMLINE_COLOR_SOLID       0
-#define STREAMLINE_COLOR_SPEED       1
-#define STREAMLINE_COLOR_VORTICITY   2
-#define STREAMLINE_COLOR_ARCLENGTH   3
-#define STREAMLINE_COLOR_TIME        4
-#define STREAMLINE_COLOR_ID          5
-#define STREAMLINE_COLOR_VARIABLE    6
-#define STREAMLINE_CORRELATION_DISTANCE 7
+#define PICS_COLOR_SOLID       0
+#define PICS_COLOR_SPEED       1
+#define PICS_COLOR_VORTICITY   2
+#define PICS_COLOR_ARCLENGTH   3
+#define PICS_COLOR_TIME        4
+#define PICS_COLOR_ID          5
+#define PICS_COLOR_VARIABLE    6
+#define PICS_CORRELATION_DISTANCE 7
 
-#define STREAMLINE_DISPLAY_LINES     0
-#define STREAMLINE_DISPLAY_TUBES     1
-#define STREAMLINE_DISPLAY_RIBBONS   2
+#define PICS_DISPLAY_LINES     0
+#define PICS_DISPLAY_TUBES     1
+#define PICS_DISPLAY_RIBBONS   2
 
 
 // ****************************************************************************
@@ -88,8 +88,8 @@ class vtkAppendPolyData;
 //   Added ability to color by vorticity and the ability to display as ribbons.
 //
 //   Brad Whitlock, Mon Jan 3 10:56:47 PDT 2005
-//   Added SetZToZero to ensure that we can set restrict streamline sources
-//   to 2D when the input data is 2D.
+//   Added SetZToZero to ensure that we can set restrict integral curve
+//   sources to 2D when the input data is 2D.
 //
 //   Brad Whitlock, Tue Jan 4 10:56:47 PDT 2005
 //   Removed the integrator member since it was not being used.
@@ -99,7 +99,7 @@ class vtkAppendPolyData;
 //   support it.  Added PostExecute method to get the extents right.
 //
 //   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
-//   Add support for streamline direction option.
+//   Add support for integral curve direction option.
 //
 //   Hank Childs, Tue Mar  4 08:54:27 PST 2008
 //   Refactored to inherit from avtDatasetOnDemandFilter.
@@ -126,8 +126,8 @@ class vtkAppendPolyData;
 //   Add case5 to MasterSlave algorithm.
 //
 //   Dave Pugmire, Tue Feb  3 10:58:56 EST 2009
-//   Major refactor of the streamline code.  Moved all the streamline
-//   algorithm code into different classes.
+//   Major refactor of the integral curve code.  Moved all the
+//   integral curve algorithm code into different classes.
 //
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
 //   Add workGroupSize for masterSlave algorithm.
@@ -246,61 +246,62 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
                                         const avtVector &v_start,
                                         long ID);
 
-    void                      SetTermination(int maxSteps, 
-                                             bool doDistance, double maxDistance, 
-                                             bool doTime, double maxTime);
+    void SetTermination(int maxSteps, 
+    bool doDistance, double maxDistance, 
+    bool doTime, double maxTime);
 
-    void                      SetVelocitySource(const double *v);
+    void SetVelocitySource(const double *v);
 
-    void                      SetPointSource(const double *p);
-    void                      SetLineSource(const double *p0, const double *p1,
-                                            int den, bool rand, int seed, int numPts);
+    void SetPointSource(const double *p);
+    void SetLineSource(const double *p0, const double *p1,
+                       int den, bool rand, int seed, int numPts);
     
-    void                      SetPlaneSource(double O[3], double N[3], double U[3], 
-                                             int den1, int den2, double dist1, double dist2,
-                                             bool fill, bool rand, int seed, int numPts);
-    void                      SetCircleSource(double O[3], double N[3], double U[3], double r,
-                                              int den1, int den2,
-                                              bool fill, bool rand, int seed, int numPts);
-    void                      SetSphereSource(double O[3], double R,
-                                              int den1, int den2, int den3,
-                                              bool fill, bool rand, int seed, int numPts);
-    void                      SetBoxSource(double E[6], bool wholeBox,
-                                           int den1, int den2, int den3,
-                                           bool fill, bool rand, int seed, int numPts);
-    void                      SetPointListSource(const std::vector<double> &);
-    void                      SetSelectionSource(std::string selectionName,
-                                                 int stride,
-                                                 bool random, int seed, int numPts);
+    void SetPlaneSource(double O[3], double N[3], double U[3], 
+                        int den1, int den2, double dist1, double dist2,
+                        bool fill, bool rand, int seed, int numPts);
+    void SetCircleSource(double O[3], double N[3], double U[3], double r,
+                         int den1, int den2,
+                         bool fill, bool rand, int seed, int numPts);
+    void SetSphereSource(double O[3], double R,
+                         int den1, int den2, int den3,
+                         bool fill, bool rand, int seed, int numPts);
+    void SetBoxSource(double E[6], bool wholeBox,
+                      int den1, int den2, int den3,
+                      bool fill, bool rand, int seed, int numPts);
+    void SetPointListSource(const std::vector<double> &);
+    void SetSelectionSource(std::string selectionName,
+                            int stride,
+                            bool random, int seed, int numPts);
+    
+    void SetDisplayMethod(int d);
+    void SetColoringMethod(int, const std::string &var="");
+    void SetColorByCorrelationDistanceTol(double angTol,
+                                          double minDist, bool doBBox)
+         {
+             correlationDistanceAngTol = angTol;
+             correlationDistanceMinDist = minDist;
+             correlationDistanceDoBBox = doBBox;
+         }
 
-    void                      SetDisplayMethod(int d);
-    void                      SetColoringMethod(int, const std::string &var="");
-    void                      SetColorByCorrelationDistanceTol(double angTol, double minDist, bool doBBox)
-                              {
-                                  correlationDistanceAngTol = angTol;
-                                  correlationDistanceMinDist = minDist;
-                                  correlationDistanceDoBBox = doBBox;
-                              }
+    void SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
+    void SetOpacityVariable(const std::string &var);
+    void SetScaleTubeRadiusVariable(const std::string &var);
 
-    void                      SetVelocitiesForLighting(bool v) { storeVelocitiesForLighting = v; };
-    void                      SetOpacityVariable(const std::string &var);
-    void                      SetScaleTubeRadiusVariable(const std::string &var);
+    void SetReferenceTypeForDisplay(int d) 
+     { referenceTypeForDisplay = d; };
+    void IssueWarningForMaxStepsTermination(bool v) 
+                 { issueWarningForMaxStepsTermination = v; };
+    void IssueWarningForStiffness(bool v) 
+                 { issueWarningForStiffness = v; };
+    void IssueWarningForCriticalPoints(bool v, double speed) 
+                 { issueWarningForCriticalPoints = v;
+                   criticalPointThreshold = speed; };
 
-    void                      SetReferenceTypeForDisplay(int d) 
-                                               { referenceTypeForDisplay = d; };
-    void                      IssueWarningForMaxStepsTermination(bool v) 
-                                      { issueWarningForMaxStepsTermination = v; };
-    void                      IssueWarningForStiffness(bool v) 
-                                      { issueWarningForStiffness = v; };
-    void                      IssueWarningForCriticalPoints(bool v, double speed) 
-                                      { issueWarningForCriticalPoints = v;
-                                        criticalPointThreshold = speed; };
+    virtual avtIVPField  *GetFieldForDomain(const BlockIDType&, vtkDataSet*);
 
-    virtual avtIVPField      *GetFieldForDomain(const BlockIDType&, vtkDataSet*);
-
-    virtual void              PostExecute(void);
-    virtual void              UpdateDataObjectInfo(void);
-    virtual avtContract_p     ModifyContract(avtContract_p);
+    virtual void          PostExecute(void);
+    virtual void          UpdateDataObjectInfo(void);
+    virtual avtContract_p ModifyContract(avtContract_p);
 
   protected:
     int    sourceType;   
@@ -338,18 +339,18 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 
     avtVector seedVelocity;
 
-    std::string             SeedInfoString() const;
+    std::string  SeedInfoString() const;
 
-    void                      GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromPlane(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromSphere(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
-    void                      GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromPoint(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromLine(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromPlane(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromSphere(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromBox(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromCircle(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromPointList(std::vector<avtVector> &pts);
+    void GenerateSeedPointsFromSelection(std::vector<avtVector> &pts);
 
-    unsigned char             GenerateAttributeFields() const;
+    unsigned char GenerateAttributeFields() const;
 
     virtual std::vector<avtVector> GetInitialLocations(void);
     virtual std::vector<avtVector> GetInitialVelocities(void);
@@ -357,4 +358,3 @@ class AVTFILTERS_API avtStreamlineFilter : virtual public avtPICSFilter
 };
 
 #endif
-

@@ -97,10 +97,10 @@ public:
     
     virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
 
-    unsigned int     numSteps;
   public:
     unsigned int     maxSteps;
   protected:
+    unsigned int     numSteps;
     bool             doDistance;
     double           maxDistance;
     bool             doTime;
