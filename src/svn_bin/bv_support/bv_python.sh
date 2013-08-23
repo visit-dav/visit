@@ -372,10 +372,11 @@ diff -c Imaging-1.1.6.orig/setup.py Imaging-1.1.6/setup.py
 --- Imaging-1.1.6/setup.py      Tue Dec 14 13:39:39 2010
 ***************
 *** 196,201 ****
---- 196,204 ----
+--- 196,205 ----
           add_directory(library_dirs, "/usr/local/lib")
           add_directory(include_dirs, "/usr/local/include")
 
++         add_directory(library_dirs, "/usr/lib/x86_64-linux-gnu")
 +         add_directory(library_dirs, "/usr/lib64")
 +         add_directory(include_dirs, "/usr/include")
 +
