@@ -1235,7 +1235,7 @@ avtChomboFileFormat::InitializeReader(void)
             }
         }
 
-#if 1
+#if 0
         // Debug output about boxes
         for (int patchNo = 0; patchNo < patchesPerLevel[0]; ++patchNo)
         {

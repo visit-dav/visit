@@ -44,7 +44,6 @@
 
 #include <list>
 
-#include <boost/foreach.hpp>
 #include <float.h>
 
 #include <vtkCellData.h>
@@ -175,6 +174,15 @@ avtRectilinearProject2DFilter::PreExecute(void)
 //
 // ****************************************************************************
 
+struct box2d
+{
+    int iMin, iMax;
+    int jMin, jMax;
+
+    box2d(int _iMin, int _iMax, int _jMin, int _jMax) : iMin(_iMin), iMax(_iMax), jMin(_jMin), jMax(_jMax) {}
+    bool operator==(box2d& o) { return iMin == o.iMin && iMax == o.iMax && jMin == o.jMin && jMax == o.jMax; }
+};
+
 void
 avtRectilinearProject2DFilter::Execute()
 {
@@ -194,14 +202,6 @@ avtRectilinearProject2DFilter::Execute()
     for (int i = 0; i < nLeaves; ++i)
         if (!(rgrids[i] = dynamic_cast<vtkRectilinearGrid*>(leaves[i])))
             EXCEPTION1(ImproperUseException, "Can only project rectilinear grids.");
-
-    struct box2d {
-        int iMin, iMax;
-        int jMin, jMax;
-
-        box2d(int _iMin, int _iMax, int _jMin, int _jMax) : iMin(_iMin), iMax(_iMax), jMin(_jMin), jMax(_jMax) {}
-        bool operator==(box2d& o) { return iMin == o.iMin && iMax == o.iMax && jMin == o.jMin && jMax == o.jMax; }
-    };
 
     // Compute extents in i,j index space as list of boxes
     std::vector<box2d> boxes;
@@ -223,9 +223,6 @@ avtRectilinearProject2DFilter::Execute()
                     base_index[1], base_index[1] + dims[1] - 2
                     ));
     }
-
-    //BOOST_FOREACH(const box2d& box, boxes)
-        //std::cout << box.iMin << " " << box.iMax << " " << box.jMin << " " << box.jMax << std::endl;
 
     // Group boxes by same i, j extents
     // ... for each group of boxes with same i, j exntents identify one representing box
@@ -259,8 +256,13 @@ avtRectilinearProject2DFilter::Execute()
     // Project grids per group to 2D generating one 2D mesh per group
     vtkDataSet** ogrids = new vtkDataSet*[ijGroup.size()];
     int currGrid = 0;
-    BOOST_FOREACH(const std::vector<int>& currGroup, ijGroup)
+    std::vector<int> domain_ids;
+    for (std::vector< std::vector<int> >::const_iterator currGroupIt = ijGroup.begin();
+            currGroupIt != ijGroup.end(); ++currGroupIt)
     {
+        const std::vector<int>& currGroup = *currGroupIt;
+        domain_ids.push_back(currGroup[0]);
+
         // Dimensions of data set
         int dims[3];
         rgrids[currGroup[0]]->GetDimensions(dims);
@@ -386,18 +388,19 @@ avtRectilinearProject2DFilter::Execute()
                         {
                             double val = 0.0;
                             int nKTotal = 0;
-                            BOOST_FOREACH(const int &boxNo, currGroup)
+                            for (std::vector<int>::const_iterator boxNoIt = currGroup.begin();
+                                    boxNoIt != currGroup.end(); ++boxNoIt)
                             {
-                                vtkIdType nK = rgrids[boxNo]->GetDimensions()[2] - 1;
+                                vtkIdType nK = rgrids[*boxNoIt]->GetDimensions()[2] - 1;
                                 nKTotal += nK;
-                                vtkDataArray *curr_icvals = rgrids[boxNo]->GetCellData()->GetArray(varname);
+                                vtkDataArray *curr_icvals = rgrids[*boxNoIt]->GetCellData()->GetArray(varname);
                                 if (!curr_icvals)
                                     EXCEPTION1(ImproperUseException, "Error: All domains must have the same set of variables.");
 
                                 for (int k=0; k<nK; ++k)
                                 {
                                     int ijk[3] = { i, j, k };
-                                    vtkIdType cell_id = rgrids[boxNo]->ComputeCellId(ijk);
+                                    vtkIdType cell_id = rgrids[*boxNoIt]->ComputeCellId(ijk);
                                     val += curr_icvals->GetTuple1(cell_id);
                                 }
                             }
@@ -426,9 +429,6 @@ avtRectilinearProject2DFilter::Execute()
         ogrids[currGrid++] = ods;
     }
     delete[] rgrids;
-    std::vector<int> domain_ids;
-    BOOST_FOREACH(const std::vector<int>& currGroup, ijGroup)
-        domain_ids.push_back(currGroup[0]);
     avtDataTree_p out_tree = new avtDataTree(ijGroup.size(), ogrids, domain_ids);
     delete[] ogrids;
     SetOutputDataTree(out_tree);
