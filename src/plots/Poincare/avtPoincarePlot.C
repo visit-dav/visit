@@ -453,8 +453,8 @@ avtPoincarePlot::SetAtts(const AttributeGroup *a)
 
     poincareFilter->SetClipPlanes( planes );
 
-    poincareFilter->SetDisplayMethod(STREAMLINE_DISPLAY_LINES);
-    poincareFilter->SetColoringMethod(STREAMLINE_COLOR_SOLID);
+    poincareFilter->SetDisplayMethod(PICS_DISPLAY_LINES);
+    poincareFilter->SetColoringMethod(PICS_COLOR_SOLID);
 
     poincareFilter->SetDataValue( atts.GetDataValue() );
 
