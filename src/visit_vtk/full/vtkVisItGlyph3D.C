@@ -137,6 +137,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //    full frame correction to the orientation.  So the shape has the
 //    distortion removed, but the orientation properly leaves it in.
 //
+//    Jeremy Meredith, Fri Aug 23 12:01:38 EDT 2013
+//    Added back the original full frame correction for non-vector glyphs.
+//
 // ****************************************************************************
 
 int
@@ -804,6 +807,21 @@ vtkVisItGlyph3D::RequestData(
         }
       trans->Scale(scalex,scaley,scalez);
       }
+
+    if (!haveVectors)
+    {
+      // If we are using full frame scaling then add an additional
+      // transform to undo what fullframe will do.
+      // Note that we applied a different correction for vectors,
+      // so only apply this one for non-vectors.
+      if (this->UseFullFrameScaling)
+        {
+          trans->Scale(1. / this->FullFrameScaling[0],
+                       1. / this->FullFrameScaling[1],
+                       1. / this->FullFrameScaling[2]);
+        }
+    }
+
 
     // multiply points and normals by resulting matrix
     trans->TransformPoints(sourcePts,newPts);
