@@ -51,15 +51,18 @@
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkStreamer.h>
-#include <InvalidVariableException.h>
-#include <limits>
-#include <cmath>
-
-#include <avtOriginatingSource.h>
-#include <vtkVisItScalarTree.h>
-#include <avtGradientExpression.h>
 
 #include <avtParallel.h>
+#include <avtCallback.h>
+
+#include <avtFTLEIC.h>
+
+#include <avtOriginatingSource.h>
+#include <avtGradientExpression.h>
+#include <vtkVisItScalarTree.h>
+
+#include <limits>
+#include <cmath>
 
 // ****************************************************************************
 //  Method: avtFTLEFilter constructor
@@ -1248,6 +1251,7 @@ avtFTLEFilter::PreExecute(void)
     global_resolution[2] = res[2];
     if (global_bounds[4] == global_bounds[5])
         global_resolution[2] = 1;
+
     avtPICSFilter::PreExecute();
 }
 
@@ -1278,9 +1282,126 @@ avtFTLEFilter::Execute(void)
         SetOutputDataTree(dt);
         return;
     }
+    else
+    {
+      debug1 << "FTLE: no cached version, must re-execute" << std::endl;
 
-    debug1 << "FTLE: no cached version, must re-execute" << std::endl;
-    avtPICSFilter::Execute();
+      avtPICSFilter::Execute();
+
+      std::vector<avtIntegralCurve *> ics;
+      GetTerminatedIntegralCurves(ics);
+      
+      ReportWarnings( ics );
+    }
+}
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ReportWarnings() 
+//
+//  Purpose:
+//      Reports any potential integration warnings
+//
+//  Programmer: Allen Sanderson
+//  Creation:   20 August 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
+{
+    if (ics.size() == 0)
+        return;
+
+    int numICs = ics.size();
+//    int numPts = 0;
+    int numEarlyTerminators = 0;
+    int numStiff = 0;
+    int numCritPts = 0;
+
+    if (DebugStream::Level5())
+        debug5 << "::CreateIntegralCurveOutput " << ics.size() << endl;
+
+    //See how many pts, ics we have so we can preallocate everything.
+    for (int i = 0; i < numICs; i++)
+    {
+        avtFTLEIC *ic = dynamic_cast<avtFTLEIC*>(ics[i]);
+
+        // NOT USED ??????????????????????????
+        // size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
+        // if (numSamps > 1)
+        //     numPts += numSamps;
+
+        if (ic->TerminatedBecauseOfMaxSteps())
+        {
+            // Calculated only with avtStateRecorderIntegralCurve
+            // if (ic->SpeedAtTermination() <= criticalPointThreshold)
+            //     numCritPts++;
+            // else
+                numEarlyTerminators++;
+        }
+
+        if (ic->EncounteredNumericalProblems())
+            numStiff++;
+    }
+
+    if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
+    {
+        SumIntAcrossAllProcessors(numEarlyTerminators);
+        if (numEarlyTerminators > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines terminated because they "
+               "reached the maximum number of steps.  This may be indicative of your "
+               "time or distance criteria being too large or of other attributes being "
+               "set incorrectly (example: your step size is too small).  If you are "
+               "confident in your settings and want the particles to advect farther, "
+               "you should increase the maximum number of steps.  If you want to disable "
+               "this message, you can do this under the Advaced tab of the streamline plot."
+               "  Note that this message does not mean that an error has occurred; it simply "
+               "means that VisIt stopped advecting particles because it reached the maximum "
+               "number of steps. (That said, this case happens most often when other attributes "
+               "are set incorrectly.)", numEarlyTerminators);
+            avtCallback::IssueWarning(str);
+        }
+    }
+
+    if (issueWarningForCriticalPoints)
+    {
+        SumIntAcrossAllProcessors(numCritPts);
+        if (numCritPts > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines circled round and round a critical point (a zero"
+               " velocity location).  Normally, VisIt is able to advect the particle "
+               "to the critical point location and terminate.  However, VisIt was not able "
+               "to do this for these particles due to numerical issues.  In all likelihood, "
+               "additional steps will _not_ help this problem and only cause execution to "
+               "take longer.  If you want to disable this message, you can do this under "
+               "the Advanced tab of the streamline plot.", numCritPts);
+            avtCallback::IssueWarning(str);
+        }
+    }
+
+    if (issueWarningForStiffness)
+    {
+        SumIntAcrossAllProcessors(numStiff);
+        if (numStiff > 0)
+        {
+            char str[1024];
+            SNPRINTF(str, 1024, 
+               "%d of your streamlines were unable to advect because of \"stiffness\".  "
+               "When one component of a velocity field varies quickly and another stays "
+               "relatively constant, then it is not possible to choose step sizes that "
+               "remain within tolerances.  This condition is referred to as stiffness and "
+               "VisIt stops advecting in this case.  If you want to disable this message, "
+               "you can do this under the Advanced tab of the streamline plot.", numStiff);
+            avtCallback::IssueWarning(str);
+        }
+    }
 }
 
 // ****************************************************************************

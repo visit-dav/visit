@@ -51,6 +51,7 @@
 /** included attributes for FTLE */
 #include <FTLEAttributes.h>
 
+#include <vector>
 
 class vtkDataSet;
 class vtkRectilinearGrid;
@@ -121,6 +122,8 @@ class avtFTLEFilter : public virtual avtPluginFilter,
 
     virtual void         UpdateDataObjectInfo(void);
 
+    virtual void         ReportWarnings(std::vector<avtIntegralCurve *> &ics);
+
     //helper functions
     size_t               ComputeBoundsAndResolution(vtkDataSet* in_ds, double bounds[6],int resolution[3]);
     std::string          CreateResampledCacheString(void);
@@ -186,6 +189,5 @@ class avtFTLEFilter : public virtual avtPluginFilter,
 
     virtual avtContract_p   ModifyContract(avtContract_p);
 };
-
 
 #endif

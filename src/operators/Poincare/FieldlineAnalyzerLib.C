@@ -2697,6 +2697,32 @@ FieldlineLib::fieldlineProperties( std::vector< Point > &ptList,
                                    unsigned int OLineToroidalWinding,
                                    std::string OLineAxisFilename )
 {
+  if( ptList.empty() )
+  {
+    fi.type = FieldlineProperties::UNKNOWN_TYPE;
+
+    fi.analysisState = FieldlineProperties::TERMINATED;
+
+    fi.safetyFactor = 0;
+    fi.toroidalWinding = 0;
+    fi.poloidalWinding = 0;
+    fi.poloidalWindingP = 0;
+    fi.toroidalResonance = 0;
+    fi.poloidalResonance = 0;
+    fi.windingPairs.clear();
+    fi.topWindingPairs.clear();
+    fi.windingGroupOffset = 0;
+    fi.islands = 0;
+    fi.islandGroups = 0;
+    fi.nnodes  = 0;
+
+    fi.nPuncturesNeeded  = 0;
+
+    fi.seedPoints.clear();
+
+    return;
+  }
+
   std::vector< Point > poloidal_puncture_pts;
   std::vector< Point > poloidal_puncture_pts2;
   std::vector< Point > ridgeline_points;

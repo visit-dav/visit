@@ -96,6 +96,7 @@ FiveFoldTetSubdivision
 Flux
 FTLE
 IndexSelect
+IntegralCurve
 InverseGhostZone
 Isosurface
 Isovolume

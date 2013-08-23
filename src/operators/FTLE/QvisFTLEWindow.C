@@ -143,9 +143,43 @@ QvisFTLEWindow::CreateWindowContents()
     // ----------------------------------------------------------------------
     QWidget *integrationTab = new QWidget(central);
     propertyTabs->addTab(integrationTab, tr("Integration"));
-    
-    QGridLayout *mainLayout = new QGridLayout(integrationTab);
+    CreateIntegrationTab(integrationTab);
+
+    // ----------------------------------------------------------------------
+    // Appearance tab
+    // ----------------------------------------------------------------------
+    QWidget *appearanceTab = new QWidget(central);
+    propertyTabs->addTab(appearanceTab, tr("Appearance"));
+    CreateAppearanceTab(appearanceTab);
+
+    // ----------------------------------------------------------------------
+    // Advanced tab
+    // ----------------------------------------------------------------------
+    QWidget *advancedTab = new QWidget(central);
+    propertyTabs->addTab(advancedTab, tr("Advanced"));
+    CreateAdvancedTab(advancedTab);
+}
+
+
+// ****************************************************************************
+// Method: QvisFTLEWindow::IntegrationTab
+//
+// Purpose: 
+//   Populates the integration tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFTLEWindow::CreateIntegrationTab(QWidget *pageIntegration)
+{
+    QGridLayout *mainLayout = new QGridLayout(pageIntegration);
     mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
     // Create the source group box.
     QGroupBox *sourceGroup = new QGroupBox(central);
@@ -155,7 +189,6 @@ QvisFTLEWindow::CreateWindowContents()
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
     sourceLayout->setMargin(5);
     sourceLayout->setSpacing(10);
-
 
     // Create the source type combo box.
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
@@ -380,13 +413,6 @@ QvisFTLEWindow::CreateWindowContents()
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
     terminationLayout->addWidget(maxSteps, 2,1);
-
-    // ----------------------------------------------------------------------
-    // Parallel tab
-    // ----------------------------------------------------------------------
-    QWidget *advancedTab = new QWidget(central);
-    propertyTabs->addTab(advancedTab, tr("Advanced"));
-    CreateAdvancedTab(advancedTab);
 }
 
 
@@ -394,86 +420,26 @@ QvisFTLEWindow::CreateWindowContents()
 // Method: QvisFTLEWindow::CreateAdvancedTab
 //
 // Purpose: 
-//   Populates the advanced tab.
+//   Populates the appearance tab.
 //
 // Programmer: Dave Pugmire
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
 //
-//   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
-//   Add option for having VisIt select the best algorithm.
-//
-//   Hank Childs, Oct  8 23:30:27 PDT 2010
-//   Set up controls for multiple termination criteria.
-// 
-//   Hank Childs, Sun Dec  5 05:31:57 PST 2010
-//   Add additional warning controls.
-//
 // ****************************************************************************
 
 void
-QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
+QvisFTLEWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
-    int row = 0;
-    QGridLayout *advGLayout = new QGridLayout(pageAdvanced);
-    advGLayout->setMargin(5);
-    advGLayout->setSpacing(5);
+    QGridLayout *mainLayout = new QGridLayout(pageAppearance);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(10);
 
-    QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
-    algoGrp->setTitle(tr("Parallel integration options"));
-    //advGLayout->addWidget(algoGrp, 0, 0, 1, 4);
-    advGLayout->addWidget(algoGrp, 0, 0);
-
-    // Algorithm group.
-    QGridLayout *algoGLayout = new QGridLayout(algoGrp);
-    algoGLayout->setSpacing(10);
-    algoGLayout->setColumnStretch(1,10);
-
-    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
-    parallelAlgo = new QComboBox(algoGrp);
-    parallelAlgo->addItem(tr("Parallelize over curves"));
-    parallelAlgo->addItem(tr("Parallelize over domains"));
-    parallelAlgo->addItem(tr("Parallelize over curves and domains"));
-    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
-    connect(parallelAlgo, SIGNAL(activated(int)),
-            this, SLOT(parallelAlgorithmChanged(int)));
-    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
-    algoGLayout->addWidget( parallelAlgo, 1,1);
-    
-    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
-    maxSLCount = new QSpinBox(algoGrp);
-    maxSLCount->setMinimum(1);
-    maxSLCount->setMaximum(100000);
-    connect(maxSLCount, SIGNAL(valueChanged(int)), 
-            this, SLOT(maxSLCountChanged(int)));
-    algoGLayout->addWidget( maxSLCountLabel, 2,0);
-    algoGLayout->addWidget( maxSLCount,2,1);
-
-    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
-    maxDomainCache = new QSpinBox(algoGrp);
-    maxDomainCache->setMinimum(1);
-    maxDomainCache->setMaximum(100000);
-    connect(maxDomainCache, SIGNAL(valueChanged(int)),
-            this, SLOT(maxDomainCacheChanged(int)));
-    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
-    algoGLayout->addWidget( maxDomainCache, 3,1);
-
-    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
-    workGroupSize = new QSpinBox(algoGrp);
-    workGroupSize->setMinimum(2);
-    workGroupSize->setMaximum(1000000);
-    connect(workGroupSize, SIGNAL(valueChanged(int)),
-            this, SLOT(workGroupSizeChanged(int)));
-    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
-    algoGLayout->addWidget( workGroupSize, 4,1);
-
-
-    // Pathline Advance Group.
-    QGroupBox *icGrp = new QGroupBox(pageAdvanced);
+    // Streamlines/Pathline Group.
+    QGroupBox *icGrp = new QGroupBox(pageAppearance);
     icGrp->setTitle(tr("Streamlines vs Pathlines"));
-    //advGLayout->addWidget(icGrp, 1, 0, 1, 4);
-    advGLayout->addWidget(icGrp, 1, 0);
+    mainLayout->addWidget(icGrp, 1, 0);
 
     QGridLayout *icGrpLayout = new QGridLayout(icGrp);
     icGrpLayout->setSpacing(10);
@@ -529,11 +495,89 @@ QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0);
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
 
+}
+
+// ****************************************************************************
+// Method: QvisFTLEWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Populates the advanced tab.
+//
+// Programmer: Dave Pugmire
+// Creation:   Tue Dec 29 14:37:53 EST 2009
+//
+// Modifications:
+//
+//   Hank Childs, Wed Sep 29 19:25:06 PDT 2010
+//   Add option for having VisIt select the best algorithm.
+//
+//   Hank Childs, Oct  8 23:30:27 PDT 2010
+//   Set up controls for multiple termination criteria.
+// 
+//   Hank Childs, Sun Dec  5 05:31:57 PST 2010
+//   Add additional warning controls.
+//
+// ****************************************************************************
+
+void
+QvisFTLEWindow::CreateAdvancedTab(QWidget *pageAdvanced)
+{
+    int row = 0;
+    QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
+    mainLayout->setMargin(5);
+    mainLayout->setSpacing(5);
+
+    QGroupBox *algoGrp = new QGroupBox(pageAdvanced);
+    algoGrp->setTitle(tr("Parallel integration options"));
+    mainLayout->addWidget(algoGrp, 0, 0);
+
+    // Algorithm group.
+    QGridLayout *algoGLayout = new QGridLayout(algoGrp);
+    algoGLayout->setSpacing(10);
+    algoGLayout->setColumnStretch(1,10);
+
+    parallelAlgoLabel = new QLabel(tr("Parallelization"), algoGrp);
+    parallelAlgo = new QComboBox(algoGrp);
+    parallelAlgo->addItem(tr("Parallelize over curves"));
+    parallelAlgo->addItem(tr("Parallelize over domains"));
+    parallelAlgo->addItem(tr("Parallelize over curves and domains"));
+    parallelAlgo->addItem(tr("Have VisIt select the best algorithm"));
+    connect(parallelAlgo, SIGNAL(activated(int)),
+            this, SLOT(parallelAlgorithmChanged(int)));
+    algoGLayout->addWidget( parallelAlgoLabel, 1,0);
+    algoGLayout->addWidget( parallelAlgo, 1,1);
+    
+    maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
+    maxSLCount = new QSpinBox(algoGrp);
+    maxSLCount->setMinimum(1);
+    maxSLCount->setMaximum(100000);
+    connect(maxSLCount, SIGNAL(valueChanged(int)), 
+            this, SLOT(maxSLCountChanged(int)));
+    algoGLayout->addWidget( maxSLCountLabel, 2,0);
+    algoGLayout->addWidget( maxSLCount,2,1);
+
+    maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
+    maxDomainCache = new QSpinBox(algoGrp);
+    maxDomainCache->setMinimum(1);
+    maxDomainCache->setMaximum(100000);
+    connect(maxDomainCache, SIGNAL(valueChanged(int)),
+            this, SLOT(maxDomainCacheChanged(int)));
+    algoGLayout->addWidget( maxDomainCacheLabel, 3,0);
+    algoGLayout->addWidget( maxDomainCache, 3,1);
+
+    workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
+    workGroupSize = new QSpinBox(algoGrp);
+    workGroupSize->setMinimum(2);
+    workGroupSize->setMaximum(1000000);
+    connect(workGroupSize, SIGNAL(valueChanged(int)),
+            this, SLOT(workGroupSizeChanged(int)));
+    algoGLayout->addWidget( workGroupSizeLabel, 4,0);
+    algoGLayout->addWidget( workGroupSize, 4,1);
+
     // Warnings group.
     QGroupBox *warningsGrp = new QGroupBox(pageAdvanced);
     warningsGrp->setTitle(tr("Warnings"));
-    //advGLayout->addWidget(warningsGrp, 2, 0, 1, 4);
-    advGLayout->addWidget(warningsGrp, 2, 0);
+    mainLayout->addWidget(warningsGrp, 1, 0);
 
     QGridLayout *warningsGLayout = new QGridLayout(warningsGrp);
     warningsGLayout->setSpacing(10);
