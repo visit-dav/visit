@@ -1,3 +1,4 @@
+import re
 import time
 
 # Global state variable
@@ -296,6 +297,65 @@ def DisableAutomaticMapping():
     RemoveMappingFromAllPlots()
     RegisterCallback("AddPlotRPC")
 
+def PerformPick4D(pa):
+    global lastPickOutput
+    if lastPickOutput != GetPickOutput():
+        lastPickOutput = GetPickOutput()
+        pattern = re.compile('level <([^>]*)>')
+        match = pattern.search(lastPickOutput)
+        if match != None:
+            try:
+                print match.group(1)
+                (i, j , dummy)=match.group(1).split(",")
+                i = int(i)
+                j = int(j)
+                SetActiveWindow(2)
+                RegisterCallback("SetActivePlotsRPC")
+                DeleteAllPlots()
+                AddPlot("Pseudocolor", "operators/ExtractPointFunction2D/component_0")
+                ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()
+                ExtractPointFunction2DAtts.I = i
+                ExtractPointFunction2DAtts.J = j
+                SetOperatorOptions(ExtractPointFunction2DAtts)
+                DrawPlots()
+                RegisterCallback("SetActivePlotsRPC", onSetActivePlots)
+                SetActiveWindow(1)
+            except:
+                pass
+
+def StartPick4D():
+    global lastPickOutput
+    lastPickOutput = GetPickOutput()
+    pickAtts = GetPickAttributes()
+    pickAtts.variables = ("default")
+    pickAtts.showIncidentElements = 0
+    pickAtts.showNodeId = 0
+    pickAtts.showNodeDomainLogicalCoords = 0
+    pickAtts.showNodeBlockLogicalCoords = 0
+    pickAtts.showNodePhysicalCoords = 0
+    pickAtts.showZoneId = 0
+    pickAtts.showZoneDomainLogicalCoords = 0
+    pickAtts.showZoneBlockLogicalCoords = 1
+    pickAtts.doTimeCurve = 0
+    pickAtts.conciseOutput = 0
+    pickAtts.showTimeStep = 0
+    pickAtts.showMeshName = 0
+    pickAtts.showGlobalIds = 0
+    pickAtts.showPickLetter = 0
+    pickAtts.reusePickLetter = 1
+    pickAtts.createSpreadsheet = 0
+    pickAtts.floatFormat = "%g"
+    SetPickAttributes(pickAtts)
+    RegisterCallback("PickAttributes", PerformPick4D)
+    SetWindowMode("zone pick")
+    SetWindowLayout(2)
+    SetActiveWindow(1)
+
+def EndPick4D():
+    SetWindowLayout(1)
+    SetWindowMode("navigate")
+    RegisterCallback("PickAttributes")
+
 RegisterMacro("Slice", SetupSlice)
 RegisterMacro("Contours", SetupIsosurf)
 RegisterMacro("Boxes", SetupBoundingBox)
@@ -303,3 +363,5 @@ RegisterMacro("Mesh", SetupMesh)
 RegisterMacro("EB", SetupBoundary)
 RegisterMacro("Mapping on", EnableAutomaticMapping)
 RegisterMacro("Mapping off", DisableAutomaticMapping)
+RegisterMacro("Start 4D Pick", StartPick4D)
+RegisterMacro("End 4D Pick", EndPick4D)
