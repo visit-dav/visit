@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+  <Plugin name="ExtractPointFunction2D" type="operator" label="Extract Point Function 2D" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" createExpression="true" exprInType="array" exprOutType="scalar" category="Analysis">
+    <Attribute name="ExtractPointFunction2DAttributes" purpose="Attributes for ExtractPointFunction2D" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ExtractPointFunction2DAttributes.code">
+      <Field name="I" label="I" type="int">
+        0
+      </Field>
+      <Field name="J" label="J" type="int">
+        0
+      </Field>
+      <Function name="ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>

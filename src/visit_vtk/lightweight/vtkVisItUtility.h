@@ -70,20 +70,25 @@ class vtkRectilinearGrid;
 //    Brad Whitlock, Wed Mar 21 12:01:11 PDT 2012
 //    I added NewPoints.
 //
+//    Gunther H. Weber, Thu Aug 22 10:15:58 PDT 2013
+//    Added option to allow negaitve inddices (false by default) to
+//    GetLogicalIndices.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
 {
     VISIT_VTK_LIGHT_API vtkPoints  *GetPoints(vtkDataSet *);
     VISIT_VTK_LIGHT_API vtkPoints  *NewPoints(vtkDataSet *);
-    VISIT_VTK_LIGHT_API void        GetLogicalIndices(vtkDataSet *, const bool, 
-                                                const int, int [3], 
+    VISIT_VTK_LIGHT_API void        GetLogicalIndices(vtkDataSet *, const bool,
+                                                const int, int [3],
                                                 const bool = false,
-                                                const bool = true);
-    VISIT_VTK_LIGHT_API int         CalculateRealID(const int, const bool, 
+                                                const bool = true,
+                                                const bool = false);
+    VISIT_VTK_LIGHT_API int         CalculateRealID(const int, const bool,
                                               vtkDataSet *ds);
     VISIT_VTK_LIGHT_API int         ComputeStructuredCoordinates(
-                                              vtkRectilinearGrid *, 
+                                              vtkRectilinearGrid *,
                                               double x[3], int ijk[3]);
     VISIT_VTK_LIGHT_API int         FindCell(vtkDataSet *, double pt[3]);
     VISIT_VTK_LIGHT_API void        GetDimensions(vtkDataSet *, int[3]);
@@ -93,25 +98,25 @@ namespace vtkVisItUtility
                                         const int);
     VISIT_VTK_LIGHT_API int         CalculateGhostIdFromNonGhost(
                                         vtkDataSet *ds,
-                                        const int cellId, 
+                                        const int cellId,
                                         const bool forCell);
     VISIT_VTK_LIGHT_API int         GetLocalElementForGlobal(
                                         vtkDataSet *ds,
-                                        const int elementId, 
+                                        const int elementId,
                                         const bool forCell);
 
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, double center[3]);
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
     VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
     VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, const char *);
-    VISIT_VTK_LIGHT_API vtkRectilinearGrid * 
+    VISIT_VTK_LIGHT_API vtkRectilinearGrid *
                                    Create1DRGrid(int nXCoords,
-                                                 int type = VTK_FLOAT); 
+                                                 int type = VTK_FLOAT);
     VISIT_VTK_LIGHT_API vtkRectilinearGrid *
                                    CreateEmptyRGrid(int nXCoords,
                                                     int nYCoords = 1,
                                                     int nZCoords = 1,
-                                                    int type = VTK_FLOAT); 
+                                                    int type = VTK_FLOAT);
     VISIT_VTK_LIGHT_API bool       PointsEqual(double p1[3], double p2[3],
                                                const double *_eps = 0);
     VISIT_VTK_LIGHT_API void       RegisterStaticVTKObject(vtkObject*);

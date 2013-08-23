@@ -615,6 +615,9 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //    Cyrus Harrison, Mon Sep 17 11:35:32 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Gunther H. Weber, Thu Aug 22 10:19:37 PDT 2013
+//    Allow GetLogicalIndices to return negative indices.
+//
 // ****************************************************************************
 
 
@@ -638,8 +641,8 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
        if (pickAtts.GetShowNodeDomainLogicalCoords())
        {
            nodeCoords.clear();
-           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk, 
-              false);
+           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk,
+              false, true, true);
            if (pickAtts.GetDimension() == 2)
            {
                SNPRINTF(buff, 80, "<%d, %d>",
@@ -656,13 +659,13 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
        if (pickAtts.GetShowNodeBlockLogicalCoords())
        {
            nodeCoords.clear();
-           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk, 
-               true);
+           vtkVisItUtility::GetLogicalIndices(ds, false, nodeId, ijk,
+               true, true, true);
            if (pickAtts.GetDimension() == 2)
            {
                SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
            }
-           else 
+           else
            {
                SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
            }
@@ -711,6 +714,9 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
 //    I made it use the cell origin for the zonal domain logical coordinates.
 //    I also made it use SNPRINTF.
 //
+//    Gunther H. Weber, Thu Aug 22 10:19:37 PDT 2013
+//    Allow GetLogicalIndices to return negative indices.
+//
 // ****************************************************************************
 
 void
@@ -729,7 +735,7 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
         {
             zoneCoords.clear();
             vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, 
-                        ijk, false);
+                        ijk, false, true, true);
             if (pickAtts.GetDimension() == 2)
             {
                 SNPRINTF(buff, 80, "<%d, %d>", ijk[0] + cellOrigin,
@@ -749,7 +755,7 @@ avtPickQuery::GetZoneCoords(vtkDataSet *ds, const int zoneId)
         {
             zoneCoords.clear();
             vtkVisItUtility::GetLogicalIndices(ds, true, zoneId, 
-                        ijk, true);
+                        ijk, true, true, true);
             if (pickAtts.GetDimension() == 2)
             {
                 SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
@@ -1102,6 +1108,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Cyrus Harrison, Mon Sep 17 11:35:32 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Gunther H. Weber, Thu Aug 22 10:19:37 PDT 2013
+//    Allow GetLogicalIndices to return negative indices.
+//
 // ****************************************************************************
 
 bool
@@ -1194,8 +1203,8 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
             {
                 if (pickAtts.GetShowNodeDomainLogicalCoords())
                 {
-                    vtkVisItUtility::GetLogicalIndices(ds, false, 
-                         ptIds->GetId(i), ijk, false);
+                    vtkVisItUtility::GetLogicalIndices(ds, false,
+                         ptIds->GetId(i), ijk, false, true, true);
                     if (pickAtts.GetDimension() == 2)
                     {
                         SNPRINTF(buff, 80, "<%d, %d>",
@@ -1211,7 +1220,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                 if (pickAtts.GetShowNodeBlockLogicalCoords())
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, false, 
-                         ptIds->GetId(i), ijk, true);
+                         ptIds->GetId(i), ijk, true, true, true);
                     if (pickAtts.GetDimension() == 2)
                     {
                         SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
@@ -1323,6 +1332,9 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
 //    Kathleen Biagas, Thu Oct 16 13:18:51 PDT 2012 
 //    Account for cellOrigin.
 //
+//    Gunther H. Weber, Thu Aug 22 10:19:37 PDT 2013
+//    Allow GetLogicalIndices to return negative indices.
+//
 // ****************************************************************************
 
 bool
@@ -1388,7 +1400,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
                 if (pickAtts.GetShowZoneDomainLogicalCoords())
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], 
-                                                       ijk, false);
+                                                       ijk, false, true, true);
 
                     if (pickAtts.GetDimension() == 2)
                     {
@@ -1405,7 +1417,7 @@ avtPickQuery::RetrieveZones(vtkDataSet *ds, int foundNode)
                 if (pickAtts.GetShowZoneBlockLogicalCoords())
                 {
                     vtkVisItUtility::GetLogicalIndices(ds, true, cells[i], 
-                                                       ijk, true);
+                                                       ijk, true, true, true);
 
                     if (pickAtts.GetDimension() == 2)
                     {

@@ -1,0 +1,30 @@
+Target: xml2info
+Function: ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions
+Declaration: virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+Definition:
+ExpressionList *
+ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+{
+    char name[1024];
+    char defn[1024];
+    ExpressionList *el = new ExpressionList;
+
+    for (int i = 0 ; i < md->GetNumArrays() ; i++)
+    {
+        const char *array = md->GetArrays(i).name.c_str();
+        const char *mesh = md->GetArrays(i).meshName.c_str();
+
+        Expression e;
+        sprintf(name, "operators/ExtractPointFunction2D/%s", array);
+        e.SetName(name);
+        e.SetType(Expression::ScalarMeshVar);
+        e.SetFromOperator(true);
+        e.SetOperatorName("ExtractPointFunction2D");
+        sprintf(defn, "cell_constant(%s, 0)", mesh);
+        e.SetDefinition(defn);
+        el->AddExpressions(e);
+    }
+
+    return el;
+}
+
