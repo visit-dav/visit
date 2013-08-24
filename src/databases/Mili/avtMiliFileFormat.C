@@ -3943,6 +3943,8 @@ avtMiliFileFormat::LoadMiliInfo(const char *fname)
 //  Notes:
 //
 //  Modifications:
+//    Mark .C Miller Fri Aug 23 18:38:07 PDT 2013
+//    Initialize kwUpper to fix a UMR.
 //
 // ****************************************************************************
 char *
@@ -4010,6 +4012,7 @@ avtMiliFileFormat::ReadMiliFileLine(ifstream &in, const char *commentSymbol,
             continue;
 
         char kwUpper[256];
+        kwUpper[0] = '\0';
         if (kw)
             if (strlen(kw)>0)
             {
