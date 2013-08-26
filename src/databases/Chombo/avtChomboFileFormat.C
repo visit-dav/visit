@@ -907,7 +907,7 @@ avtChomboFileFormat::InitializeReader(void)
                     refinement_ratio[i].push_back(rr_tmp.i);
                     refinement_ratio[i].push_back(rr_tmp.j);
                 }
-                else
+                else if (dimension == 3)
                 {
                     intvect3d rr_tmp;
                     H5Aread(rr_id, intvect3d_id, &rr_tmp);
@@ -915,6 +915,11 @@ avtChomboFileFormat::InitializeReader(void)
                     refinement_ratio[i].push_back(rr_tmp.j);
                     refinement_ratio[i].push_back(rr_tmp.k);
                 }
+                else
+                {
+                    EXCEPTION1(InvalidDBTypeException, "vec_dx not yet supported for 4D data");
+                }
+
             }
             else
             {
@@ -1467,7 +1472,7 @@ avtChomboFileFormat::CalculateDomainNesting(void)
     //
     int t1 = visitTimer->StartTimer();
     avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(
-            dimension == 3 ? totalPatches : listOfRepresentativeBoxes.size(), num_levels);
+            dimension < 4 ? totalPatches : listOfRepresentativeBoxes.size(), num_levels);
 
     //
     // Calculate what the refinement ratio is from one level to the next.
