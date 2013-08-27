@@ -97,8 +97,8 @@ class avtStateRecorderIntegralCurve;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtIntegralCurveFilter : public virtual avtPluginFilter,
-                                              public avtPICSFilter
+class avtIntegralCurveFilter : public virtual avtPluginFilter,
+                               public avtPICSFilter
 {
   public:
     // default constructor
