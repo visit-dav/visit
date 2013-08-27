@@ -909,8 +909,6 @@ avtIntegralCurveFilter::CreateIntegralCurve( const avtIVPSolver* model,
                                              const avtVector &v_start,
                                              long ID ) 
 {
-  std::cerr << __LINE__ << " " << integrationType << std::endl;
-
     unsigned char attr = GenerateAttributeFields();
 
     double t = maxTime;

@@ -2467,7 +2467,7 @@ QvisIntegralCurveWindow::GetCurrentValues(int which_widget)
             atts->SetPhiScaling(val);
         else
         {
-          cerr << "phi scaling (" << val << ")" << endl;
+//          cerr << "phi scaling (" << val << ")" << endl;
 
             ResettingError(tr("phi scaling"),
                 DoubleToQString(atts->GetPhiScaling()));
