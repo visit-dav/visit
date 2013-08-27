@@ -55,6 +55,7 @@
 #include "visit_vtkOpenFOAMReader.h"
 
 
+#include <algorithm>
 #include <vector>
 #include <vtksys/SystemTools.hxx>
 #include <vtksys/ios/sstream>
@@ -1411,7 +1412,14 @@ public:
     // reset line number to indicate the beginning of the file when an
     // exception is thrown
     this->Superclass::LineNumber = 0;
+#ifdef _WIN32
+    // ensure correct path-separators on Windows.
+    vtkStdString tmp = fileName;
+    std::replace(tmp.begin(), tmp.end(), '/', '\\');
+    this->Superclass::FileName = tmp;
+#else
     this->Superclass::FileName = fileName;
+#endif
 
     if (this->Superclass::File)
       {
