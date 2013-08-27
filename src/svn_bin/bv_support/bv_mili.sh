@@ -23,10 +23,10 @@ echo ""
 
 function bv_mili_info
 {
-export MILI_FILE=${MILI_FILE:-"Mili-13.1.tar.gz"}
-export MILI_VERSION=${MILI_VERSION:-"13.1"}
-export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"13.1"}
-export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"Mili"}
+export MILI_FILE=${MILI_FILE:-"Mili-13.1.1-patch.tar.gz"}
+export MILI_VERSION=${MILI_VERSION:-"13.1.1-patch"}
+export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"13.1.1-patch"}
+export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
 export MILI_MD5_CHECKSUM=""
 export MILI_SHA256_CHECKSUM=""
 }
@@ -290,6 +290,9 @@ function build_mili
             warn "Mili build failed.  Giving up"
             return 1
         fi
+    elif [[ ${MILI_VERSION} == 13.1.1-patch ]] ; then
+        cd MILI-*-*
+        make opt fortran=false
     fi
 
     #
@@ -306,6 +309,8 @@ function build_mili
         cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
         cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
+    elif [[ ${MILI_VERSION} == 13.1.1-patch ]] ; then
+        cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     fi
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
@@ -321,12 +326,16 @@ function build_mili
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        ar -rc libmili.a *.o 
-        if [[ $? != 0 ]] ; then
-          warn "Mili install failed.  Giving up"
-          return 1
+        if [[ ${MILI_VERSION} != 13.1.1-patch ]] ; then
+            ar -rc libmili.a *.o 
+            if [[ $? != 0 ]] ; then
+              warn "Mili install failed.  Giving up"
+              return 1
+            fi
+            cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
+        else
+            cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
         fi
-        cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
