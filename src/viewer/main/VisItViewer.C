@@ -975,6 +975,9 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
+//
+//    Mark C. Miller, Mon Aug 26 16:57:27 PDT 2013
+//    Adjusted strings to LogCommand to ensure we get stderr output too. 
 // ****************************************************************************
 
 static void
@@ -983,8 +986,8 @@ LogGlxAndXdpyInfo()
 #if !defined(_WIN32) && !defined(Q_WS_MACX)
     if (DebugStream::Level5())
     {
-        LogCommand("xdpyinfo", "number of visuals"); // truncate at list of visuals
-        LogCommand("glxinfo -v -t", "^Vis  Vis");    // truncate at table of visuals
+        LogCommand("sh -c \"xdpyinfo 2>&1\"", "number of visuals"); // truncate at list of visuals
+        LogCommand("sh -c \"glxinfo -v -t 2>&1\"", "^Vis  Vis");    // truncate at table of visuals
     }
 #endif
 }
