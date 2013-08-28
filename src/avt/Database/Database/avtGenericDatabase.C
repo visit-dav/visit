@@ -5003,6 +5003,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Hank Childs, Tue Dec 15 14:55:50 PST 2009
 //    Add support for group IDs based on ranges.
 //
+//    Kathleen Biagas, Tue Aug 27 16:58:30 PDT 2013
+//    Add support for groupNames.
+//
 // ****************************************************************************
 
 void
@@ -5039,6 +5042,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     sprintf(progressString, "Reading from %s", Interface->GetType());
 
     stringVector blockNames;
+    stringVector groupNames;
     intVector gIds;
     intVector groupIdsBasedOnRange;
     int domOrigin = 0;
@@ -5051,6 +5055,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         blockNames =  GetMetaData(ts)->GetMesh(meshName)->blockNames;
         domOrigin  =  GetMetaData(ts)->GetMesh(meshName)->blockOrigin;
         grpOrigin  =  GetMetaData(ts)->GetMesh(meshName)->groupOrigin;
+        groupNames =  GetMetaData(ts)->GetMesh(meshName)->groupNames;
         gIds       =  GetMetaData(ts)->GetMesh(meshName)->groupIds;
         groupIdsBasedOnRange =  GetMetaData(ts)->GetMesh(meshName)->groupIdsBasedOnRange;
     }
@@ -5188,7 +5193,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         else if (subT == AVT_GROUP_SUBSET)
         {
             char temp[512];
-            if (gIds.size() != 0)
+            if (!groupNames.empty() && !gIds.empty())
+                sprintf(temp, "%s", groupNames[gIds[i]].c_str());
+            else if (gIds.size() != 0)
                 sprintf(temp, "%d", gIds[domains[i]]);
             else
             {

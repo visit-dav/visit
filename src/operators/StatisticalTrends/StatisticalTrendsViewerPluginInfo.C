@@ -359,3 +359,4 @@ StatisticalTrendsViewerPluginInfo::XPMIconData() const
 {
     return StatisticalTrends_xpm;
 }
+
