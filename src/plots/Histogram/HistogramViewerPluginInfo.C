@@ -214,7 +214,7 @@ HistogramViewerPluginInfo::ProvidesLegend() const
 
 void
 HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(HistogramAttributes*)atts = *defaultAtts;
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
@@ -258,7 +258,7 @@ HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 
 void
 HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
 
@@ -300,7 +300,7 @@ HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 // ****************************************************************************
 void
 HistogramViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     ReInitializePlotAtts(atts, plot);
 }

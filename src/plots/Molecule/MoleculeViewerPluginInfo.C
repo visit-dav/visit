@@ -198,7 +198,7 @@ MoleculeViewerPluginInfo::AllocAvtPlot()
 
 void
 MoleculeViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(MoleculeAttributes*)atts = *defaultAtts;
 }

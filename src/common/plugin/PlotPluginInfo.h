@@ -196,12 +196,12 @@ class PLUGIN_API ViewerPlotPluginInfo : public virtual CommonPlotPluginInfo
     virtual bool PermitsCurveViewScaling() const { return false; }
     virtual bool Permits2DViewScaling() const { return true; }
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *) = 0;
+    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *) = 0;
     virtual void ReInitializePlotAtts(AttributeSubject *atts, 
-        ViewerPlot *) { ; }
+        const ViewerPlot *) { ; }
 
     virtual void ResetPlotAtts(AttributeSubject *atts,
-        ViewerPlot *) { ; }
+        const ViewerPlot *) { ; }
 
     virtual QString *GetMenuName() const = 0;
     virtual const char **XPMIconData() const { return 0; }

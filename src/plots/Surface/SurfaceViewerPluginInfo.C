@@ -198,7 +198,7 @@ SurfaceViewerPluginInfo::AllocAvtPlot()
 
 void
 SurfaceViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(SurfaceAttributes*)atts = *defaultAtts;
 }

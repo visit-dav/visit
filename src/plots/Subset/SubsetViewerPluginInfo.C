@@ -215,7 +215,7 @@ SubsetViewerPluginInfo::AllocAvtPlot()
 
 void
 SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(SubsetAttributes*)atts = *defaultAtts;
 
@@ -245,7 +245,7 @@ SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 
 void
 SubsetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
@@ -284,7 +284,7 @@ SubsetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 
 void
 SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 
 {
     PrivateSetPlotAtts(atts, plot);
@@ -422,7 +422,7 @@ SubsetViewerPluginInfo::XPMIconData() const
 
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 

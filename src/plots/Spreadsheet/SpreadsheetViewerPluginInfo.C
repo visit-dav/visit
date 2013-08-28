@@ -212,7 +212,7 @@ SpreadsheetViewerPluginInfo::Permits2DViewScaling() const
 // ****************************************************************************
 void
 SpreadsheetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(SpreadsheetAttributes*)atts = *defaultAtts;
 
@@ -238,7 +238,7 @@ SpreadsheetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 // ****************************************************************************
 void
 SpreadsheetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
@@ -263,7 +263,7 @@ SpreadsheetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 
 void
 SpreadsheetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 
 {
     *(SpreadsheetAttributes*)atts = *defaultAtts;
@@ -561,7 +561,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
 
 void
 SpreadsheetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     const char *mName = "SpreadsheetViewerPluginInfo::PrivateSetPlotAtts: ";
 

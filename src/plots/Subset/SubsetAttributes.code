@@ -55,7 +55,7 @@ PySubsetAttributes_SetDefaults(const SubsetAttributes *atts)
 
 Target: xml2info
 Function: SubsetViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::InitializePlotAtts
@@ -91,7 +91,7 @@ Definition:
 
 void
 SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(SubsetAttributes*)atts = *defaultAtts;
 
@@ -99,7 +99,7 @@ SubsetViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 }
 
 Function: SubsetViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::ReInitializePlotAtts
@@ -124,13 +124,13 @@ Definition:
 
 void
 SubsetViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
 Function: SubsetViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::ResetPlotAtts
@@ -166,14 +166,14 @@ Definition:
 
 void
 SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
 Function: SubsetViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: SubsetViewerPluginInfo::PrivateSetPlotAtts
@@ -244,7 +244,7 @@ Definition:
 
 void
 SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     SubsetAttributes *subsetAtts = (SubsetAttributes *)atts;
 

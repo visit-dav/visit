@@ -216,7 +216,7 @@ CurveViewerPluginInfo::PermitsCurveViewScaling() const
 
 void
 CurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(CurveAttributes*)atts = *defaultAtts;
     SetColor(atts);

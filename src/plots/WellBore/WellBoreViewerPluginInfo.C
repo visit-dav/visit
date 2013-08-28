@@ -206,7 +206,7 @@ WellBoreViewerPluginInfo::AllocAvtPlot()
 
 void
 WellBoreViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     WellBoreAttributes *wellBore = (WellBoreAttributes *)atts;
     *wellBore = *defaultAtts;

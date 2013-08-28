@@ -189,7 +189,7 @@ WellBoreViewerPluginInfo::InitializeGlobalObjects()
 }
 
 Function: WellBoreViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 // Method: WellBoreViewerPluginInfo::InitializePlotAtts
@@ -210,7 +210,7 @@ Definition:
 
 void
 WellBoreViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     WellBoreAttributes *wellBore = (WellBoreAttributes *)atts;
     *wellBore = *defaultAtts;

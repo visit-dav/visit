@@ -198,7 +198,7 @@ PoincareViewerPluginInfo::AllocAvtPlot()
 
 void
 PoincareViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(PoincareAttributes*)atts = *defaultAtts;
 }

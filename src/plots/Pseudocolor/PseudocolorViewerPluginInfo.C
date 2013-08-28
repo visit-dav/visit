@@ -198,7 +198,7 @@ PseudocolorViewerPluginInfo::AllocAvtPlot()
 
 void
 PseudocolorViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(PseudocolorAttributes*)atts = *defaultAtts;
 }

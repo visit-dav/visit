@@ -227,7 +227,7 @@ ParallelCoordinatesViewerPluginInfo::Permits2DViewScaling() const
 
 void
 ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
-    AttributeSubject *atts, ViewerPlot *plot)
+    AttributeSubject *atts, const ViewerPlot *plot)
 {
     // If we had scalar names, we can just copy the default atts
     // and return.

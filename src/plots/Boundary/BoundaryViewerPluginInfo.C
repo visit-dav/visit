@@ -215,7 +215,7 @@ BoundaryViewerPluginInfo::AllocAvtPlot()
 
 void
 BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(BoundaryAttributes*)atts = *defaultAtts;
 
@@ -245,7 +245,7 @@ BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 
 void
 BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
@@ -284,7 +284,7 @@ BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 
 void
 BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
@@ -405,7 +405,7 @@ BoundaryViewerPluginInfo::XPMIconData() const
 
 void
 BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 

@@ -610,11 +610,11 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual bool PermitsCurveViewScaling() const;" << endl;
             if(OverrideBuiltin(infoName + "::Permits2DViewScaling"))
                 h << "    virtual bool Permits2DViewScaling() const;" << endl;
-            h << "    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);" << endl;
+            h << "    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
             if(OverrideBuiltin(infoName + "::ReInitializePlotAtts"))
-                h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);" << endl;
+                h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
             if(OverrideBuiltin(infoName + "::ResetPlotAtts"))
-                h << "    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);" << endl;
+                h << "    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);" << endl;
             h << "    virtual QString *GetMenuName() const;" << endl;
             if(iconFile.length() > 0)
                 h << "    virtual const char **XPMIconData() const;" << endl;
@@ -1910,7 +1910,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << endl;
                 c << "void" << endl;
                 c << funcName<<"(AttributeSubject *atts," << endl
-                  << "    ViewerPlot *)" << endl;
+                  << "    const ViewerPlot *)" << endl;
                 c << "{" << endl;
                 c << "    *("<<atts->name<<"*)atts = *defaultAtts;" << endl;
                 c << "}" << endl;
