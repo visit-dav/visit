@@ -204,7 +204,7 @@ VolumeViewerPluginInfo::Permits2DViewScaling() const
 
 void
 VolumeViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(VolumeAttributes*)atts = *defaultAtts;
 }

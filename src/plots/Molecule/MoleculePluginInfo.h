@@ -103,7 +103,7 @@ class MoleculeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public vir
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;

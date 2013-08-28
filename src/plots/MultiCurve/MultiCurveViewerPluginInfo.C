@@ -206,7 +206,7 @@ MultiCurveViewerPluginInfo::AllocAvtPlot()
 
 void
 MultiCurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     MultiCurveAttributes *multiCurve = (MultiCurveAttributes *)atts;
     *multiCurve = *defaultAtts;

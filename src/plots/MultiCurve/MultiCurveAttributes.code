@@ -203,7 +203,7 @@ MultiCurveViewerPluginInfo::InitializeGlobalObjects()
 }
 
 Function: MultiCurveViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 // Method: MultiCurveViewerPluginInfo::InitializePlotAtts
@@ -224,7 +224,7 @@ Definition:
 
 void
 MultiCurveViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     MultiCurveAttributes *multiCurve = (MultiCurveAttributes *)atts;
     *multiCurve = *defaultAtts;

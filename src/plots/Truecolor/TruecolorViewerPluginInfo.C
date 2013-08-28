@@ -198,7 +198,7 @@ TruecolorViewerPluginInfo::AllocAvtPlot()
 
 void
 TruecolorViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(TruecolorAttributes*)atts = *defaultAtts;
 }

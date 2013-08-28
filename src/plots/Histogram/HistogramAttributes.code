@@ -68,7 +68,7 @@ HistogramAttributes::CopyAttributes(const AttributeGroup *atts)
 
 Target: xml2info
 Function: HistogramViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: HistogramViewerPluginInfo::InitializePlotAtts
@@ -97,7 +97,7 @@ Definition:
 
 void
 HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(HistogramAttributes*)atts = *defaultAtts;
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
@@ -122,7 +122,7 @@ HistogramViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 }
 
 Function: HistogramViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: HistogramViewerPluginInfo::ReInitializePlotAtts
@@ -144,7 +144,7 @@ Definition:
 
 void
 HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     HistogramAttributes *hatts = (HistogramAttributes *) atts;
 
@@ -168,7 +168,7 @@ HistogramViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
 }
 
 Function: HistogramViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: HistogramViewerPluginInfo::ResetPlotAtts
@@ -189,7 +189,7 @@ Definition:
 // ****************************************************************************
 void
 HistogramViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     ReInitializePlotAtts(atts, plot);
 }

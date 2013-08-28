@@ -104,7 +104,7 @@ class VolumeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
     virtual avtPlot *AllocAvtPlot();
 
     virtual bool Permits2DViewScaling() const;
-    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;

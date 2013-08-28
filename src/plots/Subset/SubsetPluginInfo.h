@@ -103,9 +103,9 @@ class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
 
     virtual avtPlot *AllocAvtPlot();
 
-    virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
-    virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
-    virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+    virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+    virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
+    virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
     virtual QString *GetMenuName() const;
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
@@ -116,7 +116,7 @@ class SubsetViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtu
     static SubsetAttributes *clientAtts;
     // User-defined functions
   private:
-    void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+    void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 };
 
 class SubsetEnginePluginInfo : public virtual EnginePlotPluginInfo, public virtual SubsetCommonPluginInfo

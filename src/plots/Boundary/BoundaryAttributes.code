@@ -90,7 +90,7 @@ PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts)
 
 Target: xml2info
 Function: BoundaryViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: BoundaryViewerPluginInfo::InitializePlotAtts
@@ -126,7 +126,7 @@ Definition:
 
 void
 BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     *(BoundaryAttributes*)atts = *defaultAtts;
 
@@ -134,7 +134,7 @@ BoundaryViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
 }
 
 Function: BoundaryViewerPluginInfo::ReInitializePlotAtts
-Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: BoundaryViewerPluginInfo::ReInitializePlotAtts
@@ -159,13 +159,13 @@ Definition:
 
 void
 BoundaryViewerPluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
 Function: BoundaryViewerPluginInfo::ResetPlotAtts
-Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: BoundaryViewerPluginInfo::ResetPlotAtts
@@ -201,13 +201,13 @@ Definition:
 
 void
 BoundaryViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     PrivateSetPlotAtts(atts, plot);
 }
 
 Function: BoundaryViewerPluginInfo::PrivateSetPlotAtts
-Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: BoundaryViewerPluginInfo::PrivateSetPlotAtts
@@ -262,7 +262,7 @@ Definition:
 
 void
 BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts, 
-    ViewerPlot *plot)
+    const ViewerPlot *plot)
 {
     BoundaryAttributes *boundaryAtts = (BoundaryAttributes *)atts;
 

@@ -198,7 +198,7 @@ ScatterViewerPluginInfo::AllocAvtPlot()
 
 void
 ScatterViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *)
+    const ViewerPlot *)
 {
     *(ScatterAttributes*)atts = *defaultAtts;
 }

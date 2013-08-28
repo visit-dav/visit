@@ -517,7 +517,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
 }
 
 Function: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
-Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, ViewerPlot *);
+Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const ViewerPlot *);
 Definition:
 // ****************************************************************************
 //  Method: ParallelCoordinatesViewerPluginInfo::InitializePlotAtts
@@ -559,7 +559,7 @@ Definition:
 
 void
 ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
-    AttributeSubject *atts, ViewerPlot *plot)
+    AttributeSubject *atts, const ViewerPlot *plot)
 {
     // If we had scalar names, we can just copy the default atts
     // and return.
