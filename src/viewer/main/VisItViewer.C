@@ -54,6 +54,9 @@ static void LogGlxAndXdpyInfo();
 //   Jonathan Byrd (Allinea Software), Sun 18 Dec, 2011
 //   Auto-connect to DDT if the DDT_LAUNCHED_VISIT env. var. exists
 //
+//   Kathleen Biagas, Wed Aug 28 14:34:55 PDT 2013
+//   Don't call LogGlxAndXdpyInfo if in nowin mode.
+//
 // ****************************************************************************
 
 void
@@ -61,6 +64,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 {
     VisItInit::SetComponentName("viewer");
     VisItInit::Initialize(*argc, *argv, 0, 1, false);
+    bool nowin = false;
     for (int i = 0 ; i < *argc ; i++)
     {
         if (strcmp((*argv)[i], "-manta") == 0)
@@ -68,9 +72,14 @@ VisItViewer::Initialize(int *argc, char ***argv)
             std::cerr << "setting Manta mode\n";
             avtCallback::SetMantaMode(true);
         }
+        else if (strcmp((*argv)[i], "-nowin") == 0)
+        {
+            nowin = true;
+        }
     }
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
-    LogGlxAndXdpyInfo();
+    if (!nowin)
+        LogGlxAndXdpyInfo();
 
     // If VisIt has been launched by DDT, try to connect to DDT once the event
     // loop is started (socket communication needs the event loop to be active)
