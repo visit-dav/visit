@@ -981,13 +981,14 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //
 //    Mark C. Miller, Wed Aug 28 09:53:15 PDT 2013
 //    Don't attempt to log this information in nowin mode.
+//
+//    Mark C. Miller, Wed Aug 28 09:53:15 PDT 2013
+//    Undid previous change.
 // ****************************************************************************
 
 static void
 LogGlxAndXdpyInfo()
 {
-    if (GetNowinMode())
-        return;
 #if !defined(_WIN32) && !defined(Q_WS_MACX)
     if (DebugStream::Level5())
     {
