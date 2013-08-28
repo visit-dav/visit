@@ -93,7 +93,6 @@ class TriangulateRegularPointsViewerPluginInfo : public virtual ViewerOperatorPl
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
     virtual void GetClientAtts(AttributeSubject *atts);
-    virtual void GetClientAtts(AttributeSubject *atts, const bool, const bool);
 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
