@@ -44,7 +44,6 @@
 #include <VolumeAttributes.h>
 
 #include <visit-config.h>
-
 VISIT_PLUGIN_VERSION(Volume,PLOT_EXPORT)
 
 // ****************************************************************************
