@@ -43,7 +43,7 @@ SetView3D(v)
 
 Test("mili_01")
 
-SetTimeSliderState(100)
+SetTimeSliderState(101)
 v = GetView3D()
 v.viewNormal = (0.38, 0.34, 0.85)
 v.focus = (14.1, 0, 0)
