@@ -978,11 +978,16 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //
 //    Mark C. Miller, Mon Aug 26 16:57:27 PDT 2013
 //    Adjusted strings to LogCommand to ensure we get stderr output too. 
+//
+//    Mark C. Miller, Wed Aug 28 09:53:15 PDT 2013
+//    Don't attempt to log this information in nowin mode.
 // ****************************************************************************
 
 static void
 LogGlxAndXdpyInfo()
 {
+    if (GetNowinMode())
+        return;
 #if !defined(_WIN32) && !defined(Q_WS_MACX)
     if (DebugStream::Level5())
     {
