@@ -5006,6 +5006,10 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Kathleen Biagas, Tue Aug 27 16:58:30 PDT 2013
 //    Add support for groupNames.
 //
+//    Kathleen Biagas, Wed Aug 28 08:51:16 PDT 2013
+//    Fixed error where domains[i] wasn't being used to get the correct 
+//    groupName, resulting in incorrect labels for the SIL selection.
+//
 // ****************************************************************************
 
 void
@@ -5194,7 +5198,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         {
             char temp[512];
             if (!groupNames.empty() && !gIds.empty())
-                sprintf(temp, "%s", groupNames[gIds[i]].c_str());
+                sprintf(temp, "%s", groupNames[gIds[domains[i]]].c_str());
             else if (gIds.size() != 0)
                 sprintf(temp, "%d", gIds[domains[i]]);
             else
