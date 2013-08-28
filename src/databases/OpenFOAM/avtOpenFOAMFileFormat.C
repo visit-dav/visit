@@ -105,9 +105,9 @@ avtOpenFOAMFileFormat::avtOpenFOAMFileFormat(const char *filename,
             int index = readOpts->GetEnum("Case Type");
             reader->SetCaseType(index);
         }
-        if (readOpts->FindIndex("Convert Cell Data to Point Data") >= 0)
+        if (readOpts->FindIndex("Convert Cell Data To Point Data") >= 0)
         {
-            convertCellToPoint = readOpts->GetBool("Convert Cell Data to Point Data");
+            convertCellToPoint = readOpts->GetBool("Convert Cell Data To Point Data");
             reader->SetCreateCellToPoint(convertCellToPoint);
         }
         if (readOpts->FindIndex("Read Zones") >= 0)
