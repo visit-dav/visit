@@ -43,7 +43,7 @@
 #include <CarpetHDF5PluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *CarpetHDF5VisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(CarpetHDF5,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo
@@ -95,7 +95,7 @@ CarpetHDF5GeneralPluginInfo::GetName() const
 const char *
 CarpetHDF5GeneralPluginInfo::GetVersion() const
 {
-    return "2.0";
+    return "2.1";
 }
 
 // ****************************************************************************
@@ -114,7 +114,7 @@ CarpetHDF5GeneralPluginInfo::GetVersion() const
 const char *
 CarpetHDF5GeneralPluginInfo::GetID() const
 {
-    return "CarpetHDF5_2.0";
+    return "CarpetHDF5_2.1";
 }
 // ****************************************************************************
 //  Method: CarpetHDF5GeneralPluginInfo::EnabledByDefault

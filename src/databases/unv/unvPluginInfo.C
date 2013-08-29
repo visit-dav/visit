@@ -43,7 +43,7 @@
 #include <unvPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *unvVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(unv,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

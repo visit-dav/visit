@@ -32,6 +32,8 @@
     <LIBS components="EPar">
       -ladiosread
     </LIBS>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS.code">
+      <Function name="ADIOSCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

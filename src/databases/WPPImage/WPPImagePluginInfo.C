@@ -43,7 +43,7 @@
 #include <WPPImagePluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *WPPImageVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(WPPImage,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

@@ -185,7 +185,7 @@ OpenFOAMGeneralPluginInfo::GetDefaultFilePatterns() const
 bool
 OpenFOAMGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
-    return false;
+    return true;
 }
 
 // ****************************************************************************

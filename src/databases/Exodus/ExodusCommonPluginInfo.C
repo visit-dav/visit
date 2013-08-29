@@ -41,8 +41,6 @@
 #include <avtMTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
-#include <string>
-
 // ****************************************************************************
 //  Method:  ExodusCommonPluginInfo::GetDatabaseType
 //
@@ -173,3 +171,4 @@ ExodusCommonPluginInfo::SetupDatabase(const char *const *list,
         = new avtMTSDFileFormatInterface(ffl, nTimestepGroups, nBlock);
     return new avtGenericDatabase(inter);
 }
+

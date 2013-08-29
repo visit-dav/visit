@@ -50,7 +50,7 @@ PixieCommonPluginInfo::SetupDatabase(const char *const *list,
         {
             for (int j = 0 ; j < nBlock ; j++)
             {
-                ffl[i][j] = new avtPixieFileFormat(list[i*nBlock+j]);
+                ffl[i][j] = new avtPixieFileFormat(list[i*nBlock+j], readOptions);
             }
         }
     }

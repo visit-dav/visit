@@ -109,3 +109,4 @@ ADIOSCommonPluginInfo::SetupDatabase(const char *const *list,
 
     return db;
 }
+
