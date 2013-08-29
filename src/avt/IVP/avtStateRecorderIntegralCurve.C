@@ -220,11 +220,12 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
         RecordStep( field, step, step.GetT0() );
     }
 
-    // Possibly need this for state we record.
-    distance += step.GetLength();
-
     if (CheckForTermination(step, field))
         status.SetTerminationMet();
+
+    // Possibly need this for state we record. Must come after the
+    // check for termination as the curve may get truncated.
+    distance += step.GetLength();
 
     // This must be called after CheckForTermination, because 
     // CheckForTermination will modify the step if it goes beyond the
