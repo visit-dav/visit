@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Geqdsk" type="database" label="avtGeqdsk" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="Geqdsk" type="database" label="avtGeqdsk" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${GEQDSK_INCLUDE_DIR}
     </CXXFLAGS>

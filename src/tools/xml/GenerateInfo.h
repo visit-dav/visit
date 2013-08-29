@@ -718,6 +718,9 @@ class InfoGeneratorPlugin : public Plugin
                   << endl;
                 h << "    virtual DBOptionsAttributes *GetWriteOptions() const;"
                   << endl;
+                QString infoName = name + "CommonPluginInfo";
+                if(OverrideBuiltin(infoName + "::SetReadOptions"))
+                    h << "    virtual void                 SetReadOptions(DBOptionsAttributes *);" << endl;
             }
             h << "};" << endl;
             h << "" << endl;
@@ -1198,6 +1201,8 @@ class InfoGeneratorPlugin : public Plugin
                     c << "    return Get"<<name<<"WriteOptions();" << endl;
                     c << "}" << endl;
                 }
+                funcName = name + "CommonPluginInfo::SetReadOptions";
+                ReplaceBuiltin(c, funcName);
             }
 
         }

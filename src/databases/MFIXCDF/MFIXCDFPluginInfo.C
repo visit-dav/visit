@@ -43,7 +43,7 @@
 #include <MFIXCDFPluginInfo.h>
 
 #include <visit-config.h>
-extern "C" DBP_EXPORT const char *MFIXCDFVisItPluginVersion = VISIT_VERSION;
+VISIT_PLUGIN_VERSION(MFIXCDF,DBP_EXPORT)
 
 // ****************************************************************************
 //  Function:  GetGeneralInfo

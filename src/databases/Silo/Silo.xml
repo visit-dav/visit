@@ -24,6 +24,8 @@
       avtSiloOptions.C
       avtSiloWriter.C
     </Files>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Silo.code">
+      <Function name="SiloCommonPluginInfo::SetReadOptions" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

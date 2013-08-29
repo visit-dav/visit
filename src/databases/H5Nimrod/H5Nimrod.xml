@@ -11,8 +11,8 @@
       ${ZLIB_LIB}
     </LIBS>
     <FilePatterns>
-      *.h5nimrod
       *.h5
+      *.h5nimrod
     </FilePatterns>
     <Files components="M">
       avtH5NimrodFileFormat.C

@@ -96,3 +96,4 @@ CarpetHDF5CommonPluginInfo::SetupDatabase(const char *const *list,
            = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
     return new avtGenericDatabase(inter);
 }
+

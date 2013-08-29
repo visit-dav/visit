@@ -21,6 +21,8 @@
       avtCarpetHDF5FileFormat.C
       H5Index.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="CarpetHDF5.code">
+      <Function name="CarpetHDF5CommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

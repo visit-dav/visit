@@ -41,8 +41,6 @@
 #include <avtSTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
-using     namespace std;
-
 // ****************************************************************************
 //  Method:  paraDIS_tecplotCommonPluginInfo::GetDatabaseType
 //
