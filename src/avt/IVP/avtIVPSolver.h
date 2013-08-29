@@ -268,7 +268,7 @@ public:
         // points from the last iteration above, hence we can simply copy them.
 
         std::copy( tmp, tmp+size(), begin() );
-        t1 = t0 + t*(t1 + t0);
+        t1 = t0 + t*(t1 - t0);
         delete [] tmp;
     }
 
