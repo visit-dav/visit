@@ -75,8 +75,8 @@ public:
 
     virtual void    Serialize(MemStream::Mode mode, MemStream &buff, 
                               avtIVPSolver *solver, SerializeFlags serializeFlags);
-    virtual bool    UseFixedTerminationTime(void) { return doTime; };
-    virtual double  FixedTerminationTime(void)    { return maxTime; };
+    // virtual bool    UseFixedTerminationTime(void) { return doTime; };
+    // virtual double  FixedTerminationTime(void)    { return maxTime; };
 
     bool            TerminatedBecauseOfMaxSteps(void) 
                                  { return terminatedBecauseOfMaxSteps; };
@@ -87,6 +87,8 @@ public:
     
   public:
     virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
+
+    virtual double getDistance() { return distance; }
 
     virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field);
   

@@ -155,6 +155,8 @@ public:
     
     virtual bool CheckForTermination(avtIVPStep &step, avtIVPField *) = 0;
 
+    virtual double getDistance() { return distance; }
+
   protected:
     avtStateRecorderIntegralCurve( const avtStateRecorderIntegralCurve& );
     avtStateRecorderIntegralCurve& operator=( const avtStateRecorderIntegralCurve& );

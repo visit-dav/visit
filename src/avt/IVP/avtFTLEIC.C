@@ -190,40 +190,15 @@ avtFTLEIC::MergeIntegralCurveSequence(std::vector<avtIntegralCurve *> &v)
 void avtFTLEIC::AnalyzeStep( avtIVPStep &step,
                              avtIVPField *field)
 {
-  /* Check for termination:
-     Code used from avtStreamline.C 
-  */
-  // bool shouldTerminate = false;
-  
-  // if( (direction == DIRECTION_FORWARD && step.GetT1() >= maxTime) ||
-  //     (direction == DIRECTION_BACKWARD && step.GetT1() <= maxTime) )
-  // {
-  //   shouldTerminate = true;
-  // }
-  
-  // /** if the integration is taking too long */
-  // if( !shouldTerminate && numSteps >= maxSteps )
-  // {
-  //   shouldTerminate = true;
-  // }
-  
-  p_end = step.GetP1();
-  p_end = CurrentLocation();
-        
-  // /** update other termination criteria */
-  // numSteps += 1;
-  
-  // if (field->VelocityIsInstantaneous() &&
-  //     (step.GetLength() / std::abs(step.t1 - step.t0) < 1e-8) &&
-  //     numSteps > 5)
-  //   shouldTerminate = true;
-  
-  // /* if Code has to be terminated */
-  // if( shouldTerminate )
-  //   status.SetTerminationMet();
-    
-  if (CheckForTermination(step, field))
-    status.SetTerminationMet();
+    if (CheckForTermination(step, field))
+        status.SetTerminationMet();
+
+    // These must be called after CheckForTermination, because 
+    // CheckForTermination will modify the step if it goes beyond the
+    // termination criteria.  (Example: streamlines will split a step if it
+    // is terminating by distance.)
+    distance += step.GetLength();
+    p_end = step.GetP1();
 }
 
 // ****************************************************************************
@@ -289,9 +264,6 @@ avtFTLEIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
 
     // Update other termination criteria.
     numSteps += 1;
-
-    // Done by state recorder, which may need to record state
-    distance += step.GetLength();
 
     return shouldTerminate;
 }
