@@ -92,3 +92,4 @@ BoxAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
+

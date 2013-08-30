@@ -101,6 +101,7 @@ void BoxAttributes::Init()
     maxy = 1;
     minz = 0;
     maxz = 1;
+    inverse = false;
 
     BoxAttributes::SelectAll();
 }
@@ -129,6 +130,7 @@ void BoxAttributes::Copy(const BoxAttributes &obj)
     maxy = obj.maxy;
     minz = obj.minz;
     maxz = obj.maxz;
+    inverse = obj.inverse;
 
     BoxAttributes::SelectAll();
 }
@@ -292,7 +294,8 @@ BoxAttributes::operator == (const BoxAttributes &obj) const
             (miny == obj.miny) &&
             (maxy == obj.maxy) &&
             (minz == obj.minz) &&
-            (maxz == obj.maxz));
+            (maxz == obj.maxz) &&
+            (inverse == obj.inverse));
 }
 
 // ****************************************************************************
@@ -471,13 +474,14 @@ BoxAttributes::NewInstance(bool copy) const
 void
 BoxAttributes::SelectAll()
 {
-    Select(ID_amount, (void *)&amount);
-    Select(ID_minx,   (void *)&minx);
-    Select(ID_maxx,   (void *)&maxx);
-    Select(ID_miny,   (void *)&miny);
-    Select(ID_maxy,   (void *)&maxy);
-    Select(ID_minz,   (void *)&minz);
-    Select(ID_maxz,   (void *)&maxz);
+    Select(ID_amount,  (void *)&amount);
+    Select(ID_minx,    (void *)&minx);
+    Select(ID_maxx,    (void *)&maxx);
+    Select(ID_miny,    (void *)&miny);
+    Select(ID_maxy,    (void *)&maxy);
+    Select(ID_minz,    (void *)&minz);
+    Select(ID_maxz,    (void *)&maxz);
+    Select(ID_inverse, (void *)&inverse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -552,6 +556,12 @@ BoxAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
         node->AddNode(new DataNode("maxz", maxz));
     }
 
+    if(completeSave || !FieldsEqual(ID_inverse, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("inverse", inverse));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -616,6 +626,8 @@ BoxAttributes::SetFromNode(DataNode *parentNode)
         SetMinz(node->AsDouble());
     if((node = searchNode->GetNode("maxz")) != 0)
         SetMaxz(node->AsDouble());
+    if((node = searchNode->GetNode("inverse")) != 0)
+        SetInverse(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -671,6 +683,13 @@ BoxAttributes::SetMaxz(double maxz_)
     Select(ID_maxz, (void *)&maxz);
 }
 
+void
+BoxAttributes::SetInverse(bool inverse_)
+{
+    inverse = inverse_;
+    Select(ID_inverse, (void *)&inverse);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -717,6 +736,12 @@ BoxAttributes::GetMaxz() const
     return maxz;
 }
 
+bool
+BoxAttributes::GetInverse() const
+{
+    return inverse;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -741,13 +766,14 @@ BoxAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_amount: return "amount";
-    case ID_minx:   return "minx";
-    case ID_maxx:   return "maxx";
-    case ID_miny:   return "miny";
-    case ID_maxy:   return "maxy";
-    case ID_minz:   return "minz";
-    case ID_maxz:   return "maxz";
+    case ID_amount:  return "amount";
+    case ID_minx:    return "minx";
+    case ID_maxx:    return "maxx";
+    case ID_miny:    return "miny";
+    case ID_maxy:    return "maxy";
+    case ID_minz:    return "minz";
+    case ID_maxz:    return "maxz";
+    case ID_inverse: return "inverse";
     default:  return "invalid index";
     }
 }
@@ -772,13 +798,14 @@ BoxAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_amount: return FieldType_enum;
-    case ID_minx:   return FieldType_double;
-    case ID_maxx:   return FieldType_double;
-    case ID_miny:   return FieldType_double;
-    case ID_maxy:   return FieldType_double;
-    case ID_minz:   return FieldType_double;
-    case ID_maxz:   return FieldType_double;
+    case ID_amount:  return FieldType_enum;
+    case ID_minx:    return FieldType_double;
+    case ID_maxx:    return FieldType_double;
+    case ID_miny:    return FieldType_double;
+    case ID_maxy:    return FieldType_double;
+    case ID_minz:    return FieldType_double;
+    case ID_maxz:    return FieldType_double;
+    case ID_inverse: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -803,13 +830,14 @@ BoxAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_amount: return "enum";
-    case ID_minx:   return "double";
-    case ID_maxx:   return "double";
-    case ID_miny:   return "double";
-    case ID_maxy:   return "double";
-    case ID_minz:   return "double";
-    case ID_maxz:   return "double";
+    case ID_amount:  return "enum";
+    case ID_minx:    return "double";
+    case ID_maxx:    return "double";
+    case ID_miny:    return "double";
+    case ID_maxy:    return "double";
+    case ID_minz:    return "double";
+    case ID_maxz:    return "double";
+    case ID_inverse: return "bool";
     default:  return "invalid index";
     }
 }
@@ -869,6 +897,11 @@ BoxAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_maxz:
         {  // new scope
         retval = (maxz == obj.maxz);
+        }
+        break;
+    case ID_inverse:
+        {  // new scope
+        retval = (inverse == obj.inverse);
         }
         break;
     default: retval = false;

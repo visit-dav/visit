@@ -93,6 +93,7 @@ class QvisBoxWindow : public QvisOperatorWindow
     void maxyProcessText();
     void minzProcessText();
     void maxzProcessText();
+    void inverseChanged(bool val);
   private:
     QWidget      *amount;
     QButtonGroup *amountButtonGroup;
@@ -102,6 +103,7 @@ class QvisBoxWindow : public QvisOperatorWindow
     QLineEdit *maxy;
     QLineEdit *minz;
     QLineEdit *maxz;
+    QCheckBox *inverse;
     QLabel *amountLabel;
     QLabel *minxLabel;
     QLabel *maxxLabel;

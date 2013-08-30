@@ -100,6 +100,7 @@ public:
     void SetMaxy(double maxy_);
     void SetMinz(double minz_);
     void SetMaxz(double maxz_);
+    void SetInverse(bool inverse_);
 
     // Property getting methods
     Amount GetAmount() const;
@@ -109,6 +110,7 @@ public:
     double GetMaxy() const;
     double GetMinz() const;
     double GetMaxz() const;
+    bool   GetInverse() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -137,6 +139,7 @@ public:
         ID_maxy,
         ID_minz,
         ID_maxz,
+        ID_inverse,
         ID__LAST
     };
 
@@ -148,11 +151,12 @@ private:
     double maxy;
     double minz;
     double maxz;
+    bool   inverse;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define BOXATTRIBUTES_TMFS "idddddd"
+#define BOXATTRIBUTES_TMFS "iddddddb"
 
 #endif

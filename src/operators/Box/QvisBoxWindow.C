@@ -186,6 +186,11 @@ QvisBoxWindow::CreateWindowContents()
             this, SLOT(maxzProcessText()));
     mainLayout->addWidget(maxz, 6,1);
 
+    inverse = new QCheckBox(tr("Inverse"), central);
+    connect(inverse, SIGNAL(toggled(bool)),
+            this, SLOT(inverseChanged(bool)));
+    mainLayout->addWidget(inverse, 7,0);
+
 }
 
 
@@ -243,6 +248,11 @@ QvisBoxWindow::UpdateWindow(bool doAll)
             break;
           case BoxAttributes::ID_maxz:
             maxz->setText(DoubleToQString(atts->GetMaxz()));
+            break;
+          case BoxAttributes::ID_inverse:
+            inverse->blockSignals(true);
+            inverse->setChecked(atts->GetInverse());
+            inverse->blockSignals(false);
             break;
         }
     }
@@ -417,6 +427,15 @@ void
 QvisBoxWindow::maxzProcessText()
 {
     GetCurrentValues(BoxAttributes::ID_maxz);
+    Apply();
+}
+
+
+void
+QvisBoxWindow::inverseChanged(bool val)
+{
+    atts->SetInverse(val);
+    SetUpdate(false);
     Apply();
 }
 
