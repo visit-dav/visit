@@ -63,6 +63,7 @@ void CylinderAttributes::Init()
     point2[1] = 0;
     point2[2] = 0;
     radius = 1;
+    inverse = false;
 
     CylinderAttributes::SelectAll();
 }
@@ -93,6 +94,7 @@ void CylinderAttributes::Copy(const CylinderAttributes &obj)
     point2[2] = obj.point2[2];
 
     radius = obj.radius;
+    inverse = obj.inverse;
 
     CylinderAttributes::SelectAll();
 }
@@ -262,7 +264,8 @@ CylinderAttributes::operator == (const CylinderAttributes &obj) const
     // Create the return value
     return (point1_equal &&
             point2_equal &&
-            (radius == obj.radius));
+            (radius == obj.radius) &&
+            (inverse == obj.inverse));
 }
 
 // ****************************************************************************
@@ -396,9 +399,10 @@ CylinderAttributes::NewInstance(bool copy) const
 void
 CylinderAttributes::SelectAll()
 {
-    Select(ID_point1, (void *)point1, 3);
-    Select(ID_point2, (void *)point2, 3);
-    Select(ID_radius, (void *)&radius);
+    Select(ID_point1,  (void *)point1, 3);
+    Select(ID_point2,  (void *)point2, 3);
+    Select(ID_radius,  (void *)&radius);
+    Select(ID_inverse, (void *)&inverse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -449,6 +453,12 @@ CylinderAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("radius", radius));
     }
 
+    if(completeSave || !FieldsEqual(ID_inverse, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("inverse", inverse));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -491,6 +501,8 @@ CylinderAttributes::SetFromNode(DataNode *parentNode)
         SetPoint2(node->AsDoubleArray());
     if((node = searchNode->GetNode("radius")) != 0)
         SetRadius(node->AsDouble());
+    if((node = searchNode->GetNode("inverse")) != 0)
+        SetInverse(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -520,6 +532,13 @@ CylinderAttributes::SetRadius(double radius_)
 {
     radius = radius_;
     Select(ID_radius, (void *)&radius);
+}
+
+void
+CylinderAttributes::SetInverse(bool inverse_)
+{
+    inverse = inverse_;
+    Select(ID_inverse, (void *)&inverse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -554,6 +573,12 @@ double
 CylinderAttributes::GetRadius() const
 {
     return radius;
+}
+
+bool
+CylinderAttributes::GetInverse() const
+{
+    return inverse;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -596,9 +621,10 @@ CylinderAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_point1: return "point1";
-    case ID_point2: return "point2";
-    case ID_radius: return "radius";
+    case ID_point1:  return "point1";
+    case ID_point2:  return "point2";
+    case ID_radius:  return "radius";
+    case ID_inverse: return "inverse";
     default:  return "invalid index";
     }
 }
@@ -623,9 +649,10 @@ CylinderAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_point1: return FieldType_doubleArray;
-    case ID_point2: return FieldType_doubleArray;
-    case ID_radius: return FieldType_double;
+    case ID_point1:  return FieldType_doubleArray;
+    case ID_point2:  return FieldType_doubleArray;
+    case ID_radius:  return FieldType_double;
+    case ID_inverse: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -650,9 +677,10 @@ CylinderAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_point1: return "doubleArray";
-    case ID_point2: return "doubleArray";
-    case ID_radius: return "double";
+    case ID_point1:  return "doubleArray";
+    case ID_point2:  return "doubleArray";
+    case ID_radius:  return "double";
+    case ID_inverse: return "bool";
     default:  return "invalid index";
     }
 }
@@ -702,6 +730,11 @@ CylinderAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_radius:
         {  // new scope
         retval = (radius == obj.radius);
+        }
+        break;
+    case ID_inverse:
+        {  // new scope
+        retval = (inverse == obj.inverse);
         }
         break;
     default: retval = false;

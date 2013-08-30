@@ -148,6 +148,11 @@ QvisCylinderWindow::CreateWindowContents()
             this, SLOT(radiusProcessText()));
     mainLayout->addWidget(radius, 2,1);
 
+    inverse = new QCheckBox(tr("Inverse"), central);
+    connect(inverse, SIGNAL(toggled(bool)),
+            this, SLOT(inverseChanged(bool)));
+    mainLayout->addWidget(inverse, 3,0);
+
 }
 
 
@@ -190,6 +195,11 @@ QvisCylinderWindow::UpdateWindow(bool doAll)
             break;
           case CylinderAttributes::ID_radius:
             radius->setText(DoubleToQString(atts->GetRadius()));
+            break;
+          case CylinderAttributes::ID_inverse:
+            inverse->blockSignals(true);
+            inverse->setChecked(atts->GetInverse());
+            inverse->blockSignals(false);
             break;
         }
     }
@@ -286,6 +296,15 @@ void
 QvisCylinderWindow::radiusProcessText()
 {
     GetCurrentValues(CylinderAttributes::ID_radius);
+    Apply();
+}
+
+
+void
+QvisCylinderWindow::inverseChanged(bool val)
+{
+    atts->SetInverse(val);
+    SetUpdate(false);
     Apply();
 }
 
