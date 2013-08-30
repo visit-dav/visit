@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class BoxAttributes extends AttributeSubject implements Plugin
 {
-    private static int BoxAttributes_numAdditionalAtts = 7;
+    private static int BoxAttributes_numAdditionalAtts = 8;
 
     // Enum values
     public final static int AMOUNT_SOME = 0;
@@ -77,6 +77,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         maxy = 1;
         minz = 0;
         maxz = 1;
+        inverse = false;
     }
 
     public BoxAttributes(int nMoreFields)
@@ -90,6 +91,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         maxy = 1;
         minz = 0;
         maxz = 1;
+        inverse = false;
     }
 
     public BoxAttributes(BoxAttributes obj)
@@ -103,6 +105,7 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         maxy = obj.maxy;
         minz = obj.minz;
         maxz = obj.maxz;
+        inverse = obj.inverse;
 
         SelectAll();
     }
@@ -126,7 +129,8 @@ public class BoxAttributes extends AttributeSubject implements Plugin
                 (miny == obj.miny) &&
                 (maxy == obj.maxy) &&
                 (minz == obj.minz) &&
-                (maxz == obj.maxz));
+                (maxz == obj.maxz) &&
+                (inverse == obj.inverse));
     }
 
     public String GetName() { return "Box"; }
@@ -175,14 +179,21 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
+    public void SetInverse(boolean inverse_)
+    {
+        inverse = inverse_;
+        Select(7);
+    }
+
     // Property getting methods
-    public int    GetAmount() { return amount; }
-    public double GetMinx() { return minx; }
-    public double GetMaxx() { return maxx; }
-    public double GetMiny() { return miny; }
-    public double GetMaxy() { return maxy; }
-    public double GetMinz() { return minz; }
-    public double GetMaxz() { return maxz; }
+    public int     GetAmount() { return amount; }
+    public double  GetMinx() { return minx; }
+    public double  GetMaxx() { return maxx; }
+    public double  GetMiny() { return miny; }
+    public double  GetMaxy() { return maxy; }
+    public double  GetMinz() { return minz; }
+    public double  GetMaxz() { return maxz; }
+    public boolean GetInverse() { return inverse; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -201,6 +212,8 @@ public class BoxAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(minz);
         if(WriteSelect(6, buf))
             buf.WriteDouble(maxz);
+        if(WriteSelect(7, buf))
+            buf.WriteBool(inverse);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -228,6 +241,9 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         case 6:
             SetMaxz(buf.ReadDouble());
             break;
+        case 7:
+            SetInverse(buf.ReadBool());
+            break;
         }
     }
 
@@ -246,17 +262,19 @@ public class BoxAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("maxy", maxy, indent) + "\n";
         str = str + doubleToString("minz", minz, indent) + "\n";
         str = str + doubleToString("maxz", maxz, indent) + "\n";
+        str = str + boolToString("inverse", inverse, indent) + "\n";
         return str;
     }
 
 
     // Attributes
-    private int    amount;
-    private double minx;
-    private double maxx;
-    private double miny;
-    private double maxy;
-    private double minz;
-    private double maxz;
+    private int     amount;
+    private double  minx;
+    private double  maxx;
+    private double  miny;
+    private double  maxy;
+    private double  minz;
+    private double  maxz;
+    private boolean inverse;
 }
 

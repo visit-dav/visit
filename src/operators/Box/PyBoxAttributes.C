@@ -103,6 +103,11 @@ PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smaxz = %g\n", prefix, atts->GetMaxz());
     str += tmpStr;
+    if(atts->GetInverse())
+        SNPRINTF(tmpStr, 1000, "%sinverse = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinverse = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -292,6 +297,30 @@ BoxAttributes_GetMaxz(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+BoxAttributes_SetInverse(PyObject *self, PyObject *args)
+{
+    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the inverse in the object.
+    obj->data->SetInverse(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+BoxAttributes_GetInverse(PyObject *self, PyObject *args)
+{
+    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInverse()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH] = {
@@ -310,6 +339,8 @@ PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH] = {
     {"GetMinz", BoxAttributes_GetMinz, METH_VARARGS},
     {"SetMaxz", BoxAttributes_SetMaxz, METH_VARARGS},
     {"GetMaxz", BoxAttributes_GetMaxz, METH_VARARGS},
+    {"SetInverse", BoxAttributes_SetInverse, METH_VARARGS},
+    {"GetInverse", BoxAttributes_GetInverse, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -357,6 +388,8 @@ PyBoxAttributes_getattr(PyObject *self, char *name)
         return BoxAttributes_GetMinz(self, NULL);
     if(strcmp(name, "maxz") == 0)
         return BoxAttributes_GetMaxz(self, NULL);
+    if(strcmp(name, "inverse") == 0)
+        return BoxAttributes_GetInverse(self, NULL);
 
     return Py_FindMethod(PyBoxAttributes_methods, self, name);
 }
@@ -385,6 +418,8 @@ PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoxAttributes_SetMinz(self, tuple);
     else if(strcmp(name, "maxz") == 0)
         obj = BoxAttributes_SetMaxz(self, tuple);
+    else if(strcmp(name, "inverse") == 0)
+        obj = BoxAttributes_SetInverse(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

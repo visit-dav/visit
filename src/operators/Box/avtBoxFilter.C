@@ -95,6 +95,10 @@ public:
   vtkGetMacro(AllOfCell, int);
   vtkBooleanMacro(AllOfCell, int);
 
+  vtkSetMacro(Inverse, bool)
+  vtkGetMacro(Inverse, bool)
+  vtkBooleanMacro(Inverse, bool)
+
 protected:
   vtkBoxFilter();
   ~vtkBoxFilter();
@@ -109,6 +113,7 @@ protected:
 
   float MinX, MaxX, MinY, MaxY, MinZ, MaxZ;
   int   AllOfCell;
+  bool Inverse;
 };
 
 
@@ -396,12 +401,11 @@ vtkBoxFilter::RequestData(
                         
                         double t;
                         if (vtkBox::IntersectBox(bounds, pt1, ray, pt2, t)
-                                && t < 1)
+                            && t < 1)
                         {
                             meetsCriteria = true;
                             break;
                         }
-                        
                     }
                 }
 
@@ -439,7 +443,7 @@ vtkBoxFilter::RequestData(
            }
         }
 
-        if (meetsCriteria)
+        if ((!GetInverse() && meetsCriteria) || (GetInverse() && !meetsCriteria))
         {
             //
             // We must re-map the point ids from the input mesh to the
@@ -626,6 +630,9 @@ avtBoxFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Sun Apr 24 11:11:46 PDT 2005
 //    Add special support for rectilinear grids.
 //
+//   Dave Pugmire, Fri Aug 30 15:57:33 EDT 2013
+//   Add an inverse option for box clip.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -643,7 +650,7 @@ avtBoxFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
 
     vtkDataSet *outDS = NULL;
-    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    if (!atts.GetInverse() && in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         int dims[3] = {0, 0, 0};
         ((vtkRectilinearGrid*)in_ds)->GetDimensions(dims);
@@ -695,6 +702,7 @@ vtkUnstructuredGrid *
 avtBoxFilter::GeneralExecute(vtkDataSet *in_ds)
 {
     vtkBoxFilter *bf = vtkBoxFilter::New();
+    bf->SetInverse(atts.GetInverse());
     bf->SetInputData(in_ds);
 
     //
