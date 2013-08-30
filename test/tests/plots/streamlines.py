@@ -159,7 +159,7 @@ Test( "streamlines_07" )
 
 # test termination modes (termination by time implied in previous tests)
 
-StreamlineAtts.coloringMethod = StreamlineAtts.Solid
+StreamlineAtts.coloringMethod = StreamlineAtts.ColorByLength
 
 StreamlineAtts.terminateByTime = 0
 StreamlineAtts.terminateByDistance = 1
