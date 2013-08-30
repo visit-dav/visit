@@ -92,6 +92,7 @@ public:
     void SetPoint1(const double *point1_);
     void SetPoint2(const double *point2_);
     void SetRadius(double radius_);
+    void SetInverse(bool inverse_);
 
     // Property getting methods
     const double *GetPoint1() const;
@@ -99,6 +100,7 @@ public:
     const double *GetPoint2() const;
           double *GetPoint2();
     double       GetRadius() const;
+    bool         GetInverse() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -117,6 +119,7 @@ public:
         ID_point1 = 0,
         ID_point2,
         ID_radius,
+        ID_inverse,
         ID__LAST
     };
 
@@ -124,11 +127,12 @@ private:
     double point1[3];
     double point2[3];
     double radius;
+    bool   inverse;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CYLINDERATTRIBUTES_TMFS "DDd"
+#define CYLINDERATTRIBUTES_TMFS "DDdb"
 
 #endif

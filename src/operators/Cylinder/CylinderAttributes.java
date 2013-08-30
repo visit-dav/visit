@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class CylinderAttributes extends AttributeSubject implements Plugin
 {
-    private static int CylinderAttributes_numAdditionalAtts = 3;
+    private static int CylinderAttributes_numAdditionalAtts = 4;
 
     public CylinderAttributes()
     {
@@ -74,6 +74,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         point2[1] = 0;
         point2[2] = 0;
         radius = 1;
+        inverse = false;
     }
 
     public CylinderAttributes(int nMoreFields)
@@ -89,6 +90,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         point2[1] = 0;
         point2[2] = 0;
         radius = 1;
+        inverse = false;
     }
 
     public CylinderAttributes(CylinderAttributes obj)
@@ -108,6 +110,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         point2[2] = obj.point2[2];
 
         radius = obj.radius;
+        inverse = obj.inverse;
 
         SelectAll();
     }
@@ -139,7 +142,8 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         // Create the return value
         return (point1_equal &&
                 point2_equal &&
-                (radius == obj.radius));
+                (radius == obj.radius) &&
+                (inverse == obj.inverse));
     }
 
     public String GetName() { return "Cylinder"; }
@@ -184,10 +188,17 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         Select(2);
     }
 
+    public void SetInverse(boolean inverse_)
+    {
+        inverse = inverse_;
+        Select(3);
+    }
+
     // Property getting methods
     public double[] GetPoint1() { return point1; }
     public double[] GetPoint2() { return point2; }
     public double   GetRadius() { return radius; }
+    public boolean  GetInverse() { return inverse; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -198,6 +209,8 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
             buf.WriteDoubleArray(point2);
         if(WriteSelect(2, buf))
             buf.WriteDouble(radius);
+        if(WriteSelect(3, buf))
+            buf.WriteBool(inverse);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -213,6 +226,9 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         case 2:
             SetRadius(buf.ReadDouble());
             break;
+        case 3:
+            SetInverse(buf.ReadBool());
+            break;
         }
     }
 
@@ -222,6 +238,7 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
         str = str + doubleArrayToString("point1", point1, indent) + "\n";
         str = str + doubleArrayToString("point2", point2, indent) + "\n";
         str = str + doubleToString("radius", radius, indent) + "\n";
+        str = str + boolToString("inverse", inverse, indent) + "\n";
         return str;
     }
 
@@ -230,5 +247,6 @@ public class CylinderAttributes extends AttributeSubject implements Plugin
     private double[] point1;
     private double[] point2;
     private double   radius;
+    private boolean  inverse;
 }
 

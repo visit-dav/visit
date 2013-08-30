@@ -89,10 +89,12 @@ class QvisCylinderWindow : public QvisOperatorWindow
     void point1ProcessText();
     void point2ProcessText();
     void radiusProcessText();
+    void inverseChanged(bool val);
   private:
     QLineEdit *point1;
     QLineEdit *point2;
     QLineEdit *radius;
+    QCheckBox *inverse;
     QLabel *point1Label;
     QLabel *point2Label;
     QLabel *radiusLabel;

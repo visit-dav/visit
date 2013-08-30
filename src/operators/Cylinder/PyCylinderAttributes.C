@@ -110,6 +110,11 @@ PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix
     }
     SNPRINTF(tmpStr, 1000, "%sradius = %g\n", prefix, atts->GetRadius());
     str += tmpStr;
+    if(atts->GetInverse())
+        SNPRINTF(tmpStr, 1000, "%sinverse = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sinverse = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -254,6 +259,30 @@ CylinderAttributes_GetRadius(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+CylinderAttributes_SetInverse(PyObject *self, PyObject *args)
+{
+    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the inverse in the object.
+    obj->data->SetInverse(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CylinderAttributes_GetInverse(PyObject *self, PyObject *args)
+{
+    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetInverse()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH] = {
@@ -264,6 +293,8 @@ PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH] = {
     {"GetPoint2", CylinderAttributes_GetPoint2, METH_VARARGS},
     {"SetRadius", CylinderAttributes_SetRadius, METH_VARARGS},
     {"GetRadius", CylinderAttributes_GetRadius, METH_VARARGS},
+    {"SetInverse", CylinderAttributes_SetInverse, METH_VARARGS},
+    {"GetInverse", CylinderAttributes_GetInverse, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -298,6 +329,8 @@ PyCylinderAttributes_getattr(PyObject *self, char *name)
         return CylinderAttributes_GetPoint2(self, NULL);
     if(strcmp(name, "radius") == 0)
         return CylinderAttributes_GetRadius(self, NULL);
+    if(strcmp(name, "inverse") == 0)
+        return CylinderAttributes_GetInverse(self, NULL);
 
     return Py_FindMethod(PyCylinderAttributes_methods, self, name);
 }
@@ -318,6 +351,8 @@ PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CylinderAttributes_SetPoint2(self, tuple);
     else if(strcmp(name, "radius") == 0)
         obj = CylinderAttributes_SetRadius(self, tuple);
+    else if(strcmp(name, "inverse") == 0)
+        obj = CylinderAttributes_SetInverse(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
