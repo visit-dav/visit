@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:22:08 PST 2010
 #   Add folder property.
 #
+#   Kathleen Biagas, Tue Sep 3,  2013
+#   Ensure GLEW links against opengl on Windows.
+#
 #****************************************************************************/
 
 SET(GLEW_SOURCES glew/src/glew.c)
@@ -51,7 +54,12 @@ ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include
 IF(WIN32)
     ADD_DEFINITIONS("/DGLEW_BUILD")
 ENDIF(WIN32)
+
 ADD_LIBRARY(visitGLEW ${GLEW_SOURCES})
+
+IF(WIN32)
+    TARGET_LINK_LIBRARIES(visitGLEW ${OPENGL_gl_LIBRARY})
+ENDIF(WIN32)
 
 VISIT_INSTALL_TARGETS(visitGLEW)
 SET_TARGET_PROPERTIES(visitGLEW PROPERTIES FOLDER thirdparty_builtin/glew)
