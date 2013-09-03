@@ -880,7 +880,6 @@ for arg in "${arguments[@]}" ; do
         --installation-build-dir) next_arg="installation-build-dir";;
         --write-unified-file) next_arg="write-unified-file";;
         --parallel-build) DO_SUPER_BUILD="yes";;
-        --mangle-libraries) DO_MANGLED_LIBRARIES="yes";;
         --dry-run) VISIT_DRY_RUN=1;;
         --arch) next_arg="arch";;
         --build-mode) next_arg="build-mode";;
