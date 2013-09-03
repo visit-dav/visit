@@ -43,7 +43,7 @@
 #include <float.h>
 #include "avtOpenGL3DTextureVolumeRenderer.h"
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -212,8 +212,10 @@ avtOpenGL3DTextureVolumeRenderer::Render(
 {
     static bool haveIssuedWarning = false;
 
+#ifdef HAVE_LIBGLEW
     if(!(avt::glew::supported("GL_VERSION_1_2") ||
          avt::glew::supported("GL_EXT_texture3D")))
+#endif
     {
         if(!haveIssuedWarning)
         {

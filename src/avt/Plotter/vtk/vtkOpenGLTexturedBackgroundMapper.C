@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 #include "vtkOpenGLTexturedBackgroundMapper.h"
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <vtkCamera.h>
 #include <vtkTexture.h>
 #include <vtkViewport.h>

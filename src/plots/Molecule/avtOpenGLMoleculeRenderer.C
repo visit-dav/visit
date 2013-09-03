@@ -57,7 +57,7 @@
 
 #include "avtOpenGLMoleculeRenderer.h"
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
 #include <avtViewInfo.h>
@@ -65,8 +65,6 @@
 #include <InvalidColortableException.h>
 #include <LightList.h>
 #include <MoleculeAttributes.h>
-
-#include <avtGLEWInitializer.h>
 
 #include "AtomicProperties.h"
 #include <LineAttributes.h>

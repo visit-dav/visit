@@ -39,7 +39,7 @@
 #include <avtOpenGLLabelRenderer.h>
 #include <arial.h>
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 
 #include <vtkCamera.h>
 #include <vtkCellData.h>

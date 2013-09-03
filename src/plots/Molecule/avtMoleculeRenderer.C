@@ -52,7 +52,6 @@
 #include <vtkRenderWindow.h>
 #include <vtkToolkits.h>
 
-#include <avtGLEWInitializer.h>
 #include "avtMoleculeRenderer.h"
 
 #include <avtCallback.h>

@@ -20,7 +20,7 @@
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
 =========================================================================*/
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include "vtkOpenGLRectilinearGridMapper.h"
 
 #include <vtkPoints.h>
@@ -1002,11 +1002,11 @@ vtkOpenGLRectilinearGridMapper::BeginColorTexturing()
     //
 #ifdef HAVE_LIBGLEW
     if(GLEW_EXT_secondary_color)
-#endif
     {
         glEnable(GL_COLOR_SUM_EXT);
         glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
     }
+#endif
 }
 
 
@@ -1042,10 +1042,10 @@ vtkOpenGLRectilinearGridMapper::EndColorTexturing()
     }
 #ifdef HAVE_LIBGLEW
     if(GLEW_EXT_secondary_color)
-#endif
     {
         glDisable(GL_COLOR_SUM_EXT);
     }
+#endif
 }
 
 

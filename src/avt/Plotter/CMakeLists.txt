@@ -48,6 +48,10 @@
 #   Kathleen Biagas, Tue Jul 31 12:08:32 MST 2012
 #   Change CONFIGURE_FILE settings so things work correctly with 
 #   out-of-source builds.
+#
+#   Kathleen Biagas, Tue Sep  3 11:08:03 PDT 2013
+#   Swap avtGLEWInitializer for avtOpenGLExtensionManager.
+#
 #****************************************************************************/
 
 SET(VISIT_VTK_MANTA_SOURCES
@@ -71,7 +75,7 @@ CONFIGURE_FILE(
 )
 
 SET(AVTPLOTTER_OPENGL_SOURCES
-avtGLEWInitializer.C 
+avtOpenGLExtensionManager.C 
 avtOpenGLSurfaceAndWireframeRenderer.C 
 vtk/vtkOpenGLRectilinearGridMapper.C 
 vtk/vtkOpenGLStructuredGridMapper.C 

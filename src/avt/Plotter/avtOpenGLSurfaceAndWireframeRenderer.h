@@ -46,7 +46,7 @@
 #include <plotter_exports.h>
 
 #include <avtSurfaceAndWireframeRenderer.h>
-#include <avtGLEWInitializer.h> // needed for GLenum
+#include <avtOpenGLExtensionManager.h> // needed for GLenum
 #include <vtkType.h>  // for vtkIdType
 
 class vtkCellArray;

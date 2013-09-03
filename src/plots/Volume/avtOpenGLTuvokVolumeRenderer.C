@@ -58,7 +58,7 @@
 #include <tuvok/Renderer/GL/GLFrameCapture.h>
 
 #include <avtCallback.h>
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <avtParallel.h>
 #include <avtViewInfo.h>
 #include <DebugStream.h>
