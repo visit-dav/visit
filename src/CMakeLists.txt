@@ -840,55 +840,6 @@ MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
                         WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
         )
-        IF(APPLE)
-            FOREACH(target ${ARGN})
-                GET_TARGET_PROPERTY(type ${target} TYPE)
-                IF(${type} STREQUAL "SHARED_LIBRARY")
-                    # This turns out to be a better way to get the
-                    # base filename of the output target.
-                    GET_TARGET_PROPERTY(filename ${target} LOCATION)
-                    GET_FILENAME_COMPONENT(filename ${filename} NAME)
-                    INSTALL(CODE
-                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
-                             OUTPUT_VARIABLE OSXOUT)
-                         MESSAGE(STATUS \"\${OSXOUT}\")
-                        ")
-                ELSEIF(${type} STREQUAL "MODULE_LIBRARY")
-                    # This turns out to be a better way to get the
-                    # base filename of the output target.
-                    GET_TARGET_PROPERTY(filename ${target} LOCATION)
-                    GET_FILENAME_COMPONENT(filename ${filename} NAME)
-                    INSTALL(CODE
-                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                             COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}/${filename}\"
-                             OUTPUT_VARIABLE OSXOUT)
-                         MESSAGE(STATUS \"\${OSXOUT}\")
-                        ")
-                ELSEIF(${type} STREQUAL "EXECUTABLE")
-                    GET_TARGET_PROPERTY(filename ${target} OUTPUT_NAME)
-                    IF(filename STREQUAL "filename-NOTFOUND")
-                        SET(filename ${target})
-                    ENDIF(filename STREQUAL "filename-NOTFOUND")
-                    GET_TARGET_PROPERTY(bundle ${target} MACOSX_BUNDLE)
-                    IF(${bundle} STREQUAL "ON")
-                        INSTALL(CODE
-                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -bundle ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}\" ${filename}
-                                OUTPUT_VARIABLE OSXOUT)
-                             MESSAGE(STATUS \"\${OSXOUT}\")
-                            ")
-                    ELSE(${bundle} STREQUAL "ON")
-                        INSTALL(CODE
-                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}//${dest_dir}${filename}\"
-                                OUTPUT_VARIABLE OSXOUT)
-                             MESSAGE(STATUS \"\${OSXOUT}\")
-                            ")
-                    ENDIF(${bundle} STREQUAL "ON")
-                ENDIF(${type} STREQUAL "SHARED_LIBRARY")
-            ENDFOREACH(target)
-        ENDIF(APPLE)
     ENDIF(VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_TARGETS_RELATIVE)
 
@@ -2181,16 +2132,6 @@ IF(VISIT_MPICH_INSTALL)
                               WORLD_READ             WORLD_EXECUTE
         CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
     )
-    IF(APPLE)
-        FOREACH(filename libmpich.dylib libopa.dylib libmpl.dylib libpmpich.dylib)
-            INSTALL(CODE
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${filename}\"
-                        OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-        ENDFOREACH(filename)
-    ENDIF(APPLE)
 ENDIF(VISIT_MPICH_INSTALL)
 
 #-----------------------------------------------------------------------------
@@ -2517,6 +2458,16 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
+
+#CMake add subdirectory forces this action to go last
+#todo: find way for this function to execute as last
+#step of make install process
+#ADD_CUSTOM_TARGET(osxfixup ALL 
+#     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
+#ADD_DEPENDENCIES(osxfixup install)
+
+#todo: replace add_subdirectory with the lines above
+ADD_SUBDIRECTORY(osxfixup)
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")

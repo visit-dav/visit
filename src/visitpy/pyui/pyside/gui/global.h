@@ -6,7 +6,7 @@
 //#endif
 
 #include <pysidegui.h>
-#include "pyside_global.h"
-#include "QtCore/pyside_qtcore_python.h"
-#include "QtGui/qpytextobject.h"
-#include "QtGui/pyside_qtgui_python.h"
+//#include "pyside_global.h"
+//#include "QtCore/pyside_qtcore_python.h"
+//#include "QtGui/qpytextobject.h"
+//#include "QtGui/pyside_qtgui_python.h"

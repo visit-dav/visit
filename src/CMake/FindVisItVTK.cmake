@@ -259,27 +259,6 @@ IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
                 DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 PATTERN ".svn" EXCLUDE
             )
-
-        #
-        # On OSX we need to patch the lib names in the vtk python wrappers.
-        #
-        # Obtain a list of all '.so' libs from the module source directory and
-        # use these names to create an install rule that executes 'osxfixup'.
-        # Yes - VTK generates '.so's here instead of 'dylib's ...
-        #
-        IF(APPLE)
-            FILE(GLOB vtkpylibs ${VTK_PY_MODULE}/*so)
-            FOREACH(vtkpylib ${vtkpylibs})
-                GET_FILENAME_COMPONENT(libname ${vtkpylib} NAME)
-                INSTALL(CODE
-                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH}
-                        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/site-packages/vtk/${libname}\"
-                        OUTPUT_VARIABLE OSXOUT)
-                        MESSAGE(STATUS \"\${OSXOUT}\")
-                        ")
-            ENDFOREACH(vtkpylib ${vtkpylibs})
-        ENDIF(APPLE)
     ENDIF(VISIT_VTK_SKIP_INSTALL)
 
     SET(VTK_PYTHON_WRAPPERS_FOUND TRUE)

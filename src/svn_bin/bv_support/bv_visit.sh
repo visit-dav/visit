@@ -305,44 +305,6 @@ function build_visit
         fi
     fi
     
-    if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-        mangle_libraries "$VISIT_DIR" "mangled_$VISIT_DIR"
-    
-        if [[ $? == 0 ]]; then
-            #TODO: fix and remove this
-            #modify cmake to find library
-            cd "mangled_$VISIT_DIR"
-            mangle_file "$CMAKE_ROOT"/Modules/FindVTK.cmake CMake/FindMTK.cmake
-patch -f -p0 <<\EOF
-*** CMake/FindVisItMTK_tmp.cmake    2012-02-29 18:56:18.770322939 -0800
---- CMake/FindVisItMTK.cmake    2012-02-29 19:11:10.950323153 -0800
-***************
-*** 72,78 ****
-  SET(MTK_DIR ${VISIT_MTK_DIR}/lib)
-  
-  MESSAGE(STATUS "Checking for MTK in ${MTK_DIR}")
-! INCLUDE(${CMAKE_ROOT}/Modules/FindMTK.cmake)
-  
-  # Set the VisIt mangled mesa off of the MTK mangled mesa variable.
-  IF("${MTK_USE_MANGLED_MESA}" STREQUAL "ON")
---- 72,78 ----
-  SET(MTK_DIR ${VISIT_MTK_DIR}/lib)
-  
-  MESSAGE(STATUS "Checking for MTK in ${MTK_DIR}")
-! INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMTK.cmake)
-  
-  # Set the VisIt mangled mesa off of the MTK mangled mesa variable.
-  IF("${MTK_USE_MANGLED_MESA}" STREQUAL "ON")
-EOF
-            cd ..
-            [[ $VISIT_DIR != "src" ]] && cd ..
-            cp -R $VISIT_DIR/bin/shaders "mangled_${VISIT_DIR}/bin/shaders"
-            VISIT_DIR="mangled_$VISIT_DIR"
-        else
-            error "Mangling VisIt failed"
-            exit 0
-        fi
-    fi
     cd $VISIT_DIR
     #cp $START_DIR/$(hostname).cmake config-site
 
