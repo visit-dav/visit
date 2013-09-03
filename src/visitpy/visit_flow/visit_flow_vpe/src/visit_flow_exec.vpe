@@ -1,0 +1,148 @@
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2012, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#*****************************************************************************
+"""
+ file: visit_flow_exec.vpe
+ author: Cyrus Harrison <cyrush@llnl.gov>
+ created:  12/09/2011
+ description:
+    VisIt Python Expression that executes a flow workspace.
+
+"""
+
+import numpy as npy
+# used to convert between vtk & numpy
+import vtk.util.numpy_support as vnp
+
+from flow import *
+from flow.filters import *
+from visit_flow_vpe import vpe_timing_info
+import hotshot
+from hotshot import stats
+
+class FlowExecExpr(SimplePythonExpression):
+    def __init__(self):
+        SimplePythonExpression.__init__(self)
+        self.name = "FlowExecExpr"
+        self.output_is_point_var = False
+        self.output_dimension = 1
+        self.profile = False
+    def modify_contract(self,contract):
+        # request ghost zones
+        dreq = contract.GetDataRequest()
+        dreq.SetDesiredGhostDataType("GHOST_ZONE_DATA")
+    def derive_variable(self,ds_in,domain_id):
+        if self.profile:
+            prof   = hotshot.Profile("hotshot_vpe_exec")
+            prof.start()
+        wtot   = WallTimer("derive_variable")
+        fsetup = WallTimer("setup_exe")
+        tvtk   = WallTimer("vtk_setup")
+        fexec  = WallTimer("exe_main")
+        wtot.start()
+        fsetup.start()
+        # get workspace
+        wstype = self.arguments[0]
+        wsexpr = self.arguments[1]
+        plat   = int(self.arguments[2])
+        dev    = int(self.arguments[3])
+        if mpicom.parallel():
+            dev = mpicom.rank() % 2
+        ctx = None
+        if wstype == "src":
+            w = Workspace.load_workspace_script(src=self.arguments[1])
+            if w.has_context("root"):
+                ctx = w.get_context("root")
+        else:
+            w = Workspace()
+            w.register_filters(module(wstype))
+            ctx = w.add_context(wstype,"root")
+            ctx.start(plat,dev)
+            w.setup_expression_network(wsexpr,ctx)
+        fsetup.stop()
+        tvtk.start()
+        # construct output array
+        ncells = ds_in.GetNumberOfCells()
+        dims = npy.array(ds_in.GetDimensions(),dtype=npy.int32)
+        w.registry_add(":dims",dims)
+        res = vtk.vtkFloatArray()
+        res.SetNumberOfComponents(1)
+        res.SetNumberOfTuples(ncells)
+        out = vnp.vtk_to_numpy(res)
+        # get input arrays & bind data into workspace
+        for var in self.input_var_names:
+            vdata = ds_in.GetCellData().GetArray(var)
+            if vdata is None:
+                vdata = ds_in.GetPointData().GetArray(var)
+            if vdata is None:
+                raise Exception("flow_vpe error: could not fetch %s" % var)
+            vdata = vnp.vtk_to_numpy(vdata)
+            w.registry_add(":" + var,vdata)
+        tvtk.stop()
+        fexec.start()
+        # exec filter graph (returns last registry entry obj)
+        if w.has_context("root"):
+            ctx.set_output_shape((ncells,))
+        r = w.execute()
+        # check the active context to see if
+        # are using pyocl_{ops,batch,compile}
+        if w.has_context("root"):
+            if ctx.context_type.count("compile") > 0:
+                r = ctx.run()
+            elif ctx.context_type.count("batch") > 0:
+                r = r.read()
+            pyocl_env.Manager.queue().finish()
+        # set result (results in a numpy data copy)
+        out[:] = r
+        fexec.stop()
+        wtot.stop()
+        if self.profile:
+            prof.close()
+        if w.has_context("root"):
+            txt, ttag = ctx.events_summary()
+            tsummary = vpe_timing_info(ttag,[fsetup, tvtk, fexec],wtot)
+            if mpicom.parallel():
+                ofile = open("rank_%d_flow_vpe_out.txt" % mpicom.rank(),"w")
+                ofile.write(txt)
+                ofile.write(tsummary)
+                ofile.close()
+            else:
+                print txt
+                print tsummary
+        return res
+
+
+py_filter = FlowExecExpr
