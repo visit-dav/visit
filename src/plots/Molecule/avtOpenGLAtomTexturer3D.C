@@ -37,13 +37,12 @@
 *****************************************************************************/
 
 #include "avtOpenGLAtomTexturer3D.h"
+#include <avtOpenGLExtensionManager.h>
 #include <vtkConfigure.h>
 #include <cstring>
 #include <math.h>
 
-#include <vtkConfigure.h>
 
-#include <avtGLEWInitializer.h>
 #include <DebugStream.h>
 
 //////////////////////////////////////////////////////////////////////////////

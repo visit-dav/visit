@@ -41,6 +41,7 @@
 // ************************************************************************* //
 
 #include <avtGLSLProgram.h>
+#include <avtOpenGLExtensionManager.h>
 #include <DebugStream.h>
 
 #include <cstring>

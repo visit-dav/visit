@@ -37,62 +37,41 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtGLSLProgram.h                        //
+//                  avtOpenGLExtensionManager.h                              //
 // ************************************************************************* //
+#ifndef AVT_OPENGL_EXTENSION_MANAGER_H
+#define AVT_OPENGL_EXTENSION_MANAGER_H
+#include <plotter_exports.h>
 
-#ifndef AVT_GLSL_PROGRAM_H
-#define AVT_GLSL_PROGRAM_H
+#ifdef HAVE_LIBGLEW
+// We don't need it in this header, but include GLEW here for ease of use.
+// GLEW must be included before any OpenGL headers, and if clients want this
+// file then *not* including GLEW wouldn't make any sense!
+#include <GL/glew.h>
+#else
+// We're not using GLEW for OpenGL. Use straight OpenGL.
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#endif
 
-#include <avtCustomRenderer.h>
-#include <StreamlineAttributes.h>
+namespace avt {
+namespace glew {
+    // ****************************************************************************
+    //  Function: visit::glew::initialize
+    //
+    //  Purpose: Initializes GLEW using GL library from RuntimeSetting.
+    //           Maintains state to avoid duplicate initialization.
+    //
+    //  Arguments:
+    //    force : force initialization even if we've previously initialized.
+    //            Needed if, for example, contexts change behind our back.
+    //
+    //  Programmer: Tom Fogal
+    //
+    // ****************************************************************************
+    bool PLOTTER_API initialize(bool force=false);
 
-class vtkDataArray;
-class avtLookupTable;
-class avtGLSLProgramImplementation;
-
-// ****************************************************************************
-//  Class: avtGLSLProgram
-//
-//  Purpose:
-//
-//
-//  Programmer: Dave Pugmire
-//  Creation:   December 29, 2009
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-#include <avtOpenGLExtensionManager.h>
-#include <vector>
-#include <string>
-
-class avtGLSLProgram
-{
-public:
-
-    avtGLSLProgram( const std::string& name );
-    virtual ~avtGLSLProgram();
-    
-    void AttachShaderFromString( GLenum type, const std::string& source );
-    
-    bool Enable();
-    void Disable();
-
-    bool Create();
-    void Destroy();
-
-    bool IsSupported();
-
-protected:
-
-    typedef std::pair<GLenum,std::string> Shader;
-    
-    std::string         name;
-    GLuint              program;
-    GLint               previous;
-    std::vector<Shader> shaders;
-    int                 supported;
+    bool PLOTTER_API supported(const char *);
 };
-
+};
 #endif

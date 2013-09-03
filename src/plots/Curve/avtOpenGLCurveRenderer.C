@@ -50,7 +50,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 
 // ****************************************************************************
 // Method: avtOpenGLCurveRenderer::avtOpenGLCurveRenderer

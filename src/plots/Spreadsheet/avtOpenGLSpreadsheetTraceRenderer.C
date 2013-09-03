@@ -39,7 +39,7 @@
 
 #include <float.h>
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>

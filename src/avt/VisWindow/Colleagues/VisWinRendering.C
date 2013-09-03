@@ -58,7 +58,7 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <avtCallback.h>
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <avtSourceFromImage.h>
 
 #include <ImproperUseException.h>

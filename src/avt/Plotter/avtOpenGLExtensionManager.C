@@ -37,41 +37,79 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            GLEWInitializer.h                              //
+//                   avtOpenGLExtensionManager.C                             //
 // ************************************************************************* //
-#ifndef VISIT_GLEW_INITIALIZER_H
-#define VISIT_GLEW_INITIALIZER_H
-#include <plotter_exports.h>
 
+#include "avtOpenGLExtensionManager.h"
+
+#include <iostream>
+using namespace std;
+
+namespace avt { namespace glew {
+
+// Won't call init again if true.
+static bool initialized = false;
+
+// ****************************************************************************
+//  Function: avt::glew::initialize
+//
+//  Purpose: Initializes GLEW using GL library from RuntimeSetting.
+//           Maintains state to avoid duplicate initialization.
+//
+//  Arguments:
+//    force : force initialization even if we've previously initialized.
+//            Needed if, for example, contexts change behind our back.
+//
+//  Programmer: Tom Fogal
+//
+//  Modifications:
+//
+//    Tom Fogal, Tue Nov 24 10:48:00 MST 2009
+//    Update for GLEW API change.
+//
+//    Tom Fogal, Tue Dec  8 14:07:38 MST 2009
+//    Allow colon-separated list of libraries, trying them in sequence until
+//    one works.
+//
+//    Tom Fogal, Mon Feb  8 12:52:06 MST 2010
+//    Change separator to ";" to be more windows-friendly.
+//
+//    Kathleen Bonnell, Tue Feb 16 13:37:52 MST 2010
+//    Don't use mesa on windows.
+//
+//    Brad Whitlock, Fri Oct 21 13:08:02 PDT 2011
+//    Make it work with static linking.
+//
+//    Eric Brugger, Wed Feb 22 10:19:22 PST 2012
+//    I added support for building without mesa.
+//
+// ****************************************************************************
+
+bool initialize(bool force)
+{
 #ifdef HAVE_LIBGLEW
-// We don't need it in this header, but include GLEW here for ease of use.
-// GLEW must be included before any OpenGL headers, and if clients want this
-// file then *not* including GLEW wouldn't make any sense!
-#include <GL/glew.h>
+    if(initialized && !force) // Bail early if we've already been here.
+    {
+        return true;
+    }
+    GLenum err = glewInit();
+    if (GLEW_OK == err)
+        initialized = true;
+    else
+        cerr << "GLEW initialization failed: " << glewGetErrorString(err) << endl;
+
+#endif
+    return initialized;
+}
+
+bool
+supported(const char *key)
+{
+#ifdef HAVE_LIBGLEW
+    return glewIsSupported(key);
 #else
-// We're not using GLEW for OpenGL. Use straight OpenGL.
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
+    return true;
 #endif
+}
 
-namespace avt {
-namespace glew {
-    // ****************************************************************************
-    //  Function: visit::glew::initialize
-    //
-    //  Purpose: Initializes GLEW using GL library from RuntimeSetting.
-    //           Maintains state to avoid duplicate initialization.
-    //
-    //  Arguments:
-    //    force : force initialization even if we've previously initialized.
-    //            Needed if, for example, contexts change behind our back.
-    //
-    //  Programmer: Tom Fogal
-    //
-    // ****************************************************************************
-    bool PLOTTER_API initialize(bool force=false);
-
-    bool PLOTTER_API supported(const char *);
-};
-};
-#endif
+}; /* glew */ }; /* avt */

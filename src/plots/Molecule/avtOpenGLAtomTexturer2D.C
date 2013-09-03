@@ -49,15 +49,7 @@
 //
 
 #include <visit-config.h>
-#include <avtGLEWInitializer.h>
-#if defined(__APPLE__)
-  #include <OpenGL/gl.h>
-#else
-  #if defined(_WIN32)
-     #include <windows.h>
-  #endif
-  #include <GL/gl.h>
-#endif
+#include <avtOpenGLExtensionManager.h>
 
 #define SPHERE_TEX_W 256
 #define SPHERE_TEX_H 256

@@ -42,7 +42,6 @@
 
 #include <vtkToolkits.h>
 
-#include <avtGLEWInitializer.h>
 
 #include <avtCurvePlot.h>
 #include <avtOpenGLCurveRenderer.h>

@@ -42,7 +42,7 @@
 
 #include "avtOpenGLSurfaceAndWireframeRenderer.h"
 
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>

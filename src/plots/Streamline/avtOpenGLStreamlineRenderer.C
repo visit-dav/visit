@@ -64,7 +64,7 @@
 #include <ImproperUseException.h>
 #include <LineAttributes.h>
 #include <avtLookupTable.h>
-#include <avtGLEWInitializer.h>
+#include <avtOpenGLExtensionManager.h>
 #include <avtGLSLProgram.h>
 #include <vtkCamera.h>
 #include <vtkStripper.h>

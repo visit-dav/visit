@@ -353,6 +353,9 @@
 #    Eric Brugger, Thu May  9 17:09:27 PDT 2013
 #    Removed support for mangled mesa.
 #
+#    Kathleen Biagas, Tue Sep  3 11:06:51 PDT 2013
+#    Turn off SLIVR if we aren't using GLEW.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)
@@ -1132,6 +1135,7 @@ IF(VISIT_USE_GLEW)
 ELSE(VISIT_USE_GLEW)
     # We're not using GLEW but we need to substitute GL
     SET(GLEW_INCLUDE_DIR ${OPENGL_INCLUDE_DIR})
+    VISIT_OPTION_DEFAULT(VISIT_SLIVR false TYPE BOOL)
 ENDIF(VISIT_USE_GLEW)
 
 # Set up the tuvok library if it was enabled.

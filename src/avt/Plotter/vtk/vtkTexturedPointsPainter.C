@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-#include <avtGLEWInitializer.h>  // Make sure GLEW gets included first.
+#include <avtOpenGLExtensionManager.h>  // Make sure GLEW gets included first.
 #include "vtkTexturedPointsPainter.h"
 
 #include <vtkObjectFactory.h>
