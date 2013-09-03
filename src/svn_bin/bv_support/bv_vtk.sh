@@ -97,11 +97,7 @@ function bv_vtk_host_profile
     if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
     else
-        if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_MTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
-        else
             echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/$VTK_VERSION/\${VISITARCH})" >> $HOSTCONF
-        fi
     fi
 }
 
@@ -110,9 +106,6 @@ function bv_vtk_initialize_vars
     info "initalizing vtk vars"
     if [[ $DO_R == "yes" ]]; then
         VTK_INSTALL_DIR="vtk-r"
-    fi
-    if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
-        VTK_INSTALL_DIR="mangled-$VTK_INSTALL_DIR"
     fi
 }
 
@@ -272,15 +265,7 @@ EOF
 
         # first change the libraries name and identification by executing the
         # following bourne shell script
-        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-            #remove python since mangle vtk libraries does not support python (yet:TODO:Fix this)
-            # Change "vtk" to "mtk"
-            sed "/s/libvtk/libmtk/g" vtklibnames.txt > mtklibnames.txt
-            VTK_LIB_NAMES="`cat mtklibnames.txt`"
-            rm -f mtklibnames.txt
-        else
-            VTK_LIB_NAMES="`cat vtklibnames.txt`"
-        fi
+        VTK_LIB_NAMES="`cat vtklibnames.txt`"
         rm -f vtklibnames.txt
         for i in $VTK_LIB_NAMES
         do
@@ -301,15 +286,9 @@ EOF
                     $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/${i}-${VTK_COMPATIBILITY_VERSION}.$SO_EXT
             done
 
-#        if [[ "$DO_MANGLED_LIBRARIES" == "yes" ]]; then
-#            install_name_tool -change \
-#                libmtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libmtkNetCDF_cxx.dylib \
-#                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-#        else
 #            install_name_tool -change \
 #                libvtkNetCDF_cxx.dylib $INSTALLNAMEPATH/libvtkNetCDF_cxx.dylib \
 #                $VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}/lib/$i.$SO_EXT
-#        fi
 #        if [[ "$DO_R" == "yes" ]]; then
 #            install_name_tool -change \
 #                libR.dylib $VISITDIR/R/${R_VERSION}/${VISITARCH}/lib/R/lib/libR.dylib \
@@ -458,17 +437,6 @@ function build_vtk
     fi
 
     info "Configuring VTK . . ."
-    VTK_PREFIX="VTK"
-    if [[ $DO_MANGLED_LIBRARIES == "yes" ]]; then
-        mangle_libraries $VTK_BUILD_DIR "mangled_$VTK_BUILD_DIR"
-        if [[ $? == 0 ]]; then
-            VTK_BUILD_DIR="mangled_$VTK_BUILD_DIR"
-            VTK_PREFIX="MTK" #TODO: Change this to look up a variable..
-        else
-            warn "VTK Mangling failed"
-            exit 0
-        fi
-    fi
 
     # Make a build directory for an out-of-source build.. Change the
     # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
@@ -529,7 +497,7 @@ function build_vtk
     else
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    vopts="${vopts} -D${VTK_PREFIX}_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
+    vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
     vopts="${vopts} -DBUILD_TESTING:BOOL=false"
     vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
@@ -540,20 +508,20 @@ function build_vtk
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
     if test "${OPSYS}" = "Darwin" ; then
-        vopts="${vopts} -D${VTK_PREFIX}_USE_COCOA:BOOL=ON"
+        vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
     fi
 
     # allow VisIt to override any of vtk's classes
-    vopts="${vopts} -D${VTK_PREFIX}_ALL_NEW_OBJECT_FACTORY:BOOL=true"
+    vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
 
     # Turn off module groups
-    vopts="${vopts} -D${VTK_PREFIX}_Group_Imaging:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_MPI:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_Qt:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_Rendering:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_StandAlone:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_Tk:BOOL=false"
-    vopts="${vopts} -D${VTK_PREFIX}_Group_Views:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
+    vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Qt:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Rendering:BOOL=false"
+    vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Views:BOOL=false"
 
     # Turn on individual modules. dependent modules are turned on automatically
     vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
@@ -592,7 +560,7 @@ function build_vtk
             pyinc="${PYTHON_INCLUDE_DIR}"
             pylib="${PYTHON_LIBRARY}"
 
-            vopts="${vopts} -D${VTK_PREFIX}_WRAP_PYTHON:BOOL=true"
+            vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
             vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
@@ -607,7 +575,7 @@ function build_vtk
     if test "$DO_R" = "yes" ; then
         vopts="${vopts} -DModule_vtkFiltersStatisticsGnuR:BOOL=true"
         vopts="${vopts} -DR_COMMAND:PATH=${R_INSTALL_DIR}/bin/R"
-        vopts="${vopts} -D${VTK_PREFIX}_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
+        vopts="${vopts} -DVTK_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
         vopts="${vopts} -DR_INCLUDE_DIR:PATH=${R_INSTALL_DIR}/lib/R/include"
         vopts="${vopts} -DR_LIBRARY_BASE:PATH=${R_INSTALL_DIR}/lib/R/lib/libR.${SO_EXT}"
         vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=${R_INSTALL_DIR}/lib/R/lib/libRlapack.${SO_EXT}"
@@ -629,7 +597,7 @@ function build_vtk
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "${CMAKE_BIN}" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
 

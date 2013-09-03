@@ -90,17 +90,6 @@ MACRO(VISIT_INSTALL_PLUGINS type)
                 ENDIF()
             ENDFOREACH(target)
         ENDIF(NOT WIN32)
-        IF(APPLE)
-            FOREACH(target ${ARGN})
-                SET(filename lib${target}.dylib)
-                INSTALL(CODE 
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                         COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_PLUGINS}/${type}/${filename}\"
-                         OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ENDFOREACH(target)
-        ENDIF(APPLE)
     ENDIF(NOT VISIT_STATIC)
 ENDMACRO(VISIT_INSTALL_PLUGINS)
 

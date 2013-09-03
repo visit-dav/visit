@@ -206,34 +206,12 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                             )
-
-                            # On Apple, we need to make the framework be executable relative
-                            GET_FILENAME_COMPONENT(frameworkNameWE ${curNAMEWithExt} NAME_WE)
-                            GET_FILENAME_COMPONENT(realFramework ${curNAMEWithExt}/${frameworkNameWE} REALPATH)
-                            STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
-                            INSTALL(CODE 
-                                "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                    COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
-                                    OUTPUT_VARIABLE OSXOUT)
-                                 MESSAGE(STATUS \"\${OSXOUT}\")
-                                ")
                         ELSE(IS_DIRECTORY ${curNAMEWithExt})
                             INSTALL(FILES ${curNAMEWithExt}
                                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                                 CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                             )
-
-                            # On Apple, we need to make the library be executable relative.
-                            IF(APPLE)
-                                GET_FILENAME_COMPONENT(libName ${curNAMEWithExt} NAME)
-                                INSTALL(CODE 
-                                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
-                                        OUTPUT_VARIABLE OSXOUT)
-                                     MESSAGE(STATUS \"\${OSXOUT}\")
-                                    ")
-                            ENDIF(APPLE)
                         ENDIF(IS_DIRECTORY ${curNAMEWithExt})
                     ENDIF(EXISTS ${curNAMEWithExt})
                 ENDFOREACH(curNAMEWithExt)
@@ -252,17 +230,6 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                         CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                         PATTERN "Qt*_debug" EXCLUDE # Exclude Qt*_debug libraries in framework.
                     )
-
-                    # On Apple, we need to make the framework be executable relative
-                    GET_FILENAME_COMPONENT(frameworkNameWE ${tmpLIBFILE} NAME_WE)
-                    GET_FILENAME_COMPONENT(realFramework ${tmpLIBFILE}/${frameworkNameWE} REALPATH)
-                    STRING(REGEX MATCH "${frameworkNameWE}[A-Za-z0-9._/-]*" frameworkMatch ${realFramework})
-                    INSTALL(CODE 
-                        "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                            COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${frameworkMatch}\"
-                            OUTPUT_VARIABLE OSXOUT)
-                         MESSAGE(STATUS \"\${OSXOUT}\")
-                        ")
                 ELSE(IS_DIRECTORY ${tmpLIBFILE})
                     # Create an install target for just the library file
                     INSTALL(FILES ${tmpLIBFILE}
@@ -270,17 +237,6 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                         CONFIGURATIONS "";None;Debug;Release;RelWithDebInfo;MinSizeRel
                     )
-    
-                    # On Apple, we need to make the library be executable relative.
-                    IF(APPLE)
-                        GET_FILENAME_COMPONENT(libName ${tmpLIBFILE} NAME)
-                        INSTALL(CODE 
-                            "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                                COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -lib ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libName}\"
-                                OUTPUT_VARIABLE OSXOUT)
-                             MESSAGE(STATUS \"\${OSXOUT}\")
-                            ")
-                    ENDIF(APPLE)
                 ENDIF(IS_DIRECTORY ${tmpLIBFILE})
 #            MESSAGE("**We need to install lib ${tmpLIBFILE}")
             ENDIF((NOT ${curPATH} STREQUAL "/usr/lib") AND (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
@@ -340,15 +296,6 @@ FUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE)
                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
                            WORLD_READ WORLD_EXECUTE
             )
-            IF(APPLE)
-                GET_FILENAME_COMPONENT(pname ${exe}  NAME)
-                INSTALL(CODE
-                    "EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
-                        COMMAND /bin/sh ${VISIT_SOURCE_DIR}/CMake/osxfixup -exe ${VISIT_MPICH_INSTALL} ${VISIT_OSX_USE_RPATH} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_BIN}/${pname}\"
-                        OUTPUT_VARIABLE OSXOUT)
-                     MESSAGE(STATUS \"\${OSXOUT}\")
-                    ")
-            ENDIF(APPLE)
         ENDIF(EXISTS ${exe})
     ENDFOREACH(exe ${ARGN})
 ENDFUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE exes)
