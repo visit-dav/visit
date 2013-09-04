@@ -2495,7 +2495,7 @@ def PickTensors():
 
 def PickMili():
     #'7144
-    OpenDatabase(data_path("mili_test_data/m_plot.plt.mili"))
+    OpenDatabase(data_path("mili_test_data/m_plot.mili"))
 
     AddPlot("Pseudocolor", "derived/nodpos/x")
     AddOperator("Threshold")
