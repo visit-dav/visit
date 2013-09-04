@@ -41,6 +41,9 @@
 #   Kathleen Biagas, Tue Sep 3,  2013
 #   Ensure GLEW links against opengl on Windows.
 #
+#   Kathleen Biagas, Wed Sep  4 14:41:39 PDT 2013
+#   Ensure GLEW links against opengl everywhere.
+#
 #****************************************************************************/
 
 SET(GLEW_SOURCES glew/src/glew.c)
@@ -57,9 +60,7 @@ ENDIF(WIN32)
 
 ADD_LIBRARY(visitGLEW ${GLEW_SOURCES})
 
-IF(WIN32)
-    TARGET_LINK_LIBRARIES(visitGLEW ${OPENGL_gl_LIBRARY})
-ENDIF(WIN32)
+TARGET_LINK_LIBRARIES(visitGLEW ${OPENGL_gl_LIBRARY})
 
 VISIT_INSTALL_TARGETS(visitGLEW)
 SET_TARGET_PROPERTIES(visitGLEW PROPERTIES FOLDER thirdparty_builtin/glew)
