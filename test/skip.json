@@ -38,8 +38,8 @@
                     {"category":"unit","file":"launcher.py","platform":"win"},
                     {"category":"unit","file":"mrucache.py","platform":"win"},
                     {"category":"unit","file":"namescheme.py","platform":"win"},
-                    {"category":"unit","file":"stringhelpers.py","platform":"win"}
-                    {"category":"plots","file":"pics.py","platform":"win"}
+                    {"category":"unit","file":"stringhelpers.py","platform":"win"},
+                    {"category":"plots","file":"pics.py","platform":"win"},
                     {"category":"plots","file":"pathlines.py","platform":"win"}
                   ]},
  {"mode":"parallel","tests":[
