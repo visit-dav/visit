@@ -45,7 +45,7 @@
 #
 # ----------------------------------------------------------------------------
 
-import os, string, sys, time
+import os, string, sys, time, shutil
 
 def GetTruncatedWindowInformationString():
     # Get the window information and convert it to a string.
@@ -155,7 +155,10 @@ def CreateMTFile(prefix, makeVisItFile, percent):
                 print >>sys.stderr, "Error: %s didn't exist" % fileFrom
             try:
                 # Copy a file from the data directory to the current directory.
-                os.link(fileFrom, fileTo)
+                if not sys.platform.startswith("win"):
+                    os.link(fileFrom, fileTo)
+                else:
+                    shutil.copyfile(fileFrom, fileTo)
             except OSError:
                 print >>sys.stderr, "Don't need to copy %s" % file
         db = prefix + "wave*.silo database"
@@ -363,7 +366,10 @@ def test4(testIndex):
 
     # Copy curv2d to the current directory.
     db = "test4.silo"
-    os.link(silo_data_path("curv2d.silo") , db)
+    if not sys.platform.startswith("win"):
+        os.link(silo_data_path("curv2d.silo") , db)
+    else: 
+        shutil.copyfile(silo_data_path("curv2d.silo") , db)
 
     # Open up the file and create a plot.
     OpenDatabase(db)
@@ -372,15 +378,28 @@ def test4(testIndex):
     Test("reopen_%02d" % testIndex)
 
     # Delete the file
-    os.unlink(db)
-    os.link(silo_data_path("rect2d.silo") , db)
+    try:
+        os.unlink(db)
+    except:
+        # Ignore any exceptions
+        pass
+
+    if not sys.platform.startswith("win"):
+        os.link(silo_data_path("rect2d.silo") , db)
+    else: 
+        shutil.copyfile(silo_data_path("curv2d.silo") , db)
+
     ReOpenDatabase(db)
     ResetView()
     Test("reopen_%02d" % (testIndex + 1))
 
     DeleteAllPlots()
     # Delete the file
-    os.unlink(db)
+    try:
+        os.unlink(db)
+    except:
+        # Ignore any exceptions
+        pass
 
     return testIndex + 2
 
@@ -488,7 +507,10 @@ def test7(testIndex):
     TestSection("Testing reopen on a deleted file")
     # Link a file from the data directory to the current directory.
     db = "reopen_globe.silo"
-    os.link(silo_data_path("globe.silo") , db)
+    if not sys.platform.startswith("win"):
+        os.link(silo_data_path("globe.silo") , db)
+    else:
+        shutil.copyfile(silo_data_path("globe.silo") , db)
 
     OpenDatabase(db)
     AddPlot("Pseudocolor", "t")
