@@ -77,7 +77,21 @@
                     {"category":"session","file":"legendproperties.py","cases":["legendproperties00","legendproperties01"]},
                     {"category":"queries","file": "pick.py","cases":"PickAfterEngineCrash"},
                     {"category":"queries","file": "revolved_surface_area.py"},
-                    {"category":"queries","file":"conncomp.py"}
+                    {"category":"queries","file":"conncomp.py"},
+                    {"category":"databases","file":"silo.py","platform":"win","cases":["silo_26"]},
+                    {"category":"databases","file":"silo.py","platform":"win","cases":["silo_36"]},
+                    {"category":"databases","file":"silo.py","platform":"win","cases":["silo_37"]},
+                    {"category":"databases","file":"silo.py","platform":"win","cases":["silo_38"]},
+                    {"category":"databases","file":"silo.py","platform":"win","cases":["silo_39"]},
+                    {"category":"databases","file":"reopen.py","platform":"win","cases":["reopen_24"]},
+                    {"category":"databases","file":"reopen.py","platform":"win","cases":["reopen_29"]},
+                    {"category":"databases","file":"reopen.py","platform":"win","cases":["reopen_31"]},
+                    {"category":"databases","file":"reopen.py","platform":"win","cases":["reopen_39"]},
+                    {"category":"databases","file":"reopen.py","platform":"win","cases":["reopen_40"]},
+                    {"category":"databases","file":"oldsilo.py","platform":"win"},
+                    {"category":"databases","file":"rect.py","platform":"win"},
+                    {"category":"databases","file":"itaps.py","platform":"win"},
+                    {"category":"databases","file":"claw.py","platform":"win"}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"plots","file": "sl_termination.py"},
