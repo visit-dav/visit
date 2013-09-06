@@ -139,6 +139,12 @@ class AVTFILTERS_API avtRPOTFilter : virtual public avtDatasetToDatasetFilter,
     void DebugData(int loc, std::string nm);
 
     int daysPerYear, dayCountAtMonthEnd[12];
+
+    int RankForLocation(int loc);
+    std::pair<int,int> LocationsForRank(int rank);
+
+    void ExchangeData();
+    void ExchangeData0();
 };
 
 #endif
