@@ -51,6 +51,7 @@
 #include <UnexpectedValueException.h>
 #include <InvalidFilesException.h>
 #include <math.h>
+#include <TimingsManager.h>
 
 
 // ****************************************************************************
@@ -188,6 +189,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
+    int t0 = visitTimer->StartTimer();
+    
     for (timeLoopIter=0; timeLoopIter<numTimeLoopIterations; ++timeLoopIter)
     {
         debug4 << "Time loop filter updating with iteration # "
@@ -255,7 +258,10 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             avtCallback::ResetTimeout(5*60);
         }
     }
+    
+    visitTimer->StopTimer(t0, "avtTimeLoopFilter Read time slices");
 
+    int t1 = visitTimer->StartTimer();
     //
     // It is possible that execution of some timesteps may have resulted
     // in an error condition.   This may be perfectly valid, so reset
@@ -274,6 +280,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     // Ensure the pipeline is in the same state as when we began.
     //
     GetInput()->Update(spec);
+    visitTimer->StopTimer(t1, "avtTimeLoopFilter CreateFinalOutput");
     
     // 
     // Set the time information to be the time from the input, not from the
