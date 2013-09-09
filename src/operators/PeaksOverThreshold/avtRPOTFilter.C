@@ -787,7 +787,6 @@ avtRPOTFilter::ExchangeData()
                 {
                     float *buff = rBuffs[idx[i]];
                     int nLocs = (int)buff[0];
-                    debug1<<rank<<": Recv "<<num<<" nLocs= "<<nLocs<<" sz= "<<status[i]._count/4;
                     int cnt = 1;
                     for (int j = 0; j < nLocs; j++)
                     {
