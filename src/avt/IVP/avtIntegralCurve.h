@@ -128,6 +128,19 @@ class IVP_API ICStatus
     //Get
     bool OK() const {return CheckBit(STATUS_OK);}
     bool Error() const {return !OK();}
+
+    bool TerminatedOnly() const // i.e. terminated only due the maxSteps
+    {
+      if( Error() ||
+          EncounteredSpatialBoundary() || EncounteredTemporalBoundary() ||
+          ExitedSpatialBoundary() || ExitedTemporalBoundary() ||
+          NumericalError() || BadStepError() )
+        return false;
+      else if( OK() && TerminationMet() )
+        return true;
+      else
+        return false;
+    }
     bool Terminated() const
     {
         return Error() || TerminationMet() ||
@@ -424,7 +437,4 @@ inline std::ostream& operator<<(std::ostream& out,
     return out;
 }
 
-
 #endif //  AVT_INTEGRAL_CURVE_H
-
-

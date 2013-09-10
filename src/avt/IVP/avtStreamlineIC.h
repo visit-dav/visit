@@ -85,6 +85,8 @@ public:
                               avtIVPSolver *solver, SerializeFlags serializeFlags);
     virtual bool    UseFixedTerminationTime(void) { return doTime; };
     virtual double  FixedTerminationTime(void)    { return maxTime; };
+    virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
+    virtual double  FixedTerminationDistance(void)    { return maxDistance; };
 
     bool            TerminatedBecauseOfMaxSteps(void) 
                                  { return terminatedBecauseOfMaxSteps; };

@@ -52,8 +52,9 @@
 #include <avtVector.h>
 #include <algorithm>
 
-const double avtStateRecorderIntegralCurve::epsilon = 100.0*(std::numeric_limits<float>::epsilon() *
-                                                            std::numeric_limits<float>::epsilon());
+const double avtStateRecorderIntegralCurve::epsilon =
+  100.0*(std::numeric_limits<float>::epsilon() *
+         std::numeric_limits<float>::epsilon());
 
 
 // ****************************************************************************
@@ -74,6 +75,7 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
     int ID) :
     avtIntegralCurve(model, dir, t_start, p_start, v_start, ID), historyMask(mask)
 {
+    time = 0.0;
     distance = 0.0;
     sequenceCnt = 0;
     _serializeFlags = SERIALIZE_NO_OPT;
@@ -90,6 +92,7 @@ avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve(
 
 avtStateRecorderIntegralCurve::avtStateRecorderIntegralCurve()
 {
+    time = 0.0;
     distance = 0.0;
     sequenceCnt = 0;
     _serializeFlags = SERIALIZE_NO_OPT;
@@ -143,7 +146,7 @@ void avtStateRecorderIntegralCurve::RecordStep(const avtIVPField* field,
         Sample prevSamp = GetSample(nSamp-1);
         if ((p-prevSamp.position).length2() < epsilon)
         {
-            std::vector<float>::iterator m = history.begin() + (nSamp-1)*GetSampleStride();
+            std::vector<double>::iterator m = history.begin() + (nSamp-1)*GetSampleStride();
             history.erase(m, history.end());
         }
     }
@@ -227,6 +230,8 @@ avtStateRecorderIntegralCurve::AnalyzeStep( avtIVPStep& step,
     // CheckForTermination will modify the step if it goes beyond the
     // termination criteria.  (Example: streamlines will split a step if it
     // is terminating by distance.)
+
+    time = step.GetT1();
     distance += step.GetLength();
 
     RecordStep( field, step, step.GetT1() );
@@ -289,11 +294,15 @@ size_t avtStateRecorderIntegralCurve::GetSampleStride() const
 avtStateRecorderIntegralCurve::Sample
 avtStateRecorderIntegralCurve::GetSample( size_t n ) const
 {
-    std::vector<float>::const_iterator m = history.begin() + n*GetSampleStride();
+    std::vector<double>::const_iterator m =
+      history.begin() + n*GetSampleStride();
+
     Sample s;
 
     if( historyMask & SAMPLE_TIME )
         s.time = *(m++);
+    else
+        s.time = 0;
 
     if( historyMask & SAMPLE_POSITION )
     {
@@ -301,28 +310,42 @@ avtStateRecorderIntegralCurve::GetSample( size_t n ) const
         s.position.y = *(m++);
         s.position.z = *(m++);
     }
-    
+    else
+        s.position = avtVector(0,0,0);
+
     if( historyMask & SAMPLE_VELOCITY )
     {
         s.velocity.x = *(m++);
         s.velocity.y = *(m++);
         s.velocity.z = *(m++);
     }
+    else
+        s.velocity = avtVector(0,0,0);
 
     if( historyMask & SAMPLE_VORTICITY )
         s.vorticity = *(m++);
+    else
+        s.vorticity = 0;
 
     if( historyMask & SAMPLE_ARCLENGTH )
         s.arclength = *(m++);
+    else
+        s.arclength = 0;
 
     if( historyMask & SAMPLE_SCALAR0 ) 
         s.scalar0 = *(m++);
+    else
+        s.scalar0 = 0;
 
     if( historyMask & SAMPLE_SCALAR1 )
         s.scalar1 = *(m++);
+    else
+        s.scalar1 = 0;
 
     if( historyMask & SAMPLE_SCALAR2 )
         s.scalar2 = *(m++);
+    else
+        s.scalar2 = 0;
 
     return s;
 }
@@ -581,3 +604,39 @@ avtStateRecorderIntegralCurve::SameCurve(avtIntegralCurve *ic)
     return (id == sic->id) && (sequenceCnt == sic->sequenceCnt);
 }
 
+
+
+// ****************************************************************************
+//  Method: avtStateRecorderIntegralCurve::Get
+//
+//  Purpose:
+//      QUick access to member values
+//
+//  Programmer: Allen Sanderson
+//  Creation:   September 8, 2013
+//
+// ****************************************************************************
+
+double avtStateRecorderIntegralCurve::GetTime()
+{
+  if( GetNumberOfSamples() )
+    return GetSample( GetNumberOfSamples() - 1 ).time;
+  else
+    return time;
+}
+
+double avtStateRecorderIntegralCurve::GetDistance()
+{
+  if( GetNumberOfSamples() )
+    return GetSample( GetNumberOfSamples() - 1 ).arclength;
+  else
+    return distance;
+}
+
+avtVector avtStateRecorderIntegralCurve::GetEndPoint()
+{
+  if( GetNumberOfSamples() )
+    return GetSample( GetNumberOfSamples() - 1 ).position;
+  else
+    return ivp->GetCurrentY();
+}
