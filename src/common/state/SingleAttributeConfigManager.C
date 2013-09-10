@@ -96,6 +96,13 @@ SingleAttributeConfigManager::~SingleAttributeConfigManager()
 //   Added ability to do a selective save.
 //
 // ****************************************************************************
+bool
+SingleAttributeConfigManager::Export(std::ostream& out,
+                                     bool complete)
+{
+    completeSave = complete;
+    return WriteConfigFile(out);
+}
 
 bool
 SingleAttributeConfigManager::Export(const std::string &filename,
@@ -122,6 +129,17 @@ SingleAttributeConfigManager::Export(const std::string &filename,
 //   Fix: function wasn't returning anything in the `success' case.
 //   
 // ****************************************************************************
+bool
+SingleAttributeConfigManager::Import(std::istream& in)
+{
+    DataNode *node = ReadConfigFile(in);
+
+    if (!node)
+        return false;
+
+    attribute->SetFromNode(node);
+    return true;
+}
 
 bool
 SingleAttributeConfigManager::Import(const std::string &filename)
@@ -154,7 +172,7 @@ SingleAttributeConfigManager::Import(const std::string &filename)
 // ****************************************************************************
 
 bool
-SingleAttributeConfigManager::WriteConfigFile(const char *filename)
+SingleAttributeConfigManager::WriteConfigFile(std::ostream& out)
 {
     // We need to start with a top-level container data node, but that's
     // not what we wind up saving; get the actual one from inside it.
@@ -164,21 +182,29 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
     if (!actualNode)
         return false;
 
-    // Try to open the output file.
-    if((fp = fopen(filename, "wb")) == 0)
-    {
-        return false;
-    }
-
     // Write the output file.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(actualNode);
-
-    // Close the file
-    fclose(fp);
-    fp = 0;
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, actualNode);
 
     return true;
+}
+
+bool
+SingleAttributeConfigManager::WriteConfigFile(const char *filename)
+{
+    std::ofstream outf;
+
+    // Try to open the output file.
+    outf.open(filename, ios::out | ios::binary); //"wb"
+    if(outf.is_open() == false)
+        return false;
+
+    bool res = WriteConfigFile(outf);
+
+    // Close the file
+    outf.close();
+
+    return res;
 }
 
 // ****************************************************************************
@@ -197,24 +223,36 @@ SingleAttributeConfigManager::WriteConfigFile(const char *filename)
 //   
 // ****************************************************************************
 
+
+DataNode *
+SingleAttributeConfigManager::ReadConfigFile(std::istream& in)
+{
+    DataNode* node = 0;
+
+    // Read the XML tag and ignore it.
+    FinishTag(in);
+
+    // Create a root node and use it to read the visit tree.
+    node = new DataNode("FileRoot");
+    ReadObject(in, node);
+
+    return node;
+}
+
 DataNode *
 SingleAttributeConfigManager::ReadConfigFile(const char *filename)
 {
     DataNode *node = 0;
+    std::ifstream inf;
 
+    inf.open(filename, ios::in);
     // Try and open the file for reading.
-    if((fp = fopen(filename, "r")) == 0)
+    if(inf.is_open() == false)
         return node;
 
-    // Read the XML tag and ignore it.
-    FinishTag();
+    node = ReadConfigFile(inf);
 
-    // Create a root node and use it to read the visit tree.
-    node = new DataNode("FileRoot");
-    ReadObject(node);
-
-    fclose(fp);
-    fp = 0;
+    inf.close();
 
     return node;
 }

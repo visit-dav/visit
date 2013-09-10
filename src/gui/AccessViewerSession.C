@@ -95,28 +95,37 @@ AccessViewerSession::~AccessViewerSession()
 //   Skip the XML tag.
 //
 // ****************************************************************************
+DataNode *
+AccessViewerSession::ReadConfigFile(std::istream& in)
+{
+    // Skip the XML tag
+    FinishTag(in);
+
+    root = new DataNode("root");
+    ReadObject(in, root);
+
+    return GetRootNode();
+}
 
 DataNode *
 AccessViewerSession::ReadConfigFile(const char *filename)
 {
     const char *mName = "AccessViewerSession::ReadConfigFile: ";
     DataNode *node = 0;
-
+    std::ifstream inf;
     // Try and open the file for reading.
-    if((fp = fopen(filename, "rt")) == 0)
+    inf.open(filename, ios::in | ios::trunc); //"rt"
+    if(inf.is_open() == false)
     {
         debug1 << mName << "Could not read " << filename << endl;
         return node;
     }
 
-    // Skip the XML tag
-    FinishTag();
+    node = ReadConfigFile(inf);
 
-    root = new DataNode("root");
-    ReadObject(root);
-    fclose(fp); fp = 0;
+    inf.close();
 
-    return GetRootNode();
+    return node;
 }
 
 // ****************************************************************************
@@ -134,6 +143,15 @@ AccessViewerSession::ReadConfigFile(const char *filename)
 // Modifications:
 //   
 // ****************************************************************************
+bool
+AccessViewerSession::WriteConfigFile(std::ostream& out)
+{
+    // Write the output file to stdout for now.
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, GetRootNode());
+
+    return true;
+}
 
 bool
 AccessViewerSession::WriteConfigFile(const char *filename)
@@ -141,20 +159,18 @@ AccessViewerSession::WriteConfigFile(const char *filename)
     // If we have no root then return.
     if(root == 0)
         return false;
-
+    std::ofstream outf;
     // Try to open the output file.
-    if((fp = fopen(filename, "wt")) == 0)
+    outf.open(filename, ios::out | ios::trunc);
+    if(outf.is_open() == false)
         return false;
 
-    // Write the output file to stdout for now.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(GetRootNode());
+    bool res = WriteConfigFile(outf);
 
     // close the file
-    fclose(fp);
-    fp = 0;
+    outf.close();
 
-    return true;
+    return res;
 }
 
 // ****************************************************************************

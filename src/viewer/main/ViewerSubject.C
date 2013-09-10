@@ -3617,15 +3617,31 @@ void GetSerializedData(int windowIndex,
     }
 }
 
+// ****************************************************************************
+// Method: QvisHostProfileWindow::ExportWindow
+//
+// Purpose:
+//   Experimental! Export screen capture over memory.
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
 ViewerSubject::ExportWindow()
 {
-    ViewerState* state = GetViewerState();
+    JSONNode node;
+    node.Parse(GetViewerState()->GetViewerRPC()->GetStringArg1());
+
+
+    intVector windowIds = node["plotIds"].AsIntVector();
+    std::string format = node["format"].GetString();
+
+
     ViewerClientInformation* qatts = GetViewerState()->GetViewerClientInformation();
-
-    intVector windowIds = state->GetViewerRPC()->GetActivePlotIds();
-    std::string format = state->GetViewerRPC()->GetStringArg1();
-
     ViewerClientInformation::OutputFormat of;
 
     qatts->OutputFormat_FromString(format, of);
@@ -3636,7 +3652,7 @@ ViewerSubject::ExportWindow()
         return;
     }
 
-    int clientId = state->GetViewerRPC()->GetIntArg1();
+    int clientId = GetViewerState()->GetViewerRPC()->GetIntArg1();
 
     int resultId = -1;
     /// Broadcast directly to client..
@@ -3688,6 +3704,92 @@ ViewerSubject::ExportWindow()
     client->BroadcastToClient(qatts);
 
     qatts->ClearVars();
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::ExportHostProfile
+//
+// Purpose:
+//   Export Selected HostProfile to Directory.
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::ExportHostProfile()
+{
+    JSONNode node;
+    node.Parse(GetViewerState()->GetViewerRPC()->GetStringArg1());
+
+    std::string profileName = node["profileName"].GetString();
+    std::string fileName = node["fileName"].GetString();
+    bool saveInUserDir = node["saveInUserDir"].GetBool();
+
+    std::string userdir = GetAndMakeUserVisItHostsDirectory();
+    HostProfileList *hpl = GetViewerState()->GetHostProfileList();
+
+    for (int i = 0; i < hpl->GetNumMachines(); ++i)
+    {
+        MachineProfile &pl = hpl->GetMachines(i);
+        std::string host = pl.GetHostNickname();
+
+        if(host != profileName) continue;
+
+        std::string name = "";
+
+        if(!saveInUserDir)
+            name = fileName;
+        else
+            name = userdir + VISIT_SLASH_STRING + fileName;
+
+        QString msg2 = tr("Host profile %1 exported to %2").
+                       arg(host.c_str()).
+                       arg(name.c_str());
+        Status(msg2);
+
+        // Tell the user what happened.
+        msg2 = tr("VisIt exported host profile \"%1\" to the file: %2. ").
+           arg(host.c_str()).
+           arg(name.c_str());
+        Message(msg2);
+
+        SingleAttributeConfigManager mgr(&pl);
+        mgr.Export(name);
+        break;
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::Export
+//
+// Purpose:
+//   Handle new export functions
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::Export()
+{
+    JSONNode node;
+    node.Parse(GetViewerState()->GetViewerRPC()->GetStringArg1());
+
+    std::string action = node["action"].GetString();
+
+    if(action == "ExportWindows") {
+        ExportWindow();
+    }
+    else if(action == "ExportHostProfile") {
+        ExportHostProfile();
+    }
 }
 
 // ****************************************************************************
@@ -8590,6 +8692,9 @@ ViewerSubject::HandleViewerRPCEx()
         break;
     case ViewerRPC::SetPickAttributesRPC:
         SetPickAttributes();
+        break;
+    case ViewerRPC::ExportRPC:
+        Export();
         break;
     case ViewerRPC::ExportColorTableRPC:
         ExportColorTable();

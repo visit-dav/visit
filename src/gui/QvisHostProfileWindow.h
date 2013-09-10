@@ -41,6 +41,7 @@
 #include <gui_exports.h>
 #include <QvisPostableWindowObserver.h>
 #include <QMap>
+#include <QModelIndex>
 
 // Forward declrations
 class HostProfileList;
@@ -59,6 +60,9 @@ class QListWidgetItem;
 class QCheckBox;
 class QButtonGroup;
 class QRadioButton;
+class QNetworkReply;
+class QTreeWidget;
+class QNetworkAccessManager;
 
 // ****************************************************************************
 //  Class: QvisHostProfileWindow
@@ -170,7 +174,7 @@ class QRadioButton;
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
 {
     Q_OBJECT
-
+    friend class DropListWidget; //todo remove this dependency..
 public:
     QvisHostProfileWindow(HostProfileList *profiles, 
                           const QString &caption = QString::null,
@@ -186,6 +190,9 @@ private:
     bool GetCurrentValues();
     void Apply(bool val = false);
     void ReplaceLocalHost();
+    void addRemoteProfile(const QString& inputUrl, const QString& results);
+    void ListWidgetDropEvent(QDropEvent * event);
+    void addChildren(const QModelIndex& list, QStringList& suffixList, QStringList& globalList);
 private slots:
     void apply();
 
@@ -195,11 +202,14 @@ private slots:
     void addMachineProfile();
     void delMachineProfile();
     void copyMachineProfile();
+    void exportMachineProfile();
 
     void addLaunchProfile();
     void delLaunchProfile();
     void copyLaunchProfile();
     void makeDefaultLaunchProfile();
+    void retriveLatestProfiles();
+    void downloadHosts(QNetworkReply* reply);
 
     void processProfileNameText(const QString &);
     void processDirectoryText(const QString &);
@@ -259,12 +269,15 @@ private:
     QPushButton *addHost;
     QPushButton *delHost;
     QPushButton *copyHost;
+    QPushButton *exportHost;
 
     QTabWidget *machineTabs;
     QWidget    *machineSettingsGroup;
     QWidget    *launchProfilesGroup;
+    QWidget    *remoteProfilesGroup;
     QWidget    *CreateMachineSettingsGroup();
     QWidget    *CreateLaunchProfilesGroup();
+    QWidget    *CreateRemoteProfilesGroup();
 
     // Launch Profiles
     QListWidget *profileList;
@@ -361,6 +374,10 @@ private:
     QSpinBox     *maxProcessors;
 
     // other stuff
+    QComboBox     *remoteUrl;
+    QTreeWidget     *remoteTree;
+    QMap<QString, QString> remoteData;
+    QNetworkAccessManager *manager;
     int          profileCounter;
     MachineProfile *currentMachine;
     LaunchProfile  *currentLaunch;

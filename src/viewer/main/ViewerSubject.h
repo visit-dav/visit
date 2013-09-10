@@ -630,6 +630,8 @@ private:
     void PrintWindow();
     void SaveWindow();
     void ExportWindow();
+    void ExportHostProfile();
+    void Export();
     void UpdateColorTable();
     void ExportColorTable();
     void WriteConfigFile();
