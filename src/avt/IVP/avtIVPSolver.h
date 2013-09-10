@@ -124,6 +124,12 @@ class avtIVPStep: public std::vector<avtVector>
 {
 public:
 
+    avtIVPStep()
+    {
+        t0 = 0;
+        t1 = 0;
+    }
+
     unsigned int GetDegree() const 
     { 
         return size()-1; 

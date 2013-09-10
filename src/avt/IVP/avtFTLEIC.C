@@ -110,6 +110,8 @@ avtFTLEIC::avtFTLEIC() : avtIntegralCurve()
     maxDistance = 0.;
     doTime = false;
     maxTime = 0.;
+
+    time     = 0.;
     distance = 0.;
     
     terminatedBecauseOfMaxSteps = false;
@@ -197,6 +199,7 @@ void avtFTLEIC::AnalyzeStep( avtIVPStep &step,
     // CheckForTermination will modify the step if it goes beyond the
     // termination criteria.  (Example: streamlines will split a step if it
     // is terminating by distance.)
+    time = step.GetT1();
     distance += step.GetLength();
     p_end = step.GetP1();
 }

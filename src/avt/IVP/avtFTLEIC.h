@@ -75,8 +75,10 @@ public:
 
     virtual void    Serialize(MemStream::Mode mode, MemStream &buff, 
                               avtIVPSolver *solver, SerializeFlags serializeFlags);
-    // virtual bool    UseFixedTerminationTime(void) { return doTime; };
-    // virtual double  FixedTerminationTime(void)    { return maxTime; };
+    virtual bool    UseFixedTerminationTime(void) { return doTime; };
+    virtual double  FixedTerminationTime(void)    { return maxTime; };
+    virtual bool    UseFixedTerminationDistance(void) { return doDistance; };
+    virtual double  FixedTerminationDistance(void)    { return maxDistance; };
 
     bool            TerminatedBecauseOfMaxSteps(void) 
                                  { return terminatedBecauseOfMaxSteps; };
@@ -86,9 +88,10 @@ public:
     avtFTLEIC& operator=( const avtFTLEIC& );
     
   public:
-    virtual bool     CheckForTermination(avtIVPStep& step, avtIVPField *);
+    virtual bool   CheckForTermination(avtIVPStep& step, avtIVPField *);
 
-    virtual double getDistance() { return distance; }
+    virtual double GetTime() { return time; }
+    virtual double GetDistance() { return distance; }
 
     virtual void     AnalyzeStep( avtIVPStep &step, avtIVPField *field);
   
@@ -99,16 +102,17 @@ public:
     avtVector GetStartPoint() { return p_start; }
     avtVector GetEndPoint() { return p_end; }
 
-  protected:
-    unsigned int     numSteps;
   public:
     unsigned int     maxSteps;
   protected:
+    unsigned int     numSteps;
     bool             doDistance;
     double           maxDistance;
     bool             doTime;
     double           maxTime;
     bool             terminatedBecauseOfMaxSteps;
+
+    double           time;
     double           distance;
 
     avtVector p_start, p_end;

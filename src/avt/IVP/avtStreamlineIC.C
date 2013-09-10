@@ -204,15 +204,12 @@ avtStreamlineIC::CheckForTermination(avtIVPStep& step, avtIVPField *field)
     if( !shouldTerminate && numSteps >= maxSteps )
     {
         terminatedBecauseOfMaxSteps = true;
-        speedAtTermination = step.GetV(step.GetT1()).length();
         shouldTerminate = true;
+        speedAtTermination = step.GetV(step.GetT1()).length();
     }
 
     // Update other termination criteria.
     numSteps += 1;
-
-    // Done by state recorder, which may need to record state
-    //distance += step.GetLength();
 
     return shouldTerminate;
 }
