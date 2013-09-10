@@ -161,7 +161,7 @@ ViewerConfigManager::~ViewerConfigManager()
 // ****************************************************************************
 
 bool
-ViewerConfigManager::WriteConfigFile(const char *filename)
+ViewerConfigManager::WriteConfigFile(std::ostream& out)
 {
     DataNode topLevel("topLevel");
 
@@ -188,20 +188,28 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
     // Let the parent write its data to the "VIEWER" node.
     parent->CreateNode(viewerNode, writeDetail);
 
-    // Try to open the output file.
-    std::string expandedFile(ExpandUserPath(filename));
-    if((fp = fopen(expandedFile.c_str(), "wt")) == 0)
-        return false;
-
     // Write the output file to stdout for now.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(visitNode);
-
-    // close the file
-    fclose(fp);
-    fp = 0;
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, visitNode);
 
     return true;
+}
+
+bool
+ViewerConfigManager::WriteConfigFile(const char *filename)
+{
+    // Try to open the output file.
+    std::string expandedFile(ExpandUserPath(filename));
+    std::ofstream outf(expandedFile.c_str(), ios::out | ios::trunc);
+    if(outf.is_open() == false)
+        return false;
+
+    bool res = WriteConfigFile(outf);
+
+    // close the file
+    outf.close();
+
+    return res;
 }
 
 // ****************************************************************************
@@ -245,23 +253,34 @@ ViewerConfigManager::WriteConfigFile(const char *filename)
 // ****************************************************************************
 
 DataNode *
+ViewerConfigManager::ReadConfigFile(std::istream& in)
+{
+    DataNode *node = 0;
+
+    // Read the XML tag and ignore it.
+    FinishTag(in);
+
+    // Create a root node and use it to read the visit tree.
+    node = new DataNode("FileRoot");
+    ReadObject(in, node);
+
+    return node;
+}
+
+DataNode *
 ViewerConfigManager::ReadConfigFile(const char *filename)
 {
     DataNode *node = 0;
 
     // Try and open the file for reading.
     std::string expandedFile(ExpandUserPath(filename));
-    if((fp = fopen(expandedFile.c_str(), "rt")) == 0)
+    std::ifstream inf(expandedFile.c_str(), ios::in | ios::trunc);
+    if(inf.is_open() == false)
         return node;
 
-    // Read the XML tag and ignore it.
-    FinishTag();
+    node = ReadConfigFile(inf);
 
-    // Create a root node and use it to read the visit tree.
-    node = new DataNode("FileRoot");
-    ReadObject(node);
-    fclose(fp);
-    fp = 0;
+    inf.close();
 
     return node;
 }

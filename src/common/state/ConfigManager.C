@@ -62,7 +62,6 @@
 
 ConfigManager::ConfigManager()
 {
-    fp = 0;
     putback = false;
     putbackChar = 0;
 }
@@ -82,8 +81,6 @@ ConfigManager::ConfigManager()
 
 ConfigManager::~ConfigManager()
 {
-    if(fp != 0)
-        fclose(fp);
 }
 
 // ****************************************************************************
@@ -109,17 +106,13 @@ ConfigManager::~ConfigManager()
 void
 ConfigManager::WriteBack(DataNode *root)
 {
-    // Try to open the output file.
-    if((fp = fopen("WRITEBACK", "wt")) == 0)
-        return;
-
+    std::ofstream outf;
+    outf.open("WRITEBACK", ios::out | ios::trunc); //"wt"
     // Write the output file to stdout for now.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(root);
+    outf << "<?xml version=\"1.0\"?>\n";
+    WriteObject(outf, root);
 
-    // close the file
-    fclose(fp);
-    fp = 0;
+    outf.close();
 }
 
 // ****************************************************************************
@@ -139,10 +132,10 @@ ConfigManager::WriteBack(DataNode *root)
 // ****************************************************************************
 
 void
-ConfigManager::WriteIndent(int indentLevel)
+ConfigManager::WriteIndent(std::ostream& out, int indentLevel)
 {
     for(int i = 0; i < indentLevel; ++i)
-        fprintf(fp, "    ");
+        out << "    ";
 }
 
 // ****************************************************************************
@@ -163,9 +156,9 @@ ConfigManager::WriteIndent(int indentLevel)
 // ****************************************************************************
 
 void
-ConfigManager::WriteQuotedStringData(const std::string &str)
+ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 {
-    fputc('"', fp);    
+    out.put('"');
     if(str.size() > 0)
     {
         const char *cptr = str.c_str();
@@ -173,13 +166,13 @@ ConfigManager::WriteQuotedStringData(const std::string &str)
         {
             // Add escape characters.
             if(cptr[i] == '"' || cptr[i] == '\\')
-                fputc('\\', fp);
-            fputc(cptr[i], fp);
+                out.put('\\');
+            out.put(cptr[i]);
         }
     }
 
-    fputc('"', fp);
-    fputc(' ', fp);
+    out.put('"');
+    out.put(' ');
 }
 
 // ****************************************************************************
@@ -199,7 +192,7 @@ ConfigManager::WriteQuotedStringData(const std::string &str)
 // ****************************************************************************
 
 void
-ConfigManager::WriteEscapedString(const std::string &str)
+ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
 {
     if(str.size() > 0)
     {
@@ -212,9 +205,9 @@ ConfigManager::WriteEscapedString(const std::string &str)
                cptr[i] == '<'  ||
                cptr[i] == '>')
             {
-                fputc('\\', fp);
+                out.put('\\');
             }
-            fputc(cptr[i], fp);
+            out.put(cptr[i]);
         }
     }
 }
@@ -252,91 +245,91 @@ ConfigManager::WriteEscapedString(const std::string &str)
 // ****************************************************************************
 
 void
-ConfigManager::WriteData(DataNode *node)
+ConfigManager::WriteData(std::ostream& out, DataNode *node)
 {
     switch(node->GetNodeType())
     {
     case CHAR_NODE:
-        fprintf(fp, "%c", node->AsChar());
+        out << node->AsChar();
         break;
     case UNSIGNED_CHAR_NODE:
-        fprintf(fp, "%d", (int)node->AsUnsignedChar());
+        out << (int)node->AsUnsignedChar();
         break;
     case INT_NODE:
-        fprintf(fp, "%d", node->AsInt());
+        out << node->AsInt();
         break;
     case LONG_NODE:
-        fprintf(fp, "%ld", node->AsLong());
+        out << node->AsLong();
         break;
     case FLOAT_NODE:
-        fprintf(fp, "%g", node->AsFloat());
+        out << node->AsFloat();
         break;
     case DOUBLE_NODE:
-        fprintf(fp, "%g", node->AsDouble());
+        out << node->AsDouble();
         break;
     case STRING_NODE:
         { // new scope
             bool hasSpaces = node->AsString().find(" ") != std::string::npos;
             if(hasSpaces)
-                fprintf(fp, "%s", "\"");
-            WriteEscapedString(node->AsString());
+                out << "\"";
+            WriteEscapedString(out, node->AsString());
             if(hasSpaces)
-                fprintf(fp, "%s", "\"");
+                out << "\"";
         }
         break;
     case BOOL_NODE:
         if(node->AsBool())
-           fprintf(fp, "true");
+           out << "true";
         else
-           fprintf(fp, "false");
+           out << "false";
         break;
     case CHAR_ARRAY_NODE:
         { // new scope
             const char *cptr = node->AsCharArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%c ", *cptr++);
+                out << (char)*cptr++;
         }
         break;
     case UNSIGNED_CHAR_ARRAY_NODE:
         { // new scope
             const unsigned char *uptr = node->AsUnsignedCharArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%d ", (int)*uptr++);
+                out << (int)*uptr++;
         }
         break;
     case INT_ARRAY_NODE:
         { // new scope
             const int *iptr = node->AsIntArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%d ", *iptr++);
+                out << *iptr++;
         }
         break;
     case LONG_ARRAY_NODE:
         { // new scope
             const long *lptr = node->AsLongArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%ld ", *lptr++);
+                out << *lptr++;
         }
         break;
     case FLOAT_ARRAY_NODE:
         { // new scope
             const float *fptr = node->AsFloatArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%g ", *fptr++);
+                out << *fptr++;
         }
         break;
     case DOUBLE_ARRAY_NODE:
         { // new scope
             const double *dptr = node->AsDoubleArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                fprintf(fp, "%g ", *dptr++);
+                out << *dptr++;
         }
         break;
     case STRING_ARRAY_NODE:
         { // new scope
             const std::string *sptr = node->AsStringArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                WriteQuotedStringData(*sptr++);
+                WriteQuotedStringData(out,*sptr++);
         }
         break;
     case BOOL_ARRAY_NODE:
@@ -345,9 +338,9 @@ ConfigManager::WriteData(DataNode *node)
             for(int i = 0; i < node->GetLength(); ++i)
             {
                 if(*bptr++)
-                    fprintf(fp, "true ");
+                    out << "true ";
                 else
-                    fprintf(fp, "false ");
+                    out << "false ";
             }
         }
         break;
@@ -355,49 +348,49 @@ ConfigManager::WriteData(DataNode *node)
        { // new scope
             const charVector &cvec = node->AsCharVector();
             for(size_t i = 0; i < cvec.size(); ++i)
-                fprintf(fp, "%c ", cvec[i]);
+                out << cvec[i];
        }
        break;
     case UNSIGNED_CHAR_VECTOR_NODE:
        { // new scope
             const unsignedCharVector &uvec = node->AsUnsignedCharVector();
             for(size_t i = 0; i < uvec.size(); ++i)
-                fprintf(fp, "%d ", (int)uvec[i]);
+                out << (int)uvec[i];
        }
        break;
     case INT_VECTOR_NODE:
        { // new scope
             const intVector &ivec = node->AsIntVector();
             for(size_t i = 0; i < ivec.size(); ++i)
-                fprintf(fp, "%d ", ivec[i]);
+                out << ivec[i];
        }
        break;
     case LONG_VECTOR_NODE:
        { // new scope
             const longVector &lvec = node->AsLongVector();
             for(size_t i = 0; i < lvec.size(); ++i)
-                fprintf(fp, "%ld ", lvec[i]);
+                out << lvec[i];
        }
        break;
     case FLOAT_VECTOR_NODE:
        { // new scope
             const floatVector &fvec = node->AsFloatVector();
             for(size_t i = 0; i < fvec.size(); ++i)
-                fprintf(fp, "%g ", fvec[i]);
+                out << fvec[i];
        }
        break;
     case DOUBLE_VECTOR_NODE:
        { // new scope
             const doubleVector &dvec = node->AsDoubleVector();
             for(size_t i = 0; i < dvec.size(); ++i)
-               fprintf(fp, "%g ", dvec[i]);
+               out << dvec[i];
        }
        break;
     case STRING_VECTOR_NODE:
        { // new scope
             const stringVector &svec = node->AsStringVector();
             for(size_t i = 0; i < svec.size(); ++i)
-                WriteQuotedStringData(svec[i]);
+                WriteQuotedStringData(out, svec[i]);
        }
        break;
     default:
@@ -432,12 +425,12 @@ ConfigManager::WriteData(DataNode *node)
 // ****************************************************************************
 
 void
-ConfigManager::WriteObject(DataNode *node, int indentLevel)
+ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
 {
     // Write the beginning tag.
-    WriteIndent(indentLevel);
+    WriteIndent(out, indentLevel);
     if(node->GetNodeType() == INTERNAL_NODE)
-        fprintf(fp, "<Object name=\"%s\">\n", node->GetKey().c_str());
+        out << "<Object name=\"" << node->GetKey().c_str() << "\">\n";
     else
     {
         // Write out the field tag based on the node type.
@@ -451,13 +444,13 @@ ConfigManager::WriteObject(DataNode *node, int indentLevel)
         case DOUBLE_ARRAY_NODE:
         case STRING_ARRAY_NODE:
         case BOOL_ARRAY_NODE:
-            fprintf(fp, "<Field name=\"%s\" type=\"%s\" length=\"%d\">",
-                    node->GetKey().c_str(), NodeTypeName(node->GetNodeType()),
-                    node->GetLength());
+            out << "<Field name=\"" << node->GetKey().c_str()
+                                   << "\" type=\"" << NodeTypeName(node->GetNodeType())
+                                   << "\" length=\"" << node->GetLength() << "\">";
             break;
         default:
-            fprintf(fp, "<Field name=\"%s\" type=\"%s\">",
-                    node->GetKey().c_str(), NodeTypeName(node->GetNodeType()));
+            out << "<Field name=\""<< node->GetKey().c_str()
+                << "\" type=\"" << NodeTypeName(node->GetNodeType()) << "\">";
         }
     }
 
@@ -468,24 +461,24 @@ ConfigManager::WriteObject(DataNode *node, int indentLevel)
         {
             DataNode **children = node->GetChildren();
             for(int i = 0; i < node->GetNumChildren(); ++i)
-                WriteObject(children[i], indentLevel + 1);
+                WriteObject(out, children[i], indentLevel + 1);
         }
     }
     else
     {
         // We have to write actual values.
-        WriteData(node);
+        WriteData(out, node);
     }
 
     // Write the ending tag.
     if(node->GetNodeType() == INTERNAL_NODE)
     {
-        WriteIndent(indentLevel);
-        fprintf(fp, "</Object>\n");
+        WriteIndent(out, indentLevel);
+        out << "</Object>\n";
     }
     else
     {
-        fprintf(fp, "</Field>\n");
+        out << "</Field>\n";
     }
 }
 
@@ -504,7 +497,7 @@ ConfigManager::WriteObject(DataNode *node, int indentLevel)
 // ****************************************************************************
 
 char
-ConfigManager::ReadChar()
+ConfigManager::ReadChar(std::istream& in)
 {
     if(putback)
     {
@@ -519,10 +512,10 @@ ConfigManager::ReadChar()
         // encounter eof.
         do
         {
-           c = fgetc(fp);
-        } while(c < ' ' && !feof(fp));
+           in.get(c);
+        } while(c < ' ' && !in.eof());
 
-        if(feof(fp))
+        if(in.eof())
             return 0;
         else
             return c;
@@ -569,10 +562,10 @@ ConfigManager::PutBackChar(char c)
 // ****************************************************************************
 
 void
-ConfigManager::FinishTag()
+ConfigManager::FinishTag(std::istream& in)
 {
     char c = '\0';
-    for(int i = 0; !feof(fp) && ((c = ReadChar()) != '>'); ++i);
+    for(int i = 0; !in.eof() && ((c = ReadChar(in)) != '>'); ++i);
 
     if(c != '>')
         PutBackChar(c);
@@ -603,7 +596,7 @@ ConfigManager::FinishTag()
 // ****************************************************************************
 
 stringVector
-ConfigManager::ReadStringVector(char termChar)
+ConfigManager::ReadStringVector(std::istream& in, char termChar)
 {
     stringVector retval;
 
@@ -615,8 +608,8 @@ ConfigManager::ReadStringVector(char termChar)
 
     while(keepgoing)
     {
-        c = ReadChar();
-        keepgoing = (!feof(fp) && (escaped || c != termChar));
+        c = ReadChar(in);
+        keepgoing = (!in.eof() && (escaped || c != termChar));
 
         if(c == ' ')
         {
@@ -759,7 +752,7 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 // ****************************************************************************
 
 DataNode *
-ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
+ConfigManager::ReadFieldData(std::istream& in, const std::string &tagName, NodeTypeEnum type,
     int tagLength)
 {
     DataNode *retval = 0;
@@ -774,7 +767,7 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
     bool          bval;
 
     // Read strings until we get a '<' character.
-    stringVector  sv = ReadStringVector('<');
+    stringVector  sv = ReadStringVector(in, '<');
 
     int minSize = (tagLength == 0) ? (int)sv.size() :
                   ((tagLength < (int)sv.size()) ? tagLength : (int)sv.size());
@@ -1109,10 +1102,10 @@ ConfigManager::ReadFieldData(const std::string &tagName, NodeTypeEnum type,
 // ****************************************************************************
 
 bool
-ConfigManager::ReadObject(DataNode *parentNode)
+ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
 {
     bool te = false;
-    return ReadObjectHelper(parentNode, te);
+    return ReadObjectHelper(in, parentNode, te);
 }
 
 // ****************************************************************************
@@ -1137,7 +1130,7 @@ ConfigManager::ReadObject(DataNode *parentNode)
 // ****************************************************************************
 
 bool
-ConfigManager::ReadObjectHelper(DataNode *parentNode, bool &te)
+ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te)
 {
     bool keepReading = true;
     bool tagIsEndTag = false;
@@ -1146,7 +1139,7 @@ ConfigManager::ReadObjectHelper(DataNode *parentNode, bool &te)
     int          tagLength = 0;
 
     // Read the opening tag.
-    keepReading = ReadTag(tagName, tagType, tagLength, tagIsEndTag);
+    keepReading = ReadTag(in, tagName, tagType, tagLength, tagIsEndTag);
 
     if(tagIsEndTag && keepReading)
     {
@@ -1161,17 +1154,17 @@ ConfigManager::ReadObjectHelper(DataNode *parentNode, bool &te)
 
         while(keepReading && !tagIsEndTag)
         {
-            keepReading = ReadObjectHelper(node, tagIsEndTag);
+            keepReading = ReadObjectHelper(in, node, tagIsEndTag);
         }
 
         if(tagIsEndTag)
             return keepReading;
     }
     else
-        keepReading = ReadField(parentNode, tagName, tagType, tagLength);
+        keepReading = ReadField(in, parentNode, tagName, tagType, tagLength);
 
     // Read the ending tag.
-    stringVector sv = ReadStringVector('>');
+    stringVector sv = ReadStringVector(in,'>');
     keepReading = sv.size() > 0;
 
     te = false;
@@ -1200,11 +1193,11 @@ ConfigManager::ReadObjectHelper(DataNode *parentNode, bool &te)
 // ****************************************************************************
 
 bool
-ConfigManager::ReadTag(std::string &tagName, NodeTypeEnum &tagType,
+ConfigManager::ReadTag(std::istream& in, std::string &tagName, NodeTypeEnum &tagType,
     int &tagLength, bool &tagIsReturnTag)
 {
     // Read strings.
-    stringVector sv = ReadStringVector('>');
+    stringVector sv = ReadStringVector(in, '>');
 
     std::string tagTypeStr("");
     tagName = "";
@@ -1277,10 +1270,10 @@ ConfigManager::ReadTag(std::string &tagName, NodeTypeEnum &tagType,
 // ****************************************************************************
 
 bool
-ConfigManager::ReadField(DataNode *parentNode, const std::string &tagName,
+ConfigManager::ReadField(std::istream& in, DataNode *parentNode, const std::string &tagName,
     NodeTypeEnum tagType, int tagLength)
 {
-    DataNode *retval = ReadFieldData(tagName, tagType, tagLength);
+    DataNode *retval = ReadFieldData(in, tagName, tagType, tagLength);
 
     if(retval != 0)
     {

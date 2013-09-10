@@ -187,12 +187,10 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //   I removed the exception and made the function return a bool.
 //
 // ****************************************************************************
-
 bool
-ColorTableManager::WriteConfigFile(const char *filename)
+ColorTableManager::WriteConfigFile(std::ostream& out)
 {
     DataNode topLevel("topLevel");
-
     // Create the color table node.
     DataNode *ctNode = new DataNode("ColorTable");
     topLevel.AddNode(ctNode);
@@ -201,21 +199,29 @@ ColorTableManager::WriteConfigFile(const char *filename)
     // Let the color table create add its information to tbe node.
     ccpl.CreateNode(ctNode, false, true);
 
-    // Try to open the output file.
-    if((fp = fopen(filename, "wb")) == 0)
-    {
-        return false;
-    }
-
     // Write the output file.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(ctNode);
-
-    // Close the file
-    fclose(fp);
-    fp = 0;
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, ctNode);
 
     return true;
+}
+
+bool
+ColorTableManager::WriteConfigFile(const char *filename)
+{
+    std::ofstream outf;
+
+    // Try to open the output file.
+    outf.open(filename, ios::out | ios::binary);
+    if(outf.is_open() == false)
+        return false;
+
+    bool res = WriteConfigFile(outf);
+
+    // Close the file
+    outf.close();
+
+    return res;
 }
 
 // ****************************************************************************
@@ -233,25 +239,34 @@ ColorTableManager::WriteConfigFile(const char *filename)
 // Modifications:
 //   
 // ****************************************************************************
+DataNode *
+ColorTableManager::ReadConfigFile(std::istream& in)
+{
+    DataNode *node = 0;
+
+    // Read the XML tag and ignore it.
+    FinishTag(in);
+
+    // Create a root node and use it to read the visit tree.
+    node = new DataNode("FileRoot");
+    ReadObject(in, node);
+    return node;
+}
 
 DataNode *
 ColorTableManager::ReadConfigFile(const char *filename)
 {
-    DataNode *node = 0;
+    std::ifstream inf;
+    DataNode* node = NULL;
 
     // Try and open the file for reading.
-    if((fp = fopen(filename, "r")) == 0)
+    inf.open(filename, ios::in);
+    if(inf.is_open() == false)
         return node;
 
-    // Read the XML tag and ignore it.
-    FinishTag();
+    node = ReadConfigFile(inf);
 
-    // Create a root node and use it to read the visit tree.
-    node = new DataNode("FileRoot");
-    ReadObject(node);
-
-    fclose(fp);
-    fp = 0;
+    inf.close();
 
     return node;
 }

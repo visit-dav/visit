@@ -116,6 +116,10 @@ public:
 
     virtual bool WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
+
+    virtual bool WriteConfigFile(std::ostream& out);
+    virtual DataNode *ReadConfigFile(std::istream& in);
+
     void ProcessConfigSettings(DataNode *, bool processPluginAtts = true);
     void Notify();
     void NotifyIfSelected();

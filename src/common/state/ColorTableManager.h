@@ -78,6 +78,9 @@ public:
 
     virtual bool      WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
+
+    virtual bool      WriteConfigFile(std::ostream& out);
+    virtual DataNode *ReadConfigFile(std::istream& in);
 protected:
     void              ImportColorTable(const std::string &ctFileName);
     static void       ImportHelper(void *, const std::string &,

@@ -71,8 +71,15 @@ public:
                              bool completeSave = true);
     bool              Import(const std::string &filename);
 
+    bool              Export(std::ostream& out,
+                             bool completeSave = true);
+    bool              Import(std::istream& in);
+
     virtual bool      WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
+
+    virtual bool      WriteConfigFile(std::ostream& out);
+    virtual DataNode *ReadConfigFile(std::istream& in);
 protected:
 private:
     AttributeGroup *attribute;

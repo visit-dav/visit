@@ -65,6 +65,10 @@ public:
 
     virtual bool WriteConfigFile(const char *filename);
     virtual DataNode *ReadConfigFile(const char *filename);
+
+    virtual bool WriteConfigFile(std::ostream& out);
+    virtual DataNode *ReadConfigFile(std::istream& in);
+
     DataNode *GetRootNode() const;
     DataNode *GetVSNode() const;
 

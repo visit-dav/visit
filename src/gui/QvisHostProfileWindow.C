@@ -52,9 +52,24 @@
 #include <QStringList>
 #include <QTabWidget>
 #include <QWidget>
+#include <QTreeWidget>
+#include <QDropEvent>
+#include <QUrl>
+#include <QHeaderView>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+#include <QAbstractTableModel>
+#include <QFileInfo>
+#include <QEvent>
+#include <QDragEnterEvent>
+
 
 #include <snprintf.h>
 
+
+#include <XMLNode.h>
+#include <SingleAttributeConfigManager.h>
 #include <MachineProfile.h>
 #include <LaunchProfile.h>
 #include <HostProfileList.h>
@@ -113,6 +128,10 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
     profileCounter = 0;
     currentMachine = NULL;
     currentLaunch = NULL;
+
+    remoteUrl = NULL;
+    remoteTree = NULL;
+    manager = NULL;
 }
 
 // ****************************************************************************
@@ -131,6 +150,149 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
 QvisHostProfileWindow::~QvisHostProfileWindow()
 {
 }
+
+// ****************************************************************************
+// Method: DropListWidget
+//
+// Purpose:
+//   TODO: Remove this class as soon as the eventFilter works
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class DropListWidget : public QListWidget
+{
+    QvisHostProfileWindow* window;
+    friend class QvisHostProfileWindow;
+public:
+
+    DropListWidget(QWidget* parent) : QListWidget(parent){
+    }
+    ~DropListWidget() {}
+
+    void dropEvent(QDropEvent *event){
+        window->ListWidgetDropEvent(event);
+    }
+};
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::addChildren
+//
+// Purpose:
+//   Find all paths that need to get copied into hostList
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::addChildren(const QModelIndex& list, QStringList& suffixList, QStringList& globalList)
+{
+    if(!remoteTree->model()->hasChildren(list)) {
+        QString gList = "";
+        for(int i = 0; i < suffixList.size(); ++i)
+            gList += suffixList[i] + (i == suffixList.size()-1 ? "" : "/");
+        globalList.push_back(gList);
+        return;
+    }
+
+    for(int i = 0; i < remoteTree->model()->rowCount(list); ++i) {
+        QModelIndex child = remoteTree->model()->index(i,0, list);
+        suffixList.push_back(child.data().toString());
+        addChildren(child, suffixList, globalList);
+        suffixList.pop_back();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::ListWidgetDropEvent
+//
+// Purpose:
+//   DropEvent
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::ListWidgetDropEvent(QDropEvent *event)
+{
+    /// ensure event source is from remoteTree
+    if(event->source() != remoteTree) return;
+
+    QByteArray encoded = event->mimeData()->data("application/x-qabstractitemmodeldatalist");
+
+    QDataStream stream(&encoded, QIODevice::ReadOnly);
+
+    while (!stream.atEnd())
+    {
+        int row, col;
+        QMap<int,  QVariant> roleDataMap;
+        stream >> row >> col >> roleDataMap;
+
+        QModelIndexList list = remoteTree->model()->match(remoteTree->model()->index(0,0), Qt::DisplayRole,
+                                                          roleDataMap[Qt::DisplayRole], 1,
+                                                          Qt::MatchExactly |
+                                                          Qt::MatchWrap |
+                                                          Qt::MatchRecursive);
+        if(list.size() > 0) {
+            QModelIndex index = list.back();
+
+            /// create prefix..
+            QString prefix = index.data(Qt::DisplayRole).toString();
+
+            QModelIndex parent = index.parent();
+            while(parent.isValid())
+            {
+                prefix = parent.data(Qt::DisplayRole).toString() + "/" + prefix;
+                parent = parent.parent();
+            }
+
+            /// add children..
+            QStringList globalList;
+            if(remoteTree->model()->hasChildren()) {
+                QStringList suffixList;
+                suffixList.push_back(prefix);
+                addChildren(index,suffixList,globalList);
+            }
+            else {
+                globalList.push_back(prefix);
+            }
+
+            for(int x = 0; x < globalList.size(); ++x) {
+
+                QString machine = globalList[x];
+
+                if(!remoteData.contains(machine)) {
+                    /// std::cout << "Remote data not found: " << machine.toStdString() << std::endl;
+                    continue;
+                }
+                std::istringstream str(remoteData[machine].toStdString().c_str());
+
+                MachineProfile mp;
+                SingleAttributeConfigManager sac(&mp);
+                sac.Import(str);
+                HostProfileList* profiles = (HostProfileList*)subject;
+                mp.SelectAll();
+                profiles->AddMachines(mp);
+                profiles->Notify();
+            }
+        }
+    }
+
+    event->acceptProposedAction();
+}
+
 
 // ****************************************************************************
 // Method: QvisHostProfileWindow::CreateWindowContents
@@ -159,12 +321,19 @@ QvisHostProfileWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
     topLayout->setStretchFactor(mainLayout, 100);
 
-    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,3);
-    hostList = new QListWidget(central);
+    mainLayout->addWidget(new QLabel(tr("Hosts")), 0,0, 1,4);
+    hostList = new DropListWidget(central);
     hostList->setSortingEnabled(true);
-    mainLayout->addWidget(hostList, 1,0, 1,3);
+    mainLayout->addWidget(hostList, 1,0, 1,4);
     connect(hostList, SIGNAL(itemSelectionChanged()),
             this, SLOT(currentHostChanged()));
+
+    hostList->setDropIndicatorShown(true);
+    hostList->setDragDropMode(QAbstractItemView::DropOnly);
+    hostList->setDefaultDropAction(Qt::CopyAction);
+    hostList->setAcceptDrops(true);
+    //hostList->installEventFilter(this);
+    //hostList->setMouseTracking(true);
 
     addHost = new QPushButton(tr("New Host"), central);
     mainLayout->addWidget(addHost, 2,0);
@@ -178,14 +347,242 @@ QvisHostProfileWindow::CreateWindowContents()
     mainLayout->addWidget(copyHost, 2,2);
     connect(copyHost, SIGNAL(clicked()), this, SLOT(copyMachineProfile()));
 
-    machineTabs = new QTabWidget(central);
-    mainLayout->addWidget(machineTabs, 0,3, 3,1);
+    exportHost = new QPushButton(tr("Export Host"), central);
+    mainLayout->addWidget(exportHost, 2,3);
+    connect(exportHost, SIGNAL(clicked()), this, SLOT(exportMachineProfile()));
+
+    QTabWidget* masterWidget = new QTabWidget(central);
+    masterWidget->setTabPosition(QTabWidget::West);
+    mainLayout->addWidget(masterWidget, 0,4, 3,1);
+
+    machineTabs = new QTabWidget();
+    masterWidget->addTab(machineTabs, tr("Machines"));
 
     machineSettingsGroup = CreateMachineSettingsGroup();
     machineTabs->addTab(machineSettingsGroup, tr("Host Settings"));
 
     launchProfilesGroup = CreateLaunchProfilesGroup();
     machineTabs->addTab(launchProfilesGroup, tr("Launch Profiles"));
+
+    remoteProfilesGroup = CreateRemoteProfilesGroup();
+    masterWidget->addTab(remoteProfilesGroup, tr("Remote Profiles"));
+
+    ((DropListWidget*)hostList)->window = this;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateRemoteProfilesGroup
+//
+// Purpose:
+//   Create the Remote Profiles Interface
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateRemoteProfilesGroup()
+{
+    QWidget* currentGroup = new QWidget();
+
+    QGridLayout *gridLayout;
+    QPushButton *pushButton;
+
+    gridLayout = new QGridLayout(currentGroup);
+    pushButton = new QPushButton(currentGroup);
+
+    QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    sizePolicy.setHorizontalStretch(0);
+    sizePolicy.setVerticalStretch(0);
+    sizePolicy.setHeightForWidth(pushButton->sizePolicy().hasHeightForWidth());
+
+    pushButton->setSizePolicy(sizePolicy);
+    pushButton->setText(tr("Update"));
+
+    gridLayout->addWidget(pushButton, 0, 1, 1, 1);
+
+    remoteUrl = new QComboBox(currentGroup);
+    //remoteUrl->setEditable(true);
+
+    gridLayout->addWidget(remoteUrl, 0, 0, 1, 1);
+
+    /// todo: use a configuration API to load remote url..
+    remoteUrl->addItem("http://portal.nersc.gov/svn/visit/trunk/src/resources/hosts/");
+    remoteUrl->setCurrentIndex(0);
+
+    remoteTree = new QTreeWidget(currentGroup);
+    remoteTree->setAlternatingRowColors(true);
+    remoteTree->setHeaderLabel(tr("Profiles"));
+    remoteTree->setDragEnabled(true);
+    remoteTree->setDragDropMode(QAbstractItemView::DragOnly);
+    remoteTree->setSortingEnabled(true);
+    remoteTree->sortByColumn(0, Qt::AscendingOrder);
+
+    gridLayout->addWidget(remoteTree, 1, 0, 1, 2);
+
+    connect(pushButton, SIGNAL(clicked()), this, SLOT(retriveLatestProfiles()));
+
+    return currentGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::retrieveLatestProfiles
+//
+// Purpose:
+//   Retrieve latest set of profiles from remote URL
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::retriveLatestProfiles()
+{
+    ///get content from url..
+    QUrl url(remoteUrl->currentText());
+
+    if(!manager) {
+        manager = new QNetworkAccessManager();
+
+        connect(manager, SIGNAL(finished(QNetworkReply*)),
+                this, SLOT(downloadHosts(QNetworkReply*)));
+    }
+
+    remoteTree->clear();
+    remoteData.clear();
+
+    QNetworkRequest request(url);
+    manager->get(request);
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::addRemoteProfile
+//
+// Purpose:
+//  Add Remote Profile to User Interface.
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &results)
+{
+    /// remove prefix..
+    QString iurl = inputUrl;
+    QString treePath = iurl.remove(remoteUrl->currentText());
+
+    QStringList treeList = treePath.split("/");
+
+    if(treeList.size() > 0) {
+        QTreeWidgetItem* item = 0;
+
+        QString key = "";
+        for(int index = 0; index < treeList.size(); ++index)
+        {
+            QString path = treeList[index].trimmed();
+
+            if(path.length() == 0) continue;
+
+            if(key == "")
+                key = path;
+            else
+                key += "/" + path;
+
+            if(item == NULL)
+            {
+                for(int x = 0; x < remoteTree->topLevelItemCount(); ++x)
+                {
+                    if(remoteTree->topLevelItem(x)->text(0) == path) {
+                        item = remoteTree->topLevelItem(x);
+                        break;
+                    }
+                }
+                if(!item)
+                    item = new QTreeWidgetItem(remoteTree, QStringList() << path);
+            }
+            else
+            {
+                QTreeWidgetItem* child = 0;
+                for(int x = 0; x < item->childCount(); ++x)
+                {
+                    if(item->child(x)->text(0) == path) {
+                        child = item->child(x);
+                        break;
+                    }
+                }
+
+                if(!child)
+                    child = new QTreeWidgetItem(item, QStringList() << path);
+                item = child;
+            }
+        }
+        remoteData[key] = results;
+    }
+//    else {
+//        QFileInfo info(inputUrl);
+//        QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << info.fileName());
+//        remoteTree->addTopLevelItem(item);
+//    }
+
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::downloadHosts
+//
+// Purpose:
+//   Download results from URL
+//
+// Programmer:
+// Creation:   September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
+{
+    QString results(reply->readAll());
+
+    QString inputUrl = reply->url().toString();
+
+    /// this is the result within an xml file..
+    /// parse and store this entry.
+    if(inputUrl.contains(".xml")) {
+        addRemoteProfile(inputUrl, results);
+    }
+    else {
+        QStringList responseList = results.split("\n");
+
+        foreach(const QString& response, responseList) {
+
+            if(!response.contains("<a href")) continue;
+            if(!response.contains(".xml") && !response.contains("/<")) continue;
+
+            QString tag = "<a href=\"";
+            int start = response.indexOf(tag) + tag.length();
+            int end = response.indexOf("\">",start);
+
+            if(start == -1 || end == -1 || end <= start) continue;
+
+            QString urlext = response.mid(start,end-start);
+
+            QUrl newUrl(inputUrl + "/" + urlext);
+
+            QNetworkRequest request(newUrl);
+            manager->get(request);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -3829,6 +4226,44 @@ QvisHostProfileWindow::delMachineProfile()
     }
     currentMachine = NULL;
     Apply();
+}
+
+// ****************************************************************************
+// Method:  QvisHostProfileWindow::exportMachineProfile
+//
+// Purpose:
+//   callback for "export" machine profile button
+//
+// Arguments:
+//   none
+//
+// Programmer:
+// Creation:    September 10, 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::exportMachineProfile()
+{
+    QModelIndex index = hostList->currentIndex();
+    if(!index.isValid()) return;
+
+    std::string text = index.data().toString().toStdString();
+
+    std::string s = text;
+
+    for (int j=0; j<s.length(); j++)
+    {
+        if (s[j]>='A' && s[j]<='Z')
+            s[j] += int('a')-int('A');
+        if ((s[j]<'a'||s[j]>'z') && (s[j]<'0'||s[j]>'9'))
+            s[j] = '_';
+    }
+
+    s = "host_" + s + ".xml";
+    GetViewerMethods()->ExportHostProfile(text, s, true);
 }
 
 // ****************************************************************************

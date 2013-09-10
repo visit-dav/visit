@@ -443,6 +443,7 @@ public:
     void DDTFocus(int domain);
 
     void ExportWindows(const intVector &windowIds, const std::string& format);
+    void ExportHostProfile(const std::string& profile, const std::string &filename, const bool& saveInUserDir = false);
 private:
     ViewerState *state;
 };

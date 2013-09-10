@@ -253,15 +253,23 @@ MovieTemplateConfig::CreateSequenceObjects(DataNode *sNode,
 //   Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //   Changed interface to DebugStream to obtain current debug level.
 // ****************************************************************************
+DataNode *
+MovieTemplateConfig::ReadConfigFile(std::istream& in)
+{
+    const char *mName = "MovieTemplateConfig::ReadConfigFile (istream): ";
+    debug1 << mName << " does not support streams " << endl;
+    return NULL;
+}
 
 DataNode *
 MovieTemplateConfig::ReadConfigFile(const char *filename)
 {
     const char *mName = "MovieTemplateConfig::ReadConfigFile: ";
     DataNode *node = 0;
-
+    std::ifstream inf;
     // Try and open the file for reading.
-    if((fp = fopen(filename, "rt")) == 0)
+    inf.open(filename, ios::in | ios::trunc);
+    if(inf.is_open() == false)
     {
         debug1 << mName << "Could not open " << filename << endl;
         return node;
@@ -270,22 +278,22 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
         debug1 << mName << "Opened " << filename << endl;
 
     // Skip the XMl tag
-    FinishTag();
+    FinishTag(inf);
 
     // Read the real data.
     root = new DataNode("root");
-    ReadObject(root);
-    fclose(fp); fp = 0;
+    ReadObject(inf, root);
+    inf.close();
     debug1 << mName << "The objects were read " << endl;
 
-    // Reparent the TemplateOptions node from the "root" node and 
+    // Reparent the TemplateOptions node from the "root" node and
     // make it the new root node.
     DataNode **children = root->GetChildren();
     for(int i = 0; i < root->GetNumChildren(); ++i)
     {
         DataNode *thisChild = children[i];
         if(thisChild->GetKey() == "TemplateOptions")
-        { 
+        {
             root->RemoveNode(thisChild, false);
             delete root;
             root = thisChild;
@@ -346,6 +354,19 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
 // Modifications:
 //   
 // ****************************************************************************
+bool
+MovieTemplateConfig::WriteConfigFile(std::ostream& out)
+{
+    // If we have no root then return.
+    if(root == 0)
+        return false;
+
+    // Write the output file to stdout for now.
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, GetRootNode());
+
+    return true;
+}
 
 bool
 MovieTemplateConfig::WriteConfigFile(const char *filename)
@@ -353,20 +374,17 @@ MovieTemplateConfig::WriteConfigFile(const char *filename)
     // If we have no root then return.
     if(root == 0)
         return false;
-
+    std::ofstream outf;
     // Try to open the output file.
-    if((fp = fopen(filename, "wt")) == 0)
+    outf.open(filename, ios::out | ios::trunc);
+    if(outf.is_open() == false)
         return false;
 
-    // Write the output file to stdout for now.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(GetRootNode());
-
+    bool res = WriteConfigFile(outf);
     // close the file
-    fclose(fp);
-    fp = 0;
+    outf.close();
 
-    return true;
+    return res;
 }
 
 // ****************************************************************************

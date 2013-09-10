@@ -90,34 +90,37 @@ public:
 
     virtual bool WriteConfigFile(const char *filename) = 0;
     virtual DataNode *ReadConfigFile(const char *filename) = 0;
+
+    virtual bool WriteConfigFile(std::ostream& out) = 0;
+    virtual DataNode *ReadConfigFile(std::istream& in) = 0;
 protected:
     // Functions to write out the tree.
-    void WriteObject(DataNode *node, int indentLevel = 0);
-    void WriteData(DataNode *node);
-    void WriteQuotedStringData(const std::string &str);
-    void WriteEscapedString(const std::string &str);
-    void WriteIndent(int indentLevel);
+    void WriteObject(std::ostream& out, DataNode *node, int indentLevel = 0);
+    void WriteData(std::ostream &out, DataNode *node);
+    void WriteQuotedStringData(std::ostream& out, const std::string &str);
+    void WriteEscapedString(std::ostream& out, const std::string &str);
+    void WriteIndent(std::ostream &out, int indentLevel);
     void WriteBack(DataNode *root);
 
     // Functions to read in the tree.
-    bool ReadObject(DataNode *);
-    bool ReadObjectHelper(DataNode *, bool &);
-    char ReadChar();
+    bool ReadObject(std::istream& in, DataNode *);
+    bool ReadObjectHelper(std::istream &in, DataNode *, bool &);
+    char ReadChar(std::istream &in);
     void PutBackChar(char c);
-    void FinishTag();
-    bool ReadField(DataNode *parentNode, const std::string &tagName,
+    void FinishTag(std::istream& in);
+    bool ReadField(std::istream &in, DataNode *parentNode, const std::string &tagName,
                    NodeTypeEnum tagType, int tagLength);
-    DataNode *ReadFieldData(const std::string &tagName, NodeTypeEnum tagType,
+    DataNode *ReadFieldData(std::istream& in, const std::string &tagName, NodeTypeEnum tagType,
                             int tagLength);
-    bool ReadTag(std::string &tagName, NodeTypeEnum &tagType,
+    bool ReadTag(std::istream &in, std::string &tagName, NodeTypeEnum &tagType,
                    int &tagLength, bool &tagIsReturnTag);
-    stringVector ReadStringVector(char termChar);
+    stringVector ReadStringVector(std::istream &in, char termChar);
     void RemoveLeadAndTailQuotes(stringVector &sv);
 
+private:
     // File attributes used in reading.
     bool  putback;
     char  putbackChar;
-    FILE *fp;
 };
 
 #endif

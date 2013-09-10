@@ -5454,20 +5454,38 @@ ViewerMethods::DDTFocus(int domain)
 }
 
 // ****************************************************************************
-//  Method: ViewerMethods::DDTFocus
+//  Method: ViewerMethods::Export functions
 //
-//  Purpose: Instructs DDT to focus on a specific domain
+//  Purpose: A set of Export functions
 //
 //  Programmer:
-//  Creation:   December 18, 2011
+//  Creation:   September 9, 2013
 //
 // ****************************************************************************
 
 void
 ViewerMethods::ExportWindows(const intVector &windowIds, const std::string &format)
 {
+    JSONNode node;
+    node["action"] = "ExportWindows";
+    node["plotIds"] = windowIds;
+    node["format"] = format;
+
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
-    state->GetViewerRPC()->SetActivePlotIds(windowIds);
-    state->GetViewerRPC()->SetStringArg1(format);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
+    state->GetViewerRPC()->Notify();
+}
+
+void
+ViewerMethods::ExportHostProfile(const std::string& profile, const std::string& filename, const bool &saveInUserDir)
+{
+    JSONNode node;
+    node["action"] = "ExportHostProfile";
+    node["profileName"] = profile;
+    node["fileName"] = filename;
+    node["saveInUserDir"] = saveInUserDir;
+
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ExportRPC);
+    state->GetViewerRPC()->SetStringArg1(node.ToString());
     state->GetViewerRPC()->Notify();
 }

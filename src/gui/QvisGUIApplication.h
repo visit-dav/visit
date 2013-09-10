@@ -383,9 +383,11 @@ protected:
     void MoveAndResizeMainWindow(int orientation);
     void ProcessArguments(int &argc, char **argv);
     virtual DataNode *ReadConfigFile(const char *filename);
+    virtual DataNode *ReadConfigFile(std::istream& in);
     void ProcessConfigSettings(DataNode *settings, bool systemConfig);
     void ProcessWindowConfigSettings(DataNode *settings);
     void SetOrientation(int orientation);
+    virtual bool WriteConfigFile(std::ostream& out);
     virtual bool WriteConfigFile(const char *filename);
     void ReadSavedMainWindowGeometry(DataNode *node,
                                      bool &wh_set, int &w, int &h,
