@@ -1184,112 +1184,207 @@ static void PlusEqual(vtkDataArray *lhs, vtkDataArray *rhs)
     }
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Tue Sep 10 16:06:30 PDT 2013
+//    Add 'num_nodes' argument and use it to determine if cell types are
+//    quadratic.  Borrowing from vtk's reader, reduced complexity by only 
+//    comparing first 3 chars of ex_elem_type_att in most instances, and 
+//    supporting more exodus types.  Set vtk_celltype to -1 for types that
+//    VisIt may not yet support. 
+//
+// ****************************************************************************
+
 static void 
-DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_celltype)
+DecodeExodusElemTypeAttText(const char *ex_elem_type_att, int *tdim, int *vtk_celltype, int &num_nodes)
 {
-    if (!STRNCASECMP(ex_elem_type_att, "circle", strlen("circle")))
+    std::string elemType(ex_elem_type_att);
+    std::transform(elemType.begin(), elemType.end(), elemType.begin(), ::tolower);    
+    if (elemType.substr(0, 3) == "cir")
     {
         if (tdim) *tdim = 2;
         if (vtk_celltype) *vtk_celltype = VTK_VERTEX;
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "sphere", strlen("sphere")))
+    else if (elemType.substr(0, 3) == "sph")
     {
         if (tdim) *tdim = 3;
         if (vtk_celltype) *vtk_celltype = VTK_VERTEX;
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "quad4", strlen("quad4")))
+    else if (elemType.substr(0, 3) == "qua")
     {
         if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_QUAD;
+        if (vtk_celltype) 
+        {
+            if (4 == num_nodes)
+                *vtk_celltype = VTK_QUAD;
+            else if (8 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_QUAD;
+            else if (9 == num_nodes)
+                *vtk_celltype = VTK_BIQUADRATIC_QUAD;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "quad", strlen("quad")))
+    else if (elemType.substr(0, 3) == "tri")
     {
         if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_QUAD;
+        if (vtk_celltype)
+        {
+            if (3 == num_nodes)
+                *vtk_celltype = VTK_TRIANGLE;
+            else if (6 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_TRIANGLE;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "tri3", strlen("tri3")))
+    else if (elemType.substr(0, 3) == "she")
     {
         if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_TRIANGLE;
+        if (vtk_celltype)
+        {
+            if (3 == num_nodes)
+                *vtk_celltype = VTK_TRIANGLE;
+            else if (4 == num_nodes)
+                *vtk_celltype = VTK_QUAD;
+            else if (8 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_QUAD;
+            else if (8 == num_nodes)
+            {
+                *vtk_celltype = VTK_QUADRATIC_QUAD;
+                num_nodes = 8;
+            }
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "triangle", strlen("triangle")))
-    {
-        if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_TRIANGLE;
-        return;
-    }
-    else if (!STRNCASECMP(ex_elem_type_att, "tri", strlen("tri")))
-    {
-        if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_TRIANGLE;
-        return;
-    }
-    else if (!STRNCASECMP(ex_elem_type_att, "shell4", strlen("shell4")))
-    {
-        if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_QUAD;
-        return;
-    }
-    else if (!STRNCASECMP(ex_elem_type_att, "shell", strlen("shell")))
-    {
-        if (tdim) *tdim = 2;
-        if (vtk_celltype) *vtk_celltype = VTK_QUAD;
-        return;
-    }
-    else if (!STRNCASECMP(ex_elem_type_att, "hex8", strlen("hex8")))
+    else if (elemType.substr(0, 3) == "hex")
     {
         if (tdim) *tdim = 3;
-        if (vtk_celltype) *vtk_celltype = VTK_HEXAHEDRON;
+        if (vtk_celltype)
+        {
+            if (8 == num_nodes)
+                *vtk_celltype = VTK_HEXAHEDRON;
+            else if (20 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_HEXAHEDRON;
+            else if (21 == num_nodes)
+            {
+                *vtk_celltype = VTK_QUADRATIC_HEXAHEDRON;
+                num_nodes = 20;
+            }
+            //else if (27 == num_nodes)
+            //    *vtk_celltype = VTK_TRIQUADRATIC_HEXAHEDRON;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "hex", strlen("hex")))
+    else if (elemType.substr(0, 3) == "tet")
     {
         if (tdim) *tdim = 3;
-        if (vtk_celltype) *vtk_celltype = VTK_HEXAHEDRON;
+        if (vtk_celltype)
+        {
+            if (4 == num_nodes)
+                *vtk_celltype = VTK_TETRA;
+            else if (10 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_TETRA;
+            else if (11 == num_nodes)
+            {
+                *vtk_celltype = VTK_QUADRATIC_TETRA;
+                num_nodes = 10;
+            }
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "tetra", strlen("tetra")))
+    else if (elemType.substr(0, 3) == "wed")
     {
         if (tdim) *tdim = 3;
-        if (vtk_celltype) *vtk_celltype = VTK_TETRA;
+        if (vtk_celltype)
+        {
+            if (6 == num_nodes)
+                *vtk_celltype = VTK_WEDGE;
+            else if (15 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_WEDGE;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "wedge", strlen("wedge")))
+    else if (elemType.substr(0, 3) == "pyr")
     {
         if (tdim) *tdim = 3;
-        if (vtk_celltype) *vtk_celltype = VTK_WEDGE;
+        if (vtk_celltype)
+        {
+            if (5 == num_nodes)
+                *vtk_celltype = VTK_PYRAMID;
+            else if (13 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_PYRAMID;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "pyramid", strlen("pyramid")))
-    {
-        if (tdim) *tdim = 3;
-        if (vtk_celltype) *vtk_celltype = VTK_PYRAMID;
-        return;
-    }
-    else if (!STRNCASECMP(ex_elem_type_att, "beam", strlen("beam")))
+    else if (elemType.substr(0, 3) == "tru")
     {
         if (tdim) *tdim = 1;
-        if (vtk_celltype) *vtk_celltype = VTK_LINE;
+        if (vtk_celltype)
+        {
+            if (2 == num_nodes)
+                *vtk_celltype = VTK_LINE;
+            else if (3 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_EDGE;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "bar", strlen("bar")))
+    else if (elemType.substr(0, 3) == "bea")
     {
         if (tdim) *tdim = 1;
-        if (vtk_celltype) *vtk_celltype = VTK_LINE;
+        if (vtk_celltype)
+        {
+            if (2 == num_nodes)
+                *vtk_celltype = VTK_LINE;
+            else if (3 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_EDGE;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "edge", strlen("edge")))
+    else if (elemType.substr(0, 3) == "bar")
     {
         if (tdim) *tdim = 1;
-        if (vtk_celltype) *vtk_celltype = VTK_LINE;
+        if (vtk_celltype)
+        {
+            if (2 == num_nodes)
+                *vtk_celltype = VTK_LINE;
+            else if (3 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_EDGE;
+        }
         return;
     }
-    else if (!STRNCASECMP(ex_elem_type_att, "null", strlen("null")))
+    else if (elemType.substr(0, 3) == "edg")
+    {
+        if (tdim) *tdim = 1;
+        if (vtk_celltype)
+        {
+            if (2 == num_nodes)
+                *vtk_celltype = VTK_LINE;
+            else if (3 == num_nodes)
+                *vtk_celltype = VTK_QUADRATIC_EDGE;
+        }
+        return;
+    }
+    else if (elemType.substr(0, 8) == "straight")
+    {
+        if (tdim) *tdim = 1;
+        if (vtk_celltype)
+        {
+            if (2 == num_nodes)
+                *vtk_celltype = VTK_LINE;
+        }
+        return;
+    }
+    else if (elemType.substr(0, 3) == "sup")
+    {
+        if (tdim) *tdim = 1;
+        if (vtk_celltype)
+        {
+            *vtk_celltype = VTK_POLY_VERTEX;
+        }
+        return;
+    }
+    else if (elemType.substr(0, 4) == "null")
     {
         if (tdim) *tdim = 0;
         if (vtk_celltype) *vtk_celltype = VTK_EMPTY_CELL;
@@ -1303,15 +1398,22 @@ static int
 ExodusElemTypeAtt2TopoDim(const char *ex_elem_type_att)
 {
     int tdim;
-    DecodeExodusElemTypeAttText(ex_elem_type_att, &tdim, 0);
+    DecodeExodusElemTypeAttText(ex_elem_type_att, &tdim, 0, tdim);
     return tdim;
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Tue Sep 10 16:06:30 PDT 2013
+//    Add 'num_nodes' argument and pass it to DecodeExodusElemTypeAttText.
+//
+// ****************************************************************************
+
 static int
-ExodusElemTypeAtt2VTKCellType(const char *ex_elem_type_att)
+ExodusElemTypeAtt2VTKCellType(const char *ex_elem_type_att, int &num_nodes)
 {
-    int ctype;
-    DecodeExodusElemTypeAttText(ex_elem_type_att, 0, &ctype);
+    int ctype = -1;
+    DecodeExodusElemTypeAttText(ex_elem_type_att, 0, &ctype, num_nodes);
     return ctype;
 }
 
@@ -1688,6 +1790,12 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Thu Jun 27 10:13:46 PDT 2013
 //    Removed logic to automagically add displacements.
+//
+//    Kathleen Biagas, Mon Sep  9 15:51:17 PDT 2013
+//    Use num_nodes_per_elem when determining vtk_celltype so quadratic cells
+//    are handled correctly.  Change 'verts' size to 20 to handle quadratic
+//    hexes. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1814,8 +1922,6 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         VisItNCErr = nc_get_att_text(ncExIIId, connect_varid, "elem_type", connect_elem_type_attval);
         if (VisItNCErr != NC_NOERR)
             strcpy(connect_elem_type_attval, "unknown");
-        int vtk_celltype = ExodusElemTypeAtt2VTKCellType(connect_elem_type_attval);
-        delete [] connect_elem_type_attval;
 
         char num_el_in_blk_dimname[NC_MAX_NAME+1];
         SNPRINTF(num_el_in_blk_dimname, sizeof(num_el_in_blk_dimname), "num_el_in_blk%d", i+1);
@@ -1836,10 +1942,12 @@ avtExodusFileFormat::GetMesh(int ts, const char *mesh)
         VisItNCErr = nc_inq_dimlen(ncExIIId, num_nod_per_dimId, &num_nod_per_len);
         CheckNCError(nc_inq_dimlen);
         int num_nodes_per_elem = (int) num_nod_per_len;
+        int vtk_celltype = ExodusElemTypeAtt2VTKCellType(connect_elem_type_attval, num_nodes_per_elem);
+        delete [] connect_elem_type_attval;
 
         blockIdToMatMap[i+1] = num_elems_in_blk;
 
-        vtkIdType verts[16];
+        vtkIdType verts[20];
         switch (connect_vartype)
         {
             case NC_INT:
