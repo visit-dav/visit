@@ -2086,7 +2086,7 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 
     // See if the vector needs converting.
     if (num_comps == 2 && metadata != NULL && 
-        metdata->GetMesh("Mesh")->spatialDimension == 3)
+        metadata->GetMesh("Mesh")->spatialDimension == 3)
     {
         // convert the 2-component vector to 3-component
         vtkDataArray *vec = arr->NewInstance();
