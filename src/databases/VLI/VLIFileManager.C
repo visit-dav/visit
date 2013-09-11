@@ -97,11 +97,13 @@ VLIFileManager::~VLIFileManager()
 // Creation:   Fri Aug 10 11:13:00 EDT 2007
 //
 // Modifications:
+//    Kathleen Biagas, Wed Sep 11 09:44:31 PDT 2013
+//    Added the ostream version.
 //
 // ****************************************************************************
 
 bool
-VLIFileManager::WriteConfigFile(const char *filename)
+VLIFileManager::WriteConfigFile(std::ostream &out)
 {
     DataNode topLevel("topLevel");
 
@@ -113,21 +115,28 @@ VLIFileManager::WriteConfigFile(const char *filename)
     // Let the vli file manager create and add its information to the node.
     ctNode->AddNode(Export());
 
+    // Write the output file.
+    out << "<?xml version=\"1.0\"?>\n";
+    WriteObject(out, ctNode);
+    return true;
+}
+
+bool
+VLIFileManager::WriteConfigFile(const char *filename)
+{
     // Try to open the output file.
-    if((fp = fopen(filename, "wb")) == 0)
+    std::ofstream outf(filename, ios::out | ios::trunc);
+    if(outf.is_open() == false)
     {
         return false;
     }
 
-    // Write the output file.
-    fprintf(fp, "<?xml version=\"1.0\"?>\n");
-    WriteObject(ctNode);
+    bool res = WriteConfigFile(outf);
 
     // Close the file
-    fclose(fp);
-    fp = 0;
+    outf.close();
 
-    return true;
+    return res;
 }
 
 // ****************************************************************************
@@ -143,8 +152,25 @@ VLIFileManager::WriteConfigFile(const char *filename)
 // Creation:   Fri Aug 10 11:13:00 EDT 2007
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Sep 11 09:39:24 PDT 2013
+//    Added istream version.
+//
 // ****************************************************************************
+
+DataNode *
+VLIFileManager::ReadConfigFile(std::istream &in)
+{
+    DataNode *node = 0;
+
+    // Read the XML tag and ignore it.
+    FinishTag(in);
+
+    // Create a root node and use it to read the visit tree.
+    node = new DataNode("FileRoot");
+    ReadObject(in, node);
+
+    return Import(node);
+}
 
 DataNode *
 VLIFileManager::ReadConfigFile(const char *filename)
@@ -152,20 +178,13 @@ VLIFileManager::ReadConfigFile(const char *filename)
     DataNode *node = 0;
 
     // Try and open the file for reading.
-    if((fp = fopen(filename, "r")) == 0)
+    std::ifstream inf(filename, ios::in | ios::trunc);
+    if (inf.is_open() == false)
         return node;
-
-    // Read the XML tag and ignore it.
-    FinishTag();
-
-    // Create a root node and use it to read the visit tree.
-    node = new DataNode("FileRoot");
-    ReadObject(node);
-
-    fclose(fp);
-    fp = 0;
-    
-    return Import(node);
+    node = ReadConfigFile(inf);
+    inf.close();
+ 
+    return node;
 }
 
 // ****************************************************************************
