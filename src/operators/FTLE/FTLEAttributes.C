@@ -443,10 +443,6 @@ void FTLEAttributes::Init()
     issueStiffnessWarnings = true;
     issueCriticalPointsWarnings = true;
     criticalPointThreshold = 0.001;
-    correlationDistanceAngTol = 5;
-    correlationDistanceMinDistAbsolute = 1;
-    correlationDistanceMinDistBBox = 0.005;
-    correlationDistanceMinDistType = FractionOfBBox;
 
     FTLEAttributes::SelectAll();
 }
@@ -519,11 +515,6 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     issueStiffnessWarnings = obj.issueStiffnessWarnings;
     issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
     criticalPointThreshold = obj.criticalPointThreshold;
-    correlationDistanceAngTol = obj.correlationDistanceAngTol;
-    correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
-    correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
-    correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
-    selection = obj.selection;
 
     FTLEAttributes::SelectAll();
 }
@@ -739,12 +730,7 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             (issueTerminationWarnings == obj.issueTerminationWarnings) &&
             (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
             (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
-            (criticalPointThreshold == obj.criticalPointThreshold) &&
-            (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
-            (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
-            (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
-            (correlationDistanceMinDistType == obj.correlationDistanceMinDistType) &&
-            (selection == obj.selection));
+            (criticalPointThreshold == obj.criticalPointThreshold));
 }
 
 // ****************************************************************************
@@ -902,50 +888,45 @@ FTLEAttributes::NewInstance(bool copy) const
 void
 FTLEAttributes::SelectAll()
 {
-    Select(ID_sourceType,                         (void *)&sourceType);
-    Select(ID_Resolution,                         (void *)Resolution, 3);
-    Select(ID_UseDataSetStart,                    (void *)&UseDataSetStart);
-    Select(ID_StartPosition,                      (void *)StartPosition, 3);
-    Select(ID_UseDataSetEnd,                      (void *)&UseDataSetEnd);
-    Select(ID_EndPosition,                        (void *)EndPosition, 3);
-    Select(ID_integrationDirection,               (void *)&integrationDirection);
-    Select(ID_maxSteps,                           (void *)&maxSteps);
-    Select(ID_terminationType,                    (void *)&terminationType);
-    Select(ID_terminateBySize,                    (void *)&terminateBySize);
-    Select(ID_termSize,                           (void *)&termSize);
-    Select(ID_terminateByDistance,                (void *)&terminateByDistance);
-    Select(ID_termDistance,                       (void *)&termDistance);
-    Select(ID_terminateByTime,                    (void *)&terminateByTime);
-    Select(ID_termTime,                           (void *)&termTime);
-    Select(ID_maxStepLength,                      (void *)&maxStepLength);
-    Select(ID_limitMaximumTimestep,               (void *)&limitMaximumTimestep);
-    Select(ID_maxTimeStep,                        (void *)&maxTimeStep);
-    Select(ID_relTol,                             (void *)&relTol);
-    Select(ID_absTolSizeType,                     (void *)&absTolSizeType);
-    Select(ID_absTolAbsolute,                     (void *)&absTolAbsolute);
-    Select(ID_absTolBBox,                         (void *)&absTolBBox);
-    Select(ID_fieldType,                          (void *)&fieldType);
-    Select(ID_fieldConstant,                      (void *)&fieldConstant);
-    Select(ID_velocitySource,                     (void *)velocitySource, 3);
-    Select(ID_integrationType,                    (void *)&integrationType);
-    Select(ID_parallelizationAlgorithmType,       (void *)&parallelizationAlgorithmType);
-    Select(ID_maxProcessCount,                    (void *)&maxProcessCount);
-    Select(ID_maxDomainCacheSize,                 (void *)&maxDomainCacheSize);
-    Select(ID_workGroupSize,                      (void *)&workGroupSize);
-    Select(ID_pathlines,                          (void *)&pathlines);
-    Select(ID_pathlinesOverrideStartingTimeFlag,  (void *)&pathlinesOverrideStartingTimeFlag);
-    Select(ID_pathlinesOverrideStartingTime,      (void *)&pathlinesOverrideStartingTime);
-    Select(ID_pathlinesCMFE,                      (void *)&pathlinesCMFE);
-    Select(ID_forceNodeCenteredData,              (void *)&forceNodeCenteredData);
-    Select(ID_issueTerminationWarnings,           (void *)&issueTerminationWarnings);
-    Select(ID_issueStiffnessWarnings,             (void *)&issueStiffnessWarnings);
-    Select(ID_issueCriticalPointsWarnings,        (void *)&issueCriticalPointsWarnings);
-    Select(ID_criticalPointThreshold,             (void *)&criticalPointThreshold);
-    Select(ID_correlationDistanceAngTol,          (void *)&correlationDistanceAngTol);
-    Select(ID_correlationDistanceMinDistAbsolute, (void *)&correlationDistanceMinDistAbsolute);
-    Select(ID_correlationDistanceMinDistBBox,     (void *)&correlationDistanceMinDistBBox);
-    Select(ID_correlationDistanceMinDistType,     (void *)&correlationDistanceMinDistType);
-    Select(ID_selection,                          (void *)&selection);
+    Select(ID_sourceType,                        (void *)&sourceType);
+    Select(ID_Resolution,                        (void *)Resolution, 3);
+    Select(ID_UseDataSetStart,                   (void *)&UseDataSetStart);
+    Select(ID_StartPosition,                     (void *)StartPosition, 3);
+    Select(ID_UseDataSetEnd,                     (void *)&UseDataSetEnd);
+    Select(ID_EndPosition,                       (void *)EndPosition, 3);
+    Select(ID_integrationDirection,              (void *)&integrationDirection);
+    Select(ID_maxSteps,                          (void *)&maxSteps);
+    Select(ID_terminationType,                   (void *)&terminationType);
+    Select(ID_terminateBySize,                   (void *)&terminateBySize);
+    Select(ID_termSize,                          (void *)&termSize);
+    Select(ID_terminateByDistance,               (void *)&terminateByDistance);
+    Select(ID_termDistance,                      (void *)&termDistance);
+    Select(ID_terminateByTime,                   (void *)&terminateByTime);
+    Select(ID_termTime,                          (void *)&termTime);
+    Select(ID_maxStepLength,                     (void *)&maxStepLength);
+    Select(ID_limitMaximumTimestep,              (void *)&limitMaximumTimestep);
+    Select(ID_maxTimeStep,                       (void *)&maxTimeStep);
+    Select(ID_relTol,                            (void *)&relTol);
+    Select(ID_absTolSizeType,                    (void *)&absTolSizeType);
+    Select(ID_absTolAbsolute,                    (void *)&absTolAbsolute);
+    Select(ID_absTolBBox,                        (void *)&absTolBBox);
+    Select(ID_fieldType,                         (void *)&fieldType);
+    Select(ID_fieldConstant,                     (void *)&fieldConstant);
+    Select(ID_velocitySource,                    (void *)velocitySource, 3);
+    Select(ID_integrationType,                   (void *)&integrationType);
+    Select(ID_parallelizationAlgorithmType,      (void *)&parallelizationAlgorithmType);
+    Select(ID_maxProcessCount,                   (void *)&maxProcessCount);
+    Select(ID_maxDomainCacheSize,                (void *)&maxDomainCacheSize);
+    Select(ID_workGroupSize,                     (void *)&workGroupSize);
+    Select(ID_pathlines,                         (void *)&pathlines);
+    Select(ID_pathlinesOverrideStartingTimeFlag, (void *)&pathlinesOverrideStartingTimeFlag);
+    Select(ID_pathlinesOverrideStartingTime,     (void *)&pathlinesOverrideStartingTime);
+    Select(ID_pathlinesCMFE,                     (void *)&pathlinesCMFE);
+    Select(ID_forceNodeCenteredData,             (void *)&forceNodeCenteredData);
+    Select(ID_issueTerminationWarnings,          (void *)&issueTerminationWarnings);
+    Select(ID_issueStiffnessWarnings,            (void *)&issueStiffnessWarnings);
+    Select(ID_issueCriticalPointsWarnings,       (void *)&issueCriticalPointsWarnings);
+    Select(ID_criticalPointThreshold,            (void *)&criticalPointThreshold);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1212,36 +1193,6 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("criticalPointThreshold", criticalPointThreshold));
     }
 
-    if(completeSave || !FieldsEqual(ID_correlationDistanceAngTol, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("correlationDistanceAngTol", correlationDistanceAngTol));
-    }
-
-    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistAbsolute, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("correlationDistanceMinDistAbsolute", correlationDistanceMinDistAbsolute));
-    }
-
-    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistBBox, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("correlationDistanceMinDistBBox", correlationDistanceMinDistBBox));
-    }
-
-    if(completeSave || !FieldsEqual(ID_correlationDistanceMinDistType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("correlationDistanceMinDistType", SizeType_ToString(correlationDistanceMinDistType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_selection, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("selection", selection));
-    }
-
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1496,30 +1447,6 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         SetIssueCriticalPointsWarnings(node->AsBool());
     if((node = searchNode->GetNode("criticalPointThreshold")) != 0)
         SetCriticalPointThreshold(node->AsDouble());
-    if((node = searchNode->GetNode("correlationDistanceAngTol")) != 0)
-        SetCorrelationDistanceAngTol(node->AsDouble());
-    if((node = searchNode->GetNode("correlationDistanceMinDistAbsolute")) != 0)
-        SetCorrelationDistanceMinDistAbsolute(node->AsDouble());
-    if((node = searchNode->GetNode("correlationDistanceMinDistBBox")) != 0)
-        SetCorrelationDistanceMinDistBBox(node->AsDouble());
-    if((node = searchNode->GetNode("correlationDistanceMinDistType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetCorrelationDistanceMinDistType(SizeType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            SizeType value;
-            if(SizeType_FromString(node->AsString(), value))
-                SetCorrelationDistanceMinDistType(value);
-        }
-    }
-    if((node = searchNode->GetNode("selection")) != 0)
-        SetSelection(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1807,41 +1734,6 @@ FTLEAttributes::SetCriticalPointThreshold(double criticalPointThreshold_)
     Select(ID_criticalPointThreshold, (void *)&criticalPointThreshold);
 }
 
-void
-FTLEAttributes::SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
-{
-    correlationDistanceAngTol = correlationDistanceAngTol_;
-    Select(ID_correlationDistanceAngTol, (void *)&correlationDistanceAngTol);
-}
-
-void
-FTLEAttributes::SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
-{
-    correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-    Select(ID_correlationDistanceMinDistAbsolute, (void *)&correlationDistanceMinDistAbsolute);
-}
-
-void
-FTLEAttributes::SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
-{
-    correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-    Select(ID_correlationDistanceMinDistBBox, (void *)&correlationDistanceMinDistBBox);
-}
-
-void
-FTLEAttributes::SetCorrelationDistanceMinDistType(FTLEAttributes::SizeType correlationDistanceMinDistType_)
-{
-    correlationDistanceMinDistType = correlationDistanceMinDistType_;
-    Select(ID_correlationDistanceMinDistType, (void *)&correlationDistanceMinDistType);
-}
-
-void
-FTLEAttributes::SetSelection(const std::string &selection_)
-{
-    selection = selection_;
-    Select(ID_selection, (void *)&selection);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2104,42 +1996,6 @@ FTLEAttributes::GetCriticalPointThreshold() const
     return criticalPointThreshold;
 }
 
-double
-FTLEAttributes::GetCorrelationDistanceAngTol() const
-{
-    return correlationDistanceAngTol;
-}
-
-double
-FTLEAttributes::GetCorrelationDistanceMinDistAbsolute() const
-{
-    return correlationDistanceMinDistAbsolute;
-}
-
-double
-FTLEAttributes::GetCorrelationDistanceMinDistBBox() const
-{
-    return correlationDistanceMinDistBBox;
-}
-
-FTLEAttributes::SizeType
-FTLEAttributes::GetCorrelationDistanceMinDistType() const
-{
-    return SizeType(correlationDistanceMinDistType);
-}
-
-const std::string &
-FTLEAttributes::GetSelection() const
-{
-    return selection;
-}
-
-std::string &
-FTLEAttributes::GetSelection()
-{
-    return selection;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2168,12 +2024,6 @@ FTLEAttributes::SelectVelocitySource()
     Select(ID_velocitySource, (void *)velocitySource, 3);
 }
 
-void
-FTLEAttributes::SelectSelection()
-{
-    Select(ID_selection, (void *)&selection);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2198,50 +2048,45 @@ FTLEAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:                         return "sourceType";
-    case ID_Resolution:                         return "Resolution";
-    case ID_UseDataSetStart:                    return "UseDataSetStart";
-    case ID_StartPosition:                      return "StartPosition";
-    case ID_UseDataSetEnd:                      return "UseDataSetEnd";
-    case ID_EndPosition:                        return "EndPosition";
-    case ID_integrationDirection:               return "integrationDirection";
-    case ID_maxSteps:                           return "maxSteps";
-    case ID_terminationType:                    return "terminationType";
-    case ID_terminateBySize:                    return "terminateBySize";
-    case ID_termSize:                           return "termSize";
-    case ID_terminateByDistance:                return "terminateByDistance";
-    case ID_termDistance:                       return "termDistance";
-    case ID_terminateByTime:                    return "terminateByTime";
-    case ID_termTime:                           return "termTime";
-    case ID_maxStepLength:                      return "maxStepLength";
-    case ID_limitMaximumTimestep:               return "limitMaximumTimestep";
-    case ID_maxTimeStep:                        return "maxTimeStep";
-    case ID_relTol:                             return "relTol";
-    case ID_absTolSizeType:                     return "absTolSizeType";
-    case ID_absTolAbsolute:                     return "absTolAbsolute";
-    case ID_absTolBBox:                         return "absTolBBox";
-    case ID_fieldType:                          return "fieldType";
-    case ID_fieldConstant:                      return "fieldConstant";
-    case ID_velocitySource:                     return "velocitySource";
-    case ID_integrationType:                    return "integrationType";
-    case ID_parallelizationAlgorithmType:       return "parallelizationAlgorithmType";
-    case ID_maxProcessCount:                    return "maxProcessCount";
-    case ID_maxDomainCacheSize:                 return "maxDomainCacheSize";
-    case ID_workGroupSize:                      return "workGroupSize";
-    case ID_pathlines:                          return "pathlines";
-    case ID_pathlinesOverrideStartingTimeFlag:  return "pathlinesOverrideStartingTimeFlag";
-    case ID_pathlinesOverrideStartingTime:      return "pathlinesOverrideStartingTime";
-    case ID_pathlinesCMFE:                      return "pathlinesCMFE";
-    case ID_forceNodeCenteredData:              return "forceNodeCenteredData";
-    case ID_issueTerminationWarnings:           return "issueTerminationWarnings";
-    case ID_issueStiffnessWarnings:             return "issueStiffnessWarnings";
-    case ID_issueCriticalPointsWarnings:        return "issueCriticalPointsWarnings";
-    case ID_criticalPointThreshold:             return "criticalPointThreshold";
-    case ID_correlationDistanceAngTol:          return "correlationDistanceAngTol";
-    case ID_correlationDistanceMinDistAbsolute: return "correlationDistanceMinDistAbsolute";
-    case ID_correlationDistanceMinDistBBox:     return "correlationDistanceMinDistBBox";
-    case ID_correlationDistanceMinDistType:     return "correlationDistanceMinDistType";
-    case ID_selection:                          return "selection";
+    case ID_sourceType:                        return "sourceType";
+    case ID_Resolution:                        return "Resolution";
+    case ID_UseDataSetStart:                   return "UseDataSetStart";
+    case ID_StartPosition:                     return "StartPosition";
+    case ID_UseDataSetEnd:                     return "UseDataSetEnd";
+    case ID_EndPosition:                       return "EndPosition";
+    case ID_integrationDirection:              return "integrationDirection";
+    case ID_maxSteps:                          return "maxSteps";
+    case ID_terminationType:                   return "terminationType";
+    case ID_terminateBySize:                   return "terminateBySize";
+    case ID_termSize:                          return "termSize";
+    case ID_terminateByDistance:               return "terminateByDistance";
+    case ID_termDistance:                      return "termDistance";
+    case ID_terminateByTime:                   return "terminateByTime";
+    case ID_termTime:                          return "termTime";
+    case ID_maxStepLength:                     return "maxStepLength";
+    case ID_limitMaximumTimestep:              return "limitMaximumTimestep";
+    case ID_maxTimeStep:                       return "maxTimeStep";
+    case ID_relTol:                            return "relTol";
+    case ID_absTolSizeType:                    return "absTolSizeType";
+    case ID_absTolAbsolute:                    return "absTolAbsolute";
+    case ID_absTolBBox:                        return "absTolBBox";
+    case ID_fieldType:                         return "fieldType";
+    case ID_fieldConstant:                     return "fieldConstant";
+    case ID_velocitySource:                    return "velocitySource";
+    case ID_integrationType:                   return "integrationType";
+    case ID_parallelizationAlgorithmType:      return "parallelizationAlgorithmType";
+    case ID_maxProcessCount:                   return "maxProcessCount";
+    case ID_maxDomainCacheSize:                return "maxDomainCacheSize";
+    case ID_workGroupSize:                     return "workGroupSize";
+    case ID_pathlines:                         return "pathlines";
+    case ID_pathlinesOverrideStartingTimeFlag: return "pathlinesOverrideStartingTimeFlag";
+    case ID_pathlinesOverrideStartingTime:     return "pathlinesOverrideStartingTime";
+    case ID_pathlinesCMFE:                     return "pathlinesCMFE";
+    case ID_forceNodeCenteredData:             return "forceNodeCenteredData";
+    case ID_issueTerminationWarnings:          return "issueTerminationWarnings";
+    case ID_issueStiffnessWarnings:            return "issueStiffnessWarnings";
+    case ID_issueCriticalPointsWarnings:       return "issueCriticalPointsWarnings";
+    case ID_criticalPointThreshold:            return "criticalPointThreshold";
     default:  return "invalid index";
     }
 }
@@ -2266,50 +2111,45 @@ FTLEAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:                         return FieldType_enum;
-    case ID_Resolution:                         return FieldType_intArray;
-    case ID_UseDataSetStart:                    return FieldType_enum;
-    case ID_StartPosition:                      return FieldType_doubleArray;
-    case ID_UseDataSetEnd:                      return FieldType_enum;
-    case ID_EndPosition:                        return FieldType_doubleArray;
-    case ID_integrationDirection:               return FieldType_enum;
-    case ID_maxSteps:                           return FieldType_int;
-    case ID_terminationType:                    return FieldType_enum;
-    case ID_terminateBySize:                    return FieldType_bool;
-    case ID_termSize:                           return FieldType_double;
-    case ID_terminateByDistance:                return FieldType_bool;
-    case ID_termDistance:                       return FieldType_double;
-    case ID_terminateByTime:                    return FieldType_bool;
-    case ID_termTime:                           return FieldType_double;
-    case ID_maxStepLength:                      return FieldType_double;
-    case ID_limitMaximumTimestep:               return FieldType_bool;
-    case ID_maxTimeStep:                        return FieldType_double;
-    case ID_relTol:                             return FieldType_double;
-    case ID_absTolSizeType:                     return FieldType_enum;
-    case ID_absTolAbsolute:                     return FieldType_double;
-    case ID_absTolBBox:                         return FieldType_double;
-    case ID_fieldType:                          return FieldType_enum;
-    case ID_fieldConstant:                      return FieldType_double;
-    case ID_velocitySource:                     return FieldType_doubleArray;
-    case ID_integrationType:                    return FieldType_enum;
-    case ID_parallelizationAlgorithmType:       return FieldType_enum;
-    case ID_maxProcessCount:                    return FieldType_int;
-    case ID_maxDomainCacheSize:                 return FieldType_int;
-    case ID_workGroupSize:                      return FieldType_int;
-    case ID_pathlines:                          return FieldType_bool;
-    case ID_pathlinesOverrideStartingTimeFlag:  return FieldType_bool;
-    case ID_pathlinesOverrideStartingTime:      return FieldType_double;
-    case ID_pathlinesCMFE:                      return FieldType_enum;
-    case ID_forceNodeCenteredData:              return FieldType_bool;
-    case ID_issueTerminationWarnings:           return FieldType_bool;
-    case ID_issueStiffnessWarnings:             return FieldType_bool;
-    case ID_issueCriticalPointsWarnings:        return FieldType_bool;
-    case ID_criticalPointThreshold:             return FieldType_double;
-    case ID_correlationDistanceAngTol:          return FieldType_double;
-    case ID_correlationDistanceMinDistAbsolute: return FieldType_double;
-    case ID_correlationDistanceMinDistBBox:     return FieldType_double;
-    case ID_correlationDistanceMinDistType:     return FieldType_enum;
-    case ID_selection:                          return FieldType_string;
+    case ID_sourceType:                        return FieldType_enum;
+    case ID_Resolution:                        return FieldType_intArray;
+    case ID_UseDataSetStart:                   return FieldType_enum;
+    case ID_StartPosition:                     return FieldType_doubleArray;
+    case ID_UseDataSetEnd:                     return FieldType_enum;
+    case ID_EndPosition:                       return FieldType_doubleArray;
+    case ID_integrationDirection:              return FieldType_enum;
+    case ID_maxSteps:                          return FieldType_int;
+    case ID_terminationType:                   return FieldType_enum;
+    case ID_terminateBySize:                   return FieldType_bool;
+    case ID_termSize:                          return FieldType_double;
+    case ID_terminateByDistance:               return FieldType_bool;
+    case ID_termDistance:                      return FieldType_double;
+    case ID_terminateByTime:                   return FieldType_bool;
+    case ID_termTime:                          return FieldType_double;
+    case ID_maxStepLength:                     return FieldType_double;
+    case ID_limitMaximumTimestep:              return FieldType_bool;
+    case ID_maxTimeStep:                       return FieldType_double;
+    case ID_relTol:                            return FieldType_double;
+    case ID_absTolSizeType:                    return FieldType_enum;
+    case ID_absTolAbsolute:                    return FieldType_double;
+    case ID_absTolBBox:                        return FieldType_double;
+    case ID_fieldType:                         return FieldType_enum;
+    case ID_fieldConstant:                     return FieldType_double;
+    case ID_velocitySource:                    return FieldType_doubleArray;
+    case ID_integrationType:                   return FieldType_enum;
+    case ID_parallelizationAlgorithmType:      return FieldType_enum;
+    case ID_maxProcessCount:                   return FieldType_int;
+    case ID_maxDomainCacheSize:                return FieldType_int;
+    case ID_workGroupSize:                     return FieldType_int;
+    case ID_pathlines:                         return FieldType_bool;
+    case ID_pathlinesOverrideStartingTimeFlag: return FieldType_bool;
+    case ID_pathlinesOverrideStartingTime:     return FieldType_double;
+    case ID_pathlinesCMFE:                     return FieldType_enum;
+    case ID_forceNodeCenteredData:             return FieldType_bool;
+    case ID_issueTerminationWarnings:          return FieldType_bool;
+    case ID_issueStiffnessWarnings:            return FieldType_bool;
+    case ID_issueCriticalPointsWarnings:       return FieldType_bool;
+    case ID_criticalPointThreshold:            return FieldType_double;
     default:  return FieldType_unknown;
     }
 }
@@ -2334,50 +2174,45 @@ FTLEAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_sourceType:                         return "enum";
-    case ID_Resolution:                         return "intArray";
-    case ID_UseDataSetStart:                    return "enum";
-    case ID_StartPosition:                      return "doubleArray";
-    case ID_UseDataSetEnd:                      return "enum";
-    case ID_EndPosition:                        return "doubleArray";
-    case ID_integrationDirection:               return "enum";
-    case ID_maxSteps:                           return "int";
-    case ID_terminationType:                    return "enum";
-    case ID_terminateBySize:                    return "bool";
-    case ID_termSize:                           return "double";
-    case ID_terminateByDistance:                return "bool";
-    case ID_termDistance:                       return "double";
-    case ID_terminateByTime:                    return "bool";
-    case ID_termTime:                           return "double";
-    case ID_maxStepLength:                      return "double";
-    case ID_limitMaximumTimestep:               return "bool";
-    case ID_maxTimeStep:                        return "double";
-    case ID_relTol:                             return "double";
-    case ID_absTolSizeType:                     return "enum";
-    case ID_absTolAbsolute:                     return "double";
-    case ID_absTolBBox:                         return "double";
-    case ID_fieldType:                          return "enum";
-    case ID_fieldConstant:                      return "double";
-    case ID_velocitySource:                     return "doubleArray";
-    case ID_integrationType:                    return "enum";
-    case ID_parallelizationAlgorithmType:       return "enum";
-    case ID_maxProcessCount:                    return "int";
-    case ID_maxDomainCacheSize:                 return "int";
-    case ID_workGroupSize:                      return "int";
-    case ID_pathlines:                          return "bool";
-    case ID_pathlinesOverrideStartingTimeFlag:  return "bool";
-    case ID_pathlinesOverrideStartingTime:      return "double";
-    case ID_pathlinesCMFE:                      return "enum";
-    case ID_forceNodeCenteredData:              return "bool";
-    case ID_issueTerminationWarnings:           return "bool";
-    case ID_issueStiffnessWarnings:             return "bool";
-    case ID_issueCriticalPointsWarnings:        return "bool";
-    case ID_criticalPointThreshold:             return "double";
-    case ID_correlationDistanceAngTol:          return "double";
-    case ID_correlationDistanceMinDistAbsolute: return "double";
-    case ID_correlationDistanceMinDistBBox:     return "double";
-    case ID_correlationDistanceMinDistType:     return "enum";
-    case ID_selection:                          return "string";
+    case ID_sourceType:                        return "enum";
+    case ID_Resolution:                        return "intArray";
+    case ID_UseDataSetStart:                   return "enum";
+    case ID_StartPosition:                     return "doubleArray";
+    case ID_UseDataSetEnd:                     return "enum";
+    case ID_EndPosition:                       return "doubleArray";
+    case ID_integrationDirection:              return "enum";
+    case ID_maxSteps:                          return "int";
+    case ID_terminationType:                   return "enum";
+    case ID_terminateBySize:                   return "bool";
+    case ID_termSize:                          return "double";
+    case ID_terminateByDistance:               return "bool";
+    case ID_termDistance:                      return "double";
+    case ID_terminateByTime:                   return "bool";
+    case ID_termTime:                          return "double";
+    case ID_maxStepLength:                     return "double";
+    case ID_limitMaximumTimestep:              return "bool";
+    case ID_maxTimeStep:                       return "double";
+    case ID_relTol:                            return "double";
+    case ID_absTolSizeType:                    return "enum";
+    case ID_absTolAbsolute:                    return "double";
+    case ID_absTolBBox:                        return "double";
+    case ID_fieldType:                         return "enum";
+    case ID_fieldConstant:                     return "double";
+    case ID_velocitySource:                    return "doubleArray";
+    case ID_integrationType:                   return "enum";
+    case ID_parallelizationAlgorithmType:      return "enum";
+    case ID_maxProcessCount:                   return "int";
+    case ID_maxDomainCacheSize:                return "int";
+    case ID_workGroupSize:                     return "int";
+    case ID_pathlines:                         return "bool";
+    case ID_pathlinesOverrideStartingTimeFlag: return "bool";
+    case ID_pathlinesOverrideStartingTime:     return "double";
+    case ID_pathlinesCMFE:                     return "enum";
+    case ID_forceNodeCenteredData:             return "bool";
+    case ID_issueTerminationWarnings:          return "bool";
+    case ID_issueStiffnessWarnings:            return "bool";
+    case ID_issueCriticalPointsWarnings:       return "bool";
+    case ID_criticalPointThreshold:            return "double";
     default:  return "invalid index";
     }
 }
@@ -2617,31 +2452,6 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_criticalPointThreshold:
         {  // new scope
         retval = (criticalPointThreshold == obj.criticalPointThreshold);
-        }
-        break;
-    case ID_correlationDistanceAngTol:
-        {  // new scope
-        retval = (correlationDistanceAngTol == obj.correlationDistanceAngTol);
-        }
-        break;
-    case ID_correlationDistanceMinDistAbsolute:
-        {  // new scope
-        retval = (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute);
-        }
-        break;
-    case ID_correlationDistanceMinDistBBox:
-        {  // new scope
-        retval = (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox);
-        }
-        break;
-    case ID_correlationDistanceMinDistType:
-        {  // new scope
-        retval = (correlationDistanceMinDistType == obj.correlationDistanceMinDistType);
-        }
-        break;
-    case ID_selection:
-        {  // new scope
-        retval = (selection == obj.selection);
         }
         break;
     default: retval = false;

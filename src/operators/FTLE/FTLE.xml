@@ -176,20 +176,6 @@
         0.001000
       </Field>
 
-      <Field name="correlationDistanceAngTol" label="correlationDistanceAngTol" type="double">
-        5.000000
-      </Field>
-      <Field name="correlationDistanceMinDistAbsolute" label="correlationDistanceMinDistAbsolute" type="double">
-        1.000000
-      </Field>
-      <Field name="correlationDistanceMinDistBBox" label="correlationDistanceMinDistBBox" type="double">
-        0.005000
-      </Field>
-      <Field name="correlationDistanceMinDistType" label="correlationDistanceMinDistType" type="enum" subtype="SizeType">
-        FractionOfBBox
-      </Field>
-      <Field name="selection" label="selection" type="string">
-      </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
