@@ -2067,6 +2067,9 @@ avtExodusFileFormat::GetVar(int ts, const char *var)
 //    Hank Childs, Tue Apr  8 10:58:18 PDT 2003
 //    Make sure the file is read in before proceeding.
 //
+//    Kathleen Biagas, Wed Sep 11 08:37:55 PDT 2013
+//    Convert 2-component vector if mesh is 3D.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -2078,7 +2081,27 @@ avtExodusFileFormat::GetVectorVar(int ts, const char *var)
 
     GetData(ncExIIId, ts, var, numBlocks, &type, &num_comps, &num_vals, &buf);
 
-    return MakeVTKDataArrayByTakingOwnershipOfNCVarData(type, num_comps, num_vals, buf);
+    vtkDataArray *arr = MakeVTKDataArrayByTakingOwnershipOfNCVarData(type, 
+                            num_comps, num_vals, buf);
+
+    // See if the vector needs converting.
+    if (num_comps == 2 && metadata != NULL && 
+        metdata->GetMesh("Mesh")->spatialDimension == 3)
+    {
+        // convert the 2-component vector to 3-component
+        vtkDataArray *vec = arr->NewInstance();
+        vec->SetNumberOfComponents(3);
+        vec->SetNumberOfTuples(num_vals);
+        for (int i = 0; i < num_vals; ++i)
+        {
+            vec->SetComponent(i, 0, arr->GetComponent(i, 0));
+            vec->SetComponent(i, 1, arr->GetComponent(i, 1));
+            vec->SetComponent(i, 2, 0);
+        }
+        arr->Delete();
+        return vec;
+    }
+    return arr;
 }
 
 
