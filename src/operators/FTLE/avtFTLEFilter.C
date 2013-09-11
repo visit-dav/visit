@@ -63,6 +63,7 @@
 #include <VisItException.h>
 #include <ImproperUseException.h>
 
+#include <iostream>
 #include <limits>
 #include <cmath>
 
@@ -562,10 +563,6 @@ avtFTLEFilter::PreExecute(void)
 
     if( doSize && maxSize <= minResolution )
     {
-    // std::cerr << atts.GetTermSize() << "  "
-    //        << resX << "  " << resY << "  " << resZ << "  "
-    //        << std::endl;
-
         char str[1028];
 
         SNPRINTF(str, 1028, "\nThe size limit for FSLE is %f. "
@@ -602,6 +599,7 @@ avtFTLEFilter::Execute(void)
 
     if (!needsRecalculation && *dt != NULL)
     {
+      // std::cerr << "FTLE: using cached version" << std::endl;
         debug1 << "FTLE: using cached version" << std::endl;
         if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
             if (PAR_Rank() != 0)
@@ -611,6 +609,7 @@ avtFTLEFilter::Execute(void)
     }
     else
     {
+      // std::cerr << "FTLE: no cached version, must re-execute" << std::endl;
       debug1 << "FTLE: no cached version, must re-execute" << std::endl;
 
       avtPICSFilter::Execute();
@@ -1110,6 +1109,13 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
         vtkIntArray *mask = (vtkIntArray *)
           fsle_rect_grid->GetPointData()->GetArray("mask");
 
+        // std::cerr << exponents << "  "
+        //        << component << "  "
+        //        << times << "  "
+        //        << lengths << "  "
+        //        << mask << "  "
+        //        << std::endl;
+
         // Storage for the points, times, and lengths
         std::vector<avtVector> remapPoints(leafSize);
         std::vector<double> remapTimes(leafSize);
@@ -1407,7 +1413,7 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
           ++count;
       }
 
-      if( count <= nTuples/10 )
+      if( count <= nTuples/50 )
       {
         char str[1028];
 
@@ -1427,9 +1433,6 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
         avtCallback::IssueWarning(str);
       }
       
-      // std:cerr << "Output  " << count << "  " << nTuples/10 << "  "
-      //               << minv << "  " << maxv << std::endl;
-
       // Remove the working arrays.
       fsle_rect_grid->GetPointData()->RemoveArray("component");
       fsle_rect_grid->GetPointData()->RemoveArray("times");
@@ -1447,8 +1450,9 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
       //          << bounds[0] << " " << bounds[1] << " " << bounds[2]
       //          << " " << bounds[3] << " " << bounds[4] << " "
       //          << bounds[5] << std::endl;
-      
-      std::string str = CreateResampledCacheString();
+
+      // std::cerr << "Caching fsle_rect_grid" << std::endl;
+      std::string str = CreateCacheString();
       StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                               outVarName.c_str(), -1, -1,
                               str.c_str(), fsle_rect_grid);
@@ -1708,7 +1712,7 @@ avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurve*> &
         //        << " " << bounds[3] << " " << bounds[4] << " "
         //        << bounds[5] << std::endl;
 
-        std::string str = CreateResampledCacheString();
+        std::string str = CreateCacheString();
         StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                 outVarName.c_str(), -1, -1,
                                 str.c_str(), rect_grid);
@@ -1932,9 +1936,9 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     for(int i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        size_t l = (index-offset);
+        int l = (index-offset);
         //std::cout << "l = " << l << " " << ntuples << std::endl;
-        if(l >= 0 && l < remapPoints.size())
+        if(0 <= l && l < remapPoints.size())
         {
           // remapPoints[l] = ((avtFTLEIC*)ics[i])->GetEndPoint() -
           //                ((avtFTLEIC*)ics[i])->GetStartPoint();
@@ -2032,8 +2036,8 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     for(int i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        size_t l = (index-offset);
-        if(l >= 0 && l < ntuples)
+        int l = (index-offset);
+        if(0 <= l && l < ntuples)
         {
           avtVector diff = (((avtFTLEIC*)ics[i])->GetEndPoint()[0] -
                             ((avtFTLEIC*)ics[i])->GetStartPoint()[0]);
@@ -2058,7 +2062,8 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 #endif
 
     //Store this dataset in Cache for next time.
-    std::string str = CreateNativeResolutionCacheString();
+    std::string str = CreateCacheString();
+
     StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                             outVarName.c_str(),domain, -1,
                             str.c_str(), out_grid);
@@ -2107,9 +2112,9 @@ int avtFTLEFilter::InBounds( int x, int y, int z )
 
 void avtFTLEFilter::Increment( int x, int y, int z, vtkDataArray *array)
 {
-  size_t l = InBounds( x, y, z );
+  int l = InBounds( x, y, z );
   
-  if( 0 <= l )
+  if( 0 <= l && l < array->GetNumberOfTuples() )
   {      
     int cc = array->GetTuple1(l);
     ++cc;
@@ -2133,9 +2138,9 @@ void avtFTLEFilter::Increment( int x, int y, int z, vtkDataArray *array)
 
 bool avtFTLEFilter::Value( int x, int y, int z, vtkDataArray *array)
 {
-  size_t l = InBounds( x, y, z );
+  int l = InBounds( x, y, z );
 
-  if( 0 <= l )
+  if( 0 <= l && l < array->GetNumberOfTuples() )
     return array->GetTuple1(l);
   else
     return 0;
@@ -2161,13 +2166,12 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
                                 vtkDataArray *exponents,
                                 vtkDataArray *mask)
 {
-
   //min and max values over all datasets of the tree.
   double minv = std::numeric_limits<double>::max();
   double maxv = std::numeric_limits<double>::min();
-      
+
   size_t l = 0;
-  
+
   for(int k=0, k1=1, k_1=-1; k<global_resolution[2]; ++k, ++k1, ++k_1)
   {
     for(int j=0, j1=1, j_1=-1; j<global_resolution[1]; ++j, ++j1, ++j_1)
@@ -2180,15 +2184,15 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
         // taken a step forward or backwards.
         if( round( fabs(times->GetTuple1(l)) / maxStepLength ) != numSteps )
         {
-          if( l == 1896 )
-              std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
-                        << (double) numSteps * maxStepLength << "  "
-                        << times->GetTuple1(l) << "  "
-                        << lengths->GetTuple1(l) << "  "
-                        << fabs(times->GetTuple1(l) - (double) numSteps * maxStepLength) << "  "
-                        << fabs(times->GetTuple1(l) + (double) numSteps * maxStepLength) << "  "
-                        << lambda << "  "
-                        << std::endl;
+          // if( l == 1896 )
+          //     std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
+          //               << (double) numSteps * maxStepLength << "  "
+          //               << times->GetTuple1(l) << "  "
+          //               << lengths->GetTuple1(l) << "  "
+          //               << fabs(times->GetTuple1(l) - (double) numSteps * maxStepLength) << "  "
+          //               << fabs(times->GetTuple1(l) + (double) numSteps * maxStepLength) << "  "
+          //               << lambda << "  "
+          //               << std::endl;
 
           // If a curve has terminated set the exponent to zero.
           if( lambda == std::numeric_limits<float>::min() )
@@ -2284,6 +2288,8 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
         ++l;
       }
     }
+
+//  std::cerr << "Compute  " << l << std::endl;
   }
 
   // std::cerr << "Compute  " << minv << "  " << maxv << std::endl;
@@ -2520,7 +2526,7 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::CreateResampledCacheString
+//  Method: avtFTLEFilter::CreateString
 //
 //  Purpose:
 //      A routine that calculates a string for caching that encodes all the
@@ -2531,89 +2537,69 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //
 //  Modifications:
 //
-//    Hank Childs, Wed Mar 28 08:36:34 PDT 2012
-//    Add steady state.
-//
-//    Hank Childs, Wed Apr 11 11:35:16 PDT 2012
-//    Add reverse flow.
-//
 // ****************************************************************************
 
 std::string
-avtFTLEFilter::CreateResampledCacheString(void)
+avtFTLEFilter::CreateCacheString(void)
 {
-    double integration;
+  const int*    resolution = atts.GetResolution();
+  const double* startPosition = atts.GetStartPosition();
+  const double* endPosition = atts.GetEndPosition();
+  const double* velocitySource = atts.GetVelocitySource();
 
-    if( doTime )
-      integration = maxTime;
-    else if( doDistance )
-      integration = maxDistance;
+  std::ostringstream os;
 
-    const char *typeString = (doTime ? "time" : "distance");
+  os << atts.GetSourceType() << " "
+     << resolution[0] << " "
+     << resolution[1] << " "
+     << resolution[2] << " "
+     << atts.GetUseDataSetStart() << " "
+     << startPosition[0] << " "
+     << startPosition[1] << " "
+     << startPosition[2] << " "
+     << atts.GetUseDataSetEnd() << " "
+     << endPosition[0] << " "
+     << endPosition[1] << " "
+     << endPosition[2] << " "
+     << atts.GetIntegrationDirection() << " "
+     << atts.GetMaxSteps() << " "
+     << atts.GetTerminationType() << " "
+     << atts.GetTerminateBySize() << " "
+     << atts.GetTermSize() << " "
+     << atts.GetTerminateByDistance() << " "
+     << atts.GetTermDistance() << " "
+     << atts.GetTerminateByTime() << " "
+     << atts.GetTermTime() << " "
+     << atts.GetMaxStepLength() << " "
+     << atts.GetLimitMaximumTimestep() << " "
+     << atts.GetMaxTimeStep() << " "
+     << atts.GetRelTol() << " "
+     << atts.GetAbsTolSizeType() << " "
+     << atts.GetAbsTolAbsolute() << " "
+     << atts.GetAbsTolBBox() << " "
+     << atts.GetFieldType() << " "
+     << atts.GetFieldConstant() << " "
+     << velocitySource[0] << " "
+     << velocitySource[1] << " "
+     << velocitySource[2] << " "
+     << atts.GetIntegrationType() << " "
+     << atts.GetParallelizationAlgorithmType() << " "
+     << atts.GetMaxProcessCount() << " "
+     << atts.GetMaxDomainCacheSize() << " "
+     << atts.GetWorkGroupSize() << " "
+     << atts.GetPathlines() << " "
+     << atts.GetPathlinesOverrideStartingTimeFlag() << " "
+     << atts.GetPathlinesOverrideStartingTime() << " "
+     << atts.GetPathlinesCMFE() << " "
+     << atts.GetForceNodeCenteredData() << " "
+     << atts.GetIssueTerminationWarnings() << " "
+     << atts.GetIssueStiffnessWarnings() << " "
+     << atts.GetIssueCriticalPointsWarnings() << " "
+     << atts.GetCriticalPointThreshold() << " ";
 
-    const char *flowTypeString =
-      (atts.GetPathlines() == true ? "unsteady" : "steady");
-
-    const char *directionString =
-      (atts.GetIntegrationDirection() == FTLEAttributes::Forward ? "forward" : "backward");
-
-    char str[1024];
-    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_RESOLUTION_%d_%d_%d_TERM_TYPE_%s_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",
-            outVarName.c_str(), 
-            global_bounds[0], global_bounds[1], global_bounds[2], 
-            global_bounds[3], global_bounds[4], global_bounds[5], 
-            global_resolution[0], global_resolution[1], global_resolution[2],
-            typeString, integration, timeState, flowTypeString, directionString);
-    return std::string(str);
+  return os.str();
 }
 
-
-// ****************************************************************************
-//  Method: avtFTLEFilter::CreateNativeResolutionCacheString
-//
-//  Purpose:
-//      A routine that calculates a string for caching that encodes all the
-//      parameters of the FTLE: bounds, integration time, and variable name.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Mar 28 08:36:34 PDT 2012
-//    Add steady state.
-//
-//    Hank Childs, Wed Apr 11 11:35:16 PDT 2012
-//    Add reverse flow.
-//
-// ****************************************************************************
-
-std::string
-avtFTLEFilter::CreateNativeResolutionCacheString(void)
-{
-    double integration;
-
-    if( doTime )
-      integration = maxTime;
-    else if( doDistance )
-      integration = maxDistance;
-
-    const char *typeString = (doTime ? "time" : "distance");
-
-    const char *flowTypeString =
-      (atts.GetPathlines() == true ? "unsteady" : "steady");
-
-    const char *directionString =
-      (atts.GetIntegrationDirection() == FTLEAttributes::Forward ? "forward" : "backward");
-
-    char str[1024];
-    sprintf(str, "FTLE_OF_%s_BOUNDS_%f_%f_%f_%f_%f_%f_TERM_TYPE_%s_INTEGRATION_%f_timeindex_%d_FLOW_TYPE_%s_DIRECTION_%s",
-            outVarName.c_str(), 
-            global_bounds[0], global_bounds[1], global_bounds[2], 
-            global_bounds[3], global_bounds[4], global_bounds[5], 
-            typeString, integration, timeState, flowTypeString, directionString);
-    return std::string(str);
-}
 
 // ****************************************************************************
 //  Method: avtFTLEFilter::GetCachedDataSet
@@ -2694,7 +2680,7 @@ avtFTLEFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
         vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
         int dom = inDT->GetDataRepresentation().GetDomain();
         std::string label = inDT->GetDataRepresentation().GetLabel();
-        std::string str = CreateNativeResolutionCacheString();
+        std::string str = CreateCacheString();
         vtkDataSet *rv = (vtkDataSet *)
                          FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                                  outVarName.c_str(), dom, -1, str.c_str());
@@ -2747,7 +2733,7 @@ avtFTLEFilter::GetCachedNativeDataSet(avtDataTree_p inDT)
 avtDataTree_p
 avtFTLEFilter::GetCachedResampledDataSet()
 {
-    std::string str = CreateResampledCacheString();
+    std::string str = CreateCacheString();
     vtkRectilinearGrid *rv = (vtkRectilinearGrid *)
                      FetchArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                                              outVarName.c_str(), -1, -1,

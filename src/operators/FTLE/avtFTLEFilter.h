@@ -168,8 +168,7 @@ protected:
     void                 ComputeFtle(vtkDataArray* jacobian[3], 
                                      vtkDataArray* result);
 
-    std::string          CreateResampledCacheString(void);
-    std::string          CreateNativeResolutionCacheString(void);
+    std::string          CreateCacheString(void);
     avtDataTree_p        GetCachedDataSet();
     avtDataTree_p        GetCachedResampledDataSet();
     avtDataTree_p        GetCachedNativeDataSet(avtDataTree_p);
