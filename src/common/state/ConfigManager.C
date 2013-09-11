@@ -287,42 +287,42 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
         { // new scope
             const char *cptr = node->AsCharArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << (char)*cptr++;
+                out << (char)*cptr++ << " ";
         }
         break;
     case UNSIGNED_CHAR_ARRAY_NODE:
         { // new scope
             const unsigned char *uptr = node->AsUnsignedCharArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << (int)*uptr++;
+                out << (int)*uptr++ << " ";
         }
         break;
     case INT_ARRAY_NODE:
         { // new scope
             const int *iptr = node->AsIntArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *iptr++;
+                out << *iptr++ << " ";
         }
         break;
     case LONG_ARRAY_NODE:
         { // new scope
             const long *lptr = node->AsLongArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *lptr++;
+                out << *lptr++ << " ";
         }
         break;
     case FLOAT_ARRAY_NODE:
         { // new scope
             const float *fptr = node->AsFloatArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *fptr++;
+                out << *fptr++ << " ";
         }
         break;
     case DOUBLE_ARRAY_NODE:
         { // new scope
             const double *dptr = node->AsDoubleArray();
             for(int i = 0; i < node->GetLength(); ++i)
-                out << *dptr++;
+                out << *dptr++ << " ";
         }
         break;
     case STRING_ARRAY_NODE:
@@ -348,42 +348,42 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
        { // new scope
             const charVector &cvec = node->AsCharVector();
             for(size_t i = 0; i < cvec.size(); ++i)
-                out << cvec[i];
+                out << cvec[i] << " ";
        }
        break;
     case UNSIGNED_CHAR_VECTOR_NODE:
        { // new scope
             const unsignedCharVector &uvec = node->AsUnsignedCharVector();
             for(size_t i = 0; i < uvec.size(); ++i)
-                out << (int)uvec[i];
+                out << (int)uvec[i] << " ";
        }
        break;
     case INT_VECTOR_NODE:
        { // new scope
             const intVector &ivec = node->AsIntVector();
             for(size_t i = 0; i < ivec.size(); ++i)
-                out << ivec[i];
+                out << ivec[i] << " ";
        }
        break;
     case LONG_VECTOR_NODE:
        { // new scope
             const longVector &lvec = node->AsLongVector();
             for(size_t i = 0; i < lvec.size(); ++i)
-                out << lvec[i];
+                out << lvec[i] << " ";
        }
        break;
     case FLOAT_VECTOR_NODE:
        { // new scope
             const floatVector &fvec = node->AsFloatVector();
             for(size_t i = 0; i < fvec.size(); ++i)
-                out << fvec[i];
+                out << fvec[i] << " ";
        }
        break;
     case DOUBLE_VECTOR_NODE:
        { // new scope
             const doubleVector &dvec = node->AsDoubleVector();
             for(size_t i = 0; i < dvec.size(); ++i)
-               out << dvec[i];
+               out << dvec[i] << " ";
        }
        break;
     case STRING_VECTOR_NODE:

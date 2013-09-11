@@ -114,7 +114,7 @@ AccessViewerSession::ReadConfigFile(const char *filename)
     DataNode *node = 0;
     std::ifstream inf;
     // Try and open the file for reading.
-    inf.open(filename, ios::in | ios::trunc); //"rt"
+    inf.open(filename, ios::in); // | ios::trunc); //"rt"
     if(inf.is_open() == false)
     {
         debug1 << mName << "Could not read " << filename << endl;
