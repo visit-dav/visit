@@ -268,7 +268,7 @@ MovieTemplateConfig::ReadConfigFile(const char *filename)
     DataNode *node = 0;
     std::ifstream inf;
     // Try and open the file for reading.
-    inf.open(filename, ios::in | ios::trunc);
+    inf.open(filename, ios::in); // | ios::trunc);
     if(inf.is_open() == false)
     {
         debug1 << mName << "Could not open " << filename << endl;

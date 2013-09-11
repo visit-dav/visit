@@ -274,7 +274,7 @@ ViewerConfigManager::ReadConfigFile(const char *filename)
 
     // Try and open the file for reading.
     std::string expandedFile(ExpandUserPath(filename));
-    std::ifstream inf(expandedFile.c_str(), ios::in | ios::trunc);
+    std::ifstream inf(expandedFile.c_str(), ios::in); // | ios::trunc);
     if(inf.is_open() == false)
         return node;
 
@@ -330,7 +330,7 @@ ViewerConfigManager::ProcessConfigSettings(DataNode *node,
     if(viewerNode == 0)
         return;
 
-    // Get the defaults node. 
+    // Get the defaults node.
     DataNode *defaultsNode = viewerNode->GetNode("DEFAULT_VALUES");
     if(defaultsNode == 0)
         return;
