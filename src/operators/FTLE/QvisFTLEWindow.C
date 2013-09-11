@@ -208,43 +208,59 @@ QvisFTLEWindow::CreateIntegrationTab(QWidget *pageIntegration)
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
-
+    // Regular grid
     QGroupBox *regularGridBox = new QGroupBox(central);
     regularGridBox->setTitle(tr("Regular Grid"));
     geometryLayout->addWidget(regularGridBox);
 
+    // Resolution
     QGridLayout *rgridLayout = new QGridLayout(regularGridBox);
     ResolutionLabel = new QLabel(tr("Resolution"), central);
     rgridLayout->addWidget(ResolutionLabel,0,0);
+
     Resolution = new QLineEdit(central);
     connect(Resolution, SIGNAL(returnPressed()),
             this, SLOT(ResolutionProcessText()));
-    rgridLayout->addWidget(Resolution, 0,1);
+    rgridLayout->addWidget(Resolution, 0, 1, 1, 2);
 
-    UseDataSetStart = new QCheckBox(tr("Start at DataSet Extent"), central);
-    connect(UseDataSetStart, SIGNAL(toggled(bool)),
-            this, SLOT(UseDataSetStartChanged(bool)));
-    rgridLayout->addWidget(UseDataSetStart, 1,0);
+    // Start extents
+    rgridLayout->addWidget(new QLabel(tr("Data start extent"), central), 1, 0);
 
-    StartPositionLabel = new QLabel(tr("Subset Start"), central);
-    rgridLayout->addWidget(StartPositionLabel,2,0);
+    UseDataSetStart = new QButtonGroup(central);
+    QRadioButton* rb = new QRadioButton(tr("Full"), central);
+    UseDataSetStart->addButton(rb, 0);
+    rgridLayout->addWidget(rb, 1,1);
+
+    rb = new QRadioButton(tr("Subset"), central);
+    UseDataSetStart->addButton(rb, 1);
+    rgridLayout->addWidget(rb, 1,2);
+    connect(UseDataSetStart, SIGNAL(buttonClicked(int)), this,
+            SLOT(UseDataSetStartChanged(int)));
+
     StartPosition = new QLineEdit(central);
     connect(StartPosition, SIGNAL(returnPressed()),
             this, SLOT(StartPositionProcessText()));
-    rgridLayout->addWidget(StartPosition, 2,1);
+    rgridLayout->addWidget(StartPosition, 1,3);
 
-    UseDatasetEnd = new QCheckBox(tr("End at DataSet Extent"), central);
-    connect(UseDatasetEnd, SIGNAL(toggled(bool)),
-            this, SLOT(UseDatasetEndChanged(bool)));
-    rgridLayout->addWidget(UseDatasetEnd, 3,0);
 
-    EndPositionLabel = new QLabel(tr("Subset End"), central);
-    rgridLayout->addWidget(EndPositionLabel,4,0);
+    // End extents
+    rgridLayout->addWidget(new QLabel(tr("Data end extent"), central), 2, 0);
+
+    UseDataSetEnd = new QButtonGroup(central);
+    rb = new QRadioButton(tr("Full"), central);
+    UseDataSetEnd->addButton(rb, 0);
+    rgridLayout->addWidget(rb, 2,1);
+
+    rb = new QRadioButton(tr("Subset"), central);
+    UseDataSetEnd->addButton(rb, 1);
+    rgridLayout->addWidget(rb, 2,2);
+    connect(UseDataSetEnd, SIGNAL(buttonClicked(int)), this,
+            SLOT(UseDataSetEndChanged(int)));
+
     EndPosition = new QLineEdit(central);
     connect(EndPosition, SIGNAL(returnPressed()),
             this, SLOT(EndPositionProcessText()));
-    rgridLayout->addWidget(EndPosition, 4,1);
-
+    rgridLayout->addWidget(EndPosition, 2,3);
 
     // Create the field group box.
     QGroupBox *fieldGroup = new QGroupBox(central);
@@ -384,13 +400,21 @@ QvisFTLEWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // opposite of streamlines/pathlines which optionally use the
     // termination.
     limitButtonGroup = new QButtonGroup(terminationGroup);
-    limitButtons[0] = new QRadioButton(tr("Limit maximum time i.e. FTLE"), terminationGroup);
-    limitButtons[1] = new QRadioButton(tr("Limit maximum distance i.e. FDLE"), terminationGroup);
-    limitButtons[0]->setChecked(true);
-    limitButtonGroup->addButton(limitButtons[0], 0);
-    limitButtonGroup->addButton(limitButtons[1], 1);
-    terminationLayout->addWidget(limitButtons[0], 0,0);
-    terminationLayout->addWidget(limitButtons[1], 1,0);
+    rb = new QRadioButton(tr("Limit maximum time i.e. FTLE"), terminationGroup);
+    limitButtonGroup->addButton(rb, 0);
+    terminationLayout->addWidget(rb, 0,0);
+
+    rb->setChecked(true);
+
+    rb = new QRadioButton(tr("Limit maximum distance i.e. FDLE"), terminationGroup);
+    limitButtonGroup->addButton(rb, 1);
+    terminationLayout->addWidget(rb, 1,0);
+
+    rb = new QRadioButton(tr("Limit maximum size i.e. FSLE"), terminationGroup);
+    limitButtonGroup->addButton(rb, 2);
+    terminationLayout->addWidget(rb, 2,0);
+
+
     connect(limitButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(limitButtonGroupChanged(int)));
 
     // limitMaxTime = new QCheckBox(tr("Limit maximum time elapsed for particles"), terminationGroup);
@@ -403,16 +427,23 @@ QvisFTLEWindow::CreateIntegrationTab(QWidget *pageIntegration)
     // limitMaxDistance = new QCheckBox(tr("Limit maximum distance traveled by particles"), terminationGroup);
     // connect(limitMaxDistance, SIGNAL(toggled(bool)), this, SLOT(limitMaxDistanceChanged(bool)));
     // terminationLayout->addWidget(limitMaxDistance, 1,0);
+
     maxDistance = new QLineEdit(central);
     connect(maxDistance, SIGNAL(returnPressed()), this, SLOT(maxDistanceProcessText()));
     terminationLayout->addWidget(maxDistance, 1,1);
 
+
+    maxSize = new QLineEdit(central);
+    connect(maxSize, SIGNAL(returnPressed()), this, SLOT(maxSizeProcessText()));
+    terminationLayout->addWidget(maxSize, 2,1);
+
+
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
-    terminationLayout->addWidget(maxStepsLabel, 2,0);
+    terminationLayout->addWidget(maxStepsLabel, 3,0);
     maxSteps = new QLineEdit(central);
     connect(maxSteps, SIGNAL(returnPressed()),
             this, SLOT(maxStepsProcessText()));
-    terminationLayout->addWidget(maxSteps, 2,1);
+    terminationLayout->addWidget(maxSteps, 3,1);
 }
 
 
@@ -660,36 +691,26 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             if (FTLEAtts->GetSourceType() == FTLEAttributes::RegularGrid)
             {
                 Resolution->setEnabled(true);
-                if(ResolutionLabel)
-                    ResolutionLabel->setEnabled(true);
-                UseDataSetStart->setEnabled(true);
-                UseDatasetEnd->setEnabled(true);
-                if (FTLEAtts->GetUseDataSetStart() == false)
-                {
-                    StartPosition->setEnabled(true);
-                    if(StartPositionLabel)
-                        StartPositionLabel->setEnabled(true);
-                }
-                if (FTLEAtts->GetUseDataSetEnd() == false)
-                {
-                    EndPosition->setEnabled(true);
-                    if(EndPositionLabel)
-                        EndPositionLabel->setEnabled(true);
-                }
+                ResolutionLabel->setEnabled(true);
+                UseDataSetStart->button(0)->setEnabled(true);
+                UseDataSetStart->button(1)->setEnabled(true);
+                UseDataSetEnd->button(0)->setEnabled(true);
+                UseDataSetEnd->button(1)->setEnabled(true);
+                StartPosition->setEnabled(FTLEAtts->GetUseDataSetStart() ==
+                                          FTLEAttributes::Subset);
+                EndPosition->setEnabled(FTLEAtts->GetUseDataSetEnd() ==
+                                        FTLEAttributes::Subset);
             }
             else
             {
                 Resolution->setEnabled(false);
-                if(ResolutionLabel)
-                    ResolutionLabel->setEnabled(false);
-                UseDataSetStart->setEnabled(false);
-                UseDatasetEnd->setEnabled(false);
+                ResolutionLabel->setEnabled(false);
+                UseDataSetStart->button(0)->setEnabled(false);
+                UseDataSetStart->button(1)->setEnabled(false);
+                UseDataSetEnd->button(0)->setEnabled(false);
+                UseDataSetEnd->button(1)->setEnabled(false);
                 StartPosition->setEnabled(false);
-                if(StartPositionLabel)
-                    StartPositionLabel->setEnabled(false);
                 EndPosition->setEnabled(false);
-                if(EndPositionLabel)
-                    EndPositionLabel->setEnabled(false);
             }
 
             break;
@@ -698,41 +719,24 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
             Resolution->setText(IntsToQString(FTLEAtts->GetResolution(),3));
             break;
         case FTLEAttributes::ID_UseDataSetStart:
-            if (FTLEAtts->GetUseDataSetStart() == false)
-            {
-                StartPosition->setEnabled(true);
-                if(StartPositionLabel)
-                    StartPositionLabel->setEnabled(true);
-            }
-            else
-            {
-                StartPosition->setEnabled(false);
-                if(StartPositionLabel)
-                    StartPositionLabel->setEnabled(false);
-            }
             UseDataSetStart->blockSignals(true);
-            UseDataSetStart->setChecked(FTLEAtts->GetUseDataSetStart());
+            UseDataSetStart->button(FTLEAtts->GetUseDataSetStart())->setChecked(true);
             UseDataSetStart->blockSignals(false);
+
+            StartPosition->setEnabled(FTLEAtts->GetUseDataSetStart() ==
+                                      FTLEAttributes::Subset);
+
             break;
         case FTLEAttributes::ID_StartPosition:
             StartPosition->setText(DoublesToQString(FTLEAtts->GetStartPosition(), 3));
             break;
         case FTLEAttributes::ID_UseDataSetEnd:
-            if (FTLEAtts->GetUseDataSetEnd() == false)
-            {
-                EndPosition->setEnabled(true);
-                if(EndPositionLabel)
-                    EndPositionLabel->setEnabled(true);
-            }
-            else
-            {
-                EndPosition->setEnabled(false);
-                if(EndPositionLabel)
-                    EndPositionLabel->setEnabled(false);
-            }
-            UseDatasetEnd->blockSignals(true);
-            UseDatasetEnd->setChecked(FTLEAtts->GetUseDataSetEnd());
-            UseDatasetEnd->blockSignals(false);
+            UseDataSetEnd->blockSignals(true);
+            UseDataSetEnd->button(FTLEAtts->GetUseDataSetEnd())->setChecked(true);
+            UseDataSetEnd->blockSignals(false);
+
+            EndPosition->setEnabled(FTLEAtts->GetUseDataSetEnd() ==
+                                    FTLEAttributes::Subset);
             break;
         case FTLEAttributes::ID_EndPosition:
             EndPosition->setText(DoublesToQString(FTLEAtts->GetEndPosition(), 3));
@@ -772,23 +776,16 @@ QvisFTLEWindow::UpdateWindow(bool doAll)
 
             maxTime->setEnabled(FTLEAtts->GetTerminationType()==0);
             maxDistance->setEnabled(FTLEAtts->GetTerminationType()==1);
+            maxSize->setEnabled(FTLEAtts->GetTerminationType()==2);
             break;
-        // case FTLEAttributes::ID_terminateByDistance:
-        //     limitMaxDistance->blockSignals(true);
-        //     limitMaxDistance->setChecked(FTLEAtts->GetTerminateByDistance());
-        //     limitMaxDistance->blockSignals(false);
-        //      maxDistance->setEnabled(FTLEAtts->GetTerminateByDistance());
-        //      break;
+        case FTLEAttributes::ID_termSize:
+            temp.setNum(FTLEAtts->GetTermSize());
+            maxSize->setText(temp);
+            break;
         case FTLEAttributes::ID_termDistance:
             temp.setNum(FTLEAtts->GetTermDistance());
             maxDistance->setText(temp);
             break;
-        // case FTLEAttributes::ID_terminateByTime:
-        //     limitMaxTime->blockSignals(true);
-        //     limitMaxTime->setChecked(FTLEAtts->GetTerminateByTime());
-        //     limitMaxTime->blockSignals(false);
-        //     maxTime->setEnabled(FTLEAtts->GetTerminateByTime());
-        //     break;
         case FTLEAttributes::ID_termTime:
             temp.setNum(FTLEAtts->GetTermTime(), 'g', 16);
             maxTime->setText(temp);
@@ -1151,6 +1148,49 @@ QvisFTLEWindow::GetCurrentValues(int which_widget)
     bool doAll = (which_widget == -1);
     QString msg, temp;
 
+    // Do resolution
+    if(which_widget == FTLEAttributes::ID_Resolution || doAll)
+    {
+        int val[3];
+        if(LineEditGetInts(Resolution, val, 3))
+            FTLEAtts->SetResolution(val);
+        else
+        {
+            ResettingError(tr("Resolution"),
+                IntsToQString(FTLEAtts->GetResolution(), 3));
+            FTLEAtts->SetResolution(FTLEAtts->GetResolution());
+        }
+    }
+
+    // Do Start Position
+    if(which_widget == FTLEAttributes::ID_StartPosition || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(StartPosition, val, 3))
+            FTLEAtts->SetStartPosition(val);
+        else
+        {
+            ResettingError(tr("StartPosition"),
+                DoublesToQString(FTLEAtts->GetStartPosition(), 3));
+            FTLEAtts->SetStartPosition(FTLEAtts->GetStartPosition());
+        }
+    }
+
+    // Do End Position
+    if(which_widget == FTLEAttributes::ID_EndPosition || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(EndPosition, val, 3))
+            FTLEAtts->SetEndPosition(val);
+        else
+        {
+            ResettingError(tr("EndPosition"),
+                DoublesToQString(FTLEAtts->GetEndPosition(), 3));
+            FTLEAtts->SetEndPosition(FTLEAtts->GetEndPosition());
+        }
+    }
+
+
     // Do fieldConstant
     if(which_widget == FTLEAttributes::ID_fieldConstant || doAll)
     {
@@ -1228,6 +1268,18 @@ QvisFTLEWindow::GetCurrentValues(int which_widget)
             ResettingError(tr("maxdistance"),
                 DoubleToQString(FTLEAtts->GetTermDistance()));
             FTLEAtts->SetTermDistance(FTLEAtts->GetTermDistance());
+        }
+    }
+    if(which_widget == FTLEAttributes::ID_termSize || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(maxSize, val))
+            FTLEAtts->SetTermSize(val);
+        else
+        {
+            ResettingError(tr("maxsize"),
+                DoubleToQString(FTLEAtts->GetTermSize()));
+            FTLEAtts->SetTermSize(FTLEAtts->GetTermSize());
         }
     }
     if(which_widget == FTLEAttributes::ID_pathlinesOverrideStartingTime || doAll)
@@ -1367,9 +1419,9 @@ QvisFTLEWindow::ResolutionProcessText()
 
 
 void
-QvisFTLEWindow::UseDataSetStartChanged(bool val)
+QvisFTLEWindow::UseDataSetStartChanged(int val)
 {
-    FTLEAtts->SetUseDataSetStart(val);
+    FTLEAtts->SetUseDataSetStart(FTLEAttributes::Extents(val));
     Apply();
 }
 
@@ -1383,9 +1435,9 @@ QvisFTLEWindow::StartPositionProcessText()
 
 
 void
-QvisFTLEWindow::UseDatasetEndChanged(bool val)
+QvisFTLEWindow::UseDataSetEndChanged(int val)
 {
-    FTLEAtts->SetUseDataSetEnd(val);
+  FTLEAtts->SetUseDataSetEnd(FTLEAttributes::Extents(val));
     Apply();
 }
 
@@ -1469,33 +1521,12 @@ QvisFTLEWindow::maxStepsProcessText()
 void
 QvisFTLEWindow::limitButtonGroupChanged(int index)
 {
-    FTLEAtts->SetTerminationType( index == 0 ?
-                                  FTLEAttributes::Time :
-                                  FTLEAttributes::Distance );
+    FTLEAtts->SetTerminationType( (FTLEAttributes::TerminationType) index );
     FTLEAtts->SetTerminateByTime( index == 0);
     FTLEAtts->SetTerminateByDistance( index == 1);
+    FTLEAtts->SetTerminateBySize( index == 2);
     Apply();
 }
-
-// void
-// QvisFTLEWindow::limitMaxTimeChanged(bool val)
-// {
-//     if(val != FTLEAtts->GetTerminateByTime())
-//     {
-//         FTLEAtts->SetTerminateByTime(val);
-//         Apply();
-//     }
-// }
-
-// void
-// QvisFTLEWindow::limitMaxDistanceChanged(bool val)
-// {
-//     if(val != FTLEAtts->GetTerminateByDistance())
-//     {
-//         FTLEAtts->SetTerminateByDistance(val);
-//         Apply();
-//     }
-// }
 
 void
 QvisFTLEWindow::maxTimeProcessText()
@@ -1508,6 +1539,13 @@ void
 QvisFTLEWindow::maxDistanceProcessText()
 {
     GetCurrentValues(FTLEAttributes::ID_termDistance);
+    Apply();
+}
+
+void
+QvisFTLEWindow::maxSizeProcessText()
+{
+    GetCurrentValues(FTLEAttributes::ID_termSize);
     Apply();
 }
 

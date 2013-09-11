@@ -102,9 +102,9 @@ class QvisFTLEWindow : public QvisOperatorWindow
     // Integration
     void sourceTypeChanged(int val);
     void ResolutionProcessText();
-    void UseDataSetStartChanged(bool val);
+    void UseDataSetStartChanged(int);
     void StartPositionProcessText();
-    void UseDatasetEndChanged(bool val);
+    void UseDataSetEndChanged(int);
     void EndPositionProcessText();
 
     void fieldTypeChanged(int val);
@@ -114,6 +114,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
 
     void directionTypeChanged(int val);
     void integrationTypeChanged(int val);
+    void limitMaxTimeStepChanged(bool);
     void maxStepLengthProcessText();
     void maxTimeStepProcessText();
     void maxStepsProcessText();
@@ -124,7 +125,7 @@ class QvisFTLEWindow : public QvisOperatorWindow
     void limitButtonGroupChanged(int);
     void maxTimeProcessText();
     void maxDistanceProcessText();
-    void limitMaxTimeStepChanged(bool);
+    void maxSizeProcessText();
 
     // Advanced
     void parallelAlgorithmChanged(int val);
@@ -149,11 +150,9 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QComboBox *sourceType;
     QLabel *ResolutionLabel;
     QLineEdit *Resolution;
-    QCheckBox *UseDataSetStart;
-    QLabel *StartPositionLabel;
+    QButtonGroup *UseDataSetStart;
     QLineEdit *StartPosition;
-    QLabel *EndPositionLabel;
-    QCheckBox *UseDatasetEnd;
+    QButtonGroup *UseDataSetEnd;
     QLineEdit *EndPosition;
 
     QComboBox *fieldType;
@@ -177,9 +176,9 @@ class QvisFTLEWindow : public QvisOperatorWindow
     QLabel    *absTolLabel;
 
     QButtonGroup *limitButtonGroup;
-    QRadioButton *limitButtons[2];
     QLineEdit *maxTime;
     QLineEdit *maxDistance;
+    QLineEdit *maxSize;
 
     // Advanced
     QLabel    *parallelAlgoLabel;

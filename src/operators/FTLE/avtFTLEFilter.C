@@ -42,6 +42,7 @@
 
 #include <avtFTLEFilter.h>
 #include <avtFTLEIC.h>
+#include <avtStreamlineIC.h>
 
 #include <avtExtents.h>
 #include <avtMatrix.h>
@@ -55,11 +56,12 @@
 #include <avtParallel.h>
 #include <avtCallback.h>
 
-#include <avtFTLEIC.h>
-
 #include <avtOriginatingSource.h>
 #include <avtGradientExpression.h>
 #include <vtkVisItScalarTree.h>
+
+#include <VisItException.h>
+#include <ImproperUseException.h>
 
 #include <limits>
 #include <cmath>
@@ -95,6 +97,12 @@ avtFTLEFilter::avtFTLEFilter() : seedVelocity(0,0,0)
     global_resolution[0] = global_resolution[1] = global_resolution[2] = 10;
     absTol = 1e-6;
     relTol = 1e-7;
+
+    numSteps = 0;
+    fsle_rect_grid = 0;
+
+    minSizeValue = std::numeric_limits<double>::max();
+    maxSizeValue = std::numeric_limits<double>::min();
 }
 
 
@@ -181,13 +189,27 @@ avtFTLEFilter::SetAtts(const AttributeGroup *a)
     {
         // For DoPri, the max time step is sent in to the PICS filter
         // as the max step length.
-        double step = atts.GetMaxTimeStep();
-        if (! atts.GetLimitMaximumTimestep())
-            step = 0;
+        double step;
+        if (atts.GetLimitMaximumTimestep())
+          step = atts.GetMaxTimeStep();
+        else
+        {
+          if( atts.GetTerminateBySize() )
+          {
+            EXCEPTION1(ImproperUseException,
+                       "When performing FSLE the step size must be fixed. "
+                       "Please check 'Limit maximum time step' and "
+                       "set the maximum time step.");
+          }
+
+          step = 0;
+        }
+
         SetMaxStepLength(step);
     }
     else
         SetMaxStepLength(atts.GetMaxStepLength());
+
     double absTol = 0.;
     bool doBBox = (atts.GetAbsTolSizeType() == FTLEAttributes::FractionOfBBox);
     if (doBBox)
@@ -200,7 +222,9 @@ avtFTLEFilter::SetAtts(const AttributeGroup *a)
                    atts.GetTerminateByDistance(),
                    atts.GetTermDistance(),
                    atts.GetTerminateByTime(),
-                   atts.GetTermTime());
+                   atts.GetTermTime(),
+                   atts.GetTerminateBySize(),
+                   atts.GetTermSize());
 
     IssueWarningForMaxStepsTermination(atts.GetIssueTerminationWarnings());
     IssueWarningForStiffness(atts.GetIssueStiffnessWarnings());
@@ -251,160 +275,6 @@ avtFTLEFilter::GetInitialVelocities(void)
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::GetInitialLocationsFromMesh
-//
-//  Purpose:
-//      Walks through an AVT data tree and sets up the initial locations from
-//      each point in the mesh.
-//
-//  Arguments:
-//      inDT          A pointer to a data tree.  
-//      setupList     Whether or not we should write to the list.
-//      idx           The index into the list.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-int
-avtFTLEFilter::GetInitialLocationsFromMesh(avtDataTree_p inDT, 
-                                           std::vector<avtVector> &seedPoints,
-                                           bool setupList, int idx)
-{
-    if (*inDT == NULL)
-        return 0;
-
-    int nc = inDT->GetNChildren();
-
-    if (nc <= 0 && !inDT->HasData())
-    {
-        return 0;
-    }
-
-    if (nc == 0)
-    {
-        //
-        // there is only one dataset to process
-        //
-        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
-        size_t pts = in_ds->GetNumberOfPoints();
-        if (setupList)
-        {
-            double points[3];
-            for(size_t i = 0; i < pts; ++i)
-            {
-                in_ds->GetPoint(i,points);
-                seedPoints[idx+i].set(points);
-            }
-        }
-        return pts;
-    }
-
-    //
-    // there is more than one input dataset to process
-    // and we need an output datatree for each
-    //
-    int rv = 0;
-    for (int j = 0; j < nc; j++)
-    {
-        if (inDT->ChildIsPresent(j))
-        {
-            int numNewPts = GetInitialLocationsFromMesh(inDT->GetChild(j),
-                                                        seedPoints,
-                                                        setupList, idx);
-            rv += numNewPts;
-            idx += numNewPts;
-        }
-    }
-    return rv;
-}
-
-
-// ****************************************************************************
-//  Method: avtFTLEFilter::GetInitialLocations
-//
-//  Purpose:
-//      Tells the PICS filter where to place the initial seed locations.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-std::vector<avtVector>
-avtFTLEFilter::GetInitialLocations()
-{
-    seedPoints.clear();
-
-    //compute total number of seeds that will be generated..
-    size_t totalNumberOfSeeds = 0;
-    if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
-        totalNumberOfSeeds = GetInitialLocationsFromMesh(GetInputDataTree(), 
-                                                         seedPoints, false, 0);
-    else
-        totalNumberOfSeeds =
-          global_resolution[0]*global_resolution[1]*global_resolution[2];
-
-    seedPoints.resize(totalNumberOfSeeds);
-
-    if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
-    {
-        GetInitialLocationsFromMesh(GetInputDataTree(), seedPoints, true, 0);
-    }
-    else
-    {
-        size_t l = 0; //current line of the seed..
-
-        //add sample points by looping over in x,y,z
-        for(int k = 0; k < global_resolution[2]; ++k)
-        {
-            double zpcnt = 0;
-            if (global_resolution[2] > 1)
-                zpcnt = ((double)k)/((double)global_resolution[2]-1);
-            double z = global_bounds[4]*(1.0-zpcnt) + global_bounds[5]*zpcnt;
-
-            for(int j = 0; j < global_resolution[1]; ++j)
-            {
-                double ypcnt = 0;
-                if (global_resolution[1] > 1)
-                    ypcnt = ((double)j)/((double)global_resolution[1]-1);
-                double y = global_bounds[2]*(1.0-ypcnt) + global_bounds[3]*ypcnt;
-
-                for(int i = 0; i < global_resolution[0]; ++i)
-                {
-                    double xpcnt = 0;
-                    if (global_resolution[0] > 1)
-                       xpcnt = ((double)i)/((double)global_resolution[0]-1);
-                    double x =
-                      global_bounds[0]*(1.0-xpcnt) +
-                      global_bounds[1]*xpcnt;
-
-                    size_t index =
-                      (global_resolution[1]*global_resolution[0]*k) +
-                      (global_resolution[0]*j)+i;
-                    if(l >= seedPoints.size())
-                        std::cout << "ERROR" << std::endl;
-                    seedPoints[l].set(x,y,z);
-                    l++;
-                }
-            }
-        }
-
-        if (l != totalNumberOfSeeds)
-        {
-            debug1 << "FTLE expected to generated "
-                   << totalNumberOfSeeds << " but only generated "
-                   << l << endl;
-            EXCEPTION0(ImproperUseException);
-        }
-    }//else
-
-    return seedPoints;
-}
-
-
-// ****************************************************************************
 //  Method: avtFTLEFilter::SetTermination
 //
 //  Purpose:
@@ -416,15 +286,18 @@ avtFTLEFilter::GetInitialLocations()
 // ****************************************************************************
 
 void
-avtFTLEFilter::SetTermination(int maxSteps_, bool doDistance_,
-                              double maxDistance_,
-                              bool doTime_, double maxTime_)
+avtFTLEFilter::SetTermination(int maxSteps_,
+                              bool doDistance_, double maxDistance_,
+                              bool doTime_,     double maxTime_,
+                              bool doSize_,     double maxSize_)
 {
     maxSteps = maxSteps_;
     doDistance = doDistance_;
     maxDistance = maxDistance_;
     doTime = doTime_;
     maxTime = maxTime_;
+    doSize = doSize_;
+    maxSize = maxSize_;
 }
 
 
@@ -442,8 +315,10 @@ avtFTLEFilter::SetTermination(int maxSteps_, bool doDistance_,
 avtIntegralCurve*
 avtFTLEFilter::CreateIntegralCurve(void)
 {
-    avtFTLEIC *fic = new avtFTLEIC();
-    return fic;
+  if( doSize ) 
+    return (new avtStreamlineIC());
+  else
+    return (new avtFTLEIC());
 }
 
 
@@ -463,9 +338,10 @@ avtFTLEFilter::CreateIntegralCurve(const avtIVPSolver* model,
                                    avtIntegralCurve::Direction dir,
                                    const double& t_start,
                                    const avtVector &p_start,
-                                   const avtVector& v_start,long ID)
+                                   const avtVector& v_start, long ID)
 {
     double t;
+
     if (doPathlines)
     {
         if (dir == avtIntegralCurve::DIRECTION_BACKWARD)
@@ -481,11 +357,22 @@ avtFTLEFilter::CreateIntegralCurve(const avtIVPSolver* model,
             t = maxTime;
     }
 
-    avtFTLEIC *fic =
-      new avtFTLEIC(maxSteps, doDistance, maxDistance, doTime, t,
-                    model, dir, t_start, p_start, v_start, ID);
-
-    return fic;
+    if( doSize )
+    {
+      unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+      attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+      attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+      
+      return
+        (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, t,
+                             attr, model, dir, t_start, p_start, v_start, ID));
+    }
+    else
+    {
+      return
+        (new avtFTLEIC(maxSteps, doDistance, maxDistance, doTime, t,
+                       model, dir, t_start, p_start, v_start, ID));
+    }
 }
 
 
@@ -511,99 +398,1386 @@ avtFTLEFilter::SetVelocitySource(const double *p)
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::ComputeFtle
+//  Method: avtFTLEFilter::ModifyContract
 //
 //  Purpose:
-//      Computes the FTLE gives a Jacobian.
+//      Creates a contract the removes the operator-created-expression.
 //
-//  Programmer: Hari Krishnan
+//  Programmer: hchilds -- generated by xml2avt
+//  Creation:   Mon Jan 10 07:15:51 PDT 2011
+//
+// ****************************************************************************
+
+avtContract_p
+avtFTLEFilter::ModifyContract(avtContract_p in_contract)
+{
+    avtDataRequest_p in_dr = in_contract->GetDataRequest();
+    std::string var =  in_dr->GetOriginalVariable();
+//    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
+//    in_contract->SetOnDemandStreaming(false);
+//    in_contract->GetDataRequest();
+    in_dr->SetUsesAllDomains(true);
+    if( strncmp(var.c_str(), "operators/FTLE/", strlen("operators/FTLE/")) == 0)
+    {
+        std::string justTheVar = var.substr(strlen("operators/FTLE/"));
+
+        outVarName = justTheVar;
+        avtDataRequest_p out_dr = new avtDataRequest(in_dr,justTheVar.c_str());
+        //out_dr->SetDesiredGhostDataType(GHOST_NODE_DATA);
+        //out_dr->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+
+        return avtPICSFilter::ModifyContract( new avtContract(in_contract,out_dr) );
+    }
+
+    return avtPICSFilter::ModifyContract(in_contract);
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//      Tells output that we have a new variable.
+//
+//  Programmer: hchilds -- generated by xml2avt
+//  Creation:   Mon Jan 10 07:15:51 PDT 2011
+//
+// ****************************************************************************
+
+void
+avtFTLEFilter::UpdateDataObjectInfo(void)
+{
+    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
+    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
+
+    timeState = in_atts.GetTimeIndex();
+
+    //the outvarname has been assigned and will be added.
+    //outVarName = "velocity";
+    if (outVarName != "")
+    {
+        std::string fullVarName = std::string("operators/FTLE/") + outVarName;
+        atts.RemoveVariable(in_atts.GetVariableName());
+
+        if (! atts.ValidVariable(fullVarName) )
+        {
+            //std::cout << "Adding variable: " << outVarName << std::endl;
+            //atts.AddVariable(outVarName.c_str());
+            atts.AddVariable((fullVarName).c_str());
+            atts.SetActiveVariable(fullVarName.c_str());
+            atts.SetVariableDimension(1);
+            //atts.SetTopologicalDimension(3);
+            atts.SetVariableType(AVT_SCALAR_VAR);
+            atts.SetCentering(AVT_NODECENT);
+        }
+    }
+
+    avtPICSFilter::UpdateDataObjectInfo();
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::PreExecute
+//
+//  Purpose:
+//      Initialize data attributes for this filter and its base type (PICS).
+//
+//  Programmer: Hari Krishna
 //  Creation:   December 5, 2011
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Sep  7 15:47:12 PDT 2012
-//    Convert calculation to double precision, which prevents a "cliff" from
-//    too large epsilon associated with float.
+//    Hank Childs, Jul  6 14:17:47 PDT 2012
+//    Set resolution for Z to be 1 for 2D meshes.
 //
 // ****************************************************************************
 
-void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3], vtkDataArray *result)
+void 
+avtFTLEFilter::PreExecute(void)
 {
-    size_t nvalues = result->GetNumberOfTuples();
-    for(size_t l = 0; l < nvalues; ++l)
+    SetActiveVariable(outVarName.c_str());
+    GetSpatialExtents(global_bounds);
+
+    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
-        double * j0 = jacobian[0]->GetTuple3(l);
-        double * j1 = jacobian[1]->GetTuple3(l);
-        double * j2 = jacobian[2]->GetTuple3(l);
+        // we set them to 0->1 earlier and GetSpatialExtents only sets the
+        // X and Y parts of the extents for 2D.
+        global_bounds[4] = 0;
+        global_bounds[5] = 0;
+    }
 
-        //x,y,z components compute left,right
-        avtVector dx(j0[0],j1[0],j2[0]);
-        //x,y,z components compute top,bottom
-        avtVector dy(j0[1],j1[1],j2[1]);
-        //x,y,z components compute front,back
-        avtVector dz(j0[2],j1[2],j2[2]);
+    if(atts.GetUseDataSetStart() == FTLEAttributes::Subset)
+    {
+        double* a = atts.GetStartPosition();
+        global_bounds[0] = a[0];
+        global_bounds[2] = a[1];
+        global_bounds[4] = a[2];
+    }
 
-        //std::cout << dx << " " << dy << " " << dz << std::endl;
+    if(atts.GetUseDataSetEnd() == FTLEAttributes::Subset)
+    {
+        double* a = atts.GetEndPosition();
+        global_bounds[1] = a[0];
+        global_bounds[3] = a[1];
+        global_bounds[5] = a[2];
+    }
 
-        //J*J^T
-        //float a = dx.dot(dx), b = dx.dot(dy), c = dx.dot(dz);
-        //float d = dy.dot(dy), e = dy.dot(dz), f = dz.dot(dz);
+    const int* res = atts.GetResolution();
+    global_resolution[0] = res[0];
+    global_resolution[1] = res[1];
+    global_resolution[2] = res[2];
+    if (global_bounds[4] == global_bounds[5])
+        global_resolution[2] = 1;
 
-        double a = dx.x*dx.x + dx.y*dx.y + dx.z*dx.z;
-        double b = dx.x*dy.x + dx.y*dy.y + dx.z*dy.z;
-        double c = dx.x*dz.x + dx.y*dz.y + dx.z*dz.z;
-        double d = dy.x*dy.x + dy.y*dy.y + dy.z*dy.z;
-        double e = dy.x*dz.x + dy.y*dz.y + dy.z*dz.z;
-        double f = dz.x*dz.x + dz.y*dz.y + dz.z*dz.z;
-        double x = ( a + d + f ) / 3.0f;
+    double minResolution = std::numeric_limits<float>::max();
 
-        a -= x;
-        d -= x;
-        f -= x;
+    double resX, resY, resZ;
 
-        double q = (a*d*f + b*e*c + c*b*e - c*d*c - e*e*a - f*b*b) / 2.0f;
-        double r = (a*a + b*b + c*c + b*b + d*d + e*e + c*c + e*e + f*f);
-        r /= 6.0f;
+    if (global_resolution[0] > 1)
+    {
+      double pcnt = 1.0 / (double) (global_resolution[0]-1);
 
-        double D = (r*r*r - q*q);
-        double phi = 0.0f;
+      resX = (global_bounds[1] - global_bounds[0]) * pcnt; 
 
-        //std::cout << a << " " << b << " " << c << " " << d << " "
-                  //<< e << " " << f << " " << x << " " << q << " " << r << std::endl;
-        if( D < std::numeric_limits<double>::epsilon())
-            phi = 0.0f;
+      minResolution = std::min( resX, minResolution );
+    }
+      
+    if (global_resolution[1] > 1)
+    {
+      double pcnt = 1.0 / (double) (global_resolution[1]-1);
+
+      resY = (global_bounds[3] - global_bounds[2]) * pcnt; 
+ 
+      minResolution = std::min( resY, minResolution );
+    }
+      
+    if (global_resolution[2] > 1)
+    {
+      double pcnt = 1.0 / (double) (global_resolution[2]-1);
+
+      resZ = (global_bounds[5] - global_bounds[4]) * pcnt; 
+
+      minResolution = std::min( resZ, minResolution );
+    }
+
+    if( doSize && maxSize <= minResolution )
+    {
+        char str[1028];
+
+        SNPRINTF(str, 1028, "\nThe size limit for FSLE is %f. "
+                 "and is equal to or smaller than the resolution of the grid "
+                 "(%f, %f, %f). ",
+                 atts.GetTermSize(), resX, resY, resZ );
+
+        avtCallback::IssueWarning(str);
+        
+//      EXCEPTION1(ImproperUseException, str );
+    }
+
+    // std::cerr << atts.GetTermSize() << "  "
+    //        << resX << "  " << resY << "  " << resZ << "  "
+    //        << std::endl;
+
+    avtPICSFilter::PreExecute();
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::Execute
+//
+//  Purpose:
+//      Executes the FTLE.  If we already have a cached version, then it
+//      just returns that version.  If not, it calls PICS execute, which will
+//      call our FTLE set up routines via CreateIntegralCurveOutput.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void
+avtFTLEFilter::Execute(void)
+{
+    avtDataTree_p dt = GetCachedDataSet();
+
+    if (!needsRecalculation && *dt != NULL)
+    {
+        debug1 << "FTLE: using cached version" << std::endl;
+        if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+            if (PAR_Rank() != 0)
+                dt = new avtDataTree();
+        SetOutputDataTree(dt);
+        return;
+    }
+    else
+    {
+      debug1 << "FTLE: no cached version, must re-execute" << std::endl;
+
+      avtPICSFilter::Execute();
+
+      std::vector<avtIntegralCurve *> ics;
+      GetTerminatedIntegralCurves(ics);
+      
+      if( doSize )
+      {
+        if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
+          CreateNativeResolutionFSLEOutput(ics);
+        else //if (atts.GetSourceType() == FTLEAttributes::RegularGrid)
+          CreateRectilinearResolutionFSLEOutput(ics);
+      }
+
+      ReportWarnings( ics );
+    }
+}
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ContinueExecute
+//
+//  Purpose:
+//      See if execution needs to continue.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   Mon Aug 17 08:30:06 EDT 2009
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
+//    Use new names that have integral curves instead of fieldlines.
+//
+// ****************************************************************************
+
+bool
+avtFTLEFilter::ContinueExecute()
+{
+    ++numSteps;
+
+    if( doTime || doDistance )
+        return false;
+
+    else //if( doSize )
+    {
+//      std::cerr << "Continue execute " << numSteps << std::endl;
+    
+      std::vector<avtIntegralCurve *> ics;
+    
+      GetTerminatedIntegralCurves(ics);
+    
+      if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
+      {
+        if (ComputeNativeResolutionFSLE(ics) == true )
+          return false;
         else
-        {
-            phi = atanf( sqrtf(D)/q ) / 3.0f;
+          return true;
 
-            if( phi < 0 )
-                phi += 3.1415926536f;
+      }
+      else //if (atts.GetSourceType() == FTLEAttributes::RegularGrid)
+      {
+        if (ComputeRectilinearResolutionFSLE(ics) == true )
+          return false;
+        else
+          return true;
+      }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::GetInitialLocations
+//
+//  Purpose:
+//      Tells the PICS filter where to place the initial seed locations.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+std::vector<avtVector>
+avtFTLEFilter::GetInitialLocations()
+{
+    seedPoints.clear();
+
+    if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
+    {
+        GetInitialLocationsFromMesh(GetInputDataTree());
+    }
+    else //if (atts.GetSourceType() == FTLEAttributes::RegularGrid)
+    {
+        GetInitialLocationsFromGrid();
+    }
+
+    return seedPoints;
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::GetInitialLocationsFromMesh
+//
+//  Purpose:
+//      Walks through an AVT data tree and sets up the initial locations from
+//      each point in the mesh.
+//
+//  Arguments:
+//      inDT          A pointer to a data tree.  
+//
+//  Programmer: Hank Childs
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void
+avtFTLEFilter::GetInitialLocationsFromMesh(avtDataTree_p inDT)
+{
+    if (*inDT == NULL)
+        return;
+
+    int nc = inDT->GetNChildren();
+
+    if (nc <= 0 && !inDT->HasData())
+    {
+        return;
+    }
+
+    if (nc == 0)
+    {
+        //
+        // there is only one dataset to process
+        //
+        vtkDataSet *in_ds = inDT->GetDataRepresentation().GetDataVTK();
+        size_t pts = in_ds->GetNumberOfPoints();
+
+        int numberOfSeeds = seedPoints.size();
+        int totalNumberOfSeeds = numberOfSeeds + pts;
+
+        seedPoints.resize( totalNumberOfSeeds );
+
+        double points[3];
+        for(size_t i = 0; i < pts; ++i)
+        {
+          in_ds->GetPoint(i, points);
+          seedPoints[numberOfSeeds+i].set(points);
+        }
+    }
+    else
+    {
+        //
+        // there is more than one input dataset to process
+        // and we need an output datatree for each
+        //
+        for (int j = 0; j < nc; j++)
+        {
+            if (inDT->ChildIsPresent(j))
+            {
+                GetInitialLocationsFromMesh(inDT->GetChild(j));
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::GetInitialLocationsFromGrid
+//
+//  Purpose:
+//      Walks through an AVT data tree and sets up the initial locations from
+//      each point in the grid.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void
+avtFTLEFilter::GetInitialLocationsFromGrid()
+{
+    //compute total number of seeds that will be generated.
+    size_t totalNumberOfSeeds =
+      global_resolution[0] * global_resolution[1] * global_resolution[2];
+    
+    seedPoints.resize(totalNumberOfSeeds);
+
+    size_t l = 0; //current line of the seed.
+  
+    //add sample points by looping over in x,y,z
+    for(int k = 0; k < global_resolution[2]; ++k)
+    {
+        double zpcnt = 0;
+
+        if (global_resolution[2] > 1)
+          zpcnt = ((double)k)/((double)global_resolution[2]-1);
+
+        double z = global_bounds[4]*(1.0-zpcnt) + global_bounds[5]*zpcnt;
+        
+        for(int j = 0; j < global_resolution[1]; ++j)
+        {
+            double ypcnt = 0;
+
+            if (global_resolution[1] > 1)
+              ypcnt = ((double)j)/((double)global_resolution[1]-1);
+
+            double y = global_bounds[2]*(1.0-ypcnt) + global_bounds[3]*ypcnt;
+            
+            for(int i = 0; i < global_resolution[0]; ++i)
+            {
+                double xpcnt = 0;
+
+                if (global_resolution[0] > 1)
+                  xpcnt = ((double)i)/((double)global_resolution[0]-1);
+
+                double x =
+                  global_bounds[0]*(1.0-xpcnt) +
+                  global_bounds[1]*xpcnt;
+                
+                size_t index =
+                  (global_resolution[1]*global_resolution[0]*k) +
+                  (global_resolution[0]*j)+i;
+
+                seedPoints[l++].set(x,y,z);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ComputeNativeResolutionFSLE
+//
+//  Purpose:
+//      Computes the FSLE on a native resolution grid.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+//    Mark C. Miller, Wed Aug 22 19:22:40 PDT 2012
+//    Fix leak of all_indices, index_counts, all_result, result_counts on 
+//    rank 0 (root).
+// ****************************************************************************
+
+bool
+avtFTLEFilter::ComputeNativeResolutionFSLE(std::vector<avtIntegralCurve*> &ics)
+{
+  return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ComputeRectilinearResolutionFSLE
+//
+//  Purpose:
+//      Computes the FSLE on a rectilinear grid.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+//    Mark C. Miller, Wed Aug 22 19:22:40 PDT 2012
+//    Fix leak of all_indices, index_counts, all_result, result_counts on 
+//    rank 0 (root).
+// ****************************************************************************
+
+bool
+avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &ics)
+{
+    // std::cerr << "Computing ... " << std::endl;
+
+    //variable name.
+    std::string var = std::string("operators/FTLE/") + outVarName;
+
+    //algorithm sends index to global datastructure as well as end points.
+    //Send List of index into global array to rank 0
+    //Send end positions into global array to rank 0
+
+    //loop over all the intelgral curves and add it back to the
+    //original list of seeds.
+    intVector indices(ics.size());
+    doubleVector points(ics.size()*3);
+    doubleVector times(ics.size());
+    doubleVector lengths(ics.size());
+
+    for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
+    {
+        avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+
+        indices[i] = ic->id;
+
+        avtVector point = ic->GetEndPoint();
+
+        points[j+0] = point[0];
+        points[j+1] = point[1];
+        points[j+2] = point[2];
+
+        if( doPathlines )
+          times[i] = ic->GetTime() - seedTime0;
+        else
+          times[i] = ic->GetTime();
+
+        lengths[i] = ic->GetDistance();
+
+        // if( ic->id == 1896 )
+        //   std::cerr << ic->id << " " << ic->status << "  "
+        //          << point[0] << "  "
+        //          << point[1] << "  "
+        //          << point[2] << "  "
+        //          <<  (double) numSteps * maxStepLength << "  "
+        //          << ic->GetTime() << "  "
+        //          << ic->GetDistance() << "  "
+        //          << std::endl;
+        
+        // std::cerr << numSteps*maxStepLength << "  "
+        //        << times[i] << "  "
+        //        << std::endl;
+
+        // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
+        //             << end_point << std::endl;
+    }
+
+    // std::cout << PAR_Rank() << " total integral pts: "
+    //        << ics.size() << std::endl;
+    // std::flush(cout);
+
+    int* all_indices = 0;
+    int* index_counts = 0;
+
+    double* all_points = 0;
+    int *point_counts = 0;
+
+    double* all_times = 0;
+    int *time_counts = 0;
+
+    double* all_lengths = 0;
+    int *length_counts = 0;
+
+    Barrier();
+
+    CollectIntArraysOnRootProc(all_indices, index_counts,
+                               &indices.front(), indices.size());
+
+    CollectDoubleArraysOnRootProc(all_points, point_counts,
+                                  &points.front(), points.size());
+
+    CollectDoubleArraysOnRootProc(all_times, time_counts,
+                                  &times.front(), times.size());
+
+    CollectDoubleArraysOnRootProc(all_lengths, length_counts,
+                                  &lengths.front(), lengths.size());
+
+    Barrier();
+
+    //root should now have index into global structure and all
+    //matching end positions.
+    if(PAR_Rank() != 0)
+    {
+        return true;
+    }
+    else
+    {
+      //now global grid has been created.
+        size_t leafSize =
+          global_resolution[0] * global_resolution[1] * global_resolution[2];
+
+        if( fsle_rect_grid == 0 )
+        {
+          //rank 0
+          //now create a rectilinear grid.
+          
+          // The grid is stored so not to be created as the curve is extended.
+          fsle_rect_grid = vtkRectilinearGrid::New();
+
+          fsle_rect_grid->SetDimensions(global_resolution);
+      
+          vtkFloatArray* lxcoord = vtkFloatArray::New();
+          vtkFloatArray* lycoord = vtkFloatArray::New();
+          vtkFloatArray* lzcoord = vtkFloatArray::New();
+
+          //Note this grid is a uniform gird which allows the
+          //avtGradientExpression to be used to get the distances
+          //between integral curves.
+          lxcoord->SetNumberOfTuples(global_resolution[0]);
+          for (int i = 0; i < global_resolution[0]; i++)
+            lxcoord->SetTuple1(i, i);
+      
+          lycoord->SetNumberOfTuples(global_resolution[1]);
+          for (int i = 0; i < global_resolution[1]; i++)
+            lycoord->SetTuple1(i, i);
+      
+          lzcoord->SetNumberOfTuples(global_resolution[2]);
+          for (int i = 0; i < global_resolution[2]; i++)
+            lzcoord->SetTuple1(i, i);
+      
+          fsle_rect_grid->SetXCoordinates(lxcoord);
+          fsle_rect_grid->SetYCoordinates(lycoord);
+          fsle_rect_grid->SetZCoordinates(lzcoord);
+        
+          //cleanup
+          lxcoord->Delete();
+          lycoord->Delete();
+          lzcoord->Delete();
+
+          // std::cout << "final resolution: " << PAR_Rank() << " "
+          //         << global_resolution[0] << " "
+          //         << global_resolution[1] << " "
+          //         << global_resolution[2] << std::endl;
+
+          vtkFloatArray *exponents = vtkFloatArray::New();
+          exponents->SetName(var.c_str());
+          exponents->SetNumberOfTuples(leafSize);
+          fsle_rect_grid->GetPointData()->AddArray(exponents);
+//        fsle_rect_grid->GetPointData()->SetActiveScalars(var.c_str());
+
+          vtkFloatArray *component = vtkFloatArray::New();
+          component->SetName("component");
+          component->SetNumberOfTuples(leafSize);
+          fsle_rect_grid->GetPointData()->AddArray(component);
+          fsle_rect_grid->GetPointData()->SetActiveScalars("component");
+
+          vtkFloatArray *times = vtkFloatArray::New();
+          times->SetName("times");
+          times->SetNumberOfTuples(leafSize);
+          fsle_rect_grid->GetPointData()->AddArray(times);
+
+          vtkFloatArray *lengths = vtkFloatArray::New();
+          lengths->SetName("lengths");
+          lengths->SetNumberOfTuples(leafSize);
+          fsle_rect_grid->GetPointData()->AddArray(lengths);
+
+          vtkIntArray *mask = vtkIntArray::New();
+          mask->SetName("mask");
+          mask->SetNumberOfTuples(leafSize);
+          fsle_rect_grid->GetPointData()->AddArray(mask);
+
+          for (size_t l = 0; l < leafSize; l++)
+          {
+            exponents->SetTuple1(l, std::numeric_limits<float>::min());
+            mask->SetTuple1(l, 0 );
+          }
+          
+          // Preincraement the mask as boundary nodes will not be
+          // accessed fully.
+          int k1 = 0;
+          int k_1 = global_resolution[2]-1;
+
+          // Z plane
+          for(int j = 0; j < global_resolution[1]; ++j)
+          {
+            for(int i = 0; i < global_resolution[0]; ++i)
+            {
+              Increment( i, j, k1,  mask );
+              Increment( i, j, k_1, mask );
+            }
+          }
+          
+          int j1 = 0;
+          int j_1 = global_resolution[1]-1;
+          
+          for(int k = 0; k < global_resolution[2]; ++k)
+          {
+            for(int i = 0; i < global_resolution[0]; ++i)
+            {
+              Increment( i, j1,  k, mask );
+              Increment( i, j_1, k, mask );
+            }
+          }
+
+          int i1 = 0;
+          int i_1 = global_resolution[0]-1;
+          
+          for(int k = 0; k < global_resolution[2]; ++k)
+          {
+            for(int j = 0; j < global_resolution[1]; ++j)
+            {
+              Increment( i1, j,  k, mask );
+              Increment( i_1, j, k, mask );
+            }
+          }
+          
+          //cleanup
+          exponents->Delete();
+          component->Delete();
+          times->Delete();
+          lengths->Delete();
+          mask->Delete();
         }
 
-        const double sqrt3 = sqrtf(3.0f);
-        const double sqrtr = sqrtf(r);
+        // Get the stored data arrays
+        vtkDataArray* jacobian[3];
 
-        double sinphi = 0.0f, cosphi = 0.0f;
-        sinphi = sinf(phi);
-        cosphi = cosf(phi);
+        vtkFloatArray *exponents = (vtkFloatArray *)
+          fsle_rect_grid->GetPointData()->GetArray(var.c_str());
+        vtkFloatArray *component = (vtkFloatArray *)
+          fsle_rect_grid->GetPointData()->GetArray("component");
+        vtkFloatArray *times = (vtkFloatArray *)
+          fsle_rect_grid->GetPointData()->GetArray("times");
+        vtkFloatArray *lengths = (vtkFloatArray *)
+          fsle_rect_grid->GetPointData()->GetArray("lengths");
+        vtkIntArray *mask = (vtkIntArray *)
+          fsle_rect_grid->GetPointData()->GetArray("mask");
 
-        double lambda = 1.0f;
-        lambda = std::max( lambda, x + 2.0f*sqrtr*cosphi );
-        lambda = std::max( lambda, x - sqrtr*(cosphi + sqrt3*sinphi) );
-        lambda = std::max( lambda, x - sqrtr*(cosphi - sqrt3*sinphi) );
+        // Storage for the points, times, and lengths
+        std::vector<avtVector> remapPoints(leafSize);
+        std::vector<double> remapTimes(leafSize);
+        std::vector<double> remapLengths(leafSize);
 
-        //lambda = log( sqrtf( lambda ) ) + 0.000000001;
-        //                    std::cout << "s: " << lambda << std::endl;
-        lambda = log( sqrtf( lambda ) );
+        //update remapPoints with new value bounds from integral curves.
+        int par_size = PAR_Size();
+        size_t total = 0;
+        for(int i = 0; i < par_size; ++i)
+        {
+            if(index_counts[i]*3 != point_counts[i] ||
+               index_counts[i]   != time_counts[i] ||
+               index_counts[i]   != length_counts[i])
+            {
+              EXCEPTION1(VisItException,
+                         "Index count does not the result count." );
+            }
 
-        if( doTime )
-          lambda /= maxTime;
-        else if( doDistance )
-          lambda /= maxDistance;
+            total += index_counts[i];
+        }
 
-        //std::cout << "lambda :" << lambda << std::endl;
-        result->SetTuple1(l,lambda);
+        // std::cout << "total number integrated: " << total << std::endl;
+
+        for(int j=0, k=0; j<total; ++j, k+=3)
+        {
+            size_t index = all_indices[j];
+
+            if(leafSize <= index)
+            {
+              EXCEPTION1(VisItException,
+                         "More integral curves were generatated than "
+                         "grid points." );
+            }
+
+            // std::cout << index << " before " << remapPoints[index]
+            //        << std::endl;
+            
+            remapPoints[index].set( all_points[k+0],
+                                    all_points[k+1],
+                                    all_points[k+2]);
+
+            remapTimes[index] = all_times[j];
+            remapLengths[index] = all_lengths[j];
+
+            // std::cout << PAR_Rank() << " " << index << " "
+            //        << remapPoints[index] << std::endl;
+            // std::cout << "middle: " << avtVector( all_points[k+0],
+            //                                    all_points[k+1],
+            //                                    all_points[k+2])
+            //        << std::endl;
+            // std::cout << index << " after " << remapPoints[index]
+            //        << std::endl;
+        }
+
+        // for(size_t l = 0; l < leafSize; ++l)
+        //   if( (fabs(remapPoints[l][0]+5.0) < 1.0e-2) &&
+        //       (fabs(remapPoints[l][1]+7.0) < 1.0e-2 ||
+        //        fabs(remapPoints[l][1]+7.5) < 1.0e-2 ||
+        //        fabs(remapPoints[l][1]+8.0) < 1.0e-2) &&
+        //       (fabs(remapPoints[l][2]+0.0) < 1.0e-2) )
+
+        //     std::cerr << l << "  "
+        //            << remapPoints[l][0] << "  "
+        //            << remapPoints[l][1] << "  "
+        //            << remapPoints[l][2] << "  "
+        //            << std::endl;
+
+
+        //calculate jacobian in parts (x,y,z).  The jacobian really
+        //contains the distance components which when combined given
+        //the distance between neighboring integral curves.
+        for(int i = 0; i < 3; ++i)
+        {
+            // Store the point component by component
+            for(size_t l = 0; l < leafSize; ++l)
+                component->SetTuple1(l, remapPoints[l][i]);
+
+            jacobian[i] =
+              avtGradientExpression::CalculateGradient(fsle_rect_grid,
+                                                       "component");
+        }
+
+        // Store the times and lengths for the exponent.
+        for(size_t l = 0; l < leafSize; ++l)
+        {
+          times->SetTuple1(l, remapTimes[l]);
+          lengths->SetTuple1(l, remapLengths[l]);
+        }
+
+        // Compute the FSLE
+        ComputeFsle(jacobian, times, lengths, exponents, mask);
+
+        jacobian[0]->Delete();
+        jacobian[1]->Delete();
+        jacobian[2]->Delete();
+
+        bool haveAllExponents = true;
+
+        for(size_t i=0; i<ics.size(); ++i)
+        {
+          avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
+
+          size_t l = ic->id;
+
+          if( mask->GetTuple1( l ) < 7 )
+          {
+            ic->maxSteps++;
+            ic->status.ClearTerminationMet();
+          }
+
+          // Check to see if all exponents have been found.
+          if( exponents->GetTuple1(l) == std::numeric_limits<float>::min() &&
+              ic->maxSteps < maxSteps )
+            haveAllExponents = false;
+
+          // if( ic->id == 1896 )
+          //   std::cerr << i << "  "
+          //          << ic->id << "  "
+          //          << ic->maxSteps << "  "
+          //          << mask->GetTuple1( l ) << "  "
+          //          << ic->status << "  "
+          //          << std::endl
+          //          << std::endl;
+        }
+
+        //cleanup.
+        // component->Delete();
+        // times->Delete();
+        // lengths->Delete();
+        // exponents->Delete();
+
+        if (all_indices)   delete [] all_indices;
+        if (index_counts)  delete [] index_counts;
+
+        if (all_points)    delete [] all_points;
+        if (point_counts)  delete [] point_counts;
+
+        if (all_times)    delete [] all_times;
+        if (time_counts)  delete [] time_counts;
+
+        if (all_lengths)    delete [] all_lengths;
+        if (length_counts)  delete [] length_counts;
+
+        return haveAllExponents;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::CreateIntegralCurveOutput
+//
+//  Purpose:
+//      Computes the FTLE output (via sub-routines) after the PICS filter has
+//      calculated the final particle positions.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void 
+avtFTLEFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
+{
+  if( doTime || doDistance )
+  {
+    if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
+        ComputeNativeDataSetResolution(ics);
+    else //if (atts.GetSourceType() == FTLEAttributes::RegularGrid)
+        ComputeRectilinearDataResolution(ics);
+  }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::CreateRectilinearResolutionFSLEOutput
+//
+//  Purpose:
+//      Computes the FTLE output (via sub-routines) after the PICS filter has
+//      calculated the final particle positions.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void 
+avtFTLEFilter::CreateNativeResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics)
+{
+}
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::CreateRectilinearResolutionFSLEOutput
+//
+//  Purpose:
+//      Computes the FTLE output (via sub-routines) after the PICS filter has
+//      calculated the final particle positions.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void 
+avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics)
+{
+    //root should now have index into global structure and all
+    //matching end positions.
+    if(PAR_Rank() != 0)
+    {
+        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
+        avtDataTree* dummy = new avtDataTree();
+        SetOutputDataTree(dummy);
+    }
+    else
+    {
+      //variable name.
+      std::string var = std::string("operators/FTLE/") + outVarName;
+
+      // Set the grid points to the actual grid (i.e. replace the
+      // uniform grid used to get the distances via the gradient
+      // expression).
+      vtkFloatArray* lxcoord = vtkFloatArray::New();
+      vtkFloatArray* lycoord = vtkFloatArray::New();
+      vtkFloatArray* lzcoord = vtkFloatArray::New();
+      
+      fsle_rect_grid->SetDimensions(global_resolution);
+      
+      lxcoord->SetNumberOfTuples(global_resolution[0]);
+      for (int i = 0; i < global_resolution[0]; i++)
+      {
+        double pcnt = 0;
+        if (global_resolution[0] > 1)
+          pcnt = ((double)i)/((double)global_resolution[0]-1);
+        lxcoord->SetTuple1(i, global_bounds[0]*(1.0-pcnt) + global_bounds[1]*pcnt);
+      }
+      
+      lycoord->SetNumberOfTuples(global_resolution[1]);
+      for (int i = 0; i < global_resolution[1]; i++)
+      {
+        double pcnt = 0;
+        if (global_resolution[1] > 1)
+          pcnt = ((double)i)/((double)global_resolution[1]-1);
+        lycoord->SetTuple1(i, global_bounds[2]*(1.0-pcnt) + global_bounds[3]*pcnt);
+      }
+      
+      lzcoord->SetNumberOfTuples(global_resolution[2]);
+      for (int i = 0; i < global_resolution[2]; i++)
+      {
+        double pcnt = 0;
+        if (global_resolution[2] > 1)
+          pcnt = ((double)i)/((double)global_resolution[2]-1);
+        lzcoord->SetTuple1(i, global_bounds[4]*(1.0-pcnt) + global_bounds[5]*pcnt);
+      }
+      
+      fsle_rect_grid->SetXCoordinates(lxcoord);
+      fsle_rect_grid->SetYCoordinates(lycoord);
+      fsle_rect_grid->SetZCoordinates(lzcoord);
+      
+      //cleanup
+      lxcoord->Delete();
+      lycoord->Delete();
+      lzcoord->Delete();
+
+      vtkFloatArray *exponents = (vtkFloatArray *)
+        fsle_rect_grid->GetPointData()->GetArray(var.c_str());
+
+      int nTuples = exponents->GetNumberOfTuples();
+
+      //min and max values over all datasets of the tree.
+      double minv = std::numeric_limits<double>::max();
+      double maxv = std::numeric_limits<double>::min();
+      
+      int count = 0;
+
+      for(size_t l=0; l<nTuples; ++l)
+      {
+        avtStreamlineIC * ic = (avtStreamlineIC *) ics[l];
+
+        double lambda = exponents->GetTuple1(l);
+
+        if( lambda == std::numeric_limits<float>::min() )
+        {
+          lambda = 0;
+          exponents->SetTuple1(l, lambda );
+        }
+        else
+        {
+          ic->status.ClearTerminationMet();
+        }
+
+        minv = std::min(lambda, minv);
+        maxv = std::max(lambda, maxv);
+
+        if( lambda != 0 )
+          ++count;
+      }
+
+      if( count <= nTuples/10 )
+      {
+        char str[1028];
+
+        SNPRINTF(str, 1028, "\nOnly %d of the %d nodes (%d%%) exaimed "
+                 "produced a valid exponent (%f to %f). "
+                 "This may be due to too large of a size limit (%f), "
+                 "too small of an integration step (%f), or "
+                 "too few integration steps (%d out of %d where taken), or "
+                 "simply due to the nature of the data. "
+                 "The size range was from %f to %f. ",
+                 count, nTuples,
+                 (int) (100.0 * (double) count / (double) nTuples),
+                 minv, maxv,
+                 maxSize, maxStepLength, numSteps, maxSteps,
+                 minSizeValue, maxSizeValue );
+
+        avtCallback::IssueWarning(str);
+      }
+      
+      // std:cerr << "Output  " << count << "  " << nTuples/10 << "  "
+      //               << minv << "  " << maxv << std::endl;
+
+      // Remove the working arrays.
+      fsle_rect_grid->GetPointData()->RemoveArray("component");
+      fsle_rect_grid->GetPointData()->RemoveArray("times");
+      fsle_rect_grid->GetPointData()->RemoveArray("lengths");
+      fsle_rect_grid->GetPointData()->RemoveArray("mask");
+
+      fsle_rect_grid->GetPointData()->SetActiveScalars(var.c_str());
+
+      //store this dataset in Cache for next time.
+      double bounds[6];
+      fsle_rect_grid->GetBounds(bounds);
+          
+      // std::cout << "final size and bounds: "
+      //          << PAR_Rank() << " " << leafSize << " "
+      //          << bounds[0] << " " << bounds[1] << " " << bounds[2]
+      //          << " " << bounds[3] << " " << bounds[4] << " "
+      //          << bounds[5] << std::endl;
+      
+      std::string str = CreateResampledCacheString();
+      StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                              outVarName.c_str(), -1, -1,
+                              str.c_str(), fsle_rect_grid);
+      
+      int index = 0;//what does index mean in this context?
+      avtDataTree* dt = new avtDataTree(fsle_rect_grid,index);
+      int x = 0;
+      dt->GetAllLeaves(x);
+      
+      // std::cout << "total leaves:: " << x << std::endl;
+      
+      SetOutputDataTree(dt);
+      
+      //set atts.
+      avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
+      avtExtents* e = dataatts.GetThisProcsActualDataExtents();
+      
+      double range[2];
+      range[0] = minv;
+      range[1] = maxv;
+      e->Set(range);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ComputeRectilinearDataResolution
+//
+//  Purpose:
+//      Computes the FTLE on a rectilinear grid.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+//    Mark C. Miller, Wed Aug 22 19:22:40 PDT 2012
+//    Fix leak of all_indices, index_counts, all_points, result_counts on 
+//    rank 0 (root).
+// ****************************************************************************
+
+void
+avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurve*> &ics)
+{
+    //variable name.
+    std::string var = std::string("operators/FTLE/") + outVarName;
+
+    //algorithm sends index to global datastructure as well as end points.
+    //Send List of index into global array to rank 0
+    //Send end positions into global array to rank 0
+
+    //loop over all the intelgral curves and add it back to the
+    //original list of seeds.
+    intVector indices(ics.size());
+    doubleVector points(ics.size()*3);
+
+    for(size_t i=0, j=0; i<ics.size(); ++i, j+=3)
+    {
+        indices[i] = ics[i]->id;
+
+        // avtVector distance = ( ((avtFTLEIC*)ics[i])->GetEndPoint() -
+        //                        ((avtFTLEIC*)ics[i])->GetStartPoint() );
+
+        // if(distance.length() > 0)
+        //    std::cout << "distance: " << indices[i]
+        //           << " " << distance.length() << std::endl;
+
+        avtVector end_point = ((avtFTLEIC*)ics[i])->GetEndPoint();
+
+        // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
+        //             << end_point << std::endl;
+
+        points[j+0] = end_point[0];
+        points[j+1] = end_point[1];
+        points[j+2] = end_point[2];
+    }
+
+    // std::cout << PAR_Rank() << " total integral pts: "
+    //        << ics.size() << std::endl;
+    // std::flush(cout);
+
+    int* all_indices = 0;
+    int* index_counts = 0;
+    double* all_points = 0;
+    int *point_counts = 0;
+
+    Barrier();
+
+    CollectIntArraysOnRootProc(all_indices, index_counts,
+                               &indices.front(), indices.size());
+
+    CollectDoubleArraysOnRootProc(all_points, point_counts,
+                                  &points.front(), points.size());
+
+    Barrier();
+
+    //root should now have index into global structure and all
+    //matching end positions.
+    if(PAR_Rank() != 0)
+    {
+        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
+        avtDataTree* dummy = new avtDataTree();
+        SetOutputDataTree(dummy);
+    }
+    else
+    {
+        //rank 0
+        //now create a rectilinear grid.
+        vtkRectilinearGrid* rect_grid = vtkRectilinearGrid::New();
+
+        vtkFloatArray* lxcoord = vtkFloatArray::New();
+        vtkFloatArray* lycoord = vtkFloatArray::New();
+        vtkFloatArray* lzcoord = vtkFloatArray::New();
+
+        rect_grid->SetDimensions(global_resolution);
+
+        lxcoord->SetNumberOfTuples(global_resolution[0]);
+        for (int i = 0; i < global_resolution[0]; i++)
+        {
+            double pcnt = 0;
+            if (global_resolution[0] > 1)
+                pcnt = ((double)i)/((double)global_resolution[0]-1);
+            lxcoord->SetTuple1(i, global_bounds[0]*(1.0-pcnt) + global_bounds[1]*pcnt);
+        }
+
+        lycoord->SetNumberOfTuples(global_resolution[1]);
+        for (int i = 0; i < global_resolution[1]; i++)
+        {
+            double pcnt = 0;
+            if (global_resolution[1] > 1)
+                pcnt = ((double)i)/((double)global_resolution[1]-1);
+            lycoord->SetTuple1(i, global_bounds[2]*(1.0-pcnt) + global_bounds[3]*pcnt);
+        }
+
+        lzcoord->SetNumberOfTuples(global_resolution[2]);
+        for (int i = 0; i < global_resolution[2]; i++)
+        {
+            double pcnt = 0;
+            if (global_resolution[2] > 1)
+                pcnt = ((double)i)/((double)global_resolution[2]-1);
+            lzcoord->SetTuple1(i, global_bounds[4]*(1.0-pcnt) + global_bounds[5]*pcnt);
+        }
+
+        rect_grid->SetXCoordinates(lxcoord);
+        rect_grid->SetYCoordinates(lycoord);
+        rect_grid->SetZCoordinates(lzcoord);
+
+        //cleanup
+        lxcoord->Delete();
+        lycoord->Delete();
+        lzcoord->Delete();
+
+        //now global grid has been created.
+        size_t leafSize =
+          global_resolution[0] * global_resolution[1] * global_resolution[2];
+
+        // std::cout << "final resolution: " << PAR_Rank() << " "
+        //         << global_resolution[0] << " "
+        //         << global_resolution[1] << " "
+        //         << global_resolution[2] << std::endl;
+
+        vtkDataArray* jacobian[3];
+        vtkFloatArray *component = vtkFloatArray::New();
+
+        component->SetName(var.c_str());
+        component->SetNumberOfTuples(leafSize);
+
+        rect_grid->GetPointData()->AddArray(component);
+        rect_grid->GetPointData()->SetActiveScalars(var.c_str());
+
+        //calculate jacobian in parts (x,y,z).
+        std::vector<avtVector> remapPoints(leafSize);
+
+        //update remapPoints with new value bounds from integral curves.
+        int par_size = PAR_Size();
+        size_t total = 0;
+        for(int i = 0; i < par_size; ++i)
+        {
+            if(index_counts[i]*3 != point_counts[i])
+            {
+              EXCEPTION1(VisItException,
+                         "Index count does not the result count." );
+            }
+            total += index_counts[i];
+        }
+
+        // std::cout << "total number integrated: " << total << std::endl;
+
+        for(int j = 0,k = 0; j < total; ++j, k += 3)
+        {
+            size_t index = all_indices[j];
+
+            if(index >= leafSize)
+            {
+              EXCEPTION1(VisItException,
+                         "More integral curves were generatated than "
+                         "grid points." );
+            }
+
+            // std::cout << index << " before " << remapPoints[index]
+            //        << std::endl;
+            
+            remapPoints[index].set( all_points[k+0],
+                                    all_points[k+1],
+                                    all_points[k+2]);
+            
+            // std::cout << PAR_Rank() << " " << index << " "
+            //        << remapPoints[index] << std::endl;
+            // std::cout << "middle: " << avtVector( all_points[k+0],
+            //                                    all_points[k+1],
+            //                                    all_points[k+2])
+            //        << std::endl;
+            // std::cout << index << " after " << remapPoints[index]
+            //        << std::endl;
+        }
+
+        for(int i = 0; i < 3; ++i)
+        {
+            for(size_t j = 0; j < leafSize; ++j)
+                component->SetTuple1(j, remapPoints[j][i]);
+
+            jacobian[i] =
+              avtGradientExpression::CalculateGradient(rect_grid, var.c_str());
+        }
+
+        for (size_t l = 0; l < leafSize; l++)
+            component->SetTuple1(l, std::numeric_limits<float>::epsilon());
+
+        ComputeFtle(jacobian, component);
+
+        //min and max values over all datasets of the tree.
+        double minv = std::numeric_limits<double>::max();
+        double maxv = std::numeric_limits<double>::min();
+
+        for(size_t l = 0; l < leafSize; ++l)
+        {
+            minv = std::min(component->GetTuple1(l), minv);
+            maxv = std::max(component->GetTuple1(l), maxv);
+        }
+
+        //cleanup.
+        component->Delete();
+        jacobian[0]->Delete();
+        jacobian[1]->Delete();
+        jacobian[2]->Delete();
+
+        if (all_indices)  delete [] all_indices;
+        if (index_counts) delete [] index_counts;
+        if (all_points)   delete [] all_points;
+        if (point_counts) delete [] point_counts;
+
+        //store this dataset in Cache for next time.
+        double bounds[6];
+        rect_grid->GetBounds(bounds);
+
+        // std::cout << "final size and bounds: "
+        //        << PAR_Rank() << " " << leafSize << " "
+        //        << bounds[0] << " " << bounds[1] << " " << bounds[2]
+        //        << " " << bounds[3] << " " << bounds[4] << " "
+        //        << bounds[5] << std::endl;
+
+        std::string str = CreateResampledCacheString();
+        StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
+                                outVarName.c_str(), -1, -1,
+                                str.c_str(), rect_grid);
+
+        int index = 0;//what does index mean in this context?
+        avtDataTree* dt = new avtDataTree(rect_grid,index);
+        int x = 0;
+        dt->GetAllLeaves(x);
+
+        // std::cout << "total leaves:: " << x << std::endl;
+
+        SetOutputDataTree(dt);
+
+        //set atts.
+        avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
+        avtExtents* e = dataatts.GetThisProcsActualDataExtents();
+
+        double range[2];
+        range[0] = minv;
+        range[1] = maxv;
+        e->Set(range);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ComputeNativeDataSetResolution
+//
+//  Purpose:
+//      Computes the FTLE after the particles have been advected.
+//
+//  Programmer: Hari Krishnan
+//  Creation:   December 5, 2011
+//
+// ****************************************************************************
+
+void avtFTLEFilter::ComputeNativeDataSetResolution(std::vector<avtIntegralCurve*> &ics)
+{
+    //accumulate all of the points then do jacobian?
+    //or do jacobian then accumulate?
+    //picking the first.
+
+    double minv   = std::numeric_limits<double>::max();
+    double maxv   = std::numeric_limits<double>::min();
+    int    offset = 0;
+
+    avtDataTree_p outTree =
+      MultiBlockComputeFTLE(GetInputDataTree(), ics, offset, minv, maxv);
+
+    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
+        if (PAR_Rank() != 0)
+            outTree = new avtDataTree();
+    SetOutputDataTree(outTree);
+
+    avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
+    avtExtents* e = dataatts.GetThisProcsActualDataExtents();
+
+    double range[2];
+    range[0] = minv;
+    range[1] = maxv;
+    e->Set(range);
+
+    e = dataatts.GetThisProcsOriginalDataExtents();
+    e->Set(range);
+
+    e = dataatts.GetThisProcsActualSpatialExtents();
+    e->Set(global_bounds);
+    e = dataatts.GetThisProcsOriginalSpatialExtents();
+    e->Set(global_bounds);
 }
 
 
@@ -620,7 +1794,8 @@ void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3], vtkDataArray *result)
 // ****************************************************************************
 
 avtDataTree_p
-avtFTLEFilter::MultiBlockComputeFTLE(avtDataTree_p inDT, std::vector<avtIntegralCurve*> &ics,
+avtFTLEFilter::MultiBlockComputeFTLE(avtDataTree_p inDT,
+                                     std::vector<avtIntegralCurve*> &ics,
                                      int &offset, double &minv, double &maxv)
 {
     if (*inDT == NULL)
@@ -647,23 +1822,25 @@ avtFTLEFilter::MultiBlockComputeFTLE(avtDataTree_p inDT, std::vector<avtIntegral
         out_ds->Delete();
         return rv;
     }
-
-    //
-    // there is more than one input dataset to process
-    // and we need an output datatree for each
-    //
-    avtDataTree_p *outDT = new avtDataTree_p[nc];
-    for (int j = 0; j < nc; j++)
+    else
     {
-        if (inDT->ChildIsPresent(j))
+      //
+      // there is more than one input dataset to process
+      // and we need an output datatree for each
+      //
+      avtDataTree_p *outDT = new avtDataTree_p[nc];
+      for (int j = 0; j < nc; j++)
+      {
+          if (inDT->ChildIsPresent(j))
             outDT[j] = MultiBlockComputeFTLE(inDT->GetChild(j), ics, 
                                              offset, minv, maxv);
-        else
+          else
             outDT[j] = NULL;
+      }
+      avtDataTree_p rv = new avtDataTree(nc, outDT);
+      delete [] outDT;
+      return rv;
     }
-    avtDataTree_p rv = new avtDataTree(nc, outDT);
-    delete [] outDT;
-    return rv;
 }
 
 
@@ -701,22 +1878,22 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
                                       int &offset, int domain,
                                       double &minv, double &maxv)
 {
-    //variable name..
+    //variable name.
     std::string var = std::string("operators/FTLE/") + outVarName;
 
-    //create new instance from old..
+    //create new instance from old.
     vtkDataSet* out_grid = in_ds->NewInstance();
     out_grid->ShallowCopy(in_ds);
     int ntuples = in_ds->GetNumberOfPoints();
 
-    //an array for the initial locations
-    std::vector<avtVector> remapVector;
-    remapVector.resize(ntuples);
+    //an array for the initial locations.
+    std::vector<avtVector> remapPoints;
+    remapPoints.resize(ntuples);
 
     if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
     {
         // The parallel synchronization for when data is replicated involves
-        // a sum across all processors.  So we want remapVector to have the
+        // a sum across all processors.  So we want remapPoints to have the
         // location of the particle on one processor, and zero on the rest.
         // Do that here.
         // Special care is needed for the case where the particle never
@@ -725,11 +1902,11 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
         std::vector<int> iHavePoint(ntuples, 0);
         std::vector<int> anyoneHasPoint;
 
-        for (size_t idx = 0 ; idx < ics.size() ; idx++)
+        for (size_t idx = 0; idx < ics.size(); idx++)
         {
             size_t index = ics[idx]->id;
-            int l = (index-offset);
-            if(l >= 0 && l < remapVector.size())
+            size_t l = (index-offset);
+            if(l >= 0 && l < remapPoints.size())
             {
                 iHavePoint[l] = 1;
             }
@@ -738,46 +1915,50 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
         UnifyMaximumValue(iHavePoint, anyoneHasPoint);
         avtVector zero;
         zero.x = zero.y = zero.z = 0.;
-        for (size_t i = 0 ; i < ntuples ; i++)
+        for (size_t i = 0; i < ntuples; i++)
             if (PAR_Rank() == 0 && !anyoneHasPoint[i])
-                remapVector[i] = seedPoints.at(offset + i);
+                remapPoints[i] = seedPoints.at(offset + i);
             else
-                remapVector[i] = zero;
+                remapPoints[i] = zero;
     }
     else
     {
         //copy the original seed points
-        for(size_t i = 0; i < remapVector.size(); ++i)
-            remapVector[i] = seedPoints.at(offset + i);
+        for(size_t i = 0; i < remapPoints.size(); ++i)
+            remapPoints[i] = seedPoints.at(offset + i);
     }
 
 #if 1
     for(int i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        int l = (index-offset);
+        size_t l = (index-offset);
         //std::cout << "l = " << l << " " << ntuples << std::endl;
-        if(l >= 0 && l < remapVector.size())
+        if(l >= 0 && l < remapPoints.size())
         {
-            //remapVector[l] = ((avtFTLEFilterIC*)ics[i])->GetEndPoint() - ((avtFTLEFilterIC*)ics[i])->GetStartPoint();
-            remapVector.at(l) = ((avtFTLEIC*)ics[i])->GetEndPoint();
+          // remapPoints[l] = ((avtFTLEIC*)ics[i])->GetEndPoint() -
+          //                ((avtFTLEIC*)ics[i])->GetStartPoint();
+
+          remapPoints.at(l) = ((avtFTLEIC*)ics[i])->GetEndPoint();
         }
     }
 
-    // We are done with offset, increment it for the next call to this function.
+    //done with offset, increment it for the next call to this
+    //function.
     offset += ntuples;
 
     //use static function in avtGradientExpression to calculate
-    //gradients..  since this function only does scalar, break our
-    //vectors into scalar components and calculate one at a time..
+    //gradients.  since this function only does scalar, break our
+    //vectors into scalar components and calculate one at a time.
 
     vtkDataArray* jacobian[3];
+
     vtkFloatArray *component = vtkFloatArray::New();
     component->SetName(var.c_str());
     component->SetNumberOfTuples(ntuples);
 
     //temporarily add point data to output grid in order to calculate
-    //gradient per component..
+    //gradient per component.
 
     //is this soft copy or deep copy?
     out_grid->GetPointData()->AddArray(component);
@@ -786,7 +1967,8 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     for(int i = 0; i < 3; ++i)
     {
         for(size_t j = 0; j < ntuples; ++j)
-            component->SetTuple1(j,remapVector[j][i]);
+            component->SetTuple1(j, remapPoints[j][i]);
+
         if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
         {
             float *newvals = new float[ntuples];
@@ -797,35 +1979,43 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
             delete [] newvals;
         }
 
-        jacobian[i] = avtGradientExpression::CalculateGradient(out_grid,var.c_str());
+        jacobian[i] =
+          avtGradientExpression::CalculateGradient(out_grid, var.c_str());
     }
 
-    //remove array once done..
-    component->Delete();
-    out_grid->GetPointData()->RemoveArray(var.c_str());
+    // ARS - How can the resolution of the original dataset and new
+    // dataset may be different when we are computing using the native
+    // data set resolution???????????????
 
-    //not reusing component because the resolution of the original
-    //dataset and new dataset may be different?
-    vtkFloatArray *arr = vtkFloatArray::New();
-    arr->SetNumberOfTuples(ntuples);
+    // //remove array once done.
+    // component->Delete();
+    // out_grid->GetPointData()->RemoveArray(var.c_str());
 
-    for (int i = 0 ; i < ntuples ; i++)
+    // //do not reuse the component because the resolution of the
+    // //original dataset and new dataset may be different?
+    // vtkFloatArray *arr = vtkFloatArray::New();
+    // arr->SetName(var.c_str());
+    // arr->SetNumberOfTuples(ntuples);
+
+    // out_grid->GetPointData()->AddArray(arr);
+    // out_grid->GetPointData()->SetActiveScalars(var.c_str());
+
+    vtkFloatArray *arr = component;
+
+
+    for (int i = 0; i < ntuples; i++)
         arr->SetTuple1(i, std::numeric_limits<float>::epsilon());
 
-    //now I should have components of the jacobian 3 arrays of 3x3 array..
-    ComputeFtle(jacobian,arr);
+    //now have the jacobian - 3 arrays with 3 components.
+    ComputeFtle(jacobian, arr);
 
     for(int i = 0; i < ntuples; ++i)
     {
-        minv = std::min(arr->GetTuple1(i),minv);
-        maxv = std::max(arr->GetTuple1(i),maxv);
+        minv = std::min(arr->GetTuple1(i), minv);
+        maxv = std::max(arr->GetTuple1(i), maxv);
     }
 
-    arr->SetName(var.c_str());
-
-    out_grid->GetPointData()->AddArray(arr);
     arr->Delete();
-    out_grid->GetPointData()->SetActiveScalars(var.c_str());
 
     jacobian[0]->Delete();
     jacobian[1]->Delete();
@@ -836,23 +2026,26 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
     vtkFloatArray *arr = vtkFloatArray::New();
     arr->SetNumberOfTuples(ntuples);
 
-    for (int i = 0 ; i < ntuples ; i++)
+    for (int i = 0; i < ntuples; i++)
         arr->SetTuple1(i, -1);
 
     for(int i = 0; i < ics.size(); ++i)
     {
         size_t index = ics[i]->id;
-        int l = (index-offset);
+        size_t l = (index-offset);
         if(l >= 0 && l < ntuples)
         {
-            arr->SetTuple1(l, 
-            ((avtFTLEFilterIC*)ics[i])->GetEndPoint()[0] - ((avtFTLEFilterIC*)ics[i])->GetStartPoint()[0]);
+          avtVector diff = (((avtFTLEIC*)ics[i])->GetEndPoint()[0] -
+                            ((avtFTLEIC*)ics[i])->GetStartPoint()[0]);
+
+            arr->SetTuple1(l, diff );
         }
     }
+
     for(int i = 0; i < ntuples; ++i)
     {
-        minv = std::min(arr->GetTuple1(i),minv);
-        maxv = std::max(arr->GetTuple1(i),maxv);
+        minv = std::min(arr->GetTuple1(i), minv);
+        maxv = std::max(arr->GetTuple1(i), maxv);
     }
 
     arr->SetName(var.c_str());
@@ -864,7 +2057,7 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 
 #endif
 
-    //Store this dataset in Cache for next time..
+    //Store this dataset in Cache for next time.
     std::string str = CreateNativeResolutionCacheString();
     StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
                             outVarName.c_str(),domain, -1,
@@ -876,424 +2069,332 @@ avtFTLEFilter::SingleBlockComputeFTLE(vtkDataSet *in_ds,
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::ComputeNativeDataSetResolution
+//  Method: avtFTLEFilter::InBounds
 //
 //  Purpose:
-//      Computes the FTLE after the particles have been advected.
+//      Returns true if indexes are in bounds.
 //
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
+//
+//  Modifications:
 //
 // ****************************************************************************
 
-void avtFTLEFilter::ComputeNativeDataSetResolution(std::vector<avtIntegralCurve*> &ics)
+int avtFTLEFilter::InBounds( int x, int y, int z )
 {
-    //accumulate all of the points then do jacobian?
-    //or do jacobian then accumulate?
-    //picking the first..
-
-    double minv   = std::numeric_limits<double>::max();
-    double maxv   = std::numeric_limits<double>::min();
-    int    offset = 0;
-
-    avtDataTree_p outTree = MultiBlockComputeFTLE(GetInputDataTree(), ics, offset,
-                                                  minv, maxv);
-    if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-        if (PAR_Rank() != 0)
-            outTree = new avtDataTree();
-    SetOutputDataTree(outTree);
-
-    avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
-    avtExtents* e = dataatts.GetThisProcsActualDataExtents();
-
-    double range[2];
-    range[0] = minv;
-    range[1] = maxv;
-    e->Set(range);
-
-    e = dataatts.GetThisProcsOriginalDataExtents();
-    e->Set(range);
-
-    e = dataatts.GetThisProcsActualSpatialExtents();
-    e->Set(global_bounds);
-    e = dataatts.GetThisProcsOriginalSpatialExtents();
-    e->Set(global_bounds);
+  if( 0 <= x && x < global_resolution[0] &&
+      0 <= y && y < global_resolution[1] &&
+      0 <= z && z < global_resolution[2] )
+    return (z * global_resolution[1] + y) * global_resolution[0] + x;
+  else
+    return -1;
 }
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::ComputeRectilinearDataResolution
+//  Method: avtFTLEFilter::Increment
 //
 //  Purpose:
-//      Computes the FTLE on a rectilinear grid.
+//      Increments a counter
 //
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
 //
-//    Mark C. Miller, Wed Aug 22 19:22:40 PDT 2012
-//    Fix leak of all_indices, index_counts, all_result, result_counts on 
-//    rank 0 (root).
+//  Modifications:
+//
 // ****************************************************************************
 
-void avtFTLEFilter::ComputeRectilinearDataResolution(std::vector<avtIntegralCurve*> &ics)
+void avtFTLEFilter::Increment( int x, int y, int z, vtkDataArray *array)
 {
-    //variable name..
-    std::string var = std::string("operators/FTLE/") + outVarName;
-
-    //algorithm sends index to global datastructure as well as end points..
-    //Send List of index into global array to rank 0
-    //Send end positions into global array to rank 0
-
-    //loop over all the intelgral curves and add it back to the original list of seeds..
-    intVector indices(ics.size());
-    doubleVector end_results(ics.size()*3);
-
-    for(size_t i = 0,j = 0; i < ics.size(); ++i,j += 3)
-    {
-        indices[i] = ics[i]->id;
-
-        //avtVector distance = ((avtFTLEFilterIC*)ics[i])->GetEndPoint() - ((avtFTLEFilterIC*)ics[i])->GetStartPoint();
-
-        //if(distance.length() > 0)
-        //    std::cout << "distance: " << indices[i] << " " << distance.length() << std::endl;
-
-        avtVector end_point = ((avtFTLEIC*)ics[i])->GetEndPoint();
-        //std::cout << PAR_Rank() << " ics: " << indices[i] << " " << end_point << std::endl;
-        end_results[j+0] = end_point[0];
-        end_results[j+1] = end_point[1];
-        end_results[j+2] = end_point[2];
-    }
-    //std::cout << PAR_Rank() << " total integral pts: " << ics.size() << std::endl;
-
-    //std::flush(cout);
-
-    int* all_indices = 0;
-    int* index_counts = 0;
-    double* all_result = 0;
-    int *result_counts = 0;
-
-    Barrier();
-
-    CollectIntArraysOnRootProc(all_indices,index_counts,&indices.front(),indices.size());
-    CollectDoubleArraysOnRootProc(all_result,result_counts,&end_results.front(),end_results.size());
-
-    Barrier();
-    //root should now have index into global structure and all
-    //matching end positions..
-    if(PAR_Rank() != 0)
-    {
-        //std::cout << PAR_Rank() << " creating dummy output" << std::endl;
-        avtDataTree* dummy = new avtDataTree();
-        SetOutputDataTree(dummy);
-    }
-    else
-    {
-        //rank 0 ..
-        //now create a rectilinear grid ..
-        vtkRectilinearGrid* rect_grid = vtkRectilinearGrid::New();
-
-        vtkFloatArray* lxcoord = vtkFloatArray::New();
-        vtkFloatArray* lycoord = vtkFloatArray::New();
-        vtkFloatArray* lzcoord = vtkFloatArray::New();
-
-        rect_grid->SetDimensions(global_resolution);
-
-        lxcoord->SetNumberOfTuples(global_resolution[0]);
-        for (int i = 0 ; i < global_resolution[0] ; i++)
-        {
-            double pcnt = 0;
-            if (global_resolution[0] > 1)
-                pcnt = ((double)i)/((double)global_resolution[0]-1);
-            lxcoord->SetTuple1(i, global_bounds[0]*(1.0-pcnt) + global_bounds[1]*pcnt);
-        }
-
-        lycoord->SetNumberOfTuples(global_resolution[1]);
-        for (int i = 0 ; i < global_resolution[1] ; i++)
-        {
-            double pcnt = 0;
-            if (global_resolution[1] > 1)
-                pcnt = ((double)i)/((double)global_resolution[1]-1);
-            lycoord->SetTuple1(i, global_bounds[2]*(1.0-pcnt) + global_bounds[3]*pcnt);
-        }
-
-        lzcoord->SetNumberOfTuples(global_resolution[2]);
-        for (int i = 0 ; i < global_resolution[2] ; i++)
-        {
-            double pcnt = 0;
-            if (global_resolution[2] > 1)
-                pcnt = ((double)i)/((double)global_resolution[2]-1);
-            lzcoord->SetTuple1(i, global_bounds[4]*(1.0-pcnt) + global_bounds[5]*pcnt);
-        }
-
-        rect_grid->SetXCoordinates(lxcoord);
-        rect_grid->SetYCoordinates(lycoord);
-        rect_grid->SetZCoordinates(lzcoord);
-
-        //cleanup
-        lxcoord->Delete();
-        lycoord->Delete();
-        lzcoord->Delete();
-
-        //now global grid has been created..
-        size_t leafSize = global_resolution[0]*global_resolution[1]*global_resolution[2];
-
-        //std::cout << "final resolution: " << PAR_Rank() << " " << global_resolution[0] << " "
-                //<< global_resolution[1] << " "
-                //<< global_resolution[2] << std::endl;
-
-
-        vtkDataArray* jacobian[3];
-        vtkFloatArray *component = vtkFloatArray::New();
-
-        component->SetName(var.c_str());
-        component->SetNumberOfTuples(leafSize);
-
-        rect_grid->GetPointData()->AddArray(component);
-        rect_grid->GetPointData()->SetActiveScalars(var.c_str());
-
-        //calculate jacobian in parts (x,y,z)..
-        std::vector<avtVector> remapVector(leafSize);
-
-        //recreate initial grid..
-        size_t l = 0;
-        for(int k = 0; k < global_resolution[2]; ++k)
-        {
-            double zpcnt = 0;
-            if (global_resolution[2] > 1)
-                zpcnt = ((double)k)/((double)global_resolution[2]-1);
-            double z = global_bounds[4]*(1.0-zpcnt) + global_bounds[5]*zpcnt;
-
-            for(int j = 0; j < global_resolution[1]; ++j)
-            {
-                double ypcnt = 0;
-                if (global_resolution[1] > 1)
-                    ypcnt = ((double)j)/((double)global_resolution[1]-1);
-                double y = global_bounds[2]*(1.0-ypcnt) + global_bounds[3]*ypcnt;
-
-                for(int i = 0; i < global_resolution[0]; ++i)
-                {
-                    double xpcnt = 0;
-                    if (global_resolution[0] > 1)
-                        xpcnt = ((double)i)/((double)global_resolution[0]-1);
-                    double x = global_bounds[0]*(1.0-xpcnt) + global_bounds[1]*xpcnt;
-
-                    remapVector[l].set(x,y,z);
-                    l++;
-                }
-            }
-        }
-
-        //update remapVector with new value bounds from integral curves..
-        int par_size = PAR_Size();
-        size_t total = 0;
-        for(int i = 0; i < par_size; ++i)
-        {
-            if(index_counts[i]*3 != result_counts[i])
-            {
-                std::cout << "Throw exception: mismatching counts" << std::endl;
-            }
-            total += index_counts[i];
-        }
-
-        //std::cout << "total number integrated: " << total << std::endl;
-        for(int j = 0,k = 0; j < total; ++j, k += 3)
-        {
-            size_t index = all_indices[j];
-
-            if(index >= leafSize)
-            {
-                std::cout << "Throw exception: index > leafSize" << std::endl;
-            }
-
-            //std::cout << index << " before " << remapVector[index] << std::endl;
-            remapVector[index].set(all_result[k+0],all_result[k+1],all_result[k+2]);
-            //std::cout << PAR_Rank() << " " << index << " " << remapVector[index] << std::endl;
-            //std::cout << "middle: " << avtVector(all_result[k+0],all_result[k+1],all_result[k+2]) << std::endl;
-            //std::cout << index << " after " << remapVector[index] << std::endl;
-        }
-
-        for(int i = 0; i < 3; ++i)
-        {
-            for(size_t j = 0; j < leafSize; ++j)
-                component->SetTuple1(j,remapVector[j][i]);
-
-            jacobian[i] = avtGradientExpression::CalculateGradient(rect_grid,var.c_str());
-        }
-
-        for (int i = 0 ; i < leafSize ; i++)
-            component->SetTuple1(i, std::numeric_limits<float>::epsilon());
-
-        ComputeFtle(jacobian,component);
-
-        //min and max values over all datasets of the tree..
-        double minv = std::numeric_limits<double>::max();
-        double maxv = std::numeric_limits<double>::min();
-
-        for(int i = 0; i < leafSize; ++i)
-        {
-            minv = std::min(component->GetTuple1(i),minv);
-            maxv = std::max(component->GetTuple1(i),maxv);
-        }
-
-        //cleanup..
-        component->Delete();
-        jacobian[0]->Delete();
-        jacobian[1]->Delete();
-        jacobian[2]->Delete();
-
-        //Store this dataset in Cache for next time..
-        double bounds[6];
-        rect_grid->GetBounds(bounds);
-        //std::cout << "final size and bounds: " << PAR_Rank() << " " << leafSize << " "
-                //<< bounds[0] << " " << bounds[1] << " " << bounds[2]
-                //<< " " << bounds[3] << " " << bounds[4] << " "
-                //<< bounds[5] << std::endl;
-
-        std::string str = CreateResampledCacheString();
-        StoreArbitraryVTKObject(SPATIAL_DEPENDENCE | DATA_DEPENDENCE,
-                                outVarName.c_str(), -1, -1,
-                                str.c_str(), rect_grid);
-
-        int index = 0;//what does index mean in this context?
-        avtDataTree* dt = new avtDataTree(rect_grid,index);
-        int x = 0;
-        dt->GetAllLeaves(x);
-        //std::cout << "total leaves:: " << x << std::endl;
-        SetOutputDataTree(dt);
-
-        //set atts..
-        avtDataAttributes &dataatts = GetOutput()->GetInfo().GetAttributes();
-        avtExtents* e = dataatts.GetThisProcsActualDataExtents();
-
-        double range[2];
-        range[0] = minv;
-        range[1] = maxv;
-        e->Set(range);
-
-        if (all_indices) delete [] all_indices;
-        if (index_counts) delete [] index_counts;
-        if (all_result) delete [] all_result;
-        if (result_counts) delete [] result_counts;
-    }
-}
-
-// ****************************************************************************
-//  Method: avtFTLEFilter::CreateIntegralCurveOutput
-//
-//  Purpose:
-//      Computes the FTLE output (via sub-routines) after the PICS filter has
-//      calculated the final particle positions.
-//
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
-//
-// ****************************************************************************
-
-void 
-avtFTLEFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
-{
-    if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
-        ComputeNativeDataSetResolution(ics);
-    else
-        ComputeRectilinearDataResolution(ics);
+  size_t l = InBounds( x, y, z );
+  
+  if( 0 <= l )
+  {      
+    int cc = array->GetTuple1(l);
+    ++cc;
+    array->SetTuple1(l, cc);
+  }
 }
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::PreExecute
+//  Method: avtFTLEFilter::Value
 //
 //  Purpose:
-//      Initialize data attributes for this filter and its base type (PICS).
+//      Returns the value for a coordinate
+//
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool avtFTLEFilter::Value( int x, int y, int z, vtkDataArray *array)
+{
+  size_t l = InBounds( x, y, z );
+
+  if( 0 <= l )
+    return array->GetTuple1(l);
+  else
+    return 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtFTLEFilter::ComputeFsle
+//
+//  Purpose:
+//      Computes the FSLE given a Jacobian.
 //
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
 //  Modifications:
 //
-//    Hank Childs, Jul  6 14:17:47 PDT 2012
-//    Set resolution for Z to be 1 for 2D meshes.
-//
 // ****************************************************************************
 
-void 
-avtFTLEFilter::PreExecute(void)
+void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],              
+                                vtkDataArray *times,
+                                vtkDataArray *lengths,
+                                vtkDataArray *exponents,
+                                vtkDataArray *mask)
 {
-    SetActiveVariable(outVarName.c_str());
-    GetSpatialExtents(global_bounds);
 
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+  //min and max values over all datasets of the tree.
+  double minv = std::numeric_limits<double>::max();
+  double maxv = std::numeric_limits<double>::min();
+      
+  size_t l = 0;
+  
+  for(int k=0, k1=1, k_1=-1; k<global_resolution[2]; ++k, ++k1, ++k_1)
+  {
+    for(int j=0, j1=1, j_1=-1; j<global_resolution[1]; ++j, ++j1, ++j_1)
     {
-        // we set them to 0->1 earlier and GetSpatialExtents only sets the
-        // X and Y parts of the extents for 2D.
-        global_bounds[4] = 0;
-        global_bounds[5] = 0;
+      for(int i=0, i1=1, i_1=-1; i<global_resolution[0]; ++i, ++i1, ++i_1)
+      {
+        double lambda = exponents->GetTuple1(l);
+
+        // Check for a curve that has terminated which will not have
+        // taken a step forward or backwards.
+        if( round( fabs(times->GetTuple1(l)) / maxStepLength ) != numSteps )
+        {
+          if( l == 1896 )
+              std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
+                        << (double) numSteps * maxStepLength << "  "
+                        << times->GetTuple1(l) << "  "
+                        << lengths->GetTuple1(l) << "  "
+                        << fabs(times->GetTuple1(l) - (double) numSteps * maxStepLength) << "  "
+                        << fabs(times->GetTuple1(l) + (double) numSteps * maxStepLength) << "  "
+                        << lambda << "  "
+                        << std::endl;
+
+          // If a curve has terminated set the exponent to zero.
+          if( lambda == std::numeric_limits<float>::min() )
+          {
+            lambda = 0;
+            exponents->SetTuple1(l, lambda);
+            mask->SetTuple1( l, 7 );
+            
+            // Counter to note that the neighbors do
+            // not need additon advection.
+            Increment( i1,   j,  k,   mask );
+            Increment( i_1,  j,  k,   mask );
+            Increment( i,   j1,  k,   mask );
+            Increment( i,   j_1, k,   mask );
+            Increment( i,   j,   k1,  mask );
+            Increment( i,   j,   k_1, mask );
+          }
+        }
+
+        // If the exponent was previously set skip checking it.
+        else if( lambda == std::numeric_limits<float>::min() )
+        {
+            double *jac0 = jacobian[0]->GetTuple3(l);
+            double *jac1 = jacobian[1]->GetTuple3(l);
+            double *jac2 = jacobian[2]->GetTuple3(l);
+
+            avtVector dx, dy, dz;
+
+            if( Value( i, j, k, times ) == Value( i1,  j, k, times ) &&
+                Value( i, j, k, times ) == Value( i_1, j, k, times ) )
+              //x,y,z components compute left,right
+              dx = avtVector(jac0[0],jac1[0],jac2[0]);
+            else
+              dx = avtVector(0,0,0);
+
+            if( Value( i, j, k, times ) == Value( i, j1,  k, times ) &&
+                Value( i, j, k, times ) == Value( i, j_1, k, times ) )
+              //x,y,z components compute top,bottom
+              dy = avtVector(jac0[1],jac1[1],jac2[1]);
+            else
+              dy = avtVector(0,0,0);
+
+            if( Value( i, j, k, times ) == Value( i, j, k1,  times ) &&
+                Value( i, j, k, times ) == Value( i, j, k_1, times ) )
+              //x,y,z components compute front,back
+              dz = avtVector(jac0[2],jac1[2],jac2[2]);
+            else
+              dz = avtVector(0,0,0);
+
+            dx = avtVector(jac0[0],jac1[0],jac2[0]);
+            dy = avtVector(jac0[1],jac1[1],jac2[1]);
+            dz = avtVector(jac0[2],jac1[2],jac2[2]);
+
+            double size = std::max( std::max( dx.length(), dy.length() ),
+                                    dz.length() );
+
+            // if( l == 1896 )
+            //   std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
+            //                  << size << "  "
+            //          << dx.length() << "  " << dy.length() << "  " << dz.length() << "  "
+            //                  << lengths->GetTuple1(l) << "  "
+            //                  << times->GetTuple1(l) << "  "
+            //          << log( size / lengths->GetTuple1(l) ) / fabs(times->GetTuple1(l)) << "  "
+            //                  << std::endl;
+
+            minSizeValue = std::min(size, minSizeValue);
+            maxSizeValue = std::max(size, maxSizeValue);
+        
+            // Record the Lynapouv exponent if the max
+            // size has been reached.
+            if( size > maxSize )
+            {
+              lambda =
+                log( size / lengths->GetTuple1(l) ) / fabs(times->GetTuple1(l));
+              
+              exponents->SetTuple1(l, lambda);
+
+              // Counter to note that the neighbors do
+              // not need additon advection.
+              Increment( i,    j,  k,   mask );
+              Increment( i1,   j,  k,   mask );
+              Increment( i_1,  j,  k,   mask );
+              Increment( i,   j1,  k,   mask );
+              Increment( i,   j_1, k,   mask );
+              Increment( i,   j,   k1,  mask );
+              Increment( i,   j,   k_1, mask );
+            }
+        }
+
+        minv = std::min(lambda, minv);
+        maxv = std::max(lambda, maxv);  
+        
+        ++l;
+      }
     }
+  }
 
-    if(!atts.GetUseDataSetStart())
-    {
-        double* a = atts.GetStartPosition();
-        global_bounds[0] = a[0];
-        global_bounds[2] = a[1];
-        global_bounds[4] = a[2];
-    }
-
-    if(!atts.GetUseDataSetEnd())
-    {
-        double* a = atts.GetEndPosition();
-        global_bounds[1] = a[0];
-        global_bounds[3] = a[1];
-        global_bounds[5] = a[2];
-    }
-
-    const int* res = atts.GetResolution();
-    global_resolution[0] = res[0];
-    global_resolution[1] = res[1];
-    global_resolution[2] = res[2];
-    if (global_bounds[4] == global_bounds[5])
-        global_resolution[2] = 1;
-
-    avtPICSFilter::PreExecute();
+  // std::cerr << "Compute  " << minv << "  " << maxv << std::endl;
 }
 
 
 // ****************************************************************************
-//  Method: avtFTLEFilter::Execute
+//  Method: avtFTLEFilter::ComputeFtle
 //
 //  Purpose:
-//      Executes the FTLE.  If we already have a cached version, then it
-//      just returns that version.  If not, it calls PICS execute, which will
-//      call our FTLE set up routines via CreateIntegralCurveOutput.
+//      Computes the FTLE given a Jacobian. Which is the following:
+//      log of the square root of the maximum eigen vector of the
+//      jacobian * jacobian transposed with the result divided 
+//      by the time or distance.
 //
 //  Programmer: Hari Krishnan
 //  Creation:   December 5, 2011
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep  7 15:47:12 PDT 2012
+//    Convert calculation to double precision, which prevents a "cliff" from
+//    too large epsilon associated with float.
+//
 // ****************************************************************************
 
-void
-avtFTLEFilter::Execute(void)
+void avtFTLEFilter::ComputeFtle(vtkDataArray *jacobian[3], vtkDataArray *result)
 {
-    avtDataTree_p dt = GetCachedDataSet();
-    if (!needsRecalculation && *dt != NULL)
-    {
-        debug1 << "FTLE: using cached version" << std::endl;
-        if (GetInput()->GetInfo().GetAttributes().DataIsReplicatedOnAllProcessors())
-            if (PAR_Rank() != 0)
-                dt = new avtDataTree();
-        SetOutputDataTree(dt);
-        return;
-    }
-    else
-    {
-      debug1 << "FTLE: no cached version, must re-execute" << std::endl;
+    size_t ntuples = result->GetNumberOfTuples();
 
-      avtPICSFilter::Execute();
+    for(size_t l = 0; l < ntuples; ++l)
+    {
+        double * j0 = jacobian[0]->GetTuple3(l);
+        double * j1 = jacobian[1]->GetTuple3(l);
+        double * j2 = jacobian[2]->GetTuple3(l);
 
-      std::vector<avtIntegralCurve *> ics;
-      GetTerminatedIntegralCurves(ics);
-      
-      ReportWarnings( ics );
+        //x,y,z components compute left,right
+        avtVector dx(j0[0],j1[0],j2[0]);
+        //x,y,z components compute top,bottom
+        avtVector dy(j0[1],j1[1],j2[1]);
+        //x,y,z components compute front,back
+        avtVector dz(j0[2],j1[2],j2[2]);
+
+        // std::cout << dx << " " << dy << " " << dz << std::endl;
+
+        // Compute the 
+        //J*J^T
+        //float a = dx.dot(dx), b = dx.dot(dy), c = dx.dot(dz);
+        //float d = dy.dot(dy), e = dy.dot(dz), f = dz.dot(dz);
+
+        double a = dx.x*dx.x + dx.y*dx.y + dx.z*dx.z;
+        double b = dx.x*dy.x + dx.y*dy.y + dx.z*dy.z;
+        double c = dx.x*dz.x + dx.y*dz.y + dx.z*dz.z;
+        double d = dy.x*dy.x + dy.y*dy.y + dy.z*dy.z;
+        double e = dy.x*dz.x + dy.y*dz.y + dy.z*dz.z;
+        double f = dz.x*dz.x + dz.y*dz.y + dz.z*dz.z;
+        double x = ( a + d + f ) / 3.0f;
+
+        a -= x;
+        d -= x;
+        f -= x;
+
+        double q = (a*d*f + b*e*c + c*b*e - c*d*c - e*e*a - f*b*b) / 2.0f;
+        double r = (a*a + b*b + c*c + b*b + d*d + e*e + c*c + e*e + f*f);
+        r /= 6.0f;
+
+        double D = (r*r*r - q*q);
+        double phi = 0.0f;
+
+        // std::cout << a << " " << b << " " << c << " " << d << " "
+        //           << e << " " << f << " " << x << " " << q << " "
+        //           << r << std::endl;
+
+        if( D < std::numeric_limits<double>::epsilon())
+            phi = 0.0f;
+        else
+        {
+            phi = atanf( sqrtf(D)/q ) / 3.0f;
+
+            if( phi < 0 )
+                phi += M_PI;
+        }
+
+        const double sqrt3 = sqrtf(3.0f);
+        const double sqrtr = sqrtf(r);
+
+        double sinphi = 0.0f, cosphi = 0.0f;
+        sinphi = sinf(phi);
+        cosphi = cosf(phi);
+
+        double lambda = 1.0f;
+        lambda = std::max( lambda, x + 2.0f*sqrtr*cosphi );
+        lambda = std::max( lambda, x - sqrtr*(cosphi + sqrt3*sinphi) );
+        lambda = std::max( lambda, x - sqrtr*(cosphi - sqrt3*sinphi) );
+
+        // lambda = log( sqrtf( lambda ) ) + 0.000000001;
+        // std::cout << "s: " << lambda << std::endl;
+        lambda = log( sqrtf( lambda ) );
+
+        if( doTime )
+          lambda /= maxTime;
+        else if( doDistance )
+          lambda /= maxDistance;
+        else if( doSize )
+          lambda /= maxSize;
+
+        // std::cout << "lambda :" << lambda << std::endl;
+        result->SetTuple1(l, lambda);
     }
 }
+
 
 // ****************************************************************************
 //  Method: avtFTLEFilter::ReportWarnings() 
@@ -1326,45 +2427,59 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
     //See how many pts, ics we have so we can preallocate everything.
     for (int i = 0; i < numICs; i++)
     {
-        avtFTLEIC *ic = dynamic_cast<avtFTLEIC*>(ics[i]);
+        bool terminatedBecauseOfMaxSteps;
+        bool encounteredNumericalProblems;
+
+        if( doSize )
+        {
+            avtStreamlineIC *ic = dynamic_cast<avtStreamlineIC*>(ics[i]);
+            terminatedBecauseOfMaxSteps  = ic->TerminatedBecauseOfMaxSteps();
+            encounteredNumericalProblems = ic->EncounteredNumericalProblems();
+        }
+        else
+        {
+            avtFTLEIC *ic = dynamic_cast<avtFTLEIC*>(ics[i]);
+            terminatedBecauseOfMaxSteps  = ic->TerminatedBecauseOfMaxSteps();
+            encounteredNumericalProblems = ic->EncounteredNumericalProblems();
+        }
 
         // NOT USED ??????????????????????????
         // size_t numSamps = (ic ? ic->GetNumberOfSamples() : 0);
         // if (numSamps > 1)
         //     numPts += numSamps;
 
-        if (ic->TerminatedBecauseOfMaxSteps())
+        if (terminatedBecauseOfMaxSteps)
         {
             // Calculated only with avtStateRecorderIntegralCurve
             // if (ic->SpeedAtTermination() <= criticalPointThreshold)
             //     numCritPts++;
             // else
-                numEarlyTerminators++;
+            numEarlyTerminators++;
         }
 
-        if (ic->EncounteredNumericalProblems())
+        if (encounteredNumericalProblems)
             numStiff++;
     }
 
-    if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
+    char str[4096] = "";
+
+    if ((doDistance || doTime || doSize) && issueWarningForMaxStepsTermination)
     {
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines terminated because they "
-               "reached the maximum number of steps.  This may be indicative of your "
-               "time or distance criteria being too large or of other attributes being "
-               "set incorrectly (example: your step size is too small).  If you are "
-               "confident in your settings and want the particles to advect farther, "
-               "you should increase the maximum number of steps.  If you want to disable "
-               "this message, you can do this under the Advaced tab of the streamline plot."
-               "  Note that this message does not mean that an error has occurred; it simply "
-               "means that VisIt stopped advecting particles because it reached the maximum "
-               "number of steps. (That said, this case happens most often when other attributes "
-               "are set incorrectly.)", numEarlyTerminators);
-            avtCallback::IssueWarning(str);
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated because they "
+                   "reached the maximum number of steps.  This may be indicative of your "
+                   "time or distance criteria being too large or of other attributes being "
+                   "set incorrectly (example: your step size is too small).  If you are "
+                   "confident in your settings and want the particles to advect farther, "
+                   "you should increase the maximum number of steps.  If you want to disable "
+                   "this message, you can do this under the Advaced tab."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles because it reached the maximum "
+                   "number of steps. (That said, this case happens most often when other attributes "
+                   "are set incorrectly.)\n", str, numEarlyTerminators);
         }
     }
 
@@ -1373,16 +2488,14 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numCritPts);
         if (numCritPts > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines circled round and round a critical point (a zero"
-               " velocity location).  Normally, VisIt is able to advect the particle "
-               "to the critical point location and terminate.  However, VisIt was not able "
-               "to do this for these particles due to numerical issues.  In all likelihood, "
-               "additional steps will _not_ help this problem and only cause execution to "
-               "take longer.  If you want to disable this message, you can do this under "
-               "the Advanced tab of the streamline plot.", numCritPts);
-            avtCallback::IssueWarning(str);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves circled round and round a critical point (a zero"
+                     " velocity location).  Normally, VisIt is able to advect the particle "
+                     "to the critical point location and terminate.  However, VisIt was not able "
+                     "to do this for these particles due to numerical issues.  In all likelihood, "
+                     "additional steps will _not_ help this problem and only cause execution to "
+                     "take longer.  If you want to disable this message, you can do this under "
+                     "the Advanced tab.\n", str, numCritPts);
         }
     }
 
@@ -1391,94 +2504,18 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStiff);
         if (numStiff > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines were unable to advect because of \"stiffness\".  "
-               "When one component of a velocity field varies quickly and another stays "
-               "relatively constant, then it is not possible to choose step sizes that "
-               "remain within tolerances.  This condition is referred to as stiffness and "
-               "VisIt stops advecting in this case.  If you want to disable this message, "
-               "you can do this under the Advanced tab of the streamline plot.", numStiff);
-            avtCallback::IssueWarning(str);
-        }
-    }
-}
-
-// ****************************************************************************
-//  Method: avtFTLEFilter::ModifyContract
-//
-//  Purpose:
-//      Creates a contract the removes the operator-created-expression.
-//
-//  Programmer: hchilds -- generated by xml2avt
-//  Creation:   Mon Jan 10 07:15:51 PDT 2011
-//
-// ****************************************************************************
-
-avtContract_p
-avtFTLEFilter::ModifyContract(avtContract_p in_contract)
-{
-    avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    std::string var =  in_dr->GetOriginalVariable();
-//    in_contract->SetReplicateSingleDomainOnAllProcessors(true);
-//    in_contract->SetOnDemandStreaming(false);
-//    in_contract->GetDataRequest();
-    in_dr->SetUsesAllDomains(true);
-    if( strncmp(var.c_str(), "operators/FTLE/", strlen("operators/FTLE/")) == 0)
-    {
-        std::string justTheVar = var.substr(strlen("operators/FTLE/"));
-
-        outVarName = justTheVar;
-        avtDataRequest_p out_dr = new avtDataRequest(in_dr,justTheVar.c_str());
-        //out_dr->SetDesiredGhostDataType(GHOST_NODE_DATA);
-        //out_dr->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-
-        return avtPICSFilter::ModifyContract( new avtContract(in_contract,out_dr) );
-    }
-    return avtPICSFilter::ModifyContract(in_contract);
-}
-
-
-// ****************************************************************************
-//  Method: avtFTLEFilter::UpdateDataObjectInfo
-//
-//  Purpose:
-//      Tells output that we have a new variable.
-//
-//  Programmer: hchilds -- generated by xml2avt
-//  Creation:   Mon Jan 10 07:15:51 PDT 2011
-//
-// ****************************************************************************
-
-void
-avtFTLEFilter::UpdateDataObjectInfo(void)
-{
-    avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
-    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
-
-    timeState = in_atts.GetTimeIndex();
-
-    //the outvarname has been assigned and will be added..
-    //outVarName = "velocity";
-    if (outVarName != "")
-    {
-        std::string fullVarName = std::string("operators/FTLE/") + outVarName;
-        atts.RemoveVariable(in_atts.GetVariableName());
-
-        if (! atts.ValidVariable(fullVarName) )
-        {
-            //std::cout << "Adding variable: " << outVarName << std::endl;
-            //atts.AddVariable(outVarName.c_str());
-            atts.AddVariable((fullVarName).c_str());
-            atts.SetActiveVariable(fullVarName.c_str());
-            atts.SetVariableDimension(1);
-            //atts.SetTopologicalDimension(3);
-            atts.SetVariableType(AVT_SCALAR_VAR);
-            atts.SetCentering(AVT_NODECENT);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves were unable to advect because of \"stiffness\".  "
+                     "When one component of a velocity field varies quickly and another stays "
+                     "relatively constant, then it is not possible to choose step sizes that "
+                     "remain within tolerances.  This condition is referred to as stiffness and "
+                     "VisIt stops advecting in this case.  If you want to disable this message, "
+                     "you can do this under the Advanced tab.\n", str,numStiff);
         }
     }
 
-    avtPICSFilter::UpdateDataObjectInfo();
+    if( strlen( str ) )
+      avtCallback::IssueWarning(str);
 }
 
 
@@ -1609,7 +2646,7 @@ avtFTLEFilter::GetCachedDataSet()
         if (looksOK == 0)
             rv = NULL;
     }
-    else
+    else //if (atts.GetSourceType() == FTLEAttributes::RegularGrid)
     {
         rv = GetCachedResampledDataSet();
         int looksOK = (*rv == NULL ? 0 : 1);

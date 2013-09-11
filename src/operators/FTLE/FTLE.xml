@@ -5,6 +5,10 @@
         NativeResolutionOfMesh
         RegularGrid
       </Enum>
+      <Enum name="Extents">
+        Full
+        Subset
+      </Enum>
       <Enum name="IntegrationDirection">
         Forward
         Backward
@@ -39,6 +43,7 @@
       <Enum name="TerminationType">
         Time
         Distance
+        Size
       </Enum>
       <Enum name="PathlinesCMFE">
         CONN_CMFE
@@ -52,18 +57,18 @@
         10
         10
       </Field>
-      <Field name="UseDataSetStart" label="Start at DataSet Extent" type="bool" enabler="sourceType:RegularGrid">
-        true
+      <Field name="UseDataSetStart" label="Start at DataSet Extent" type="enum" subtype="Extents" enabler="sourceType:RegularGrid">
+        Full
       </Field>
-      <Field name="StartPosition" label="Subset Start" type="doubleArray" length="3" enabler="UseDataSetStart:false">
+      <Field name="StartPosition" label="Subset Start" type="doubleArray" length="3" enabler="UseDataSetStart:Subset">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="UseDataSetEnd" label="End at DataSet Extent" type="bool" enabler="sourceType:RegularGrid">
-        true
+      <Field name="UseDataSetEnd" label="End at DataSet Extent" type="enum" subtype="Extents" enabler="sourceType:RegularGrid">
+        Full
       </Field>
-      <Field name="EndPosition" label="Subset End" type="doubleArray" length="3" enabler="UseDataSetEnd:false">
+      <Field name="EndPosition" label="Subset End" type="doubleArray" length="3" enabler="UseDataSetEnd:Subset">
         1.000000
         1.000000
         1.000000
@@ -76,6 +81,12 @@
       </Field>
       <Field name="terminationType" label="Termination" type="enum" subtype="TerminationType">
         Time
+      </Field>
+      <Field name="terminateBySize" label="Use the size criteria for termination" type="bool">
+        false
+      </Field>
+      <Field name="termSize" label="Size for Termination" type="double" enabler="terminateBySize:true">
+        10.000000
       </Field>
       <Field name="terminateByDistance" label="Use the distance criteria for termination" type="bool">
         false

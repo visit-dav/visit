@@ -59,11 +59,14 @@ import llnl.visit.Plugin;
 
 public class FTLEAttributes extends AttributeSubject implements Plugin
 {
-    private static int FTLEAttributes_numAdditionalAtts = 42;
+    private static int FTLEAttributes_numAdditionalAtts = 44;
 
     // Enum values
     public final static int SOURCETYPE_NATIVERESOLUTIONOFMESH = 0;
     public final static int SOURCETYPE_REGULARGRID = 1;
+
+    public final static int EXTENTS_FULL = 0;
+    public final static int EXTENTS_SUBSET = 1;
 
     public final static int INTEGRATIONDIRECTION_FORWARD = 0;
     public final static int INTEGRATIONDIRECTION_BACKWARD = 1;
@@ -93,6 +96,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
 
     public final static int TERMINATIONTYPE_TIME = 0;
     public final static int TERMINATIONTYPE_DISTANCE = 1;
+    public final static int TERMINATIONTYPE_SIZE = 2;
 
     public final static int PATHLINESCMFE_CONN_CMFE = 0;
     public final static int PATHLINESCMFE_POS_CMFE = 1;
@@ -107,12 +111,12 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Resolution[0] = 10;
         Resolution[1] = 10;
         Resolution[2] = 10;
-        UseDataSetStart = true;
+        UseDataSetStart = EXTENTS_FULL;
         StartPosition = new double[3];
         StartPosition[0] = 0;
         StartPosition[1] = 0;
         StartPosition[2] = 0;
-        UseDataSetEnd = true;
+        UseDataSetEnd = EXTENTS_FULL;
         EndPosition = new double[3];
         EndPosition[0] = 1;
         EndPosition[1] = 1;
@@ -120,6 +124,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminationType = TERMINATIONTYPE_TIME;
+        terminateBySize = false;
+        termSize = 10;
         terminateByDistance = false;
         termDistance = 10;
         terminateByTime = false;
@@ -167,12 +173,12 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Resolution[0] = 10;
         Resolution[1] = 10;
         Resolution[2] = 10;
-        UseDataSetStart = true;
+        UseDataSetStart = EXTENTS_FULL;
         StartPosition = new double[3];
         StartPosition[0] = 0;
         StartPosition[1] = 0;
         StartPosition[2] = 0;
-        UseDataSetEnd = true;
+        UseDataSetEnd = EXTENTS_FULL;
         EndPosition = new double[3];
         EndPosition[0] = 1;
         EndPosition[1] = 1;
@@ -180,6 +186,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminationType = TERMINATIONTYPE_TIME;
+        terminateBySize = false;
+        termSize = 10;
         terminateByDistance = false;
         termDistance = 10;
         terminateByTime = false;
@@ -245,6 +253,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         integrationDirection = obj.integrationDirection;
         maxSteps = obj.maxSteps;
         terminationType = obj.terminationType;
+        terminateBySize = obj.terminateBySize;
+        termSize = obj.termSize;
         terminateByDistance = obj.terminateByDistance;
         termDistance = obj.termDistance;
         terminateByTime = obj.terminateByTime;
@@ -330,6 +340,8 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 (integrationDirection == obj.integrationDirection) &&
                 (maxSteps == obj.maxSteps) &&
                 (terminationType == obj.terminationType) &&
+                (terminateBySize == obj.terminateBySize) &&
+                (termSize == obj.termSize) &&
                 (terminateByDistance == obj.terminateByDistance) &&
                 (termDistance == obj.termDistance) &&
                 (terminateByTime == obj.terminateByTime) &&
@@ -391,7 +403,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
-    public void SetUseDataSetStart(boolean UseDataSetStart_)
+    public void SetUseDataSetStart(int UseDataSetStart_)
     {
         UseDataSetStart = UseDataSetStart_;
         Select(2);
@@ -413,7 +425,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
-    public void SetUseDataSetEnd(boolean UseDataSetEnd_)
+    public void SetUseDataSetEnd(int UseDataSetEnd_)
     {
         UseDataSetEnd = UseDataSetEnd_;
         Select(4);
@@ -453,82 +465,94 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
+    public void SetTerminateBySize(boolean terminateBySize_)
+    {
+        terminateBySize = terminateBySize_;
+        Select(9);
+    }
+
+    public void SetTermSize(double termSize_)
+    {
+        termSize = termSize_;
+        Select(10);
+    }
+
     public void SetTerminateByDistance(boolean terminateByDistance_)
     {
         terminateByDistance = terminateByDistance_;
-        Select(9);
+        Select(11);
     }
 
     public void SetTermDistance(double termDistance_)
     {
         termDistance = termDistance_;
-        Select(10);
+        Select(12);
     }
 
     public void SetTerminateByTime(boolean terminateByTime_)
     {
         terminateByTime = terminateByTime_;
-        Select(11);
+        Select(13);
     }
 
     public void SetTermTime(double termTime_)
     {
         termTime = termTime_;
-        Select(12);
+        Select(14);
     }
 
     public void SetMaxStepLength(double maxStepLength_)
     {
         maxStepLength = maxStepLength_;
-        Select(13);
+        Select(15);
     }
 
     public void SetLimitMaximumTimestep(boolean limitMaximumTimestep_)
     {
         limitMaximumTimestep = limitMaximumTimestep_;
-        Select(14);
+        Select(16);
     }
 
     public void SetMaxTimeStep(double maxTimeStep_)
     {
         maxTimeStep = maxTimeStep_;
-        Select(15);
+        Select(17);
     }
 
     public void SetRelTol(double relTol_)
     {
         relTol = relTol_;
-        Select(16);
+        Select(18);
     }
 
     public void SetAbsTolSizeType(int absTolSizeType_)
     {
         absTolSizeType = absTolSizeType_;
-        Select(17);
+        Select(19);
     }
 
     public void SetAbsTolAbsolute(double absTolAbsolute_)
     {
         absTolAbsolute = absTolAbsolute_;
-        Select(18);
+        Select(20);
     }
 
     public void SetAbsTolBBox(double absTolBBox_)
     {
         absTolBBox = absTolBBox_;
-        Select(19);
+        Select(21);
     }
 
     public void SetFieldType(int fieldType_)
     {
         fieldType = fieldType_;
-        Select(20);
+        Select(22);
     }
 
     public void SetFieldConstant(double fieldConstant_)
     {
         fieldConstant = fieldConstant_;
-        Select(21);
+        Select(23);
     }
 
     public void SetVelocitySource(double[] velocitySource_)
@@ -536,7 +560,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = velocitySource_[0];
         velocitySource[1] = velocitySource_[1];
         velocitySource[2] = velocitySource_[2];
-        Select(22);
+        Select(24);
     }
 
     public void SetVelocitySource(double e0, double e1, double e2)
@@ -544,133 +568,135 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         velocitySource[0] = e0;
         velocitySource[1] = e1;
         velocitySource[2] = e2;
-        Select(22);
+        Select(24);
     }
 
     public void SetIntegrationType(int integrationType_)
     {
         integrationType = integrationType_;
-        Select(23);
+        Select(25);
     }
 
     public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
         parallelizationAlgorithmType = parallelizationAlgorithmType_;
-        Select(24);
+        Select(26);
     }
 
     public void SetMaxProcessCount(int maxProcessCount_)
     {
         maxProcessCount = maxProcessCount_;
-        Select(25);
+        Select(27);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(26);
+        Select(28);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(27);
+        Select(29);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(28);
+        Select(30);
     }
 
     public void SetPathlinesOverrideStartingTimeFlag(boolean pathlinesOverrideStartingTimeFlag_)
     {
         pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
-        Select(29);
+        Select(31);
     }
 
     public void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
     {
         pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
-        Select(30);
+        Select(32);
     }
 
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(31);
+        Select(33);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(32);
+        Select(34);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(33);
+        Select(35);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(34);
+        Select(36);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(35);
+        Select(37);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(36);
+        Select(38);
     }
 
     public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
     {
         correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(37);
+        Select(39);
     }
 
     public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
     {
         correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(38);
+        Select(40);
     }
 
     public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
     {
         correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(39);
+        Select(41);
     }
 
     public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
     {
         correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(40);
+        Select(42);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(41);
+        Select(43);
     }
 
     // Property getting methods
     public int      GetSourceType() { return sourceType; }
     public int[]    GetResolution() { return Resolution; }
-    public boolean  GetUseDataSetStart() { return UseDataSetStart; }
+    public int      GetUseDataSetStart() { return UseDataSetStart; }
     public double[] GetStartPosition() { return StartPosition; }
-    public boolean  GetUseDataSetEnd() { return UseDataSetEnd; }
+    public int      GetUseDataSetEnd() { return UseDataSetEnd; }
     public double[] GetEndPosition() { return EndPosition; }
     public int      GetIntegrationDirection() { return integrationDirection; }
     public int      GetMaxSteps() { return maxSteps; }
     public int      GetTerminationType() { return terminationType; }
+    public boolean  GetTerminateBySize() { return terminateBySize; }
+    public double   GetTermSize() { return termSize; }
     public boolean  GetTerminateByDistance() { return terminateByDistance; }
     public double   GetTermDistance() { return termDistance; }
     public boolean  GetTerminateByTime() { return terminateByTime; }
@@ -713,11 +739,11 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(1, buf))
             buf.WriteIntArray(Resolution);
         if(WriteSelect(2, buf))
-            buf.WriteBool(UseDataSetStart);
+            buf.WriteInt(UseDataSetStart);
         if(WriteSelect(3, buf))
             buf.WriteDoubleArray(StartPosition);
         if(WriteSelect(4, buf))
-            buf.WriteBool(UseDataSetEnd);
+            buf.WriteInt(UseDataSetEnd);
         if(WriteSelect(5, buf))
             buf.WriteDoubleArray(EndPosition);
         if(WriteSelect(6, buf))
@@ -727,70 +753,74 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(8, buf))
             buf.WriteInt(terminationType);
         if(WriteSelect(9, buf))
-            buf.WriteBool(terminateByDistance);
+            buf.WriteBool(terminateBySize);
         if(WriteSelect(10, buf))
-            buf.WriteDouble(termDistance);
+            buf.WriteDouble(termSize);
         if(WriteSelect(11, buf))
-            buf.WriteBool(terminateByTime);
+            buf.WriteBool(terminateByDistance);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(termTime);
+            buf.WriteDouble(termDistance);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(maxStepLength);
+            buf.WriteBool(terminateByTime);
         if(WriteSelect(14, buf))
-            buf.WriteBool(limitMaximumTimestep);
+            buf.WriteDouble(termTime);
         if(WriteSelect(15, buf))
-            buf.WriteDouble(maxTimeStep);
+            buf.WriteDouble(maxStepLength);
         if(WriteSelect(16, buf))
-            buf.WriteDouble(relTol);
+            buf.WriteBool(limitMaximumTimestep);
         if(WriteSelect(17, buf))
-            buf.WriteInt(absTolSizeType);
+            buf.WriteDouble(maxTimeStep);
         if(WriteSelect(18, buf))
-            buf.WriteDouble(absTolAbsolute);
+            buf.WriteDouble(relTol);
         if(WriteSelect(19, buf))
-            buf.WriteDouble(absTolBBox);
+            buf.WriteInt(absTolSizeType);
         if(WriteSelect(20, buf))
-            buf.WriteInt(fieldType);
+            buf.WriteDouble(absTolAbsolute);
         if(WriteSelect(21, buf))
-            buf.WriteDouble(fieldConstant);
+            buf.WriteDouble(absTolBBox);
         if(WriteSelect(22, buf))
-            buf.WriteDoubleArray(velocitySource);
+            buf.WriteInt(fieldType);
         if(WriteSelect(23, buf))
-            buf.WriteInt(integrationType);
+            buf.WriteDouble(fieldConstant);
         if(WriteSelect(24, buf))
-            buf.WriteInt(parallelizationAlgorithmType);
+            buf.WriteDoubleArray(velocitySource);
         if(WriteSelect(25, buf))
-            buf.WriteInt(maxProcessCount);
+            buf.WriteInt(integrationType);
         if(WriteSelect(26, buf))
-            buf.WriteInt(maxDomainCacheSize);
+            buf.WriteInt(parallelizationAlgorithmType);
         if(WriteSelect(27, buf))
-            buf.WriteInt(workGroupSize);
+            buf.WriteInt(maxProcessCount);
         if(WriteSelect(28, buf))
-            buf.WriteBool(pathlines);
+            buf.WriteInt(maxDomainCacheSize);
         if(WriteSelect(29, buf))
-            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
+            buf.WriteInt(workGroupSize);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(pathlinesOverrideStartingTime);
+            buf.WriteBool(pathlines);
         if(WriteSelect(31, buf))
-            buf.WriteInt(pathlinesCMFE);
+            buf.WriteBool(pathlinesOverrideStartingTimeFlag);
         if(WriteSelect(32, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteDouble(pathlinesOverrideStartingTime);
         if(WriteSelect(33, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(34, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(35, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(36, buf))
-            buf.WriteDouble(criticalPointThreshold);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(37, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
+            buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(38, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+            buf.WriteDouble(criticalPointThreshold);
         if(WriteSelect(39, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
+            buf.WriteDouble(correlationDistanceAngTol);
         if(WriteSelect(40, buf))
-            buf.WriteInt(correlationDistanceMinDistType);
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
         if(WriteSelect(41, buf))
+            buf.WriteDouble(correlationDistanceMinDistBBox);
+        if(WriteSelect(42, buf))
+            buf.WriteInt(correlationDistanceMinDistType);
+        if(WriteSelect(43, buf))
             buf.WriteString(selection);
     }
 
@@ -805,13 +835,13 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             SetResolution(buf.ReadIntArray());
             break;
         case 2:
-            SetUseDataSetStart(buf.ReadBool());
+            SetUseDataSetStart(buf.ReadInt());
             break;
         case 3:
             SetStartPosition(buf.ReadDoubleArray());
             break;
         case 4:
-            SetUseDataSetEnd(buf.ReadBool());
+            SetUseDataSetEnd(buf.ReadInt());
             break;
         case 5:
             SetEndPosition(buf.ReadDoubleArray());
@@ -826,102 +856,108 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             SetTerminationType(buf.ReadInt());
             break;
         case 9:
-            SetTerminateByDistance(buf.ReadBool());
+            SetTerminateBySize(buf.ReadBool());
             break;
         case 10:
-            SetTermDistance(buf.ReadDouble());
+            SetTermSize(buf.ReadDouble());
             break;
         case 11:
-            SetTerminateByTime(buf.ReadBool());
+            SetTerminateByDistance(buf.ReadBool());
             break;
         case 12:
-            SetTermTime(buf.ReadDouble());
+            SetTermDistance(buf.ReadDouble());
             break;
         case 13:
-            SetMaxStepLength(buf.ReadDouble());
+            SetTerminateByTime(buf.ReadBool());
             break;
         case 14:
-            SetLimitMaximumTimestep(buf.ReadBool());
+            SetTermTime(buf.ReadDouble());
             break;
         case 15:
-            SetMaxTimeStep(buf.ReadDouble());
+            SetMaxStepLength(buf.ReadDouble());
             break;
         case 16:
-            SetRelTol(buf.ReadDouble());
+            SetLimitMaximumTimestep(buf.ReadBool());
             break;
         case 17:
-            SetAbsTolSizeType(buf.ReadInt());
+            SetMaxTimeStep(buf.ReadDouble());
             break;
         case 18:
-            SetAbsTolAbsolute(buf.ReadDouble());
+            SetRelTol(buf.ReadDouble());
             break;
         case 19:
-            SetAbsTolBBox(buf.ReadDouble());
+            SetAbsTolSizeType(buf.ReadInt());
             break;
         case 20:
-            SetFieldType(buf.ReadInt());
+            SetAbsTolAbsolute(buf.ReadDouble());
             break;
         case 21:
-            SetFieldConstant(buf.ReadDouble());
+            SetAbsTolBBox(buf.ReadDouble());
             break;
         case 22:
-            SetVelocitySource(buf.ReadDoubleArray());
+            SetFieldType(buf.ReadInt());
             break;
         case 23:
-            SetIntegrationType(buf.ReadInt());
+            SetFieldConstant(buf.ReadDouble());
             break;
         case 24:
-            SetParallelizationAlgorithmType(buf.ReadInt());
+            SetVelocitySource(buf.ReadDoubleArray());
             break;
         case 25:
-            SetMaxProcessCount(buf.ReadInt());
+            SetIntegrationType(buf.ReadInt());
             break;
         case 26:
-            SetMaxDomainCacheSize(buf.ReadInt());
+            SetParallelizationAlgorithmType(buf.ReadInt());
             break;
         case 27:
-            SetWorkGroupSize(buf.ReadInt());
+            SetMaxProcessCount(buf.ReadInt());
             break;
         case 28:
-            SetPathlines(buf.ReadBool());
+            SetMaxDomainCacheSize(buf.ReadInt());
             break;
         case 29:
-            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
+            SetWorkGroupSize(buf.ReadInt());
             break;
         case 30:
-            SetPathlinesOverrideStartingTime(buf.ReadDouble());
+            SetPathlines(buf.ReadBool());
             break;
         case 31:
-            SetPathlinesCMFE(buf.ReadInt());
+            SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
             break;
         case 32:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
         case 33:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetPathlinesCMFE(buf.ReadInt());
             break;
         case 34:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 35:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 36:
-            SetCriticalPointThreshold(buf.ReadDouble());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 37:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
         case 38:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            SetCriticalPointThreshold(buf.ReadDouble());
             break;
         case 39:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
             break;
         case 40:
-            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
             break;
         case 41:
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            break;
+        case 42:
+            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            break;
+        case 43:
             SetSelection(buf.ReadString());
             break;
         }
@@ -937,9 +973,19 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             str = str + "SOURCETYPE_REGULARGRID";
         str = str + "\n";
         str = str + intArrayToString("Resolution", Resolution, indent) + "\n";
-        str = str + boolToString("UseDataSetStart", UseDataSetStart, indent) + "\n";
+        str = str + indent + "UseDataSetStart = ";
+        if(UseDataSetStart == EXTENTS_FULL)
+            str = str + "EXTENTS_FULL";
+        if(UseDataSetStart == EXTENTS_SUBSET)
+            str = str + "EXTENTS_SUBSET";
+        str = str + "\n";
         str = str + doubleArrayToString("StartPosition", StartPosition, indent) + "\n";
-        str = str + boolToString("UseDataSetEnd", UseDataSetEnd, indent) + "\n";
+        str = str + indent + "UseDataSetEnd = ";
+        if(UseDataSetEnd == EXTENTS_FULL)
+            str = str + "EXTENTS_FULL";
+        if(UseDataSetEnd == EXTENTS_SUBSET)
+            str = str + "EXTENTS_SUBSET";
+        str = str + "\n";
         str = str + doubleArrayToString("EndPosition", EndPosition, indent) + "\n";
         str = str + indent + "integrationDirection = ";
         if(integrationDirection == INTEGRATIONDIRECTION_FORWARD)
@@ -955,7 +1001,11 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             str = str + "TERMINATIONTYPE_TIME";
         if(terminationType == TERMINATIONTYPE_DISTANCE)
             str = str + "TERMINATIONTYPE_DISTANCE";
+        if(terminationType == TERMINATIONTYPE_SIZE)
+            str = str + "TERMINATIONTYPE_SIZE";
         str = str + "\n";
+        str = str + boolToString("terminateBySize", terminateBySize, indent) + "\n";
+        str = str + doubleToString("termSize", termSize, indent) + "\n";
         str = str + boolToString("terminateByDistance", terminateByDistance, indent) + "\n";
         str = str + doubleToString("termDistance", termDistance, indent) + "\n";
         str = str + boolToString("terminateByTime", terminateByTime, indent) + "\n";
@@ -1046,13 +1096,15 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     // Attributes
     private int      sourceType;
     private int[]    Resolution;
-    private boolean  UseDataSetStart;
+    private int      UseDataSetStart;
     private double[] StartPosition;
-    private boolean  UseDataSetEnd;
+    private int      UseDataSetEnd;
     private double[] EndPosition;
     private int      integrationDirection;
     private int      maxSteps;
     private int      terminationType;
+    private boolean  terminateBySize;
+    private double   termSize;
     private boolean  terminateByDistance;
     private double   termDistance;
     private boolean  terminateByTime;
