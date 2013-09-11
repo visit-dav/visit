@@ -107,11 +107,21 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetUseDataSetStart())
-        SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = 0\n", prefix);
-    str += tmpStr;
+    const char *UseDataSetStart_names = "Full, Subset";
+    switch (atts->GetUseDataSetStart())
+    {
+      case FTLEAttributes::Full:
+          SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = %sFull  # %s\n", prefix, prefix, UseDataSetStart_names);
+          str += tmpStr;
+          break;
+      case FTLEAttributes::Subset:
+          SNPRINTF(tmpStr, 1000, "%sUseDataSetStart = %sSubset  # %s\n", prefix, prefix, UseDataSetStart_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     {   const double *StartPosition = atts->GetStartPosition();
         SNPRINTF(tmpStr, 1000, "%sStartPosition = (", prefix);
         str += tmpStr;
@@ -128,11 +138,21 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetUseDataSetEnd())
-        SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = 0\n", prefix);
-    str += tmpStr;
+    const char *UseDataSetEnd_names = "Full, Subset";
+    switch (atts->GetUseDataSetEnd())
+    {
+      case FTLEAttributes::Full:
+          SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = %sFull  # %s\n", prefix, prefix, UseDataSetEnd_names);
+          str += tmpStr;
+          break;
+      case FTLEAttributes::Subset:
+          SNPRINTF(tmpStr, 1000, "%sUseDataSetEnd = %sSubset  # %s\n", prefix, prefix, UseDataSetEnd_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     {   const double *EndPosition = atts->GetEndPosition();
         SNPRINTF(tmpStr, 1000, "%sEndPosition = (", prefix);
         str += tmpStr;
@@ -170,7 +190,7 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%smaxSteps = %d\n", prefix, atts->GetMaxSteps());
     str += tmpStr;
-    const char *terminationType_names = "Time, Distance";
+    const char *terminationType_names = "Time, Distance, Size";
     switch (atts->GetTerminationType())
     {
       case FTLEAttributes::Time:
@@ -181,10 +201,21 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
           SNPRINTF(tmpStr, 1000, "%sterminationType = %sDistance  # %s\n", prefix, prefix, terminationType_names);
           str += tmpStr;
           break;
+      case FTLEAttributes::Size:
+          SNPRINTF(tmpStr, 1000, "%sterminationType = %sSize  # %s\n", prefix, prefix, terminationType_names);
+          str += tmpStr;
+          break;
       default:
           break;
     }
 
+    if(atts->GetTerminateBySize())
+        SNPRINTF(tmpStr, 1000, "%sterminateBySize = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sterminateBySize = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%stermSize = %g\n", prefix, atts->GetTermSize());
+    str += tmpStr;
     if(atts->GetTerminateByDistance())
         SNPRINTF(tmpStr, 1000, "%sterminateByDistance = 1\n", prefix);
     else
@@ -521,7 +552,16 @@ FTLEAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the UseDataSetStart in the object.
-    obj->data->SetUseDataSetStart(ival != 0);
+    if(ival >= 0 && ival < 2)
+        obj->data->SetUseDataSetStart(FTLEAttributes::Extents(ival));
+    else
+    {
+        fprintf(stderr, "An invalid UseDataSetStart value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Full, Subset.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -531,7 +571,7 @@ FTLEAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
 FTLEAttributes_GetUseDataSetStart(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseDataSetStart()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetUseDataSetStart()));
     return retval;
 }
 
@@ -599,7 +639,16 @@ FTLEAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the UseDataSetEnd in the object.
-    obj->data->SetUseDataSetEnd(ival != 0);
+    if(ival >= 0 && ival < 2)
+        obj->data->SetUseDataSetEnd(FTLEAttributes::Extents(ival));
+    else
+    {
+        fprintf(stderr, "An invalid UseDataSetEnd value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Full, Subset.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -609,7 +658,7 @@ FTLEAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
 FTLEAttributes_GetUseDataSetEnd(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUseDataSetEnd()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetUseDataSetEnd()));
     return retval;
 }
 
@@ -734,14 +783,14 @@ FTLEAttributes_SetTerminationType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the terminationType in the object.
-    if(ival >= 0 && ival < 2)
+    if(ival >= 0 && ival < 3)
         obj->data->SetTerminationType(FTLEAttributes::TerminationType(ival));
     else
     {
         fprintf(stderr, "An invalid terminationType value was given. "
-                        "Valid values are in the range of [0,1]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Time, Distance.");
+                        "Time, Distance, Size.");
         return NULL;
     }
 
@@ -754,6 +803,54 @@ FTLEAttributes_GetTerminationType(PyObject *self, PyObject *args)
 {
     FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTerminationType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_SetTerminateBySize(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the terminateBySize in the object.
+    obj->data->SetTerminateBySize(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_GetTerminateBySize(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTerminateBySize()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_SetTermSize(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the termSize in the object.
+    obj->data->SetTermSize(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+FTLEAttributes_GetTermSize(PyObject *self, PyObject *args)
+{
+    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetTermSize());
     return retval;
 }
 
@@ -1657,6 +1754,10 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetMaxSteps", FTLEAttributes_GetMaxSteps, METH_VARARGS},
     {"SetTerminationType", FTLEAttributes_SetTerminationType, METH_VARARGS},
     {"GetTerminationType", FTLEAttributes_GetTerminationType, METH_VARARGS},
+    {"SetTerminateBySize", FTLEAttributes_SetTerminateBySize, METH_VARARGS},
+    {"GetTerminateBySize", FTLEAttributes_GetTerminateBySize, METH_VARARGS},
+    {"SetTermSize", FTLEAttributes_SetTermSize, METH_VARARGS},
+    {"GetTermSize", FTLEAttributes_GetTermSize, METH_VARARGS},
     {"SetTerminateByDistance", FTLEAttributes_SetTerminateByDistance, METH_VARARGS},
     {"GetTerminateByDistance", FTLEAttributes_GetTerminateByDistance, METH_VARARGS},
     {"SetTermDistance", FTLEAttributes_SetTermDistance, METH_VARARGS},
@@ -1762,10 +1863,20 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return FTLEAttributes_GetResolution(self, NULL);
     if(strcmp(name, "UseDataSetStart") == 0)
         return FTLEAttributes_GetUseDataSetStart(self, NULL);
+    if(strcmp(name, "Full") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Full));
+    if(strcmp(name, "Subset") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Subset));
+
     if(strcmp(name, "StartPosition") == 0)
         return FTLEAttributes_GetStartPosition(self, NULL);
     if(strcmp(name, "UseDataSetEnd") == 0)
         return FTLEAttributes_GetUseDataSetEnd(self, NULL);
+    if(strcmp(name, "Full") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Full));
+    if(strcmp(name, "Subset") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Subset));
+
     if(strcmp(name, "EndPosition") == 0)
         return FTLEAttributes_GetEndPosition(self, NULL);
     if(strcmp(name, "integrationDirection") == 0)
@@ -1785,7 +1896,13 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(FTLEAttributes::Time));
     if(strcmp(name, "Distance") == 0)
         return PyInt_FromLong(long(FTLEAttributes::Distance));
+    if(strcmp(name, "Size") == 0)
+        return PyInt_FromLong(long(FTLEAttributes::Size));
 
+    if(strcmp(name, "terminateBySize") == 0)
+        return FTLEAttributes_GetTerminateBySize(self, NULL);
+    if(strcmp(name, "termSize") == 0)
+        return FTLEAttributes_GetTermSize(self, NULL);
     if(strcmp(name, "terminateByDistance") == 0)
         return FTLEAttributes_GetTerminateByDistance(self, NULL);
     if(strcmp(name, "termDistance") == 0)
@@ -1934,6 +2051,10 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetMaxSteps(self, tuple);
     else if(strcmp(name, "terminationType") == 0)
         obj = FTLEAttributes_SetTerminationType(self, tuple);
+    else if(strcmp(name, "terminateBySize") == 0)
+        obj = FTLEAttributes_SetTerminateBySize(self, tuple);
+    else if(strcmp(name, "termSize") == 0)
+        obj = FTLEAttributes_SetTermSize(self, tuple);
     else if(strcmp(name, "terminateByDistance") == 0)
         obj = FTLEAttributes_SetTerminateByDistance(self, tuple);
     else if(strcmp(name, "termDistance") == 0)

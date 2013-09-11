@@ -77,6 +77,43 @@ FTLEAttributes::SourceType_FromString(const std::string &s, FTLEAttributes::Sour
 }
 
 //
+// Enum conversion methods for FTLEAttributes::Extents
+//
+
+static const char *Extents_strings[] = {
+"Full", "Subset"};
+
+std::string
+FTLEAttributes::Extents_ToString(FTLEAttributes::Extents t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return Extents_strings[index];
+}
+
+std::string
+FTLEAttributes::Extents_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return Extents_strings[index];
+}
+
+bool
+FTLEAttributes::Extents_FromString(const std::string &s, FTLEAttributes::Extents &val)
+{
+    val = FTLEAttributes::Full;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == Extents_strings[i])
+        {
+            val = (Extents)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
 // Enum conversion methods for FTLEAttributes::IntegrationDirection
 //
 
@@ -272,20 +309,21 @@ FTLEAttributes::ParallelizationAlgorithmType_FromString(const std::string &s, FT
 //
 
 static const char *TerminationType_strings[] = {
-"Time", "Distance"};
+"Time", "Distance", "Size"
+};
 
 std::string
 FTLEAttributes::TerminationType_ToString(FTLEAttributes::TerminationType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return TerminationType_strings[index];
 }
 
 std::string
 FTLEAttributes::TerminationType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return TerminationType_strings[index];
 }
 
@@ -293,7 +331,7 @@ bool
 FTLEAttributes::TerminationType_FromString(const std::string &s, FTLEAttributes::TerminationType &val)
 {
     val = FTLEAttributes::Time;
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < 3; ++i)
     {
         if(s == TerminationType_strings[i])
         {
@@ -362,17 +400,19 @@ void FTLEAttributes::Init()
     Resolution[0] = 10;
     Resolution[1] = 10;
     Resolution[2] = 10;
-    UseDataSetStart = true;
+    UseDataSetStart = Full;
     StartPosition[0] = 0;
     StartPosition[1] = 0;
     StartPosition[2] = 0;
-    UseDataSetEnd = true;
+    UseDataSetEnd = Full;
     EndPosition[0] = 1;
     EndPosition[1] = 1;
     EndPosition[2] = 1;
     integrationDirection = Forward;
     maxSteps = 1000;
     terminationType = Time;
+    terminateBySize = false;
+    termSize = 10;
     terminateByDistance = false;
     termDistance = 10;
     terminateByTime = false;
@@ -446,6 +486,8 @@ void FTLEAttributes::Copy(const FTLEAttributes &obj)
     integrationDirection = obj.integrationDirection;
     maxSteps = obj.maxSteps;
     terminationType = obj.terminationType;
+    terminateBySize = obj.terminateBySize;
+    termSize = obj.termSize;
     terminateByDistance = obj.terminateByDistance;
     termDistance = obj.termDistance;
     terminateByTime = obj.terminateByTime;
@@ -668,6 +710,8 @@ FTLEAttributes::operator == (const FTLEAttributes &obj) const
             (integrationDirection == obj.integrationDirection) &&
             (maxSteps == obj.maxSteps) &&
             (terminationType == obj.terminationType) &&
+            (terminateBySize == obj.terminateBySize) &&
+            (termSize == obj.termSize) &&
             (terminateByDistance == obj.terminateByDistance) &&
             (termDistance == obj.termDistance) &&
             (terminateByTime == obj.terminateByTime) &&
@@ -867,6 +911,8 @@ FTLEAttributes::SelectAll()
     Select(ID_integrationDirection,               (void *)&integrationDirection);
     Select(ID_maxSteps,                           (void *)&maxSteps);
     Select(ID_terminationType,                    (void *)&terminationType);
+    Select(ID_terminateBySize,                    (void *)&terminateBySize);
+    Select(ID_termSize,                           (void *)&termSize);
     Select(ID_terminateByDistance,                (void *)&terminateByDistance);
     Select(ID_termDistance,                       (void *)&termDistance);
     Select(ID_terminateByTime,                    (void *)&terminateByTime);
@@ -947,7 +993,7 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     if(completeSave || !FieldsEqual(ID_UseDataSetStart, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("UseDataSetStart", UseDataSetStart));
+        node->AddNode(new DataNode("UseDataSetStart", Extents_ToString(UseDataSetStart)));
     }
 
     if(completeSave || !FieldsEqual(ID_StartPosition, &defaultObject))
@@ -959,7 +1005,7 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     if(completeSave || !FieldsEqual(ID_UseDataSetEnd, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("UseDataSetEnd", UseDataSetEnd));
+        node->AddNode(new DataNode("UseDataSetEnd", Extents_ToString(UseDataSetEnd)));
     }
 
     if(completeSave || !FieldsEqual(ID_EndPosition, &defaultObject))
@@ -984,6 +1030,18 @@ FTLEAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     {
         addToParent = true;
         node->AddNode(new DataNode("terminationType", TerminationType_ToString(terminationType)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_terminateBySize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("terminateBySize", terminateBySize));
+    }
+
+    if(completeSave || !FieldsEqual(ID_termSize, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("termSize", termSize));
     }
 
     if(completeSave || !FieldsEqual(ID_terminateByDistance, &defaultObject))
@@ -1239,11 +1297,39 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("Resolution")) != 0)
         SetResolution(node->AsIntArray());
     if((node = searchNode->GetNode("UseDataSetStart")) != 0)
-        SetUseDataSetStart(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetUseDataSetStart(Extents(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Extents value;
+            if(Extents_FromString(node->AsString(), value))
+                SetUseDataSetStart(value);
+        }
+    }
     if((node = searchNode->GetNode("StartPosition")) != 0)
         SetStartPosition(node->AsDoubleArray());
     if((node = searchNode->GetNode("UseDataSetEnd")) != 0)
-        SetUseDataSetEnd(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetUseDataSetEnd(Extents(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            Extents value;
+            if(Extents_FromString(node->AsString(), value))
+                SetUseDataSetEnd(value);
+        }
+    }
     if((node = searchNode->GetNode("EndPosition")) != 0)
         SetEndPosition(node->AsDoubleArray());
     if((node = searchNode->GetNode("integrationDirection")) != 0)
@@ -1270,7 +1356,7 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetTerminationType(TerminationType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1280,6 +1366,10 @@ FTLEAttributes::SetFromNode(DataNode *parentNode)
                 SetTerminationType(value);
         }
     }
+    if((node = searchNode->GetNode("terminateBySize")) != 0)
+        SetTerminateBySize(node->AsBool());
+    if((node = searchNode->GetNode("termSize")) != 0)
+        SetTermSize(node->AsDouble());
     if((node = searchNode->GetNode("terminateByDistance")) != 0)
         SetTerminateByDistance(node->AsBool());
     if((node = searchNode->GetNode("termDistance")) != 0)
@@ -1453,7 +1543,7 @@ FTLEAttributes::SetResolution(const int *Resolution_)
 }
 
 void
-FTLEAttributes::SetUseDataSetStart(bool UseDataSetStart_)
+FTLEAttributes::SetUseDataSetStart(FTLEAttributes::Extents UseDataSetStart_)
 {
     UseDataSetStart = UseDataSetStart_;
     Select(ID_UseDataSetStart, (void *)&UseDataSetStart);
@@ -1469,7 +1559,7 @@ FTLEAttributes::SetStartPosition(const double *StartPosition_)
 }
 
 void
-FTLEAttributes::SetUseDataSetEnd(bool UseDataSetEnd_)
+FTLEAttributes::SetUseDataSetEnd(FTLEAttributes::Extents UseDataSetEnd_)
 {
     UseDataSetEnd = UseDataSetEnd_;
     Select(ID_UseDataSetEnd, (void *)&UseDataSetEnd);
@@ -1503,6 +1593,20 @@ FTLEAttributes::SetTerminationType(FTLEAttributes::TerminationType terminationTy
 {
     terminationType = terminationType_;
     Select(ID_terminationType, (void *)&terminationType);
+}
+
+void
+FTLEAttributes::SetTerminateBySize(bool terminateBySize_)
+{
+    terminateBySize = terminateBySize_;
+    Select(ID_terminateBySize, (void *)&terminateBySize);
+}
+
+void
+FTLEAttributes::SetTermSize(double termSize_)
+{
+    termSize = termSize_;
+    Select(ID_termSize, (void *)&termSize);
 }
 
 void
@@ -1760,10 +1864,10 @@ FTLEAttributes::GetResolution()
     return Resolution;
 }
 
-bool
+FTLEAttributes::Extents
 FTLEAttributes::GetUseDataSetStart() const
 {
-    return UseDataSetStart;
+    return Extents(UseDataSetStart);
 }
 
 const double *
@@ -1778,10 +1882,10 @@ FTLEAttributes::GetStartPosition()
     return StartPosition;
 }
 
-bool
+FTLEAttributes::Extents
 FTLEAttributes::GetUseDataSetEnd() const
 {
-    return UseDataSetEnd;
+    return Extents(UseDataSetEnd);
 }
 
 const double *
@@ -1812,6 +1916,18 @@ FTLEAttributes::TerminationType
 FTLEAttributes::GetTerminationType() const
 {
     return TerminationType(terminationType);
+}
+
+bool
+FTLEAttributes::GetTerminateBySize() const
+{
+    return terminateBySize;
+}
+
+double
+FTLEAttributes::GetTermSize() const
+{
+    return termSize;
 }
 
 bool
@@ -2091,6 +2207,8 @@ FTLEAttributes::GetFieldName(int index) const
     case ID_integrationDirection:               return "integrationDirection";
     case ID_maxSteps:                           return "maxSteps";
     case ID_terminationType:                    return "terminationType";
+    case ID_terminateBySize:                    return "terminateBySize";
+    case ID_termSize:                           return "termSize";
     case ID_terminateByDistance:                return "terminateByDistance";
     case ID_termDistance:                       return "termDistance";
     case ID_terminateByTime:                    return "terminateByTime";
@@ -2150,13 +2268,15 @@ FTLEAttributes::GetFieldType(int index) const
     {
     case ID_sourceType:                         return FieldType_enum;
     case ID_Resolution:                         return FieldType_intArray;
-    case ID_UseDataSetStart:                    return FieldType_bool;
+    case ID_UseDataSetStart:                    return FieldType_enum;
     case ID_StartPosition:                      return FieldType_doubleArray;
-    case ID_UseDataSetEnd:                      return FieldType_bool;
+    case ID_UseDataSetEnd:                      return FieldType_enum;
     case ID_EndPosition:                        return FieldType_doubleArray;
     case ID_integrationDirection:               return FieldType_enum;
     case ID_maxSteps:                           return FieldType_int;
     case ID_terminationType:                    return FieldType_enum;
+    case ID_terminateBySize:                    return FieldType_bool;
+    case ID_termSize:                           return FieldType_double;
     case ID_terminateByDistance:                return FieldType_bool;
     case ID_termDistance:                       return FieldType_double;
     case ID_terminateByTime:                    return FieldType_bool;
@@ -2216,13 +2336,15 @@ FTLEAttributes::GetFieldTypeName(int index) const
     {
     case ID_sourceType:                         return "enum";
     case ID_Resolution:                         return "intArray";
-    case ID_UseDataSetStart:                    return "bool";
+    case ID_UseDataSetStart:                    return "enum";
     case ID_StartPosition:                      return "doubleArray";
-    case ID_UseDataSetEnd:                      return "bool";
+    case ID_UseDataSetEnd:                      return "enum";
     case ID_EndPosition:                        return "doubleArray";
     case ID_integrationDirection:               return "enum";
     case ID_maxSteps:                           return "int";
     case ID_terminationType:                    return "enum";
+    case ID_terminateBySize:                    return "bool";
+    case ID_termSize:                           return "double";
     case ID_terminateByDistance:                return "bool";
     case ID_termDistance:                       return "double";
     case ID_terminateByTime:                    return "bool";
@@ -2340,6 +2462,16 @@ FTLEAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_terminationType:
         {  // new scope
         retval = (terminationType == obj.terminationType);
+        }
+        break;
+    case ID_terminateBySize:
+        {  // new scope
+        retval = (terminateBySize == obj.terminateBySize);
+        }
+        break;
+    case ID_termSize:
+        {  // new scope
+        retval = (termSize == obj.termSize);
         }
         break;
     case ID_terminateByDistance:
@@ -2574,6 +2706,8 @@ FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
     //Check the general stuff first...
     if (sourceType != obj.sourceType ||
         maxSteps != obj.maxSteps ||
+        terminateBySize != obj.terminateBySize ||
+        termSize != obj.termSize ||
         terminateByDistance != obj.terminateByDistance ||
         termDistance != obj.termDistance ||
         terminateByTime != obj.terminateByTime ||

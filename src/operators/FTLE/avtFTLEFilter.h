@@ -115,24 +115,35 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     virtual void CreateIntegralCurveOutput(
                     std::vector<avtIntegralCurve*> &);
 
+    void CreateNativeResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics);
+    void CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurve*> &ics);
+
+    virtual avtContract_p   ModifyContract(avtContract_p);
+
     virtual void         PreExecute(void);
     virtual void         Execute(void);
+    virtual bool         ContinueExecute();
+
     virtual void         SetAtts(const AttributeGroup*);
     virtual bool         Equivalent(const AttributeGroup*);
 
     virtual void         UpdateDataObjectInfo(void);
 
+protected:
     virtual void         ReportWarnings(std::vector<avtIntegralCurve *> &ics);
 
     //helper functions
-    size_t               ComputeBoundsAndResolution(vtkDataSet* in_ds, double bounds[6],int resolution[3]);
-    std::string          CreateResampledCacheString(void);
-    std::string          CreateNativeResolutionCacheString(void);
-    avtDataTree_p        GetCachedDataSet();
-    avtDataTree_p        GetCachedResampledDataSet();
-    avtDataTree_p        GetCachedNativeDataSet(avtDataTree_p);
-    int                  GetInitialLocationsFromMesh(avtDataTree_p, 
-                                          std::vector<avtVector> &, bool, int);
+    // size_t               ComputeBoundsAndResolution(vtkDataSet* in_ds,
+    //                                              double bounds[6],
+    //                                              int resolution[3]);
+
+    void                 GetInitialLocationsFromMesh(avtDataTree_p);
+    void                 GetInitialLocationsFromGrid();
+
+
+    bool ComputeNativeResolutionFSLE(std::vector<avtIntegralCurve*> &ics);
+    bool ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &ics);
+
 
     void                 ComputeRectilinearDataResolution(
                                           std::vector<avtIntegralCurve*> &ics);
@@ -144,13 +155,29 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     vtkDataSet          *SingleBlockComputeFTLE(vtkDataSet *, 
                                           std::vector<avtIntegralCurve*> &,
                                           int &, int, double &, double &);
+
+    bool                 Value( int x, int y, int z, vtkDataArray *array);
+    void                 Increment( int x, int y, int z, vtkDataArray *mask);
+    int                  InBounds( int x, int y, int z );
+
+    void                 ComputeFsle(vtkDataArray* jacobian[3], 
+                                     vtkDataArray* times,
+                                     vtkDataArray* lengths,
+                                     vtkDataArray* result,
+                                     vtkDataArray* mask);
     void                 ComputeFtle(vtkDataArray* jacobian[3], 
                                      vtkDataArray* result);
 
+    std::string          CreateResampledCacheString(void);
+    std::string          CreateNativeResolutionCacheString(void);
+    avtDataTree_p        GetCachedDataSet();
+    avtDataTree_p        GetCachedResampledDataSet();
+    avtDataTree_p        GetCachedNativeDataSet(avtDataTree_p);
 
     void                 SetTermination(int maxSteps, 
                                         bool doDistance, double maxDistance, 
-                                        bool doTime, double maxTime);
+                                        bool doTime, double maxTime,
+                                        bool doSize, double maxSize);
 
     void                 SetVelocitySource(const double *v);
 
@@ -170,12 +197,16 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     int                global_resolution[3];
     int                timeState;
 
-
+    int      numSteps;
     int      maxSteps;
     bool     doDistance;
     double   maxDistance;
     bool     doTime;
     double   maxTime;
+    bool     doSize;
+    double   maxSize;
+
+    double    minSizeValue, maxSizeValue;
 
     bool      issueWarningForMaxStepsTermination;
     bool      issueWarningForStiffness;
@@ -187,7 +218,7 @@ class avtFTLEFilter : public virtual avtPluginFilter,
     //input seed points..
     std::vector<avtVector> seedPoints;
 
-    virtual avtContract_p   ModifyContract(avtContract_p);
+    vtkRectilinearGrid* fsle_rect_grid;
 };
 
 #endif

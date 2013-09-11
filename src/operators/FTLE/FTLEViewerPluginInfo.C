@@ -236,8 +236,8 @@ FTLEViewerPluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
 {
     FTLEAttributes *atts_in = (FTLEAttributes *)atts;
 
-    const char numTypes = 2;
-    const char *typeString[2] = { "FTLE", "FDLE" };
+    const char numTypes = 3;
+    const char *typeString[3] = { "FTLE", "FDLE", "FSLE" };
 
     std::string var = plot->GetVariableName();
 

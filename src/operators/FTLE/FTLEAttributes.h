@@ -65,6 +65,11 @@ public:
         NativeResolutionOfMesh,
         RegularGrid
     };
+    enum Extents
+    {
+        Full,
+        Subset
+    };
     enum IntegrationDirection
     {
         Forward,
@@ -104,7 +109,8 @@ public:
     enum TerminationType
     {
         Time,
-        Distance
+        Distance,
+        Size
     };
     enum PathlinesCMFE
     {
@@ -146,13 +152,15 @@ public:
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
     void SetResolution(const int *Resolution_);
-    void SetUseDataSetStart(bool UseDataSetStart_);
+    void SetUseDataSetStart(Extents UseDataSetStart_);
     void SetStartPosition(const double *StartPosition_);
-    void SetUseDataSetEnd(bool UseDataSetEnd_);
+    void SetUseDataSetEnd(Extents UseDataSetEnd_);
     void SetEndPosition(const double *EndPosition_);
     void SetIntegrationDirection(IntegrationDirection integrationDirection_);
     void SetMaxSteps(int maxSteps_);
     void SetTerminationType(TerminationType terminationType_);
+    void SetTerminateBySize(bool terminateBySize_);
+    void SetTermSize(double termSize_);
     void SetTerminateByDistance(bool terminateByDistance_);
     void SetTermDistance(double termDistance_);
     void SetTerminateByTime(bool terminateByTime_);
@@ -191,15 +199,17 @@ public:
     SourceType        GetSourceType() const;
     const int         *GetResolution() const;
           int         *GetResolution();
-    bool              GetUseDataSetStart() const;
+    Extents           GetUseDataSetStart() const;
     const double      *GetStartPosition() const;
           double      *GetStartPosition();
-    bool              GetUseDataSetEnd() const;
+    Extents           GetUseDataSetEnd() const;
     const double      *GetEndPosition() const;
           double      *GetEndPosition();
     IntegrationDirection GetIntegrationDirection() const;
     int               GetMaxSteps() const;
     TerminationType   GetTerminationType() const;
+    bool              GetTerminateBySize() const;
+    double            GetTermSize() const;
     bool              GetTerminateByDistance() const;
     double            GetTermDistance() const;
     bool              GetTerminateByTime() const;
@@ -245,6 +255,11 @@ public:
     static bool SourceType_FromString(const std::string &, SourceType &);
 protected:
     static std::string SourceType_ToString(int);
+public:
+    static std::string Extents_ToString(Extents);
+    static bool Extents_FromString(const std::string &, Extents &);
+protected:
+    static std::string Extents_ToString(int);
 public:
     static std::string IntegrationDirection_ToString(IntegrationDirection);
     static bool IntegrationDirection_FromString(const std::string &, IntegrationDirection &);
@@ -302,6 +317,8 @@ public:
         ID_integrationDirection,
         ID_maxSteps,
         ID_terminationType,
+        ID_terminateBySize,
+        ID_termSize,
         ID_terminateByDistance,
         ID_termDistance,
         ID_terminateByTime,
@@ -341,13 +358,15 @@ public:
 private:
     int         sourceType;
     int         Resolution[3];
-    bool        UseDataSetStart;
+    int         UseDataSetStart;
     double      StartPosition[3];
-    bool        UseDataSetEnd;
+    int         UseDataSetEnd;
     double      EndPosition[3];
     int         integrationDirection;
     int         maxSteps;
     int         terminationType;
+    bool        terminateBySize;
+    double      termSize;
     bool        terminateByDistance;
     double      termDistance;
     bool        terminateByTime;
@@ -386,6 +405,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FTLEATTRIBUTES_TMFS "iIbDbDiiibdbddbddiddidDiiiiibbdibbbbddddis"
+#define FTLEATTRIBUTES_TMFS "iIiDiDiiibdbdbddbddiddidDiiiiibbdibbbbddddis"
 
 #endif
