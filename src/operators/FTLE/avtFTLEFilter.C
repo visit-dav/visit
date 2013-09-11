@@ -1413,12 +1413,12 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
           ++count;
       }
 
-      if( count <= nTuples/50 )
+      if( count <= nTuples/10 )
       {
         char str[1028];
 
-        SNPRINTF(str, 1028, "\nOnly %d of the %d nodes (%d%%) exaimed "
-                 "produced a valid exponent (%f to %f). "
+        SNPRINTF(str, 1028, "\nOnly %d%% of the nodes (%d of %d nodes) "
+                 "exaimed produced a valid exponent (%f to %f). "
                  "This may be due to too large of a size limit (%f), "
                  "too small of an integration step (%f), or "
                  "too few integration steps (%d out of %d where taken), or "
