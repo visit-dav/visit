@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class FTLEAttributes extends AttributeSubject implements Plugin
 {
-    private static int FTLEAttributes_numAdditionalAtts = 44;
+    private static int FTLEAttributes_numAdditionalAtts = 39;
 
     // Enum values
     public final static int SOURCETYPE_NATIVERESOLUTIONOFMESH = 0;
@@ -157,11 +157,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
-        correlationDistanceAngTol = 5;
-        correlationDistanceMinDistAbsolute = 1;
-        correlationDistanceMinDistBBox = 0.005;
-        correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
-        selection = new String("");
     }
 
     public FTLEAttributes(int nMoreFields)
@@ -219,11 +214,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = true;
         issueCriticalPointsWarnings = true;
         criticalPointThreshold = 0.001;
-        correlationDistanceAngTol = 5;
-        correlationDistanceMinDistAbsolute = 1;
-        correlationDistanceMinDistBBox = 0.005;
-        correlationDistanceMinDistType = SIZETYPE_FRACTIONOFBBOX;
-        selection = new String("");
     }
 
     public FTLEAttributes(FTLEAttributes obj)
@@ -287,11 +277,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         issueStiffnessWarnings = obj.issueStiffnessWarnings;
         issueCriticalPointsWarnings = obj.issueCriticalPointsWarnings;
         criticalPointThreshold = obj.criticalPointThreshold;
-        correlationDistanceAngTol = obj.correlationDistanceAngTol;
-        correlationDistanceMinDistAbsolute = obj.correlationDistanceMinDistAbsolute;
-        correlationDistanceMinDistBBox = obj.correlationDistanceMinDistBBox;
-        correlationDistanceMinDistType = obj.correlationDistanceMinDistType;
-        selection = new String(obj.selection);
 
         SelectAll();
     }
@@ -369,12 +354,7 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
                 (issueTerminationWarnings == obj.issueTerminationWarnings) &&
                 (issueStiffnessWarnings == obj.issueStiffnessWarnings) &&
                 (issueCriticalPointsWarnings == obj.issueCriticalPointsWarnings) &&
-                (criticalPointThreshold == obj.criticalPointThreshold) &&
-                (correlationDistanceAngTol == obj.correlationDistanceAngTol) &&
-                (correlationDistanceMinDistAbsolute == obj.correlationDistanceMinDistAbsolute) &&
-                (correlationDistanceMinDistBBox == obj.correlationDistanceMinDistBBox) &&
-                (correlationDistanceMinDistType == obj.correlationDistanceMinDistType) &&
-                (selection.equals(obj.selection)));
+                (criticalPointThreshold == obj.criticalPointThreshold));
     }
 
     public String GetName() { return "FTLE"; }
@@ -655,36 +635,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         Select(38);
     }
 
-    public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
-    {
-        correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(39);
-    }
-
-    public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
-    {
-        correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(40);
-    }
-
-    public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
-    {
-        correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(41);
-    }
-
-    public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
-    {
-        correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(42);
-    }
-
-    public void SetSelection(String selection_)
-    {
-        selection = selection_;
-        Select(43);
-    }
-
     // Property getting methods
     public int      GetSourceType() { return sourceType; }
     public int[]    GetResolution() { return Resolution; }
@@ -725,11 +675,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     public boolean  GetIssueStiffnessWarnings() { return issueStiffnessWarnings; }
     public boolean  GetIssueCriticalPointsWarnings() { return issueCriticalPointsWarnings; }
     public double   GetCriticalPointThreshold() { return criticalPointThreshold; }
-    public double   GetCorrelationDistanceAngTol() { return correlationDistanceAngTol; }
-    public double   GetCorrelationDistanceMinDistAbsolute() { return correlationDistanceMinDistAbsolute; }
-    public double   GetCorrelationDistanceMinDistBBox() { return correlationDistanceMinDistBBox; }
-    public int      GetCorrelationDistanceMinDistType() { return correlationDistanceMinDistType; }
-    public String   GetSelection() { return selection; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -812,16 +757,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(38, buf))
             buf.WriteDouble(criticalPointThreshold);
-        if(WriteSelect(39, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
-        if(WriteSelect(40, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
-        if(WriteSelect(41, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
-        if(WriteSelect(42, buf))
-            buf.WriteInt(correlationDistanceMinDistType);
-        if(WriteSelect(43, buf))
-            buf.WriteString(selection);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -945,21 +880,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         case 38:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
-        case 39:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
-            break;
-        case 40:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
-            break;
-        case 41:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
-            break;
-        case 42:
-            SetCorrelationDistanceMinDistType(buf.ReadInt());
-            break;
-        case 43:
-            SetSelection(buf.ReadString());
-            break;
         }
     }
 
@@ -1079,16 +999,6 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("issueStiffnessWarnings", issueStiffnessWarnings, indent) + "\n";
         str = str + boolToString("issueCriticalPointsWarnings", issueCriticalPointsWarnings, indent) + "\n";
         str = str + doubleToString("criticalPointThreshold", criticalPointThreshold, indent) + "\n";
-        str = str + doubleToString("correlationDistanceAngTol", correlationDistanceAngTol, indent) + "\n";
-        str = str + doubleToString("correlationDistanceMinDistAbsolute", correlationDistanceMinDistAbsolute, indent) + "\n";
-        str = str + doubleToString("correlationDistanceMinDistBBox", correlationDistanceMinDistBBox, indent) + "\n";
-        str = str + indent + "correlationDistanceMinDistType = ";
-        if(correlationDistanceMinDistType == SIZETYPE_ABSOLUTE)
-            str = str + "SIZETYPE_ABSOLUTE";
-        if(correlationDistanceMinDistType == SIZETYPE_FRACTIONOFBBOX)
-            str = str + "SIZETYPE_FRACTIONOFBBOX";
-        str = str + "\n";
-        str = str + stringToString("selection", selection, indent) + "\n";
         return str;
     }
 
@@ -1133,10 +1043,5 @@ public class FTLEAttributes extends AttributeSubject implements Plugin
     private boolean  issueStiffnessWarnings;
     private boolean  issueCriticalPointsWarnings;
     private double   criticalPointThreshold;
-    private double   correlationDistanceAngTol;
-    private double   correlationDistanceMinDistAbsolute;
-    private double   correlationDistanceMinDistBBox;
-    private int      correlationDistanceMinDistType;
-    private String   selection;
 }
 

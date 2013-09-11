@@ -562,6 +562,10 @@ avtFTLEFilter::PreExecute(void)
 
     if( doSize && maxSize <= minResolution )
     {
+    // std::cerr << atts.GetTermSize() << "  "
+    //        << resX << "  " << resY << "  " << resZ << "  "
+    //        << std::endl;
+
         char str[1028];
 
         SNPRINTF(str, 1028, "\nThe size limit for FSLE is %f. "
@@ -573,10 +577,6 @@ avtFTLEFilter::PreExecute(void)
         
 //      EXCEPTION1(ImproperUseException, str );
     }
-
-    // std::cerr << atts.GetTermSize() << "  "
-    //        << resX << "  " << resY << "  " << resZ << "  "
-    //        << std::endl;
 
     avtPICSFilter::PreExecute();
 }

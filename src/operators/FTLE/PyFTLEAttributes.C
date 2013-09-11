@@ -420,29 +420,6 @@ PyFTLEAttributes_ToString(const FTLEAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scriticalPointThreshold = %g\n", prefix, atts->GetCriticalPointThreshold());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceAngTol = %g\n", prefix, atts->GetCorrelationDistanceAngTol());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistAbsolute = %g\n", prefix, atts->GetCorrelationDistanceMinDistAbsolute());
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistBBox = %g\n", prefix, atts->GetCorrelationDistanceMinDistBBox());
-    str += tmpStr;
-    const char *correlationDistanceMinDistType_names = "Absolute, FractionOfBBox";
-    switch (atts->GetCorrelationDistanceMinDistType())
-    {
-      case FTLEAttributes::Absolute:
-          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sAbsolute  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
-          str += tmpStr;
-          break;
-      case FTLEAttributes::FractionOfBBox:
-          SNPRINTF(tmpStr, 1000, "%scorrelationDistanceMinDistType = %sFractionOfBBox  # %s\n", prefix, prefix, correlationDistanceMinDistType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
-    SNPRINTF(tmpStr, 1000, "%sselection = \"%s\"\n", prefix, atts->GetSelection().c_str());
-    str += tmpStr;
     return str;
 }
 
@@ -1603,135 +1580,6 @@ FTLEAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-FTLEAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the correlationDistanceAngTol in the object.
-    obj->data->SetCorrelationDistanceAngTol(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceAngTol());
-    return retval;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the correlationDistanceMinDistAbsolute in the object.
-    obj->data->SetCorrelationDistanceMinDistAbsolute(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistAbsolute());
-    return retval;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
-
-    // Set the correlationDistanceMinDistBBox in the object.
-    obj->data->SetCorrelationDistanceMinDistBBox(dval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistBBox());
-    return retval;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the correlationDistanceMinDistType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCorrelationDistanceMinDistType(FTLEAttributes::SizeType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid correlationDistanceMinDistType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, FractionOfBBox.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetCorrelationDistanceMinDistType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_SetSelection(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
-
-    // Set the selection in the object.
-    obj->data->SetSelection(std::string(str));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FTLEAttributes_GetSelection(PyObject *self, PyObject *args)
-{
-    FTLEAttributesObject *obj = (FTLEAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetSelection().c_str());
-    return retval;
-}
-
 
 
 PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
@@ -1814,16 +1662,6 @@ PyMethodDef PyFTLEAttributes_methods[FTLEATTRIBUTES_NMETH] = {
     {"GetIssueCriticalPointsWarnings", FTLEAttributes_GetIssueCriticalPointsWarnings, METH_VARARGS},
     {"SetCriticalPointThreshold", FTLEAttributes_SetCriticalPointThreshold, METH_VARARGS},
     {"GetCriticalPointThreshold", FTLEAttributes_GetCriticalPointThreshold, METH_VARARGS},
-    {"SetCorrelationDistanceAngTol", FTLEAttributes_SetCorrelationDistanceAngTol, METH_VARARGS},
-    {"GetCorrelationDistanceAngTol", FTLEAttributes_GetCorrelationDistanceAngTol, METH_VARARGS},
-    {"SetCorrelationDistanceMinDistAbsolute", FTLEAttributes_SetCorrelationDistanceMinDistAbsolute, METH_VARARGS},
-    {"GetCorrelationDistanceMinDistAbsolute", FTLEAttributes_GetCorrelationDistanceMinDistAbsolute, METH_VARARGS},
-    {"SetCorrelationDistanceMinDistBBox", FTLEAttributes_SetCorrelationDistanceMinDistBBox, METH_VARARGS},
-    {"GetCorrelationDistanceMinDistBBox", FTLEAttributes_GetCorrelationDistanceMinDistBBox, METH_VARARGS},
-    {"SetCorrelationDistanceMinDistType", FTLEAttributes_SetCorrelationDistanceMinDistType, METH_VARARGS},
-    {"GetCorrelationDistanceMinDistType", FTLEAttributes_GetCorrelationDistanceMinDistType, METH_VARARGS},
-    {"SetSelection", FTLEAttributes_SetSelection, METH_VARARGS},
-    {"GetSelection", FTLEAttributes_GetSelection, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -2004,21 +1842,6 @@ PyFTLEAttributes_getattr(PyObject *self, char *name)
         return FTLEAttributes_GetIssueCriticalPointsWarnings(self, NULL);
     if(strcmp(name, "criticalPointThreshold") == 0)
         return FTLEAttributes_GetCriticalPointThreshold(self, NULL);
-    if(strcmp(name, "correlationDistanceAngTol") == 0)
-        return FTLEAttributes_GetCorrelationDistanceAngTol(self, NULL);
-    if(strcmp(name, "correlationDistanceMinDistAbsolute") == 0)
-        return FTLEAttributes_GetCorrelationDistanceMinDistAbsolute(self, NULL);
-    if(strcmp(name, "correlationDistanceMinDistBBox") == 0)
-        return FTLEAttributes_GetCorrelationDistanceMinDistBBox(self, NULL);
-    if(strcmp(name, "correlationDistanceMinDistType") == 0)
-        return FTLEAttributes_GetCorrelationDistanceMinDistType(self, NULL);
-    if(strcmp(name, "Absolute") == 0)
-        return PyInt_FromLong(long(FTLEAttributes::Absolute));
-    if(strcmp(name, "FractionOfBBox") == 0)
-        return PyInt_FromLong(long(FTLEAttributes::FractionOfBBox));
-
-    if(strcmp(name, "selection") == 0)
-        return FTLEAttributes_GetSelection(self, NULL);
 
     return Py_FindMethod(PyFTLEAttributes_methods, self, name);
 }
@@ -2111,16 +1934,6 @@ PyFTLEAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FTLEAttributes_SetIssueCriticalPointsWarnings(self, tuple);
     else if(strcmp(name, "criticalPointThreshold") == 0)
         obj = FTLEAttributes_SetCriticalPointThreshold(self, tuple);
-    else if(strcmp(name, "correlationDistanceAngTol") == 0)
-        obj = FTLEAttributes_SetCorrelationDistanceAngTol(self, tuple);
-    else if(strcmp(name, "correlationDistanceMinDistAbsolute") == 0)
-        obj = FTLEAttributes_SetCorrelationDistanceMinDistAbsolute(self, tuple);
-    else if(strcmp(name, "correlationDistanceMinDistBBox") == 0)
-        obj = FTLEAttributes_SetCorrelationDistanceMinDistBBox(self, tuple);
-    else if(strcmp(name, "correlationDistanceMinDistType") == 0)
-        obj = FTLEAttributes_SetCorrelationDistanceMinDistType(self, tuple);
-    else if(strcmp(name, "selection") == 0)
-        obj = FTLEAttributes_SetSelection(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

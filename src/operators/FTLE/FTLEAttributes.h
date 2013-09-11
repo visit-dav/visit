@@ -147,7 +147,6 @@ public:
     void SelectStartPosition();
     void SelectEndPosition();
     void SelectVelocitySource();
-    void SelectSelection();
 
     // Property setting methods
     void SetSourceType(SourceType sourceType_);
@@ -189,62 +188,51 @@ public:
     void SetIssueStiffnessWarnings(bool issueStiffnessWarnings_);
     void SetIssueCriticalPointsWarnings(bool issueCriticalPointsWarnings_);
     void SetCriticalPointThreshold(double criticalPointThreshold_);
-    void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_);
-    void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_);
-    void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_);
-    void SetCorrelationDistanceMinDistType(SizeType correlationDistanceMinDistType_);
-    void SetSelection(const std::string &selection_);
 
     // Property getting methods
-    SourceType        GetSourceType() const;
-    const int         *GetResolution() const;
-          int         *GetResolution();
-    Extents           GetUseDataSetStart() const;
-    const double      *GetStartPosition() const;
-          double      *GetStartPosition();
-    Extents           GetUseDataSetEnd() const;
-    const double      *GetEndPosition() const;
-          double      *GetEndPosition();
+    SourceType   GetSourceType() const;
+    const int    *GetResolution() const;
+          int    *GetResolution();
+    Extents      GetUseDataSetStart() const;
+    const double *GetStartPosition() const;
+          double *GetStartPosition();
+    Extents      GetUseDataSetEnd() const;
+    const double *GetEndPosition() const;
+          double *GetEndPosition();
     IntegrationDirection GetIntegrationDirection() const;
-    int               GetMaxSteps() const;
-    TerminationType   GetTerminationType() const;
-    bool              GetTerminateBySize() const;
-    double            GetTermSize() const;
-    bool              GetTerminateByDistance() const;
-    double            GetTermDistance() const;
-    bool              GetTerminateByTime() const;
-    double            GetTermTime() const;
-    double            GetMaxStepLength() const;
-    bool              GetLimitMaximumTimestep() const;
-    double            GetMaxTimeStep() const;
-    double            GetRelTol() const;
-    SizeType          GetAbsTolSizeType() const;
-    double            GetAbsTolAbsolute() const;
-    double            GetAbsTolBBox() const;
-    FieldType         GetFieldType() const;
-    double            GetFieldConstant() const;
-    const double      *GetVelocitySource() const;
-          double      *GetVelocitySource();
-    IntegrationType   GetIntegrationType() const;
+    int          GetMaxSteps() const;
+    TerminationType GetTerminationType() const;
+    bool         GetTerminateBySize() const;
+    double       GetTermSize() const;
+    bool         GetTerminateByDistance() const;
+    double       GetTermDistance() const;
+    bool         GetTerminateByTime() const;
+    double       GetTermTime() const;
+    double       GetMaxStepLength() const;
+    bool         GetLimitMaximumTimestep() const;
+    double       GetMaxTimeStep() const;
+    double       GetRelTol() const;
+    SizeType     GetAbsTolSizeType() const;
+    double       GetAbsTolAbsolute() const;
+    double       GetAbsTolBBox() const;
+    FieldType    GetFieldType() const;
+    double       GetFieldConstant() const;
+    const double *GetVelocitySource() const;
+          double *GetVelocitySource();
+    IntegrationType GetIntegrationType() const;
     ParallelizationAlgorithmType GetParallelizationAlgorithmType() const;
-    int               GetMaxProcessCount() const;
-    int               GetMaxDomainCacheSize() const;
-    int               GetWorkGroupSize() const;
-    bool              GetPathlines() const;
-    bool              GetPathlinesOverrideStartingTimeFlag() const;
-    double            GetPathlinesOverrideStartingTime() const;
-    PathlinesCMFE     GetPathlinesCMFE() const;
-    bool              GetForceNodeCenteredData() const;
-    bool              GetIssueTerminationWarnings() const;
-    bool              GetIssueStiffnessWarnings() const;
-    bool              GetIssueCriticalPointsWarnings() const;
-    double            GetCriticalPointThreshold() const;
-    double            GetCorrelationDistanceAngTol() const;
-    double            GetCorrelationDistanceMinDistAbsolute() const;
-    double            GetCorrelationDistanceMinDistBBox() const;
-    SizeType          GetCorrelationDistanceMinDistType() const;
-    const std::string &GetSelection() const;
-          std::string &GetSelection();
+    int          GetMaxProcessCount() const;
+    int          GetMaxDomainCacheSize() const;
+    int          GetWorkGroupSize() const;
+    bool         GetPathlines() const;
+    bool         GetPathlinesOverrideStartingTimeFlag() const;
+    double       GetPathlinesOverrideStartingTime() const;
+    PathlinesCMFE GetPathlinesCMFE() const;
+    bool         GetForceNodeCenteredData() const;
+    bool         GetIssueTerminationWarnings() const;
+    bool         GetIssueStiffnessWarnings() const;
+    bool         GetIssueCriticalPointsWarnings() const;
+    double       GetCriticalPointThreshold() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -347,64 +335,54 @@ public:
         ID_issueStiffnessWarnings,
         ID_issueCriticalPointsWarnings,
         ID_criticalPointThreshold,
-        ID_correlationDistanceAngTol,
-        ID_correlationDistanceMinDistAbsolute,
-        ID_correlationDistanceMinDistBBox,
-        ID_correlationDistanceMinDistType,
-        ID_selection,
         ID__LAST
     };
 
 private:
-    int         sourceType;
-    int         Resolution[3];
-    int         UseDataSetStart;
-    double      StartPosition[3];
-    int         UseDataSetEnd;
-    double      EndPosition[3];
-    int         integrationDirection;
-    int         maxSteps;
-    int         terminationType;
-    bool        terminateBySize;
-    double      termSize;
-    bool        terminateByDistance;
-    double      termDistance;
-    bool        terminateByTime;
-    double      termTime;
-    double      maxStepLength;
-    bool        limitMaximumTimestep;
-    double      maxTimeStep;
-    double      relTol;
-    int         absTolSizeType;
-    double      absTolAbsolute;
-    double      absTolBBox;
-    int         fieldType;
-    double      fieldConstant;
-    double      velocitySource[3];
-    int         integrationType;
-    int         parallelizationAlgorithmType;
-    int         maxProcessCount;
-    int         maxDomainCacheSize;
-    int         workGroupSize;
-    bool        pathlines;
-    bool        pathlinesOverrideStartingTimeFlag;
-    double      pathlinesOverrideStartingTime;
-    int         pathlinesCMFE;
-    bool        forceNodeCenteredData;
-    bool        issueTerminationWarnings;
-    bool        issueStiffnessWarnings;
-    bool        issueCriticalPointsWarnings;
-    double      criticalPointThreshold;
-    double      correlationDistanceAngTol;
-    double      correlationDistanceMinDistAbsolute;
-    double      correlationDistanceMinDistBBox;
-    int         correlationDistanceMinDistType;
-    std::string selection;
+    int    sourceType;
+    int    Resolution[3];
+    int    UseDataSetStart;
+    double StartPosition[3];
+    int    UseDataSetEnd;
+    double EndPosition[3];
+    int    integrationDirection;
+    int    maxSteps;
+    int    terminationType;
+    bool   terminateBySize;
+    double termSize;
+    bool   terminateByDistance;
+    double termDistance;
+    bool   terminateByTime;
+    double termTime;
+    double maxStepLength;
+    bool   limitMaximumTimestep;
+    double maxTimeStep;
+    double relTol;
+    int    absTolSizeType;
+    double absTolAbsolute;
+    double absTolBBox;
+    int    fieldType;
+    double fieldConstant;
+    double velocitySource[3];
+    int    integrationType;
+    int    parallelizationAlgorithmType;
+    int    maxProcessCount;
+    int    maxDomainCacheSize;
+    int    workGroupSize;
+    bool   pathlines;
+    bool   pathlinesOverrideStartingTimeFlag;
+    double pathlinesOverrideStartingTime;
+    int    pathlinesCMFE;
+    bool   forceNodeCenteredData;
+    bool   issueTerminationWarnings;
+    bool   issueStiffnessWarnings;
+    bool   issueCriticalPointsWarnings;
+    double criticalPointThreshold;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define FTLEATTRIBUTES_TMFS "iIiDiDiiibdbdbddbddiddidDiiiiibbdibbbbddddis"
+#define FTLEATTRIBUTES_TMFS "iIiDiDiiibdbdbddbddiddidDiiiiibbdibbbbd"
 
 #endif
