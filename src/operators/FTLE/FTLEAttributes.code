@@ -128,31 +128,40 @@ bool
 FTLEAttributes::ChangesRequireRecalculation(const FTLEAttributes &obj) const
 {
     //Check the general stuff first...
-    if (sourceType != obj.sourceType ||
+
+    if( sourceType != obj.sourceType ||
+        integrationDirection != obj.integrationDirection ||
         maxSteps != obj.maxSteps ||
+        terminationType != obj.terminationType ||
         terminateBySize != obj.terminateBySize ||
         termSize != obj.termSize ||
         terminateByDistance != obj.terminateByDistance ||
         termDistance != obj.termDistance ||
         terminateByTime != obj.terminateByTime ||
         termTime != obj.termTime ||
-        integrationDirection != obj.integrationDirection ||
-        fieldType != obj.fieldType ||
-        fieldConstant != obj.fieldConstant ||
-        integrationType != obj.integrationType ||
         maxStepLength != obj.maxStepLength ||
-        maxTimeStep != obj.maxTimeStep ||
         limitMaximumTimestep != obj.limitMaximumTimestep ||
+        maxTimeStep != obj.maxTimeStep ||
         relTol != obj.relTol ||
+        absTolSizeType != obj.absTolSizeType ||
         absTolAbsolute != obj.absTolAbsolute ||
         absTolBBox != obj.absTolBBox ||
-        absTolSizeType != obj.absTolSizeType ||
-        forceNodeCenteredData != obj.forceNodeCenteredData ||
+        fieldType != obj.fieldType ||
+        fieldConstant != obj. fieldConstant||
+        integrationType != obj.integrationType ||
+        parallelizationAlgorithmType != obj.parallelizationAlgorithmType ||
+        maxProcessCount != obj.maxProcessCount ||
+        maxDomainCacheSize != obj.maxDomainCacheSize ||
+        workGroupSize != obj.workGroupSize ||
         pathlines != obj.pathlines ||
         pathlinesOverrideStartingTimeFlag != obj.pathlinesOverrideStartingTimeFlag ||
         pathlinesOverrideStartingTime != obj.pathlinesOverrideStartingTime ||
         pathlinesCMFE != obj.pathlinesCMFE ||
-        1)
+        forceNodeCenteredData != obj.forceNodeCenteredData ||
+        issueTerminationWarnings != obj.issueTerminationWarnings ||
+        issueStiffnessWarnings != obj.issueStiffnessWarnings ||
+        issueCriticalPointsWarnings != obj.issueCriticalPointsWarnings ||
+        criticalPointThreshold != obj.criticalPointThreshold )
     {
         return true;
     }
