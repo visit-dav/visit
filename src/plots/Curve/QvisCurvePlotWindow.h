@@ -110,11 +110,12 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     virtual void makeDefault();
     virtual void reset();
   protected:
+    void CreateAppearanceTab(QWidget *);
+    void CreateRenderingTab(QWidget *);
+
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
-    QWidget *CreateRenderingOptionsGroup(void);
-    QWidget *CreateCueOptionsGroup(void);
  
   private slots:
     void showLinesChanged(bool val);

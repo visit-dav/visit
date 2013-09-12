@@ -165,21 +165,174 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 void
 QvisCurvePlotWindow::CreateWindowContents()
 {
-    // Create a tab widgets to separate Rendering and Cue options.
-    //
-    QTabWidget *tabs = new QTabWidget(central);
-    topLayout->addWidget(tabs, 100);
+    QTabWidget *propertyTabs = new QTabWidget(central);
+    topLayout->addWidget(propertyTabs);
 
-    renderingOptions = CreateRenderingOptionsGroup();
-    tabs->addTab(renderingOptions, tr("Rendering Options"));
+    // ----------------------------------------------------------------------
+    // Rendering tab
+    // ----------------------------------------------------------------------
+    QWidget *renderingTab = new QWidget(central);
+    propertyTabs->addTab(renderingTab, tr("Rendering"));
+    CreateRenderingTab(renderingTab);
 
-    cueOptions = CreateCueOptionsGroup();
-    tabs->addTab(cueOptions, tr("Cue Options"));
+    // ----------------------------------------------------------------------
+    // Appearance tab
+    // ----------------------------------------------------------------------
+    QWidget *appearanceTab = new QWidget(central);
+    propertyTabs->addTab(appearanceTab, tr("Appearance"));
+    CreateAppearanceTab(appearanceTab);
 }
 
 
 // ****************************************************************************
-// Method: QvisCurvePlotWindow::CreateRenderingOptionsGroup
+// Method: QvisCurvePlotWindow::CreateAppearanceTab
+//
+// Purpose: 
+//   Creates the widgets for the cue options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 11, 2013
+//
+// ****************************************************************************
+
+void
+QvisCurvePlotWindow::CreateAppearanceTab(QWidget *pageAppearance)
+{
+    QGridLayout *topLayout = new QGridLayout(pageAppearance);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
+
+    //
+    // Create the time cue stuff
+    //
+    QGroupBox * timeCueGroup = new QGroupBox(central);
+    timeCueGroup->setTitle(tr("Create Cue For Current Location"));
+    topLayout->addWidget(timeCueGroup);
+
+    QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
+    timeCueLayout->setMargin(5);
+    timeCueLayout->setSpacing(10);
+ 
+    doBallTimeCue = new QCheckBox(tr("Add Ball"), central);
+    connect(doBallTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doBallTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doBallTimeCue, 0,0);
+
+    ballTimeCueColor = new QvisColorButton(central);
+    connect(ballTimeCueColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(ballTimeCueColorChanged(const QColor&)));
+    timeCueLayout->addWidget(ballTimeCueColor, 0,1);
+
+    timeCueBallSizeLabel = new QLabel(tr("Ball size"), central);
+    timeCueLayout->addWidget(timeCueBallSizeLabel,0,2);
+    timeCueBallSize = new QLineEdit(central);
+    connect(timeCueBallSize, SIGNAL(returnPressed()),
+            this, SLOT(timeCueBallSizeProcessText()));
+    timeCueLayout->addWidget(timeCueBallSize, 0,3);
+
+    doLineTimeCue = new QCheckBox(tr("Add Line"), central);
+    connect(doLineTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doLineTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doLineTimeCue, 1,0);
+
+    lineTimeCueColor = new QvisColorButton(central);
+    connect(lineTimeCueColor, SIGNAL(selectedColor(const QColor&)),
+            this, SLOT(lineTimeCueColorChanged(const QColor&)));
+    timeCueLayout->addWidget(lineTimeCueColor, 1,1);
+
+    lineTimeCueWidth = new QvisLineWidthWidget(0, central);
+    lineTimeCueWidthLabel = new QLabel(tr("Line width"), central);
+    lineTimeCueWidthLabel->setBuddy(lineTimeCueWidth);
+    timeCueLayout->addWidget(lineTimeCueWidthLabel,1,2);
+    connect(lineTimeCueWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(lineTimeCueWidthChanged(int)));
+
+    timeCueLayout->addWidget(lineTimeCueWidth, 1,3);
+
+    doCropTimeCue = new QCheckBox(tr("Crop"), central);
+    connect(doCropTimeCue, SIGNAL(toggled(bool)),
+            this, SLOT(doCropTimeCueChanged(bool)));
+    timeCueLayout->addWidget(doCropTimeCue, 2,0);
+
+    timeForTimeCueLabel = new QLabel(tr("Position of cue"), central);
+    timeCueLayout->addWidget(timeForTimeCueLabel,3,0);
+    timeForTimeCue = new QLineEdit(central);
+    connect(timeForTimeCue, SIGNAL(returnPressed()),
+            this, SLOT(timeForTimeCueProcessText()));
+    timeCueLayout->addWidget(timeForTimeCue, 3,1);
+
+    //
+    // Create the coordinate system controls
+    //
+    QGroupBox *coordSystemGroup = new QGroupBox(central);
+    coordSystemGroup->setTitle(tr("Coordinate System"));
+    topLayout->addWidget(coordSystemGroup);
+
+    QGridLayout *coordSystemLayout = new QGridLayout(coordSystemGroup);
+    coordSystemLayout->setMargin(5);
+    coordSystemLayout->setSpacing(10);
+
+
+    polarToggle = new QCheckBox(tr("Polar to Cartesian"), central);
+    connect(polarToggle, SIGNAL(toggled(bool)),
+            this, SLOT(polarToggled(bool)));
+    coordSystemLayout->addWidget(polarToggle, 0, 0, 1, 2);
+
+    //coordSystemLayout->addWidget(new QLabel("     ", central), 1, 0, 1, 1);
+
+    polarOrder = new QComboBox(central);
+    polarOrder->addItem(tr("R_Theta"));
+    polarOrder->addItem(tr("Theta_R"));
+    polarOrderLabel = new QLabel(tr("Order"), central);
+    polarOrderLabel->setBuddy(polarOrder);
+    polarOrderLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    connect(polarOrder, SIGNAL(activated(int)),
+            this, SLOT(polarOrderChanged(int))); 
+
+    coordSystemLayout->addWidget(polarOrderLabel, 1, 0, 1, 1);
+    coordSystemLayout->addWidget(polarOrder, 1, 1, 1, 1);
+
+
+    // Create the angle-unit widget
+    angleUnits = new QComboBox(central);
+    angleUnits->addItem(tr("Radians"));
+    angleUnits->addItem(tr("Degrees"));
+    angleUnitsLabel = new QLabel(tr("Units"), central);
+    angleUnitsLabel->setBuddy(angleUnits);
+    angleUnitsLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    connect(angleUnits, SIGNAL(activated(int)),
+            this, SLOT(angleUnitsChanged(int))); 
+
+    coordSystemLayout->addWidget(angleUnitsLabel, 1, 2, 1, 1);
+    coordSystemLayout->addWidget(angleUnits, 1, 3, 1, 1);
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    topLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+
+    // Create the labels toggle
+    labelsToggle = new QCheckBox(tr("Labels"), central);
+    connect(labelsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelsToggled(bool)));
+    miscLayout->addWidget(labelsToggle, 0, 1);
+}
+
+
+// ****************************************************************************
+// Method: QvisCurvePlotWindow::CreateRenderingTab
 //
 // Purpose: 
 //   Creates the widgets for the rendering options tab.
@@ -189,39 +342,38 @@ QvisCurvePlotWindow::CreateWindowContents()
 //
 // ****************************************************************************
 
-QWidget *
-QvisCurvePlotWindow::CreateRenderingOptionsGroup()
+void
+QvisCurvePlotWindow::CreateRenderingTab(QWidget *pageRendering)
 {
-    QWidget *parent = new QWidget(central);
-    QGridLayout *renderingOptionsLayout = new QGridLayout(parent);
-    renderingOptionsLayout->setMargin(5);
-    renderingOptionsLayout->setSpacing(5);
-
-    //
-    // Create the geometry
-    //
-    QGroupBox * geometryGroup = new QGroupBox(central);
-    geometryGroup->setTitle(tr("Line/Point Geometry"));
-    renderingOptionsLayout->addWidget(geometryGroup);
-
-    QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
-    geometryLayout->setSpacing(10);
+    QGridLayout *topLayout = new QGridLayout(pageRendering);
+    topLayout->setMargin(5);
+    topLayout->setSpacing(10);
 
     int ROW = 0;
 
     //
     // Create line related controls.
     //
+    QGroupBox * lineGroup = new QGroupBox(central);
+    lineGroup->setTitle(tr("Line"));
+    topLayout->addWidget(lineGroup);
+
+    QGridLayout *lineLayout = new QGridLayout(lineGroup);
+    lineLayout->setMargin(5);
+    lineLayout->setSpacing(10);
+
+    ROW = 0;
+
+
     showLines = new QCheckBox(tr("Show lines"), central);
     connect(showLines, SIGNAL(toggled(bool)),
             this, SLOT(showLinesChanged(bool)));
 
-    geometryLayout->addWidget(showLines, ROW, 0, 1, 2);
+    lineLayout->addWidget(showLines, ROW, 0, 1, 2);
 
     ++ROW;
 
-    geometryLayout->addWidget(new QLabel("     ", central), ROW, 0, 1, 1);
+    lineLayout->addWidget(new QLabel("     ", central), ROW, 0, 1, 1);
 
     lineStyle = new QvisLineStyleWidget(0, central);
     lineStyleLabel = new QLabel(tr("Line style"), central);
@@ -230,30 +382,41 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     connect(lineStyle, SIGNAL(lineStyleChanged(int)),
             this, SLOT(lineStyleChanged(int)));
 
-    geometryLayout->addWidget(lineStyleLabel, ROW, 1, 1, 1);
-    geometryLayout->addWidget(lineStyle, ROW, 2, 1, 1);
+    lineLayout->addWidget(lineStyleLabel, ROW, 1, 1, 1);
+    lineLayout->addWidget(lineStyle, ROW, 2, 1, 1);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     lineWidthLabel = new QLabel(tr("Line width"), central);
     lineWidthLabel->setBuddy(lineWidth);
 
-    geometryLayout->addWidget(lineWidthLabel, ROW, 3, 1, 1);
-    geometryLayout->addWidget(lineWidth, ROW, 4, 1, 1);
+    lineLayout->addWidget(lineWidthLabel, ROW, 3, 1, 1);
+    lineLayout->addWidget(lineWidth, ROW, 4, 1, 1);
 
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
 
     ++ROW;
 
+
     // 
     // Create point related controls.
     //
+
+    QGroupBox * pointGroup = new QGroupBox(central);
+    pointGroup->setTitle(tr("Point"));
+    topLayout->addWidget(pointGroup);
+
+    QGridLayout *pointLayout = new QGridLayout(pointGroup);
+    pointLayout->setMargin(5);
+    pointLayout->setSpacing(10);
+
+    ROW = 0;
 
     showPoints = new QCheckBox(tr("Show points"), central);
     connect(showPoints, SIGNAL(toggled(bool)),
             this, SLOT(showPointsChanged(bool)));
 
-    geometryLayout->addWidget(showPoints, ROW, 0, 1, 2);
+    pointLayout->addWidget(showPoints, ROW, 0, 1, 2);
 
     ++ROW;
 
@@ -298,9 +461,9 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     symbolTypeLabel = new QLabel(tr("Symbol"), central);
     symbolTypeLabel->setBuddy(symbolType);
 
-    geometryLayout->addWidget(new QLabel("    ", central), ROW, 0, 1 ,1);
-    geometryLayout->addWidget(symbolTypeLabel, ROW, 1, 1, 1);
-    geometryLayout->addWidget(symbolType, ROW, 2, 1, 1);
+    pointLayout->addWidget(new QLabel("    ", central), ROW, 0, 1 ,1);
+    pointLayout->addWidget(symbolTypeLabel, ROW, 1, 1, 1);
+    pointLayout->addWidget(symbolType, ROW, 2, 1, 1);
 
 
     // Create the point size line edit
@@ -311,20 +474,20 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     connect(pointSize, SIGNAL(returnPressed()),
             this, SLOT(processPointSizeText())); 
 
-    geometryLayout->addWidget(pointSizeLabel, ROW, 3, 1, 1);
-    geometryLayout->addWidget(pointSize, ROW, 4, 1, 1);
+    pointLayout->addWidget(pointSizeLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(pointSize, ROW, 4, 1, 1);
 
     ++ROW;
 
-    fillModeGroup = new QButtonGroup(geometryGroup);
+    fillModeGroup = new QButtonGroup(pointGroup);
 
     connect(fillModeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(symbolFillModeChanged(int)));
 
-    staticButton = new QRadioButton(tr("Static"), geometryGroup);
+    staticButton = new QRadioButton(tr("Static"), pointGroup);
     staticButton->setChecked(true);
     fillModeGroup->addButton(staticButton, 0);
-    geometryLayout->addWidget(staticButton, ROW, 1, 1, 2);
+    pointLayout->addWidget(staticButton, ROW, 1, 1, 2);
 
     // Create the point stride 
     pointStride = new QSpinBox(central);
@@ -336,15 +499,15 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     connect(pointStride, SIGNAL(valueChanged(int)),
             this, SLOT(pointStrideChanged(int))); 
 
-    geometryLayout->addWidget(pointStrideLabel, ROW, 3, 1, 1);
-    geometryLayout->addWidget(pointStride, ROW, 4, 1, 1);
+    pointLayout->addWidget(pointStrideLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(pointStride, ROW, 4, 1, 1);
 
     ++ROW;
 
-    dynamicButton = new QRadioButton(tr("Dynamic"), geometryGroup);
+    dynamicButton = new QRadioButton(tr("Dynamic"), pointGroup);
     fillModeGroup->addButton(dynamicButton, 1);
 
-    geometryLayout->addWidget(dynamicButton, ROW, 1, 1, 2);
+    pointLayout->addWidget(dynamicButton, ROW, 1, 1, 2);
 
     // Create the point density spin box
     symbolDensity = new QSpinBox(central);
@@ -356,15 +519,15 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     connect(symbolDensity, SIGNAL(valueChanged(int)),
             this, SLOT(symbolDensityChanged(int)));
 
-    geometryLayout->addWidget(symbolDensityLabel, ROW, 3, 1, 1);
-    geometryLayout->addWidget(symbolDensity, ROW, 4, 1, 1);
+    pointLayout->addWidget(symbolDensityLabel, ROW, 3, 1, 1);
+    pointLayout->addWidget(symbolDensity, ROW, 4, 1, 1);
 
     //
     // Create the color
     //
     QGroupBox * colorGroup = new QGroupBox(central);
     colorGroup->setTitle(tr("Color"));
-    renderingOptionsLayout->addWidget(colorGroup);
+    topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
     colorLayout->setMargin(5);
@@ -444,156 +607,6 @@ QvisCurvePlotWindow::CreateRenderingOptionsGroup()
     connect(fillOpacity2, SIGNAL(valueChanged(int, const void*)),
             this, SLOT(fillColor2OpacityChanged(int, const void*)));
     fillLayout->addWidget(fillOpacity2, 2, 2);
-
-    //
-    // Create the coordinate system controls
-    //
-    QGroupBox *coordSystemGroup = new QGroupBox(central);
-    coordSystemGroup->setTitle(tr("Coordinate System"));
-    renderingOptionsLayout->addWidget(coordSystemGroup);
-
-    QGridLayout *coordSystemLayout = new QGridLayout(coordSystemGroup);
-    coordSystemLayout->setMargin(5);
-    coordSystemLayout->setSpacing(10);
-
-
-    polarToggle = new QCheckBox(tr("Polar to Cartesian"), central);
-    connect(polarToggle, SIGNAL(toggled(bool)),
-            this, SLOT(polarToggled(bool)));
-    coordSystemLayout->addWidget(polarToggle, 0, 0, 1, 2);
-
-    //coordSystemLayout->addWidget(new QLabel("     ", central), 1, 0, 1, 1);
-
-    polarOrder = new QComboBox(central);
-    polarOrder->addItem(tr("R_Theta"));
-    polarOrder->addItem(tr("Theta_R"));
-    polarOrderLabel = new QLabel(tr("Order"), central);
-    polarOrderLabel->setBuddy(polarOrder);
-    polarOrderLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-    connect(polarOrder, SIGNAL(activated(int)),
-            this, SLOT(polarOrderChanged(int))); 
-
-    coordSystemLayout->addWidget(polarOrderLabel, 1, 0, 1, 1);
-    coordSystemLayout->addWidget(polarOrder, 1, 1, 1, 1);
-
-
-    // Create the angle-unit widget
-    angleUnits = new QComboBox(central);
-    angleUnits->addItem(tr("Radians"));
-    angleUnits->addItem(tr("Degrees"));
-    angleUnitsLabel = new QLabel(tr("Units"), central);
-    angleUnitsLabel->setBuddy(angleUnits);
-    angleUnitsLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-    connect(angleUnits, SIGNAL(activated(int)),
-            this, SLOT(angleUnitsChanged(int))); 
-
-    coordSystemLayout->addWidget(angleUnitsLabel, 1, 2, 1, 1);
-    coordSystemLayout->addWidget(angleUnits, 1, 3, 1, 1);
-
-    //
-    // Create the misc stuff
-    //
-    QGroupBox * miscGroup = new QGroupBox(central);
-    miscGroup->setTitle(tr("Misc"));
-    renderingOptionsLayout->addWidget(miscGroup);
-
-    QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
-    miscLayout->setSpacing(10);
- 
-    // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(toggled(bool)),
-            this, SLOT(legendToggled(bool)));
-    miscLayout->addWidget(legendToggle, 0, 0);
-
-    // Create the labels toggle
-    labelsToggle = new QCheckBox(tr("Labels"), central);
-    connect(labelsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(labelsToggled(bool)));
-    miscLayout->addWidget(labelsToggle, 0, 1);
-
-    return parent;
-}
-
-
-// ****************************************************************************
-// Method: QvisCurvePlotWindow::CreateCueOptionsGroup
-//
-// Purpose: 
-//   Creates the widgets for the cue options tab.
-//
-// Programmer: Kathleen Biagas 
-// Creation:   September 11, 2013
-//
-// ****************************************************************************
-
-QWidget *
-QvisCurvePlotWindow::CreateCueOptionsGroup()
-{
-    QWidget *parent = new QWidget(central);
-    QGridLayout *cueOptionsLayout = new QGridLayout(parent);
-    cueOptionsLayout->setMargin(5);
-    cueOptionsLayout->setSpacing(5);
-    //
-    // Create the time cue stuff
-    //
-    QGroupBox * timeCueGroup = new QGroupBox(central);
-    timeCueGroup->setTitle(tr("Create Cue For Current Location"));
-    cueOptionsLayout->addWidget(timeCueGroup);
-
-    QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
-    timeCueLayout->setMargin(5);
-    timeCueLayout->setSpacing(10);
- 
-    doBallTimeCue = new QCheckBox(tr("Add Ball"), central);
-    connect(doBallTimeCue, SIGNAL(toggled(bool)),
-            this, SLOT(doBallTimeCueChanged(bool)));
-    timeCueLayout->addWidget(doBallTimeCue, 0,0);
-
-    ballTimeCueColor = new QvisColorButton(central);
-    connect(ballTimeCueColor, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(ballTimeCueColorChanged(const QColor&)));
-    timeCueLayout->addWidget(ballTimeCueColor, 0,1);
-
-    timeCueBallSizeLabel = new QLabel(tr("Ball size"), central);
-    timeCueLayout->addWidget(timeCueBallSizeLabel,0,2);
-    timeCueBallSize = new QLineEdit(central);
-    connect(timeCueBallSize, SIGNAL(returnPressed()),
-            this, SLOT(timeCueBallSizeProcessText()));
-    timeCueLayout->addWidget(timeCueBallSize, 0,3);
-
-    doLineTimeCue = new QCheckBox(tr("Add Line"), central);
-    connect(doLineTimeCue, SIGNAL(toggled(bool)),
-            this, SLOT(doLineTimeCueChanged(bool)));
-    timeCueLayout->addWidget(doLineTimeCue, 1,0);
-
-    lineTimeCueColor = new QvisColorButton(central);
-    connect(lineTimeCueColor, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(lineTimeCueColorChanged(const QColor&)));
-    timeCueLayout->addWidget(lineTimeCueColor, 1,1);
-
-    lineTimeCueWidth = new QvisLineWidthWidget(0, central);
-    lineTimeCueWidthLabel = new QLabel(tr("Line width"), central);
-    lineTimeCueWidthLabel->setBuddy(lineTimeCueWidth);
-    timeCueLayout->addWidget(lineTimeCueWidthLabel,1,2);
-    connect(lineTimeCueWidth, SIGNAL(lineWidthChanged(int)),
-            this, SLOT(lineTimeCueWidthChanged(int)));
-
-    timeCueLayout->addWidget(lineTimeCueWidth, 1,3);
-
-    doCropTimeCue = new QCheckBox(tr("Crop"), central);
-    connect(doCropTimeCue, SIGNAL(toggled(bool)),
-            this, SLOT(doCropTimeCueChanged(bool)));
-    timeCueLayout->addWidget(doCropTimeCue, 2,0);
-
-    timeForTimeCueLabel = new QLabel(tr("Position of cue"), central);
-    timeCueLayout->addWidget(timeForTimeCueLabel,3,0);
-    timeForTimeCue = new QLineEdit(central);
-    connect(timeForTimeCue, SIGNAL(returnPressed()),
-            this, SLOT(timeForTimeCueProcessText()));
-    timeCueLayout->addWidget(timeForTimeCue, 3,1);
-    return parent;
 }
 
 
