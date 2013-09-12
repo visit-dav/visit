@@ -178,7 +178,7 @@ VLIFileManager::ReadConfigFile(const char *filename)
     DataNode *node = 0;
 
     // Try and open the file for reading.
-    std::ifstream inf(filename, ios::in | ios::trunc);
+    std::ifstream inf(filename, ios::in); // | ios::trunc);
     if (inf.is_open() == false)
         return node;
     node = ReadConfigFile(inf);
