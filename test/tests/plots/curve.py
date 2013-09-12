@@ -23,6 +23,9 @@
 #    Added TestPointsAndSymbols to test various points/symbol settings.
 #    Added TestTimeCue to test time-cue functionality
 #
+#    Kathleen Biagas, Thu Sep 12 09:08:00 PDT 2013
+#    Added TestPolar to test new polar conversion capability.
+#
 # ----------------------------------------------------------------------------
 
 def Test1():
@@ -332,12 +335,88 @@ def TestTimeCue():
     DeleteAllPlots()
     CloseDatabase(data_path("curve_test_data/ol_curveC.curve"))
 
+def TestPolar():
+    OpenDatabase(data_path("curve_test_data/rose_theta_r_rads.ultra"))
+    AddPlot("Curve", "rose")
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.color = (255, 0, 0, 255)
+    c.showLabels = 0
+    c.doLineTimeCue = 0
+    c.doCropTimeCue = 0
+    SetPlotOptions(c)
+    DrawPlots()
+    ResetView()
+    Test("polar_curve_01")
+    c.polarToCartesian = 1
+    c.polarCoordinateOrder = c.Theta_R
+    c.angleUnits = c.Radians
+    SetPlotOptions(c)
+    ResetView()
+    Test("polar_curve_02")
+    DeleteAllPlots()
+    CloseDatabase(data_path("curve_test_data/rose_theta_r_rads.ultra"))
+
+    OpenDatabase(data_path("curve_test_data/rose_r_theta_rads.ultra"))
+    AddPlot("Curve", "rose")
+    c = CurveAttributes()
+    c.curveColorSource = c.Custom
+    c.color = (0, 0, 255, 255)
+    c.showLabels = 0
+    c.doLineTimeCue = 0
+    c.doCropTimeCue = 0
+    SetPlotOptions(c)
+    DrawPlots()
+    ResetView()
+    Test("polar_curve_03")
+    c.polarToCartesian = 1
+    c.polarCoordinateOrder = c.R_Theta
+    c.angleUnits = c.Radians
+    SetPlotOptions(c)
+    ResetView()
+    Test("polar_curve_04")
+    DeleteAllPlots()
+    CloseDatabase(data_path("curve_test_data/rose_r_theta_rads.ultra"))
+
+    OpenDatabase(data_path("curve_test_data/spiral_r_theta_deg.ultra"))
+    AddPlot("Curve", "spiral")
+    c.color = (0, 255, 0, 255)
+    c.polarToCartesian = 0
+    SetPlotOptions(c)
+    DrawPlots()
+    Test("polar_curve_05")
+    c.polarToCartesian = 1
+    c.polarCoordinateOrder = c.R_Theta
+    c.angleUnits = c.Degrees
+    SetPlotOptions(c)
+    ResetView()
+    Test("polar_curve_06")
+    DeleteAllPlots()
+    CloseDatabase(data_path("curve_test_data/spiral_r_theta_deg.ultra"))
+
+    OpenDatabase(data_path("curve_test_data/circle.ultra"))
+    AddPlot("Curve", "circle")
+    c.color = (255, 0, 255, 255)
+    c.polarToCartesian = 0
+    SetPlotOptions(c)
+    DrawPlots()
+    Test("polar_curve_07")
+    c.polarToCartesian = 1
+    c.polarCoordinateOrder = c.Theta_R
+    c.angleUnits = c.Degrees
+    SetPlotOptions(c)
+    ResetView()
+    Test("polar_curve_08")
+    DeleteAllPlots()
+    CloseDatabase(data_path("curve_test_data/circle.ultra"))
+ 
 
 def Main():
     Test1()
     TestOverlayCurves()
     TestPointsAndSymbols()
     TestTimeCue()
+    TestPolar()
 
 Main()
 Exit()
