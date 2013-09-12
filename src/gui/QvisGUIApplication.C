@@ -4725,6 +4725,8 @@ QvisGUIApplication::ReadConfigFile(std::istream& in)
 
     // Force the appearance attributes to be set from the datanodes.
     GetViewerState()->GetAppearanceAttributes()->SetFromNode(guiNode);
+
+    return node;
 }
 
 DataNode *
