@@ -28,6 +28,7 @@ avtCurvePlot.C
 avtCurveFilter.C
 avtCurveRenderer.C
 avtOpenGLCurveRenderer.C
+avtPolarToCartesianFilter.C
 ${COMMON_SOURCES}
 )
 
@@ -37,6 +38,7 @@ avtCurvePlot.C
 avtCurveFilter.C
 avtCurveRenderer.C
 avtOpenGLCurveRenderer.C
+avtPolarToCartesianFilter.C
 ${COMMON_SOURCES}
 )
 

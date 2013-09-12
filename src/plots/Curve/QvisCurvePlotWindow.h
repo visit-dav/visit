@@ -89,6 +89,9 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Fri Jul  5 16:54:02 PDT 2013
 //   Add fill color.
 //
+//   Kathleen Biagas, Wed Sep 11 17:17:42 PDT 2013
+//   Added polarToggle and useDegreesToggle, added widgets for saving tabs.
+//
 // ****************************************************************************
 
 class QvisCurvePlotWindow : public QvisPostableWindowObserver
@@ -110,6 +113,9 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
+    QWidget *CreateRenderingOptionsGroup(void);
+    QWidget *CreateCueOptionsGroup(void);
+ 
   private slots:
     void showLinesChanged(bool val);
     void lineStyleChanged(int style);
@@ -143,6 +149,10 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     void lineTimeCueWidthChanged(int);
     void doCropTimeCueChanged(bool val);
     void timeForTimeCueProcessText();
+
+    void polarToggled(bool val);
+    void polarOrderChanged(int);
+    void angleUnitsChanged(int);
 
   private:
     int plotType;
@@ -197,6 +207,15 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
     QLabel              *timeCueBallSizeLabel;
     QLabel              *lineTimeCueWidthLabel;
     QLabel              *timeForTimeCueLabel;
+
+    QWidget             *renderingOptions;
+    QWidget             *cueOptions;
+
+    QCheckBox           *polarToggle;
+    QComboBox           *polarOrder;
+    QLabel              *polarOrderLabel;
+    QComboBox           *angleUnits;
+    QLabel              *angleUnitsLabel;
 
     CurveAttributes *atts;
 };

@@ -239,6 +239,41 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
     const unsigned char *fillColor2 = atts->GetFillColor2().GetColor();
     SNPRINTF(tmpStr, 1000, "%sfillColor2 = (%d, %d, %d, %d)\n", prefix, int(fillColor2[0]), int(fillColor2[1]), int(fillColor2[2]), int(fillColor2[3]));
     str += tmpStr;
+    if(atts->GetPolarToCartesian())
+        SNPRINTF(tmpStr, 1000, "%spolarToCartesian = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%spolarToCartesian = 0\n", prefix);
+    str += tmpStr;
+    const char *polarCoordinateOrder_names = "R_Theta, Theta_R";
+    switch (atts->GetPolarCoordinateOrder())
+    {
+      case CurveAttributes::R_Theta:
+          SNPRINTF(tmpStr, 1000, "%spolarCoordinateOrder = %sR_Theta  # %s\n", prefix, prefix, polarCoordinateOrder_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::Theta_R:
+          SNPRINTF(tmpStr, 1000, "%spolarCoordinateOrder = %sTheta_R  # %s\n", prefix, prefix, polarCoordinateOrder_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    const char *angleUnits_names = "Radians, Degrees";
+    switch (atts->GetAngleUnits())
+    {
+      case CurveAttributes::Radians:
+          SNPRINTF(tmpStr, 1000, "%sangleUnits = %sRadians  # %s\n", prefix, prefix, angleUnits_names);
+          str += tmpStr;
+          break;
+      case CurveAttributes::Degrees:
+          SNPRINTF(tmpStr, 1000, "%sangleUnits = %sDegrees  # %s\n", prefix, prefix, angleUnits_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -1162,6 +1197,96 @@ CurveAttributes_GetFillColor2(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the polarToCartesian in the object.
+    obj->data->SetPolarToCartesian(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetPolarToCartesian(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetPolarToCartesian()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the polarCoordinateOrder in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetPolarCoordinateOrder(CurveAttributes::PolarCoordinateOrder(ival));
+    else
+    {
+        fprintf(stderr, "An invalid polarCoordinateOrder value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "R_Theta, Theta_R.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetPolarCoordinateOrder(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPolarCoordinateOrder()));
+    return retval;
+}
+
+/*static*/ PyObject *
+CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the angleUnits in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetAngleUnits(CurveAttributes::AngleUnits(ival));
+    else
+    {
+        fprintf(stderr, "An invalid angleUnits value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Radians, Degrees.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+CurveAttributes_GetAngleUnits(PyObject *self, PyObject *args)
+{
+    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAngleUnits()));
+    return retval;
+}
+
 
 
 PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
@@ -1216,6 +1341,12 @@ PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
     {"GetFillColor1", CurveAttributes_GetFillColor1, METH_VARARGS},
     {"SetFillColor2", CurveAttributes_SetFillColor2, METH_VARARGS},
     {"GetFillColor2", CurveAttributes_GetFillColor2, METH_VARARGS},
+    {"SetPolarToCartesian", CurveAttributes_SetPolarToCartesian, METH_VARARGS},
+    {"GetPolarToCartesian", CurveAttributes_GetPolarToCartesian, METH_VARARGS},
+    {"SetPolarCoordinateOrder", CurveAttributes_SetPolarCoordinateOrder, METH_VARARGS},
+    {"GetPolarCoordinateOrder", CurveAttributes_GetPolarCoordinateOrder, METH_VARARGS},
+    {"SetAngleUnits", CurveAttributes_SetAngleUnits, METH_VARARGS},
+    {"GetAngleUnits", CurveAttributes_GetAngleUnits, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1337,6 +1468,22 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return CurveAttributes_GetFillColor1(self, NULL);
     if(strcmp(name, "fillColor2") == 0)
         return CurveAttributes_GetFillColor2(self, NULL);
+    if(strcmp(name, "polarToCartesian") == 0)
+        return CurveAttributes_GetPolarToCartesian(self, NULL);
+    if(strcmp(name, "polarCoordinateOrder") == 0)
+        return CurveAttributes_GetPolarCoordinateOrder(self, NULL);
+    if(strcmp(name, "R_Theta") == 0)
+        return PyInt_FromLong(long(CurveAttributes::R_Theta));
+    if(strcmp(name, "Theta_R") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Theta_R));
+
+    if(strcmp(name, "angleUnits") == 0)
+        return CurveAttributes_GetAngleUnits(self, NULL);
+    if(strcmp(name, "Radians") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Radians));
+    if(strcmp(name, "Degrees") == 0)
+        return PyInt_FromLong(long(CurveAttributes::Degrees));
+
 
     // Try and handle legacy fields in CurveAttributes
     if(strcmp(name, "cycleColors") == 0)
@@ -1421,6 +1568,12 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CurveAttributes_SetFillColor1(self, tuple);
     else if(strcmp(name, "fillColor2") == 0)
         obj = CurveAttributes_SetFillColor2(self, tuple);
+    else if(strcmp(name, "polarToCartesian") == 0)
+        obj = CurveAttributes_SetPolarToCartesian(self, tuple);
+    else if(strcmp(name, "polarCoordinateOrder") == 0)
+        obj = CurveAttributes_SetPolarCoordinateOrder(self, tuple);
+    else if(strcmp(name, "angleUnits") == 0)
+        obj = CurveAttributes_SetAngleUnits(self, tuple);
 
    // Try and handle legacy fields in CurveAttributes
     if(obj == NULL)
