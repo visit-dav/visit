@@ -54,6 +54,7 @@
 #include <avtSurfaceAndWireframeRenderer.h> 
 #include <avtWarpFilter.h>
 #include <avtUserDefinedMapper.h>
+#include <avtPolarToCartesianFilter.h>
 
 #include <LineAttributes.h>
 
@@ -83,6 +84,9 @@
 //    Brad Whitlock, Mon Nov 20 10:16:08 PDT 2006
 //    Changed to a curve renderer.
 //
+//    Kathleen Biagas, Wed Sep 11 17:14:48 PDT 2013
+//    Added PolarFilter.
+//
 // ****************************************************************************
 
 avtCurvePlot::avtCurvePlot()
@@ -92,6 +96,7 @@ avtCurvePlot::avtCurvePlot()
 
     CurveFilter = new avtCurveFilter();
     WarpFilter = new avtWarpFilter();
+    PolarFilter = new avtPolarToCartesianFilter();
     renderer = new avtOpenGLCurveRenderer;
     avtCustomRenderer_p ren;
     CopyTo(ren, renderer);
@@ -129,6 +134,9 @@ avtCurvePlot::avtCurvePlot()
 //    Brad Whitlock, Mon Nov 20 10:16:25 PDT 2006
 //    Removed property.
 //
+//    Kathleen Biagas, Wed Sep 11 17:15:06 PDT 2013
+//    Added PolarFilter.
+//
 // ****************************************************************************
 
 avtCurvePlot::~avtCurvePlot()
@@ -152,6 +160,11 @@ avtCurvePlot::~avtCurvePlot()
     {
         delete WarpFilter;
         WarpFilter = NULL;
+    }
+    if (PolarFilter != NULL)
+    {
+        delete PolarFilter;
+        PolarFilter = NULL;
     }
 }
 
@@ -262,15 +275,27 @@ avtCurvePlot::ApplyOperators(avtDataObject_p input)
 //    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
 //    Added warp filter. 
 //    
+//    Kathleen Biagas, Wed Sep 11 17:15:21 PDT 2013
+//    Use PolarFilter if user has requested the conversion.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
     WarpFilter->SetInput(input);
-    return WarpFilter->GetOutput();
+    if (!atts.GetPolarToCartesian())
+        return WarpFilter->GetOutput();
+    else
+    {
+        PolarFilter->SetSwapCoords(
+            atts.GetPolarCoordinateOrder()==CurveAttributes::Theta_R);
+        PolarFilter->SetUseDegrees(
+            atts.GetAngleUnits()==CurveAttributes::Degrees);
+        PolarFilter->SetInput(WarpFilter->GetOutput());
+        return PolarFilter->GetOutput();
+    }
 }
-
 
 
 // ****************************************************************************

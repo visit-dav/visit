@@ -157,24 +157,59 @@ QvisCurvePlotWindow::~QvisCurvePlotWindow()
 //   Brad Whitlock, Fri Jul  5 17:18:48 PDT 2013
 //   Added fill color.
 //
+//   Kathleen Biagas, Wed Sep 11 17:18:21 PDT 2013
+//   Moved bulk of code to new methods that fill in tabs.
+//
 // ****************************************************************************
 
 void
 QvisCurvePlotWindow::CreateWindowContents()
 {
+    // Create a tab widgets to separate Rendering and Cue options.
+    //
+    QTabWidget *tabs = new QTabWidget(central);
+    topLayout->addWidget(tabs, 100);
+
+    renderingOptions = CreateRenderingOptionsGroup();
+    tabs->addTab(renderingOptions, tr("Rendering Options"));
+
+    cueOptions = CreateCueOptionsGroup();
+    tabs->addTab(cueOptions, tr("Cue Options"));
+}
+
+
+// ****************************************************************************
+// Method: QvisCurvePlotWindow::CreateRenderingOptionsGroup
+//
+// Purpose: 
+//   Creates the widgets for the rendering options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 11, 2013
+//
+// ****************************************************************************
+
+QWidget *
+QvisCurvePlotWindow::CreateRenderingOptionsGroup()
+{
+    QWidget *parent = new QWidget(central);
+    QGridLayout *renderingOptionsLayout = new QGridLayout(parent);
+    renderingOptionsLayout->setMargin(5);
+    renderingOptionsLayout->setSpacing(5);
+
     //
     // Create the geometry
     //
     QGroupBox * geometryGroup = new QGroupBox(central);
     geometryGroup->setTitle(tr("Line/Point Geometry"));
-    topLayout->addWidget(geometryGroup);
+    renderingOptionsLayout->addWidget(geometryGroup);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
     geometryLayout->setMargin(5);
     geometryLayout->setSpacing(10);
- 
 
     int ROW = 0;
+
     //
     // Create line related controls.
     //
@@ -329,7 +364,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     //
     QGroupBox * colorGroup = new QGroupBox(central);
     colorGroup->setTitle(tr("Color"));
-    topLayout->addWidget(colorGroup);
+    renderingOptionsLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
     colorLayout->setMargin(5);
@@ -411,11 +446,101 @@ QvisCurvePlotWindow::CreateWindowContents()
     fillLayout->addWidget(fillOpacity2, 2, 2);
 
     //
+    // Create the coordinate system controls
+    //
+    QGroupBox *coordSystemGroup = new QGroupBox(central);
+    coordSystemGroup->setTitle(tr("Coordinate System"));
+    renderingOptionsLayout->addWidget(coordSystemGroup);
+
+    QGridLayout *coordSystemLayout = new QGridLayout(coordSystemGroup);
+    coordSystemLayout->setMargin(5);
+    coordSystemLayout->setSpacing(10);
+
+
+    polarToggle = new QCheckBox(tr("Polar to Cartesian"), central);
+    connect(polarToggle, SIGNAL(toggled(bool)),
+            this, SLOT(polarToggled(bool)));
+    coordSystemLayout->addWidget(polarToggle, 0, 0, 1, 2);
+
+    //coordSystemLayout->addWidget(new QLabel("     ", central), 1, 0, 1, 1);
+
+    polarOrder = new QComboBox(central);
+    polarOrder->addItem(tr("R_Theta"));
+    polarOrder->addItem(tr("Theta_R"));
+    polarOrderLabel = new QLabel(tr("Order"), central);
+    polarOrderLabel->setBuddy(polarOrder);
+    polarOrderLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    connect(polarOrder, SIGNAL(activated(int)),
+            this, SLOT(polarOrderChanged(int))); 
+
+    coordSystemLayout->addWidget(polarOrderLabel, 1, 0, 1, 1);
+    coordSystemLayout->addWidget(polarOrder, 1, 1, 1, 1);
+
+
+    // Create the angle-unit widget
+    angleUnits = new QComboBox(central);
+    angleUnits->addItem(tr("Radians"));
+    angleUnits->addItem(tr("Degrees"));
+    angleUnitsLabel = new QLabel(tr("Units"), central);
+    angleUnitsLabel->setBuddy(angleUnits);
+    angleUnitsLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    connect(angleUnits, SIGNAL(activated(int)),
+            this, SLOT(angleUnitsChanged(int))); 
+
+    coordSystemLayout->addWidget(angleUnitsLabel, 1, 2, 1, 1);
+    coordSystemLayout->addWidget(angleUnits, 1, 3, 1, 1);
+
+    //
+    // Create the misc stuff
+    //
+    QGroupBox * miscGroup = new QGroupBox(central);
+    miscGroup->setTitle(tr("Misc"));
+    renderingOptionsLayout->addWidget(miscGroup);
+
+    QGridLayout *miscLayout = new QGridLayout(miscGroup);
+    miscLayout->setMargin(5);
+    miscLayout->setSpacing(10);
+ 
+    // Create the legend toggle
+    legendToggle = new QCheckBox(tr("Legend"), central);
+    connect(legendToggle, SIGNAL(toggled(bool)),
+            this, SLOT(legendToggled(bool)));
+    miscLayout->addWidget(legendToggle, 0, 0);
+
+    // Create the labels toggle
+    labelsToggle = new QCheckBox(tr("Labels"), central);
+    connect(labelsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelsToggled(bool)));
+    miscLayout->addWidget(labelsToggle, 0, 1);
+
+    return parent;
+}
+
+
+// ****************************************************************************
+// Method: QvisCurvePlotWindow::CreateCueOptionsGroup
+//
+// Purpose: 
+//   Creates the widgets for the cue options tab.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   September 11, 2013
+//
+// ****************************************************************************
+
+QWidget *
+QvisCurvePlotWindow::CreateCueOptionsGroup()
+{
+    QWidget *parent = new QWidget(central);
+    QGridLayout *cueOptionsLayout = new QGridLayout(parent);
+    cueOptionsLayout->setMargin(5);
+    cueOptionsLayout->setSpacing(5);
+    //
     // Create the time cue stuff
     //
     QGroupBox * timeCueGroup = new QGroupBox(central);
     timeCueGroup->setTitle(tr("Create Cue For Current Location"));
-    topLayout->addWidget(timeCueGroup);
+    cueOptionsLayout->addWidget(timeCueGroup);
 
     QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
     timeCueLayout->setMargin(5);
@@ -468,29 +593,7 @@ QvisCurvePlotWindow::CreateWindowContents()
     connect(timeForTimeCue, SIGNAL(returnPressed()),
             this, SLOT(timeForTimeCueProcessText()));
     timeCueLayout->addWidget(timeForTimeCue, 3,1);
-
-    //
-    // Create the misc stuff
-    //
-    QGroupBox * miscGroup = new QGroupBox(central);
-    miscGroup->setTitle(tr("Misc"));
-    topLayout->addWidget(miscGroup);
-
-    QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
-    miscLayout->setSpacing(10);
- 
-    // Create the legend toggle
-    legendToggle = new QCheckBox(tr("Legend"), central);
-    connect(legendToggle, SIGNAL(toggled(bool)),
-            this, SLOT(legendToggled(bool)));
-    miscLayout->addWidget(legendToggle, 0, 0);
-
-    // Create the labels toggle
-    labelsToggle = new QCheckBox(tr("Labels"), central);
-    connect(labelsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(labelsToggled(bool)));
-    miscLayout->addWidget(labelsToggle, 0, 1);
+    return parent;
 }
 
 
@@ -532,6 +635,9 @@ QvisCurvePlotWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Jul  5 17:19:40 PDT 2013
 //   Add fill color.
+//
+//   Kathleen Biagas, Wed Sep 11 17:22:43 PDT 2013
+//   Added polarToggle and degreesToggle.
 //
 // ****************************************************************************
 
@@ -782,6 +888,25 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
                 fillOpacity2->setGradientColor(c);
                 fillOpacity2->blockSignals(false);
             }
+            break;
+          case CurveAttributes::ID_polarToCartesian:
+            polarToggle->blockSignals(true);
+            polarToggle->setChecked(atts->GetPolarToCartesian());
+            polarOrder->setEnabled(atts->GetPolarToCartesian());
+            polarOrderLabel->setEnabled(atts->GetPolarToCartesian());
+            angleUnits->setEnabled(atts->GetPolarToCartesian());
+            angleUnitsLabel->setEnabled(atts->GetPolarToCartesian());
+            polarToggle->blockSignals(false);
+            break;
+          case CurveAttributes::ID_polarCoordinateOrder:
+            polarOrder->blockSignals(true);
+            polarOrder->setCurrentIndex((int)atts->GetPolarCoordinateOrder());
+            polarOrder->blockSignals(false);
+            break;
+          case CurveAttributes::ID_angleUnits:
+            angleUnits->blockSignals(true);
+            angleUnits->setCurrentIndex((int)atts->GetAngleUnits());
+            angleUnits->blockSignals(false);
             break;
         }
     }
@@ -1210,5 +1335,32 @@ QvisCurvePlotWindow::fillColor2OpacityChanged(int opacity, const void*)
     c.SetAlpha(opacity);
     atts->SetFillColor2(c);
     SetUpdate(false);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::polarToggled(bool val)
+{
+    atts->SetPolarToCartesian(val);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::polarOrderChanged(int val)
+{
+    if(val == 0)
+        atts->SetPolarCoordinateOrder(CurveAttributes::R_Theta);
+    else if(val == 1)
+        atts->SetPolarCoordinateOrder(CurveAttributes::Theta_R);
+    Apply();
+}
+
+void
+QvisCurvePlotWindow::angleUnitsChanged(int val)
+{
+    if(val == 0)
+        atts->SetAngleUnits(CurveAttributes::Radians);
+    else if(val == 1)
+        atts->SetAngleUnits(CurveAttributes::Degrees);
     Apply();
 }

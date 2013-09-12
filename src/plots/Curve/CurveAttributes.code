@@ -129,9 +129,20 @@ CurveAttributes::CreateCompatible(const std::string &tname) const
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
 Definition:
+// ****************************************************************************
+//
+// Modifications:
+//    Kathleen Biagas, Wed Sep 11 17:16:26 PDT 2013
+//    Return true if converting coordinates.
+//
+// ****************************************************************************
+
 bool
 CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
 {
+    if (polarToCartesian != obj.polarToCartesian) return true;
+    if (angleUnits != obj.angleUnits && obj.polarToCartesian) return true;
+    if (polarCoordinateOrder != obj.polarCoordinateOrder && obj.polarToCartesian) return true;
     return false;
 }
 

@@ -36,29 +36,56 @@
 *
 *****************************************************************************/
 
-#ifndef PY_CURVEATTRIBUTES_H
-#define PY_CURVEATTRIBUTES_H
-#include <Python.h>
-#include <CurveAttributes.h>
+// ************************************************************************* //
+//                   avtPolarToCartesianFilter.h                             //
+// ************************************************************************* //
 
+#ifndef AVT_POLARTOCARTESIAN_FILTER_H
+#define AVT_POALRTOCARTESIAN_FILTER_H
+
+#include <avtDataTreeIterator.h>
+
+
+// ****************************************************************************
+//  Class: avtPolarToCartesianFilter
 //
-// Functions exposed to the VisIt module.
+//  Purpose:
+//    Converts a polar coordinate curve to cartesian coordinates.
 //
-#define CURVEATTRIBUTES_NMETH 58
-void           PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
-void           PyCurveAttributes_CloseDown();
-PyMethodDef *  PyCurveAttributes_GetMethodTable(int *nMethods);
-bool           PyCurveAttributes_Check(PyObject *obj);
-CurveAttributes *  PyCurveAttributes_FromPyObject(PyObject *obj);
-PyObject *     PyCurveAttributes_New();
-PyObject *     PyCurveAttributes_Wrap(const CurveAttributes *attr);
-void           PyCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
-void           PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
-std::string    PyCurveAttributes_GetLogString();
-std::string    PyCurveAttributes_ToString(const CurveAttributes *, const char *);
-PyObject *     PyCurveAttributes_getattr(PyObject *self, char *name);
-int            PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
-extern PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH];
+//  Programmer: Kathleen Biagas 
+//  Creation:   September 11, 2013
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class avtPolarToCartesianFilter : public avtDataTreeIterator
+{
+  public:
+                              avtPolarToCartesianFilter();
+    virtual                  ~avtPolarToCartesianFilter();
+
+    virtual const char       *GetType(void)   
+                                  { return "avtPolarToCartesianFilter"; }
+    virtual const char       *GetDescription(void)
+                                  { return "PolarToCartesianing dataset"; }
+    void                      SetSwapCoords(bool val)
+                                  { swapCoords = val; }
+    void                      SetUseDegrees(bool val)
+                                  { useDegrees = val; }
+
+  protected:
+    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void              PostExecute(void);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p     ModifyContract(avtContract_p);
+
+  private:
+    bool                      swapCoords;
+    bool                      useDegrees;
+};
+
 
 #endif
+
 

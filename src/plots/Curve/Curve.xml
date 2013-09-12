@@ -37,6 +37,14 @@
         HorizontalGradient
         VerticalGradient
       </Enum>
+      <Enum name="PolarCoordinateOrder">
+        R_Theta
+        Theta_R
+      </Enum>
+      <Enum name="AngleUnits">
+        Radians
+        Degrees
+      </Enum>
       <Field name="showLines" label="showLines" type="bool">
         true
       </Field>
@@ -125,6 +133,15 @@
         100
         100
         255
+      </Field>
+      <Field name="polarToCartesian" label="Polar to Cartesian" type="bool">
+        false
+      </Field>
+      <Field name="polarCoordinateOrder" label="Polar Coordinate Order" type="enum" subtype="PolarCoordinateOrder" enabler="polarToCartesian:true">
+        R_Theta
+      </Field>
+      <Field name="angleUnits" label="Angle Units" type="enum" subtype="AngleUnits" enabler="polarToCartesian:true">
+        Radians
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

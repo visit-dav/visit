@@ -89,6 +89,16 @@ public:
         HorizontalGradient,
         VerticalGradient
     };
+    enum PolarCoordinateOrder
+    {
+        R_Theta,
+        Theta_R
+    };
+    enum AngleUnits
+    {
+        Radians,
+        Degrees
+    };
 
     // These constructors are for objects of this class
     CurveAttributes();
@@ -148,6 +158,9 @@ public:
     void SetFillMode(CurveFillMode fillMode_);
     void SetFillColor1(const ColorAttribute &fillColor1_);
     void SetFillColor2(const ColorAttribute &fillColor2_);
+    void SetPolarToCartesian(bool polarToCartesian_);
+    void SetPolarCoordinateOrder(PolarCoordinateOrder polarCoordinateOrder_);
+    void SetAngleUnits(AngleUnits angleUnits_);
 
     // Property getting methods
     bool                 GetShowLines() const;
@@ -181,6 +194,9 @@ public:
           ColorAttribute &GetFillColor1();
     const ColorAttribute &GetFillColor2() const;
           ColorAttribute &GetFillColor2();
+    bool                 GetPolarToCartesian() const;
+    PolarCoordinateOrder GetPolarCoordinateOrder() const;
+    AngleUnits           GetAngleUnits() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -206,6 +222,16 @@ public:
     static bool CurveFillMode_FromString(const std::string &, CurveFillMode &);
 protected:
     static std::string CurveFillMode_ToString(int);
+public:
+    static std::string PolarCoordinateOrder_ToString(PolarCoordinateOrder);
+    static bool PolarCoordinateOrder_FromString(const std::string &, PolarCoordinateOrder &);
+protected:
+    static std::string PolarCoordinateOrder_ToString(int);
+public:
+    static std::string AngleUnits_ToString(AngleUnits);
+    static bool AngleUnits_FromString(const std::string &, AngleUnits &);
+protected:
+    static std::string AngleUnits_ToString(int);
 public:
 
     // Keyframing methods
@@ -245,6 +271,9 @@ public:
         ID_fillMode,
         ID_fillColor1,
         ID_fillColor2,
+        ID_polarToCartesian,
+        ID_polarCoordinateOrder,
+        ID_angleUnits,
         ID__LAST
     };
 
@@ -274,11 +303,14 @@ private:
     int            fillMode;
     ColorAttribute fillColor1;
     ColorAttribute fillColor2;
+    bool           polarToCartesian;
+    int            polarCoordinateOrder;
+    int            angleUnits;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CURVEATTRIBUTES_TMFS "biibidiiiiabbsbadbaibdiaa"
+#define CURVEATTRIBUTES_TMFS "biibidiiiiabbsbadbaibdiaabii"
 
 #endif
