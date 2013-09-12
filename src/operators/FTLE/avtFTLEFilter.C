@@ -1293,11 +1293,11 @@ avtFTLEFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve*> &ics)
 //  Method: avtFTLEFilter::CreateRectilinearResolutionFSLEOutput
 //
 //  Purpose:
-//      Computes the FTLE output (via sub-routines) after the PICS filter has
-//      calculated the final particle positions.
+//      Computes the FSLE output (via sub-routines) after the PICS filter
+//      has calculated the particle positions.
 //
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
 //
 // ****************************************************************************
 
@@ -1310,11 +1310,11 @@ avtFTLEFilter::CreateNativeResolutionFSLEOutput(std::vector<avtIntegralCurve*> &
 //  Method: avtFTLEFilter::CreateRectilinearResolutionFSLEOutput
 //
 //  Purpose:
-//      Computes the FTLE output (via sub-routines) after the PICS filter has
-//      calculated the final particle positions.
+//      Computes the FSLE output (via sub-routines) after the PICS filter
+//      has calculated the particle positions.
 //
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
 //
 // ****************************************************************************
 
@@ -1439,6 +1439,7 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
       fsle_rect_grid->GetPointData()->RemoveArray("lengths");
       fsle_rect_grid->GetPointData()->RemoveArray("mask");
 
+      // Make the exponents the the active scalars.
       fsle_rect_grid->GetPointData()->SetActiveScalars(var.c_str());
 
       //store this dataset in Cache for next time.
@@ -2182,7 +2183,7 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
 
         // Check for a curve that has terminated which will not have
         // taken a step forward or backwards.
-        if( round( fabs(times->GetTuple1(l)) / maxStepLength ) != numSteps )
+        if( floor( fabs(times->GetTuple1(l)) / maxStepLength + 0.5) != numSteps )
         {
           // if( l == 1896 )
           //     std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
@@ -2532,8 +2533,8 @@ avtFTLEFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //      A routine that calculates a string for caching that encodes all the
 //      parameters of the FTLE: bounds, integration time, and variable name.
 //
-//  Programmer: Hari Krishnan
-//  Creation:   December 5, 2011
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
 //
 //  Modifications:
 //
