@@ -51,7 +51,7 @@ write_ucd3d(DBfile *dbfile)
     int nodelist[] = {
         1,2,3,4,5,6,7,8,    /* hex,     zone 1 */
         5,6,7,8,9,10,11,12, /* hex,     zone 2 */
-        9,10,11,12,13,      /* pyramid, zone 3 */
+        12,11,10,9,13,      /* pyramid, zone 3 */
         2,3,16,15,6,7,      /* prism,   zone 4 */
         2,15,14,6           /* tet,     zone 5 */
     };
