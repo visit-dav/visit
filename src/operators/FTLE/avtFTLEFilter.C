@@ -42,7 +42,15 @@
 
 #include <avtFTLEFilter.h>
 #include <avtFTLEIC.h>
-#include <avtStreamlineIC.h>
+
+// For now use the avtFTLEIC as the state does not need to be recorded
+//for the FSLE. That is because currently the integration is being
+//done step by step rather than in chunks. However, the code is set up
+//to use avtStreamlineIC. Which if the integration is done in chucks
+//will probably be more efficient.
+
+//#include <avtStreamlineIC.h>
+#define avtStreamlineIC avtFTLEIC
 
 #include <avtExtents.h>
 #include <avtMatrix.h>
@@ -360,13 +368,16 @@ avtFTLEFilter::CreateIntegralCurve(const avtIVPSolver* model,
 
     if( doSize )
     {
-      unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
-      attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
-      attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
+      // unsigned char attr = avtStateRecorderIntegralCurve::SAMPLE_POSITION;
+      // attr |= avtStateRecorderIntegralCurve::SAMPLE_TIME;
+      // attr |= avtStateRecorderIntegralCurve::SAMPLE_ARCLENGTH;
       
+      // return
+      //   (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, t,
+      //                        attr, model, dir, t_start, p_start, v_start, ID));
       return
-        (new avtStreamlineIC(numSteps, doDistance, maxDistance, doTime, t,
-                             attr, model, dir, t_start, p_start, v_start, ID));
+        (new avtFTLEIC(numSteps, doDistance, maxDistance, doTime, t,
+                       model, dir, t_start, p_start, v_start, ID));
     }
     else
     {
@@ -565,7 +576,7 @@ avtFTLEFilter::PreExecute(void)
     {
         char str[1028];
 
-        SNPRINTF(str, 1028, "\nThe size limit for FSLE is %f. "
+        SNPRINTF(str, 1028, "\nThe size limit for the FSLE is %f. "
                  "and is equal to or smaller than the resolution of the grid "
                  "(%f, %f, %f). ",
                  atts.GetTermSize(), resX, resY, resZ );
@@ -617,6 +628,8 @@ avtFTLEFilter::Execute(void)
       std::vector<avtIntegralCurve *> ics;
       GetTerminatedIntegralCurves(ics);
       
+      // Because continue execute is used for FSLE the output must be
+      // created here rather than in CreateIntegralCurveOutput.
       if( doSize )
       {
         if (atts.GetSourceType() == FTLEAttributes::NativeResolutionOfMesh)
@@ -635,13 +648,10 @@ avtFTLEFilter::Execute(void)
 //  Purpose:
 //      See if execution needs to continue.
 //
-//  Programmer: Dave Pugmire
-//  Creation:   Mon Aug 17 08:30:06 EDT 2009
+//  Programmer: Allen Sanderson
+//  Creation:   September 5, 2013
 //
 //  Modifications:
-//
-//    Hank Childs, Sun Jun  6 11:53:33 CDT 2010
-//    Use new names that have integral curves instead of fieldlines.
 //
 // ****************************************************************************
 
@@ -910,20 +920,6 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
 
         lengths[i] = ic->GetDistance();
 
-        // if( ic->id == 1896 )
-        //   std::cerr << ic->id << " " << ic->status << "  "
-        //          << point[0] << "  "
-        //          << point[1] << "  "
-        //          << point[2] << "  "
-        //          <<  (double) numSteps * maxStepLength << "  "
-        //          << ic->GetTime() << "  "
-        //          << ic->GetDistance() << "  "
-        //          << std::endl;
-        
-        // std::cerr << numSteps*maxStepLength << "  "
-        //        << times[i] << "  "
-        //        << std::endl;
-
         // std::cout << PAR_Rank() << " ics: " << indices[i] << " "
         //             << end_point << std::endl;
     }
@@ -968,7 +964,7 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
     }
     else
     {
-      //now global grid has been created.
+        //now global grid has been created.
         size_t leafSize =
           global_resolution[0] * global_resolution[1] * global_resolution[2];
 
@@ -977,7 +973,8 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
           //rank 0
           //now create a rectilinear grid.
           
-          // The grid is stored so not to be created as the curve is extended.
+          // The grid is stored so not to be created as each curve is
+          // extended.
           fsle_rect_grid = vtkRectilinearGrid::New();
 
           fsle_rect_grid->SetDimensions(global_resolution);
@@ -1019,6 +1016,9 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
           exponents->SetName(var.c_str());
           exponents->SetNumberOfTuples(leafSize);
           fsle_rect_grid->GetPointData()->AddArray(exponents);
+          // Will set the exponents to be the active scalars when
+          // finished. In the mean time the component is the working
+          // active scalars.
 //        fsle_rect_grid->GetPointData()->SetActiveScalars(var.c_str());
 
           vtkFloatArray *component = vtkFloatArray::New();
@@ -1037,6 +1037,10 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
           lengths->SetNumberOfTuples(leafSize);
           fsle_rect_grid->GetPointData()->AddArray(lengths);
 
+          // The mask array is a tally to indicate whether a curve
+          // needs to have additional integration. WHen the tally
+          // reachs a count of seven no additional integration is
+          // required. (Sseven == six neighbors and itself).
           vtkIntArray *mask = vtkIntArray::New();
           mask->SetName("mask");
           mask->SetNumberOfTuples(leafSize);
@@ -1109,13 +1113,6 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
         vtkIntArray *mask = (vtkIntArray *)
           fsle_rect_grid->GetPointData()->GetArray("mask");
 
-        // std::cerr << exponents << "  "
-        //        << component << "  "
-        //        << times << "  "
-        //        << lengths << "  "
-        //        << mask << "  "
-        //        << std::endl;
-
         // Storage for the points, times, and lengths
         std::vector<avtVector> remapPoints(leafSize);
         std::vector<double> remapTimes(leafSize);
@@ -1170,23 +1167,10 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
             //        << std::endl;
         }
 
-        // for(size_t l = 0; l < leafSize; ++l)
-        //   if( (fabs(remapPoints[l][0]+5.0) < 1.0e-2) &&
-        //       (fabs(remapPoints[l][1]+7.0) < 1.0e-2 ||
-        //        fabs(remapPoints[l][1]+7.5) < 1.0e-2 ||
-        //        fabs(remapPoints[l][1]+8.0) < 1.0e-2) &&
-        //       (fabs(remapPoints[l][2]+0.0) < 1.0e-2) )
-
-        //     std::cerr << l << "  "
-        //            << remapPoints[l][0] << "  "
-        //            << remapPoints[l][1] << "  "
-        //            << remapPoints[l][2] << "  "
-        //            << std::endl;
-
-
         //calculate jacobian in parts (x,y,z).  The jacobian really
-        //contains the distance components which when combined given
-        //the distance between neighboring integral curves.
+        //contains the xyz distance components in parts which when
+        //combined given the distance between the end points
+        //neighboring integral curves.
         for(int i = 0; i < 3; ++i)
         {
             // Store the point component by component
@@ -1214,11 +1198,13 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
 
         bool haveAllExponents = true;
 
+        // For each integral curve check it's mask value to see it
+        // additional integration is required.
         for(size_t i=0; i<ics.size(); ++i)
         {
           avtStreamlineIC * ic = (avtStreamlineIC *) ics[i];
 
-          size_t l = ic->id;
+          size_t l = ic->id; // The curve id is the index into the VTK data.
 
           if( mask->GetTuple1( l ) < 7 )
           {
@@ -1230,23 +1216,9 @@ avtFTLEFilter::ComputeRectilinearResolutionFSLE(std::vector<avtIntegralCurve*> &
           if( exponents->GetTuple1(l) == std::numeric_limits<float>::min() &&
               ic->maxSteps < maxSteps )
             haveAllExponents = false;
-
-          // if( ic->id == 1896 )
-          //   std::cerr << i << "  "
-          //          << ic->id << "  "
-          //          << ic->maxSteps << "  "
-          //          << mask->GetTuple1( l ) << "  "
-          //          << ic->status << "  "
-          //          << std::endl
-          //          << std::endl;
         }
 
         //cleanup.
-        // component->Delete();
-        // times->Delete();
-        // lengths->Delete();
-        // exponents->Delete();
-
         if (all_indices)   delete [] all_indices;
         if (index_counts)  delete [] index_counts;
 
@@ -1424,8 +1396,8 @@ avtFTLEFilter::CreateRectilinearResolutionFSLEOutput(std::vector<avtIntegralCurv
                  "too few integration steps (%d out of %d where taken), or "
                  "simply due to the nature of the data. "
                  "The size range was from %f to %f. ",
-                 count, nTuples,
                  (int) (100.0 * (double) count / (double) nTuples),
+                 count, nTuples,
                  minv, maxv,
                  maxSize, maxStepLength, numSteps, maxSteps,
                  minSizeValue, maxSizeValue );
@@ -2181,23 +2153,15 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
       {
         double lambda = exponents->GetTuple1(l);
 
-        // Check for a curve that has terminated which will not have
-        // taken a step forward or backwards.
-        if( floor( fabs(times->GetTuple1(l)) / maxStepLength + 0.5) != numSteps )
-        {
-          // if( l == 1896 )
-          //     std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
-          //               << (double) numSteps * maxStepLength << "  "
-          //               << times->GetTuple1(l) << "  "
-          //               << lengths->GetTuple1(l) << "  "
-          //               << fabs(times->GetTuple1(l) - (double) numSteps * maxStepLength) << "  "
-          //               << fabs(times->GetTuple1(l) + (double) numSteps * maxStepLength) << "  "
-          //               << lambda << "  "
-          //               << std::endl;
-
-          // If a curve has terminated set the exponent to zero.
-          if( lambda == std::numeric_limits<float>::min() )
+        // If the exponent was previously set skip checking it.
+        if( lambda == std::numeric_limits<float>::min() )
+        {           
+          // Check for a curve that has terminated which will not have
+          // taken a step forward or backwards.
+          if( floor( fabs(times->GetTuple1(l)) / maxStepLength + 0.5) !=
+              numSteps )
           {
+            // If a curve has terminated set the exponent to zero.
             lambda = 0;
             exponents->SetTuple1(l, lambda);
             mask->SetTuple1( l, 7 );
@@ -2211,54 +2175,45 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
             Increment( i,   j,   k1,  mask );
             Increment( i,   j,   k_1, mask );
           }
-        }
 
-        // If the exponent was previously set skip checking it.
-        else if( lambda == std::numeric_limits<float>::min() )
-        {
+          // Check the distances between neighbors.
+          else
+          {
             double *jac0 = jacobian[0]->GetTuple3(l);
             double *jac1 = jacobian[1]->GetTuple3(l);
             double *jac2 = jacobian[2]->GetTuple3(l);
 
             avtVector dx, dy, dz;
 
+            // It is possible that one neighbor has terminated but not
+            // the other. However, there is not a way to detected this
+            // case when using the gradient expression. As such,
+            // currently both neighbors must be valid.
+
+            //x,y,z components compute left,right
             if( Value( i, j, k, times ) == Value( i1,  j, k, times ) &&
                 Value( i, j, k, times ) == Value( i_1, j, k, times ) )
-              //x,y,z components compute left,right
               dx = avtVector(jac0[0],jac1[0],jac2[0]);
             else
               dx = avtVector(0,0,0);
-
+            
+            //x,y,z components compute top,bottom
             if( Value( i, j, k, times ) == Value( i, j1,  k, times ) &&
                 Value( i, j, k, times ) == Value( i, j_1, k, times ) )
-              //x,y,z components compute top,bottom
               dy = avtVector(jac0[1],jac1[1],jac2[1]);
             else
               dy = avtVector(0,0,0);
-
+            
+            //x,y,z components compute front,back
             if( Value( i, j, k, times ) == Value( i, j, k1,  times ) &&
                 Value( i, j, k, times ) == Value( i, j, k_1, times ) )
-              //x,y,z components compute front,back
               dz = avtVector(jac0[2],jac1[2],jac2[2]);
             else
               dz = avtVector(0,0,0);
 
-            dx = avtVector(jac0[0],jac1[0],jac2[0]);
-            dy = avtVector(jac0[1],jac1[1],jac2[1]);
-            dz = avtVector(jac0[2],jac1[2],jac2[2]);
-
             double size = std::max( std::max( dx.length(), dy.length() ),
                                     dz.length() );
-
-            // if( l == 1896 )
-            //   std::cerr << l << "  " << k << "  " << j << "  " << i << "  "
-            //                  << size << "  "
-            //          << dx.length() << "  " << dy.length() << "  " << dz.length() << "  "
-            //                  << lengths->GetTuple1(l) << "  "
-            //                  << times->GetTuple1(l) << "  "
-            //          << log( size / lengths->GetTuple1(l) ) / fabs(times->GetTuple1(l)) << "  "
-            //                  << std::endl;
-
+            
             minSizeValue = std::min(size, minSizeValue);
             maxSizeValue = std::max(size, maxSizeValue);
         
@@ -2281,6 +2236,7 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
               Increment( i,   j,   k1,  mask );
               Increment( i,   j,   k_1, mask );
             }
+          }
         }
 
         minv = std::min(lambda, minv);
@@ -2289,11 +2245,7 @@ void avtFTLEFilter::ComputeFsle(vtkDataArray *jacobian[3],
         ++l;
       }
     }
-
-//  std::cerr << "Compute  " << l << std::endl;
   }
-
-  // std::cerr << "Compute  " << minv << "  " << maxv << std::endl;
 }
 
 
