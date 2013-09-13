@@ -121,7 +121,7 @@ do
    $cmd visit${version}_x64.exe                     >> ../$output
    $cmd visit$version2.darwin-x86_64.tar.gz         >> ../$output
    $cmd visit$version2.linux-x86_64-ubuntu11.tar.gz >> ../$output
-   $cmd visit$version2.linux-x86_64-rhel5.tar.gz    >> ../$output
+   $cmd visit$version2.linux-x86_64-rhel6.tar.gz    >> ../$output
 
    echo ""                                          >> ../$output
    echo "The VisIt source code $property"           >> ../$output
