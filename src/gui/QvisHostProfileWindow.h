@@ -377,6 +377,7 @@ private:
     QComboBox     *remoteUrl;
     QTreeWidget     *remoteTree;
     QMap<QString, QString> remoteData;
+    QMap<QString, QString> profileMap;
     QNetworkAccessManager *manager;
     int          profileCounter;
     MachineProfile *currentMachine;
