@@ -1,33 +1,3 @@
-/// requires jQuery to work..
-var debugTextArea = document.getElementById("debugTextArea");
-
-function debug(message)
-{
-    debugTextArea.value += message + "\n";
-    debugTextArea.scrollTop = debugTextArea.scrollHeight;
-}
-
-function showAllClasses()
-    {
-//        $.each(viewerApi, function(key,value)
-//        {
-//            debug("key: " + key + " " + viewerState.get(key).typename);
-//        });
-    }
-
-function inspectClass()
-{
-//        var key = document.getElementById("inspect").value;
-//        debug("api: " + JSON.stringify(viewerState.get(key)));
-//        debug("data: " + JSON.stringify(viewerState.get(key)));
-}
-            
-function clearScreen()
-{
-    debugTextArea.value = "";
-    debugTextArea.scrollTop = debugTextArea.scrollHeight;
-}
-    
 
 function AttributeSubject()
 {
@@ -78,6 +48,9 @@ function AttributeSubject()
         return typename;
     }
 
+    this.toString = function() {
+        return JSON.stringify(api) + "\n" + JSON.stringify(data);
+    }
     this.registerCallback = function(cb) {
         callbackList.push(cb);
     }
@@ -514,7 +487,7 @@ function VisItProxy()
         }
         catch(err)
         {
-           alert(data);
+           //alert(data);
            return;
         }
 
