@@ -40,6 +40,7 @@
 #include <QLayout>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QToolButton>
 #include <QScrollArea>
 
 #include <GlobalAttributes.h>
@@ -276,7 +277,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     {
         QPushButton *resetButton = new QPushButton(tr("Reset"), topCentral);
         connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
-        buttonLayout->addWidget(resetButton, 0, 4);
+        buttonLayout->addWidget(resetButton, 0, 4, 1, 2);
     }
 
     if(buttonCombination & LoadButton)
@@ -319,6 +320,12 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     QPushButton *dismissButton = new QPushButton(tr("Dismiss"), topCentral);
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
     buttonLayout->addWidget(dismissButton, 1, 4);
+
+    QToolButton *helpButton = new QToolButton(topCentral);
+    helpButton->setText(tr("?"));
+    connect(helpButton, SIGNAL(clicked()), this, SLOT(help()));
+    buttonLayout->addWidget(helpButton, 1, 5);
+
     if(notepad != 0 && stretchWindow)
         vLayout->addStretch(0);
 
