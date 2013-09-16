@@ -457,6 +457,10 @@ QvisHostProfileWindow::retriveLatestProfiles()
     remoteTree->clear();
     remoteData.clear();
 
+    QNetworkRequest maprequest(QUrl(remoteUrl->currentText() + "/networks.dat"));
+    QNetworkReply* reply = manager->get(maprequest);
+    reply->waitForReadyRead(-1);
+
     QNetworkRequest request(url);
     manager->get(request);
 }
@@ -492,6 +496,9 @@ QvisHostProfileWindow::addRemoteProfile(const QString& inputUrl, const QString &
             QString path = treeList[index].trimmed();
 
             if(path.length() == 0) continue;
+
+            if(profileMap.contains(path))
+                path = profileMap[path];
 
             if(key == "")
                 key = path;
@@ -558,7 +565,20 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 
     /// this is the result within an xml file..
     /// parse and store this entry.
-    if(inputUrl.contains(".xml")) {
+    if(QFileInfo(inputUrl).fileName() == "networks.dat"){
+        /// if the network has a mapping structure..
+        QStringList maplist = results.split("\n");
+        foreach(const QString& mp, maplist) {
+            int mpindex = mp.indexOf(":");
+            if(mpindex < 0) continue;
+
+            QString values = mp.mid(0, mpindex);
+            QString key = mp.mid(mpindex+1, mp.length() - mpindex);
+
+            profileMap[key] = values;
+        }
+    }
+    else if(inputUrl.contains(".xml")) {
         addRemoteProfile(inputUrl, results);
     }
     else {
