@@ -1374,15 +1374,15 @@ function build_hostconf
     #
     # Patch for Ubuntu 11.04
     #
-    if test -d "/usr/lib/x86_64-linux-gnu" ; then
-        numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
-        if (( $numLibs > 10 )) ; then
-           rm -f $HOSTCONF.tmp
-           cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
-           rm $HOSTCONF
-           mv $HOSTCONF.tmp $HOSTCONF
-        fi
-    fi
+    #if test -d "/usr/lib/x86_64-linux-gnu" ; then
+    #    numLibs=$(ls -1 /usr/lib/x86_64-linux-gnu | wc -l)
+    #    if (( $numLibs > 10 )) ; then
+    #       rm -f $HOSTCONF.tmp
+    #       cat $HOSTCONF | sed "s/\/usr\/lib/\/usr\/lib\/x86_64-linux-gnu/" > $HOSTCONF.tmp
+    #       rm $HOSTCONF
+    #       mv $HOSTCONF.tmp $HOSTCONF
+    #    fi
+    #fi
 
     cd "$START_DIR"
     echo "Done creating $HOSTCONF"

@@ -2203,7 +2203,8 @@ class MainLauncher(object):
 
         # Set R_HOME in case R has been installed it will be in this location..
         visitrdir = os.path.join(self.visitlibdir, "r_support", "R")
-        SETENV("R_HOME", visitrdir)
+        if os.path.exists(visitrdir):
+            SETENV("R_HOME", visitrdir)
 
         # Get the private plugin directory.
         visitprivateplugins = self.PrivatePlugins()
