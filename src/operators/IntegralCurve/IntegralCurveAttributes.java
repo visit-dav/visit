@@ -61,26 +61,31 @@ import java.util.Vector;
 
 public class IntegralCurveAttributes extends AttributeSubject implements Plugin
 {
-    private static int IntegralCurveAttributes_numAdditionalAtts = 64;
+    private static int IntegralCurveAttributes_numAdditionalAtts = 65;
 
     // Enum values
-    public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
-    public final static int SOURCETYPE_SPECIFIEDPOINTLIST = 1;
-    public final static int SOURCETYPE_SPECIFIEDLINE = 2;
-    public final static int SOURCETYPE_SPECIFIEDCIRCLE = 3;
-    public final static int SOURCETYPE_SPECIFIEDPLANE = 4;
-    public final static int SOURCETYPE_SPECIFIEDSPHERE = 5;
-    public final static int SOURCETYPE_SPECIFIEDBOX = 6;
+    public final static int SOURCETYPE_POINT = 0;
+    public final static int SOURCETYPE_POINTLIST = 1;
+    public final static int SOURCETYPE_LINE_ = 2;
+    public final static int SOURCETYPE_CIRCLE = 3;
+    public final static int SOURCETYPE_PLANE = 4;
+    public final static int SOURCETYPE_SPHERE = 5;
+    public final static int SOURCETYPE_BOX = 6;
     public final static int SOURCETYPE_SELECTION = 7;
 
-    public final static int COLORINGMETHOD_SOLID = 0;
-    public final static int COLORINGMETHOD_COLORBYSPEED = 1;
-    public final static int COLORINGMETHOD_COLORBYVORTICITY = 2;
-    public final static int COLORINGMETHOD_COLORBYLENGTH = 3;
-    public final static int COLORINGMETHOD_COLORBYTIME = 4;
-    public final static int COLORINGMETHOD_COLORBYSEEDPOINTID = 5;
-    public final static int COLORINGMETHOD_COLORBYVARIABLE = 6;
-    public final static int COLORINGMETHOD_COLORBYCORRELATIONDISTANCE = 7;
+    public final static int DATAVALUE_SOLID = 0;
+    public final static int DATAVALUE_SPEED = 1;
+    public final static int DATAVALUE_VORTICITY = 2;
+    public final static int DATAVALUE_ARCLENGTH = 3;
+    public final static int DATAVALUE_TIMEABSOLUTE = 4;
+    public final static int DATAVALUE_TIMERELATIVE = 5;
+    public final static int DATAVALUE_SEEDPOINTID = 6;
+    public final static int DATAVALUE_VARIABLE = 7;
+    public final static int DATAVALUE_CORRELATIONDISTANCE = 8;
+
+    public final static int DISPLAYGEOMETRY_LINES = 0;
+    public final static int DISPLAYGEOMETRY_TUBES = 1;
+    public final static int DISPLAYGEOMETRY_RIBBONS = 2;
 
     public final static int COORDINATESYSTEM_ASIS = 0;
     public final static int COORDINATESYSTEM_CYLINDRICALTOCARTESIAN = 1;
@@ -120,7 +125,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         super(IntegralCurveAttributes_numAdditionalAtts);
 
-        sourceType = SOURCETYPE_SPECIFIEDPOINT;
+        sourceType = SOURCETYPE_POINT;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -171,8 +176,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = 2;
         sampleDensity1 = 2;
         sampleDensity2 = 2;
-        coloringMethod = COLORINGMETHOD_COLORBYTIME;
-        coloringVariable = new String("");
+        dataValue = DATAVALUE_TIMEABSOLUTE;
+        dataVariable = new String("");
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminateByDistance = false;
@@ -201,6 +206,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
+        displayGeometry = DISPLAYGEOMETRY_LINES;
         coordinateSystem = COORDINATESYSTEM_ASIS;
         phiScalingFlag = false;
         phiScaling = 1;
@@ -229,7 +235,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         super(IntegralCurveAttributes_numAdditionalAtts + nMoreFields);
 
-        sourceType = SOURCETYPE_SPECIFIEDPOINT;
+        sourceType = SOURCETYPE_POINT;
         pointSource = new double[3];
         pointSource[0] = 0;
         pointSource[1] = 0;
@@ -280,8 +286,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = 2;
         sampleDensity1 = 2;
         sampleDensity2 = 2;
-        coloringMethod = COLORINGMETHOD_COLORBYTIME;
-        coloringVariable = new String("");
+        dataValue = DATAVALUE_TIMEABSOLUTE;
+        dataVariable = new String("");
         integrationDirection = INTEGRATIONDIRECTION_FORWARD;
         maxSteps = 1000;
         terminateByDistance = false;
@@ -310,6 +316,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTimeFlag = false;
         pathlinesOverrideStartingTime = 0;
         pathlinesCMFE = PATHLINESCMFE_POS_CMFE;
+        displayGeometry = DISPLAYGEOMETRY_LINES;
         coordinateSystem = COORDINATESYSTEM_ASIS;
         phiScalingFlag = false;
         phiScaling = 1;
@@ -392,8 +399,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         sampleDensity0 = obj.sampleDensity0;
         sampleDensity1 = obj.sampleDensity1;
         sampleDensity2 = obj.sampleDensity2;
-        coloringMethod = obj.coloringMethod;
-        coloringVariable = new String(obj.coloringVariable);
+        dataValue = obj.dataValue;
+        dataVariable = new String(obj.dataVariable);
         integrationDirection = obj.integrationDirection;
         maxSteps = obj.maxSteps;
         terminateByDistance = obj.terminateByDistance;
@@ -423,6 +430,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         pathlinesOverrideStartingTimeFlag = obj.pathlinesOverrideStartingTimeFlag;
         pathlinesOverrideStartingTime = obj.pathlinesOverrideStartingTime;
         pathlinesCMFE = obj.pathlinesCMFE;
+        displayGeometry = obj.displayGeometry;
         coordinateSystem = obj.coordinateSystem;
         phiScalingFlag = obj.phiScalingFlag;
         phiScaling = obj.phiScaling;
@@ -533,8 +541,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
                 (sampleDensity0 == obj.sampleDensity0) &&
                 (sampleDensity1 == obj.sampleDensity1) &&
                 (sampleDensity2 == obj.sampleDensity2) &&
-                (coloringMethod == obj.coloringMethod) &&
-                (coloringVariable.equals(obj.coloringVariable)) &&
+                (dataValue == obj.dataValue) &&
+                (dataVariable.equals(obj.dataVariable)) &&
                 (integrationDirection == obj.integrationDirection) &&
                 (maxSteps == obj.maxSteps) &&
                 (terminateByDistance == obj.terminateByDistance) &&
@@ -560,6 +568,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
                 (pathlinesOverrideStartingTimeFlag == obj.pathlinesOverrideStartingTimeFlag) &&
                 (pathlinesOverrideStartingTime == obj.pathlinesOverrideStartingTime) &&
                 (pathlinesCMFE == obj.pathlinesCMFE) &&
+                (displayGeometry == obj.displayGeometry) &&
                 (coordinateSystem == obj.coordinateSystem) &&
                 (phiScalingFlag == obj.phiScalingFlag) &&
                 (phiScaling == obj.phiScaling) &&
@@ -749,15 +758,15 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         Select(14);
     }
 
-    public void SetColoringMethod(int coloringMethod_)
+    public void SetDataValue(int dataValue_)
     {
-        coloringMethod = coloringMethod_;
+        dataValue = dataValue_;
         Select(15);
     }
 
-    public void SetColoringVariable(String coloringVariable_)
+    public void SetDataVariable(String dataVariable_)
     {
-        coloringVariable = coloringVariable_;
+        dataVariable = dataVariable_;
         Select(16);
     }
 
@@ -921,136 +930,142 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         Select(41);
     }
 
+    public void SetDisplayGeometry(int displayGeometry_)
+    {
+        displayGeometry = displayGeometry_;
+        Select(42);
+    }
+
     public void SetCoordinateSystem(int coordinateSystem_)
     {
         coordinateSystem = coordinateSystem_;
-        Select(42);
+        Select(43);
     }
 
     public void SetPhiScalingFlag(boolean phiScalingFlag_)
     {
         phiScalingFlag = phiScalingFlag_;
-        Select(43);
+        Select(44);
     }
 
     public void SetPhiScaling(double phiScaling_)
     {
         phiScaling = phiScaling_;
-        Select(44);
+        Select(45);
     }
 
     public void SetShowLines(boolean showLines_)
     {
         showLines = showLines_;
-        Select(45);
+        Select(46);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(46);
+        Select(47);
     }
 
     public void SetSampleDistance0(double sampleDistance0_)
     {
         sampleDistance0 = sampleDistance0_;
-        Select(47);
+        Select(48);
     }
 
     public void SetSampleDistance1(double sampleDistance1_)
     {
         sampleDistance1 = sampleDistance1_;
-        Select(48);
+        Select(49);
     }
 
     public void SetSampleDistance2(double sampleDistance2_)
     {
         sampleDistance2 = sampleDistance2_;
-        Select(49);
+        Select(50);
     }
 
     public void SetFillInterior(boolean fillInterior_)
     {
         fillInterior = fillInterior_;
-        Select(50);
+        Select(51);
     }
 
     public void SetRandomSamples(boolean randomSamples_)
     {
         randomSamples = randomSamples_;
-        Select(51);
+        Select(52);
     }
 
     public void SetRandomSeed(int randomSeed_)
     {
         randomSeed = randomSeed_;
-        Select(52);
+        Select(53);
     }
 
     public void SetNumberOfRandomSamples(int numberOfRandomSamples_)
     {
         numberOfRandomSamples = numberOfRandomSamples_;
-        Select(53);
+        Select(54);
     }
 
     public void SetForceNodeCenteredData(boolean forceNodeCenteredData_)
     {
         forceNodeCenteredData = forceNodeCenteredData_;
-        Select(54);
+        Select(55);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(55);
+        Select(56);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(56);
+        Select(57);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(57);
+        Select(58);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(58);
+        Select(59);
     }
 
     public void SetCorrelationDistanceAngTol(double correlationDistanceAngTol_)
     {
         correlationDistanceAngTol = correlationDistanceAngTol_;
-        Select(59);
+        Select(60);
     }
 
     public void SetCorrelationDistanceMinDistAbsolute(double correlationDistanceMinDistAbsolute_)
     {
         correlationDistanceMinDistAbsolute = correlationDistanceMinDistAbsolute_;
-        Select(60);
+        Select(61);
     }
 
     public void SetCorrelationDistanceMinDistBBox(double correlationDistanceMinDistBBox_)
     {
         correlationDistanceMinDistBBox = correlationDistanceMinDistBBox_;
-        Select(61);
+        Select(62);
     }
 
     public void SetCorrelationDistanceMinDistType(int correlationDistanceMinDistType_)
     {
         correlationDistanceMinDistType = correlationDistanceMinDistType_;
-        Select(62);
+        Select(63);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(63);
+        Select(64);
     }
 
     // Property getting methods
@@ -1069,8 +1084,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public int      GetSampleDensity0() { return sampleDensity0; }
     public int      GetSampleDensity1() { return sampleDensity1; }
     public int      GetSampleDensity2() { return sampleDensity2; }
-    public int      GetColoringMethod() { return coloringMethod; }
-    public String   GetColoringVariable() { return coloringVariable; }
+    public int      GetDataValue() { return dataValue; }
+    public String   GetDataVariable() { return dataVariable; }
     public int      GetIntegrationDirection() { return integrationDirection; }
     public int      GetMaxSteps() { return maxSteps; }
     public boolean  GetTerminateByDistance() { return terminateByDistance; }
@@ -1096,6 +1111,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public boolean  GetPathlinesOverrideStartingTimeFlag() { return pathlinesOverrideStartingTimeFlag; }
     public double   GetPathlinesOverrideStartingTime() { return pathlinesOverrideStartingTime; }
     public int      GetPathlinesCMFE() { return pathlinesCMFE; }
+    public int      GetDisplayGeometry() { return displayGeometry; }
     public int      GetCoordinateSystem() { return coordinateSystem; }
     public boolean  GetPhiScalingFlag() { return phiScalingFlag; }
     public double   GetPhiScaling() { return phiScaling; }
@@ -1153,9 +1169,9 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(14, buf))
             buf.WriteInt(sampleDensity2);
         if(WriteSelect(15, buf))
-            buf.WriteInt(coloringMethod);
+            buf.WriteInt(dataValue);
         if(WriteSelect(16, buf))
-            buf.WriteString(coloringVariable);
+            buf.WriteString(dataVariable);
         if(WriteSelect(17, buf))
             buf.WriteInt(integrationDirection);
         if(WriteSelect(18, buf))
@@ -1207,48 +1223,50 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(41, buf))
             buf.WriteInt(pathlinesCMFE);
         if(WriteSelect(42, buf))
-            buf.WriteInt(coordinateSystem);
+            buf.WriteInt(displayGeometry);
         if(WriteSelect(43, buf))
-            buf.WriteBool(phiScalingFlag);
+            buf.WriteInt(coordinateSystem);
         if(WriteSelect(44, buf))
-            buf.WriteDouble(phiScaling);
+            buf.WriteBool(phiScalingFlag);
         if(WriteSelect(45, buf))
-            buf.WriteBool(showLines);
+            buf.WriteDouble(phiScaling);
         if(WriteSelect(46, buf))
-            buf.WriteBool(showPoints);
+            buf.WriteBool(showLines);
         if(WriteSelect(47, buf))
-            buf.WriteDouble(sampleDistance0);
+            buf.WriteBool(showPoints);
         if(WriteSelect(48, buf))
-            buf.WriteDouble(sampleDistance1);
+            buf.WriteDouble(sampleDistance0);
         if(WriteSelect(49, buf))
-            buf.WriteDouble(sampleDistance2);
+            buf.WriteDouble(sampleDistance1);
         if(WriteSelect(50, buf))
-            buf.WriteBool(fillInterior);
+            buf.WriteDouble(sampleDistance2);
         if(WriteSelect(51, buf))
-            buf.WriteBool(randomSamples);
+            buf.WriteBool(fillInterior);
         if(WriteSelect(52, buf))
-            buf.WriteInt(randomSeed);
+            buf.WriteBool(randomSamples);
         if(WriteSelect(53, buf))
-            buf.WriteInt(numberOfRandomSamples);
+            buf.WriteInt(randomSeed);
         if(WriteSelect(54, buf))
-            buf.WriteBool(forceNodeCenteredData);
+            buf.WriteInt(numberOfRandomSamples);
         if(WriteSelect(55, buf))
-            buf.WriteBool(issueTerminationWarnings);
+            buf.WriteBool(forceNodeCenteredData);
         if(WriteSelect(56, buf))
-            buf.WriteBool(issueStiffnessWarnings);
+            buf.WriteBool(issueTerminationWarnings);
         if(WriteSelect(57, buf))
-            buf.WriteBool(issueCriticalPointsWarnings);
+            buf.WriteBool(issueStiffnessWarnings);
         if(WriteSelect(58, buf))
-            buf.WriteDouble(criticalPointThreshold);
+            buf.WriteBool(issueCriticalPointsWarnings);
         if(WriteSelect(59, buf))
-            buf.WriteDouble(correlationDistanceAngTol);
+            buf.WriteDouble(criticalPointThreshold);
         if(WriteSelect(60, buf))
-            buf.WriteDouble(correlationDistanceMinDistAbsolute);
+            buf.WriteDouble(correlationDistanceAngTol);
         if(WriteSelect(61, buf))
-            buf.WriteDouble(correlationDistanceMinDistBBox);
+            buf.WriteDouble(correlationDistanceMinDistAbsolute);
         if(WriteSelect(62, buf))
-            buf.WriteInt(correlationDistanceMinDistType);
+            buf.WriteDouble(correlationDistanceMinDistBBox);
         if(WriteSelect(63, buf))
+            buf.WriteInt(correlationDistanceMinDistType);
+        if(WriteSelect(64, buf))
             buf.WriteString(selection);
     }
 
@@ -1302,10 +1320,10 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             SetSampleDensity2(buf.ReadInt());
             break;
         case 15:
-            SetColoringMethod(buf.ReadInt());
+            SetDataValue(buf.ReadInt());
             break;
         case 16:
-            SetColoringVariable(buf.ReadString());
+            SetDataVariable(buf.ReadString());
             break;
         case 17:
             SetIntegrationDirection(buf.ReadInt());
@@ -1383,69 +1401,72 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             SetPathlinesCMFE(buf.ReadInt());
             break;
         case 42:
-            SetCoordinateSystem(buf.ReadInt());
+            SetDisplayGeometry(buf.ReadInt());
             break;
         case 43:
-            SetPhiScalingFlag(buf.ReadBool());
+            SetCoordinateSystem(buf.ReadInt());
             break;
         case 44:
-            SetPhiScaling(buf.ReadDouble());
+            SetPhiScalingFlag(buf.ReadBool());
             break;
         case 45:
-            SetShowLines(buf.ReadBool());
+            SetPhiScaling(buf.ReadDouble());
             break;
         case 46:
-            SetShowPoints(buf.ReadBool());
+            SetShowLines(buf.ReadBool());
             break;
         case 47:
-            SetSampleDistance0(buf.ReadDouble());
+            SetShowPoints(buf.ReadBool());
             break;
         case 48:
-            SetSampleDistance1(buf.ReadDouble());
+            SetSampleDistance0(buf.ReadDouble());
             break;
         case 49:
-            SetSampleDistance2(buf.ReadDouble());
+            SetSampleDistance1(buf.ReadDouble());
             break;
         case 50:
-            SetFillInterior(buf.ReadBool());
+            SetSampleDistance2(buf.ReadDouble());
             break;
         case 51:
-            SetRandomSamples(buf.ReadBool());
+            SetFillInterior(buf.ReadBool());
             break;
         case 52:
-            SetRandomSeed(buf.ReadInt());
+            SetRandomSamples(buf.ReadBool());
             break;
         case 53:
-            SetNumberOfRandomSamples(buf.ReadInt());
+            SetRandomSeed(buf.ReadInt());
             break;
         case 54:
-            SetForceNodeCenteredData(buf.ReadBool());
+            SetNumberOfRandomSamples(buf.ReadInt());
             break;
         case 55:
-            SetIssueTerminationWarnings(buf.ReadBool());
+            SetForceNodeCenteredData(buf.ReadBool());
             break;
         case 56:
-            SetIssueStiffnessWarnings(buf.ReadBool());
+            SetIssueTerminationWarnings(buf.ReadBool());
             break;
         case 57:
-            SetIssueCriticalPointsWarnings(buf.ReadBool());
+            SetIssueStiffnessWarnings(buf.ReadBool());
             break;
         case 58:
-            SetCriticalPointThreshold(buf.ReadDouble());
+            SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
         case 59:
-            SetCorrelationDistanceAngTol(buf.ReadDouble());
+            SetCriticalPointThreshold(buf.ReadDouble());
             break;
         case 60:
-            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
+            SetCorrelationDistanceAngTol(buf.ReadDouble());
             break;
         case 61:
-            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
+            SetCorrelationDistanceMinDistAbsolute(buf.ReadDouble());
             break;
         case 62:
-            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            SetCorrelationDistanceMinDistBBox(buf.ReadDouble());
             break;
         case 63:
+            SetCorrelationDistanceMinDistType(buf.ReadInt());
+            break;
+        case 64:
             SetSelection(buf.ReadString());
             break;
         }
@@ -1455,20 +1476,20 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + indent + "sourceType = ";
-        if(sourceType == SOURCETYPE_SPECIFIEDPOINT)
-            str = str + "SOURCETYPE_SPECIFIEDPOINT";
-        if(sourceType == SOURCETYPE_SPECIFIEDPOINTLIST)
-            str = str + "SOURCETYPE_SPECIFIEDPOINTLIST";
-        if(sourceType == SOURCETYPE_SPECIFIEDLINE)
-            str = str + "SOURCETYPE_SPECIFIEDLINE";
-        if(sourceType == SOURCETYPE_SPECIFIEDCIRCLE)
-            str = str + "SOURCETYPE_SPECIFIEDCIRCLE";
-        if(sourceType == SOURCETYPE_SPECIFIEDPLANE)
-            str = str + "SOURCETYPE_SPECIFIEDPLANE";
-        if(sourceType == SOURCETYPE_SPECIFIEDSPHERE)
-            str = str + "SOURCETYPE_SPECIFIEDSPHERE";
-        if(sourceType == SOURCETYPE_SPECIFIEDBOX)
-            str = str + "SOURCETYPE_SPECIFIEDBOX";
+        if(sourceType == SOURCETYPE_POINT)
+            str = str + "SOURCETYPE_POINT";
+        if(sourceType == SOURCETYPE_POINTLIST)
+            str = str + "SOURCETYPE_POINTLIST";
+        if(sourceType == SOURCETYPE_LINE_)
+            str = str + "SOURCETYPE_LINE_";
+        if(sourceType == SOURCETYPE_CIRCLE)
+            str = str + "SOURCETYPE_CIRCLE";
+        if(sourceType == SOURCETYPE_PLANE)
+            str = str + "SOURCETYPE_PLANE";
+        if(sourceType == SOURCETYPE_SPHERE)
+            str = str + "SOURCETYPE_SPHERE";
+        if(sourceType == SOURCETYPE_BOX)
+            str = str + "SOURCETYPE_BOX";
         if(sourceType == SOURCETYPE_SELECTION)
             str = str + "SOURCETYPE_SELECTION";
         str = str + "\n";
@@ -1486,25 +1507,27 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         str = str + intToString("sampleDensity0", sampleDensity0, indent) + "\n";
         str = str + intToString("sampleDensity1", sampleDensity1, indent) + "\n";
         str = str + intToString("sampleDensity2", sampleDensity2, indent) + "\n";
-        str = str + indent + "coloringMethod = ";
-        if(coloringMethod == COLORINGMETHOD_SOLID)
-            str = str + "COLORINGMETHOD_SOLID";
-        if(coloringMethod == COLORINGMETHOD_COLORBYSPEED)
-            str = str + "COLORINGMETHOD_COLORBYSPEED";
-        if(coloringMethod == COLORINGMETHOD_COLORBYVORTICITY)
-            str = str + "COLORINGMETHOD_COLORBYVORTICITY";
-        if(coloringMethod == COLORINGMETHOD_COLORBYLENGTH)
-            str = str + "COLORINGMETHOD_COLORBYLENGTH";
-        if(coloringMethod == COLORINGMETHOD_COLORBYTIME)
-            str = str + "COLORINGMETHOD_COLORBYTIME";
-        if(coloringMethod == COLORINGMETHOD_COLORBYSEEDPOINTID)
-            str = str + "COLORINGMETHOD_COLORBYSEEDPOINTID";
-        if(coloringMethod == COLORINGMETHOD_COLORBYVARIABLE)
-            str = str + "COLORINGMETHOD_COLORBYVARIABLE";
-        if(coloringMethod == COLORINGMETHOD_COLORBYCORRELATIONDISTANCE)
-            str = str + "COLORINGMETHOD_COLORBYCORRELATIONDISTANCE";
+        str = str + indent + "dataValue = ";
+        if(dataValue == DATAVALUE_SOLID)
+            str = str + "DATAVALUE_SOLID";
+        if(dataValue == DATAVALUE_SPEED)
+            str = str + "DATAVALUE_SPEED";
+        if(dataValue == DATAVALUE_VORTICITY)
+            str = str + "DATAVALUE_VORTICITY";
+        if(dataValue == DATAVALUE_ARCLENGTH)
+            str = str + "DATAVALUE_ARCLENGTH";
+        if(dataValue == DATAVALUE_TIMEABSOLUTE)
+            str = str + "DATAVALUE_TIMEABSOLUTE";
+        if(dataValue == DATAVALUE_TIMERELATIVE)
+            str = str + "DATAVALUE_TIMERELATIVE";
+        if(dataValue == DATAVALUE_SEEDPOINTID)
+            str = str + "DATAVALUE_SEEDPOINTID";
+        if(dataValue == DATAVALUE_VARIABLE)
+            str = str + "DATAVALUE_VARIABLE";
+        if(dataValue == DATAVALUE_CORRELATIONDISTANCE)
+            str = str + "DATAVALUE_CORRELATIONDISTANCE";
         str = str + "\n";
-        str = str + stringToString("coloringVariable", coloringVariable, indent) + "\n";
+        str = str + stringToString("dataVariable", dataVariable, indent) + "\n";
         str = str + indent + "integrationDirection = ";
         if(integrationDirection == INTEGRATIONDIRECTION_FORWARD)
             str = str + "INTEGRATIONDIRECTION_FORWARD";
@@ -1582,6 +1605,14 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         if(pathlinesCMFE == PATHLINESCMFE_POS_CMFE)
             str = str + "PATHLINESCMFE_POS_CMFE";
         str = str + "\n";
+        str = str + indent + "displayGeometry = ";
+        if(displayGeometry == DISPLAYGEOMETRY_LINES)
+            str = str + "DISPLAYGEOMETRY_LINES";
+        if(displayGeometry == DISPLAYGEOMETRY_TUBES)
+            str = str + "DISPLAYGEOMETRY_TUBES";
+        if(displayGeometry == DISPLAYGEOMETRY_RIBBONS)
+            str = str + "DISPLAYGEOMETRY_RIBBONS";
+        str = str + "\n";
         str = str + indent + "coordinateSystem = ";
         if(coordinateSystem == COORDINATESYSTEM_ASIS)
             str = str + "COORDINATESYSTEM_ASIS";
@@ -1636,8 +1667,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     private int      sampleDensity0;
     private int      sampleDensity1;
     private int      sampleDensity2;
-    private int      coloringMethod;
-    private String   coloringVariable;
+    private int      dataValue;
+    private String   dataVariable;
     private int      integrationDirection;
     private int      maxSteps;
     private boolean  terminateByDistance;
@@ -1663,6 +1694,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     private boolean  pathlinesOverrideStartingTimeFlag;
     private double   pathlinesOverrideStartingTime;
     private int      pathlinesCMFE;
+    private int      displayGeometry;
     private int      coordinateSystem;
     private boolean  phiScalingFlag;
     private double   phiScaling;

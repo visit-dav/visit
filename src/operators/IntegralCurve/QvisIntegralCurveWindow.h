@@ -239,8 +239,8 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
     void absTolSizeTypeChanged(int);
 
   // Appearance
-    void coloringMethodChanged(int val);
-    void coloringVariableChanged(const QString &var);
+    void dataValueChanged(int val);
+    void dataVariableChanged(const QString &var);
 
     void correlationDistanceMinDistTypeChanged(int);
     void processCorrelationDistanceAngTolEditText();
@@ -248,6 +248,7 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
 
     void showLinesChanged(bool val);
     void showPointsChanged(bool val);
+    void geometryButtonGroupChanged(int val);
 
     void coordinateButtonGroupChanged(int val);
     void phiScalingToggled(bool);
@@ -343,13 +344,16 @@ class QvisIntegralCurveWindow : public QvisOperatorWindow
 
   // Appearance
     QComboBox *dataValueComboBox;
-    QvisVariableButton *coloringVar;
+    QvisVariableButton *dataVariable;
     QLabel    *correlationDistanceAngTolLabel, *correlationDistanceMinDistLabel;
     QLineEdit *correlationDistanceAngTolEdit, *correlationDistanceMinDistEdit;
     QComboBox *correlationDistanceMinDistType;
 
     QCheckBox    *showLines;
     QCheckBox    *showPoints;
+
+    QLabel       *geometryLabel;
+    QButtonGroup *geometryButtonGroup;
 
     QButtonGroup *coordinateButtonGroup;
     QLineEdit *phiScaling;
