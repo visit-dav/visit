@@ -259,14 +259,7 @@ public:
     void SetVerboseFlag(bool verboseFlag_);
     void SetShow1DPlots(bool show1DPlots_);
     void SetShowLines(bool showLines_);
-    void SetLineWidth(int lineWidth_);
-    void SetLineStyle(int lineStyle_);
     void SetShowPoints(bool showPoints_);
-    void SetPointSize(double pointSize_);
-    void SetPointSizePixels(int pointSizePixels_);
-    void SetPointType(PointType pointType_);
-    void SetLegendFlag(bool legendFlag_);
-    void SetLightingFlag(bool lightingFlag_);
     void SetParallelizationAlgorithmType(ParallelizationAlgorithmType parallelizationAlgorithmType_);
     void SetMaxProcessCount(int maxProcessCount_);
     void SetMaxDomainCacheSize(int maxDomainCacheSize_);
@@ -345,14 +338,7 @@ public:
     bool                 GetVerboseFlag() const;
     bool                 GetShow1DPlots() const;
     bool                 GetShowLines() const;
-    int                  GetLineWidth() const;
-    int                  GetLineStyle() const;
     bool                 GetShowPoints() const;
-    double               GetPointSize() const;
-    int                  GetPointSizePixels() const;
-    PointType            GetPointType() const;
-    bool                 GetLegendFlag() const;
-    bool                 GetLightingFlag() const;
     ParallelizationAlgorithmType GetParallelizationAlgorithmType() const;
     int                  GetMaxProcessCount() const;
     int                  GetMaxDomainCacheSize() const;
@@ -517,14 +503,7 @@ public:
         ID_verboseFlag,
         ID_show1DPlots,
         ID_showLines,
-        ID_lineWidth,
-        ID_lineStyle,
         ID_showPoints,
-        ID_pointSize,
-        ID_pointSizePixels,
-        ID_pointType,
-        ID_legendFlag,
-        ID_lightingFlag,
         ID_parallelizationAlgorithmType,
         ID_maxProcessCount,
         ID_maxDomainCacheSize,
@@ -598,14 +577,7 @@ private:
     bool           verboseFlag;
     bool           show1DPlots;
     bool           showLines;
-    int            lineWidth;
-    int            lineStyle;
     bool           showPoints;
-    double         pointSize;
-    int            pointSizePixels;
-    int            pointType;
-    bool           legendFlag;
-    bool           lightingFlag;
     int            parallelizationAlgorithmType;
     int            maxProcessCount;
     int            maxDomainCacheSize;
@@ -623,6 +595,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbiibdiibbiiiibbdibbbd"
+#define POINCAREATTRIBUTES_TMFS "idiiiiDDDiibdDiidbddiddiiiiddiiiidddbbiasibibibibisbbbbbbbiiiibbdibbbd"
 
 #endif
