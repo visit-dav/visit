@@ -690,14 +690,7 @@ void PoincareAttributes::Init()
     verboseFlag = false;
     show1DPlots = false;
     showLines = true;
-    lineWidth = 0;
-    lineStyle = 0;
     showPoints = false;
-    pointSize = 1;
-    pointSizePixels = 1;
-    pointType = Point;
-    legendFlag = true;
-    lightingFlag = true;
     parallelizationAlgorithmType = VisItSelects;
     maxProcessCount = 10;
     maxDomainCacheSize = 3;
@@ -800,14 +793,7 @@ void PoincareAttributes::Copy(const PoincareAttributes &obj)
     verboseFlag = obj.verboseFlag;
     show1DPlots = obj.show1DPlots;
     showLines = obj.showLines;
-    lineWidth = obj.lineWidth;
-    lineStyle = obj.lineStyle;
     showPoints = obj.showPoints;
-    pointSize = obj.pointSize;
-    pointSizePixels = obj.pointSizePixels;
-    pointType = obj.pointType;
-    legendFlag = obj.legendFlag;
-    lightingFlag = obj.lightingFlag;
     parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
     maxProcessCount = obj.maxProcessCount;
     maxDomainCacheSize = obj.maxDomainCacheSize;
@@ -1056,14 +1042,7 @@ PoincareAttributes::operator == (const PoincareAttributes &obj) const
             (verboseFlag == obj.verboseFlag) &&
             (show1DPlots == obj.show1DPlots) &&
             (showLines == obj.showLines) &&
-            (lineWidth == obj.lineWidth) &&
-            (lineStyle == obj.lineStyle) &&
             (showPoints == obj.showPoints) &&
-            (pointSize == obj.pointSize) &&
-            (pointSizePixels == obj.pointSizePixels) &&
-            (pointType == obj.pointType) &&
-            (legendFlag == obj.legendFlag) &&
-            (lightingFlag == obj.lightingFlag) &&
             (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
             (maxProcessCount == obj.maxProcessCount) &&
             (maxDomainCacheSize == obj.maxDomainCacheSize) &&
@@ -1301,14 +1280,7 @@ PoincareAttributes::SelectAll()
     Select(ID_verboseFlag,                       (void *)&verboseFlag);
     Select(ID_show1DPlots,                       (void *)&show1DPlots);
     Select(ID_showLines,                         (void *)&showLines);
-    Select(ID_lineWidth,                         (void *)&lineWidth);
-    Select(ID_lineStyle,                         (void *)&lineStyle);
     Select(ID_showPoints,                        (void *)&showPoints);
-    Select(ID_pointSize,                         (void *)&pointSize);
-    Select(ID_pointSizePixels,                   (void *)&pointSizePixels);
-    Select(ID_pointType,                         (void *)&pointType);
-    Select(ID_legendFlag,                        (void *)&legendFlag);
-    Select(ID_lightingFlag,                      (void *)&lightingFlag);
     Select(ID_parallelizationAlgorithmType,      (void *)&parallelizationAlgorithmType);
     Select(ID_maxProcessCount,                   (void *)&maxProcessCount);
     Select(ID_maxDomainCacheSize,                (void *)&maxDomainCacheSize);
@@ -1697,52 +1669,10 @@ PoincareAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
         node->AddNode(new DataNode("showLines", showLines));
     }
 
-    if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineWidth", lineWidth));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
-    }
-
     if(completeSave || !FieldsEqual(ID_showPoints, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showPoints", showPoints));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSize, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSize", pointSize));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointSizePixels, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
-    }
-
-    if(completeSave || !FieldsEqual(ID_pointType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("pointType", PointType_ToString(pointType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("legendFlag", legendFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lightingFlag, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lightingFlag", lightingFlag));
     }
 
     if(completeSave || !FieldsEqual(ID_parallelizationAlgorithmType, &defaultObject))
@@ -2135,36 +2065,8 @@ PoincareAttributes::SetFromNode(DataNode *parentNode)
         SetShow1DPlots(node->AsBool());
     if((node = searchNode->GetNode("showLines")) != 0)
         SetShowLines(node->AsBool());
-    if((node = searchNode->GetNode("lineWidth")) != 0)
-        SetLineWidth(node->AsInt());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("showPoints")) != 0)
         SetShowPoints(node->AsBool());
-    if((node = searchNode->GetNode("pointSize")) != 0)
-        SetPointSize(node->AsDouble());
-    if((node = searchNode->GetNode("pointSizePixels")) != 0)
-        SetPointSizePixels(node->AsInt());
-    if((node = searchNode->GetNode("pointType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 8)
-                SetPointType(PointType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            PointType value;
-            if(PointType_FromString(node->AsString(), value))
-                SetPointType(value);
-        }
-    }
-    if((node = searchNode->GetNode("legendFlag")) != 0)
-        SetLegendFlag(node->AsBool());
-    if((node = searchNode->GetNode("lightingFlag")) != 0)
-        SetLightingFlag(node->AsBool());
     if((node = searchNode->GetNode("parallelizationAlgorithmType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -2631,59 +2533,10 @@ PoincareAttributes::SetShowLines(bool showLines_)
 }
 
 void
-PoincareAttributes::SetLineWidth(int lineWidth_)
-{
-    lineWidth = lineWidth_;
-    Select(ID_lineWidth, (void *)&lineWidth);
-}
-
-void
-PoincareAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
-}
-
-void
 PoincareAttributes::SetShowPoints(bool showPoints_)
 {
     showPoints = showPoints_;
     Select(ID_showPoints, (void *)&showPoints);
-}
-
-void
-PoincareAttributes::SetPointSize(double pointSize_)
-{
-    pointSize = pointSize_;
-    Select(ID_pointSize, (void *)&pointSize);
-}
-
-void
-PoincareAttributes::SetPointSizePixels(int pointSizePixels_)
-{
-    pointSizePixels = pointSizePixels_;
-    Select(ID_pointSizePixels, (void *)&pointSizePixels);
-}
-
-void
-PoincareAttributes::SetPointType(PoincareAttributes::PointType pointType_)
-{
-    pointType = pointType_;
-    Select(ID_pointType, (void *)&pointType);
-}
-
-void
-PoincareAttributes::SetLegendFlag(bool legendFlag_)
-{
-    legendFlag = legendFlag_;
-    Select(ID_legendFlag, (void *)&legendFlag);
-}
-
-void
-PoincareAttributes::SetLightingFlag(bool lightingFlag_)
-{
-    lightingFlag = lightingFlag_;
-    Select(ID_lightingFlag, (void *)&lightingFlag);
 }
 
 void
@@ -3158,52 +3011,10 @@ PoincareAttributes::GetShowLines() const
     return showLines;
 }
 
-int
-PoincareAttributes::GetLineWidth() const
-{
-    return lineWidth;
-}
-
-int
-PoincareAttributes::GetLineStyle() const
-{
-    return lineStyle;
-}
-
 bool
 PoincareAttributes::GetShowPoints() const
 {
     return showPoints;
-}
-
-double
-PoincareAttributes::GetPointSize() const
-{
-    return pointSize;
-}
-
-int
-PoincareAttributes::GetPointSizePixels() const
-{
-    return pointSizePixels;
-}
-
-PoincareAttributes::PointType
-PoincareAttributes::GetPointType() const
-{
-    return PointType(pointType);
-}
-
-bool
-PoincareAttributes::GetLegendFlag() const
-{
-    return legendFlag;
-}
-
-bool
-PoincareAttributes::GetLightingFlag() const
-{
-    return lightingFlag;
 }
 
 PoincareAttributes::ParallelizationAlgorithmType
@@ -3405,14 +3216,7 @@ PoincareAttributes::GetFieldName(int index) const
     case ID_verboseFlag:                       return "verboseFlag";
     case ID_show1DPlots:                       return "show1DPlots";
     case ID_showLines:                         return "showLines";
-    case ID_lineWidth:                         return "lineWidth";
-    case ID_lineStyle:                         return "lineStyle";
     case ID_showPoints:                        return "showPoints";
-    case ID_pointSize:                         return "pointSize";
-    case ID_pointSizePixels:                   return "pointSizePixels";
-    case ID_pointType:                         return "pointType";
-    case ID_legendFlag:                        return "legendFlag";
-    case ID_lightingFlag:                      return "lightingFlag";
     case ID_parallelizationAlgorithmType:      return "parallelizationAlgorithmType";
     case ID_maxProcessCount:                   return "maxProcessCount";
     case ID_maxDomainCacheSize:                return "maxDomainCacheSize";
@@ -3506,14 +3310,7 @@ PoincareAttributes::GetFieldType(int index) const
     case ID_verboseFlag:                       return FieldType_bool;
     case ID_show1DPlots:                       return FieldType_bool;
     case ID_showLines:                         return FieldType_bool;
-    case ID_lineWidth:                         return FieldType_linewidth;
-    case ID_lineStyle:                         return FieldType_linestyle;
     case ID_showPoints:                        return FieldType_bool;
-    case ID_pointSize:                         return FieldType_double;
-    case ID_pointSizePixels:                   return FieldType_int;
-    case ID_pointType:                         return FieldType_enum;
-    case ID_legendFlag:                        return FieldType_bool;
-    case ID_lightingFlag:                      return FieldType_bool;
     case ID_parallelizationAlgorithmType:      return FieldType_enum;
     case ID_maxProcessCount:                   return FieldType_int;
     case ID_maxDomainCacheSize:                return FieldType_int;
@@ -3607,14 +3404,7 @@ PoincareAttributes::GetFieldTypeName(int index) const
     case ID_verboseFlag:                       return "bool";
     case ID_show1DPlots:                       return "bool";
     case ID_showLines:                         return "bool";
-    case ID_lineWidth:                         return "linewidth";
-    case ID_lineStyle:                         return "linestyle";
     case ID_showPoints:                        return "bool";
-    case ID_pointSize:                         return "double";
-    case ID_pointSizePixels:                   return "int";
-    case ID_pointType:                         return "enum";
-    case ID_legendFlag:                        return "bool";
-    case ID_lightingFlag:                      return "bool";
     case ID_parallelizationAlgorithmType:      return "enum";
     case ID_maxProcessCount:                   return "int";
     case ID_maxDomainCacheSize:                return "int";
@@ -3958,44 +3748,9 @@ PoincareAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (showLines == obj.showLines);
         }
         break;
-    case ID_lineWidth:
-        {  // new scope
-        retval = (lineWidth == obj.lineWidth);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
-        }
-        break;
     case ID_showPoints:
         {  // new scope
         retval = (showPoints == obj.showPoints);
-        }
-        break;
-    case ID_pointSize:
-        {  // new scope
-        retval = (pointSize == obj.pointSize);
-        }
-        break;
-    case ID_pointSizePixels:
-        {  // new scope
-        retval = (pointSizePixels == obj.pointSizePixels);
-        }
-        break;
-    case ID_pointType:
-        {  // new scope
-        retval = (pointType == obj.pointType);
-        }
-        break;
-    case ID_legendFlag:
-        {  // new scope
-        retval = (legendFlag == obj.legendFlag);
-        }
-        break;
-    case ID_lightingFlag:
-        {  // new scope
-        retval = (lightingFlag == obj.lightingFlag);
         }
         break;
     case ID_parallelizationAlgorithmType:

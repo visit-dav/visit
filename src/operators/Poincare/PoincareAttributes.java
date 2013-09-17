@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PoincareAttributes extends AttributeSubject implements Plugin
 {
-    private static int PoincareAttributes_numAdditionalAtts = 77;
+    private static int PoincareAttributes_numAdditionalAtts = 70;
 
     // Enum values
     public final static int SOURCETYPE_SPECIFIEDPOINT = 0;
@@ -213,14 +213,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         verboseFlag = false;
         show1DPlots = false;
         showLines = true;
-        lineWidth = 0;
-        lineStyle = 0;
         showPoints = false;
-        pointSize = 1;
-        pointSizePixels = 1;
-        pointType = POINTTYPE_POINT;
-        legendFlag = true;
-        lightingFlag = true;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -308,14 +301,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         verboseFlag = false;
         show1DPlots = false;
         showLines = true;
-        lineWidth = 0;
-        lineStyle = 0;
         showPoints = false;
-        pointSize = 1;
-        pointSizePixels = 1;
-        pointType = POINTTYPE_POINT;
-        legendFlag = true;
-        lightingFlag = true;
         parallelizationAlgorithmType = PARALLELIZATIONALGORITHMTYPE_VISITSELECTS;
         maxProcessCount = 10;
         maxDomainCacheSize = 3;
@@ -409,14 +395,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         verboseFlag = obj.verboseFlag;
         show1DPlots = obj.show1DPlots;
         showLines = obj.showLines;
-        lineWidth = obj.lineWidth;
-        lineStyle = obj.lineStyle;
         showPoints = obj.showPoints;
-        pointSize = obj.pointSize;
-        pointSizePixels = obj.pointSizePixels;
-        pointType = obj.pointType;
-        legendFlag = obj.legendFlag;
-        lightingFlag = obj.lightingFlag;
         parallelizationAlgorithmType = obj.parallelizationAlgorithmType;
         maxProcessCount = obj.maxProcessCount;
         maxDomainCacheSize = obj.maxDomainCacheSize;
@@ -525,14 +504,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
                 (verboseFlag == obj.verboseFlag) &&
                 (show1DPlots == obj.show1DPlots) &&
                 (showLines == obj.showLines) &&
-                (lineWidth == obj.lineWidth) &&
-                (lineStyle == obj.lineStyle) &&
                 (showPoints == obj.showPoints) &&
-                (pointSize == obj.pointSize) &&
-                (pointSizePixels == obj.pointSizePixels) &&
-                (pointType == obj.pointType) &&
-                (legendFlag == obj.legendFlag) &&
-                (lightingFlag == obj.lightingFlag) &&
                 (parallelizationAlgorithmType == obj.parallelizationAlgorithmType) &&
                 (maxProcessCount == obj.maxProcessCount) &&
                 (maxDomainCacheSize == obj.maxDomainCacheSize) &&
@@ -933,124 +905,82 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         Select(56);
     }
 
-    public void SetLineWidth(int lineWidth_)
-    {
-        lineWidth = lineWidth_;
-        Select(57);
-    }
-
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(58);
-    }
-
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(59);
-    }
-
-    public void SetPointSize(double pointSize_)
-    {
-        pointSize = pointSize_;
-        Select(60);
-    }
-
-    public void SetPointSizePixels(int pointSizePixels_)
-    {
-        pointSizePixels = pointSizePixels_;
-        Select(61);
-    }
-
-    public void SetPointType(int pointType_)
-    {
-        pointType = pointType_;
-        Select(62);
-    }
-
-    public void SetLegendFlag(boolean legendFlag_)
-    {
-        legendFlag = legendFlag_;
-        Select(63);
-    }
-
-    public void SetLightingFlag(boolean lightingFlag_)
-    {
-        lightingFlag = lightingFlag_;
-        Select(64);
+        Select(57);
     }
 
     public void SetParallelizationAlgorithmType(int parallelizationAlgorithmType_)
     {
         parallelizationAlgorithmType = parallelizationAlgorithmType_;
-        Select(65);
+        Select(58);
     }
 
     public void SetMaxProcessCount(int maxProcessCount_)
     {
         maxProcessCount = maxProcessCount_;
-        Select(66);
+        Select(59);
     }
 
     public void SetMaxDomainCacheSize(int maxDomainCacheSize_)
     {
         maxDomainCacheSize = maxDomainCacheSize_;
-        Select(67);
+        Select(60);
     }
 
     public void SetWorkGroupSize(int workGroupSize_)
     {
         workGroupSize = workGroupSize_;
-        Select(68);
+        Select(61);
     }
 
     public void SetPathlines(boolean pathlines_)
     {
         pathlines = pathlines_;
-        Select(69);
+        Select(62);
     }
 
     public void SetPathlinesOverrideStartingTimeFlag(boolean pathlinesOverrideStartingTimeFlag_)
     {
         pathlinesOverrideStartingTimeFlag = pathlinesOverrideStartingTimeFlag_;
-        Select(70);
+        Select(63);
     }
 
     public void SetPathlinesOverrideStartingTime(double pathlinesOverrideStartingTime_)
     {
         pathlinesOverrideStartingTime = pathlinesOverrideStartingTime_;
-        Select(71);
+        Select(64);
     }
 
     public void SetPathlinesCMFE(int pathlinesCMFE_)
     {
         pathlinesCMFE = pathlinesCMFE_;
-        Select(72);
+        Select(65);
     }
 
     public void SetIssueTerminationWarnings(boolean issueTerminationWarnings_)
     {
         issueTerminationWarnings = issueTerminationWarnings_;
-        Select(73);
+        Select(66);
     }
 
     public void SetIssueStiffnessWarnings(boolean issueStiffnessWarnings_)
     {
         issueStiffnessWarnings = issueStiffnessWarnings_;
-        Select(74);
+        Select(67);
     }
 
     public void SetIssueCriticalPointsWarnings(boolean issueCriticalPointsWarnings_)
     {
         issueCriticalPointsWarnings = issueCriticalPointsWarnings_;
-        Select(75);
+        Select(68);
     }
 
     public void SetCriticalPointThreshold(double criticalPointThreshold_)
     {
         criticalPointThreshold = criticalPointThreshold_;
-        Select(76);
+        Select(69);
     }
 
     // Property getting methods
@@ -1111,14 +1041,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     public boolean        GetVerboseFlag() { return verboseFlag; }
     public boolean        GetShow1DPlots() { return show1DPlots; }
     public boolean        GetShowLines() { return showLines; }
-    public int            GetLineWidth() { return lineWidth; }
-    public int            GetLineStyle() { return lineStyle; }
     public boolean        GetShowPoints() { return showPoints; }
-    public double         GetPointSize() { return pointSize; }
-    public int            GetPointSizePixels() { return pointSizePixels; }
-    public int            GetPointType() { return pointType; }
-    public boolean        GetLegendFlag() { return legendFlag; }
-    public boolean        GetLightingFlag() { return lightingFlag; }
     public int            GetParallelizationAlgorithmType() { return parallelizationAlgorithmType; }
     public int            GetMaxProcessCount() { return maxProcessCount; }
     public int            GetMaxDomainCacheSize() { return maxDomainCacheSize; }
@@ -1250,44 +1173,30 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(56, buf))
             buf.WriteBool(showLines);
         if(WriteSelect(57, buf))
-            buf.WriteInt(lineWidth);
-        if(WriteSelect(58, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(59, buf))
             buf.WriteBool(showPoints);
-        if(WriteSelect(60, buf))
-            buf.WriteDouble(pointSize);
-        if(WriteSelect(61, buf))
-            buf.WriteInt(pointSizePixels);
-        if(WriteSelect(62, buf))
-            buf.WriteInt(pointType);
-        if(WriteSelect(63, buf))
-            buf.WriteBool(legendFlag);
-        if(WriteSelect(64, buf))
-            buf.WriteBool(lightingFlag);
-        if(WriteSelect(65, buf))
+        if(WriteSelect(58, buf))
             buf.WriteInt(parallelizationAlgorithmType);
-        if(WriteSelect(66, buf))
+        if(WriteSelect(59, buf))
             buf.WriteInt(maxProcessCount);
-        if(WriteSelect(67, buf))
+        if(WriteSelect(60, buf))
             buf.WriteInt(maxDomainCacheSize);
-        if(WriteSelect(68, buf))
+        if(WriteSelect(61, buf))
             buf.WriteInt(workGroupSize);
-        if(WriteSelect(69, buf))
+        if(WriteSelect(62, buf))
             buf.WriteBool(pathlines);
-        if(WriteSelect(70, buf))
+        if(WriteSelect(63, buf))
             buf.WriteBool(pathlinesOverrideStartingTimeFlag);
-        if(WriteSelect(71, buf))
+        if(WriteSelect(64, buf))
             buf.WriteDouble(pathlinesOverrideStartingTime);
-        if(WriteSelect(72, buf))
+        if(WriteSelect(65, buf))
             buf.WriteInt(pathlinesCMFE);
-        if(WriteSelect(73, buf))
+        if(WriteSelect(66, buf))
             buf.WriteBool(issueTerminationWarnings);
-        if(WriteSelect(74, buf))
+        if(WriteSelect(67, buf))
             buf.WriteBool(issueStiffnessWarnings);
-        if(WriteSelect(75, buf))
+        if(WriteSelect(68, buf))
             buf.WriteBool(issueCriticalPointsWarnings);
-        if(WriteSelect(76, buf))
+        if(WriteSelect(69, buf))
             buf.WriteDouble(criticalPointThreshold);
     }
 
@@ -1468,63 +1377,42 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             SetShowLines(buf.ReadBool());
             break;
         case 57:
-            SetLineWidth(buf.ReadInt());
-            break;
-        case 58:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 59:
             SetShowPoints(buf.ReadBool());
             break;
-        case 60:
-            SetPointSize(buf.ReadDouble());
-            break;
-        case 61:
-            SetPointSizePixels(buf.ReadInt());
-            break;
-        case 62:
-            SetPointType(buf.ReadInt());
-            break;
-        case 63:
-            SetLegendFlag(buf.ReadBool());
-            break;
-        case 64:
-            SetLightingFlag(buf.ReadBool());
-            break;
-        case 65:
+        case 58:
             SetParallelizationAlgorithmType(buf.ReadInt());
             break;
-        case 66:
+        case 59:
             SetMaxProcessCount(buf.ReadInt());
             break;
-        case 67:
+        case 60:
             SetMaxDomainCacheSize(buf.ReadInt());
             break;
-        case 68:
+        case 61:
             SetWorkGroupSize(buf.ReadInt());
             break;
-        case 69:
+        case 62:
             SetPathlines(buf.ReadBool());
             break;
-        case 70:
+        case 63:
             SetPathlinesOverrideStartingTimeFlag(buf.ReadBool());
             break;
-        case 71:
+        case 64:
             SetPathlinesOverrideStartingTime(buf.ReadDouble());
             break;
-        case 72:
+        case 65:
             SetPathlinesCMFE(buf.ReadInt());
             break;
-        case 73:
+        case 66:
             SetIssueTerminationWarnings(buf.ReadBool());
             break;
-        case 74:
+        case 67:
             SetIssueStiffnessWarnings(buf.ReadBool());
             break;
-        case 75:
+        case 68:
             SetIssueCriticalPointsWarnings(buf.ReadBool());
             break;
-        case 76:
+        case 69:
             SetCriticalPointThreshold(buf.ReadDouble());
             break;
         }
@@ -1696,31 +1584,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("verboseFlag", verboseFlag, indent) + "\n";
         str = str + boolToString("show1DPlots", show1DPlots, indent) + "\n";
         str = str + boolToString("showLines", showLines, indent) + "\n";
-        str = str + intToString("lineWidth", lineWidth, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
-        str = str + doubleToString("pointSize", pointSize, indent) + "\n";
-        str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
-        str = str + indent + "pointType = ";
-        if(pointType == POINTTYPE_BOX)
-            str = str + "POINTTYPE_BOX";
-        if(pointType == POINTTYPE_AXIS)
-            str = str + "POINTTYPE_AXIS";
-        if(pointType == POINTTYPE_ICOSAHEDRON)
-            str = str + "POINTTYPE_ICOSAHEDRON";
-        if(pointType == POINTTYPE_OCTAHEDRON)
-            str = str + "POINTTYPE_OCTAHEDRON";
-        if(pointType == POINTTYPE_TETRAHEDRON)
-            str = str + "POINTTYPE_TETRAHEDRON";
-        if(pointType == POINTTYPE_SPHEREGEOMETRY)
-            str = str + "POINTTYPE_SPHEREGEOMETRY";
-        if(pointType == POINTTYPE_POINT)
-            str = str + "POINTTYPE_POINT";
-        if(pointType == POINTTYPE_SPHERE)
-            str = str + "POINTTYPE_SPHERE";
-        str = str + "\n";
-        str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
-        str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + indent + "parallelizationAlgorithmType = ";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND)
             str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
@@ -1809,14 +1673,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
     private boolean        verboseFlag;
     private boolean        show1DPlots;
     private boolean        showLines;
-    private int            lineWidth;
-    private int            lineStyle;
     private boolean        showPoints;
-    private double         pointSize;
-    private int            pointSizePixels;
-    private int            pointType;
-    private boolean        legendFlag;
-    private boolean        lightingFlag;
     private int            parallelizationAlgorithmType;
     private int            maxProcessCount;
     private int            maxDomainCacheSize;

@@ -557,7 +557,6 @@ avtPoincareFilter::SetAtts(const AttributeGroup *a)
     SetShowIslands( atts.GetShowIslands() );
     SetShowLines(atts.GetShowLines());
     SetShowPoints(atts.GetShowPoints());
-    SetPointScale(atts.GetPointSize());
     SetShow1DPlots(atts.GetShow1DPlots());
     SetSummaryFlag( atts.GetSummaryFlag() );
     SetVerboseFlag( atts.GetVerboseFlag() );
@@ -1068,25 +1067,25 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
             numStiff++;
     }
 
+    char str[4096] = "";
+
     if ((doDistance || doTime) && issueWarningForMaxStepsTermination)
     {
         SumIntAcrossAllProcessors(numEarlyTerminators);
         if (numEarlyTerminators > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines terminated because they "
-               "reached the maximum number of steps.  This may be indicative of your "
-               "time or distance criteria being too large or of other attributes being "
-               "set incorrectly (example: your step size is too small).  If you are "
-               "confident in your settings and want the particles to advect farther, "
-               "you should increase the maximum number of steps.  If you want to disable "
-               "this message, you can do this under the Advaced tab of the streamline plot."
-               "  Note that this message does not mean that an error has occurred; it simply "
-               "means that VisIt stopped advecting particles because it reached the maximum "
-               "number of steps. (That said, this case happens most often when other attributes "
-               "are set incorrectly.)", numEarlyTerminators);
-            avtCallback::IssueWarning(str);
+          SNPRINTF(str, 4096,
+                   "%s\n%d of your integral curves terminated because they "
+                   "reached the maximum number of steps.  This may be indicative of your "
+                   "time or distance criteria being too large or of other attributes being "
+                   "set incorrectly (example: your step size is too small).  If you are "
+                   "confident in your settings and want the particles to advect farther, "
+                   "you should increase the maximum number of steps.  If you want to disable "
+                   "this message, you can do this under the Advaced tab."
+                   "  Note that this message does not mean that an error has occurred; it simply "
+                   "means that VisIt stopped advecting particles because it reached the maximum "
+                   "number of steps. (That said, this case happens most often when other attributes "
+                   "are set incorrectly.)\n", str, numEarlyTerminators);
         }
     }
 
@@ -1095,16 +1094,14 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numCritPts);
         if (numCritPts > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines circled round and round a critical point (a zero"
-               " velocity location).  Normally, VisIt is able to advect the particle "
-               "to the critical point location and terminate.  However, VisIt was not able "
-               "to do this for these particles due to numerical issues.  In all likelihood, "
-               "additional steps will _not_ help this problem and only cause execution to "
-               "take longer.  If you want to disable this message, you can do this under "
-               "the Advanced tab of the streamline plot.", numCritPts);
-            avtCallback::IssueWarning(str);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves circled round and round a critical point (a zero"
+                     " velocity location).  Normally, VisIt is able to advect the particle "
+                     "to the critical point location and terminate.  However, VisIt was not able "
+                     "to do this for these particles due to numerical issues.  In all likelihood, "
+                     "additional steps will _not_ help this problem and only cause execution to "
+                     "take longer.  If you want to disable this message, you can do this under "
+                     "the Advanced tab.\n", str, numCritPts);
         }
     }
 
@@ -1113,17 +1110,18 @@ avtPoincareFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
         SumIntAcrossAllProcessors(numStiff);
         if (numStiff > 0)
         {
-            char str[1024];
-            SNPRINTF(str, 1024, 
-               "%d of your streamlines were unable to advect because of \"stiffness\".  "
-               "When one component of a velocity field varies quickly and another stays "
-               "relatively constant, then it is not possible to choose step sizes that "
-               "remain within tolerances.  This condition is referred to as stiffness and "
-               "VisIt stops advecting in this case.  If you want to disable this message, "
-               "you can do this under the Advanced tab of the streamline plot.", numStiff);
-            avtCallback::IssueWarning(str);
+            SNPRINTF(str, 4096, 
+                     "%s\n%d of your integral curves were unable to advect because of \"stiffness\".  "
+                     "When one component of a velocity field varies quickly and another stays "
+                     "relatively constant, then it is not possible to choose step sizes that "
+                     "remain within tolerances.  This condition is referred to as stiffness and "
+                     "VisIt stops advecting in this case.  If you want to disable this message, "
+                     "you can do this under the Advanced tab.\n", str,numStiff);
         }
     }
+
+    if( strlen( str ) )
+      avtCallback::IssueWarning(str);
 }
 
 // ****************************************************************************
